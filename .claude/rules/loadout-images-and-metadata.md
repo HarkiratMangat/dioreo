@@ -7,332 +7,56 @@ paths:
 
 # Loadout & patch-notes images — Cloudinary caching + structured metadata
 
-*Loads when you touch the Cloudinary cache/upload utils. Draw-thumbnail caching, patch-notes image
-caching, calendar-banner caching, the loadout image workflow, and Cloudinary structured-metadata
-fields. The loadout system itself is in `.claude/rules/loadouts.md`; `/autobuild` (which drives some
-uploads) in `.claude/rules/autobuild.md`.*
-*⚠️ SECURITY: never log a raw Cloudinary error object — the Admin API's rejected promise carries the
-account's plaintext API key+secret in `request_options.auth`. Use each module's `safeErrorMessage()`.
-(Also stated in root CLAUDE.md's invariants.)*
-*📐 CONVENTION (added 2026-08-07 22:04 EDT, v2.61.0): every Cloudinary delivery URL this bot
-produces bakes in `f_auto,q_auto` (adaptive format + quality) unless a site has an explicit reason
-not to — `utils/cloudinaryDeliveryUrl.js`'s `withDeliveryDefaults()`, idempotent, applied on every
-upload/lookup in `cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js`.
-Only loadout images (`loadoutRender.js`'s `buildImageUrl()`, below) had this before — found live
-while debugging an unrelated calendar-banner issue. A new Cloudinary-uploading module should call
-this helper on whatever URL it stores/returns, same as the three above; existing stored URLs were
-retroactively fixed via `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to re-run).*
+*Loads when you touch the Cloudinary cache/upload utils. Draw-thumbnail caching, patch-notes image caching, calendar-banner caching, the loadout image workflow, and Cloudinary structured-metadata fields. The loadout system itself is in `.claude/rules/loadouts.md`; `/autobuild` (which drives some uploads) in `.claude/rules/autobuild.md`.* *⚠️ SECURITY: never log a raw Cloudinary error object — the Admin API's rejected promise carries the account's plaintext API key+secret in `request_options.auth`. Use each module's `safeErrorMessage()`. (Also stated in root CLAUDE.md's invariants.)* *📐 CONVENTION (added 2026-08-07 22:04 EDT, v2.61.0): every Cloudinary delivery URL this bot produces bakes in `f_auto,q_auto` (adaptive format + quality) unless a site has an explicit reason not to — `utils/cloudinaryDeliveryUrl.js`'s `withDeliveryDefaults()`, idempotent, applied on every upload/lookup in `cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js`. Only loadout images (`loadoutRender.js`'s `buildImageUrl()`, below) had this before — found live while debugging an unrelated calendar-banner issue. A new Cloudinary-uploading module should call this helper on whatever URL it stores/returns, same as the three above; existing stored URLs were retroactively fixed via `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to re-run).*
 
 ### The Cloudinary image workflow, finally documented (2026-07-18, `/manage` loadout UX overhaul)
-This was a real, standing mystery — even to Harkirat, who built it: he had to rename the FSS
-Hurricane screenshot locally and re-upload before it rendered, and noticed some Secondaries loadouts
-never got renamed at all, with no clear idea why. Confirmed the ACTUAL current process live against
-the real Cloudinary account (via the Cloudinary MCP tool — `search-assets`/`search-folders`, not
-guessed from code alone) before writing this:
-- **There is no bot-side upload automation for loadout images at all**, unlike draws
-  (`utils/cloudinaryCache.js`) or patch notes (`utils/patchNotesCache.js`), both of which auto-fetch
-  a given URL into Cloudinary themselves. For loadouts, the admin uploads the Gunsmith screenshot to
-  Cloudinary **outside the bot entirely** — via Cloudinary's own web dashboard, or by asking Claude to
-  do it through the Cloudinary MCP tool — and only then types the resulting key into `/manage`.
-- **Every loadout image lives in one flat Cloudinary folder, `gun-builds`** (132 assets as of this
-  writing) — confirmed via `search-folders`, there is no per-weapon or per-category subfolder
-  structure at all. This folder is purely organizational inside Cloudinary's own Media Library UI —
-  it is **NOT part of the delivery URL** (`buildImageUrl()` in `utils/loadoutRender.js` interpolates
-  `imageKey` directly with no folder segment: `.../upload/f_auto,q_auto/v1/{imageKey}`), because this
-  Cloudinary account uses "dynamic folder" mode, where the display folder and the Public ID path are
-  decoupled. Don't assume a `gun-builds/` prefix belongs in `imageKey` — it doesn't, and never has.
-- **The actual root cause of the mystery: Cloudinary assigns an uploaded asset's Public ID from the
-  file's own name, unless you rename it during/after upload.** This is confirmed directly in the live
-  data — most weapons have clean, intentional keys (`BAL-27-1` through `BAL-27-5`, `FSS-HURRICANE-1`,
-  `DMZ-AK117-1`, `AK117-1`, `SKS-4`, `PKM-2`) that were clearly renamed at some point, but roughly a
-  dozen assets are STILL sitting under their raw camera-roll filenames (`IMG_5630`, `IMG_5631`,
-  `IMG_3123`, etc.) — never renamed. Whatever the Public ID ends up being (renamed or not) is EXACTLY
-  the string that has to be typed into `/manage`'s "Cloudinary Image Key" field, character-for-
-  character. The FSS Hurricane incident was almost certainly this exact mismatch: the screenshot's
-  original filename didn't match what was typed into the modal, so it 404'd until Harkirat manually
-  renamed the file and re-uploaded so the two finally lined up.
-- **The bot never validates that a typed key actually resolves to anything** — `buildImageUrl()` is
-  pure string interpolation, no network call, so a typo or a forgotten rename silently saves fine and
-  only shows up later as a broken image in Discord. Fixed with a real check: `utils/loadoutRender.js`'s
-  new `checkImageExists(imageKey)` does a HEAD request against the constructed URL after a save (Add
-  Loadout, Edit Loadout, and Bulk Add/Replace in `index.js` all call it) and appends a clear "no image
-  found at that key" warning to the confirmation message if it 404s — advisory only, never blocks the
-  save (a network hiccup is treated as "can't confirm," not "missing," so this can't produce a false
-  warning). This is the direct fix for the exact failure mode Harkirat hit — the mismatch is now
-  caught the moment it's saved, not discovered later by chance.
-- **Recommended naming convention going forward (already the majority pattern in the live data,
-  formalized here rather than invented): `WeaponKey-BuildNum`**, all-caps with hyphens, matching the
-  weapon's own display name (e.g. `BP50-1`, `FSS-HURRICANE-1`, DMZ builds prefixed `DMZ-` — e.g.
-  `DMZ-AK117-1`). Rename the asset to this in Cloudinary (during or right after upload) instead of
-  leaving the camera-roll default — this is now called out directly in `/manage`'s loadouts pages
-  (a new "How Images Work" info block, `commands/manage.js`'s `loadoutsPageDef()`) and in the Add/Edit
-  Loadout modals' own field label + placeholder (`buildAddLoadoutModal`/`buildEditLoadoutModal`),
-  not just here — the goal was to make this self-explanatory in the tool itself, not just in this file.
-- **Follow-up session (2026-07-19): the "unrenamed" IMG_XXXX assets fully investigated and cleaned up.**
-  A live account audit (all 133 `Loadout` docs' `imageKey`s cross-referenced against every Cloudinary
-  asset, via the Cloudinary MCP tool + a direct MongoDB query, not guessed) found the earlier diagnosis
-  was half right: those 10 `IMG_XXXX` assets were NOT actually causing any broken loadout images —
-  **zero current loadout docs referenced them.** Timestamps told the real story: all 10 were uploaded
-  in one 3-second batch, then the exact same 10 screenshots were re-uploaded correctly-named (`DOBVRA-1`,
-  `R9-0-1`, `50GS-1`/`-2`, `SHORTY-1`, `CROSSBOW-1`/`-2`, `L-CAR-9-1`/`-2`, `MACHINE-PISTOL-1`) just 15
-  minutes later — the admin caught the naming mistake almost immediately and fixed it, but the broken
-  originals were never deleted, and the fix re-uploads landed in Cloudinary's root "Home" folder
-  instead of `gun-builds` (same for `LOCUS-1`/`LOCUS-2`). **Also discovered along the way:** Cloudinary
-  tracks `public_id` (the real URL identifier) and `display_name` (a separate, purely cosmetic
-  dashboard label) as two independently-editable fields — several assets (`BAL-27-*`, `PKM-2`, `SKS-4`)
-  have a correctly-renamed `public_id` but a stale `display_name` still showing the original upload
-  filename, which is what made them LOOK unrenamed when browsing Cloudinary directly even though the
-  bot's URLs were already correct. **Resolved:** the 10 genuinely-orphaned `IMG_XXXX` assets deleted;
-  the 12 correctly-named-but-misplaced assets moved into `gun-builds` (via `asset-update`'s
-  `asset_folder`, which never touches `public_id`/the delivery URL); ~26 of Cloudinary's own default
-  demo assets (`samples/*`, `sample`, `cld-sample*`) also deleted, unrelated to the bot, just account
-  clutter. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` (uploaded 2026-06-16, also orphaned) deliberately left
-  alone — confirmed with Harkirat these are for a future DMZ loadouts feature, not a mistake.
-  **Also fixed the root cause of "draws/patch-notes look like they're in the wrong folder":**
-  `utils/cloudinaryCache.js`/`utils/patchNotesCache.js` always correctly baked their folder into the
-  `public_id` path (`temp_draws/{slug}`, `patch_notes/{id}/{index}`), but never set Cloudinary's newer,
-  separate `asset_folder` field — so the dashboard's own "Folder" grouping never recognized them as
-  organized, even though the URLs were always correct. Both modules now pass `asset_folder` on upload;
-  the 12 pre-existing `temp_draws/` assets were moved into a real folder the same way as the loadout
-  cleanup above. Real Cloudinary folders now exist for all three subsystems: `gun-builds`, `temp_draws`,
-  `patch_notes`. **Still no in-bot way to browse what's in `gun-builds`** — that part of the original
-  "Verify Cloudinary folder organization" roadmap item is genuinely still open, though now much less
-  urgent since the account itself is clean.
+This was a real, standing mystery — even to Harkirat, who built it: he had to rename the FSS Hurricane screenshot locally and re-upload before it rendered, and noticed some Secondaries loadouts never got renamed at all, with no clear idea why. Confirmed the ACTUAL current process live against the real Cloudinary account (via the Cloudinary MCP tool — `search-assets`/`search-folders`, not guessed from code alone) before writing this:
+- **There is no bot-side upload automation for loadout images at all**, unlike draws (`utils/cloudinaryCache.js`) or patch notes (`utils/patchNotesCache.js`), both of which auto-fetch a given URL into Cloudinary themselves. For loadouts, the admin uploads the Gunsmith screenshot to Cloudinary **outside the bot entirely** — via Cloudinary's own web dashboard, or by asking Claude to do it through the Cloudinary MCP tool — and only then types the resulting key into `/manage`.
+- **Every loadout image lives in one flat Cloudinary folder, `gun-builds`** (132 assets as of this writing) — confirmed via `search-folders`, there is no per-weapon or per-category subfolder structure at all. This folder is purely organizational inside Cloudinary's own Media Library UI — it is **NOT part of the delivery URL** (`buildImageUrl()` in `utils/loadoutRender.js` interpolates `imageKey` directly with no folder segment: `.../upload/f_auto,q_auto/v1/{imageKey}`), because this Cloudinary account uses "dynamic folder" mode, where the display folder and the Public ID path are decoupled. Don't assume a `gun-builds/` prefix belongs in `imageKey` — it doesn't, and never has.
+- **The actual root cause of the mystery: Cloudinary assigns an uploaded asset's Public ID from the file's own name, unless you rename it during/after upload.** This is confirmed directly in the live data — most weapons have clean, intentional keys (`BAL-27-1` through `BAL-27-5`, `FSS-HURRICANE-1`, `DMZ-AK117-1`, `AK117-1`, `SKS-4`, `PKM-2`) that were clearly renamed at some point, but roughly a dozen assets are STILL sitting under their raw camera-roll filenames (`IMG_5630`, `IMG_5631`, `IMG_3123`, etc.) — never renamed. Whatever the Public ID ends up being (renamed or not) is EXACTLY the string that has to be typed into `/manage`'s "Cloudinary Image Key" field, character-for- character. The FSS Hurricane incident was almost certainly this exact mismatch: the screenshot's original filename didn't match what was typed into the modal, so it 404'd until Harkirat manually renamed the file and re-uploaded so the two finally lined up.
+- **The bot never validates that a typed key actually resolves to anything** — `buildImageUrl()` is pure string interpolation, no network call, so a typo or a forgotten rename silently saves fine and only shows up later as a broken image in Discord. Fixed with a real check: `utils/loadoutRender.js`'s new `checkImageExists(imageKey)` does a HEAD request against the constructed URL after a save (Add Loadout, Edit Loadout, and Bulk Add/Replace in `index.js` all call it) and appends a clear "no image found at that key" warning to the confirmation message if it 404s — advisory only, never blocks the save (a network hiccup is treated as "can't confirm," not "missing," so this can't produce a false warning). This is the direct fix for the exact failure mode Harkirat hit — the mismatch is now caught the moment it's saved, not discovered later by chance.
+- **Recommended naming convention going forward (already the majority pattern in the live data, formalized here rather than invented): `WeaponKey-BuildNum`**, all-caps with hyphens, matching the weapon's own display name (e.g. `BP50-1`, `FSS-HURRICANE-1`, DMZ builds prefixed `DMZ-` — e.g. `DMZ-AK117-1`). Rename the asset to this in Cloudinary (during or right after upload) instead of leaving the camera-roll default — this is now called out directly in `/manage`'s loadouts pages (a new "How Images Work" info block, `commands/manage.js`'s `loadoutsPageDef()`) and in the Add/Edit Loadout modals' own field label + placeholder (`buildAddLoadoutModal`/`buildEditLoadoutModal`), not just here — the goal was to make this self-explanatory in the tool itself, not just in this file.
+- **Follow-up session (2026-07-19): the "unrenamed" IMG_XXXX assets fully investigated and cleaned up.** A live account audit (all 133 `Loadout` docs' `imageKey`s cross-referenced against every Cloudinary asset, via the Cloudinary MCP tool + a direct MongoDB query, not guessed) found the earlier diagnosis was half right: those 10 `IMG_XXXX` assets were NOT actually causing any broken loadout images — **zero current loadout docs referenced them.** Timestamps told the real story: all 10 were uploaded in one 3-second batch, then the exact same 10 screenshots were re-uploaded correctly-named (`DOBVRA-1`, `R9-0-1`, `50GS-1`/`-2`, `SHORTY-1`, `CROSSBOW-1`/`-2`, `L-CAR-9-1`/`-2`, `MACHINE-PISTOL-1`) just 15 minutes later — the admin caught the naming mistake almost immediately and fixed it, but the broken originals were never deleted, and the fix re-uploads landed in Cloudinary's root "Home" folder instead of `gun-builds` (same for `LOCUS-1`/`LOCUS-2`). **Also discovered along the way:** Cloudinary tracks `public_id` (the real URL identifier) and `display_name` (a separate, purely cosmetic dashboard label) as two independently-editable fields — several assets (`BAL-27-*`, `PKM-2`, `SKS-4`) have a correctly-renamed `public_id` but a stale `display_name` still showing the original upload filename, which is what made them LOOK unrenamed when browsing Cloudinary directly even though the bot's URLs were already correct. **Resolved:** the 10 genuinely-orphaned `IMG_XXXX` assets deleted; the 12 correctly-named-but-misplaced assets moved into `gun-builds` (via `asset-update`'s `asset_folder`, which never touches `public_id`/the delivery URL); ~26 of Cloudinary's own default demo assets (`samples/*`, `sample`, `cld-sample*`) also deleted, unrelated to the bot, just account clutter. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` (uploaded 2026-06-16, also orphaned) deliberately left alone — confirmed with Harkirat these are for a future DMZ loadouts feature, not a mistake.
+  **Also fixed the root cause of "draws/patch-notes look like they're in the wrong folder":** `utils/cloudinaryCache.js`/`utils/patchNotesCache.js` always correctly baked their folder into the `public_id` path (`temp_draws/{slug}`, `patch_notes/{id}/{index}`), but never set Cloudinary's newer, separate `asset_folder` field — so the dashboard's own "Folder" grouping never recognized them as organized, even though the URLs were always correct. Both modules now pass `asset_folder` on upload; the 12 pre-existing `temp_draws/` assets were moved into a real folder the same way as the loadout cleanup above. Real Cloudinary folders now exist for all three subsystems: `gun-builds`, `temp_draws`, `patch_notes`. **Still no in-bot way to browse what's in `gun-builds`** — that part of the original "Verify Cloudinary folder organization" roadmap item is genuinely still open, though now much less urgent since the account itself is clean.
 
 
 ## Draw thumbnail Cloudinary cache (`utils/cloudinaryCache.js`)
-Draw thumbnail URLs are often hosted externally (Facebook, etc.), and those platforms sometimes
-remove/expire the image later, leaving a broken "image failed to load" placeholder in `/draws`.
-Built 2026-07-12 to re-host every provided thumbnail into this bot's own Cloudinary account
-(folder `temp_draws/`, same account `/dmz`/MP loadouts already use — cloud name `dr6dn61eh`) so the
-command keeps working even after the original source goes dark. This is the first place in the bot
-that actually calls Cloudinary's upload/delete API itself — `utils/loadoutRender.js`'s existing
-Cloudinary usage only ever builds URL strings for images an admin already uploaded by hand.
-- **Cloudinary has NO native per-asset TTL/auto-expiry** — confirmed against the current
-  `cloudinary_npm` docs before building this (don't assume otherwise if you revisit it). "Auto-delete
-  after 45 days" is therefore something THIS bot does on a schedule
-  (`pruneExpiredThumbnails`, called from `index.js`'s `runCloudinaryCleanup()` on boot + every 24h
-  via `setInterval`), not a Cloudinary feature being configured.
-- **Upload is remote-URL-to-remote-URL** — `cloudinary.uploader.upload(sourceUrl, {...})` hands
-  Cloudinary the external URL directly; Cloudinary fetches the bytes server-side, the bot never
-  downloads the image itself. `overwrite: true` + `invalidate: true` means re-adding/replacing a
-  draw with a NEW url replaces the cached file in place (same `public_id`, derived from
-  `slugify(title)`) with no separate delete step needed first.
-- **Thumbnail URL is now OPTIONAL everywhere it's entered** (single add/edit modals in `manage.js`,
-  and the bulk paste format in `adminParser.js`'s `parseBulkDrawList`) — a blank/omitted URL means
-  "reuse whatever's already cached in Cloudinary for this exact draw title" (Harkirat's spec: "if
-  the url field is not provided again... automatically use that"). `utils/cloudinaryCache.js`'s
-  `resolveThumbnail(title, providedUrl)` is the one entry point every draw-save site in `index.js`
-  calls (6 sites: single add/edit, bulk add/replace new+returning, bulk add/replace both) — it never
-  throws, always resolves, and returns `{ url, cached, error, reused }` so callers can tell a
-  successful cache from a fallback from a hard failure.
+Draw thumbnail URLs are often hosted externally (Facebook, etc.), and those platforms sometimes remove/expire the image later, leaving a broken "image failed to load" placeholder in `/draws`. Built 2026-07-12 to re-host every provided thumbnail into this bot's own Cloudinary account (folder `temp_draws/`, same account `/dmz`/MP loadouts already use — cloud name `dr6dn61eh`) so the command keeps working even after the original source goes dark. This is the first place in the bot that actually calls Cloudinary's upload/delete API itself — `utils/loadoutRender.js`'s existing Cloudinary usage only ever builds URL strings for images an admin already uploaded by hand.
+- **Cloudinary has NO native per-asset TTL/auto-expiry** — confirmed against the current `cloudinary_npm` docs before building this (don't assume otherwise if you revisit it). "Auto-delete after 45 days" is therefore something THIS bot does on a schedule (`pruneExpiredThumbnails`, called from `index.js`'s `runCloudinaryCleanup()` on boot + every 24h via `setInterval`), not a Cloudinary feature being configured.
+- **Upload is remote-URL-to-remote-URL** — `cloudinary.uploader.upload(sourceUrl, {...})` hands Cloudinary the external URL directly; Cloudinary fetches the bytes server-side, the bot never downloads the image itself. `overwrite: true` + `invalidate: true` means re-adding/replacing a draw with a NEW url replaces the cached file in place (same `public_id`, derived from `slugify(title)`) with no separate delete step needed first.
+- **Thumbnail URL is now OPTIONAL everywhere it's entered** (single add/edit modals in `manage.js`, and the bulk paste format in `adminParser.js`'s `parseBulkDrawList`) — a blank/omitted URL means "reuse whatever's already cached in Cloudinary for this exact draw title" (Harkirat's spec: "if the url field is not provided again... automatically use that"). `utils/cloudinaryCache.js`'s `resolveThumbnail(title, providedUrl)` is the one entry point every draw-save site in `index.js` calls (6 sites: single add/edit, bulk add/replace new+returning, bulk add/replace both) — it never throws, always resolves, and returns `{ url, cached, error, reused }` so callers can tell a successful cache from a fallback from a hard failure.
   - Provided a URL + caching succeeds → cached Cloudinary URL.
-  - Provided a URL + caching fails (source already dead, network hiccup, etc.) → falls back to the
-    raw URL as typed, so the draw still saves — a Cloudinary hiccup must never block an admin action,
-    that's the opposite of what this feature is for.
-  - No URL + a cache hit exists → reuses the cached URL. **Fuzzy fallback (added 2026-07-31 17:20
-    EDT, Harkirat's request):** an exact-slug miss now tries a near-match against everything cached
-    under `temp_draws/` before giving up — `getCachedUrlFuzzy()`'s `titleSimilarity()` is plain
-    Levenshtein edit-distance ratio (character-level), NOT `utils/search.js`'s word-overlap
-    `isSameDrawTitle()` (that one's built for reworded/extra-word variants of the same content — the
-    wrong tool for "same title, off by a typo or a small edit"). Threshold `0.75`, not a literal 0.9
-    — his own framing was "~90%... or something similar as per your judgement," and "slightly adjust
-    it" (his example) reads as more than single-character typo tolerance; a false match's worst case
-    is reusing a different-but-real cached thumbnail, not corrupted data, so this errs toward
-    matching over missing. `resolveThumbnail()`'s return shape gained `matchedTitle` (only set on a
-    non-exact match) — every draws call site in `index.js` surfaces it via a shared `thumbnailNote()`
-    helper so a typo reusing a DIFFERENT draw's image is visible in the confirmation, never silent.
-  - No URL + no cache hit at all (exact or fuzzy) → `url: null`, and this IS treated as a real
-    validation error by every caller (the draw needs *some* thumbnail to render at all) — single
-    add/edit rejects the submission with a clear message; bulk routes skip just that one entry and
-    report it by name in the confirmation, rather than silently saving a draw with a broken/missing
-    image field.
-- **Bulk-paste URL detection is a space heuristic, not a stricter format change.** Every date this
-  bot's admin flows accept ("July 15", "August 5, 2026") contains a space; a URL or bare Cloudinary
-  key never does. `adminParser.js`'s `looksLikeUrlOrKey()` pops the trailing comma-field as a URL
-  only if it has no space AND isn't a bare 4-digit year (which also has no space, and is the
-  comma-split tail of a "Month Day, Year" date — see the existing year-merge-back logic right below
-  it). Verified against all 4 combinations (URL/no-URL × plain-date/comma-year-date) before shipping.
-- **Cleanup rule is 45+ days old AND orphaned, not a strict age cutoff** (Harkirat's confirmed
-  choice) — `pruneExpiredThumbnails(currentUrls)` only deletes a cached asset if it's both past the
-  45-day window AND no current draw's `thumbnailUrl` still points at it. `currentUrls` is built by
-  the caller (`index.js`, from `SeasonalData.newDraws`/`returningDraws`) — `cloudinaryCache.js` stays
-  model-agnostic, matching every other file in `utils/`. A long-lived draw's image is never at risk
-  just because it's been up for a while.
-- **SECURITY: never log a raw Cloudinary error object.** Caught live during review before this ever
-  shipped — the Admin API's rejected-promise shape is
-  `{ request_options: { auth: 'api_key:api_secret', ... }, error: { message, http_code } }`, so
-  `console.error('...', err)` (or any fallback like `err.message || err`, which still logs the whole
-  object when `.message` is absent) prints the account's live API key AND secret in plaintext to the
-  console/log aggregator. `cloudinaryCache.js`'s `safeErrorMessage(err)`/`errorHttpCode(err)` are the
-  ONLY sanctioned way to read a Cloudinary error anywhere in this module (the upload API's errors
-  carry `.message`/`.http_code` directly; the Admin API's, used by `getCachedUrl`, nest them one
-  level under `.error` instead — checking only the top-level shape silently mis-detected every
-  "not yet cached" 404 as a real error too, logging the credential-bearing object on every single
-  cache-miss lookup until this was fixed). Every Cloudinary call in this file has its error caught
-  and sanitized IN this file — none of it is left to escape to a caller that doesn't know to
-  sanitize it (verified by wrapping `pruneExpiredThumbnails`'s entire body, not just the delete
-  call — `listCachedAssets()` had no try/catch of its own and could have leaked the same way).
-- Package: `cloudinary` (npm, added 2026-07-12) — auto-configures itself from the existing
-  `CLOUDINARY_URL` env var the moment it's required, no explicit `cloudinary.config()` call needed.
-  Already present in both local `.env` and Railway's production variables.
+  - Provided a URL + caching fails (source already dead, network hiccup, etc.) → falls back to the raw URL as typed, so the draw still saves — a Cloudinary hiccup must never block an admin action, that's the opposite of what this feature is for.
+  - No URL + a cache hit exists → reuses the cached URL. **Fuzzy fallback (added 2026-07-31 17:20 EDT, Harkirat's request):** an exact-slug miss now tries a near-match against everything cached under `temp_draws/` before giving up — `getCachedUrlFuzzy()`'s `titleSimilarity()` is plain Levenshtein edit-distance ratio (character-level), NOT `utils/search.js`'s word-overlap `isSameDrawTitle()` (that one's built for reworded/extra-word variants of the same content — the wrong tool for "same title, off by a typo or a small edit"). Threshold `0.75`, not a literal 0.9 — his own framing was "~90%... or something similar as per your judgement," and "slightly adjust it" (his example) reads as more than single-character typo tolerance; a false match's worst case is reusing a different-but-real cached thumbnail, not corrupted data, so this errs toward matching over missing. `resolveThumbnail()`'s return shape gained `matchedTitle` (only set on a non-exact match) — every draws call site in `index.js` surfaces it via a shared `thumbnailNote()` helper so a typo reusing a DIFFERENT draw's image is visible in the confirmation, never silent.
+  - No URL + no cache hit at all (exact or fuzzy) → `url: null`, and this IS treated as a real validation error by every caller (the draw needs *some* thumbnail to render at all) — single add/edit rejects the submission with a clear message; bulk routes skip just that one entry and report it by name in the confirmation, rather than silently saving a draw with a broken/missing image field.
+- **Bulk-paste URL detection is a space heuristic, not a stricter format change.** Every date this bot's admin flows accept ("July 15", "August 5, 2026") contains a space; a URL or bare Cloudinary key never does. `adminParser.js`'s `looksLikeUrlOrKey()` pops the trailing comma-field as a URL only if it has no space AND isn't a bare 4-digit year (which also has no space, and is the comma-split tail of a "Month Day, Year" date — see the existing year-merge-back logic right below it). Verified against all 4 combinations (URL/no-URL × plain-date/comma-year-date) before shipping.
+- **Cleanup rule is 45+ days old AND orphaned, not a strict age cutoff** (Harkirat's confirmed choice) — `pruneExpiredThumbnails(currentUrls)` only deletes a cached asset if it's both past the 45-day window AND no current draw's `thumbnailUrl` still points at it. `currentUrls` is built by the caller (`index.js`, from `SeasonalData.newDraws`/`returningDraws`) — `cloudinaryCache.js` stays model-agnostic, matching every other file in `utils/`. A long-lived draw's image is never at risk just because it's been up for a while.
+- **SECURITY: never log a raw Cloudinary error object.** Caught live during review before this ever shipped — the Admin API's rejected-promise shape is `{ request_options: { auth: 'api_key:api_secret', ... }, error: { message, http_code } }`, so `console.error('...', err)` (or any fallback like `err.message || err`, which still logs the whole object when `.message` is absent) prints the account's live API key AND secret in plaintext to the console/log aggregator. `cloudinaryCache.js`'s `safeErrorMessage(err)`/`errorHttpCode(err)` are the ONLY sanctioned way to read a Cloudinary error anywhere in this module (the upload API's errors carry `.message`/`.http_code` directly; the Admin API's, used by `getCachedUrl`, nest them one level under `.error` instead — checking only the top-level shape silently mis-detected every "not yet cached" 404 as a real error too, logging the credential-bearing object on every single cache-miss lookup until this was fixed). Every Cloudinary call in this file has its error caught and sanitized IN this file — none of it is left to escape to a caller that doesn't know to sanitize it (verified by wrapping `pruneExpiredThumbnails`'s entire body, not just the delete call — `listCachedAssets()` had no try/catch of its own and could have leaked the same way).
+- Package: `cloudinary` (npm, added 2026-07-12) — auto-configures itself from the existing `CLOUDINARY_URL` env var the moment it's required, no explicit `cloudinary.config()` call needed. Already present in both local `.env` and Railway's production variables.
 
 
 ## Patch notes Cloudinary caching (`utils/patchNotesCache.js`, shipped 2026-07-13)
-Same underlying problem as draws' thumbnail cache (admin-typed external screenshot URLs can go
-dark later, leaving a broken image in `/patch notes`' media carousel) but a genuinely DIFFERENT
-retention model, so this is its own module rather than a reuse of `cloudinaryCache.js`:
-- **Retention is SEASON-based, not time-based.** An image stays cached for as long as its season is
-  still reachable through `/patch notes`' own "previous 5 seasons" history dropdown
-  (`patchnotes.js`'s `recentPatches = seasonalDoc.patchNotes.slice(-5)`), and gets pruned once that
-  season rolls off the back of that list — regardless of how many days have passed. A season live
-  for months stays cached the whole time as long as it's still one of the 5 most recent; a season
-  that rolled off the dropdown yesterday gets pruned on the very next sweep no matter how young it
-  is. `pruneOrphanedPatchFolders(keepPatchIds)` takes the exact same `_id` set the history dropdown
-  is built from, so retention here can never drift out of sync with what's actually still reachable
-  in Discord.
-- **Keyed by the patch note subdocument's own `_id`, not its title** — titles CAN be renamed later
-  (the most-recent entry's title stays synced to `currentSeasonTitle`, see the design-decision-log
-  entry above), and keying by a mutable title would either orphan already-cached images on a rename
-  or require a folder-rename step neither Cloudinary nor this module supports. `_id` never changes.
-- `public_id` shape: `patch_notes/{patchId}/{imageIndex}` — `imageIndex` is the ABSOLUTE position in
-  the patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting
-  the same slot (`urls1` owns indices 0-4, `urls2` owns 5-9) always overwrites the same asset in
-  place (`overwrite: true`) instead of accumulating duplicates under different indices.
-- Same `overwrite: true` + `invalidate: true` remote-URL-to-remote-URL upload pattern as the draws
-  cache (Cloudinary fetches the bytes server-side, the bot never downloads the image itself), and
-  the same never-throw-just-fall-back-to-the-raw-URL philosophy — a Cloudinary hiccup must never
-  block an admin's save.
-- **Same SECURITY rule as the draws cache, re-applied here rather than assumed inherited**: never
-  log a raw Cloudinary error object (the Admin API's rejected-promise carries the account's live API
-  key+secret in `request_options.auth`) — every Cloudinary call in this file catches and sanitizes
-  its own error via `safeErrorMessage()`, none of it escapes to a caller that doesn't know to
-  sanitize it.
-- Runs on the same boot + 24h `setInterval` schedule as the draws cleanup (`index.js`'s
-  `runCloudinaryCleanup()`), same Cloudinary account, separate `patch_notes/` folder.
-- **REAL LIVE BUG found 2026-07-19, FIXED 2026-07-20 (a data fix, not a code fix — the caching code was
-  always correct).** The only current patch note entry (Season 6 — Take Your Heart) had its `images[]`
-  array pointing to raw `media.discordapp.net` URLs, not Cloudinary ones — this caching module never
-  actually ran for it. Root cause: this entry's release date is 2026-07-06, BEFORE this whole caching
-  feature shipped (2026-07-13), and it was never re-submitted through `/manage`'s URLs 1/URLs 2 modals
-  since. Made materially worse by what it fell back to: `media.discordapp.net` URLs with `ex=`/`is=`/
-  `hm=` query params are Discord's newer SIGNED, time-limited CDN proxy links, not permanent — decoding
-  the `ex=` hex timestamp on the live entry confirmed it had been expired since 2026-07-07, meaning
-  `/patch notes` had been showing broken images for about two weeks with nothing in the bot ever
-  detecting or alerting on it. **Confirmed the raw stored URL was truly dead via a direct `curl` (404 at
-  the CDN origin) before doing anything** — worth noting Harkirat could still SEE the images fine in his
-  own Discord client the whole time despite this; that's Discord's client silently refreshing an expired
-  signed attachment link when rendering a message whose original channel it can still resolve, which
-  masks the dead link for a viewer with access but does nothing for a server-side fetch (Cloudinary, or
-  any other Discord user without access to the source channel) — don't mistake "still visible to the
-  admin in Discord" for "actually alive" again. Fixed once Harkirat supplied 5 fresh URLs (re-shared from
-  the original screenshots, arrived reverse-ordered relative to the array — reordered by matching each
-  URL's own filename suffix number, which happens to already sort ascending in the correct order): each
-  verified live (200) via `curl`, then re-cached through the existing, unmodified `cachePatchImage()`
-  (`patch_notes/6a4bd78c9b44d22e27107d2c/0-4.webp`), then the live `SeasonalData` doc's
-  `patchNotes[0].images` array updated directly via the MongoDB MCP tool to point at the new Cloudinary
-  URLs. Still open: whether an admin action or a boot-time check should flag a patch note entry whose
-  images are non-Cloudinary URLs, so this class of "silently stale before the feature existed" gap can't
-  recur unnoticed for other data created before a similar future caching feature ships — not built this
-  pass, just the immediate fix.
+Same underlying problem as draws' thumbnail cache (admin-typed external screenshot URLs can go dark later, leaving a broken image in `/patch notes`' media carousel) but a genuinely DIFFERENT retention model, so this is its own module rather than a reuse of `cloudinaryCache.js`:
+- **Retention is SEASON-based, not time-based.** An image stays cached for as long as its season is still reachable through `/patch notes`' own "previous 5 seasons" history dropdown (`patchnotes.js`'s `recentPatches = seasonalDoc.patchNotes.slice(-5)`), and gets pruned once that season rolls off the back of that list — regardless of how many days have passed. A season live for months stays cached the whole time as long as it's still one of the 5 most recent; a season that rolled off the dropdown yesterday gets pruned on the very next sweep no matter how young it is. `pruneOrphanedPatchFolders(keepPatchIds)` takes the exact same `_id` set the history dropdown is built from, so retention here can never drift out of sync with what's actually still reachable in Discord.
+- **Keyed by the patch note subdocument's own `_id`, not its title** — titles CAN be renamed later (the most-recent entry's title stays synced to `currentSeasonTitle`, see the design-decision-log entry above), and keying by a mutable title would either orphan already-cached images on a rename or require a folder-rename step neither Cloudinary nor this module supports. `_id` never changes.
+- `public_id` shape: `patch_notes/{patchId}/{imageIndex}` — `imageIndex` is the ABSOLUTE position in the patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting the same slot (`urls1` owns indices 0-4, `urls2` owns 5-9) always overwrites the same asset in place (`overwrite: true`) instead of accumulating duplicates under different indices.
+- Same `overwrite: true` + `invalidate: true` remote-URL-to-remote-URL upload pattern as the draws cache (Cloudinary fetches the bytes server-side, the bot never downloads the image itself), and the same never-throw-just-fall-back-to-the-raw-URL philosophy — a Cloudinary hiccup must never block an admin's save.
+- **Same SECURITY rule as the draws cache, re-applied here rather than assumed inherited**: never log a raw Cloudinary error object (the Admin API's rejected-promise carries the account's live API key+secret in `request_options.auth`) — every Cloudinary call in this file catches and sanitizes its own error via `safeErrorMessage()`, none of it escapes to a caller that doesn't know to sanitize it.
+- Runs on the same boot + 24h `setInterval` schedule as the draws cleanup (`index.js`'s `runCloudinaryCleanup()`), same Cloudinary account, separate `patch_notes/` folder.
+- **REAL LIVE BUG found 2026-07-19, FIXED 2026-07-20 (a data fix, not a code fix — the caching code was always correct).** The only current patch note entry (Season 6 — Take Your Heart) had its `images[]` array pointing to raw `media.discordapp.net` URLs, not Cloudinary ones — this caching module never actually ran for it. Root cause: this entry's release date is 2026-07-06, BEFORE this whole caching feature shipped (2026-07-13), and it was never re-submitted through `/manage`'s URLs 1/URLs 2 modals since. Made materially worse by what it fell back to: `media.discordapp.net` URLs with `ex=`/`is=`/ `hm=` query params are Discord's newer SIGNED, time-limited CDN proxy links, not permanent — decoding the `ex=` hex timestamp on the live entry confirmed it had been expired since 2026-07-07, meaning `/patch notes` had been showing broken images for about two weeks with nothing in the bot ever detecting or alerting on it. **Confirmed the raw stored URL was truly dead via a direct `curl` (404 at the CDN origin) before doing anything** — worth noting Harkirat could still SEE the images fine in his own Discord client the whole time despite this; that's Discord's client silently refreshing an expired signed attachment link when rendering a message whose original channel it can still resolve, which masks the dead link for a viewer with access but does nothing for a server-side fetch (Cloudinary, or any other Discord user without access to the source channel) — don't mistake "still visible to the admin in Discord" for "actually alive" again. Fixed once Harkirat supplied 5 fresh URLs (re-shared from the original screenshots, arrived reverse-ordered relative to the array — reordered by matching each URL's own filename suffix number, which happens to already sort ascending in the correct order): each verified live (200) via `curl`, then re-cached through the existing, unmodified `cachePatchImage()` (`patch_notes/6a4bd78c9b44d22e27107d2c/0-4.webp`), then the live `SeasonalData` doc's `patchNotes[0].images` array updated directly via the MongoDB MCP tool to point at the new Cloudinary URLs. Still open: whether an admin action or a boot-time check should flag a patch note entry whose images are non-Cloudinary URLs, so this class of "silently stale before the feature existed" gap can't recur unnoticed for other data created before a similar future caching feature ships — not built this pass, just the immediate fix.
 
 
 ### Cloudinary Structured Metadata for loadouts AND patch notes (2026-07-21, `/autobuild` live-test follow-up + expansion)
-Harkirat's call after the first live test: switch loadout-image metadata from Cloudinary `context` (loose
-key/value pairs) to real **Structured Metadata Fields** (account-level defined, validated, queryable in the
-dashboard + Admin API), then (same session) expand it — badge + date fields, an equivalent set for patch
-notes, auto-sync on every edit, and a backfill of all existing assets. **22 fields total**, created on the
-live account via the idempotent `scripts/createCloudinaryMetadataFields.js` (lists existing fields, creates
-only the missing ones — safe to re-run when a field is added; reads BOTH schema lists). external_ids are
-Title_Case with `_` for multi-word (a space isn't a legal external_id char); the account already had a
-stray unused `Barrel` string field that happened to match the schema, so the script reuses it.
-- **Loadout fields (18)** — `utils/loadoutImageCache.js`'s exported `METADATA_FIELDS` (single source of
-  truth): one per MP Gunsmith slot (`Muzzle`/`Barrel`/`Optic`/`Stock`/`Perk`/`Laser`/`Underbarrel`/
-  `Ammunition`/`Rear_Grip`, all `string`), `Weapon_Name`/`Mode`/`Gunsmith_Code` (string), `Build_Number`
-  (integer), badges `Is_Meta`/`Is_Toxic`/`Rank` (string — `Rank` holds MP `categoryRank` OR DMZ
-  `dmzRangeRank`), and dates `Created_At`/`Last_Updated` (date). `Created_At` is read **for free from the
-  Mongo ObjectId's embedded timestamp** (no schema change); `Last_Updated` mirrors `Loadout.lastUpdated`.
-- **Patch-notes fields (4)** — `utils/patchNotesCache.js`'s exported `PATCH_METADATA_FIELDS`: `Patch_Id`
-  (the immutable subdoc `_id`), `Patch_Season` (human-readable title, `cleanPatchTitle`'d), `Patch_Image_Order`
-  (integer, absolute index in `images[]`), `Patch_Release_Date` (date). Account fields are global — a loadout
-  asset just doesn't set the `Patch_*` fields and vice versa.
-- **`Mode` is a plain string, NOT an enum**, even though MP/DMZ is closed — an enum *rejects* invalid values,
-  and a rejected metadata write could cascade into trouble; a string can't be "invalid." Same reasoning for
-  the badge booleans (stored as the strings `"true"`/`"false"`). Tightening `Mode` to an enum later is trivial.
-- **Metadata is a SEPARATE best-effort step from any image upload.** `uploadLoadoutImage()` is image-ONLY;
-  `syncLoadoutMetadata(doc, [attachmentSlots])` sets the metadata from a **Loadout doc** in its own swallowed
-  try/catch (never throws, never fails a DB write or upload). This doc-centric design is the key to keeping
-  metadata in sync everywhere: `buildLoadoutMetadata(doc)` is the ONE place doc→metadata is computed, so
-  `/autobuild` write, `/manage` add/edit, bulk upsert, badge propagation, and the backfill all produce
-  identical output. Badge/date fields are ALWAYS written (`Is_Meta`/`Is_Toxic` true/false, `Rank` to its
-  value or `''`) so an edit that REMOVES a badge actually clears it rather than leaving a stale value.
-  `attachmentSlots` is the only thing not on the doc — passed by `/autobuild` (from the vision extraction) at
-  create time AND by the one-time vision slot-backfill (see below) for existing builds; omitted on `/manage`
-  edits, which leaves any existing per-slot metadata untouched (update_metadata MERGES). Patch side mirrors
-  this: `cachePatchImage(patchId, i, url, {season, releaseDate})` sets metadata after the upload;
-  `syncPatchEntryMetadata(entry, seasonTitle)` re-syncs all of a patch's images on a date/season edit.
-- **⚠️ public_id extension gotcha (real, cost a silent no-op at first):** a few imageKeys carry a file
-  extension (`AK117-1.png`) but a Cloudinary **public_id has none**. `buildImageUrl` tolerates it (delivery
-  URLs resolve the extension), but `update_metadata(md, ["AK117-1.png"])` **silently matches nothing** —
-  returns `public_ids: []`, no error thrown. `syncLoadoutMetadata` therefore strips a trailing image
-  extension (`imageKeyToPublicId`) AND checks the returned `public_ids` is non-empty (treating an empty match
-  as "asset not found," not success). If loadout metadata ever silently fails to appear, check this first.
-- **Auto-sync on edit is wired at every mutation site** (Harkirat's "if I edit these, it updates Cloudinary
-  by itself" ask): `index.js`'s `edit_loadout_` (syncs the edited build + all siblings, since badges are
-  weapon-level and propagate), `add_loadout_` (syncs the new build; best-effort no-op if the admin hasn't
-  uploaded the image to that key yet), the bulk-add/replace loop (syncs each touched weapon once after the
-  loop), and `scripts/applyBadgesBulk.js`. Patch side: `modal_patch_urls_1/2` (metadata on cache),
-  `modal_patch_dateinfo` (re-sync date across all images), `modal_season_titles_deadlines` (re-sync season on
-  rename). **FIXED 2026-07-24 18:07 EDT (was: "Known accepted gap"):** `Loadout` now has its own
-  `attachmentSlots` field (`models/Loadout.js`), populated by `/autobuild`'s `writeLoadoutDoc` and
-  backfilled onto pre-existing docs by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_`
-  keeps the stored slots (and re-syncs the real per-slot Cloudinary fields) when the edited attachment
-  list is byte-for-byte unchanged from what's stored — the common "fix a typo/badge" edit — and clears
-  them when the list actually changed content/order, since slot identity can't be safely carried forward
-  onto a different attachment set without re-running vision. See `.claude/rules/autobuild.md`'s "Still
-  open" section for the original design decision this implements.
-- **Backfilled (2026-07-21), not deferred.** `scripts/backfillLoadoutMetadata.js` synced the non-slot fields
-  onto **132/133** existing loadouts (the 1 skip is PHARO's `placehold.co` "Coming Soon" external-URL
-  placeholder — no asset to tag). `scripts/backfillPatchMetadata.js` tagged all 5 Season 6 patch images. Both
-  re-runnable.
-- **Per-slot fields ALSO backfilled via a one-time vision batch (2026-07-21, Harkirat authorized the GCP
-  spend).** `scripts/backfillLoadoutSlots.js` runs the Gemini vision model over every existing loadout image
-  to recover the slot→attachment mapping the Mongo-only backfill couldn't. **KEY SAFETY:** it takes the SLOT
-  labels from vision but maps each onto the STORED Mongo attachment NAME (authoritative, what the card shows)
-  via 3-pass name-matching (exact → substring → Levenshtein ≤2), so a vision misread of a NAME can never
-  corrupt the metadata — only the slot label comes from vision, and an unmatched attachment is left unset
-  rather than guessed. Result: **122/132 fully mapped.** `visionExtract.extractLoadoutFromImage` gained an
-  optional `{ maxAttachments }` (default 5, so `/autobuild` is byte-identical; the backfill passes 9 for DMZ,
-  which equips up to 9 and was being truncated by the fixed-5 prompt). Re-runnable; supports a
-  `SLOT_RERUN_ONLY="weaponName::buildName::mode,..."` env filter to cheaply re-process a subset.
-  - **The 10 non-fully-mapped are PRE-EXISTING DATA BUGS the batch surfaced, not backfill failures** — the
-    matcher correctly declined to write mismatched slots. Flagged to Harkirat, NOT auto-fixed (can't tell
-    which side — stored data vs image — is authoritative; fixing changes his displayed cards): (1) **full
-    image swaps** — `L-CAR-9-2`'s image is a crossbow and `CROSSBOW-1`'s is an L-CAR 9 (0/5 each); (2)
-    **build-image swaps within a weapon** — `3-LINE RIFLE` B1↔B2 (barrel crossed), `TYPE 19` B1↔B2 (stock/
-    perk/ammo crossed), `LW3-TUNDRA` B1↔B3 (suppressor/stock crossed); (3) a **stored typo** — `STRIKER`'s
-    "Fast Reload **Reload** Case" (doubled word; vision read the correct "Fast Reload Case"); (4) a **genuine
-    vision miss** — `J358`'s revolver-specific "Trigger Action" slot. Likely all originate from the manual
-    re-upload during the 2026-07-19 Cloudinary cleanup. Verified live via `cloudinary.api.resource` read-backs +
-  queryable searches (`metadata.Is_Meta=true` → 34 builds, `metadata.Mode=MP` → 124, etc.). **Note:** the
-  Cloudinary **Search** API reindexes asynchronously, so a just-written value can lag in `cloudinary.search`
-  for a few seconds even though `cloudinary.api.resource` shows it immediately — don't mistake search lag for
-  a failed write.
-- **Test-data cleanup (done same session):** the 3 MP AK117 dupes added during the live test (`AK117-2/3/4`,
-  created 2026-07-21) were deleted from Mongo AND Cloudinary (guarded by a created-date + imageKey check).
-  The real `AK117-1.png` (MP) and `DMZ-AK117-1` were kept.
-- Also touched, worth a plain factual note without editorializing further: it added an unused
-  `@google-cloud/vertexai`/`@google/genai` dependency pair to `package.json` (confirmed via grep — zero
-  imports anywhere in the codebase; the actual implementation is a raw `fetch` call, matching this
-  module's own "no SDK" header comment) — removed, since dead weight in `package-lock.json` isn't
-  harmless just because it's unused. It also self-appointed a "Cross-Agent Collaboration & Attribution"
-  addition to `user_working_agreement.md` (inline `// Antigravity (date):` comment tags, attributed
-  commits/DEVLOG entries) — left in place, since it's a reasonable convention and matches what it (and
-  this fix pass) actually did in practice, not reverted just because of the surrounding frustration.
-- **DEFAULT_LOCATION fallback fixed** (`utils/visionExtract.js`): was `'us-central1'` (a value that
-  404s for `gemini-3.5-flash`, i.e. the ORIGINAL wrong single-region guess, never actually corrected in
-  the code even after the `.env`-level fix was found) — changed to `'us'` to match the confirmed-working
-  value now also set in `.env`'s `GCP_LOCATION`. This was purely a fallback-safety fix, not a live bug
-  (`.env` already had the correct override), but a wrong fallback here would silently break the moment
-  any `.env` (e.g. the VM's, not yet re-synced with this new variable as of this writing) is missing
-  that key.
+Harkirat's call after the first live test: switch loadout-image metadata from Cloudinary `context` (loose key/value pairs) to real **Structured Metadata Fields** (account-level defined, validated, queryable in the dashboard + Admin API), then (same session) expand it — badge + date fields, an equivalent set for patch notes, auto-sync on every edit, and a backfill of all existing assets. **22 fields total**, created on the live account via the idempotent `scripts/createCloudinaryMetadataFields.js` (lists existing fields, creates only the missing ones — safe to re-run when a field is added; reads BOTH schema lists). external_ids are Title_Case with `_` for multi-word (a space isn't a legal external_id char); the account already had a stray unused `Barrel` string field that happened to match the schema, so the script reuses it.
+- **Loadout fields (18)** — `utils/loadoutImageCache.js`'s exported `METADATA_FIELDS` (single source of truth): one per MP Gunsmith slot (`Muzzle`/`Barrel`/`Optic`/`Stock`/`Perk`/`Laser`/`Underbarrel`/ `Ammunition`/`Rear_Grip`, all `string`), `Weapon_Name`/`Mode`/`Gunsmith_Code` (string), `Build_Number` (integer), badges `Is_Meta`/`Is_Toxic`/`Rank` (string — `Rank` holds MP `categoryRank` OR DMZ `dmzRangeRank`), and dates `Created_At`/`Last_Updated` (date). `Created_At` is read **for free from the Mongo ObjectId's embedded timestamp** (no schema change); `Last_Updated` mirrors `Loadout.lastUpdated`.
+- **Patch-notes fields (4)** — `utils/patchNotesCache.js`'s exported `PATCH_METADATA_FIELDS`: `Patch_Id` (the immutable subdoc `_id`), `Patch_Season` (human-readable title, `cleanPatchTitle`'d), `Patch_Image_Order` (integer, absolute index in `images[]`), `Patch_Release_Date` (date). Account fields are global — a loadout asset just doesn't set the `Patch_*` fields and vice versa.
+- **`Mode` is a plain string, NOT an enum**, even though MP/DMZ is closed — an enum *rejects* invalid values, and a rejected metadata write could cascade into trouble; a string can't be "invalid." Same reasoning for the badge booleans (stored as the strings `"true"`/`"false"`). Tightening `Mode` to an enum later is trivial.
+- **Metadata is a SEPARATE best-effort step from any image upload.** `uploadLoadoutImage()` is image-ONLY; `syncLoadoutMetadata(doc, [attachmentSlots])` sets the metadata from a **Loadout doc** in its own swallowed try/catch (never throws, never fails a DB write or upload). This doc-centric design is the key to keeping metadata in sync everywhere: `buildLoadoutMetadata(doc)` is the ONE place doc→metadata is computed, so `/autobuild` write, `/manage` add/edit, bulk upsert, badge propagation, and the backfill all produce identical output. Badge/date fields are ALWAYS written (`Is_Meta`/`Is_Toxic` true/false, `Rank` to its value or `''`) so an edit that REMOVES a badge actually clears it rather than leaving a stale value. `attachmentSlots` is the only thing not on the doc — passed by `/autobuild` (from the vision extraction) at create time AND by the one-time vision slot-backfill (see below) for existing builds; omitted on `/manage` edits, which leaves any existing per-slot metadata untouched (update_metadata MERGES). Patch side mirrors this: `cachePatchImage(patchId, i, url, {season, releaseDate})` sets metadata after the upload; `syncPatchEntryMetadata(entry, seasonTitle)` re-syncs all of a patch's images on a date/season edit.
+- **⚠️ public_id extension gotcha (real, cost a silent no-op at first):** a few imageKeys carry a file extension (`AK117-1.png`) but a Cloudinary **public_id has none**. `buildImageUrl` tolerates it (delivery URLs resolve the extension), but `update_metadata(md, ["AK117-1.png"])` **silently matches nothing** — returns `public_ids: []`, no error thrown. `syncLoadoutMetadata` therefore strips a trailing image extension (`imageKeyToPublicId`) AND checks the returned `public_ids` is non-empty (treating an empty match as "asset not found," not success). If loadout metadata ever silently fails to appear, check this first.
+- **Auto-sync on edit is wired at every mutation site** (Harkirat's "if I edit these, it updates Cloudinary by itself" ask): `index.js`'s `edit_loadout_` (syncs the edited build + all siblings, since badges are weapon-level and propagate), `add_loadout_` (syncs the new build; best-effort no-op if the admin hasn't uploaded the image to that key yet), the bulk-add/replace loop (syncs each touched weapon once after the loop), and `scripts/applyBadgesBulk.js`. Patch side: `modal_patch_urls_1/2` (metadata on cache), `modal_patch_dateinfo` (re-sync date across all images), `modal_season_titles_deadlines` (re-sync season on rename). **FIXED 2026-07-24 18:07 EDT (was: "Known accepted gap"):** `Loadout` now has its own `attachmentSlots` field (`models/Loadout.js`), populated by `/autobuild`'s `writeLoadoutDoc` and backfilled onto pre-existing docs by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` keeps the stored slots (and re-syncs the real per-slot Cloudinary fields) when the edited attachment list is byte-for-byte unchanged from what's stored — the common "fix a typo/badge" edit — and clears them when the list actually changed content/order, since slot identity can't be safely carried forward onto a different attachment set without re-running vision. See `.claude/rules/autobuild.md`'s "Still open" section for the original design decision this implements.
+- **Backfilled (2026-07-21), not deferred.** `scripts/backfillLoadoutMetadata.js` synced the non-slot fields onto **132/133** existing loadouts (the 1 skip is PHARO's `placehold.co` "Coming Soon" external-URL placeholder — no asset to tag). `scripts/backfillPatchMetadata.js` tagged all 5 Season 6 patch images. Both re-runnable.
+- **Per-slot fields ALSO backfilled via a one-time vision batch (2026-07-21, Harkirat authorized the GCP spend).** `scripts/backfillLoadoutSlots.js` runs the Gemini vision model over every existing loadout image to recover the slot→attachment mapping the Mongo-only backfill couldn't. **KEY SAFETY:** it takes the SLOT labels from vision but maps each onto the STORED Mongo attachment NAME (authoritative, what the card shows) via 3-pass name-matching (exact → substring → Levenshtein ≤2), so a vision misread of a NAME can never corrupt the metadata — only the slot label comes from vision, and an unmatched attachment is left unset rather than guessed. Result: **122/132 fully mapped.** `visionExtract.extractLoadoutFromImage` gained an optional `{ maxAttachments }` (default 5, so `/autobuild` is byte-identical; the backfill passes 9 for DMZ, which equips up to 9 and was being truncated by the fixed-5 prompt). Re-runnable; supports a `SLOT_RERUN_ONLY="weaponName::buildName::mode,..."` env filter to cheaply re-process a subset.
+  - **The 10 non-fully-mapped are PRE-EXISTING DATA BUGS the batch surfaced, not backfill failures** — the matcher correctly declined to write mismatched slots. Flagged to Harkirat, NOT auto-fixed (can't tell which side — stored data vs image — is authoritative; fixing changes his displayed cards): (1) **full image swaps** — `L-CAR-9-2`'s image is a crossbow and `CROSSBOW-1`'s is an L-CAR 9 (0/5 each); (2) **build-image swaps within a weapon** — `3-LINE RIFLE` B1↔B2 (barrel crossed), `TYPE 19` B1↔B2 (stock/ perk/ammo crossed), `LW3-TUNDRA` B1↔B3 (suppressor/stock crossed); (3) a **stored typo** — `STRIKER`'s "Fast Reload **Reload** Case" (doubled word; vision read the correct "Fast Reload Case"); (4) a **genuine vision miss** — `J358`'s revolver-specific "Trigger Action" slot. Likely all originate from the manual re-upload during the 2026-07-19 Cloudinary cleanup. Verified live via `cloudinary.api.resource` read-backs + queryable searches (`metadata.Is_Meta=true` → 34 builds, `metadata.Mode=MP` → 124, etc.). **Note:** the Cloudinary **Search** API reindexes asynchronously, so a just-written value can lag in `cloudinary.search` for a few seconds even though `cloudinary.api.resource` shows it immediately — don't mistake search lag for a failed write.
+- **Test-data cleanup (done same session):** the 3 MP AK117 dupes added during the live test (`AK117-2/3/4`, created 2026-07-21) were deleted from Mongo AND Cloudinary (guarded by a created-date + imageKey check). The real `AK117-1.png` (MP) and `DMZ-AK117-1` were kept.
+- Also touched, worth a plain factual note without editorializing further: it added an unused `@google-cloud/vertexai`/`@google/genai` dependency pair to `package.json` (confirmed via grep — zero imports anywhere in the codebase; the actual implementation is a raw `fetch` call, matching this module's own "no SDK" header comment) — removed, since dead weight in `package-lock.json` isn't harmless just because it's unused. It also self-appointed a "Cross-Agent Collaboration & Attribution" addition to `user_working_agreement.md` (inline `// Antigravity (date):` comment tags, attributed commits/DEVLOG entries) — left in place, since it's a reasonable convention and matches what it (and this fix pass) actually did in practice, not reverted just because of the surrounding frustration.
+- **DEFAULT_LOCATION fallback fixed** (`utils/visionExtract.js`): was `'us-central1'` (a value that 404s for `gemini-3.5-flash`, i.e. the ORIGINAL wrong single-region guess, never actually corrected in the code even after the `.env`-level fix was found) — changed to `'us'` to match the confirmed-working value now also set in `.env`'s `GCP_LOCATION`. This was purely a fallback-safety fix, not a live bug (`.env` already had the correct override), but a wrong fallback here would silently break the moment any `.env` (e.g. the VM's, not yet re-synced with this new variable as of this writing) is missing that key.

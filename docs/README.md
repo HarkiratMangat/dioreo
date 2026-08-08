@@ -1,25 +1,14 @@
 # 📚 Dioreo — Documentation Map
 
-**Read this if you're unsure which doc file does what, when to touch it, or how they relate.** This is
-the front door to the project's records. It doesn't hold project content itself — it points at where each
-kind of content lives and who's responsible for keeping it current.
+**Read this if you're unsure which doc file does what, when to touch it, or how they relate.** This is the front door to the project's records. It doesn't hold project content itself — it points at where each kind of content lives and who's responsible for keeping it current.
 
-> **The one rule that ties them together:** when you "document" a change (see the working-agreement
-> non-negotiables), that means updating **every relevant layer in the same turn** — not just one.
-> The changelog is the layer that historically keeps getting skipped. Under the Branch → Commit → Push →
-> PR → Merge → Deploy workflow (adopted 2026-07-24 12:24 EDT, see `project_git_workflow` memory), docs
-> ride IN the PR's diff — drafted on the branch as the change happens, finalized on the branch in the
-> final pre-merge checkpoint (so they fold into the squash commit — see step 8). A merged PR
-> in this repo isn't finished until `CHANGELOG.md` was touched (the doc-check hook now fires on
-> `gh pr merge`, not on every branch checkpoint commit).
+> **The one rule that ties them together:** when you "document" a change (see the working-agreement non-negotiables), that means updating **every relevant layer in the same turn** — not just one. The changelog is the layer that historically keeps getting skipped. Under the Branch → Commit → Push → PR → Merge → Deploy workflow (adopted 2026-07-24 12:24 EDT, see `project_git_workflow` memory), docs ride IN the PR's diff — drafted on the branch as the change happens, finalized on the branch in the final pre-merge checkpoint (so they fold into the squash commit — see step 8). A merged PR in this repo isn't finished until `CHANGELOG.md` was touched (the doc-check hook now fires on `gh pr merge`, not on every branch checkpoint commit).
 
 ---
 
 ## 📁 First: which FOLDER does a thing belong in?
 
-*Settled 2026-08-06 08:33 EDT, after three reorganizations in two days that all had the same cause —
-a file sitting in a folder whose purpose it didn't match. **The test is what KIND of thing it is, never
-what it is about.** A Discord-rendering topic can legitimately belong in any of these.*
+*Settled 2026-08-06 08:33 EDT, after three reorganizations in two days that all had the same cause — a file sitting in a folder whose purpose it didn't match. **The test is what KIND of thing it is, never what it is about.** A Discord-rendering topic can legitimately belong in any of these.*
 
 | Folder | It holds | Tense | It is NOT | When it goes out of date |
 |---|---|---|---|---|
@@ -29,16 +18,7 @@ what it is about.** A Discord-rendering topic can legitimately belong in any of 
 | **`archive/`** | **Dead** — swept intake, closed deferred items. Don't read by default. | Past, closed | Not a search target | Nothing here goes out of date; it is already history. |
 | **root records** | `CHANGELOG` · `CHANGELOG-SUMMARY` · `DEVLOG` · `ROADMAP` · `db-deferred-list` · `SESSION-START` · this file | Append-only history, or live trackers | — | **Never backdate.** An old entry keeps the old name. |
 
-⚠️ **`ideas/` vs `superpowers/specs/` is the pair that actually gets confused**, and the whole
-difference is the last column: an `ideas/` file you *edit*, a `specs/` file you *supersede*.
-⚠️ **Narrative belongs in `DEVLOG.md`, not `reference/`.** That is precisely why **design-history**
-was folded out on 2026-08-06 — it read as a reference doc and was a story. If a candidate for
-`reference/` cannot be phrased as "read this to do X correctly," it is probably a DEVLOG entry.
-⚠️ **An open bug is never a `reference/` entry.** **known-issues** accumulated both for weeks; the
-split that fixed it is why `platform-constraints.md` has that name.
-*(Both retired names are written without their `.md` on purpose — `xref` cannot distinguish a
-historical mention from a live broken link, so spelling one out costs a permanent audit warning.)* Real defects go to
-`db-deferred-list.md`'s 🐞 section, which is read and written far more often.
+⚠️ **`ideas/` vs `superpowers/specs/` is the pair that actually gets confused**, and the whole difference is the last column: an `ideas/` file you *edit*, a `specs/` file you *supersede*. ⚠️ **Narrative belongs in `DEVLOG.md`, not `reference/`.** That is precisely why **design-history** was folded out on 2026-08-06 — it read as a reference doc and was a story. If a candidate for `reference/` cannot be phrased as "read this to do X correctly," it is probably a DEVLOG entry. ⚠️ **An open bug is never a `reference/` entry.** **known-issues** accumulated both for weeks; the split that fixed it is why `platform-constraints.md` has that name. *(Both retired names are written without their `.md` on purpose — `xref` cannot distinguish a historical mention from a live broken link, so spelling one out costs a permanent audit warning.)* Real defects go to `db-deferred-list.md`'s 🐞 section, which is read and written far more often.
 
 ---
 
@@ -65,152 +45,56 @@ historical mention from a live broken link, so spelling one out costs a permanen
 | **`archive/`** | **Dead archive — don't read by default.** `graveyard.md` (resolved + ℋ-confirmed intake swept out of the notes file), `resolved-list.md` (closed entries from `db-deferred-list.md`), and the dated pre-tidy notes snapshot (pre-2026-07-18, largely superseded by git history). Renamed from `notes-archive/` and given its two archive files 2026-07-25 21:43 EDT. | Only when running a sweep, or looking something specific up. | reference |
 
 **Two authoritative records that live OUTSIDE this folder:**
-- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (the repo-slug path; it
-  MOVED here 2026-07-28 01:41 EDT — see CLAUDE.md's canonical-memory-path note). Standing rules for how to work. **Start at `user_working_agreement.md`** — its
-  top "🔴 THE RULES THAT GET SKIPPED" checklist is the fastest way to load the non-negotiables. `MEMORY.md`
-  is the index.
-- **`/Applications/Claude Code/meta-deferred-list.md`** (outside this repo) — the **cross-project** tracker,
-  and only that: cross-project bugs (the MarkEdit extensions, which live outside every repo),
-  Claude/Anthropic product feedback, meta/architecture work, and the canonical Priority·Effort legend.
-  **Everything Dior's-Builds-specific — bugs, reminders, tech-debt — now lives in `db-deferred-list.md`
-  above instead** (2026-07-25 21:43 EDT). Renamed from `deferred-items.md` in the same pass.
+- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (the repo-slug path; it MOVED here 2026-07-28 01:41 EDT — see CLAUDE.md's canonical-memory-path note). Standing rules for how to work. **Start at `user_working_agreement.md`** — its top "🔴 THE RULES THAT GET SKIPPED" checklist is the fastest way to load the non-negotiables. `MEMORY.md` is the index.
+- **`/Applications/Claude Code/meta-deferred-list.md`** (outside this repo) — the **cross-project** tracker, and only that: cross-project bugs (the MarkEdit extensions, which live outside every repo), Claude/Anthropic product feedback, meta/architecture work, and the canonical Priority·Effort legend. **Everything Dior's-Builds-specific — bugs, reminders, tech-debt — now lives in `db-deferred-list.md` above instead** (2026-07-25 21:43 EDT). Renamed from `deferred-items.md` in the same pass.
 
 ---
 
 ## How they relate (don't duplicate — sync)
 
-- **`docs/ROADMAP.md` is the source of truth for the roadmap** (moved out of CLAUDE.md 2026-07-22). Its
-  v2–v5 lists are authoritative; the `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY)
-  sections are *synced views* of it — update all three together, or they silently drift (a real records bug).
-- **The notes file feeds the roadmap, it doesn't hold it.** A feature idea lands in the notes as intake, gets
-  FILED into `docs/ROADMAP.md` + the changelog roadmaps, then LEAVES the notes file. The roadmap is never
-  duplicated in the notes file.
-- **Memory holds the rules; the docs hold the record.** A workflow lesson → memory. A shipped change → changelog.
-  The "why" behind the code → CLAUDE.md's invariants + the matching **`.claude/rules/*.md`**. The story of
-  getting there → DEVLOG.
+- **`docs/ROADMAP.md` is the source of truth for the roadmap** (moved out of CLAUDE.md 2026-07-22). Its v2–v5 lists are authoritative; the `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY) sections are *synced views* of it — update all three together, or they silently drift (a real records bug).
+- **The notes file feeds the roadmap, it doesn't hold it.** A feature idea lands in the notes as intake, gets FILED into `docs/ROADMAP.md` + the changelog roadmaps, then LEAVES the notes file. The roadmap is never duplicated in the notes file.
+- **Memory holds the rules; the docs hold the record.** A workflow lesson → memory. A shipped change → changelog. The "why" behind the code → CLAUDE.md's invariants + the matching **`.claude/rules/*.md`**. The story of getting there → DEVLOG.
 - **`ROADMAP.md` / `db-deferred-list.md` are the record; the [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) is a view.** ⚠️ **The board's 15 draft items were sourced 2026-07-25 21:35 EDT, minutes before the 21:43 EDT deferred-list restructure** — so its items predate the rename, the bugs/reminders moving in-repo, and the resolved items moving to `archive/`. Re-sync it manually before trusting it. The board (Status/Priority/Effort/Model/Flags fields) exists for an at-a-glance visual snapshot — a Status kanban + a Priority table. It is refreshed manually and periodically from the docs, never the other way around: if the board and the docs ever disagree, the docs win. Don't let it silently drift into a second source of truth the way the notes-file/CLAUDE.md roadmap once did.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
 
-**Which of these are machine-checked (re-audited 2026-07-28 20:50 EDT):** items **1, 2, 3, 5, 8.2,
-8.4, 8.5** fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
-`commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
-(memory)** and **7 (notes file)** fire at `gh pr create` via
-`.claude/hooks/records-close-check.sh`.
+**Which of these are machine-checked (re-audited 2026-07-28 20:50 EDT):** items **1, 2, 3, 5, 8.2, 8.4, 8.5** fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under `commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6 (memory)** and **7 (notes file)** fire at `gh pr create` via `.claude/hooks/records-close-check.sh`.
 
-> ⚠️ **They surface as ADVISORY context, not as a permission prompt — changed 2026-08-02 17:55 EDT
-> (v2.50.0), and the reason matters.** These gates used to emit `permissionDecision:"ask"`. Measured
-> that day: an `ask` from a `PreToolUse` hook is **silently auto-approved** in the permission mode
-> actually in use — the same `gh pr create` produced no prompt and no output, while running the hook
-> by hand emitted a full finding. Seven gates were dead this way. `additionalContext` demonstrably
-> does surface, so every judgement gate now uses it, and objective violations (impossible timestamp,
-> squash without `--body`, tag/version mismatch, `force:true` artifact overwrite) were promoted to
-> `deny`, which was verified to block hard. **Never write a new gate as `ask` without re-testing that
-> asks are visible.**
+> ⚠️ **They surface as ADVISORY context, not as a permission prompt — changed 2026-08-02 17:55 EDT (v2.50.0), and the reason matters.** These gates used to emit `permissionDecision:"ask"`. Measured that day: an `ask` from a `PreToolUse` hook is **silently auto-approved** in the permission mode actually in use — the same `gh pr create` produced no prompt and no output, while running the hook by hand emitted a full finding. Seven gates were dead this way. `additionalContext` demonstrably does surface, so every judgement gate now uses it, and objective violations (impossible timestamp, squash without `--body`, tag/version mismatch, `force:true` artifact overwrite) were promoted to `deny`, which was verified to block hard. **Never write a new gate as `ask` without re-testing that asks are visible.**
 
-> ⚠️ **This paragraph used to say items 6 and 7 were "NOT checkable". That was wrong** (corrected
-> 2026-07-28 20:50 EDT, Harkirat's catch). A `SessionStart` hook had been counting the notes file's
-> open items the entire time. The real defect was never absence, it was **timing**: that check fires
-> at the moment of *discovery*, when nothing is filed yet and there is nothing to compare against,
-> and never at the moment of *closure* — the identical shape to the DEVLOG failure measured at 8/22.
-> **The general lesson, worth more than the fix:** "not checkable" is almost always "I haven't worked
-> out what the derivable invariant is." For the records it turned out to be **conservation** — an
-> item leaves an active list only by appearing in an archive, so a shrink with no matching grow is
-> either unswept or silently *deleted*. What genuinely stays uncheckable is whether the **judgment**
-> was right; a gate proves an artifact was opened, never that the right thing was written in it.
+> ⚠️ **This paragraph used to say items 6 and 7 were "NOT checkable". That was wrong** (corrected 2026-07-28 20:50 EDT, Harkirat's catch). A `SessionStart` hook had been counting the notes file's open items the entire time. The real defect was never absence, it was **timing**: that check fires at the moment of *discovery*, when nothing is filed yet and there is nothing to compare against, and never at the moment of *closure* — the identical shape to the DEVLOG failure measured at 8/22.
+> **The general lesson, worth more than the fix:** "not checkable" is almost always "I haven't worked out what the derivable invariant is." For the records it turned out to be **conservation** — an item leaves an active list only by appearing in an archive, so a shrink with no matching grow is either unswept or silently *deleted*. What genuinely stays uncheckable is whether the **judgment** was right; a gate proves an artifact was opened, never that the right thing was written in it.
 
-**The tree-level invariants live in `../scripts/docs-audit.mjs`** (`npm run docs:audit`; `--list` prints
-the current roster, deliberately not counted here) — checks
-covering the doc map, cross-references, version coverage across all three records, the changelog
-hash-chain, the DEVLOG TOC, tag integrity, and the sweep/conservation rules above. It is a **program,
-not a hook**, deliberately: a hook only fires inside a Claude session on one Mac, so it runs as a **CI
-gate on every PR** too. `ERROR` findings fail the build; `WARN` findings never block, so a hotfix is
-never held up by prose. `npm run docs:audit:test` proves every check can actually *fail* — a guard
-nobody has watched fail is not a guard, and this repo has already shipped one that was silently dead.
+**The tree-level invariants live in `../scripts/docs-audit.mjs`** (`npm run docs:audit`; `--list` prints the current roster, deliberately not counted here) — checks covering the doc map, cross-references, version coverage across all three records, the changelog hash-chain, the DEVLOG TOC, tag integrity, and the sweep/conservation rules above. It is a **program, not a hook**, deliberately: a hook only fires inside a Claude session on one Mac, so it runs as a **CI gate on every PR** too. `ERROR` findings fail the build; `WARN` findings never block, so a hotfix is never held up by prose. `npm run docs:audit:test` proves every check can actually *fail* — a guard nobody has watched fail is not a guard, and this repo has already shipped one that was silently dead.
 
-**Read the accounting line, not just the verdict.** Every run reports `N/M checks verified (K items
-examined)`, plus anything **SKIPPED** (it could not run — no memory store, a shallow clone) and
-anything that examined **nothing**. `N checks passed` used to hide all three: a check that matched
-zero items "passes" while verifying nothing, which is how a broken matcher survives indefinitely.
-A pass means *no known failure mode tripped* — never *the records are correct*. Novel drift, prose
-quality and judgement calls are outside what any of this can see, and it says so on every run.
+**Read the accounting line, not just the verdict.** Every run reports `N/M checks verified (K items examined)`, plus anything **SKIPPED** (it could not run — no memory store, a shallow clone) and anything that examined **nothing**. `N checks passed` used to hide all three: a check that matched zero items "passes" while verifying nothing, which is how a broken matcher survives indefinitely. A pass means *no known failure mode tripped* — never *the records are correct*. Novel drift, prose quality and judgement calls are outside what any of this can see, and it says so on every run.
 
-**It also runs at `gh pr create`** via `../.claude/hooks/docs-audit-gate.sh`, so failures surface
-while fixing them is still free. ⚠️ That local gate fires only on the literal `gh pr create` command
-inside a Claude Code session on this machine — a PR opened through the GitHub web UI bypasses it, and
-every other local hook with it, including the notes/memory closure check. **CI is the guarantee; the
-hook is the convenience.**
-Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
-code) and finalized on the branch in the final pre-merge checkpoint:
+**It also runs at `gh pr create`** via `../.claude/hooks/docs-audit-gate.sh`, so failures surface while fixing them is still free. ⚠️ That local gate fires only on the literal `gh pr create` command inside a Claude Code session on this machine — a PR opened through the GitHub web UI bypasses it, and every other local hook with it, including the notes/memory closure check. **CI is the guarantee; the hook is the convenience.** Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.
-2. `CHANGELOG.md`: a numbered entry (draft it in `Unreleased` on the branch; finalize it with the real
-   number + timestamp + **PR number, no hash** in the final pre-merge checkpoint — the hash is backfilled
-   one release later, per step 8).
+2. `CHANGELOG.md`: a numbered entry (draft it in `Unreleased` on the branch; finalize it with the real number + timestamp + **PR number, no hash** in the final pre-merge checkpoint — the hash is backfilled one release later, per step 8).
 3. `CHANGELOG-SUMMARY.md`: a friendly line (user-facing) or a one-liner (ops/docs-only) under its OWN `## vX.Y.Z` heading — never skip the number, and never fold new releases into a range (that convention is retired; see the records table above).
-4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
-   affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
-   Keep the root nav-map table current if you add/remove a rule file.
-5. `DEVLOG.md`: **a narrative entry by DEFAULT.** Skip it only when the change is purely mechanical
-   (a typo, a version bump, a lockfile) — and if you skip it, **say so and say why**. This used to read
-   "if the work had real reasoning/discovery," and that conditional is exactly why DEVLOG coverage was
-   **8/22 releases (36%)** while the hook-checked CHANGELOG and its summary were 22/22 (measured
-   2026-07-28 14:15 EDT). A judgment call made at the moment you are trying to finish defaults to "no."
-   Now hook-checked at `gh pr merge` like the changelog.
+4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md). Keep the root nav-map table current if you add/remove a rule file.
+5. `DEVLOG.md`: **a narrative entry by DEFAULT.** Skip it only when the change is purely mechanical (a typo, a version bump, a lockfile) — and if you skip it, **say so and say why**. This used to read "if the work had real reasoning/discovery," and that conditional is exactly why DEVLOG coverage was **8/22 releases (36%)** while the hook-checked CHANGELOG and its summary were 22/22 (measured 2026-07-28 14:15 EDT). A judgment call made at the moment you are trying to finish defaults to "no." Now hook-checked at `gh pr merge` like the changelog.
 6. Memory: update any rule the session established or corrected.
 7. `diors-notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
 8. **One commit + one tag per release — the 4-step lifecycle** (adopted 2026-07-27 21:27 EDT):
-   1. On the branch, as the **final pre-merge checkpoint**: write the changelog entry with the PR
-      number and no hash — `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`,
-      finalize `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
-   2. In that **same** checkpoint, backfill the *previous* entry's hash: `(#32)` → ``(#32 · `f913975`)``.
-      Additive-only — insert `` · `sha` `` and touch nothing else on the line; never edit the timestamp
-      afterwards; **never `--amend`, never force-push** (this is an ordinary edit in a later commit).
+   1. On the branch, as the **final pre-merge checkpoint**: write the changelog entry with the PR number and no hash — `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`, finalize `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
+   2. In that **same** checkpoint, backfill the *previous* entry's hash: `(#32)` → ``(#32 · `f913975`)``. Additive-only — insert `` · `sha` `` and touch nothing else on the line; never edit the timestamp afterwards; **never `--amend`, never force-push** (this is an ordinary edit in a later commit).
    3. `gh pr merge --squash` → **one** commit on `main`. No `chore(release)` commit — it is retired.
-   4. `git pull`, then `git tag -a vX.Y.Z <that sha>`, then `git push origin main --follow-tags`. The
-      tagged commit's `package.json` already reads `X.Y.Z` because of step 1.
-   5. **Prune the branch — it dies with its PR.** Use `--delete-branch` on the merge (step 3) so this is
-      automatic; otherwise `git branch -D <branch>` + `git fetch --prune` now, not later. GitHub's
-      auto-delete-on-merge only removes the *remote*, and a plain `git fetch` doesn't prune
-      remote-tracking refs, so merged branches accumulate invisibly — **10 were found rotting
-      2026-07-27 21:50 EDT.** Before deleting, confirm the PR really merged
-      (`gh pr list --head <branch> --state all --json number,state`); don't trust `git branch --merged`,
-      which never reports a squash-merged branch as merged. Enforced by two hooks in
-      `.claude/settings.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a
-      merge omits `--delete-branch`) — **tracked in `.claude/settings.json` since v2.39.0, so they ride in
-      PRs and survive a fresh clone.**
-   ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second**
-   `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape
-   of v2.33.0–v2.35.15, forced by citing the squash commit's own hash inline (a commit cannot contain
-   its own hash). Lagging the hash by one release removes the need for that commit, so the "one commit +
-   one tag per version" promise is now true rather than aspirational. Full design + the rejected
-   alternatives: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §3, §5, §10.
-9. **Sanity-check the records before calling the merge done.** Cheap, and it has caught real drift twice:
-   newest `package.json` version == newest `CHANGELOG.md` entry == newest `CHANGELOG-SUMMARY.md` entry;
-   every changelog version has a git tag and a summary line (no number skipped); every SHA cited in a
-   changelog entry actually resolves (`git cat-file -e <sha>^{commit}`) — **exempting the newest entry,
-   whose hash is backfilled by the next release**; every entry from **v2.33.0** on cites a PR number
-   (the 9 older entries, v2.26.0–v2.32.0, predate the PR workflow and are correctly hash-only); and
-   `git fetch --prune` before trusting `git branch -a`, which lists long-merged branches otherwise.
+   4. `git pull`, then `git tag -a vX.Y.Z <that sha>`, then `git push origin main --follow-tags`. The tagged commit's `package.json` already reads `X.Y.Z` because of step 1.
+   5. **Prune the branch — it dies with its PR.** Use `--delete-branch` on the merge (step 3) so this is automatic; otherwise `git branch -D <branch>` + `git fetch --prune` now, not later. GitHub's auto-delete-on-merge only removes the *remote*, and a plain `git fetch` doesn't prune remote-tracking refs, so merged branches accumulate invisibly — **10 were found rotting 2026-07-27 21:50 EDT.** Before deleting, confirm the PR really merged (`gh pr list --head <branch> --state all --json number,state`); don't trust `git branch --merged`, which never reports a squash-merged branch as merged. Enforced by two hooks in `.claude/settings.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a merge omits `--delete-branch`) — **tracked in `.claude/settings.json` since v2.39.0, so they ride in PRs and survive a fresh clone.** ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second** `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape of v2.33.0–v2.35.15, forced by citing the squash commit's own hash inline (a commit cannot contain its own hash). Lagging the hash by one release removes the need for that commit, so the "one commit + one tag per version" promise is now true rather than aspirational. Full design + the rejected alternatives: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §3, §5, §10.
+9. **Sanity-check the records before calling the merge done.** Cheap, and it has caught real drift twice: newest `package.json` version == newest `CHANGELOG.md` entry == newest `CHANGELOG-SUMMARY.md` entry; every changelog version has a git tag and a summary line (no number skipped); every SHA cited in a changelog entry actually resolves (`git cat-file -e <sha>^{commit}`) — **exempting the newest entry, whose hash is backfilled by the next release**; every entry from **v2.33.0** on cites a PR number (the 9 older entries, v2.26.0–v2.32.0, predate the PR workflow and are correctly hash-only); and `git fetch --prune` before trusting `git branch -a`, which lists long-merged branches otherwise.
 
 ## Versioning
-`vMAJOR.MODERATE.MINOR` (3-part, uniform throughout as of 2026-07-21). Full rules in
-`CHANGELOG.md`'s versioning header and the `project_dior_builds_changelog_system` memory (the source of truth
-for the scheme). To find the current live version: `git describe --tags` or `scripts/vmstatus.sh`.
+`vMAJOR.MODERATE.MINOR` (3-part, uniform throughout as of 2026-07-21). Full rules in `CHANGELOG.md`'s versioning header and the `project_dior_builds_changelog_system` memory (the source of truth for the scheme). To find the current live version: `git describe --tags` or `scripts/vmstatus.sh`.
 
 ## Date/time convention (all records)
-Write dates with a **time and timezone** — `YYYY-MM-DD HH:MM TZ` (e.g. `2026-07-21 22:46 EDT`), not a bare
-date (Harkirat's standing request, 2026-07-21 ~22:46 EDT). The time is a second factor for exact intra-day
-ordering when several things ship the same day; always state the timezone because the VM runs UTC while
-Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any dated content** —
-`date "+%Y-%m-%d %H:%M %Z"` — and reuse that value for every date written the rest of the turn. A
-`PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not
-license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see
-`feedback_docs_at_push_time` / `feedback_token_conscious_tool_routing` memory).
+Write dates with a **time and timezone** — `YYYY-MM-DD HH:MM TZ` (e.g. `2026-07-21 22:46 EDT`), not a bare date (Harkirat's standing request, 2026-07-21 ~22:46 EDT). The time is a second factor for exact intra-day ordering when several things ship the same day; always state the timezone because the VM runs UTC while Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any dated content** — `date "+%Y-%m-%d %H:%M %Z"` — and reuse that value for every date written the rest of the turn. A `PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see `feedback_docs_at_push_time` / `feedback_token_conscious_tool_routing` memory).
 
 ## Where the legal documents live, and why they are not all together
 
-A reasonable question, asked 2026-08-02: there are four legal documents and they sit in two places.
-The split is **forced by tooling, not chosen**, and moving them breaks things:
+A reasonable question, asked 2026-08-02: there are four legal documents and they sit in two places. The split is **forced by tooling, not chosen**, and moving them breaks things:
 
 | Document | Location | Why there |
 |---|---|---|
@@ -220,13 +104,8 @@ The split is **forced by tooling, not chosen**, and moving them breaks things:
 | `SECURITY.md` | repo root | GitHub reads it to power the private "Report a vulnerability" flow. Deliberately NOT published to the site; `/security` redirects to the Contributing page instead. |
 | `TERMS.md` · `PRIVACY.md` | `docs/legal/` | **No tool recognises these two.** They are ordinary project documents, so they live with the other documents rather than cluttering the root. |
 
-So: root is "files a tool reads by name"; `docs/` is everything else. **Do not tidy this into one
-folder** — it would cost the licence banner, the vulnerability-report flow and the contributor prompts.
+So: root is "files a tool reads by name"; `docs/` is everything else. **Do not tidy this into one folder** — it would cost the licence banner, the vulnerability-report flow and the contributor prompts.
 
 ### And why `LICENSE`/`NOTICE` appear a second time under `public/`
 
-Those two are copied **verbatim, byte-for-byte**, by `buildCompanions()` so the deployed site serves
-the unrendered originals at a stable URL. They are operative legal instruments, and putting a Markdown
-parser between a reader and the binding wording is a lossy transformation. Each therefore has two
-forms: `legal/license.html` to read, `/LICENSE` to rely on. `CONTRIBUTING`/`CONTRIBUTORS` get no such
-copy — they are prose about a process, not instruments.
+Those two are copied **verbatim, byte-for-byte**, by `buildCompanions()` so the deployed site serves the unrendered originals at a stable URL. They are operative legal instruments, and putting a Markdown parser between a reader and the binding wording is a lossy transformation. Each therefore has two forms: `legal/license.html` to read, `/LICENSE` to rely on. `CONTRIBUTING`/`CONTRIBUTORS` get no such copy — they are prose about a process, not instruments.

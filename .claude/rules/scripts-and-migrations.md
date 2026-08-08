@@ -5,217 +5,67 @@ paths:
 
 # Scripts & migrations — where each is documented
 
-*Loads when you touch `scripts/**`. There is no single "scripts" chapter — each script is documented in
-the subsystem rule it belongs to:*
+*Loads when you touch `scripts/**`. There is no single "scripts" chapter — each script is documented in the subsystem rule it belongs to:*
 
 - `migrateBuildsToMongo.js`, `applyBadgesBulk.js`, `createPlaceholderLoadouts.js` → `.claude/rules/loadouts.md`
 - `backfillLoadoutMetadata.js`, `backfillPatchMetadata.js`, `createCloudinaryMetadataFields.js` → `.claude/rules/loadout-images-and-metadata.md`
 - `backfillLoadoutSlots.js`, `test-vertex-extract.js` → `.claude/rules/autobuild.md`
-- `backfillCalendarCategories.js` (one-time backfill of the `category` field for calendar entries
-  that pre-date the 3-section redesign) and `calendarDedup.test.js` (regression test for
-  `utils/search.js`'s `isSameDrawTitle()`, built from real seasonal titles) →
-  `.claude/rules/design-decisions.md` + `commands/calendar.js`
-- `syncMissingDevEmojis.js` (uploads any `utils/emojiMap.js` emoji the DEV application is missing,
-  matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
-- `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
-  → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
-- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → **`.claude/rules/legal-site.md`**, which
-  loads automatically alongside this file when you open either of them. *(It used to point at a
-  286-line section of the root `CLAUDE.md`; that was moved into its own path-scoped rule on
-  2026-08-01 23:40 EDT, because subsystem craft loaded on every session is exactly what the rules
-  system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → flat `public/*.html` at
-  the site root (dioreo.app went live 2026-08-05 14:43 EDT; the site used to open at `/legal/` and now
-  opens at `/`), **and the three records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` →
-  `public/changelog/*.html`**, for
-  Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed.
-  Run it with **`npm run site`** (syntax-checks both files first, then builds).
-  ⚠️ **The name is now narrower than the job** — it builds the whole site, not just the legal pages.
-  Kept deliberately: `dior legal deploy`/`check` in the CLI repo, this line, and CLAUDE.md all name it,
-  so a rename is a four-place change and its own commit.
-  ⚠️ **`chronicle.js` receives everything it shares via the one-way `CHROME` bundle** — it imports
-  nothing from `buildLegalPages.js`. Add a key to `CHROME_KEYS` when you pass a new one; `requireChrome()`
-  throws on a missing key rather than rendering a page with a hole a content gate would not notice.
-  ⚠️ **Two output directories.** Every nav/footer link goes through `hrefTo(target, from)`, never a bare
-  `./name.html` — two pages are called `index.html` now. New page in a new directory ⇒ set `dir`, and add
-  it to `PUBLISHED_TARGETS` (and `PAGE_ALIASES` if its output name differs from its source name). It deliberately hand-rolls its Markdown parsing
-  rather than adding a dependency — `NOTICE` §3 commits to a copyleft-free tree that gets re-audited on
-  every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
-  touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
+- `backfillCalendarCategories.js` (one-time backfill of the `category` field for calendar entries that pre-date the 3-section redesign) and `calendarDedup.test.js` (regression test for `utils/search.js`'s `isSameDrawTitle()`, built from real seasonal titles) → `.claude/rules/design-decisions.md` + `commands/calendar.js`
+- `syncMissingDevEmojis.js` (uploads any `utils/emojiMap.js` emoji the DEV application is missing, matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
+- `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot` → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
+- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → **`.claude/rules/legal-site.md`**, which loads automatically alongside this file when you open either of them. *(It used to point at a 286-line section of the root `CLAUDE.md`; that was moved into its own path-scoped rule on 2026-08-01 23:40 EDT, because subsystem craft loaded on every session is exactly what the rules system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → flat `public/*.html` at the site root (dioreo.app went live 2026-08-05 14:43 EDT; the site used to open at `/legal/` and now opens at `/`), **and the three records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` → `public/changelog/*.html`**, for Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed. Run it with **`npm run site`** (syntax-checks both files first, then builds). ⚠️ **The name is now narrower than the job** — it builds the whole site, not just the legal pages. Kept deliberately: `dior legal deploy`/`check` in the CLI repo, this line, and CLAUDE.md all name it, so a rename is a four-place change and its own commit. ⚠️ **`chronicle.js` receives everything it shares via the one-way `CHROME` bundle** — it imports nothing from `buildLegalPages.js`. Add a key to `CHROME_KEYS` when you pass a new one; `requireChrome()` throws on a missing key rather than rendering a page with a hole a content gate would not notice. ⚠️ **Two output directories.** Every nav/footer link goes through `hrefTo(target, from)`, never a bare `./name.html` — two pages are called `index.html` now. New page in a new directory ⇒ set `dir`, and add it to `PUBLISHED_TARGETS` (and `PAGE_ALIASES` if its output name differs from its source name). It deliberately hand-rolls its Markdown parsing rather than adding a dependency — `NOTICE` §3 commits to a copyleft-free tree that gets re-audited on every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
 
-  ⚠️ **The CSS lives inside JS template literals**, so a **backtick in a stylesheet comment** terminates
-  the string and fails the build with a SyntaxError pointing at CSS. It happened twice, 2026-07-29 22:00 EDT.
-  Run `node --check scripts/buildLegalPages.js` before a full run. Related trap: a `//` comment
-  containing `/*` (a glob like the model-file path) reads as an unclosed block comment to naive tooling.
+  ⚠️ **The CSS lives inside JS template literals**, so a **backtick in a stylesheet comment** terminates the string and fails the build with a SyntaxError pointing at CSS. It happened twice, 2026-07-29 22:00 EDT. Run `node --check scripts/buildLegalPages.js` before a full run. Related trap: a `//` comment containing `/*` (a glob like the model-file path) reads as an unclosed block comment to naive tooling.
 
-  ⚠️ **`parseBlocks()` strips HTML comments, and that is load-bearing** (added 2026-07-29 22:17 EDT).
-  `CONTRIBUTORS.md` keeps its "format for new entries" template inside a comment, complete with a worked
-  example row. Without the strip the comment rendered as visible content and the live credits page
-  listed a **fabricated contributor** (`@example`) as though it were real.
+  ⚠️ **`parseBlocks()` strips HTML comments, and that is load-bearing** (added 2026-07-29 22:17 EDT). `CONTRIBUTORS.md` keeps its "format for new entries" template inside a comment, complete with a worked example row. Without the strip the comment rendered as visible content and the live credits page listed a **fabricated contributor** (`@example`) as though it were real.
 
-  ⚠️ **Its gates are INDEPENDENT and passing one proves nothing about the others** (learned the hard
-  way; the roster is printed on every run — read it there rather than from a count in prose, which said
-  "THREE" here and "FIVE" in CLAUDE.md and was stale both times). Historically (learned the hard
-  way 2026-07-29 18:55 EDT, v2.43.1; third added 2026-07-29 22:17 EDT). `verify()` checks that every
-  multi-word run of source survived into the HTML; `linkAudit()` resolves every internal href against the
-  deploy tree; `structureAudit()` asserts every column-aligned source line landed inside a `<pre>` or a
-  heading. **The third exists because NOTICE holds its dependency and trademark tables together with runs
-  of spaces — the *alignment* is the structure, and joining those rows into a paragraph destroys the table
-  without changing one word**, so the other two stay green on a wrecked document. It was proven to fail
-  before being trusted: neutering the column detector produced 24 findings naming the real dependency
-  rows. Both documents reported
-  **"100% of source content present" while shipping seven dead links** — content presence and link
-  resolution are different properties, and only the first had a check. Never read a clean `verify()` as
-  "the output is correct."
-  - **`PUBLISHED_TARGETS` is the allowlist of what actually gets deployed.** The source Markdown
-    cross-references plenty of repo-only files (`CLAUDE.md`, `ROADMAP.md`, `models/UserPreference.js`,
-    the rules files); those render as inert `<span class="ref">` text instead of links, because a 404
-    inside a legal document is worse than an unlinked mention. **If you start publishing a new file, add
-    it here or its references stay inert.** Do NOT "fix" these by pointing at GitHub — the repo can be
-    private at any time, which is why the documents carry no repo links at all.
-  - `CONTRIBUTING.md` **and `CONTRIBUTORS.md` ARE published now** (2026-07-29 22:17 EDT), as the two
-    `EXTRA_PAGES` rendered by `warmShell()`. This reverses the earlier pull, and both original objections
-    are answered: `CONTRIBUTORS.md` being published makes that link resolve, the rest degrade to inert
-    text, and every page's header now carries a repo link. `linkAudit()` enforces this per build rather
-    than trusting the note.
-  - **The site root IS the homepage now, not a redirect to one** (flattened 2026-08-05 14:43 EDT when
-    dioreo.app went live — `build()` writes `index.html` straight to `public/`, the site root, instead
-    of to `public/legal/`). `public/_redirects` keeps a set of 301s from the old `/legal/*` shape to the
-    new flat one (`/legal/terms.html` → `/terms`, etc.) purely for compatibility — bookmarks, the
-    Discord Developer Portal's ToS/Privacy links if they still point at the old URLs — not because
-    anything still lives there. Cloudflare Pages also serves **extensionless** canonical URLs and
-    308-redirects the `.html` form — so any script checking the live site needs `curl -L`, or it reads
-    zero bytes and reports total drift. `dior legal check` in the CLI repo does this correctly; copy
-    from it.
+  ⚠️ **Its gates are INDEPENDENT and passing one proves nothing about the others** (learned the hard way; the roster is printed on every run — read it there rather than from a count in prose, which said "THREE" here and "FIVE" in CLAUDE.md and was stale both times). Historically (learned the hard way 2026-07-29 18:55 EDT, v2.43.1; third added 2026-07-29 22:17 EDT). `verify()` checks that every multi-word run of source survived into the HTML; `linkAudit()` resolves every internal href against the deploy tree; `structureAudit()` asserts every column-aligned source line landed inside a `<pre>` or a heading. **The third exists because NOTICE holds its dependency and trademark tables together with runs of spaces — the *alignment* is the structure, and joining those rows into a paragraph destroys the table without changing one word**, so the other two stay green on a wrecked document. It was proven to fail before being trusted: neutering the column detector produced 24 findings naming the real dependency rows. Both documents reported **"100% of source content present" while shipping seven dead links** — content presence and link resolution are different properties, and only the first had a check. Never read a clean `verify()` as "the output is correct."
+  - **`PUBLISHED_TARGETS` is the allowlist of what actually gets deployed.** The source Markdown cross-references plenty of repo-only files (`CLAUDE.md`, `ROADMAP.md`, `models/UserPreference.js`, the rules files); those render as inert `<span class="ref">` text instead of links, because a 404 inside a legal document is worse than an unlinked mention. **If you start publishing a new file, add it here or its references stay inert.** Do NOT "fix" these by pointing at GitHub — the repo can be private at any time, which is why the documents carry no repo links at all.
+  - `CONTRIBUTING.md` **and `CONTRIBUTORS.md` ARE published now** (2026-07-29 22:17 EDT), as the two `EXTRA_PAGES` rendered by `warmShell()`. This reverses the earlier pull, and both original objections are answered: `CONTRIBUTORS.md` being published makes that link resolve, the rest degrade to inert text, and every page's header now carries a repo link. `linkAudit()` enforces this per build rather than trusting the note.
+  - **The site root IS the homepage now, not a redirect to one** (flattened 2026-08-05 14:43 EDT when dioreo.app went live — `build()` writes `index.html` straight to `public/`, the site root, instead of to `public/legal/`). `public/_redirects` keeps a set of 301s from the old `/legal/*` shape to the new flat one (`/legal/terms.html` → `/terms`, etc.) purely for compatibility — bookmarks, the Discord Developer Portal's ToS/Privacy links if they still point at the old URLs — not because anything still lives there. Cloudflare Pages also serves **extensionless** canonical URLs and 308-redirects the `.html` form — so any script checking the live site needs `curl -L`, or it reads zero bytes and reports total drift. `dior legal check` in the CLI repo does this correctly; copy from it.
 
-⚠️ **`vmstatus.sh` had a lost `#` for an unknown number of days** (fixed 2026-07-29 18:55 EDT, v2.43.1).
-Line 180 was a fragment of its own multi-line comment with the leading `#` missing, so the shell executed
-`you wait out the whole probe to be told` as a command and printed `you: command not found` on **every
-run**, from the Mac and on the VM. **`bash -n` cannot catch this** — the line is valid syntax, it just
-isn't a comment any more, which puts it in the same class as the bash-3.2 constructs noted above. When
-editing this script's long comment blocks, re-run it and read the FIRST lines of output, not just the
-panel; the error printed above the banner and had been read past as noise more than once.
+⚠️ **`vmstatus.sh` had a lost `#` for an unknown number of days** (fixed 2026-07-29 18:55 EDT, v2.43.1). Line 180 was a fragment of its own multi-line comment with the leading `#` missing, so the shell executed `you wait out the whole probe to be told` as a command and printed `you: command not found` on **every run**, from the Mac and on the VM. **`bash -n` cannot catch this** — the line is valid syntax, it just isn't a comment any more, which puts it in the same class as the bash-3.2 constructs noted above. When editing this script's long comment blocks, re-run it and read the FIRST lines of output, not just the panel; the error printed above the banner and had been read past as noise more than once.
 
-⚠️ **`vmstatus.sh` runs in TWO places and the difference is load-bearing** (rewritten 2026-07-28 15:34 EDT,
-v2.41.0 — design: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`). Normally it runs
-**from the Mac** and reaches the VM over SSH. But `deploy.sh` runs it **on the VM** as its post-restart
-check, so the script detects its own host (`ON_VM`) and reads locally instead of trying to SSH into
-itself. On the VM it also **skips the Cloud Logging queries** — the instance service account writes logs
-but can't read them back, and paying those API round-trips for empty counters would slow every deploy. Both
-paths print an explicit `NOT LIVE` banner rather than a bare `0`. If you touch this script, test **both**
-hosts; the on-VM path was quietly half-broken from 2026-07-18 until this rewrite.
+⚠️ **`vmstatus.sh` runs in TWO places and the difference is load-bearing** (rewritten 2026-07-28 15:34 EDT, v2.41.0 — design: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`). Normally it runs **from the Mac** and reaches the VM over SSH. But `deploy.sh` runs it **on the VM** as its post-restart check, so the script detects its own host (`ON_VM`) and reads locally instead of trying to SSH into itself. On the VM it also **skips the Cloud Logging queries** — the instance service account writes logs but can't read them back, and paying those API round-trips for empty counters would slow every deploy. Both paths print an explicit `NOT LIVE` banner rather than a bare `0`. If you touch this script, test **both** hosts; the on-VM path was quietly half-broken from 2026-07-18 until this rewrite.
 
-⚠️ **It targets bash 3.2** (stock macOS `/bin/bash`, and the only bash on Harkirat's Mac). No
-`declare -A`, no `${var^^}`, no `mapfile` — and `bash -n` does **not** catch these, they fail at runtime.
+⚠️ **It targets bash 3.2** (stock macOS `/bin/bash`, and the only bash on Harkirat's Mac). No `declare -A`, no `${var^^}`, no `mapfile` — and `bash -n` does **not** catch these, they fail at runtime.
 
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
-`npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script
-here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list`
-for the current check roster -- no count is written down here, because a number in prose is a copy of
-state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said
-"10" within an hour of the roster reaching 19). Two severities:
-`ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
+`npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 
 If you touch it:
-- **Add the check AND its self-test in the same change.** `docs-audit.test.mjs` asserts two things per
-  check — the broken fixture FAILS *and* valid input stays SILENT. The second half is what catches a
-  matcher that fires on everything; skipping it nearly turned two correct `CHANGELOG-SUMMARY.md` range
-  headings into a fabricated gap. The self-test found a completely dead check on its first run.
-- **Exemptions carry a reason and a date.** `KNOWN_BAD_TAGS`, `TAG_RULE_FROM` (package.json wasn't
-  bumped per release before v2.33.0 — verified), `DEVLOG_RULE_FROM`, and the `XREF_SKIP_*` lists all
-  exist because an unexplained allowlist silences a real defect forever.
-- **It must never report a conclusion it can't support.** It detects a shallow clone and downgrades
-  the git-dependent checks to a warning; a depth-1 checkout otherwise yields 42 false `hash-chain`
-  errors and sees 1 tag instead of 100+ (measured).
+- **Add the check AND its self-test in the same change.** `docs-audit.test.mjs` asserts two things per check — the broken fixture FAILS *and* valid input stays SILENT. The second half is what catches a matcher that fires on everything; skipping it nearly turned two correct `CHANGELOG-SUMMARY.md` range headings into a fabricated gap. The self-test found a completely dead check on its first run.
+- **Exemptions carry a reason and a date.** `KNOWN_BAD_TAGS`, `TAG_RULE_FROM` (package.json wasn't bumped per release before v2.33.0 — verified), `DEVLOG_RULE_FROM`, and the `XREF_SKIP_*` lists all exist because an unexplained allowlist silences a real defect forever.
+- **It must never report a conclusion it can't support.** It detects a shallow clone and downgrades the git-dependent checks to a warning; a depth-1 checkout otherwise yields 42 false `hash-chain` errors and sees 1 tag instead of 100+ (measured).
 - `DOCS_AUDIT_ROOT` repoints the whole audit at a fixture tree; that's how the self-test works.
 
-**Current state and its honest edges (2026-07-29 02:10 EDT, v2.42.0).** Run
-`node scripts/docs-audit.mjs --list` for the live roster — no count is written here, it would rot.
-Read the **accounting line** every run prints, not just the verdict: `N/M checks verified (K items
-examined)`, plus anything **SKIPPED** and anything that examined **nothing**. A check matching zero
-items "passes" while verifying nothing, and that is how a broken matcher survives indefinitely.
-A pass means *no known failure mode tripped* — never *the records are correct*.
-**What it cannot cover is filed, not forgotten:** see `docs/db-deferred-list.md` → 🧹 Someday /
-tech-debt → "the limits it does NOT cover" (content accuracy, novel drift, the web-UI PR path).
+**Current state and its honest edges (2026-07-29 02:10 EDT, v2.42.0).** Run `node scripts/docs-audit.mjs --list` for the live roster — no count is written here, it would rot. Read the **accounting line** every run prints, not just the verdict: `N/M checks verified (K items examined)`, plus anything **SKIPPED** and anything that examined **nothing**. A check matching zero items "passes" while verifying nothing, and that is how a broken matcher survives indefinitely. A pass means *no known failure mode tripped* — never *the records are correct*.
+**What it cannot cover is filed, not forgotten:** see `docs/db-deferred-list.md` → 🧹 Someday / tech-debt → "the limits it does NOT cover" (content accuracy, novel drift, the web-UI PR path).
 
-**Two gates DELEGATE to this script — and both fail LOUD, never silent.**
-`.claude/hooks/devlog-toc-check.sh` and `.claude/hooks/docs-audit-gate.sh` call it rather than keeping
-their own copies, so there is one implementation of each rule. The cost of that is a single point of
-failure: delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired both gates.
-So **"the audit could not run" is reported as its own finding** — missing file and invalid-JSON crash
-are both handled, and both were tested by actually removing and breaking the script. Deliberately NOT
-a duplicated fallback implementation: two copies drift, and the drift is silent too. The independent
-prior detection layer still stands beside it — the `gh pr merge` hooks (changelog, DEVLOG, release-doc
-check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim
-hooks all run without this script and catch different failures.
+**Two gates DELEGATE to this script — and both fail LOUD, never silent.** `.claude/hooks/devlog-toc-check.sh` and `.claude/hooks/docs-audit-gate.sh` call it rather than keeping their own copies, so there is one implementation of each rule. The cost of that is a single point of failure: delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired both gates. So **"the audit could not run" is reported as its own finding** — missing file and invalid-JSON crash are both handled, and both were tested by actually removing and breaking the script. Deliberately NOT a duplicated fallback implementation: two copies drift, and the drift is silent too. The independent prior detection layer still stands beside it — the `gh pr merge` hooks (changelog, DEVLOG, release-doc check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim hooks all run without this script and catch different failures.
 
-⚠️ **`--json` mode means STDOUT IS A CONTRACT — never `console.log` from inside a check body**
-(learned the hard way 2026-08-06 00:23 EDT, within two minutes of writing the offending line). The
-whole report goes to stdout as one JSON document and the two delegating hooks parse it, so a single
-prose line printed from a check prepends itself to that document and both hooks report
-**"DOCS AUDIT CRASHED: it did not return valid JSON"** — the script itself was fine. Check bodies run
-in **both** modes; the summary notes near the bottom of the file run only in the human path, which is
-why `console.log` is safe there and not here. **Anything printed from inside a check goes to
-`console.error`.** This is the delegation cost the paragraph above describes, in its concrete form.
+⚠️ **`--json` mode means STDOUT IS A CONTRACT — never `console.log` from inside a check body** (learned the hard way 2026-08-06 00:23 EDT, within two minutes of writing the offending line). The whole report goes to stdout as one JSON document and the two delegating hooks parse it, so a single prose line printed from a check prepends itself to that document and both hooks report **"DOCS AUDIT CRASHED: it did not return valid JSON"** — the script itself was fine. Check bodies run in **both** modes; the summary notes near the bottom of the file run only in the human path, which is why `console.log` is safe there and not here. **Anything printed from inside a check goes to `console.error`.** This is the delegation cost the paragraph above describes, in its concrete form.
 
-⚠️ **A SUPPRESSED check is a third state beside pass and fail, and it has three requirements.**
-`SUPPRESS_CHRONICLE_DRIFT` (added 2026-08-06 00:20 EDT, Harkirat's call — the chronicle pages are
-withdrawn from the nav, so that meter reported the same expected drift on every run and was training
-everyone to read past the whole WARN block). A suppression is only legitimate when: **(1)** the check
-still runs and still examines its items, so the vacuous-pass detector keeps watching it; **(2)** it
-still prints its state every run, so the information is withheld from the *findings*, never from the
-*reader*; and **(3)** it is gated on `DOCS_AUDIT_ROOT` being absent, so the fixture tree is untouched
-and `docs-audit.test.mjs`'s `proves()` keeps exercising the real logic. Miss (3) and the suppression
-disables its own failure test — the silently-dead gate this whole file exists to prevent. Every
-suppression also needs a **filed lift-trigger** (`docs/db-deferred-list.md`), because an exemption
-with no removal condition is permanent by accident.
+⚠️ **A SUPPRESSED check is a third state beside pass and fail, and it has three requirements.** `SUPPRESS_CHRONICLE_DRIFT` (added 2026-08-06 00:20 EDT, Harkirat's call — the chronicle pages are withdrawn from the nav, so that meter reported the same expected drift on every run and was training everyone to read past the whole WARN block). A suppression is only legitimate when: **(1)** the check still runs and still examines its items, so the vacuous-pass detector keeps watching it; **(2)** it still prints its state every run, so the information is withheld from the *findings*, never from the *reader*; and **(3)** it is gated on `DOCS_AUDIT_ROOT` being absent, so the fixture tree is untouched and `docs-audit.test.mjs`'s `proves()` keeps exercising the real logic. Miss (3) and the suppression disables its own failure test — the silently-dead gate this whole file exists to prevent. Every suppression also needs a **filed lift-trigger** (`docs/db-deferred-list.md`), because an exemption with no removal condition is permanent by accident.
 
 ## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 14:59 EDT)
-Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`;
-writes nothing and touches no project state. It measures the 7-day MCP observation window opened
-2026-08-02 14:43 EDT (protocol + pre-registered baseline:
-`docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder
-in `docs/db-deferred-list.md`).
+Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`; writes nothing and touches no project state. It measures the 7-day MCP observation window opened 2026-08-02 14:43 EDT (protocol + pre-registered baseline: `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder in `docs/db-deferred-list.md`).
 
-⚠️ **DO NOT EDIT IT DURING THE WINDOW.** The baseline and the treatment period must be measured the
-same way or the comparison is void. It already went v1 → v2 once (v1 measured turns but not tokens or
-model mix — half the cost model), which was only legitimate because zero treatment data existed yet.
-The same edit on day 3 destroys the experiment. If a change is unavoidable: note it in the protocol
-and re-baseline both windows.
+⚠️ **DO NOT EDIT IT DURING THE WINDOW.** The baseline and the treatment period must be measured the same way or the comparison is void. It already went v1 → v2 once (v1 measured turns but not tokens or model mix — half the cost model), which was only legitimate because zero treatment data existed yet. The same edit on day 3 destroys the experiment. If a change is unavoidable: note it in the protocol and re-baseline both windows.
 
-⚠️ **`--to` is EXCLUSIVE.** Use `--to 2026-08-10` to include 2026-08-09. This off-by-one has already
-been caught twice — once here and once in `.claude/hooks/mcp-layer-check.sh`'s date comparison, where
-it would have reverted the window's final 17 hours.
+⚠️ **`--to` is EXCLUSIVE.** Use `--to 2026-08-10` to include 2026-08-09. This off-by-one has already been caught twice — once here and once in `.claude/hooks/mcp-layer-check.sh`'s date comparison, where it would have reverted the window's final 17 hours.
 
-⚠️ **`estCostUSD` is a RELATIVE INDEX, never spend.** Calibrated against the one real figure
-(session `38972d5e`: 404 Sonnet-5 turns → $44.02 at list vs $17.10 billed = **2.57×**), and that factor
-is **model-specific** — Opus and Sonnet rates differ ~5×, so it holds only while the model mix holds.
-**Check the `models` breakdown first at close-out**; an Opus-skewed week moves every number by itself.
+⚠️ **`estCostUSD` is a RELATIVE INDEX, never spend.** Calibrated against the one real figure (session `38972d5e`: 404 Sonnet-5 turns → $44.02 at list vs $17.10 billed = **2.57×**), and that factor is **model-specific** — Opus and Sonnet rates differ ~5×, so it holds only while the model mix holds. **Check the `models` breakdown first at close-out**; an Opus-skewed week moves every number by itself.
 
-It counts real `tool_use` invocations, never mentions — mention-counting `sequentialthinking` returns
-38 vs 2 actual calls, because the name appears in every system-prompt tool listing.
+It counts real `tool_use` invocations, never mentions — mention-counting `sequentialthinking` returns 38 vs 2 actual calls, because the name appears in every system-prompt tool listing.
 
-*General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert).
-Never log a raw Cloudinary error object from a script — plaintext secrets; see
-`.claude/rules/loadout-images-and-metadata.md`.*
+*General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert). Never log a raw Cloudinary error object from a script — plaintext secrets; see `.claude/rules/loadout-images-and-metadata.md`.*
 
 ## Licence & attribution gates (added 2026-08-02)
 
-Two invariants that CLAUDE.md's licensing section had stated in prose and nothing enforced — the
-consequence of getting either wrong is a licence-compliance defect, not stale documentation.
+Two invariants that CLAUDE.md's licensing section had stated in prose and nothing enforced — the consequence of getting either wrong is a licence-compliance defect, not stale documentation.
 
-- **`dep-licences`** (ERROR) — no GPL/AGPL/LGPL/MPL/SSPL/CDDL/EPL/CC-BY-SA/OSL/EUPL anywhere in the
-  tree, and **every package's licence must be KNOWN**. A licence resolves from the lockfile, then the
-  package's own `package.json`, then its licence FILE text. ⚠️ **The text fallback is not optional**:
-  `chroma-js` and `exif-parser` declare no licence field at all, and a scanner that reads "unknown" as
-  permissive fails open — the exact failure it exists to prevent. Reading the file identifies them
-  (BSD and MIT) with no allowlist to go stale. SKIPs with a stated reason when `node_modules` is
-  absent rather than passing.
-- **`notice-attribution`** (ERROR) — every runtime dependency appears in NOTICE §1 **at the version
-  the lockfile resolves**. The version half matters: "regenerate when dependencies change" is mostly
-  about changes, and a name-only check calls a two-majors-stale attribution correct.
-  ⚠️ Its section boundary is the next **line-initial** numbered heading. The first version searched
-  for the literal `"2."` and matched inside `chrono-node 2.9.1` — the first entry — so the section came
-  out empty and every dependency was reported missing against a NOTICE that was entirely correct.
+- **`dep-licences`** (ERROR) — no GPL/AGPL/LGPL/MPL/SSPL/CDDL/EPL/CC-BY-SA/OSL/EUPL anywhere in the tree, and **every package's licence must be KNOWN**. A licence resolves from the lockfile, then the package's own `package.json`, then its licence FILE text. ⚠️ **The text fallback is not optional**: `chroma-js` and `exif-parser` declare no licence field at all, and a scanner that reads "unknown" as permissive fails open — the exact failure it exists to prevent. Reading the file identifies them (BSD and MIT) with no allowlist to go stale. SKIPs with a stated reason when `node_modules` is absent rather than passing.
+- **`notice-attribution`** (ERROR) — every runtime dependency appears in NOTICE §1 **at the version the lockfile resolves**. The version half matters: "regenerate when dependencies change" is mostly about changes, and a name-only check calls a two-majors-stale attribution correct. ⚠️ Its section boundary is the next **line-initial** numbered heading. The first version searched for the literal `"2."` and matched inside `chrono-node 2.9.1` — the first entry — so the section came out empty and every dependency was reported missing against a NOTICE that was entirely correct.
 
-⚠️ **`scripts/checkEmojiCaptures.js` now runs in CI.** It was documented in memory as "run it after
-touching emoji rendering" and nothing ran it.
+⚠️ **`scripts/checkEmojiCaptures.js` now runs in CI.** It was documented in memory as "run it after touching emoji rendering" and nothing ran it.

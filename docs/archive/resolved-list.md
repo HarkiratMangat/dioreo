@@ -2,805 +2,205 @@
 
 **Archive. Not active content. Do not read this file by default.**
 
-Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, get dropped, or turn out
-not to be real. Created **2026-07-25 21:43 EDT** (Harkirat's ask) so the active deferred list holds only
-live work — a resolved item's value is "don't re-litigate this," which is worth keeping but not worth
-loading on every read.
+Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, get dropped, or turn out not to be real. Created **2026-07-25 21:43 EDT** (Harkirat's ask) so the active deferred list holds only live work — a resolved item's value is "don't re-litigate this," which is worth keeping but not worth loading on every read.
 
 ## The rules
-- An item moves here the moment it's **shipped / dropped / proven-not-an-issue**, in the same pass that
-  closes it. Never delete — always move.
-- Keep the original wording and add the outcome: **what happened, when (`YYYY-MM-DD HH:MM TZ`), and
-  where the full story lives** (version, commit, DEVLOG entry, memory file).
+- An item moves here the moment it's **shipped / dropped / proven-not-an-issue**, in the same pass that closes it. Never delete — always move.
+- Keep the original wording and add the outcome: **what happened, when (`YYYY-MM-DD HH:MM TZ`), and where the full story lives** (version, commit, DEVLOG entry, memory file).
 - Newest at the top of each section.
-- **Not for standing "decided-no" calls that could get re-raised** — those stay visible in
-  `db-deferred-list.md`'s own 🚫 Decided-no section, precisely so nobody re-opens them.
+- **Not for standing "decided-no" calls that could get re-raised** — those stay visible in `db-deferred-list.md`'s own 🚫 Decided-no section, precisely so nobody re-opens them.
 
 ## Its sibling in this folder
-`docs/archive/graveyard.md` — the same idea for **`docs/diors-builds notes.md`**: resolved and
-ℋ-confirmed intake is swept there. Two archives, deliberately separate, so it stays obvious which
-active file a given dead item came out of.
+`docs/archive/graveyard.md` — the same idea for **`docs/diors-builds notes.md`**: resolved and ℋ-confirmed intake is swept there. Two archives, deliberately separate, so it stays obvious which active file a given dead item came out of.
 
 ---
 
 ## Shipped / fixed
 
-- ✅ **`/calendar` page banners: width cap was a no-op, and Discord-CDN banner sources expired within
-  ~24-48h — RESOLVED 2026-08-07 22:04 EDT.** `[P2 · S]` Filed 2026-08-07 21:23 EDT. Root cause and
-  the two failed workarounds (`height=auto` → 400; forging `ex=` → still 404, `hm=` is a real
-  signature) are as originally filed. **Fix (Harkirat's call after live-testing both the resize and
-  the workarounds): stop skipping Cloudinary re-hosting for Discord-CDN banner sources.**
-  `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source unconditionally;
-  the stale "Discord CDN doesn't expire" comments were corrected in place. **The width-cap feature
-  itself was then dropped entirely** (not just fixed) — Harkirat live-tested it working (Cloudinary's
-  `c_limit,w_N`, verified aspect-preserving from one dimension) and rejected it anyway: a
-  Cloudinary-transformed derivative has no path back to the original, so the cap also shrank the
-  ZOOMED view, which he didn't want. `commands/calendar.js` now renders the raw (Cloudinary-hosted,
-  durable) banner URL at full resolution, no cap, inline or on zoom.
-  **Same investigation surfaced a second, broader gap**, fixed in the same pass: none of the three
-  Cloudinary re-upload modules (`cloudinaryCache.js`/draws, `patchNotesCache.js`, this file) baked
-  `f_auto,q_auto` into the stored `secure_url`, unlike loadout images — new shared
-  `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`, idempotent) now applies it on every
-  upload/lookup across all three, and `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to
-  re-run) fixed everything already stored — ran clean against both dev (25 URLs) and prod (25 URLs),
-  each spot-verified live via `curl`.
-- ✅ **`/calendar`: replace Prev/Next pagination with section-toggle buttons — RESOLVED 2026-08-07
-  13:56 EDT (found stale, not built this pass).** `[P2 · M]` Filed 2026-07-31 12:10 EDT during the
-  3-section calendar redesign (notes L195), describing the pagination as still Prev/Next with named
-  section buttons wanted "eventually." It never should have stayed queued — `.claude/rules/
-  design-decisions.md`'s own text from the SAME session (2026-07-31 14:00 EDT) says outright: "the
-  section-toggle-buttons item originally filed to db-deferred-list.md was built immediately instead
-  of deferred, per Harkirat's direct follow-up." `commands/calendar.js`'s `calpage_0/1/2` buttons
-  (Draws/Events/Gamemodes) have been live since that same day. Caught by the stale-reference sweep on
-  an unrelated PR (v2.59.0) that happened to touch this exact file for a different item — a targeted
-  grep for the claim itself, not just the filename, is what surfaced it.
-- ✅ **`v2.58.0`'s git tag was never pushed to GitHub — RESOLVED 2026-08-07 10:12 EDT.** `[P0 · XS]`
-  Filed 2026-08-07 08:06 EDT, escalated to P0 at 08:12 EDT the same session when PR #95 discovered it
-  was blocking `syntax-check` (via `docs-audit`'s `tag-coverage` ERROR) on **every** PR, not just ones
-  touching drawprices. Two remote sandbox sessions both hit a real, unfixable-from-there 403 pushing
-  the tag (an explicit org egress/proxy policy denial — see `local/handoff/v2.58.0-merge-handoff.md`
-  for the full repro) and correctly escalated rather than routing around it. A session with real push
-  access ran exactly the commands both handoffs specified: `git tag -a v2.58.0
-  570187dd8af8f7f437873d567ad9657b073f2d92 -m "v2.58.0 — A third region, sourced instead of guessed"`
-  then `git push origin v2.58.0`. Verified after: `git ls-remote --tags origin v2.58.0` resolves to the
-  right commit, `docs-audit`'s `tag-coverage` check no longer errors, and PR #95's `syntax-check`
-  (which was failing on exactly this) passed clean on re-run with no other changes.
+- ✅ **`/calendar` page banners: width cap was a no-op, and Discord-CDN banner sources expired within ~24-48h — RESOLVED 2026-08-07 22:04 EDT.** `[P2 · S]` Filed 2026-08-07 21:23 EDT. Root cause and the two failed workarounds (`height=auto` → 400; forging `ex=` → still 404, `hm=` is a real signature) are as originally filed. **Fix (Harkirat's call after live-testing both the resize and the workarounds): stop skipping Cloudinary re-hosting for Discord-CDN banner sources.** `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source unconditionally; the stale "Discord CDN doesn't expire" comments were corrected in place. **The width-cap feature itself was then dropped entirely** (not just fixed) — Harkirat live-tested it working (Cloudinary's `c_limit,w_N`, verified aspect-preserving from one dimension) and rejected it anyway: a Cloudinary-transformed derivative has no path back to the original, so the cap also shrank the ZOOMED view, which he didn't want. `commands/calendar.js` now renders the raw (Cloudinary-hosted, durable) banner URL at full resolution, no cap, inline or on zoom. **Same investigation surfaced a second, broader gap**, fixed in the same pass: none of the three Cloudinary re-upload modules (`cloudinaryCache.js`/draws, `patchNotesCache.js`, this file) baked `f_auto,q_auto` into the stored `secure_url`, unlike loadout images — new shared `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`, idempotent) now applies it on every upload/lookup across all three, and `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to re-run) fixed everything already stored — ran clean against both dev (25 URLs) and prod (25 URLs), each spot-verified live via `curl`.
+- ✅ **`/calendar`: replace Prev/Next pagination with section-toggle buttons — RESOLVED 2026-08-07 13:56 EDT (found stale, not built this pass).** `[P2 · M]` Filed 2026-07-31 12:10 EDT during the 3-section calendar redesign (notes L195), describing the pagination as still Prev/Next with named section buttons wanted "eventually." It never should have stayed queued — `.claude/rules/ design-decisions.md`'s own text from the SAME session (2026-07-31 14:00 EDT) says outright: "the section-toggle-buttons item originally filed to db-deferred-list.md was built immediately instead of deferred, per Harkirat's direct follow-up." `commands/calendar.js`'s `calpage_0/1/2` buttons (Draws/Events/Gamemodes) have been live since that same day. Caught by the stale-reference sweep on an unrelated PR (v2.59.0) that happened to touch this exact file for a different item — a targeted grep for the claim itself, not just the filename, is what surfaced it.
+- ✅ **`v2.58.0`'s git tag was never pushed to GitHub — RESOLVED 2026-08-07 10:12 EDT.** `[P0 · XS]` Filed 2026-08-07 08:06 EDT, escalated to P0 at 08:12 EDT the same session when PR #95 discovered it was blocking `syntax-check` (via `docs-audit`'s `tag-coverage` ERROR) on **every** PR, not just ones touching drawprices. Two remote sandbox sessions both hit a real, unfixable-from-there 403 pushing the tag (an explicit org egress/proxy policy denial — see `local/handoff/v2.58.0-merge-handoff.md` for the full repro) and correctly escalated rather than routing around it. A session with real push access ran exactly the commands both handoffs specified: `git tag -a v2.58.0 570187dd8af8f7f437873d567ad9657b073f2d92 -m "v2.58.0 — A third region, sourced instead of guessed"` then `git push origin v2.58.0`. Verified after: `git ls-remote --tags origin v2.58.0` resolves to the right commit, `docs-audit`'s `tag-coverage` check no longer errors, and PR #95's `syntax-check` (which was failing on exactly this) passed clean on re-run with no other changes.
 
-- ✅ **CI cancelled at 15m04s on PR #89 — RESOLVED 2026-08-06 19:45 EDT: it was a GitHub Actions major
-  outage, never this repo.** Two runs died at *exactly* 15m04s / 15m03s with **zero log bytes** (no
-  runner was ever assigned — a failing step always leaves output), and **`main`'s own run failed
-  identically** on a branch the work never touched. The repo is public, so Actions minutes were never a
-  candidate. Confirmed at githubstatus.com. Once Actions recovered, `syntax-check` passed on the head
-  commit unchanged and **v2.57.0 merged and tagged normally** (`129304f`) — nothing in the repo was ever
-  fixed, because nothing in it was ever broken.
-  ⚠️ **The standing lesson:** the failure shape — a cancel with **no failed step and no log output** —
-  is the tell. **Check githubstatus.com before debugging the repo.** A prior session had recorded
-  "runner starvation" as an explicit hypothesis-not-a-finding, which was the right call and turned out
-  correct; the cheap confirmation (one status-page request) simply hadn't been run.
-  ⚠️ **Also surfaced:** `syntax-check` **is** a required status check, while CLAUDE.md still claimed
-  none existed — so a PR became genuinely unmergeable with 0 checks during the outage. CLAUDE.md is
-  corrected.
+- ✅ **CI cancelled at 15m04s on PR #89 — RESOLVED 2026-08-06 19:45 EDT: it was a GitHub Actions major outage, never this repo.** Two runs died at *exactly* 15m04s / 15m03s with **zero log bytes** (no runner was ever assigned — a failing step always leaves output), and **`main`'s own run failed identically** on a branch the work never touched. The repo is public, so Actions minutes were never a candidate. Confirmed at githubstatus.com. Once Actions recovered, `syntax-check` passed on the head commit unchanged and **v2.57.0 merged and tagged normally** (`129304f`) — nothing in the repo was ever fixed, because nothing in it was ever broken. ⚠️ **The standing lesson:** the failure shape — a cancel with **no failed step and no log output** — is the tell. **Check githubstatus.com before debugging the repo.** A prior session had recorded "runner starvation" as an explicit hypothesis-not-a-finding, which was the right call and turned out correct; the cheap confirmation (one status-page request) simply hadn't been run. ⚠️ **Also surfaced:** `syntax-check` **is** a required status check, while CLAUDE.md still claimed none existed — so a PR became genuinely unmergeable with 0 checks during the outage. CLAUDE.md is corrected.
 
-- ✅ **DONE 2026-08-06 15:20 EDT (v2.57.0)** — `utils/alertExplain.js` supplies the plain-language layer
-  (what happened · does it fix itself · what to do), reads Discord close codes so a transient 1006 and a
-  fatal 4004 no longer read alike, and humanises the DISPLAY title only (the stored title stays a
-  canonical key for the throttle and `AlertLog`). `utils/gatewayRecovery.js` adds the "Back online"
-  signal. ⚠️ **The recovery is PAIRED, not unconditional** — a problem that was announced gets a
-  recovery that is announced; routine 1-3h reconnect churn stays silent, preserving the 2026-07-20
-  anti-noise decision that a naive "make resume loud" fix would have undone. Both `shardResume` (session
-  replayed) and `shardReady` (session lost, re-identified) close an outage — wiring only the former
-  would have left the *worst* outages with no recovery signal. 21 unit tests; Discord returned HTTP 204
-  for the new payload. **Still open from the original filing:** Harkirat mentioned *"some discuss[ion]
-  around it as well"* — never clarified, so ask if there was more he wanted here.
+- ✅ **DONE 2026-08-06 15:20 EDT (v2.57.0)** — `utils/alertExplain.js` supplies the plain-language layer (what happened · does it fix itself · what to do), reads Discord close codes so a transient 1006 and a fatal 4004 no longer read alike, and humanises the DISPLAY title only (the stored title stays a canonical key for the throttle and `AlertLog`). `utils/gatewayRecovery.js` adds the "Back online" signal. ⚠️ **The recovery is PAIRED, not unconditional** — a problem that was announced gets a recovery that is announced; routine 1-3h reconnect churn stays silent, preserving the 2026-07-20 anti-noise decision that a naive "make resume loud" fix would have undone. Both `shardResume` (session replayed) and `shardReady` (session lost, re-identified) close an outage — wiring only the former would have left the *worst* outages with no recovery signal. 21 unit tests; Discord returned HTTP 204 for the new payload. **Still open from the original filing:** Harkirat mentioned *"some discuss[ion] around it as well"* — never clarified, so ask if there was more he wanted here.
   <details><summary>original item</summary>
 
-  `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
-  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
-  shard error" alert live and had "absolutely no clue what it meant," and separately has no
-  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
-  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
-  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
-  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
-  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
-  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
-  forever. See `utils/alertStore.js` + the alert-tier design referenced in
-  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
-  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
-  before scoping the actual build.
+  `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway shard error" alert live and had "absolutely no clue what it meant," and separately has no indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`, `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves, what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert to close the loop after a disruption alert fires, so a one-off blip reads as an open question forever. See `utils/alertStore.js` + the alert-tier design referenced in `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to before scoping the actual build.
   </details>
 
-- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
-  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
-  that session; this entry is the unfinished half.*
+- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in that session; this entry is the unfinished half.*
 
-  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
-  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
-  personal data is copied onto a development machine. Confirmed present, not assumed —
-  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
-  returned **17**, all real snowflake ids.
+  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production personal data is copied onto a development machine. Confirmed present, not assumed — `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'` returned **17**, all real snowflake ids.
 
-  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
-  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
-  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
-  is the only collection at issue.**
+  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`, `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences` is the only collection at issue.**
 
-  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
-  processing instead of documenting it, and is the standard answer to production personal data in a
-  development environment. Three parts — **all three now closed**, the first of them only on
-  2026-08-06 15:11 EDT, two days after the other two were filed as done:
-  1. ✅ **DONE 2026-08-06 15:11 EDT (v2.57.0) — but ANONYMISED, not purged.** Harkirat's call when he
-     scoped the session: *"I don't want to purge all the user data locally, I just want to decouple
-     and remove the user ids so the test data still remains and we can use it for testing."* So
-     `seedDevData.js` (which deletes all 17 and inserts six fixtures) was **not** the right tool, and
-     `scripts/anonymizeDevDb.js` was written instead: every document survives, only the identifiers
-     are replaced. Verified independently of the script's own report — the canonical audit query now
-     returns **0**, all 17 documents are still present with unique ids, and the dev bot boots against
-     them. Both scripts remain; `deployment-and-ops.md` documents when to reach for each.
-     ⚠️ **This sat open for two days while the record said it was handled.** The 2026-08-04 session
-     shipped the seeder and the doc and filed the finding as addressed — and never ran anything, so
-     all 17 real ids were still live on 2026-08-06. **A script existing is not the data being clean.**
-     ⚠️ **The inventory below undercounted the fields.** It named `discordId` only; the session that
-     scoped this added three colour-source fields, two of which do not exist in the data at all —
-     while `avatarPaletteSource`, `bannerPaletteSource` and `decorationPaletteSource`, named by
-     neither, **do** and hold real Discord avatar/banner asset hashes (per-user CDN addresses). The
-     list was written from the schema, not from the rows. Any new per-user cache key belongs on it.
-  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
-     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
-     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
-     database, because either alone is defeatable by one wrong environment variable, and it
-     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
-     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
-  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT**, extended 2026-08-06 15:28 EDT. The row
-     that instructed `mongodump` from prod is gone; it carries the verification query plus the note
-     that `userpreferences` is the only affected collection. *(Superseded detail: it pointed at the
-     seeder ALONE when this was written. It now documents **both** scripts and when to reach for each,
-     plus the two traps found on 2026-08-06 — that a script existing is not the data being clean, and
-     that synthetic ids must not be snowflake-shaped or they trip the audit regex forever.)*
+  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the processing instead of documenting it, and is the standard answer to production personal data in a development environment. Three parts — **all three now closed**, the first of them only on 2026-08-06 15:11 EDT, two days after the other two were filed as done:
+  1. ✅ **DONE 2026-08-06 15:11 EDT (v2.57.0) — but ANONYMISED, not purged.** Harkirat's call when he scoped the session: *"I don't want to purge all the user data locally, I just want to decouple and remove the user ids so the test data still remains and we can use it for testing."* So `seedDevData.js` (which deletes all 17 and inserts six fixtures) was **not** the right tool, and `scripts/anonymizeDevDb.js` was written instead: every document survives, only the identifiers are replaced. Verified independently of the script's own report — the canonical audit query now returns **0**, all 17 documents are still present with unique ids, and the dev bot boots against them. Both scripts remain; `deployment-and-ops.md` documents when to reach for each. ⚠️ **This sat open for two days while the record said it was handled.** The 2026-08-04 session shipped the seeder and the doc and filed the finding as addressed — and never ran anything, so all 17 real ids were still live on 2026-08-06. **A script existing is not the data being clean.** ⚠️ **The inventory below undercounted the fields.** It named `discordId` only; the session that scoped this added three colour-source fields, two of which do not exist in the data at all — while `avatarPaletteSource`, `bannerPaletteSource` and `decorationPaletteSource`, named by neither, **do** and hold real Discord avatar/banner asset hashes (per-user CDN addresses). The list was written from the schema, not from the rows. Any new per-user cache key belongs on it.
+  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to re-run. Its guard is the real content: it requires a loopback host **and** a dev-named database, because either alone is defeatable by one wrong environment variable, and it refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
+  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT**, extended 2026-08-06 15:28 EDT. The row that instructed `mongodump` from prod is gone; it carries the verification query plus the note that `userpreferences` is the only affected collection. *(Superseded detail: it pointed at the seeder ALONE when this was written. It now documents **both** scripts and when to reach for each, plus the two traps found on 2026-08-06 — that a script existing is not the data being clean, and that synthetic ids must not be snowflake-shaped or they trip the audit regex forever.)*
 
-  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
-  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
-  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
-  §7 / §8 change plus an Appendix A row — not a one-line note.
+  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 / §7 / §8 change plus an Appendix A row — not a one-line note.
 
-- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]` —
-  **ANSWERED YES, 2026-08-06 12:35 EDT.** *(Heading kept verbatim from the active list, per this
-  file's own rule — and because `archive-conservation` traces a removed item by a six-word
-  fingerprint, so a paraphrase reads to it as a deletion. My first draft paraphrased it and the
-  check was right to reject it.)* Filed 2026-08-06 09:35 EDT in the same pass that built the hook,
-  because the session that registers a `SessionStart`/`Stop` hook is running the PREVIOUS
-  registration by construction and cannot observe its own change.
+- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]` — **ANSWERED YES, 2026-08-06 12:35 EDT.** *(Heading kept verbatim from the active list, per this file's own rule — and because `archive-conservation` traces a removed item by a six-word fingerprint, so a paraphrase reads to it as a deletion. My first draft paraphrased it and the check was right to reject it.)* Filed 2026-08-06 09:35 EDT in the same pass that built the hook, because the session that registers a `SessionStart`/`Stop` hook is running the PREVIOUS registration by construction and cannot observe its own change.
 
-  Original wording, kept: *"The hook is registered in `.claude/settings.json`, which the harness reads
-  at session start, so the session that added it is running the previous registration — the identical
-  structural blind spot as the notes hook. Its logic is proven (17/17 self-tests, both directions of
-  the angle detector), and its wiring is proven valid JSON in the right event. What is unproven is
-  that the harness invokes it."*
+  Original wording, kept: *"The hook is registered in `.claude/settings.json`, which the harness reads at session start, so the session that added it is running the previous registration — the identical structural blind spot as the notes hook. Its logic is proven (17/17 self-tests, both directions of the angle detector), and its wiring is proven valid JSON in the right event. What is unproven is that the harness invokes it."*
 
-  **It fires.** Unprompted, on a real completion claim, with no nudging. The wiring works and this
-  half of the question is closed.
+  **It fires.** Unprompted, on a real completion claim, with no nudging. The wiring works and this half of the question is closed.
 
-  ⚠️ **The other half is NOT closed and stays open as `[P1 · S]` in the active list:** on that first
-  live fire it reported **all five angles as un-taken** on a session that had run every one — the
-  detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the hook by hand
-  against the same file suppressed all five correctly, so the fault is in what the harness handed it
-  and the root cause is unknown. Split rather than closed wholesale, because "it fires" and "what it
-  says is true" are different claims and only the first was ever in question here.
+  ⚠️ **The other half is NOT closed and stays open as `[P1 · S]` in the active list:** on that first live fire it reported **all five angles as un-taken** on a session that had run every one — the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the hook by hand against the same file suppressed all five correctly, so the fault is in what the harness handed it and the root cause is unknown. Split rather than closed wholesale, because "it fires" and "what it says is true" are different claims and only the first was ever in question here.
 
-- **🪝 `main-push-guard.sh` blocked a branch DELETION, not just a push of commits — CLOSED
-  2026-08-06 10:48 EDT (v2.56.1, #87).** Filed 2026-08-05 19:08 EDT as `[P3 · XS]`, hit during the
-  v2.55.0 release cleanup.
+- **🪝 `main-push-guard.sh` blocked a branch DELETION, not just a push of commits — CLOSED 2026-08-06 10:48 EDT (v2.56.1, #87).** Filed 2026-08-05 19:08 EDT as `[P3 · XS]`, hit during the v2.55.0 release cleanup.
 
-  Original wording, kept: standing on `main`, `git push origin --delete <branch>` was denied with the
-  guard's "this would push commits directly to main" message. It doesn't — a `--delete` pushes *no*
-  commits and cannot touch `main`; the matcher saw `git push` plus a remote and stopped there. It
-  fired on exactly the operation the chore checklist asks for at the end of every release, so it
-  recurred every time. The filed note warned: **do not "fix" it by broadening the matcher until it
-  stops firing — that is how a guard becomes decorative.** The narrow change asked for was to exempt
-  a `--delete`/`-d` with no refspec, and to prove the deny path still works.
+  Original wording, kept: standing on `main`, `git push origin --delete <branch>` was denied with the guard's "this would push commits directly to main" message. It doesn't — a `--delete` pushes *no* commits and cannot touch `main`; the matcher saw `git push` plus a remote and stopped there. It fired on exactly the operation the chore checklist asks for at the end of every release, so it recurred every time. The filed note warned: **do not "fix" it by broadening the matcher until it stops firing — that is how a guard becomes decorative.** The narrow change asked for was to exempt a `--delete`/`-d` with no refspec, and to prove the deny path still works.
 
-  **What actually shipped was that narrow rule, generalised by one notch because the same defect had
-  a second, worse face.** The guard only ever asked *"is the PROJECT DIR on main?"* — so once a
-  squash-merge with `--delete-branch` left HEAD back on `main`, it denied **every** push: a new
-  feature branch, a deletion, and pushes belonging to a **different repository** (`cd ~/.config/dior
-  && git push -u origin fix/...`), where the project dir's branch says nothing about the operation.
-  It blocked the dior-CLI PR minutes after the guard's own release merged, which is how it surfaced.
-  One rule covers both: **an explicit non-`main` destination ref disclaims main**; a bare `git push`
-  on main still denies, because nothing disclaims it there.
+  **What actually shipped was that narrow rule, generalised by one notch because the same defect had a second, worse face.** The guard only ever asked *"is the PROJECT DIR on main?"* — so once a squash-merge with `--delete-branch` left HEAD back on `main`, it denied **every** push: a new feature branch, a deletion, and pushes belonging to a **different repository** (`cd ~/.config/dior && git push -u origin fix/...`), where the project dir's branch says nothing about the operation. It blocked the dior-CLI PR minutes after the guard's own release merged, which is how it surfaced. One rule covers both: **an explicit non-`main` destination ref disclaims main**; a bare `git push` on main still denies, because nothing disclaims it there.
 
-  **Two holes found while fixing it, both caught by the suite's pre-existing cases** — the reason
-  those cases were written:
-  - comparing the whole refspec against a fixed list let **`abc1234:main`** through, i.e. pushing an
-    arbitrary sha straight onto main. It now judges the **destination** (`${ref##*:}`), since only
-    that decides where commits land.
-  - `:` was missing from the ref character class, so the extractor stopped at the colon and read
-    `abc1234:main` as a branch named `abc1234`.
+  **Two holes found while fixing it, both caught by the suite's pre-existing cases** — the reason those cases were written:
+  - comparing the whole refspec against a fixed list let **`abc1234:main`** through, i.e. pushing an arbitrary sha straight onto main. It now judges the **destination** (`${ref##*:}`), since only that decides where commits land.
+  - `:` was missing from the ref character class, so the extractor stopped at the colon and read `abc1234:main` as a branch named `abc1234`.
 
-  Verified: the four new cases FAIL against the old guard, and the deny path is re-proven — bare
-  push, `origin main`, `origin HEAD`, `abc1234:main`, `--delete main` and the `rtk`-wrapped forms all
-  still block. 24/24 guard cases, 21/21 hooks.
+  Verified: the four new cases FAIL against the old guard, and the deny path is re-proven — bare push, `origin main`, `origin HEAD`, `abc1234:main`, `--delete main` and the `rtk`-wrapped forms all still block. 24/24 guard cases, 21/21 hooks.
 
-- **📖 Fold `docs/reference/design-history.md` into `docs/DEVLOG.md` as its earliest entries, then
-  delete it — CLOSED 2026-08-06 08:24 EDT.** Filed 2026-08-06 00:37 EDT as
-  `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg]`.
+- **📖 Fold `docs/reference/design-history.md` into `docs/DEVLOG.md` as its earliest entries, then delete it — CLOSED 2026-08-06 08:24 EDT.** Filed 2026-08-06 00:37 EDT as `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg]`.
 
-  ⚠️ **Filed late, and that was the point of the entry.** The v2.55.5 DEVLOG entry stated *"Filed, not
-  done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it
-  was true, and was caught by the outstanding-items gate minutes after the merge. Writing "filed" is
-  not filing; the two feel identical in the moment and only one survives the session.
+  ⚠️ **Filed late, and that was the point of the entry.** The v2.55.5 DEVLOG entry stated *"Filed, not done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it was true, and was caught by the outstanding-items gate minutes after the merge. Writing "filed" is not filing; the two feel identical in the moment and only one survives the session.
 
-  Original reasoning, kept: `design-history.md` failed the `docs/reference/` test — narrative, not
-  "look this up to do the thing correctly." But it did not need a `docs/history/` either. It covered
-  **2026-07-12**, `DEVLOG.md`'s earliest entry was **2026-07-13**, and DEVLOG's own status header
-  described that earlier backfill as outstanding. Not a misfiled reference doc — the missing chapter
-  DEVLOG had been waiting for.
+  Original reasoning, kept: `design-history.md` failed the `docs/reference/` test — narrative, not "look this up to do the thing correctly." But it did not need a `docs/history/` either. It covered **2026-07-12**, `DEVLOG.md`'s earliest entry was **2026-07-13**, and DEVLOG's own status header described that earlier backfill as outstanding. Not a misfiled reference doc — the missing chapter DEVLOG had been waiting for.
 
-  **What shipped:** its four sections folded in as Part A's four earliest entries, dates preserved
-  rather than backdated, bodies kept in substance; four TOC lines added, mirroring each heading
-  verbatim as that block requires. `docs/reference/` now holds two files.
+  **What shipped:** its four sections folded in as Part A's four earliest entries, dates preserved rather than backdated, bodies kept in substance; four TOC lines added, mirroring each heading verbatim as that block requires. `docs/reference/` now holds two files.
 
   **Two judgement calls worth not re-deriving:**
-  - **The `[backfill — expand later from transcripts]` marker was KEPT, not resolved.** The filed item
-    said "resolve it *if* this closes it" — it doesn't. That marker never only meant 07-12: 2026-07-06
-    (the Components V2 rewrite), the Excel→Mongo migration and 2026-07-10 (the security incident) are
-    still one-bullet summaries with no transcript behind them. Removing it because *part* of its scope
-    got written would have retired an outstanding job by accident. The header now says which half is
-    done, and the "Earlier milestones" 07-11/12 bullet says the same.
-  - **The headings carry no time-of-day qualifier**, even though the source sections were labelled
-    "evening"/"night". The TOC's own note retired exactly those qualifiers on 2026-07-28 17:35 EDT for
-    being ambiguous *and* rot-prone (inserting one entry silently shifts what every "later" below it
-    means). Four same-day entries are distinguished by their content instead.
+  - **The `[backfill — expand later from transcripts]` marker was KEPT, not resolved.** The filed item said "resolve it *if* this closes it" — it doesn't. That marker never only meant 07-12: 2026-07-06 (the Components V2 rewrite), the Excel→Mongo migration and 2026-07-10 (the security incident) are still one-bullet summaries with no transcript behind them. Removing it because *part* of its scope got written would have retired an outstanding job by accident. The header now says which half is done, and the "Earlier milestones" 07-11/12 bullet says the same.
+  - **The headings carry no time-of-day qualifier**, even though the source sections were labelled "evening"/"night". The TOC's own note retired exactly those qualifiers on 2026-07-28 17:35 EDT for being ambiguous *and* rot-prone (inserting one entry silently shifts what every "later" below it means). Four same-day entries are distinguished by their content instead.
 
-  **Sweep:** the filed estimate was 12 files; the live set was 11 in-repo + 1 memory file. Seven
-  `.claude/rules/*.md` cross-references were repointed **individually to the specific new entry**
-  rather than blanket-swapped to `docs/DEVLOG.md` — each had been citing a particular section
-  (the repalette, the wording overpass, the `/settings` 2-page layout), and a pointer to a
-  3,000-line file is not the same pointer. The dated `docs/superpowers/specs/2026-07-22-*` snapshot
-  was left alone.
+  **Sweep:** the filed estimate was 12 files; the live set was 11 in-repo + 1 memory file. Seven `.claude/rules/*.md` cross-references were repointed **individually to the specific new entry** rather than blanket-swapped to `docs/DEVLOG.md` — each had been citing a particular section (the repalette, the wording overpass, the `/settings` 2-page layout), and a pointer to a 3,000-line file is not the same pointer. The dated `docs/superpowers/specs/2026-07-22-*` snapshot was left alone.
 
-- **🧭 Split `docs/reference/known-issues.md`, then rename it to `platform-constraints.md` — CLOSED
-  2026-08-06 08:15 EDT.** Filed 2026-08-06 00:14 EDT as
-  `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move]`, Harkirat's call.
+- **🧭 Split `docs/reference/known-issues.md`, then rename it to `platform-constraints.md` — CLOSED 2026-08-06 08:15 EDT.** Filed 2026-08-06 00:14 EDT as `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move]`, Harkirat's call.
 
-  Original reasoning, kept: the file's 78 lines were mostly **accepted platform constraints**, not
-  open bugs — "View Colors vertical centering is unsolved", "Deco renders as a static poster",
-  "`ffmpeg` is a real system dependency". Those are *facts*, not defects. A minority genuinely were
-  open items duplicating `db-deferred-list.md`'s own 🐞 section. **Renaming without splitting would
-  have put a lie on the tin**, and merging wholesale into 🐞 would have invited a future session to
-  "fix" something that is not fixable.
+  Original reasoning, kept: the file's 78 lines were mostly **accepted platform constraints**, not open bugs — "View Colors vertical centering is unsolved", "Deco renders as a static poster", "`ffmpeg` is a real system dependency". Those are *facts*, not defects. A minority genuinely were open items duplicating `db-deferred-list.md`'s own 🐞 section. **Renaming without splitting would have put a lie on the tin**, and merging wholesale into 🐞 would have invited a future session to "fix" something that is not fixable.
 
   **The split, as actually decided — 6 entries, 2 out and 4 kept:**
-  - **Out → 🐞 Active Bugs:** `patchnotes.js`'s media carousel has no component-count chunking. Our
-    missing guard, not a Discord limit. Filed honestly as UNVERIFIED rather than confirmed broken,
-    with the cheap close (count what a worst-case entry actually renders) stated.
-  - **Out → 🧹 Someday:** the pagination double-round-trip investigation and its agreed hybrid fix.
-    Never a constraint — our own architecture with a *decided* design, which belongs where
-    decided-but-unbuilt work lives. It was folded into the existing "Pagination perf hybrid" item,
-    which had been a pointer back at `known-issues.md`; the detail is now in one place instead of
-    split across two files pointing at each other.
+  - **Out → 🐞 Active Bugs:** `patchnotes.js`'s media carousel has no component-count chunking. Our missing guard, not a Discord limit. Filed honestly as UNVERIFIED rather than confirmed broken, with the cheap close (count what a worst-case entry actually renders) stated.
+  - **Out → 🧹 Someday:** the pagination double-round-trip investigation and its agreed hybrid fix. Never a constraint — our own architecture with a *decided* design, which belongs where decided-but-unbuilt work lives. It was folded into the existing "Pagination perf hybrid" item, which had been a pointer back at `known-issues.md`; the detail is now in one place instead of split across two files pointing at each other.
   - **Kept:** View Colors vertical centering · Deco's static poster · the `ffmpeg` system dependency.
-  - **Kept, and reframed:** the button-expiry entry, now labelled *"NOT a constraint — the standing
-    refutation of one."* It records a confident "hard Discord platform wall" claim that was wrong and
-    corrected **twice in one day** after Harkirat pushed back. In a constraints file that is the most
-    valuable entry present, because it is the one that stops a wrong constraint being re-derived.
+  - **Kept, and reframed:** the button-expiry entry, now labelled *"NOT a constraint — the standing refutation of one."* It records a confident "hard Discord platform wall" claim that was wrong and corrected **twice in one day** after Harkirat pushed back. In a constraints file that is the most valuable entry present, because it is the one that stops a wrong constraint being re-derived.
 
-  **The header note Harkirat asked for is in the file**, and says three things: what belongs here,
-  what belongs in the deferred list instead (with the test — *whose* limitation is it), and that these
-  are **not forever-constraints**. An entry is *evidence, not a verdict*; re-test it against the
-  current platform before citing it as a reason something cannot be done, especially before telling
-  Harkirat a request is impossible.
+  **The header note Harkirat asked for is in the file**, and says three things: what belongs here, what belongs in the deferred list instead (with the test — *whose* limitation is it), and that these are **not forever-constraints**. An entry is *evidence, not a verdict*; re-test it against the current platform before citing it as a reason something cannot be done, especially before telling Harkirat a request is impossible.
 
-  **Sweep:** the filed estimate was 8 files; the live set was 6 in-repo (`CLAUDE.md`, `docs/README.md`,
-  `docs/ROADMAP.md`, `docs/db-deferred-list.md`, `docs/ideas/docs-system.md`,
-  `.claude/rules/settings-and-expiry.md`) plus 4 memory files. Records and the dated
-  `docs/superpowers/specs/**` were left alone.
-  ⚠️ **A blind find-replace corrupted three of them** and had to be undone by hand: the sentences that
-  *describe* the rename legitimately contain the old name, and a path-shaped matcher cannot tell a
-  live pointer from a historical mention. Same class of trap as the notes-file move.
-  ⚠️ **It also exposed a pre-existing false cross-reference:** the "Verify Cloudinary folder
-  organization" item claimed it was "also tracked in `known-issues.md`". It never was — that file held
-  six entries and none concerned Cloudinary. Removed rather than repointed; a cross-reference to a
-  file that does not carry the item reads as corroboration and supplies none.
+  **Sweep:** the filed estimate was 8 files; the live set was 6 in-repo (`CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/db-deferred-list.md`, `docs/ideas/docs-system.md`, `.claude/rules/settings-and-expiry.md`) plus 4 memory files. Records and the dated `docs/superpowers/specs/**` were left alone. ⚠️ **A blind find-replace corrupted three of them** and had to be undone by hand: the sentences that *describe* the rename legitimately contain the old name, and a path-shaped matcher cannot tell a live pointer from a historical mention. Same class of trap as the notes-file move. ⚠️ **It also exposed a pre-existing false cross-reference:** the "Verify Cloudinary folder organization" item claimed it was "also tracked in `known-issues.md`". It never was — that file held six entries and none concerned Cloudinary. Removed rather than repointed; a cross-reference to a file that does not carry the item reads as corroboration and supplies none.
 
-- **📓 Move + rename the notes file: `docs/diors-builds notes.md` → `docs/ideas/diors-notes.md` —
-  CLOSED 2026-08-06 08:07 EDT.** Filed 2026-08-06 00:14 EDT as
-  `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split]`, Harkirat's call: the folder move AND
-  the shorter name together, since both drag the same sweep.
+- **📓 Move + rename the notes file: `docs/diors-builds notes.md` → `docs/ideas/diors-notes.md` — CLOSED 2026-08-06 08:07 EDT.** Filed 2026-08-06 00:14 EDT as `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split]`, Harkirat's call: the folder move AND the shorter name together, since both drag the same sweep.
 
-  Original wording, kept: this is NOT a `git mv` — the path was hardcoded in 7 places plus 3 test
-  files, inventoried 2026-08-05 23:58 EDT (the `SessionStart` open-items hook in
-  `.claude/settings.json`; `records-close-check.sh` ×2; `notes-hardwrap-check.sh` ×3;
-  `outstanding-not-filed.sh`; `notes-open-items.sh`; the tests `records-close-check.test.sh` ×4,
-  `notes-hardwrap-check.test.sh` — an absolute path — and `.claude/rules/autobuild.md`). The
-  dangerous one was `records-close-check.sh:53`, a literal `grep -qx 'docs/diors-builds notes.md'`
-  against the changed-file list, which after a move simply stops matching: the gate keeps running,
-  keeps passing, and nothing reports that it has died.
+  Original wording, kept: this is NOT a `git mv` — the path was hardcoded in 7 places plus 3 test files, inventoried 2026-08-05 23:58 EDT (the `SessionStart` open-items hook in `.claude/settings.json`; `records-close-check.sh` ×2; `notes-hardwrap-check.sh` ×3; `outstanding-not-filed.sh`; `notes-open-items.sh`; the tests `records-close-check.test.sh` ×4, `notes-hardwrap-check.test.sh` — an absolute path — and `.claude/rules/autobuild.md`). The dangerous one was `records-close-check.sh:53`, a literal `grep -qx 'docs/diors-builds notes.md'` against the changed-file list, which after a move simply stops matching: the gate keeps running, keeps passing, and nothing reports that it has died.
 
-  **What actually shipped**, beyond the inventory: the live reference set was **14 files**, not 10 —
-  the extra four were `scripts/docs-audit.mjs` (×6, including the `archive-conservation` pairing),
-  `scripts/docs-audit.test.mjs` (×12 fixtures), `docs/README.md` and `docs/SESSION-START.md` — plus
-  8 memory files. Records (`CHANGELOG.md`, `DEVLOG.md`, `docs/archive/**`) and the dated
-  `docs/superpowers/specs/**` were deliberately left alone; they say the old name because that is
-  what it was called when they were written.
+  **What actually shipped**, beyond the inventory: the live reference set was **14 files**, not 10 — the extra four were `scripts/docs-audit.mjs` (×6, including the `archive-conservation` pairing), `scripts/docs-audit.test.mjs` (×12 fixtures), `docs/README.md` and `docs/SESSION-START.md` — plus 8 memory files. Records (`CHANGELOG.md`, `DEVLOG.md`, `docs/archive/**`) and the dated `docs/superpowers/specs/**` were deliberately left alone; they say the old name because that is what it was called when they were written.
 
-  **The dangerous reference was not just repointed, it was made underivable-from-two-places.**
-  `records-close-check.sh` now sets `NOTES_REL` once and matches with `grep -qxF "$NOTES_REL"`, so
-  the path it looks for and the path it reads cannot drift apart again. Two spellings of one path
-  was the actual defect; there is one spelling now. Its self-test's
-  *"open notes + touched → silent"* case discriminates — with the old literal it would have fired.
+  **The dangerous reference was not just repointed, it was made underivable-from-two-places.** `records-close-check.sh` now sets `NOTES_REL` once and matches with `grep -qxF "$NOTES_REL"`, so the path it looks for and the path it reads cannot drift apart again. Two spellings of one path was the actual defect; there is one spelling now. Its self-test's *"open notes + touched → silent"* case discriminates — with the old literal it would have fired.
 
-  **One consequence the inventory did not predict:** moving the file from a loose `docs/*.md` into a
-  subdirectory flipped which `readme-map` coverage unit applies (loose files are covered by their
-  own name, anything nested only by naming its directory), so `docs-audit.test.mjs`'s baseline
-  fixture failed on valid input until its README named `ideas/`. The meta-test caught it — that is
-  the *"broken fixture fails AND valid input stays silent"* half doing its job.
+  **One consequence the inventory did not predict:** moving the file from a loose `docs/*.md` into a subdirectory flipped which `readme-map` coverage unit applies (loose files are covered by their own name, anything nested only by naming its directory), so `docs-audit.test.mjs`'s baseline fixture failed on valid input until its README named `ideas/`. The meta-test caught it — that is the *"broken fixture fails AND valid input stays silent"* half doing its job.
 
-  Verified: both affected hook self-tests pass individually (12/12 and 10/10), `npm test` green
-  (58 checks proven failable, 18/18 hooks), `npm run docs:audit` exit 0. The `SessionStart` notes
-  hook was dry-run against the new path and returned the identical 3 open items.
-  ⚠️ **Left open on purpose:** the hook firing for real in a *fresh* session cannot be proven from
-  inside the session that changed it — see the reminder filed for it.
+  Verified: both affected hook self-tests pass individually (12/12 and 10/10), `npm test` green (58 checks proven failable, 18/18 hooks), `npm run docs:audit` exit 0. The `SessionStart` notes hook was dry-run against the new path and returned the identical 3 open items. ⚠️ **Left open on purpose:** the hook firing for real in a *fresh* session cannot be proven from inside the session that changed it — see the reminder filed for it.
 
-- **🔗 Every GitHub link on the live site was a 404 until the repo was renamed to `dioreo` — CLOSED
-  2026-08-05 19:07 EDT, verified rather than assumed.** Filed 2026-08-04 16:23 EDT as
-  `[P1 · XS · Harkirat action, not a build]`, shipped-broken in v2.52.0 with Harkirat's prior
-  go-ahead for the rename itself.
+- **🔗 Every GitHub link on the live site was a 404 until the repo was renamed to `dioreo` — CLOSED 2026-08-05 19:07 EDT, verified rather than assumed.** Filed 2026-08-04 16:23 EDT as `[P1 · XS · Harkirat action, not a build]`, shipped-broken in v2.52.0 with Harkirat's prior go-ahead for the rename itself.
 
-  Original wording, kept: the v2.52.0 rename changed the repo URL everywhere it appears —
-  `package.json`'s three URL fields, `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and
-  its `git clone` snippet, and `REPO_URL` in the generator, which is what the **Source** button in
-  every page header points at. They all read `github.com/HarkiratMangat/dioreo` while the repository
-  was still called `Diors-Builds`, so each one 404'd. It was a deliberate ordering choice rather than
-  an oversight — GitHub 301-redirects the old path after a rename, so either order ends up correct
-  and only this one has a window.
+  Original wording, kept: the v2.52.0 rename changed the repo URL everywhere it appears — `package.json`'s three URL fields, `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and its `git clone` snippet, and `REPO_URL` in the generator, which is what the **Source** button in every page header points at. They all read `github.com/HarkiratMangat/dioreo` while the repository was still called `Diors-Builds`, so each one 404'd. It was a deliberate ordering choice rather than an oversight — GitHub 301-redirects the old path after a rename, so either order ends up correct and only this one has a window.
 
-  The fix as originally written, kept verbatim because the rule here is never-delete-always-move —
-  it was Harkirat's to run, being outward-facing, so it was not run unasked:
+  The fix as originally written, kept verbatim because the rule here is never-delete-always-move — it was Harkirat's to run, being outward-facing, so it was not run unasked:
   ```
   gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
   ```
-  followed by `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local
-  clone.
+  followed by `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local clone.
 
-  **Outcome: Harkirat ran the rename at some point before 2026-08-05.** Confirmed during the v2.55.0
-  release rather than taken on trust — `gh api repos/HarkiratMangat/dioreo` returns `full_name:
-  HarkiratMangat/dioreo`, the old path still resolves through GitHub's redirect, and `REPO_URL` in
-  the generator points at the name that now exists. So the window closed and the Source button works.
+  **Outcome: Harkirat ran the rename at some point before 2026-08-05.** Confirmed during the v2.55.0 release rather than taken on trust — `gh api repos/HarkiratMangat/dioreo` returns `full_name: HarkiratMangat/dioreo`, the old path still resolves through GitHub's redirect, and `REPO_URL` in the generator points at the name that now exists. So the window closed and the Source button works.
 
-  ⚠️ **It was found stale only because a push printed the old name.** The local clone's `origin` was
-  still `…/diors-builds.git` (harmless, GitHub redirects), which is what made the item *look* live
-  when it wasn't. Remote URL updated to `…/dioreo.git` in the same pass. The folder itself is
-  deliberately NOT renamed — the memory-store slug derives from that path; see
-  `project_rename_to_dioreo`.
+  ⚠️ **It was found stale only because a push printed the old name.** The local clone's `origin` was still `…/diors-builds.git` (harmless, GitHub redirects), which is what made the item *look* live when it wasn't. Remote URL updated to `…/dioreo.git` in the same pass. The folder itself is deliberately NOT renamed — the memory-store slug derives from that path; see `project_rename_to_dioreo`.
 
-- **🌿 `fix/mobile-site-polish` sat finished, pushed and unmerged, blocked on a version decision —
-  RELEASED 2026-08-04 16:23 EDT as v2.52.0.** Filed as `[P1 · S]` ⛓️ blocked at 13:42 EDT the same
-  day; closed when Harkirat said "commit, push, pr, and merge".
+- **🌿 `fix/mobile-site-polish` sat finished, pushed and unmerged, blocked on a version decision — RELEASED 2026-08-04 16:23 EDT as v2.52.0.** Filed as `[P1 · S]` ⛓️ blocked at 13:42 EDT the same day; closed when Harkirat said "commit, push, pr, and merge".
 
-  Kept because of *why* it was blocked rather than what it was. The branch was complete and green
-  the whole time; the only thing missing was a number. It got stuck because the version question was
-  **asked and denied**, and the denial was then misread as licence to choose — which is what pushed
-  the branch to the remote in the first place. The reminder that replaced it existed to stop a later
-  session repeating that, and said in as many words: *do not pick a version to unblock this.*
+  Kept because of *why* it was blocked rather than what it was. The branch was complete and green the whole time; the only thing missing was a number. It got stuck because the version question was **asked and denied**, and the denial was then misread as licence to choose — which is what pushed the branch to the remote in the first place. The reminder that replaced it existed to stop a later session repeating that, and said in as many words: *do not pick a version to unblock this.*
 
-  **What unblocked it was the workflow's own rule, not a second guess.** CLAUDE.md states that "the
-  merge-yes IS the version-number-yes; MAJOR always asked separately" — so an explicit instruction to
-  merge carries the version with it, and only a MAJOR needs its own question. v2.52.0 is MODERATE, so
-  nothing further needed asking. The lesson worth keeping: when a decision looks blocked, check
-  whether the project has already written down who owns it. See `feedback_denial_is_not_approval`.
+  **What unblocked it was the workflow's own rule, not a second guess.** CLAUDE.md states that "the merge-yes IS the version-number-yes; MAJOR always asked separately" — so an explicit instruction to merge carries the version with it, and only a MAJOR needs its own question. v2.52.0 is MODERATE, so nothing further needed asking. The lesson worth keeping: when a decision looks blocked, check whether the project has already written down who owns it. See `feedback_denial_is_not_approval`.
 
-- **📄 PRIVACY §2.6 stated something false about what the Site stores — FIXED 2026-08-04 12:12 EDT,
-  shipped as policy revision 1.7.** Filed in `db-deferred-list.md` as `[P1 · S]` earlier the same
-  session and closed in it, so it never went stale — recorded here because the *reasoning* is worth
-  keeping.
+- **📄 PRIVACY §2.6 stated something false about what the Site stores — FIXED 2026-08-04 12:12 EDT, shipped as policy revision 1.7.** Filed in `db-deferred-list.md` as `[P1 · S]` earlier the same session and closed in it, so it never went stale — recorded here because the *reasoning* is worth keeping.
 
-  §2.6 was written when the Site stored one item and was not revisited when a second arrived. It
-  still carried "the **one thing** it stores" as its heading directly above a sentence saying "It
-  stores **two** items", plus "Nothing is stored until you press the light/dark switch" and "Before
-  you press the switch, nothing is stored at all" — both untrue since `db-booted`, which
-  `scripts/lib/chronicle.js` writes **on load** of What's New / Changelog / Devlog with no
-  interaction.
+  §2.6 was written when the Site stored one item and was not revisited when a second arrived. It still carried "the **one thing** it stores" as its heading directly above a sentence saying "It stores **two** items", plus "Nothing is stored until you press the light/dark switch" and "Before you press the switch, nothing is stored at all" — both untrue since `db-booted`, which `scripts/lib/chronicle.js` writes **on load** of What's New / Changelog / Devlog with no interaction.
 
-  ⚠️ **The part that actually mattered was the consent-banner paragraph, and it was the least
-  obviously broken.** It argued the strictly-necessary exemption purely from "a display preference
-  you set by pressing a switch" — reasoning that reaches `db-theme` and does not reach `db-booted` at
-  all. So the policy justified a banner-free site on grounds covering half of what it stored. The
-  exemption does still apply, but the document now argues it for both rather than leaving the gap.
+  ⚠️ **The part that actually mattered was the consent-banner paragraph, and it was the least obviously broken.** It argued the strictly-necessary exemption purely from "a display preference you set by pressing a switch" — reasoning that reaches `db-theme` and does not reach `db-booted` at all. So the policy justified a banner-free site on grounds covering half of what it stored. The exemption does still apply, but the document now argues it for both rather than leaving the gap.
 
-  **The lesson, which is the reusable part:** the appendices were right the whole time. Appendix A,
-  Appendix C and the Appendix B revision table all listed both keys correctly — only §2.6's *prose*
-  was stale. A table gets updated when data changes because it visibly has a row per item; a
-  paragraph asserting "the one thing" has no such affordance and rots silently. **When a countable
-  fact enters prose in a legal document, it acquires a maintenance obligation nothing enforces** —
-  the same failure `feedback_no_duplicated_state_in_prose` records for architecture docs, here with
-  a compliance consequence rather than a confusing one. Nothing in the build could catch it:
-  `verify()` checks that source words reached the page, not that they are true.
+  **The lesson, which is the reusable part:** the appendices were right the whole time. Appendix A, Appendix C and the Appendix B revision table all listed both keys correctly — only §2.6's *prose* was stale. A table gets updated when data changes because it visibly has a row per item; a paragraph asserting "the one thing" has no such affordance and rots silently. **When a countable fact enters prose in a legal document, it acquires a maintenance obligation nothing enforces** — the same failure `feedback_no_duplicated_state_in_prose` records for architecture docs, here with a compliance consequence rather than a confusing one. Nothing in the build could catch it: `verify()` checks that source words reached the page, not that they are true.
 
-- **📋 Cross-session notice — REMOVED 2026-08-03 21:00 EDT, verified reconciled, not just aged
-  out.** Was carried in `db-deferred-list.md` as: *"⚠️ CROSS-SESSION NOTICE — a parallel session
-  was mid-flight on hooks + the DEVLOG backfill when v2.41.0 landed."* Written 2026-07-28 16:45 EDT;
-  the notice itself said to remove it "once that session has resumed and reconciled." Confirmed
-  rather than assumed:
-  `stale-reference-sweep.sh` (the hook it described as newly added) is live in
-  `.claude/settings.json`, `utils/logger.js` (the file it flagged as new) exists, and
-  `docs/DEVLOG.md` carries 17+ dated entries after it with no sign of an unresolved conflict —
-  six days and several releases (through v2.50.0) passed cleanly. Two other db-deferred-list
-  items still pointed at "the Render deletion above/reminder above," which had itself shipped and
-  moved to this file's own **Dropped / replaced → n/a, see Shipped above: `[Diors Builds] Delete
-  the suspended Render service`** entry on 2026-07-27 — both reworded to point here instead.
+- **📋 Cross-session notice — REMOVED 2026-08-03 21:00 EDT, verified reconciled, not just aged out.** Was carried in `db-deferred-list.md` as: *"⚠️ CROSS-SESSION NOTICE — a parallel session was mid-flight on hooks + the DEVLOG backfill when v2.41.0 landed."* Written 2026-07-28 16:45 EDT; the notice itself said to remove it "once that session has resumed and reconciled." Confirmed rather than assumed: `stale-reference-sweep.sh` (the hook it described as newly added) is live in `.claude/settings.json`, `utils/logger.js` (the file it flagged as new) exists, and `docs/DEVLOG.md` carries 17+ dated entries after it with no sign of an unresolved conflict — six days and several releases (through v2.50.0) passed cleanly. Two other db-deferred-list items still pointed at "the Render deletion above/reminder above," which had itself shipped and moved to this file's own **Dropped / replaced → n/a, see Shipped above: `[Diors Builds] Delete the suspended Render service`** entry on 2026-07-27 — both reworded to point here instead.
 
-- **🌿 `fix/legal-site-nav-and-mobile-sheet` — VERIFIED SUPERSEDED AND DELETED 2026-08-02 18:29 EDT.**
-  *Filed and closed the same session; the filing is what forced the verification.*
-  The branch (`704994b`, PR [#61](https://github.com/HarkiratMangat/Diors-Builds/pull/61),
-  **closed-unmerged**) was still on `origin`. A session handoff had asserted it deleted — only the
-  **local** ref was gone, and `git branch -a` renders remote-only branches indistinguishably.
-  **`git ls-remote --heads origin` is the check that does not lie.**
-  **Why it needed proving rather than sweeping:** the standing rule is *a merged branch must never
-  outlive its PR*, and this was the **opposite** case — closed, not merged, so the branch was the only
-  copy of 19 commits. Deleting on the strength of a rule that does not cover the case would have been
-  destruction, not tidying.
-  **How it was verified** (Harkirat's belief that PR #62 had absorbed it turned out correct): for
-  every source document, each line the branch ADDED relative to the merge base `a4b17d6` was searched
-  for in `main`. All present, with exactly two exceptions — `**Effective date:** 31 July 2026` in
-  TERMS and PRIVACY, where `main` reads **1 August 2026**, i.e. superseded rather than lost. Its
-  DEVLOG entry is on `main`, and `SECURITY.md`, the `/install` and `/security` redirects all match
-  byte-for-byte. `public/` was excluded deliberately: it is build output, so a diff there proves
-  nothing about content.
+- **🌿 `fix/legal-site-nav-and-mobile-sheet` — VERIFIED SUPERSEDED AND DELETED 2026-08-02 18:29 EDT.** *Filed and closed the same session; the filing is what forced the verification.* The branch (`704994b`, PR [#61](https://github.com/HarkiratMangat/Diors-Builds/pull/61), **closed-unmerged**) was still on `origin`. A session handoff had asserted it deleted — only the **local** ref was gone, and `git branch -a` renders remote-only branches indistinguishably. **`git ls-remote --heads origin` is the check that does not lie.**
+  **Why it needed proving rather than sweeping:** the standing rule is *a merged branch must never outlive its PR*, and this was the **opposite** case — closed, not merged, so the branch was the only copy of 19 commits. Deleting on the strength of a rule that does not cover the case would have been destruction, not tidying. **How it was verified** (Harkirat's belief that PR #62 had absorbed it turned out correct): for every source document, each line the branch ADDED relative to the merge base `a4b17d6` was searched for in `main`. All present, with exactly two exceptions — `**Effective date:** 31 July 2026` in TERMS and PRIVACY, where `main` reads **1 August 2026**, i.e. superseded rather than lost. Its DEVLOG entry is on `main`, and `SECURITY.md`, the `/install` and `/security` redirects all match byte-for-byte. `public/` was excluded deliberately: it is build output, so a diff there proves nothing about content.
   **Remote heads now:** `main` and `v3-pre-release` only.
 
-- **🎭 "Contributors' emptiness" (open question 1 of the warm-pages redesign) — ANSWERED
-  2026-08-02 18:22 EDT by the reference research, not by a decision.** *Was carried in
-  `db-deferred-list.md` as: "There is genuinely one name, so the plate is mostly bare and the dashed
-  'unengraved' row currently reads as a rendering bug rather than as reserved space. Two honest
-  routes: shrink the plate…, or make the reserved slot unmistakably deliberate."*
-  *The block it sat in was headed "**Three open questions, deliberately carried here rather than
-  answered:**" — that header is now reworded in place to "the three ORIGINAL open questions, kept for
-  the record", because only this one closed; 2 and 3 remain open there.*
-  **Both routes are retired.** The nine-site crawl (`local/site-redesign/reference-research.md`)
-  found the problem solved structurally at ensambles.eu/creditos: **cut the roster into many small
-  NAMED sections**, so no section is ever expected to be full and a single name never reads as a gap.
-  That is a better answer than either sizing tweak because it removes the premise — emptiness stops
-  being a property of the page. Questions 2 (lane colours) and 3 (the Contributors accent) stay open
-  in `db-deferred-list.md`, but apply **only if** the abandoned Interchange/Plate mockup is revived;
-  the live open decision is now the constellation-vs-gradient-bands fork, filed there.
+- **🎭 "Contributors' emptiness" (open question 1 of the warm-pages redesign) — ANSWERED 2026-08-02 18:22 EDT by the reference research, not by a decision.** *Was carried in `db-deferred-list.md` as: "There is genuinely one name, so the plate is mostly bare and the dashed 'unengraved' row currently reads as a rendering bug rather than as reserved space. Two honest routes: shrink the plate…, or make the reserved slot unmistakably deliberate."* *The block it sat in was headed "**Three open questions, deliberately carried here rather than answered:**" — that header is now reworded in place to "the three ORIGINAL open questions, kept for the record", because only this one closed; 2 and 3 remain open there.* **Both routes are retired.** The nine-site crawl (`local/site-redesign/reference-research.md`) found the problem solved structurally at ensambles.eu/creditos: **cut the roster into many small NAMED sections**, so no section is ever expected to be full and a single name never reads as a gap. That is a better answer than either sizing tweak because it removes the premise — emptiness stops being a property of the page. Questions 2 (lane colours) and 3 (the Contributors accent) stay open in `db-deferred-list.md`, but apply **only if** the abandoned Interchange/Plate mockup is revived; the live open decision is now the constellation-vs-gradient-bands fork, filed there.
 
-- **🔒 Three enforcement hooks that fired too late to prevent anything — FIXED 2026-08-02 17:24 EDT
-  (v2.50.0).** *Filed and closed in the same session; the filing is what made the class visible.*
-  Measured: PreToolUse had 7 hooks, all `Bash`/`Artifact`, **none on `Edit|Write`**, so nothing could
-  prevent a bad write. (1) `timestamp-check.sh` was PostToolUse when the content sits in
-  `tool_input.new_string` at PreToolUse → now runs at both, `pre` denying an impossible stamp.
-  (2) `main-push-guard.sh` guarded `git push` while the real violation is the commit → new
-  `branch-discipline-guard.sh` denies editing a *tracked* file, or committing, on `main`/`master`.
-  (3) The SQUASH-TRAILER GATE was `"ask"` → now `"deny"`; as an ask it was clicked past on three
-  consecutive merges, including the three that shipped the hook work itself. **The class to sweep
-  for:** the check exists, its diagnosis is correct, and it fires where nothing can still be
-  prevented. `c6cd875` (#67) had fixed exactly one instance and the sweep was never done. Full
-  record: CHANGELOG v2.50.0, DEVLOG 2026-08-02 17:14 EDT, memory `reference_enforcement_hooks`.
+- **🔒 Three enforcement hooks that fired too late to prevent anything — FIXED 2026-08-02 17:24 EDT (v2.50.0).** *Filed and closed in the same session; the filing is what made the class visible.* Measured: PreToolUse had 7 hooks, all `Bash`/`Artifact`, **none on `Edit|Write`**, so nothing could prevent a bad write. (1) `timestamp-check.sh` was PostToolUse when the content sits in `tool_input.new_string` at PreToolUse → now runs at both, `pre` denying an impossible stamp. (2) `main-push-guard.sh` guarded `git push` while the real violation is the commit → new `branch-discipline-guard.sh` denies editing a *tracked* file, or committing, on `main`/`master`. (3) The SQUASH-TRAILER GATE was `"ask"` → now `"deny"`; as an ask it was clicked past on three consecutive merges, including the three that shipped the hook work itself. **The class to sweep for:** the check exists, its diagnosis is correct, and it fires where nothing can still be prevented. `c6cd875` (#67) had fixed exactly one instance and the sweep was never done. Full record: CHANGELOG v2.50.0, DEVLOG 2026-08-02 17:14 EDT, memory `reference_enforcement_hooks`.
 
-- **🧪 Six hook self-tests that nothing ever ran — WIRED 2026-08-02 17:24 EDT (v2.50.0).** Each
-  `*.test.sh` was referenced by `package.json`, `.github/workflows/` and `.claude/settings.json` a
-  combined **zero** times; `scripts/calendarDedup.test.js` was likewise reachable only via an
-  `npm test` CI never called. Harkirat: *"they dont even seem to hold despite their 'tests'."* The
-  tests were correct — nothing executed them. `npm run test:hooks` → `npm test` → CI, with coverage
-  computed from the scripts on disk so deleting a test fails the suite. Writing the eight missing
-  tests exposed **two gates that had never worked**: `main-push-guard` passed `rtk git push` (the
-  documented normal spelling, and it is the only hook that can block), and `records-close-check`
-  used `find -newermt "@epoch"`, which BSD find cannot parse — it errored into `/dev/null` and the
-  check fired on every PR regardless. 17 suites, 0 untested hooks.
+- **🧪 Six hook self-tests that nothing ever ran — WIRED 2026-08-02 17:24 EDT (v2.50.0).** Each `*.test.sh` was referenced by `package.json`, `.github/workflows/` and `.claude/settings.json` a combined **zero** times; `scripts/calendarDedup.test.js` was likewise reachable only via an `npm test` CI never called. Harkirat: *"they dont even seem to hold despite their 'tests'."* The tests were correct — nothing executed them. `npm run test:hooks` → `npm test` → CI, with coverage computed from the scripts on disk so deleting a test fails the suite. Writing the eight missing tests exposed **two gates that had never worked**: `main-push-guard` passed `rtk git push` (the documented normal spelling, and it is the only hook that can block), and `records-close-check` used `find -newermt "@epoch"`, which BSD find cannot parse — it errored into `/dev/null` and the check fired on every PR regardless. 17 suites, 0 untested hooks.
 
-- **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 14:43 EDT (data migration, outside the repo).**
-  *Was filed the same session as `[P2 · M]` ⛓️ "blocked on tooling", which was **wrong** — the block was
-  never tested. Disproving it took four tool calls.* Linksee had misfiled ~29% of this project's
-  memories under fake path-derived entities: `Application` (66, the **entire licensing session** that
-  produced `LICENSE`/`NOTICE`/`TERMS.md`/`PRIVACY.md`), `Containers` (31, incl. an edit to
-  `.claude/settings.local.json`), `CleanShot` (41), `Application Support` (25), plus three
-  name-variant fragments. Entity-scoped recall missed all of them, silently.
-  **Fix:** `memories.entity_id` is a plain FK and the `caveat` "protection" is application-layer only
-  (`trg_protect_caveat` is `AFTER INSERT`, sets `protected=1`, blocks no SQL). After a `.backup`, one
-  transaction re-homed everything provably tied to the repo path and dropped the emptied entities
-  behind a `NOT EXISTS` guard. **`Diors-Builds` 450 → 573 (+123); total rows 696 before and after —
-  nothing lost; `integrity_check` ok.** Entity `dior` (a real separate project) untouched.
-  **Also corrected in the same pass:** linksee v0.11.x **removed** `list_entities`, `recall_file`,
-  `update_memory` and `consolidate` (the server answers them with a migration hint; consolidate now
-  auto-runs at startup) while the bundled SKILL.md still taught all four — verified against package
-  source 0.11.5, so it is an upstream doc bug, not an install problem. The local skill was fixed and
-  its Japanese stripped (the frontmatter loads every session). And the **global
-  `usage-guard.mjs` hook was injecting a stale "codebase-index is PYTHON-ONLY" claim into every large
-  Read**, routing sessions away from a graph tool that does index this JS repo.
-  **The lesson is filed as its own case** in `feedback_not_checkable_is_usually_unexamined`: "blocked"
-  is the same failure as "not checkable" — a deferral with a priority tag and a blocker reason *looks
-  like diligence*, which is exactly why it escapes scrutiny.
-  Root cause (path-derived entity naming) remains open as a `[P3 · S]` item; the recall-by-query
-  defence is in force.
+- **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 14:43 EDT (data migration, outside the repo).** *Was filed the same session as `[P2 · M]` ⛓️ "blocked on tooling", which was **wrong** — the block was never tested. Disproving it took four tool calls.* Linksee had misfiled ~29% of this project's memories under fake path-derived entities: `Application` (66, the **entire licensing session** that produced `LICENSE`/`NOTICE`/`TERMS.md`/`PRIVACY.md`), `Containers` (31, incl. an edit to `.claude/settings.local.json`), `CleanShot` (41), `Application Support` (25), plus three name-variant fragments. Entity-scoped recall missed all of them, silently.
+  **Fix:** `memories.entity_id` is a plain FK and the `caveat` "protection" is application-layer only (`trg_protect_caveat` is `AFTER INSERT`, sets `protected=1`, blocks no SQL). After a `.backup`, one transaction re-homed everything provably tied to the repo path and dropped the emptied entities behind a `NOT EXISTS` guard. **`Diors-Builds` 450 → 573 (+123); total rows 696 before and after — nothing lost; `integrity_check` ok.** Entity `dior` (a real separate project) untouched.
+  **Also corrected in the same pass:** linksee v0.11.x **removed** `list_entities`, `recall_file`, `update_memory` and `consolidate` (the server answers them with a migration hint; consolidate now auto-runs at startup) while the bundled SKILL.md still taught all four — verified against package source 0.11.5, so it is an upstream doc bug, not an install problem. The local skill was fixed and its Japanese stripped (the frontmatter loads every session). And the **global `usage-guard.mjs` hook was injecting a stale "codebase-index is PYTHON-ONLY" claim into every large Read**, routing sessions away from a graph tool that does index this JS repo. **The lesson is filed as its own case** in `feedback_not_checkable_is_usually_unexamined`: "blocked" is the same failure as "not checkable" — a deferral with a priority tag and a blocker reason *looks like diligence*, which is exactly why it escapes scrutiny. Root cause (path-derived entity naming) remains open as a `[P3 · S]` item; the recall-by-query defence is in force.
 
-- **🧠 MEMORY.md index scaling — SHIPPED 2026-08-02 14:30 EDT, branch `docs/memory-index-scaling-design`
-  (not yet merged/tagged).**
-  *Was `[P2 · M]`, filed 2026-08-02 13:40 EDT as "consolidation pass 2" and completed the same session,
-  so it never sat queued.* `MEMORY.md` is the only auto-loaded memory file, so the index is charged per
-  FILE; an emergency compaction had already spent the line-length lever (23.1KB → 12.9KB). Delivered:
-  the `memory/archive/` tier with retirement criteria · a canonical `feedback_verify_before_claiming`
-  merging five verification memories · `project_git_workflow` and `feedback_token_conscious_tool_routing`
-  absorbing three more as cases · a `SessionStart` guard (`memory-index-check.sh`) enforcing a 16,000B
-  budget and a three-partition conservation rule, with all 11 failure modes proven by its own test suite.
-  **Two corrections landed with it:** native memory auto-load is CONFIRMED (no hook loads `MEMORY.md`,
-  yet it is in context), and the assumed "24.4KB hard read limit" **does not reproduce** — a 33,530-byte
-  memory file reads in full.
-  **The finding worth keeping:** applying the earning rule honestly, the store turned out **far less
-  redundant than the design assumed** — `project_context_token_budget`,
-  `feedback_not_checkable_is_usually_unexamined`, and `feedback_docs_at_push_time` all earned their
-  files and were correctly NOT merged. Consolidation is therefore close to exhausted as a lever, and the
-  **growth governor (a new lesson defaults to a CASE, not a file) is what actually holds the line.** Do
-  not re-raise "merge more memories" as a size fix without testing candidates against that rule first.
-  See `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md` and the memory
-  `project_memory_index_scaling`.
+- **🧠 MEMORY.md index scaling — SHIPPED 2026-08-02 14:30 EDT, branch `docs/memory-index-scaling-design` (not yet merged/tagged).** *Was `[P2 · M]`, filed 2026-08-02 13:40 EDT as "consolidation pass 2" and completed the same session, so it never sat queued.* `MEMORY.md` is the only auto-loaded memory file, so the index is charged per FILE; an emergency compaction had already spent the line-length lever (23.1KB → 12.9KB). Delivered: the `memory/archive/` tier with retirement criteria · a canonical `feedback_verify_before_claiming` merging five verification memories · `project_git_workflow` and `feedback_token_conscious_tool_routing` absorbing three more as cases · a `SessionStart` guard (`memory-index-check.sh`) enforcing a 16,000B budget and a three-partition conservation rule, with all 11 failure modes proven by its own test suite.
+  **Two corrections landed with it:** native memory auto-load is CONFIRMED (no hook loads `MEMORY.md`, yet it is in context), and the assumed "24.4KB hard read limit" **does not reproduce** — a 33,530-byte memory file reads in full.
+  **The finding worth keeping:** applying the earning rule honestly, the store turned out **far less redundant than the design assumed** — `project_context_token_budget`, `feedback_not_checkable_is_usually_unexamined`, and `feedback_docs_at_push_time` all earned their files and were correctly NOT merged. Consolidation is therefore close to exhausted as a lever, and the **growth governor (a new lesson defaults to a CASE, not a file) is what actually holds the line.** Do not re-raise "merge more memories" as a size fix without testing candidates against that rule first. See `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md` and the memory `project_memory_index_scaling`.
 
-- **⚔️ Patch notes "Additional Info" auto-formatting — SHIPPED 2026-07-31 17:20 EDT, on branch
-  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
-  *Was `[P2 · S]`, filed 2026-07-31 16:41 EDT from notes L182's ∴ follow-up reply (2026-07-31 11:39
-  EDT).* Harkirat's decided structure, from his own reference screenshot (`local/Screenshots/
-  CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional Changes` heading, `__**Weapon**__` per
-  weapon, its attachments as plain lines, each change as `> b:/n: details`. `commands/patchnotes.js`'s
-  new `formatAdditionalInfo()` — OPT-IN via a `# Weapon Name` line marker so every pre-existing
-  free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the structured
-  heading only appears once the admin actually starts a line with `#`. Handles a weapon with
-  multiple attachment lines and an attachment with multiple change lines, per the filed requirement.
-  Verified against 5 cases via a dry-run script: the exact screenshot structure, plain prose with no
-  `#` marker (unchanged, alias-only), multiple attachments/multiple changes per attachment, a preamble
-  line before the first `#` marker (kept, not discarded), and empty input.
-- **🗂️ Bulk-import format helper/template — SHIPPED (scoped-down) 2026-07-31 17:20 EDT, on branch
-  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
-  *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L189.* Harkirat's own uncertainty ("idk")
-  flagged 2 options — a static help-text improvement, or a full raw-text → bulk-format AI converter.
-  Scoped to the former: a "Guide" button on Draws/Calendar/Loadouts' bulk sections in `/manage`
-  (`commands/manage.js`'s `BULK_FORMAT_GUIDES`, real syntax pulled straight from each parser in
-  `utils/adminParser.js`, not hand-guessed) replies ephemeral with the exact syntax + a worked
-  example + a pointer to that page's own Export button for a live example against real data. Chosen
-  over the AI-converter option as the well-scoped MVP — verified char counts stay well under
-  Discord's 2000-char message cap (727-907 chars per guide). **If this doesn't fully solve the
-  "forget the format" problem, the raw-text→bulk-format AI converter is still the bigger option on
-  the table** — ask Harkirat whether the static guide is enough before considering this fully closed.
-- **🖼️ `/calendar` banner image — ONE PER PAGE — SHIPPED 2026-07-31 17:20 EDT, on branch
-  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
-  *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L184, spec refined 2026-07-31 16:41 EDT.*
-  Separate banners for the Draws/Events/Playlists pages, each independently settable via
-  `/manage`'s Calendar → "Banners" action (one modal, 3 clearable fields). Blank = shows nothing
-  for that page. Re-hosted through the new `utils/calendarBannerCache.js`, its own Cloudinary
-  folder (`calendar_banners/draws|events|playlists`), overwrite-in-place per page — no age-based
-  pruning needed since only 3 possible assets exist, and clearing a field does a real Cloudinary
-  delete rather than orphaning the asset. Rendered as a Media Gallery (type 12) at the VERY TOP of
-  the container, above even the title (Harkirat's explicit placement call — reads as a true
-  cover/hero image rather than a mid-card illustration). `SeasonalData` gained `drawsBannerUrl`/
-  `eventsBannerUrl`/`playlistsBannerUrl` + the matching `draft.*` trio (schema-only forward compat
-  for now — no staging UI exists yet to actually set a draft banner, but Promote-to-Live already
-  copies them across if one's ever set directly). Verified via a dry-run script against the dev DB:
-  banner renders as the first component when set, is absent (not a placeholder) when blank,
-  disappears immediately on clear, and stays well under Discord's 40-component cap (20/16/16 across
-  the 3 pages with a banner set).
-- **📟 `scripts/vmstatus.sh logs` overhaul — SHIPPED 2026-07-28 15:52 EDT as v2.41.0.**
-  *Was `[P2 · M · Sonnet5-H]`, filed 2026-07-28 01:41 EDT from notes L120.* Original ask: per-line
-  date/time + running commit hash, retention 1,000 → ~3,000, default 25 → 40 lines, m/h/d time-window
-  args including `<newer>-<older>` ranges, a "more lines available" notice, a richer/stylized standalone
-  panel, and an expanded error tracker. **All delivered except one item that turned out not to exist**,
-  and the investigation found a defect larger than the whole filed scope:
-  - **The error counter was broken at the source, not in the display.** It grepped log-line *text* for
-    `error|…|reconnecting`, counting routine gateway reconnects as errors (measured: reported 2, both
-    were reconnects). `journalctl -p err` was no better — the bot logged everything to stdout so journald
-    tagged **every** line priority 6 (24h: p0–p5 = 0, p6 = 30), meaning `-p err` would have read 0 during
-    a crash. Fixed at the source by the new `utils/logger.js`.
-  - **The retention bump was a misunderstanding — nothing to raise.** The "1,000 cap" is the AlertLog
-    *Mongo* store (`alertStore.js` `HARD_CAP`). journald had **no** retention config and held every line
-    since install (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d`
-    + `SystemMaxUse=200M` instead, so the assumed 30-day window is enforced rather than incidental.
-    Disk headroom question answered: 4.0G/30G (13%), never the constraint.
-  - **The Google Cloud Ops Agent was already installed and running** (~127MB RSS) shipping unparsed
-    syslog nobody queried — so the Cloud Logging option carved out of the 2026-07-24 Firestore review
-    was already paid for. Now wired to a structured JSON sink carrying severity + version + commit per
-    entry (`scripts/ops-agent-config.yaml`, `scripts/logrotate-diors-bot`).
-  - **Also answered the long-standing "RAM 536/969MB looks high" worry:** the bot is ~121MB; the agents
-    are most of the remainder. The panel now breaks RAM out so it can't misread again.
-  Full story: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`, CHANGELOG v2.41.0, and
-  the DEVLOG entry for 2026-07-28. **Sentry was deliberately NOT built** — re-filed in
-  `db-deferred-list.md` as `[P3 · S]` with the reason its case is now weaker.
+- **⚔️ Patch notes "Additional Info" auto-formatting — SHIPPED 2026-07-31 17:20 EDT, on branch `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).** *Was `[P2 · S]`, filed 2026-07-31 16:41 EDT from notes L182's ∴ follow-up reply (2026-07-31 11:39 EDT).* Harkirat's decided structure, from his own reference screenshot (`local/Screenshots/ CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachments as plain lines, each change as `> b:/n: details`. `commands/patchnotes.js`'s new `formatAdditionalInfo()` — OPT-IN via a `# Weapon Name` line marker so every pre-existing free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the structured heading only appears once the admin actually starts a line with `#`. Handles a weapon with multiple attachment lines and an attachment with multiple change lines, per the filed requirement. Verified against 5 cases via a dry-run script: the exact screenshot structure, plain prose with no `#` marker (unchanged, alias-only), multiple attachments/multiple changes per attachment, a preamble line before the first `#` marker (kept, not discarded), and empty input.
+- **🗂️ Bulk-import format helper/template — SHIPPED (scoped-down) 2026-07-31 17:20 EDT, on branch `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).** *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L189.* Harkirat's own uncertainty ("idk") flagged 2 options — a static help-text improvement, or a full raw-text → bulk-format AI converter. Scoped to the former: a "Guide" button on Draws/Calendar/Loadouts' bulk sections in `/manage` (`commands/manage.js`'s `BULK_FORMAT_GUIDES`, real syntax pulled straight from each parser in `utils/adminParser.js`, not hand-guessed) replies ephemeral with the exact syntax + a worked example + a pointer to that page's own Export button for a live example against real data. Chosen over the AI-converter option as the well-scoped MVP — verified char counts stay well under Discord's 2000-char message cap (727-907 chars per guide). **If this doesn't fully solve the "forget the format" problem, the raw-text→bulk-format AI converter is still the bigger option on the table** — ask Harkirat whether the static guide is enough before considering this fully closed.
+- **🖼️ `/calendar` banner image — ONE PER PAGE — SHIPPED 2026-07-31 17:20 EDT, on branch `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).** *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L184, spec refined 2026-07-31 16:41 EDT.* Separate banners for the Draws/Events/Playlists pages, each independently settable via `/manage`'s Calendar → "Banners" action (one modal, 3 clearable fields). Blank = shows nothing for that page. Re-hosted through the new `utils/calendarBannerCache.js`, its own Cloudinary folder (`calendar_banners/draws|events|playlists`), overwrite-in-place per page — no age-based pruning needed since only 3 possible assets exist, and clearing a field does a real Cloudinary delete rather than orphaning the asset. Rendered as a Media Gallery (type 12) at the VERY TOP of the container, above even the title (Harkirat's explicit placement call — reads as a true cover/hero image rather than a mid-card illustration). `SeasonalData` gained `drawsBannerUrl`/ `eventsBannerUrl`/`playlistsBannerUrl` + the matching `draft.*` trio (schema-only forward compat for now — no staging UI exists yet to actually set a draft banner, but Promote-to-Live already copies them across if one's ever set directly). Verified via a dry-run script against the dev DB: banner renders as the first component when set, is absent (not a placeholder) when blank, disappears immediately on clear, and stays well under Discord's 40-component cap (20/16/16 across the 3 pages with a banner set).
+- **📟 `scripts/vmstatus.sh logs` overhaul — SHIPPED 2026-07-28 15:52 EDT as v2.41.0.** *Was `[P2 · M · Sonnet5-H]`, filed 2026-07-28 01:41 EDT from notes L120.* Original ask: per-line date/time + running commit hash, retention 1,000 → ~3,000, default 25 → 40 lines, m/h/d time-window args including `<newer>-<older>` ranges, a "more lines available" notice, a richer/stylized standalone panel, and an expanded error tracker. **All delivered except one item that turned out not to exist**, and the investigation found a defect larger than the whole filed scope:
+  - **The error counter was broken at the source, not in the display.** It grepped log-line *text* for `error|…|reconnecting`, counting routine gateway reconnects as errors (measured: reported 2, both were reconnects). `journalctl -p err` was no better — the bot logged everything to stdout so journald tagged **every** line priority 6 (24h: p0–p5 = 0, p6 = 30), meaning `-p err` would have read 0 during a crash. Fixed at the source by the new `utils/logger.js`.
+  - **The retention bump was a misunderstanding — nothing to raise.** The "1,000 cap" is the AlertLog *Mongo* store (`alertStore.js` `HARD_CAP`). journald had **no** retention config and held every line since install (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d`
+    + `SystemMaxUse=200M` instead, so the assumed 30-day window is enforced rather than incidental. Disk headroom question answered: 4.0G/30G (13%), never the constraint.
+  - **The Google Cloud Ops Agent was already installed and running** (~127MB RSS) shipping unparsed syslog nobody queried — so the Cloud Logging option carved out of the 2026-07-24 Firestore review was already paid for. Now wired to a structured JSON sink carrying severity + version + commit per entry (`scripts/ops-agent-config.yaml`, `scripts/logrotate-diors-bot`).
+  - **Also answered the long-standing "RAM 536/969MB looks high" worry:** the bot is ~121MB; the agents are most of the remainder. The panel now breaks RAM out so it can't misread again. Full story: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`, CHANGELOG v2.41.0, and the DEVLOG entry for 2026-07-28. **Sentry was deliberately NOT built** — re-filed in `db-deferred-list.md` as `[P3 · S]` with the reason its case is now weaker.
 
-- **🔑 Two dead host credentials removed from `.env` — RESOLVED 2026-07-28 11:20 EDT.**
-  *Found during the memory-migration audit, entirely unrelated to what was being swept — a reminder that
-  a focused sweep is a good way to surface unrelated rot.* `.env` still held **`RENDER_API_KEY`** and
-  **`RAILWAY_TOKEN`** for hosts long gone (Render's service deleted 2026-07-27 20:20 EDT, Railway
-  abandoned 2026-07-17; the GCP VM is the only host). **No code read either** — zero `.js`/`.sh`/`.yml`
-  references.
-  **The point worth keeping:** Harkirat first commented the lines out rather than deleting them, which is
-  a reasonable instinct for "might need this later" — but **commenting out a credential does not revoke
-  it.** The string stays valid at the provider, and an API key generally authenticates against the whole
-  *account*, not the single deleted service, so it can still create and bill resources. He then revoked
-  both at Render and Railway directly, and only after that were the lines deleted. **Revoke first, then
-  delete — deleting alone would have left live keys floating with no record they existed.**
-  `PORT` was also commented out and deliberately kept: not a secret, read by nothing (`process.env.PORT`
-  appears nowhere, and there is no HTTP server or web framework in the dependency tree) — it was a
-  Render/Railway artifact, since those platforms require a bound port for web services.
-  `.env` was gitignored throughout and the keys were never committed, so there was no git-history
-  exposure to clean up.
+- **🔑 Two dead host credentials removed from `.env` — RESOLVED 2026-07-28 11:20 EDT.** *Found during the memory-migration audit, entirely unrelated to what was being swept — a reminder that a focused sweep is a good way to surface unrelated rot.* `.env` still held **`RENDER_API_KEY`** and **`RAILWAY_TOKEN`** for hosts long gone (Render's service deleted 2026-07-27 20:20 EDT, Railway abandoned 2026-07-17; the GCP VM is the only host). **No code read either** — zero `.js`/`.sh`/`.yml` references.
+  **The point worth keeping:** Harkirat first commented the lines out rather than deleting them, which is a reasonable instinct for "might need this later" — but **commenting out a credential does not revoke it.** The string stays valid at the provider, and an API key generally authenticates against the whole *account*, not the single deleted service, so it can still create and bill resources. He then revoked both at Render and Railway directly, and only after that were the lines deleted. **Revoke first, then delete — deleting alone would have left live keys floating with no record they existed.** `PORT` was also commented out and deliberately kept: not a secret, read by nothing (`process.env.PORT` appears nowhere, and there is no HTTP server or web framework in the dependency tree) — it was a Render/Railway artifact, since those platforms require a bound port for web services. `.env` was gitignored throughout and the keys were never committed, so there was no git-history exposure to clean up.
 
-- ~~`[P2 · S · Sonnet5-M]` **Decide what to do about 6 tags whose `package.json` is one release stale.**~~
-  Resolved 2026-07-27 23:23 EDT (Claude, Harkirat's call: "go with option 1, I'd rather have that consistency
-  taken care of right now"). `v2.33.3`, `v2.33.4`, `v2.35.0`, `v2.35.1`, `v2.35.2`, `v2.35.3` force-moved
-  from their squash commit to their corresponding `chore(release)/docs: finalize …` commit via
-  `git tag -f` + `git push --force origin <tag>`. Verified before and after: each of the 6 finalize
-  commits' `package.json` exactly matched its tag version pre-move, and `git show vX.Y.Z:package.json`
-  now reports the correct version for all 6, same as every other tag. No redeploy needed (nothing at
-  runtime reads a tag's `package.json`) and no one else references these tags (solo repo). See
-  `docs/reference/deployment-and-ops.md` § Version tagging for the corrected tag list.
+- ~~`[P2 · S · Sonnet5-M]` **Decide what to do about 6 tags whose `package.json` is one release stale.**~~ Resolved 2026-07-27 23:23 EDT (Claude, Harkirat's call: "go with option 1, I'd rather have that consistency taken care of right now"). `v2.33.3`, `v2.33.4`, `v2.35.0`, `v2.35.1`, `v2.35.2`, `v2.35.3` force-moved from their squash commit to their corresponding `chore(release)/docs: finalize …` commit via `git tag -f` + `git push --force origin <tag>`. Verified before and after: each of the 6 finalize commits' `package.json` exactly matched its tag version pre-move, and `git show vX.Y.Z:package.json` now reports the correct version for all 6, same as every other tag. No redeploy needed (nothing at runtime reads a tag's `package.json`) and no one else references these tags (solo repo). See `docs/reference/deployment-and-ops.md` § Version tagging for the corrected tag list.
 
-- ~~`[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the
-  2-commit reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
-  §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
-  launched (`904dec8`→`acc1d8d` for v2.33.0, `8c44f97`→`e5c93d8` for v2.33.1, `6a64e37`→`4b91218` for
-  v2.33.2 — verified via `git log`) has actually produced 2 commits: the squash-merge, then a follow-up
-  "finalize changelog/DEVLOG with the real hash" commit. Root cause: the changelog convention cites the
-  squash commit's own hash inline, but a commit can't contain its own hash, and `gh pr merge --squash`
-  merges straight to GitHub's remote — there's no local staging step to fold the two together. Harkirat's
-  ask (2026-07-25 16:20 EDT): keep doing the 2-commit pattern for now (don't change process ad hoc), but
-  give this to a dedicated Opus session with room to actually reason about a better design (e.g. dropping
-  the inline hash citation, a different finalize mechanism, or accepting/documenting the 2-commit reality)
-  rather than deciding it inline.~~
-  → **RESOLVED 2026-07-27 21:27 EDT, shipped as v2.36.0.** The dedicated session happened. Two findings
-  reframed it: it was never "spec vs. reality" but **one self-contradictory clause inside the spec** (§3
-  already described a working 1-commit design; only §5's *"finalized at merge — real number +
-  squash-commit hash + tag"* blocked it), and the existing tags were verified to be on the **correct**
-  commit (`v2.35.15`→`a5563df` has `package.json` `2.35.15`; its parent squash has `2.35.14`), so "tag
-  the squash commit" could only be restored *together with* moving the bump onto the branch.
-  **Chosen design — lagged-backfill citation:** the entry cites `(#PR)` at branch time and the hash is
-  inserted **one release later**, on the next release's branch, where it rides into that release's own
-  squash commit. The hash therefore never costs a commit of its own, and the `chore(release): finalize …`
-  commit is retired. The backfill is additive-only, never an `--amend`, never a force-push.
-  Rejected (recorded in spec §10 so they aren't re-proposed): local `merge --squash` + `--amend` (circular
-  — amending changes the hash again), a `(pending)` placeholder amended on `main` (needs a force-push —
-  what caused the 2026-07-27 VM divergence), `git notes` (invisible, not pushed by default), dropping the
-  citation (loses the only pointer `v3-pre-release` has, since it has no tags until `v3.0.0`), and
-  accepting the 2-commit reality (retires a promise for a solvable problem).
-  Full story: spec §3/§5/§10, `docs/README.md` step 8, memory `project_git_workflow`, DEVLOG v2.36.0.
+- ~~`[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the 2-commit reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow launched (`904dec8`→`acc1d8d` for v2.33.0, `8c44f97`→`e5c93d8` for v2.33.1, `6a64e37`→`4b91218` for v2.33.2 — verified via `git log`) has actually produced 2 commits: the squash-merge, then a follow-up "finalize changelog/DEVLOG with the real hash" commit. Root cause: the changelog convention cites the squash commit's own hash inline, but a commit can't contain its own hash, and `gh pr merge --squash` merges straight to GitHub's remote — there's no local staging step to fold the two together. Harkirat's ask (2026-07-25 16:20 EDT): keep doing the 2-commit pattern for now (don't change process ad hoc), but give this to a dedicated Opus session with room to actually reason about a better design (e.g. dropping the inline hash citation, a different finalize mechanism, or accepting/documenting the 2-commit reality) rather than deciding it inline.~~ → **RESOLVED 2026-07-27 21:27 EDT, shipped as v2.36.0.** The dedicated session happened. Two findings reframed it: it was never "spec vs. reality" but **one self-contradictory clause inside the spec** (§3 already described a working 1-commit design; only §5's *"finalized at merge — real number + squash-commit hash + tag"* blocked it), and the existing tags were verified to be on the **correct** commit (`v2.35.15`→`a5563df` has `package.json` `2.35.15`; its parent squash has `2.35.14`), so "tag the squash commit" could only be restored *together with* moving the bump onto the branch.
+  **Chosen design — lagged-backfill citation:** the entry cites `(#PR)` at branch time and the hash is inserted **one release later**, on the next release's branch, where it rides into that release's own squash commit. The hash therefore never costs a commit of its own, and the `chore(release): finalize …` commit is retired. The backfill is additive-only, never an `--amend`, never a force-push. Rejected (recorded in spec §10 so they aren't re-proposed): local `merge --squash` + `--amend` (circular — amending changes the hash again), a `(pending)` placeholder amended on `main` (needs a force-push — what caused the 2026-07-27 VM divergence), `git notes` (invisible, not pushed by default), dropping the citation (loses the only pointer `v3-pre-release` has, since it has no tags until `v3.0.0`), and accepting the 2-commit reality (retires a promise for a solvable problem). Full story: spec §3/§5/§10, `docs/README.md` step 8, memory `project_git_workflow`, DEVLOG v2.36.0.
 
-- ~~[Diors Builds] Delete the suspended Render service~~ → **DONE 2026-07-27 20:20 EDT.** REST `DELETE`
-  on `srv-d850b2og4nts73fhpfog` returned `204`; a follow-up `GET` returned `404 not found`, so it is
-  confirmed gone rather than assumed. The P0 trigger ("~2026-07-24, once the GCP VM has proven reliable
-  for ~a week") was satisfied 10 days after the 2026-07-17 cutover, and the health precondition was
-  actually checked first rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with
-  **0 restarts**, ~11h uptime, RAM 564/969MB, load 0.10, disk 15%, and `journalctl -p err` over the
-  previous hour returning no entries. **The GCP VM is now the only host — there is no fallback.**
-  Follow-up filed: `RENDER_API_KEY` is now a dead credential and wants revoking.
-  *Noted in passing:* `scripts/vmstatus.sh` reported `errors(1h): 1` while the journal showed no
-  error-priority entries — its counter reads a different source and shouldn't be trusted alone as a
-  health signal.
+- ~~[Diors Builds] Delete the suspended Render service~~ → **DONE 2026-07-27 20:20 EDT.** REST `DELETE` on `srv-d850b2og4nts73fhpfog` returned `204`; a follow-up `GET` returned `404 not found`, so it is confirmed gone rather than assumed. The P0 trigger ("~2026-07-24, once the GCP VM has proven reliable for ~a week") was satisfied 10 days after the 2026-07-17 cutover, and the health precondition was actually checked first rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with **0 restarts**, ~11h uptime, RAM 564/969MB, load 0.10, disk 15%, and `journalctl -p err` over the previous hour returning no entries. **The GCP VM is now the only host — there is no fallback.** Follow-up filed: `RENDER_API_KEY` is now a dead credential and wants revoking. *Noted in passing:* `scripts/vmstatus.sh` reported `errors(1h): 1` while the journal showed no error-priority entries — its counter reads a different source and shouldn't be trusted alone as a health signal.
 
-- ~~[Diors Builds] GCP VM git history diverged from `origin/main`~~ → **DONE 2026-07-27 20:15 EDT.**
-  Caused by the 2026-07-27 08:29 EDT force-push landing after the VM had already pulled the pre-rewrite
-  commits, leaving the VM 2 ahead / 16 behind. The 2 VM-only commits (`f1dff2c`, `42f024e`) were exactly
-  the v2.36.0→v2.35.4 pair the rewrite erased, so nothing was lost. Fixed with
-  `git fetch origin && git reset --hard origin/main` in `~/diors-builds`; the VM's working tree was clean
-  beforehand, so there was nothing local to preserve. **The service was deliberately NOT restarted** —
-  that would be a deploy — so the VM's files are now at v2.35.13 while the running process stays on
-  v2.35.4's code until the next restart, the normal post-pull/pre-restart state. Verified after: HEAD
-  `771ea76`, no ahead/behind, and `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`. The only runtime
-  delta the reset introduced is v2.35.9's Cloudinary dev guard, which is inert in prod.
+- ~~[Diors Builds] GCP VM git history diverged from `origin/main`~~ → **DONE 2026-07-27 20:15 EDT.** Caused by the 2026-07-27 08:29 EDT force-push landing after the VM had already pulled the pre-rewrite commits, leaving the VM 2 ahead / 16 behind. The 2 VM-only commits (`f1dff2c`, `42f024e`) were exactly the v2.36.0→v2.35.4 pair the rewrite erased, so nothing was lost. Fixed with `git fetch origin && git reset --hard origin/main` in `~/diors-builds`; the VM's working tree was clean beforehand, so there was nothing local to preserve. **The service was deliberately NOT restarted** — that would be a deploy — so the VM's files are now at v2.35.13 while the running process stays on v2.35.4's code until the next restart, the normal post-pull/pre-restart state. Verified after: HEAD `771ea76`, no ahead/behind, and `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`. The only runtime delta the reset introduced is v2.35.9's Cloudinary dev guard, which is inert in prod.
 
-- ~~[Diors Builds] Single-instance guard (startup lock)~~ → **SHIPPED 2026-07-26 18:43 EDT (v2.35.0,
-  `3b978a5`, PR #9)**. Token-scoped Mongo heartbeat lock (`models/BotInstance.js` +
-  `utils/instanceLock.js`, 10s heartbeat / 30s staleness); `index.js` calls `acquireInstanceLock()`
-  before `client.login()` and `process.exit(1)`s if another instance of the same `BOT_TOKEN` is already
-  alive. Lock `_id` is a hash of the token, not a global singleton, so the dev bot and the VM's prod
-  instance coexist on separate tokens. Boot-tested against the dev bot: clean single boot, second
-  instance on the same token refused and exits 1, `SIGINT` releases the lock and a fresh boot succeeds,
-  prod VM unaffected throughout (`scripts/vmstatus.sh`). Killing stray local instances by hand before a
-  push is no longer strictly required, though still harmless. Merged, **not yet deployed** — the VM is
-  still on v2.33.0's code.
-- ~~[Diors Builds] Re-sync the GitHub Projects board~~ → **DONE 2026-07-26 11:29 EDT (same session that caught it)**.
-  The board's 15 draft items were re-synced against the 2026-07-25 21:43 EDT deferred-list restructure:
-  `Opus4.8-H` → `Opus5-H` on the "View Colors" and "Real search + multi-select" cards' Model suggestion
-  field, and every item body's `deferred-items.md` source citation updated to `db-deferred-list.md`.
-  Also caught 2 stale `Opus4.8-H` tags the restructure's own model-tag refresh had missed in
-  `docs/ROADMAP.md` (View Colors line 64, `index.js` split line 309) and fixed those too. Board:
-  https://github.com/users/HarkiratMangat/projects/2.
-- ~~[Diors Builds] Webhook alerting — heavier half~~ → **SHIPPED + DEPLOYED 2026-07-20/21 (v2.26.0,
-  `477d37c`); store verified live in production** (boot alert wrote `Jul21-01`). Persistent Mongo alert
-  store (`models/AlertLog` + atomic `models/AlertCounter`, `utils/alertStore.js`) with short `MMMDD-NN`
-  UTC ids, an independent-fire-and-forget write that can't block the Discord POST, 30d/1000 retention;
-  the admin-only **`/alerts`** command (recent list + Export Log `.txt` + "What alerts mean?" explainer).
-  All 3 folded-in specifics done: escalating uptime (`formatUptime`), "Reconnecting to Discord" reword,
-  and manual-vs-auto restart labeling via `scripts/deploy.sh` + a `.restart-reason` marker. `/status` was
-  un-bundled and stays deferred. Verified offline against live Mongo; live Discord test pending. Full
-  detail: `docs/reference/deployment-and-ops.md`.
-- ~~[Diors Builds] `/manage` Edit-loadout bug (didn't-respond-in-time)~~ → **FIXED 2026-07-17 (v2.20.0)**.
-  The `mng_editbtn_` button handler was misplaced in the `isModalSubmit()` block → dead code → no ACK →
-  timeout; broke Edit for ALL entities (draws/calendar/MP/DMZ). Moved to `isButton()`; verified offline
-  against live Mongo (125 loadouts, 0 throws). Full story: DEVLOG 2026-07-17 + `feedback_verify_fix_actually_works`.
-- ~~[Diors Builds] Ops Agent install + RAM peaks~~ → **DONE 2026-07-17 (v2.20.0)**. Agent v2.70.0 installed;
-  had to `gcloud services enable` the Monitoring + Logging APIs (both were off, silently blocking all agent
-  metrics). `scripts/vmpeaks.sh` now reports RAM peaks. See `project_deployment_migration_render_to_gcp`.
-- ~~[Diors Builds] Daily "still healthy" heartbeat alert~~ → **DONE 2026-07-17 (v2.20.0)**. Info-level,
-  non-pinging, 24h, uptime/servers/latency/memory in `utils/alertWebhook.js` via `index.js`.
-- ~~Diors Builds hosting kept dropping the Discord gateway on Render's free tier~~ → **migrated to a GCP
-  Compute Engine VM 2026-07-17 (v2.19.0)**; connects in seconds and holds. Render suspended — deleting the
-  suspended service is still an open 🔔 Reminder in `db-deferred-list.md`. Full story:
-  `project_deployment_migration_render_to_gcp` memory + DEVLOG.
+- ~~[Diors Builds] Single-instance guard (startup lock)~~ → **SHIPPED 2026-07-26 18:43 EDT (v2.35.0, `3b978a5`, PR #9)**. Token-scoped Mongo heartbeat lock (`models/BotInstance.js` + `utils/instanceLock.js`, 10s heartbeat / 30s staleness); `index.js` calls `acquireInstanceLock()` before `client.login()` and `process.exit(1)`s if another instance of the same `BOT_TOKEN` is already alive. Lock `_id` is a hash of the token, not a global singleton, so the dev bot and the VM's prod instance coexist on separate tokens. Boot-tested against the dev bot: clean single boot, second instance on the same token refused and exits 1, `SIGINT` releases the lock and a fresh boot succeeds, prod VM unaffected throughout (`scripts/vmstatus.sh`). Killing stray local instances by hand before a push is no longer strictly required, though still harmless. Merged, **not yet deployed** — the VM is still on v2.33.0's code.
+- ~~[Diors Builds] Re-sync the GitHub Projects board~~ → **DONE 2026-07-26 11:29 EDT (same session that caught it)**. The board's 15 draft items were re-synced against the 2026-07-25 21:43 EDT deferred-list restructure: `Opus4.8-H` → `Opus5-H` on the "View Colors" and "Real search + multi-select" cards' Model suggestion field, and every item body's `deferred-items.md` source citation updated to `db-deferred-list.md`. Also caught 2 stale `Opus4.8-H` tags the restructure's own model-tag refresh had missed in `docs/ROADMAP.md` (View Colors line 64, `index.js` split line 309) and fixed those too. Board: https://github.com/users/HarkiratMangat/projects/2.
+- ~~[Diors Builds] Webhook alerting — heavier half~~ → **SHIPPED + DEPLOYED 2026-07-20/21 (v2.26.0, `477d37c`); store verified live in production** (boot alert wrote `Jul21-01`). Persistent Mongo alert store (`models/AlertLog` + atomic `models/AlertCounter`, `utils/alertStore.js`) with short `MMMDD-NN` UTC ids, an independent-fire-and-forget write that can't block the Discord POST, 30d/1000 retention; the admin-only **`/alerts`** command (recent list + Export Log `.txt` + "What alerts mean?" explainer). All 3 folded-in specifics done: escalating uptime (`formatUptime`), "Reconnecting to Discord" reword, and manual-vs-auto restart labeling via `scripts/deploy.sh` + a `.restart-reason` marker. `/status` was un-bundled and stays deferred. Verified offline against live Mongo; live Discord test pending. Full detail: `docs/reference/deployment-and-ops.md`.
+- ~~[Diors Builds] `/manage` Edit-loadout bug (didn't-respond-in-time)~~ → **FIXED 2026-07-17 (v2.20.0)**. The `mng_editbtn_` button handler was misplaced in the `isModalSubmit()` block → dead code → no ACK → timeout; broke Edit for ALL entities (draws/calendar/MP/DMZ). Moved to `isButton()`; verified offline against live Mongo (125 loadouts, 0 throws). Full story: DEVLOG 2026-07-17 + `feedback_verify_fix_actually_works`.
+- ~~[Diors Builds] Ops Agent install + RAM peaks~~ → **DONE 2026-07-17 (v2.20.0)**. Agent v2.70.0 installed; had to `gcloud services enable` the Monitoring + Logging APIs (both were off, silently blocking all agent metrics). `scripts/vmpeaks.sh` now reports RAM peaks. See `project_deployment_migration_render_to_gcp`.
+- ~~[Diors Builds] Daily "still healthy" heartbeat alert~~ → **DONE 2026-07-17 (v2.20.0)**. Info-level, non-pinging, 24h, uptime/servers/latency/memory in `utils/alertWebhook.js` via `index.js`.
+- ~~Diors Builds hosting kept dropping the Discord gateway on Render's free tier~~ → **migrated to a GCP Compute Engine VM 2026-07-17 (v2.19.0)**; connects in seconds and holds. Render suspended — deleting the suspended service is still an open 🔔 Reminder in `db-deferred-list.md`. Full story: `project_deployment_migration_render_to_gcp` memory + DEVLOG.
 
 ## Dropped / replaced
 
-- ~~`[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
-  over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
-  not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
-  grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud
-  Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh`
-  surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does
-  Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred
-  admin `/status` command (`getAlertSummary()` can feed it either way).~~
-  → **ANSWERED AND CLOSED 2026-08-06 15:12 EDT — the answer is no, and the item should never have been
-  a separate open question.** This sat in 🗂️ Queued asking whether to adopt Sentry while the SAME file's
-  🚫 Decided-no section already recorded the decision not to; the tracker held both the question and its
-  answer, and a session picking up the Queued item would have re-litigated a settled call without
-  noticing. **The answer is not now, on the technical merits — and it is not permanent.**
-  ⚠️ **This entry originally gave the published Privacy Policy as the decisive reason, and Harkirat
-  rejected that outright** (2026-08-06 15:46 EDT): *"the privacy policy shouldn't be the decision maker
-  when it comes to implementing things or trying things. It's only advisory but I'm open to changing
-  the policy."* He is right — the policy says "None present" **because** we chose not to adopt one, so
-  citing it back is circular. The amendment is a cost line. The real case, measured:
-  **of 409 stored alerts, 2 are errors across 1 distinct title** — Sentry's core value is fingerprinting
-  many distinct exceptions at volume, and that volume does not exist here; and the practical want
-  ("I can't tell what an alert means") was answered directly by v2.57.0 instead.
-  🔎 **The genuinely useful finding: Google Cloud Error Reporting was never considered and is not
-  enabled** (`gcloud services list --enabled` shows only `logging.googleapis.com`, checked live). It
-  does the grouping/dedup half for free, off the stack traces `utils/logger.js` already emits, with no
-  SDK in the process and no policy amendment. **Try that first.** Full reasoning in
-  `db-deferred-list.md`'s 🚫 Decided-no entry; lesson in [[feedback_policy_is_advisory_not_a_veto]].
-  Nothing was built.
+- ~~`[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh` surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred admin `/status` command (`getAlertSummary()` can feed it either way).~~ → **ANSWERED AND CLOSED 2026-08-06 15:12 EDT — the answer is no, and the item should never have been a separate open question.** This sat in 🗂️ Queued asking whether to adopt Sentry while the SAME file's 🚫 Decided-no section already recorded the decision not to; the tracker held both the question and its answer, and a session picking up the Queued item would have re-litigated a settled call without noticing. **The answer is not now, on the technical merits — and it is not permanent.** ⚠️ **This entry originally gave the published Privacy Policy as the decisive reason, and Harkirat rejected that outright** (2026-08-06 15:46 EDT): *"the privacy policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only advisory but I'm open to changing the policy."* He is right — the policy says "None present" **because** we chose not to adopt one, so citing it back is circular. The amendment is a cost line. The real case, measured: **of 409 stored alerts, 2 are errors across 1 distinct title** — Sentry's core value is fingerprinting many distinct exceptions at volume, and that volume does not exist here; and the practical want ("I can't tell what an alert means") was answered directly by v2.57.0 instead. 🔎 **The genuinely useful finding: Google Cloud Error Reporting was never considered and is not enabled** (`gcloud services list --enabled` shows only `logging.googleapis.com`, checked live). It does the grouping/dedup half for free, off the stack traces `utils/logger.js` already emits, with no SDK in the process and no policy amendment. **Try that first.** Full reasoning in `db-deferred-list.md`'s 🚫 Decided-no entry; lesson in [[feedback_policy_is_advisory_not_a_veto]]. Nothing was built.
 
-- ~~[Diors Builds] `/secondary` rename + `/pistols` alias~~ → **DROPPED, replaced 2026-07-18 (v2.21.0).**
-  `/secondaries` stays exactly as-is; built a category-level search-synonym feature instead
-  (`utils/search.js`'s `resolveCategorySynonym`) so typing "pistol" surfaces every Secondaries weapon
-  directly — no second command needed (Discord has no real alias mechanism anyway). See
-  `.claude/rules/loadouts.md`.
+- ~~[Diors Builds] `/secondary` rename + `/pistols` alias~~ → **DROPPED, replaced 2026-07-18 (v2.21.0).** `/secondaries` stays exactly as-is; built a category-level search-synonym feature instead (`utils/search.js`'s `resolveCategorySynonym`) so typing "pistol" surfaces every Secondaries weapon directly — no second command needed (Discord has no real alias mechanism anyway). See `.claude/rules/loadouts.md`.
 
-- ~~`[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT
-  pages.** *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a
-  build, not an exploration.*~~ — and ~~🧩 **THE ONE OPEN DECISION, and it needs Harkirat — do not
-  guess it.** For Contributing's four routes, which structure carries them?~~
-  → **RETIRED 2026-08-02 23:16 EDT.** *(Both lines quoted verbatim above so the sweep is traceable:
-  the item itself is NOT closed — it lives on, re-headed and re-tiered, in `docs/db-deferred-list.md`.
-  What retired is this FRAMING of it.)* That framing was true when filed and is now false twice over. The approved artefact was
-  `local/site-redesign/mockup-v1.html` — the Interchange/Plate concept — and a nine-site reference
-  crawl superseded it outright, after which Harkirat released both pages from the legal set's design
-  language entirely; mockup-v1 became a fallback nobody chose. Then the redesign itself was **parked**
-  (*"needs heavy designing and discussion work"*), so it is neither approved-as-built nor in flight.
-  **The live site never changed** — everything stayed in gitignored `local/`.
-  What survives, on the active item in `docs/db-deferred-list.md`: the structural fork IS answered
-  (constellation on desktop, full-width stack on mobile), and it is marked **read-when-asked** so it
-  stops being raised unprompted. *This also corrects the line in the section above, which still said
-  the redesign was "its own scheduled session with an approved mockup" — it is neither now.*
+- ~~`[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT pages.** *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a build, not an exploration.*~~ — and ~~🧩 **THE ONE OPEN DECISION, and it needs Harkirat — do not guess it.** For Contributing's four routes, which structure carries them?~~ → **RETIRED 2026-08-02 23:16 EDT.** *(Both lines quoted verbatim above so the sweep is traceable: the item itself is NOT closed — it lives on, re-headed and re-tiered, in `docs/db-deferred-list.md`. What retired is this FRAMING of it.)* That framing was true when filed and is now false twice over. The approved artefact was `local/site-redesign/mockup-v1.html` — the Interchange/Plate concept — and a nine-site reference crawl superseded it outright, after which Harkirat released both pages from the legal set's design language entirely; mockup-v1 became a fallback nobody chose. Then the redesign itself was **parked** (*"needs heavy designing and discussion work"*), so it is neither approved-as-built nor in flight. **The live site never changed** — everything stayed in gitignored `local/`. What survives, on the active item in `docs/db-deferred-list.md`: the structural fork IS answered (constellation on desktop, full-width stack on mobile), and it is marked **read-when-asked** so it stops being raised unprompted. *This also corrects the line in the section above, which still said the redesign was "its own scheduled session with an approved mockup" — it is neither now.*
 
 ## Not a real issue
 
-- ~~[Diors Builds] "Tundra" weapon name~~ → **NON-ISSUE, confirmed 2026-07-18.** Connected to the live
-  MongoDB cluster and checked directly — already correctly stored as `LW3-TUNDRA` (weaponKey
-  `lw3-tundra`). The bare "Tundra" spelling only ever existed in `scripts/applyBadgesBulk.js`'s fuzzy
-  match list, not the real data. No fix needed.
+- ~~[Diors Builds] "Tundra" weapon name~~ → **NON-ISSUE, confirmed 2026-07-18.** Connected to the live MongoDB cluster and checked directly — already correctly stored as `LW3-TUNDRA` (weaponKey `lw3-tundra`). The bare "Tundra" spelling only ever existed in `scripts/applyBadgesBulk.js`'s fuzzy match list, not the real data. No fix needed.
 
 ## The legal site's unenumerated bug list — CLOSED 2026-08-02 00:40 EDT (v2.47.0)
 
-Filed 2026-07-30 00:35 EDT as `[P1 · M · Opus5-H]` with the warning that **the specific bug list did
-not exist yet** — Harkirat had reviewed the live site, found "many bugs", and gone to sleep before
-enumerating them. The item's own first instruction was "ask him what he actually saw".
+Filed 2026-07-30 00:35 EDT as `[P1 · M · Opus5-H]` with the warning that **the specific bug list did not exist yet** — Harkirat had reviewed the live site, found "many bugs", and gone to sleep before enumerating them. The item's own first instruction was "ask him what he actually saw".
 
-**He did enumerate them**, across two page-by-page passes on 2026-08-01, and they were worked through
-in the same session. Closing the parts that are genuinely done:
+**He did enumerate them**, across two page-by-page passes on 2026-08-01, and they were worked through in the same session. Closing the parts that are genuinely done:
 
 - **The list arrived.** The premise of the item — an unknown list — no longer holds.
-- **The unreviewed design changes** (four-tab switcher, moon/sun toggle, invite cards, larger wordmark)
-  were all reviewed by him directly, and each was either accepted or replaced. The toggle in particular
-  he called "perfect now".
-- **Desktop measurement is no longer terms-only.** This session measured `license`, `privacy`,
-  `contributors`, `devlog` and the landing page — nav staging at six widths across two tab counts,
-  sticky headings through a real scroll, footer geometry at the scrolled-to-bottom position.
-- **The warm pages' aesthetic review happened** and produced a decision rather than a fix: Harkirat
-  asked for a full redesign of Contributing and Contributors. That is now its own scheduled session
-  with an approved mockup, not an open bug.
+- **The unreviewed design changes** (four-tab switcher, moon/sun toggle, invite cards, larger wordmark) were all reviewed by him directly, and each was either accepted or replaced. The toggle in particular he called "perfect now".
+- **Desktop measurement is no longer terms-only.** This session measured `license`, `privacy`, `contributors`, `devlog` and the landing page — nav staging at six widths across two tab counts, sticky headings through a real scroll, footer geometry at the scrolled-to-bottom position.
+- **The warm pages' aesthetic review happened** and produced a decision rather than a fix: Harkirat asked for a full redesign of Contributing and Contributors. That is now its own scheduled session with an approved mockup, not an open bug.
 
-**What did NOT close, and stays on the active list:** the two Cloudflare deployments that published
-zero files (cause still unexplained), and light mode at desktop width, which was never checked in
-either session. Both carried forward.
+**What did NOT close, and stays on the active list:** the two Cloudflare deployments that published zero files (cause still unexplained), and light mode at desktop width, which was never checked in either session. Both carried forward.

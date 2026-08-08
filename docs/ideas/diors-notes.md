@@ -16,9 +16,7 @@
 ---
 
 ## 🔑 Legend
-*How this file's own marks work, decided 2026-07-18, reorganized 2026-07-24 (Harkirat flagged his own
-edit-pass to this section was a raw dump, not properly organized — see the filing note in `docs/archive/graveyard.md` for
-what changed and why). Read this before adding to, reading, or acting on anything below.*
+*How this file's own marks work, decided 2026-07-18, reorganized 2026-07-24 (Harkirat flagged his own edit-pass to this section was a raw dump, not properly organized — see the filing note in `docs/archive/graveyard.md` for what changed and why). Read this before adding to, reading, or acting on anything below.*
 
 **The marks:**
 - **`[x] ✓ ~~text~~`** — closed, and it SHIPPED / got a real answer. Rendered GREEN (`#3fb950`) in MarkEdit.
@@ -53,8 +51,7 @@ what changed and why). Read this before adding to, reading, or acting on anythin
   - **DEFERRED** — discussed on purpose and deliberately not acted on yet; leave the item unchecked, not `[x]`.
   - Comments written before 2026-08-03 predate this convention and are left as-is — their meaning is still clear from context, and rewriting ~100 historical comments for word-choice consistency isn't worth the risk of corrupting an otherwise-accurate record. Apply the convention going forward only.
 
-**Outside MarkEdit:** every mark in this file is PLAIN TEXT to any other tool (GitHub, `cat`, another
-editor) — the colors are a local MarkEdit-only rendering layer, never baked into the committed characters.
+**Outside MarkEdit:** every mark in this file is PLAIN TEXT to any other tool (GitHub, `cat`, another editor) — the colors are a local MarkEdit-only rendering layer, never baked into the committed characters.
 
 ---
 
@@ -72,9 +69,7 @@ editor) — the colors are a local MarkEdit-only rendering layer, never baked in
 | Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` |
 | Resolved **and** ℋ-confirmed item from this file | **`docs/archive/graveyard.md`** (swept, never deleted) |
 
-**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless.
-New feature ideas start here as intake in the sections above, then get filed to the right home on the
-next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
+**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless. New feature ideas start here as intake in the sections above, then get filed to the right home on the next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
 
 ---
 

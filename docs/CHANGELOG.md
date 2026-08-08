@@ -1,939 +1,321 @@
 # Changelog (Detailed)
 
-Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
-[CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md) for a plain-language version of the same timeline.
+Dior's Builds' own "release notes" — tracks what shipped, when, and why. See [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md) for a plain-language version of the same timeline.
 
 **Versioning:**
-- **v1.0.0** (`b225785`) — the actual first working version of the bot. There is no "v0.x" — the
-  very first commit was already a real (if tiny) release, not a pre-release draft.
-- **v1.x** — the pre-collaboration era: solo-built, Excel-backed MP loadouts, classic Discord
-  Embeds. Runs through `cbf2106` (the original `/timestamp` command).
-- **v2.0.0** (`63cebb1`, "Pre-release") — the Components V2 rewrite. This is also where Harkirat
-  started working on the bot together with Claude, so everything from here on has much more
-  detailed reasoning behind it than the entries above.
-- **Three-part `vMAJOR.MODERATE.MINOR`** (restructured 2026-07-12). `MAJOR` (whole-number, e.g.
-  v2 → v3) = a major overhaul or major new functionality — only bumped deliberately, with Harkirat's
-  confirmation. `MODERATE` (middle field) = a significant PR: a new feature, a real design change,
-  several large bug fixes, or a bundle of adjustments — bumping it resets `MINOR` to 0. `MINOR` (last
-  field) = a small adjustment/fix/correction. `MODERATE` can climb past 9 (v2.10.x, v2.11.x, …)
-  indefinitely; reaching double digits is NOT a reason to bump `MAJOR`.
-- **Notation — now uniform three-part throughout (normalized 2026-07-21).** Entries v2.7.1 and earlier
-  were originally written in a condensed **two-decimal** notation (the trailing MINOR digit crammed onto
-  the MODERATE field, no second dot — e.g. `v2.71` meant v2.7.1, `v2.51` meant v2.5.1, `v1.61` meant
-  v1.6.1; a single-decimal `v2.7` meant v2.7.0). At Harkirat's request these were retroactively renumbered
-  to explicit `vMAJOR.MODERATE.MINOR` so the whole file reads in one consistent scheme — no bot code or git
-  tags were affected (pre-`v2.17.3` versions were never tagged; see the version-tagging note in
-  `docs/reference/deployment-and-ops.md`).
-  Fixing the notation also surfaced and corrected one pre-existing ordering slip (v2.7.1, a `.1` follow-up,
-  had sat below v2.7.0 — now above it, matching every other pair and the newest-first order).
-- **The unit that earns a version number changed 2026-07-24 12:24 EDT: "push-that-went-live" →
-  "merged PR."** Under the new Branch → Commit → Push → PR → Merge → Deploy workflow (see
-  `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`),
-  each merged PR squashes to ONE commit on `main` and gets ONE version number + one git tag on that squash
-  commit — not per raw commit, not per push of a feature branch. Everything through v2.32.0 above was
-  numbered under the old "one push, one number" rule; that history is left as-is, only the *going-forward*
-  unit changed.
-- **Entry citation format + the lagged hash backfill (adopted 2026-07-27 21:27 EDT).** A heading reads
-  `## vX.Y.Z — YYYY-MM-DD HH:MM EDT (#PR · `sha`) — <title>`. Because a commit cannot contain its own
-  hash, the two halves are written at different times: the **PR number** is written on the branch as the
-  final pre-merge checkpoint (with the `package.json` bump, so it folds into the squash commit), and the
-  **hash is backfilled one release later**, on the *next* release's branch. So **the newest entry always
-  lacks a hash — that is correct, not drift.** The backfill is additive-only (insert `` · `sha` ``, touch
-  nothing else, never edit the timestamp) and is an ordinary edit in a later commit — **never an
-  `--amend`, never a force-push.**
-  ⚠️ **Most of v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on
-  their squash commit** — the old convention cited the squash hash inline, which forced that second
-  commit. Measured 2026-07-27 21:27 EDT across the 25 hash-citing entries: **16 cite the tag's parent**
-  (the 2-commit shape — v2.33.5, v2.33.6, v2.34.0, v2.34.1, v2.35.4–v2.35.15) and **9 cite the tag
-  itself** (v2.33.0–v2.33.4, v2.35.0–v2.35.3), so the old pattern was the majority but never universal.
-  Those 16 tags are correct as they stand (the finalize commit is where `package.json` reads the tagged
-  version); don't "fix" them. **Entries from v2.36.0 on follow the new shape**: one commit, one tag, on
-  the squash commit. Full design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
-  §3, §5, §10.
-- **Entries before v2.33.0 (v2.26.0–v2.32.0) cite a hash only, with no `#PR`** — they predate the PR
-  workflow entirely (PR #1 *is* v2.33.0), so there is no PR to cite. Accurate history, not a gap.
+- **v1.0.0** (`b225785`) — the actual first working version of the bot. There is no "v0.x" — the very first commit was already a real (if tiny) release, not a pre-release draft.
+- **v1.x** — the pre-collaboration era: solo-built, Excel-backed MP loadouts, classic Discord Embeds. Runs through `cbf2106` (the original `/timestamp` command).
+- **v2.0.0** (`63cebb1`, "Pre-release") — the Components V2 rewrite. This is also where Harkirat started working on the bot together with Claude, so everything from here on has much more detailed reasoning behind it than the entries above.
+- **Three-part `vMAJOR.MODERATE.MINOR`** (restructured 2026-07-12). `MAJOR` (whole-number, e.g. v2 → v3) = a major overhaul or major new functionality — only bumped deliberately, with Harkirat's confirmation. `MODERATE` (middle field) = a significant PR: a new feature, a real design change, several large bug fixes, or a bundle of adjustments — bumping it resets `MINOR` to 0. `MINOR` (last field) = a small adjustment/fix/correction. `MODERATE` can climb past 9 (v2.10.x, v2.11.x, …) indefinitely; reaching double digits is NOT a reason to bump `MAJOR`.
+- **Notation — now uniform three-part throughout (normalized 2026-07-21).** Entries v2.7.1 and earlier were originally written in a condensed **two-decimal** notation (the trailing MINOR digit crammed onto the MODERATE field, no second dot — e.g. `v2.71` meant v2.7.1, `v2.51` meant v2.5.1, `v1.61` meant v1.6.1; a single-decimal `v2.7` meant v2.7.0). At Harkirat's request these were retroactively renumbered to explicit `vMAJOR.MODERATE.MINOR` so the whole file reads in one consistent scheme — no bot code or git tags were affected (pre-`v2.17.3` versions were never tagged; see the version-tagging note in `docs/reference/deployment-and-ops.md`). Fixing the notation also surfaced and corrected one pre-existing ordering slip (v2.7.1, a `.1` follow-up, had sat below v2.7.0 — now above it, matching every other pair and the newest-first order).
+- **The unit that earns a version number changed 2026-07-24 12:24 EDT: "push-that-went-live" → "merged PR."** Under the new Branch → Commit → Push → PR → Merge → Deploy workflow (see `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`), each merged PR squashes to ONE commit on `main` and gets ONE version number + one git tag on that squash commit — not per raw commit, not per push of a feature branch. Everything through v2.32.0 above was numbered under the old "one push, one number" rule; that history is left as-is, only the *going-forward* unit changed.
+- **Entry citation format + the lagged hash backfill (adopted 2026-07-27 21:27 EDT).** A heading reads `## vX.Y.Z — YYYY-MM-DD HH:MM EDT (#PR · `sha`) — <title>`. Because a commit cannot contain its own hash, the two halves are written at different times: the **PR number** is written on the branch as the final pre-merge checkpoint (with the `package.json` bump, so it folds into the squash commit), and the **hash is backfilled one release later**, on the *next* release's branch. So **the newest entry always lacks a hash — that is correct, not drift.** The backfill is additive-only (insert `` · `sha` ``, touch nothing else, never edit the timestamp) and is an ordinary edit in a later commit — **never an `--amend`, never a force-push.** ⚠️ **Most of v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on their squash commit** — the old convention cited the squash hash inline, which forced that second commit. Measured 2026-07-27 21:27 EDT across the 25 hash-citing entries: **16 cite the tag's parent** (the 2-commit shape — v2.33.5, v2.33.6, v2.34.0, v2.34.1, v2.35.4–v2.35.15) and **9 cite the tag itself** (v2.33.0–v2.33.4, v2.35.0–v2.35.3), so the old pattern was the majority but never universal. Those 16 tags are correct as they stand (the finalize commit is where `package.json` reads the tagged version); don't "fix" them. **Entries from v2.36.0 on follow the new shape**: one commit, one tag, on the squash commit. Full design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §3, §5, §10.
+- **Entries before v2.33.0 (v2.26.0–v2.32.0) cite a hash only, with no `#PR`** — they predate the PR workflow entirely (PR #1 *is* v2.33.0), so there is no PR to cite. Accurate history, not a gap.
 
-Only merged PRs get a permanent version number — see **Unreleased** at the bottom of this file for
-work still on an open branch/PR.
+Only merged PRs get a permanent version number — see **Unreleased** at the bottom of this file for work still on an open branch/PR.
 
-**Detailed vs. summary coverage:** every merged PR gets an entry here, including purely internal
-housekeeping (repo/tooling changes, nothing a player would notice). [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)
-**represents every version number too — no number is skipped** (Harkirat's rule, 2026-07-21: "easier to
-delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given
-their own prose write-up — instead they're folded into a neighbouring entry's version range (e.g.
-`v2.18.0–v2.18.3`) or noted in one line (e.g. "*v2.22.1 was a docs-only point release*"), so a reader can
-still see the version existed. Only genuinely user-facing changes get a real bullet.
+**Detailed vs. summary coverage:** every merged PR gets an entry here, including purely internal housekeeping (repo/tooling changes, nothing a player would notice). [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md) **represents every version number too — no number is skipped** (Harkirat's rule, 2026-07-21: "easier to delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given their own prose write-up — instead they're folded into a neighbouring entry's version range (e.g. `v2.18.0–v2.18.3`) or noted in one line (e.g. "*v2.22.1 was a docs-only point release*"), so a reader can still see the version existed. Only genuinely user-facing changes get a real bullet.
 
 ---
 
 # 🔮 Planned & Upcoming (not shipped yet)
-Ideas, committed work, and known small gaps — nothing in this section has shipped. Roughly ordered by
-how committed we are. Items graduate into a numbered version entry below once they actually ship.
+Ideas, committed work, and known small gaps — nothing in this section has shipped. Roughly ordered by how committed we are. Items graduate into a numbered version entry below once they actually ship.
 
 ### 🛠️ Planned — intend to build
-- **Real "search + multi-select" admin flow** — for "Delete Multiple" (all entities) and Loadouts'
-  "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder
-  paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.
-- **General bot/code housekeeping session** (added 2026-07-15) — one dedicated cleanup pass instead of
-  piecemeal mid-feature tidying: delete leftover `*.bak-*` config backups, sweep for any stale absolute
-  paths left over from the 2026-07-14 repo relocation (the known ones are already fixed; prefer
-  relative/dynamic paths so a future move can't rot them), dead-code/stale-comment/unused-dependency
-  review, and decide whether `/patch notes`' media carousel needs component-count chunking.
-- **Write a user-friendly bot/ops guide** (added 2026-07-18) — a rich but noob-friendly how-to for
-  operating the bot end-to-end (the GCP VM, hosting, deploy flow, checking status/logs), so Harkirat can
-  maintain it himself. Distinct from CLAUDE.md and the terse VM command card — a human operator's guide.
+- **Real "search + multi-select" admin flow** — for "Delete Multiple" (all entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.
+- **General bot/code housekeeping session** (added 2026-07-15) — one dedicated cleanup pass instead of piecemeal mid-feature tidying: delete leftover `*.bak-*` config backups, sweep for any stale absolute paths left over from the 2026-07-14 repo relocation (the known ones are already fixed; prefer relative/dynamic paths so a future move can't rot them), dead-code/stale-comment/unused-dependency review, and decide whether `/patch notes`' media carousel needs component-count chunking.
+- **Write a user-friendly bot/ops guide** (added 2026-07-18) — a rich but noob-friendly how-to for operating the bot end-to-end (the GCP VM, hosting, deploy flow, checking status/logs), so Harkirat can maintain it himself. Distinct from CLAUDE.md and the terse VM command card — a human operator's guide.
 
 #### Remaining v2 polish batch (filed 2026-07-14/15 from the plan-notes file)
-Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release work. Most of this batch has
-already shipped and graduated into the numbered list below: **8 items in v2.21.0** (`/timestamp`
-`format`→`view`, `/settings` `hidden` option, mobile description trim, short/partial loadout search, admin
-override + reworded action-blocked message, View Colors download buttons, `/manage` `section`→`data_for`),
-plus **`/manage` loadout data-entry UX** (v2.23.0), **`/manage` per-page accent colors** (v2.24.0),
-**webhook alerting heavy-half** (v2.26.0 — per-alert IDs, `/alerts`, text-log export, legibility fixes), and
-**pagination loop-back** (v2.28.0, with its 2-page crash fixed in v2.30.2). Still open from this batch:
-- **View Colors: wider colour variety** — a real avatar returned 6 of 8 requested colours and missed a
-  useful yellow. Minimal images correctly returning 2-4 on one page must NOT be padded out to a quota.
-  Needs its own focused session — determinism is a hard constraint (Refresh's change-detection).
+Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release work. Most of this batch has already shipped and graduated into the numbered list below: **8 items in v2.21.0** (`/timestamp` `format`→`view`, `/settings` `hidden` option, mobile description trim, short/partial loadout search, admin override + reworded action-blocked message, View Colors download buttons, `/manage` `section`→`data_for`), plus **`/manage` loadout data-entry UX** (v2.23.0), **`/manage` per-page accent colors** (v2.24.0), **webhook alerting heavy-half** (v2.26.0 — per-alert IDs, `/alerts`, text-log export, legibility fixes), and **pagination loop-back** (v2.28.0, with its 2-page crash fixed in v2.30.2). Still open from this batch:
+- **View Colors: wider colour variety** — a real avatar returned 6 of 8 requested colours and missed a useful yellow. Minimal images correctly returning 2-4 on one page must NOT be padded out to a quota. Needs its own focused session — determinism is a hard constraint (Refresh's change-detection).
 - **View Colors: humour pages for unset Display Name / Nameplate / Deco** instead of hiding them.
-- **Richer in-bot diagnostic logging** (filed 2026-07-18) — so a failure points at exactly which component
-  broke and why (distinct from the webhook alerting heavy-half, now shipped, and the v3 DB-change audit log).
-- **Admin `/status` command** (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count)
-  surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`. **Un-bundled from the webhook work
-  2026-07-20** (Harkirat's call — unsure of its usability right now); still deferred as its own session.
+- **Richer in-bot diagnostic logging** (filed 2026-07-18) — so a failure points at exactly which component broke and why (distinct from the webhook alerting heavy-half, now shipped, and the v3 DB-change audit log).
+- **Admin `/status` command** (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count) surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`. **Un-bundled from the webhook work 2026-07-20** (Harkirat's call — unsure of its usability right now); still deferred as its own session.
 
 #### v3 (next MAJOR — pre-release track)
-Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary
-changelog until v3 actually launches.
-- **`/manage` → `/admin`**, keeping the dashboard panel but adding slash-driven actions
-  (`/admin command:{x} action:{y}`), with `action` choices scoped to the chosen command. Plus an
-  internal DB-change logging/tracking system.
+Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary changelog until v3 actually launches.
+- **`/manage` → `/admin`**, keeping the dashboard panel but adding slash-driven actions (`/admin command:{x} action:{y}`), with `action` choices scoped to the chosen command. Plus an internal DB-change logging/tracking system.
 - **`/meta`** — browse every weapon marked Meta, paginated, category-switchable, per-category accent.
-- **Draw cost calculator** — cost to finish a draw from region + attempts done/remaining + CP balance,
-  with a suggested top-up package.
-- **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta`
-  above; pick one shape at design time). `/dmz` stays as-is.
+- **Draw cost calculator** — cost to finish a draw from region + attempts done/remaining + CP balance, with a suggested top-up package.
+- **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta` above; pick one shape at design time). `/dmz` stays as-is.
 - **`/settings` jump-to options** and **detaching `/colors`' visibility** from settings.
-- **`/help`** detailing commands/features, referenced from the bot's Discord description — must include
-  a way to contact Harkirat (his Discord) for bug reports/requests.
-- A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour
-  pages and the reworded block message.
-- **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up
-  embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
-- **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked
-  (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.
-- **Privacy Policy / Terms of Service** — needed for Discord compliance, especially once verified/past
-  100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics
-  item below if that ships first.
-- **Richer usage analytics** — who ran what command, when, how often, and how people actually navigate a
-  feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure
-  attribution, this is usage telemetry).
+- **`/help`** detailing commands/features, referenced from the bot's Discord description — must include a way to contact Harkirat (his Discord) for bug reports/requests.
+- A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour pages and the reworded block message.
+- **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
+- **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.
+- **Privacy Policy / Terms of Service** — needed for Discord compliance, especially once verified/past 100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics item below if that ships first.
+- **Richer usage analytics** — who ran what command, when, how often, and how people actually navigate a feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure attribution, this is usage telemetry).
 - **`/define` (Urban Dictionary integration)** — pure fun, not CODM-related, low priority.
-- **Extend the passive auto-disable pattern** beyond `/settings` (which shipped it in v2.22.0) to
-  draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse
-  `utils/passiveExpiry.js`), open question is whether 10 minutes is the right window everywhere.
+- **Extend the passive auto-disable pattern** beyond `/settings` (which shipped it in v2.22.0) to draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse `utils/passiveExpiry.js`), open question is whether 10 minutes is the right window everywhere.
 
 ### 💭 Considering — ideas, not committed
 - Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.
-- Possibly promote the View Colors / accent-personalization system to a **`v3.0.0`** milestone rather
-  than leaving it inside the v2 line — Harkirat's call (a MAJOR bump is never made without his OK).
-- **v4 — guild install + text/prefix commands** (`d b ak117`), with a settable per-server prefix and
-  server-exclusive commands. ⚠️ This reverses the bot's user-installed-only architecture and needs Dev
-  Portal changes: Guild Install enabled, `setIntegrationTypes([0, 1])`, and the **privileged MESSAGE
-  CONTENT intent** (which needs Discord approval past 100 servers).
+- Possibly promote the View Colors / accent-personalization system to a **`v3.0.0`** milestone rather than leaving it inside the v2 line — Harkirat's call (a MAJOR bump is never made without his OK).
+- **v4 — guild install + text/prefix commands** (`d b ak117`), with a settable per-server prefix and server-exclusive commands. ⚠️ This reverses the bot's user-installed-only architecture and needs Dev Portal changes: Guild Install enabled, `setIntegrationTypes([0, 1])`, and the **privileged MESSAGE CONTENT intent** (which needs Discord approval past 100 servers).
 - **v4 — user-submitted loadouts**, gated behind manual review (deny / accept / accept-with-edit).
-- **v5 — generate the gunsmith image + share code ourselves**, removing the manual-screenshot step:
-  teach the code structure + layout, supply per-weapon base pages, store output in Cloudinary.
-- **v5 — user-built custom gunsmiths in-bot** (depends on the above), plus a "my builds" command that
-  merges a user's own builds into `/loadout` results, visually distinct from official ones.
+- **v5 — generate the gunsmith image + share code ourselves**, removing the manual-screenshot step: teach the code structure + layout, supply per-weapon base pages, store output in Cloudinary.
+- **v5 — user-built custom gunsmiths in-bot** (depends on the above), plus a "my builds" command that merges a user's own builds into `/loadout` results, visually distinct from official ones.
 
 ### 🐛 Known issues / small fixes — deferred, mostly cosmetic
-- **View Colors heading isn't vertically centered** against its thumbnail — Components V2 has no
-  vertical-align control; a workaround was tried and reverted. Purely cosmetic.
-- **Decoration & nameplate previews show as static posters, not animated** — a genuine Discord-client
-  limitation, not a bug here; the real fix (re-encoding to GIF per render) was rejected as not worth
-  the per-render latency for a cosmetic nicety.
-- **Cloudinary folder organization — verify** (added 2026-07-18) — confirm draw thumbnails actually land in
-  `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as designed; Harkirat noticed assets that
-  look like they're in the main folder + secondary-weapon files not following the old naming. Read-only
-  check; escalate to a real bug only if a genuine discrepancy is confirmed.
-- **`/patch notes` media carousel has no component-count chunking** yet, unlike `/draws`/`/calendar`
-  — untested at scale; likely fine (few screenshots per entry) but not empirically verified.
-- **`ffmpeg` is an unverified production dependency** — used for decoration still-frames; confirmed on
-  the local Mac, not guaranteed on Render's container. If decoration color extraction ever breaks in
-  production only, check for `ffmpeg` on the deployed image first.
-- **Pagination/toggle clicks pay a structural double network round-trip** (`deferUpdate()` then a
-  separate `PATCH` to update the message) — not a CPU/DB bug this time, just the current architecture.
-  Real fix is switching to a single direct `UPDATE_MESSAGE` response; touches every paginated command,
-  deferred as its own future pass rather than bundled into v2.18.0.
-- ~~Disabling expired buttons — a reactive "friendly message but buttons stay live" gap~~ — **SHIPPED
-  for `/settings` in v2.22.0** as a genuinely PASSIVE, no-click auto-disable (a held interaction token
-  + `setTimeout` PATCHes the message on its own after 10 idle minutes) — see that entry below for the
-  mechanism, and CLAUDE.md's "Passive idle-timeout auto-disable" section for the full design. This
-  entry itself went through two rounds of correction before landing there: first wrongly claimed
-  disabling was impossible at all, then wrongly claimed a proactive zero-click update specifically was
-  impossible — both wrong, see CLAUDE.md's "Known open issues" for the full trail. Still open: the same
-  pattern for draws/calendar/drawprices/loadouts (see the v3 roadmap list above).
-- **Global profile only, never per-server "Server Profile" overrides** (confirmed 2026-07-18) — every
-  avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different
-  avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install
-  pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member
-  context is available to the bot.
+- **View Colors heading isn't vertically centered** against its thumbnail — Components V2 has no vertical-align control; a workaround was tried and reverted. Purely cosmetic.
+- **Decoration & nameplate previews show as static posters, not animated** — a genuine Discord-client limitation, not a bug here; the real fix (re-encoding to GIF per render) was rejected as not worth the per-render latency for a cosmetic nicety.
+- **Cloudinary folder organization — verify** (added 2026-07-18) — confirm draw thumbnails actually land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as designed; Harkirat noticed assets that look like they're in the main folder + secondary-weapon files not following the old naming. Read-only check; escalate to a real bug only if a genuine discrepancy is confirmed.
+- **`/patch notes` media carousel has no component-count chunking** yet, unlike `/draws`/`/calendar` — untested at scale; likely fine (few screenshots per entry) but not empirically verified.
+- **`ffmpeg` is an unverified production dependency** — used for decoration still-frames; confirmed on the local Mac, not guaranteed on Render's container. If decoration color extraction ever breaks in production only, check for `ffmpeg` on the deployed image first.
+- **Pagination/toggle clicks pay a structural double network round-trip** (`deferUpdate()` then a separate `PATCH` to update the message) — not a CPU/DB bug this time, just the current architecture. Real fix is switching to a single direct `UPDATE_MESSAGE` response; touches every paginated command, deferred as its own future pass rather than bundled into v2.18.0.
+- ~~Disabling expired buttons — a reactive "friendly message but buttons stay live" gap~~ — **SHIPPED for `/settings` in v2.22.0** as a genuinely PASSIVE, no-click auto-disable (a held interaction token
+  + `setTimeout` PATCHes the message on its own after 10 idle minutes) — see that entry below for the mechanism, and CLAUDE.md's "Passive idle-timeout auto-disable" section for the full design. This entry itself went through two rounds of correction before landing there: first wrongly claimed disabling was impossible at all, then wrongly claimed a proactive zero-click update specifically was impossible — both wrong, see CLAUDE.md's "Known open issues" for the full trail. Still open: the same pattern for draws/calendar/drawprices/loadouts (see the v3 roadmap list above).
+- **Global profile only, never per-server "Server Profile" overrides** (confirmed 2026-07-18) — every avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member context is available to the bot.
 
 ---
 
 ## v2.62.1 — 2026-08-08 09:49 EDT (#102) — Remediate 16 of 24 GitHub code-scanning alerts on the legal-site generator
 
-GitHub Advanced Security opened 24 code-scanning alerts on 2026-08-06 across
-`scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, and both `.github/workflows/*.yml` files.
-Triaged individually rather than batched or dismissed wholesale — read each flagged function's
-full body and traced where the flagged string actually flows, not just the CodeQL summary text.
+GitHub Advanced Security opened 24 code-scanning alerts on 2026-08-06 across `scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, and both `.github/workflows/*.yml` files. Triaged individually rather than batched or dismissed wholesale — read each flagged function's full body and traced where the flagged string actually flows, not just the CodeQL summary text.
 
-**16 were real, fixed here.** `esc()` (buildLegalPages.js) only escaped `& < >`, not quotes,
-despite being used inside double-quoted HTML attributes (meta `content`, `data-lang`,
-`data-label`, `download`) as well as text nodes — an unescaped `"` there could close an attribute
-early (`js/incomplete-html-attribute-sanitization`, 12 alerts). `stripTags()`
-(buildLegalPages.js) and `labelOf()` (chronicle.js) strip real tags from already-rendered HTML and
-re-embed the result unescaped — the CONTRIBUTORS page legend and the devlog's Lessons/TOC labels
-— so both now also escape any stray `<`/`>` an imperfect strip regex missed, deliberately without
-touching `&` (the input is already-escaped, and re-escaping it would double-encode legitimate
-entities like `&amp;`) (`js/incomplete-multi-character-sanitization`, 2 more alerts). Both
-workflow YAML files gained an explicit `permissions: contents: read` — neither ever writes with
-`GITHUB_TOKEN` (`actions/missing-workflow-permissions`, 2 alerts). `public/` was rebuilt and
-committed alongside — visually identical (`&#39;`/`&quot;` render the same as the literal
-characters), confirmed by the build's own 100%-content self-verifier plus a manual grep for
-double-escape artifacts across every published page.
+**16 were real, fixed here.** `esc()` (buildLegalPages.js) only escaped `& < >`, not quotes, despite being used inside double-quoted HTML attributes (meta `content`, `data-lang`, `data-label`, `download`) as well as text nodes — an unescaped `"` there could close an attribute early (`js/incomplete-html-attribute-sanitization`, 12 alerts). `stripTags()` (buildLegalPages.js) and `labelOf()` (chronicle.js) strip real tags from already-rendered HTML and re-embed the result unescaped — the CONTRIBUTORS page legend and the devlog's Lessons/TOC labels — so both now also escape any stray `<`/`>` an imperfect strip regex missed, deliberately without touching `&` (the input is already-escaped, and re-escaping it would double-encode legitimate entities like `&amp;`) (`js/incomplete-multi-character-sanitization`, 2 more alerts). Both workflow YAML files gained an explicit `permissions: contents: read` — neither ever writes with `GITHUB_TOKEN` (`actions/missing-workflow-permissions`, 2 alerts). `public/` was rebuilt and committed alongside — visually identical (`&#39;`/`&quot;` render the same as the literal characters), confirmed by the build's own 100%-content self-verifier plus a manual grep for double-escape artifacts across every published page.
 
-**8 were false positives, dismissed with documented reasoning rather than silenced** — see
-`docs/db-deferred-list.md` → 🚫 Decided-no. All eight sit inside build-time audit/gate functions
-(`structureAudit()`, `crossRefAudit()`, `scriptSyntaxAudit()`, chronicle's heading classifiers)
-where the flagged string is only ever compared or `.test()`-ed against internally — it never
-reaches a page actually served to a reader.
+**8 were false positives, dismissed with documented reasoning rather than silenced** — see `docs/db-deferred-list.md` → 🚫 Decided-no. All eight sit inside build-time audit/gate functions (`structureAudit()`, `crossRefAudit()`, `scriptSyntaxAudit()`, chronicle's heading classifiers) where the flagged string is only ever compared or `.test()`-ed against internally — it never reaches a page actually served to a reader.
 
-**A 9th false positive turned up from CodeQL's own re-scan of this PR**, on the `stripTags()` fix
-itself: its dataflow model evaluates the tag-strip regex in isolation and doesn't credit the
-unconditional character-class escape immediately after it, even after matching the tool's own
-advisory-recommended fix shape exactly. Since that escape runs on every code path with no branch
-around it, no residual `<`/`>` can survive — a provable false positive, suppressed inline with
-`// lgtm[...]` rather than chased through further rewrites. Also documented in `docs/db-deferred-list.md`.
+**A 9th false positive turned up from CodeQL's own re-scan of this PR**, on the `stripTags()` fix itself: its dataflow model evaluates the tag-strip regex in isolation and doesn't credit the unconditional character-class escape immediately after it, even after matching the tool's own advisory-recommended fix shape exactly. Since that escape runs on every code path with no branch around it, no residual `<`/`>` can survive — a provable false positive, suppressed inline with `// lgtm[...]` rather than chased through further rewrites. Also documented in `docs/db-deferred-list.md`.
 
-Real-world exploitability was already low throughout (every source Markdown this generator
-renders is this repo's own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records —
-never user-submitted), but the escaping gaps were genuine and the fix was free.
+Real-world exploitability was already low throughout (every source Markdown this generator renders is this repo's own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records — never user-submitted), but the escaping gaps were genuine and the fix was free.
 
 ## v2.62.0 — 2026-08-08 00:46 EDT (#101 · `4c00432`) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
 
-A batch of small, Harkirat-requested tweaks. **Patch notes' Additional Info field gains a third
-shorthand alongside the existing `b:`/`n:` buff/nerf icons**: `f:` swaps in a new
-`<:Fix:1535479788007985172>` icon, in both the plain inline form and the structured
-`# Weapon, Attachment, f: text` grammar (`commands/patchnotes.js`'s `applyInfoAliases()`/
-`formatAdditionalInfo()`); the `/manage` placeholder and rich Guide text were updated to match,
-staying under Discord's 100-char placeholder cap (97 chars). **The "Additional Changes" heading is
-now all-caps** (`### ADDITIONAL CHANGES`), per Harkirat's direct request. **`accentColorStyle`'s
-schema default flipped back from `'avatar'` to `'preset'`** (Pre-Designed Palette) — only affects
-new users and anyone who's never explicitly saved a preference; see memory
-`project_accent_default_flip` for the full history of this reversal. **`/calendar`'s title caption
-renamed** from "Events Calendar" to "Season Calendar" (the slash command itself stays `/calendar` —
-Discord doesn't allow spaces in command names). **The Modes emoji was re-uploaded** with a new ID
-after Harkirat deleted the old one from the Discord portal.
+A batch of small, Harkirat-requested tweaks. **Patch notes' Additional Info field gains a third shorthand alongside the existing `b:`/`n:` buff/nerf icons**: `f:` swaps in a new `<:Fix:1535479788007985172>` icon, in both the plain inline form and the structured `# Weapon, Attachment, f: text` grammar (`commands/patchnotes.js`'s `applyInfoAliases()`/ `formatAdditionalInfo()`); the `/manage` placeholder and rich Guide text were updated to match, staying under Discord's 100-char placeholder cap (97 chars). **The "Additional Changes" heading is now all-caps** (`### ADDITIONAL CHANGES`), per Harkirat's direct request. **`accentColorStyle`'s schema default flipped back from `'avatar'` to `'preset'`** (Pre-Designed Palette) — only affects new users and anyone who's never explicitly saved a preference; see memory `project_accent_default_flip` for the full history of this reversal. **`/calendar`'s title caption renamed** from "Events Calendar" to "Season Calendar" (the slash command itself stays `/calendar` — Discord doesn't allow spaces in command names). **The Modes emoji was re-uploaded** with a new ID after Harkirat deleted the old one from the Discord portal.
 
-A completeness sweep after the code changes caught two rule-file docs that had gone stale on exactly
-these points: `.claude/rules/models.md` still documented `accentColorStyle`'s default as `'avatar'`,
-and `.claude/rules/design-decisions.md` still described the old lowercase heading and `b:`/`n:`-only
-grammar — both corrected in the same branch. Verified via `node --check` on every edited file,
-`scripts/checkEmojiCaptures.js` (zero module-level emoji reads), a direct test of
-`formatAdditionalInfo()` confirming the new alias and heading render correctly, and the full
-`npm test` suite (22/22 hook self-tests, docs audit) staying green.
+A completeness sweep after the code changes caught two rule-file docs that had gone stale on exactly these points: `.claude/rules/models.md` still documented `accentColorStyle`'s default as `'avatar'`, and `.claude/rules/design-decisions.md` still described the old lowercase heading and `b:`/`n:`-only grammar — both corrected in the same branch. Verified via `node --check` on every edited file, `scripts/checkEmojiCaptures.js` (zero module-level emoji reads), a direct test of `formatAdditionalInfo()` confirming the new alias and heading render correctly, and the full `npm test` suite (22/22 hook self-tests, docs audit) staying green.
 
-**Also bundled: `MEMORY.md`'s enforced byte budget was TEMPORARILY raised from 16,000 to 20,000
-bytes** (`.claude/hooks/memory-index-check.sh`), per Harkirat's direct request after a quick look at
-the index found its points genuinely worth keeping and not easily trimmable — 98 lines didn't
-justify forcing a full compaction session over a few hundred bytes. The real fix stays open in
-`docs/db-deferred-list.md`'s P2 "MEMORY.md compaction pass" item; this is a stopgap, not a revised
-target. `memory-index-check.test.sh`'s 14 fixtures are unaffected (they always pass an explicit
-`MEMCHECK_BUDGET` override).
+**Also bundled: `MEMORY.md`'s enforced byte budget was TEMPORARILY raised from 16,000 to 20,000 bytes** (`.claude/hooks/memory-index-check.sh`), per Harkirat's direct request after a quick look at the index found its points genuinely worth keeping and not easily trimmable — 98 lines didn't justify forcing a full compaction session over a few hundred bytes. The real fix stays open in `docs/db-deferred-list.md`'s P2 "MEMORY.md compaction pass" item; this is a stopgap, not a revised target. `memory-index-check.test.sh`'s 14 fixtures are unaffected (they always pass an explicit `MEMCHECK_BUDGET` override).
 
 ## v2.61.2 — 2026-08-07 22:31 EDT (#100 · `10917b4`) — Fixing the hook that made v2.61.1 necessary
 
-Harkirat asked directly why the release-doc-check hook flagged the missing `design-decisions.md`
-update only *after* v2.61.0 had already merged, forcing v2.61.1 to exist at all. Investigated rather
-than assumed: `git log -S` on both files confirmed the PostToolUse "RELEASE DOC CHECK" hook (checks
-`origin/main`, after `gh pr merge`) has run this exact check since 2026-07-28, five days before
-`release-ready-check.sh` (the PreToolUse, pre-merge equivalent) was built specifically to fix this
-class of wrong-moment bug. That 2026-08-02 fix migrated the CHANGELOG/CHANGELOG-SUMMARY/package.json/
-DEVLOG checks but not this one — an incomplete migration, not a deliberate choice. The check now also
-runs pre-merge, catching the gap while it can still be fixed for free; it was deliberately NOT removed
-from the post-merge hook, since `RELEASE_SKIP` bypasses that pre-merge gate's whole miss-list and the
-post-merge copy is the unconditional safety net for exactly that case (same role package.json/
-CHANGELOG-SUMMARY already play there). Also corrected `.claude/hooks/completeness-sweep.sh`'s
-`generated-output` angle text, which asserted a blanket "rebuild public/ if any site source changed"
-with no exception for changelog/devlog-only changes — those three pages are withdrawn from the site
-nav (the same exemption `deploy-site.yml` already codes for), so demanding a rebuild for them was a
-false gap, not a real one. 4 new test cases added to `release-ready-check.test.sh`; full 22-hook suite
-still green.
+Harkirat asked directly why the release-doc-check hook flagged the missing `design-decisions.md` update only *after* v2.61.0 had already merged, forcing v2.61.1 to exist at all. Investigated rather than assumed: `git log -S` on both files confirmed the PostToolUse "RELEASE DOC CHECK" hook (checks `origin/main`, after `gh pr merge`) has run this exact check since 2026-07-28, five days before `release-ready-check.sh` (the PreToolUse, pre-merge equivalent) was built specifically to fix this class of wrong-moment bug. That 2026-08-02 fix migrated the CHANGELOG/CHANGELOG-SUMMARY/package.json/ DEVLOG checks but not this one — an incomplete migration, not a deliberate choice. The check now also runs pre-merge, catching the gap while it can still be fixed for free; it was deliberately NOT removed from the post-merge hook, since `RELEASE_SKIP` bypasses that pre-merge gate's whole miss-list and the post-merge copy is the unconditional safety net for exactly that case (same role package.json/ CHANGELOG-SUMMARY already play there). Also corrected `.claude/hooks/completeness-sweep.sh`'s `generated-output` angle text, which asserted a blanket "rebuild public/ if any site source changed" with no exception for changelog/devlog-only changes — those three pages are withdrawn from the site nav (the same exemption `deploy-site.yml` already codes for), so demanding a rebuild for them was a false gap, not a real one. 4 new test cases added to `release-ready-check.test.sh`; full 22-hook suite still green.
 
 ## v2.61.1 — 2026-08-07 22:17 EDT (#99 · `c592fef`) — Design-notes correction, no code change
 
-`.claude/rules/design-decisions.md`'s calendar-banner entry still asserted the reversed 2026-07-31
-call ("prefer Discord's own CDN, it doesn't expire") after v2.61.0 shipped the opposite behavior —
-corrected in place (struck through, not deleted, so the reasoning trail stays readable) rather than
-left to mislead the next session that touches this area. `.claude/rules/loadout-images-and-metadata.md`
-and this file's own rules-navigation table also updated to cover `calendarBannerCache.js` and the new
-`f_auto,q_auto` convention, which weren't mentioned anywhere before this.
+`.claude/rules/design-decisions.md`'s calendar-banner entry still asserted the reversed 2026-07-31 call ("prefer Discord's own CDN, it doesn't expire") after v2.61.0 shipped the opposite behavior — corrected in place (struck through, not deleted, so the reasoning trail stays readable) rather than left to mislead the next session that touches this area. `.claude/rules/loadout-images-and-metadata.md` and this file's own rules-navigation table also updated to cover `calendarBannerCache.js` and the new `f_auto,q_auto` convention, which weren't mentioned anywhere before this.
 
 ## v2.61.0 — 2026-08-07 22:06 EDT (#98 · `87ed7a5`) — Calendar banners stop silently expiring, and every Cloudinary URL gets adaptive quality
 
-**`/manage`'s calendar bulk add/replace now reports a per-category breakdown, not just a count.**
-Harkirat bulk-added 23 calendar events with no manual category prefixes and several MP-mode/BR
-titles landed under Events instead of Playlists — the classifier itself turned out correct (an
-explicit `e•` prefix was present in the actual submitted text, not visible in what he'd retyped for
-review), but the confirmation message gave no way to catch it without opening `/calendar` and
-cross-checking by eye. It now lists every title grouped by the category it was actually assigned,
-capped so one giant paste can't blow Discord's 2000-char reply limit.
+**`/manage`'s calendar bulk add/replace now reports a per-category breakdown, not just a count.** Harkirat bulk-added 23 calendar events with no manual category prefixes and several MP-mode/BR titles landed under Events instead of Playlists — the classifier itself turned out correct (an explicit `e•` prefix was present in the actual submitted text, not visible in what he'd retyped for review), but the confirmation message gave no way to catch it without opening `/calendar` and cross-checking by eye. It now lists every title grouped by the category it was actually assigned, capped so one giant paste can't blow Discord's 2000-char reply limit.
 
-**`/calendar` page banners were silently going dead within ~24-48h, and the width-cap feature built
-to fix a desktop-width nuisance turned out to be a complete no-op anyway.** The 2026-07-31 decision
-to skip Cloudinary re-hosting for Discord-CDN banner sources ("a real Discord CDN link doesn't
-expire") was built on a false premise — `media.discordapp.net` links are signed with expiring
-`ex=`/`is=`/`hm=` params; decoding a live one showed it had already expired. Two workarounds
-(`height=auto`, forging a later `ex=`) both failed on direct testing. Separately, the width cap
-itself (`capBannerPreviewWidth`) only ever sent `?width=N`, which Discord's resize proxy silently
-ignores without an accompanying `height` — confirmed it had never actually resized anything.
-Fix: `utils/calendarBannerCache.js` now re-hosts every banner source to Cloudinary unconditionally
-(durable, no expiry), and the width cap was dropped entirely rather than fixed — Harkirat live-tested
-a working version and rejected it anyway, since a Cloudinary-transformed derivative has no path back
-to the original, so the cap also shrank the zoomed view. Banners now render at full resolution,
-inline and on zoom, from a durable host.
+**`/calendar` page banners were silently going dead within ~24-48h, and the width-cap feature built to fix a desktop-width nuisance turned out to be a complete no-op anyway.** The 2026-07-31 decision to skip Cloudinary re-hosting for Discord-CDN banner sources ("a real Discord CDN link doesn't expire") was built on a false premise — `media.discordapp.net` links are signed with expiring `ex=`/`is=`/`hm=` params; decoding a live one showed it had already expired. Two workarounds (`height=auto`, forging a later `ex=`) both failed on direct testing. Separately, the width cap itself (`capBannerPreviewWidth`) only ever sent `?width=N`, which Discord's resize proxy silently ignores without an accompanying `height` — confirmed it had never actually resized anything. Fix: `utils/calendarBannerCache.js` now re-hosts every banner source to Cloudinary unconditionally (durable, no expiry), and the width cap was dropped entirely rather than fixed — Harkirat live-tested a working version and rejected it anyway, since a Cloudinary-transformed derivative has no path back to the original, so the cap also shrank the zoomed view. Banners now render at full resolution, inline and on zoom, from a durable host.
 
-**Every Cloudinary-hosted image in this bot now uses adaptive format/quality (`f_auto,q_auto`), not
-just loadout screenshots.** Investigating the banner issue surfaced that draw thumbnails and
-patch-note images never applied this either — only loadout images (which build their delivery URL
-fresh at render time) did; the other three modules stored Cloudinary's `secure_url` verbatim, at
-full/original quality. New shared `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`,
-idempotent, non-Cloudinary URLs pass through untouched) is now applied on every upload/lookup across
-`cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js` — the standing
-convention going forward for any Cloudinary URL this bot produces. `scripts/
-backfillCloudinaryDeliveryDefaults.js` (safe to re-run) fixed everything already stored on both
-dev and prod (25 URLs each), each spot-verified live.
+**Every Cloudinary-hosted image in this bot now uses adaptive format/quality (`f_auto,q_auto`), not just loadout screenshots.** Investigating the banner issue surfaced that draw thumbnails and patch-note images never applied this either — only loadout images (which build their delivery URL fresh at render time) did; the other three modules stored Cloudinary's `secure_url` verbatim, at full/original quality. New shared `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`, idempotent, non-Cloudinary URLs pass through untouched) is now applied on every upload/lookup across `cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js` — the standing convention going forward for any Cloudinary URL this bot produces. `scripts/ backfillCloudinaryDeliveryDefaults.js` (safe to re-run) fixed everything already stored on both dev and prod (25 URLs each), each spot-verified live.
 
 ## v2.60.0 — 2026-08-07 19:49 EDT (#97 · `138b25c`) — The bug that looked fixed, and the fix that traded speed for correctness
 
-**The ACTUAL live bug behind "`/manage`'s calendar bulk buttons still don't work" — a different, earlier
-failure than the one v2.59.0 fixed.** `buildCalendarBulkModal()`'s placeholder text was 181 characters
-against Discord's HARD 100-character cap on modal `TextInput` placeholders — discord.js throws
-synchronously, crashing the modal-builder before `showModal()` can even run. Both bulk add/replace
-buttons looked completely dead in prod, indistinguishable from the `deferReply()` timeout bug fixed one
-release earlier, because this crash happens ONE step earlier, before an interaction ack is even
-possible. Fixed by shortening the placeholder to 98 chars; the 100-char cap itself was already known in
-passing (Patch Notes' Additional Info field respects it) but undocumented as a real constraint — now
-recorded in `docs/reference/platform-constraints.md`.
+**The ACTUAL live bug behind "`/manage`'s calendar bulk buttons still don't work" — a different, earlier failure than the one v2.59.0 fixed.** `buildCalendarBulkModal()`'s placeholder text was 181 characters against Discord's HARD 100-character cap on modal `TextInput` placeholders — discord.js throws synchronously, crashing the modal-builder before `showModal()` can even run. Both bulk add/replace buttons looked completely dead in prod, indistinguishable from the `deferReply()` timeout bug fixed one release earlier, because this crash happens ONE step earlier, before an interaction ack is even possible. Fixed by shortening the placeholder to 98 chars; the 100-char cap itself was already known in passing (Patch Notes' Additional Info field respects it) but undocumented as a real constraint — now recorded in `docs/reference/platform-constraints.md`.
 
-**A button's custom emoji could go blank after a click on a DIFFERENT button, sometimes permanently —
-root-caused to the single-hop "pagination perf hybrid" from v2.58.2, and reverted for the affected
-handlers.** Investigated live across `/calendar`'s section-toggle row, `/draw prices`' region-switch
-row, and `/settings`' pagination — every reproduction traced to the exact same code path: a `type:7`
-UPDATE_MESSAGE posted as an interaction's first and only response, the single-hop delivery mechanism
-`sendV2Payload.js` added to cut pagination clicks from two Discord round-trips to one. Systematically
-ruled out every other candidate cause before accepting the mechanism itself: the JSON payload (always
-correct, verified directly against the code), timing (artificial delays from 200ms up to a full 2
-seconds on the single-hop path all failed to fix it), animated-vs-static emoji (a static-only repro on
-`/settings` disproved this), and button/emoji count (broke on a 2-button row same as a 3-button row). No
-compromise preserving both single-hop speed and correct rendering was found. `calpage_`, `price_region_`,
-`price_subpage_`, and `set_page_` now defer first again (two-hop) — a real, measured ~200-300ms extra
-cost per click, accepted over the alternative of dropping the emoji or living with the bug. `draws`' own
-sub-page nav is the one branch left single-hop, untested for this bug either way.
+**A button's custom emoji could go blank after a click on a DIFFERENT button, sometimes permanently — root-caused to the single-hop "pagination perf hybrid" from v2.58.2, and reverted for the affected handlers.** Investigated live across `/calendar`'s section-toggle row, `/draw prices`' region-switch row, and `/settings`' pagination — every reproduction traced to the exact same code path: a `type:7` UPDATE_MESSAGE posted as an interaction's first and only response, the single-hop delivery mechanism `sendV2Payload.js` added to cut pagination clicks from two Discord round-trips to one. Systematically ruled out every other candidate cause before accepting the mechanism itself: the JSON payload (always correct, verified directly against the code), timing (artificial delays from 200ms up to a full 2 seconds on the single-hop path all failed to fix it), animated-vs-static emoji (a static-only repro on `/settings` disproved this), and button/emoji count (broke on a 2-button row same as a 3-button row). No compromise preserving both single-hop speed and correct rendering was found. `calpage_`, `price_region_`, `price_subpage_`, and `set_page_` now defer first again (two-hop) — a real, measured ~200-300ms extra cost per click, accepted over the alternative of dropping the emoji or living with the bug. `draws`' own sub-page nav is the one branch left single-hop, untested for this bug either way.
 
-**Three visual asks.** `/draw prices`' three CP-region buttons now carry their own per-region icon
-(previously one shared generic icon). `/calendar`'s "Gamemodes" button label shortened to "Modes" so
-all three toggle buttons fit one row on mobile; the footer hint and page-2 heading corrected from
-"Gamemodes" to the real two-word "Game Modes." `/settings`' Default Visibility and Default Preferences
-rows reformatted — the setting's own value now lives in an inline-code span (a literal-value styling)
-instead of the label; the label is bold plain text instead of inline code with a leading bullet;
-"in chat" dropped from the visibility phrasing as redundant.
+**Three visual asks.** `/draw prices`' three CP-region buttons now carry their own per-region icon (previously one shared generic icon). `/calendar`'s "Gamemodes" button label shortened to "Modes" so all three toggle buttons fit one row on mobile; the footer hint and page-2 heading corrected from "Gamemodes" to the real two-word "Game Modes." `/settings`' Default Visibility and Default Preferences rows reformatted — the setting's own value now lives in an inline-code span (a literal-value styling) instead of the label; the label is bold plain text instead of inline code with a leading bullet; "in chat" dropped from the visibility phrasing as redundant.
 
 ## v2.59.0 — 2026-08-07 13:49 EDT (#96 · `cee3180`) — A purge that looked like data loss, and wasn't
 
-**`/manage` calendar bulk add/replace could time out with no visible confirmation.** The handler never
-called `deferReply()` before its DB fetch + parse + (replace-mode) fuzzy-match + `save()` — all inside
-Discord's 3-second interaction-ack window, unlike the sibling draws bulk handler a few lines up which
-already deferred. Once the window was blown, `interaction.reply()` failed on a dead token ("Dior's
-Builds didn't respond in time") even though the save had already gone through — so data landed with no
-confirmation, which is what made this look broken rather than just slow.
+**`/manage` calendar bulk add/replace could time out with no visible confirmation.** The handler never called `deferReply()` before its DB fetch + parse + (replace-mode) fuzzy-match + `save()` — all inside Discord's 3-second interaction-ack window, unlike the sibling draws bulk handler a few lines up which already deferred. Once the window was blown, `interaction.reply()` failed on a dead token ("Dior's Builds didn't respond in time") even though the save had already gone through — so data landed with no confirmation, which is what made this look broken rather than just slow.
 
-**A real draw went missing from `/calendar`'s Draws page after a calendar-events purge, and the data
-was never actually the problem.** Traced end-to-end against the live production database (an earlier
-pass wrongly diagnosed this against the dev database instead — see DEVLOG): the draw was correctly in
-`newDraws`, correctly synthesized by `getDrawSectionEntries()`, and correctly deduped against an
-explicit calendar row. The actual bug was `isEventEnded()` treating a same-day-released draw as
-"ended" the instant its UTC-midnight release timestamp passed — for any US-timezone viewer, that's
-almost immediately. Combined with an Active-Only calendar filter preference, a draw released today
-would silently disappear from the filtered view within hours while `/draws` (no such filter) kept
-showing it fine. `dateOnly` entries now never count as "ended" — they only disappear when actually
-removed from `newDraws`/`returningDraws`, matching `/draws`' own behavior, until the already-queued
-season-expiry feature gets built on purpose. Also fixed: `guessCalendarCategory()`'s draw-keyword
-regex only matched the spelled-out "two", never the numeral a real title might use.
+**A real draw went missing from `/calendar`'s Draws page after a calendar-events purge, and the data was never actually the problem.** Traced end-to-end against the live production database (an earlier pass wrongly diagnosed this against the dev database instead — see DEVLOG): the draw was correctly in `newDraws`, correctly synthesized by `getDrawSectionEntries()`, and correctly deduped against an explicit calendar row. The actual bug was `isEventEnded()` treating a same-day-released draw as "ended" the instant its UTC-midnight release timestamp passed — for any US-timezone viewer, that's almost immediately. Combined with an Active-Only calendar filter preference, a draw released today would silently disappear from the filtered view within hours while `/draws` (no such filter) kept showing it fine. `dateOnly` entries now never count as "ended" — they only disappear when actually removed from `newDraws`/`returningDraws`, matching `/draws`' own behavior, until the already-queued season-expiry feature gets built on purpose. Also fixed: `guessCalendarCategory()`'s draw-keyword regex only matched the spelled-out "two", never the numeral a real title might use.
 
-**The Guide emoji wasn't broken code — the dev Discord application was just missing the asset.**
-`refreshEmojiIds()` re-points an existing same-named emoji to whichever app is booting; it can't
-create one that was never uploaded. Confirmed directly against Discord's API (not assumed) that the
-dev app had 76 emojis and no "Guide." Synced via the existing `scripts/syncMissingDevEmojis.js` — a
-duplicate script was built first and caught before merge (see DEVLOG).
+**The Guide emoji wasn't broken code — the dev Discord application was just missing the asset.** `refreshEmojiIds()` re-points an existing same-named emoji to whichever app is booting; it can't create one that was never uploaded. Confirmed directly against Discord's API (not assumed) that the dev app had 76 emojis and no "Guide." Synced via the existing `scripts/syncMissingDevEmojis.js` — a duplicate script was built first and caught before merge (see DEVLOG).
 
-**Two visual asks:** `/draw prices`' region-switch buttons changed from red to blue; `/calendar`'s
-three section-toggle buttons (Draws/Events/Gamemodes) now carry emoji.
+**Two visual asks:** `/draw prices`' region-switch buttons changed from red to blue; `/calendar`'s three section-toggle buttons (Draws/Events/Gamemodes) now carry emoji.
 
-**New: an unconditional dev-bot duplicate-instance check at SessionStart.** The existing guidance
-("suspect multiple instances if the bot behaves erratically") was reactive and memory-dependent — it
-missed a real collision this session where repeated `git switch` calls restarted the `--watch`
-dev-bot child mid-session. The new hook distinguishes a normal `--watch` supervisor+child pair (same
-parent/child PID relationship) from a genuine second, independently-launched instance on the same
-token, and only speaks up for the latter.
+**New: an unconditional dev-bot duplicate-instance check at SessionStart.** The existing guidance ("suspect multiple instances if the bot behaves erratically") was reactive and memory-dependent — it missed a real collision this session where repeated `git switch` calls restarted the `--watch` dev-bot child mid-session. The new hook distinguishes a normal `--watch` supervisor+child pair (same parent/child PID relationship) from a genuine second, independently-launched instance on the same token, and only speaks up for the latter.
 
 ## v2.58.2 — 2026-08-07 11:22 EDT (#93 · `ed0225f`) — A tolerance window, a round-trip cut, and a CI-only bug hiding in both
 
-**`timestamp-check.sh`'s future-stamp gate went from a zero-tolerance string compare to an epoch-second
-compare with a 3-minute grace window.** The old `[ "$d $hm" \> "$now" ]` check denied a perfectly honest
-write the moment ordinary turn latency (a minute or two between reading the clock and the bytes landing)
-put it a few minutes ahead of a stale `$now`. Still catches what the gate exists for — the original
-incident was stamps drifting 4.5 hours into the future — while no longer denying single-digit-minute
-drift from normal operation.
+**`timestamp-check.sh`'s future-stamp gate went from a zero-tolerance string compare to an epoch-second compare with a 3-minute grace window.** The old `[ "$d $hm" \> "$now" ]` check denied a perfectly honest write the moment ordinary turn latency (a minute or two between reading the clock and the bytes landing) put it a few minutes ahead of a stale `$now`. Still catches what the gate exists for — the original incident was stamps drifting 4.5 hours into the future — while no longer denying single-digit-minute drift from normal operation.
 
-**That fix's own `date -j -f` parse was BSD/macOS-only, and silently went dead on CI.** `ubuntu-latest`
-runs GNU date, which rejects `-j`; the parse error was piped to `/dev/null` and treated as "unparseable,
-skip," so the whole future-stamp gate parsed nothing and denied nothing in CI — 46 of 47 test-suite
-assertions failed there while all 47 passed locally on the Mac dev machine, because the Mac path never
-exercised the failure branch. Found by reading a failed CI log, not by re-running the suite locally
-(which stayed green the entire time). Fixed with a BSD-first, GNU-fallback parse.
+**That fix's own `date -j -f` parse was BSD/macOS-only, and silently went dead on CI.** `ubuntu-latest` runs GNU date, which rejects `-j`; the parse error was piped to `/dev/null` and treated as "unparseable, skip," so the whole future-stamp gate parsed nothing and denied nothing in CI — 46 of 47 test-suite assertions failed there while all 47 passed locally on the Mac dev machine, because the Mac path never exercised the failure branch. Found by reading a failed CI log, not by re-running the suite locally (which stayed green the entire time). Fixed with a BSD-first, GNU-fallback parse.
 
-**Draws/calendar/drawprices/settings pagination and settings toggles now cost ONE Discord round-trip
-instead of two.** These paths are pure string-building — no image or network work before responding —
-so the `deferUpdate()` ack that used to run before every click bought nothing but latency.
-`sendV2Payload()` now POSTs directly to the interaction-callback endpoint as the first and only response
-when the interaction hasn't already been acked; any path that still defers first (the initial slash
-invocation, heavy paths like View Colors) is unaffected. One latent bug fixed while removing the
-settings toggle's `deferUpdate()`: it used to pass the real interaction straight through when
-`actingUser === interaction.user`, relying on that removed call to make `settings.js`'s own deferral
-guard a no-op — now always synthetic with a no-op override, matching every other branch.
+**Draws/calendar/drawprices/settings pagination and settings toggles now cost ONE Discord round-trip instead of two.** These paths are pure string-building — no image or network work before responding — so the `deferUpdate()` ack that used to run before every click bought nothing but latency. `sendV2Payload()` now POSTs directly to the interaction-callback endpoint as the first and only response when the interaction hasn't already been acked; any path that still defers first (the initial slash invocation, heavy paths like View Colors) is unaffected. One latent bug fixed while removing the settings toggle's `deferUpdate()`: it used to pass the real interaction straight through when `actingUser === interaction.user`, relying on that removed call to make `settings.js`'s own deferral guard a no-op — now always synthetic with a no-op override, matching every other branch.
 
-**`memory-index-check.sh`'s budget guard only ever warned once ALREADY over budget** — a session reading
-its "ok" status at 98% full had no signal anything needed attention before the next line simply didn't
-fit. Added a 90%-threshold advisory tier, distinct from the hard over-budget error, with tests proving
-both fire independently.
+**`memory-index-check.sh`'s budget guard only ever warned once ALREADY over budget** — a session reading its "ok" status at 98% full had no signal anything needed attention before the next line simply didn't fit. Added a 90%-threshold advisory tier, distinct from the hard over-budget error, with tests proving both fire independently.
 
-Also: every `docs/db-deferred-list.md` item now carries a model+effort recommendation from the
-priority-tier grid (Harkirat's standing ask — a reference for whichever session picks it up, not a
-binding order), synced to the canonical copy of that legend in the cross-project tracker.
+Also: every `docs/db-deferred-list.md` item now carries a model+effort recommendation from the priority-tier grid (Harkirat's standing ask — a reference for whichever session picks it up, not a binding order), synced to the canonical copy of that legend in the cross-project tracker.
 
 ## v2.58.1 — 2026-08-07 08:10 EDT (#95 · `a695964`) — Filing what the last release only said in chat
 
-Two things from the v2.58.0 merge session had only ever been stated to Harkirat directly, not
-recorded anywhere a future session would find them: the `v2.58.0` git tag never actually reached
-GitHub (the push hit a genuine 403 from that session's proxy — an organization policy denial, not a
-transient failure, confirmed by retrying once with no change), and the local `git tag -a`
-invariant-check hook hard-errors instead of skipping whenever its hardcoded Mac-only path doesn't
-exist, which will hit every future non-Mac session the same way. Both are now filed in
-`docs/db-deferred-list.md` (a Reminder with the exact commands + a verify step for the tag, an
-Active Bug for the hook) instead of living only in a chat transcript.
+Two things from the v2.58.0 merge session had only ever been stated to Harkirat directly, not recorded anywhere a future session would find them: the `v2.58.0` git tag never actually reached GitHub (the push hit a genuine 403 from that session's proxy — an organization policy denial, not a transient failure, confirmed by retrying once with no change), and the local `git tag -a` invariant-check hook hard-errors instead of skipping whenever its hardcoded Mac-only path doesn't exist, which will hit every future non-Mac session the same way. Both are now filed in `docs/db-deferred-list.md` (a Reminder with the exact commands + a verify step for the tag, an Active Bug for the hook) instead of living only in a chat transcript.
 
 ## v2.58.0 — 2026-08-07 07:00 EDT (#94 · `570187d`) — A third region, sourced instead of guessed
 
-**Harkirat provided real screenshots of a 20 CP region for `/draw prices`** that had never existed in
-the bot — 10 CP and 30 CP were the only two regions coded. Before touching any code, the real data was
-cross-checked against an arithmetic-mean-of-region_10/region_30 model: the model matched almost every
-pull within 0-3%, with the last 1-2 "chase" pulls in a draw sometimes running ~9% below what the model
-predicted. That validation mattered because it turned "guess the missing region" into "confirm the real
-numbers, then note where a future estimate would and wouldn't be trustworthy" — the model is recorded
-in code comments as a fallback method, never as a substitute for real data that already exists.
+**Harkirat provided real screenshots of a 20 CP region for `/draw prices`** that had never existed in the bot — 10 CP and 30 CP were the only two regions coded. Before touching any code, the real data was cross-checked against an arithmetic-mean-of-region_10/region_30 model: the model matched almost every pull within 0-3%, with the last 1-2 "chase" pulls in a draw sometimes running ~9% below what the model predicted. That validation mattered because it turned "guess the missing region" into "confirm the real numbers, then note where a future estimate would and wouldn't be trustworthy" — the model is recorded in code comments as a fallback method, never as a substitute for real data that already exists.
 
-**`DRAW_DATA.region_20` and `ADVANCED_DOUBLE_LEGENDARY.region_20`** now hold the real, sourced numbers
-for every draw type that has them. `doubleEpicCharacters.region_20` stays `null` — no real data exists
-for that draw beyond its 10 CP array (not even at 30 CP), and Harkirat's explicit call was to leave it
-null rather than ship an unverified guess as real pricing, matching the existing missing-data
-convention already used for that same draw's `region_30`.
+**`DRAW_DATA.region_20` and `ADVANCED_DOUBLE_LEGENDARY.region_20`** now hold the real, sourced numbers for every draw type that has them. `doubleEpicCharacters.region_20` stays `null` — no real data exists for that draw beyond its 10 CP array (not even at 30 CP), and Harkirat's explicit call was to leave it null rather than ship an unverified guess as real pricing, matching the existing missing-data convention already used for that same draw's `region_30`.
 
-**The binary 10⇄30 CP toggle button is now a 3-way switcher.** A single "switch to the other region"
-button stopped making sense once a 3rd region existed, so it's now three buttons (10/20/30 CP), one per
-region, following the bot's own established multi-option button convention: the current region's
-button is disabled + Danger/red, the other two are Secondary/gray. `/settings`' region dropdown and the
-slash command's `region` option both gained the 20 CP choice too.
+**The binary 10⇄30 CP toggle button is now a 3-way switcher.** A single "switch to the other region" button stopped making sense once a 3rd region existed, so it's now three buttons (10/20/30 CP), one per region, following the bot's own established multi-option button convention: the current region's button is disabled + Danger/red, the other two are Secondary/gray. `/settings`' region dropdown and the slash command's `region` option both gained the 20 CP choice too.
 
-**A draw type the codebase never had: the Advanced Double Legendary Character Draw.** Harkirat's
-screenshots also surfaced a Regular/Advanced purchase split for the Legendary Character draw that
-mirrors the existing Advanced Double Legendary *Weapon* page but was never coded. Its own 4th
-pagination page reuses that page's exact structure and rendering, but its reward framing is genuinely
-different — Harkirat clarified this draw's two pairs are both Legendary tier (2 Legendary Characters as
-the headline reward, 2 Legendary Weapons as the secondary Advanced-purchase reward), unlike the Weapon
-page's Legendary-weapons-plus-Epic-characters mix — so the strategy wording was written to match, not
-copied and swapped. Its Regular-purchase array is read directly from the existing
-`legendaryCharacterWeapon` data rather than duplicated, per this file's own "a wrong number can only
-ever exist in one place" rule.
+**A draw type the codebase never had: the Advanced Double Legendary Character Draw.** Harkirat's screenshots also surfaced a Regular/Advanced purchase split for the Legendary Character draw that mirrors the existing Advanced Double Legendary *Weapon* page but was never coded. Its own 4th pagination page reuses that page's exact structure and rendering, but its reward framing is genuinely different — Harkirat clarified this draw's two pairs are both Legendary tier (2 Legendary Characters as the headline reward, 2 Legendary Weapons as the secondary Advanced-purchase reward), unlike the Weapon page's Legendary-weapons-plus-Epic-characters mix — so the strategy wording was written to match, not copied and swapped. Its Regular-purchase array is read directly from the existing `legendaryCharacterWeapon` data rather than duplicated, per this file's own "a wrong number can only ever exist in one place" rule.
 
-No live Discord testing was possible in the session that built this (no dev bot credentials in that
-remote environment) — verified instead by rendering `buildContainer()` for all 3 regions × 4 pages in
-isolation (no exceptions, max ~35 components against the 40 cap) and by hand-checking every new array's
-sum against its real sourced total.
+No live Discord testing was possible in the session that built this (no dev bot credentials in that remote environment) — verified instead by rendering `buildContainer()` for all 3 regions × 4 pages in isolation (no exceptions, max ~35 components against the 40 cap) and by hand-checking every new array's sum against its real sourced total.
 
 ## v2.57.3 — 2026-08-06 21:44 EDT (#92 · `323a4bd`) — The rule was everywhere, the method was nowhere
 
-**Harkirat asked whether v2.57.2's model-selection change had actually reached the surfaces that
-*prescribe* the recommendation.** It had not, and the gap was the instructive kind: the **obligation**
-was written in three places — `SESSION-START.md`'s hard gate, the working agreement, and the
-per-turn self-check — and the **method** in none of them. A session was told to recommend one model
-and one effort level, with no criteria attached. That is how the over-spec bias survived for months:
-the rule was enforced the whole time; there was simply nothing to enforce it *against*.
+**Harkirat asked whether v2.57.2's model-selection change had actually reached the surfaces that *prescribe* the recommendation.** It had not, and the gap was the instructive kind: the **obligation** was written in three places — `SESSION-START.md`'s hard gate, the working agreement, and the per-turn self-check — and the **method** in none of them. A session was told to recommend one model and one effort level, with no criteria attached. That is how the over-spec bias survived for months: the rule was enforced the whole time; there was simply nothing to enforce it *against*.
 
-Now every prescriptive surface points at the grid: both mention points in `SESSION-START.md`, both in
-the working agreement, `MEMORY.md`'s index line, and **`docs/ROADMAP.md`'s legend, which still read
-"Effort XS→L (with model+effort for real builds)"** — the exact conflation v2.57.2 removed. *(That last
-one would have been missed; the earlier sweep only covered memory and the two deferred lists.)*
-⚠️ `~/.config/dior/CLAUDE.md` needed no edit — it only *points at* `SESSION-START.md`, so it is correct
-by reference. Checked rather than assumed, since that repo is invisible to every in-repo search.
+Now every prescriptive surface points at the grid: both mention points in `SESSION-START.md`, both in the working agreement, `MEMORY.md`'s index line, and **`docs/ROADMAP.md`'s legend, which still read "Effort XS→L (with model+effort for real builds)"** — the exact conflation v2.57.2 removed. *(That last one would have been missed; the earlier sweep only covered memory and the two deferred lists.)* ⚠️ `~/.config/dior/CLAUDE.md` needed no edit — it only *points at* `SESSION-START.md`, so it is correct by reference. Checked rather than assumed, since that repo is invisible to every in-repo search.
 
-**Two real false positives fixed in `branch-discipline-guard.sh`, both hit live while editing the guard
-itself.** It denied `git switch -c fix/x && git commit` for being "on main" — but `PreToolUse` reads
-HEAD *before* the command runs, and that commit lands on `fix/x`. The deny was factually wrong about
-where the commit would go, and the remedy it printed was the very command already in the line. Now the
-**target** of the last switch decides, so `git switch main && git commit` still denies. It also denied
-a `python3 - <<'PY'` call whose heredoc was *writing a test fixture* containing the words "git commit" —
-nothing was being committed. Heredoc bodies are stripped before matching now, and a real commit after a
-heredoc still denies. Plus a `cut -c1-0` crash when the commit sits at position 0.
+**Two real false positives fixed in `branch-discipline-guard.sh`, both hit live while editing the guard itself.** It denied `git switch -c fix/x && git commit` for being "on main" — but `PreToolUse` reads HEAD *before* the command runs, and that commit lands on `fix/x`. The deny was factually wrong about where the commit would go, and the remedy it printed was the very command already in the line. Now the **target** of the last switch decides, so `git switch main && git commit` still denies. It also denied a `python3 - <<'PY'` call whose heredoc was *writing a test fixture* containing the words "git commit" — nothing was being committed. Heredoc bodies are stripped before matching now, and a real commit after a heredoc still denies. Plus a `cut -c1-0` crash when the commit sits at position 0.
 
-**And the remedy text itself was wrong for the case that triggered it.** Writing two handoffs into
-gitignored `local/` needed **no commit at all**, yet the message said `git switch -c` — which would
-produce a branch for an empty commit, and reads as "you needed a branch". The Write/Edit half of the
-same guard already stated the gitignored exemption; the commit half did not. **A guard whose suggested
-fix is wrong for your situation is the same failure class as one that fires on correct input** — both
-teach you to route around it.
+**And the remedy text itself was wrong for the case that triggered it.** Writing two handoffs into gitignored `local/` needed **no commit at all**, yet the message said `git switch -c` — which would produce a branch for an empty commit, and reads as "you needed a branch". The Write/Edit half of the same guard already stated the gitignored exemption; the commit half did not. **A guard whose suggested fix is wrong for your situation is the same failure class as one that fires on correct input** — both teach you to route around it.
 
-⚠️ **A correction to my own work, because the test caught the belief rather than the code.** I wrote a
-comment asserting `bash -c "git commit"` *"must still be caught"*, then wrote a test to prove it — and
-the test **failed**. It was never caught: the matcher requires `^` or `;&|` before `git`, and there a
-quote precedes it. A pre-existing blind spot, not a regression. The test now pins the real behaviour
-instead of asserting a capability that does not exist, and the gap is **filed** rather than buried in a
-changelog line. Second time in one evening a test I wrote convicted my own belief.
+⚠️ **A correction to my own work, because the test caught the belief rather than the code.** I wrote a comment asserting `bash -c "git commit"` *"must still be caught"*, then wrote a test to prove it — and the test **failed**. It was never caught: the matcher requires `^` or `;&|` before `git`, and there a quote precedes it. A pre-existing blind spot, not a regression. The test now pins the real behaviour instead of asserting a capability that does not exist, and the gap is **filed** rather than buried in a changelog line. Second time in one evening a test I wrote convicted my own belief.
 
 10 new test cases on that guard; 31/31 pass.
 
-**Also written down: the assert-before-write heredoc**, after Harkirat noticed it working and asked
-whether it was a script future sessions inherit. It is not — it was an inline pattern, undocumented,
-reinvented each time. Now in `feedback_token_conscious_tool_routing`. The value is one line,
-`assert old in s` before the write: `sed` **exits 0 on no match**, so an edit "succeeds" having changed
-nothing, which is exactly how a stale line survives a sweep and then gets reported as swept. ⚠️ Recorded
-honestly as a TURN trade, not an upgrade over the `Edit` tool: `Edit` is one edit per call and the
-harness verifies each one; the heredoc is N per call and **the assert is the verification, written by
-me**. No assert, no heredoc.
+**Also written down: the assert-before-write heredoc**, after Harkirat noticed it working and asked whether it was a script future sessions inherit. It is not — it was an inline pattern, undocumented, reinvented each time. Now in `feedback_token_conscious_tool_routing`. The value is one line, `assert old in s` before the write: `sed` **exits 0 on no match**, so an edit "succeeds" having changed nothing, which is exactly how a stale line survives a sweep and then gets reported as swept. ⚠️ Recorded honestly as a TURN trade, not an upgrade over the `Edit` tool: `Edit` is one edit per call and the harness verifies each one; the heredoc is N per call and **the assert is the verification, written by me**. No assert, no heredoc.
 
 ## v2.57.2 — 2026-08-06 21:08 EDT (#91 · `02ec50c`) — Choosing the model is a grid, not a ladder
 
 Records and internal judgement only; no behaviour changed.
 
-**Harkirat: *"noticed you over-spec the model recommendation quite often."*** He was right, and
-measuring it made the shape precise rather than vague. The **filed** effort tags are well calibrated —
-`XS → Sonnet5-L`, `S → Sonnet5-M`, `L → Opus5-H`, and 9 Opus vs 10 Sonnet overall. It is the **fresh,
-in-the-moment** recommendations that drift upward: both handoffs written that day reached for Opus,
-one of them for work described in the same paragraph as *"specified, not novel design."*
+**Harkirat: *"noticed you over-spec the model recommendation quite often."*** He was right, and measuring it made the shape precise rather than vague. The **filed** effort tags are well calibrated — `XS → Sonnet5-L`, `S → Sonnet5-M`, `L → Opus5-H`, and 9 Opus vs 10 Sonnet overall. It is the **fresh, in-the-moment** recommendations that drift upward: both handoffs written that day reached for Opus, one of them for work described in the same paragraph as *"specified, not novel design."*
 
-**The mechanism, which is the only part that generalises: under-speccing fails visibly in front of me,
-over-speccing fails invisibly and Harkirat pays for it.** So I drift toward the cost I never have to
-look at, and it feels like caution. It is not caution — a recommendation that is always one tier up
-carries no information.
+**The mechanism, which is the only part that generalises: under-speccing fails visibly in front of me, over-speccing fails invisibly and Harkirat pays for it.** So I drift toward the cost I never have to look at, and it feels like caution. It is not caution — a recommendation that is always one tier up carries no information.
 
-**The root cause was a category error:** effort tier answers *how much work*, model+effort answers
-*how hard the thinking is*, and I had been treating the first as a proxy for the second. They are now
-separate axes. **Reasoning effort buys breadth; the model buys judgement and self-correction.** That is
-also why `Sonnet5-XHigh ≈ Opus5-Medium` in quality yet they are not interchangeable — equal on breadth
-with clear criteria, unequal the moment something requires noticing a premise is false.
+**The root cause was a category error:** effort tier answers *how much work*, model+effort answers *how hard the thinking is*, and I had been treating the first as a proxy for the second. They are now separate axes. **Reasoning effort buys breadth; the model buys judgement and self-correction.** That is also why `Sonnet5-XHigh ≈ Opus5-Medium` in quality yet they are not interchangeable — equal on breadth with clear criteria, unequal the moment something requires noticing a premise is false.
 
-Selection is now a **12-cell grid** (premise risk × deliberation load) in `reference_priority_tier_system`,
-mirrored into both deferred-list legends. ⚠️ **Every cell names exactly ONE combo.** An earlier draft
-wrote cells as `Sonnet5-Low/Medium`; a lookup table whose cells say "one of these two" re-creates the
-wobble the rule exists to remove — and there is a `Stop` hook that blocks effort ranges outright.
+Selection is now a **12-cell grid** (premise risk × deliberation load) in `reference_priority_tier_system`, mirrored into both deferred-list legends. ⚠️ **Every cell names exactly ONE combo.** An earlier draft wrote cells as `Sonnet5-Low/Medium`; a lookup table whose cells say "one of these two" re-creates the wobble the rule exists to remove — and there is a `Stop` hook that blocks effort ranges outright.
 
-**No `XL` effort tier — considered and rejected on the data.** Completion rates: **S 35% · M 28% ·
-XS 14% · L 11%** (1 of 9, and that one was *retired*, not shipped). `L` is already where work goes to
-not happen, so a bigger bucket would make parking easier. **The rule instead: an `L` item carries a
-named first slice or a decomposition, or it is not schedulable.**
+**No `XL` effort tier — considered and rejected on the data.** Completion rates: **S 35% · M 28% · XS 14% · L 11%** (1 of 9, and that one was *retired*, not shipped). `L` is already where work goes to not happen, so a bigger bucket would make parking easier. **The rule instead: an `L` item carries a named first slice or a decomposition, or it is not schedulable.**
 
-**The `Max` criterion was keyed on the wrong property.** It required *irreversible*; Harkirat's memory
-of reaching for the top tier on the CLAUDE.md modularization exposed the flaw — that work was fully
-git-revertible, yet a mistake there means **a safety rule silently stops loading and nobody notices for
-weeks**. The trigger is **detection**, not undo. `Max` now also covers work that *defines the system
-governing all future work*. *(Measured aside: that session actually ran Opus **4.8** at `high`→`xhigh`
-— Opus 5 did not exist yet.)*
+**The `Max` criterion was keyed on the wrong property.** It required *irreversible*; Harkirat's memory of reaching for the top tier on the CLAUDE.md modularization exposed the flaw — that work was fully git-revertible, yet a mistake there means **a safety rule silently stops loading and nobody notices for weeks**. The trigger is **detection**, not undo. `Max` now also covers work that *defines the system governing all future work*. *(Measured aside: that session actually ran Opus **4.8** at `high`→`xhigh` — Opus 5 did not exist yet.)*
 
-⚠️ **And a trap worth naming, because it caught me three times in one evening: self-referential
-evidence.** I cited `PRIVACY.md` against Sentry (it says "none present" *because we chose none*),
-inferred a tag convention from tags I had written myself, and read Harkirat's model-usage history as
-evidence that unused tiers were unneeded — when he is self-described new to this and **built this
-system so that Claude would choose**. All three read identically whether or not the conclusion is
-true, which means none of them is evidence. `CLAUDE.md` already documented this exact trap for
-sequential-thinking usage counts. Knowing the pattern abstractly did not make me recognise an instance.
+⚠️ **And a trap worth naming, because it caught me three times in one evening: self-referential evidence.** I cited `PRIVACY.md` against Sentry (it says "none present" *because we chose none*), inferred a tag convention from tags I had written myself, and read Harkirat's model-usage history as evidence that unused tiers were unneeded — when he is self-described new to this and **built this system so that Claude would choose**. All three read identically whether or not the conclusion is true, which means none of them is evidence. `CLAUDE.md` already documented this exact trap for sequential-thinking usage counts. Knowing the pattern abstractly did not make me recognise an instance.
 
-**Two real defects fixed in the `Stop` gate that polices this**, both found by it firing on me:
-it read `tail -8`, so a single stray phrase **re-fired every turn for eight turns**; and it stripped
-backticked *spans*, which made `` `xhigh`/`max` `` invisible to it while leaving `high/max` exposed by
-luck. Now `tail -2` and it strips backtick *characters* — verified against the exact phrase that
-slipped through.
+**Two real defects fixed in the `Stop` gate that polices this**, both found by it firing on me: it read `tail -8`, so a single stray phrase **re-fired every turn for eight turns**; and it stripped backticked *spans*, which made `` `xhigh`/`max` `` invisible to it while leaving `high/max` exposed by luck. Now `tail -2` and it strips backtick *characters* — verified against the exact phrase that slipped through.
 
 ## v2.57.1 — 2026-08-06 19:48 EDT (#90 · `8da2d47`) — Closing out the outage
 
 Records only; no behaviour changed.
 
-**The CI mystery is closed, and the answer was never in this repo.** Two runs on the v2.57.0 branch
-died at *exactly* 15m04s and 15m03s with **zero log bytes** — no runner was ever assigned, and a
-failing step always leaves output. `main`'s own run failed identically, on a branch that work never
-touched. It was a **GitHub Actions major outage**, confirmed at githubstatus.com. Once Actions
-recovered, `syntax-check` passed on the head commit *unchanged* and v2.57.0 merged normally. Nothing
-was fixed, because nothing here was broken. **The tell is the shape: a cancel with no failed step and
-no log output. Check githubstatus.com before debugging the repo.**
+**The CI mystery is closed, and the answer was never in this repo.** Two runs on the v2.57.0 branch died at *exactly* 15m04s and 15m03s with **zero log bytes** — no runner was ever assigned, and a failing step always leaves output. `main`'s own run failed identically, on a branch that work never touched. It was a **GitHub Actions major outage**, confirmed at githubstatus.com. Once Actions recovered, `syntax-check` passed on the head commit *unchanged* and v2.57.0 merged normally. Nothing was fixed, because nothing here was broken. **The tell is the shape: a cancel with no failed step and no log output. Check githubstatus.com before debugging the repo.**
 
-**A stale claim in CLAUDE.md surfaced while diagnosing it.** That file said no required status check
-existed, so "a PR with red CI still merges". **`syntax-check` IS required** (verified against the
-protection API), which is why the PR sat `BLOCKED` with 0 checks and genuinely could not be merged
-during the outage. The warning is replaced with the fact, plus the new failure mode it creates.
+**A stale claim in CLAUDE.md surfaced while diagnosing it.** That file said no required status check existed, so "a PR with red CI still merges". **`syntax-check` IS required** (verified against the protection API), which is why the PR sat `BLOCKED` with 0 checks and genuinely could not be merged during the outage. The warning is replaced with the fact, plus the new failure mode it creates.
 
-**Handoff files moved to `local/handoff/`** and renamed to `<date>-<topic>-handoff.md` (Harkirat's
-call — `local/`'s root had six of them under three naming schemes). Each was dated from a date written
-inside the file and cross-checked against its mtime; all six agreed, so none of the dates are guesses.
+**Handoff files moved to `local/handoff/`** and renamed to `<date>-<topic>-handoff.md` (Harkirat's call — `local/`'s root had six of them under three naming schemes). Each was dated from a date written inside the file and cross-checked against its mtime; all six agreed, so none of the dates are guesses.
 
 ## v2.57.0 — 2026-08-06 15:15 EDT (#89 · `129304f`) — Alerts a human can read, and a dev database that isn't anyone's
 
-**A live `🔴 Gateway shard error` alert read, in full: `Unexpected server response: 503` and three
-`node_modules/ws/lib/websocket.js` stack frames.** Harkirat, on receiving it: *"absolutely no clue what
-it meant."* The alert was technically perfect and practically useless — it said WHERE in the websocket
-library the failure surfaced, and nothing about whether the bot was down, whether users were affected,
-or whether he needed to get up. **An alert exists to drive a decision; one that can't be read can't
-drive one.**
+**A live `🔴 Gateway shard error` alert read, in full: `Unexpected server response: 503` and three `node_modules/ws/lib/websocket.js` stack frames.** Harkirat, on receiving it: *"absolutely no clue what it meant."* The alert was technically perfect and practically useless — it said WHERE in the websocket library the failure surfaced, and nothing about whether the bot was down, whether users were affected, or whether he needed to get up. **An alert exists to drive a decision; one that can't be read can't drive one.**
 
-Every alert now answers three questions in plain sentences, with the stack trace demoted below them:
-**what happened** · **does it fix itself?** · **what to do**. The middle one is the valuable one — it
-is the difference between "ignore this" and "get up". `utils/alertExplain.js` also reads Discord's
-gateway **close codes**, which is where that distinction actually lives: a 1006 blip and a 4004
-*"your bot token was rejected"* are both rendered as "disconnected, close code NNNN" by the old alert,
-but one clears itself in seconds and the other means the bot is down until someone changes something.
+Every alert now answers three questions in plain sentences, with the stack trace demoted below them: **what happened** · **does it fix itself?** · **what to do**. The middle one is the valuable one — it is the difference between "ignore this" and "get up". `utils/alertExplain.js` also reads Discord's gateway **close codes**, which is where that distinction actually lives: a 1006 blip and a 4004 *"your bot token was rejected"* are both rendered as "disconnected, close code NNNN" by the old alert, but one clears itself in seconds and the other means the bot is down until someone changes something.
 
-**Titles are humanised at DISPLAY only** — `Gateway shard error` → **Discord connection error**. The
-stored title stays canonical because it is a key (the 1/min throttle and `AlertLog` both use it), so
-history and `/alerts` filtering are untouched. This matters more than it looks: the push-notification
-line is `<@user> 🔴 **<title>**`, which on a phone at 03:00 is the *entire* message — the embed is not
-shown in a notification.
+**Titles are humanised at DISPLAY only** — `Gateway shard error` → **Discord connection error**. The stored title stays canonical because it is a key (the 1/min throttle and `AlertLog` both use it), so history and `/alerts` filtering are untouched. This matters more than it looks: the push-notification line is `<@user> 🔴 **<title>**`, which on a phone at 03:00 is the *entire* message — the embed is not shown in a notification.
 
-**And the bot now tells you when it RECOVERS.** Harkirat: there is no signal at all when it heals —
-you learn it broke and never that it came back. ⚠️ **The obvious fix was the wrong one.** Making
-`Gateway resumed` loud would have undone a correct 2026-07-20 decision: that pair fires every 1-3h as
-routine churn (the VM logged one 10 minutes before this release), and posting it refills the channel
-with exactly the noise that decision removed. Noise is not the lesser failure — it is how someone
-learns to stop reading the channel, and then the loud alerts stop working too. So the rule is
-**symmetry**: a problem that was announced gets a recovery that is announced; a problem that was silent
-stays silent. Routine blips remain invisible; the 03:00 disconnect that pinged his phone now gets an
-explicit **"Back online"** with how long it was actually down.
+**And the bot now tells you when it RECOVERS.** Harkirat: there is no signal at all when it heals — you learn it broke and never that it came back. ⚠️ **The obvious fix was the wrong one.** Making `Gateway resumed` loud would have undone a correct 2026-07-20 decision: that pair fires every 1-3h as routine churn (the VM logged one 10 minutes before this release), and posting it refills the channel with exactly the noise that decision removed. Noise is not the lesser failure — it is how someone learns to stop reading the channel, and then the loud alerts stop working too. So the rule is **symmetry**: a problem that was announced gets a recovery that is announced; a problem that was silent stays silent. Routine blips remain invisible; the 03:00 disconnect that pinged his phone now gets an explicit **"Back online"** with how long it was actually down.
 
-⚠️ **Both recovery paths are wired, and the worse one is the easy one to miss.** `shardResume` fires
-when the session replays — the *good* case. When a disconnect is bad enough that the session cannot be
-resumed, discord.js re-identifies from scratch and only `shardReady` fires. Wiring recovery to
-`shardResume` alone would have left precisely the **worst** outages with no recovery signal.
+⚠️ **Both recovery paths are wired, and the worse one is the easy one to miss.** `shardResume` fires when the session replays — the *good* case. When a disconnect is bad enough that the session cannot be resumed, discord.js re-identifies from scratch and only `shardReady` fires. Wiring recovery to `shardResume` alone would have left precisely the **worst** outages with no recovery signal.
 
-**17 real users' Discord IDs are gone from the local dev database.** They were there because
-`deployment-and-ops.md` used to instruct seeding dev from a prod `mongodump`. ⚠️ **Anonymised, not
-purged** (Harkirat's explicit call — the records stay as realistic test data, they just stop belonging
-to anyone). `scripts/anonymizeDevDb.js` keeps every document and replaces only the identifiers.
-**The filed item undercounted the problem:** it named `discordId` plus three colour-source fields, two
-of which do not exist in the data at all — while `avatarPaletteSource`, `bannerPaletteSource` and
-`decorationPaletteSource` **do**, and hold real Discord avatar/banner asset hashes that address a
-specific person's image on the CDN.
+**17 real users' Discord IDs are gone from the local dev database.** They were there because `deployment-and-ops.md` used to instruct seeding dev from a prod `mongodump`. ⚠️ **Anonymised, not purged** (Harkirat's explicit call — the records stay as realistic test data, they just stop belonging to anyone). `scripts/anonymizeDevDb.js` keeps every document and replaces only the identifiers.
+**The filed item undercounted the problem:** it named `discordId` plus three colour-source fields, two of which do not exist in the data at all — while `avatarPaletteSource`, `bannerPaletteSource` and `decorationPaletteSource` **do**, and hold real Discord avatar/banner asset hashes that address a specific person's image on the CDN.
 
-⚠️ **A script existing is not the data being clean.** `scripts/seedDevData.js` was written 2026-08-04
-12:07 EDT in response to this exact finding — and the 17 real IDs were still sitting there two days
-later, because nothing ever ran it. The shipped artefact was the script and the doc, not the cleanup.
+⚠️ **A script existing is not the data being clean.** `scripts/seedDevData.js` was written 2026-08-04 12:07 EDT in response to this exact finding — and the 17 real IDs were still sitting there two days later, because nothing ever ran it. The shipped artefact was the script and the doc, not the cleanup.
 
-⚠️ **Synthetic ids must not be snowflake-shaped**, caught mid-implementation. The first version used
-`90000000000…` on the reasoning that keeping the id snowflake-shaped preserved the data's shape — but
-the project's canonical audit check is `discordId: /^[0-9]{17,20}$/`, so a fully-cleaned database would
-have reported 17 real users **forever**. A check that cries wolf is one that gets ignored on the day it
-is right.
+⚠️ **Synthetic ids must not be snowflake-shaped**, caught mid-implementation. The first version used `90000000000…` on the reasoning that keeping the id snowflake-shaped preserved the data's shape — but the project's canonical audit check is `discordId: /^[0-9]{17,20}$/`, so a fully-cleaned database would have reported 17 real users **forever**. A check that cries wolf is one that gets ignored on the day it is right.
 
-**Sentry: asked, answered, not now — and not for the reason I first gave.** The tracker held a
-`[P3 · S]` *"re-evaluate Sentry"* item in 🗂️ Queued **while the same file's 🚫 Decided-no section
-already recorded the decision not to** — the question and its answer, filed separately, so a session
-picking up the queued item would have re-litigated a settled call without noticing.
+**Sentry: asked, answered, not now — and not for the reason I first gave.** The tracker held a `[P3 · S]` *"re-evaluate Sentry"* item in 🗂️ Queued **while the same file's 🚫 Decided-no section already recorded the decision not to** — the question and its answer, filed separately, so a session picking up the queued item would have re-litigated a settled call without noticing.
 
-⚠️ **My first verdict rested on the published Privacy Policy, and Harkirat threw it out:** *"the privacy
-policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only
-advisory but I'm open to changing the policy."* He is right, and the reasoning was circular — the policy
-says "None present" **because** we previously chose not to adopt one, so quoting it back dresses our own
-past decision up as an external constraint. A policy amendment is a **cost line**, never a veto.
+⚠️ **My first verdict rested on the published Privacy Policy, and Harkirat threw it out:** *"the privacy policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only advisory but I'm open to changing the policy."* He is right, and the reasoning was circular — the policy says "None present" **because** we previously chose not to adopt one, so quoting it back dresses our own past decision up as an external constraint. A policy amendment is a **cost line**, never a veto.
 
-**The real case is diversity, not volume.** Cloud Logging holds **19 ERROR entries over 30 days, and 15
-are the same `Shard 0 error: Unexpected server response: 503`** — the very alert that started this
-release. Sentry exists to fingerprint many occurrences of *many distinct* exceptions and catch
-regressions across releases; here there is essentially one recurring error, and it is a transient
-network condition rather than a bug.
+**The real case is diversity, not volume.** Cloud Logging holds **19 ERROR entries over 30 days, and 15 are the same `Shard 0 error: Unexpected server response: 503`** — the very alert that started this release. Sentry exists to fingerprint many occurrences of *many distinct* exceptions and catch regressions across releases; here there is essentially one recurring error, and it is a transient network condition rather than a bug.
 
-🔎 **And the original evaluation had missed the real alternative entirely: Google Cloud Error
-Reporting — now ENABLED and wired.** It does the grouping and dedup half for free, off the stack traces
-`utils/logger.js` already emits, with **no SDK inside the bot process** (no RAM on the e2-micro, nothing
-that can fail) and no data leaving the GCP project that already handles these logs. `logger.js` now
-attaches `serviceContext` to ERROR entries, which is the entire integration. Verified end to end rather
-than assumed: a test event was reported, appeared correctly grouped with its service and version, and
-was then deleted so the dashboard starts clean — and the VM was confirmed to live in the *same* project
-as the enabled API, since enabling it on the wrong one would have been an invisible no-op.
-⚠️ **It stays empty until the VM is deployed past v2.46.0.**
+🔎 **And the original evaluation had missed the real alternative entirely: Google Cloud Error Reporting — now ENABLED and wired.** It does the grouping and dedup half for free, off the stack traces `utils/logger.js` already emits, with **no SDK inside the bot process** (no RAM on the e2-micro, nothing that can fail) and no data leaving the GCP project that already handles these logs. `logger.js` now attaches `serviceContext` to ERROR entries, which is the entire integration. Verified end to end rather than assumed: a test event was reported, appeared correctly grouped with its service and version, and was then deleted so the dashboard starts clean — and the VM was confirmed to live in the *same* project as the enabled API, since enabling it on the wrong one would have been an invisible no-op. ⚠️ **It stays empty until the VM is deployed past v2.46.0.**
 
-⚠️ **A number worth keeping straight:** AlertLog reports 2 errors where Cloud Logging reports 19,
-because `sendAlert` throttles to 1/min per `level:title`. Neither is wrong — one counts what *happened*,
-the other what was *announced*. **The disagreement is the finding**, and the three tiers must not be
-reconciled into one figure.
+⚠️ **A number worth keeping straight:** AlertLog reports 2 errors where Cloud Logging reports 19, because `sendAlert` throttles to 1/min per `level:title`. Neither is wrong — one counts what *happened*, the other what was *announced*. **The disagreement is the finding**, and the three tiers must not be reconciled into one figure.
 
-**And the `/autobuild` DMZ blocker is gone — with three of my assumptions killed on the way.** Harkirat
-supplied real in-game screenshots, and they contradict the obvious implementation at every point.
-**MP is not a 5-slot mode**: it shows the *same nine slot positions* as DMZ and applies a 5-attachment
-**equip cap** (`ATTACHMENTS ● ● ● ● ●`) — which is what his original note *"DMZ partials are the
-5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a DMZ
-SVD renders only five slots and would classify as MP — and the reason a count varies differs by mode:
-in MP the roster is intrinsic to the weapon (rarity is irrelevant), while in DMZ rarity itself changes
-the total, capped at 9. **And slot position cannot identify a slot**:
-the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detection keys on UI chrome
-instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code
-in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.
+**And the `/autobuild` DMZ blocker is gone — with three of my assumptions killed on the way.** Harkirat supplied real in-game screenshots, and they contradict the obvious implementation at every point. **MP is not a 5-slot mode**: it shows the *same nine slot positions* as DMZ and applies a 5-attachment **equip cap** (`ATTACHMENTS ● ● ● ● ●`) — which is what his original note *"DMZ partials are the 5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a DMZ SVD renders only five slots and would classify as MP — and the reason a count varies differs by mode: in MP the roster is intrinsic to the weapon (rarity is irrelevant), while in DMZ rarity itself changes the total, capped at 9. **And slot position cannot identify a slot**: the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detection keys on UI chrome instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.
 
-And the sharpest trap of all: **a weapon can rename its canonical slots, add unique ones, omit others,
-and move them around the grid.** The Crossbow labels Muzzle `Bowstring`, Barrel `Limb`, Ammunition
-`Bolt`, and has no Rear Grip; revolvers show `Trigger Action` for Underbarrel; the Shorty adds a
-`Guard` slot and the R9-0 a `Smoothbore`, each sitting *alongside* that weapon's own Underbarrel rather
-than replacing it. **And position is no anchor either** — the Shorty pushes `Ammunition` to the final
-chip where Rear Grip normally sits, while the R9-0 puts it in the top row in Stock's place. So a fixed
-nine-name allow-list fails three ways over, and grid-position mapping fails outright. This is precisely
-the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26 backfill,
-generalised. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"**
-section, because the screenshots live in gitignored `local/` and the knowledge cannot.
+And the sharpest trap of all: **a weapon can rename its canonical slots, add unique ones, omit others, and move them around the grid.** The Crossbow labels Muzzle `Bowstring`, Barrel `Limb`, Ammunition `Bolt`, and has no Rear Grip; revolvers show `Trigger Action` for Underbarrel; the Shorty adds a `Guard` slot and the R9-0 a `Smoothbore`, each sitting *alongside* that weapon's own Underbarrel rather than replacing it. **And position is no anchor either** — the Shorty pushes `Ammunition` to the final chip where Rear Grip normally sits, while the R9-0 puts it in the top row in Stock's place. So a fixed nine-name allow-list fails three ways over, and grid-position mapping fails outright. This is precisely the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26 backfill, generalised. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"** section, because the screenshots live in gitignored `local/` and the knowledge cannot.
 
-**Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`
-(13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification —
-firing sample alerts and reading the embeds — **cannot reach the branch that matters**: `sendAlert`
-throttles per `level:title`, so a second `Gateway disconnected` with a different close code is silently
-dropped. The transient-vs-fatal distinction looked covered and was not. Between them the suites caught
-a `formatUptime` that floors to minutes (a 4-second outage rendering as *"restored after 0m"*), a
-display-title table that had drifted out of step with the explanation table, and an assertion of mine
-that was twice wrong in the same direction — demanding length, then a full stop — on text where
-*"Nothing."* is the correct answer.
+**Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js` (13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification — firing sample alerts and reading the embeds — **cannot reach the branch that matters**: `sendAlert` throttles per `level:title`, so a second `Gateway disconnected` with a different close code is silently dropped. The transient-vs-fatal distinction looked covered and was not. Between them the suites caught a `formatUptime` that floors to minutes (a 4-second outage rendering as *"restored after 0m"*), a display-title table that had drifted out of step with the explanation table, and an assertion of mine that was twice wrong in the same direction — demanding length, then a full stop — on text where *"Nothing."* is the correct answer.
 
-**Verified rather than asserted:** the dev bot boots clean against the anonymised data; `shardReady` on
-first connect fires the recovery path and correctly stays silent (no duplicate "Bot online"); and
-Discord returned **HTTP 204** for the new `fields` payload — a console render proves the layout, not
-that Discord accepts it.
+**Verified rather than asserted:** the dev bot boots clean against the anonymised data; `shardReady` on first connect fires the recovery path and correctly stays silent (no duplicate "Bot online"); and Discord returned **HTTP 204** for the new `fields` payload — a console render proves the layout, not that Discord accepts it.
 
 ---
 
 ### Also in this release — the sweep's first live fire, and what it got wrong
 
-*(Prepared as its own release and folded in when GitHub Actions went into a major outage mid-flow,
-blocking the merge. One squash commit gets one version, so it ships here rather than as a second tag.)*
+*(Prepared as its own release and folded in when GitHub Actions went into a major outage mid-flow, blocking the merge. One squash commit gets one version, so it ships here rather than as a second tag.)*
 
-The three-pass audit shipped in v2.56.0 fired for the first time in a live session, unprompted, on a
-real completion claim. **That answers the "does the harness actually invoke it" question — and it
-immediately failed its own test.**
+The three-pass audit shipped in v2.56.0 fired for the first time in a live session, unprompted, on a real completion claim. **That answers the "does the harness actually invoke it" question — and it immediately failed its own test.**
 
-It reported **all five angles as un-taken** on a session that had demonstrably run every one; measured
-afterwards, the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the
-hook by hand against that same file suppressed all five correctly, so the matching logic is sound and
-the fault is in what the harness handed it. **Root cause is still unknown and is deliberately not
-guessed at.**
+It reported **all five angles as un-taken** on a session that had demonstrably run every one; measured afterwards, the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the hook by hand against that same file suppressed all five correctly, so the matching logic is sound and the fault is in what the harness handed it. **Root cause is still unknown and is deliberately not guessed at.**
 
-⚠️ **Mitigated, not fixed.** A transcript carrying zero Bash `tool_use` entries now reports
-**ANGLE DETECTION COULD NOT RUN** and prints the path and line count it saw. *"I cannot see the
-session"* and *"no angle was taken"* are different answers, and reporting all five is the
-fires-on-everything behaviour that gets a gate dismissed unread.
+⚠️ **Mitigated, not fixed.** A transcript carrying zero Bash `tool_use` entries now reports **ANGLE DETECTION COULD NOT RUN** and prints the path and line count it saw. *"I cannot see the session"* and *"no angle was taken"* are different answers, and reporting all five is the fires-on-everything behaviour that gets a gate dismissed unread.
 
-**Two real bugs found while investigating, both fixed and pinned:** `claim-detect.sh` was resolved
-from `${BASH_SOURCE[0]}` **after** the script `cd`s to `$REPO`, re-anchoring a relative invocation
-path to the wrong tree — which breaks under a worktree, and which `records-close-check.sh` already
-solved correctly without the pattern being copied. And the Bash-scoping is weaker than it was
-documented to be: JSONL puts a whole assistant message on ONE line, so it excludes messages with no
-tool call at all but **cannot** separate prose from a command inside the same message. That surfaced
-when the property broke this hook's own test fixture.
+**Two real bugs found while investigating, both fixed and pinned:** `claim-detect.sh` was resolved from `${BASH_SOURCE[0]}` **after** the script `cd`s to `$REPO`, re-anchoring a relative invocation path to the wrong tree — which breaks under a worktree, and which `records-close-check.sh` already solved correctly without the pattern being copied. And the Bash-scoping is weaker than it was documented to be: JSONL puts a whole assistant message on ONE line, so it excludes messages with no tool call at all but **cannot** separate prose from a command inside the same message. That surfaced when the property broke this hook's own test fixture.
 
-**Also:** the self-service data-deletion item is re-tagged **P1 → P3, deferred to v4** (Harkirat's
-call — the email route stands). Verified rather than assumed that this leaves `PRIVACY.md` accurate:
-§7.1 already discloses there is no self-service delete, names email as the live mechanism, and calls
-a `/settings` option *"planned"* with no timeline attached.
+**Also:** the self-service data-deletion item is re-tagged **P1 → P3, deferred to v4** (Harkirat's call — the email route stands). Verified rather than assumed that this leaves `PRIVACY.md` accurate: §7.1 already discloses there is no self-service delete, names email as the live mechanism, and calls a `/settings` option *"planned"* with no timeline attached.
 
 ## v2.56.2 — 2026-08-06 10:58 EDT (#88 · `30348c4`) — The DEVLOG entry v2.56.1 should have carried
 
-Records only. The `release-ready-check` gate fired on v2.56.1 saying its branch changed four
-non-mechanical files with no DEVLOG entry — and it was right; the merge went through anyway because
-an `ask` from a `PreToolUse` hook is silently auto-approved in this permission mode. This is the
-extra release that gate exists to prevent, paid rather than left as a wrong record.
+Records only. The `release-ready-check` gate fired on v2.56.1 saying its branch changed four non-mechanical files with no DEVLOG entry — and it was right; the merge went through anyway because an `ask` from a `PreToolUse` hook is silently auto-approved in this permission mode. This is the extra release that gate exists to prevent, paid rather than left as a wrong record.
 
-The entry itself is worth having: a guard blocking the PR that fixes the guard, a fix that opened a
-worse hole than the one it closed, and the pre-existing adversarial test case that caught it twice.
+The entry itself is worth having: a guard blocking the PR that fixes the guard, a fix that opened a worse hole than the one it closed, and the pre-existing adversarial test case that caught it twice.
 
-🔴 **And the gate itself is fixed here, so this stays the LAST release it costs.** It emitted
-`additionalContext` with **no `permissionDecision` at all** — a pure notice that could never stop
-anything. This is the third hook caught at the wrong enforcement level: the force-overwrite and
-squash-trailer gates were both `ask` until 2026-08-02, when it was measured that an `ask` from a
-`PreToolUse` hook is silently auto-approved in this permission mode. Both became `deny` and both now
-work — the trailer gate blocked this very session's first merge attempt, correctly. Nobody re-checked
-this sibling at the time. **When you fix one gate's enforcement level, audit the others the same day.**
+🔴 **And the gate itself is fixed here, so this stays the LAST release it costs.** It emitted `additionalContext` with **no `permissionDecision` at all** — a pure notice that could never stop anything. This is the third hook caught at the wrong enforcement level: the force-overwrite and squash-trailer gates were both `ask` until 2026-08-02, when it was measured that an `ask` from a `PreToolUse` hook is silently auto-approved in this permission mode. Both became `deny` and both now work — the trailer gate blocked this very session's first merge attempt, correctly. Nobody re-checked this sibling at the time. **When you fix one gate's enforcement level, audit the others the same day.**
 
-It now **denies**, with a deliberate escape: `RELEASE_SKIP="why" gh pr merge …` turns a legitimate
-skip into a recorded decision rather than an omission. A judgement-call gate with no way through is
-one people edit out of the way, which is how a guard becomes decorative.
+It now **denies**, with a deliberate escape: `RELEASE_SKIP="why" gh pr merge …` turns a legitimate skip into a recorded decision rather than an omission. A judgement-call gate with no way through is one people edit out of the way, which is how a guard becomes decorative.
 
-⚠️ Its own test suite had a case named *"advisory, never a hard block"* that only asserted the
-message contained some text — true whether the hook denied, asked or merely narrated. The property
-that mattered was never tested, which is why this survived. Three real assertions on the decision
-level replace it, verified to fail against the old hook.
+⚠️ Its own test suite had a case named *"advisory, never a hard block"* that only asserted the message contained some text — true whether the hook denied, asked or merely narrated. The property that mattered was never tested, which is why this survived. Three real assertions on the decision level replace it, verified to fail against the old hook.
 
 ## v2.56.1 — 2026-08-06 10:53 EDT (#87 · `3b9d023`) — A guard that judged the room instead of the request
 
-`main-push-guard.sh` asked one question — *is the project dir on `main`?* — and answered it about the
-ambient repository rather than about the command in front of it. A squash-merge with
-`--delete-branch` leaves HEAD back on `main`, so from that moment it denied **every** push: a
-brand-new feature branch, a branch deletion, and pushes belonging to a **different repository**
-(`cd ~/.config/dior && git push -u origin fix/...`), where the project dir's branch says nothing
-about the operation at all. It blocked the dior-CLI PR minutes after the guard's own release merged,
-which is how it was found.
+`main-push-guard.sh` asked one question — *is the project dir on `main`?* — and answered it about the ambient repository rather than about the command in front of it. A squash-merge with `--delete-branch` leaves HEAD back on `main`, so from that moment it denied **every** push: a brand-new feature branch, a branch deletion, and pushes belonging to a **different repository** (`cd ~/.config/dior && git push -u origin fix/...`), where the project dir's branch says nothing about the operation at all. It blocked the dior-CLI PR minutes after the guard's own release merged, which is how it was found.
 
-**The rule is now that an explicit non-`main` DESTINATION ref disclaims main.** A bare `git push` on
-main still denies, because nothing disclaims it there. This also closes the separately filed
-`[P3 · XS]` `--delete` false positive — one defect with two faces, and the narrow shape that item
-asked for rather than broadening the matcher until it stopped firing.
+**The rule is now that an explicit non-`main` DESTINATION ref disclaims main.** A bare `git push` on main still denies, because nothing disclaims it there. This also closes the separately filed `[P3 · XS]` `--delete` false positive — one defect with two faces, and the narrow shape that item asked for rather than broadening the matcher until it stopped firing.
 
-⚠️ **Two holes opened and closed during the fix, both caught by the suite's pre-existing cases.**
-Comparing the whole refspec against a fixed list let `abc1234:main` through — an arbitrary sha
-pushed straight onto `main`; it now judges the destination (`${ref##*:}`). And `:` was missing from
-the ref character class, so the extractor stopped at the colon and read that as a branch called
-`abc1234`. The four new cases were verified to fail against the old guard, and every deny path was
-re-proven.
+⚠️ **Two holes opened and closed during the fix, both caught by the suite's pre-existing cases.** Comparing the whole refspec against a fixed list let `abc1234:main` through — an arbitrary sha pushed straight onto `main`; it now judges the destination (`${ref##*:}`). And `:` was missing from the ref character class, so the extractor stopped at the colon and read that as a branch called `abc1234`. The four new cases were verified to fail against the old guard, and every deny path was re-proven.
 
 ## v2.56.0 — 2026-08-06 10:34 EDT (#86 · `ae1e3b8`) — Three filed reorgs, and the audit that came out of checking them
 
 Records, docs structure and the enforcement layer. Nothing about the bot or the site changed.
 
-**Three reorg items, all filed before this session started.** The notes scratchpad moved to
-`docs/ideas/diors-notes.md` — which also drops the space every reference had to quote around.
-`docs/reference/known-issues.md` was split and renamed to **`platform-constraints.md`**: of its six
-entries four were accepted platform facts and two were our own open work, so the split had to come
-first or the new name would have been a lie on the tin. `docs/reference/design-history.md` folded
-into `DEVLOG.md` as Part A's four earliest (`2026-07-12`) entries and was deleted — it was narrative,
-not lookup, and DEVLOG's own header had been describing exactly that backfill as outstanding.
+**Three reorg items, all filed before this session started.** The notes scratchpad moved to `docs/ideas/diors-notes.md` — which also drops the space every reference had to quote around. `docs/reference/known-issues.md` was split and renamed to **`platform-constraints.md`**: of its six entries four were accepted platform facts and two were our own open work, so the split had to come first or the new name would have been a lie on the tin. `docs/reference/design-history.md` folded into `DEVLOG.md` as Part A's four earliest (`2026-07-12`) entries and was deleted — it was narrative, not lookup, and DEVLOG's own header had been describing exactly that backfill as outstanding.
 
-**Each filed inventory undercounted its own sweep.** The notes move touched 14 live files, not 10;
-`known-issues` 6 + 4 memory files, not 8; `design-history` 11 + 1, not 12. Records, archives and the
-dated `docs/superpowers/specs/**` were deliberately left alone — they say the old names because that
-is what things were called when they were written.
+**Each filed inventory undercounted its own sweep.** The notes move touched 14 live files, not 10; `known-issues` 6 + 4 memory files, not 8; `design-history` 11 + 1, not 12. Records, archives and the dated `docs/superpowers/specs/**` were deliberately left alone — they say the old names because that is what things were called when they were written.
 
-**`dior notes` was broken outright, and four repo-wide sweeps read clean.** `~/.config/dior/` is a
-different git tree that hardcodes paths inside this repo, so no in-repo search reaches it —
-`rg -uu --hidden` does not help, because the flags address hidden and ignored files, not other
-repositories. The same blind spot had been hiding a **third copy** of the open-items regex, reporting
-29 open items where the hook reported 3, under a comment claiming the two could not drift.
+**`dior notes` was broken outright, and four repo-wide sweeps read clean.** `~/.config/dior/` is a different git tree that hardcodes paths inside this repo, so no in-repo search reaches it — `rg -uu --hidden` does not help, because the flags address hidden and ignored files, not other repositories. The same blind spot had been hiding a **third copy** of the open-items regex, reporting 29 open items where the hook reported 3, under a comment claiming the two could not drift.
 
-**A three-pass pre-PR audit, timed at the claim rather than the PR.** Harkirat's standing complaint
-was needing three prompts after every long session. Those are three different KINDS of check, and
-naming the kinds is what made them buildable: references, conservation, and *which kind of check
-never ran*. That last one is a set difference over a registry of angles, not a question. The existing
-`stale-reference-sweep.sh` fires at `gh pr create` and **could not have fired this session** — three
-completion claims across six commits, no PR — so `completeness-sweep.sh` runs at `Stop`, claim-gated,
-with the PR hook as backstop.
+**A three-pass pre-PR audit, timed at the claim rather than the PR.** Harkirat's standing complaint was needing three prompts after every long session. Those are three different KINDS of check, and naming the kinds is what made them buildable: references, conservation, and *which kind of check never ran*. That last one is a set difference over a registry of angles, not a question. The existing `stale-reference-sweep.sh` fires at `gh pr create` and **could not have fired this session** — three completion claims across six commits, no PR — so `completeness-sweep.sh` runs at `Stop`, claim-gated, with the PR hook as backstop.
 
-**A `※` follow-up had sat unsurfaced for about five sessions**, invisible three ways at once: below
-the open-items scan boundary, not a `- [ ]` item, and no hook anywhere matched the mark. It is
-answered now, the pointer section it asked about has moved up next to the Legend, and
-`notes-open-items.sh` closes its scan on an explicit marker so the layout is no longer dictated by a
-scan range. `notes-followups.sh` reports open exchanges every session — **including answered ones
-whose reply still asks something**, which is precisely the case that was missed.
+**A `※` follow-up had sat unsurfaced for about five sessions**, invisible three ways at once: below the open-items scan boundary, not a `- [ ]` item, and no hook anywhere matched the mark. It is answered now, the pointer section it asked about has moved up next to the Legend, and `notes-open-items.sh` closes its scan on an explicit marker so the layout is no longer dictated by a scan range. `notes-followups.sh` reports open exchanges every session — **including answered ones whose reply still asks something**, which is precisely the case that was missed.
 
-**`docs-audit-gate.sh` had been reporting a FALSE crash on every PR** since 2026-08-06 00:20 EDT,
-caught by the new sweep on its first live run. `--json` makes stdout a contract, so the audit
-correctly puts its notices on stderr; the gate captured with `2>&1` and announced "DOCS AUDIT
-CRASHED: nothing was verified" about an audit that had run perfectly.
+**`docs-audit-gate.sh` had been reporting a FALSE crash on every PR** since 2026-08-06 00:20 EDT, caught by the new sweep on its first live run. `--json` makes stdout a contract, so the audit correctly puts its notices on stderr; the gate captured with `2>&1` and announced "DOCS AUDIT CRASHED: nothing was verified" about an audit that had run perfectly.
 
-⚠️ **The gates found seven defects in themselves.** Angle detection was suppressing every angle after
-its first fire (the hook's own output carries every detector string); uncommitted work was invisible
-(`BASE...HEAD` is committed-only — the default mid-session state); a missing `rg` inverted into
-fabricated 100% data loss; the `.git/` stamp leaked across sessions; a duplicated claim regex was
-consolidated into `claim-detect.sh`; a `for` loop word-split `diors-builds notes` on its space; and
-`rg` parsed a markdown bullet's leading `-` as a flag. Every one is pinned by a test that was
-verified to fail against the old code.
+⚠️ **The gates found seven defects in themselves.** Angle detection was suppressing every angle after its first fire (the hook's own output carries every detector string); uncommitted work was invisible (`BASE...HEAD` is committed-only — the default mid-session state); a missing `rg` inverted into fabricated 100% data loss; the `.git/` stamp leaked across sessions; a duplicated claim regex was consolidated into `claim-detect.sh`; a `for` loop word-split `diors-builds notes` on its space; and `rg` parsed a markdown bullet's leading `-` as a flag. Every one is pinned by a test that was verified to fail against the old code.
 
 ## v2.55.5 — 2026-08-06 00:26 EDT (#85 · `cc06c3d`) — A tier for thinking, and a warning that had become noise
 
 Records and tooling only. Nothing about the bot or the site changed.
 
-**A new documentation tier: `docs/ideas/`.** Harkirat created it and moved his private
-`Harkirats-Space.md` there; this release moves the other two forward-looking documents in beside it
-and sweeps every reference. The distinction is now written into both nav maps and is the useful part:
-**`docs/ideas/` is forward-looking and MAINTAINED** — edited as thinking changes — against
-**`docs/superpowers/specs/`**, whose dated documents are **snapshots** that get superseded rather
-than revised. `docs/reference/` is a **legend**: *look this up to do the thing correctly.* That test
-is what exposed two misfits — `design-history.md`, which is narrative rather than lookup, and
-`known-issues.md`, whose 78 lines are mostly accepted platform facts rather than open bugs.
+**A new documentation tier: `docs/ideas/`.** Harkirat created it and moved his private `Harkirats-Space.md` there; this release moves the other two forward-looking documents in beside it and sweeps every reference. The distinction is now written into both nav maps and is the useful part: **`docs/ideas/` is forward-looking and MAINTAINED** — edited as thinking changes — against **`docs/superpowers/specs/`**, whose dated documents are **snapshots** that get superseded rather than revised. `docs/reference/` is a **legend**: *look this up to do the thing correctly.* That test is what exposed two misfits — `design-history.md`, which is narrative rather than lookup, and `known-issues.md`, whose 78 lines are mostly accepted platform facts rather than open bugs.
 
-**The docs-system guide.** A mini brainstorming side-session produced a guide to what a Dioreo
-documentation system could be — a player-facing command help system and an admin operations manual.
-Three scratch files were consolidated into one restructured document at `docs/ideas/docs-system.md`.
-It is **explicitly undecided**, says so in its own banner, and instructs a future session to change it
-rather than defend it — which is precisely why it belongs in the maintained tier and not among the
-dated snapshots. Its one idea worth not losing: the command reference should be **generated** from the
-`SlashCommandBuilder` definitions, because Discord renders its own command picker from that same
-object and a generated reference therefore cannot drift.
+**The docs-system guide.** A mini brainstorming side-session produced a guide to what a Dioreo documentation system could be — a player-facing command help system and an admin operations manual. Three scratch files were consolidated into one restructured document at `docs/ideas/docs-system.md`. It is **explicitly undecided**, says so in its own banner, and instructs a future session to change it rather than defend it — which is precisely why it belongs in the maintained tier and not among the dated snapshots. Its one idea worth not losing: the command reference should be **generated** from the `SlashCommandBuilder` definitions, because Discord renders its own command picker from that same object and a generated reference therefore cannot drift.
 
-**`chronicle-drift` is suppressed until the journey pages are reworked.** It reported the same known
-drift on every run and grew by a line per release. **A warning that is always present and always
-expected trains everyone to read past the whole WARN block, which camouflages the next real one** — so
-leaving it noisy was not the safe option it looked like. It is suppressed, **not deleted and not
-silent**: it still runs, still examines both pairs so the vacuous-pass detector keeps watching it,
-still prints its state every run, and is gated on `DOCS_AUDIT_ROOT` so its own failure test keeps
-exercising the real logic. A `[P2 · XS]` reminder carries the lift trigger.
+**`chronicle-drift` is suppressed until the journey pages are reworked.** It reported the same known drift on every run and grew by a line per release. **A warning that is always present and always expected trains everyone to read past the whole WARN block, which camouflages the next real one** — so leaving it noisy was not the safe option it looked like. It is suppressed, **not deleted and not silent**: it still runs, still examines both pairs so the vacuous-pass detector keeps watching it, still prints its state every run, and is gated on `DOCS_AUDIT_ROOT` so its own failure test keeps exercising the real logic. A `[P2 · XS]` reminder carries the lift trigger.
 
-⚠️ **And the suppression immediately broke something, which is the most useful thing in this release.**
-The status line was printed with `console.log` — but `docs-audit.mjs --json` writes the whole report to
-stdout as one JSON document, and **two hooks parse it**. Both instantly reported *"DOCS AUDIT CRASHED:
-it did not return valid JSON"* while the script itself was fine. **Stdout is a contract wherever
-something parses it**, check bodies run in both modes, and anything printed from inside one belongs on
-stderr. Caught by the repo's own gate roughly two minutes after the line was written; the rule is now
-recorded in `.claude/rules/scripts-and-migrations.md`.
+⚠️ **And the suppression immediately broke something, which is the most useful thing in this release.** The status line was printed with `console.log` — but `docs-audit.mjs --json` writes the whole report to stdout as one JSON document, and **two hooks parse it**. Both instantly reported *"DOCS AUDIT CRASHED: it did not return valid JSON"* while the script itself was fine. **Stdout is a contract wherever something parses it**, check bodies run in both modes, and anything printed from inside one belongs on stderr. Caught by the repo's own gate roughly two minutes after the line was written; the rule is now recorded in `.claude/rules/scripts-and-migrations.md`.
 
-**Queued rather than done**, each with its traps inventoried so nothing is rediscovered: the notes-file
-move and rename (**not** a `git mv` — 7 hardcoded references plus 3 test files, and
-`records-close-check.sh:53` uses `grep -qx` against the changed-file list, so after a move it stops
-matching *silently*); the `known-issues.md` split-then-rename; and lifting the `chronicle-drift`
-suppression. Also eases `design-ideas.md`'s read-when-asked rule, which read more harshly than intended.
+**Queued rather than done**, each with its traps inventoried so nothing is rediscovered: the notes-file move and rename (**not** a `git mv` — 7 hardcoded references plus 3 test files, and `records-close-check.sh:53` uses `grep -qx` against the changed-file list, so after a move it stops matching *silently*); the `known-issues.md` split-then-rename; and lifting the `chronicle-drift` suppression. Also eases `design-ideas.md`'s read-when-asked rule, which read more harshly than intended.
 
 ---
 
 ## v2.55.4 — 2026-08-05 22:26 EDT (#84 · `88851ef`) — A pack triage, and a tool chosen for the wrong reason
 
-Records-only. Harkirat was approved for the GitHub Student Developer Pack and asked which of its
-offers were genuinely worth adopting for this project, and which were traps. All 85 were assessed
-against the real stack; the verdicts are now in `docs/db-deferred-list.md` so they cannot be
-re-derived from scratch or quietly re-litigated later.
+Records-only. Harkirat was approved for the GitHub Student Developer Pack and asked which of its offers were genuinely worth adopting for this project, and which were traps. All 85 were assessed against the real stack; the verdicts are now in `docs/db-deferred-list.md` so they cannot be re-derived from scratch or quietly re-litigated later.
 
-**The headline result contradicted the premise it started from.** The nominated highest-value
-candidate was real-device testing, on the strength of the `[P2 · M]` iOS liquid-indicator bug — filed
-as needing *"a real device or CDP against a WebKit build"*, with four fixes already spent on it. That
-is right about the need and wrong about the tool. The artefact is a **compositing** failure, so what
-closes it is the **layer tree**, and the instrument that provides one is Safari's Web Inspector
-attached over USB to the iPhone that already reproduces it — free, already owned, and the one thing a
-remote-device vendor structurally cannot offer, because BrowserStack and LambdaTest hand you a screen,
-not an inspector. The item now carries a cheapest-first ladder, marked **NOT YET RUN**, with the
-vendor rung marked contingent on the free rungs failing first. The pack's real contribution there is
-narrower and worth being honest about: it buys iteration speed and iOS-version breadth, because every
-one of those four fixes cost a round trip through Harkirat's phone.
+**The headline result contradicted the premise it started from.** The nominated highest-value candidate was real-device testing, on the strength of the `[P2 · M]` iOS liquid-indicator bug — filed as needing *"a real device or CDP against a WebKit build"*, with four fixes already spent on it. That is right about the need and wrong about the tool. The artefact is a **compositing** failure, so what closes it is the **layer tree**, and the instrument that provides one is Safari's Web Inspector attached over USB to the iPhone that already reproduces it — free, already owned, and the one thing a remote-device vendor structurally cannot offer, because BrowserStack and LambdaTest hand you a screen, not an inspector. The item now carries a cheapest-first ladder, marked **NOT YET RUN**, with the vendor rung marked contingent on the free rungs failing first. The pack's real contribution there is narrower and worth being honest about: it buys iteration speed and iOS-version breadth, because every one of those four fixes cost a round trip through Harkirat's phone.
 
-**The second finding is a coupling nobody had priced.** Sentry looked like a free "why not". It isn't:
-`docs/legal/PRIVACY.md`'s verification appendix names Sentry, PostHog, Mixpanel and Google Analytics
-**explicitly** and states *"None present"*, while §2.6 promises no third-party scripts. Adopting any
-of them costs a policy amendment, a new US sub-processor disclosure, a policy version bump, and a site
-rebuild — before a line of code. That applies to **any** third-party SDK, not just error reporting,
-and it is now written down where the next session will find it.
+**The second finding is a coupling nobody had priced.** Sentry looked like a free "why not". It isn't: `docs/legal/PRIVACY.md`'s verification appendix names Sentry, PostHog, Mixpanel and Google Analytics **explicitly** and states *"None present"*, while §2.6 promises no third-party scripts. Adopting any of them costs a policy amendment, a new US sub-processor disclosure, a policy version bump, and a site rebuild — before a line of code. That applies to **any** third-party SDK, not just error reporting, and it is now written down where the next session will find it.
 
-**Also recorded:** the pack yields this project *no cost reduction*, which is a checked result rather
-than an oversight — every line is already $0 or credit-funded, and nothing among the 85 touches Vertex
-AI, the only line that could ever become real spend. The MongoDB credit is worth $0 against an M0
-cluster. Travis CI cannot replace Actions here without running two CI systems and breaking
-`docs-audit`'s `ci-wiring` check. And Imgbot would open automated PRs into a repo where every merge
-mints a version.
+**Also recorded:** the pack yields this project *no cost reduction*, which is a checked result rather than an oversight — every line is already $0 or credit-funded, and nothing among the 85 touches Vertex AI, the only line that could ever become real spend. The MongoDB credit is worth $0 against an M0 cluster. Travis CI cannot replace Actions here without running two CI systems and breaking `docs-audit`'s `ci-wiring` check. And Imgbot would open automated PRs into a repo where every merge mints a version.
 
 ---
 
@@ -941,766 +323,280 @@ mints a version.
 
 Records-only, and it exists because a gate was overridden rather than because anything shipped.
 
-Before the v2.55.2 merge, `release-ready-check.sh` reported that twelve non-mechanical files had
-changed with no `docs/DEVLOG.md` entry. That warning fires PreToolUse — before the merge lands —
-specifically because it is the last moment the gap can be closed cheaply. I merged anyway, on the
-reasoning that the changelog already carried the detail. Wrong: the changelog records *what shipped*,
-and the DEVLOG records *how the answers were reached*, which is the half that transfers to the next
-problem. The gate's own message states the remedy after a merge is an extra release. This is that
-release, at Harkirat's instruction.
+Before the v2.55.2 merge, `release-ready-check.sh` reported that twelve non-mechanical files had changed with no `docs/DEVLOG.md` entry. That warning fires PreToolUse — before the merge lands — specifically because it is the last moment the gap can be closed cheaply. I merged anyway, on the reasoning that the changelog already carried the detail. Wrong: the changelog records *what shipped*, and the DEVLOG records *how the answers were reached*, which is the half that transfers to the next problem. The gate's own message states the remedy after a merge is an extra release. This is that release, at Harkirat's instruction.
 
-**What the entry captures is worth more than the fix it describes.** All three defects in v2.55.2 were
-found by looking at the site on a phone, and **all three were reported as fine by a fifteen-gate
-build**, because each sat in a blind spot: a paint-level seam that measured exactly zero in layout, an
-entire `<head>` tag family absent from one template, and a meta attribute emptied by a text tool. None
-of those are exotic. The lesson block is therefore written about the shape rather than the instances —
-**a green gate is a statement about what it checks and nothing else**, and when adding a check it is
-worth writing down what shape of defect it cannot see.
+**What the entry captures is worth more than the fix it describes.** All three defects in v2.55.2 were found by looking at the site on a phone, and **all three were reported as fine by a fifteen-gate build**, because each sat in a blind spot: a paint-level seam that measured exactly zero in layout, an entire `<head>` tag family absent from one template, and a meta attribute emptied by a text tool. None of those are exotic. The lesson block is therefore written about the shape rather than the instances — **a green gate is a statement about what it checks and nothing else**, and when adding a check it is worth writing down what shape of defect it cannot see.
 
-It also records the third variation in two days on the measurement theme, where the progression is the
-useful part: the nav indicator was *derived instead of measured*, the descender clipping was
-*measured, but the canvas measured a different font*, and this one was *measured correctly and the
-correct answer was zero*. Each narrowing gets closer to the actual rule, which is that a layout number
-is not a claim about pixels.
+It also records the third variation in two days on the measurement theme, where the progression is the useful part: the nav indicator was *derived instead of measured*, the descender clipping was *measured, but the canvas measured a different font*, and this one was *measured correctly and the correct answer was zero*. Each narrowing gets closer to the actual rule, which is that a layout number is not a claim about pixels.
 
-The heading is titled v2.55.2 because that is what it narrates, with this release named alongside so
-the two are not confused, and the TOC line mirrors it verbatim as that section requires.
+The heading is titled v2.55.2 because that is what it narrates, with this release named alongside so the two are not confused, and the TOC line mirrors it verbatim as that section requires.
 
 ---
 
 ## v2.55.2 — 2026-08-05 20:50 EDT (#82 · `0cfec7f`) — A seam only one device could see, and the share card nobody had checked
 
-Three fixes, all from Harkirat looking at the site on his phone rather than from anything a gate
-caught.
+Three fixes, all from Harkirat looking at the site on his phone rather than from anything a gate caught.
 
-**The command line's two chip beds showed a seam on iOS, and it does not reproduce in Chrome — which
-is the diagnosis, not a dead end.** He photographed the option and value beds visibly separated where
-they should read as one continuous pill. Chrome measures the gap at **exactly zero**: the option's
-right edge and the value's left edge both land on `112.594px`. That fractional coordinate is the
-whole answer. A boundary at `.594` sits mid-device-pixel, and at iOS's 3× DPR the antialiasing of two
-merely *abutting* edges can each leave that pixel partly transparent, so the page ground shows
-through as a hairline. **Layout adjacency is not paint adjacency.** The option bed now carries
-`margin-right:-1px` with the same pixel added back to its right padding, so the beds overlap while
-the gap between the two words is unchanged.
+**The command line's two chip beds showed a seam on iOS, and it does not reproduce in Chrome — which is the diagnosis, not a dead end.** He photographed the option and value beds visibly separated where they should read as one continuous pill. Chrome measures the gap at **exactly zero**: the option's right edge and the value's left edge both land on `112.594px`. That fractional coordinate is the whole answer. A boundary at `.594` sits mid-device-pixel, and at iOS's 3× DPR the antialiasing of two merely *abutting* edges can each leave that pixel partly transparent, so the page ground shows through as a hairline. **Layout adjacency is not paint adjacency.** The option bed now carries `margin-right:-1px` with the same pixel added back to its right padding, so the beds overlap while the gap between the two words is unchanged.
 
-**`.cmd-o:has(+ .cmd-v:empty)` became a class the animation sets itself**, which is a second candidate
-cause of the same photo — both beds appeared fully rounded rather than forming one pill, which is
-what a misfiring selector would produce. `:has()` is the tidier expression, but it asked the engine
-to re-derive state `paint()` already knows exactly, the value segment's own character count, and made
-rendering depend on a selector feature behaving identically across engines. The general form is worth
-keeping: **if the code already computes the state, do not restate it as a selector.** Choosing a fix
-that is correct under *every* candidate cause is also what makes an unreproducible bug shippable —
-being wrong about which cause it was does not matter.
+**`.cmd-o:has(+ .cmd-v:empty)` became a class the animation sets itself**, which is a second candidate cause of the same photo — both beds appeared fully rounded rather than forming one pill, which is what a misfiring selector would produce. `:has()` is the tidier expression, but it asked the engine to re-derive state `paint()` already knows exactly, the value segment's own character count, and made rendering depend on a selector feature behaving identically across engines. The general form is worth keeping: **if the code already computes the state, do not restate it as a selector.** Choosing a fix that is correct under *every* candidate cause is also what makes an unreproducible bug shippable — being wrong about which cause it was does not matter.
 
-**The homepage had no Open Graph tags at all.** Asking what the per-page share descriptions were is
-what surfaced it: every other template emits `og:title`, `og:description` and `og:type`, and
-`indexPage` emitted none. Most scrapers fall back to `<title>` and `<meta name="description">`, which
-is precisely why it survived unnoticed — the preview looked right and was one heuristic away from not
-being — and it is the only URL anyone actually shares. Its description is now a single const feeding
-both tags rather than the same sentence written twice, since two copies drift and the drift stays
-invisible until someone compares a search result against a share card.
+**The homepage had no Open Graph tags at all.** Asking what the per-page share descriptions were is what surfaced it: every other template emits `og:title`, `og:description` and `og:type`, and `indexPage` emitted none. Most scrapers fall back to `<title>` and `<meta name="description">`, which is precisely why it survived unnoticed — the preview looked right and was one heuristic away from not being — and it is the only URL anyone actually shares. Its description is now a single const feeding both tags rather than the same sentence written twice, since two copies drift and the drift stays invisible until someone compares a search result against a share card.
 
-**The four legal pages had one formula between them** — "*<Title>* for Dioreo, an unofficial Call of
-Duty: Mobile Discord bot." — accurate and empty. Each now has a hand-written sentence, carried on a
-new `desc` field. Deliberately NOT the existing `blurb`: that one sits in the landing page's numbered
-list where all four are visible at once, so it can be comparative and terse, while `desc` arrives
-alone in a card with no siblings for context and has to name the product and stand by itself.
-Deriving either from the other would make one of them read wrong. The old formula stays as the
-fallback so a future page without a `desc` gets something sane rather than the literal "undefined".
+**The four legal pages had one formula between them** — "*<Title>* for Dioreo, an unofficial Call of Duty: Mobile Discord bot." — accurate and empty. Each now has a hand-written sentence, carried on a new `desc` field. Deliberately NOT the existing `blurb`: that one sits in the landing page's numbered list where all four are visible at once, so it can be comparative and terse, while `desc` arrives alone in a card with no siblings for context and has to name the product and stand by itself. Deriving either from the other would make one of them read wrong. The old formula stays as the fallback so a future page without a `desc` gets something sane rather than the literal "undefined".
 
-**Contributing and Contributors got the same treatment**, for a different reason. Those two were
-never formulaic — `warmShell()` fed both meta tags from the page's `lede`, which is hand-written and
-good. It was redundant rather than wrong: the lede is the first line *on* the page, so a share card
-quoting it previewed the exact sentence the reader was about to see, and a lede is written to sit
-under a headline rather than to carry a card alone. They now have their own `desc`, with `lede` kept
-as the fallback. All ten pages were then checked with both tags side by side — present, matching,
-and non-empty — rather than spot-checking the two that changed.
+**Contributing and Contributors got the same treatment**, for a different reason. Those two were never formulaic — `warmShell()` fed both meta tags from the page's `lede`, which is hand-written and good. It was redundant rather than wrong: the lede is the first line *on* the page, so a share card quoting it previewed the exact sentence the reader was about to see, and a lede is written to sit under a headline rather than to carry a card alone. They now have their own `desc`, with `lede` kept as the fallback. All ten pages were then checked with both tags side by side — present, matching, and non-empty — rather than spot-checking the two that changed.
 
-The homepage tab title also changed, `Dioreo — Call of Duty: Mobile, in Discord` →
-`Dioreo — COD:M Companion Bot`. The old one spent its width on positioning; the new one says what the
-thing is. That change is exercised by `deploy-site.yml`, which asserts the live `<title>` matches
-what it uploaded.
+The homepage tab title also changed, `Dioreo — Call of Duty: Mobile, in Discord` → `Dioreo — COD:M Companion Bot`. The old one spent its width on positioning; the new one says what the thing is. That change is exercised by `deploy-site.yml`, which asserts the live `<title>` matches what it uploaded.
 
-⚠️ **One near-miss worth recording, because no gate would have caught it.** Rewriting the two meta
-tags with `sd`, the replacement string `${esc(shareDesc)}` was read as a capture-group reference and
-both tags came out as `content=""`. Every legal page would have deployed with an empty description
-and the build would still have said *Done* — the content gate checks that source text survives into
-the page, not that a meta attribute is non-empty. It was caught only by listing all ten descriptions
-afterwards instead of trusting the build's own verdict. **Verify the thing you changed, not the thing
-the tool reports.**
+⚠️ **One near-miss worth recording, because no gate would have caught it.** Rewriting the two meta tags with `sd`, the replacement string `${esc(shareDesc)}` was read as a capture-group reference and both tags came out as `content=""`. Every legal page would have deployed with an empty description and the build would still have said *Done* — the content gate checks that source text survives into the page, not that a meta attribute is non-empty. It was caught only by listing all ten descriptions afterwards instead of trusting the build's own verdict. **Verify the thing you changed, not the thing the tool reports.**
 
 ---
 
 ## v2.55.1 — 2026-08-05 19:09 EDT (#81 · `3342446`) — A P1 that had been fixed for a day, and a guard that blocks the cleanup it asks for
 
-Records-only. Both corrections were found while closing out v2.55.0, which is the point worth
-recording: neither came from reading the list.
+Records-only. Both corrections were found while closing out v2.55.0, which is the point worth recording: neither came from reading the list.
 
-**The `[P1 · XS]` saying every GitHub link on the live site 404s until the repo is renamed had already
-been fixed.** Harkirat ran the rename; nobody closed the item. So the deferred list has been asserting
-the live site is broken while it works — the actively-misleading kind of stale, worse than an item
-that is merely old. Verified rather than assumed before closing: `gh api repos/HarkiratMangat/dioreo`
-returns that `full_name`, the old path still resolves through GitHub's redirect, and `REPO_URL` in the
-generator points at the name that now exists. Moved to `docs/archive/resolved-list.md` with its
-original wording plus the outcome, per the conservation rule.
+**The `[P1 · XS]` saying every GitHub link on the live site 404s until the repo is renamed had already been fixed.** Harkirat ran the rename; nobody closed the item. So the deferred list has been asserting the live site is broken while it works — the actively-misleading kind of stale, worse than an item that is merely old. Verified rather than assumed before closing: `gh api repos/HarkiratMangat/dioreo` returns that `full_name`, the old path still resolves through GitHub's redirect, and `REPO_URL` in the generator points at the name that now exists. Moved to `docs/archive/resolved-list.md` with its original wording plus the outcome, per the conservation rule.
 
-**It stayed open because of a detail with no functional consequence.** The local clone's `origin`
-still read `.../diors-builds.git`. Harmless — GitHub redirects, every push in this session worked —
-but it printed the old name on every push, which is exactly what made the item look current. Remote
-URL updated in the same pass. The repo *folder* deliberately stays as it is; the memory-store slug
-derives from that path.
+**It stayed open because of a detail with no functional consequence.** The local clone's `origin` still read `.../diors-builds.git`. Harmless — GitHub redirects, every push in this session worked — but it printed the old name on every push, which is exactly what made the item look current. Remote URL updated in the same pass. The repo *folder* deliberately stays as it is; the memory-store slug derives from that path.
 
-**Filed against tech-debt: `main-push-guard.sh` denies a branch DELETION.** Standing on `main`,
-`git push origin --delete <branch>` is refused with "this would push commits directly to main". It
-does not: a `--delete` pushes no commits and cannot touch `main`. The matcher stops at `git push` plus
-a remote. It fires on precisely the cleanup the chore checklist mandates after every merge — "a merged
-branch must never outlive its PR" — so it recurs every release, and it was hit during this one.
+**Filed against tech-debt: `main-push-guard.sh` denies a branch DELETION.** Standing on `main`, `git push origin --delete <branch>` is refused with "this would push commits directly to main". It does not: a `--delete` pushes no commits and cannot touch `main`. The matcher stops at `git push` plus a remote. It fires on precisely the cleanup the chore checklist mandates after every merge — "a merged branch must never outlive its PR" — so it recurs every release, and it was hit during this one.
 
-Left unfixed deliberately, with the reason written into the item: every script in `.claude/hooks/`
-must carry a `<name>.test.sh`, so the fix is a matcher change **plus** a negative case in
-`main-push-guard.test.sh` proving a `--delete` is allowed while a real commit push is still denied.
-The note also says what not to do — broaden the matcher until it stops firing, which is how a guard
-becomes decorative. Workaround meanwhile, and arguably clearer about intent anyway:
-`gh api -X DELETE repos/HarkiratMangat/dioreo/git/refs/heads/<branch>`.
+Left unfixed deliberately, with the reason written into the item: every script in `.claude/hooks/` must carry a `<name>.test.sh`, so the fix is a matcher change **plus** a negative case in `main-push-guard.test.sh` proving a `--delete` is allowed while a real commit push is still denied. The note also says what not to do — broaden the matcher until it stops firing, which is how a guard becomes decorative. Workaround meanwhile, and arguably clearer about intent anyway: `gh api -X DELETE repos/HarkiratMangat/dioreo/git/refs/heads/<branch>`.
 
 ---
 
 ## v2.55.0 — 2026-08-05 18:51 EDT (#80 · `66f5c4c`) — A homepage that types, and a button an ad blocker had been hiding
 
-The static `/` sitting under the hero lede — placed there last release and deliberately left inert —
-now types a real slash command, holds it, backspaces to `/` and moves on. It never erases past the
-slash, so the resting look it replaced is exactly what a reader sees between commands.
+The static `/` sitting under the hero lede — placed there last release and deliberately left inert — now types a real slash command, holds it, backspaces to `/` and moves on. It never erases past the slash, so the resting look it replaced is exactly what a reader sees between commands.
 
-**It composes each line rather than holding a list of them**, and that distinction is the feature.
-`SPECS` carries the sixteen public commands; each renders freshly every time it comes up — bare
-about two showings in five, otherwise carrying a randomly chosen option, occasionally two. So `/ar`
-is sometimes just `/ar`, sometimes `/ar weapon AK117`, sometimes with `build 2` on the end. A fixed
-list would have looked identical on every visit, which was the thing to avoid.
+**It composes each line rather than holding a list of them**, and that distinction is the feature. `SPECS` carries the sixteen public commands; each renders freshly every time it comes up — bare about two showings in five, otherwise carrying a randomly chosen option, occasionally two. So `/ar` is sometimes just `/ar`, sometimes `/ar weapon AK117`, sometimes with `build 2` on the end. A fixed list would have looked identical on every visit, which was the thing to avoid.
 
-**Every command and every option value is real, and each was checked against its own source.** That
-mattered more than expected: `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and
-`/secondaries` are registered at BOOT in `index.js`'s `handleBotReady()`, from
-`Loadout.distinct('category', { mode: 'MP' })` — so grepping `commands/*.js` for `.setName(` finds
-nine commands and makes the weapon classes look invented. A handoff note asserted exactly that and
-was wrong. The weapon pools are the live `loadouts` collection grouped by category, verbatim, since
-autocomplete answers with the stored `weaponName`. The choice labels are the `name:` half of the
-real `addChoices(...)` calls — Discord renders the name, so `page` / `New Draws`, never `page` /
-`new`. Every `datetime` sample parses under chrono-node, which is the parser `/timestamp` hands them
-to. `/all` is excluded by Harkirat's call; `/manage`, `/alerts` and `/autobuild` because two are
-admin-locked and one is unfinished, and the front door should not send a reader to a refusal.
+**Every command and every option value is real, and each was checked against its own source.** That mattered more than expected: `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and `/secondaries` are registered at BOOT in `index.js`'s `handleBotReady()`, from `Loadout.distinct('category', { mode: 'MP' })` — so grepping `commands/*.js` for `.setName(` finds nine commands and makes the weapon classes look invented. A handoff note asserted exactly that and was wrong. The weapon pools are the live `loadouts` collection grouped by category, verbatim, since autocomplete answers with the stored `weaponName`. The choice labels are the `name:` half of the real `addChoices(...)` calls — Discord renders the name, so `page` / `New Draws`, never `page` / `new`. Every `datetime` sample parses under chrono-node, which is the parser `/timestamp` hands them to. `/all` is excluded by Harkirat's call; `/manage`, `/alerts` and `/autobuild` because two are admin-locked and one is unfinished, and the front door should not send a reader to a refusal.
 
-**The one place a repeat can happen is the cycle seam, and it is invisible to casual reasoning.** A
-shuffled full pass shows every command exactly once, so within a cycle two showings are the whole
-list apart and the design looks safe. But the LAST command of one cycle can be the FIRST of the
-next — and shuffling harder never fixes that, because each pass is individually fine. `spaced()`
-rejects an order whose opening repeats the previous ending too soon, guaranteeing at least three
-other commands between showings.
+**The one place a repeat can happen is the cycle seam, and it is invisible to casual reasoning.** A shuffled full pass shows every command exactly once, so within a cycle two showings are the whole list apart and the design looks safe. But the LAST command of one cycle can be the FIRST of the next — and shuffling harder never fixes that, because each pass is individually fine. `spaced()` rejects an order whose opening repeats the previous ending too soon, guaranteeing at least three other commands between showings.
 
-**The parts are drawn the way Discord draws them**, checked against a screenshot of a real used
-command rather than from memory — an earlier guess at the model was wrong. The command is bold
-accent text; the option name and its value each sit in their own box forming one continuous pill,
-with no colon, since two adjacent beds already separate the pair. The beds are different materials
-on purpose: neutral grey for the label, coral tint for the value.
+**The parts are drawn the way Discord draws them**, checked against a screenshot of a real used command rather than from memory — an earlier guess at the model was wrong. The command is bold accent text; the option name and its value each sit in their own box forming one continuous pill, with no colon, since two adjacent beds already separate the pair. The beds are different materials on purpose: neutral grey for the label, coral tint for the value.
 
-**The boxes are `inline-block`, and that is what contains descenders — not padding.** An inline box
-paints its background over the font's *content area*, derived from the face's ascent/descent metrics
-and shorter than the glyphs actually drawn, so the legs of p, g and y hung outside the chip at any
-horizontal padding. Worth recording how that was diagnosed: a canvas `TextMetrics` check reported
-1.7px of clearance and therefore no clipping, and a screenshot showed the legs plainly outside. The
-font the canvas measured was not the box the browser painted. When a measurement and a rasterisation
-disagree, believe the pixels — the same lesson the nav indicator's dilation taught, one level
-sneakier, because a measurement carries the authority of having been checked.
+**The boxes are `inline-block`, and that is what contains descenders — not padding.** An inline box paints its background over the font's *content area*, derived from the face's ascent/descent metrics and shorter than the glyphs actually drawn, so the legs of p, g and y hung outside the chip at any horizontal padding. Worth recording how that was diagnosed: a canvas `TextMetrics` check reported 1.7px of clearance and therefore no clipping, and a screenshot showed the legs plainly outside. The font the canvas measured was not the box the browser painted. When a measurement and a rasterisation disagree, believe the pixels — the same lesson the nav indicator's dilation taught, one level sneakier, because a measurement carries the authority of having been checked.
 
-**A width cap keeps `nowrap` safe, and it needs two numbers rather than one.** Each chip carries its
-own padding, so a two-option line spends four lots of it — roughly 1.6em more than a one-option line
-of the same length. A single flat cap has to be set for the widest shape and then starves the narrow
-one: at a flat 30 characters, `/calendar page Playlists & Modes` and *every* `/draw prices` option
-were silently filtered out despite painting 260px into a 281px box. That is the failure mode worth
-remembering — the cap does not error, it just quietly stops offering things.
+**A width cap keeps `nowrap` safe, and it needs two numbers rather than one.** Each chip carries its own padding, so a two-option line spends four lots of it — roughly 1.6em more than a one-option line of the same length. A single flat cap has to be set for the widest shape and then starves the narrow one: at a flat 30 characters, `/calendar page Playlists & Modes` and *every* `/draw prices` option were silently filtered out despite painting 260px into a 281px box. That is the failure mode worth remembering — the cap does not error, it just quietly stops offering things.
 
-**Reduced motion is handled in JS on purpose.** `COMPONENT_CSS`'s global override kills CSS
-transitions and keyframes, and this effect is neither, so a reduced-motion reader would have got the
-full typewriter unless the module opted out itself. It goes still on one whole command rather than a
-bare slash, and is bound live so toggling the OS setting takes effect. `#cmd-line` keeps
-`aria-hidden`, now as a decision rather than an inherited default: it duplicates nothing the lede
-already says, its text is rewritten every ~50ms so a reader landing on it would get a partial
-string, and `aria-live` would be worse — a region announcing every keystroke.
+**Reduced motion is handled in JS on purpose.** `COMPONENT_CSS`'s global override kills CSS transitions and keyframes, and this effect is neither, so a reduced-motion reader would have got the full typewriter unless the module opted out itself. It goes still on one whole command rather than a bare slash, and is bound live so toggling the OS setting takes effect. `#cmd-line` keeps `aria-hidden`, now as a decision rather than an inherited default: it duplicates nothing the lede already says, its text is rewritten every ~50ms so a reader landing on it would get a partial string, and `aria-live` would be worse — a region announcing every keystroke.
 
-**The driver is one `requestAnimationFrame` loop on a time-based clock.** Each frame asks how many
-characters should be visible by now rather than assuming the previous timer fired on schedule, so
-the cadence holds under load instead of drifting later on every character. `paint()` writes only the
-segment whose visible length changed — 1.93 DOM writes per character, against one per segment
-before. That also let the `visibilitychange` handler go, which is a fix and not a tidy-up:
-`setTimeout` keeps firing in a hidden tab throttled to about one tick a second, so the old code had
-to detect the return and restart the whole command, where rAF simply stops and resumes where it was.
+**The driver is one `requestAnimationFrame` loop on a time-based clock.** Each frame asks how many characters should be visible by now rather than assuming the previous timer fired on schedule, so the cadence holds under load instead of drifting later on every character. `paint()` writes only the segment whose visible length changed — 1.93 DOM writes per character, against one per segment before. That also let the `visibilitychange` handler go, which is a fix and not a tidy-up: `setTimeout` keeps firing in a hidden tab throttled to about one tick a second, so the old code had to detect the return and restart the whole command, where rAF simply stops and resumes where it was.
 
 ### The back-to-top button was invisible under uBlock Origin
 
-Not a regression — it had been happening on Harkirat's browser and looked like the button "not
-working". **Fanboy's Annoyance List carries the GENERIC cosmetic rule `##[aria-label="Back to top"]`**
-— no domain prefix, so it applies to this site like any other — and uBlock's *"Ignore generic
-cosmetic filters"* is off by default. Our button carried exactly that label and was `display:none`.
-Upstream source: `easylist/easylist` → `fanboy-addon/fanboy_annoyance_general_hide.txt` line 787.
+Not a regression — it had been happening on Harkirat's browser and looked like the button "not working". **Fanboy's Annoyance List carries the GENERIC cosmetic rule `##[aria-label="Back to top"]`** — no domain prefix, so it applies to this site like any other — and uBlock's *"Ignore generic cosmetic filters"* is off by default. Our button carried exactly that label and was `display:none`. Upstream source: `easylist/easylist` → `fanboy-addon/fanboy_annoyance_general_hide.txt` line 787.
 
-**The obvious suspect was innocent, and this is the part to remember.** The instinct is to rename the
-class, and the class is fine: the list filters `.gotop-btn` and `.gotop-wrapper` but not a bare
-`gotop`, and its only `##.totop` rule is domain-scoped to unrelated sites. Renaming would have been
-pure wasted work. Both generators now use `aria-label="Scroll back to top of page"`; the visible
-tooltip still reads "Back to top", since nothing filters `data-tip`.
+**The obvious suspect was innocent, and this is the part to remember.** The instinct is to rename the class, and the class is fine: the list filters `.gotop-btn` and `.gotop-wrapper` but not a bare `gotop`, and its only `##.totop` rule is domain-scoped to unrelated sites. Renaming would have been pure wasted work. Both generators now use `aria-label="Scroll back to top of page"`; the visible tooltip still reads "Back to top", since nothing filters `data-tip`.
 
-Before settling on that wording it was verified to be a real escape rather than a guess: that is the
-*only* generic `aria-label` rule mentioning "top", and the list contains **no** substring
-(`[aria-label*=]`) aria-label rules at all. The **uBO-specific variant** was checked too, which
-matters more than it sounds — that flavour is the one that can carry *procedural* filters
-(`:has-text()`, `:matches-attr()`) matching on text content or partial attributes, and such a rule
-would have sailed straight past a reworded label. None target anything top- or label-shaped. Then
-all seven `aria-label` strings the two generators emit were audited across every annoyance list
-enabled — Fanboy's, EasyList Notifications, EasyList Social Widgets, EasyList/uBO Cookie Notices,
-third-party Notifications, AdGuard Annoyances and AdGuard Privacy. One collision in total, the one
-above. Fixing only the reported control would have left the same class of bug in six other places.
+Before settling on that wording it was verified to be a real escape rather than a guess: that is the *only* generic `aria-label` rule mentioning "top", and the list contains **no** substring (`[aria-label*=]`) aria-label rules at all. The **uBO-specific variant** was checked too, which matters more than it sounds — that flavour is the one that can carry *procedural* filters (`:has-text()`, `:matches-attr()`) matching on text content or partial attributes, and such a rule would have sailed straight past a reworded label. None target anything top- or label-shaped. Then all seven `aria-label` strings the two generators emit were audited across every annoyance list enabled — Fanboy's, EasyList Notifications, EasyList Social Widgets, EasyList/uBO Cookie Notices, third-party Notifications, AdGuard Annoyances and AdGuard Privacy. One collision in total, the one above. Fixing only the reported control would have left the same class of bug in six other places.
 
 ### Also in this release
 
-The mobile section-menu download button is sticky again, but the card wrapping it (`.mp-dl`) now
-spans a full row height above the button so text fades in before it is covered instead of cutting
-off mid-word, and carries its own solid bottom padding so the button never sits flush against the
-dropdown's edge. The homepage link-preview description was reworded, and "Type / and go." was split
-out of the intro into the standalone line this release then animated.
+The mobile section-menu download button is sticky again, but the card wrapping it (`.mp-dl`) now spans a full row height above the button so text fades in before it is covered instead of cutting off mid-word, and carries its own solid bottom padding so the button never sits flush against the dropdown's edge. The homepage link-preview description was reworded, and "Type / and go." was split out of the intro into the standalone line this release then animated.
 
-**Verification.** 15 build gates, `docs:audit`, `npm test` (18/18) and two purpose-built generator
-harnesses. 300 sampled lines off the *emitted* script covered all sixteen commands with all twelve
-option-bearing ones showing options, a minimum same-command gap of 3, and nothing over the cap.
-Width was re-measured at 320px after every padding change — worst case 274px into a 281px box, zero
-document overflow. The rAF loop needed a real browser to verify: the Browser pane reports
-`visibilityState: "hidden"` even while screenshotting, so rAF never ticks there and the line sat at
-`/` — a harness artefact, but not one to assume away, so it was driven through headless Chrome over
-CDP instead (73 distinct frames, paragraph height steady at 28.05px).
+**Verification.** 15 build gates, `docs:audit`, `npm test` (18/18) and two purpose-built generator harnesses. 300 sampled lines off the *emitted* script covered all sixteen commands with all twelve option-bearing ones showing options, a minimum same-command gap of 3, and nothing over the cap. Width was re-measured at 320px after every padding change — worst case 274px into a 281px box, zero document overflow. The rAF loop needed a real browser to verify: the Browser pane reports `visibilityState: "hidden"` even while screenshotting, so rAF never ticks there and the line sat at `/` — a harness artefact, but not one to assume away, so it was driven through headless Chrome over CDP instead (73 distinct frames, paragraph height steady at 28.05px).
 
 ---
 
 ## v2.54.0 — 2026-08-05 14:53 EDT (#79 · `88f969e`) — dioreo.app, and a site that no longer lives one folder down from itself
 
-Harkirat bought `dioreo.app` and linked it to the site's existing Cloudflare Pages project — the
-first time the domain named in the branding actually matches the URL. That exposed a structural
-choice made back when the site first went live: everything rendered into `public/legal/`, with the
-site root 302-redirecting there because the landing page had nowhere else to live. A domain a
-reader is expected to actually type deserves `dioreo.app/terms`, not `dioreo.app/legal/terms` —
-so this flattens the whole document family (Terms, Privacy, License, Notice, Contributing,
-Contributors, and the homepage itself) to the site root, leaving `/changelog/` as the one
-remaining subdirectory.
+Harkirat bought `dioreo.app` and linked it to the site's existing Cloudflare Pages project — the first time the domain named in the branding actually matches the URL. That exposed a structural choice made back when the site first went live: everything rendered into `public/legal/`, with the site root 302-redirecting there because the landing page had nowhere else to live. A domain a reader is expected to actually type deserves `dioreo.app/terms`, not `dioreo.app/legal/terms` — so this flattens the whole document family (Terms, Privacy, License, Notice, Contributing, Contributors, and the homepage itself) to the site root, leaving `/changelog/` as the one remaining subdirectory.
 
-**The routing math had one real asymmetry to get right.** Before this, the two output directories
-(`legal/` and `changelog/`) sat at the SAME depth, so crossing between them was always "up one,
-then down into the other" — `hrefTo()` had exactly one cross-directory case. Flattening `legal/`
-into the root makes that asymmetric: root is depth 0, `changelog/` is depth 1, so crossing FROM
-root only ever goes DOWN, and crossing FROM `changelog/` only ever goes UP — two distinct cases
-where there used to be one. Getting this wrong silently produces a working-in-one-direction site
-(links from the homepage fine, links from a changelog page double-slashed or missing a level) that
-`linkAudit()`'s resolve-against-the-real-tree check would have caught, but a mid-refactor visual
-check would not have.
+**The routing math had one real asymmetry to get right.** Before this, the two output directories (`legal/` and `changelog/`) sat at the SAME depth, so crossing between them was always "up one, then down into the other" — `hrefTo()` had exactly one cross-directory case. Flattening `legal/` into the root makes that asymmetric: root is depth 0, `changelog/` is depth 1, so crossing FROM root only ever goes DOWN, and crossing FROM `changelog/` only ever goes UP — two distinct cases where there used to be one. Getting this wrong silently produces a working-in-one-direction site (links from the homepage fine, links from a changelog page double-slashed or missing a level) that `linkAudit()`'s resolve-against-the-real-tree check would have caught, but a mid-refactor visual check would not have.
 
-**Fixed by that structural cascade, not by tracking down each symptom.** `OUT` moved from
-`public/legal` to `public` and `dirOf()`'s default from `'legal'` to `''` (root); everything else —
-`outDirFor()`, the LICENSE/NOTICE raw-download links (`../LICENSE` → `LICENSE`, now same-directory
-siblings instead of one level up), the wordmark's asset path (root pages get bare `assets/...`;
-`chronicle.js`'s changelog pages still need `../assets/...`, since they're still one level deep) —
-followed from those two definitions rather than needing independent fixes. The `LINK_BASE`/`../../`-
-fold mechanism that used to compensate for root-authored sources (LICENSE, NOTICE, CONTRIBUTING.md,
-CONTRIBUTORS.md) rendering one level below where they're authored is now permanently inert, since
-every source renders at the exact depth its own links already assume — kept rather than deleted,
-since a future page family at a real depth would need the same correction again.
+**Fixed by that structural cascade, not by tracking down each symptom.** `OUT` moved from `public/legal` to `public` and `dirOf()`'s default from `'legal'` to `''` (root); everything else — `outDirFor()`, the LICENSE/NOTICE raw-download links (`../LICENSE` → `LICENSE`, now same-directory siblings instead of one level up), the wordmark's asset path (root pages get bare `assets/...`; `chronicle.js`'s changelog pages still need `../assets/...`, since they're still one level deep) — followed from those two definitions rather than needing independent fixes. The `LINK_BASE`/`../../`- fold mechanism that used to compensate for root-authored sources (LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md) rendering one level below where they're authored is now permanently inert, since every source renders at the exact depth its own links already assume — kept rather than deleted, since a future page family at a real depth would need the same correction again.
 
-**`_redirects` gained six 301s** from the old `/legal/*.html` shape to the new flat paths, purely
-for continuity — a bookmark, or the Discord Developer Portal's ToS/Privacy links if they still
-point at the old shape when this ships. `/install` (already pointing at the Discord OAuth URL) and
-`/changelog` were untouched; `/security`'s target lost its now-nonexistent `/legal/` prefix.
+**`_redirects` gained six 301s** from the old `/legal/*.html` shape to the new flat paths, purely for continuity — a bookmark, or the Discord Developer Portal's ToS/Privacy links if they still point at the old shape when this ships. `/install` (already pointing at the Discord OAuth URL) and `/changelog` were untouched; `/security`'s target lost its now-nonexistent `/legal/` prefix.
 
-**All fifteen build gates and the full docs-audit passed on the first post-refactor build** — the
-existing verification suite (`linkAudit`, `structureAudit`, `crossRefAudit`, the warm-structure and
-column-alignment checks) turned out to already cover this class of change completely; nothing
-needed extending to catch it. Verified independently anyway: fetched `LICENSE` from a rendered
-`license.html` (200), confirmed the changelog family's asset paths still resolve one level up
-(`naturalWidth: 600`, not a broken image), and confirmed the local preview server now shows the
-homepage directly at `/` instead of the directory listing it used to.
+**All fifteen build gates and the full docs-audit passed on the first post-refactor build** — the existing verification suite (`linkAudit`, `structureAudit`, `crossRefAudit`, the warm-structure and column-alignment checks) turned out to already cover this class of change completely; nothing needed extending to catch it. Verified independently anyway: fetched `LICENSE` from a rendered `license.html` (200), confirmed the changelog family's asset paths still resolve one level up (`naturalWidth: 600`, not a broken image), and confirmed the local preview server now shows the homepage directly at `/` instead of the directory listing it used to.
 
 ## v2.53.0 — 2026-08-05 13:11 EDT (#78 · `5af0734`) — Confirmations that only worked when nothing else was happening
 
-A mobile-polish round that kept turning up bugs whose actual cause was event ORDERING, not the
-feature itself — plus a privacy-policy gap found by directly auditing the schemas against the
-policy rather than trusting the existing check.
+A mobile-polish round that kept turning up bugs whose actual cause was event ORDERING, not the feature itself — plus a privacy-policy gap found by directly auditing the schemas against the policy rather than trusting the existing check.
 
-**The anchor-copy "Copied" confirmation never fired in real use, only in tests that stubbed the
-clipboard.** It waited for `navigator.clipboard.writeText()`'s promise to resolve before showing
-anything — but `.anchor` is a real `<a href="#id">`, and the browser's own scroll-to-hash runs as
-its OWN step right after the click finishes dispatching, before that promise's microtask gets a
-turn. By the time the confirmation would have fired, the page had already jumped and the moment
-was gone. Fixed by showing it synchronously in the click handler and firing the clipboard write
-fire-and-forget alongside it — verified live that a real click now flips the shared hint bubble to
-"Copied" in the same tick.
+**The anchor-copy "Copied" confirmation never fired in real use, only in tests that stubbed the clipboard.** It waited for `navigator.clipboard.writeText()`'s promise to resolve before showing anything — but `.anchor` is a real `<a href="#id">`, and the browser's own scroll-to-hash runs as its OWN step right after the click finishes dispatching, before that promise's microtask gets a turn. By the time the confirmation would have fired, the page had already jumped and the moment was gone. Fixed by showing it synchronously in the click handler and firing the clipboard write fire-and-forget alongside it — verified live that a real click now flips the shared hint bubble to "Copied" in the same tick.
 
-**That fix immediately exposed a second race**, caught only because the row-highlight redesign
-earlier in the session had already established the pattern of catching a defect on-screen from a
-recording: the module's own "hide the hint on scroll" listener was firing on the SAME native
-scroll-to-hash, wiping the confirmation before it was visible even when shown synchronously. The
-flash now re-places itself on every scroll tick while active, riding along with the anchor instead
-of vanishing.
+**That fix immediately exposed a second race**, caught only because the row-highlight redesign earlier in the session had already established the pattern of catching a defect on-screen from a recording: the module's own "hide the hint on scroll" listener was firing on the SAME native scroll-to-hash, wiping the confirmation before it was visible even when shown synchronously. The flash now re-places itself on every scroll tick while active, riding along with the anchor instead of vanishing.
 
-**The tooltip firing on a touch swipe was the same class of bug wearing different clothes.** It was
-gated on any `focusin`, which a scroll gesture that merely grazes a link also produces. Gated on
-`:focus-visible` instead — the browser's own answer to "was this a keyboard request" — rather than
-guessing from device type.
+**The tooltip firing on a touch swipe was the same class of bug wearing different clothes.** It was gated on any `focusin`, which a scroll gesture that merely grazes a link also produces. Gated on `:focus-visible` instead — the browser's own answer to "was this a keyboard request" — rather than guessing from device type.
 
-**NOTICE's dependency tables moved from a raw monospace `<pre>` to real cards** after a screenshot
-showed the old rendering crushing package name, license, and URL into two columns that ran off a
-phone screen. `structureAudit()` (the gate that verifies every column-aligned source line survives
-somewhere) gained a matching branch so the invariant holds against the new shape instead of
-regressing silently. The download button that used to sit as a bare icon in the mobile nav header,
-then as a sticky footer that pinned over whatever section was scrolled underneath it — "such a poor
-implementation... looks slapped on" — is now a plain card at the bottom of the section menu,
-matching the desktop rail's row that never drew a complaint.
+**NOTICE's dependency tables moved from a raw monospace `<pre>` to real cards** after a screenshot showed the old rendering crushing package name, license, and URL into two columns that ran off a phone screen. `structureAudit()` (the gate that verifies every column-aligned source line survives somewhere) gained a matching branch so the invariant holds against the new shape instead of regressing silently. The download button that used to sit as a bare icon in the mobile nav header, then as a sticky footer that pinned over whatever section was scrolled underneath it — "such a poor implementation... looks slapped on" — is now a plain card at the bottom of the section menu, matching the desktop rail's row that never drew a complaint.
 
-**The Privacy Policy gap wasn't found by the existing check — the existing check only ever looked
-at one model.** `privacy-inventory` verifies `UserPreference`'s fields against Appendix A by name;
-auditing the other five schemas by hand turned up that MongoDB Atlas's row in §5 said it stores
-only "your preference record," when the same cluster also backs the operational alert log §2.4
-already discloses in prose. Fixed (Privacy Policy v1.9), and generalized into a new check,
-`privacy-model-coverage`, that scans every `models/*.js` for a `discordId`/`userId`-shaped field and
-requires it be named somewhere in the policy — so the next new per-user collection can't repeat the
-same silent gap. Its own baseline was briefly vacuous (0 items to examine once `UserPreference.js`
-is correctly excluded, since that's the other check's job) until a second disclosed model was added
-to the shared test fixture to prove the check verifies something real.
+**The Privacy Policy gap wasn't found by the existing check — the existing check only ever looked at one model.** `privacy-inventory` verifies `UserPreference`'s fields against Appendix A by name; auditing the other five schemas by hand turned up that MongoDB Atlas's row in §5 said it stores only "your preference record," when the same cluster also backs the operational alert log §2.4 already discloses in prose. Fixed (Privacy Policy v1.9), and generalized into a new check, `privacy-model-coverage`, that scans every `models/*.js` for a `discordId`/`userId`-shaped field and requires it be named somewhere in the policy — so the next new per-user collection can't repeat the same silent gap. Its own baseline was briefly vacuous (0 items to examine once `UserPreference.js` is correctly excluded, since that's the other check's job) until a second disclosed model was added to the shared test fixture to prove the check verifies something real.
 
-**Also this release:** plural "Sections N, N, and N" cross-reference lists (the classic
-survival-clause shape) now linkify each number individually — the singular-only regex silently
-never matched the plural word at all. NOTICE's `*** ... ***` inline emphasis renders as styled text
-instead of literal asterisks now that it lives inside a real card. The homepage intro paragraph was
-rewritten. The mascot and wordmark were swapped for Harkirat's coral recolor (standing pose, the
-standard black outline over the brownline variant), trimmed to their actual content bounds — the
-source canvases carried a large transparent margin around the artwork.
+**Also this release:** plural "Sections N, N, and N" cross-reference lists (the classic survival-clause shape) now linkify each number individually — the singular-only regex silently never matched the plural word at all. NOTICE's `*** ... ***` inline emphasis renders as styled text instead of literal asterisks now that it lives inside a real card. The homepage intro paragraph was rewritten. The mascot and wordmark were swapped for Harkirat's coral recolor (standing pose, the standard black outline over the brownline variant), trimmed to their actual content bounds — the source canvases carried a large transparent margin around the artwork.
 
 ## v2.52.0 — 2026-08-04 16:24 EDT (#77 · `d294128`) — The bot has a name, and the front door finally says what it is
 
-**Dior's Builds is now Dioreo.** The dev application has carried the name since 2026-07-26; this
-takes it project-wide, ahead of the v3 launch and while the site is live but not yet shared — so
-there is no audience holding the old name to preserve.
+**Dior's Builds is now Dioreo.** The dev application has carried the name since 2026-07-26; this takes it project-wide, ahead of the v3 launch and while the site is live but not yet shared — so there is no audience holding the old name to preserve.
 
-The rename is documented the way a product rename has to be, rather than being done by
-find-and-replace alone. `LICENSE` becomes the **Dioreo Source-Available License v1.1**
-(`LicenseRef-Dioreo-Source-Available-1.1`) with a new **§18**: change of name only, no assignment or
-change of ownership, references to the former name still bind, copies held under v1.0 remain valid,
-and the old SPDX identifier still denotes v1.0. **§1.5 now covers BOTH names** — retiring a name does
-not release it. Terms goes to **1.5** and Privacy to **1.8**, each with a name-change clause and a
-revision-history row; the privacy one states explicitly that **the controller did not change** — no
-new controller, processor, recipient or purpose, and Appendix A is untouched. `NOTICE` carries the
-former name in its banner.
+The rename is documented the way a product rename has to be, rather than being done by find-and-replace alone. `LICENSE` becomes the **Dioreo Source-Available License v1.1** (`LicenseRef-Dioreo-Source-Available-1.1`) with a new **§18**: change of name only, no assignment or change of ownership, references to the former name still bind, copies held under v1.0 remain valid, and the old SPDX identifier still denotes v1.0. **§1.5 now covers BOTH names** — retiring a name does not release it. Terms goes to **1.5** and Privacy to **1.8**, each with a name-change clause and a revision-history row; the privacy one states explicitly that **the controller did not change** — no new controller, processor, recipient or purpose, and Appendix A is untouched. `NOTICE` carries the former name in its banner.
 
-**What was deliberately NOT renamed**, because the boundary matters more than the consistency: the
-three record files and `docs/archive/` (past entries say what the project was called when they were
-written), the dated design specs, the VM / systemd / dev-database identifiers, and **the repo folder**
-— the memory-store slug derives from that path, and renaming it would strand the store exactly as the
-2026-07-28 migration fixed. `CLAUDE.md` records the whole boundary; so does a new memory file.
+**What was deliberately NOT renamed**, because the boundary matters more than the consistency: the three record files and `docs/archive/` (past entries say what the project was called when they were written), the dated design specs, the VM / systemd / dev-database identifiers, and **the repo folder** — the memory-store slug derives from that path, and renaming it would strand the store exactly as the 2026-07-28 migration fixed. `CLAUDE.md` records the whole boundary; so does a new memory file.
 
-Terms' revision history also picks up an old discrepancy: **1.2 and 1.3 were never published.** The
-header jumped 1.1 → 1.4 on 1 August while the row describing that change was written as "1.2". Both
-are now recorded as skipped rather than quietly renumbered — the document a reader was shown on 1
-August said 1.4, and a revision history that renumbers a published version to tidy itself up is worth
-less than one with an honest gap in it.
+Terms' revision history also picks up an old discrepancy: **1.2 and 1.3 were never published.** The header jumped 1.1 → 1.4 on 1 August while the row describing that change was written as "1.2". Both are now recorded as skipped rather than quietly renumbered — the document a reader was shown on 1 August said 1.4, and a revision history that renumbers a published version to tidy itself up is worth less than one with an honest gap in it.
 
 Alongside it, the mobile round the rename interrupted:
 
-- **The landing page introduces the bot instead of the paperwork.** It opened on "Legal / The fine
-  print, in plain sight", which was right when four documents were the only thing on the site. The
-  record pages have shipped since and a help/docs section is planned, so a reader arriving at the root
-  met a page that introduced the fine print and never said what the bot was. The legal set keeps its
-  numbered list under its own section label, and its "*N* documents" line stays **derived**, so it
-  still cannot claim "four" after a fifth lands.
-- **Code blocks are rebuilt as a header strip plus the code.** The copy control used to float *on* the
-  code, which cost three separate workarounds — an opaque background, reserved right padding, and a
-  3.6rem top pad on touch so a long line could not slide underneath — and still read on a phone as a
-  large disc in an empty band. A header removes the collision structurally, so all three came out.
-  Copying now shows a **Copied** bubble under the button as well as announcing it.
-- **The legal pages' footer rhythm matches Contributing**, which is the one it was asked to match:
-  54px above the link row and 82px below the sign-off, against 96 and 28. `.page` had no bottom
-  padding at all while the shared CSS was trimming the footer's own on the reasoning that the wrapper
-  provides it — true of the warm template, false here.
-- **Contributing and Contributors get the back-to-top button.** Its CSS and its behaviour had been
-  loading on those pages for weeks and doing nothing; the only missing piece was the button.
-- **LICENSE and NOTICE offer their plain-text originals** from the section index — the mobile
-  disclosure and the desktop rail — so the authoritative file is reachable from anywhere on the page,
-  not only from the callout at the top that scrolls away.
-- **Contributor plates fill the row.** A 268px ceiling meant the single maintainer plate hugged the
-  left edge with two empty columns beside it, which read as a grid that had failed to load.
+- **The landing page introduces the bot instead of the paperwork.** It opened on "Legal / The fine print, in plain sight", which was right when four documents were the only thing on the site. The record pages have shipped since and a help/docs section is planned, so a reader arriving at the root met a page that introduced the fine print and never said what the bot was. The legal set keeps its numbered list under its own section label, and its "*N* documents" line stays **derived**, so it still cannot claim "four" after a fifth lands.
+- **Code blocks are rebuilt as a header strip plus the code.** The copy control used to float *on* the code, which cost three separate workarounds — an opaque background, reserved right padding, and a 3.6rem top pad on touch so a long line could not slide underneath — and still read on a phone as a large disc in an empty band. A header removes the collision structurally, so all three came out. Copying now shows a **Copied** bubble under the button as well as announcing it.
+- **The legal pages' footer rhythm matches Contributing**, which is the one it was asked to match: 54px above the link row and 82px below the sign-off, against 96 and 28. `.page` had no bottom padding at all while the shared CSS was trimming the footer's own on the reasoning that the wrapper provides it — true of the warm template, false here.
+- **Contributing and Contributors get the back-to-top button.** Its CSS and its behaviour had been loading on those pages for weeks and doing nothing; the only missing piece was the button.
+- **LICENSE and NOTICE offer their plain-text originals** from the section index — the mobile disclosure and the desktop rail — so the authoritative file is reachable from anywhere on the page, not only from the callout at the top that scrolls away.
+- **Contributor plates fill the row.** A 268px ceiling meant the single maintainer plate hugged the left edge with two empty columns beside it, which read as a grid that had failed to load.
 
-**A real defect fell out of the rename.** The CLA slip's copy button carried a literal `Copy` text
-node between the CLA line and the paragraph after it, so the page text read *"…in §5 of the LICENSE
-**copy** If you'd rather…"*. `verify()` had reported 100% for four days purely because it slices runs
-at a fixed stride from word one and no boundary happened to land on that seam; removing one word far
-upstream shifted every boundary and the next build caught it. **The defect never changed — only the
-arithmetic did.** Both copy labels are CSS content now and nothing writes a word into the document
-from script. The same sweep found `LICENSE` §6's nominative-use example still naming the old product,
-which had survived only because that file is hard-wrapped and the name broke across a line.
+**A real defect fell out of the rename.** The CLA slip's copy button carried a literal `Copy` text node between the CLA line and the paragraph after it, so the page text read *"…in §5 of the LICENSE **copy** If you'd rather…"*. `verify()` had reported 100% for four days purely because it slices runs at a fixed stride from word one and no boundary happened to land on that seam; removing one word far upstream shifted every boundary and the next build caught it. **The defect never changed — only the arithmetic did.** Both copy labels are CSS content now and nothing writes a word into the document from script. The same sweep found `LICENSE` §6's nominative-use example still naming the old product, which had survived only because that file is hard-wrapped and the name broke across a line.
 
-Two CSS specificity bugs were caught the same way, by reading computed values off the rendered page
-rather than trusting the source: a narrow-width `.doc` margin losing to the later `.doc` rule, and the
-contributor wall's column key losing to `.card p` — the latter had **no rule at all** and was
-rendering as body-size serif, which is what "not a fan of the maintainer card design" was pointing at.
+Two CSS specificity bugs were caught the same way, by reading computed values off the rendered page rather than trusting the source: a narrow-width `.doc` margin losing to the later `.doc` rule, and the contributor wall's column key losing to `.card p` — the latter had **no rule at all** and was rendering as body-size serif, which is what "not a fan of the maintainer card design" was pointing at.
 
-⚠️ **Ships with one known break, on purpose.** Every GitHub URL now reads
-`github.com/HarkiratMangat/dioreo` and the repository is still called `Diors-Builds`, so the Source
-button and the clone snippet 404 until `gh repo rename` is run. Filed `[P1 · XS]`; the alternative was
-landing the release with the old URLs and re-editing seven files afterwards.
+⚠️ **Ships with one known break, on purpose.** Every GitHub URL now reads `github.com/HarkiratMangat/dioreo` and the repository is still called `Diors-Builds`, so the Source button and the clone snippet 404 until `gh repo rename` is run. Filed `[P1 · XS]`; the alternative was landing the release with the old URLs and re-editing seven files afterwards.
 
 ---
 
 ## v2.51.3 — 2026-08-04 00:04 EDT (#76 · `eb0b82d`) — Closing the loop on a CLI that shouldn't be the worse variant
 
-A small, repo-side follow-up to the `dior` CLI consolidation work filed in
-`meta-deferred-list.md` on 2026-08-01: `dior legal build`/`deploy` (in the separate `dior-cli`
-repo) now run the same `node --check` pre-pass `npm run site` already did, so the two build
-entry points are finally equally safe — the CLI path, the one that actually publishes, is no
-longer the unprotected one. `CLAUDE.md`'s "known wart" note is rewritten to say so.
+A small, repo-side follow-up to the `dior` CLI consolidation work filed in `meta-deferred-list.md` on 2026-08-01: `dior legal build`/`deploy` (in the separate `dior-cli` repo) now run the same `node --check` pre-pass `npm run site` already did, so the two build entry points are finally equally safe — the CLI path, the one that actually publishes, is no longer the unprotected one. `CLAUDE.md`'s "known wart" note is rewritten to say so.
 
-Also adds `cliff.toml`, config for a new `dior changelog` command (git-cliff) that drafts release
-notes grouped by this repo's exact 11 Conventional Commits types. Deliberately a draft generator,
-not a replacement for this file's own hand-curated system — the lagged hash backfill above, the
-sync across three files, `docs-audit.mjs`'s structural checks — none of which a generator can
-reproduce; the config's own header comment says so explicitly. Verified live against real tagged
-releases and an unreleased commit range before landing.
+Also adds `cliff.toml`, config for a new `dior changelog` command (git-cliff) that drafts release notes grouped by this repo's exact 11 Conventional Commits types. Deliberately a draft generator, not a replacement for this file's own hand-curated system — the lagged hash backfill above, the sync across three files, `docs-audit.mjs`'s structural checks — none of which a generator can reproduce; the config's own header comment says so explicitly. Verified live against real tagged releases and an unreleased commit range before landing.
 
 ---
 
 ## v2.51.2 — 2026-08-03 21:12 EDT (#75 · `accd881`) — One regex, two copies, one left unfixed
 
-A housekeeping pass on `docs/diors-builds notes.md` and `docs/db-deferred-list.md`, then an audit
-of the hooks and gates that actually enforce them.
+A housekeeping pass on `docs/diors-builds notes.md` and `docs/db-deferred-list.md`, then an audit of the hooks and gates that actually enforce them.
 
-**The notes file.** Swept ~33 ℋ-confirmed items and 7 historical `SESSION STATUS` blocks into
-`docs/archive/graveyard.md` (overdue since the 2026-07-25 tidy) — one of them a calendar-banner
-feature that had shipped 3 days earlier and sat unmarked through several sessions despite the
-shipping commit's own code comment citing the line it answered. Added two standing Legend
-conventions: a still-open filed-but-unbuilt item is always `- [ ]`, never a bare `-`; and Claude's
-own resolution comments use a standardized lead verb (FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.). A
-second pass then trimmed the Legend's own accumulated meta-discussion — a dead empty follow-up-mark
-pair, a resolved multi-message exchange condensed to three sentences, and several dangling
-references to content that no longer existed after the sweep (including one the sweep itself had
-just created).
+**The notes file.** Swept ~33 ℋ-confirmed items and 7 historical `SESSION STATUS` blocks into `docs/archive/graveyard.md` (overdue since the 2026-07-25 tidy) — one of them a calendar-banner feature that had shipped 3 days earlier and sat unmarked through several sessions despite the shipping commit's own code comment citing the line it answered. Added two standing Legend conventions: a still-open filed-but-unbuilt item is always `- [ ]`, never a bare `-`; and Claude's own resolution comments use a standardized lead verb (FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.). A second pass then trimmed the Legend's own accumulated meta-discussion — a dead empty follow-up-mark pair, a resolved multi-message exchange condensed to three sentences, and several dangling references to content that no longer existed after the sweep (including one the sweep itself had just created).
 
-**The deferred list.** Removed a week-old cross-session notice that had verifiably already
-reconciled (properly logged to `docs/archive/resolved-list.md` per the file's own never-delete
-rule, after `docs-audit.mjs`'s `archive-conservation` check caught the first attempt at silently
-deleting it), and fixed two references pointing at a "Render deletion" reminder that had itself
-shipped and archived weeks earlier.
+**The deferred list.** Removed a week-old cross-session notice that had verifiably already reconciled (properly logged to `docs/archive/resolved-list.md` per the file's own never-delete rule, after `docs-audit.mjs`'s `archive-conservation` check caught the first attempt at silently deleting it), and fixed two references pointing at a "Render deletion" reminder that had itself shipped and archived weeks earlier.
 
-**The gates themselves.** `records-close-check.sh` (the `gh pr create` gate for unclosed notes
-items) turned out to carry the exact same dead regex — `^- [^<[]`, which silently excludes a
-`- [ ]` checkbox line — that the SessionStart hook had already been fixed for earlier the same
-session. It existed in two places because the logic was copy-pasted, not shared, which is how one
-copy got fixed and the other didn't. Extracted both into `.claude/hooks/notes-open-items.sh` with
-its own 7-case test suite, so this can't drift apart silently again.
+**The gates themselves.** `records-close-check.sh` (the `gh pr create` gate for unclosed notes items) turned out to carry the exact same dead regex — `^- [^<[]`, which silently excludes a `- [ ]` checkbox line — that the SessionStart hook had already been fixed for earlier the same session. It existed in two places because the logic was copy-pasted, not shared, which is how one copy got fixed and the other didn't. Extracted both into `.claude/hooks/notes-open-items.sh` with its own 7-case test suite, so this can't drift apart silently again.
 
-Also, outside this repo: MarkEdit's follow-up-mark extension now sentence-cases correctly
-regardless of where it's placed (two root causes — its own sentence-start detection never
-recognized a follow-up's prefix, and the heading auto-formatter was blindly title-casing follow-up
-text living inside a heading). Full history in `reference_markedit_extension_api` memory.
+Also, outside this repo: MarkEdit's follow-up-mark extension now sentence-cases correctly regardless of where it's placed (two root causes — its own sentence-start detection never recognized a follow-up's prefix, and the heading auto-formatter was blindly title-casing follow-up text living inside a heading). Full history in `reference_markedit_extension_api` memory.
 
 ## v2.51.1 — 2026-08-03 18:22 EDT (#74 · `a239a17`) — A placeholder time is not a bare date
 
-Closed out two resolved MarkEdit-extension notes-file items — the Return-key
-double-blank-line bug (root-caused live: not any of Dior's Builds' own
-extensions, but MarkEdit's own native list-continuation logic double-inserting
-a blank line after a whole-line HTML comment) and the standalone timestamp
-toolbar button + `Option+T` shortcut. Both fixes live in MarkEdit's own
-extension files outside this repo; tracked in full in
-`/Applications/Claude Code/meta-deferred-list.md`.
+Closed out two resolved MarkEdit-extension notes-file items — the Return-key double-blank-line bug (root-caused live: not any of Dior's Builds' own extensions, but MarkEdit's own native list-continuation logic double-inserting a blank line after a whole-line HTML comment) and the standalone timestamp toolbar button + `Option+T` shortcut. Both fixes live in MarkEdit's own extension files outside this repo; tracked in full in `/Applications/Claude Code/meta-deferred-list.md`.
 
-`timestamp-check.sh` gained a real gap fix: the bare-date advisory only
-stripped a stamp when its `HH:MM` was real digits, so a placeholder like
-`18:xx` or `XX:XX` slipped past as unflagged new content instead of a caught
-mistake. Added a dedicated `pre`-mode deny for a date paired with a
-placeholder time slot — same tier as the existing impossible-future-timestamp
-deny, since unlike an ordinary bare date, a placeholder character in an
-`HH:MM` slot is never legitimate. Deliberately excludes `h`/`H` so the
-project's own literal `YYYY-MM-DD HH:MM TZ` format spec is never flagged as a
-fake instance of itself. 7 new tests, 45/45 passing.
+`timestamp-check.sh` gained a real gap fix: the bare-date advisory only stripped a stamp when its `HH:MM` was real digits, so a placeholder like `18:xx` or `XX:XX` slipped past as unflagged new content instead of a caught mistake. Added a dedicated `pre`-mode deny for a date paired with a placeholder time slot — same tier as the existing impossible-future-timestamp deny, since unlike an ordinary bare date, a placeholder character in an `HH:MM` slot is never legitimate. Deliberately excludes `h`/`H` so the project's own literal `YYYY-MM-DD HH:MM TZ` format spec is never flagged as a fake instance of itself. 7 new tests, 45/45 passing.
 
 ## v2.51.0 — 2026-08-03 17:04 EDT (#73 · `6502764`) — Two colours meeting inside a pill, and a cursor you can aim
 
-The fluid morph left the proof-of-concept and reached the live site, and then
-four rounds of tuning turned it into something usable. Every round started the
-same way: Harkirat said what he could see, the claim was measured against a live
-renderer, and the measurement disagreed with the code more often than it agreed.
+The fluid morph left the proof-of-concept and reached the live site, and then four rounds of tuning turned it into something usable. Every round started the same way: Harkirat said what he could see, the claim was measured against a live renderer, and the measurement disagreed with the code more often than it agreed.
 
-**The morph, on six surfaces.** One constant, `MORPH_JS`, emitted on every
-template, holding modules that select themselves out of the DOM rather than
-being switched on per page — a module whose element is absent returns after one
-`querySelector`. The reveal's morphing mark (desktop only; it rests as an
-unfiltered pill on a plate and hands over to the filtered morph on wake), the
-GitHub button's alignment, the liquid cursor site-wide, the scroll-linked
-landing rows extended to the `.inv` tickets, and the back-to-top's birth and
-destruction.
+**The morph, on six surfaces.** One constant, `MORPH_JS`, emitted on every template, holding modules that select themselves out of the DOM rather than being switched on per page — a module whose element is absent returns after one `querySelector`. The reveal's morphing mark (desktop only; it rests as an unfiltered pill on a plate and hands over to the filtered morph on wake), the GitHub button's alignment, the liquid cursor site-wide, the scroll-linked landing rows extended to the `.inv` tickets, and the back-to-top's birth and destruction.
 
-**A contained mesh inside the nav pill.** Five blobs on the morph's own
-`0.85 + c*0.21` rhythm, mixing the cursor's colour — the page accent, which it
-keeps everywhere — into the hovered tab's. Each piece mixes against *its own*
-fill, so mid-move the tail stirs the colour you are leaving and the head the one
-you are arriving at, and the stadium border-box clips the field for free.
+**A contained mesh inside the nav pill.** Five blobs on the morph's own `0.85 + c*0.21` rhythm, mixing the cursor's colour — the page accent, which it keeps everywhere — into the hovered tab's. Each piece mixes against *its own* fill, so mid-move the tail stirs the colour you are leaving and the head the one you are arriving at, and the stadium border-box clips the field for free.
 
-**The landing page got its own accent.** It wore `BRAND.amber` — the identical
-value to Terms — so the index and the first instrument in the series were the
-same colour. Its coral is placed at 11°, which is forced: the arc between
-crimson and amber is 34° wide, so that is the midpoint and the best separation
-available, 17° each way. Under the line the six tab hues are held to,
-deliberately, because this hue is never a tab.
+**The landing page got its own accent.** It wore `BRAND.amber` — the identical value to Terms — so the index and the first instrument in the series were the same colour. Its coral is placed at 11°, which is forced: the arc between crimson and amber is 34° wide, so that is the midpoint and the best separation available, 17° each way. Under the line the six tab hues are held to, deliberately, because this hue is never a tab.
 
-**A caret you can aim.** The liquid cursor's text mode is now a stack of masses
-merged by the filter, ordered centre-out, sized to the line box under the
-pointer. It rasterises at 6.4 × 22.5px on a 23px line with a lean of 0.02, and
-keeps 75% of its body through a click, where it used to disappear entirely.
+**A caret you can aim.** The liquid cursor's text mode is now a stack of masses merged by the filter, ordered centre-out, sized to the line box under the pointer. It rasterises at 6.4 × 22.5px on a 23px line with a lean of 0.02, and keeps 75% of its body through a click, where it used to disappear entirely.
 
 **A hint on 57 controls**, replacing the single native `title=` the site had.
 
 ### The findings, because most of them contradicted the obvious answer
 
-- **`mix-blend-mode` does nothing on `.cur-ink`.** The property applies —
-  computed style reads back `screen` — and the render does not change: over the
-  violet pill the swarm core stayed `rgb(212,78,99)` where a working screen
-  gives `rgb(237,146,236)`, the signature of blending against black. Not the
-  filter, the opacity, the nesting or the transform; hand-built probes carrying
-  each of those, and all at once, blended correctly against the same pill in the
-  same frame. **The swarm's alpha is what lets the pill through.**
-- **Screened gradient layers pile into a near-white core**, which defeats the
-  point when what should be visible is two *accents* mixing. Plain alpha caps
-  the field at the mixture itself.
-- **Thinner also means shorter.** A Gaussian erodes a curve in proportion to its
-  curvature, so squashing the cursor thin and tall rasterised as a short lozenge
-  about an x-height long. Hence the stack — it cannot be eroded from an end,
-  because there is another mass there.
-- **A `position:fixed` element centred by `left` + `translate(-50%)` is
-  shrink-wrapped by the space remaining to the viewport edge** before the
-  transform moves it. The back-to-top hint came out 56px wide and 4.2 lines
-  tall, overlapping the button.
-- **`contrastAudit()` checks the token matrix, not individual rules.** It reads
-  `--name: #hex` declarations only, so a component painting its own
-  `color-mix()` surface is invisible to it and a green build says nothing about
-  it. The hint's contrast was worked out by hand: 12.4:1 dark, 10.1:1 light.
-- **The dark blob over the Install button was never a light-mode flourish.**
-  `.ins` is `color:#141021` on `background:var(--accent)` in both themes; the
-  legibility test compared that ink against the *page* ground, which passed on
-  light paper and failed at 1.16:1 on the dark page. It judges against the
-  chip's own fill now, so the behaviour is the same in both.
+- **`mix-blend-mode` does nothing on `.cur-ink`.** The property applies — computed style reads back `screen` — and the render does not change: over the violet pill the swarm core stayed `rgb(212,78,99)` where a working screen gives `rgb(237,146,236)`, the signature of blending against black. Not the filter, the opacity, the nesting or the transform; hand-built probes carrying each of those, and all at once, blended correctly against the same pill in the same frame. **The swarm's alpha is what lets the pill through.**
+- **Screened gradient layers pile into a near-white core**, which defeats the point when what should be visible is two *accents* mixing. Plain alpha caps the field at the mixture itself.
+- **Thinner also means shorter.** A Gaussian erodes a curve in proportion to its curvature, so squashing the cursor thin and tall rasterised as a short lozenge about an x-height long. Hence the stack — it cannot be eroded from an end, because there is another mass there.
+- **A `position:fixed` element centred by `left` + `translate(-50%)` is shrink-wrapped by the space remaining to the viewport edge** before the transform moves it. The back-to-top hint came out 56px wide and 4.2 lines tall, overlapping the button.
+- **`contrastAudit()` checks the token matrix, not individual rules.** It reads `--name: #hex` declarations only, so a component painting its own `color-mix()` surface is invisible to it and a green build says nothing about it. The hint's contrast was worked out by hand: 12.4:1 dark, 10.1:1 light.
+- **The dark blob over the Install button was never a light-mode flourish.** `.ins` is `color:#141021` on `background:var(--accent)` in both themes; the legibility test compared that ink against the *page* ground, which passed on light paper and failed at 1.16:1 on the dark page. It judges against the chip's own fill now, so the behaviour is the same in both.
 
 ### Also
 
-`.tipx` had no background at all on six of the nine pages: it was painted with
-`var(--card)`, a token only `chronicle.js` declares. The privacy policy's
-storage disclosure was corrected in the same pass — see below.
+`.tipx` had no background at all on six of the nine pages: it was painted with `var(--card)`, a token only `chronicle.js` declares. The privacy policy's storage disclosure was corrected in the same pass — see below.
 
-**Privacy policy → v1.6.** §2.6 and Appendix A now list the Site's second
-browser-storage item, `db-booted`, a session-storage flag set on the three
-record pages so their opening animation plays once per browsing session. It has
-been written since those pages launched while the policy said `db-theme` was the
-only key: the verification note had searched the *generator*, and the flag is
-written by `scripts/lib/chronicle.js`. The note searches the *built pages* now.
-No change to what is collected, why, who receives it, or how long it is kept.
+**Privacy policy → v1.6.** §2.6 and Appendix A now list the Site's second browser-storage item, `db-booted`, a session-storage flag set on the three record pages so their opening animation plays once per browsing session. It has been written since those pages launched while the policy said `db-theme` was the only key: the verification note had searched the *generator*, and the flag is written by `scripts/lib/chronicle.js`. The note searches the *built pages* now. No change to what is collected, why, who receives it, or how long it is kept.
 
 ## v2.50.4 — 2026-08-02 23:22 EDT (#72 · `300c274`) — The spellchecker did not know the codebase's own vocabulary
 
-`cpy` is the copy-control class family in the site generator — `.cpy`, `.cpy-t`,
-`.cpy-s`, and the CSS-drawn `.cpy-g` glyph, **30 occurrences**. `typos` reads it
-as a misspelling of "copy" or "cpu", so any prose naming the class gets flagged.
+`cpy` is the copy-control class family in the site generator — `.cpy`, `.cpy-t`, `.cpy-s`, and the CSS-drawn `.cpy-g` glyph, **30 occurrences**. `typos` reads it as a misspelling of "copy" or "cpu", so any prose naming the class gets flagged.
 
-This is the same problem `mis` was added for, and `_typos.toml` already states the
-reasoning: *"a linter that is usually wrong is one you learn to ignore."* A
-checker that fires on your own vocabulary trains you to scroll past it, and then
-it catches nothing when it is finally right — the identical failure mode the
-bare-date hook was narrowed for in v2.50.2.
+This is the same problem `mis` was added for, and `_typos.toml` already states the reasoning: *"a linter that is usually wrong is one you learn to ignore."* A checker that fires on your own vocabulary trains you to scroll past it, and then it catches nothing when it is finally right — the identical failure mode the bare-date hook was narrowed for in v2.50.2.
 
 Caught while writing a session handoff that happened to name the class.
 
 ## v2.50.3 — 2026-08-02 23:01 EDT (#71 · `f74d212`) — A third home for an idea that was right but early
 
-The Contributing/Contributors redesign is **parked**, and the live site is
-untouched — nothing from two sessions of exploration reached the generator,
-`public/`, or either source file. What needed keeping was the *thinking*, and
-there was nowhere correct to put it.
+The Contributing/Contributors redesign is **parked**, and the live site is untouched — nothing from two sessions of exploration reached the generator, `public/`, or either source file. What needed keeping was the *thinking*, and there was nowhere correct to put it.
 
-`docs/db-deferred-list.md` tracks work with a pending outcome: a bug to fix, a
-chore to do, a decision to make. Its 🚫 Decided-no section holds ideas rejected
-**on merit**, where the recorded reasoning is what stops them coming back. Neither
-fits an idea that is *good* and simply has nothing to operate on yet — file it as
-work and it reads as overdue; file it as decided-no and the reasoning argues
-against rebuilding it when the time is actually right.
+`docs/db-deferred-list.md` tracks work with a pending outcome: a bug to fix, a chore to do, a decision to make. Its 🚫 Decided-no section holds ideas rejected **on merit**, where the recorded reasoning is what stops them coming back. Neither fits an idea that is *good* and simply has nothing to operate on yet — file it as work and it reads as overdue; file it as decided-no and the reasoning argues against rebuilding it when the time is actually right.
 
-So **`docs/reference/design-ideas.md`** exists now, as the forward-looking
-counterpart to `design-history.md`. One rule decides what belongs: an idea
-rejected **on timing** goes here with the condition that would make it right
-written down; an idea rejected **on merit** does not. When a condition is met the
-entry graduates into the deferred list as real queued work.
+So **`docs/reference/design-ideas.md`** exists now, as the forward-looking counterpart to `design-history.md`. One rule decides what belongs: an idea rejected **on timing** goes here with the condition that would make it right written down; an idea rejected **on merit** does not. When a condition is met the entry graduates into the deferred list as real queued work.
 
-Its first entry is snp.agency's **cross-referenced contributor index** — three
-columns (*Who* · *Route in* · *First shipped in*) where touching any item lights
-its relations and greys the rest. The strongest structural idea in the nine-site
-research, and unbuildable today: with one contributor and one release it renders a
-relationship diagram of a single node, which reads as broken rather than as empty.
+Its first entry is snp.agency's **cross-referenced contributor index** — three columns (*Who* · *Route in* · *First shipped in*) where touching any item lights its relations and greys the rest. The strongest structural idea in the nine-site research, and unbuildable today: with one contributor and one release it renders a relationship diagram of a single node, which reads as broken rather than as empty.
 
-The concrete risk this closes: that research lives in **gitignored `local/`**, so
-it exists on one machine and would not survive a fresh clone. The entry carries
-enough to rebuild the idea without it.
+The concrete risk this closes: that research lives in **gitignored `local/`**, so it exists on one machine and would not survive a fresh clone. The entry carries enough to rebuild the idea without it.
 
-Also recorded: the redesign's structural fork is **answered** — constellation on
-desktop, a full-width stack on mobile — so the next session starts on design
-quality, not on choosing a direction.
+Also recorded: the redesign's structural fork is **answered** — constellation on desktop, a full-width stack on mobile — so the next session starts on design quality, not on choosing a direction.
 
 ### The bare-date check found a shape its corpus never had
 
-Harkirat: *"whole point of the hook was so you wouldn't forget to include the time…
-especially considering the fact u get the current date+time injected into your
-context on every tool use."* Correct — a `PostToolUse` fire costs an extra edit and
-prevents nothing, so it is a failure signal, not a save. That is now written into
-the working agreement as a keystroke-level rule: the moment you type the year
-inside content, the time follows in the same keystroke.
+Harkirat: *"whole point of the hook was so you wouldn't forget to include the time… especially considering the fact u get the current date+time injected into your context on every tool use."* Correct — a `PostToolUse` fire costs an extra edit and prevents nothing, so it is a failure signal, not a save. That is now written into the working agreement as a keystroke-level rule: the moment you type the year inside content, the time follows in the same keystroke.
 
 Two changes to `timestamp-check.sh`, both proven against the shapes:
 
-- **The advisory now prints the real clock** — `⏰ RIGHT NOW IT IS: …` — so
-  correcting a miss needs no second lookup, and states plainly that it runs after
-  the bytes land and cannot prevent anything.
-- **An enumeration of dates is data, not a record stamp.** `(2026-07-24,
-  2026-07-26, 2026-08-02)` fired the branch — while editing a memory file to
-  explain this very rule. The test is a comma adjacent to **another date**, never a
-  bare trailing comma, because `asked <date>, and nobody answered` is still a stamp
-  and must keep firing. A first attempt using `[,;]` alone got both halves wrong.
+- **The advisory now prints the real clock** — `⏰ RIGHT NOW IT IS: …` — so correcting a miss needs no second lookup, and states plainly that it runs after the bytes land and cannot prevent anything.
+- **An enumeration of dates is data, not a record stamp.** `(2026-07-24, 2026-07-26, 2026-08-02)` fired the branch — while editing a memory file to explain this very rule. The test is a comma adjacent to **another date**, never a bare trailing comma, because `asked <date>, and nobody answered` is still a stamp and must keep firing. A first attempt using `[,;]` alone got both halves wrong.
 
-⚠️ **Worth being straight about the "100% precision" figure from v2.50.2**: it was
-measured on 164 real lines from one day, and this shape simply was not among them.
-Honest for its corpus, not a guarantee beyond it — which is the argument for
-keeping this branch **advisory**. Its own comment already says a gate that blocks
-on noise is a gate that gets switched off, so it was not promoted to a deny.
+⚠️ **Worth being straight about the "100% precision" figure from v2.50.2**: it was measured on 164 real lines from one day, and this shape simply was not among them. Honest for its corpus, not a guarantee beyond it — which is the argument for keeping this branch **advisory**. Its own comment already says a gate that blocks on noise is a gate that gets switched off, so it was not promoted to a deny.
 
 ## v2.50.2 — 2026-08-02 18:43 EDT (#70 · `3b14f2e`) — The bare-date check was wrong four times in five
 
-Harkirat: *"it's triggered way too many false positives."* He was right, and the
-number is worse than it felt.
+Harkirat: *"it's triggered way too many false positives."* He was right, and the number is worse than it felt.
 
-**Measured, not estimated.** Corpus: every line added to `main` today carrying
-today's date, `public/` excluded because generated HTML never reaches the hook —
-**164 lines**. Both hook versions were then run over it, rather than reasoning
-about what they would do:
+**Measured, not estimated.** Corpus: every line added to `main` today carrying today's date, `public/` excluded because generated HTML never reaches the hook — **164 lines**. Both hook versions were then run over it, rather than reasoning about what they would do:
 
 | | fires | genuine | precision |
 |---|---|---|---|
 | before | 22 | 4 | **18%** |
 | after | 4 | 4 | **100%** |
 
-18 suppressed, and **no real miss** — all four survivors are record stamps that
-genuinely lack a time (`(added …)`, `PATH UPDATED …:`, `asked …:`).
+18 suppressed, and **no real miss** — all four survivors are record stamps that genuinely lack a time (`(added …)`, `PATH UPDATED …:`, `asked …:`).
 
-**The rule was asking the wrong question.** Working-agreement rule 10 wants a time
-on a *record stamp*. It never wanted one on ordinary English that happens to name
-a day, and the check could not tell those apart. Two discriminators, both derived
-from the corpus:
+**The rule was asking the wrong question.** Working-agreement rule 10 wants a time on a *record stamp*. It never wanted one on ordinary English that happens to name a day, and the check could not tell those apart. Two discriminators, both derived from the corpus:
 
-- **Prose** — a preposition, article or conjunction immediately before the date:
-  "on 2026-08-02", "from 2026-08-02", "a 2026-08-02 session". Most of the 18.
-- **Range endpoint** — an arrow or dash on either side (`2026-07-24 → 2026-08-02`).
-  A bound is a date, not a moment; a clock time there would be *wrong*.
+- **Prose** — a preposition, article or conjunction immediately before the date: "on 2026-08-02", "from 2026-08-02", "a 2026-08-02 session". Most of the 18.
+- **Range endpoint** — an arrow or dash on either side (`2026-07-24 → 2026-08-02`). A bound is a date, not a moment; a clock time there would be *wrong*.
 
-Double-quoted spans are now stripped alongside backticks — a date inside a string
-literal is data, not a record. That is the same trick the deferral-tell hook
-already uses.
+Double-quoted spans are now stripped alongside backticks — a date inside a string literal is data, not a record. That is the same trick the deferral-tell hook already uses.
 
-⚠️ **A deliberate limit, pinned by a test:** only the word *immediately* before the
-date is examined, so `the actual 2026-08-02 failure` still fires. Widening it to
-"article plus any adjective" starts guessing at grammar, and the real corpus line
-was quoted anyway — the quote strip is what handles it.
+⚠️ **A deliberate limit, pinned by a test:** only the word *immediately* before the date is examined, so `the actual 2026-08-02 failure` still fires. Widening it to "article plus any adjective" starts guessing at grammar, and the real corpus line was quoted anyway — the quote strip is what handles it.
 
-This is the same lesson the hook's own header already carried and had not applied
-to its second branch: **a gate that is usually wrong trains you to scroll past
-it**, which is how the fabricated-timestamp miss got waved through 30 times.
+This is the same lesson the hook's own header already carried and had not applied to its second branch: **a gate that is usually wrong trains you to scroll past it**, which is how the fabricated-timestamp miss got waved through 30 times.
 
 ## v2.50.1 — 2026-08-02 18:22 EDT (#69 · `21e7e3f`) — A gate that refused a real deadline, and two items that were only ever said out loud
 
-**`timestamp-check.sh pre` denied a correct edit.** Its deny message tells you
-that if you mean a future deadline, write the date with no clock time — and that
-advice is wrong for scheduled events. `docs/db-deferred-list.md` carries the MCP
-observation-window close-out, where the hour **is** the content: the window
-closes at a time, not on a day. Merely editing *near* that line was refused.
+**`timestamp-check.sh pre` denied a correct edit.** Its deny message tells you that if you mean a future deadline, write the date with no clock time — and that advice is wrong for scheduled events. `docs/db-deferred-list.md` carries the MCP observation-window close-out, where the hour **is** the content: the window closes at a time, not on a day. Merely editing *near* that line was refused.
 
-New per-line **`TS-DEADLINE`** escape, kept separate from `TS-EXAMPLE` on
-purpose: they mean different things, and someone grepping `rg TS-EXAMPLE` to
-audit for hidden fabrications should not have to wade through scheduled
-deadlines. An **unmarked** future deadline still denies — a test pins that pair,
-because an escape that is easy to reach for stops being an escape.
+New per-line **`TS-DEADLINE`** escape, kept separate from `TS-EXAMPLE` on purpose: they mean different things, and someone grepping `rg TS-EXAMPLE` to audit for hidden fabrications should not have to wade through scheduled deadlines. An **unmarked** future deadline still denies — a test pins that pair, because an escape that is easy to reach for stops being an escape.
 
-**And two things this session had only ever said in chat are now filed** — the
-`Stop` gate caught that, correctly:
+**And two things this session had only ever said in chat are now filed** — the `Stop` gate caught that, correctly:
 
-- The **Contributing design fork** (constellation · gradient bands · hybrid) was
-  asked and dismissed, so it stayed nowhere. The deferred entry it belongs to was
-  also carrying three *superseded* questions from the abandoned Interchange/Plate
-  mockup; the reference research settled the first outright — Contributors'
-  emptiness is solved **structurally**, by cutting the roster into many small
-  named sections, not by resizing a plate.
-- **`fix/legal-site-nav-and-mobile-sheet` was still on `origin`** at `704994b` —
-  a handoff had asserted it deleted, but only the *local* ref was gone, and
-  `git branch -a` renders remote-only branches indistinguishably. It was
-  CLOSED-unmerged, so the "a merged branch must never outlive its PR" rule is the
-  *opposite* case: it was the only copy of 19 commits. **Proven superseded before
-  deleting** — every line the branch added relative to merge-base `a4b17d6` was
-  searched for in `main`, and all were present except `Effective date: 31 July
-  2026` in TERMS and PRIVACY, where `main` reads **1 August 2026**. Superseded,
-  not lost. Branch deleted; remote heads are now `main` and `v3-pre-release`.
+- The **Contributing design fork** (constellation · gradient bands · hybrid) was asked and dismissed, so it stayed nowhere. The deferred entry it belongs to was also carrying three *superseded* questions from the abandoned Interchange/Plate mockup; the reference research settled the first outright — Contributors' emptiness is solved **structurally**, by cutting the roster into many small named sections, not by resizing a plate.
+- **`fix/legal-site-nav-and-mobile-sheet` was still on `origin`** at `704994b` — a handoff had asserted it deleted, but only the *local* ref was gone, and `git branch -a` renders remote-only branches indistinguishably. It was CLOSED-unmerged, so the "a merged branch must never outlive its PR" rule is the *opposite* case: it was the only copy of 19 commits. **Proven superseded before deleting** — every line the branch added relative to merge-base `a4b17d6` was searched for in `main`, and all were present except `Effective date: 31 July 2026` in TERMS and PRIVACY, where `main` reads **1 August 2026**. Superseded, not lost. Branch deleted; remote heads are now `main` and `v3-pre-release`.
 
 ## v2.50.0 — 2026-08-02 17:14 EDT (#68 · `7b9e3c4`) — The tests were fine. Nothing was running them.
 
-Harkirat, after three gates failed inside the first minutes of a session he had
-spent hours building them in: *"i literally spent hours last session working on
-some of these gates and literally within the first few minutes of this session,
-they dont even seem to hold despite their 'tests'."*
+Harkirat, after three gates failed inside the first minutes of a session he had spent hours building them in: *"i literally spent hours last session working on some of these gates and literally within the first few minutes of this session, they dont even seem to hold despite their 'tests'."*
 
-**The tests were correct. They were executed by nothing.** Measured: each of the
-six `.claude/hooks/*.test.sh` files was referenced by `package.json`,
-`.github/workflows/` and `.claude/settings.json` a combined **zero** times. They
-ran only when someone hand-typed `bash <file>` — in practice, the session that
-wrote them and never again. `scripts/calendarDedup.test.js` was in the same
-state: reachable only through `npm test`, which CI never called.
+**The tests were correct. They were executed by nothing.** Measured: each of the six `.claude/hooks/*.test.sh` files was referenced by `package.json`, `.github/workflows/` and `.claude/settings.json` a combined **zero** times. They ran only when someone hand-typed `bash <file>` — in practice, the session that wrote them and never again. `scripts/calendarDedup.test.js` was in the same state: reachable only through `npm test`, which CI never called.
 
-A test nobody runs is worse than no test, because it produces a documented belief
-that the behaviour is covered. Same shape as shellcheck sitting installed and
-unrun while the bug it catches shipped.
+A test nobody runs is worse than no test, because it produces a documented belief that the behaviour is covered. Same shape as shellcheck sitting installed and unrun while the bug it catches shipped.
 
-**`npm run test:hooks` now runs every hook self-test, `npm test` includes it, and
-CI calls `npm test`.** The runner also asserts **coverage**: every hook script
-must have a test, computed from the scripts on disk rather than a hand-kept list,
-so deleting a test fails the suite instead of silently shrinking it.
+**`npm run test:hooks` now runs every hook self-test, `npm test` includes it, and CI calls `npm test`.** The runner also asserts **coverage**: every hook script must have a test, computed from the scripts on disk rather than a hand-kept list, so deleting a test fails the suite instead of silently shrinking it.
 
 **Writing the eight missing tests found two gates that had never worked:**
 
-- **`main-push-guard.sh` — the only hook in the repo that can actually block
-  anything — passed `rtk git push` straight through.** Its anchor required `git`
-  at the start of a command, and RTK.md documents that commands are transparently
-  rewritten through `rtk`. `rtk --help` confirms `rtk git` and `rtk gh` are both
-  real subcommands. The same naive anchor was in **nine** gate invocations: the
-  squash gate, the release-ready check, the four `gh pr create` dispatchers and
-  the three post-merge checks. All hardened; `command-anchors.test.sh` is a
-  regression lock that scans the whole layer, because a per-hook test cannot catch
-  the *next* gate written the old way.
-- **`records-close-check.sh`'s memory branch used `find -newermt "@epoch"`, which
-  BSD find cannot parse.** It errored into `2>/dev/null`, the count came back 0
-  every time, and check (6) fired on every PR whether or not a memory had been
-  written — a gate that always fires trains you to dismiss it. Replaced with an
-  explicit `stat` comparison. **It nearly escaped a second time:** probing
-  `find -newermt @N` from an interactive shell *succeeds*, because this machine
-  aliases `find` to `bfs`. Hooks get plain `/usr/bin/find`. Test a hook the way the
-  hook runs.
+- **`main-push-guard.sh` — the only hook in the repo that can actually block anything — passed `rtk git push` straight through.** Its anchor required `git` at the start of a command, and RTK.md documents that commands are transparently rewritten through `rtk`. `rtk --help` confirms `rtk git` and `rtk gh` are both real subcommands. The same naive anchor was in **nine** gate invocations: the squash gate, the release-ready check, the four `gh pr create` dispatchers and the three post-merge checks. All hardened; `command-anchors.test.sh` is a regression lock that scans the whole layer, because a per-hook test cannot catch the *next* gate written the old way.
+- **`records-close-check.sh`'s memory branch used `find -newermt "@epoch"`, which BSD find cannot parse.** It errored into `2>/dev/null`, the count came back 0 every time, and check (6) fired on every PR whether or not a memory had been written — a gate that always fires trains you to dismiss it. Replaced with an explicit `stat` comparison. **It nearly escaped a second time:** probing `find -newermt @N` from an interactive shell *succeeds*, because this machine aliases `find` to `bfs`. Hooks get plain `/usr/bin/find`. Test a hook the way the hook runs.
 
-**🚨 `permissionDecision:"ask"` is silently auto-approved — seven gates were dead.**
-Found mid-merge-flow while running this very PR: `gh pr create` produced no prompt
-and no output, while running the same hook by hand emitted a full finding. The
-innocent explanations were ruled out first — the wrapper regex was confirmed to
-match the real command string, and the hook was confirmed to emit `ask`. It simply
-never surfaced. The discriminating test was `gh pr merge 999999 --squash` on a PR
-that cannot exist: the `deny` **blocked hard, with its message**.
+**🚨 `permissionDecision:"ask"` is silently auto-approved — seven gates were dead.** Found mid-merge-flow while running this very PR: `gh pr create` produced no prompt and no output, while running the same hook by hand emitted a full finding. The innocent explanations were ruled out first — the wrapper regex was confirmed to match the real command string, and the hook was confirmed to emit `ask`. It simply never surfaced. The discriminating test was `gh pr merge 999999 --squash` on a PR that cannot exist: the `deny` **blocked hard, with its message**.
 
 | Decision | Behaviour | Evidence |
 |---|---|---|
@@ -1708,1737 +604,576 @@ that cannot exist: the `deny` **blocked hard, with its message**.
 | `additionalContext` | surfaces every time | rg-flag-guard, all session |
 | `ask` | **silently auto-approved** | four gates fired, zero output |
 
-So the earlier framing in v2.49.x was wrong and is corrected: the squash gate was
-not "clicked past by a session in a hurry" — **it was never presented at all.**
-Same for the tag-invariant gate, the Artifact force-overwrite gate, and all four
-`gh pr create` gates.
+So the earlier framing in v2.49.x was wrong and is corrected: the squash gate was not "clicked past by a session in a hurry" — **it was never presented at all.** Same for the tag-invariant gate, the Artifact force-overwrite gate, and all four `gh pr create` gates.
 
-Objective violations are now `deny` (impossible timestamp · squash without
-`--body` · tag ≠ `package.json` · `force:true` overwrite · tracked-file edit or
-commit on `main`). Judgement calls became visible `additionalContext`
-(`release-ready-check`, `records-close-check`, `stale-reference-sweep`,
-`devlog-toc-check`, `docs-audit-gate`) — **a visible advisory beats an invisible
-ask, always.** Proven end-to-end: the identical `gh pr create --help` that was
-silent before now prints both findings.
+Objective violations are now `deny` (impossible timestamp · squash without `--body` · tag ≠ `package.json` · `force:true` overwrite · tracked-file edit or commit on `main`). Judgement calls became visible `additionalContext` (`release-ready-check`, `records-close-check`, `stale-reference-sweep`, `devlog-toc-check`, `docs-audit-gate`) — **a visible advisory beats an invisible ask, always.** Proven end-to-end: the identical `gh pr create --help` that was silent before now prints both findings.
 
-On the trailers themselves: of the last 8 squash commits only `ee3b0cd` has the
-correct 2 lines; `f778195` has 20 and `9b9b4ce` has **130**.
+On the trailers themselves: of the last 8 squash commits only `ee3b0cd` has the correct 2 lines; `f778195` has 20 and `9b9b4ce` has **130**.
 
-**New `branch-discipline-guard.sh`** — PreToolUse had **seven** hooks, all
-`Bash`/`Artifact`, and **none on `Edit|Write`**, so nothing could prevent a bad
-write. Editing tracked files on `main`, and committing there, were unguarded; the
-push guard only spoke at the last step, when there are already commits to unwind.
-Tracked files only — untracked and gitignored paths stay writable.
+**New `branch-discipline-guard.sh`** — PreToolUse had **seven** hooks, all `Bash`/`Artifact`, and **none on `Edit|Write`**, so nothing could prevent a bad write. Editing tracked files on `main`, and committing there, were unguarded; the push guard only spoke at the last step, when there are already commits to unwind. Tracked files only — untracked and gitignored paths stay writable.
 
-**`timestamp-check.sh` now runs at both events** — `pre` denies an impossible
-timestamp before it reaches disk, `post` keeps the advisory bare-date check. Three
-further defects fixed: it only ever checked **today**, so a stamp dated tomorrow
-sailed through; backticks exempted the impossible check, which is exactly where
-changelog fabrications land; and a timestamp wrapped across a line break read as a
-bare date. A `TS-EXAMPLE` line token exempts documentation that quotes fabricated
-stamps — the first `pre` build denied its own header.
+**`timestamp-check.sh` now runs at both events** — `pre` denies an impossible timestamp before it reaches disk, `post` keeps the advisory bare-date check. Three further defects fixed: it only ever checked **today**, so a stamp dated tomorrow sailed through; backticks exempted the impossible check, which is exactly where changelog fabrications land; and a timestamp wrapped across a line break read as a bare date. A `TS-EXAMPLE` line token exempts documentation that quotes fabricated stamps — the first `pre` build denied its own header.
 
-**New `clock-inject.sh`, from Harkirat's suggestion, adopted the same turn.** A
-`UserPromptSubmit` clock hook already existed, but it refreshes only when he
-speaks; inside this turn the anchor went stale and four timestamps were invented
-by extrapolating from it. The clock is now re-stated before every write. Its own
-test caught it broken on first run — `rtrimstr(.;"\n")` is the two-argument form
-and does not exist, so the hook failed to compile on every write.
+**New `clock-inject.sh`, from Harkirat's suggestion, adopted the same turn.** A `UserPromptSubmit` clock hook already existed, but it refreshes only when he speaks; inside this turn the anchor went stale and four timestamps were invented by extrapolating from it. The clock is now re-stated before every write. Its own test caught it broken on first run — `rtrimstr(.;"\n")` is the two-argument form and does not exist, so the hook failed to compile on every write.
 
-Also: `release-ready-check.sh` diffed `origin/main...HEAD` unconditionally, wrong
-for every `v3-pre-release` PR and invisible only because the two branches are
-currently identical; it now resolves the real base and drops the
-CHANGELOG-SUMMARY demand during v3 pre-release. `rg-flag-guard.sh` no longer
-reports flag-shaped text inside a quoted **pattern** (its fifth false-positive
-class). The global `usage-guard.mjs` no longer demands `--hidden` for explicitly
-named files — verified empirically that ripgrep searches named hidden/gitignored
-files regardless, so that warning was simply wrong.
+Also: `release-ready-check.sh` diffed `origin/main...HEAD` unconditionally, wrong for every `v3-pre-release` PR and invisible only because the two branches are currently identical; it now resolves the real base and drops the CHANGELOG-SUMMARY demand during v3 pre-release. `rg-flag-guard.sh` no longer reports flag-shaped text inside a quoted **pattern** (its fifth false-positive class). The global `usage-guard.mjs` no longer demands `--hidden` for explicitly named files — verified empirically that ripgrep searches named hidden/gitignored files regardless, so that warning was simply wrong.
 
 **17 hook test suites, 0 untested hooks, shellcheck-clean.**
 
 ## v2.49.2 — 2026-08-02 16:12 EDT (#67 · `c6cd875`) — A gate that fired too late, and the release it forced
 
-**The DEVLOG check was gated `PostToolUse` on `gh pr merge` — it fired AFTER the
-merge.** It caught a genuine omission in v2.49.1, but by then the branch was gone
-and the only remedy it could offer was "ship a follow-up release". So it
-manufactured an extra PR, merge, version and tag purely to satisfy a gate that
-fired too late. Harkirat, immediately: *"thats just poor timing for the hook to
-trigger, no? it stopped you AFTER you had already merged and thus caused another
-merge."*
+**The DEVLOG check was gated `PostToolUse` on `gh pr merge` — it fired AFTER the merge.** It caught a genuine omission in v2.49.1, but by then the branch was gone and the only remedy it could offer was "ship a follow-up release". So it manufactured an extra PR, merge, version and tag purely to satisfy a gate that fired too late. Harkirat, immediately: *"thats just poor timing for the hook to trigger, no? it stopped you AFTER you had already merged and thus caused another merge."*
 
-That is textbook — **a check at the wrong MOMENT is the same bug as no check** —
-and it was already written down in `feedback_not_checkable_is_usually_unexamined`
-before being shipped anyway.
+That is textbook — **a check at the wrong MOMENT is the same bug as no check** — and it was already written down in `feedback_not_checkable_is_usually_unexamined` before being shipped anyway.
 
-**Four** release checks were on the wrong side of the merge. `release-ready-check.sh`
-now runs **`PreToolUse` on `gh pr merge`** and inspects `origin/main...HEAD` — the
-branch's own diff — so a missing changelog, summary, version bump or DEVLOG entry
-is caught while the branch can still receive it. Not an event-name swap: the
-post-merge versions read `origin/main` after the fact, which is a different
-question. It **asks** rather than blocks, because a docs-only merge may
-legitimately skip a DEVLOG entry — but that must be a decision, not an omission.
+**Four** release checks were on the wrong side of the merge. `release-ready-check.sh` now runs **`PreToolUse` on `gh pr merge`** and inspects `origin/main...HEAD` — the branch's own diff — so a missing changelog, summary, version bump or DEVLOG entry is caught while the branch can still receive it. Not an event-name swap: the post-merge versions read `origin/main` after the fact, which is a different question. It **asks** rather than blocks, because a docs-only merge may legitimately skip a DEVLOG entry — but that must be a decision, not an omission.
 
-The `PostToolUse` DEVLOG check is **removed**; its only possible remedy was the
-extra release. The remaining post-merge checks stay as backstops, because what
-they find (a hash backfill) is genuinely fixable next release.
+The `PostToolUse` DEVLOG check is **removed**; its only possible remedy was the extra release. The remaining post-merge checks stay as backstops, because what they find (a hash backfill) is genuinely fixable next release.
 
-Six proofs, including the discriminating pair: a missing DEVLOG fires, a purely
-mechanical change (changelog + summary + version only) does not.
+Six proofs, including the discriminating pair: a missing DEVLOG fires, a purely mechanical change (changelog + summary + version only) does not.
 
-**And this release carries the DEVLOG entry v2.49.1 should have had** — the guard
-that sharpened itself by misfiring on its own author, where to stop widening an
-escape, and the versioning rule that had been documenting a dead era.
+**And this release carries the DEVLOG entry v2.49.1 should have had** — the guard that sharpened itself by misfiring on its own author, where to stop widening an escape, and the versioning rule that had been documenting a dead era.
 
 ## v2.49.1 — 2026-08-02 16:06 EDT (#66 · `6bf05ed`) — The gate fired on its own author, and the versioning rule was describing a dead era
 
-**A guard blocked a summary that was true.** `outstanding-not-filed` flagged two
-items as unfiled; both were genuinely filed, at `docs/db-deferred-list.md:202`
-and `:249`, in `7cd21e7`, present on `origin/main`. The gate was right
-*mechanically* — that turn touched no list — but its already-filed escape only
-matched `filed as/in/under/it`, while the message said **"filed with direction"**
-and **"deferred with a full note"**.
+**A guard blocked a summary that was true.** `outstanding-not-filed` flagged two items as unfiled; both were genuinely filed, at `docs/db-deferred-list.md:202` and `:249`, in `7cd21e7`, present on `origin/main`. The gate was right *mechanically* — that turn touched no list — but its already-filed escape only matched `filed as/in/under/it`, while the message said **"filed with direction"** and **"deferred with a full note"**.
 
-Widened to cover `filed with/to`, `deferred with a`, and a bare mention of the
-list filenames. **Deliberately NOT widened to "I'll file it" or "file it
-later"** — those are *intentions*, and letting an intention pass is the entire
-failure the gate exists for. A test pins that line: "filed with direction"
-passes, "I'll file it later" still blocks. 12 cases.
+Widened to cover `filed with/to`, `deferred with a`, and a bare mention of the list filenames. **Deliberately NOT widened to "I'll file it" or "file it later"** — those are *intentions*, and letting an intention pass is the entire failure the gate exists for. A test pins that line: "filed with direction" passes, "I'll file it later" still blocks. 12 cases.
 
-**And the versioning rule was documenting a superseded era as current.** It read
-*"a version is minted for a RELEASE, not for every merge"* and cited 31 untagged
-commits as *"entirely correct"*. Measured against tags: 29 of 85 commits carry no
-tag, **but the newest of those is 2026-07-28**; only **3** are the retired
-`chore(release): finalize` pattern; and the last **14 consecutive** commits are
-tagged, *including pure `docs:` merges* (`v2.43.2`, `v2.42.1`, `v2.41.4`).
-**A merge means a version bump — the judgement is the size, never whether.**
+**And the versioning rule was documenting a superseded era as current.** It read *"a version is minted for a RELEASE, not for every merge"* and cited 31 untagged commits as *"entirely correct"*. Measured against tags: 29 of 85 commits carry no tag, **but the newest of those is 2026-07-28**; only **3** are the retired `chore(release): finalize` pattern; and the last **14 consecutive** commits are tagged, *including pure `docs:` merges* (`v2.43.2`, `v2.42.1`, `v2.41.4`). **A merge means a version bump — the judgement is the size, never whether.**
 
-⚠️ Correcting it in full first pushed that CLAUDE.md section to **137 lines
-against a 130 limit**, and `docs:audit` failed the build. Compressed rather than
-exempted: the file is loaded in full every session, and a verbose correction to a
-stale rule is still a cost paid on every future one.
+⚠️ Correcting it in full first pushed that CLAUDE.md section to **137 lines against a 130 limit**, and `docs:audit` failed the build. Compressed rather than exempted: the file is loaded in full every session, and a verbose correction to a stale rule is still a cost paid on every future one.
 
 ## v2.49.0 — 2026-08-02 15:41 EDT (#65 · `7cd21e7`) — Four guards that fire at the moment of the mistake, and thirty invented timestamps
 
-**I fabricated thirty timestamps and every gate passed them.** `date` was called
-**once**, at 12:57 EDT, and every stamp after it was invented — drifting to 19:30
-while the real clock read 15:02. They reached `docs/`, four memory files, the
-**released v2.48.0 changelog**, the **DEVLOG** and a **git tag annotation**.
+**I fabricated thirty timestamps and every gate passed them.** `date` was called **once**, at 12:57 EDT, and every stamp after it was invented — drifting to 19:30 while the real clock read 15:02. They reached `docs/`, four memory files, the **released v2.48.0 changelog**, the **DEVLOG** and a **git tag annotation**.
 
-The old TIMESTAMP hook asserted a time was *present*, never that it was *true*, so
-all thirty sailed through well-formed. **A validator that checks SHAPE will certify
-fiction.** All thirty corrected from **git**, which timestamps its own commits —
-`git log -S"<stamp>"` recovers when each string actually landed.
+The old TIMESTAMP hook asserted a time was *present*, never that it was *true*, so all thirty sailed through well-formed. **A validator that checks SHAPE will certify fiction.** All thirty corrected from **git**, which timestamps its own commits — `git log -S"<stamp>"` recovers when each string actually landed.
 
-**Four guards, all point-of-use** — the distinction that matters is not hook-vs-prose
-but *fires at the moment of the mistake* vs *catalogue read at session start*:
-- **`timestamp-check.sh`** flags a time **later than now** as impossible. It also strips
-  date-prefixed filenames, `--flag DATE` arguments and backticked spans first — the old
-  one fired ~15 times a session and nearly every fire was a false positive, which is
-  precisely how the real miss got waved through.
-- **`outstanding-not-filed.sh`** blocks naming something as outstanding without filing
-  it. Five consecutive messages ended with "still outstanding: the distil queue" and it
-  was never written down; Harkirat had to ask.
-- **`rg-flag-guard.sh`** catches `-h`/`-E`/`-r` typed from grep habit. All three produced
-  silent garbage in one day — `-oh` printed the **help text**, which skims exactly like
-  "no matches" and nearly produced a wrong "unused field" conclusion.
+**Four guards, all point-of-use** — the distinction that matters is not hook-vs-prose but *fires at the moment of the mistake* vs *catalogue read at session start*:
+- **`timestamp-check.sh`** flags a time **later than now** as impossible. It also strips date-prefixed filenames, `--flag DATE` arguments and backticked spans first — the old one fired ~15 times a session and nearly every fire was a false positive, which is precisely how the real miss got waved through.
+- **`outstanding-not-filed.sh`** blocks naming something as outstanding without filing it. Five consecutive messages ended with "still outstanding: the distil queue" and it was never written down; Harkirat had to ask.
+- **`rg-flag-guard.sh`** catches `-h`/`-E`/`-r` typed from grep habit. All three produced silent garbage in one day — `-oh` printed the **help text**, which skims exactly like "no matches" and nearly produced a wrong "unused field" conclusion.
 - **`typos-check.sh`** checks only the text being written, not the whole file.
 
-Plus a **clock injected into every turn**, which is the actual prevention: there is no
-longer a reason to estimate a time.
+Plus a **clock injected into every turn**, which is the actual prevention: there is no longer a reason to estimate a time.
 
-**Tools are now ROUTED, not merely installed.** `shellcheck` sat installed and unrun
-while the bug it catches shipped — it flags that word-splitting failure instantly. Now
-hooked, with `sd`, `ast-grep`, `gron`, `difft`, `deno` and `gtimeout` named in the
-session-injected routing block. `markdownlint-cli2` was deliberately **not** wired (725
-of 741 findings are house style, and the rule that matters is already in `docs-audit`),
-nor `shfmt` (cosmetic on shellcheck-clean scripts).
+**Tools are now ROUTED, not merely installed.** `shellcheck` sat installed and unrun while the bug it catches shipped — it flags that word-splitting failure instantly. Now hooked, with `sd`, `ast-grep`, `gron`, `difft`, `deno` and `gtimeout` named in the session-injected routing block. `markdownlint-cli2` was deliberately **not** wired (725 of 741 findings are house style, and the rule that matters is already in `docs-audit`), nor `shfmt` (cosmetic on shellcheck-clean scripts).
 
-**Corrections this release makes to its own work**, kept rather than quietly fixed:
-`rg-flag-guard` shipped without tests and regressed four times before getting the suite
-it should have had · **three separate test harnesses** read *absence of output* as a
-firing, one reporting that `curl -H` tripped an `rg` guard · and the distil backlog is
-**19, not 8** — `dream()` returns a batch of up to 8, and reading that batch as a total
-"corrected" a figure that had been right all along.
+**Corrections this release makes to its own work**, kept rather than quietly fixed: `rg-flag-guard` shipped without tests and regressed four times before getting the suite it should have had · **three separate test harnesses** read *absence of output* as a firing, one reporting that `curl -H` tripped an `rg` guard · and the distil backlog is **19, not 8** — `dream()` returns a batch of up to 8, and reading that batch as a total "corrected" a figure that had been right all along.
 
 ## v2.48.0 — 2026-08-02 14:43 EDT (#64 · `8731b6f`) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
 
-**`MEMORY.md` is the only auto-loaded memory file**, so the index is a per-session
-tax charged **per FILE** — every entry is paid on every session, forever, while the
-memory bodies are only paid when something reads them. It had been emergency-compacted
-23.1KB → 12.9KB by shortening lines, which is a lever you can only pull once.
+**`MEMORY.md` is the only auto-loaded memory file**, so the index is a per-session tax charged **per FILE** — every entry is paid on every session, forever, while the memory bodies are only paid when something reads them. It had been emergency-compacted 23.1KB → 12.9KB by shortening lines, which is a lever you can only pull once.
 
-**The premise turned out to be wrong.** The "24.4KB hard read limit" the compaction was
-racing does not reproduce: a 33,530-byte memory file reads in full, no truncation. What
-IS true and matters more — verified by checking every settings file — is that **nothing
-in this repo loads `MEMORY.md`; the platform does**, which also retires a standing
-"native auto-load is UNVERIFIED" caveat that had sat in `CLAUDE.md` for days.
+**The premise turned out to be wrong.** The "24.4KB hard read limit" the compaction was racing does not reproduce: a 33,530-byte memory file reads in full, no truncation. What IS true and matters more — verified by checking every settings file — is that **nothing in this repo loads `MEMORY.md`; the platform does**, which also retires a standing "native auto-load is UNVERIFIED" caveat that had sat in `CLAUDE.md` for days.
 
-- **Archive tier** — `memory/archive/` holds retired memories intact with a `RETIRED`
-  header, struck from the index. Both hooks that recurse into the memory directory were
-  taught about it *and dry-run before a single file moved*: `records-close-check.sh`
-  needed `-maxdepth 1` (an archived file's mtime would otherwise satisfy the "memory was
-  written" gate), and `stale-reference-sweep.sh` now excludes it, because an outdated
-  reference inside a frozen record is correct rather than drift.
-- **Eight memories consolidated** into three canonical entries.
-  `feedback_verify_before_claiming` is new and resolves a filename several memories had
-  been linking to *before it existed*.
-- **`memory-index-check.sh`** runs at SessionStart against a 16,000B budget, a
-  three-partition conservation rule, and a total-count floor that catches a memory
-  **deleted** rather than archived — unrecoverable otherwise, because the store lives in
-  `~/.claude/` and has no version control.
-- **The rule that actually holds the line:** a new lesson becomes a **case inside an
-  existing memory** unless it has a different trigger, supersedes, or is independently
-  actionable. Applied honestly it *shrank* the merge list — three memories earned their
-  files and were correctly left alone, against the design's own candidate list.
+- **Archive tier** — `memory/archive/` holds retired memories intact with a `RETIRED` header, struck from the index. Both hooks that recurse into the memory directory were taught about it *and dry-run before a single file moved*: `records-close-check.sh` needed `-maxdepth 1` (an archived file's mtime would otherwise satisfy the "memory was written" gate), and `stale-reference-sweep.sh` now excludes it, because an outdated reference inside a frozen record is correct rather than drift.
+- **Eight memories consolidated** into three canonical entries. `feedback_verify_before_claiming` is new and resolves a filename several memories had been linking to *before it existed*.
+- **`memory-index-check.sh`** runs at SessionStart against a 16,000B budget, a three-partition conservation rule, and a total-count floor that catches a memory **deleted** rather than archived — unrecoverable otherwise, because the store lives in `~/.claude/` and has no version control.
+- **The rule that actually holds the line:** a new lesson becomes a **case inside an existing memory** unless it has a different trigger, supersedes, or is independently actionable. Applied honestly it *shrank* the merge list — three memories earned their files and were correctly left alone, against the design's own candidate list.
 
-**The MCP layer underneath was measurably broken**, and none of it was visible from
-outside — 438 memories and 11k captures all looked healthy.
-- **~29% of this project's linksee memories were filed under fake path-derived
-  entities.** `Application` held the *entire licensing session* that produced `LICENSE`,
-  `NOTICE`, `TERMS.md` and `PRIVACY.md`; `Containers` held an edit to
-  `.claude/settings.local.json`. Entity-scoped recall missed all of them **silently**,
-  with no error. **Repaired: 123 memories re-homed, 696 rows before and after,
-  `integrity_check` ok**, and the real sibling project `dior` deliberately untouched.
-- **The global `usage-guard.mjs` was injecting a stale "codebase-index is PYTHON-ONLY"
-  claim into every large Read** — routing every session away from a graph tool that does
-  index this JS repo (2,260 nodes on live HEAD). Measurable cost: `search_graph` used
-  **once in 35 sessions**. A gate repeating a stale capability finding is worse than no
-  gate.
-- **linksee v0.11.x removed four tools its own bundled SKILL.md still teaches**
-  (`list_entities`, `recall_file`, `update_memory`, `consolidate`). Verified against the
-  installed package source — not an install, Claude Desktop or Claude Code problem, an
-  upstream documentation bug. The local skill was corrected and its Japanese stripped,
-  since the frontmatter loads into every session.
-- **`mcp-layer-check.sh`** now injects the measured routing every session and reports
-  live fragmentation. Every one of the failures above was already "documented somewhere";
-  prose has never carried a rule on this repo, and this is the standing answer to that.
+**The MCP layer underneath was measurably broken**, and none of it was visible from outside — 438 memories and 11k captures all looked healthy.
+- **~29% of this project's linksee memories were filed under fake path-derived entities.** `Application` held the *entire licensing session* that produced `LICENSE`, `NOTICE`, `TERMS.md` and `PRIVACY.md`; `Containers` held an edit to `.claude/settings.local.json`. Entity-scoped recall missed all of them **silently**, with no error. **Repaired: 123 memories re-homed, 696 rows before and after, `integrity_check` ok**, and the real sibling project `dior` deliberately untouched.
+- **The global `usage-guard.mjs` was injecting a stale "codebase-index is PYTHON-ONLY" claim into every large Read** — routing every session away from a graph tool that does index this JS repo (2,260 nodes on live HEAD). Measurable cost: `search_graph` used **once in 35 sessions**. A gate repeating a stale capability finding is worse than no gate.
+- **linksee v0.11.x removed four tools its own bundled SKILL.md still teaches** (`list_entities`, `recall_file`, `update_memory`, `consolidate`). Verified against the installed package source — not an install, Claude Desktop or Claude Code problem, an upstream documentation bug. The local skill was corrected and its Japanese stripped, since the frontmatter loads into every session.
+- **`mcp-layer-check.sh`** now injects the measured routing every session and reports live fragmentation. Every one of the failures above was already "documented somewhere"; prose has never carried a rule on this repo, and this is the standing answer to that.
 
-**A 7-day measurement window opened on `sequential-thinking`.** It has been invoked twice
-ever — but it was installed by the *same* 2026-07-24 integration that restricted it
-(**310 pre-rule transcripts, present in 0**), so that number measures the rule, not the
-tool, and any inference from it is circular. It is unrestricted until 2026-08-09 with
-pre-registered metrics, a scripted instrument, an auto-expiring suspension, and the
-design-heavy task mix declared as a known confound *in advance*.
+**A 7-day measurement window opened on `sequential-thinking`.** It has been invoked twice ever — but it was installed by the *same* 2026-07-24 integration that restricted it (**310 pre-rule transcripts, present in 0**), so that number measures the rule, not the tool, and any inference from it is circular. It is unrestricted until 2026-08-09 with pre-registered metrics, a scripted instrument, an auto-expiring suspension, and the design-heavy task mix declared as a known confound *in advance*.
 
-**Corrections this release makes to its own claims**, kept rather than quietly fixed: a
-"blocked on tooling" deferral that four tool calls disproved · a cost calibration of
-7.7× that was Opus rates applied to a Sonnet session with output tokens ignored (actual
-2.57×, and model-specific) · session bucketing by mtime that would have dropped 919
-pre-relaxation turns into the treatment set · two off-by-one boundary bugs · and a
-vacuous test that grepped a string matching the healthy state.
+**Corrections this release makes to its own claims**, kept rather than quietly fixed: a "blocked on tooling" deferral that four tool calls disproved · a cost calibration of 7.7× that was Opus rates applied to a Sonnet session with output tokens ignored (actual 2.57×, and model-specific) · session bucketing by mtime that would have dropped 919 pre-relaxation turns into the treatment set · two off-by-one boundary bugs · and a vacuous test that grepped a string matching the healthy state.
 
 ## v2.47.1 — 2026-08-02 02:20 EDT (#63 · `f778195`) — The site publishes itself, and main stops accepting direct pushes
 
-**The live site was stale and nothing noticed.** `dioreo.is-not-a.dev` was still
-serving the previous headline *after* v2.47.0 had merged and been tagged. `public/`
-was correct in `main`; publishing was a command run by hand from one Mac, so the
-site drifted for exactly as long as nobody remembered.
+**The live site was stale and nothing noticed.** `dioreo.is-not-a.dev` was still serving the previous headline *after* v2.47.0 had merged and been tagged. `public/` was correct in `main`; publishing was a command run by hand from one Mac, so the site drifted for exactly as long as nobody remembered.
 
-`.github/workflows/deploy-site.yml` now publishes on any push to `main` that
-touches the site.
-- ⚠️ **It deliberately does NOT fire for changelog/devlog-only changes.** Those
-  three pages are withdrawn from the nav, so republishing the whole site for a page
-  no reader can reach is waste. The negation `!public/changelog/**` must stay BELOW
-  `public/**`: excluding the SOURCE files would not work, because it is the built
-  OUTPUT that lands in the commit.
-- It rebuilds and refuses to publish a stale `public/`, then asserts the live
-  `<title>` matches what it uploaded — a 200 alone can be served from cache while
-  the site is down, which is how an outage hid behind a green check here before.
-- Deploys are serialised rather than cancelled; cancelling mid-upload is a
-  plausible shape for the unexplained zero-file deploys on the deferred list.
-- Until `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` exist it verifies the
-  build and skips the upload with a visible warning, rather than going permanently
-  red — a workflow that is always red trains everyone to ignore red.
+`.github/workflows/deploy-site.yml` now publishes on any push to `main` that touches the site.
+- ⚠️ **It deliberately does NOT fire for changelog/devlog-only changes.** Those three pages are withdrawn from the nav, so republishing the whole site for a page no reader can reach is waste. The negation `!public/changelog/**` must stay BELOW `public/**`: excluding the SOURCE files would not work, because it is the built OUTPUT that lands in the commit.
+- It rebuilds and refuses to publish a stale `public/`, then asserts the live `<title>` matches what it uploaded — a 200 alone can be served from cache while the site is down, which is how an outage hid behind a green check here before.
+- Deploys are serialised rather than cancelled; cancelling mid-upload is a plausible shape for the unexplained zero-file deploys on the deferred list.
+- Until `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` exist it verifies the build and skips the upload with a visible warning, rather than going permanently red — a workflow that is always red trains everyone to ignore red.
 
-**`main` stops accepting direct pushes.** Immediately after tagging v2.47.0 I
-committed documentation straight onto `main` and pushed it, which the workflow
-explicitly forbids and which nothing prevented.
-- `.claude/hooks/main-push-guard.sh` refuses such a push. ⚠️ Its first version only
-  checked the CURRENT branch and missed every explicit refspec — found by using
-  one: the retraction below needed `git push --force-with-lease origin 9b9b4ce:main`
-  from a feature branch, and the guard written to stop that let it through.
-- `main` is branch-protected: PR required, force pushes and deletions blocked,
-  linear history, **0 required approvals** (a solo maintainer cannot approve their
-  own PR). `enforce_admins` is off so an emergency override stays possible.
-- **`ebbf196` was retracted** from `main` and `v3-pre-release`, both of which were
-  at exactly that commit with zero divergence. Its content ships in this release
-  instead, so `main`'s history contains no direct-push commit.
+**`main` stops accepting direct pushes.** Immediately after tagging v2.47.0 I committed documentation straight onto `main` and pushed it, which the workflow explicitly forbids and which nothing prevented.
+- `.claude/hooks/main-push-guard.sh` refuses such a push. ⚠️ Its first version only checked the CURRENT branch and missed every explicit refspec — found by using one: the retraction below needed `git push --force-with-lease origin 9b9b4ce:main` from a feature branch, and the guard written to stop that let it through.
+- `main` is branch-protected: PR required, force pushes and deletions blocked, linear history, **0 required approvals** (a solo maintainer cannot approve their own PR). `enforce_admins` is off so an emergency override stays possible.
+- **`ebbf196` was retracted** from `main` and `v3-pre-release`, both of which were at exactly that commit with zero divergence. Its content ships in this release instead, so `main`'s history contains no direct-push commit.
 
-**There was no version gap, and the first measurement of that was wrong.**
-Measured by TAGS, which is how versions were actually recorded: 31 of the 85
-post-adoption commits on `main` carry no tag, almost all `docs:` work, so
-unversioned commits on `main` are routine. ⚠️ The first attempt measured
-`package.json` instead and reported "exactly one direct push"; `package.json` went
-unbumped for a long stretch — the audit's own `TAG_RULE_FROM` exemption records
-it — so that number answered a different question. Re-measured: **nine** direct
-pushes, eight of them in the 2026-07-24 → 07-27 window of the retired two-commit
-release pattern. CLAUDE.md now states the two rules separately, because one
-sentence conflated "main only advances through a PR" with "every merge mints a
-version" — only the first is absolute.
+**There was no version gap, and the first measurement of that was wrong.** Measured by TAGS, which is how versions were actually recorded: 31 of the 85 post-adoption commits on `main` carry no tag, almost all `docs:` work, so unversioned commits on `main` are routine. ⚠️ The first attempt measured `package.json` instead and reported "exactly one direct push"; `package.json` went unbumped for a long stretch — the audit's own `TAG_RULE_FROM` exemption records it — so that number answered a different question. Re-measured: **nine** direct pushes, eight of them in the 2026-07-24 → 07-27 window of the retired two-commit release pattern. CLAUDE.md now states the two rules separately, because one sentence conflated "main only advances through a PR" with "every merge mints a version" — only the first is absolute.
 
 **Two new audit checks, and the suite that was blind to one of them.**
-- `unreleased-on-main` (WARN) reports commits on `main` belonging to no release.
-  WARN, not ERROR: the documented merge→tag gap makes it briefly true during
-  correct behaviour, and an ERROR there would be muted and then catch nothing.
-- `lock-version` (ERROR) — `package-lock.json` had read **2.35.3** while
-  `package.json` read 2.47.0, twelve releases of drift that `npm ci` ignores.
-- ⚠️ `unreleased-on-main` shipped with **no self-test**, and the suite still
-  reported "all 53 checks proven" — it was counting PROVE CASES, never checks. A
-  suite whose entire purpose is "no guard ships unproven" could not see an unproven
-  guard. It now compares coverage against the audit's own `--list`, which
-  immediately found **five untested checks**, including `record-structure`, added
-  after a splice corrupted a changelog. Four that read the real `~/.claude` are
-  exempt with stated reasons.
+- `unreleased-on-main` (WARN) reports commits on `main` belonging to no release. WARN, not ERROR: the documented merge→tag gap makes it briefly true during correct behaviour, and an ERROR there would be muted and then catch nothing.
+- `lock-version` (ERROR) — `package-lock.json` had read **2.35.3** while `package.json` read 2.47.0, twelve releases of drift that `npm ci` ignores.
+- ⚠️ `unreleased-on-main` shipped with **no self-test**, and the suite still reported "all 53 checks proven" — it was counting PROVE CASES, never checks. A suite whose entire purpose is "no guard ships unproven" could not see an unproven guard. It now compares coverage against the audit's own `--list`, which immediately found **five untested checks**, including `record-structure`, added after a splice corrupted a changelog. Four that read the real `~/.claude` are exempt with stated reasons.
 
-**Documentation.** The deploy path is documented in CLAUDE.md and the rules file,
-both of which named the manual command as the only way to publish until now.
+**Documentation.** The deploy path is documented in CLAUDE.md and the rules file, both of which named the manual command as the only way to publish until now.
 
 ## v2.47.0 — 2026-08-02 00:40 EDT (#62 · `9b9b4ce`) — The record pages, a rebuilt nav indicator, and eight new build gates
 
-The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over
-most of the surface Harkirat had flagged from live testing.
+The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over most of the surface Harkirat had flagged from live testing.
 
 **The nav swallowed clicks, and the cause was its drag gesture.**
-- The switcher began a drag on **every** `pointerdown` anywhere on the track, and a capture-phase
-  handler cancelled the link's navigation whenever the pointer had moved more than 3px between press
-  and release. Its own fallback then only navigated if the **rounded** settled index differed from the
-  starting one — which a few pixels of hand drift never changes. So an ordinary click with a little
-  movement was swallowed whole: no navigation, no error, nothing in the console.
-- Demonstrated in Chrome against the deployed build rather than argued from the source: identical
-  synthetic click sequences reached the link at 0px of drift and never reached it at 6px. After the
-  rebuild, 0/6/20/40px all reach it. The drag is gone entirely; tabs are plain links again.
-- ⚠️ A first "reproduction" was **invalid** and was retracted — the drag tool used fires only
-  `pointerdown`, never `pointerup` or `click`, so it exercised nothing. The real demonstration
-  came from dispatching the full pointer sequence and watching whether the click reached the anchor.
+- The switcher began a drag on **every** `pointerdown` anywhere on the track, and a capture-phase handler cancelled the link's navigation whenever the pointer had moved more than 3px between press and release. Its own fallback then only navigated if the **rounded** settled index differed from the starting one — which a few pixels of hand drift never changes. So an ordinary click with a little movement was swallowed whole: no navigation, no error, nothing in the console.
+- Demonstrated in Chrome against the deployed build rather than argued from the source: identical synthetic click sequences reached the link at 0px of drift and never reached it at 6px. After the rebuild, 0/6/20/40px all reach it. The drag is gone entirely; tabs are plain links again.
+- ⚠️ A first "reproduction" was **invalid** and was retracted — the drag tool used fires only `pointerdown`, never `pointerup` or `click`, so it exercised nothing. The real demonstration came from dispatching the full pointer sequence and watching whether the click reached the anchor.
 
 **Desktop and mobile navigation are now separate controls.**
-- Sharing one control across breakpoints was the source of most of the mobile breakage: an indicator
-  that has to be a horizontal pointer track **and** a vertical thumb-follower does neither well, and
-  every hover rule it carried latched on first tap. Three mobile variants were built and discarded
-  before this one — a two-tab rail, a bottom sheet, and a plain disclosure — and the disclosure lost
-  for the same reason as the other two: it hid the answer behind a tap. What shipped is a **swipeable
-  tab strip**: all six pages on one scrollable row, the current one always on screen, a hairline
-  separating the four instruments from the two invitations, 44px targets, and a section index that
-  sits with the document it indexes rather than in the same menu as the pages.
-- Every hover rule on the site now sits inside `(hover:hover) and (pointer:fine)`. A latched
-  `:hover` after a tap is why buttons appeared "stuck mid-phase" on a phone. **This is applied
-  mechanically, not by hand.** A comment claimed every rule was already guarded; a twelve-line script
-  found sixty that were not. The build now rewrites the finished stylesheet at the single point where
-  it reaches disk — and the first version of that transform destroyed eight rules, because it kept
-  comments in the selector prelude and a comment containing a **comma** was split as if it were a
-  selector list, writing the rewritten rule into the middle of the comment. A gate re-parses the
-  built CSS for unguarded `:hover`, brace balance, and braces inside comments; it fails the build
-  that shipped the bug and passes the one that fixes it.
-- **The two surfaces use different metaball engines, and that is a decision, not an inconsistency.**
-  The desktop indicator tears apart and reforms through an **SVG `feColorMatrix` alpha crush**, which
-  multiplies alpha and leaves RGB untouched — so the indicator keeps its own colour over the
-  translucent glass header, with no bed, no blend and no duplicated label. It runs only during a move,
-  because thresholding a blurred stadium flattens its caps and the resting pill came out a rounded
-  rectangle inside a stadium track.
-  The mobile strip uses the **CSS `blur(7px) contrast(20) blur(0)` crush** instead, because on iOS an
-  SVG filter renders the swarm as hard circles where the CSS chain renders it as liquid — measured on
-  the same device, same page, two panels side by side. The CSS crush can only threshold colour, so it
-  needs an opaque black bed and a blend to erase it; the mobile bar was made opaque to pay for that.
-  The same trade on desktop would mean an opaque header, which is why it was not made.
+- Sharing one control across breakpoints was the source of most of the mobile breakage: an indicator that has to be a horizontal pointer track **and** a vertical thumb-follower does neither well, and every hover rule it carried latched on first tap. Three mobile variants were built and discarded before this one — a two-tab rail, a bottom sheet, and a plain disclosure — and the disclosure lost for the same reason as the other two: it hid the answer behind a tap. What shipped is a **swipeable tab strip**: all six pages on one scrollable row, the current one always on screen, a hairline separating the four instruments from the two invitations, 44px targets, and a section index that sits with the document it indexes rather than in the same menu as the pages.
+- Every hover rule on the site now sits inside `(hover:hover) and (pointer:fine)`. A latched `:hover` after a tap is why buttons appeared "stuck mid-phase" on a phone. **This is applied mechanically, not by hand.** A comment claimed every rule was already guarded; a twelve-line script found sixty that were not. The build now rewrites the finished stylesheet at the single point where it reaches disk — and the first version of that transform destroyed eight rules, because it kept comments in the selector prelude and a comment containing a **comma** was split as if it were a selector list, writing the rewritten rule into the middle of the comment. A gate re-parses the built CSS for unguarded `:hover`, brace balance, and braces inside comments; it fails the build that shipped the bug and passes the one that fixes it.
+- **The two surfaces use different metaball engines, and that is a decision, not an inconsistency.** The desktop indicator tears apart and reforms through an **SVG `feColorMatrix` alpha crush**, which multiplies alpha and leaves RGB untouched — so the indicator keeps its own colour over the translucent glass header, with no bed, no blend and no duplicated label. It runs only during a move, because thresholding a blurred stadium flattens its caps and the resting pill came out a rounded rectangle inside a stadium track. The mobile strip uses the **CSS `blur(7px) contrast(20) blur(0)` crush** instead, because on iOS an SVG filter renders the swarm as hard circles where the CSS chain renders it as liquid — measured on the same device, same page, two panels side by side. The CSS crush can only threshold colour, so it needs an opaque black bed and a blend to erase it; the mobile bar was made opaque to pay for that. The same trade on desktop would mean an opaque header, which is why it was not made.
 
 **Two content defects in the published instruments.**
-- The orphaned `these documents are published on (the "Site")` fragment under the masthead on Terms
-  **and** Privacy was a parser bug, not a typo: those head fields are wrapped across two source lines
-  and the strip that removes them used `.*$`, which stops at the first newline — so the
-  wrapped remainder survived and rendered as an orphaned fragment directly under the masthead.
-  The pattern now consumes any following line that is not blank, another `**field**`, a rule, a
-  heading or a quote: exactly the wrapped remainder and nothing past the head block. Verified
-  against both files — 47 and 36 characters removed, and §1.1's operative definition of the
-  Site untouched. It read like a paragraph cut in half because it was one. The same helper feeds
-  `build()` and `verify()`, so one fix corrects both and the content gate cannot drift from what
-  is rendered.
-- LICENSE clause numbers sat 13.3px above the sentence they label — an empty heading was still
-  generating a 14.5px box plus a margin, pushing the text down while the number stayed pinned.
+- The orphaned `these documents are published on (the "Site")` fragment under the masthead on Terms **and** Privacy was a parser bug, not a typo: those head fields are wrapped across two source lines and the strip that removes them used `.*$`, which stops at the first newline — so the wrapped remainder survived and rendered as an orphaned fragment directly under the masthead. The pattern now consumes any following line that is not blank, another `**field**`, a rule, a heading or a quote: exactly the wrapped remainder and nothing past the head block. Verified against both files — 47 and 36 characters removed, and §1.1's operative definition of the Site untouched. It read like a paragraph cut in half because it was one. The same helper feeds `build()` and `verify()`, so one fix corrects both and the content gate cannot drift from what is rendered.
+- LICENSE clause numbers sat 13.3px above the sentence they label — an empty heading was still generating a 14.5px box plus a margin, pushing the text down while the number stayed pinned.
 
-**Footer, rebuilt to the annotated layout.** Notice left, links top-right, sign-off beneath them. The
-sign-off is **first in the DOM and last on screen**, which is load-bearing: on the warm pages that line
-runs on from the closing paragraph, so putting the nav labels between them lands five links inside that
-sentence and correctly fails gate 1. Grid placement moves it visually without moving it in the document.
+**Footer, rebuilt to the annotated layout.** Notice left, links top-right, sign-off beneath them. The sign-off is **first in the DOM and last on screen**, which is load-bearing: on the warm pages that line runs on from the closing paragraph, so putting the nav labels between them lands five links inside that sentence and correctly fails gate 1. Grid placement moves it visually without moving it in the document.
 
-**Added.** A back-to-top control whose ring is the scroll position, driven from the same handler as the
-progress bar and section rail so the three cannot disagree · download buttons for the plain-text LICENSE
-and NOTICE, placed in the note that explains why those files govern · copy buttons on every code block.
+**Added.** A back-to-top control whose ring is the scroll position, driven from the same handler as the progress bar and section rail so the three cannot disagree · download buttons for the plain-text LICENSE and NOTICE, placed in the note that explains why those files govern · copy buttons on every code block.
 
-**The warm pages.** "Ways to contribute" was three thin blocks with a fourth stranded underneath —
-`auto-fit` fits three tracks at that width, so four parallel lanes were laid out as 3+1; now a 2x2 of
-equal tiles · the CLA's 26px bordered circles read as radio buttons on the one page explaining what you
-are agreeing to, and are now bare direction marks with the row carrying the edge · the contributors wall
-stretched its single plate across the whole card, which was most of why that page read as lifeless.
+**The warm pages.** "Ways to contribute" was three thin blocks with a fourth stranded underneath — `auto-fit` fits three tracks at that width, so four parallel lanes were laid out as 3+1; now a 2x2 of equal tiles · the CLA's 26px bordered circles read as radio buttons on the one page explaining what you are agreeing to, and are now bare direction marks with the row carrying the edge · the contributors wall stretched its single plate across the whole card, which was most of why that page read as lifeless.
 
-**The landing page was off centre, and this pass caused it.** The goo filter's `<svg>` was injected
-into all three templates but its collapsing style lived in the switcher stylesheet, which the landing
-page does not include — so it kept its intrinsic 300x150 and took part in layout (measured 480px of
-margin against 180px). The style is inline on the element now. Also: the 01/02 numbers all hovered
-orange because a custom property resolves where it is **declared**, not where it is used, so
-`--accent-t:var(--accent)` computed once on `:root` and inherited that finished value · the plus icon
-swung back from the wrong pivot because `transform-origin` was set only in the hover rule · the ticket
-notches were discs filled with the page colour, which does not match a page carrying a radial glow, and
-are now masked out of the card.
+**The landing page was off centre, and this pass caused it.** The goo filter's `<svg>` was injected into all three templates but its collapsing style lived in the switcher stylesheet, which the landing page does not include — so it kept its intrinsic 300x150 and took part in layout (measured 480px of margin against 180px). The style is inline on the element now. Also: the 01/02 numbers all hovered orange because a custom property resolves where it is **declared**, not where it is used, so `--accent-t:var(--accent)` computed once on `:root` and inherited that finished value · the plus icon swung back from the wrong pivot because `transform-origin` was set only in the hover rule · the ticket notches were discs filled with the page colour, which does not match a page carrying a radial glow, and are now masked out of the card.
 
-**Verification.** All six build gates green. **Gate 1 caught a real defect mid-work**: a copy button's
-"Copy" label landed between a code block and the prose after it and split three source runs, so the
-control is now text-free with a CSS-drawn mark. Motion itself could **not** be verified automatically —
-Chrome throttles `requestAnimationFrame` in a background tab and the preview pane runs zero frames —
-so geometry, colour, endpoints and contrast were measured by taking manual control of the animation
-clock and inspecting specific frames. Contrast was re-derived from scratch: a tinted indicator fails
-WCAG AA at **any** tint (violet-on-dark 4.60 untinted, 4.28 at 6%), which is what drove the solid pill
-with an inverted near-black label (worst pair 5.07 across all six accents and every mid-gradient blend).
+**Verification.** All six build gates green. **Gate 1 caught a real defect mid-work**: a copy button's "Copy" label landed between a code block and the prose after it and split three source runs, so the control is now text-free with a CSS-drawn mark. Motion itself could **not** be verified automatically — Chrome throttles `requestAnimationFrame` in a background tab and the preview pane runs zero frames — so geometry, colour, endpoints and contrast were measured by taking manual control of the animation clock and inspecting specific frames. Contrast was re-derived from scratch: a tinted indicator fails WCAG AA at **any** tint (violet-on-dark 4.60 untinted, 4.28 at 6%), which is what drove the solid pill with an inverted near-black label (worst pair 5.07 across all six accents and every mid-gradient blend).
 
-**The indicator now comes apart instead of travelling.** The source pill shrinks away by 55% of the
-move, the destination does not begin forming until 28%, and the neck pinches off at 40% — so around the
-middle there is barely any pill on screen and fourteen droplets carry the shape across on their own arcs
-before converging into the destination's centre. Colour is per **piece** and solid; a single ramp across
-the whole control was why the colour appeared to lag behind the motion, because a blob already sitting on
-the destination still carried some of the origin's hue until the move ended.
-Two faults were in the filter rather than the geometry. The droplets were being erased **arithmetically**:
-a disc of radius *r* blurred at stdDeviation *s* peaks near `1-exp(-r²/2s²)` alpha, which at r=3.5 and
-s=4.5 is 0.26 — and the alpha crush `32α-15` does not reach opacity until 0.469, so every small droplet
-was deleted before it could render. Blur drops to 3.6, the threshold to `22α-8`, and droplets grow from
-3.5-10.5px to 7-16px. Long thin shapes survive a blur far better than small round ones, which is exactly
-why the neck stayed visible the whole time the droplets did not. Separately the spray reached `h*1.25` —
-about 40px on a 34px bar — so it left the header entirely and read as confetti.
-The label inversion also fired at 40% of the move, when the destination pill is 11px wide behind a 79px
-label: more than half the word went near-black while still on the dark bar. Held to 80%, where the pill
-is 64px and the existing 300ms colour ease covers the remainder.
+**The indicator now comes apart instead of travelling.** The source pill shrinks away by 55% of the move, the destination does not begin forming until 28%, and the neck pinches off at 40% — so around the middle there is barely any pill on screen and fourteen droplets carry the shape across on their own arcs before converging into the destination's centre. Colour is per **piece** and solid; a single ramp across the whole control was why the colour appeared to lag behind the motion, because a blob already sitting on the destination still carried some of the origin's hue until the move ended. Two faults were in the filter rather than the geometry. The droplets were being erased **arithmetically**: a disc of radius *r* blurred at stdDeviation *s* peaks near `1-exp(-r²/2s²)` alpha, which at r=3.5 and s=4.5 is 0.26 — and the alpha crush `32α-15` does not reach opacity until 0.469, so every small droplet was deleted before it could render. Blur drops to 3.6, the threshold to `22α-8`, and droplets grow from 3.5-10.5px to 7-16px. Long thin shapes survive a blur far better than small round ones, which is exactly why the neck stayed visible the whole time the droplets did not. Separately the spray reached `h*1.25` — about 40px on a 34px bar — so it left the header entirely and read as confetti. The label inversion also fired at 40% of the move, when the destination pill is 11px wide behind a 79px label: more than half the word went near-black while still on the dark bar. Held to 80%, where the pill is 64px and the existing 300ms colour ease covers the remainder.
 
-**The theme toggle's moon is a crescent now, and was not before.** What is left after subtracting one
-circle from another is a lune of width `R + D - r`. The old values — orb 7.4, cut 6.6, centres 10.46
-apart — give 11.27 of a 14.8 diameter, so that shape was a **gibbous with a bite out of it**; and because
-the width grows with *D*, pushing the cut further away only ever made the bite shallower. Cut radius 7 at
-a centre distance of 2.7 gives 3.1, about a fifth of the disc, with the horn tips landing at ±71° so they
-read as horns rather than closing into a ring. The three craters went with it: at that width the crescent
-renders about 2px across and every crater sat in the mass that is now cut away.
+**The theme toggle's moon is a crescent now, and was not before.** What is left after subtracting one circle from another is a lune of width `R + D - r`. The old values — orb 7.4, cut 6.6, centres 10.46 apart — give 11.27 of a 14.8 diameter, so that shape was a **gibbous with a bite out of it**; and because the width grows with *D*, pushing the cut further away only ever made the bite shallower. Cut radius 7 at a centre distance of 2.7 gives 3.1, about a fifth of the disc, with the horn tips landing at ±71° so they read as horns rather than closing into a ring. The three craters went with it: at that width the crescent renders about 2px across and every crater sat in the mass that is now cut away.
 
-**The mobile indicator is the reference effect, and the colour is a blend rather than a filter.**
-Fifteen 20px discs spawn on a radius of 90 and converge inward to 10, blurred and crushed to a hard
-two-tone image that fuses them into the pill they are building. The colour was the hard part. The
-crush drives every channel to 0 or 1 — amber and lime both land on `#FFFF00`, violet on `#FF00FF` —
-so the accent has to be restored *after* it. The first attempt fitted a
-`sepia/saturate/hue-rotate/brightness` chain per accent: composing the four matrices and solving
-white → accent lands all six within 1/255 **on paper**, and renders visibly desaturated. Two
-different clamping models were tried and neither matches what the browser paints; a five-parameter
-fit with a leading `brightness()` still missed by 74/255 in red on teal. Browsers clamp somewhere no
-published description covers, so this was fitting a curve to a function nobody has the form of.
-It is a blend now, and needs no model at all: `multiply(white, accent)` **is** accent and
-`multiply(black, accent)` **is** black, exactly, for every accent that will ever exist. An accent
-plate blended over the crushed image colours the blobs and leaves the bed alone. Light mode is the
-mirror — invert the crushed image so the bed comes out white, which is `multiply`'s identity, and
-switch the plate to `screen`, whose identities are `screen(white, accent) = white` and
-`screen(black, accent) = accent`. Twelve fitted chains were deleted. The one trap is reach: the plate
-must stay inside the bed's opaque core, or blending against a partly-transparent backdrop shows the
-plate's own colour as a square around the whole effect.
-**How that was settled is worth keeping.** Two colours side by side had already passed the wrong
-chains. A **difference blend** — the candidate over the true accent, `mix-blend-mode: difference` —
-renders pure black on an exact match and glows in the colour of the failing channel otherwise, so one
-screenshot judged twelve candidates at once.
+**The mobile indicator is the reference effect, and the colour is a blend rather than a filter.** Fifteen 20px discs spawn on a radius of 90 and converge inward to 10, blurred and crushed to a hard two-tone image that fuses them into the pill they are building. The colour was the hard part. The crush drives every channel to 0 or 1 — amber and lime both land on `#FFFF00`, violet on `#FF00FF` — so the accent has to be restored *after* it. The first attempt fitted a `sepia/saturate/hue-rotate/brightness` chain per accent: composing the four matrices and solving white → accent lands all six within 1/255 **on paper**, and renders visibly desaturated. Two different clamping models were tried and neither matches what the browser paints; a five-parameter fit with a leading `brightness()` still missed by 74/255 in red on teal. Browsers clamp somewhere no published description covers, so this was fitting a curve to a function nobody has the form of. It is a blend now, and needs no model at all: `multiply(white, accent)` **is** accent and `multiply(black, accent)` **is** black, exactly, for every accent that will ever exist. An accent plate blended over the crushed image colours the blobs and leaves the bed alone. Light mode is the mirror — invert the crushed image so the bed comes out white, which is `multiply`'s identity, and switch the plate to `screen`, whose identities are `screen(white, accent) = white` and `screen(black, accent) = accent`. Twelve fitted chains were deleted. The one trap is reach: the plate must stay inside the bed's opaque core, or blending against a partly-transparent backdrop shows the plate's own colour as a square around the whole effect. **How that was settled is worth keeping.** Two colours side by side had already passed the wrong chains. A **difference blend** — the candidate over the true accent, `mix-blend-mode: difference` — renders pure black on an exact match and glows in the colour of the failing channel otherwise, so one screenshot judged twelve candidates at once.
 
 **Four more defects, each found by measuring rather than looking.**
-- The indicator landed **17px off** its tab. It cached `offsetLeft − scrollLeft`, and `scroll-snap`
-  re-settles the strip after the initial scroll — so the cached value was stale before the first
-  paint. It measures rects now, which cannot go stale, and holds alignment at every scroll offset.
-- The pill was armed inside `requestAnimationFrame`, which does not run in a backgrounded tab, so a
-  page opened in one came forward with **no indicator at all**. The forced reflow already restarts
-  the animation; nothing there needed to wait for a frame.
-- **The entire mobile header block was dead code.** The base `.bar` rule is concatenated after it at
-  equal specificity, so the desktop gap and padding won at every width — measured at 375px it was
-  still reporting `gap:1.5rem` and `padding:1rem`. That, plus a missing `overflow` on the wordmark,
-  is why "Dior's Builds" kept its full 90px of text inside a 31px box and painted straight across the
-  repo button. The override is specificity-proofed, the wordmark truncates instead of overflowing,
-  and 19px of hover-only affordance (the mark's padding and its travel arrow) is reclaimed on a
-  surface that has no hover.
-- Droplets on the **desktop** morph were being erased by the same arithmetic that erased them on
-  mobile: the alpha crush `22α−8` does not paint until a droplet's blurred peak clears 0.364, which
-  at stdDeviation 3.6 needs about 10.6px, and a third of them spawned smaller than that.
+- The indicator landed **17px off** its tab. It cached `offsetLeft − scrollLeft`, and `scroll-snap` re-settles the strip after the initial scroll — so the cached value was stale before the first paint. It measures rects now, which cannot go stale, and holds alignment at every scroll offset.
+- The pill was armed inside `requestAnimationFrame`, which does not run in a backgrounded tab, so a page opened in one came forward with **no indicator at all**. The forced reflow already restarts the animation; nothing there needed to wait for a frame.
+- **The entire mobile header block was dead code.** The base `.bar` rule is concatenated after it at equal specificity, so the desktop gap and padding won at every width — measured at 375px it was still reporting `gap:1.5rem` and `padding:1rem`. That, plus a missing `overflow` on the wordmark, is why "Dior's Builds" kept its full 90px of text inside a 31px box and painted straight across the repo button. The override is specificity-proofed, the wordmark truncates instead of overflowing, and 19px of hover-only affordance (the mark's padding and its travel arrow) is reclaimed on a surface that has no hover.
+- Droplets on the **desktop** morph were being erased by the same arithmetic that erased them on mobile: the alpha crush `22α−8` does not paint until a droplet's blurred peak clears 0.364, which at stdDeviation 3.6 needs about 10.6px, and a third of them spawned smaller than that.
 
-**The desktop morph inherited what mobile paid for.** The arriving pill now lands on a damped spring
-that overshoots about 4% and rings down to exactly 1, instead of a smoothstep that decelerates and
-stops dead — width rather than `scaleX`, because `border-radius:999px` keeps the caps circular at any
-width and a `scaleX` would flatten them to ellipses at the peak. Droplets rotate, which is invisible
-on a circle but is applied *before* the translate, so it bows each trajectory differently; straight
-lines were the largest remaining tell that this was fourteen elements on fourteen paths rather than
-one mass coming apart.
-**The unreadable label was a timing bug, not a contrast one.** `.lit` toggled every tab in a single
-pass at 80% of the travel, so the tab the pill was *leaving* kept its near-black for 600ms after the
-pill had gone — sitting on the dark bar with nothing behind it. Clearing and setting are opposite
-events and now happen at opposite times.
+**The desktop morph inherited what mobile paid for.** The arriving pill now lands on a damped spring that overshoots about 4% and rings down to exactly 1, instead of a smoothstep that decelerates and stops dead — width rather than `scaleX`, because `border-radius:999px` keeps the caps circular at any width and a `scaleX` would flatten them to ellipses at the peak. Droplets rotate, which is invisible on a circle but is applied *before* the translate, so it bows each trajectory differently; straight lines were the largest remaining tell that this was fourteen elements on fourteen paths rather than one mass coming apart. **The unreadable label was a timing bug, not a contrast one.** `.lit` toggled every tab in a single pass at 80% of the travel, so the tab the pill was *leaving* kept its near-black for 600ms after the pill had gone — sitting on the dark bar with nothing behind it. Clearing and setting are opposite events and now happen at opposite times.
 
-**The section rail follows the page instead of scrolling itself.** It is taller than the viewport on
-every one of these documents, so it has to scroll, but it was doing so as an independent surface with
-its own bar beside the page's — two things to operate, and no reason to operate that one. The
-scrollspy already knows the tracked section, so it keeps that slot inside the rail's box. `scrollTop`
-is set directly rather than through `scrollIntoView`, which walks every scrollable ancestor and would
-make a sticky rail scroll the page in response to being scrolled. A 2rem mask fade replaces the hard
-crop, because with the bar gone a hard edge claims the list ends there and it does not.
+**The section rail follows the page instead of scrolling itself.** It is taller than the viewport on every one of these documents, so it has to scroll, but it was doing so as an independent surface with its own bar beside the page's — two things to operate, and no reason to operate that one. The scrollspy already knows the tracked section, so it keeps that slot inside the rail's box. `scrollTop` is set directly rather than through `scrollIntoView`, which walks every scrollable ancestor and would make a sticky rail scroll the page in response to being scrolled. A 2rem mask fade replaces the hard crop, because with the bar gone a hard edge claims the list ends there and it does not.
 
-**A record repaired, and a gate so it cannot recur.** The v2.47.0 entry in this file had the
-changelog's own 183-line header spliced into the middle of it, truncating a sentence mid-word — done
-by the very commit that wrote the entry. Every existing check passed: links resolved, versions were
-covered, the hash chain was intact, because none of them look at a file's **shape**. `docs:audit`
-gained `record-structure`, which fails on a repeated top-level heading. Its first version asserted
-"exactly one H1" and the self-test immediately caught that DEVLOG legitimately uses H1 for its parts —
-the invariant that detects a splice is repetition, not count.
+**A record repaired, and a gate so it cannot recur.** The v2.47.0 entry in this file had the changelog's own 183-line header spliced into the middle of it, truncating a sentence mid-word — done by the very commit that wrote the entry. Every existing check passed: links resolved, versions were covered, the hash chain was intact, because none of them look at a file's **shape**. `docs:audit` gained `record-structure`, which fails on a repeated top-level heading. Its first version asserted "exactly one H1" and the self-test immediately caught that DEVLOG legitimately uses H1 for its parts — the invariant that detects a splice is repetition, not count.
 
-**Still open:** every mobile claim here is Chrome emulation at 375/393/430, never a real phone; and
-the contributors page remains thin by nature.
+**Still open:** every mobile claim here is Chrome emulation at 375/393/430, never a real phone; and the contributors page remains thin by nature.
 
 **The changelog, devlog and what's-new pages were published — then withdrawn from the nav.**
-- A third page family (`scripts/lib/chronicle.js`), three voices on one skeleton: a notice board, an
-  engineering ledger and a notebook. What separates them is the **grid**, never the palette — a
-  reader stops seeing colour in two seconds.
-- The pages are still built, deployed and reachable at `/changelog/`, but they are off the switcher,
-  the mobile strip and the footer — **except inside `/changelog/` itself**, where they keep their own
-  group so a reader arriving by link is not stranded. Harkirat withdrew the landing-page row first;
-  leaving the tabs advertising it was half a job.
+- A third page family (`scripts/lib/chronicle.js`), three voices on one skeleton: a notice board, an engineering ledger and a notebook. What separates them is the **grid**, never the palette — a reader stops seeing colour in two seconds.
+- The pages are still built, deployed and reachable at `/changelog/`, but they are off the switcher, the mobile strip and the footer — **except inside `/changelog/` itself**, where they keep their own group so a reader arriving by link is not stranded. Harkirat withdrew the landing-page row first; leaving the tabs advertising it was half a job.
 
 **The nav indicator's label was illegible, reported four times before the cause was found.**
-- `.tab:hover{color:var(--ink)}` — a brightening affordance from before the tabs had an indicator at
-  all. `(0,2,0)` against `.tab`'s own `(0,1,0)`, so it beat the per-frame coverage colour outright:
-  for as long as a real pointer sat on a tab the label was pinned near-white **on top of** the pill
-  that had just arrived under it, releasing only when the pointer left. Hence "it turns black when
-  the morph is *leaving* it".
-- ⚠️ A scripted `mouseenter` cannot reproduce this — a dispatched event does not create a `:hover`
-  state — so three rounds of measurement read the correct colour while the screen showed the wrong
-  one. Three plausible-but-wrong diagnoses in a row is the signature of an instrument that cannot see
-  the failing state.
-- Also fixed: the current tab was painted in its **own accent**, the same colour as its pill; and a
-  cold group's first hover left the label unpainted because `aim()`'s early return never repainted —
-  the exact mirror of a bug fixed in `rest()` earlier the same day.
+- `.tab:hover{color:var(--ink)}` — a brightening affordance from before the tabs had an indicator at all. `(0,2,0)` against `.tab`'s own `(0,1,0)`, so it beat the per-frame coverage colour outright: for as long as a real pointer sat on a tab the label was pinned near-white **on top of** the pill that had just arrived under it, releasing only when the pointer left. Hence "it turns black when the morph is *leaving* it".
+- ⚠️ A scripted `mouseenter` cannot reproduce this — a dispatched event does not create a `:hover` state — so three rounds of measurement read the correct colour while the screen showed the wrong one. Three plausible-but-wrong diagnoses in a row is the signature of an instrument that cannot see the failing state.
+- Also fixed: the current tab was painted in its **own accent**, the same colour as its pill; and a cold group's first hover left the label unpainted because `aim()`'s early return never repainted — the exact mirror of a bug fixed in `rest()` earlier the same day.
 
-**Timing tied to the pill instead of to the clock.** Label coverage is measured against the LABEL, not
-the tab's padding box (roughly half of which is padding), against the head's true centred rect, and
-including the vertical taper — a wide flat head sits *beside* the glyphs, not under them. Measured on
-one hover: the colour used to commit 84ms into a 760ms move as a two-frame flip; it now crosses at
-284ms over 108ms and thirteen frames.
+**Timing tied to the pill instead of to the clock.** Label coverage is measured against the LABEL, not the tab's padding box (roughly half of which is padding), against the head's true centred rect, and including the vertical taper — a wide flat head sits *beside* the glyphs, not under them. Measured on one hover: the colour used to commit 84ms into a 760ms move as a two-frame flip; it now crosses at 284ms over 108ms and thirteen frames.
 
-**The pill is assembled on page load.** Droplets converge from a wide ring and the shape forms out of
-them, once per arrival. Not a second animation system: a birth is a move whose source has no width, so
-`paint()` already does the right thing and it cannot drift from the hover morph.
+**The pill is assembled on page load.** Droplets converge from a wide ring and the shape forms out of them, once per arrival. Not a second animation system: a birth is a move whose source has no width, so `paint()` already does the right thing and it cannot drift from the hover morph.
 
-**Sticky section headings on the legal documents.** `sectionise()` wraps each `<h2>` and its clauses in
-a `<section>`, because what bounds a sticky element is its containing block and the parser emits
-headings as flat siblings. The band spans the number gutter (or the previous section's number scrolls
-past beside the pinned one) and fades the prose beneath it (or an arriving line is sliced in half).
+**Sticky section headings on the legal documents.** `sectionise()` wraps each `<h2>` and its clauses in a `<section>`, because what bounds a sticky element is its containing block and the parser emits headings as flat siblings. The band spans the number gutter (or the previous section's number scrolls past beside the pinned one) and fades the prose beneath it (or an arriving line is sliced in half).
 
-**The documents themselves.** Terms and Privacy to **v1.5**: Discord added as a second contact route
-alongside the canonical email — deliberately *not* at every email mention, since §17.1, takedown
-notices and Privacy Requests each name a single route on purpose. Privacy Appendix A had really
-drifted: `decorationColorHex` and `nameplateColorHex` were **stored and unlisted** under a heading
-reading "That's the whole list." All four instruments now close with the full trademark notice, so the
-footer no longer says it a second time in different words. Terms' own change history was missing its
-1.1 and 1.2 rows; backfilled from git.
+**The documents themselves.** Terms and Privacy to **v1.5**: Discord added as a second contact route alongside the canonical email — deliberately *not* at every email mention, since §17.1, takedown notices and Privacy Requests each name a single route on purpose. Privacy Appendix A had really drifted: `decorationColorHex` and `nameplateColorHex` were **stored and unlisted** under a heading reading "That's the whole list." All four instruments now close with the full trademark notice, so the footer no longer says it a second time in different words. Terms' own change history was missing its 1.1 and 1.2 rows; backfilled from git.
 
 **Eight new build gates, each proven against broken input before being trusted.**
-- `scriptSyntaxAudit()` — parses every emitted inline `<script>`. It exists because a build shipped a
-  completely dead nav while **twelve gates stayed green**: a comment landed one line below its closing
-  `*/`, and `node --check` on the generator cannot see it, because that code is a string in a template
-  literal until a browser parses it.
-- `privacy-inventory` — Appendix A against the live `UserPreference` schema. Loads the schema rather
-  than regexing it: a regex that misses an oddly-formatted field fails **open**.
-- `dep-licences` — no copyleft anywhere, and every licence must be **known**. `chroma-js` and
-  `exif-parser` declare none at all, so it falls back to reading the licence text; a scanner that reads
-  "unknown" as permissive fails open.
+- `scriptSyntaxAudit()` — parses every emitted inline `<script>`. It exists because a build shipped a completely dead nav while **twelve gates stayed green**: a comment landed one line below its closing `*/`, and `node --check` on the generator cannot see it, because that code is a string in a template literal until a browser parses it.
+- `privacy-inventory` — Appendix A against the live `UserPreference` schema. Loads the schema rather than regexing it: a regex that misses an oddly-formatted field fails **open**.
+- `dep-licences` — no copyleft anywhere, and every licence must be **known**. `chroma-js` and `exif-parser` declare none at all, so it falls back to reading the licence text; a scanner that reads "unknown" as permissive fails open.
 - `notice-attribution` — every runtime dependency in NOTICE §1 at the version the lockfile resolves.
-- `claude-md-shape` — no `CLAUDE.md` section over 130 lines. The `public/` section had reached 286,
-  43% of the file that loads in full every session.
-- `lock-version` — `package-lock.json` had read **2.35.3** while `package.json` read 2.47.0, twelve
-  releases of drift that `npm ci` ignores and nothing checked.
-- **CI now builds the site and fails if `public/` moved** — it is build output *and* it is committed,
-  so a source edit without a rebuild ships the previous binding wording. It caught a stale tree on its
-  first real run.
+- `claude-md-shape` — no `CLAUDE.md` section over 130 lines. The `public/` section had reached 286, 43% of the file that loads in full every session.
+- `lock-version` — `package-lock.json` had read **2.35.3** while `package.json` read 2.47.0, twelve releases of drift that `npm ci` ignores and nothing checked.
+- **CI now builds the site and fails if `public/` moved** — it is build output *and* it is committed, so a source edit without a rebuild ships the previous binding wording. It caught a stale tree on its first real run.
 - `scripts/checkEmojiCaptures.js` wired into CI.
 
-**Documentation moved to where it belongs.** The legal site's craft detail left `CLAUDE.md` for
-`.claude/rules/legal-site.md`, which loads only when you touch the generator, `public/`, or one of the
-nine sources. 665 → 417 lines, with zero word-tokens lost.
+**Documentation moved to where it belongs.** The legal site's craft detail left `CLAUDE.md` for `.claude/rules/legal-site.md`, which loads only when you touch the generator, `public/`, or one of the nine sources. 665 → 417 lines, with zero word-tokens lost.
 
-⚠️ **PR #61 was closed unmerged, not merged.** Its commits are ancestors of this branch, so merging
-both would have applied the same work twice. Everything it contained ships here.
+⚠️ **PR #61 was closed unmerged, not merged.** Its commits are ancestors of this branch, so merging both would have applied the same work twice. Everything it contained ships here.
 
-⚠️ **Mobile is UNVERIFIED.** Every measurement in this release was at desktop widths. Filed as
-`[P1 · M]` in `docs/db-deferred-list.md`.
+⚠️ **Mobile is UNVERIFIED.** Every measurement in this release was at desktop widths. Filed as `[P1 · M]` in `docs/db-deferred-list.md`.
 
 ## v2.46.0 — 2026-07-31 23:50 EDT (#60 · `a4b17d6`) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
 
-The full follow-up to v2.45.0's launch-bug pass: the calendar redesign notes L184-197 asked for,
-plus everything live-testing turned up once it actually shipped.
+The full follow-up to v2.45.0's launch-bug pass: the calendar redesign notes L184-197 asked for, plus everything live-testing turned up once it actually shipped.
 
 **Calendar: 3 separate pages, TBD deadlines, a settings-based filter.**
-- `/calendar` split into 3 named pages (Draws / Events / Playlists & Modes) with toggle buttons
-  instead of Prev/Next arrows — Draws further soft-splits into NEW DRAWS / RETURNING DRAWS
-  sub-sections. Category auto-guessed from title keywords (`draw`/`armory`/`mode`/`playlist`/
-  standalone `MP`/`BR`, etc.), with a `d•`/`p•`/`e•` bulk-paste prefix as the explicit override.
-- Season-end deadlines gained a real **TBD state** (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`) — typing
-  "TBD" no longer corrupts the date (the actual bug: `parseAdminDate()` silently fell back to
-  `new Date()` on unparseable input, and a typo'd "TDB" landed almost exactly on Aug 1 00:00 UTC
-  across all 3 fields in one submit). Every date-writing call site now treats a parse failure as
-  "leave it alone," never "guess now."
+- `/calendar` split into 3 named pages (Draws / Events / Playlists & Modes) with toggle buttons instead of Prev/Next arrows — Draws further soft-splits into NEW DRAWS / RETURNING DRAWS sub-sections. Category auto-guessed from title keywords (`draw`/`armory`/`mode`/`playlist`/ standalone `MP`/`BR`, etc.), with a `d•`/`p•`/`e•` bulk-paste prefix as the explicit override.
+- Season-end deadlines gained a real **TBD state** (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`) — typing "TBD" no longer corrupts the date (the actual bug: `parseAdminDate()` silently fell back to `new Date()` on unparseable input, and a typo'd "TDB" landed almost exactly on Aug 1 00:00 UTC across all 3 fields in one submit). Every date-writing call site now treats a parse failure as "leave it alone," never "guess now."
 - The Active/All Events filter moved from an in-page toggle to `/settings`' Preferences page.
 
-**Calendar per-page banners.** One optional banner image per page, set via `/manage` → Calendar →
-"Banners." A `cdn.discordapp.com`/`media.discordapp.net` source URL skips Cloudinary re-hosting
-entirely and uses Discord's own dynamic resize proxy instead — the only way to get a real
-small-preview/full-resolution-on-click pairing; a Cloudinary-hosted fallback (non-Discord sources)
-caps the same width everywhere, inline and on zoom alike.
+**Calendar per-page banners.** One optional banner image per page, set via `/manage` → Calendar → "Banners." A `cdn.discordapp.com`/`media.discordapp.net` source URL skips Cloudinary re-hosting entirely and uses Discord's own dynamic resize proxy instead — the only way to get a real small-preview/full-resolution-on-click pairing; a Cloudinary-hosted fallback (non-Discord sources) caps the same width everywhere, inline and on zoom alike.
 
-**`/manage`'s bulk-import guide, rebuilt twice.** Went from nonexistent, to a plain-text reply, to a
-rich structured Components V2 view with a topic-switching dropdown (`utils/manageGuides.js`) covering
-all 5 bulk-having pages — Patch Notes and Next Season Draft had no guide at all before. Reachable from
-every page's own Guide button (now consistently the LAST section: single-item management → bulk
-management → purge → export → guide) and directly as `/manage`'s own `data_for` choice. Carries a
-dedicated animated emoji (`emojiMap.js`'s `guide`) instead of the generic info icon.
+**`/manage`'s bulk-import guide, rebuilt twice.** Went from nonexistent, to a plain-text reply, to a rich structured Components V2 view with a topic-switching dropdown (`utils/manageGuides.js`) covering all 5 bulk-having pages — Patch Notes and Next Season Draft had no guide at all before. Reachable from every page's own Guide button (now consistently the LAST section: single-item management → bulk management → purge → export → guide) and directly as `/manage`'s own `data_for` choice. Carries a dedicated animated emoji (`emojiMap.js`'s `guide`) instead of the generic info icon.
 
-**Patch Notes "Additional Info" auto-formats into a real structure — and the grammar was corrected
-twice from live-testing.** Typing `# Weapon, Attachment, b: text, n: text, ...` renders a
-`### Additional Changes` heading with `__**Weapon**__`/attachment/`> {buff/nerf} details` blocks —
-opt-in via the `#` marker, so every pre-existing free-typed entry is untouched. The first version
-required every weapon/attachment/change on its own physical line, which directly caused a real
-submission mistake (a comma-separated one-liner got read as one giant weapon name) — the final
-grammar matches the SAME comma-delimited mental model draws/calendar bulk pastes already use: one
-weapon per line, comma-separated, only a new weapon needs a new line.
+**Patch Notes "Additional Info" auto-formats into a real structure — and the grammar was corrected twice from live-testing.** Typing `# Weapon, Attachment, b: text, n: text, ...` renders a `### Additional Changes` heading with `__**Weapon**__`/attachment/`> {buff/nerf} details` blocks — opt-in via the `#` marker, so every pre-existing free-typed entry is untouched. The first version required every weapon/attachment/change on its own physical line, which directly caused a real submission mistake (a comma-separated one-liner got read as one giant weapon name) — the final grammar matches the SAME comma-delimited mental model draws/calendar bulk pastes already use: one weapon per line, comma-separated, only a new weapon needs a new line.
 
 **Smaller fixes, all from the same live-testing pass:**
-- Draw thumbnails: an exact-title cache miss now tries a Levenshtein-based fuzzy match against
-  everything cached before giving up, so a typo or a slight rewording reuses the right image instead
-  of failing — surfaced by name in the confirmation when it wasn't an exact match.
+- Draw thumbnails: an exact-title cache miss now tries a Levenshtein-based fuzzy match against everything cached before giving up, so a typo or a slight rewording reuses the right image instead of failing — surfaced by name in the confirmation when it wasn't an exact match.
 - Tier shorthand: legacy `ll` → `lg`.
 - Buff/nerf emoji IDs updated to Harkirat's uploaded replacements.
-- Draw/calendar add/edit confirmations use real `<t:X:D>` Discord timestamps instead of
-  `.toDateString()` text; draws bulk confirmations list actual titles, not just counts.
+- Draw/calendar add/edit confirmations use real `<t:X:D>` Discord timestamps instead of `.toDateString()` text; draws bulk confirmations list actual titles, not just counts.
 - Patch Notes' "previous balance changes" footer text bolded.
 
-**A real gap caught mid-session, not just fixed quietly:** an earlier deferred-list entry marked
-"SHIPPED" had wrapped its own date across two lines, which accidentally dodged the `docs:audit`
-deferred-sweep check instead of actually passing it — both that entry and this session's other
-shipped items were moved into `docs/archive/resolved-list.md` properly once the escape was noticed.
+**A real gap caught mid-session, not just fixed quietly:** an earlier deferred-list entry marked "SHIPPED" had wrapped its own date across two lines, which accidentally dodged the `docs:audit` deferred-sweep check instead of actually passing it — both that entry and this session's other shipped items were moved into `docs/archive/resolved-list.md` properly once the escape was noticed.
 
 ## v2.45.0 — 2026-07-30 22:24 EDT (#59 · `ee3b0cd`) — Six v2 launch bugs: a lowercased "V", a comment line stored as a fake weapon, and a real staging area for next season
 
-Six items pulled off the notes file (lines 191/192/197/199/200/201), all picked because they're
-launch-blocking for the new season, not "nice to have":
+Six items pulled off the notes file (lines 191/192/197/199/200/201), all picked because they're launch-blocking for the new season, not "nice to have":
 
-- **`toTitleCase()` mangled any title containing a `/`.** "Jupiter Cannon/Void Implosion Draw" came out
-  "Jupiter Cannon/void Implosion Draw" — `capitalizeSegment()` only ever capitalizes the FIRST letter
-  of a whitespace-delimited token, and "Cannon/Void" has no hyphen, so it was treated as one token and
-  everything after its first letter got lowercased, including the "V". Same fix shape as the existing
-  hyphen handling: `toTitleCase()` now splits each word on `-` **and** `/`, capitalizing each side
-  independently (`utils/adminParser.js`).
-- **Draw items can now carry a `-# comment` line** instead of only tiered weapon/character entries —
-  typing `-# {note}` in the Items field (single add/edit or bulk) stores it as a `tier: 'comment'` item
-  and renders it as plain Discord subtext (`-# text`, no tier emoji, no bold) instead of a real item row.
-  Previously "-#" wasn't a recognized tier shorthand, so it silently fell through to the generic
-  fallback and got title-cased like a weapon name (`adminParser.js`'s `parseItemLine`, `draws.js`'s
-  `buildDrawSections`, round-trips correctly through Edit Draw's pre-fill and the bulk export format).
-- **Buff/nerf emoji aliasing for Patch Notes' "Additional Info" field** — typing a standalone `b:` or
-  `n:` token now swaps in Harkirat's uploaded buff/nerf emoji at render time (never baked into the
-  stored text, same "resolve at render time" rule as every other emoji in this bot —
-  `patchnotes.js`'s `applyInfoAliases()`). Both modals that write this field now hint at it in their
-  placeholder text.
-- **A real "Next Season Draft" staging area** (`/manage` → new "Next Season Draft" section) — the
-  actual fix for the season-overlap problem (notes lines 192, 197, 201). `SeasonalData` is a single
-  global document, so editing next-season draws/calendar/dates directly during the overlap window
-  between "current season not over" and "new season announced" immediately overwrote what was still
-  live — and an "All Season" calendar event's displayed end always reads the LIVE `bpEnd`, which is
-  exactly why dates briefly reverted to the OLD season's Jul 31/Aug 1 end when the new one was being
-  set up (line 201's reported bug). The new `seasonalDoc.draft` sub-document lets the whole next
-  season (title, BP/Ranked/DMZ deadlines, New + Returning draws, calendar) be staged completely
-  separately — nothing in it is live, nothing it stages can bleed into what's currently shown — until
-  **Promote to Live** swaps it in as one atomic save and clears the draft. Promote snapshots the
-  pre-swap live values so it's Undo-able like every other destructive `/manage` action; Discard just
-  clears the draft. Deliberately bulk-only for the staged draws/calendar (no single add/edit/delete
-  against a draft) — the real workflow is "type up the whole next season once, then promote," and a
-  typo is fixed by re-running the bulk modal, same replace-not-append convention every other bulk
-  action on this panel already uses.
+- **`toTitleCase()` mangled any title containing a `/`.** "Jupiter Cannon/Void Implosion Draw" came out "Jupiter Cannon/void Implosion Draw" — `capitalizeSegment()` only ever capitalizes the FIRST letter of a whitespace-delimited token, and "Cannon/Void" has no hyphen, so it was treated as one token and everything after its first letter got lowercased, including the "V". Same fix shape as the existing hyphen handling: `toTitleCase()` now splits each word on `-` **and** `/`, capitalizing each side independently (`utils/adminParser.js`).
+- **Draw items can now carry a `-# comment` line** instead of only tiered weapon/character entries — typing `-# {note}` in the Items field (single add/edit or bulk) stores it as a `tier: 'comment'` item and renders it as plain Discord subtext (`-# text`, no tier emoji, no bold) instead of a real item row. Previously "-#" wasn't a recognized tier shorthand, so it silently fell through to the generic fallback and got title-cased like a weapon name (`adminParser.js`'s `parseItemLine`, `draws.js`'s `buildDrawSections`, round-trips correctly through Edit Draw's pre-fill and the bulk export format).
+- **Buff/nerf emoji aliasing for Patch Notes' "Additional Info" field** — typing a standalone `b:` or `n:` token now swaps in Harkirat's uploaded buff/nerf emoji at render time (never baked into the stored text, same "resolve at render time" rule as every other emoji in this bot — `patchnotes.js`'s `applyInfoAliases()`). Both modals that write this field now hint at it in their placeholder text.
+- **A real "Next Season Draft" staging area** (`/manage` → new "Next Season Draft" section) — the actual fix for the season-overlap problem (notes lines 192, 197, 201). `SeasonalData` is a single global document, so editing next-season draws/calendar/dates directly during the overlap window between "current season not over" and "new season announced" immediately overwrote what was still live — and an "All Season" calendar event's displayed end always reads the LIVE `bpEnd`, which is exactly why dates briefly reverted to the OLD season's Jul 31/Aug 1 end when the new one was being set up (line 201's reported bug). The new `seasonalDoc.draft` sub-document lets the whole next season (title, BP/Ranked/DMZ deadlines, New + Returning draws, calendar) be staged completely separately — nothing in it is live, nothing it stages can bleed into what's currently shown — until **Promote to Live** swaps it in as one atomic save and clears the draft. Promote snapshots the pre-swap live values so it's Undo-able like every other destructive `/manage` action; Discard just clears the draft. Deliberately bulk-only for the staged draws/calendar (no single add/edit/delete against a draft) — the real workflow is "type up the whole next season once, then promote," and a typo is fixed by re-running the bulk modal, same replace-not-append convention every other bulk action on this panel already uses.
 
-**Not done tonight, on purpose:** the broader "how should Additional Info be formatted" question (part
-of line 191) is a style question, not a bug — the buff/nerf alias covers the concrete, checkable part
-of the ask. Lines 193–196, 198 are extra-feature requests Harkirat explicitly deferred, not part of
-this pass.
+**Not done tonight, on purpose:** the broader "how should Additional Info be formatted" question (part of line 191) is a style question, not a bug — the buff/nerf alias covers the concrete, checkable part of the ask. Lines 193–196, 198 are extra-feature requests Harkirat explicitly deferred, not part of this pass.
 
 ---
 
 ## v2.44.0 — 2026-07-30 00:40 EDT (#58 · `93aaec2`) — Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed
-**The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code
-changed; nothing here touches the VM.
+**The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code changed; nothing here touches the VM.
 
-- **`contributing` and `contributors` were "basic / lazy designed"** — prose in a rounded box, which is
-  the right treatment for a statute and the wrong one for an invitation. Each now gets structure derived
-  from what its content actually **is**, via a new composition layer (`warmCompose()`):
-  - **contributing is a path**, so its sections hang off a **spine** — with no numerals, because the
-    `01/02/03` series belongs to the legal set and means *"this binds you."* Inside it: the four ways to
-    contribute are **parallel**, not sequential, so they became option **tiles**; the CLA is genuinely
-    two-sided, so it became a **ledger** marked by direction (what leaves your hands vs what stays);
-    and the one line a contributor must physically take away became a **consent slip** with a tear edge
-    and a copy button.
-  - **contributors is a wall.** No spine — it has three sections and the truth of the page is *one
-    filled plate beside empty space.* The "no external contributions yet" line stopped being an italic
-    apology and became the **empty plate itself**: the invitation IS the object.
-- **New GATE 5, `warmStructAudit()`.** The treatments key off source heading text, so renaming a heading
-  in `CONTRIBUTING.md` would silently revert a section to plain prose — and **none of the existing four
-  gates can see it**: every word is still present (gate 1), no link changes (gate 2), no aligned columns
-  (gate 3), no cross-references (gate 4). Different property, so a different gate. `WARM_STRUCT` is
-  **declared** rather than sniffed from the source, so the check cannot draw its expectations from the
-  thing it is testing.
-- **`verify()` was reporting three false misses, and the mechanism was an undecoded HTML entity becoming
-  a WORD.** `&middot;` reduced to the literal token `"middot"` and `&#9825;` to `"9825"`, which then sat
-  *inside* an otherwise-intact source run and broke it — 12 entities across 7 pages. It now decodes
-  numeric, hex and named entities. This cannot hide real content loss, which is the only reason it is
-  safe: an entity resolves to exactly one character, so decoding can only ever *remove* a fabricated
-  word, never supply a source word the page does not render. **Re-proved the gate can still fail** after
-  the change (deleting a real paragraph took contributors from 1 → 5 missing runs).
-- **Two of the three misses were real, and both were mine.** The ghost plate's `Your name` label was
-  invented text sitting between a heading and the source's own sentence — it moved to CSS, the same test
-  the ledger's direction marks had to pass. And the lifted sign-off was rendering **below the footer
-  nav**, so five link labels sat inside a source run; a reader met the nav mid-sentence too. A letter
-  signs off before the site's footer, not after it.
-- **The desktop rail was NOT fixed, and had been documented as fixed.** `align-self:start` was recorded
-  as "what keeps this out of the footer." It does not: a sticky element is bounded by its **containing
-  block**, not by its own height, so shrinking the box changed nothing. Measured at 1440×900, scrolled to
-  the bottom of Terms, the rail ran **236px past the document and 126px into the footer.** The cause was
-  that `.page` was a grid holding **three** children — rail, doc **and footer** — so the footer lived
-  inside the very block that bounded the rail. Fixed structurally: `.page` is now only the centred
-  wrapper, a new `.cols` carries the two-column grid, and the footer sits in `.page` outside `.cols`.
-  The naive version of that fix (footer as a `<body>` child) was tried first and rejected because it
-  stretched the footer to the full 1440px viewport instead of the 1156px document column. Both halves
-  were verified in a real browser at the scrolled-to-bottom position, which is the only place the bug is
-  visible at all.
-- **`dior legal check` was blind to the one URL a human types.** It checked every uploaded file and never
-  checked `/`. That is not hypothetical: two Cloudflare deployments published **zero files**, production
-  pointed at the newest, and every `/legal/*` path still answered 200 **from cache** (`age: 6525`) — so
-  the byte comparison passed on stale bytes while the site was down. The bare domain, uncacheable because
-  it is a redirect, was the only thing that exposed it, and that is how it got reported. The root is now
-  asserted (expects a 3xx that lands on 200), and the retry that absorbs Cloudflare's edge lag now covers
-  **non-200 responses**, not only hash mismatches — propagation presents as a **404** for up to ~60s, and
-  the old retry only fired when the code was already 200, so it reported the landing page DOWN and told
-  the reader to redeploy a site that was fine. Both new checks were proven to fail before being trusted.
-- The backtick-in-a-CSS-comment trap bit **twice more** while writing this change's own comments. `node
-  --check` caught both, which is precisely why that step is in the rules.
-- **Outstanding: Harkirat reviewed the live site and found bugs I have not seen**, and went to sleep
-  before listing them. Filed as `[P1 · M]` at the top of `docs/db-deferred-list.md`'s 🐞 section, with an
-  explicit warning that the list there is *mine*, not his, and that the next session's first action is to
-  ask him what he actually saw.
+- **`contributing` and `contributors` were "basic / lazy designed"** — prose in a rounded box, which is the right treatment for a statute and the wrong one for an invitation. Each now gets structure derived from what its content actually **is**, via a new composition layer (`warmCompose()`):
+  - **contributing is a path**, so its sections hang off a **spine** — with no numerals, because the `01/02/03` series belongs to the legal set and means *"this binds you."* Inside it: the four ways to contribute are **parallel**, not sequential, so they became option **tiles**; the CLA is genuinely two-sided, so it became a **ledger** marked by direction (what leaves your hands vs what stays); and the one line a contributor must physically take away became a **consent slip** with a tear edge and a copy button.
+  - **contributors is a wall.** No spine — it has three sections and the truth of the page is *one filled plate beside empty space.* The "no external contributions yet" line stopped being an italic apology and became the **empty plate itself**: the invitation IS the object.
+- **New GATE 5, `warmStructAudit()`.** The treatments key off source heading text, so renaming a heading in `CONTRIBUTING.md` would silently revert a section to plain prose — and **none of the existing four gates can see it**: every word is still present (gate 1), no link changes (gate 2), no aligned columns (gate 3), no cross-references (gate 4). Different property, so a different gate. `WARM_STRUCT` is **declared** rather than sniffed from the source, so the check cannot draw its expectations from the thing it is testing.
+- **`verify()` was reporting three false misses, and the mechanism was an undecoded HTML entity becoming a WORD.** `&middot;` reduced to the literal token `"middot"` and `&#9825;` to `"9825"`, which then sat *inside* an otherwise-intact source run and broke it — 12 entities across 7 pages. It now decodes numeric, hex and named entities. This cannot hide real content loss, which is the only reason it is safe: an entity resolves to exactly one character, so decoding can only ever *remove* a fabricated word, never supply a source word the page does not render. **Re-proved the gate can still fail** after the change (deleting a real paragraph took contributors from 1 → 5 missing runs).
+- **Two of the three misses were real, and both were mine.** The ghost plate's `Your name` label was invented text sitting between a heading and the source's own sentence — it moved to CSS, the same test the ledger's direction marks had to pass. And the lifted sign-off was rendering **below the footer nav**, so five link labels sat inside a source run; a reader met the nav mid-sentence too. A letter signs off before the site's footer, not after it.
+- **The desktop rail was NOT fixed, and had been documented as fixed.** `align-self:start` was recorded as "what keeps this out of the footer." It does not: a sticky element is bounded by its **containing block**, not by its own height, so shrinking the box changed nothing. Measured at 1440×900, scrolled to the bottom of Terms, the rail ran **236px past the document and 126px into the footer.** The cause was that `.page` was a grid holding **three** children — rail, doc **and footer** — so the footer lived inside the very block that bounded the rail. Fixed structurally: `.page` is now only the centred wrapper, a new `.cols` carries the two-column grid, and the footer sits in `.page` outside `.cols`. The naive version of that fix (footer as a `<body>` child) was tried first and rejected because it stretched the footer to the full 1440px viewport instead of the 1156px document column. Both halves were verified in a real browser at the scrolled-to-bottom position, which is the only place the bug is visible at all.
+- **`dior legal check` was blind to the one URL a human types.** It checked every uploaded file and never checked `/`. That is not hypothetical: two Cloudflare deployments published **zero files**, production pointed at the newest, and every `/legal/*` path still answered 200 **from cache** (`age: 6525`) — so the byte comparison passed on stale bytes while the site was down. The bare domain, uncacheable because it is a redirect, was the only thing that exposed it, and that is how it got reported. The root is now asserted (expects a 3xx that lands on 200), and the retry that absorbs Cloudflare's edge lag now covers **non-200 responses**, not only hash mismatches — propagation presents as a **404** for up to ~60s, and the old retry only fired when the code was already 200, so it reported the landing page DOWN and told the reader to redeploy a site that was fine. Both new checks were proven to fail before being trusted.
+- The backtick-in-a-CSS-comment trap bit **twice more** while writing this change's own comments. `node --check` caught both, which is precisely why that step is in the rules.
+- **Outstanding: Harkirat reviewed the live site and found bugs I have not seen**, and went to sleep before listing them. Filed as `[P1 · M]` at the top of `docs/db-deferred-list.md`'s 🐞 section, with an explicit warning that the list there is *mine*, not his, and that the next session's first action is to ask him what he actually saw.
 
 ---
 
 ## v2.43.2 — 2026-07-29 19:20 EDT (#57 · `ff74e8e`) — The rule note the merge gate asked for, and the lessons behind it
 **Docs only — no behaviour change.** Closes the chore-checklist gap the `gh pr merge` hook flagged on #56.
 
-- **`scripts/` changed in v2.43.1 with no accompanying rules note**, which the release-doc hook caught at
-  merge time. It could not be folded into #56's squash after the fact (that would need a force-push, which
-  this project never does), so it ships here instead — additively, one release later, the same way a
-  changelog hash gets backfilled.
-- **`.claude/rules/scripts-and-migrations.md` now records the two things a future session would otherwise
-  rediscover the expensive way.** (1) `buildLegalPages.js` has **two independent gates and passing one
-  proves nothing about the other** — `verify()` covers content survival, `linkAudit()` covers link
-  resolution, and both documents reported "100% of source content present" while shipping seven dead
-  links. (2) `PUBLISHED_TARGETS` is the allowlist of what is actually deployed, with the standing warning
-  never to "fix" an inert reference by pointing it at GitHub, since the repo can go private at any time.
-- **Also recorded: the `vmstatus.sh` lost-`#` failure mode**, because `bash -n` cannot catch it. A comment
-  fragment with a missing `#` is valid syntax that simply isn't a comment, which puts it in the same class
-  as the bash-3.2 constructs already flagged in that file. It printed `you: command not found` above the
-  banner on every run and had been read past as noise more than once.
-- **Two memories added** — `feedback_complete_is_not_correct` (a verifier proving output is COMPLETE never
-  proves it is CORRECT) and `feedback_reply_with_the_followup_mark` (the notes-file conversation rule).
+- **`scripts/` changed in v2.43.1 with no accompanying rules note**, which the release-doc hook caught at merge time. It could not be folded into #56's squash after the fact (that would need a force-push, which this project never does), so it ships here instead — additively, one release later, the same way a changelog hash gets backfilled.
+- **`.claude/rules/scripts-and-migrations.md` now records the two things a future session would otherwise rediscover the expensive way.** (1) `buildLegalPages.js` has **two independent gates and passing one proves nothing about the other** — `verify()` covers content survival, `linkAudit()` covers link resolution, and both documents reported "100% of source content present" while shipping seven dead links. (2) `PUBLISHED_TARGETS` is the allowlist of what is actually deployed, with the standing warning never to "fix" an inert reference by pointing it at GitHub, since the repo can go private at any time.
+- **Also recorded: the `vmstatus.sh` lost-`#` failure mode**, because `bash -n` cannot catch it. A comment fragment with a missing `#` is valid syntax that simply isn't a comment, which puts it in the same class as the bash-3.2 constructs already flagged in that file. It printed `you: command not found` above the banner on every run and had been read past as noise more than once.
+- **Two memories added** — `feedback_complete_is_not_correct` (a verifier proving output is COMPLETE never proves it is CORRECT) and `feedback_reply_with_the_followup_mark` (the notes-file conversation rule).
 
 ---
 
 ## v2.43.1 — 2026-07-29 18:55 EDT (#56 · `4895432`) — Seven dead links inside the documents whose point is being checkable
 **Docs + tooling — no bot behaviour change.** Going live found things that only going live could find.
 
-- **The legal site is LIVE** at `https://diors-builds-legal.pages.dev`, on Cloudflare Pages. The
-  canonical URLs are **extensionless** — Pages 308-redirects the `.html` form — so the Discord Developer
-  Portal should carry `…/legal/terms` and `…/legal/privacy`, not the `.html` variants.
-- **`terms.html` and `privacy.html` shipped SEVEN dead internal links**, and both documents had reported
-  "100% of source content present" while doing it. The content verifier and link resolution fail on
-  genuinely different things, and only one of them was being checked. Broken citations in a document
-  whose entire value is that its citations can be followed is not a cosmetic defect.
-- **Root cause: the source Markdown cross-references repo files that are not published** — `CLAUDE.md`,
-  `ROADMAP.md`, `CONTRIBUTORS.md`, `models/UserPreference.js`, the rules files. The `.md` → `.html`
-  rewrite turned each into a link to nothing. Fixed with an explicit `PUBLISHED_TARGETS` allowlist: a
-  reference to something that is not deployed now renders as styled plain text instead of a 404. That is
-  the right answer rather than linking to GitHub, because the repo may be private at any time — the same
-  reason these documents carry no repo links at all.
-- **`LICENSE` and `NOTICE` are now published** (verbatim text, deliberately not run through the parser —
-  they are the operative instruments and a lossy transformation has no business between a reader and the
-  wording). `TERMS`/`PRIVACY` cite them, so they had to be reachable.
-- **`CONTRIBUTING.html` was built, then deliberately un-built.** Publishing it dragged in four more dead
-  links to unpublished repo docs, and it is a document about working on a repo the reader may not be able
-  to see. Reverted in the same session it was added; the allowlist is what handles references to it now.
-- **A `linkAudit()` stage is now part of the build and fails it.** Every internal href in every built page
-  is resolved against the deploy tree. This is the check that found the seven, on output that looked
-  perfect — so it is permanent rather than a thing someone ran once by hand.
-- **`_redirects` maps `/` → `/legal/`.** The site root 404'd on the first deploy because the landing page
-  lives in `legal/`. A redirect rather than a second copy of the index, since two landing pages drift.
-- **The nav's active tab is now derived from the page** instead of inferred by testing the title against
-  the string `Terms`, which silently labelled any third page as Privacy.
-- **`scripts/vmstatus.sh` line 180 had lost its `#`**, so a fragment of its own comment was executed as a
-  command and printed `you: command not found` on every single run, from the Mac and on the VM. `bash -n`
-  cannot catch this — it is valid syntax, just not a comment.
-- **Notes-file workflow, two corrections from Harkirat.** Mark-dates now carry a time
-  (`(YYYY-MM-DD HH:MM TZ)`); the legend had required this since 2026-07-24 18:07 EDT and I had written a
-  bare date, then wrongly defended it as deliberate. And **acting on one of his follow-up marks now
-  requires replying with one** — a comment carries the date it was written, so a past-dated comment
-  cannot tell him whether it is a fresh reply or nine days old, which is exactly what happened on the
-  MarkEdit item. Both are now written into the file's own legend.
-- **`dior legal` shipped in the CLI** (separate repo): `deploy` / `check` / `build` / `open`. `deploy`
-  always rebuilds and refuses to upload a build that fails verification; `check` compares live SHA-256
-  against the local build, because a 200 proves something is there, not that it is current.
+- **The legal site is LIVE** at `https://diors-builds-legal.pages.dev`, on Cloudflare Pages. The canonical URLs are **extensionless** — Pages 308-redirects the `.html` form — so the Discord Developer Portal should carry `…/legal/terms` and `…/legal/privacy`, not the `.html` variants.
+- **`terms.html` and `privacy.html` shipped SEVEN dead internal links**, and both documents had reported "100% of source content present" while doing it. The content verifier and link resolution fail on genuinely different things, and only one of them was being checked. Broken citations in a document whose entire value is that its citations can be followed is not a cosmetic defect.
+- **Root cause: the source Markdown cross-references repo files that are not published** — `CLAUDE.md`, `ROADMAP.md`, `CONTRIBUTORS.md`, `models/UserPreference.js`, the rules files. The `.md` → `.html` rewrite turned each into a link to nothing. Fixed with an explicit `PUBLISHED_TARGETS` allowlist: a reference to something that is not deployed now renders as styled plain text instead of a 404. That is the right answer rather than linking to GitHub, because the repo may be private at any time — the same reason these documents carry no repo links at all.
+- **`LICENSE` and `NOTICE` are now published** (verbatim text, deliberately not run through the parser — they are the operative instruments and a lossy transformation has no business between a reader and the wording). `TERMS`/`PRIVACY` cite them, so they had to be reachable.
+- **`CONTRIBUTING.html` was built, then deliberately un-built.** Publishing it dragged in four more dead links to unpublished repo docs, and it is a document about working on a repo the reader may not be able to see. Reverted in the same session it was added; the allowlist is what handles references to it now.
+- **A `linkAudit()` stage is now part of the build and fails it.** Every internal href in every built page is resolved against the deploy tree. This is the check that found the seven, on output that looked perfect — so it is permanent rather than a thing someone ran once by hand.
+- **`_redirects` maps `/` → `/legal/`.** The site root 404'd on the first deploy because the landing page lives in `legal/`. A redirect rather than a second copy of the index, since two landing pages drift.
+- **The nav's active tab is now derived from the page** instead of inferred by testing the title against the string `Terms`, which silently labelled any third page as Privacy.
+- **`scripts/vmstatus.sh` line 180 had lost its `#`**, so a fragment of its own comment was executed as a command and printed `you: command not found` on every single run, from the Mac and on the VM. `bash -n` cannot catch this — it is valid syntax, just not a comment.
+- **Notes-file workflow, two corrections from Harkirat.** Mark-dates now carry a time (`(YYYY-MM-DD HH:MM TZ)`); the legend had required this since 2026-07-24 18:07 EDT and I had written a bare date, then wrongly defended it as deliberate. And **acting on one of his follow-up marks now requires replying with one** — a comment carries the date it was written, so a past-dated comment cannot tell him whether it is a fresh reply or nine days old, which is exactly what happened on the MarkEdit item. Both are now written into the file's own legend.
+- **`dior legal` shipped in the CLI** (separate repo): `deploy` / `check` / `build` / `open`. `deploy` always rebuilds and refuses to upload a build that fails verification; `check` compares live SHA-256 against the local build, because a 200 proves something is there, not that it is current.
 
 ---
 
 ## v2.43.0 — 2026-07-29 18:24 EDT (#55 · `3dc6f4b`) — A licence that said the opposite of what it meant
 **Docs + tooling — no bot behaviour change.** The project's legal footing, and the first time it has had one.
 
-- **`package.json` declared `"license": "ISC"` on a public repo with no LICENSE file.** ISC is
-  permissive: it granted redistribution, modification, commercial use, and the right to run a competing
-  instance — precisely the four things Harkirat does not want to give. The declared licence had been
-  saying the opposite of his intent for the entire life of the repo, and anyone who relied on it had a
-  defensible claim. Replaced with the custom **Dior's Builds Source-Available License v1.0**
-  (`LicenseRef-Diors-Builds-Source-Available-1.0`), plus `"private": true` to block an accidental
-  `npm publish`.
-- **The licence permits reading, auditing, good-faith security research, and a local single-user run;
-  it prohibits deployment where anyone else can reach it, redistribution, commercial use, competing
-  services, Curated-Data extraction, and AI/ML training.** The `Deploy` definition turns on a single
-  bright line — whether *any person other than You* can invoke it or receive its output — rather than on
-  server counts or hosting arrangements that would age badly.
-- **§4.2 carves out GitHub forking instead of banning it.** GitHub ToS §D.5 grants every user the right
-  to fork a public repo and no licence can revoke it while the repo stays public. A prohibition would
-  have been wrong on its face and would have undermined the document's credibility everywhere else, so
-  the carve-out states the right and confines it to reproduction *on GitHub* — conveying no
-  derivative-work or off-GitHub redistribution right. Same instinct in **§4.5**, which says plainly that
-  copyright protects expression and not functionality: someone may build a competing CODM bot, just not
-  from this code.
-- **§8A asserts human authorship, and it is load-bearing rather than decorative.** The licence has force
-  only if copyright subsists, and purely AI-generated material is not copyrightable (US Copyright
-  Office; cert denied 2026-03-02). §8A records the human creative control the claim rests on and
-  discloses the AI assistance openly instead of leaving it as a latent weakness.
-- **`NOTICE`, incorporated by reference (§7.1).** Per-dependency attributions; the Apache-2.0 §4
-  obligations that attach to discord.js and xlsx **regardless of what this licence permits**, because
-  that duty runs upstream; and an emoji.gg attribution to `tofooo` carrying a standing constraint — the
-  Basic License is conditional on users never being charged, so a paid tier would require replacing
-  those emoji first. Verified 127 packages, **zero copyleft**: no reciprocal licence that could force
-  source publication on terms incompatible with the source-available model.
-- **`docs/legal/TERMS.md` + `docs/legal/PRIVACY.md` (v1.0), Ontario law, CAD $20 liability cap.**
-  Class-action waiver with a consumer carve-out, and **deliberately no arbitration clause** — *Uber
-  Technologies Inc. v. Heller* (2020 SCC) makes an unconscionable one unenforceable, and a clause that
-  collapses in court is worse than none at all.
-- **The privacy policy states verified facts, not inferences.** MongoDB Atlas resolves to **Azure Canada
-  Central**, so user data stays in Canada; Cloudinary is US-hosted and holds no personal data; the bot
-  carries `GatewayIntentBits.Guilds` only and therefore cannot read message content; the AI call is
-  **Vertex AI**, not the consumer Gemini API, so Google does not train on it. **Google Cloud Logging was
-  an entirely undisclosed data flow** until this audit found it — now documented with its 30-day
-  retention. Appendix C records how every claim was checked.
-- **An earlier draft of the policy was false and was caught before publication.** It told users they
-  could self-delete by resetting preferences; `commands/settings.js` has no reset. There is **no**
-  automated deletion path anywhere in the codebase. §7.1 now discloses that absence rather than papering
-  over it, and the missing path is filed as `[P1 · M]` in `docs/db-deferred-list.md`.
-- **The documents are visibility-neutral on purpose.** The repo may flip public or private without
-  notice, so no document links to it and email is the sole canonical contact. `scripts/buildLegalPages.js`
-  renders them to `public/legal/*.html` for Cloudflare Pages, which keeps the Discord-required URLs live
-  either way.
-- **The page build renders every `§N` reference as a working anchor and verifies its own output**,
-  asserting that every multi-word run of source survived rendering (both documents: 100%). Two crashes
-  found and fixed in the process: code spans were stashed behind a space-delimited ` N ` sentinel that
-  the restore pass then matched against any bare number in prose ("30 days" → out-of-range index →
-  throw), and a section *count* was passed through the HTML escaper. Two earlier verifier alarms turned
-  out to be verifier bugs rather than lost content — investigated instead of assumed, which is the only
-  reason the real ones were distinguishable.
-- **`scripts/docs-audit.mjs` caught three gaps in this very change**, which is the point of it: `public/`
-  was tracked but described nowhere, `buildLegalPages.js` was in no pointer map, and the licensing
-  memory had no `MEMORY.md` index line. All three fixed here. The two remaining
-  `utils/emojiMap.dev.json` warnings are correct-by-design and were re-confirmed as the genuine optional
-  dev overlay read by `utils/emojiMap.js`.
+- **`package.json` declared `"license": "ISC"` on a public repo with no LICENSE file.** ISC is permissive: it granted redistribution, modification, commercial use, and the right to run a competing instance — precisely the four things Harkirat does not want to give. The declared licence had been saying the opposite of his intent for the entire life of the repo, and anyone who relied on it had a defensible claim. Replaced with the custom **Dior's Builds Source-Available License v1.0** (`LicenseRef-Diors-Builds-Source-Available-1.0`), plus `"private": true` to block an accidental `npm publish`.
+- **The licence permits reading, auditing, good-faith security research, and a local single-user run; it prohibits deployment where anyone else can reach it, redistribution, commercial use, competing services, Curated-Data extraction, and AI/ML training.** The `Deploy` definition turns on a single bright line — whether *any person other than You* can invoke it or receive its output — rather than on server counts or hosting arrangements that would age badly.
+- **§4.2 carves out GitHub forking instead of banning it.** GitHub ToS §D.5 grants every user the right to fork a public repo and no licence can revoke it while the repo stays public. A prohibition would have been wrong on its face and would have undermined the document's credibility everywhere else, so the carve-out states the right and confines it to reproduction *on GitHub* — conveying no derivative-work or off-GitHub redistribution right. Same instinct in **§4.5**, which says plainly that copyright protects expression and not functionality: someone may build a competing CODM bot, just not from this code.
+- **§8A asserts human authorship, and it is load-bearing rather than decorative.** The licence has force only if copyright subsists, and purely AI-generated material is not copyrightable (US Copyright Office; cert denied 2026-03-02). §8A records the human creative control the claim rests on and discloses the AI assistance openly instead of leaving it as a latent weakness.
+- **`NOTICE`, incorporated by reference (§7.1).** Per-dependency attributions; the Apache-2.0 §4 obligations that attach to discord.js and xlsx **regardless of what this licence permits**, because that duty runs upstream; and an emoji.gg attribution to `tofooo` carrying a standing constraint — the Basic License is conditional on users never being charged, so a paid tier would require replacing those emoji first. Verified 127 packages, **zero copyleft**: no reciprocal licence that could force source publication on terms incompatible with the source-available model.
+- **`docs/legal/TERMS.md` + `docs/legal/PRIVACY.md` (v1.0), Ontario law, CAD $20 liability cap.** Class-action waiver with a consumer carve-out, and **deliberately no arbitration clause** — *Uber Technologies Inc. v. Heller* (2020 SCC) makes an unconscionable one unenforceable, and a clause that collapses in court is worse than none at all.
+- **The privacy policy states verified facts, not inferences.** MongoDB Atlas resolves to **Azure Canada Central**, so user data stays in Canada; Cloudinary is US-hosted and holds no personal data; the bot carries `GatewayIntentBits.Guilds` only and therefore cannot read message content; the AI call is **Vertex AI**, not the consumer Gemini API, so Google does not train on it. **Google Cloud Logging was an entirely undisclosed data flow** until this audit found it — now documented with its 30-day retention. Appendix C records how every claim was checked.
+- **An earlier draft of the policy was false and was caught before publication.** It told users they could self-delete by resetting preferences; `commands/settings.js` has no reset. There is **no** automated deletion path anywhere in the codebase. §7.1 now discloses that absence rather than papering over it, and the missing path is filed as `[P1 · M]` in `docs/db-deferred-list.md`.
+- **The documents are visibility-neutral on purpose.** The repo may flip public or private without notice, so no document links to it and email is the sole canonical contact. `scripts/buildLegalPages.js` renders them to `public/legal/*.html` for Cloudflare Pages, which keeps the Discord-required URLs live either way.
+- **The page build renders every `§N` reference as a working anchor and verifies its own output**, asserting that every multi-word run of source survived rendering (both documents: 100%). Two crashes found and fixed in the process: code spans were stashed behind a space-delimited ` N ` sentinel that the restore pass then matched against any bare number in prose ("30 days" → out-of-range index → throw), and a section *count* was passed through the HTML escaper. Two earlier verifier alarms turned out to be verifier bugs rather than lost content — investigated instead of assumed, which is the only reason the real ones were distinguishable.
+- **`scripts/docs-audit.mjs` caught three gaps in this very change**, which is the point of it: `public/` was tracked but described nowhere, `buildLegalPages.js` was in no pointer map, and the licensing memory had no `MEMORY.md` index line. All three fixed here. The two remaining `utils/emojiMap.dev.json` warnings are correct-by-design and were re-confirmed as the genuine optional dev overlay read by `utils/emojiMap.js`.
 
 ---
 
 ## v2.42.2 — 2026-07-29 12:30 EDT (#54 · `a302aa8`) — Nineteen entries the table of contents never lied about
 **Docs + tooling — no bot behaviour change.**
-- **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed
-  them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated
-  entries" — even though the table of contents already listed all 19 under Part A, in the right order.
-  The existing `devlog-toc` check couldn't see this: it compares the TOC against every dated heading in
-  the file regardless of which Part physically holds it, so a misplaced entry passed as long as the TOC
-  ordering agreed. Re-derived the true boundary from scratch after an earlier attempt (in a prior
-  session) mistook a dated entry's own `### Lessons` subsection for a real Part B section header and
-  put the cut nine entries too late. The block move is contiguous and needed no resequencing — the
-  chronology already lined up exactly at the seam.
-- **Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs`**, closing the gap `devlog-toc` had: no
-  dated `## 20YY-` heading may ever appear after the `# Part B` marker. Uses the shared `anchorMissing()`
-  helper so a renamed marker fails loudly instead of silently no-op'ing, same as `devlog-toc`'s own
-  anchors. `scripts/docs-audit.test.mjs` gained the required broken/valid pair plus an anchor-missing
-  case (41 → 43 assertions); the baseline fixture's `docs/DEVLOG.md` needed a real `# Part B` heading
-  added so the new check wasn't reporting a vacuous pass against it.
-- **Closed out the three standing `docs-audit` warnings from v2.42.1.** `root-docs`'s VACUOUS PASS is
-  confirmed still correct — it self-corrects once `LICENSE`/`NOTICE` land on `main` — and stays tracked
-  in `docs/db-deferred-list.md`. The `xref` warning for `memory-migration-handoff.md` is confirmed real
-  but expected: that file lives in gitignored `local/` (per `docs/db-deferred-list.md`, "now-complete"),
-  which a fresh working tree doesn't carry — the same gitignored-file caveat the audit already documents
-  for itself, not a stale pointer. `memory-index`'s warning about `project_licensing_and_legal_docs.md`
-  is left for Harkirat — it's his in-flight legal/licensing work, not something this session should
-  resolve on his behalf.
+- **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated entries" — even though the table of contents already listed all 19 under Part A, in the right order. The existing `devlog-toc` check couldn't see this: it compares the TOC against every dated heading in the file regardless of which Part physically holds it, so a misplaced entry passed as long as the TOC ordering agreed. Re-derived the true boundary from scratch after an earlier attempt (in a prior session) mistook a dated entry's own `### Lessons` subsection for a real Part B section header and put the cut nine entries too late. The block move is contiguous and needed no resequencing — the chronology already lined up exactly at the seam.
+- **Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs`**, closing the gap `devlog-toc` had: no dated `## 20YY-` heading may ever appear after the `# Part B` marker. Uses the shared `anchorMissing()` helper so a renamed marker fails loudly instead of silently no-op'ing, same as `devlog-toc`'s own anchors. `scripts/docs-audit.test.mjs` gained the required broken/valid pair plus an anchor-missing case (41 → 43 assertions); the baseline fixture's `docs/DEVLOG.md` needed a real `# Part B` heading added so the new check wasn't reporting a vacuous pass against it.
+- **Closed out the three standing `docs-audit` warnings from v2.42.1.** `root-docs`'s VACUOUS PASS is confirmed still correct — it self-corrects once `LICENSE`/`NOTICE` land on `main` — and stays tracked in `docs/db-deferred-list.md`. The `xref` warning for `memory-migration-handoff.md` is confirmed real but expected: that file lives in gitignored `local/` (per `docs/db-deferred-list.md`, "now-complete"), which a fresh working tree doesn't carry — the same gitignored-file caveat the audit already documents for itself, not a stale pointer. `memory-index`'s warning about `project_licensing_and_legal_docs.md` is left for Harkirat — it's his in-flight legal/licensing work, not something this session should resolve on his behalf.
 
 ---
 
 ## v2.42.1 — 2026-07-29 11:44 EDT (#53 · `e2d74ac`) — A local ref is not a remote state
 **Docs only — no code change, no bot behaviour change.**
-- **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been
-  left behind after the v2.42.0 merge because the working tree was on another session's branch and
-  switching under it is the v2.41.4 incident. `git fetch origin main:main v3-pre-release:v3-pre-release`
-  writes the refs directly and git *refuses* the refspec if the branch is checked out, so it cannot
-  disturb a working tree. **This is now the merge close-out step**, recorded in `CLAUDE.md` and
-  [[project_git_workflow]].
-- **Separated "stale local pointer" from "stale remote state"** in how branch sync gets reported. A
-  `behind` marker in `git branch -vv` is a fact about the local clone only. The question Harkirat
-  actually asked is answered by `git rev-list --left-right --count origin/main...origin/v3-pre-release`,
-  which returned `0 0` — `origin/v3-pre-release` identical to `origin/main` at `fb43874`, the sync
-  workflow having run within seconds of the merge. The remote was never out of sync.
-- **Filed the GitHub Actions Node 20 deprecation as its own session** in `docs/db-deferred-list.md`
-  (`[P2 · XS]`). `actions/checkout@v4` and `actions/setup-node@v4` declare `using: node20` in their own
-  `action.yml`; GitHub is retiring that runtime and force-running them on Node 24 as a shim. Three call
-  sites across `ci.yml` and `sync-v3-pre-release.yml` need `@v5`. **Not our Node version** — the VM is on
-  24 and `ci.yml` pins `node-version` separately. The trap is written down with it: `checkout@v5` keeps
-  the depth-1 default, and a depth-1 clone costs the audit 42 false hash-chain errors, so `fetch-depth: 0`
-  must survive the bump. `ci-wiring` already asserts it.
+- **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been left behind after the v2.42.0 merge because the working tree was on another session's branch and switching under it is the v2.41.4 incident. `git fetch origin main:main v3-pre-release:v3-pre-release` writes the refs directly and git *refuses* the refspec if the branch is checked out, so it cannot disturb a working tree. **This is now the merge close-out step**, recorded in `CLAUDE.md` and [[project_git_workflow]].
+- **Separated "stale local pointer" from "stale remote state"** in how branch sync gets reported. A `behind` marker in `git branch -vv` is a fact about the local clone only. The question Harkirat actually asked is answered by `git rev-list --left-right --count origin/main...origin/v3-pre-release`, which returned `0 0` — `origin/v3-pre-release` identical to `origin/main` at `fb43874`, the sync workflow having run within seconds of the merge. The remote was never out of sync.
+- **Filed the GitHub Actions Node 20 deprecation as its own session** in `docs/db-deferred-list.md` (`[P2 · XS]`). `actions/checkout@v4` and `actions/setup-node@v4` declare `using: node20` in their own `action.yml`; GitHub is retiring that runtime and force-running them on Node 24 as a shim. Three call sites across `ci.yml` and `sync-v3-pre-release.yml` need `@v5`. **Not our Node version** — the VM is on 24 and `ci.yml` pins `node-version` separately. The trap is written down with it: `checkout@v5` keeps the depth-1 default, and a depth-1 clone costs the audit 42 false hash-chain errors, so `fetch-depth: 0` must survive the bump. `ci-wiring` already asserts it.
 
 ---
 
 ## v2.42.0 — 2026-07-28 23:10 EDT (#52 · `fb43874`) — "Not checkable" was never true
 **Tooling + docs — no bot behaviour change.**
-- **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook.
-  Run `node scripts/docs-audit.mjs --list` for the roster (deliberately not counted here). Two
-  severities: `ERROR` fails, `WARN` reports. **Wired into CI**, which is the point — a Claude Code
-  hook fires only inside a Claude session on one Mac, so any PR opened another way was unchecked.
-- **`scripts/docs-audit.test.mjs`** — proves every case can actually **fail**, plus the inverse
-  (valid input stays silent) and a baseline meta-test asserting a clean fixture reports *nothing*.
-- **`.claude/hooks/records-close-check.sh`** — gates chore items **6 (memory)** and **7 (notes file)**
-  at `gh pr create`. `devlog-toc-check.sh` now delegates to the audit, so there is one implementation.
-- **Corrected a false claim in `docs/README.md` and in the RELEASE DOC CHECK hook's own message**,
-  which both said items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the
-  notes file's open items all along. The defect was **timing**, not absence: the check ran at
-  *discovery* (session start, nothing filed yet) and never at *closure* — the same shape as the DEVLOG
-  failure measured at 8/22.
+- **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook. Run `node scripts/docs-audit.mjs --list` for the roster (deliberately not counted here). Two severities: `ERROR` fails, `WARN` reports. **Wired into CI**, which is the point — a Claude Code hook fires only inside a Claude session on one Mac, so any PR opened another way was unchecked.
+- **`scripts/docs-audit.test.mjs`** — proves every case can actually **fail**, plus the inverse (valid input stays silent) and a baseline meta-test asserting a clean fixture reports *nothing*.
+- **`.claude/hooks/records-close-check.sh`** — gates chore items **6 (memory)** and **7 (notes file)** at `gh pr create`. `devlog-toc-check.sh` now delegates to the audit, so there is one implementation.
+- **Corrected a false claim in `docs/README.md` and in the RELEASE DOC CHECK hook's own message**, which both said items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the notes file's open items all along. The defect was **timing**, not absence: the check ran at *discovery* (session start, nothing filed yet) and never at *closure* — the same shape as the DEVLOG failure measured at 8/22.
 
-**The second pass — Harkirat called the first one rushed, and it was.** Everything below was found by
-re-auditing work already declared done:
-- **Range headings in `CHANGELOG-SUMMARY.md` are RETIRED**, and the first pass had taught the checker
-  to *accept* them — entrenching a convention Harkirat had already dropped. Verified: the 7 surviving
-  ranges are all v2.18.3-and-older; every release from v2.19.0 has its own heading. Now legacy-only,
-  and `docs/README.md` (which still documented ranges as current practice, in two places) is fixed.
-- **`notes-sweep` only matched `ℋ`.** The confirmation mark is switchable in MarkEdit (`✴︎ ✦ ◆ ℋ`),
-  so an item confirmed with any other symbol was invisible and would have sat unswept forever.
-- **A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker or the
-  notes file's `## Questions` heading made both print **"passed"** while doing nothing. Two guards
-  written to stop silently-dead guards were themselves silently dead. They now report loudly, and the
-  notes case also warns that the SessionStart hook scanning the same anchors is broken too.
-- **`--only <typo>` printed "passed" and exited 0** — one wrong character in a hook registration
-  silently disabled that gate. Now exits 2. `hook-integrity` additionally verifies every registered
-  hook script exists, is executable, and cites a real check id.
-- **Two bugs from the space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead
-  (`split(" ")[0]` → `/Applications/Claude`) and `hook-integrity`'s regex stopped at the space,
-  working only by accident. Neither could surface in a space-free tmpdir, so **the test fixtures now
-  deliberately contain a space** — a fixture that doesn't reproduce production's hazards certifies the
-  wrong thing.
-- **New checks:** `records-present` · `secrets-hygiene` (the `.env`-stays-ignored invariant was
-  prose-only until now, so nothing would have noticed it being undone) · `ci-wiring` (the audit
-  guards its own CI wiring, including `fetch-depth: 0` and the `v3-pre-release` trigger) ·
-  `rule-globs` (a `paths:` glob matching nothing means that rule never loads again) ·
-  `memory-index` · `nested-worktree` · `tag-coverage` · `version-sync`.
-- **v3 pre-release compatibility**, verified by test: `Pre-Release v3.1.0` headings with a
-  `3.1.0-pre` `package.json` must not fail CI on the v3 branch.
-- **`archive-conservation` now traces removed items into the archive by content**, not just "did the
-  archive grow" — removing ten items and adding one line used to pass.
-- **Fixed a real stale path the audit had been masking:** `CLAUDE.md` and the notes file both pointed
-  at `local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `local/` ignore
-  rule hid it, so gitignored-and-missing paths now WARN instead of being skipped.
-- Removed the rotting "10 checks" count from three living docs per
-  `feedback_no_duplicated_state_in_prose` — it was wrong within the hour.
+**The second pass — Harkirat called the first one rushed, and it was.** Everything below was found by re-auditing work already declared done:
+- **Range headings in `CHANGELOG-SUMMARY.md` are RETIRED**, and the first pass had taught the checker to *accept* them — entrenching a convention Harkirat had already dropped. Verified: the 7 surviving ranges are all v2.18.3-and-older; every release from v2.19.0 has its own heading. Now legacy-only, and `docs/README.md` (which still documented ranges as current practice, in two places) is fixed.
+- **`notes-sweep` only matched `ℋ`.** The confirmation mark is switchable in MarkEdit (`✴︎ ✦ ◆ ℋ`), so an item confirmed with any other symbol was invisible and would have sat unswept forever.
+- **A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker or the notes file's `## Questions` heading made both print **"passed"** while doing nothing. Two guards written to stop silently-dead guards were themselves silently dead. They now report loudly, and the notes case also warns that the SessionStart hook scanning the same anchors is broken too.
+- **`--only <typo>` printed "passed" and exited 0** — one wrong character in a hook registration silently disabled that gate. Now exits 2. `hook-integrity` additionally verifies every registered hook script exists, is executable, and cites a real check id.
+- **Two bugs from the space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead (`split(" ")[0]` → `/Applications/Claude`) and `hook-integrity`'s regex stopped at the space, working only by accident. Neither could surface in a space-free tmpdir, so **the test fixtures now deliberately contain a space** — a fixture that doesn't reproduce production's hazards certifies the wrong thing.
+- **New checks:** `records-present` · `secrets-hygiene` (the `.env`-stays-ignored invariant was prose-only until now, so nothing would have noticed it being undone) · `ci-wiring` (the audit guards its own CI wiring, including `fetch-depth: 0` and the `v3-pre-release` trigger) · `rule-globs` (a `paths:` glob matching nothing means that rule never loads again) · `memory-index` · `nested-worktree` · `tag-coverage` · `version-sync`.
+- **v3 pre-release compatibility**, verified by test: `Pre-Release v3.1.0` headings with a `3.1.0-pre` `package.json` must not fail CI on the v3 branch.
+- **`archive-conservation` now traces removed items into the archive by content**, not just "did the archive grow" — removing ten items and adding one line used to pass.
+- **Fixed a real stale path the audit had been masking:** `CLAUDE.md` and the notes file both pointed at `local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `local/` ignore rule hid it, so gitignored-and-missing paths now WARN instead of being skipped.
+- Removed the rotting "10 checks" count from three living docs per `feedback_no_duplicated_state_in_prose` — it was wrong within the hour.
 
-**The third pass — "how does it handle the future, and its growth and change?"** Harkirat asked what
-happens when files appear, move or vanish, how a future session tells a true pass from a false one,
-and what was still being sidelined. Almost every answer was "badly", and a **live parallel session**
-supplied the test case by adding `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` and an
-entire `public/` tree while this was being written — none of which the audit could see.
-- **Evidence accounting.** `19 checks passed` conflated *verified*, *skipped* and **vacuous** (ran,
-  matched zero things, passed having verified nothing). Every check now declares what it examined or
-  why it skipped; the summary reports all three; a 0-item pass WARNS unless an empty corpus is
-  legitimate. It caught `root-docs` passing vacuously on its very first run.
-- **Growth checks:** `root-docs` · `top-level-dirs` · `scripts-documented` · `nav-map-sync`
-  (rules ↔ CLAUDE.md ↔ README, including the hardcoded "13 files" count) · `records-present`.
-- **Outside the repo:** `external-anchors` (`meta-deferred-list.md` and the global Claude config are
-  referenced by name from four places and sat at absolute paths `xref` deliberately skipped) and
-  `memory-slug`, which catches the repo-moved-and-orphaned-the-memory-store failure that **already
-  happened once** and went unnoticed for two weeks.
-- **`binary-in-text` — the unfindable one.** `docs-audit.mjs` itself contained NUL bytes (a regex
-  placeholder), which made ripgrep classify it as **binary and refuse to show matches**. In a project
-  whose CLAUDE.md mandates `rg`, the enforcement script had made itself unsearchable — invisible to
-  the very tool you would look with. Fixed, and now impossible to reintroduce.
-- **Hooks silently audited the WRONG TREE.** All three `gh pr create` gates hardcoded
-  `/Applications/Claude Code/Diors-Builds`, so inside a git worktree — which the superpowers workflow
-  actively encourages — they reported confidently about a branch you were not on. Now
-  `CLAUDE_PROJECT_DIR`. Found only because a parallel session forced the use of a worktree.
-- **New `docs-audit-gate.sh`** runs the full audit at `gh pr create`; it caught a false positive in
-  `archive-conservation` immediately (a unified diff renders an in-place EDIT as a removal, so a
-  one-line fix demanded a graveyard entry — left in, it would have trained everyone to bypass the gate).
-- **Two fingerprint matchers were broken identically**, building the search window from filtered words
-  while searching an unfiltered haystack, so they could almost never match. Neither had ever been
-  exercised. Both fixed and both branches now tested.
-- **Recovered the gap the second pass created:** bare-filename `xref` is back, resolving against
-  tracked names + gitignored-but-present + both memory stores + external anchors, skipping historical
-  "renamed from" phrasing. Scoped to `.md` and WARN — because I measured the false-positive rate with
-  a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
-- The audit now states **what a pass does not mean** on every run, and reports when it is running in a
-  linked worktree (where gitignored files are legitimately absent).
-- **Both delegating gates now fail LOUD instead of silent.** Pointing `devlog-toc-check.sh` at the
-  audit removed a working standalone implementation and replaced it with a single point of failure —
-  delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired that gate and the
-  new PR gate with it. "The audit could not run" is now reported as its own finding, for both the
-  missing-file and crashed-with-invalid-JSON cases, and both were verified by actually removing and
-  then breaking the script. Not a duplicated fallback: two copies drift, and the drift is silent too.
-  The independent layer still stands beside it — the `gh pr merge` hooks, the `git tag` invariant gate,
-  the TIMESTAMP check and the `Stop` completion-claim hooks all run without this script.
-- **Filed what the audit does NOT cover** to `docs/db-deferred-list.md` rather than leaving it in a
-  chat message: content accuracy, the whitelist limitation, the unguarded web-UI PR path, and three
-  smaller ones — each with a direction, so the next session improves the program instead of
-  rediscovering its edges.
-- **Folded in the second-account co-author trailer convention** (`docs: adopt a real second-account
-  co-author trailer for commits`, authored 2026-07-28 18:31 EDT) that had been stranded on a branch in
-  a nested worktree. Every commit now carries `Co-Authored-By: diorswrld
-  <310361322+diorswrld@users.noreply.github.com>` alongside the Claude trailer — a genuinely separate
-  personal account, which is what actually earns Pair Extraordinaire. It shipped here rather than as
-  its own release because it carried no changelog entry or version bump of its own, and one merged PR
-  is one version.
+**The third pass — "how does it handle the future, and its growth and change?"** Harkirat asked what happens when files appear, move or vanish, how a future session tells a true pass from a false one, and what was still being sidelined. Almost every answer was "badly", and a **live parallel session** supplied the test case by adding `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` and an entire `public/` tree while this was being written — none of which the audit could see.
+- **Evidence accounting.** `19 checks passed` conflated *verified*, *skipped* and **vacuous** (ran, matched zero things, passed having verified nothing). Every check now declares what it examined or why it skipped; the summary reports all three; a 0-item pass WARNS unless an empty corpus is legitimate. It caught `root-docs` passing vacuously on its very first run.
+- **Growth checks:** `root-docs` · `top-level-dirs` · `scripts-documented` · `nav-map-sync` (rules ↔ CLAUDE.md ↔ README, including the hardcoded "13 files" count) · `records-present`.
+- **Outside the repo:** `external-anchors` (`meta-deferred-list.md` and the global Claude config are referenced by name from four places and sat at absolute paths `xref` deliberately skipped) and `memory-slug`, which catches the repo-moved-and-orphaned-the-memory-store failure that **already happened once** and went unnoticed for two weeks.
+- **`binary-in-text` — the unfindable one.** `docs-audit.mjs` itself contained NUL bytes (a regex placeholder), which made ripgrep classify it as **binary and refuse to show matches**. In a project whose CLAUDE.md mandates `rg`, the enforcement script had made itself unsearchable — invisible to the very tool you would look with. Fixed, and now impossible to reintroduce.
+- **Hooks silently audited the WRONG TREE.** All three `gh pr create` gates hardcoded `/Applications/Claude Code/Diors-Builds`, so inside a git worktree — which the superpowers workflow actively encourages — they reported confidently about a branch you were not on. Now `CLAUDE_PROJECT_DIR`. Found only because a parallel session forced the use of a worktree.
+- **New `docs-audit-gate.sh`** runs the full audit at `gh pr create`; it caught a false positive in `archive-conservation` immediately (a unified diff renders an in-place EDIT as a removal, so a one-line fix demanded a graveyard entry — left in, it would have trained everyone to bypass the gate).
+- **Two fingerprint matchers were broken identically**, building the search window from filtered words while searching an unfiltered haystack, so they could almost never match. Neither had ever been exercised. Both fixed and both branches now tested.
+- **Recovered the gap the second pass created:** bare-filename `xref` is back, resolving against tracked names + gitignored-but-present + both memory stores + external anchors, skipping historical "renamed from" phrasing. Scoped to `.md` and WARN — because I measured the false-positive rate with a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
+- The audit now states **what a pass does not mean** on every run, and reports when it is running in a linked worktree (where gitignored files are legitimately absent).
+- **Both delegating gates now fail LOUD instead of silent.** Pointing `devlog-toc-check.sh` at the audit removed a working standalone implementation and replaced it with a single point of failure — delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired that gate and the new PR gate with it. "The audit could not run" is now reported as its own finding, for both the missing-file and crashed-with-invalid-JSON cases, and both were verified by actually removing and then breaking the script. Not a duplicated fallback: two copies drift, and the drift is silent too. The independent layer still stands beside it — the `gh pr merge` hooks, the `git tag` invariant gate, the TIMESTAMP check and the `Stop` completion-claim hooks all run without this script.
+- **Filed what the audit does NOT cover** to `docs/db-deferred-list.md` rather than leaving it in a chat message: content accuracy, the whitelist limitation, the unguarded web-UI PR path, and three smaller ones — each with a direction, so the next session improves the program instead of rediscovering its edges.
+- **Folded in the second-account co-author trailer convention** (`docs: adopt a real second-account co-author trailer for commits`, authored 2026-07-28 18:31 EDT) that had been stranded on a branch in a nested worktree. Every commit now carries `Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>` alongside the Claude trailer — a genuinely separate personal account, which is what actually earns Pair Extraordinaire. It shipped here rather than as its own release because it carried no changelog entry or version bump of its own, and one merged PR is one version.
 
 ## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**
-- **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test
-  the new TOC hook, also discarded the **unstaged** modification in `.claude/settings.local.json` —
-  in-flight work belonging to a **different, paused session**. `reset --hard` does not distinguish
-  between the commits you meant to drop and the working-tree changes you never looked at.
-- **Recovered from the reflog**, because the scaffold commit had incidentally captured the file. Restored
-  to unstaged-modified, byte-identical. Three permission entries were involved.
-- **I had reported the opposite.** The prior summary said that file was *"deliberately never touched or
-  committed"* — true of my commits, false of my reset. I only caught it because a follow-up question made
-  `git status` read differently than expected. It was a claim about state that was never checked against
-  state, which is the same failure mode as the `~40s` figure two releases earlier.
-- The cross-session notice in `docs/db-deferred-list.md` now tells that session to **verify its own work**
-  rather than trust this account.
-- **Rules going in:** never `reset --hard` a range whose working tree you haven't inspected, and never put
-  test scaffolding in a commit range you intend to discard — use `git stash` or a scratch worktree.
+- **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test the new TOC hook, also discarded the **unstaged** modification in `.claude/settings.local.json` — in-flight work belonging to a **different, paused session**. `reset --hard` does not distinguish between the commits you meant to drop and the working-tree changes you never looked at.
+- **Recovered from the reflog**, because the scaffold commit had incidentally captured the file. Restored to unstaged-modified, byte-identical. Three permission entries were involved.
+- **I had reported the opposite.** The prior summary said that file was *"deliberately never touched or committed"* — true of my commits, false of my reset. I only caught it because a follow-up question made `git status` read differently than expected. It was a claim about state that was never checked against state, which is the same failure mode as the `~40s` figure two releases earlier.
+- The cross-session notice in `docs/db-deferred-list.md` now tells that session to **verify its own work** rather than trust this account.
+- **Rules going in:** never `reset --hard` a range whose working tree you haven't inspected, and never put test scaffolding in a commit range you intend to discard — use `git stash` or a scratch worktree.
 
 ## v2.41.3 — 2026-07-28 18:05 EDT (#50 · `f144e35`) — A number I invented, in three files, wrong by 4x
 **Docs + comments only — no behaviour change.**
-- While checking whether `dior-cli` still worked against the rewritten script, I measured the panel's
-  actual runtime for the first time: **~10s**. I had written **"~40s"** into three files — two comments in
-  `scripts/vmstatus.sh`, `.claude/rules/scripts-and-migrations.md`, and the design spec — and it was
-  load-bearing, because it justified two design decisions (parse args before the probe; skip Cloud Logging
-  on the VM). Both decisions remain right at 10s; the number supporting them was fabricated.
-- **This is [[feedback_no_duplicated_state_in_prose]] violated inside the same session that quotes it.**
-  A figure nobody measured, copied to three places, wrong by 4x within three hours. Replaced with either
-  a date-bound measurement ("measured ~10s on 2026-07-28 18:05 EDT") or no number at all where the
-  argument doesn't need one.
+- While checking whether `dior-cli` still worked against the rewritten script, I measured the panel's actual runtime for the first time: **~10s**. I had written **"~40s"** into three files — two comments in `scripts/vmstatus.sh`, `.claude/rules/scripts-and-migrations.md`, and the design spec — and it was load-bearing, because it justified two design decisions (parse args before the probe; skip Cloud Logging on the VM). Both decisions remain right at 10s; the number supporting them was fabricated.
+- **This is [[feedback_no_duplicated_state_in_prose]] violated inside the same session that quotes it.** A figure nobody measured, copied to three places, wrong by 4x within three hours. Replaced with either a date-bound measurement ("measured ~10s on 2026-07-28 18:05 EDT") or no number at all where the argument doesn't need one.
 - Corrected alongside the `dior-cli` fixes, since measuring it is what exposed it.
 
 ## v2.41.2 — 2026-07-28 17:35 EDT (#49 · `550517b`) — A table of contents you can't actually search
 **Docs + enforcement only — no bot runtime change, no deploy needed.**
-- **Harkirat's question:** *"Confused why DEVLOG uses 'later', 'afternoon', 'late afternoon' etc instead
-  of just utilizing the timestamp system already used throughout docs?"* There was no reason — those
-  qualifiers were copied from the existing TOC lines without asking whether the convention was any good.
-  It isn't.
-- **Three things were wrong with it.** It's *ambiguous* ("later" than what?). It *rots* — insert one entry
-  and every "later"/"later still" below it silently shifts meaning. And it defeats the TOC's own stated
-  purpose: the header says to jump by **searching the entry text**, which cannot work when the TOC text
-  doesn't match the heading text it's supposed to find.
-- **New rule: every dated Part A line is its body heading verbatim, `## ` stripped.** Unique, sortable,
-  and greppable straight to the heading. Older entries whose heading carries no clock time keep the bare
-  date — mirror what the heading says, never invent a time. 25 of the 50 headings genuinely have no time.
-- **`.claude/hooks/devlog-toc-check.sh`** enforces it at `gh pr create`, printing the exact
-  in-body-not-in-TOC / in-TOC-not-in-body diff. The old rule was a "**Keep in sync**" note, and it had
-  gone **15 entries behind** — the same asymmetry already measured for the DEVLOG itself (machine-checked
-  22/22 vs attention-dependent 8/22).
-- **Two near-misses caught while building it, both worth recording.** A `git reset --hard` cleaning up
-  test-scaffold commits also destroyed the real work in the same range. And the TOC holds a deliberate
-  non-dated pointer line (`*Earlier milestones*`) with no body heading — a naive regeneration deleted it,
-  and the first version of the checker would have flagged it as stale. Both now handled: only dated lines
-  are compared, non-dated lines are preserved, and the hook says so in its own message.
+- **Harkirat's question:** *"Confused why DEVLOG uses 'later', 'afternoon', 'late afternoon' etc instead of just utilizing the timestamp system already used throughout docs?"* There was no reason — those qualifiers were copied from the existing TOC lines without asking whether the convention was any good. It isn't.
+- **Three things were wrong with it.** It's *ambiguous* ("later" than what?). It *rots* — insert one entry and every "later"/"later still" below it silently shifts meaning. And it defeats the TOC's own stated purpose: the header says to jump by **searching the entry text**, which cannot work when the TOC text doesn't match the heading text it's supposed to find.
+- **New rule: every dated Part A line is its body heading verbatim, `## ` stripped.** Unique, sortable, and greppable straight to the heading. Older entries whose heading carries no clock time keep the bare date — mirror what the heading says, never invent a time. 25 of the 50 headings genuinely have no time.
+- **`.claude/hooks/devlog-toc-check.sh`** enforces it at `gh pr create`, printing the exact in-body-not-in-TOC / in-TOC-not-in-body diff. The old rule was a "**Keep in sync**" note, and it had gone **15 entries behind** — the same asymmetry already measured for the DEVLOG itself (machine-checked 22/22 vs attention-dependent 8/22).
+- **Two near-misses caught while building it, both worth recording.** A `git reset --hard` cleaning up test-scaffold commits also destroyed the real work in the same range. And the TOC holds a deliberate non-dated pointer line (`*Earlier milestones*`) with no body heading — a naive regeneration deleted it, and the first version of the checker would have flagged it as stale. Both now handled: only dated lines are compared, non-dated lines are preserved, and the hook says so in its own message.
 
 ## v2.41.1 — 2026-07-28 17:05 EDT (#48 · `9ef9215`) — Verifying forward but never backward
 **Enforcement + docs only — no bot runtime change, no deploy needed.**
-- **Harkirat's complaint, verbatim:** *"EVERY session I have to ask to double check and verify things,
-  and it ALWAYS catches errors. I'd rather you do this on your own."* He is right, and the answer was not
-  another prose rule.
-- **Root cause, named rather than apologised for:** verification runs **forward** (does the thing I built
-  work?) and never **backward** (what did building it make untrue?). v2.41.0 is the clean illustration —
-  the forward pass was genuinely thorough (script tested on the Mac, on the VM, in both log sources, with
-  malformed args, plus a bot boot-test, all passing) and the backward pass, once *asked for*, still found
-  a memory file documenting the **retired** deploy workflow, two `.claude/rules/` files describing the old
-  behaviour, a stale ROADMAP note, a stale SESSION-START note, and a real pre-existing bug in `deploy.sh`.
-  Every one of those files contained the string `vmstatus`; none had been opened.
-- **New `stale-reference-sweep` hook** (PreToolUse/Bash on `gh pr create`). Diffs the branch, takes the
-  basenames of changed `.js`/`.sh`/`.ya?ml` files, and searches `docs/`, `.claude/`, `CLAUDE.md`, and the
-  memory store for anything that names them but wasn't itself touched. Asks **before the PR exists**, so
-  fixes still land on the branch where they belong. Silent on a clean branch — the interruption is
-  proportional to the miss, which is what stops it becoming noise that gets dismissed unread.
-- **First hook SCRIPT file in the repo** — `.claude/hooks/stale-reference-sweep.sh`, tracked, referenced
-  from tracked `.claude/settings.json`. Every prior hook is an inline command string; right for
-  one-liners, wrong for this. Recoverability is unchanged: both halves are in version control.
-- **It found two more on its first dry-run**, neither of which anyone had checked: a stale `vmstatus`
-  description in the `project_deployment_migration_render_to_gcp` memory, and — the good one — an
-  *"optional extra"* proposed in the 2026-07-24 git-workflow spec (`have vmstatus.sh print VM at <sha> ·
-  main at vX.Y.Z`) that **v2.41.0 had silently implemented** as the DEPLOY block without anyone marking it
-  done. Both corrected.
-- **Cross-session notice filed** in `docs/db-deferred-list.md` for the parallel session that was paused
-  mid-work on hooks and the DEVLOG backfill: `settings.json` gained a hook, `.claude/hooks/` is new, and
-  the **DEVLOG table of contents was rebuilt** (it had drifted 15 entries behind), which is the likely
-  merge conflict for a backfill branch cut before today.
+- **Harkirat's complaint, verbatim:** *"EVERY session I have to ask to double check and verify things, and it ALWAYS catches errors. I'd rather you do this on your own."* He is right, and the answer was not another prose rule.
+- **Root cause, named rather than apologised for:** verification runs **forward** (does the thing I built work?) and never **backward** (what did building it make untrue?). v2.41.0 is the clean illustration — the forward pass was genuinely thorough (script tested on the Mac, on the VM, in both log sources, with malformed args, plus a bot boot-test, all passing) and the backward pass, once *asked for*, still found a memory file documenting the **retired** deploy workflow, two `.claude/rules/` files describing the old behaviour, a stale ROADMAP note, a stale SESSION-START note, and a real pre-existing bug in `deploy.sh`. Every one of those files contained the string `vmstatus`; none had been opened.
+- **New `stale-reference-sweep` hook** (PreToolUse/Bash on `gh pr create`). Diffs the branch, takes the basenames of changed `.js`/`.sh`/`.ya?ml` files, and searches `docs/`, `.claude/`, `CLAUDE.md`, and the memory store for anything that names them but wasn't itself touched. Asks **before the PR exists**, so fixes still land on the branch where they belong. Silent on a clean branch — the interruption is proportional to the miss, which is what stops it becoming noise that gets dismissed unread.
+- **First hook SCRIPT file in the repo** — `.claude/hooks/stale-reference-sweep.sh`, tracked, referenced from tracked `.claude/settings.json`. Every prior hook is an inline command string; right for one-liners, wrong for this. Recoverability is unchanged: both halves are in version control.
+- **It found two more on its first dry-run**, neither of which anyone had checked: a stale `vmstatus` description in the `project_deployment_migration_render_to_gcp` memory, and — the good one — an *"optional extra"* proposed in the 2026-07-24 git-workflow spec (`have vmstatus.sh print VM at <sha> · main at vX.Y.Z`) that **v2.41.0 had silently implemented** as the DEPLOY block without anyone marking it done. Both corrected.
+- **Cross-session notice filed** in `docs/db-deferred-list.md` for the parallel session that was paused mid-work on hooks and the DEVLOG backfill: `settings.json` gained a hook, `.claude/hooks/` is new, and the **DEVLOG table of contents was rebuilt** (it had drifted 15 entries behind), which is the likely merge conflict for a backfill branch cut before today.
 
 ## v2.41.0 — 2026-07-28 15:52 EDT (#47 · `c73024b`) — The error counter was never capable of being right
-**Bot runtime change (`utils/logger.js`, `index.js`) + ops tooling. Needs a deploy AND a one-time VM
-config install — see `docs/reference/deployment-and-ops.md`.**
-- **The bug under the feature request.** The filed ask was cosmetic-sounding (timestamps, a commit hash,
-  time-window args, a prettier panel). Investigating it found `vmstatus.sh`'s error counter could not
-  have been correct in either of its two modes. The text grep (`error|10062|unhandled|disconnect|
-  reconnecting`) counted routine `🔌 Shard 0 reconnecting...` churn as errors — measured live, it
-  reported `errors(1h): 2` and **both matches were gateway reconnects**. And `journalctl -p err` was
-  structurally incapable of ever being non-zero: the bot wrote everything to stdout, so journald tagged
-  **every** entry priority 6. Measured across 24h: **p0–p5 = 0, p6 = 30.** It would have read 0 during a
-  total crash. Expanding the display around either number would only have made a wrong one bigger.
-- **Fixed at the source — `utils/logger.js` (new).** systemd's `SyslogLevelPrefix` (already `yes` on the
-  unit) reads a leading `<N>` per line and records that priority. **Verified live on the VM** with a
-  throwaway `systemd-run` unit: `<3>` → PRIORITY 3, `<4>` → PRIORITY 4, unprefixed → 6. `patchConsole()`
-  prepends the marker and tees a structured JSON copy. It patches `console` rather than rewiring ~60
-  call sites — that cannot *miss* a site, and one 30-line module is far easier to review for a real
-  regression than a 60-file mechanical diff. Multi-line stacks are prefixed **per line**, or `-p err`
-  would show a headless error. Inert locally (gates on `JOURNAL_STREAM`), so the dev bot is untouched.
-- **The Ops Agent was already running and doing nothing useful.** It was installed, active, costing
-  ~127MB RSS of a 969MB box (`otelopscol` 77MB + `core_plugin` 27MB + `guest_telemetry` 23MB), and
-  shipping `/var/log/syslog` as an unparsed text blob with **empty severity** that had never once been
-  queried. The Cloud Logging option carved out of the 2026-07-24 Firestore review was therefore already
-  paid for. `scripts/ops-agent-config.yaml` now points it at the structured sink, so every entry carries
-  real severity plus **the version and commit that produced it**.
-- **`scripts/vmstatus.sh` rewritten.** Full instrument panel (VM · SERVICE · DEPLOY · HEALTH · ERRORS ·
-  ALERTS · ACTIVITY). Cloud Logging primary, journald fallback. `logs [<time>] [<lines>]` with m/h/d
-  units, single windows and `<newer>-<older>` ranges (`20h-5d` = from 5d ago up to 20h ago, excluding
-  the last 20h), default **25 → 40** lines, and a re-run hint printing the exact command when a window
-  holds more than was shown. Args validate **before** the ~40s probe, so a typo fails instantly.
-- **Errors, alerts, and noise are three separate tiers and must not be collapsed.** When they disagree,
-  the disagreement is the signal.
-- **Two honesty rules in the panel, both the same class of bug this replaced.** RAM is broken out (bot
-  ~121MB vs agents ~127MB) so the raw `556/969MB` can't read as alarming again — that answers a worry
-  Harkirat raised 2026-07-24. And when the sink isn't deployed, the zero counts render as **"NOT LIVE —
-  these zeros mean NO DATA, not no errors."**
-- **The retention bump in the spec was a misunderstanding; nothing needed raising.** The "1,000 cap" is
-  the AlertLog **Mongo** store. journald had *no* retention config and held every line since install
-  (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d` +
-  `SystemMaxUse=200M` so the assumed 30-day window is enforced rather than incidental.
-- **Found while verifying: the VM was 18 commits / 5 releases behind** (running v2.35.13, `771ea76`,
-  against `main` at v2.40.0). Merged never meant deployed. The DEPLOY panel now flags drift every run.
-- **Fixed a pre-existing break the rewrite would have made much worse.** `scripts/deploy.sh` runs
-  `vmstatus.sh` **on the VM** as its post-restart check, and that path had been quietly half-broken since
-  2026-07-18 (the outward-facing `instances describe` needs the Mac's auth context and just reported
-  "could not reach VM"). The SSH-based rewrite would have escalated that to the VM trying to SSH into
-  itself. The script now detects its own host: on the VM it reads locally and skips Cloud Logging — the
-  instance service account can write logs but not read them back, so those calls would have cost ~40s per
-  deploy for empty counters. Verified by piping the script to the VM and running it there.
-- **Cross-reference sweep.** `.claude/rules/scripts-and-migrations.md` (both run-locations + the bash 3.2
-  constraint), `.claude/rules/interaction-router.md` (`console` is patched in `index.js` — don't move the
-  require, don't split it into per-call-site imports), `docs/SESSION-START.md` (a `NOT LIVE` zero isn't a
-  clean bill of health), `docs/ROADMAP.md`'s `/status` item (easier now, but the bot itself can't read
-  Cloud Logging — decide that before scoping it), and the `reference_vm_bot_commands` memory, which was
-  **still documenting the retired direct-push deploy flow and "one version per PUSH"** four days after the
-  branch/PR workflow replaced it.
-- Bash 3.2 target documented in-file — the first draft used `declare -A`, which `bash -n` accepts and
-  the stock macOS shell rejects at runtime.
+**Bot runtime change (`utils/logger.js`, `index.js`) + ops tooling. Needs a deploy AND a one-time VM config install — see `docs/reference/deployment-and-ops.md`.**
+- **The bug under the feature request.** The filed ask was cosmetic-sounding (timestamps, a commit hash, time-window args, a prettier panel). Investigating it found `vmstatus.sh`'s error counter could not have been correct in either of its two modes. The text grep (`error|10062|unhandled|disconnect| reconnecting`) counted routine `🔌 Shard 0 reconnecting...` churn as errors — measured live, it reported `errors(1h): 2` and **both matches were gateway reconnects**. And `journalctl -p err` was structurally incapable of ever being non-zero: the bot wrote everything to stdout, so journald tagged **every** entry priority 6. Measured across 24h: **p0–p5 = 0, p6 = 30.** It would have read 0 during a total crash. Expanding the display around either number would only have made a wrong one bigger.
+- **Fixed at the source — `utils/logger.js` (new).** systemd's `SyslogLevelPrefix` (already `yes` on the unit) reads a leading `<N>` per line and records that priority. **Verified live on the VM** with a throwaway `systemd-run` unit: `<3>` → PRIORITY 3, `<4>` → PRIORITY 4, unprefixed → 6. `patchConsole()` prepends the marker and tees a structured JSON copy. It patches `console` rather than rewiring ~60 call sites — that cannot *miss* a site, and one 30-line module is far easier to review for a real regression than a 60-file mechanical diff. Multi-line stacks are prefixed **per line**, or `-p err` would show a headless error. Inert locally (gates on `JOURNAL_STREAM`), so the dev bot is untouched.
+- **The Ops Agent was already running and doing nothing useful.** It was installed, active, costing ~127MB RSS of a 969MB box (`otelopscol` 77MB + `core_plugin` 27MB + `guest_telemetry` 23MB), and shipping `/var/log/syslog` as an unparsed text blob with **empty severity** that had never once been queried. The Cloud Logging option carved out of the 2026-07-24 Firestore review was therefore already paid for. `scripts/ops-agent-config.yaml` now points it at the structured sink, so every entry carries real severity plus **the version and commit that produced it**.
+- **`scripts/vmstatus.sh` rewritten.** Full instrument panel (VM · SERVICE · DEPLOY · HEALTH · ERRORS · ALERTS · ACTIVITY). Cloud Logging primary, journald fallback. `logs [<time>] [<lines>]` with m/h/d units, single windows and `<newer>-<older>` ranges (`20h-5d` = from 5d ago up to 20h ago, excluding the last 20h), default **25 → 40** lines, and a re-run hint printing the exact command when a window holds more than was shown. Args validate **before** the ~40s probe, so a typo fails instantly.
+- **Errors, alerts, and noise are three separate tiers and must not be collapsed.** When they disagree, the disagreement is the signal.
+- **Two honesty rules in the panel, both the same class of bug this replaced.** RAM is broken out (bot ~121MB vs agents ~127MB) so the raw `556/969MB` can't read as alarming again — that answers a worry Harkirat raised 2026-07-24. And when the sink isn't deployed, the zero counts render as **"NOT LIVE — these zeros mean NO DATA, not no errors."**
+- **The retention bump in the spec was a misunderstanding; nothing needed raising.** The "1,000 cap" is the AlertLog **Mongo** store. journald had *no* retention config and held every line since install (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d` + `SystemMaxUse=200M` so the assumed 30-day window is enforced rather than incidental.
+- **Found while verifying: the VM was 18 commits / 5 releases behind** (running v2.35.13, `771ea76`, against `main` at v2.40.0). Merged never meant deployed. The DEPLOY panel now flags drift every run.
+- **Fixed a pre-existing break the rewrite would have made much worse.** `scripts/deploy.sh` runs `vmstatus.sh` **on the VM** as its post-restart check, and that path had been quietly half-broken since 2026-07-18 (the outward-facing `instances describe` needs the Mac's auth context and just reported "could not reach VM"). The SSH-based rewrite would have escalated that to the VM trying to SSH into itself. The script now detects its own host: on the VM it reads locally and skips Cloud Logging — the instance service account can write logs but not read them back, so those calls would have cost ~40s per deploy for empty counters. Verified by piping the script to the VM and running it there.
+- **Cross-reference sweep.** `.claude/rules/scripts-and-migrations.md` (both run-locations + the bash 3.2 constraint), `.claude/rules/interaction-router.md` (`console` is patched in `index.js` — don't move the require, don't split it into per-call-site imports), `docs/SESSION-START.md` (a `NOT LIVE` zero isn't a clean bill of health), `docs/ROADMAP.md`'s `/status` item (easier now, but the bot itself can't read Cloud Logging — decide that before scoping it), and the `reference_vm_bot_commands` memory, which was **still documenting the retired direct-push deploy flow and "one version per PUSH"** four days after the branch/PR workflow replaced it.
+- Bash 3.2 target documented in-file — the first draft used `declare -A`, which `bash -n` accepts and the stock macOS shell rejects at runtime.
 - Design + every measurement: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`.
 
 ## v2.40.0 — 2026-07-28 14:15 EDT (#46 · `0cc4017`) — The DEVLOG is now enforced like the changelog
 **Config/docs only — no bot runtime change, not deployed.**
-- **Measured the problem instead of apologising for it.** Across the last 22 releases: `CHANGELOG.md`
-  **22/22**, `CHANGELOG-SUMMARY.md` **22/22**, `DEVLOG.md` **8/22 (36%)**. The 14 misses were not
-  trivial releases — they include *"Designed the v3 development structure"*, *"Stopped the dev bot from
-  writing to the LIVE Cloudinary account"*, and *"A scripted records sweep, and the chore checklist that
-  was wrong."*
-- **Root cause: asymmetric enforcement.** The changelog has had a `PostToolUse` hook on `gh pr merge`
-  since 2026-07-24; the DEVLOG had a line in a checklist. Machine-checked sits at 100%, attention-
-  dependent sits at 36% — the same result as the `grep`-vs-`rg` 788:4 measurement, in a different form.
-- **New `PostToolUse` hook:** on `gh pr merge`, if the resulting `main` touched `docs/CHANGELOG.md` but
-  NOT `docs/DEVLOG.md`, it says so and requires the skip to be stated out loud. Verified both
-  directions against real commits — fires on v2.39.1 (a genuine historical miss), silent on v2.39.2
-  (compliant) and on non-merge commands.
-- **The checklist default is inverted.** Item 5 read "a narrative entry *if* the work had real
-  reasoning/discovery" — a subjective test evaluated exactly when you are trying to finish, which
-  resolves to "no". It now reads: write it by default; skip only for purely mechanical changes, and
-  **say so if you skip**.
-- **Also recorded: a partial check that feels total is worse than no check.** The changelog hook passing
-  read as "docs handled" while the DEVLOG sat untouched.
-- **This is the first change to the enforcement layer since v2.39.0 made it trackable** — so it rides in
-  the PR instead of living in one gitignored file on one machine.
-- **Then audited the WHOLE documentation phase, not just the DEVLOG** (Harkirat's follow-up: *"when I
-  say the full merge flow, it's supposed to check both changelogs, dev log, my notes file, CLAUDE, any
-  other memory files, any references"*). Found **three more unenforced items** and added a consolidated
-  `RELEASE DOC CHECK`: (3) `CHANGELOG-SUMMARY.md` — 22/22 by habit with **nothing** enforcing it;
-  (1) the `package.json` bump; (8.2) the previous entry's hash backfill (historically 100% compliant, so
-  preventative); plus a nudge for (4) when code under `commands|utils|models|scripts` changes with no
-  `CLAUDE.md`/`.claude/rules/*.md` note. Verified in four directions: fires listing every missing item,
-  silent on a compliant release, silent on a non-release merge, silent on a non-merge command.
-- **The hook names what it CANNOT check** — (6) memory updates and (7) the notes file are judgment calls
-  outside its reach, so it says so in the message rather than implying full coverage. Applying the
-  lesson from the failure it was written for.
+- **Measured the problem instead of apologising for it.** Across the last 22 releases: `CHANGELOG.md` **22/22**, `CHANGELOG-SUMMARY.md` **22/22**, `DEVLOG.md` **8/22 (36%)**. The 14 misses were not trivial releases — they include *"Designed the v3 development structure"*, *"Stopped the dev bot from writing to the LIVE Cloudinary account"*, and *"A scripted records sweep, and the chore checklist that was wrong."*
+- **Root cause: asymmetric enforcement.** The changelog has had a `PostToolUse` hook on `gh pr merge` since 2026-07-24; the DEVLOG had a line in a checklist. Machine-checked sits at 100%, attention- dependent sits at 36% — the same result as the `grep`-vs-`rg` 788:4 measurement, in a different form.
+- **New `PostToolUse` hook:** on `gh pr merge`, if the resulting `main` touched `docs/CHANGELOG.md` but NOT `docs/DEVLOG.md`, it says so and requires the skip to be stated out loud. Verified both directions against real commits — fires on v2.39.1 (a genuine historical miss), silent on v2.39.2 (compliant) and on non-merge commands.
+- **The checklist default is inverted.** Item 5 read "a narrative entry *if* the work had real reasoning/discovery" — a subjective test evaluated exactly when you are trying to finish, which resolves to "no". It now reads: write it by default; skip only for purely mechanical changes, and **say so if you skip**.
+- **Also recorded: a partial check that feels total is worse than no check.** The changelog hook passing read as "docs handled" while the DEVLOG sat untouched.
+- **This is the first change to the enforcement layer since v2.39.0 made it trackable** — so it rides in the PR instead of living in one gitignored file on one machine.
+- **Then audited the WHOLE documentation phase, not just the DEVLOG** (Harkirat's follow-up: *"when I say the full merge flow, it's supposed to check both changelogs, dev log, my notes file, CLAUDE, any other memory files, any references"*). Found **three more unenforced items** and added a consolidated `RELEASE DOC CHECK`: (3) `CHANGELOG-SUMMARY.md` — 22/22 by habit with **nothing** enforcing it; (1) the `package.json` bump; (8.2) the previous entry's hash backfill (historically 100% compliant, so preventative); plus a nudge for (4) when code under `commands|utils|models|scripts` changes with no `CLAUDE.md`/`.claude/rules/*.md` note. Verified in four directions: fires listing every missing item, silent on a compliant release, silent on a non-release merge, silent on a non-merge command.
+- **The hook names what it CANNOT check** — (6) memory updates and (7) the notes file are judgment calls outside its reach, so it says so in the message rather than implying full coverage. Applying the lesson from the failure it was written for.
 
 ## v2.39.2 — 2026-07-28 14:00 EDT (#45 · `209472f`) — The DEVLOG entry v2.39.1 should have shipped with
 **Docs only — no bot runtime change, not deployed.**
-- **Backfills the missing DEVLOG narrative for v2.39.1.** The chore checklist asks for one where the
-  work had real reasoning, and it did. This is the checklist step nothing mechanically enforces, which
-  is exactly why it goes missing twice in one day — v2.38.3 closed the same gap for v2.38.1/.2.
-- **The lesson recorded:** the v2.39.0 sweep grepped for the phrasings it remembered writing rather
-  than for the *claim* that had gone stale, so it found the sentences already in mind and missed the
-  two that said the same thing differently. Plus the tell that generalises — **a sweep returning
-  nothing is not evidence of cleanliness until you have seen it return something**, doubly so when
-  `rg` skips hidden and gitignored paths by default.
-- Also recorded in the `feedback_no_half_measures_on_reorgs` memory, where the "finish the whole
-  rename" rule lives.
+- **Backfills the missing DEVLOG narrative for v2.39.1.** The chore checklist asks for one where the work had real reasoning, and it did. This is the checklist step nothing mechanically enforces, which is exactly why it goes missing twice in one day — v2.38.3 closed the same gap for v2.38.1/.2.
+- **The lesson recorded:** the v2.39.0 sweep grepped for the phrasings it remembered writing rather than for the *claim* that had gone stale, so it found the sentences already in mind and missed the two that said the same thing differently. Plus the tell that generalises — **a sweep returning nothing is not evidence of cleanliness until you have seen it return something**, doubly so when `rg` skips hidden and gitignored paths by default.
+- Also recorded in the `feedback_no_half_measures_on_reorgs` memory, where the "finish the whole rename" rule lives.
 
 ## v2.39.1 — 2026-07-28 13:45 EDT (#44 · `5ab6242`) — Two stale claims the v2.39.0 sweep walked past
 **Docs only — no bot runtime change, not deployed.**
-- **`docs/README.md`'s chore checklist and the `project_git_workflow` memory still said the enforcement
-  hooks were "gitignored, so local-only and not part of any PR."** False since v2.39.0 moved them to
-  tracked `.claude/settings.json`.
-- **Why they survived the v2.39.0 sweep:** that pass searched for the phrasings it expected — `must be
-  re-added by hand`, `stays gitignored`, `hooks are local-only`. These two said it a third way. The
-  lesson is narrow and reusable: **when a change invalidates a claim, sweep for the CLAIM, not for the
-  sentence you remember writing** — widen the pattern until it returns known-good hits too, so you can
-  see the search is actually reaching.
+- **`docs/README.md`'s chore checklist and the `project_git_workflow` memory still said the enforcement hooks were "gitignored, so local-only and not part of any PR."** False since v2.39.0 moved them to tracked `.claude/settings.json`.
+- **Why they survived the v2.39.0 sweep:** that pass searched for the phrasings it expected — `must be re-added by hand`, `stays gitignored`, `hooks are local-only`. These two said it a third way. The lesson is narrow and reusable: **when a change invalidates a claim, sweep for the CLAIM, not for the sentence you remember writing** — widen the pattern until it returns known-good hits too, so you can see the search is actually reaching.
 
 ## v2.39.0 — 2026-07-28 13:20 EDT (#43 · `a61ead8`) — The enforcement layer is finally in version control
 **Config/docs only — no bot runtime change, not deployed.**
-- **The 12 enforcement hooks moved from gitignored `.claude/settings.local.json` to tracked
-  `.claude/settings.json`.** They are what mechanically hold this repo's conventions — changelog at
-  merge, timestamps on every edit, the notes-file surfacing, the deferral-tell and effort-range `Stop`
-  hooks, completion-claim verification, the stale-branch report, the tag-version gate, the
-  delete-branch check and the Artifact force gate. Because their home was gitignored, **none of it
-  rode in a PR and all of it had to be re-added by hand on a fresh clone** — this file's own v2.33.0
-  entry said so out loud. A rule enforced by an unrecoverable file is one disk failure away from being
-  prose again.
-- **`.claude/settings.local.json` is now tracked too** (Harkirat's call). It keeps only the 30
-  machine-specific permission entries. Verified before tracking: no secret-shaped strings, and the
-  repo is private. `.env` remains the hard invariant and is untouched.
-- **The un-ignore needed a negation, not a deletion.** Removing the repo-level `.gitignore` pattern
-  left the file *still ignored* — `git check-ignore -v` traced it to the **global**
-  `~/.config/git/ignore`, which carries `**/.claude/settings.local.json` for every repo on the machine.
-  Editing that would have silently changed behaviour for every other project, so the fix is an explicit
-  `!.claude/settings.local.json` in this repo's `.gitignore`, which outranks the global file. Backups
-  (`*.bak`, `*.bak-*`) stay ignored.
-- **Verified rather than assumed:** all 12 hooks parse as valid shell after the JSON round-trip (the
-  real risk in moving hook bodies between files), and the timestamp hook still fires on a bare date and
-  stays silent on a full `YYYY-MM-DD HH:MM TZ`. ⚠️ Hooks load at session start, so the promoted file
-  only takes effect next session — content is verified, loading is not.
-- **~20 now-false statements corrected** across `CLAUDE.md`, `docs/README.md`, `docs/SESSION-START.md`,
-  the v3 structure spec and 9 memory files. Historical CHANGELOG/DEVLOG entries were left as written —
-  they describe what was true then. The v3 worktree rejection's "a worktree loses the `SessionStart`
-  hooks" rationale is now **obsolete** and is annotated in place.
-- **Global hook improved in the same session** (`~/.claude/hooks/usage-guard.mjs` — global, so it does
-  *not* ride in this PR; recorded here and in `reference_tool_capability_tests`). Its search-completeness
-  guard now models `--hidden` and `--no-ignore` as **separate** exclusions, per tool and per `-u` level,
-  and names the missing half. Prompted by a live miss: `fd -H . .remember -e md` returned 0 files from a
-  directory that had several, because `-H` un-hides but `.remember/` is gitignored and needs `-I`.
-- **Housekeeping:** the `~/.claude` version-control gap (global hooks, global `CLAUDE.md`, and all four
-  projects' memory stores — still unversioned) moved to `/Applications/Claude Code/meta-deferred-list.md`,
-  since its scope is cross-project, not Diors-specific.
+- **The 12 enforcement hooks moved from gitignored `.claude/settings.local.json` to tracked `.claude/settings.json`.** They are what mechanically hold this repo's conventions — changelog at merge, timestamps on every edit, the notes-file surfacing, the deferral-tell and effort-range `Stop` hooks, completion-claim verification, the stale-branch report, the tag-version gate, the delete-branch check and the Artifact force gate. Because their home was gitignored, **none of it rode in a PR and all of it had to be re-added by hand on a fresh clone** — this file's own v2.33.0 entry said so out loud. A rule enforced by an unrecoverable file is one disk failure away from being prose again.
+- **`.claude/settings.local.json` is now tracked too** (Harkirat's call). It keeps only the 30 machine-specific permission entries. Verified before tracking: no secret-shaped strings, and the repo is private. `.env` remains the hard invariant and is untouched.
+- **The un-ignore needed a negation, not a deletion.** Removing the repo-level `.gitignore` pattern left the file *still ignored* — `git check-ignore -v` traced it to the **global** `~/.config/git/ignore`, which carries `**/.claude/settings.local.json` for every repo on the machine. Editing that would have silently changed behaviour for every other project, so the fix is an explicit `!.claude/settings.local.json` in this repo's `.gitignore`, which outranks the global file. Backups (`*.bak`, `*.bak-*`) stay ignored.
+- **Verified rather than assumed:** all 12 hooks parse as valid shell after the JSON round-trip (the real risk in moving hook bodies between files), and the timestamp hook still fires on a bare date and stays silent on a full `YYYY-MM-DD HH:MM TZ`. ⚠️ Hooks load at session start, so the promoted file only takes effect next session — content is verified, loading is not.
+- **~20 now-false statements corrected** across `CLAUDE.md`, `docs/README.md`, `docs/SESSION-START.md`, the v3 structure spec and 9 memory files. Historical CHANGELOG/DEVLOG entries were left as written — they describe what was true then. The v3 worktree rejection's "a worktree loses the `SessionStart` hooks" rationale is now **obsolete** and is annotated in place.
+- **Global hook improved in the same session** (`~/.claude/hooks/usage-guard.mjs` — global, so it does *not* ride in this PR; recorded here and in `reference_tool_capability_tests`). Its search-completeness guard now models `--hidden` and `--no-ignore` as **separate** exclusions, per tool and per `-u` level, and names the missing half. Prompted by a live miss: `fd -H . .remember -e md` returned 0 files from a directory that had several, because `-H` un-hides but `.remember/` is gitignored and needs `-I`.
+- **Housekeeping:** the `~/.claude` version-control gap (global hooks, global `CLAUDE.md`, and all four projects' memory stores — still unversioned) moved to `/Applications/Claude Code/meta-deferred-list.md`, since its scope is cross-project, not Diors-specific.
 
 ## v2.38.3 — 2026-07-28 11:20 EDT (#42 · `52aac5f`) — The DEVLOG entries v2.38.1/.2 should have shipped with
 **Docs only — no bot runtime change, not deployed.**
-- **Backfills the missing DEVLOG narrative for v2.38.1 and v2.38.2.** The per-merge chore checklist
-  asks for a DEVLOG entry "if the work had real reasoning/discovery," and both qualified — the
-  `git add -A` scope leak that committed a stray file, and the revoke-vs-comment distinction on dead
-  credentials. Both shipped with a changelog entry and a summary line but no narrative, which is the
-  step most easily dropped because nothing mechanically checks for it.
-- **Turn-budget hook retuned** (`~/.claude/hooks/usage-guard.mjs` — global and gitignored, so it does
-  *not* ride in this PR; recorded here and in the `reference_tool_capability_tests` memory so the change
-  is not invisible). Thresholds `25` and `60` are now **advisory**; `120+` keeps the hard
-  checkpoint-and-report wording. The hard message was firing during ordinary multi-file doc work and
-  pushing toward wrapping up mid-task — which is exactly how a version bump, tag, or verification step
-  gets skipped to save turns. Both tiers now carry a shared quality floor: **the counter measures cost,
-  never correctness**, so the response is always "work more efficiently," never "work less completely."
-  Re-tested end-to-end (25 → advisory, 60 → advisory, 120 → hard, silent below 25).
+- **Backfills the missing DEVLOG narrative for v2.38.1 and v2.38.2.** The per-merge chore checklist asks for a DEVLOG entry "if the work had real reasoning/discovery," and both qualified — the `git add -A` scope leak that committed a stray file, and the revoke-vs-comment distinction on dead credentials. Both shipped with a changelog entry and a summary line but no narrative, which is the step most easily dropped because nothing mechanically checks for it.
+- **Turn-budget hook retuned** (`~/.claude/hooks/usage-guard.mjs` — global and gitignored, so it does *not* ride in this PR; recorded here and in the `reference_tool_capability_tests` memory so the change is not invisible). Thresholds `25` and `60` are now **advisory**; `120+` keeps the hard checkpoint-and-report wording. The hard message was firing during ordinary multi-file doc work and pushing toward wrapping up mid-task — which is exactly how a version bump, tag, or verification step gets skipped to save turns. Both tiers now carry a shared quality floor: **the counter measures cost, never correctness**, so the response is always "work more efficiently," never "work less completely." Re-tested end-to-end (25 → advisory, 60 → advisory, 120 → hard, silent below 25).
 
 ## v2.38.2 — 2026-07-28 11:20 EDT (#41 · `3d80e13`) — Two dead host credentials revoked and removed
 **Docs + local `.env` hygiene — no bot runtime change, not deployed.**
-- **`RENDER_API_KEY` and `RAILWAY_TOKEN` are gone from `.env`**, revoked at their providers first.
-  Render's service was deleted 2026-07-27 and Railway abandoned 2026-07-17; the GCP VM is the only host
-  and **no code read either variable**. Surfaced by the v2.38.0 memory audit, which was looking for
-  something else entirely.
-- **The lesson, recorded in `docs/archive/resolved-list.md`: commenting out a credential is not
-  revoking it.** The first instinct was to `#` the lines out to keep them recoverable — reasonable for
-  config, wrong for secrets. The string stays valid at the provider, and an API key generally
-  authenticates against the whole *account*, not just the deleted service. **Revoke at the provider,
-  then delete the line** — deleting alone would have left live keys floating with no record they existed.
-- `PORT` stays commented rather than removed: not a secret, read by nothing (`process.env.PORT` appears
-  nowhere; there is no HTTP server or web framework here), and only ever a Render/Railway artifact.
-- `.env` was gitignored throughout and neither key was ever committed, so there is no git history to
-  scrub.
+- **`RENDER_API_KEY` and `RAILWAY_TOKEN` are gone from `.env`**, revoked at their providers first. Render's service was deleted 2026-07-27 and Railway abandoned 2026-07-17; the GCP VM is the only host and **no code read either variable**. Surfaced by the v2.38.0 memory audit, which was looking for something else entirely.
+- **The lesson, recorded in `docs/archive/resolved-list.md`: commenting out a credential is not revoking it.** The first instinct was to `#` the lines out to keep them recoverable — reasonable for config, wrong for secrets. The string stays valid at the provider, and an API key generally authenticates against the whole *account*, not just the deleted service. **Revoke at the provider, then delete the line** — deleting alone would have left live keys floating with no record they existed.
+- `PORT` stays commented rather than removed: not a secret, read by nothing (`process.env.PORT` appears nowhere; there is no HTTP server or web framework here), and only ever a Render/Railway artifact.
+- `.env` was gitignored throughout and neither key was ever committed, so there is no git history to scrub.
 
 ## v2.38.1 — 2026-07-28 11:20 EDT (#40 · `467c843`) — Remove a stray empty file that rode in with v2.38.0
 **Repo hygiene — no bot runtime change, not deployed.**
-- **Deleted `saved`**, a 0-byte file at the repo root that was committed by mistake in v2.38.0. It was
-  never referenced by anything (the `rg` hits for "saved" are the ordinary English word inside
-  `commands/*.js`, e.g. "saved preference" — not a path).
-- **How it happened, since the mechanism matters more than the file:** the release work used
-  `git add -A` repeatedly to sweep multi-file doc edits. That stages *everything* untracked, including
-  a stray artifact from an earlier shell redirect. `git add -A` cannot distinguish "my edits" from
-  "whatever else is lying around" — **prefer explicit paths, or read `git status` before staging**, on
-  any commit that isn't a tightly-scoped change.
-- Caught in the merge output (`create mode 100644 saved`) rather than by review, which is luck, not
-  process.
+- **Deleted `saved`**, a 0-byte file at the repo root that was committed by mistake in v2.38.0. It was never referenced by anything (the `rg` hits for "saved" are the ordinary English word inside `commands/*.js`, e.g. "saved preference" — not a path).
+- **How it happened, since the mechanism matters more than the file:** the release work used `git add -A` repeatedly to sweep multi-file doc edits. That stages *everything* untracked, including a stray artifact from an earlier shell redirect. `git add -A` cannot distinguish "my edits" from "whatever else is lying around" — **prefer explicit paths, or read `git status` before staging**, on any commit that isn't a tightly-scoped change.
+- Caught in the merge output (`create mode 100644 saved`) rather than by review, which is luck, not process.
 
 ## v2.38.0 — 2026-07-28 01:41 EDT (#39 · `61c70d8`) — Memory moves to the path the platform actually reads
 **Docs + memory store — no bot runtime change, not deployed.**
-- **The memory store migrated** from `~/.claude/projects/-Applications-Diors-Builds/memory/` to
-  `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — the slug the harness actually
-  derives from the repo path, and therefore the one Claude Code's own native memory feature reads.
-- **What was actually broken.** The repo moved to `/Applications/Claude Code/Diors-Builds` on
-  2026-07-14. A 2026-07-15 session decided to pin the store to a *fixed* slug because "a fixed store is
-  move-proof," and bridged the gap with a redirect note in `CLAUDE.md`. The reasoning was sound; the
-  cost was hidden. **The bridge was instruction-following** — a session that didn't read or obey the
-  note loaded no memory at all, and nothing anywhere reported the failure. Meanwhile the path the
-  platform *does* read sat empty. Harkirat reversed the call: a correct path beats a fixed path plus a
-  note that has to be obeyed every single session.
-- **The reservation was released, not overridden.** The parked cross-project memory-architecture
-  redesign had claimed this exact path for a planned symlink. Harkirat released it *for Diors
-  specifically*; `memory-architecture-STATUS.md` and `meta-deferred-list.md` were annotated in the same
-  pass so it's visible from the cross-project side. The general defer-to-owning-project rule is intact —
-  the distinction is that the claim's stakeholder released it, which is precisely the resolution that
-  rule says to wait for.
-- **Verified, not assumed.** All 60 files copied and checked three ways (`diff -r`, matching file
-  counts, matching aggregate `shasum`), plus a `MEMORY.md` index check on the new copy (60 linked = 60
-  on disk, zero broken, zero orphaned). Confirmed beforehand that **nothing mechanically depended on the
-  path** — no hook, setting, or script referenced either slug — so this was data + prose only.
-- **The old store is kept as a frozen backup** carrying a `_MIGRATED.md` tombstone, so the move stays
-  reversible. Deleting it is a separate, later decision.
-- **Files inside the store contradicted the migration** (asserting the old path, forbidding the new one)
-  and were rewritten as content, not path-swapped — a find-replace would have produced a
-  self-contradicting store that still passed every checksum. Also fixed a long-dangling `ROADMAP.md`
-  reference to a "canonical-memory-path note at the top of this file" that has never existed there.
-- **Three audit passes were needed, and each found things the previous one missed.** Pass 1 swept the
-  literal old-slug string. Pass 2 swept the *idea* ("move-proof", "guard stands", "fixed store") and found
-  8 more — the parked-redesign memory declaring "the slug-path guard still stands" in its frontmatter
-  *and* body *and* index line, a **second** claim block in `meta-deferred-list.md`, a *"don't re-derive"*
-  section in `memory-architecture-STATUS.md` asserting the slug had no memory folder, the design doc's
-  stale premise, the unmarked handoff, and **`dior-cli/CLAUDE.md` — a separate repo aiming its sessions
-  at the dead path.** Pass 3 went machine-wide, beyond the repo, and found more still:
-  - **19 cross-store links across 11 files in the Gif-Background-Remover memory store**, all pointing
-    into Diors' old path. All 19 targets verified present in the new store before rewriting.
-  - **The parked project's own resume-point memory** (shared-root store) telling a future session the
-    slug path was *"ABSENT — the clean precondition for the planned symlink."* It is not absent; it holds
-    a live store. That one would have sent a resumed redesign straight into a failed `ln -s`.
+- **The memory store migrated** from `~/.claude/projects/-Applications-Diors-Builds/memory/` to `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — the slug the harness actually derives from the repo path, and therefore the one Claude Code's own native memory feature reads.
+- **What was actually broken.** The repo moved to `/Applications/Claude Code/Diors-Builds` on 2026-07-14. A 2026-07-15 session decided to pin the store to a *fixed* slug because "a fixed store is move-proof," and bridged the gap with a redirect note in `CLAUDE.md`. The reasoning was sound; the cost was hidden. **The bridge was instruction-following** — a session that didn't read or obey the note loaded no memory at all, and nothing anywhere reported the failure. Meanwhile the path the platform *does* read sat empty. Harkirat reversed the call: a correct path beats a fixed path plus a note that has to be obeyed every single session.
+- **The reservation was released, not overridden.** The parked cross-project memory-architecture redesign had claimed this exact path for a planned symlink. Harkirat released it *for Diors specifically*; `memory-architecture-STATUS.md` and `meta-deferred-list.md` were annotated in the same pass so it's visible from the cross-project side. The general defer-to-owning-project rule is intact — the distinction is that the claim's stakeholder released it, which is precisely the resolution that rule says to wait for.
+- **Verified, not assumed.** All 60 files copied and checked three ways (`diff -r`, matching file counts, matching aggregate `shasum`), plus a `MEMORY.md` index check on the new copy (60 linked = 60 on disk, zero broken, zero orphaned). Confirmed beforehand that **nothing mechanically depended on the path** — no hook, setting, or script referenced either slug — so this was data + prose only.
+- **The old store is kept as a frozen backup** carrying a `_MIGRATED.md` tombstone, so the move stays reversible. Deleting it is a separate, later decision.
+- **Files inside the store contradicted the migration** (asserting the old path, forbidding the new one) and were rewritten as content, not path-swapped — a find-replace would have produced a self-contradicting store that still passed every checksum. Also fixed a long-dangling `ROADMAP.md` reference to a "canonical-memory-path note at the top of this file" that has never existed there.
+- **Three audit passes were needed, and each found things the previous one missed.** Pass 1 swept the literal old-slug string. Pass 2 swept the *idea* ("move-proof", "guard stands", "fixed store") and found 8 more — the parked-redesign memory declaring "the slug-path guard still stands" in its frontmatter *and* body *and* index line, a **second** claim block in `meta-deferred-list.md`, a *"don't re-derive"* section in `memory-architecture-STATUS.md` asserting the slug had no memory folder, the design doc's stale premise, the unmarked handoff, and **`dior-cli/CLAUDE.md` — a separate repo aiming its sessions at the dead path.** Pass 3 went machine-wide, beyond the repo, and found more still:
+  - **19 cross-store links across 11 files in the Gif-Background-Remover memory store**, all pointing into Diors' old path. All 19 targets verified present in the new store before rewriting.
+  - **The parked project's own resume-point memory** (shared-root store) telling a future session the slug path was *"ABSENT — the clean precondition for the planned symlink."* It is not absent; it holds a live store. That one would have sent a resumed redesign straight into a failed `ln -s`.
   - Two `~/.claude/plans/` files instructing a resuming session to **write** memory to the old path.
-  - `local/claude md backup/` — an **unmarked** snapshot of a whole `.claude` tree (including a
-    two-generations-stale copy of the memory store) with nothing saying it was a backup. Now marked.
-- **The lesson: grep finds phrasings, not claims** — and a store that has been the canonical one for
-  weeks is referenced from places that never name it. Searching by *concept*, and searching *outside*
-  the repo, is what actually closed this out.
-- **Unrelated defects the sweeps kept surfacing, all fixed here.** Sweeping for one thing is a good way
-  to find everything else: `known-issues.md` warned that `ffmpeg` was "not guaranteed on Render/Railway's
-  production containers" (both hosts retired; the VM has it installed) and pointed at "the roadmap item
-  below" in a file that ends there; `deployment-and-ops.md`'s `HISTORICAL` marker named only Render, so
-  the Railway paragraphs after it read as live operating instructions for a dead host; and **`.env` still
-  carried `RENDER_API_KEY` and `RAILWAY_TOKEN`** for services deleted 2026-07-27 and abandoned
-  2026-07-17, read by no code. Harkirat commented all three (plus `PORT`, verified unused — no HTTP
-  server or web framework exists here) out the same session; **revocation at the providers is still
-  open, because commenting out a key does not invalidate it.**
-- **What could NOT be finished is recorded, not assumed.** Three surfaces were swept for memory
-  references (all clean, including **zero** in any `.js`/`.sh`) but never read for content accuracy:
-  **code context comments, the `.claude/rules/` bodies, and the archive/CHANGELOG/DEVLOG prose.** Those,
-  plus the `local/` folder cleanup, are folded into the standing line-by-line audit item in
-  `docs/db-deferred-list.md` — with an explicit "already done, don't redo" list so the audit starts where
-  this session stopped instead of repeating five passes of work.
-- ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
-  that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
-- **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**
-  It changed `ROADMAP.md`, `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and
-  `reference/deployment-and-ops.md`, but shipped with **no changelog entry, no `package.json` bump, and
-  no tag** — `package.json` stayed at `2.37.0`. It is recorded here as a note rather than given a
-  retroactive `v2.37.1`, because **no commit in this repo's history reads `2.37.1`**: such a tag could
-  only land on `8eb8f2e`, which reads `2.37.0`, and the `PreToolUse` tag-gate hook would refuse it —
-  the exact defect the one-commit/one-tag convention (v2.36.0) exists to prevent. Inventing the number
-  would create a changelog version that can never satisfy "every version has a tag." Keeping it a note
-  means **every `##` heading in this file remains a real, taggable version.** *The rule it illustrates:*
-  a docs-only merge either earns a version — bumped on the branch, before the squash — or it doesn't,
-  and that call must be made **at merge time**, because the bump has to live inside the commit the tag
-  will point at. It cannot be added afterwards.
+  - `local/claude md backup/` — an **unmarked** snapshot of a whole `.claude` tree (including a two-generations-stale copy of the memory store) with nothing saying it was a backup. Now marked.
+- **The lesson: grep finds phrasings, not claims** — and a store that has been the canonical one for weeks is referenced from places that never name it. Searching by *concept*, and searching *outside* the repo, is what actually closed this out.
+- **Unrelated defects the sweeps kept surfacing, all fixed here.** Sweeping for one thing is a good way to find everything else: `known-issues.md` warned that `ffmpeg` was "not guaranteed on Render/Railway's production containers" (both hosts retired; the VM has it installed) and pointed at "the roadmap item below" in a file that ends there; `deployment-and-ops.md`'s `HISTORICAL` marker named only Render, so the Railway paragraphs after it read as live operating instructions for a dead host; and **`.env` still carried `RENDER_API_KEY` and `RAILWAY_TOKEN`** for services deleted 2026-07-27 and abandoned 2026-07-17, read by no code. Harkirat commented all three (plus `PORT`, verified unused — no HTTP server or web framework exists here) out the same session; **revocation at the providers is still open, because commenting out a key does not invalidate it.**
+- **What could NOT be finished is recorded, not assumed.** Three surfaces were swept for memory references (all clean, including **zero** in any `.js`/`.sh`) but never read for content accuracy: **code context comments, the `.claude/rules/` bodies, and the archive/CHANGELOG/DEVLOG prose.** Those, plus the `local/` folder cleanup, are folded into the standing line-by-line audit item in `docs/db-deferred-list.md` — with an explicit "already done, don't redo" list so the audit starts where this session stopped instead of repeating five passes of work.
+- ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
+- **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.** It changed `ROADMAP.md`, `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and `reference/deployment-and-ops.md`, but shipped with **no changelog entry, no `package.json` bump, and no tag** — `package.json` stayed at `2.37.0`. It is recorded here as a note rather than given a retroactive `v2.37.1`, because **no commit in this repo's history reads `2.37.1`**: such a tag could only land on `8eb8f2e`, which reads `2.37.0`, and the `PreToolUse` tag-gate hook would refuse it — the exact defect the one-commit/one-tag convention (v2.36.0) exists to prevent. Inventing the number would create a changelog version that can never satisfy "every version has a tag." Keeping it a note means **every `##` heading in this file remains a real, taggable version.** *The rule it illustrates:* a docs-only merge either earns a version — bumped on the branch, before the squash — or it doesn't, and that call must be made **at merge time**, because the bump has to live inside the commit the tag will point at. It cannot be added afterwards.
 
 ## v2.37.0 — 2026-07-27 22:35 EDT (#37 · `231a93e`) — The v3 sync gets a trigger, not just a mechanism
 **Docs + CI — no bot runtime change, not deployed.**
-- **`.github/workflows/sync-v3-pre-release.yml`** — merges `main` into `v3-pre-release` and pushes on
-  every push to `main`. Skips cleanly when the branch doesn't exist (so it won't fail every push after
-  the v3.0.0 launch merge retires it), exits quietly when already current, and **fails loudly on
-  conflict** rather than auto-resolving — a red run is the notification, and conflicts are exactly when
-  a human must decide. `workflow_dispatch` lets it be re-run after a manual resolution. Pushes use
-  `GITHUB_TOKEN`, which does not retrigger workflows, so it cannot recurse.
-- **The rule that was missing.** The sync *mechanism* — one-way, by merge, never cherry-pick — was
-  documented in **four** places (`CLAUDE.md`, the v3 spec, `ROADMAP.md`, memory). The *cadence* was
-  documented in **zero**. Nothing said when, so it happened only when someone noticed, and
-  `v3-pre-release` was found two releases behind at v2.35.15, missing the very release conventions it
-  must follow. **A documented mechanism is not a trigger** — now stated in all four, and automated.
-- **Filed the `[P1 · L]` full documentation/memory/hook audit.** Line-by-line, not grep — this week alone
-  produced three instances of the same failure shape (a self-contradictory spec clause propagated into
-  five files, a source-of-truth memory still teaching a retired convention, and this missing trigger),
-  each found by accident. Includes restructuring the files that have outgrown their shape.
+- **`.github/workflows/sync-v3-pre-release.yml`** — merges `main` into `v3-pre-release` and pushes on every push to `main`. Skips cleanly when the branch doesn't exist (so it won't fail every push after the v3.0.0 launch merge retires it), exits quietly when already current, and **fails loudly on conflict** rather than auto-resolving — a red run is the notification, and conflicts are exactly when a human must decide. `workflow_dispatch` lets it be re-run after a manual resolution. Pushes use `GITHUB_TOKEN`, which does not retrigger workflows, so it cannot recurse.
+- **The rule that was missing.** The sync *mechanism* — one-way, by merge, never cherry-pick — was documented in **four** places (`CLAUDE.md`, the v3 spec, `ROADMAP.md`, memory). The *cadence* was documented in **zero**. Nothing said when, so it happened only when someone noticed, and `v3-pre-release` was found two releases behind at v2.35.15, missing the very release conventions it must follow. **A documented mechanism is not a trigger** — now stated in all four, and automated.
+- **Filed the `[P1 · L]` full documentation/memory/hook audit.** Line-by-line, not grep — this week alone produced three instances of the same failure shape (a self-contradictory spec clause propagated into five files, a source-of-truth memory still teaching a retired convention, and this missing trigger), each found by accident. Includes restructuring the files that have outgrown their shape.
 
 ## v2.36.3 — 2026-07-27 22:25 EDT (#36 · `fe79d87`) — The tag invariant becomes a gate, after it caught nobody
 **Docs/meta only — no runtime change, not deployed.**
-- **Reproduced the stale-tag defect within minutes of documenting it.** Tagging v2.36.2 was chained onto
-  the merge as one `&&` sequence. `gh pr merge` failed (checks still `UNSTABLE`) but was piped to
-  `tail -1`, and **a pipeline exits with the last command's status**, so the failure was masked and the
-  chain continued. `main` never advanced, so `v2.36.2` was created *and pushed* onto `bd51350`, whose
-  `package.json` read `2.36.1` — the exact defect logged for six historical tags one release earlier.
-  Deleted from local and remote, re-created correctly on `c5f28b6`.
-- **Root cause was the pipe, not the invariant.** Recorded as memory `feedback_pipe_masks_exit_status`:
-  never pipe a fallible command and rely on `&&`, and never derive a value (`$(git rev-parse HEAD)`) in
-  the same chain as the command meant to produce that state.
-- **The invariant is now a gate, not a wish.** A third hook (`PreToolUse` on Bash) intercepts
-  `git tag -a vX.Y.Z <sha>` and asks for confirmation when the target commit's `package.json` ≠ the tag.
-  Dry-run against the real mistake (asks), the correct tag (silent), a historical stale tag (asks), and
-  unrelated commands (silent). It had existed only as a deferred sweep-script item — which is why nothing
-  caught this.
-- **Deep sweep of memory, rules, and hooks.** Found `project_dior_builds_changelog_system` — the file
-  `docs/README.md` names as the source of truth for the versioning scheme — still teaching *"graduates to
-  a real entry (+ squash hash + tag) at merge,"* the retired clause. Corrected, with the entry format
-  added. `.claude/rules/*` are workflow-free (correct); every path and memory name referenced inside a
-  hook resolves.
+- **Reproduced the stale-tag defect within minutes of documenting it.** Tagging v2.36.2 was chained onto the merge as one `&&` sequence. `gh pr merge` failed (checks still `UNSTABLE`) but was piped to `tail -1`, and **a pipeline exits with the last command's status**, so the failure was masked and the chain continued. `main` never advanced, so `v2.36.2` was created *and pushed* onto `bd51350`, whose `package.json` read `2.36.1` — the exact defect logged for six historical tags one release earlier. Deleted from local and remote, re-created correctly on `c5f28b6`.
+- **Root cause was the pipe, not the invariant.** Recorded as memory `feedback_pipe_masks_exit_status`: never pipe a fallible command and rely on `&&`, and never derive a value (`$(git rev-parse HEAD)`) in the same chain as the command meant to produce that state.
+- **The invariant is now a gate, not a wish.** A third hook (`PreToolUse` on Bash) intercepts `git tag -a vX.Y.Z <sha>` and asks for confirmation when the target commit's `package.json` ≠ the tag. Dry-run against the real mistake (asks), the correct tag (silent), a historical stale tag (asks), and unrelated commands (silent). It had existed only as a deferred sweep-script item — which is why nothing caught this.
+- **Deep sweep of memory, rules, and hooks.** Found `project_dior_builds_changelog_system` — the file `docs/README.md` names as the source of truth for the versioning scheme — still teaching *"graduates to a real entry (+ squash hash + tag) at merge,"* the retired clause. Corrected, with the entry format added. `.claude/rules/*` are workflow-free (correct); every path and memory name referenced inside a hook resolves.
 
 ## v2.36.2 — 2026-07-27 22:05 EDT (#35 · `c5f28b6`) — Audit follow-ups: two checks that would have cried wolf
 **Docs/meta only — no runtime change, not deployed.** Found by a wide verification pass over v2.36.0–v2.36.1.
-- **Synced `main` → `v3-pre-release`.** It had been sitting two releases behind at v2.35.15, so it lacked
-  the very convention it is supposed to follow. Fast-forward (no divergence), by `git merge origin/main`
-  as the one-way sync rule requires — never a cherry-pick.
-- **Corrected a planned consistency check before it shipped.** The "every changelog version has a summary
-  line" rule, implemented as an exact `## vX.Y.Z` heading match, reported **23 false gaps** — every one of
-  them actually represented via a range heading (`## v2.18.0–v2.18.3`) or an inline mention, which is the
-  documented convention for trivial/docs-only releases. Noted on the sweep-script item so it isn't written
-  that way. A check that cries wolf 23 times gets ignored, which is worse than no check.
-- **Fixed the always-loaded lifecycle wording that would have recreated the two-commit bug.** Root
-  `CLAUDE.md` — the only file re-injected after `/compact`, and so the most likely thing a future session
-  follows — read `` `gh pr merge --squash` + `package.json` bump + version tag ``. As a sequence that says
-  *merge first, then bump*, which is precisely the pattern v2.36.0 retired. The final pre-merge checkpoint
-  is now its own lifecycle step, with the one-commit-one-tag invariant and the failure mode named outright:
-  if you're about to commit on `main` after merging, stop.
-- **Closed a `-pre` suffix ambiguity in the v3 spec.** It read as though `v3-pre-release`'s `package.json`
-  must *always* carry `-pre`; it starts with the first `Pre-Release` entry. Until then the branch just
-  tracks `main`'s plain version, so today's `2.36.1` there is correct, not drift.
+- **Synced `main` → `v3-pre-release`.** It had been sitting two releases behind at v2.35.15, so it lacked the very convention it is supposed to follow. Fast-forward (no divergence), by `git merge origin/main` as the one-way sync rule requires — never a cherry-pick.
+- **Corrected a planned consistency check before it shipped.** The "every changelog version has a summary line" rule, implemented as an exact `## vX.Y.Z` heading match, reported **23 false gaps** — every one of them actually represented via a range heading (`## v2.18.0–v2.18.3`) or an inline mention, which is the documented convention for trivial/docs-only releases. Noted on the sweep-script item so it isn't written that way. A check that cries wolf 23 times gets ignored, which is worse than no check.
+- **Fixed the always-loaded lifecycle wording that would have recreated the two-commit bug.** Root `CLAUDE.md` — the only file re-injected after `/compact`, and so the most likely thing a future session follows — read `` `gh pr merge --squash` + `package.json` bump + version tag ``. As a sequence that says *merge first, then bump*, which is precisely the pattern v2.36.0 retired. The final pre-merge checkpoint is now its own lifecycle step, with the one-commit-one-tag invariant and the failure mode named outright: if you're about to commit on `main` after merging, stop.
+- **Closed a `-pre` suffix ambiguity in the v3 spec.** It read as though `v3-pre-release`'s `package.json` must *always* carry `-pre`; it starts with the first `Pre-Release` entry. Until then the branch just tracks `main`'s plain version, so today's `2.36.1` there is correct, not drift.
 
 ## v2.36.1 — 2026-07-27 21:50 EDT (#34 · `bd51350`) — Merged branches stop rotting
 **Docs/meta only — no runtime change, not deployed.**
-- **Found 10 merged branches sitting unpruned**, the oldest from PR #11. GitHub's auto-delete-on-merge
-  removes only the *remote* branch, and a plain `git fetch` does **not** prune remote-tracking refs, so
-  they kept listing locally as though they were live work. All 10 confirmed `MERGED` via `gh pr list`
-  before deletion, and their SHAs recorded in the session log first.
-- **Verification note worth keeping:** `git branch --merged` is useless here — it never reports a
-  squash-merged branch as merged. `git diff main..<branch>` is also inconclusive, since `main` moving on
-  produces large diffs in both directions. The authoritative check is the PR's own `MERGED` state.
-- **The fix is `--delete-branch`**, which also removes the local branch. Documented in `CLAUDE.md`,
-  `docs/README.md` (new lifecycle step 5), and memory.
-- **Enforced by two new hooks** in `.claude/settings.local.json`: a `SessionStart` check that fetches
-  with `--prune` and reports any `[gone]` branch, and a `PostToolUse` check that fires when a
-  `gh pr merge` runs without `--delete-branch`. Both dry-run before shipping. ⚠️ That file is
-  **gitignored** — the hooks are local-only and are *not* in this PR; only the prose convention is.
+- **Found 10 merged branches sitting unpruned**, the oldest from PR #11. GitHub's auto-delete-on-merge removes only the *remote* branch, and a plain `git fetch` does **not** prune remote-tracking refs, so they kept listing locally as though they were live work. All 10 confirmed `MERGED` via `gh pr list` before deletion, and their SHAs recorded in the session log first.
+- **Verification note worth keeping:** `git branch --merged` is useless here — it never reports a squash-merged branch as merged. `git diff main..<branch>` is also inconclusive, since `main` moving on produces large diffs in both directions. The authoritative check is the PR's own `MERGED` state.
+- **The fix is `--delete-branch`**, which also removes the local branch. Documented in `CLAUDE.md`, `docs/README.md` (new lifecycle step 5), and memory.
+- **Enforced by two new hooks** in `.claude/settings.local.json`: a `SessionStart` check that fetches with `--prune` and reports any `[gone]` branch, and a `PostToolUse` check that fires when a `gh pr merge` runs without `--delete-branch`. Both dry-run before shipping. ⚠️ That file is **gitignored** — the hooks are local-only and are *not* in this PR; only the prose convention is.
 
 ## v2.36.0 — 2026-07-27 21:35 EDT (#33 · `30da23e`) — One commit, one tag: the finalize commit is retired
-**Docs/meta only — no runtime change, not deployed.** First release under the new citation convention,
-so this entry deliberately carries **no hash** — it gets backfilled by v2.36.1's branch. That is the
-convention working, not a missing field.
-- **Root cause was one self-contradictory clause, not "spec vs. reality."** The workflow spec's §3
-  already described a working 1-commit design (bump on the branch as the final pre-merge checkpoint, so
-  it folds into the squash commit). Only §5's *"finalized at merge — real number + squash-commit hash +
-  tag"* blocked it: a commit cannot contain its own hash, so citing the squash hash inline forced a
-  second `chore(release): finalize …` commit after the merge.
-- **The fix — lagged-backfill citation.** An entry cites `(#PR)` at branch time; the hash is inserted
-  **one release later**, on the next release's branch, where it rides into *that* release's squash
-  commit. The hash never costs a commit of its own, so the `chore(release)` commit is **retired** and
-  "one commit + one tag per version" is finally true. The backfill is additive-only, the timestamp is
-  written once and never edited, and it is an ordinary edit in a later commit — **never an `--amend`,
-  never a force-push.** `main` stays append-only.
-- **Why the hash was kept at all** (rather than the simpler "tag only"): `v3-pre-release` mints no tags
-  until `v3.0.0`, so there the inline hash is the *only* pointer an entry has. Rejected alternatives are
-  recorded in spec §10 so they aren't re-proposed.
-- **Corrects v2.35.15's claim below that "every release since the workflow launched has the same
-  shape."** Measured, not assumed: of the 25 hash-citing entries, **16 cite the tag's parent** (the
-  2-commit shape) and **9 cite the tag itself**. The pattern was the majority, never universal.
-- **Found a pre-existing latent defect** while checking the new invariants: `v2.33.3`, `v2.33.4` and
-  `v2.35.0`–`v2.35.3` are tagged on a commit predating their own version bump, so
-  `git show <tag>:package.json` reports the *previous* release. Documented in
-  `docs/reference/deployment-and-ops.md` and filed as its own item — moving six published tags needs
-  force-pushed refs and doesn't belong in this PR.
-- Closed the `[P1 · 🧩needs-design]` deferred item to `archive/resolved-list.md`; extended the queued
-  sweep-script entry with three machine-checkable invariants (newest entry exempt from the SHA check,
-  PR-number coverage from v2.33.0 on, tag's `package.json` == entry's version).
+**Docs/meta only — no runtime change, not deployed.** First release under the new citation convention, so this entry deliberately carries **no hash** — it gets backfilled by v2.36.1's branch. That is the convention working, not a missing field.
+- **Root cause was one self-contradictory clause, not "spec vs. reality."** The workflow spec's §3 already described a working 1-commit design (bump on the branch as the final pre-merge checkpoint, so it folds into the squash commit). Only §5's *"finalized at merge — real number + squash-commit hash + tag"* blocked it: a commit cannot contain its own hash, so citing the squash hash inline forced a second `chore(release): finalize …` commit after the merge.
+- **The fix — lagged-backfill citation.** An entry cites `(#PR)` at branch time; the hash is inserted **one release later**, on the next release's branch, where it rides into *that* release's squash commit. The hash never costs a commit of its own, so the `chore(release)` commit is **retired** and "one commit + one tag per version" is finally true. The backfill is additive-only, the timestamp is written once and never edited, and it is an ordinary edit in a later commit — **never an `--amend`, never a force-push.** `main` stays append-only.
+- **Why the hash was kept at all** (rather than the simpler "tag only"): `v3-pre-release` mints no tags until `v3.0.0`, so there the inline hash is the *only* pointer an entry has. Rejected alternatives are recorded in spec §10 so they aren't re-proposed.
+- **Corrects v2.35.15's claim below that "every release since the workflow launched has the same shape."** Measured, not assumed: of the 25 hash-citing entries, **16 cite the tag's parent** (the 2-commit shape) and **9 cite the tag itself**. The pattern was the majority, never universal.
+- **Found a pre-existing latent defect** while checking the new invariants: `v2.33.3`, `v2.33.4` and `v2.35.0`–`v2.35.3` are tagged on a commit predating their own version bump, so `git show <tag>:package.json` reports the *previous* release. Documented in `docs/reference/deployment-and-ops.md` and filed as its own item — moving six published tags needs force-pushed refs and doesn't belong in this PR.
+- Closed the `[P1 · 🧩needs-design]` deferred item to `archive/resolved-list.md`; extended the queued sweep-script entry with three machine-checkable invariants (newest entry exempt from the SHA check, PR-number coverage from v2.33.0 on, tag's `package.json` == entry's version).
 
 ## v2.35.15 — 2026-07-27 20:45 EDT (#32 · `f913975`) — A scripted records sweep, and the chore checklist that was wrong
-**Docs/meta only — no runtime change, not deployed.** The VM's files are at v2.35.13; its running
-process is still on v2.35.4's code (never restarted).
-- **`docs/README.md`'s chore checklist told you to tag the squash commit.** It doesn't happen and never
-  has: `v2.35.5`'s tag points at `a8b383e` (the finalize commit), not `3e12737` (its squash), and every
-  release since the workflow launched has the same shape. The cause is **structural** — a changelog entry
-  cites the squash commit's own hash inline, and a commit cannot contain its own hash, so a second
-  `chore(release): finalize …` commit is unavoidable under the current convention. Step 8 now describes
-  the real 2-commit process and points at the open `[P1]` design item instead of being "fixed" ad hoc.
-- **New checklist step 9 — sanity-check the records at merge.** Newest `package.json` == newest
-  `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every version has a tag and a summary line; every
-  cited SHA resolves; `git fetch --prune` before trusting `git branch -a`.
-- **Filed `[P2 · S]`: make the sweep a script, then a CI job**, bundled with the Vitest/Biome expansion.
-  It caught two genuine defects today that reading had missed, and prose had already failed at both —
-  the same "a checkable rule becomes a hook, not more prose" case this project applies elsewhere.
-- **Verified clean rather than assumed:** all 10 versions shipped today carry a git tag *and* a summary
-  line with no number skipped; all cited SHAs resolve via `git cat-file -e`; `CLAUDE.md`'s memory count
-  (57) matches the store; `MEMORY.md` indexes every memory file with zero broken links; both
-  `SessionStart` hook anchors in the notes file are intact.
-- **Three findings deliberately left alone**, because "stale-looking" isn't the same as wrong: dangling
-  `[[wikilinks]]` legitimately mark memories worth writing later; `utils/emojiMap.dev.json` is referenced
-  but absent **by design** (an optional dev-only override `utils/emojiMap.js:87` reads defensively); and
-  the "no CI on `main`" lines in CHANGELOG/DEVLOG are historical records of what was true when written.
+**Docs/meta only — no runtime change, not deployed.** The VM's files are at v2.35.13; its running process is still on v2.35.4's code (never restarted).
+- **`docs/README.md`'s chore checklist told you to tag the squash commit.** It doesn't happen and never has: `v2.35.5`'s tag points at `a8b383e` (the finalize commit), not `3e12737` (its squash), and every release since the workflow launched has the same shape. The cause is **structural** — a changelog entry cites the squash commit's own hash inline, and a commit cannot contain its own hash, so a second `chore(release): finalize …` commit is unavoidable under the current convention. Step 8 now describes the real 2-commit process and points at the open `[P1]` design item instead of being "fixed" ad hoc.
+- **New checklist step 9 — sanity-check the records at merge.** Newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every version has a tag and a summary line; every cited SHA resolves; `git fetch --prune` before trusting `git branch -a`.
+- **Filed `[P2 · S]`: make the sweep a script, then a CI job**, bundled with the Vitest/Biome expansion. It caught two genuine defects today that reading had missed, and prose had already failed at both — the same "a checkable rule becomes a hook, not more prose" case this project applies elsewhere.
+- **Verified clean rather than assumed:** all 10 versions shipped today carry a git tag *and* a summary line with no number skipped; all cited SHAs resolve via `git cat-file -e`; `CLAUDE.md`'s memory count (57) matches the store; `MEMORY.md` indexes every memory file with zero broken links; both `SessionStart` hook anchors in the notes file are intact.
+- **Three findings deliberately left alone**, because "stale-looking" isn't the same as wrong: dangling `[[wikilinks]]` legitimately mark memories worth writing later; `utils/emojiMap.dev.json` is referenced but absent **by design** (an optional dev-only override `utils/emojiMap.js:87` reads defensively); and the "no CI on `main`" lines in CHANGELOG/DEVLOG are historical records of what was true when written.
 - Memory `feedback_push_means_full_cycle` corrected — it still described Render as "suspended/retired".
 
 ## v2.35.14 — 2026-07-27 20:25 EDT (#31 · `5a41a91`) — Render deleted, VM divergence fixed: GCP is now the only host
-**Real infrastructure change, but no runtime change and no deploy.** The bot process was never
-restarted and is still running v2.35.4's code.
-- **Render service `srv-d850b2og4nts73fhpfog` is DELETED.** REST `DELETE` → `204`, and a follow-up `GET`
-  returns `404 not found` — confirmed gone rather than assumed from the status code. Service identity
-  was verified before deleting (name `diors-builds`, suspended by user, untouched since the 2026-07-17
-  cutover). The P0 trigger fired on schedule, and the health precondition was **actually checked**
-  rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with **0 restarts**, ~11h
-  uptime, RAM 564/969MB, load 0.10, disk 15%, `journalctl -p err` over the previous hour empty.
-  **The GCP VM is now the only host — there is no fallback.**
-- **The VM's diverged git history is fixed** — `git fetch origin && git reset --hard origin/main`. Its 2
-  extra commits (`f1dff2c`, `42f024e`) were exactly the pair this morning's force-push erased, and the
-  working tree was clean, so nothing was lost. **The service was deliberately NOT restarted**, because
-  that would be a deploy: the VM's *files* now sit at v2.35.13 while the *running process* stays on
-  v2.35.4's code until the next restart — the normal post-`git pull`, pre-restart state. Verified after:
-  HEAD `771ea76`, no ahead/behind, `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`.
-- **`deployment-and-ops.md`'s Render suspend/resume mechanics are now marked historical.** That block
-  carried its own expiry — *"kept for reference until the service is deleted"* — and the condition fired.
-- **Filed: revoke `RENDER_API_KEY`.** It now authenticates against an account with no services, so it
-  grants nothing while remaining a live secret in prod's `.env` and on the VM. `RAILWAY_TOKEN` is
-  probably in the same position (Railway was abandoned even earlier) and is worth checking in the same
-  pass. A credential with zero remaining purpose is pure downside.
-- Both reminders moved to `docs/archive/resolved-list.md` recording what was verified, not just that
-  they were done. Memory `project_deployment_migration_render_to_gcp` updated to match.
+**Real infrastructure change, but no runtime change and no deploy.** The bot process was never restarted and is still running v2.35.4's code.
+- **Render service `srv-d850b2og4nts73fhpfog` is DELETED.** REST `DELETE` → `204`, and a follow-up `GET` returns `404 not found` — confirmed gone rather than assumed from the status code. Service identity was verified before deleting (name `diors-builds`, suspended by user, untouched since the 2026-07-17 cutover). The P0 trigger fired on schedule, and the health precondition was **actually checked** rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with **0 restarts**, ~11h uptime, RAM 564/969MB, load 0.10, disk 15%, `journalctl -p err` over the previous hour empty. **The GCP VM is now the only host — there is no fallback.**
+- **The VM's diverged git history is fixed** — `git fetch origin && git reset --hard origin/main`. Its 2 extra commits (`f1dff2c`, `42f024e`) were exactly the pair this morning's force-push erased, and the working tree was clean, so nothing was lost. **The service was deliberately NOT restarted**, because that would be a deploy: the VM's *files* now sit at v2.35.13 while the *running process* stays on v2.35.4's code until the next restart — the normal post-`git pull`, pre-restart state. Verified after: HEAD `771ea76`, no ahead/behind, `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`.
+- **`deployment-and-ops.md`'s Render suspend/resume mechanics are now marked historical.** That block carried its own expiry — *"kept for reference until the service is deleted"* — and the condition fired.
+- **Filed: revoke `RENDER_API_KEY`.** It now authenticates against an account with no services, so it grants nothing while remaining a live secret in prod's `.env` and on the VM. `RAILWAY_TOKEN` is probably in the same position (Railway was abandoned even earlier) and is worth checking in the same pass. A credential with zero remaining purpose is pure downside.
+- Both reminders moved to `docs/archive/resolved-list.md` recording what was verified, not just that they were done. Memory `project_deployment_migration_render_to_gcp` updated to match.
 
 ## v2.35.13 — 2026-07-27 20:10 EDT (#30 · `1773605`) — Diagnosed the VM divergence and cleared Render's health gate
 **Docs/meta only — no runtime change, not deployed, and the VM was explicitly NOT restarted.**
-- **The VM git divergence is now fully diagnosed rather than merely flagged.** Verified live: the VM sits
-  **2 ahead / 16 behind** `origin/main`. The two VM-only commits are `f1dff2c` and `42f024e` — exactly
-  the v2.36.0→v2.35.4 correction pair this morning's force-push rewrote away — so discarding them loses
-  nothing. The VM's **working tree is clean**. Critically, the runtime delta from resetting is only
-  `utils/cloudinary*.js`, the new `utils/cloudinaryDevGuard.js`, and `package.json` — i.e. v2.35.9's dev
-  write guard, which is **inert in prod** (`NODE_ENV` is unset there, so `IS_DEV` is false). So the reset
-  changes **no production behaviour**, which is the fact that makes it safe to run unattended later.
-- The entry now carries the exact command (`git fetch origin && git reset --hard origin/main` in
-  `~/diors-builds`) and an explicit **"do not restart as part of this"** — restarting would be a deploy,
-  which is separately gated.
-- **Render's deletion precondition is met.** VM `RUNNING`, `diors-bot` **active with 0 restarts**, ~11h
-  uptime, RAM 564/969MB, load 0.10, disk 15%, gateway resumed cleanly. `journalctl -u diors-bot -p err
-  --since '1 hour ago'` returned **no entries**. Worth recording: `scripts/vmstatus.sh`'s own
-  `errors(1h): 1` counter reads a **different source** and corresponded to no error-priority journal
-  entry — so that counter and the journal disagree, and the journal is the one to trust for "is
-  something actually broken."
-- **Neither action was executed.** The VM reset was blocked by Claude Code's permission classifier
-  (correct — `git reset --hard` on a live host is destructive); the Render deletion was held on purpose,
-  being irreversible and on an external service.
+- **The VM git divergence is now fully diagnosed rather than merely flagged.** Verified live: the VM sits **2 ahead / 16 behind** `origin/main`. The two VM-only commits are `f1dff2c` and `42f024e` — exactly the v2.36.0→v2.35.4 correction pair this morning's force-push rewrote away — so discarding them loses nothing. The VM's **working tree is clean**. Critically, the runtime delta from resetting is only `utils/cloudinary*.js`, the new `utils/cloudinaryDevGuard.js`, and `package.json` — i.e. v2.35.9's dev write guard, which is **inert in prod** (`NODE_ENV` is unset there, so `IS_DEV` is false). So the reset changes **no production behaviour**, which is the fact that makes it safe to run unattended later.
+- The entry now carries the exact command (`git fetch origin && git reset --hard origin/main` in `~/diors-builds`) and an explicit **"do not restart as part of this"** — restarting would be a deploy, which is separately gated.
+- **Render's deletion precondition is met.** VM `RUNNING`, `diors-bot` **active with 0 restarts**, ~11h uptime, RAM 564/969MB, load 0.10, disk 15%, gateway resumed cleanly. `journalctl -u diors-bot -p err --since '1 hour ago'` returned **no entries**. Worth recording: `scripts/vmstatus.sh`'s own `errors(1h): 1` counter reads a **different source** and corresponded to no error-priority journal entry — so that counter and the journal disagree, and the journal is the one to trust for "is something actually broken."
+- **Neither action was executed.** The VM reset was blocked by Claude Code's permission classifier (correct — `git reset --hard` on a live host is destructive); the Render deletion was held on purpose, being irreversible and on an external service.
 
 ## v2.35.12 — 2026-07-27 19:55 EDT (#29 · `d013a9a`) — Reconciled the two tracking files; refreshed stale model tags
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
-- **`ROADMAP.md` and `db-deferred-list.md` were duplicating each other while each claimed it didn't.**
-  A token-overlap cross-check (not eyeballing) found **7 items in both files**, several with identical
-  `[Priority · Effort]` tags — against ROADMAP's *"not duplicated here"* and the deferred list's
-  *"deliberately NOT a copy of it: pointer, not duplicate."*
-- **Nothing was deleted.** In the two richest pairs the *deferred* copy holds the fuller detail — the
-  already-decided hybrid design for pagination perf; the root cause, determinism constraint and
-  algorithm levers for View Colors — while ROADMAP holds a stub. Deleting either side loses
-  information, so all 14 entries got a `⇄` cross-reference naming their twin.
-- **Both headers now state the division of labour concretely:** ROADMAP answers *which version an item
-  belongs to*; `db-deferred-list.md` answers *how big it is, what's already decided, and when it earns a
-  session*. An item may appear in both — appearing in both **without** the `⇄` marker is the bug, since
-  that's precisely how these two drifted apart unnoticed.
-- **The 2026-07-25 21:43 EDT `Opus4.8-*` → `Opus5-*` refresh only covered `db-deferred-list.md`.**
-  Updated the live prescriptions it missed: ROADMAP's View Colors entry (`Own session, Opus 4.8 high`),
-  `SESSION-START.md`'s two `/rename` examples (read by every session and copied verbatim), and three
-  memory files. **Historical references deliberately left alone** — changelog, DEVLOG, spec authorship
-  lines, and the measured Opus-4.8-vs-Sonnet-5 comparison record what was true at the time.
-- **`CLAUDE.md`'s memory-file count was 55; the store holds 57.** The additions are
-  `project_dior_cli_repo.md` and `reference_dior_cli_terminal_palette.md`, filed 20:47 EDT today by the
-  `dior` CLI work. Worth flagging: this same count was corrected in v2.35.5 this morning and was stale
-  again within nine hours, which is a fair argument that a hard number costs more than it's worth here.
-  Noted, not acted on unilaterally.
+- **`ROADMAP.md` and `db-deferred-list.md` were duplicating each other while each claimed it didn't.** A token-overlap cross-check (not eyeballing) found **7 items in both files**, several with identical `[Priority · Effort]` tags — against ROADMAP's *"not duplicated here"* and the deferred list's *"deliberately NOT a copy of it: pointer, not duplicate."*
+- **Nothing was deleted.** In the two richest pairs the *deferred* copy holds the fuller detail — the already-decided hybrid design for pagination perf; the root cause, determinism constraint and algorithm levers for View Colors — while ROADMAP holds a stub. Deleting either side loses information, so all 14 entries got a `⇄` cross-reference naming their twin.
+- **Both headers now state the division of labour concretely:** ROADMAP answers *which version an item belongs to*; `db-deferred-list.md` answers *how big it is, what's already decided, and when it earns a session*. An item may appear in both — appearing in both **without** the `⇄` marker is the bug, since that's precisely how these two drifted apart unnoticed.
+- **The 2026-07-25 21:43 EDT `Opus4.8-*` → `Opus5-*` refresh only covered `db-deferred-list.md`.** Updated the live prescriptions it missed: ROADMAP's View Colors entry (`Own session, Opus 4.8 high`), `SESSION-START.md`'s two `/rename` examples (read by every session and copied verbatim), and three memory files. **Historical references deliberately left alone** — changelog, DEVLOG, spec authorship lines, and the measured Opus-4.8-vs-Sonnet-5 comparison record what was true at the time.
+- **`CLAUDE.md`'s memory-file count was 55; the store holds 57.** The additions are `project_dior_cli_repo.md` and `reference_dior_cli_terminal_palette.md`, filed 20:47 EDT today by the `dior` CLI work. Worth flagging: this same count was corrected in v2.35.5 this morning and was stale again within nine hours, which is a fair argument that a hard number costs more than it's worth here. Noted, not acted on unilaterally.
 - `MEMORY.md`'s index verified complete against the store: 0 files unlisted, 0 broken links.
 
 ## v2.35.11 — 2026-07-27 19:30 EDT (#28 · `4d29f86`) — Corrected the CI deferred entry after its own precondition was met
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
-- **"Expand CI beyond syntax-check" was asserting something that had just stopped being true.** Its ⚠️
-  correction block said there was *"genuinely no CI at all on `main`"* and that PR
-  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) was *"still open, unmerged"* — accurate
-  when written 2026-07-26 19:06 EDT, false from the moment #11 merged as v2.35.8 hours earlier the same
-  day. The entry's own stated precondition (*"Sequencing: merge PR #11 first"*) is now satisfied, so what
-  remains is purely the Vitest/Biome/commitlint expansion.
+- **"Expand CI beyond syntax-check" was asserting something that had just stopped being true.** Its ⚠️ correction block said there was *"genuinely no CI at all on `main`"* and that PR [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) was *"still open, unmerged"* — accurate when written 2026-07-26 19:06 EDT, false from the moment #11 merged as v2.35.8 hours earlier the same day. The entry's own stated precondition (*"Sequencing: merge PR #11 first"*) is now satisfied, so what remains is purely the Vitest/Biome/commitlint expansion.
 - Left standing because it is still accurate: this repo has **no test framework and no lint config**.
-- Found by a staleness sweep over `docs/` + `.claude/` + the memory store rather than by reading — the
-  entry looked fine in isolation and only failed against the current state of `main`.
+- Found by a staleness sweep over `docs/` + `.claude/` + the memory store rather than by reading — the entry looked fine in isolation and only failed against the current state of `main`.
 
 ## v2.35.10 — 2026-07-27 19:00 EDT (#27 · `2665db4`) — Synced the standing records to the v3 structure
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
-- **The "document" step for v2.35.6's design** — a standing rule changed, so the written record had to
-  catch up even though no feature code shipped.
-- **`CLAUDE.md`'s git-workflow invariant now states that TWO bases exist** and that `gh pr create`
-  defaults to the wrong one for v3 work. That's the single most likely way to silently break the v3
-  structure: a v3 PR created without `--base v3-pre-release` targets `main` and, if merged, puts
-  unfinished v3 code on the branch that must stay live-safe. Also records merge-not-cherry-pick and the
-  `-pre` versioning shape.
-- **Recorded that `git branch -a` is not a reliable view of open work here.** Auto-delete-on-merge is
-  enabled and a plain `git fetch` does not prune remote-tracking refs, so three long-merged branches
-  listed as if they were live work — surfaced only when `git push --delete` failed with "remote ref does
-  not exist." `gh pr list --state all` is the authoritative check.
-- **`ROADMAP.md`** files the v3 development structure (v2.35.6) and the first CI (v2.35.8) as shipped
-  process/tooling entries; **`DEVLOG.md`** carries the narrative — why the 2026-07-14 directive had aged
-  out from under itself, and how testing an isolation assumption is what surfaced the Cloudinary hole.
-- Memory `project_git_workflow` and `project_dior_builds_changelog_system` updated in the same pass
-  (outside the repo, so not in the PR diff). The 2026-07-14 directive is marked **partly superseded**
-  rather than deleted, with the three concrete changes called out inline.
+- **The "document" step for v2.35.6's design** — a standing rule changed, so the written record had to catch up even though no feature code shipped.
+- **`CLAUDE.md`'s git-workflow invariant now states that TWO bases exist** and that `gh pr create` defaults to the wrong one for v3 work. That's the single most likely way to silently break the v3 structure: a v3 PR created without `--base v3-pre-release` targets `main` and, if merged, puts unfinished v3 code on the branch that must stay live-safe. Also records merge-not-cherry-pick and the `-pre` versioning shape.
+- **Recorded that `git branch -a` is not a reliable view of open work here.** Auto-delete-on-merge is enabled and a plain `git fetch` does not prune remote-tracking refs, so three long-merged branches listed as if they were live work — surfaced only when `git push --delete` failed with "remote ref does not exist." `gh pr list --state all` is the authoritative check.
+- **`ROADMAP.md`** files the v3 development structure (v2.35.6) and the first CI (v2.35.8) as shipped process/tooling entries; **`DEVLOG.md`** carries the narrative — why the 2026-07-14 directive had aged out from under itself, and how testing an isolation assumption is what surfaced the Cloudinary hole.
+- Memory `project_git_workflow` and `project_dior_builds_changelog_system` updated in the same pass (outside the repo, so not in the PR diff). The 2026-07-14 directive is marked **partly superseded** rather than deleted, with the three concrete changes called out inline.
 
 ## v2.35.9 — 2026-07-27 18:45 EDT (#26 · `f1575d0`) — Stopped the dev bot from writing to the LIVE Cloudinary account
-**Dev-instance safety fix — prod behaviour is byte-identical, so this is not deployed.** The VM is still
-running v2.35.4's code and nothing here changes what it would do.
-- **`.env.dev`'s `CLOUDINARY_URL` was byte-identical to prod's.** The local dev bot (`Dio (Dev)`) is not
-  on a separate Cloudinary account — it reads *and writes* the live one, same flat `gun-builds` folder.
-  Found while verifying dev/prod isolation for the v3 development structure; `BOT_TOKEN`, `MONGODB_URI`
-  and `LOG_WEBHOOK_URL` were all correctly separated, this one wasn't. Before this fix, testing `/manage`
-  image add/edit/delete or `/autobuild` on the dev bot **mutated live assets**, and the dev bot's own
-  boot + 24h cleanup sweep would **delete prod assets unprompted**, with nobody having asked for anything.
-- **Fails closed** (`utils/cloudinaryDevGuard.js`, new): with `NODE_ENV=development`, `upload`,
-  `update_metadata` and `delete_resources` become loud no-ops across all three caches
-  (`loadoutImageCache`, `cloudinaryCache`, `patchNotesCache`). **Reads are untouched on purpose** —
-  loadout image URLs in Mongo point at prod assets, so putting dev on a different account would render
-  every loadout broken locally and gut the dev bot for exactly the image features it exists to test.
-- **A `-dev` folder was the obvious fix and is insufficient — worth recording so it isn't re-proposed.**
-  `temp_draws` and `patch_notes` bake their folder into the `public_id`, so scoping the folder namespaces
-  them end-to-end. **`gun-builds` does not**: loadout `public_id` is the bare `imageKey`, with the folder
-  carried only in `asset_folder`, which is a decoupled dashboard label and not part of the asset's
-  identity. A dev upload of an existing key therefore overwrites the live image *regardless of folder*.
-  Only not-writing prevents it. A properly designed parallel dev namespace is filed as `[P2 · M]` in
-  `docs/db-deferred-list.md`, to be done when a v3 feature actually needs dev-side image writes.
-- **Prod is provably unaffected:** `NODE_ENV=development` is set by `.env.dev` and nothing else; prod's
-  `.env` doesn't define it, and `dotenv.config()`'s backfill can only fill keys that exist *somewhere* —
-  it can't invent one. Verified by executing both paths, not by reading: dev blocked all three uploads
-  (including `gun-builds/AK117-1`, a real live key) with no network call; prod evaluated `IS_DEV = false`.
-- Each guarded call site returns its own pre-existing "upload failed" shape, so nothing downstream had to
-  learn a new contract — dev now behaves exactly as it already did against a Cloudinary hiccup, which
-  every one of these sites was built to survive.
+**Dev-instance safety fix — prod behaviour is byte-identical, so this is not deployed.** The VM is still running v2.35.4's code and nothing here changes what it would do.
+- **`.env.dev`'s `CLOUDINARY_URL` was byte-identical to prod's.** The local dev bot (`Dio (Dev)`) is not on a separate Cloudinary account — it reads *and writes* the live one, same flat `gun-builds` folder. Found while verifying dev/prod isolation for the v3 development structure; `BOT_TOKEN`, `MONGODB_URI` and `LOG_WEBHOOK_URL` were all correctly separated, this one wasn't. Before this fix, testing `/manage` image add/edit/delete or `/autobuild` on the dev bot **mutated live assets**, and the dev bot's own boot + 24h cleanup sweep would **delete prod assets unprompted**, with nobody having asked for anything.
+- **Fails closed** (`utils/cloudinaryDevGuard.js`, new): with `NODE_ENV=development`, `upload`, `update_metadata` and `delete_resources` become loud no-ops across all three caches (`loadoutImageCache`, `cloudinaryCache`, `patchNotesCache`). **Reads are untouched on purpose** — loadout image URLs in Mongo point at prod assets, so putting dev on a different account would render every loadout broken locally and gut the dev bot for exactly the image features it exists to test.
+- **A `-dev` folder was the obvious fix and is insufficient — worth recording so it isn't re-proposed.** `temp_draws` and `patch_notes` bake their folder into the `public_id`, so scoping the folder namespaces them end-to-end. **`gun-builds` does not**: loadout `public_id` is the bare `imageKey`, with the folder carried only in `asset_folder`, which is a decoupled dashboard label and not part of the asset's identity. A dev upload of an existing key therefore overwrites the live image *regardless of folder*. Only not-writing prevents it. A properly designed parallel dev namespace is filed as `[P2 · M]` in `docs/db-deferred-list.md`, to be done when a v3 feature actually needs dev-side image writes.
+- **Prod is provably unaffected:** `NODE_ENV=development` is set by `.env.dev` and nothing else; prod's `.env` doesn't define it, and `dotenv.config()`'s backfill can only fill keys that exist *somewhere* — it can't invent one. Verified by executing both paths, not by reading: dev blocked all three uploads (including `gun-builds/AK117-1`, a real live key) with no network call; prod evaluated `IS_DEV = false`.
+- Each guarded call site returns its own pre-existing "upload failed" shape, so nothing downstream had to learn a new contract — dev now behaves exactly as it already did against a Cloudinary hiccup, which every one of these sites was built to survive.
 
 ## v2.35.8 — 2026-07-27 18:25 EDT (#11 · `f3792b0`) — First CI: a syntax check on every push and PR
-**Repo tooling only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/`
-was touched, so the VM is still running v2.35.4's code.
-- **This repo had zero CI before now.** `.github/workflows/ci.yml` runs `npm ci` → `npm run check` →
-  `npm audit --audit-level=high` (advisory, non-blocking) on Node 24. Deliberately minimal: there's no
-  test framework or lint config here, and inventing them would have been scope creep beyond "add CI."
-- **`npm run check` is new and automates what was already happening by hand** — `node --check` across
-  every non-`node_modules` `.js` file, which had been run manually before commits. `package.json`'s
-  `test` script was a placeholder that always failed (`exit 1`); it now runs the same check. Added
-  `engines.node: ">=24"` to match the VM.
-- **The workflow triggers on `v3-pre-release` as well as `main`** — added while syncing this branch,
-  and load-bearing rather than cosmetic. Under the v3 development structure every v3 feature PR targets
-  `v3-pre-release`, so with `main` alone in the trigger lists **no v3 work would have run CI at all** —
-  and it fails silently, because a repo with no runs looks exactly like a repo whose runs all pass. Any
-  future long-lived integration branch needs adding to both lists for the same reason.
-- Drafted 2026-07-25, then sat 30 commits behind `main` until it was synced and merged here. Verified
-  green on its own PR before merge (`syntax-check` passed in 16s), which was the one open item on its
-  original test plan.
+**Repo tooling only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was touched, so the VM is still running v2.35.4's code.
+- **This repo had zero CI before now.** `.github/workflows/ci.yml` runs `npm ci` → `npm run check` → `npm audit --audit-level=high` (advisory, non-blocking) on Node 24. Deliberately minimal: there's no test framework or lint config here, and inventing them would have been scope creep beyond "add CI."
+- **`npm run check` is new and automates what was already happening by hand** — `node --check` across every non-`node_modules` `.js` file, which had been run manually before commits. `package.json`'s `test` script was a placeholder that always failed (`exit 1`); it now runs the same check. Added `engines.node: ">=24"` to match the VM.
+- **The workflow triggers on `v3-pre-release` as well as `main`** — added while syncing this branch, and load-bearing rather than cosmetic. Under the v3 development structure every v3 feature PR targets `v3-pre-release`, so with `main` alone in the trigger lists **no v3 work would have run CI at all** — and it fails silently, because a repo with no runs looks exactly like a repo whose runs all pass. Any future long-lived integration branch needs adding to both lists for the same reason.
+- Drafted 2026-07-25, then sat 30 commits behind `main` until it was synced and merged here. Verified green on its own PR before merge (`syntax-check` passed in 16s), which was the one open item on its original test plan.
 
 ## v2.35.7 — 2026-07-27 18:15 EDT (#15 · `801902f`) — Filed the roadmap board's remaining manual view setup
-**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
-touched, so the VM is still running v2.35.4's code.
-- **Filed a `[P1 · XS]` reminder in `docs/db-deferred-list.md`** for the two manual GitHub UI steps that
-  finish the [roadmap board](https://github.com/users/HarkiratMangat/projects/2)'s view design: a
-  Status-grouped Board view, and a Priority-grouped Table view. The board already has all 15 items and
-  every custom field populated via the API — but **GitHub's GraphQL API has no view-creation or
-  view-management mutations at all** (confirmed via introspection), so these two cannot be automated and
-  have to be clicked. The entry carries the click-by-click steps so it's actionable without a re-lookup.
-- Drafted 2026-07-26 12:12 EDT, merged now as part of clearing the branch backlog ahead of cutting
-  `v3-pre-release`.
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was touched, so the VM is still running v2.35.4's code.
+- **Filed a `[P1 · XS]` reminder in `docs/db-deferred-list.md`** for the two manual GitHub UI steps that finish the [roadmap board](https://github.com/users/HarkiratMangat/projects/2)'s view design: a Status-grouped Board view, and a Priority-grouped Table view. The board already has all 15 items and every custom field populated via the API — but **GitHub's GraphQL API has no view-creation or view-management mutations at all** (confirmed via introspection), so these two cannot be automated and have to be clicked. The entry carries the click-by-click steps so it's actionable without a re-lookup.
+- Drafted 2026-07-26 12:12 EDT, merged now as part of clearing the branch backlog ahead of cutting `v3-pre-release`.
 
 ## v2.35.6 — 2026-07-27 18:05 EDT (#25 · `a3bf9a9`) — Designed the v3 development structure
-**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
-touched, so the VM is still running v2.35.4's code.
-- **Settled how v3 gets built without conflicting with the live bot or `main`**, ahead of any v3 feature
-  work starting. Full design: `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`.
-  A long-lived **`v3-pre-release`** integration branch, cut off `main`; v3 features use the existing
-  convention (`feat/*` branches, squash-merged PRs) with `--base v3-pre-release`. v2 hotfixes are
-  unchanged and keep going to `main`, which stays live-safe at every commit **by construction** rather
-  than by a feature gate — decided that way because v3's changes are *renames and removals* of live
-  commands (`/manage`→`/admin`, collapsing the MP loadout commands), where a dormant-code mistake would
-  be a live outage rather than a cosmetic bug.
-- **Corrected the 2026-07-14 directive's sync mechanism: cherry-pick → merge.** The original said every
-  v2 change must be "cherry-pick[ed] or re-appl[ied]" into the v3 branch. A cherry-pick copies content
-  *without recording that the sync happened*, so git's merge base never advances and the same conflicts
-  resurface on every subsequent sync, indefinitely. Sync is now one-way `git merge origin/main`.
-- **Filled a versioning gap the original directive left open** — what `package.json` does during
-  pre-release. It matters, because the bot's boot alert reads it. It now carries a `-pre` suffix matching
-  the changelog 1:1 (`Pre-Release v3.1.0` ↔ `3.1.0-pre`), and no git tags are minted until `v3.0.0`.
-- **🔴 Found a live-bot safety hole while verifying isolation:** `.env.dev`'s `CLOUDINARY_URL` is
-  **byte-identical to prod's**, so the dev bot reads *and writes* the live Cloudinary account in the same
-  flat `gun-builds` folder. Bot token, Mongo, and the alert webhook are all correctly separated; this one
-  isn't. Fix spec'd here, shipping separately before the branch cut.
-- **Also recorded a git-hygiene trap that cost real time this session:** this repo has GitHub's
-  auto-delete-on-merge enabled, and a plain `git fetch` does **not** prune remote-tracking refs — so
-  `git branch -a` kept listing three long-merged branches as though they were open work. `gh pr list
-  --state all` is the authoritative check, not `git branch -a`.
-- Decided against a `git worktree` for the v3 line: a worktree gets no `.claude/settings.local.json`
-  (gitignored), so every Claude session started there would silently lose both `SessionStart` hooks.
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was touched, so the VM is still running v2.35.4's code.
+- **Settled how v3 gets built without conflicting with the live bot or `main`**, ahead of any v3 feature work starting. Full design: `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`. A long-lived **`v3-pre-release`** integration branch, cut off `main`; v3 features use the existing convention (`feat/*` branches, squash-merged PRs) with `--base v3-pre-release`. v2 hotfixes are unchanged and keep going to `main`, which stays live-safe at every commit **by construction** rather than by a feature gate — decided that way because v3's changes are *renames and removals* of live commands (`/manage`→`/admin`, collapsing the MP loadout commands), where a dormant-code mistake would be a live outage rather than a cosmetic bug.
+- **Corrected the 2026-07-14 directive's sync mechanism: cherry-pick → merge.** The original said every v2 change must be "cherry-pick[ed] or re-appl[ied]" into the v3 branch. A cherry-pick copies content *without recording that the sync happened*, so git's merge base never advances and the same conflicts resurface on every subsequent sync, indefinitely. Sync is now one-way `git merge origin/main`.
+- **Filled a versioning gap the original directive left open** — what `package.json` does during pre-release. It matters, because the bot's boot alert reads it. It now carries a `-pre` suffix matching the changelog 1:1 (`Pre-Release v3.1.0` ↔ `3.1.0-pre`), and no git tags are minted until `v3.0.0`.
+- **🔴 Found a live-bot safety hole while verifying isolation:** `.env.dev`'s `CLOUDINARY_URL` is **byte-identical to prod's**, so the dev bot reads *and writes* the live Cloudinary account in the same flat `gun-builds` folder. Bot token, Mongo, and the alert webhook are all correctly separated; this one isn't. Fix spec'd here, shipping separately before the branch cut.
+- **Also recorded a git-hygiene trap that cost real time this session:** this repo has GitHub's auto-delete-on-merge enabled, and a plain `git fetch` does **not** prune remote-tracking refs — so `git branch -a` kept listing three long-merged branches as though they were open work. `gh pr list --state all` is the authoritative check, not `git branch -a`.
+- Decided against a `git worktree` for the v3 line: a worktree gets no `.claude/settings.local.json` (gitignored), so every Claude session started there would silently lose both `SessionStart` hooks.
 
 ## v2.35.5 — 2026-07-27 11:10 EDT (#24 · `3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
-**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
-touched, so the VM is still running v2.35.4's code.
-- **`CLAUDE.md`'s canonical-memory-path count was wrong** — it claimed 26 files; the store holds 55
-  plus `MEMORY.md`. That number isn't decoration: it's how a session confirms it landed at the right
-  path, and the whole reason the warning exists is that the harness points sessions at a *different*
-  slug (`-Applications-Claude-Code-Diors-Builds`) that has no `memory/` directory at all. A count
-  stale by more than double actively undermines the check. Now timestamped and worded as a sanity
-  signal ("if you land somewhere empty, you're at the wrong path") rather than a bare number that
-  rots silently.
-- **Filed the unclickable-commit-attribution issue** in `docs/db-deferred-list.md` (Someday/tech-debt,
-  `[P3 · S · Harkirat decision first]`). Every commit before 2026-07-27 11:10 EDT carries
-  `Dior <diorswrld@discord.com>`, which isn't a verified address on the GitHub account, so GitHub
-  renders the author as flat text with no profile link — verified via
-  `gh api repos/.../commits --jq '.[].author.login'` returning `null`. **Already fixed going forward**:
-  the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`, so new
-  commits link correctly. Only the back-catalogue is affected, and fixing that rewrites every pushed
-  SHA on a repo the GCP VM pulls from, plus re-pointing 37 backfilled version tags — filed as a
-  decision to make, not a queued build.
-- Context: this landed alongside the `dior` CLI moving out of `~/.zshrc` into its own private repo
-  (`~/.config/dior`, symlinked to `/Applications/Claude Code/dior-cli`) — that work lives in that
-  repo's own history, not this one. See memory `project_dior_cli_repo`.
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was touched, so the VM is still running v2.35.4's code.
+- **`CLAUDE.md`'s canonical-memory-path count was wrong** — it claimed 26 files; the store holds 55 plus `MEMORY.md`. That number isn't decoration: it's how a session confirms it landed at the right path, and the whole reason the warning exists is that the harness points sessions at a *different* slug (`-Applications-Claude-Code-Diors-Builds`) that has no `memory/` directory at all. A count stale by more than double actively undermines the check. Now timestamped and worded as a sanity signal ("if you land somewhere empty, you're at the wrong path") rather than a bare number that rots silently.
+- **Filed the unclickable-commit-attribution issue** in `docs/db-deferred-list.md` (Someday/tech-debt, `[P3 · S · Harkirat decision first]`). Every commit before 2026-07-27 11:10 EDT carries `Dior <diorswrld@discord.com>`, which isn't a verified address on the GitHub account, so GitHub renders the author as flat text with no profile link — verified via `gh api repos/.../commits --jq '.[].author.login'` returning `null`. **Already fixed going forward**: the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`, so new commits link correctly. Only the back-catalogue is affected, and fixing that rewrites every pushed SHA on a repo the GCP VM pulls from, plus re-pointing 37 backfilled version tags — filed as a decision to make, not a queued build.
+- Context: this landed alongside the `dior` CLI moving out of `~/.zshrc` into its own private repo (`~/.config/dior`, symlinked to `/Applications/Claude Code/dior-cli`) — that work lives in that repo's own history, not this one. See memory `project_dior_cli_repo`.
 
 ---
 
 ## v2.35.4 — 2026-07-27 08:02 EDT (#23 · `f1d23da`) — Patch notes release date now supports a real local-clock time
-**Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch
-note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a
-design mismatch. `parseAdminDate` (shared by every admin date field) unconditionally discards any
-typed time and normalizes to midnight UTC; `commands/patchnotes.js` then displays that value with a
-Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *viewer's* local timezone
-— for a UTC-4 viewer, that's the previous evening.
-- Added `utils/adminParser.js`'s `parseReleaseDateTime(dateStr, userTimezone)` — used only by patch
-  notes' 3 `modal_patch_*` handlers in `index.js` (Date & Info, Add New Season, Edit Past Season).
-  A bare date with no time still falls straight through to the existing `parseAdminDate` (UTC-0
-  midnight, unchanged for every other admin date field). The moment a time is also typed, it's now
-  treated as the admin's own local clock (`UserPreference.timezone`, same field `/settings`/
-  `/timestamp` already use) and converted to the real UTC instant — detected via chrono's
-  `isCertain('hour')`, the same check `utils/timestampHelper.js`'s `generateTimestamps()` already
-  relies on for the same distinction.
-- Added the reverse formatter, `formatReleaseDateTime`, so reopening either modal to tweak something
-  unrelated (e.g. the description) doesn't silently revert a previously-set release time back to
-  midnight on the next submit — it only omits the time when the stored instant is exact UTC midnight.
-- Draws/calendar/season-end deadlines are completely unaffected — they still use the plain
-  `parseAdminDate`/`formatAdminDate` UTC-0 functions.
+**Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a design mismatch. `parseAdminDate` (shared by every admin date field) unconditionally discards any typed time and normalizes to midnight UTC; `commands/patchnotes.js` then displays that value with a Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *viewer's* local timezone — for a UTC-4 viewer, that's the previous evening.
+- Added `utils/adminParser.js`'s `parseReleaseDateTime(dateStr, userTimezone)` — used only by patch notes' 3 `modal_patch_*` handlers in `index.js` (Date & Info, Add New Season, Edit Past Season). A bare date with no time still falls straight through to the existing `parseAdminDate` (UTC-0 midnight, unchanged for every other admin date field). The moment a time is also typed, it's now treated as the admin's own local clock (`UserPreference.timezone`, same field `/settings`/ `/timestamp` already use) and converted to the real UTC instant — detected via chrono's `isCertain('hour')`, the same check `utils/timestampHelper.js`'s `generateTimestamps()` already relies on for the same distinction.
+- Added the reverse formatter, `formatReleaseDateTime`, so reopening either modal to tweak something unrelated (e.g. the description) doesn't silently revert a previously-set release time back to midnight on the next submit — it only omits the time when the stored instant is exact UTC midnight.
+- Draws/calendar/season-end deadlines are completely unaffected — they still use the plain `parseAdminDate`/`formatAdminDate` UTC-0 functions.
 - See `.claude/rules/design-decisions.md` for the full before/after reasoning.
 
 ---
@@ -3447,57 +1182,22 @@ Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *view
 
 **New script + docs only — `index.js` untouched, so no deploy needed.** The VM stays current at v2.35.2.
 
-- **The problem:** killing the dev-bot process does **not** remove `Dio (Dev)`'s slash commands from the
-  `/` picker. Registration is stored on Discord's side against the **application**, not the process —
-  `index.js` writes it once per boot and Discord keeps it indefinitely. Since the bot is user-installed,
-  those 20 commands follow Harkirat into every server and DM, duplicating prod's identical list whenever
-  he isn't testing; picking one just yields "The application did not respond" after the 3s timeout.
-  Discord exposes **no UI for this anywhere**, including the Developer Portal — it is API-only.
-- **`node scripts/devCommands.js list | clear`.** `clear` registers an empty command list.
-  **No restore mode, deliberately** — the next dev-bot boot re-registers everything, because that PUT
-  runs on every startup. The loop is: `clear` when done testing, boot when you want them back.
-- **Two independent guards against ever hitting prod**, since clearing prod's commands would strip every
-  command from the real bot until someone noticed: the script parses `.env.dev` **directly off disk**
-  rather than reading `process.env` (a `dotenv`-based script could silently hold the *prod* token via
-  dotenv's documented backfill behavior — see `CLAUDE.md`), and it aborts outright if `.env.dev`'s
-  `BOT_TOKEN` matches `.env`'s. It prints the resolved application name + id before acting, and error
-  output is limited to `rawError.message` — never the token, never the raw error object.
-- **Verified live, not just `node --check`:** `list` → `Dio (Dev)` + 20 commands; `clear` → 20 cleared,
-  re-`list` → none; an independent read-only check on the prod token → `Dior's Builds` still reports all
-  20 registered.
+- **The problem:** killing the dev-bot process does **not** remove `Dio (Dev)`'s slash commands from the `/` picker. Registration is stored on Discord's side against the **application**, not the process — `index.js` writes it once per boot and Discord keeps it indefinitely. Since the bot is user-installed, those 20 commands follow Harkirat into every server and DM, duplicating prod's identical list whenever he isn't testing; picking one just yields "The application did not respond" after the 3s timeout. Discord exposes **no UI for this anywhere**, including the Developer Portal — it is API-only.
+- **`node scripts/devCommands.js list | clear`.** `clear` registers an empty command list. **No restore mode, deliberately** — the next dev-bot boot re-registers everything, because that PUT runs on every startup. The loop is: `clear` when done testing, boot when you want them back.
+- **Two independent guards against ever hitting prod**, since clearing prod's commands would strip every command from the real bot until someone noticed: the script parses `.env.dev` **directly off disk** rather than reading `process.env` (a `dotenv`-based script could silently hold the *prod* token via dotenv's documented backfill behavior — see `CLAUDE.md`), and it aborts outright if `.env.dev`'s `BOT_TOKEN` matches `.env`'s. It prints the resolved application name + id before acting, and error output is limited to `rawError.message` — never the token, never the raw error object.
+- **Verified live, not just `node --check`:** `list` → `Dio (Dev)` + 20 commands; `clear` → 20 cleared, re-`list` → none; an independent read-only check on the prod token → `Dior's Builds` still reports all 20 registered.
 
 ---
 
 ## v2.35.2 — 2026-07-26 21:04 EDT (#21 · `b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
 
-**Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending
-VM deploy; the VM remains on v2.33.0's code.
+**Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending VM deploy; the VM remains on v2.33.0's code.
 
-- **`dotenv` silenced everywhere, not just in `index.js`.** `require('dotenv').config({ quiet: true })`
-  suppresses dotenv's env-injection log line and the rotating promotional "tip" it carries (investigated
-  and cleared as genuine maintainer self-promotion, not a supply-chain compromise — see v2.35.0's entry).
-  The original pass covered `index.js` only, leaving four scripts noisy while four others were already
-  quiet; **all nine call sites now match.**
-- **`xlsx` moved to `devDependencies`** (+ lockfile). It has exactly one consumer in the repo,
-  `scripts/migrateBuildsToMongo.js`, a one-off migration — never bot runtime. `deploy.sh` never re-runs
-  `npm install`, so nothing changes on the VM today; this is correct categorization now and functional the
-  day a production-only install step exists. Documented in `CLAUDE.md`'s Stack section along with the one
-  consequence worth knowing: `npm install --omit=dev` correctly drops it, so that script needs a full install.
-- **🐞 The Mongo connect log claimed "Atlas Cluster" no matter what it connected to.** Hardcoded since
-  before a second database existed — so a **dev-bot** boot on the **local** database printed a line that
-  reads exactly like a **production** connection. Misread that way during this branch's own boot test,
-  which is the whole problem: it breaks nothing and misinforms you at the precise moment you're checking
-  whether you're about to touch prod. Now prints the connected `host/dbName`
-  (`MongoDB (localhost/diors-builds-dev)`), and deliberately **not** the URI — that string carries the
-  Atlas credentials.
-- **Docs corrections riding along:** `db-deferred-list.md` no longer claims PR
-  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11)'s `ci.yml` shipped (still open, unmerged —
-  there is no CI on `main`), and records **Vitest + Biome** as the decided tools for that CI-expansion
-  item; `diors-builds notes.md` flags **Sentry** (free tier) as a candidate for the `vmstatus.sh`-overhaul
-  session.
-- **Verified, not assumed:** `node --check` on every edited file; two dev-bot boots on `.env.dev`
-  (no promo line, correct host in the log, shard ready, 40 emoji ids re-pointed, gateway integrated);
-  `npm ls xlsx` still resolves. The prod VM was untouched — the v2.35.0 instance lock is token-scoped.
+- **`dotenv` silenced everywhere, not just in `index.js`.** `require('dotenv').config({ quiet: true })` suppresses dotenv's env-injection log line and the rotating promotional "tip" it carries (investigated and cleared as genuine maintainer self-promotion, not a supply-chain compromise — see v2.35.0's entry). The original pass covered `index.js` only, leaving four scripts noisy while four others were already quiet; **all nine call sites now match.**
+- **`xlsx` moved to `devDependencies`** (+ lockfile). It has exactly one consumer in the repo, `scripts/migrateBuildsToMongo.js`, a one-off migration — never bot runtime. `deploy.sh` never re-runs `npm install`, so nothing changes on the VM today; this is correct categorization now and functional the day a production-only install step exists. Documented in `CLAUDE.md`'s Stack section along with the one consequence worth knowing: `npm install --omit=dev` correctly drops it, so that script needs a full install.
+- **🐞 The Mongo connect log claimed "Atlas Cluster" no matter what it connected to.** Hardcoded since before a second database existed — so a **dev-bot** boot on the **local** database printed a line that reads exactly like a **production** connection. Misread that way during this branch's own boot test, which is the whole problem: it breaks nothing and misinforms you at the precise moment you're checking whether you're about to touch prod. Now prints the connected `host/dbName` (`MongoDB (localhost/diors-builds-dev)`), and deliberately **not** the URI — that string carries the Atlas credentials.
+- **Docs corrections riding along:** `db-deferred-list.md` no longer claims PR [#11](https://github.com/HarkiratMangat/diors-builds/pull/11)'s `ci.yml` shipped (still open, unmerged — there is no CI on `main`), and records **Vitest + Biome** as the decided tools for that CI-expansion item; `diors-builds notes.md` flags **Sentry** (free tier) as a candidate for the `vmstatus.sh`-overhaul session.
+- **Verified, not assumed:** `node --check` on every edited file; two dev-bot boots on `.env.dev` (no promo line, correct host in the log, shard ready, 40 emoji ids re-pointed, gateway integrated); `npm ls xlsx` still resolves. The prod VM was untouched — the v2.35.0 instance lock is token-scoped.
 
 ---
 
@@ -3505,15 +1205,8 @@ VM deploy; the VM remains on v2.33.0's code.
 
 **Internal / docs only — no bot code touched. Does not change v2.34.0–v2.35.0's still-pending deploy.**
 
-- **`docs/db-deferred-list.md`** gains one `[P3 · S]` item under 🧹 Someday/tech-debt: a **tool-discovery
-  session** holding the CLI-tool candidates raised during a dotenvx-adjacent tooling discussion and
-  deferred on the spot rather than scoped — `procs`, `git-delta`, `zoxide`, `hyperfine`, Knip, `act`,
-  and a free-tier uptime/status-page service.
-- **Nothing is decided.** The item is deliberately a holding pen: several candidates already have a hook
-  into existing work (`procs` → the stray-`node`-process hunt in `[[feedback_multiple_bot_instances]]`,
-  `hyperfine` → the queued "Pagination perf hybrid" item, `act` → running `ci.yml` locally once PR #11
-  lands, an uptime service → the deferred `/status` command + `vmstatus.sh` overhaul), which is exactly
-  why the list was worth writing down instead of re-deriving it in three weeks.
+- **`docs/db-deferred-list.md`** gains one `[P3 · S]` item under 🧹 Someday/tech-debt: a **tool-discovery session** holding the CLI-tool candidates raised during a dotenvx-adjacent tooling discussion and deferred on the spot rather than scoped — `procs`, `git-delta`, `zoxide`, `hyperfine`, Knip, `act`, and a free-tier uptime/status-page service.
+- **Nothing is decided.** The item is deliberately a holding pen: several candidates already have a hook into existing work (`procs` → the stray-`node`-process hunt in `[[feedback_multiple_bot_instances]]`, `hyperfine` → the queued "Pagination perf hybrid" item, `act` → running `ci.yml` locally once PR #11 lands, an uptime service → the deferred `/status` command + `vmstatus.sh` overhaul), which is exactly why the list was worth writing down instead of re-deriving it in three weeks.
 
 ---
 
@@ -3521,21 +1214,11 @@ VM deploy; the VM remains on v2.33.0's code.
 
 **Real bot code, MERGED BUT NOT DEPLOYED** — stacks on top of v2.34.0/v2.34.1's still-pending VM deploy.
 
-A stray leftover local `node index.js` racing the deployed instance on the same token has caused real
-incidents before (`[[feedback_multiple_bot_instances]]`, the original 2026-07-14 discovery). This closes
-it with a startup guard instead of a manual "remember to kill local processes" step.
+A stray leftover local `node index.js` racing the deployed instance on the same token has caused real incidents before (`[[feedback_multiple_bot_instances]]`, the original 2026-07-14 discovery). This closes it with a startup guard instead of a manual "remember to kill local processes" step.
 
-- **`utils/instanceLock.js` + `models/BotInstance.js`** — a Mongo heartbeat lock. `index.js` calls
-  `acquireInstanceLock()` right before `client.login()`; the lock writes a 10s heartbeat, and if another
-  instance's heartbeat is fresher than 30s (3 missed beats), the new process logs, alerts, and
-  `process.exit(1)`s instead of connecting. Best-effort lock release on `SIGINT`/`SIGTERM`.
-- **Scoped per-token, not a global singleton** — the lock `_id` is a hash of `BOT_TOKEN`, deliberately,
-  so the local dev bot (`Dio (Dev)`, its own token) can run alongside the VM's prod instance without
-  either refusing to start. Only two processes sharing the *same* token collide.
-- **Boot-tested locally against the dev bot** (`.env.dev`) before merge: a clean single boot succeeds; a
-  second instance on the same token is refused (`❌ Refusing to start...`) and exits 1; releasing the
-  first instance's lock via `SIGINT` clears the `BotInstance` doc and a fresh boot immediately succeeds;
-  the prod VM (different token) stayed healthy and unaffected throughout (`scripts/vmstatus.sh`).
+- **`utils/instanceLock.js` + `models/BotInstance.js`** — a Mongo heartbeat lock. `index.js` calls `acquireInstanceLock()` right before `client.login()`; the lock writes a 10s heartbeat, and if another instance's heartbeat is fresher than 30s (3 missed beats), the new process logs, alerts, and `process.exit(1)`s instead of connecting. Best-effort lock release on `SIGINT`/`SIGTERM`.
+- **Scoped per-token, not a global singleton** — the lock `_id` is a hash of `BOT_TOKEN`, deliberately, so the local dev bot (`Dio (Dev)`, its own token) can run alongside the VM's prod instance without either refusing to start. Only two processes sharing the *same* token collide.
+- **Boot-tested locally against the dev bot** (`.env.dev`) before merge: a clean single boot succeeds; a second instance on the same token is refused (`❌ Refusing to start...`) and exits 1; releasing the first instance's lock via `SIGINT` clears the `BotInstance` doc and a fresh boot immediately succeeds; the prod VM (different token) stayed healthy and unaffected throughout (`scripts/vmstatus.sh`).
 
 ---
 
@@ -3543,127 +1226,51 @@ it with a startup guard instead of a manual "remember to kill local processes" s
 
 **Internal / docs only — no bot code touched. Does not change v2.34.0's still-pending deploy.**
 
-- **`manage-panel.md`** called `commands/manage.js`'s `const PAGES` "the single source of truth"; v2.34.0
-  made it **`buildPagesTable()`**, called per render, with the module export as a **getter**.
+- **`manage-panel.md`** called `commands/manage.js`'s `const PAGES` "the single source of truth"; v2.34.0 made it **`buildPagesTable()`**, called per render, with the module export as a **getter**.
 - **`design-decisions.md`** referenced `TIER_ICON`; it is now **`tierIcon()`**.
-- Both corrections state **why** the symbol changed, so a future session doesn't "simplify" them back
-  into module-level consts and silently reintroduce the stale-emoji-id bug. That matters more than the
-  rename itself: the *original* rule warned only against **destructuring** `emojiMap`, and all four
-  broken sites complied with that letter while violating its intent.
-- Left deliberately unchanged: `rendering-and-ui.md`'s description of the pre-fix code (accurate **as
-  history**), and `manage-panel.md`'s "no key in `PAGES`" lines (still true — `PAGES` remains the local
-  name inside `buildManagePage()`).
+- Both corrections state **why** the symbol changed, so a future session doesn't "simplify" them back into module-level consts and silently reintroduce the stale-emoji-id bug. That matters more than the rename itself: the *original* rule warned only against **destructuring** `emojiMap`, and all four broken sites complied with that letter while violating its intent.
+- Left deliberately unchanged: `rendering-and-ui.md`'s description of the pre-fix code (accurate **as history**), and `manage-panel.md`'s "no key in `PAGES`" lines (still true — `PAGES` remains the local name inside `buildManagePage()`).
 
 ---
 
 ## v2.34.0 — 2026-07-26 18:24 EDT (#17 · `5d39e10`) — The local dev bot: a way to test before prod
 
-**⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the
-v2.33.x docs-only run this one needs a VM deploy (`./scripts/deploy.sh` + `scripts/vmstatus.sh`) to
-actually go live. Until that runs, prod is still on v2.33.0's code.
+**⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the v2.33.x docs-only run this one needs a VM deploy (`./scripts/deploy.sh` + `scripts/vmstatus.sh`) to actually go live. Until that runs, prod is still on v2.33.0's code.
 
-The bot got its **first-ever local development instance** (2026-07-26 13:45 EDT). Until now there was no
-way to try a change before it reached prod — every visual check meant merging, deploying to the VM, and
-eyeballing the bot Harkirat's real users were using. A second, fully separate Discord application,
-**`Dio (Dev)` (`1529636846248919263`)**, now runs the same codebase against isolated local data.
+The bot got its **first-ever local development instance** (2026-07-26 13:45 EDT). Until now there was no way to try a change before it reached prod — every visual check meant merging, deploying to the VM, and eyeballing the bot Harkirat's real users were using. A second, fully separate Discord application, **`Dio (Dev)` (`1529636846248919263`)**, now runs the same codebase against isolated local data.
 
-- **Setup** (all local/gitignored, no bot code involved): a dev Discord app (user-install `[1]`, no
-  privileged intents, matching prod's architecture); local MongoDB via the `mongodb/brew` tap seeded with
-  a **read-only `mongodump` of prod** (335/335 docs + indexes → `diors-builds-dev`); a gitignored
-  `.env.dev`; and `node --watch --env-file=.env.dev index.js`, which full-restarts on every save and
-  branch switch so any branch or PR is testable live in Discord in seconds.
-- **`feat: resolve application-emoji ids by name at boot`** — the one real code change. Application
-  emojis render only for the app that owns them, so `emojiMap.js`'s hardcoded prod ids showed as broken
-  text on the dev bot. All 72 emojis were cloned to the dev app under identical names, and
-  `refreshEmojiIds(client)` (called from `handleBotReady`) now re-points every mention string at the
-  booting app's own ids by **name**. One codebase serves both apps with no per-environment config, and it
-  self-heals if an emoji is deleted and re-uploaded. **Verified a true no-op on prod** (0 rewrites, 0
-  unmatched) and 39/39 re-pointed on dev. Fail-soft: any error keeps the hardcoded prod ids. An optional
-  gitignored `utils/emojiMap.dev.json` overlay (dev-only) allows per-key test emojis.
-- **`chore: widen .gitignore to .env.*`** — the existing `.env` entry is an exact match and never covered
-  `.env.dev`. Also added a `.git/info/exclude` entry so the dev secrets stay ignored even on branches that
-  predate the glob (which mattered immediately — checking out an older PR branch reverted the tracked
-  `.gitignore`).
-- **Two live findings worth remembering.** (1) `dotenv.config()` at `index.js:38` runs *after*
-  `--env-file` and **backfills** anything the env-file omits — so leaving `LOG_WEBHOOK_URL` out of
-  `.env.dev` silently inherited the real **prod alert webhook**; it must be set explicitly blank. (2)
-  Three animated emojis exceeded Discord's 256 KB cap at 128px and needed re-encoding at 96px — all three
-  are referenced by `emojiMap`, so silently skipping them would have left visible gaps in `/manage`.
-- **Docs:** the workflow gains a free **Test** step between Commit and Push, `--draft` PRs are now rarer
-  (most test gaps close locally), and the old blanket "stop any local run before deploying" rule is
-  corrected to **per-token** — the dev bot has its own token and never conflicts.
-- **`fix(emoji): resolve emoji ids at render time, not require time`** — the sync above reported 39/39
-  re-pointed and was still wrong on screen, because **four sites read emoji values at `require()` time**.
-  `refreshEmojiIds()` runs from `handleBotReady`, long after every command module is loaded, and JS
-  strings copy by value — so anything captured at load time froze the pre-sync PROD id permanently.
-  Found only by live-testing on the dev bot: **every `/manage` page** (`manage.js`'s module-level `PAGES`
-  table), **`/draw prices` pages 1–2** (`TIER_ICON` — page 3 read live and was fine, which is what gave
-  the pattern away), **`/season end`'s BP icon** (a hardcoded `<:BP_CODM1:…>` literal that bypassed the
-  map entirely, now `emojiMap`'s `bp1`), and **the "Show Everyone" button** (`SHARE_BUTTON_ROW`).
-  `PAGES` is now built per render and exported as a getter so callers can't capture a stale copy either.
-- **New `scripts/checkEmojiCaptures.js`** — proxies `emojiMap` and fails if any module reads an emoji
-  value during `require()`. It found the "Show Everyone" site that manual review missed, and caught a
-  regression mid-fix where converting the `PAGES` export broke `manage.js`/`alerts.js`/`autobuild.js` at
-  load. The rule doc's old claim that "every consumer reads `emojis.foo` at render time" was false and
-  is corrected: **a module-level object literal containing `${emojis.x}` is the same bug as
-  destructuring, and much easier to miss.** CI candidate, noted in `docs/db-deferred-list.md`.
-  - **Prod was never affected** — its hardcoded ids were already correct, which is exactly why this
-    class of bug was invisible until a second app existed to expose it.
+- **Setup** (all local/gitignored, no bot code involved): a dev Discord app (user-install `[1]`, no privileged intents, matching prod's architecture); local MongoDB via the `mongodb/brew` tap seeded with a **read-only `mongodump` of prod** (335/335 docs + indexes → `diors-builds-dev`); a gitignored `.env.dev`; and `node --watch --env-file=.env.dev index.js`, which full-restarts on every save and branch switch so any branch or PR is testable live in Discord in seconds.
+- **`feat: resolve application-emoji ids by name at boot`** — the one real code change. Application emojis render only for the app that owns them, so `emojiMap.js`'s hardcoded prod ids showed as broken text on the dev bot. All 72 emojis were cloned to the dev app under identical names, and `refreshEmojiIds(client)` (called from `handleBotReady`) now re-points every mention string at the booting app's own ids by **name**. One codebase serves both apps with no per-environment config, and it self-heals if an emoji is deleted and re-uploaded. **Verified a true no-op on prod** (0 rewrites, 0 unmatched) and 39/39 re-pointed on dev. Fail-soft: any error keeps the hardcoded prod ids. An optional gitignored `utils/emojiMap.dev.json` overlay (dev-only) allows per-key test emojis.
+- **`chore: widen .gitignore to .env.*`** — the existing `.env` entry is an exact match and never covered `.env.dev`. Also added a `.git/info/exclude` entry so the dev secrets stay ignored even on branches that predate the glob (which mattered immediately — checking out an older PR branch reverted the tracked `.gitignore`).
+- **Two live findings worth remembering.** (1) `dotenv.config()` at `index.js:38` runs *after* `--env-file` and **backfills** anything the env-file omits — so leaving `LOG_WEBHOOK_URL` out of `.env.dev` silently inherited the real **prod alert webhook**; it must be set explicitly blank. (2) Three animated emojis exceeded Discord's 256 KB cap at 128px and needed re-encoding at 96px — all three are referenced by `emojiMap`, so silently skipping them would have left visible gaps in `/manage`.
+- **Docs:** the workflow gains a free **Test** step between Commit and Push, `--draft` PRs are now rarer (most test gaps close locally), and the old blanket "stop any local run before deploying" rule is corrected to **per-token** — the dev bot has its own token and never conflicts.
+- **`fix(emoji): resolve emoji ids at render time, not require time`** — the sync above reported 39/39 re-pointed and was still wrong on screen, because **four sites read emoji values at `require()` time**. `refreshEmojiIds()` runs from `handleBotReady`, long after every command module is loaded, and JS strings copy by value — so anything captured at load time froze the pre-sync PROD id permanently. Found only by live-testing on the dev bot: **every `/manage` page** (`manage.js`'s module-level `PAGES` table), **`/draw prices` pages 1–2** (`TIER_ICON` — page 3 read live and was fine, which is what gave the pattern away), **`/season end`'s BP icon** (a hardcoded `<:BP_CODM1:…>` literal that bypassed the map entirely, now `emojiMap`'s `bp1`), and **the "Show Everyone" button** (`SHARE_BUTTON_ROW`). `PAGES` is now built per render and exported as a getter so callers can't capture a stale copy either.
+- **New `scripts/checkEmojiCaptures.js`** — proxies `emojiMap` and fails if any module reads an emoji value during `require()`. It found the "Show Everyone" site that manual review missed, and caught a regression mid-fix where converting the `PAGES` export broke `manage.js`/`alerts.js`/`autobuild.js` at load. The rule doc's old claim that "every consumer reads `emojis.foo` at render time" was false and is corrected: **a module-level object literal containing `${emojis.x}` is the same bug as destructuring, and much easier to miss.** CI candidate, noted in `docs/db-deferred-list.md`.
+  - **Prod was never affected** — its hardcoded ids were already correct, which is exactly why this class of bug was invisible until a second app existed to expose it.
 ---
 
 ## v2.33.6 — 2026-07-26 18:07 EDT (#18 · `6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
-- **New `docs/reference/commit-and-branch-naming.md`** — the source of truth for commit subjects, branch
-  names, and PR titles. Format is **Conventional Commits v1.0.0 exactly as specified**:
-  `<type>(<optional scope>): <description>`, colon **and one space** (spec rule 1 makes both REQUIRED),
-  imperative, lowercase, no trailing period, `!` before the colon for breaking changes.
-- **A custom `<type>(<scope>)/<description>` separator was proposed and rejected** (Harkirat's call, both
-  directions, 2026-07-26 15:26 EDT). Recorded as a decision rather than left silent, so it isn't
-  re-proposed later: staying compliant keeps a future changelog generator or release automation able to
-  parse the history without a custom parser.
-- **Type vocabulary fixed to the 11 standard types** (`feat` `fix` `docs` `refactor` `perf` `style` `test`
-  `build` `ci` `chore` `revert`). Six commonly-cited types are **not** standard and
-  `@commitlint/config-conventional` rejects all of them — mapped to their real equivalents:
-  `deps`→`build(deps)`, `release`→`chore(release)`, `sec`/`security`→`fix(security)`; `wip` belongs on a
-  draft PR; `types`/`i18n` don't apply here.
-- **Branch naming documented as a SEPARATE convention** — the spec governs commit messages only and says
-  nothing about branch names. Conflating the two was the original source of confusion.
-- **The GitHub branch-rename trap is now written down** — renaming a *head* branch **auto-closes** its PR
-  and it cannot be reopened (rename only retargets PRs whose *base* moved). This cost PR #2 → #16 earlier
-  the same day. #9 and #11 were deliberately **left** on their `claude/*` branches rather than renamed;
-  re-creating them would discard their numbers and review history for a cosmetic gain.
-- **`commitlint` folded into the existing CI deferred item** rather than filed as a new one — verified
-  that no commit tooling is installed at all, so the convention is hand-enforced today. The note weighs a
-  CI job (unbypassable but late) against a `husky` `commit-msg` hook (instant but skippable with
-  `--no-verify`), and flags the `conventional-changelog` knock-on as a genuine tradeoff, since the
-  hand-written entries here are richer than a generator's.
+- **New `docs/reference/commit-and-branch-naming.md`** — the source of truth for commit subjects, branch names, and PR titles. Format is **Conventional Commits v1.0.0 exactly as specified**: `<type>(<optional scope>): <description>`, colon **and one space** (spec rule 1 makes both REQUIRED), imperative, lowercase, no trailing period, `!` before the colon for breaking changes.
+- **A custom `<type>(<scope>)/<description>` separator was proposed and rejected** (Harkirat's call, both directions, 2026-07-26 15:26 EDT). Recorded as a decision rather than left silent, so it isn't re-proposed later: staying compliant keeps a future changelog generator or release automation able to parse the history without a custom parser.
+- **Type vocabulary fixed to the 11 standard types** (`feat` `fix` `docs` `refactor` `perf` `style` `test` `build` `ci` `chore` `revert`). Six commonly-cited types are **not** standard and `@commitlint/config-conventional` rejects all of them — mapped to their real equivalents: `deps`→`build(deps)`, `release`→`chore(release)`, `sec`/`security`→`fix(security)`; `wip` belongs on a draft PR; `types`/`i18n` don't apply here.
+- **Branch naming documented as a SEPARATE convention** — the spec governs commit messages only and says nothing about branch names. Conflating the two was the original source of confusion.
+- **The GitHub branch-rename trap is now written down** — renaming a *head* branch **auto-closes** its PR and it cannot be reopened (rename only retargets PRs whose *base* moved). This cost PR #2 → #16 earlier the same day. #9 and #11 were deliberately **left** on their `claude/*` branches rather than renamed; re-creating them would discard their numbers and review history for a cosmetic gain.
+- **`commitlint` folded into the existing CI deferred item** rather than filed as a new one — verified that no commit tooling is installed at all, so the convention is hand-enforced today. The note weighs a CI job (unbypassable but late) against a `husky` `commit-msg` hook (instant but skippable with `--no-verify`), and flags the `conventional-changelog` knock-on as a genuine tradeoff, since the hand-written entries here are richer than a generator's.
 - Pointers added in `CLAUDE.md`'s git-workflow invariant, `docs/README.md`, and the workflow design spec.
 
 ---
 
 ## v2.33.5 — 2026-07-26 14:59 EDT (#16 · `ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
 
-**First change merged after the local dev bot existed, and the first one live-verified before merge
-rather than after deploy.**
+**First change merged after the local dev bot existed, and the first one live-verified before merge rather than after deploy.**
 
-- **Removed the `> **NOTE:**` callout** from the Advanced Double Legendary Weapon Draw page — the one
-  claiming a Regular-only purchase is *cheaper than a Normal Draw*. Harkirat's call: the comparison
-  invited the wrong read, and `THE TRAP` callout already carries the actionable warning. `THE TRAP` is
-  unchanged. The page drops from **9 Text Displays to 8**, one callout instead of two.
-- **Dropped the now-orphaned `normalDrawTotal` derivation** — it existed solely to feed the removed
-  callout's `X vs Y` comparison. Every remaining number on the page is still derived from `DRAW_DATA`,
-  so the "a wrong number can only ever exist in one place" property holds.
-- **Comments and the rule file were updated in the same change**, not left to drift — the builder's
-  inline block-index comments (`4-5: the two callouts` → `4: THE TRAP callout`) and
-  `.claude/rules/draw-prices.md`'s layout description both now describe the 8-display shape, each noting
-  the removal was Harkirat's request on 2026-07-25.
-- **Branch-name housekeeping:** this shipped as #16, not the original #2. Renaming the head branch
-  `claude/remove-draw-prices-note-4aceoh` → `chore/remove-draw-prices-note` (to match the repo's
-  `feat/`·`chore/`·`docs/` convention) made GitHub **auto-close** the PR — its rename only retargets PRs
-  whose *base* moved, never the head. Same commits, new number. Worth knowing before renaming the head
-  branch of the other outstanding `claude/*` PRs (#9, #11): rename first, or expect to re-open a new PR.
+- **Removed the `> **NOTE:**` callout** from the Advanced Double Legendary Weapon Draw page — the one claiming a Regular-only purchase is *cheaper than a Normal Draw*. Harkirat's call: the comparison invited the wrong read, and `THE TRAP` callout already carries the actionable warning. `THE TRAP` is unchanged. The page drops from **9 Text Displays to 8**, one callout instead of two.
+- **Dropped the now-orphaned `normalDrawTotal` derivation** — it existed solely to feed the removed callout's `X vs Y` comparison. Every remaining number on the page is still derived from `DRAW_DATA`, so the "a wrong number can only ever exist in one place" property holds.
+- **Comments and the rule file were updated in the same change**, not left to drift — the builder's inline block-index comments (`4-5: the two callouts` → `4: THE TRAP callout`) and `.claude/rules/draw-prices.md`'s layout description both now describe the 8-display shape, each noting the removal was Harkirat's request on 2026-07-25.
+- **Branch-name housekeeping:** this shipped as #16, not the original #2. Renaming the head branch `claude/remove-draw-prices-note-4aceoh` → `chore/remove-draw-prices-note` (to match the repo's `feat/`·`chore/`·`docs/` convention) made GitHub **auto-close** the PR — its rename only retargets PRs whose *base* moved, never the head. Same commits, new number. Worth knowing before renaming the head branch of the other outstanding `claude/*` PRs (#9, #11): rename first, or expect to re-open a new PR.
 
 ---
 
@@ -3671,855 +1278,276 @@ rather than after deploy.**
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
-- **Built the GitHub Projects Roadmap board** (https://github.com/users/HarkiratMangat/projects/2) via
-  `gh api graphql`: `Status`/`Priority`/`Effort`/`Model suggestion`/`Flags` fields, 15 draft items sourced
-  from `ROADMAP.md`'s remaining v2 items + `db-deferred-list.md`'s Queued section, plus 4 placeholder
-  cards for v3/v4/v5/Someday-tech-debt. Documented the division of labor in `docs/README.md` and
-  `CLAUDE.md`: the docs stay the detailed source of truth, the board is a manually-refreshed visual view.
-- **Re-synced the board + `ROADMAP.md`** against PR #13's deferred-list rename/restructure, which landed
-  8 minutes after the board was first populated: 2 items' Model suggestion field `Opus4.8-H`→`Opus5-H`,
-  every item body's `deferred-items.md` source citation → `db-deferred-list.md`, and 2 leftover
-  `Opus4.8-H` tags in `ROADMAP.md` itself that PR #13's own model-tag refresh had missed.
-- **Fixed a third stale copy of the timestamp-discipline convention** in `docs/README.md`'s "Date/time
-  convention" section — added the proactive-fetch-once guidance already applied to the two memory copies.
-- **Backfilled a missing DEVLOG entry** (2026-07-24 16:18 EDT) for the enforcement-hooks creation batch
-  that was never logged at the time, plus a new entry documenting this session's multi-pass verification
-  of the timestamp/deferral-tell hooks.
+- **Built the GitHub Projects Roadmap board** (https://github.com/users/HarkiratMangat/projects/2) via `gh api graphql`: `Status`/`Priority`/`Effort`/`Model suggestion`/`Flags` fields, 15 draft items sourced from `ROADMAP.md`'s remaining v2 items + `db-deferred-list.md`'s Queued section, plus 4 placeholder cards for v3/v4/v5/Someday-tech-debt. Documented the division of labor in `docs/README.md` and `CLAUDE.md`: the docs stay the detailed source of truth, the board is a manually-refreshed visual view.
+- **Re-synced the board + `ROADMAP.md`** against PR #13's deferred-list rename/restructure, which landed 8 minutes after the board was first populated: 2 items' Model suggestion field `Opus4.8-H`→`Opus5-H`, every item body's `deferred-items.md` source citation → `db-deferred-list.md`, and 2 leftover `Opus4.8-H` tags in `ROADMAP.md` itself that PR #13's own model-tag refresh had missed.
+- **Fixed a third stale copy of the timestamp-discipline convention** in `docs/README.md`'s "Date/time convention" section — added the proactive-fetch-once guidance already applied to the two memory copies.
+- **Backfilled a missing DEVLOG entry** (2026-07-24 16:18 EDT) for the enforcement-hooks creation batch that was never logged at the time, plus a new entry documenting this session's multi-pass verification of the timestamp/deferral-tell hooks.
 
 ## v2.33.3 — 2026-07-26 11:18 EDT (#13 · `25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
-The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project
-tracker and left everything else behind. This finishes it and reorganizes the result.
+The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project tracker and left everything else behind. This finishes it and reorganizes the result.
 
-- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders
-  (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞
-  Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6
-  `[Diors Builds]` Resolved entries moved to the new archive.
-- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and
-  `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing
-  abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
-- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's
-  `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead
-  archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries.
-  The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
-- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated
-  its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer
-  section and dry-run verified — still reports the same 4 open items.
-- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
-  `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead
-  "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on
-  2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
-- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has
-  **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split
-  reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped
-  P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
-- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
-  restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
+- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞 Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6 `[Diors Builds]` Resolved entries moved to the new archive.
+- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
+- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries. The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
+- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer section and dry-run verified — still reports the same 4 open items.
+- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on 2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
+- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
+- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
 
-**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught
-five more, all fixed:
-- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to
-  `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded
-  scan fails silently.
-- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're
-  Dior's own now. Split into two entries.
-- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing
-  else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover
-  project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
-- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now
-  names the file. Also removed an orphan `-` bullet and a doubled `---`.
-- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
-  `settings.local.json` is gitignored, so hook fixes never ride in a PR.
+**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught five more, all fixed:
+- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded scan fails silently.
+- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're Dior's own now. Split into two entries.
+- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
+- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now names the file. Also removed an orphan `-` bullet and a doubled `---`.
+- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that `settings.local.json` is gitignored, so hook fixes never ride in a PR.
 - Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.
 
 **Third pass — status refresh on the two cross-project/meta items** (Harkirat's call, 2026-07-26 11:11 EDT):
-- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused."
-  What it was built to solve has largely been handled another way — the MCP memory/recall layer
-  (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/
-  reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that
-  still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`,
-  `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files.
-  **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads
-  "parked" as "the path is free now."
-- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have
-  frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`:
-  its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file
-  content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments.
-  🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
-- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
-  own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
+- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused." What it was built to solve has largely been handled another way — the MCP memory/recall layer (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/ reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`, `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files. **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads "parked" as "the path is free now."
+- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`: its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments. 🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
+- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
 
 ## v2.33.2 — 2026-07-25 16:20 EDT (#12 · `6a64e37`) — Split Diors Builds deferred items into `docs/deferred-items.md`
 *Docs-only — no code/deploy impact.*
-- Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project
-  `/Applications/Claude Code/deferred-items.md` tracker into a new tracked `docs/deferred-items.md`, so it
-  gets real `git diff`/`git log` history like the rest of `docs/`. 🐞 Active Bugs, 🔔 Reminders, and
-  Cross-project/meta stay in the shared tracker; the shared file now carries a short pointer instead, plus
-  a flagged TODO that the Gif Background Remover skill project still needs the identical split later.
-- Updated every repo reference (`CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/diors-builds
-  notes.md`) that specifically routed Diors-Builds maintenance items to the old shared file, so they now
-  point at `docs/deferred-items.md` instead. Genuinely cross-project routing (bugs/reminders/meta) left as-is.
-- Corresponding memory-file updates (`MEMORY.md`, `reference_deferred_items_file.md`,
-  `user_working_agreement.md`, `project_central_notes_file.md`) at
-  `~/.claude/projects/-Applications-Diors-Builds/memory/` — outside this repo, not part of this diff.
+- Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project `/Applications/Claude Code/deferred-items.md` tracker into a new tracked `docs/deferred-items.md`, so it gets real `git diff`/`git log` history like the rest of `docs/`. 🐞 Active Bugs, 🔔 Reminders, and Cross-project/meta stay in the shared tracker; the shared file now carries a short pointer instead, plus a flagged TODO that the Gif Background Remover skill project still needs the identical split later.
+- Updated every repo reference (`CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/diors-builds notes.md`) that specifically routed Diors-Builds maintenance items to the old shared file, so they now point at `docs/deferred-items.md` instead. Genuinely cross-project routing (bugs/reminders/meta) left as-is.
+- Corresponding memory-file updates (`MEMORY.md`, `reference_deferred_items_file.md`, `user_working_agreement.md`, `project_central_notes_file.md`) at `~/.claude/projects/-Applications-Diors-Builds/memory/` — outside this repo, not part of this diff.
 
 ## v2.33.1 — 2026-07-25 18:35 EDT (#10 · `8c44f97`) — `/autobuild` private toggle
-- Added a `private` boolean option to `/autobuild` (default `true`, matching the always-ephemeral behavior
-  that existed before this option), applied to both the main flow and the `retry_token` retry flow's
-  `deferReply`. Explicit-option-only — no saved-preference layer like the loadout commands' `private`,
-  since this is a single-admin PoC command, not worth the extra `UserPreference` state. `/autobuild` stays
-  fully admin-gated (`ALLOWED_ADMIN_ID` check) regardless of this option — no exposure risk from the toggle.
+- Added a `private` boolean option to `/autobuild` (default `true`, matching the always-ephemeral behavior that existed before this option), applied to both the main flow and the `retry_token` retry flow's `deferReply`. Explicit-option-only — no saved-preference layer like the loadout commands' `private`, since this is a single-admin PoC command, not worth the extra `UserPreference` state. `/autobuild` stays fully admin-gated (`ALLOWED_ADMIN_ID` check) regardless of this option — no exposure risk from the toggle.
 
 ## v2.33.0 — 2026-07-24 18:18 EDT (#1 · `904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
-*The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from
-`feat/git-workflow` (PR #1), the first version ever minted at MERGE rather than at push.*
-- **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old
-  "everything on `main`, push = version bump" model. Version now mints at MERGE (squash), not push;
-  branch commits are free/unversioned checkpoints; push/merge/deploy are each asked separately, every
-  time. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`.
-- Consistency sweep across the repo-doc side to match: `CLAUDE.md`'s git-workflow invariant,
-  `docs/SESSION-START.md`'s NON-NEGOTIABLES glossary + a hardened FIRST-ACTION gate, both changelogs'
-  Versioning headers, `docs/ROADMAP.md`, `docs/README.md`'s per-merge chore checklist,
-  `docs/reference/deployment-and-ops.md`'s version-tagging section, `scripts/deploy.sh` comments, and
-  the 4 coupled memory files (`feedback_docs_at_push_time`, `feedback_push_means_full_cycle`,
-  `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system`).
-- `index.js`'s "Bot online" boot alert now reads and reports `package.json`'s version, so a lagging VM
-  deploy is visible at a glance against `main`'s latest tag. `package.json` bumped from a stale `1.0.0`
-  to `2.33.0` as part of this merge.
-- Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit`
-  to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
-- **Fixed the `/manage` attachment-edit → per-slot-Cloudinary-metadata gap** (design decided
-  2026-07-21, built this PR): `Loadout` gained a real `attachmentSlots` field (`models/Loadout.js`),
-  populated by `/autobuild`'s `writeLoadoutDoc` on every new build and backfilled onto pre-existing
-  builds by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` now re-syncs the real
-  per-slot Cloudinary fields (Muzzle/Barrel/etc.) when the edited attachment list is unchanged from
-  what's stored, and safely clears the stored mapping when it genuinely changes. See
-  `.claude/rules/autobuild.md` + `.claude/rules/loadout-images-and-metadata.md`. ⚠️ Syntax-checked,
-  not yet live-tested against a real `/manage` edit.
-- A full `docs/diors-builds notes.md` review pass — answered/fixed everything flagged there (Legend
-  formatting corrections, the bullet-comment convention, moved several answers that had only lived in
-  a SESSION STATUS block back to their own bullets, a real Firestore-migration assessment).
+*The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from `feat/git-workflow` (PR #1), the first version ever minted at MERGE rather than at push.*
+- **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old "everything on `main`, push = version bump" model. Version now mints at MERGE (squash), not push; branch commits are free/unversioned checkpoints; push/merge/deploy are each asked separately, every time. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`.
+- Consistency sweep across the repo-doc side to match: `CLAUDE.md`'s git-workflow invariant, `docs/SESSION-START.md`'s NON-NEGOTIABLES glossary + a hardened FIRST-ACTION gate, both changelogs' Versioning headers, `docs/ROADMAP.md`, `docs/README.md`'s per-merge chore checklist, `docs/reference/deployment-and-ops.md`'s version-tagging section, `scripts/deploy.sh` comments, and the 4 coupled memory files (`feedback_docs_at_push_time`, `feedback_push_means_full_cycle`, `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system`).
+- `index.js`'s "Bot online" boot alert now reads and reports `package.json`'s version, so a lagging VM deploy is visible at a glance against `main`'s latest tag. `package.json` bumped from a stale `1.0.0` to `2.33.0` as part of this merge.
+- Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit` to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
+- **Fixed the `/manage` attachment-edit → per-slot-Cloudinary-metadata gap** (design decided 2026-07-21, built this PR): `Loadout` gained a real `attachmentSlots` field (`models/Loadout.js`), populated by `/autobuild`'s `writeLoadoutDoc` on every new build and backfilled onto pre-existing builds by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` now re-syncs the real per-slot Cloudinary fields (Muzzle/Barrel/etc.) when the edited attachment list is unchanged from what's stored, and safely clears the stored mapping when it genuinely changes. See `.claude/rules/autobuild.md` + `.claude/rules/loadout-images-and-metadata.md`. ⚠️ Syntax-checked, not yet live-tested against a real `/manage` edit.
+- A full `docs/diors-builds notes.md` review pass — answered/fixed everything flagged there (Legend formatting corrections, the bullet-comment convention, moved several answers that had only lived in a SESSION STATUS block back to their own bullets, a real Firestore-migration assessment).
 
 ## v2.32.0 — 2026-07-24 12:12 EDT (`987750a`) — `/manage` patch notes: multi-season management + manual title override
-The patch-notes admin page could only ever edit the **one** entry that happened to be "current" — there was
-no way to *start* a new season's notes at all (the notes-file's own "PRIORITY: WHAT A HUGE MISS BY US" item).
-This adds the missing lifecycle. Implemented in a prior session (Sonnet 5, "Part 3") and carried uncommitted
-into this one; committed here as the **last old-model direct-to-`main` release** before the branch/PR
-workflow switch. **Syntax-checked but NOT yet tested on the live bot** — pending a real `/manage` run before
-it's trusted in production.
-- **"Add New Season"** — a new button + 5-field modal (`modal_patch_addseason`: title override, release date,
-  additional info, URLs 1, URLs 2). Submitting **pushes** a fresh `patchNotes[]` entry, which becomes the
-  Current Season; the previous current entry automatically becomes a Past Season (it's simply no longer the
-  last item in the array — nothing else about it changes). Submitted URLs are re-hosted into the new entry's
-  own Cloudinary folder, same pipeline the current-entry URL flow uses.
-- **"Past Seasons"** — a select menu (not a search modal — the full list is short enough to pick from
-  directly) that opens the chosen past entry in an edit modal (`modal_patch_editseason_<id>`), updating that
-  one entry **in place** by its `_id` and never touching which entry is "current." Options are built live from
-  the DB every render (`buildPastSeasonsOptions()` — most-recent-first, current excluded, capped at Discord's
-  25-option select limit), so `buildManagePage()` now takes a `dynamicData` param; both render call sites
-  (manage.js's `execute()` and index.js's `mng_pagesel`) fetch the doc when landing on the patch-notes page.
-  An empty list renders one disabled placeholder option rather than an (illegal) empty select.
-- **Manual title override (`titleOverride`)** — a new schema field + a `displayTitle(patch)` helper
-  (`cleanPatchTitle(titleOverride || title)`) exported from `patchnotes.js` and threaded through **every**
-  display site (main render, history dropdown, autocomplete, the manage dropdown, and Cloudinary
-  `Patch_Season` metadata) so an override can never be silently ignored. Purpose: set a placeholder title when
-  patch notes drop before the new season's real name is announced (Harkirat's example: notes out Jul 23,
-  season title still pending). Blank reverts to the auto-synced `title` (`currentSeasonTitle`); the Date/Info
-  modal also gained a "Season Title Override" field for the current entry.
+The patch-notes admin page could only ever edit the **one** entry that happened to be "current" — there was no way to *start* a new season's notes at all (the notes-file's own "PRIORITY: WHAT A HUGE MISS BY US" item). This adds the missing lifecycle. Implemented in a prior session (Sonnet 5, "Part 3") and carried uncommitted into this one; committed here as the **last old-model direct-to-`main` release** before the branch/PR workflow switch. **Syntax-checked but NOT yet tested on the live bot** — pending a real `/manage` run before it's trusted in production.
+- **"Add New Season"** — a new button + 5-field modal (`modal_patch_addseason`: title override, release date, additional info, URLs 1, URLs 2). Submitting **pushes** a fresh `patchNotes[]` entry, which becomes the Current Season; the previous current entry automatically becomes a Past Season (it's simply no longer the last item in the array — nothing else about it changes). Submitted URLs are re-hosted into the new entry's own Cloudinary folder, same pipeline the current-entry URL flow uses.
+- **"Past Seasons"** — a select menu (not a search modal — the full list is short enough to pick from directly) that opens the chosen past entry in an edit modal (`modal_patch_editseason_<id>`), updating that one entry **in place** by its `_id` and never touching which entry is "current." Options are built live from the DB every render (`buildPastSeasonsOptions()` — most-recent-first, current excluded, capped at Discord's 25-option select limit), so `buildManagePage()` now takes a `dynamicData` param; both render call sites (manage.js's `execute()` and index.js's `mng_pagesel`) fetch the doc when landing on the patch-notes page. An empty list renders one disabled placeholder option rather than an (illegal) empty select.
+- **Manual title override (`titleOverride`)** — a new schema field + a `displayTitle(patch)` helper (`cleanPatchTitle(titleOverride || title)`) exported from `patchnotes.js` and threaded through **every** display site (main render, history dropdown, autocomplete, the manage dropdown, and Cloudinary `Patch_Season` metadata) so an override can never be silently ignored. Purpose: set a placeholder title when patch notes drop before the new season's real name is announced (Harkirat's example: notes out Jul 23, season title still pending). Blank reverts to the auto-synced `title` (`currentSeasonTitle`); the Date/Info modal also gained a "Season Title Override" field for the current entry.
 
 ## v2.31.0 — 2026-07-22 (`116ccd6`) — CLAUDE.md modularized into path-scoped rules + vision cost logging
-*Two things shipped together in this one push (Harkirat's call, to get everything live and in sync): the
-CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code change
-from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting uncommitted.
-Because real `utils/` code changed, this push required a VM redeploy. `v2.31.0` is a MODERATE bump: a repo-wide
-structural change plus a new observability feature. (Finalized 2026-07-24 12:12 EDT: this entry had been left in the
-"Unreleased/proposed" staging area and untagged even though it shipped live as `116ccd6`; graduated to a real
-numbered entry and the `v2.31.0` tag backfilled onto `116ccd6` during the workflow-overhaul session.)*
-- **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the hard
-  invariants (canonical memory path, `.env` gitignore, Cloudinary secret-logging ban, user-installed-only
-  architecture, DB schema gotcha, deploy summary, context-comments rule), a platform cheat-sheet, and a 🗺️
-  navigation map. Everything else moved to:
-  - **13 path-scoped `.claude/rules/*.md`** (a real Claude Code feature, verified against the docs) — each with
-    a `paths:` glob so a subsystem's detail loads into context ONLY when you read a matching file. Files:
-    commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui,
-    accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions,
-    models, scripts-and-migrations.
-  - **`docs/ROADMAP.md`** (now the authoritative roadmap — was CLAUDE.md's "Next planned work"),
-    **`docs/reference/deployment-and-ops.md`** (stack + GCP + version tagging), **`docs/reference/known-issues.md`**,
-    **`docs/reference/design-history.md`**.
-- **Zero content loss** — a move + index + inline cleanup, verified by section→destination ledger, line
-  accounting (3,272 → 3,618 total across the new files, the delta being added frontmatter/intros/nav-map), and
-  a 22-phrase subsystem spot-check. All 13 rule files' YAML frontmatter parse-validated.
-- **All cross-references rewired**: ~30 dangling "see X above/below" refs re-pointed across the new files;
-  `docs/README.md`, `docs/SESSION-START.md`, and ~8 operative memory pointers updated (roadmap authority →
-  `docs/ROADMAP.md`); historical changelog/DEVLOG/plan refs resolve via the root nav-map redirect.
-- New memory `reference_claude_md_rules_structure` + design spec
-  `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`. Also filed a concrete plan to split
-  `index.js` (3.3k lines) into `handlers/*.js` as its own future session (`docs/ROADMAP.md`).
-- Invariants deliberately kept in root because only root `CLAUDE.md` survives `/compact`; path-scoped rules
-  reload on the next matching file read. Verify with `/context`.
-- **Bundled bot-code change — Vertex AI vision cost logging** (`utils/visionExtract.js` + 3 callers, written
-  earlier 2026-07-22, folded into this push rather than left dangling): a new `logVisionCallCost()` emits one
-  structured `console.log` line (`vision_call_cost` — taskName, model, region, input/output tokens, estimated
-  USD) per extraction, captured by journald on the VM. Added after a ~$20 GCP spike whose root cause took two
-  days to trace because Cloud Monitoring only reports aggregate per-model/region/day token totals, not per-call
-  detail; this closes that gap with zero new dependency. The spike itself was diagnosed as the 2026-07-20
-  Antigravity migration/debugging session hammering the `global` endpoint (~16M input tokens in one day), NOT
-  this bot's production path — decision recorded in-file to **stay on `gemini-3.5-flash`, not upgrade to
-  `gemini-3.6-flash`** (no published pricing, `global`-only region, and its "fewer turns" efficiency gain
-  doesn't apply to a single-shot image→JSON call). Callers (`autobuildPipeline`, `backfillLoadoutSlots`,
-  `test-vertex-extract`) now pass a `taskName` for attribution. The cost logger is wrapped in try/catch so it
-  can never break an extraction; production `/autobuild` behavior is otherwise unchanged.
+*Two things shipped together in this one push (Harkirat's call, to get everything live and in sync): the CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code change from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting uncommitted. Because real `utils/` code changed, this push required a VM redeploy. `v2.31.0` is a MODERATE bump: a repo-wide structural change plus a new observability feature. (Finalized 2026-07-24 12:12 EDT: this entry had been left in the "Unreleased/proposed" staging area and untagged even though it shipped live as `116ccd6`; graduated to a real numbered entry and the `v2.31.0` tag backfilled onto `116ccd6` during the workflow-overhaul session.)*
+- **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the hard invariants (canonical memory path, `.env` gitignore, Cloudinary secret-logging ban, user-installed-only architecture, DB schema gotcha, deploy summary, context-comments rule), a platform cheat-sheet, and a 🗺️ navigation map. Everything else moved to:
+  - **13 path-scoped `.claude/rules/*.md`** (a real Claude Code feature, verified against the docs) — each with a `paths:` glob so a subsystem's detail loads into context ONLY when you read a matching file. Files: commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui, accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions, models, scripts-and-migrations.
+  - **`docs/ROADMAP.md`** (now the authoritative roadmap — was CLAUDE.md's "Next planned work"), **`docs/reference/deployment-and-ops.md`** (stack + GCP + version tagging), **`docs/reference/known-issues.md`**, **`docs/reference/design-history.md`**.
+- **Zero content loss** — a move + index + inline cleanup, verified by section→destination ledger, line accounting (3,272 → 3,618 total across the new files, the delta being added frontmatter/intros/nav-map), and a 22-phrase subsystem spot-check. All 13 rule files' YAML frontmatter parse-validated.
+- **All cross-references rewired**: ~30 dangling "see X above/below" refs re-pointed across the new files; `docs/README.md`, `docs/SESSION-START.md`, and ~8 operative memory pointers updated (roadmap authority → `docs/ROADMAP.md`); historical changelog/DEVLOG/plan refs resolve via the root nav-map redirect.
+- New memory `reference_claude_md_rules_structure` + design spec `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`. Also filed a concrete plan to split `index.js` (3.3k lines) into `handlers/*.js` as its own future session (`docs/ROADMAP.md`).
+- Invariants deliberately kept in root because only root `CLAUDE.md` survives `/compact`; path-scoped rules reload on the next matching file read. Verify with `/context`.
+- **Bundled bot-code change — Vertex AI vision cost logging** (`utils/visionExtract.js` + 3 callers, written earlier 2026-07-22, folded into this push rather than left dangling): a new `logVisionCallCost()` emits one structured `console.log` line (`vision_call_cost` — taskName, model, region, input/output tokens, estimated USD) per extraction, captured by journald on the VM. Added after a ~$20 GCP spike whose root cause took two days to trace because Cloud Monitoring only reports aggregate per-model/region/day token totals, not per-call detail; this closes that gap with zero new dependency. The spike itself was diagnosed as the 2026-07-20 Antigravity migration/debugging session hammering the `global` endpoint (~16M input tokens in one day), NOT this bot's production path — decision recorded in-file to **stay on `gemini-3.5-flash`, not upgrade to `gemini-3.6-flash`** (no published pricing, `global`-only region, and its "fewer turns" efficiency gain doesn't apply to a single-shot image→JSON call). Callers (`autobuildPipeline`, `backfillLoadoutSlots`, `test-vertex-extract`) now pass a `taskName` for attribution. The cost logger is wrapped in try/catch so it can never break an extraction; production `/autobuild` behavior is otherwise unchanged.
 
 ## v2.30.2 — 2026-07-21 (`231b133`) — fix pagination duplicate-custom_id crash at exactly 2 pages
-A live production crash, found in the VM logs while verifying the v2.30.1 deploy (9× in one hour on `/draws`
-alone). Introduced by v2.28.0's pagination loop-back. **Player-facing** (it took down whole commands), though
-the fix itself is a one-file internal change.
-- **The bug:** on the page-number (`makeCustomId`) pagination path, wrapping at exactly **2 pages** makes both
-  arrows target the one "other" page, so `makeCustomId(prevPage) === makeCustomId(nextPage)` — two buttons with
-  an **identical `custom_id`**. Discord hard-rejects that (`Invalid Form Body … COMPONENT_CUSTOM_ID_DUPLICATED`)
-  and the **entire message fails to send**, so the command throws. v2.28.0's own note calling the 2-page case
-  "harmless, just redundant" was the opposite of true.
-- **Blast radius:** `/draws`, `/calendar`, `/settings` (which hardcodes 2 pages — so it crashed on **every
-  open** for a day), View Colors (8 colours → 2 pages) and `/alerts`. Any page-based pager that lands on 2 pages.
-- **Fix** (`utils/paginationRow.js`): it's mathematically impossible to have two *enabled looping* arrows with
-  unique page-based ids at 2 pages (both must point at the same page). So at exactly 2 pages on that path the
-  helper now **clamps + disables the boundary arrow** (`prev → max(0, cp-1)`, `next → min(last, cp+1)`), giving
-  distinct ids (`…_0` vs `…_1`). 3+ pages loop unchanged. The legacy direction-encoded (`prev_`/`next_`) path
-  used by loadout cards is inherently unique even at 2 pages and keeps looping, untouched.
-- Verified exhaustively: a harness over `totalChunks` 2–5 × every current page (zero duplicate ids), plus an
-  end-to-end `draws.buildContainer()` render of a 2-chunk doc (`subpage_new_0`/`subpage_new_1`, not two
-  `subpage_new_1`). Left as clamp-at-2; a cosmetic single-toggle-button alternative is possible later
-  (Harkirat's call).
-- **Documentation cycle shipped alongside this version (doc-only, no separate version):** the records audit
-  this session — graduated v2.27.0–v2.30.1 out of the old "pending graduation"/"Unreleased" staging into the
-  numbered list above; fixed the scrambled 2026-07-18 ordering; backfilled `CHANGELOG-SUMMARY.md` so no
-  version number is skipped (v2.27.0 + the older minors via range-extension); pruned four already-shipped
-  items from the roadmap; backfilled the missing **v2.26.0 git tag**; a full notes-scratchpad tidy (SESSION
-  STATUS #4, inline answers/marks, ℋ-item sweep) with its intake filed into CLAUDE.md/deferred-items; plus
-  CLAUDE.md staleness fixes and a memory-alignment pass. No bot behaviour changed by any of it.
-- **Second doc batch (same session, Harkirat's follow-up asks):** normalized every pre-v2.8.0 version from the
-  old two-decimal notation to uniform 3-part (`v2.71`→`v2.7.1`, etc., both changelogs) and fixed the
-  v2.7.1/v2.7.0 ordering slip it exposed; purged the obsolete "Harkirat's Space" in-file references (it's now
-  its own external file); added **`docs/README.md`** (a documentation-ecosystem map — what each doc is, when to
-  touch it, per-push chores) and a **ToC to `DEVLOG.md`**; and a second memory pass — a scannable "🔴 THE RULES
-  THAT GET SKIPPED" checklist atop `user_working_agreement.md` (so the non-negotiables reach every model tier),
-  plus rot-proofing a stale hardcoded "current version" line in the changelog-system memory.
-- **Third doc batch (same session):** **completed the git-tag backfill — every version now has a tag,
-  `v1.0.0`→`v2.30.2`, 58 tags, zero gaps** (the old "no clean commit mapping" deferral was a false premise;
-  nearly every entry cited its own hash, verified monotonic before pushing); **restructured `DEVLOG.md`** —
-  moved 7 dated narrative entries that had drifted into the "thematic" Part B back into their chronological
-  Part A slots (Part B is now purely thematic); recorded Harkirat's decision on the `/manage` per-slot fix
-  (store slot labels in Mongo); and a memory note capturing the "notice-a-gap-then-shrug" tell (I did it this
-  session and Harkirat caught it). Also adopted a new standing convention (his request): **dates in records
-  now carry a time + timezone** (`YYYY-MM-DD HH:MM TZ`) as a second factor for intra-day ordering — recorded
-  in memory + `docs/README.md`.
+A live production crash, found in the VM logs while verifying the v2.30.1 deploy (9× in one hour on `/draws` alone). Introduced by v2.28.0's pagination loop-back. **Player-facing** (it took down whole commands), though the fix itself is a one-file internal change.
+- **The bug:** on the page-number (`makeCustomId`) pagination path, wrapping at exactly **2 pages** makes both arrows target the one "other" page, so `makeCustomId(prevPage) === makeCustomId(nextPage)` — two buttons with an **identical `custom_id`**. Discord hard-rejects that (`Invalid Form Body … COMPONENT_CUSTOM_ID_DUPLICATED`) and the **entire message fails to send**, so the command throws. v2.28.0's own note calling the 2-page case "harmless, just redundant" was the opposite of true.
+- **Blast radius:** `/draws`, `/calendar`, `/settings` (which hardcodes 2 pages — so it crashed on **every open** for a day), View Colors (8 colours → 2 pages) and `/alerts`. Any page-based pager that lands on 2 pages.
+- **Fix** (`utils/paginationRow.js`): it's mathematically impossible to have two *enabled looping* arrows with unique page-based ids at 2 pages (both must point at the same page). So at exactly 2 pages on that path the helper now **clamps + disables the boundary arrow** (`prev → max(0, cp-1)`, `next → min(last, cp+1)`), giving distinct ids (`…_0` vs `…_1`). 3+ pages loop unchanged. The legacy direction-encoded (`prev_`/`next_`) path used by loadout cards is inherently unique even at 2 pages and keeps looping, untouched.
+- Verified exhaustively: a harness over `totalChunks` 2–5 × every current page (zero duplicate ids), plus an end-to-end `draws.buildContainer()` render of a 2-chunk doc (`subpage_new_0`/`subpage_new_1`, not two `subpage_new_1`). Left as clamp-at-2; a cosmetic single-toggle-button alternative is possible later (Harkirat's call).
+- **Documentation cycle shipped alongside this version (doc-only, no separate version):** the records audit this session — graduated v2.27.0–v2.30.1 out of the old "pending graduation"/"Unreleased" staging into the numbered list above; fixed the scrambled 2026-07-18 ordering; backfilled `CHANGELOG-SUMMARY.md` so no version number is skipped (v2.27.0 + the older minors via range-extension); pruned four already-shipped items from the roadmap; backfilled the missing **v2.26.0 git tag**; a full notes-scratchpad tidy (SESSION STATUS #4, inline answers/marks, ℋ-item sweep) with its intake filed into CLAUDE.md/deferred-items; plus CLAUDE.md staleness fixes and a memory-alignment pass. No bot behaviour changed by any of it.
+- **Second doc batch (same session, Harkirat's follow-up asks):** normalized every pre-v2.8.0 version from the old two-decimal notation to uniform 3-part (`v2.71`→`v2.7.1`, etc., both changelogs) and fixed the v2.7.1/v2.7.0 ordering slip it exposed; purged the obsolete "Harkirat's Space" in-file references (it's now its own external file); added **`docs/README.md`** (a documentation-ecosystem map — what each doc is, when to touch it, per-push chores) and a **ToC to `DEVLOG.md`**; and a second memory pass — a scannable "🔴 THE RULES THAT GET SKIPPED" checklist atop `user_working_agreement.md` (so the non-negotiables reach every model tier), plus rot-proofing a stale hardcoded "current version" line in the changelog-system memory.
+- **Third doc batch (same session):** **completed the git-tag backfill — every version now has a tag, `v1.0.0`→`v2.30.2`, 58 tags, zero gaps** (the old "no clean commit mapping" deferral was a false premise; nearly every entry cited its own hash, verified monotonic before pushing); **restructured `DEVLOG.md`** — moved 7 dated narrative entries that had drifted into the "thematic" Part B back into their chronological Part A slots (Part B is now purely thematic); recorded Harkirat's decision on the `/manage` per-slot fix (store slot labels in Mongo); and a memory note capturing the "notice-a-gap-then-shrug" tell (I did it this session and Harkirat caught it). Also adopted a new standing convention (his request): **dates in records now carry a time + timezone** (`YYYY-MM-DD HH:MM TZ`) as a second factor for intra-day ordering — recorded in memory + `docs/README.md`.
 
 ## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
-Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
-(`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) — the v2.30.0 version got the mockup wrong
-in two spots:
-- **Removed three internal dividers that were never in the mockup** — the v2.30.0 builder added spacing-2
-  dividers after the headline, after the three purchase modes, and after the callouts (`dividerBefore =
-  {1,4,6}`). None are in `local/advanced leggy_format.json`; all removed. The page is now a flat run of
-  Text Displays with the only dividers being the title divider above and footer divider below (both from
-  `buildContainer`, not the entry builder).
-- **Strategy heading corrected** from `### **The Strategy, If You Want...**` to the exact plain-bold form
-  Harkirat specified: `**The Strategy. If You Want...**` (no `### ` heading, comma → period).
-- Applies to both CP regions. Re-verified via a `buildContainer()` JSON dump: container now has exactly 2
-  dividers (title + footer), totals still derive from the arrays, ≈26 components (well under the 40 cap).
-- **Shipped + deployed live to the VM 2026-07-21** (committed 2026-07-21 as `c419fcf`, held one session per
-  Harkirat's instruction, then pushed/deployed the next session). Re-verified live via a `buildContainer()`
-  dump after deploy: exactly 2 dividers (title + footer) on both regions, correct plain-bold heading.
+Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent (`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) — the v2.30.0 version got the mockup wrong in two spots:
+- **Removed three internal dividers that were never in the mockup** — the v2.30.0 builder added spacing-2 dividers after the headline, after the three purchase modes, and after the callouts (`dividerBefore = {1,4,6}`). None are in `local/advanced leggy_format.json`; all removed. The page is now a flat run of Text Displays with the only dividers being the title divider above and footer divider below (both from `buildContainer`, not the entry builder).
+- **Strategy heading corrected** from `### **The Strategy, If You Want...**` to the exact plain-bold form Harkirat specified: `**The Strategy. If You Want...**` (no `### ` heading, comma → period).
+- Applies to both CP regions. Re-verified via a `buildContainer()` JSON dump: container now has exactly 2 dividers (title + footer), totals still derive from the arrays, ≈26 components (well under the 40 cap).
+- **Shipped + deployed live to the VM 2026-07-21** (committed 2026-07-21 as `c419fcf`, held one session per Harkirat's instruction, then pushed/deployed the next session). Re-verified live via a `buildContainer()` dump after deploy: exactly 2 dividers (title + footer) on both regions, correct plain-bold heading.
 
 ## v2.30.0 — 2026-07-21 (`91567dc`) — `/draw prices` Advanced Double Legendary page redesign + full-caps draw headings
-Player-facing visual pass on `/draw prices`, matching Harkirat's own hand-drawn mockup
-(`local/advanced leggy_format.json`). No data or math changed — every number is still DERIVED from the
-raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/wording moved.
-- **Advanced Double Legendary Weapon Draw page (page 3) rebuilt to the mockup** (`buildAdvancedDouble
-  LegendaryEntry`): full-caps heading + `Reg / Adv` headline totals with a `(See **The Strategy** below)`
-  pointer; three quote-styled purchase modes (`'Regular Purchase' Only`, `'Advanced Purchase' Only`,
-  `'Regular Purchase' + Remaining Item Separately`); the `NOTE` and `THE TRAP` callouts reworded to the
-  mockup copy; and **The Strategy** split from one bullet block into three separate Text Displays (its
-  `### ` heading rides the first), each with an inline CP icon on its cost.
-- **The mockup only specified the 10 CP region; the 30 CP region was cloned from the same design** with
-  its own correctly-derived figures (Reg 11,030 / Adv 17,648 / Trap 22,060; "cheaper than a Normal Draw"
-  comparison 11,830; strategies 14,810 / 13,370 / 11,030 — all re-summed and verified).
-- **Every draw-price entry heading is now FULL-CAPS** (the lines with the tier emoji prefix), across both
-  key-driven pages and the Advanced page, for consistency. `DRAW_META.name` stays the canonical mixed-case
-  source of truth; only the rendered heading is uppercased (`meta.name.toUpperCase()`).
-- Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and
-  recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the
-  share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).
-- **Docs synced** (`6c13a56`, doc-only follow-up, no redeploy): CLAUDE.md's Advanced Double Legendary
-  section rewritten from the old single-strategy-block description to this redesign's 3-block shape +
-  the full-caps heading rule.
+Player-facing visual pass on `/draw prices`, matching Harkirat's own hand-drawn mockup (`local/advanced leggy_format.json`). No data or math changed — every number is still DERIVED from the raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/wording moved.
+- **Advanced Double Legendary Weapon Draw page (page 3) rebuilt to the mockup** (`buildAdvancedDouble LegendaryEntry`): full-caps heading + `Reg / Adv` headline totals with a `(See **The Strategy** below)` pointer; three quote-styled purchase modes (`'Regular Purchase' Only`, `'Advanced Purchase' Only`, `'Regular Purchase' + Remaining Item Separately`); the `NOTE` and `THE TRAP` callouts reworded to the mockup copy; and **The Strategy** split from one bullet block into three separate Text Displays (its `### ` heading rides the first), each with an inline CP icon on its cost.
+- **The mockup only specified the 10 CP region; the 30 CP region was cloned from the same design** with its own correctly-derived figures (Reg 11,030 / Adv 17,648 / Trap 22,060; "cheaper than a Normal Draw" comparison 11,830; strategies 14,810 / 13,370 / 11,030 — all re-summed and verified).
+- **Every draw-price entry heading is now FULL-CAPS** (the lines with the tier emoji prefix), across both key-driven pages and the Advanced page, for consistency. `DRAW_META.name` stays the canonical mixed-case source of truth; only the rendered heading is uppercased (`meta.name.toUpperCase()`).
+- Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).
+- **Docs synced** (`6c13a56`, doc-only follow-up, no redeploy): CLAUDE.md's Advanced Double Legendary section rewritten from the old single-strategy-block description to this redesign's 3-block shape + the full-caps heading rule.
 
 ## v2.29.0 — 2026-07-21 (`7960454`) — `/autobuild` v2-test fixes · loadout data corrections
-Second `/autobuild` round from Harkirat's live v2 test (`local/Autobuild testing v2.md`), plus a batch of
-loadout data corrections he verified by hand. **Admin/back-end only** — nothing changes for players.
+Second `/autobuild` round from Harkirat's live v2 test (`local/Autobuild testing v2.md`), plus a batch of loadout data corrections he verified by hand. **Admin/back-end only** — nothing changes for players.
 
 ### `/autobuild` extraction fixes
-- **Weapon SKIN name no longer mistaken for the weapon.** The vision model was reading the equipped skin's
-  stylized title (e.g. `R9-0 - Death's Voice`) as the weapon name, which cascaded into a wrong
-  `weaponKey`/`imageKey` and created a brand-new "weapon" instead of adding a build to the existing one
-  (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the
-  **base weapon only** (`utils/visionExtract.js`), and a structural backstop `normalizeWeaponName()`
-  (`utils/adminParser.js`) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced
-  (`R9-0`, `CX-9`, `L-CAR 9`) so a real name is never touched.
-- **Weapon names normalized to ALL-CAPS.** Autobuild stored title-case (`Machine Pistol`) while every
-  migrated build is uppercase (`MACHINE PISTOL`), so a new build showed out of place in `/manage`'s
-  disambiguation dropdown. `normalizeWeaponName()` now uppercases too (weaponKey is already
-  case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).
-- **Restricted attachment slots are skipped.** A slot locked by another attachment (crossed-out /
-  prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a
-  `"Trigger Action"` attachment). The prompt now explicitly skips restricted AND empty slots and never
-  outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.
-- **Attachments always display in canonical slot order** (Optic → Muzzle → Barrel → Stock → Laser →
-  Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via `orderAttachmentsBySlot()`. Applies
-  to `/autobuild` builds (which carry per-slot labels); builds created before this keep their entry order
-  until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with
-  their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.
-- `/manage`'s **"How Images Work"** info block updated — it said the bot never uploads images; `/autobuild`
-  now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside
-  the manual-key entry.
+- **Weapon SKIN name no longer mistaken for the weapon.** The vision model was reading the equipped skin's stylized title (e.g. `R9-0 - Death's Voice`) as the weapon name, which cascaded into a wrong `weaponKey`/`imageKey` and created a brand-new "weapon" instead of adding a build to the existing one (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the **base weapon only** (`utils/visionExtract.js`), and a structural backstop `normalizeWeaponName()` (`utils/adminParser.js`) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced (`R9-0`, `CX-9`, `L-CAR 9`) so a real name is never touched.
+- **Weapon names normalized to ALL-CAPS.** Autobuild stored title-case (`Machine Pistol`) while every migrated build is uppercase (`MACHINE PISTOL`), so a new build showed out of place in `/manage`'s disambiguation dropdown. `normalizeWeaponName()` now uppercases too (weaponKey is already case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).
+- **Restricted attachment slots are skipped.** A slot locked by another attachment (crossed-out / prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a `"Trigger Action"` attachment). The prompt now explicitly skips restricted AND empty slots and never outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.
+- **Attachments always display in canonical slot order** (Optic → Muzzle → Barrel → Stock → Laser → Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via `orderAttachmentsBySlot()`. Applies to `/autobuild` builds (which carry per-slot labels); builds created before this keep their entry order until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.
+- `/manage`'s **"How Images Work"** info block updated — it said the bot never uploads images; `/autobuild` now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside the manual-key entry.
 
 ### Loadout data corrections (Harkirat-verified)
-- **L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped** (each screenshot uploaded under the other's
-  Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped
-  back and verified by etag; metadata re-synced.
+- **L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped** (each screenshot uploaded under the other's Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped back and verified by etag; metadata re-synced.
 - **J358's `"Trigger Action"`** removed — it was a restricted slot, not an attachment.
-- **3 `/autobuild` test builds deleted** (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice
-  Build 1 & 2.
+- **3 `/autobuild` test builds deleted** (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice Build 1 & 2.
 - **Striker's "Fast Reload Reload Case"** confirmed correct as-is (real in-game label, not a typo) — no change.
 
 ## v2.28.0 — 2026-07-21 (`cd7ba71`) — `/autobuild` live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination
-One push bundling four workstreams (the `/autobuild` + Cloudinary metadata batch had been sitting
-uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). **Shipped
-live to the VM 2026-07-21.** Player-facing parts: the new draw type + looping pagination. Admin/back-end
-parts: the `/autobuild` fixes + Cloudinary metadata.
+One push bundling four workstreams (the `/autobuild` + Cloudinary metadata batch had been sitting uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). **Shipped live to the VM 2026-07-21.** Player-facing parts: the new draw type + looping pagination. Admin/back-end parts: the `/autobuild` fixes + Cloudinary metadata.
 
 ### `/autobuild` live-test bug fixes
-First round of fixes from Harkirat's live `/autobuild` test (notes: `local/autobuild testing notes.md`).
-Admin-only feature.
-- **Open Loadout now renders the weapon's full build set + real pagination.** The PoC passed a
-  single-element array to `buildLoadoutCard`, so every "Open Loadout" card read **"Build 1 of 1"** with
-  no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build
-  of that `weaponKey` and opens **on the just-created build** — correct "Build N of M", working
-  pagination. (`index.js` `autobuild_openloadout_` handler.)
-- **Confirm now edits the review card in place** into the "Loadout created / Open Loadout" card, instead
-  of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry
-  paths too. (`utils/autobuildPipeline.js` — `replaceWithV2Card` via `sendV2Payload` PATCH `@original`,
-  replacing the old new-message `followUpV2Card` POST.)
-- **Badges now propagate across every build of a weapon.** Setting e.g. "Meta" during `/autobuild` review
-  used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not
-  one variant. `writeLoadoutDoc` now `updateMany`s siblings (same `weaponKey`/`mode`), guarded on "a badge
-  is actually set" so a blank can never wipe siblings. Mirrors `/manage`'s `edit_loadout_` convention.
-- **Duplicate-loadout detection (advisory warning).** Re-submitting a screenshot of a build already in the
-  DB silently created a second identical doc (live test 1). New `findDuplicateLoadouts`
-  (`utils/loadoutRender.js`) flags a likely dupe on the review card via two soft rules (Harkirat's idea):
-  code **identical** + ≥4/5 attachments match, **or** code within **2 char edits** + all 5 attachments
-  match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.
-- **Category-conflict warning.** Picking a category that differs from an existing build of the same weapon
-  silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN).
-  The review card now warns when the chosen category ≠ an existing build's category. **Build numbering
-  stays per-`weaponKey`, deliberately** (a weapon's identity is its key; the real bug is the miscategoriz-
-  ation, which this warning surfaces — not the numbering).
-- **Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept
-  in sync** (Harkirat's follow-up calls). **22 account-level fields** created via the idempotent
-  `scripts/createCloudinaryMetadataFields.js`:
-  - **Loadouts (18):** one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/
-    Rear_Grip), **Weapon_Name**, **Mode**, **Build_Number** (int), **Gunsmith_Code**, badges **Is_Meta**/
-    **Is_Toxic**/**Rank**, and dates **Created_At**/**Last_Updated** (Created_At read for free from the Mongo
-    ObjectId timestamp — no schema change).
-  - **Patch notes (4):** **Patch_Id**, **Patch_Season**, **Patch_Image_Order** (int), **Patch_Release_Date** —
-    so each cached screenshot knows its season, carousel order, and release date.
-  - **Backfilled** all existing assets from Mongo: **132/133** loadouts (the 1 skip is PHARO's external-URL
-    "Coming Soon" placeholder) + all 5 Season 6 patch images.
-  - **Per-slot fields backfilled too, via a one-time vision batch** (`scripts/backfillLoadoutSlots.js`,
-    GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the
-    slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored
-    attachment names. **122/132 fully mapped.** The 10 partials turned out to be pre-existing data bugs the
-    batch *surfaced* (two loadout images fully swapped — `L-CAR-9-2`↔`CROSSBOW-1`, a few builds with crossed
-    attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not
-    auto-fixed. `visionExtract` gained an optional `maxAttachments` (default 5; DMZ uses 9) — `/autobuild`
-    behavior unchanged.
-  - **Auto-syncs on every edit** (the "if I edit these it updates Cloudinary by itself" ask): loadout
-    add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design —
-    `syncLoadoutMetadata(doc)` / `syncPatchEntryMetadata(entry)` are the single sync points; metadata is
-    always a best-effort step decoupled from any image upload so it can never fail a save.
-  - Verified live end-to-end (write + `api.resource` read-back + queryable searches). Real gotcha handled: a
-    Cloudinary public_id has no file extension, so `AK117-1.png` had to be stripped to `AK117-1` for the
-    metadata API (which silently no-ops on a mismatched id).
-- **Removed the AK117 test data** created during the live test — the 3 MP dupe builds (`AK117-2/3/4`, Mongo
-  docs + Cloudinary images), guarded by a created-date check. The real MP `AK117-1` and DMZ `AK117-1` kept.
+First round of fixes from Harkirat's live `/autobuild` test (notes: `local/autobuild testing notes.md`). Admin-only feature.
+- **Open Loadout now renders the weapon's full build set + real pagination.** The PoC passed a single-element array to `buildLoadoutCard`, so every "Open Loadout" card read **"Build 1 of 1"** with no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build of that `weaponKey` and opens **on the just-created build** — correct "Build N of M", working pagination. (`index.js` `autobuild_openloadout_` handler.)
+- **Confirm now edits the review card in place** into the "Loadout created / Open Loadout" card, instead of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry paths too. (`utils/autobuildPipeline.js` — `replaceWithV2Card` via `sendV2Payload` PATCH `@original`, replacing the old new-message `followUpV2Card` POST.)
+- **Badges now propagate across every build of a weapon.** Setting e.g. "Meta" during `/autobuild` review used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not one variant. `writeLoadoutDoc` now `updateMany`s siblings (same `weaponKey`/`mode`), guarded on "a badge is actually set" so a blank can never wipe siblings. Mirrors `/manage`'s `edit_loadout_` convention.
+- **Duplicate-loadout detection (advisory warning).** Re-submitting a screenshot of a build already in the DB silently created a second identical doc (live test 1). New `findDuplicateLoadouts` (`utils/loadoutRender.js`) flags a likely dupe on the review card via two soft rules (Harkirat's idea): code **identical** + ≥4/5 attachments match, **or** code within **2 char edits** + all 5 attachments match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.
+- **Category-conflict warning.** Picking a category that differs from an existing build of the same weapon silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN). The review card now warns when the chosen category ≠ an existing build's category. **Build numbering stays per-`weaponKey`, deliberately** (a weapon's identity is its key; the real bug is the miscategoriz- ation, which this warning surfaces — not the numbering).
+- **Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept in sync** (Harkirat's follow-up calls). **22 account-level fields** created via the idempotent `scripts/createCloudinaryMetadataFields.js`:
+  - **Loadouts (18):** one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/ Rear_Grip), **Weapon_Name**, **Mode**, **Build_Number** (int), **Gunsmith_Code**, badges **Is_Meta**/ **Is_Toxic**/**Rank**, and dates **Created_At**/**Last_Updated** (Created_At read for free from the Mongo ObjectId timestamp — no schema change).
+  - **Patch notes (4):** **Patch_Id**, **Patch_Season**, **Patch_Image_Order** (int), **Patch_Release_Date** — so each cached screenshot knows its season, carousel order, and release date.
+  - **Backfilled** all existing assets from Mongo: **132/133** loadouts (the 1 skip is PHARO's external-URL "Coming Soon" placeholder) + all 5 Season 6 patch images.
+  - **Per-slot fields backfilled too, via a one-time vision batch** (`scripts/backfillLoadoutSlots.js`, GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored attachment names. **122/132 fully mapped.** The 10 partials turned out to be pre-existing data bugs the batch *surfaced* (two loadout images fully swapped — `L-CAR-9-2`↔`CROSSBOW-1`, a few builds with crossed attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not auto-fixed. `visionExtract` gained an optional `maxAttachments` (default 5; DMZ uses 9) — `/autobuild` behavior unchanged.
+  - **Auto-syncs on every edit** (the "if I edit these it updates Cloudinary by itself" ask): loadout add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design — `syncLoadoutMetadata(doc)` / `syncPatchEntryMetadata(entry)` are the single sync points; metadata is always a best-effort step decoupled from any image upload so it can never fail a save.
+  - Verified live end-to-end (write + `api.resource` read-back + queryable searches). Real gotcha handled: a Cloudinary public_id has no file extension, so `AK117-1.png` had to be stripped to `AK117-1` for the metadata API (which silently no-ops on a mismatched id).
+- **Removed the AK117 test data** created during the live test — the 3 MP dupe builds (`AK117-2/3/4`, Mongo docs + Cloudinary images), guarded by a created-date check. The real MP `AK117-1` and DMZ `AK117-1` kept.
 
 ### New "Advanced Double Legendary Weapon Draw" in `/draw prices`
 A brand-new draw type added to `/draw prices` from Harkirat's own 10/30 CP breakdown. User-facing.
-- **New 3rd page in `/draw prices`** dedicated to the **Advanced Double Legendary Weapon Draw** — a more
-  elaborate draw than the others: it offers **three purchase modes per spin** (Regular / Advanced / the
-  "Trap") plus a **strategy breakdown**, so it doesn't fit the shared `draws: []` model every other entry
-  uses. It gets its own builder (`buildAdvancedDoubleLegendaryEntry`) on its own page, reached via the same
-  Prev/Next pagination (now **3 pages**, was 2). Both CP regions have full data.
-- **Rendered with the same multi-component "section" style as the rest of the command** (separate Text
-  Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP
-  cautions → the strategy list), not one flat text block. Keeps the literal in-game **"Regular Purchase"**
-  / **"Advanced Purchase"** labels verbatim.
-- **Every number is derived, never hand-typed** — same rule the rest of this file already enforces. Only
-  the Regular and Advanced per-pull arrays are stored per region; from those the code derives the **Trap**
-  (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three **strategy costs**
-  (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from
-  the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.
-- Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page
-  stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.
+- **New 3rd page in `/draw prices`** dedicated to the **Advanced Double Legendary Weapon Draw** — a more elaborate draw than the others: it offers **three purchase modes per spin** (Regular / Advanced / the "Trap") plus a **strategy breakdown**, so it doesn't fit the shared `draws: []` model every other entry uses. It gets its own builder (`buildAdvancedDoubleLegendaryEntry`) on its own page, reached via the same Prev/Next pagination (now **3 pages**, was 2). Both CP regions have full data.
+- **Rendered with the same multi-component "section" style as the rest of the command** (separate Text Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP cautions → the strategy list), not one flat text block. Keeps the literal in-game **"Regular Purchase"** / **"Advanced Purchase"** labels verbatim.
+- **Every number is derived, never hand-typed** — same rule the rest of this file already enforces. Only the Regular and Advanced per-pull arrays are stored per region; from those the code derives the **Trap** (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three **strategy costs** (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.
+- Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.
 
 ### Bot-wide: pagination arrows now LOOP instead of disabling on the ends
-Every Prev/Next pager in the bot (draws & calendar sub-pages, draw prices, `/settings`, View Colors,
-`/alerts`, loadout cards) now **wraps around** — Next on the last page jumps to the first page, Prev on
-the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).
-- Centralised in the shared `utils/paginationRow.js`: the arrows are no longer disabled (only the middle
-  page counter stays a disabled label), and the wrap modulo lives in ONE place via a new
-  `makeCustomId(targetPage)` callback the 6 target-page callers now pass instead of pre-baked
-  `prevCustomId`/`nextCustomId` strings.
-- Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the
-  modulo wrap on click, so they just needed the buttons un-disabled.
-- Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of
-  "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
+Every Prev/Next pager in the bot (draws & calendar sub-pages, draw prices, `/settings`, View Colors, `/alerts`, loadout cards) now **wraps around** — Next on the last page jumps to the first page, Prev on the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).
+- Centralised in the shared `utils/paginationRow.js`: the arrows are no longer disabled (only the middle page counter stays a disabled label), and the wrap modulo lives in ONE place via a new `makeCustomId(targetPage)` callback the 6 target-page callers now pass instead of pre-baked `prevCustomId`/`nextCustomId` strings.
+- Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the modulo wrap on click, so they just needed the buttons un-disabled.
+- Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
 
 ## v2.27.0 — 2026-07-21 (`042b5e9`) — silence routine gateway-reconnect alerts (log, don't post)
-Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live
-on the VM 2026-07-21**, in the same deploy that shipped v2.28.0 (above).
-- **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert
-  channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every
-  1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips —
-  sub-second, resumed with full event replay = zero data loss), so they were pure channel noise. Harkirat's
-  call: keep the history for a future `/status` to print on demand, stop the every-few-hours pings-that-
-  aren't-really-pings. Confirmed via the VM journal that these were firing ~every 1-3h with clean
-  sub-second resumes before making the change.
-- **Mechanism:** new `sendAlert(..., { silent: true })` option (`utils/alertWebhook.js`) — logs to the
-  store, skips the webhook POST, never pings. Store docs carry a new `silent:true` flag (`AlertLog.silent`)
-  so `/status` can later pull exactly the reconnect history. The genuinely-bad case is untouched and still
-  loud: a reconnect that FAILS to resume surfaces via the separate 🟠 "Gateway disconnected" handler (which
-  pings), so suppressing the routine pair can't hide a real outage.
-- **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show
-  silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc
-  retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
+Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live on the VM 2026-07-21**, in the same deploy that shipped v2.28.0 (above).
+- **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every 1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips — sub-second, resumed with full event replay = zero data loss), so they were pure channel noise. Harkirat's call: keep the history for a future `/status` to print on demand, stop the every-few-hours pings-that- aren't-really-pings. Confirmed via the VM journal that these were firing ~every 1-3h with clean sub-second resumes before making the change.
+- **Mechanism:** new `sendAlert(..., { silent: true })` option (`utils/alertWebhook.js`) — logs to the store, skips the webhook POST, never pings. Store docs carry a new `silent:true` flag (`AlertLog.silent`) so `/status` can later pull exactly the reconnect history. The genuinely-bad case is untouched and still loud: a reconnect that FAILS to resume surfaces via the separate 🟠 "Gateway disconnected" handler (which pings), so suppressing the routine pair can't hide a real outage.
+- **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
 - Verified offline (silent path skips fetch, both paths record, flags correct).
 
 ## v2.26.0 — 2026-07-20 (`477d37c`)
-Pushed + deployed to the GCP VM this session; the alert store is **verified live in production** (the
-boot's own "Bot online" alert wrote the first real doc, `Jul21-01` — UTC-day rollover working as designed).
-The interactive `/alerts` panel (buttons/pagination) is not yet click-tested in Discord. This bundles the
-previously-staged housekeeping/`/manage`-colors work — one push, one version (a moderate feature folds the
-minor housekeeping in). Full technical detail: CLAUDE.md's "Deployment & Ops (GCP)" section.
+Pushed + deployed to the GCP VM this session; the alert store is **verified live in production** (the boot's own "Bot online" alert wrote the first real doc, `Jul21-01` — UTC-day rollover working as designed). The interactive `/alerts` panel (buttons/pagination) is not yet click-tested in Discord. This bundles the previously-staged housekeeping/`/manage`-colors work — one push, one version (a moderate feature folds the minor housekeeping in). Full technical detail: CLAUDE.md's "Deployment & Ops (GCP)" section.
 
-**Persistent alert log + `/alerts` command** — the "webhook alerting, heavier half" roadmap item (per-alert
-IDs + downloadable log + explainer) plus 3 folded-in legibility fixes. `/status` was **un-bundled** and
-stays deferred (Harkirat's call — unsure of its usability right now).
-- **Every alert is persisted to Mongo** (`models/AlertLog.js`) with a short human-referenceable ID —
-  `MMMDD-NN` on the **UTC** day, e.g. `Jul20-03`. Generated race-free via an atomic per-day counter
-  (`models/AlertCounter.js`) so a same-second crash burst can't collide. Retention: >30 days OR beyond a
-  1000 hard cap, pruned ≤1/hour.
-- **`utils/alertStore.js`** owns the store + the `/alerts` read helpers. The store write is an **independent
-  fire-and-forget** from the Discord POST (neither awaits the other) — a Mongo outage can't stop an alert
-  reaching Discord (a DB failure is itself an alert), and a Discord outage can't stop the log. `sendAlert`
-  stays synchronous / never-throws / never-blocks and just mirrors what was actually sent (post-throttle).
-- **New admin-only `/alerts` command** — a Components V2 panel: severity summary (24h/7d counts + last
-  error's ID/time), a paginated newest-first recent list (each with its ID), an **Export Log** button
-  (a `.txt` fuller than the embed), and a **"What alerts mean?"** explainer subpage. Auto-gated by adding
-  `alerts_` to index.js's centralized admin-guard prefix list.
-- **Escalating uptime format** in every alert footer (was raw `730m`): always the top two units —
-  `42Min` → `3H 42Min` → `2D 22H` → `1W 3D` → `1M 3W` → `1Y 2M` (minutes shown as `Min` so a bare `M` is
-  unambiguously months). `utils/alertStore.js`'s `formatUptime()`.
-- **"Gateway reconnecting" → "Reconnecting to Discord"** — clarifies the bot *process* is fine and only the
-  gateway websocket dropped; deliberately NOT "restarting" (which would falsely imply a crash).
-- **Manual-vs-automatic restart labeling.** New VM-side `scripts/deploy.sh` writes a gitignored
-  `.restart-reason` marker right before restarting; the bot reads + consumes it on boot, so "Bot online"
-  now reads **🚀 Manual deploy** / **🔧 Manual restart** / **♻️ Automatic/unattended restart** (with
-  `systemd NRestarts` context). A stale marker (>10 min) is ignored. `deploy.sh` is now the deploy path;
-  a bare `systemctl restart` correctly shows as automatic.
+**Persistent alert log + `/alerts` command** — the "webhook alerting, heavier half" roadmap item (per-alert IDs + downloadable log + explainer) plus 3 folded-in legibility fixes. `/status` was **un-bundled** and stays deferred (Harkirat's call — unsure of its usability right now).
+- **Every alert is persisted to Mongo** (`models/AlertLog.js`) with a short human-referenceable ID — `MMMDD-NN` on the **UTC** day, e.g. `Jul20-03`. Generated race-free via an atomic per-day counter (`models/AlertCounter.js`) so a same-second crash burst can't collide. Retention: >30 days OR beyond a 1000 hard cap, pruned ≤1/hour.
+- **`utils/alertStore.js`** owns the store + the `/alerts` read helpers. The store write is an **independent fire-and-forget** from the Discord POST (neither awaits the other) — a Mongo outage can't stop an alert reaching Discord (a DB failure is itself an alert), and a Discord outage can't stop the log. `sendAlert` stays synchronous / never-throws / never-blocks and just mirrors what was actually sent (post-throttle).
+- **New admin-only `/alerts` command** — a Components V2 panel: severity summary (24h/7d counts + last error's ID/time), a paginated newest-first recent list (each with its ID), an **Export Log** button (a `.txt` fuller than the embed), and a **"What alerts mean?"** explainer subpage. Auto-gated by adding `alerts_` to index.js's centralized admin-guard prefix list.
+- **Escalating uptime format** in every alert footer (was raw `730m`): always the top two units — `42Min` → `3H 42Min` → `2D 22H` → `1W 3D` → `1M 3W` → `1Y 2M` (minutes shown as `Min` so a bare `M` is unambiguously months). `utils/alertStore.js`'s `formatUptime()`.
+- **"Gateway reconnecting" → "Reconnecting to Discord"** — clarifies the bot *process* is fine and only the gateway websocket dropped; deliberately NOT "restarting" (which would falsely imply a crash).
+- **Manual-vs-automatic restart labeling.** New VM-side `scripts/deploy.sh` writes a gitignored `.restart-reason` marker right before restarting; the bot reads + consumes it on boot, so "Bot online" now reads **🚀 Manual deploy** / **🔧 Manual restart** / **♻️ Automatic/unattended restart** (with `systemd NRestarts` context). A stale marker (>10 min) is ignored. `deploy.sh` is now the deploy path; a bare `systemctl restart` correctly shows as automatic.
 
 **Bundled-in housekeeping + `/manage` accent colors** (was staged as v2.25.1)
 - Deleted 2 stale settings backups (after confirming the current files they back up still parse as valid JSON).
 - Swept for stale absolute paths from the 2026-07-14 relocation — came back clean.
-- **`/manage` pages each get their own accent color** — Draws/Calendar/Patch Notes reuse their command's
-  `PRESET_ACCENT`; MP Loadouts red (`#FF3430`) and DMZ blue (`#337BA6`), sampled off the
-  `:Rank_7Legendary_CODM:`/`:DMZ_CODM:` emoji via the bot's own `getDominantColor()` pipeline.
-- **Removed 2 unused deps** (`mongodb` raw driver, `express`) and index.js's dead Express keep-alive server
-  (a Render/Railway free-tier workaround, obsolete since the VM/systemd move). `npm audit` set unchanged.
+- **`/manage` pages each get their own accent color** — Draws/Calendar/Patch Notes reuse their command's `PRESET_ACCENT`; MP Loadouts red (`#FF3430`) and DMZ blue (`#337BA6`), sampled off the `:Rank_7Legendary_CODM:`/`:DMZ_CODM:` emoji via the bot's own `getDominantColor()` pipeline.
+- **Removed 2 unused deps** (`mongodb` raw driver, `express`) and index.js's dead Express keep-alive server (a Render/Railway free-tier workaround, obsolete since the VM/systemd move). `npm audit` set unchanged.
 
-**Process fixes (docs/tooling)** — a ⚡ FIRST ACTION banner at the top of `SESSION-START.md` backstopping
-the `/rename`+model-rec convention (it had silently degraded on recent sessions); a notes-file item about a
-MarkEdit Return-key regression annotated + filed to `deferred-items.md` after a prior session dropped it.
+**Process fixes (docs/tooling)** — a ⚡ FIRST ACTION banner at the top of `SESSION-START.md` backstopping the `/rename`+model-rec convention (it had silently degraded on recent sessions); a notes-file item about a MarkEdit Return-key regression annotated + filed to `deferred-items.md` after a prior session dropped it.
 
 ---
 
 ## v2.25.0 — 2026-07-20
-**`/autobuild`: screenshot → live loadout, built and shipped** (`d41a92f`..`299998a`, 18 commits) —
-moderate — pushed AND deployed live to the VM. *(Documented late — this whole feature shipped live
-across an earlier push with no numbered CHANGELOG entry at the time; backfilled now. Full technical
-detail lives in CLAUDE.md's "Loadout automation (screenshot → live loadout)" section — this entry is
-the release-notes summary, not a duplicate of it.)*
+**`/autobuild`: screenshot → live loadout, built and shipped** (`d41a92f`..`299998a`, 18 commits) — moderate — pushed AND deployed live to the VM. *(Documented late — this whole feature shipped live across an earlier push with no numbered CHANGELOG entry at the time; backfilled now. Full technical detail lives in CLAUDE.md's "Loadout automation (screenshot → live loadout)" section — this entry is the release-notes summary, not a duplicate of it.)*
 
-- **New admin-only `/autobuild` command**: submit a Gunsmith screenshot (attachment or URL), the bot
-  runs it through an LLM vision call to extract weapon name / Gunsmith code / attachments, cleans up
-  common OCR mistakes (fuzzy-matches attachments against existing `Loadout` data, structurally corrects
-  the Gunsmith code's Number-Letter alternation), then shows a Confirm/Edit/Cancel review card before
-  anything saves — never auto-publishes straight from extraction, same "review before write" convention
-  every other `/manage` destructive action already uses.
-- On Confirm: auto-generates the `WEAPON-NAME-N` image key/build number deterministically (plain code,
-  no AI), uploads the image to Cloudinary, and writes the real `Loadout` doc — with an "Open Loadout"
-  button on success.
-- Built as 9 tasks + a final whole-branch review in one sitting (`commands/autobuild.js`,
-  `utils/autobuildPipeline.js`, `utils/visionExtract.js`, `utils/loadoutImageCache.js`, plus new
-  `adminParser.js` helpers). Review caught and fixed several real bugs before it ever went live: a
-  confirm/retry duplicate-write race window, an ephemeral-reply leak in the extraction error path, an
-  unawaited-promise/data-loss-ordering bug in the write pipeline, and the Edit modal needing
-  `sendV2Payload` + guards for undefined fields.
-- **Vision backend migrated from Google AI Studio to GCP Vertex AI** (`299998a`) after AI Studio's
-  separate Gemini prepay credit balance ran dry — Vertex AI bills against the same GCP project credits
-  already backing the VM, at identical Gemini pricing. Uses a keyless dual-layer OAuth token fetch (VM
-  instance metadata server first, local `gcloud` ADC as a Mac-side fallback) — no stored credentials.
-  Required the VM's service account to gain the `cloud-platform` instance scope (Harkirat stopped/
-  restarted the VM for this — new external IP) and routing `gemini-3.5-flash` through Vertex AI's
-  `global`/`us`/`eu` Multi-Region endpoints (single-region endpoints don't serve that model).
-- **Two real bugs fixed in this same commit**, found during review of a same-day Antigravity handoff
-  session (used while a Claude session was rate-limited): `gunsmithCode` was coming back with the
-  weapon name prepended (`"Locus-1B2A4B8C9C"` instead of `"1B2A4B8C9C"`) — fixed via a prompt change
-  plus a structural backstop (`correctGunsmithCode`'s `stripCodePrefix()`); and per-attachment slot-type
-  extraction (e.g. "Muzzle", "Barrel") was missing entirely despite being part of the original design —
-  added, attached as Cloudinary `context` metadata, not bot-facing.
-- Also in that same commit: fixed `DEFAULT_LOCATION`'s fallback (`'us-central1'` → `'us'`, the original
-  wrong single-region guess had never actually been corrected in code even after the working `.env`
-  override was found), and removed 2 unused npm dependencies the handoff had introduced
-  (`@google-cloud/vertexai`, `@google/genai` — the real implementation is a raw `fetch` call, no SDK).
-- **Comment accuracy fix** (`8d81f54`): `correctGunsmithCode`'s header comment was updated to describe
-  all 3 of its actual correction branches (type-mismatch look-alikes, same-type case normalization,
-  no-op) instead of only the first.
-- **Not yet done, on purpose** (Harkirat's explicit call, "we'll figure it out after a live test"):
-  visually disabling the review card's Cancel/Confirm buttons after use, and validating the Edit
-  modal's free-typed `category` field. **Status as of this entry: code-complete and deployed, but
-  Harkirat has not yet run the real end-to-end Discord test** — treat any bugs that surface from that
-  test as fresh work, not a continuation of this entry.
+- **New admin-only `/autobuild` command**: submit a Gunsmith screenshot (attachment or URL), the bot runs it through an LLM vision call to extract weapon name / Gunsmith code / attachments, cleans up common OCR mistakes (fuzzy-matches attachments against existing `Loadout` data, structurally corrects the Gunsmith code's Number-Letter alternation), then shows a Confirm/Edit/Cancel review card before anything saves — never auto-publishes straight from extraction, same "review before write" convention every other `/manage` destructive action already uses.
+- On Confirm: auto-generates the `WEAPON-NAME-N` image key/build number deterministically (plain code, no AI), uploads the image to Cloudinary, and writes the real `Loadout` doc — with an "Open Loadout" button on success.
+- Built as 9 tasks + a final whole-branch review in one sitting (`commands/autobuild.js`, `utils/autobuildPipeline.js`, `utils/visionExtract.js`, `utils/loadoutImageCache.js`, plus new `adminParser.js` helpers). Review caught and fixed several real bugs before it ever went live: a confirm/retry duplicate-write race window, an ephemeral-reply leak in the extraction error path, an unawaited-promise/data-loss-ordering bug in the write pipeline, and the Edit modal needing `sendV2Payload` + guards for undefined fields.
+- **Vision backend migrated from Google AI Studio to GCP Vertex AI** (`299998a`) after AI Studio's separate Gemini prepay credit balance ran dry — Vertex AI bills against the same GCP project credits already backing the VM, at identical Gemini pricing. Uses a keyless dual-layer OAuth token fetch (VM instance metadata server first, local `gcloud` ADC as a Mac-side fallback) — no stored credentials. Required the VM's service account to gain the `cloud-platform` instance scope (Harkirat stopped/ restarted the VM for this — new external IP) and routing `gemini-3.5-flash` through Vertex AI's `global`/`us`/`eu` Multi-Region endpoints (single-region endpoints don't serve that model).
+- **Two real bugs fixed in this same commit**, found during review of a same-day Antigravity handoff session (used while a Claude session was rate-limited): `gunsmithCode` was coming back with the weapon name prepended (`"Locus-1B2A4B8C9C"` instead of `"1B2A4B8C9C"`) — fixed via a prompt change plus a structural backstop (`correctGunsmithCode`'s `stripCodePrefix()`); and per-attachment slot-type extraction (e.g. "Muzzle", "Barrel") was missing entirely despite being part of the original design — added, attached as Cloudinary `context` metadata, not bot-facing.
+- Also in that same commit: fixed `DEFAULT_LOCATION`'s fallback (`'us-central1'` → `'us'`, the original wrong single-region guess had never actually been corrected in code even after the working `.env` override was found), and removed 2 unused npm dependencies the handoff had introduced (`@google-cloud/vertexai`, `@google/genai` — the real implementation is a raw `fetch` call, no SDK).
+- **Comment accuracy fix** (`8d81f54`): `correctGunsmithCode`'s header comment was updated to describe all 3 of its actual correction branches (type-mismatch look-alikes, same-type case normalization, no-op) instead of only the first.
+- **Not yet done, on purpose** (Harkirat's explicit call, "we'll figure it out after a live test"): visually disabling the review card's Cancel/Confirm buttons after use, and validating the Edit modal's free-typed `category` field. **Status as of this entry: code-complete and deployed, but Harkirat has not yet run the real end-to-end Discord test** — treat any bugs that surface from that test as fresh work, not a continuation of this entry.
 
 ## v2.24.0 — 2026-07-20
-**Cloudinary `asset_folder` fix + full account cleanup + patch notes broken-image fix** — minor — pushed,
-NOT deployed to the VM yet (Harkirat's explicit call — no need to redeploy for this push).
+**Cloudinary `asset_folder` fix + full account cleanup + patch notes broken-image fix** — minor — pushed, NOT deployed to the VM yet (Harkirat's explicit call — no need to redeploy for this push).
 
-- `utils/cloudinaryCache.js` / `utils/patchNotesCache.js` now set Cloudinary's `asset_folder` on every
-  upload, not just a `temp_draws/`/`patch_notes/{id}/` prefix baked into the `public_id` path. Both
-  were always functionally correct (URLs always resolved right) — this only fixes Cloudinary's own
-  dashboard never recognizing them as organized into a folder, which is what made them look like they
-  were sitting in "Home" when browsed directly. No `public_id`/URL changes, so no MongoDB data needed
-  touching for this part.
-- **Live Cloudinary account audit + cleanup** (executed directly via the Cloudinary MCP tool + a
-  MongoDB cross-reference, not just code): confirmed the 10 `IMG_XXXX` "unrenamed" assets flagged last
-  session were actually already-superseded dead weight (re-uploaded correctly 15 minutes after the
-  original mistake, timestamps confirm it) — deleted. The 12 correctly-named replacement assets
-  (`DOBVRA-1`, `R9-0-1`, etc., `LOCUS-1`/`-2`) were sitting in Cloudinary's root folder instead of
-  `gun-builds` — moved (public_id/URLs untouched). ~26 of Cloudinary's own default demo assets
-  (`samples/*`) deleted, unrelated to the bot. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` deliberately left
-  alone (Harkirat confirmed: reserved for a future DMZ feature, not a mistake). Real Cloudinary folders
-  now exist for all three subsystems: `gun-builds`, `temp_draws`, `patch_notes`.
-- **Also discovered: Cloudinary's `public_id` (the real URL identifier) and `display_name` (a purely
-  cosmetic dashboard label) are independently-editable fields** — several assets have a correctly-
-  renamed `public_id` but a stale `display_name` still showing the original upload filename, which is
-  what made them look unrenamed when browsing Cloudinary directly even though the bot's URLs were
-  already correct. Not fixed everywhere (cosmetic only), flagged as optional in CLAUDE.md.
-- **Patch notes broken-image bug FIXED (a data fix, not a code fix).** The live Season 6 patch note
-  entry's `images[]` were raw, already-dead `media.discordapp.net` links (confirmed 404 at the CDN
-  origin via direct `curl`, despite still rendering fine in Harkirat's own Discord client — that's
-  Discord's client silently refreshing an expired signed attachment link for a viewer who can still
-  resolve the source channel, which doesn't help a server-side fetch). Harkirat supplied 5 fresh URLs;
-  each verified live, re-cached through the existing `cachePatchImage()` (`patch_notes/
-  6a4bd78c9b44d22e27107d2c/0-4.webp`), and the live `SeasonalData` doc's `patchNotes[0].images` updated
-  directly via the MongoDB MCP tool. `/patch notes` now serves permanent Cloudinary URLs for this entry.
-- **Loadout-automation design captured, not built** (deferred to a dedicated future session) —
-  screenshot → LLM vision extraction (Gemini, not the Claude API — Claude Pro doesn't cover API billing)
-  → structural Gunsmith-code correction + attachment fuzzy-matching → confirm-before-publish → auto
-  weaponKey/build-numbering → Cloudinary upload + Mongo doc. Full design in CLAUDE.md's new "Loadout
-  automation (screenshot → live loadout)" section under the roadmap.
+- `utils/cloudinaryCache.js` / `utils/patchNotesCache.js` now set Cloudinary's `asset_folder` on every upload, not just a `temp_draws/`/`patch_notes/{id}/` prefix baked into the `public_id` path. Both were always functionally correct (URLs always resolved right) — this only fixes Cloudinary's own dashboard never recognizing them as organized into a folder, which is what made them look like they were sitting in "Home" when browsed directly. No `public_id`/URL changes, so no MongoDB data needed touching for this part.
+- **Live Cloudinary account audit + cleanup** (executed directly via the Cloudinary MCP tool + a MongoDB cross-reference, not just code): confirmed the 10 `IMG_XXXX` "unrenamed" assets flagged last session were actually already-superseded dead weight (re-uploaded correctly 15 minutes after the original mistake, timestamps confirm it) — deleted. The 12 correctly-named replacement assets (`DOBVRA-1`, `R9-0-1`, etc., `LOCUS-1`/`-2`) were sitting in Cloudinary's root folder instead of `gun-builds` — moved (public_id/URLs untouched). ~26 of Cloudinary's own default demo assets (`samples/*`) deleted, unrelated to the bot. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` deliberately left alone (Harkirat confirmed: reserved for a future DMZ feature, not a mistake). Real Cloudinary folders now exist for all three subsystems: `gun-builds`, `temp_draws`, `patch_notes`.
+- **Also discovered: Cloudinary's `public_id` (the real URL identifier) and `display_name` (a purely cosmetic dashboard label) are independently-editable fields** — several assets have a correctly- renamed `public_id` but a stale `display_name` still showing the original upload filename, which is what made them look unrenamed when browsing Cloudinary directly even though the bot's URLs were already correct. Not fixed everywhere (cosmetic only), flagged as optional in CLAUDE.md.
+- **Patch notes broken-image bug FIXED (a data fix, not a code fix).** The live Season 6 patch note entry's `images[]` were raw, already-dead `media.discordapp.net` links (confirmed 404 at the CDN origin via direct `curl`, despite still rendering fine in Harkirat's own Discord client — that's Discord's client silently refreshing an expired signed attachment link for a viewer who can still resolve the source channel, which doesn't help a server-side fetch). Harkirat supplied 5 fresh URLs; each verified live, re-cached through the existing `cachePatchImage()` (`patch_notes/ 6a4bd78c9b44d22e27107d2c/0-4.webp`), and the live `SeasonalData` doc's `patchNotes[0].images` updated directly via the MongoDB MCP tool. `/patch notes` now serves permanent Cloudinary URLs for this entry.
+- **Loadout-automation design captured, not built** (deferred to a dedicated future session) — screenshot → LLM vision extraction (Gemini, not the Claude API — Claude Pro doesn't cover API billing) → structural Gunsmith-code correction + attachment fuzzy-matching → confirm-before-publish → auto weaponKey/build-numbering → Cloudinary upload + Mongo doc. Full design in CLAUDE.md's new "Loadout automation (screenshot → live loadout)" section under the roadmap.
 
-Full technical writeup: CLAUDE.md's "MP loadout system" → "The Cloudinary image workflow, finally
-documented", "Patch notes Cloudinary caching", and "Loadout automation (screenshot → live loadout)"
-sections.
+Full technical writeup: CLAUDE.md's "MP loadout system" → "The Cloudinary image workflow, finally documented", "Patch notes Cloudinary caching", and "Loadout automation (screenshot → live loadout)" sections.
 
 ## v2.23.0 — 2026-07-18
-**`/manage` loadout data-entry UX overhaul + Cloudinary workflow fix** (`de02ee9`) — moderate —
-**deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh` — Gateway connected, 0
-real errors, bundled with v2.22.0/v2.21.1 below in the same pull). ⚠️ **Harkirat has NOT yet
-live-click-tested the actual `/manage` loadout flow in Discord** — admin-only impact (doesn't affect
-normal user-facing commands), so he's deliberately continuing other work before doing that
-verification pass. Don't assume click-tested just because it's deployed.
+**`/manage` loadout data-entry UX overhaul + Cloudinary workflow fix** (`de02ee9`) — moderate — **deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh` — Gateway connected, 0 real errors, bundled with v2.22.0/v2.21.1 below in the same pull). ⚠️ **Harkirat has NOT yet live-click-tested the actual `/manage` loadout flow in Discord** — admin-only impact (doesn't affect normal user-facing commands), so he's deliberately continuing other work before doing that verification pass. Don't assume click-tested just because it's deployed.
 
 P1 roadmap item, filed 2026-07-18 from the third v2 batch, shipped same day.
 
-- **"How Images Work" info block** added to both `/manage` Loadouts pages (MP + DMZ) — explains, in
-  the panel itself, that image uploads are a manual step OUTSIDE the bot (Cloudinary's own dashboard,
-  or asking Claude to do it), that Cloudinary assigns the Public ID from the uploaded file's own name
-  unless renamed, and that whatever that Public ID is has to be typed exactly into "Cloudinary Image
-  Key" — no auto-fetch, no validation ahead of time.
-- **Add/Edit Loadout modal field clarity** — the Attachments field (previously no placeholder at all)
-  now shows a real example; the image field is relabeled "Cloudinary Image Key (Public ID)" with a
-  placeholder reflecting the actual naming convention used across the live collection
-  (`WeaponKey-BuildNum`, e.g. `BP50-1`), not the old made-up `bp50_flex_v1` example that was never the
-  real convention anywhere.
-- **Real Cloudinary existence check, the actual functional fix.** `utils/loadoutRender.js`'s new
-  `checkImageExists()` does a HEAD request against the constructed image URL right after a save —
-  Add Loadout, Edit Loadout, and Bulk Add/Replace (`index.js`) all call it and append a clear warning
-  to the confirmation message if the key doesn't resolve to anything on Cloudinary yet. Advisory only
-  (never blocks the save; a network hiccup is treated as "can't confirm," never as "missing," so it
-  can't produce a false warning). This is the direct fix for the exact failure Harkirat hit with FSS
-  Hurricane — a mismatched key used to save silently and only surface later as a broken card image;
-  now it's flagged the moment it's saved.
-- **The Cloudinary mystery is genuinely solved, not just narrated** — confirmed the real workflow live
-  against the actual Cloudinary account (via the Cloudinary MCP tool, not guessed): every loadout image
-  sits in one flat `gun-builds` folder (organizational only in Cloudinary's UI, NOT part of the delivery
-  URL — this account uses dynamic-folder mode), and roughly a dozen assets are still sitting under their
-  raw, never-renamed camera filenames (`IMG_5630`, `IMG_3123`, etc.) — direct confirmation of what
-  Harkirat had already suspected about the secondary-weapon files. Full writeup in CLAUDE.md's "The
-  Cloudinary image workflow, finally documented" subsection under "MP loadout system".
-- Verified via direct function-level testing (not a full local bot boot, to avoid racing the live VM
-  instance — single-token bot): `buildManagePage()` for both loadout pages builds cleanly at 35
-  components (well under Discord's 40 cap), every modal builder runs without throwing (including the
-  legacy-missing-`imageKey` guard case), and `checkImageExists()` was run live against a known-good key
-  (`FSS-HURRICANE-1` → true), a known-bad key (→ false), and the bulk-import placeholder URL (→ true,
-  correctly never checked).
+- **"How Images Work" info block** added to both `/manage` Loadouts pages (MP + DMZ) — explains, in the panel itself, that image uploads are a manual step OUTSIDE the bot (Cloudinary's own dashboard, or asking Claude to do it), that Cloudinary assigns the Public ID from the uploaded file's own name unless renamed, and that whatever that Public ID is has to be typed exactly into "Cloudinary Image Key" — no auto-fetch, no validation ahead of time.
+- **Add/Edit Loadout modal field clarity** — the Attachments field (previously no placeholder at all) now shows a real example; the image field is relabeled "Cloudinary Image Key (Public ID)" with a placeholder reflecting the actual naming convention used across the live collection (`WeaponKey-BuildNum`, e.g. `BP50-1`), not the old made-up `bp50_flex_v1` example that was never the real convention anywhere.
+- **Real Cloudinary existence check, the actual functional fix.** `utils/loadoutRender.js`'s new `checkImageExists()` does a HEAD request against the constructed image URL right after a save — Add Loadout, Edit Loadout, and Bulk Add/Replace (`index.js`) all call it and append a clear warning to the confirmation message if the key doesn't resolve to anything on Cloudinary yet. Advisory only (never blocks the save; a network hiccup is treated as "can't confirm," never as "missing," so it can't produce a false warning). This is the direct fix for the exact failure Harkirat hit with FSS Hurricane — a mismatched key used to save silently and only surface later as a broken card image; now it's flagged the moment it's saved.
+- **The Cloudinary mystery is genuinely solved, not just narrated** — confirmed the real workflow live against the actual Cloudinary account (via the Cloudinary MCP tool, not guessed): every loadout image sits in one flat `gun-builds` folder (organizational only in Cloudinary's UI, NOT part of the delivery URL — this account uses dynamic-folder mode), and roughly a dozen assets are still sitting under their raw, never-renamed camera filenames (`IMG_5630`, `IMG_3123`, etc.) — direct confirmation of what Harkirat had already suspected about the secondary-weapon files. Full writeup in CLAUDE.md's "The Cloudinary image workflow, finally documented" subsection under "MP loadout system".
+- Verified via direct function-level testing (not a full local bot boot, to avoid racing the live VM instance — single-token bot): `buildManagePage()` for both loadout pages builds cleanly at 35 components (well under Discord's 40 cap), every modal builder runs without throwing (including the legacy-missing-`imageKey` guard case), and `checkImageExists()` was run live against a known-good key (`FSS-HURRICANE-1` → true), a known-bad key (→ false), and the bulk-import placeholder URL (→ true, correctly never checked).
 
 ## v2.22.1 — 2026-07-18
-**Workflow glossary rewrite + central-notes confirmation system — docs only, no bot code touched**
-(this push) — minor
+**Workflow glossary rewrite + central-notes confirmation system — docs only, no bot code touched** (this push) — minor
 
-Follow-up to v2.22.0's push, same day. Two threads, purely process/documentation, no bot behavior
-changed:
+Follow-up to v2.22.0's push, same day. Two threads, purely process/documentation, no bot behavior changed:
 
-- **document/commit/push/deploy glossary rewrite.** `docs/SESSION-START.md`'s NON-NEGOTIABLES section
-  used to define "push" as always meaning the full deploy cycle — that stopped being literally true the
-  moment v2.22.0 shipped as commit+push with the VM deploy deliberately held. Rewritten into 4 clearly
-  separable steps (commit = local only; push = code reaches GitHub, bot untouched; deploy = the VM
-  actually goes live; document = syncing the written record), with the default-chain assumption stated
-  explicitly rather than baked into one overloaded word. Synced into `user_working_agreement.md` too.
-- **`docs/diors-builds notes.md`'s confirmation-mark system finalized.** Built earlier this session as a
-  real MarkEdit extension (files live in MarkEdit's own app container, not this repo — see
-  `reference_markedit_extension_api` memory for the full build/debug story and exact paths), landed on
-  its final spec after several rounds: 4 shortlisted symbols (✴︎ ✦ ◆ ℋ), 8 final colors (amber, orange,
-  pink, violet, periwinkle, cobalt blue, cyan, turquoise), all switchable live via a "Confirmation Mark"
-  menu in MarkEdit's Extensions bar, no restart needed for color/default changes. The file's own 🔑
-  Legend section now documents the finalized system in place of the earlier placeholder text, and every
-  one of the 5 original notes-file questions that prompted this whole thread is formally closed
-  (`[x] ✓`) rather than just answered inline. Full narrative in DEVLOG's "Building a real MarkEdit
-  extension" entry.
+- **document/commit/push/deploy glossary rewrite.** `docs/SESSION-START.md`'s NON-NEGOTIABLES section used to define "push" as always meaning the full deploy cycle — that stopped being literally true the moment v2.22.0 shipped as commit+push with the VM deploy deliberately held. Rewritten into 4 clearly separable steps (commit = local only; push = code reaches GitHub, bot untouched; deploy = the VM actually goes live; document = syncing the written record), with the default-chain assumption stated explicitly rather than baked into one overloaded word. Synced into `user_working_agreement.md` too.
+- **`docs/diors-builds notes.md`'s confirmation-mark system finalized.** Built earlier this session as a real MarkEdit extension (files live in MarkEdit's own app container, not this repo — see `reference_markedit_extension_api` memory for the full build/debug story and exact paths), landed on its final spec after several rounds: 4 shortlisted symbols (✴︎ ✦ ◆ ℋ), 8 final colors (amber, orange, pink, violet, periwinkle, cobalt blue, cyan, turquoise), all switchable live via a "Confirmation Mark" menu in MarkEdit's Extensions bar, no restart needed for color/default changes. The file's own 🔑 Legend section now documents the finalized system in place of the earlier placeholder text, and every one of the 5 original notes-file questions that prompted this whole thread is formally closed (`[x] ✓`) rather than just answered inline. Full narrative in DEVLOG's "Building a real MarkEdit extension" entry.
 
 ## v2.22.0 — 2026-07-18
-**`/settings` passive idle-timeout auto-disable** (this push) — moderate —
-**deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh`, bundled with v2.23.0/
-v2.21.1 in the same pull — the deploy was deliberately held at push time to keep working, then
-completed the same session). ⚠️ **Harkirat has NOT yet live-tested the actual 10-minute passive
-idle-timeout behavior** (open `/settings`, leave it untouched for the full 10 minutes, confirm the
-buttons go dead with no click required) — don't assume click-tested just because it's deployed.
+**`/settings` passive idle-timeout auto-disable** (this push) — moderate — **deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh`, bundled with v2.23.0/ v2.21.1 in the same pull — the deploy was deliberately held at push time to keep working, then completed the same session). ⚠️ **Harkirat has NOT yet live-tested the actual 10-minute passive idle-timeout behavior** (open `/settings`, leave it untouched for the full 10 minutes, confirm the buttons go dead with no click required) — don't assume click-tested just because it's deployed.
 
-Built the passive auto-disable feature designed earlier this same session (after two rounds of
-correction on the underlying Discord token mechanics — see v2.21.1 below and CLAUDE.md's "Known open
-issues"). `/settings`' old REACTIVE 15-minute expiry — a deadline encoded in every custom_id, checked
-on click, replying "run `/settings` again" while the buttons themselves stayed visually live forever —
-is replaced with a genuinely PASSIVE mechanism:
+Built the passive auto-disable feature designed earlier this same session (after two rounds of correction on the underlying Discord token mechanics — see v2.21.1 below and CLAUDE.md's "Known open issues"). `/settings`' old REACTIVE 15-minute expiry — a deadline encoded in every custom_id, checked on click, replying "run `/settings` again" while the buttons themselves stayed visually live forever — is replaced with a genuinely PASSIVE mechanism:
 
-- **New `utils/passiveExpiry.js`.** Every render of `/settings` (the initial command AND every
-  button/select re-render) schedules a `setTimeout` holding THAT render's own fresh interaction token.
-  Any later interaction on the same message cancels the pending timer and reschedules from ITS OWN
-  token — a sliding 10-minute idle window, not a fixed deadline from creation. If 10 straight minutes
-  pass with zero interaction, the timer fires entirely on its own (no click involved) and `PATCH`es the
-  message directly using the held token to recursively disable every button/select in it. 10 minutes is
-  a self-imposed UX choice, comfortably under each token's own ~15-minute lifetime.
-- **`commands/settings.js`** dropped the old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride` scheme and the
-  `|{expiresAt}` segment on every custom_id it builds; the final send now captures the returned message
-  (Discord's own `PATCH` response already carries the message's `id` — no extra `fetchReply()` round-
-  trip needed, even on the very first render) and calls `schedulePanelExpiry`.
-- **`index.js`** removed the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`,
-  `colors_view` handlers) — Discord itself refuses a click on an actually-disabled component, so
-  there's nothing left for a reactive check to catch. Author-lock (`|userId`) on all 4 is unchanged.
-- **Verified offline, not live**: syntax-checked, unit-tested the disable-recursion logic against a
-  realistic settings.js-shaped payload (Section accessories, action-row selects/buttons, a top-level
-  share-button row — all correctly disabled, dividers/text left untouched, no mutation of the source
-  array), cross-checked every custom_id builder/parser pair for the new (shorter) shape, and confirmed
-  via `@discordjs/rest`'s own source that a `PATCH` response is parsed JSON carrying the message `id`.
-  **Did not boot the bot locally** — the VM is the one live instance for this single-token bot; a local
-  boot would have raced it. A real Discord click-through is still pending the VM deploy.
-- **Scoped to `/settings` only** — extending the same pattern to draws/calendar/drawprices/loadouts is
-  its own separate roadmap item (see the v3 pre-release list above). The standalone View Colors panel
-  (opened via `colors_view`) still has no timeout of its own, unaffected.
-- Full design trail (including the two corrections that preceded this build) in CLAUDE.md's "Passive
-  idle-timeout auto-disable" section and "Known open issues".
+- **New `utils/passiveExpiry.js`.** Every render of `/settings` (the initial command AND every button/select re-render) schedules a `setTimeout` holding THAT render's own fresh interaction token. Any later interaction on the same message cancels the pending timer and reschedules from ITS OWN token — a sliding 10-minute idle window, not a fixed deadline from creation. If 10 straight minutes pass with zero interaction, the timer fires entirely on its own (no click involved) and `PATCH`es the message directly using the held token to recursively disable every button/select in it. 10 minutes is a self-imposed UX choice, comfortably under each token's own ~15-minute lifetime.
+- **`commands/settings.js`** dropped the old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride` scheme and the `|{expiresAt}` segment on every custom_id it builds; the final send now captures the returned message (Discord's own `PATCH` response already carries the message's `id` — no extra `fetchReply()` round- trip needed, even on the very first render) and calls `schedulePanelExpiry`.
+- **`index.js`** removed the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`, `colors_view` handlers) — Discord itself refuses a click on an actually-disabled component, so there's nothing left for a reactive check to catch. Author-lock (`|userId`) on all 4 is unchanged.
+- **Verified offline, not live**: syntax-checked, unit-tested the disable-recursion logic against a realistic settings.js-shaped payload (Section accessories, action-row selects/buttons, a top-level share-button row — all correctly disabled, dividers/text left untouched, no mutation of the source array), cross-checked every custom_id builder/parser pair for the new (shorter) shape, and confirmed via `@discordjs/rest`'s own source that a `PATCH` response is parsed JSON carrying the message `id`. **Did not boot the bot locally** — the VM is the one live instance for this single-token bot; a local boot would have raced it. A real Discord click-through is still pending the VM deploy.
+- **Scoped to `/settings` only** — extending the same pattern to draws/calendar/drawprices/loadouts is its own separate roadmap item (see the v3 pre-release list above). The standalone View Colors panel (opened via `colors_view`) still has no timeout of its own, unaffected.
+- Full design trail (including the two corrections that preceded this build) in CLAUDE.md's "Passive idle-timeout auto-disable" section and "Known open issues".
 
 ## v2.21.1 — 2026-07-18
-**Deploy-key fix + button-expiry mechanics correction + roadmap intake — docs/ops only, no bot code
-touched** (this push) — minor
+**Deploy-key fix + button-expiry mechanics correction + roadmap intake — docs/ops only, no bot code touched** (this push) — minor
 
 Follow-up to v2.21.0's push, same day. Three threads, no bot code changed, no VM redeploy needed:
 
-- **Deploy-key fix.** Flipping the repo private broke the VM's `git pull` (it had been pulling
-  anonymously over plain HTTPS, which only ever worked because the repo was public). Fixed with a
-  dedicated **read-only SSH deploy key** generated on the VM and registered via `gh repo deploy-key
-  add` — not by reusing a personal GitHub token (attempting to extract one via `gh auth token` was
-  correctly blocked by the safety classifier, same category as the earlier `~/.render/cli.yaml` block).
-  VM remote is now `git@github.com:HarkiratMangat/diors-builds.git`. Documented in CLAUDE.md's
-  Deployment & Ops section, `reference_vm_bot_commands`, and `project_deployment_migration_render_to_gcp`.
-- **Button-expiry mechanics — wrong twice, corrected properly the third time.** Harkirat asked whether
-  an expired button could be physically disabled instead of Discord's generic failure toast. First
-  answer (sourced from a real Discord-docs search on the 15-minute interaction-token lifetime) wrongly
-  concluded a MESSAGE becomes uneditable 15 minutes after creation — contradicted by the plain fact
-  that draws/calendar/loadout pagination buttons already work forever with no expiry check at all.
-  Corrected once Harkirat pushed back: **every button click carries its own fresh 15-minute token**,
-  independent of the message's age — that's exactly why those other buttons never break. `/settings`'
-  existing 15-minute expiry is a self-imposed business rule, not a Discord ceiling (an earlier claim
-  that it "had to" be 15 minutes for platform reasons was also wrong, and retracted). The real,
-  buildable gap: `/settings` already replies with a friendly "expired" message on a stale click, but
-  never uses that click's own valid token to actually disable the buttons — filed as a concrete P2
-  roadmap item. See CLAUDE.md's "Known open issues" + the new roadmap entry, and DEVLOG's "(yet later)"
-  entry for the full correction trail.
-- **15-item note-filing pass**, folded into the v3/v4 roadmap and `deferred-items.md`: Privacy Policy /
-  Terms of Service (P1, real Discord requirement past the v4 100-server threshold), a `/define` Urban
-  Dictionary command (P3, just for fun), richer usage analytics/telemetry (P2, distinct from the
-  existing diagnostic-logging item — this is usage tracking, not failure attribution), `/help` now
-  explicitly required to include a way to contact Harkirat, and extending the expiry-check pattern
-  beyond `/settings` to draws/calendar/drawprices/loadouts filed as its own item. Also confirmed via
-  full grep: every avatar/banner/deco/nameplate read in the bot uses the user's GLOBAL Discord profile,
-  never a per-server Server Profile override — a real, previously-undocumented gap, deliberately
-  deferred to v4 (guild membership becomes reliably available then). Two items resolved as non-issues
-  rather than left open: "Tundra" is confirmed already correct in the live DB (`LW3-TUNDRA`, MongoDB
-  MCP connected with explicit permission), and a rough Atlas tier check (144 docs / ~135KB total) shows
-  storage isn't the constraint that will force an upgrade at current scale.
+- **Deploy-key fix.** Flipping the repo private broke the VM's `git pull` (it had been pulling anonymously over plain HTTPS, which only ever worked because the repo was public). Fixed with a dedicated **read-only SSH deploy key** generated on the VM and registered via `gh repo deploy-key add` — not by reusing a personal GitHub token (attempting to extract one via `gh auth token` was correctly blocked by the safety classifier, same category as the earlier `~/.render/cli.yaml` block). VM remote is now `git@github.com:HarkiratMangat/diors-builds.git`. Documented in CLAUDE.md's Deployment & Ops section, `reference_vm_bot_commands`, and `project_deployment_migration_render_to_gcp`.
+- **Button-expiry mechanics — wrong twice, corrected properly the third time.** Harkirat asked whether an expired button could be physically disabled instead of Discord's generic failure toast. First answer (sourced from a real Discord-docs search on the 15-minute interaction-token lifetime) wrongly concluded a MESSAGE becomes uneditable 15 minutes after creation — contradicted by the plain fact that draws/calendar/loadout pagination buttons already work forever with no expiry check at all. Corrected once Harkirat pushed back: **every button click carries its own fresh 15-minute token**, independent of the message's age — that's exactly why those other buttons never break. `/settings`' existing 15-minute expiry is a self-imposed business rule, not a Discord ceiling (an earlier claim that it "had to" be 15 minutes for platform reasons was also wrong, and retracted). The real, buildable gap: `/settings` already replies with a friendly "expired" message on a stale click, but never uses that click's own valid token to actually disable the buttons — filed as a concrete P2 roadmap item. See CLAUDE.md's "Known open issues" + the new roadmap entry, and DEVLOG's "(yet later)" entry for the full correction trail.
+- **15-item note-filing pass**, folded into the v3/v4 roadmap and `deferred-items.md`: Privacy Policy / Terms of Service (P1, real Discord requirement past the v4 100-server threshold), a `/define` Urban Dictionary command (P3, just for fun), richer usage analytics/telemetry (P2, distinct from the existing diagnostic-logging item — this is usage tracking, not failure attribution), `/help` now explicitly required to include a way to contact Harkirat, and extending the expiry-check pattern beyond `/settings` to draws/calendar/drawprices/loadouts filed as its own item. Also confirmed via full grep: every avatar/banner/deco/nameplate read in the bot uses the user's GLOBAL Discord profile, never a per-server Server Profile override — a real, previously-undocumented gap, deliberately deferred to v4 (guild membership becomes reliably available then). Two items resolved as non-issues rather than left open: "Tundra" is confirmed already correct in the live DB (`LW3-TUNDRA`, MongoDB MCP connected with explicit permission), and a rough Atlas tier check (144 docs / ~135KB total) shows storage isn't the constraint that will force an upgrade at current scale.
 
-This entry replaces an earlier stale draft that only described the deploy-key fix, written before the
-button-expiry correction and note-filing pass landed on top of it. Full story in DEVLOG's three
-2026-07-18 "(later)" entries.
+This entry replaces an earlier stale draft that only described the deploy-key fix, written before the button-expiry correction and note-filing pass landed on top of it. Full story in DEVLOG's three 2026-07-18 "(later)" entries.
 
 ## v2.21.0 — 2026-07-18
 **v2 quick-wins polish batch — 8 small user-facing items + doc housekeeping** (`c5b8663` + this push) — moderate
 
-- **`/timestamp`'s `format` option renamed to `view`** — "format" read as if it picked a timestamp
-  FORMAT (already `style`'s job); `view` is what it actually controls (Embed panel vs plain text).
-  Same shape as the earlier `ephemeral`→`private`→`hidden` renames.
-- **Added the `hidden` option to `/settings`** — every other command already had it; `/settings` was
-  simply missed. Same explicit-option > saved-preference > public priority (`resolveEphemeral`) as
-  everywhere else — the in-panel Show/Hide toggle still controls the SAVED preference exactly as before.
-- **Mobile-width pass across every slash command's descriptions** — several (Settings 83 chars,
-  Manage 68, Calendar 50, Season End's subcommand 69, Timestamp's datetime/timezone/view options, the
-  weapon/build options shared by `/dmz`/`/all`/`/<category>`) were truncating to "..." on Discord's
-  mobile command picker; trimmed to fit while preserving meaning. Left the standardized `hidden`
-  option wording untouched (already a deliberate, heavily-revised cross-command convention).
-- **Loadout search now handles a short/partial weapon name** (e.g. `loc`) instead of just failing.
-  New `findWeaponMatches()` (`utils/search.js`) fuzzy-matches the raw typed query against the
-  mode/category-scoped candidate list when the exact `weaponKey` lookup misses: an unambiguous single
-  match auto-resolves; 2+ matches replies with the real candidate names and asks the user to pick one
-  instead of silently guessing. Applied to `/dmz` and the shared `/all`+`/<category>` MP fallback.
-- **Admin (`ALLOWED_ADMIN_ID`) is never action-blocked on someone else's `/settings` or View Colors
-  panel anymore** — a new `resolvePanelActor()` helper (`index.js`) lets Harkirat through every
-  per-user author-lock (toggle/set/set_page/colors_view/colors_page/colors_subpage/colors_refresh)
-  while still rendering/mutating the ORIGINAL owner's data, never his own — achieved by swapping
-  `.user` on a synthetic interaction to the real fetched target user, not by relaxing the identity
-  check alone (which would have silently shown Harkirat's own avatar/prefs instead). `/manage`'s own
-  admin-only guard needed no override (it was already admin-only by design).
-- **Reworded every "action blocked" denial message** across `/manage`'s admin guard and every
-  `/settings`/View Colors author-lock — clearer, a little lighter, and says what to do instead (e.g.
-  "🔒 Not your dashboard! ... run `/settings` yourself").
-- **View Colors: added full-resolution Download Avatar / Download Banner buttons** to their respective
-  color pages, bottom, outside the container, beside Refresh Colors — matching `/settings`' existing
-  download-link buttons (style-5 Link buttons pointed at the 4096px CDN URL, visually the same grey as
-  a Secondary button, just backed by a direct link instead of an interaction). `utils/colorPalette.js`'s
-  `getPalettePanelData` now also surfaces `avatarFullUrl`/`bannerFullUrl` (free — already-computed CDN
-  URL strings, no extra fetch).
-- **`/manage`'s `section` option renamed to `data_for`** — "section" didn't describe what's actually
-  being picked (a data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season). Discord option names can't
-  contain spaces, so `data_for` is the closest valid spelling of the requested "data for".
-- **Docs (`c5b8663`):** added a title-only greppable table of contents to CLAUDE.md, filed 5 new v2
-  items + 2 v3 items + 2 someday items from the notes-scratchpad intake, applied the
-  `[Priority · Effort]` tag system to the near-term roadmap.
-- **`/secondaries` stays exactly as-is** (command name, DB category enum, and the command's own
-  description) — reconsidered the older "rename to `/secondary` + `/pistols` alias" roadmap idea and
-  dropped it. Two small display-only wording tweaks instead: the autocomplete tag (`/all`'s
-  `[SECONDARIES] weaponName`) and the rank badge line ("Best SECONDARIES") now read the singular
-  "SECONDARY" — the footer, command name, and description are untouched.
-- **New category-level search synonyms** (`utils/search.js`'s `resolveCategorySynonym`) — typing a
-  weapon-CLASS term (`pistol`, `assault rifle`, `smg`, `lmg`, `marksman`/`dmr`, `sniper`, `shotgun`,
-  `secondary`/`secondaries`, `handgun`) now surfaces every weapon in that category, not just weapons
-  whose own name happens to contain that word. This is the direct replacement for the shelved
-  `/pistols` alias idea (no new command needed) — applied to `/dmz`/`/all`/`/<category>` autocomplete
-  AND the short/partial-query exact-lookup fallback added earlier this batch.
-- **Repo housekeeping: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, and the
-  central notes scratchpad (`diors-builds notes.md` + its `notes-archive/`) all moved from
-  gitignored/local-only into a new TRACKED `docs/` folder** (Harkirat's request, so a real `git diff`/
-  `git log` covers their history instead of manual snapshots — the repo was public at the time and he
-  was consciously aware/OK with it). `.env` stays gitignored (secrets never belong in git history,
-  regardless of repo visibility). The `SessionStart` hook (`.claude/settings.local.json`) was updated
-  to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live
-  reference to these files across CLAUDE.md and memory was updated to match; historical narrative
-  entries describing their PAST gitignored status were left as accurate history, not rewritten.
+- **`/timestamp`'s `format` option renamed to `view`** — "format" read as if it picked a timestamp FORMAT (already `style`'s job); `view` is what it actually controls (Embed panel vs plain text). Same shape as the earlier `ephemeral`→`private`→`hidden` renames.
+- **Added the `hidden` option to `/settings`** — every other command already had it; `/settings` was simply missed. Same explicit-option > saved-preference > public priority (`resolveEphemeral`) as everywhere else — the in-panel Show/Hide toggle still controls the SAVED preference exactly as before.
+- **Mobile-width pass across every slash command's descriptions** — several (Settings 83 chars, Manage 68, Calendar 50, Season End's subcommand 69, Timestamp's datetime/timezone/view options, the weapon/build options shared by `/dmz`/`/all`/`/<category>`) were truncating to "..." on Discord's mobile command picker; trimmed to fit while preserving meaning. Left the standardized `hidden` option wording untouched (already a deliberate, heavily-revised cross-command convention).
+- **Loadout search now handles a short/partial weapon name** (e.g. `loc`) instead of just failing. New `findWeaponMatches()` (`utils/search.js`) fuzzy-matches the raw typed query against the mode/category-scoped candidate list when the exact `weaponKey` lookup misses: an unambiguous single match auto-resolves; 2+ matches replies with the real candidate names and asks the user to pick one instead of silently guessing. Applied to `/dmz` and the shared `/all`+`/<category>` MP fallback.
+- **Admin (`ALLOWED_ADMIN_ID`) is never action-blocked on someone else's `/settings` or View Colors panel anymore** — a new `resolvePanelActor()` helper (`index.js`) lets Harkirat through every per-user author-lock (toggle/set/set_page/colors_view/colors_page/colors_subpage/colors_refresh) while still rendering/mutating the ORIGINAL owner's data, never his own — achieved by swapping `.user` on a synthetic interaction to the real fetched target user, not by relaxing the identity check alone (which would have silently shown Harkirat's own avatar/prefs instead). `/manage`'s own admin-only guard needed no override (it was already admin-only by design).
+- **Reworded every "action blocked" denial message** across `/manage`'s admin guard and every `/settings`/View Colors author-lock — clearer, a little lighter, and says what to do instead (e.g. "🔒 Not your dashboard! ... run `/settings` yourself").
+- **View Colors: added full-resolution Download Avatar / Download Banner buttons** to their respective color pages, bottom, outside the container, beside Refresh Colors — matching `/settings`' existing download-link buttons (style-5 Link buttons pointed at the 4096px CDN URL, visually the same grey as a Secondary button, just backed by a direct link instead of an interaction). `utils/colorPalette.js`'s `getPalettePanelData` now also surfaces `avatarFullUrl`/`bannerFullUrl` (free — already-computed CDN URL strings, no extra fetch).
+- **`/manage`'s `section` option renamed to `data_for`** — "section" didn't describe what's actually being picked (a data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season). Discord option names can't contain spaces, so `data_for` is the closest valid spelling of the requested "data for".
+- **Docs (`c5b8663`):** added a title-only greppable table of contents to CLAUDE.md, filed 5 new v2 items + 2 v3 items + 2 someday items from the notes-scratchpad intake, applied the `[Priority · Effort]` tag system to the near-term roadmap.
+- **`/secondaries` stays exactly as-is** (command name, DB category enum, and the command's own description) — reconsidered the older "rename to `/secondary` + `/pistols` alias" roadmap idea and dropped it. Two small display-only wording tweaks instead: the autocomplete tag (`/all`'s `[SECONDARIES] weaponName`) and the rank badge line ("Best SECONDARIES") now read the singular "SECONDARY" — the footer, command name, and description are untouched.
+- **New category-level search synonyms** (`utils/search.js`'s `resolveCategorySynonym`) — typing a weapon-CLASS term (`pistol`, `assault rifle`, `smg`, `lmg`, `marksman`/`dmr`, `sniper`, `shotgun`, `secondary`/`secondaries`, `handgun`) now surfaces every weapon in that category, not just weapons whose own name happens to contain that word. This is the direct replacement for the shelved `/pistols` alias idea (no new command needed) — applied to `/dmz`/`/all`/`/<category>` autocomplete AND the short/partial-query exact-lookup fallback added earlier this batch.
+- **Repo housekeeping: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, and the central notes scratchpad (`diors-builds notes.md` + its `notes-archive/`) all moved from gitignored/local-only into a new TRACKED `docs/` folder** (Harkirat's request, so a real `git diff`/ `git log` covers their history instead of manual snapshots — the repo was public at the time and he was consciously aware/OK with it). `.env` stays gitignored (secrets never belong in git history, regardless of repo visibility). The `SessionStart` hook (`.claude/settings.local.json`) was updated to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live reference to these files across CLAUDE.md and memory was updated to match; historical narrative entries describing their PAST gitignored status were left as accurate history, not rewritten.
 
 ## v2.20.0 — 2026-07-17
-**Admin Edit-loadout fix + daily heartbeat + Ops Agent (RAM peaks)** (`64d4c38` + this push) — moderate
-Bundles the previously-staged v2.19.1 (alert-ping wording + memory-boundary docs) with this session's
-work into one push; numbered MODERATE because it's a real bug fix restoring a fully-broken admin
-capability PLUS a new monitoring feature PLUS new ops observability, not a lone MINOR follow-up.
-- **FIXED: `/manage` Edit was completely broken for every entity** (draws, calendar, MP + DMZ loadouts).
-  Clicking the intermediate **Edit** button after a single-match search gave "Dior's Builds didn't respond
-  in time." The `mng_editbtn_` handler had been written into the `isModalSubmit()` block, but its custom_id
-  is a **button** — so a button click never reached it (dead code) and timed out with no ACK. Moved the
-  handler into the `isButton()` block; same wrong-`isX()`-branch class of bug as the loadout Browse
-  dropdown before it. Broken (unnoticed, never live-clicked) since the `mng_editbtn_` flow shipped
-  2026-07-12. Verified offline against live Mongo: the edit modal now builds for the real FSS Hurricane doc
-  and all 125 MP loadouts without throwing.
-- **NEW: daily "still healthy" heartbeat** (`utils/alertWebhook.js` via `index.js`) — an info-level,
-  NON-pinging Discord alert every 24h (uptime / servers / gateway latency / memory), so a long quiet
-  uptime is proven-alive rather than ambiguous. Skipped when the gateway isn't ready; not fired on boot
-  ("Bot online" already covers that). Complements v2.19.0's trouble/startup-only alerts.
-- **Alert readability pass** (`utils/alertWebhook.js` + `index.js`) — the webhook alerts were hard to
-  parse (Harkirat's feedback). Now: **4 severity levels** 🟢info / 🟡caution / 🟠warn / 🔴error (was 3) —
-  "Gateway reconnecting" dropped from orange to 🟡 yellow since it's transient/self-recovering, distinct
-  from a real 🟠 "Gateway disconnected"; **pings now fire on orange + red** only. Every alert carries a
-  proper Discord `<t:>` timestamp (timezone-correct, hover-expandable). Fixed the "Bot online" alert
-  showing a nonsensical "gateway -1ms" (ping isn't measured yet at that instant) → "measuring…".
-- **`/manage` Edit prompt: Edit + Search Again buttons now share one row** (were two stacked rows) for the
-  single-match case.
-- **NEW: GCP Ops Agent installed on the VM** (v2.70.0, apt-repo method — the migration-time 404 was
-  transient) → unlocks guest RAM/disk metrics + log forwarding. **`scripts/vmpeaks.sh` now reports RAM
-  peaks** (`rampeak()`, `agent.googleapis.com/memory/percent_used`). Gotcha fixed along the way: the
-  project's Cloud Monitoring + Cloud Logging APIs were both disabled, so the agent silently dropped every
-  metric — `gcloud services enable`d both (free-tier) and export errors went to zero; first RAM peak read
-  43.7% of the 1 GB VM.
-- **Alert pings now carry the title in the message** (`utils/alertWebhook.js`, from staged v2.19.1) so the
-  notification reads "@Dior 🟠 Gateway disconnected" instead of a bare @mention.
-- **Docs (from staged v2.19.1):** revised the canonical-memory-path note (CLAUDE.md + SESSION-START +
-  working agreement) from "delete the slug `memory/` subdir if it appears" → "do NOT create/delete/symlink
-  it; it's the PAUSED memory-architecture redesign's domain, defer" — after a Diors session wrongly deleted
-  the empty slug dir (harmless). New memory `feedback_defer_to_owning_project`.
+**Admin Edit-loadout fix + daily heartbeat + Ops Agent (RAM peaks)** (`64d4c38` + this push) — moderate Bundles the previously-staged v2.19.1 (alert-ping wording + memory-boundary docs) with this session's work into one push; numbered MODERATE because it's a real bug fix restoring a fully-broken admin capability PLUS a new monitoring feature PLUS new ops observability, not a lone MINOR follow-up.
+- **FIXED: `/manage` Edit was completely broken for every entity** (draws, calendar, MP + DMZ loadouts). Clicking the intermediate **Edit** button after a single-match search gave "Dior's Builds didn't respond in time." The `mng_editbtn_` handler had been written into the `isModalSubmit()` block, but its custom_id is a **button** — so a button click never reached it (dead code) and timed out with no ACK. Moved the handler into the `isButton()` block; same wrong-`isX()`-branch class of bug as the loadout Browse dropdown before it. Broken (unnoticed, never live-clicked) since the `mng_editbtn_` flow shipped 2026-07-12. Verified offline against live Mongo: the edit modal now builds for the real FSS Hurricane doc and all 125 MP loadouts without throwing.
+- **NEW: daily "still healthy" heartbeat** (`utils/alertWebhook.js` via `index.js`) — an info-level, NON-pinging Discord alert every 24h (uptime / servers / gateway latency / memory), so a long quiet uptime is proven-alive rather than ambiguous. Skipped when the gateway isn't ready; not fired on boot ("Bot online" already covers that). Complements v2.19.0's trouble/startup-only alerts.
+- **Alert readability pass** (`utils/alertWebhook.js` + `index.js`) — the webhook alerts were hard to parse (Harkirat's feedback). Now: **4 severity levels** 🟢info / 🟡caution / 🟠warn / 🔴error (was 3) — "Gateway reconnecting" dropped from orange to 🟡 yellow since it's transient/self-recovering, distinct from a real 🟠 "Gateway disconnected"; **pings now fire on orange + red** only. Every alert carries a proper Discord `<t:>` timestamp (timezone-correct, hover-expandable). Fixed the "Bot online" alert showing a nonsensical "gateway -1ms" (ping isn't measured yet at that instant) → "measuring…".
+- **`/manage` Edit prompt: Edit + Search Again buttons now share one row** (were two stacked rows) for the single-match case.
+- **NEW: GCP Ops Agent installed on the VM** (v2.70.0, apt-repo method — the migration-time 404 was transient) → unlocks guest RAM/disk metrics + log forwarding. **`scripts/vmpeaks.sh` now reports RAM peaks** (`rampeak()`, `agent.googleapis.com/memory/percent_used`). Gotcha fixed along the way: the project's Cloud Monitoring + Cloud Logging APIs were both disabled, so the agent silently dropped every metric — `gcloud services enable`d both (free-tier) and export errors went to zero; first RAM peak read 43.7% of the 1 GB VM.
+- **Alert pings now carry the title in the message** (`utils/alertWebhook.js`, from staged v2.19.1) so the notification reads "@Dior 🟠 Gateway disconnected" instead of a bare @mention.
+- **Docs (from staged v2.19.1):** revised the canonical-memory-path note (CLAUDE.md + SESSION-START + working agreement) from "delete the slug `memory/` subdir if it appears" → "do NOT create/delete/symlink it; it's the PAUSED memory-architecture redesign's domain, defer" — after a Diors session wrongly deleted the empty slug dir (harmless). New memory `feedback_defer_to_owning_project`.
 
 ## v2.19.0 — 2026-07-17
 **Hosting migration Render → GCP + observability + Discord alerting** (`e60b17a`) — moderate
-- **Migrated hosting off Render (free tier) to a Google Cloud Compute Engine e2-micro VM** (us-east1,
-  under systemd, auto-restart on crash + reboot). Render's free tier could not hold the Discord gateway
-  (10-14 min connects → silent zombie sockets → every interaction failed); identical code connects in
-  ~6s on the VM and holds. Render suspended as a fallback (delete ~2026-07-24). Full saga: DEVLOG 2026-07-17.
-- **Discord webhook alerting** (`utils/alertWebhook.js`, wired into index.js at 9 sites): posts crashes,
-  gateway disconnect/reconnect/error, DB failure, uncaught exception/rejection, and a "Bot online" ping
-  per (re)start to a private channel. **Active @mention** to the admin on notice-worthy alerts (errors +
-  gateway disconnect); error alerts include stack frames; every footer carries host + RSS memory + uptime.
-  Throttled 1/min, never throws, never blocks. `LOG_WEBHOOK_URL` is a secret (`.env` only).
-- **Monitoring tools:** `scripts/vmstatus.sh` (one-command VM+bot health) + `scripts/vmpeaks.sh`
-  (historical CPU peaks 12h-30d via Cloud Monitoring). RAM peaks pending the Ops Agent (deferred).
-- **New deploy flow:** `git push` → on the VM `git pull && sudo systemctl restart diors-bot` → verify
-  `scripts/vmstatus.sh`. Docs: CLAUDE.md "Deployment & Ops (GCP)" section, SESSION-START, memory.
+- **Migrated hosting off Render (free tier) to a Google Cloud Compute Engine e2-micro VM** (us-east1, under systemd, auto-restart on crash + reboot). Render's free tier could not hold the Discord gateway (10-14 min connects → silent zombie sockets → every interaction failed); identical code connects in ~6s on the VM and holds. Render suspended as a fallback (delete ~2026-07-24). Full saga: DEVLOG 2026-07-17.
+- **Discord webhook alerting** (`utils/alertWebhook.js`, wired into index.js at 9 sites): posts crashes, gateway disconnect/reconnect/error, DB failure, uncaught exception/rejection, and a "Bot online" ping per (re)start to a private channel. **Active @mention** to the admin on notice-worthy alerts (errors + gateway disconnect); error alerts include stack frames; every footer carries host + RSS memory + uptime. Throttled 1/min, never throws, never blocks. `LOG_WEBHOOK_URL` is a secret (`.env` only).
+- **Monitoring tools:** `scripts/vmstatus.sh` (one-command VM+bot health) + `scripts/vmpeaks.sh` (historical CPU peaks 12h-30d via Cloud Monitoring). RAM peaks pending the Ops Agent (deferred).
+- **New deploy flow:** `git push` → on the VM `git pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. Docs: CLAUDE.md "Deployment & Ops (GCP)" section, SESSION-START, memory.
 
 ## v2.18.3 — 2026-07-16
 **Shard-lifecycle diagnostics + gitignore fix** (`2a9482b`, `7c59297`, `48f5a7d`) — minor
-- **Added Discord shard-lifecycle logging** (`shardReady`/`shardResume`/`shardReconnecting`/
-  `shardDisconnect`/`shardError`) in `index.js`. The Gateway handshake could silently take 10+ min with
-  zero error anywhere; this made the WS-layer retry activity visible instead of pure silence. (This is
-  what later gave us the diagnostic trail that pinned the Render failure and drove the GCP migration.)
-- **Gitignored `.claude/settings.local.json*`** — was only untracked by luck; a `git add -A` would have
-  swept personal Claude Code settings into the public repo.
+- **Added Discord shard-lifecycle logging** (`shardReady`/`shardResume`/`shardReconnecting`/ `shardDisconnect`/`shardError`) in `index.js`. The Gateway handshake could silently take 10+ min with zero error anywhere; this made the WS-layer retry activity visible instead of pure silence. (This is what later gave us the diagnostic trail that pinned the Render failure and drove the GCP migration.)
+- **Gitignored `.claude/settings.local.json*`** — was only untracked by luck; a `git add -A` would have swept personal Claude Code settings into the public repo.
 - Doc: recorded Render auto-deploy disabled (the temporary safeguard, now moot — Render retired in v2.19).
 
 ## v2.18.2 — 2026-07-16
@@ -4527,94 +1555,34 @@ capability PLUS a new monitoring feature PLUS new ops observability, not a lone 
 
 Two commits pushed together as ONE version, same "doc-only push bumps MINOR" rule as v2.18.1.
 
-- **Corrected the canonical memory-path note** — it previously (incorrectly) claimed the
-  `-Applications-Claude-Code-Diors-Builds` project folder doesn't exist at all; it does (the harness
-  writes session transcripts there after the repo's move), it just must never gain its own `memory/`
-  subdirectory. Recorded that memory deliberately doesn't follow the repo path, worded so a future
-  session doesn't "fix" it by migrating.
-- **Added a general bot/code housekeeping item to the roadmap**: remove leftover `*.bak-*` config
-  backups, sweep for stale absolute paths after the relocation, dead-code/comment/dependency review,
-  and the `/patch notes` carousel chunking question.
-- **Added git-tag versioning, complementing (not replacing) the existing push/version system.** Each
-  real push's version now also gets an actual git tag (e.g. `v2.18.1`), so `git describe --tags`
-  gives free visibility into what's committed-but-unpushed since the last real push. Backfilled
-  `v2.17.3`, `v2.18.0`, `v2.18.1` by cross-checking this file directly against `git log` — a first
-  pass missed `v2.18.1` by only scanning commit messages for an explicit version string, since none
-  of its 3 bundled commits name it.
+- **Corrected the canonical memory-path note** — it previously (incorrectly) claimed the `-Applications-Claude-Code-Diors-Builds` project folder doesn't exist at all; it does (the harness writes session transcripts there after the repo's move), it just must never gain its own `memory/` subdirectory. Recorded that memory deliberately doesn't follow the repo path, worded so a future session doesn't "fix" it by migrating.
+- **Added a general bot/code housekeeping item to the roadmap**: remove leftover `*.bak-*` config backups, sweep for stale absolute paths after the relocation, dead-code/comment/dependency review, and the `/patch notes` carousel chunking question.
+- **Added git-tag versioning, complementing (not replacing) the existing push/version system.** Each real push's version now also gets an actual git tag (e.g. `v2.18.1`), so `git describe --tags` gives free visibility into what's committed-but-unpushed since the last real push. Backfilled `v2.17.3`, `v2.18.0`, `v2.18.1` by cross-checking this file directly against `git log` — a first pass missed `v2.18.1` by only scanning commit messages for an explicit version string, since none of its 3 bundled commits name it.
 
 ## v2.18.1 — 2026-07-15
 **Docs, roadmap & housekeeping — no bot code touched** (`f7b4575`, `c4b1c19`, `1600b8e`) — minor
 
-Three commits pushed together as ONE version. They were only ever live as a single state, so they get
-one number rather than one each — see the versioning note in the header; a doc-only push bumps MINOR,
-and had any moderate-level feature work landed first, these would have folded into that entry instead.
+Three commits pushed together as ONE version. They were only ever live as a single state, so they get one number rather than one each — see the versioning note in the header; a doc-only push bumps MINOR, and had any moderate-level feature work landed first, these would have folded into that entry instead.
 
-- **Roadmap filed out to v5** from Harkirat's `local/project plan notes.txt`. CLAUDE.md's "Next planned
-  work" gained a **remaining v2** batch (`/settings`' missing `hidden` option, mobile description
-  truncation, short-phrase loadout search, action-blocked reword + admin override, colour variety,
-  humour pages, full-res download buttons, pagination loop-back), v3 additions (`/help`, a personality
-  pass), and brand-new **v4** (guild install + text/prefix commands, user-submitted loadouts with a
-  manual review queue) and **v5** (generate the gunsmith image/code ourselves; user-built custom
-  loadouts) sections. Both changelog roadmap sections re-synced to match.
-- **Flagged that v4's guild install invalidates the "user-installed only / zero standing guild
-  permissions" architecture section** of CLAUDE.md — including everything downstream of it (the
-  `50001 Missing Access` wall, why "Show Everyone" routes through the interaction response rather than
-  a channel POST). That section must be rewritten as part of v4, not left silently contradicting reality.
-- **Documented the canonical memory path.** The repo's move to `/Applications/Claude Code/Diors-Builds`
-  means a session can be told its memory lives at `-Applications-Claude-Code-Diors-Builds`, which does
-  not exist — the real 26-file store is at `-Applications-Diors-Builds`. Writing to the wrong one would
-  silently fork memory into two half-empty stores, failing only as later "inexplicable amnesia". Noted
-  at the top of CLAUDE.md and in the working agreement, since either could be read first.
-- **Documented the pagination perf fix's agreed hybrid shape** — single `UPDATE_MESSAGE` for light
-  string-building commands (draws/calendar/drawprices/settings), keep defer-then-patch for anything
-  doing CPU or image work before replying (View Colors, attachment paths) where blowing the 3s ACK is
-  a real risk. Still deferred; this just records the decision so it isn't re-derived.
-- **Added `local/`** — a gitignored scratch folder for personal working files (plan notes, reference
-  screenshots) — and **stopped tracking `.DS_Store`** (`git rm --cached`), which had been committed to
-  the repo; the pre-existing `.gitignore` never applied to it because gitignore only affects untracked
-  files.
-- Created this file's **`Unreleased`** section, which the header had referenced for months without it
-  ever existing.
+- **Roadmap filed out to v5** from Harkirat's `local/project plan notes.txt`. CLAUDE.md's "Next planned work" gained a **remaining v2** batch (`/settings`' missing `hidden` option, mobile description truncation, short-phrase loadout search, action-blocked reword + admin override, colour variety, humour pages, full-res download buttons, pagination loop-back), v3 additions (`/help`, a personality pass), and brand-new **v4** (guild install + text/prefix commands, user-submitted loadouts with a manual review queue) and **v5** (generate the gunsmith image/code ourselves; user-built custom loadouts) sections. Both changelog roadmap sections re-synced to match.
+- **Flagged that v4's guild install invalidates the "user-installed only / zero standing guild permissions" architecture section** of CLAUDE.md — including everything downstream of it (the `50001 Missing Access` wall, why "Show Everyone" routes through the interaction response rather than a channel POST). That section must be rewritten as part of v4, not left silently contradicting reality.
+- **Documented the canonical memory path.** The repo's move to `/Applications/Claude Code/Diors-Builds` means a session can be told its memory lives at `-Applications-Claude-Code-Diors-Builds`, which does not exist — the real 26-file store is at `-Applications-Diors-Builds`. Writing to the wrong one would silently fork memory into two half-empty stores, failing only as later "inexplicable amnesia". Noted at the top of CLAUDE.md and in the working agreement, since either could be read first.
+- **Documented the pagination perf fix's agreed hybrid shape** — single `UPDATE_MESSAGE` for light string-building commands (draws/calendar/drawprices/settings), keep defer-then-patch for anything doing CPU or image work before replying (View Colors, attachment paths) where blowing the 3s ACK is a real risk. Still deferred; this just records the decision so it isn't re-derived.
+- **Added `local/`** — a gitignored scratch folder for personal working files (plan notes, reference screenshots) — and **stopped tracking `.DS_Store`** (`git rm --cached`), which had been committed to the repo; the pre-existing `.gitignore` never applied to it because gitignore only affects untracked files.
+- Created this file's **`Unreleased`** section, which the header had referenced for months without it ever existing.
 
 ## v2.18.0 — 2026-07-14
 **Panel interaction locks, Share button rename, /timestamp text mode** (this session) — moderate
-- **`/manage` locked to admin-only across EVERY interaction it spawns**, not just the initial slash
-  command. Previously only the top-level `execute()` checked `ALLOWED_ADMIN_ID` — none of the ~25
-  button/select/modal-submit handlers the panel generates (`mng_*`, `modal_*`, single add/edit
-  loadout/draw/calendar modals) re-checked who was clicking, so anyone who could see the panel message
-  (non-ephemeral run, or just present in-channel) could press its buttons and mutate bot data. Fixed
-  with ONE centralized guard in `index.js`, right after the anti-spam block, checking every custom_id
-  prefix `/manage` has ever generated against the newly-exported `ALLOWED_ADMIN_ID` before any routing
-  happens — self-maintaining for future manage actions, scoped tightly so no other command is touched.
-- **`/settings` locked to the invoking user + a 15-minute expiry**, closing a real gap (`set_page_`
-  carried no `userId` check at all) and adding a mechanism that didn't exist anywhere in the bot
-  before. Implemented statelessly — the deadline is encoded directly in every custom_id `settings.js`
-  builds rather than tracked in a Map, avoiding both new in-memory state that resets on redeploy and
-  an extra `fetchReply()` network call. Clicking around the panel never extends the clock; expired
-  interactions get an ephemeral "run `/settings` again" reply instead of executing. The "View Colors"
-  button ON the settings panel inherits this expiry (it's a settings component), but the standalone
-  colors panel it opens keeps its own existing, separate, un-timed lock (Harkirat's explicit call,
-  since that panel's code is shared with the standalone `/colors` command).
-- **"Share Publicly" button renamed to "Show Everyone"** and its icon swapped from the plain 🌐 globe
-  to a Harkirat-provided custom animated emoji (`emojiMap.js`'s new `share` entry), wired through the
-  button's dedicated `emoji` field rather than baked into `label`.
-- **New `/timestamp format` option** (Embed/Text, default Embed, slash-command-exclusive — not saved
-  to `/settings`). Text mode renders the exact same content as the embed view (All Formats overview or
-  any individual style) as plain message content instead of a Components V2 container, dropping the
-  accent-color/divider chrome; blank lines stand in for dividers. Switching styles via the dropdown
-  while in text mode correctly stays in text mode, derived from the absence of the Components V2 flag
-  on the message being edited (same trick already used to preserve ephemeral state across re-renders).
-- Investigated a "/draws feels slow when switching views" report — traced the full hot path for
-  `/draws`' New/Returning switch and `/calendar`'s sub-page nav; found a structural defer-then-patch
-  double network round-trip, not a bug. See the roadmap section above for the deferred real fix.
+- **`/manage` locked to admin-only across EVERY interaction it spawns**, not just the initial slash command. Previously only the top-level `execute()` checked `ALLOWED_ADMIN_ID` — none of the ~25 button/select/modal-submit handlers the panel generates (`mng_*`, `modal_*`, single add/edit loadout/draw/calendar modals) re-checked who was clicking, so anyone who could see the panel message (non-ephemeral run, or just present in-channel) could press its buttons and mutate bot data. Fixed with ONE centralized guard in `index.js`, right after the anti-spam block, checking every custom_id prefix `/manage` has ever generated against the newly-exported `ALLOWED_ADMIN_ID` before any routing happens — self-maintaining for future manage actions, scoped tightly so no other command is touched.
+- **`/settings` locked to the invoking user + a 15-minute expiry**, closing a real gap (`set_page_` carried no `userId` check at all) and adding a mechanism that didn't exist anywhere in the bot before. Implemented statelessly — the deadline is encoded directly in every custom_id `settings.js` builds rather than tracked in a Map, avoiding both new in-memory state that resets on redeploy and an extra `fetchReply()` network call. Clicking around the panel never extends the clock; expired interactions get an ephemeral "run `/settings` again" reply instead of executing. The "View Colors" button ON the settings panel inherits this expiry (it's a settings component), but the standalone colors panel it opens keeps its own existing, separate, un-timed lock (Harkirat's explicit call, since that panel's code is shared with the standalone `/colors` command).
+- **"Share Publicly" button renamed to "Show Everyone"** and its icon swapped from the plain 🌐 globe to a Harkirat-provided custom animated emoji (`emojiMap.js`'s new `share` entry), wired through the button's dedicated `emoji` field rather than baked into `label`.
+- **New `/timestamp format` option** (Embed/Text, default Embed, slash-command-exclusive — not saved to `/settings`). Text mode renders the exact same content as the embed view (All Formats overview or any individual style) as plain message content instead of a Components V2 container, dropping the accent-color/divider chrome; blank lines stand in for dividers. Switching styles via the dropdown while in text mode correctly stays in text mode, derived from the absence of the Components V2 flag on the message being edited (same trick already used to preserve ephemeral state across re-renders).
+- Investigated a "/draws feels slow when switching views" report — traced the full hot path for `/draws`' New/Returning switch and `/calendar`'s sub-page nav; found a structural defer-then-patch double network round-trip, not a bug. See the roadmap section above for the deferred real fix.
 
 ## v2.17.3 — 2026-07-13
 **Timeline reconciliation + changelog three-part renumbering** (docs-only; this commit)
-- Reconciled every stray `2026-07-14` (UTC) date reference in CLAUDE.md and memory back to
-  `2026-07-13` (local, matching git author dates) so the project timeline is internally consistent.
-- Renumbered the changelog catch-up below into the correct three-part `vMAJOR.MODERATE.MINOR` scheme
-  (it had been logged under a wrong flat-decimal scheme), added two previously-missed pushes
-  (`v2.8.0`/`v2.8.1`, DMZ range badges), and updated the header's versioning explanation.
+- Reconciled every stray `2026-07-14` (UTC) date reference in CLAUDE.md and memory back to `2026-07-13` (local, matching git author dates) so the project timeline is internally consistent.
+- Renumbered the changelog catch-up below into the correct three-part `vMAJOR.MODERATE.MINOR` scheme (it had been logged under a wrong flat-decimal scheme), added two previously-missed pushes (`v2.8.0`/`v2.8.1`, DMZ range badges), and updated the header's versioning explanation.
 
 ## v2.17.2 — 2026-07-13
 **Nameplate memoization + documentation** (`4674bdc`) — minor
@@ -4624,260 +1592,156 @@ and had any moderate-level feature work landed first, these would have folded in
 ## v2.17.1 — 2026-07-13
 **View Colors preview sizing** (`b3a77b7`) — minor
 - Banner preview restored to its full 512px width (it had been shrunk to 256px by the CPU change).
-- The Display Name gradient banner and the nameplate preview are now both capped at 512px wide (the
-  nameplate is fetched and resized in-house, since Discord's collectibles CDN ignores the size param).
+- The Display Name gradient banner and the nameplate preview are now both capped at 512px wide (the nameplate is fetched and resized in-house, since Discord's collectibles CDN ignores the size param).
 
 ## v2.17.0 — 2026-07-13
 **View Colors CPU fix — bot-wide interaction timeouts** (`2b6db08`) — large bug fix
-- **Fixed bot-wide "This interaction failed" (10062) errors** traced to the View Colors panel's color
-  extraction blocking Node's single event loop on Render's free-tier CPU long enough that unrelated
-  commands (`/manage`, `/settings`, etc.) missed Discord's 3-second acknowledgement window. Fixes, in
-  order of impact: **lazy per-source extraction** (only the source on screen is extracted, not all
-  four — decoration's ffmpeg step never runs unless the Deco page is opened); **removed the
-  `/settings` background soft-refresh** that speculatively warmed all four sources on every open;
-  k-means now yields to the event loop between iterations and stops early on convergence; solid swatch
-  PNGs memoized in RAM; banner extraction downsized to 256px.
-- Also root-caused erratic "different version on different clicks" behavior to **multiple bot
-  instances running at once** — three stray local `node index.js` processes racing the deployed bot.
-  Single-token bot; only one instance may run at a time.
+- **Fixed bot-wide "This interaction failed" (10062) errors** traced to the View Colors panel's color extraction blocking Node's single event loop on Render's free-tier CPU long enough that unrelated commands (`/manage`, `/settings`, etc.) missed Discord's 3-second acknowledgement window. Fixes, in order of impact: **lazy per-source extraction** (only the source on screen is extracted, not all four — decoration's ffmpeg step never runs unless the Deco page is opened); **removed the `/settings` background soft-refresh** that speculatively warmed all four sources on every open; k-means now yields to the event loop between iterations and stops early on convergence; solid swatch PNGs memoized in RAM; banner extraction downsized to 256px.
+- Also root-caused erratic "different version on different clicks" behavior to **multiple bot instances running at once** — three stray local `node index.js` processes racing the deployed bot. Single-token bot; only one instance may run at a time.
 
 ## v2.16.0 — 2026-07-13
-**View Colors panel + accent-color personalization** (`219b2e1`) — biggest feature since the v2.0.0
-Components rewrite
-- New **`/colors` command** and a **"View Colors" button in `/settings`**: browse the real colors
-  extracted from your Avatar, Banner, Display Name, Nameplate, and Decoration, with tap-to-copy hex
-  codes, a generated swatch per color, and dynamic *relationship* labels ("Majority Color", "Vibrant
-  Accent", etc.) computed via k-means clustering rather than fixed categories.
-- **"Refresh Colors"** button with honest change-detection (tells you whether your colors actually
-  changed) and a 10-second cooldown.
-- **Two new accent-color styles** in `/settings`: **Display Name** (Discord's real Nitro name-color
-  gradient, read via a raw REST call discord.js doesn't expose) and **Dynamic Profile** (randomly
-  picks from every color source you have on each new command, held stable across that message's clicks).
-- Extraction is **per-source k-means** (avatar/banner return 8 colors, nameplate/decoration 4), made
-  **deterministic** so "Refresh Colors" can honestly report whether anything changed; animated
-  decorations (APNG) are decoded to a still frame via `ffmpeg` first, since Jimp can't read them.
+**View Colors panel + accent-color personalization** (`219b2e1`) — biggest feature since the v2.0.0 Components rewrite
+- New **`/colors` command** and a **"View Colors" button in `/settings`**: browse the real colors extracted from your Avatar, Banner, Display Name, Nameplate, and Decoration, with tap-to-copy hex codes, a generated swatch per color, and dynamic *relationship* labels ("Majority Color", "Vibrant Accent", etc.) computed via k-means clustering rather than fixed categories.
+- **"Refresh Colors"** button with honest change-detection (tells you whether your colors actually changed) and a 10-second cooldown.
+- **Two new accent-color styles** in `/settings`: **Display Name** (Discord's real Nitro name-color gradient, read via a raw REST call discord.js doesn't expose) and **Dynamic Profile** (randomly picks from every color source you have on each new command, held stable across that message's clicks).
+- Extraction is **per-source k-means** (avatar/banner return 8 colors, nameplate/decoration 4), made **deterministic** so "Refresh Colors" can honestly report whether anything changed; animated decorations (APNG) are decoded to a still frame via `ffmpeg` first, since Jimp can't read them.
 - A light **600ms anti-spam cooldown** on buttons/menus to absorb rapid double-clicks.
 
 ## v2.15.0 — 2026-07-13
 **Vivid accent-color extraction** (`e5359df`, `utils/colorExtract.js`) — mostly internal
-- Reworked how the single accent color is pulled from an avatar/banner. The old flat/saturation-
-  weighted average muddied images that mix several distinct hues (e.g. teal hair + skin tone) into an
-  in-between color matching none of them.
-- New approach: bucket sampled pixels into 24 hue bins, drop near-neutral ones, pick the most
-  saturation-heavy bin, then average only the **top 20% most vivid** pixels in it — biasing toward the
-  punchiest instance of the dominant hue.
-- Chosen after a side-by-side comparison against 5 real test avatars. Every user's cached accent color
-  was cleared once so it recomputes fresh (caches key on the image hash, not the algorithm version).
+- Reworked how the single accent color is pulled from an avatar/banner. The old flat/saturation- weighted average muddied images that mix several distinct hues (e.g. teal hair + skin tone) into an in-between color matching none of them.
+- New approach: bucket sampled pixels into 24 hue bins, drop near-neutral ones, pick the most saturation-heavy bin, then average only the **top 20% most vivid** pixels in it — biasing toward the punchiest instance of the dominant hue.
+- Chosen after a side-by-side comparison against 5 real test avatars. Every user's cached accent color was cleared once so it recomputes fresh (caches key on the image hash, not the algorithm version).
 
 ## v2.14.0 — 2026-07-13
 **Patch notes image caching** (`9863e6a`, `utils/patchNotesCache.js`) — mostly internal
-- Admin-submitted patch-notes screenshots are now re-hosted on Cloudinary (same pattern as the draw
-  thumbnail cache), so a dead source link no longer leaves a broken image in `/patch notes`.
-- **Season-based retention** (not time-based): an image is kept as long as its season is still
-  reachable through the "previous 5 seasons" history dropdown, then pruned on the same scheduled sweep
-  as the draw cache. Keyed by the patch note's own `_id` (titles get renamed; `_id` never does).
+- Admin-submitted patch-notes screenshots are now re-hosted on Cloudinary (same pattern as the draw thumbnail cache), so a dead source link no longer leaves a broken image in `/patch notes`.
+- **Season-based retention** (not time-based): an image is kept as long as its season is still reachable through the "previous 5 seasons" history dropdown, then pruned on the same scheduled sweep as the draw cache. Keyed by the patch note's own `_id` (titles get renamed; `_id` never does).
 - Falls back to the raw URL on any Cloudinary hiccup, so a caching failure never blocks an admin save.
 
 ## v2.13.0 — 2026-07-13
 **Loadout browse dropdown + sorting + layout fix** (`616d4c4`)
-- Loadout cards (`/dmz`, `/all`, `/<category>`) gained a **"Browse other builds"** dropdown to jump
-  straight to another weapon without re-running the command.
-- `/all`'s weapon list is now sorted alphabetically by category then name (previously unsorted, so
-  LOCUS always showed first).
+- Loadout cards (`/dmz`, `/all`, `/<category>`) gained a **"Browse other builds"** dropdown to jump straight to another weapon without re-running the command.
+- `/all`'s weapon list is now sorted alphabetically by category then name (previously unsorted, so LOCUS always showed first).
 - Final layout correction to `/draw prices` (nav row placement + divider spacing).
 
 ## v2.12.1 — 2026-07-12
 **Critical Edit-search crash fix + post-deploy polish** (`c6c0b8f`) — minor
-- **Fixed a real crash:** every single-match Edit search in `/manage` threw "Something went wrong"
-  (discord.js can't open a modal in response to a modal submission) — Edit now routes through an
-  intermediate button, with a "Search Again" button added.
-- Calendar bulk-replace now upserts by title (matching draws); patch-notes URL modals use 5 separate
-  fields; assorted `/settings` wording, slash-command description cleanup, and the `private` option
-  renamed to `hidden` everywhere.
+- **Fixed a real crash:** every single-match Edit search in `/manage` threw "Something went wrong" (discord.js can't open a modal in response to a modal submission) — Edit now routes through an intermediate button, with a "Search Again" button added.
+- Calendar bulk-replace now upserts by title (matching draws); patch-notes URL modals use 5 separate fields; assorted `/settings` wording, slash-command description cleanup, and the `private` option renamed to `hidden` everywhere.
 
 ## v2.12.0 — 2026-07-12
 **Slash-command wording overpass + full color repalette** (`99c37a9`)
 - Standardized command/option wording across the bot.
-- **Repainted every seasonal command's accent color** (Calendar / Draws / Draw Prices / Patch Notes
-  / Season End / Timestamp) for a coherent cool-to-warm nav-row spread, and switched `/dmz` to the
-  same per-weapon-category palette MP loadouts already use.
+- **Repainted every seasonal command's accent color** (Calendar / Draws / Draw Prices / Patch Notes / Season End / Timestamp) for a coherent cool-to-warm nav-row spread, and switched `/dmz` to the same per-weapon-category palette MP loadouts already use.
 
 ## v2.11.1 — 2026-07-12
 **Batch refinement pass** (`02e27d5`) — minor
-- Follow-up refinements across the just-redesigned `/draw prices`, `/manage`, and `/settings`
-  (spacing, grouping, upsert-by-title for calendar bulk-replace, and assorted wording).
+- Follow-up refinements across the just-redesigned `/draw prices`, `/manage`, and `/settings` (spacing, grouping, upsert-by-title for calendar bulk-replace, and assorted wording).
 
 ## v2.11.0 — 2026-07-12
 **Draw thumbnail Cloudinary caching + `/draw prices` reformat** (`20071f2`)
-- **Draw thumbnail Cloudinary caching** — externally-hosted draw images are re-hosted so `/draws`
-  keeps working after the original source link expires (45-day orphan cleanup).
+- **Draw thumbnail Cloudinary caching** — externally-hosted draw images are re-hosted so `/draws` keeps working after the original source link expires (45-day orphan cleanup).
 - Further `/draw prices` reformatting and unified seasonal-command title sizing.
 
 ## v2.10.0 — 2026-07-12
 **`/draw prices` + `/manage` rebuild per mockups** (`591dcce`)
-- **`/draw prices`** rebuilt: per-pull breakdowns with all totals computed from raw data (no more
-  hand-typed totals drifting), paginated across 2 pages, region toggle.
-- **`/manage`** admin panel overhauled: additive "Add Multiple" vs destructive "Replace/Bulk Replace"
-  split, granular Purge scopes, a 2-step Confirm/Cancel on every destructive action, an **Undo**
-  button, and richer confirmation messages. `/settings` groundwork toward its 2-page layout.
+- **`/draw prices`** rebuilt: per-pull breakdowns with all totals computed from raw data (no more hand-typed totals drifting), paginated across 2 pages, region toggle.
+- **`/manage`** admin panel overhauled: additive "Add Multiple" vs destructive "Replace/Bulk Replace" split, granular Purge scopes, a 2-step Confirm/Cancel on every destructive action, an **Undo** button, and richer confirmation messages. `/settings` groundwork toward its 2-page layout.
 
 ## v2.9.0 — 2026-07-09
 **`/update` consolidated into `/manage`** (`235f145`)
-- Merged the separate `/update` bulk-import command into `/manage` as a single Components-V2
-  button/dropdown panel, so there's one admin command instead of two. (Later fully rebuilt in v2.10.0.)
+- Merged the separate `/update` bulk-import command into `/manage` as a single Components-V2 button/dropdown panel, so there's one admin command instead of two. (Later fully rebuilt in v2.10.0.)
 
 ## v2.8.1 — 2026-07-09
 **DMZ badge scoping fix** (`2793be4`) — minor
-- DMZ badges never use the per-category (MP) ranking system, even when no combat-range role applies —
-  a `best`/`topN` admin input on a DMZ loadout is routed into `dmzRangeRank`, not `categoryRank`.
+- DMZ badges never use the per-category (MP) ranking system, even when no combat-range role applies — a `best`/`topN` admin input on a DMZ loadout is routed into `dmzRangeRank`, not `categoryRank`.
 
 ## v2.8.0 — 2026-07-09
 **DMZ range-based badges** (`01d0096`)
-- Added range-qualified DMZ rank badges — **Best / Top N Close Range** and **Best / Top N Mid-Long
-  Range** — so a DMZ build can be flagged as best-in-role rather than only a bare Best/Top N.
+- Added range-qualified DMZ rank badges — **Best / Top N Close Range** and **Best / Top N Mid-Long Range** — so a DMZ build can be flagged as best-in-role rather than only a bare Best/Top N.
 
 ## v2.7.1 — 2026-07-09
 **Untrack changelog files** (`fc80d7a`) — internal only, not in the summary changelog
-- `CHANGELOG.md`/`CHANGELOG-SUMMARY.md` moved to `.gitignore` and untracked from the repo
-  (`git rm --cached`) — Harkirat wants them kept as a local-only personal record rather than
-  pushed to the public GitHub repo. No bot behavior changed.
+- `CHANGELOG.md`/`CHANGELOG-SUMMARY.md` moved to `.gitignore` and untracked from the repo (`git rm --cached`) — Harkirat wants them kept as a local-only personal record rather than pushed to the public GitHub repo. No bot behavior changed.
 
 ## v2.7.0 — 2026-07-09
 **Direct Cloudinary/GitHub integration + bulk loadout data entry**
-- Set up direct API access to both GitHub (fine-grained PAT, scoped to this repo — Contents,
-  Pull requests, Dependabot alerts, Actions) and Cloudinary (upload/rename/list resources) so
-  loadout data and images can be added, corrected, and cross-checked directly against the live
-  database and asset storage instead of only through `/manage`.
-- Fixed a real UI bug: DMZ loadout cards were showing the **buildName** under a `### Gunsmith Code`
-  heading with a working "Copy Code" button, even though DMZ builds never have a real in-game
-  share code (confirmed by Harkirat) — copying it would hand someone a fake code. Both the heading
-  and the button are now skipped entirely for `mode: 'DMZ'` in `utils/loadoutRender.js`.
-- Large batch of real loadout data added/corrected via screenshot extraction, replacing several
-  "Coming Soon" placeholders and fixing two weapon-naming mistakes:
-  - **Bal-27** (AR): rebuilt from 6 screenshots down to 5 confirmed real builds (one bogus
-    community-credited build removed, Cloudinary files renamed/renumbered to match).
-  - **DMZ**: first-ever DMZ loadout data added — SO-14, Type 19 (2 builds), AS VAL, AK117, Fennec,
-    J358 (Secondaries), Outlaw (Sniper).
-  - **PKM** (LMG) and **SKS** (Marksman): additional real MP build variants added alongside their
-    existing ones.
-  - **LOCUS**: both MP builds migrated off imgur onto Cloudinary directly, closing out the last
-    non-Cloudinary image hosting in the whole collection.
-  - **Naming corrections**: "GS50" was actually **.50 GS** and "LCAR" was actually **L-CAR 9** —
-    both renamed (weapon name + internal key) to match their real in-game names, carrying their
-    existing badges over.
-  - **New Secondaries weapons**: Machine Pistol, Crossbow, Dobvra, Shorty — real builds added
-    (Machine Pistol and Crossbow replacing earlier placeholders).
+- Set up direct API access to both GitHub (fine-grained PAT, scoped to this repo — Contents, Pull requests, Dependabot alerts, Actions) and Cloudinary (upload/rename/list resources) so loadout data and images can be added, corrected, and cross-checked directly against the live database and asset storage instead of only through `/manage`.
+- Fixed a real UI bug: DMZ loadout cards were showing the **buildName** under a `### Gunsmith Code` heading with a working "Copy Code" button, even though DMZ builds never have a real in-game share code (confirmed by Harkirat) — copying it would hand someone a fake code. Both the heading and the button are now skipped entirely for `mode: 'DMZ'` in `utils/loadoutRender.js`.
+- Large batch of real loadout data added/corrected via screenshot extraction, replacing several "Coming Soon" placeholders and fixing two weapon-naming mistakes:
+  - **Bal-27** (AR): rebuilt from 6 screenshots down to 5 confirmed real builds (one bogus community-credited build removed, Cloudinary files renamed/renumbered to match).
+  - **DMZ**: first-ever DMZ loadout data added — SO-14, Type 19 (2 builds), AS VAL, AK117, Fennec, J358 (Secondaries), Outlaw (Sniper).
+  - **PKM** (LMG) and **SKS** (Marksman): additional real MP build variants added alongside their existing ones.
+  - **LOCUS**: both MP builds migrated off imgur onto Cloudinary directly, closing out the last non-Cloudinary image hosting in the whole collection.
+  - **Naming corrections**: "GS50" was actually **.50 GS** and "LCAR" was actually **L-CAR 9** — both renamed (weapon name + internal key) to match their real in-game names, carrying their existing badges over.
+  - **New Secondaries weapons**: Machine Pistol, Crossbow, Dobvra, Shorty — real builds added (Machine Pistol and Crossbow replacing earlier placeholders).
   - **New Shotgun weapon**: R9-0, added with a Top 3 badge.
 
 ## v2.6.0 — 2026-07-08
 **Placeholder loadout seeding + changelog system**
-- Seeded 7 weapons (Bal-27, FSS Hurricane, Pharo, Machine Pistol, LCAR, GS50, Crossbow) that had
-  badge assignments but no loadout data, with "Coming Soon" placeholder builds (`scripts/
-  createPlaceholderLoadouts.js`) — first real data in the `SECONDARIES` category at the time
-  (most have since been replaced with real data — see v2.7.0).
-- Added this changelog system (`CHANGELOG.md` + `CHANGELOG-SUMMARY.md` + the stylized release-log
-  page).
+- Seeded 7 weapons (Bal-27, FSS Hurricane, Pharo, Machine Pistol, LCAR, GS50, Crossbow) that had badge assignments but no loadout data, with "Coming Soon" placeholder builds (`scripts/ createPlaceholderLoadouts.js`) — first real data in the `SECONDARIES` category at the time (most have since been replaced with real data — see v2.7.0).
+- Added this changelog system (`CHANGELOG.md` + `CHANGELOG-SUMMARY.md` + the stylized release-log page).
 
 ## v2.5.1 — 2026-07-08
 **"Toxic" badge + bulk badge import** (`6872a43`)
-- Added a third independent loadout badge, **Toxic** (Harkirat's term for an unbalanced/cheese
-  pick) — fully separate from Meta and Best/Top N, so a build can be any combination of the three
-  (e.g. Striker is Meta + Best + Toxic all at once, NA-45 is Toxic-only).
-- Added `scripts/applyBadgesBulk.js` — bulk-assigns badges across many weapons at once from a
-  pasted list instead of editing each loadout individually via `/manage`. Applied to 28 weapons
-  (52 build docs) from Harkirat's own badge list.
+- Added a third independent loadout badge, **Toxic** (Harkirat's term for an unbalanced/cheese pick) — fully separate from Meta and Best/Top N, so a build can be any combination of the three (e.g. Striker is Meta + Best + Toxic all at once, NA-45 is Toxic-only).
+- Added `scripts/applyBadgesBulk.js` — bulk-assigns badges across many weapons at once from a pasted list instead of editing each loadout individually via `/manage`. Applied to 28 weapons (52 build docs) from Harkirat's own badge list.
 
 ## v2.5.0 — 2026-07-08
 **Efficiency pass** (`9d06126`) — "Major health check and optimization check of code"
-- Added `.lean()` to every read-only Mongoose query; parallelized independent `Promise.all` awaits
-  (prefs + main content queries) across most commands.
+- Added `.lean()` to every read-only Mongoose query; parallelized independent `Promise.all` awaits (prefs + main content queries) across most commands.
 - Added a compound `{category, mode}` index on `Loadout`.
-- Extracted 3 shared helpers to kill duplication that had already caused one real bug (the nav
-  palette rotating out of sync with button order): `utils/globalNav.js` (nav row), `utils/
-  ephemeral.js` (visibility-priority resolution), `utils/sendV2Payload.js` (raw `rest.patch` V2
-  send). Extracted `adminParser.js`'s `parseItemLine()` out of 3 copy-pasted implementations.
-- Fixed the remaining unawaited `return interaction.reply/followUp(...)` sites to match the
-  established await + own-try/catch pattern.
-- Pure internal refactor — no user-facing behavior change, hence a minor (`.5`) rather than a new
-  major version.
+- Extracted 3 shared helpers to kill duplication that had already caused one real bug (the nav palette rotating out of sync with button order): `utils/globalNav.js` (nav row), `utils/ ephemeral.js` (visibility-priority resolution), `utils/sendV2Payload.js` (raw `rest.patch` V2 send). Extracted `adminParser.js`'s `parseItemLine()` out of 3 copy-pasted implementations.
+- Fixed the remaining unawaited `return interaction.reply/followUp(...)` sites to match the established await + own-try/catch pattern.
+- Pure internal refactor — no user-facing behavior change, hence a minor (`.5`) rather than a new major version.
 
 ## v2.4.0 — 2026-07-08
-**Flexible badges + fuzzy search** (`e5e599d`) — "QoL updates and implemented loadout badges
-system"
-- `categoryRank` badges support any `topN` (not just a hardcoded `top3`) — some categories don't
-  cap out at exactly 3.
-- Badges became a weapon-level property: editing one build's badges propagates to every other
-  build sharing that weapon (`Loadout.updateMany`) instead of only affecting the one build edited.
-- Edit-loadout confirmation messages now name the weapon/build and report any unrecognized badge
-  tokens instead of silently ignoring typos.
-- Autocomplete everywhere in the bot (loadout search, `/manage`, `/patch notes`) switched from
-  literal substring matching to punctuation/whitespace-insensitive fuzzy matching (`utils/
-  search.js`) — fixes real misses like typing `dlq` not matching `DL Q33`.
-- This is the commit where the badge system introduced in v2.3.0 became a genuinely complete,
-  admin-usable feature rather than a first pass.
+**Flexible badges + fuzzy search** (`e5e599d`) — "QoL updates and implemented loadout badges system"
+- `categoryRank` badges support any `topN` (not just a hardcoded `top3`) — some categories don't cap out at exactly 3.
+- Badges became a weapon-level property: editing one build's badges propagates to every other build sharing that weapon (`Loadout.updateMany`) instead of only affecting the one build edited.
+- Edit-loadout confirmation messages now name the weapon/build and report any unrecognized badge tokens instead of silently ignoring typos.
+- Autocomplete everywhere in the bot (loadout search, `/manage`, `/patch notes`) switched from literal substring matching to punctuation/whitespace-insensitive fuzzy matching (`utils/ search.js`) — fixes real misses like typing `dlq` not matching `DL Q33`.
+- This is the commit where the badge system introduced in v2.3.0 became a genuinely complete, admin-usable feature rather than a first pass.
 
 ## v2.3.1 — 2026-07-07
 **Documented the badge redesign** (`475929e`) — "Introduced the loadout badges concept"
-- Pure documentation commit: wrote up the v2.3.0 loadout card redesign (badges, Copy Attachments)
-  in `CLAUDE.md` so the reasoning behind it wasn't lost.
+- Pure documentation commit: wrote up the v2.3.0 loadout card redesign (badges, Copy Attachments) in `CLAUDE.md` so the reasoning behind it wasn't lost.
 
 ## v2.3.0 — 2026-07-07
-**Loadout card redesign** (`9ef686b`) — per `loadouts_ui.json` reference — "Major loadouts UI
-design started"
-- Weapon name promoted to the top heading; category moved from an overline down into the footer
-  (`{category} • Build N of M • Last updated...`).
-- Introduced the Meta/Best/Top-N "badges" line under the weapon name (the first pass — v2.4.0 is
-  where this became fully flexible and admin-friendly).
+**Loadout card redesign** (`9ef686b`) — per `loadouts_ui.json` reference — "Major loadouts UI design started"
+- Weapon name promoted to the top heading; category moved from an overline down into the footer (`{category} • Build N of M • Last updated...`).
+- Introduced the Meta/Best/Top-N "badges" line under the weapon name (the first pass — v2.4.0 is where this became fully flexible and admin-friendly).
 - Added a **Copy Attachments** button (plain list, ephemeral) alongside the existing Copy Code.
-- `Attachments`/`Gunsmith Code` became real `###` headings with backtick-wrapped attachment lines;
-  divider between Gunsmith Code and the image removed so the image sits directly below the text.
-- Flavor-text `description` moved below the top divider and switched from italic to a real
-  blockquote (`> `), with sentence-case normalization.
+- `Attachments`/`Gunsmith Code` became real `###` headings with backtick-wrapped attachment lines; divider between Gunsmith Code and the image removed so the image sits directly below the text.
+- Flavor-text `description` moved below the top divider and switched from italic to a real blockquote (`> `), with sentence-case normalization.
 - A real visual redesign of the bot's flagship card — big update.
 
 ## v2.2.1 — 2026-07-07
 **Per-category accent colors + `/secondaries` readiness** (`5d8b82e`)
-- MP loadout cards now use a per-weapon-category accent color (AR/SMG/LMG/MARKSMAN/SNIPER/SHOTGUN/
-  SECONDARIES each get their own color) instead of one flat color.
+- MP loadout cards now use a per-weapon-category accent color (AR/SMG/LMG/MARKSMAN/SNIPER/SHOTGUN/ SECONDARIES each get their own color) instead of one flat color.
 - `/secondaries` registered as a live command ahead of any actual SECONDARIES loadouts existing.
 - A visual/data tweak layered on the existing architecture, not a new system — minor.
 
 ## v2.2.0 — 2026-07-07
 **Crash-resilience hardening + UX pass** (`8ca36d3`)
-- Fixed a real Railway crash: `client.on('error', ...)` was missing, so a rejection from an async
-  `interactionCreate` listener (discord.js's `captureRejections: true` behavior) could bypass the
-  outer try/catch entirely and take the whole bot down.
-- Fixed a second crash class: unawaited `return interaction.reply(...)` calls inside error-fallback
-  branches don't stay "covered" by their enclosing try/catch once the promise rejects later.
-- Fixed "Share Publicly" actually failing in real servers (`DiscordAPIError[50001] Missing Access`)
-  by routing through the interaction-response mechanism instead of a raw bot-token channel POST.
+- Fixed a real Railway crash: `client.on('error', ...)` was missing, so a rejection from an async `interactionCreate` listener (discord.js's `captureRejections: true` behavior) could bypass the outer try/catch entirely and take the whole bot down.
+- Fixed a second crash class: unawaited `return interaction.reply(...)` calls inside error-fallback branches don't stay "covered" by their enclosing try/catch once the promise rejects later.
+- Fixed "Share Publicly" actually failing in real servers (`DiscordAPIError[50001] Missing Access`) by routing through the interaction-response mechanism instead of a raw bot-token channel POST.
 - Header/calendar/draws UX polish pass.
 
 ## v2.1.0 — 2026-07-07
 **Officially released: DM / user-install visibility fix** (`18bc47d`)
-- Added `.setIntegrationTypes([1]).setContexts([0,1,2])` to `/draws`, `/calendar`, `/patch notes`,
-  `/draw prices`, `/dmz`, `/season end`, and `/settings` — they were silently guild-only, so they
-  never showed up in DMs or as a user-installed app. `/update` and `/manage` stay guild-only
-  intentionally (admin-only).
-- Fixed an unawaited `return interaction.reply(...)` in the slash-command and nav-button error
-  fallbacks in `index.js`: when the fallback reply itself failed (seen live on Railway as error
-  10062 then 40060), the rejection escaped past the outer try/catch and crashed the whole process.
-  Now awaited and wrapped in their own try/catch, plus a process-level `unhandledRejection` logger
-  as a backstop.
-- Marked "Officially released" in Harkirat's own notes for this commit — the point the bot became
-  usable everywhere it was designed to be, not just in-server.
+- Added `.setIntegrationTypes([1]).setContexts([0,1,2])` to `/draws`, `/calendar`, `/patch notes`, `/draw prices`, `/dmz`, `/season end`, and `/settings` — they were silently guild-only, so they never showed up in DMs or as a user-installed app. `/update` and `/manage` stay guild-only intentionally (admin-only).
+- Fixed an unawaited `return interaction.reply(...)` in the slash-command and nav-button error fallbacks in `index.js`: when the fallback reply itself failed (seen live on Railway as error 10062 then 40060), the rejection escaped past the outer try/catch and crashed the whole process. Now awaited and wrapped in their own try/catch, plus a process-level `unhandledRejection` logger as a backstop.
+- Marked "Officially released" in Harkirat's own notes for this commit — the point the bot became usable everywhere it was designed to be, not just in-server.
 
 ## v2.0.0 (Pre-release) — 2026-07-06
-**Components V2 UI overhaul + MongoDB-backed MP loadouts** (`63cebb1`) — "Major bot update
-launched"
-- Migrated the entire bot's UI from classic Embeds to Discord's Components V2 (Containers,
-  Sections, Text Displays, Media Galleries).
-- Migrated MP weapon loadouts off the old in-memory `builds.xlsx`-backed system onto MongoDB
-  (`Loadout` collection), matching how DMZ loadouts already worked.
+**Components V2 UI overhaul + MongoDB-backed MP loadouts** (`63cebb1`) — "Major bot update launched"
+- Migrated the entire bot's UI from classic Embeds to Discord's Components V2 (Containers, Sections, Text Displays, Media Galleries).
+- Migrated MP weapon loadouts off the old in-memory `builds.xlsx`-backed system onto MongoDB (`Loadout` collection), matching how DMZ loadouts already worked.
 - Added the "Share Publicly" button pattern for ephemeral responses.
-- The single biggest architecture change in the bot's history, and the point Harkirat started
-  working on the bot together with Claude — everything before this line is reconstructed from
-  memory/commit messages; everything after is from direct working knowledge of the change.
+- The single biggest architecture change in the bot's history, and the point Harkirat started working on the bot together with Claude — everything before this line is reconstructed from memory/commit messages; everything after is from direct working knowledge of the change.
 
 ---
 
@@ -4887,8 +1751,7 @@ launched"
 
 ## v1.6.1 — 2026-05-17
 **Render bind fix** (`6bab40b`)
-- Bug fixes, including binding the keep-alive Express server to `0.0.0.0` (required for Render's
-  health checks to actually reach it).
+- Bug fixes, including binding the keep-alive Express server to `0.0.0.0` (required for Render's health checks to actually reach it).
 
 ## v1.6.0 — 2026-05-17
 **Render keep-alive workaround** (`669d68d`)
@@ -4896,23 +1759,18 @@ launched"
 
 ## v1.5.0 — 2026-04-08
 **Loadout screenshots** (`ccbddd4`)
-- Added screenshots for loadouts, and built the Cloudinary URL logic based on loadout screenshot
-  filenames — the precursor to today's `imageKey`/`buildImageUrl()` system.
+- Added screenshots for loadouts, and built the Cloudinary URL logic based on loadout screenshot filenames — the precursor to today's `imageKey`/`buildImageUrl()` system.
 
 ## v1.4.0 — 2026-04-08
-**"Practical start" of the bot** (`8c082a6`) — "Final build: fuzzy search, inline fields, and
-green copy button"
+**"Practical start" of the bot** (`8c082a6`) — "Final build: fuzzy search, inline fields, and green copy button"
 - Major bug fixes and refinement of the code logic.
 - Added fuzzy search, inline embed fields, and a green "Copy" button.
-- Marked as the bot's practical start/release in Harkirat's own notes — the point it went from
-  "a script" to "a bot people could actually use."
+- Marked as the bot's practical start/release in Harkirat's own notes — the point it went from "a script" to "a bot people could actually use."
 
 ## v1.3.0 — 2026-04-08
 **Embed builder engine** (`f1cbe1f`)
 - Embed design improvements.
-- Built out an "Embed Builder Engine" — a reusable internal system for constructing the classic
-  Discord Embeds this early version relied on (this is the direct ancestor of today's `utils/
-  loadoutRender.js`, long before Components V2 existed).
+- Built out an "Embed Builder Engine" — a reusable internal system for constructing the classic Discord Embeds this early version relied on (this is the direct ancestor of today's `utils/ loadoutRender.js`, long before Components V2 existed).
 - Other code refinements and bug fixes.
 
 ## v1.2.1 — 2026-04-08
@@ -4926,28 +1784,16 @@ green copy button"
 
 ## v1.1.0 — 2026-04-08
 **Excel-backed weapon data** (`86a6845`)
-- Added the main portion of guns, storing loadout data in an Excel spreadsheet — the system that
-  `scripts/migrateBuildsToMongo.js` would eventually migrate off of, over a year later (v2.0.0).
+- Added the main portion of guns, storing loadout data in an Excel spreadsheet — the system that `scripts/migrateBuildsToMongo.js` would eventually migrate off of, over a year later (v2.0.0).
 
 ## v1.0.0 — 2026-04-08
 **Initial launch** (`b225785`)
-- The very first version of the bot: just LOCUS, to test that the bot worked at all. No calendar,
-  no draws, no patch notes yet — MP loadouts only, rendered as classic Discord Embeds (Components
-  V2 didn't exist yet as a Discord feature at this point).
+- The very first version of the bot: just LOCUS, to test that the bot worked at all. No calendar, no draws, no patch notes yet — MP loadouts only, rendered as classic Discord Embeds (Components V2 didn't exist yet as a Discord feature at this point).
 
 ---
 
 # 📋 Unreleased (open branch/PR, not yet merged)
 
-**Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open
-branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on
-`feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version
-until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at
-the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and
-no hash** — the hash is backfilled one release later (see the citation-format note in the versioning
-header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
-that model is retired now that all work flows through a branch first.)
+**Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and no hash** — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead; that model is retired now that all work flows through a branch first.)
 
-*(Empty — nothing currently on an open branch/PR awaiting merge. v2.35.4, the last entry to sit here,
-graduated to a real numbered entry above on 2026-07-27 08:02 EDT when PR #23 squash-merged as
-`f1d23da`.)*
+*(Empty — nothing currently on an open branch/PR awaiting merge. v2.35.4, the last entry to sit here, graduated to a real numbered entry above on 2026-07-27 08:02 EDT when PR #23 squash-merged as `f1d23da`.)*

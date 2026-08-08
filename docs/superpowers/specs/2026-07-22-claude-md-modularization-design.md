@@ -3,32 +3,18 @@
 **Date:** 2026-07-22 13:27 EDT · **Author:** Claude (Opus 4.8, extra-high) · **Status:** approved, executing
 
 ## Objective
-`CLAUDE.md` had grown to **3,272 lines / ~111k startup tokens**, loaded in full on every session. Split
-the domain detail into **path-scoped `.claude/rules/*.md`** (load only when a matching file is read) and
-**nav-referenced `docs/` reference files** (read on demand), leaving a slim root `CLAUDE.md` of
-invariants + a navigation map. Target startup: ~15–22k always-on. **Zero knowledge loss** — this is a
-move + index + inline cleanup, never a summarize-away.
+`CLAUDE.md` had grown to **3,272 lines / ~111k startup tokens**, loaded in full on every session. Split the domain detail into **path-scoped `.claude/rules/*.md`** (load only when a matching file is read) and **nav-referenced `docs/` reference files** (read on demand), leaving a slim root `CLAUDE.md` of invariants + a navigation map. Target startup: ~15–22k always-on. **Zero knowledge loss** — this is a move + index + inline cleanup, never a summarize-away.
 
 ## Mechanism (verified against official docs, 2026-07-22)
-- `.claude/rules/*.md` is a **real, native Claude Code feature**. Files with `paths:` YAML frontmatter
-  load into context **only when Claude reads a file matching the glob**; rules with no `paths:` load
-  every session (same as CLAUDE.md, so no savings). Source: code.claude.com/docs/en/memory.
+- `.claude/rules/*.md` is a **real, native Claude Code feature**. Files with `paths:` YAML frontmatter load into context **only when Claude reads a file matching the glob**; rules with no `paths:` load every session (same as CLAUDE.md, so no savings). Source: code.claude.com/docs/en/memory.
 - `@import` loads **eagerly at launch** → does NOT save startup tokens. Not used here.
-- **Compaction:** only project-root `CLAUDE.md` is re-injected after `/compact`. Path-scoped rules
-  reload on the next matching file read. → **all hard invariants live physically in root.**
-- **Version:** Harkirat is on **2.1.207** (updated this session from 2.1.206, which clears the
-  pre-2.1.207 "one invalid glob breaks the Read tool" hazard). Globs are still kept conservative/valid.
+- **Compaction:** only project-root `CLAUDE.md` is re-injected after `/compact`. Path-scoped rules reload on the next matching file read. → **all hard invariants live physically in root.**
+- **Version:** Harkirat is on **2.1.207** (updated this session from 2.1.206, which clears the pre-2.1.207 "one invalid glob breaks the Read tool" hazard). Globs are still kept conservative/valid.
 
 ## Three governing design rules
-1. **Invariants never leave root** (compaction safety) — canonical memory path, `.env` gitignore,
-   Cloudinary secret-logging ban, user-installed-only architecture, database schema gotcha, deploy
-   summary, platform cheat-sheet.
-2. **The root nav map is a permanent redirect index** — every moved topic gets a keyworded entry, so
-   the ~40 historical `"see CLAUDE.md's X section"` references in changelogs/DEVLOG/plans stay
-   resolvable without rewriting history. Only CLAUDE.md's *own* internal `"see X above/below"`
-   cross-refs (which genuinely break across files) are re-pointed.
-3. **Separate live config from its story** — live values (accent hexes, etc.) → the path-scoped rule
-   for that code; the narrative of choosing them → `docs/reference/design-history.md`.
+1. **Invariants never leave root** (compaction safety) — canonical memory path, `.env` gitignore, Cloudinary secret-logging ban, user-installed-only architecture, database schema gotcha, deploy summary, platform cheat-sheet.
+2. **The root nav map is a permanent redirect index** — every moved topic gets a keyworded entry, so the ~40 historical `"see CLAUDE.md's X section"` references in changelogs/DEVLOG/plans stay resolvable without rewriting history. Only CLAUDE.md's *own* internal `"see X above/below"` cross-refs (which genuinely break across files) are re-pointed.
+3. **Separate live config from its story** — live values (accent hexes, etc.) → the path-scoped rule for that code; the narrative of choosing them → `docs/reference/design-history.md`.
 
 ## Section → destination ledger (all 39 top-level sections; source line ranges in the pre-split file)
 | # | Section (source lines) | Destination |
@@ -88,20 +74,14 @@ move + index + inline cleanup, never a summarize-away.
 - `scripts-and-migrations.md` → `paths: [scripts/**]`
 
 ### `docs/` reference files
-- `docs/reference/deployment-and-ops.md`, `docs/ROADMAP.md`, `docs/reference/design-history.md`,
-  `docs/reference/known-issues.md`
+- `docs/reference/deployment-and-ops.md`, `docs/ROADMAP.md`, `docs/reference/design-history.md`, `docs/reference/known-issues.md`
 
 ## Cross-reference rewiring (the "nothing unlinked" guarantee)
 - `docs/README.md` — describe new shape; "source of truth for roadmap" → `docs/ROADMAP.md`.
 - `docs/SESSION-START.md` — add a "where detail lives now" note; fix Version-tagging/planned-work pointers.
 - **~20 memory pointers** to CLAUDE.md sections → re-point to their new homes (list built from grep).
 - Historical changelog/DEVLOG/plan refs → left as-is, resolved via the root nav map.
-- **Verify:** `git status`, grep the split files for dangling "see the X section above/below", and a
-  line-accounting pass; `/context` after (Harkirat) to confirm root + on-demand loading.
+- **Verify:** `git status`, grep the split files for dangling "see the X section above/below", and a line-accounting pass; `/context` after (Harkirat) to confirm root + on-demand loading.
 
 ## Deferred (evaluated, not shrugged): splitting `index.js`
-`index.js` is 3,313 lines, ~2,680 of which are a single `client.on('interactionCreate')` handler. It is a
-strong candidate to modularize into `handlers/*.js` (per-subsystem routing modules), but this is a
-**runtime code refactor** — it needs boot-testing, a real deploy, and live verification, a completely
-different risk class from this docs-only reorg. Bundling it here would be the "too much at once" failure.
-**Filed as its own session** with a concrete plan in `docs/ROADMAP.md`. Not done here on purpose.
+`index.js` is 3,313 lines, ~2,680 of which are a single `client.on('interactionCreate')` handler. It is a strong candidate to modularize into `handlers/*.js` (per-subsystem routing modules), but this is a **runtime code refactor** — it needs boot-testing, a real deploy, and live verification, a completely different risk class from this docs-only reorg. Bundling it here would be the "too much at once" failure. **Filed as its own session** with a concrete plan in `docs/ROADMAP.md`. Not done here on purpose.

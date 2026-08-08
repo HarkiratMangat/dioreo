@@ -1,43 +1,17 @@
 # Session-start prompt — Dioreo
 
 > ## ⚡ FIRST ACTION THIS SESSION — HARD GATE, before ANY other content in your opening message
-> **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first
-> lines of output this session MUST be: **(1)** a ready-to-paste `/rename` string in the format
-> `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus5-H · Webhook alerts · Jul 20`), and **(2)** a
-> one-line best **model + single effort level** recommendation for this session's work — **picked from
-> the grid in `reference_priority_tier_system`, not from a feeling about importance** (rows = premise
-> risk, columns = deliberation load; effort buys breadth, the model buys judgement) — and on a large
-> opening batch, a short "defer these to their own session" list (each with its own model+effort). This is
-> a standing non-negotiable (`feedback_suggest_model_switch` memory) that **degraded repeatedly across
-> sessions** (including on Opus 4.8-High — see `feedback_docs_at_push_time`'s compliance-drift note)
-> because nothing structurally enforced it. The `UserPromptSubmit` hook re-injects this as a per-turn
-> nudge until it's done — **a nudge you keep receiving after your first response means you skipped it; go
-> back and do it now, don't wait for a natural pause.** A hook can only *remind*, it cannot *compute* the
-> recommendation or verify you complied — that verification is entirely on you, every single session, no
-> exceptions for "this session felt too urgent to pause for it." Full spec below + in memory.
+> **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first lines of output this session MUST be: **(1)** a ready-to-paste `/rename` string in the format `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus5-H · Webhook alerts · Jul 20`), and **(2)** a one-line best **model + single effort level** recommendation for this session's work — **picked from the grid in `reference_priority_tier_system`, not from a feeling about importance** (rows = premise risk, columns = deliberation load; effort buys breadth, the model buys judgement) — and on a large opening batch, a short "defer these to their own session" list (each with its own model+effort). This is a standing non-negotiable (`feedback_suggest_model_switch` memory) that **degraded repeatedly across sessions** (including on Opus 4.8-High — see `feedback_docs_at_push_time`'s compliance-drift note) because nothing structurally enforced it. The `UserPromptSubmit` hook re-injects this as a per-turn nudge until it's done — **a nudge you keep receiving after your first response means you skipped it; go back and do it now, don't wait for a natural pause.** A hook can only *remind*, it cannot *compute* the recommendation or verify you complied — that verification is entirely on you, every single session, no exceptions for "this session felt too urgent to pause for it." Full spec below + in memory.
 
-**This file is auto-loaded into every session by the `SessionStart` hook** in
-`.claude/settings.json` — it does not need pasting. `user_working_agreement.md` points here as
-the single source; it is NOT mirrored there, so edit this file directly.
+**This file is auto-loaded into every session by the `SessionStart` hook** in `.claude/settings.json` — it does not need pasting. `user_working_agreement.md` points here as the single source; it is NOT mirrored there, so edit this file directly.
 
-**Moved to `docs/SESSION-START.md` (2026-07-18)** — this file, `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`,
-`DEVLOG.md`, and the central notes scratchpad now live tracked in git under `docs/`, no longer
-gitignored/local-only (Harkirat's request, for real `git diff` history instead of manual snapshots).
-The hook path in `.claude/settings.json` was updated to match — if you ever see the "NOT FOUND"
-warning below, check that path first.
+**Moved to `docs/SESSION-START.md` (2026-07-18)** — this file, `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, and the central notes scratchpad now live tracked in git under `docs/`, no longer gitignored/local-only (Harkirat's request, for real `git diff` history instead of manual snapshots). The hook path in `.claude/settings.json` was updated to match — if you ever see the "NOT FOUND" warning below, check that path first.
 
-> **Hook health (2026-07-15):** the hook pointed at `/Applications/Diors-Builds/SESSION-START.md` for
-> an unknown period after the repo moved to `/Applications/Claude Code/Diors-Builds`. `2>/dev/null`
-> swallowed the error, so it silently injected an EMPTY string and none of the below loaded for any
-> session. Now resolved via `$CLAUDE_PROJECT_DIR` and it prints a loud ⚠️ warning if the file is ever
-> missing again instead of going quiet. If you ever see that warning in context, say so immediately.
+> **Hook health (2026-07-15):** the hook pointed at `/Applications/Diors-Builds/SESSION-START.md` for an unknown period after the repo moved to `/Applications/Claude Code/Diors-Builds`. `2>/dev/null` swallowed the error, so it silently injected an EMPTY string and none of the below loaded for any session. Now resolved via `$CLAUDE_PROJECT_DIR` and it prints a loud ⚠️ warning if the file is ever missing again instead of going quiet. If you ever see that warning in context, say so immediately.
 
-The block below is pointers + only the recurring-miss items — the rest lives in the docs it tells
-Claude to read.
+The block below is pointers + only the recurring-miss items — the rest lives in the docs it tells Claude to read.
 
-Shortcut: even *"New session on Dioreo — follow my standing start prompt (working agreement
-first; push/document/versioning/chapters/single-instance/model-rec non-negotiables apply)"* works;
-paste the full block after any session where something slipped.
+Shortcut: even *"New session on Dioreo — follow my standing start prompt (working agreement first; push/document/versioning/chapters/single-instance/model-rec non-negotiables apply)"* works; paste the full block after any session where something slipped.
 
 ---
 

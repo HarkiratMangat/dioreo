@@ -1,22 +1,14 @@
 # Design — Git branching / PR / versioning workflow overhaul
 
-> **Amendment 2026-07-26 13:45 EDT — a `Test` step now sits between Commit and Push.** The local dev bot
-> (`Dio (Dev)`) did not exist when this spec was written, so the whole design assumed testing could only
-> happen after a deploy. See §2's table + the amended draft-PR note. Setup:
-> `docs/reference/deployment-and-ops.md`.
+> **Amendment 2026-07-26 13:45 EDT — a `Test` step now sits between Commit and Push.** The local dev bot (`Dio (Dev)`) did not exist when this spec was written, so the whole design assumed testing could only happen after a deploy. See §2's table + the amended draft-PR note. Setup: `docs/reference/deployment-and-ops.md`.
 
-*Authored 2026-07-24 11:29 EDT (Claude, Opus 4.8). Brainstormed with Harkirat this session; all 5
-sections approved with refinements folded in. This is the design/spec; the implementation plan comes
-next (writing-plans).*
+*Authored 2026-07-24 11:29 EDT (Claude, Opus 4.8). Brainstormed with Harkirat this session; all 5 sections approved with refinements folded in. This is the design/spec; the implementation plan comes next (writing-plans).*
 
 ## 1 · Context & goal
 
-Today everything happens directly on `main`: commit → push → (VM `git pull` + systemd restart) →
-document, with the version number minted **per push-that-went-live** and tracked only in git tags +
-the changelog. No branches, no PRs, no merge step.
+Today everything happens directly on `main`: commit → push → (VM `git pull` + systemd restart) → document, with the version number minted **per push-that-went-live** and tracked only in git tags + the changelog. No branches, no PRs, no merge step.
 
-Harkirat wants a real **branch → commit → push → PR (draft optional) → merge → deploy** lifecycle,
-where **merge mints the version bump** (decoupled from deploy). Semantic mapping he gave:
+Harkirat wants a real **branch → commit → push → PR (draft optional) → merge → deploy** lifecycle, where **merge mints the version bump** (decoupled from deploy). Semantic mapping he gave:
 
 - Branch = "working on a feature"
 - Commit = "save progress"
@@ -25,16 +17,11 @@ where **merge mints the version bump** (decoupled from deploy). Semantic mapping
 - Merge = "sync it into `main`" (this is the version-bump moment)
 - Deploy = a *separate, optional-per-change* step that actually makes the bot run the new code
 
-Goal of this change: adopt that lifecycle, decide where versioning/tags and documentation land in it,
-and sweep every file/doc/hook/memory that encodes the old model so the whole system is coherent.
+Goal of this change: adopt that lifecycle, decide where versioning/tags and documentation land in it, and sweep every file/doc/hook/memory that encodes the old model so the whole system is coherent.
 
 ### Key facts established during brainstorming
-- **`gh` CLI is available and authed** (v2.96.0, account `HarkiratMangat`, scopes incl. `repo` +
-  `workflow`). Remote is `HarkiratMangat/diors-builds`. So Claude can drive branches/PRs/merges/tags.
-- **The version number lives NOWHERE in the running code today.** `package.json` is a stale `1.0.0`;
-  the bot reports no version on boot; there is no VERSION constant. Version is purely a label on git
-  tags + the changelog. → A "version bump" is currently just *write the number in the changelog +
-  `git tag`*. This is why merged-but-not-deployed is coherent (the bot never claimed a version).
+- **`gh` CLI is available and authed** (v2.96.0, account `HarkiratMangat`, scopes incl. `repo` + `workflow`). Remote is `HarkiratMangat/diors-builds`. So Claude can drive branches/PRs/merges/tags.
+- **The version number lives NOWHERE in the running code today.** `package.json` is a stale `1.0.0`; the bot reports no version on boot; there is no VERSION constant. Version is purely a label on git tags + the changelog. → A "version bump" is currently just *write the number in the changelog + `git tag`*. This is why merged-but-not-deployed is coherent (the bot never claimed a version).
 - Branching isn't foreign — `fix/colors-cpu-efficiency` already exists locally and on origin.
 - A `PostToolUse` hook currently nags on **every `git commit`** that didn't touch `docs/CHANGELOG.md`.
 
@@ -50,44 +37,17 @@ and sweep every file/doc/hook/memory that encodes the old model so the whole sys
 | **Merge** | sync into `main`; mint version | `gh pr merge --squash` + `package.json` bump + tag | **Yes** (this yes *is* the version-number approval) |
 | **Deploy** | make the bot run it | `./scripts/deploy.sh` on the VM (pull + restart) | **Yes** |
 
-- **Approval-gated set = push · merge · deploy.** Branch + branch-commits + PR-create are free.
-  The old "ask before every commit" non-negotiable is **retired for the normal flow** — we never
-  commit directly to `main` anymore (branch → squash-merge), and branch checkpoints carry no version,
-  so there's nothing to gate. A rare *direct-to-`main` hotfix commit* would still be gated as an
-  exception.
-- **Draft is the only optional stage, not the PR.** The PR always happens (review surface + version
-  anchor + consistency). Use `--draft` only when there is something to wait on (bot testing, a
-  deliberate eyeball). No wait needed → open ready and merge; a docs fix can be `gh pr create` →
-  `gh pr merge` back to back.
-- **⚠️ Amended 2026-07-26 13:45 EDT — the Test step changes when `--draft` is warranted.** The original
-  design assumed "bot testing" was an inherently *post-merge, post-deploy* activity, because before
-  `Dio (Dev)` existed there was no way to run the bot anywhere but prod. Now most test gaps can be
-  **closed on the branch before the PR is ever opened**, so `--draft` should be rarer: reach for it only
-  when the gap genuinely can't be closed locally (something needing real prod data, real users, or the
-  VM itself). "I haven't looked at it yet" is no longer a reason to draft — it's a reason to run the dev
-  bot. Local testing itself is free and never gated; see `docs/reference/deployment-and-ops.md`.
-- When Claude asks "OK to merge?", it states the **proposed version number** in the same breath, so
-  the merge-yes bundles the version-number-yes. **MAJOR bumps (→ v3) always need an explicit separate
-  ask**, unchanged.
+- **Approval-gated set = push · merge · deploy.** Branch + branch-commits + PR-create are free. The old "ask before every commit" non-negotiable is **retired for the normal flow** — we never commit directly to `main` anymore (branch → squash-merge), and branch checkpoints carry no version, so there's nothing to gate. A rare *direct-to-`main` hotfix commit* would still be gated as an exception.
+- **Draft is the only optional stage, not the PR.** The PR always happens (review surface + version anchor + consistency). Use `--draft` only when there is something to wait on (bot testing, a deliberate eyeball). No wait needed → open ready and merge; a docs fix can be `gh pr create` → `gh pr merge` back to back.
+- **⚠️ Amended 2026-07-26 13:45 EDT — the Test step changes when `--draft` is warranted.** The original design assumed "bot testing" was an inherently *post-merge, post-deploy* activity, because before `Dio (Dev)` existed there was no way to run the bot anywhere but prod. Now most test gaps can be **closed on the branch before the PR is ever opened**, so `--draft` should be rarer: reach for it only when the gap genuinely can't be closed locally (something needing real prod data, real users, or the VM itself). "I haven't looked at it yet" is no longer a reason to draft — it's a reason to run the dev bot. Local testing itself is free and never gated; see `docs/reference/deployment-and-ops.md`.
+- When Claude asks "OK to merge?", it states the **proposed version number** in the same breath, so the merge-yes bundles the version-number-yes. **MAJOR bumps (→ v3) always need an explicit separate ask**, unchanged.
 
 ## 3 · Versioning & tags
 
-- **One version number per merged PR** (not per commit, not per push). A PR of N checkpoint commits →
-  one number. `vMAJOR.MODERATE.MINOR` semantics unchanged: MODERATE = a significant PR, MINOR = a
-  small one, MAJOR only with explicit confirmation. Only the *unit that earns a number* moved:
-  "push-that-went-live" → "merged PR" (a cleaner release unit).
-- **Merge style = squash.** Each merged PR collapses to **one** commit on `main` = one version = one
-  tag. Linear history, one hash per changelog version, and it kills the GitHub-history bloat from
-  checkpoint commits (an explicit Harkirat complaint). Branch checkpoints stay visible on the PR page +
-  in DEVLOG narrative, just not in `main`.
-- **Tag on the squash commit**, on `main`: `git tag -a vX.Y.Z <squash-sha> -m "…"` then push the tag.
-  ⚠️ This is only correct **because** the bump is finalized on the branch (next bullet) — the tagged
-  commit's `package.json` must already read `X.Y.Z`. Never restore "tag the squash commit" without
-  that; for v2.33.0–v2.35.15 the tag deliberately sat on the separate finalize commit, because the
-  squash commit there still carried the *previous* version.
-- **`package.json` version is now bumped as part of the merge.** The bump is written on the branch as
-  the final pre-merge checkpoint (alongside the finalized changelog), so it folds into the squash
-  commit and the tag points at it. Node doesn't read the field at runtime — bumping is free/safe.
+- **One version number per merged PR** (not per commit, not per push). A PR of N checkpoint commits → one number. `vMAJOR.MODERATE.MINOR` semantics unchanged: MODERATE = a significant PR, MINOR = a small one, MAJOR only with explicit confirmation. Only the *unit that earns a number* moved: "push-that-went-live" → "merged PR" (a cleaner release unit).
+- **Merge style = squash.** Each merged PR collapses to **one** commit on `main` = one version = one tag. Linear history, one hash per changelog version, and it kills the GitHub-history bloat from checkpoint commits (an explicit Harkirat complaint). Branch checkpoints stay visible on the PR page + in DEVLOG narrative, just not in `main`.
+- **Tag on the squash commit**, on `main`: `git tag -a vX.Y.Z <squash-sha> -m "…"` then push the tag. ⚠️ This is only correct **because** the bump is finalized on the branch (next bullet) — the tagged commit's `package.json` must already read `X.Y.Z`. Never restore "tag the squash commit" without that; for v2.33.0–v2.35.15 the tag deliberately sat on the separate finalize commit, because the squash commit there still carried the *previous* version.
+- **`package.json` version is now bumped as part of the merge.** The bump is written on the branch as the final pre-merge checkpoint (alongside the finalized changelog), so it folds into the squash commit and the tag points at it. Node doesn't read the field at runtime — bumping is free/safe.
 
 ### Changelog citation format + the lagged backfill (adopted 2026-07-27 21:27 EDT)
 
@@ -99,154 +59,83 @@ A changelog heading cites **both** the PR number and the squash commit's hash:
 
 A commit cannot contain its own hash, so the two halves are written at different times:
 
-1. **At the final pre-merge checkpoint on the branch:** write the entry with the PR number only —
-   `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`, finalize
-   `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
+1. **At the final pre-merge checkpoint on the branch:** write the entry with the PR number only — `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`, finalize `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
 2. **In that same checkpoint, backfill the *previous* release's hash**: `(#32)` → ``(#32 · `f913975`)``.
 3. `gh pr merge --squash` → **one** commit on `main`.
-4. `git pull`, then `git tag -a vX.Y.Z <that sha>` → **one** tag, on a commit whose `package.json`
-   already reads `X.Y.Z`. Then `git push origin main --follow-tags`.
+4. `git pull`, then `git tag -a vX.Y.Z <that sha>` → **one** tag, on a commit whose `package.json` already reads `X.Y.Z`. Then `git push origin main --follow-tags`.
 
 Rules that keep this safe:
 
 - **The backfill is additive-only.** It inserts `` · `sha` `` and touches nothing else on the line.
-- **The timestamp is written once**, at the final pre-merge checkpoint, and is **never edited
-  afterwards** — an additive-only edit can't corrupt the line it touches, and the cited commit's own
-  author date is authoritative anyway. Drift is minutes.
-- **No history is ever rewritten.** The backfill is an ordinary edit inside a later commit — **not**
-  `git commit --amend`, not a force-push. `main` stays append-only.
-- **The one-release lag is cosmetic on `main`** — `git rev-parse vX.Y.Z` answers the hash immediately.
-  On `v3-pre-release` there are no tags until `v3.0.0`, so the inline hash is the *only* pointer, which
-  is exactly why the design that keeps the hash is the one that survives the v3 constraint.
-- **When mapping merged PRs to hashes, map by merge-commit hash, never by parsing subjects.** A squash
-  subject can contain two `#N` references (`v2.35.11`'s is `… PR #11 has merged (#28)` — the real PR is
-  the **trailing** one), and PRs #1, #9, #10 carry no `(#N)` suffix at all:
-  `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'`
-- Entries **before v2.33.0** (v2.26.0–v2.32.0) stay hash-only. They predate the PR workflow entirely —
-  PR #1 *is* v2.33.0 — so there is no PR to cite. That is accurate history, not a gap.
-- **Unreleased redefined:** an open branch/PR *is* the new "Unreleased." Its **proposed** number sits
-  in the changelog's Unreleased section and graduates to a real numbered entry + tag at squash-merge.
-- **Branch-work reference notation:** unreleased branch commits carry **no** assigned version; they're
-  referenced informally as "based on `<last merged version>`, at commit `<sha>`." Concrete numbers are
-  only minted at merge (the step Harkirat has a say on).
+- **The timestamp is written once**, at the final pre-merge checkpoint, and is **never edited afterwards** — an additive-only edit can't corrupt the line it touches, and the cited commit's own author date is authoritative anyway. Drift is minutes.
+- **No history is ever rewritten.** The backfill is an ordinary edit inside a later commit — **not** `git commit --amend`, not a force-push. `main` stays append-only.
+- **The one-release lag is cosmetic on `main`** — `git rev-parse vX.Y.Z` answers the hash immediately. On `v3-pre-release` there are no tags until `v3.0.0`, so the inline hash is the *only* pointer, which is exactly why the design that keeps the hash is the one that survives the v3 constraint.
+- **When mapping merged PRs to hashes, map by merge-commit hash, never by parsing subjects.** A squash subject can contain two `#N` references (`v2.35.11`'s is `… PR #11 has merged (#28)` — the real PR is the **trailing** one), and PRs #1, #9, #10 carry no `(#N)` suffix at all: `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'`
+- Entries **before v2.33.0** (v2.26.0–v2.32.0) stay hash-only. They predate the PR workflow entirely — PR #1 *is* v2.33.0 — so there is no PR to cite. That is accurate history, not a gap.
+- **Unreleased redefined:** an open branch/PR *is* the new "Unreleased." Its **proposed** number sits in the changelog's Unreleased section and graduates to a real numbered entry + tag at squash-merge.
+- **Branch-work reference notation:** unreleased branch commits carry **no** assigned version; they're referenced informally as "based on `<last merged version>`, at commit `<sha>`." Concrete numbers are only minted at merge (the step Harkirat has a say on).
 
 ## 4 · `package.json` as the running-version signal
 
-The reason to bump `package.json` (beyond ending the stale `1.0.0`): it becomes the **deployed/running
-version** signal, closing the gap that decoupling merge from deploy opens up.
+The reason to bump `package.json` (beyond ending the stale `1.0.0`): it becomes the **deployed/running version** signal, closing the gap that decoupling merge from deploy opens up.
 
 - **`main` version** = latest tag = `package.json` on `main`.
 - **Running version** = `package.json` on the VM's checked-out commit.
-- **Wire the "Bot online" boot alert to read `package.json` and report the version** (e.g. `require`
-  or read+parse at startup, include in the existing online alert). Then "what's live?" is answered by
-  the alert itself, and a pending deploy is obvious: alert says `v2.31.0`, `main` says `v2.32.0`.
+- **Wire the "Bot online" boot alert to read `package.json` and report the version** (e.g. `require` or read+parse at startup, include in the existing online alert). Then "what's live?" is answered by the alert itself, and a pending deploy is obvious: alert says `v2.31.0`, `main` says `v2.32.0`.
 
-This is the one net-new *feature* code change in the committed scope (the optional `deploy.sh`
-status line in §6 aside); everything else is process/docs/hooks.
+This is the one net-new *feature* code change in the committed scope (the optional `deploy.sh` status line in §6 aside); everything else is process/docs/hooks.
 
 ## 5 · Documentation model (where docs land)
 
-Docs stop being a separate "at push time" ritual (the step that kept getting skipped) and become
-**part of the PR's diff**, reviewed alongside the code.
+Docs stop being a separate "at push time" ritual (the step that kept getting skipped) and become **part of the PR's diff**, reviewed alongside the code.
 
-- **CHANGELOG / CHANGELOG-SUMMARY:** drafted on the branch (Unreleased, proposed number), **finalized
-  on the branch as the final pre-merge checkpoint** — real number + date/time + PR number, written
-  alongside the `package.json` bump so the whole release record folds into the squash commit. The
-  **commit hash is backfilled one release later** (§3's lagged-backfill rule).
-  ⚠️ **Corrected 2026-07-27 21:27 EDT — this bullet used to say "finalized at merge — real number +
-  squash-commit hash + tag."** That clause was the root cause of the 2-commit reality: a commit cannot
-  contain its own hash, so "cite the squash hash" forced a second `chore(release): finalize …` commit
-  on `main` after most merges — **16 of the 25 releases v2.33.0–v2.35.15** (measured 2026-07-27 21:27
-  EDT; the other 9 were tagged on the squash commit, 6 of them with a stale `package.json` as a result
-  — see `docs/reference/deployment-and-ops.md` § Version tagging). That contradicted §3 and §10's "one
-  commit + one tag per version." §3 already described the working design; only this clause blocked it.
-- **CLAUDE.md / `.claude/rules` / memory / working agreement / ROADMAP / notes file:** updated on the
-  branch as the relevant change happens; they ride in the PR. No separate timing.
+- **CHANGELOG / CHANGELOG-SUMMARY:** drafted on the branch (Unreleased, proposed number), **finalized on the branch as the final pre-merge checkpoint** — real number + date/time + PR number, written alongside the `package.json` bump so the whole release record folds into the squash commit. The **commit hash is backfilled one release later** (§3's lagged-backfill rule). ⚠️ **Corrected 2026-07-27 21:27 EDT — this bullet used to say "finalized at merge — real number + squash-commit hash + tag."** That clause was the root cause of the 2-commit reality: a commit cannot contain its own hash, so "cite the squash hash" forced a second `chore(release): finalize …` commit on `main` after most merges — **16 of the 25 releases v2.33.0–v2.35.15** (measured 2026-07-27 21:27 EDT; the other 9 were tagged on the squash commit, 6 of them with a stale `package.json` as a result — see `docs/reference/deployment-and-ops.md` § Version tagging). That contradicted §3 and §10's "one commit + one tag per version." §3 already described the working design; only this clause blocked it.
+- **CLAUDE.md / `.claude/rules` / memory / working agreement / ROADMAP / notes file:** updated on the branch as the relevant change happens; they ride in the PR. No separate timing.
 - **DEVLOG:** a merged PR is a natural narrative unit → entry written at merge.
-- **Enforcement hook moves from commit-time to merge-time.** The current `PostToolUse` hook that nags
-  on every `git commit` is wrong-grained now (many free checkpoint commits). Rescope it to fire on
-  **`gh pr merge`** and verify the merged diff touched `docs/CHANGELOG.md`. One check at the real gate.
-- Net win: a missing changelog entry is now **visible in the PR diff during review**, not reliant on
-  push-time memory. And because *everything* (incl. docs-only / planning sessions) flows through
-  branch → merge, nothing slips past the way planning sessions used to. Docs-only merges get a version
-  bump too (with no redeploy) — confirmed desired.
+- **Enforcement hook moves from commit-time to merge-time.** The current `PostToolUse` hook that nags on every `git commit` is wrong-grained now (many free checkpoint commits). Rescope it to fire on **`gh pr merge`** and verify the merged diff touched `docs/CHANGELOG.md`. One check at the real gate.
+- Net win: a missing changelog entry is now **visible in the PR diff during review**, not reliant on push-time memory. And because *everything* (incl. docs-only / planning sessions) flows through branch → merge, nothing slips past the way planning sessions used to. Docs-only merges get a version bump too (with no redeploy) — confirmed desired.
 
 ## 6 · Deploy (unchanged operation)
 
-- The VM operation is identical: `./scripts/deploy.sh` (pull + restart), still manual, still owns the
-  deliberate-vs-crash restart-reason labeling. Deploy stays a separable step; a merged version may sit
-  undeployed indefinitely (docs-only being the obvious case) and that's fine.
-- **`main` version vs deployed version can now diverge** — answered by §4 (`package.json` + boot
-  alert). *Optional* extra: have `deploy.sh`/`vmstatus.sh` print `VM at <sha> · main at vX.Y.Z`.
-  ✅ **BUILT 2026-07-28 15:34 EDT (v2.41.0)** — this is the `vmstatus.sh` **DEPLOY** block. It compares the
-  VM's running version/commit against `origin/main` and flags the gap. On its first real run it found the
-  VM **18 commits / 5 releases behind**, which is precisely the "merged ≠ deployed" blind spot this
-  optional extra was proposed to close. Add
-  only if wanted.
+- The VM operation is identical: `./scripts/deploy.sh` (pull + restart), still manual, still owns the deliberate-vs-crash restart-reason labeling. Deploy stays a separable step; a merged version may sit undeployed indefinitely (docs-only being the obvious case) and that's fine.
+- **`main` version vs deployed version can now diverge** — answered by §4 (`package.json` + boot alert). *Optional* extra: have `deploy.sh`/`vmstatus.sh` print `VM at <sha> · main at vX.Y.Z`. ✅ **BUILT 2026-07-28 15:34 EDT (v2.41.0)** — this is the `vmstatus.sh` **DEPLOY** block. It compares the VM's running version/commit against `origin/main` and flags the gap. On its first real run it found the VM **18 commits / 5 releases behind**, which is precisely the "merged ≠ deployed" blind spot this optional extra was proposed to close. Add only if wanted.
 
 ## 7 · Commit-message handling under squash
 
-- **Inline `// why` code comments:** untouched — they live in the files and land on `main` verbatim.
-  Keep authoring them per the working agreement.
-- **Git commit *messages*:** GitHub squash concatenates every branch commit message into the squash
-  commit body by default; Claude curates that into one clean, structured message on `main` (good title
-  + real "why" summary). Reasoning is consolidated, not lost. Branch checkpoints can therefore have
-  terse messages; the authored message is written once, at squash-merge.
-- **Subject format (added 2026-07-26 15:20 EDT):** Conventional Commits v1.0.0 as specified —
-  `<type>(<optional scope>): <description>`, colon and one space. Full vocabulary, the six non-standard
-  types to avoid, and the branch-naming half: `docs/reference/commit-and-branch-naming.md`.
+- **Inline `// why` code comments:** untouched — they live in the files and land on `main` verbatim. Keep authoring them per the working agreement.
+- **Git commit *messages*:** GitHub squash concatenates every branch commit message into the squash commit body by default; Claude curates that into one clean, structured message on `main` (good title
+  + real "why" summary). Reasoning is consolidated, not lost. Branch checkpoints can therefore have terse messages; the authored message is written once, at squash-merge.
+- **Subject format (added 2026-07-26 15:20 EDT):** Conventional Commits v1.0.0 as specified — `<type>(<optional scope>): <description>`, colon and one space. Full vocabulary, the six non-standard types to avoid, and the branch-naming half: `docs/reference/commit-and-branch-naming.md`.
 
 ## 8 · Consistency sweep (files encoding the old model)
 
-1. `CLAUDE.md` — "Deploy = git-based" invariant section: rewrite the flow + the new approval set
-   (push · merge · deploy), version = merge, squash, `package.json` bump.
-2. `docs/SESSION-START.md` — NON-NEGOTIABLES glossary: add branch/PR/merge steps; commit no longer
-   gated; version = merge not went-live.
-3. `~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md` — rule #1
-   *[Path note added 2026-07-28 01:41 EDT: the memory store has since MIGRATED to
-   `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`. The path above is left as
-   written because this is a dated historical spec — but act on the new path, not this one.]*
-   ("ask before every commit AND push") → "ask before push, merge, deploy"; non-negotiables glossary;
-   docs land in the PR.
-4. `.claude/settings.local.json` — `PostToolUse` commit-hook → merge-hook (fire on `gh pr merge`,
-   check `docs/CHANGELOG.md` touched).
-5. `docs/CHANGELOG.md` + `docs/CHANGELOG-SUMMARY.md` — Versioning header: version = merged PR (not
-   went-live); Unreleased = open PR/branch; one hash per version under squash.
-6. Memory files: `feedback_docs_at_push_time`, `feedback_push_means_full_cycle`,
-   `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system` — update to the
-   new model; add **one new** `project_git_workflow` memory as the canonical description + index it in
-   `MEMORY.md`.
+1. `CLAUDE.md` — "Deploy = git-based" invariant section: rewrite the flow + the new approval set (push · merge · deploy), version = merge, squash, `package.json` bump.
+2. `docs/SESSION-START.md` — NON-NEGOTIABLES glossary: add branch/PR/merge steps; commit no longer gated; version = merge not went-live.
+3. `~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md` — rule #1 *[Path note added 2026-07-28 01:41 EDT: the memory store has since MIGRATED to `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`. The path above is left as written because this is a dated historical spec — but act on the new path, not this one.]* ("ask before every commit AND push") → "ask before push, merge, deploy"; non-negotiables glossary; docs land in the PR.
+4. `.claude/settings.local.json` — `PostToolUse` commit-hook → merge-hook (fire on `gh pr merge`, check `docs/CHANGELOG.md` touched).
+5. `docs/CHANGELOG.md` + `docs/CHANGELOG-SUMMARY.md` — Versioning header: version = merged PR (not went-live); Unreleased = open PR/branch; one hash per version under squash.
+6. Memory files: `feedback_docs_at_push_time`, `feedback_push_means_full_cycle`, `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system` — update to the new model; add **one new** `project_git_workflow` memory as the canonical description + index it in `MEMORY.md`.
 7. `docs/DEVLOG.md` — narrative entry for the switch.
 8. `docs/ROADMAP.md` — mark this workflow item done; log deploy-on-merge automation as a future option.
 9. `docs/README.md` — per-push chore checklist → per-merge.
-10. `docs/reference/deployment-and-ops.md` — version-tagging section: tag the squash commit at merge;
-    `package.json` bump; running-vs-main version.
+10. `docs/reference/deployment-and-ops.md` — version-tagging section: tag the squash commit at merge; `package.json` bump; running-vs-main version.
 11. `scripts/deploy.sh` — mostly comments; optional `main`-vs-VM status line (§6).
 12. `index.js` — boot "Bot online" alert reads `package.json` version (§4). *(The only code change.)*
-13. `package.json` — bump from stale `1.0.0` to the current real version as part of the first merge
-    under the new flow.
+13. `package.json` — bump from stale `1.0.0` to the current real version as part of the first merge under the new flow.
 
 ## 9 · Out of scope / future
 
-- **Auto-deploy on merge** (GitHub Action/webhook → VM pull+restart). Rejected for now: real new infra
-  and it complicates the deliberate-vs-crash restart labeling `deploy.sh` does. Logged as a future
-  ROADMAP option. Deploy stays manual + separable.
+- **Auto-deploy on merge** (GitHub Action/webhook → VM pull+restart). Rejected for now: real new infra and it complicates the deliberate-vs-crash restart labeling `deploy.sh` does. Logged as a future ROADMAP option. Deploy stays manual + separable.
 - The optional `deploy.sh`/`vmstatus.sh` status line (§6) — nice-to-have, include only if wanted.
 
 ## 10 · Decisions log (don't re-litigate)
 
-- PRs kept (Option A) — reframed as review/staging surface + version anchor, not an approval gate.
-  Draft is the only optional stage. (C rejected: two flows = a per-change tax.)
-- Merge = "sync to `main`" only; **deploy is a separate step**; version bump is at merge, decoupled
-  from live. Manual deploy stays.
+- PRs kept (Option A) — reframed as review/staging surface + version anchor, not an approval gate. Draft is the only optional stage. (C rejected: two flows = a per-change tax.)
+- Merge = "sync to `main`" only; **deploy is a separate step**; version bump is at merge, decoupled from live. Manual deploy stays.
 - Squash merge; one commit + one tag per version on `main`.
 - Branch commits are free (no approval); approval-gated set = push · merge · deploy.
 - `package.json` gets bumped at merge and the boot alert reports it (running-version signal).
-- **2026-07-27 21:27 EDT — the changelog hash citation is backfilled one release late, and the
-  `chore(release): finalize …` commit is retired.** This closes the "one commit + one tag" promise
-  above, which had been false in practice for 13 releases (v2.33.0–v2.35.15). The full format and
-  lifecycle live in §3; the clause that caused it is corrected in §5. Rejected alternatives, recorded
-  so they are never re-proposed:
+- **2026-07-27 21:27 EDT — the changelog hash citation is backfilled one release late, and the `chore(release): finalize …` commit is retired.** This closes the "one commit + one tag" promise above, which had been false in practice for 13 releases (v2.33.0–v2.35.15). The full format and lifecycle live in §3; the clause that caused it is corrected in §5. Rejected alternatives, recorded so they are never re-proposed:
 
   | Approach | Why it fails |
   |---|---|
