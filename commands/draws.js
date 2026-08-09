@@ -150,7 +150,7 @@ module.exports = {
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription('View new and returning draws this season')
         .addStringOption(option => option.setName('page').setDescription('Jump directly to New Draws or Returning Draws').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
-        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -171,7 +171,8 @@ module.exports = {
 
         // Ingest manual slash command parameters
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('hidden');
+            const visibilityChoice = interaction.options.getString('visibility');
+            argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             const userChoice = interaction.options.getString('page');
             if (userChoice) activePage = userChoice;
         }

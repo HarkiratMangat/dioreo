@@ -7,7 +7,7 @@ paths:
 
 # Commands — architecture & per-command notes
 
-*Loads when you touch any `commands/*.js`. The command list + routing conventions, the user-install/DM requirement, `/timestamp`, and loadout `build`/`private` options. Deeper per-command detail lives in: `.claude/rules/manage-panel.md` (`/manage`), `.claude/rules/draw-prices.md`, `.claude/rules/settings-and-expiry.md` (`/settings` locks/expiry), `.claude/rules/loadouts.md` (loadout lookup), `.claude/rules/accent-and-colors.md` (`/colors`, accent styles), and `.claude/rules/interaction-router.md` (`index.js` handler/router logic).*
+*Loads when you touch any `commands/*.js`. The command list + routing conventions, the user-install/DM requirement, `/timestamp`, and loadout `build`/`visibility` options. Deeper per-command detail lives in: `.claude/rules/manage-panel.md` (`/manage`), `.claude/rules/draw-prices.md`, `.claude/rules/settings-and-expiry.md` (`/settings` locks/expiry), `.claude/rules/loadouts.md` (loadout lookup), `.claude/rules/accent-and-colors.md` (`/colors`, accent styles), and `.claude/rules/interaction-router.md` (`index.js` handler/router logic).*
 
 ## Command list
 Base commands use subcommands to group related functionality:
@@ -19,6 +19,7 @@ Base commands use subcommands to group related functionality:
 - `/settings`, `/timestamp` — flat commands
 - `/dmz` — `dmz.js` (flat command; standalone DMZ loadout lookup, up to 9 attachments)
 - `/all`, `/<category>` (`/ar`, `/lmg`, `/sniper`, etc.) — MP loadout lookup. NOT files in `commands/` — auto-generated in `index.js`'s `handleBotReady()` from whatever categories currently exist in MongoDB (`Loadout.distinct('category', {mode:'MP'})`), so they only show up after the bot's first successful boot post-data-import. See `.claude/rules/loadouts.md`.
+- `/help` — `help.js` (flat command; categorized command guide — Gunsmiths/Draws/Seasonal Info/Utilities/Preferences — plus a `cmd:` autocomplete jump. Shipped 2026-08-08 22:35 EDT as Pre-Release v3.1.0.)
 - `/manage` (admin-only) — the single admin data-entry command; full panel design in `.claude/rules/manage-panel.md`.
 
 ## User-install / DM support — must be set per-command, not inherited
@@ -36,6 +37,8 @@ New slash-command-exclusive `view` string option (`embed`/`text`, default `embed
 Switching styles via the dropdown while in text mode needed to STAY in text mode — there's no `view` option to re-read on that path (`overrideState` skips normal option resolution entirely, same constraint `ephemeral`/`accentColor` already work around). Solved the same way `ephemeral` already is: `index.js`'s `tsmenu|` handler derives `isTextMode` from the ABSENCE of the Components V2 bit (32768) on the message being edited (`!(interaction.message.flags?.bitfield & 32768)`), since text mode never sets that flag, and passes it through `overrideState.isTextMode`.
 
 
-## Loadout commands (`/dmz`, `/all`, `/<category>`) have `build`/`private` options
-All three accept an optional `build` (integer, 1-based, matching the "Build N of M" footer text — clamped into range rather than rejected if out of bounds) to jump straight to a specific build instead of always landing on the first and clicking Next repeatedly, and an optional `private` boolean (same explicit-option > saved-`loadoutVisibility`-preference > default priority every other command already uses) to land already-public/ephemeral in one shot. Added specifically so a user doesn't have to rely on "Share Publicly" after the fact just to get the same result up front.
+## Loadout commands (`/dmz`, `/all`, `/<category>`) have `build`/`visibility` options
+All three accept an optional `build` (integer, 1-based, matching the "Build N of M" footer text — clamped into range rather than rejected if out of bounds) to jump straight to a specific build instead of always landing on the first and clicking Next repeatedly, and an optional `visibility` boolean (renamed from `hidden` 2026-08-08, part of the /help redesign's bot-wide option rename — same explicit-option > saved-`loadoutVisibility`-preference > default priority every other command already uses) to land already-public/ephemeral in one shot. Added specifically so a user doesn't have to rely on "Share Publicly" after the fact just to get the same result up front.
+
+**The `hidden` → `visibility` rename applies to every command in the bot** (dmz/all/`<category>`/draws/draw prices/calendar/patch notes/season end/colors/settings/timestamp/manage/alerts), not just loadouts — same option name, same boolean semantics, just renamed for clarity when `/help`'s redesign needed to describe it. If you see `hidden` referenced anywhere (an old screenshot, a stale comment), it's out of date.
 

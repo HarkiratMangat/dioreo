@@ -134,15 +134,15 @@ module.exports = {
         .setDescription('View and export the bot\'s alert log')
         .setDefaultMemberPermissions(0)
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // user-install + DM, same as every public command
-        .addBooleanOption(o => o.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
+        .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
 
     async execute(interaction) {
         if (interaction.user.id !== ALLOWED_ADMIN_ID) {
             return interaction.reply({ content: "🔒 **This one's admin-only.** `/alerts` shows the bot's internal health log — try any of the bot's public commands instead!", ephemeral: true });
         }
         // Default ephemeral (admin panel), same convention as /manage.
-        const argPrivate = interaction.options.getBoolean('hidden');
-        const isEphemeral = argPrivate === null ? true : argPrivate;
+        const visibilityChoice = interaction.options.getString('visibility');
+        const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         const components = await buildAlertsPanel({ page: 0, view: 'main' });
         return sendV2Payload(interaction, components);

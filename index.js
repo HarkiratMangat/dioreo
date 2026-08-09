@@ -234,7 +234,7 @@ commands.push(
         // were truncating on mobile; see the matching trim on /dmz's and /<category>'s copies.
         .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
         .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-        .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
 );
 
@@ -295,7 +295,7 @@ async function handleBotReady() {
                 // for the same concept.
                 .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
                 .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-                .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+                .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
         );
     });
@@ -808,6 +808,15 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
+            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live
+            // per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
+            if (commandName === 'help') {
+                const { getAllHelpCommandNames } = require('./commands/help');
+                const allCommands = await getAllHelpCommandNames();
+                const filtered = allCommands.filter(name => fuzzyMatch(focusedValue, name)).slice(0, 25);
+                return await interaction.respond(filtered.map(name => ({ name, value: name })));
+            }
+
             // Standard Loadout Dictionary Autocomplete Mapping
             const Loadout = require('./models/Loadout');
             let queryFilter = {};
@@ -918,7 +927,8 @@ client.on('interactionCreate', async interaction => {
         const mpBuildsPromise = Loadout.find({ weaponKey, mode: 'MP' }).lean();
 
         const prefs = await prefsPromise;
-        const argPrivate = interaction.options.getBoolean('hidden');
+        const visibilityChoice = interaction.options.getString('visibility');
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });
 
@@ -1052,6 +1062,14 @@ client.on('interactionCreate', async interaction => {
                 isTextMode: !(interaction.message.flags?.bitfield & 32768),
                 accentColor
             });
+        }
+
+        // B2. HELP CATEGORY SELECTOR
+        if (interaction.customId === 'help_category') {
+            await interaction.deferUpdate();
+            const helpCommand = client.commands.get('help');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await helpCommand.execute(syntheticInteraction, interaction.values[0]);
         }
 
         // C. PATCH NOTES HISTORY SELECTOR
@@ -1941,7 +1959,7 @@ client.on('interactionCreate', async interaction => {
                     followUp: async (payload) => interaction.followUp(payload),
                     // Button interactions have no `.options` resolver at all (that only exists on
                     // slash command interactions). Commands re-used via nav buttons call things like
-                    // interaction.options.getBoolean('hidden'), which would otherwise throw
+                    // interaction.options.getString('visibility'), which would otherwise throw
                     // "Cannot read properties of undefined". Stub it out safely.
                     options: {
                         getBoolean: () => null, getString: () => null, getInteger: () => null,
