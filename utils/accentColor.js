@@ -1,7 +1,7 @@
 // utils/accentColor.js
 const { Routes } = require('discord.js');
 const { getDominantColor } = require('./colorExtract');
-const { extractStillFrame } = require('./stillFrame');
+const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, fetchGuildNameStyles, normalizeNameStyleColors } = require('./guildProfile');
 
 // Shared throttle for anything that needs a LIVE fetch to see fresh data (2026-07-13) -- unlike
@@ -230,9 +230,17 @@ async function getCachedDecorationColor(prefs, url, asset, fallbackHex, isGuild 
     }
     let stillFrame;
     try {
-        stillFrame = await extractStillFrame(url);
+        // Montage, not one frame -- same reasoning as the palette path (utils/stillFrame.js's own
+        // comment has the measurement). Kept in step deliberately: if the accent engine sampled one
+        // frame while the View Colors panel sampled the whole animation, a user's deco accent could
+        // be a colour their own palette page never shows.
+        // ⚠️ Cached decoration colours are keyed on the ASSET hash, which this does not change, so
+        // existing caches keep their single-frame value until the user changes their decoration.
+        // That is the documented behaviour -- if it ever needs forcing, clear SCOPED to affected
+        // users, never an unscoped updateMany({}) (see feedback_cache_invalidation_on_algorithm_change).
+        stillFrame = await extractFrameMontage(url);
     } catch (err) {
-        console.error('Still-frame extraction failed for decoration:', err.message);
+        console.error('Frame-montage extraction failed for decoration:', err.message);
         return fallbackHex;
     }
     return getCachedColorFromUrl(prefs, hexField, sourceField, stillFrame, asset, fallbackHex,

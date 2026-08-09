@@ -4,7 +4,7 @@
 // every render.
 const { getColorPalette } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
-const { extractStillFrame } = require('./stillFrame');
+const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
 
 // Per-source color counts (2026-07-14, Harkirat's request) -- avatar/banner are richer, more
@@ -135,9 +135,14 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     let imageSource = imageInfo.extractUrl || imageInfo.url;
     if (imageInfo.needsStillFrame) {
         try {
-            imageSource = await extractStillFrame(imageInfo.url);
+            // A MONTAGE of evenly-spaced frames, not one frame (2026-08-09 18:15 EDT). Measured on a
+            // real 60-frame decoration: the single frame we used to take yielded four greys (max
+            // saturation 0.26) and missed the animation's gold sparkle entirely; the montage
+            // recovers it as #AD904C at hue 42°. Harkirat spotted the missing colour in the live
+            // panel first -- "the frame it sampled simply lacked that color and thus it missed out."
+            imageSource = await extractFrameMontage(imageInfo.url);
         } catch (err) {
-            console.error(`Still-frame extraction failed for ${kind}:`, err.message);
+            console.error(`Frame-montage extraction failed for ${kind}:`, err.message);
             return prefs[paletteField] || null;
         }
     }
