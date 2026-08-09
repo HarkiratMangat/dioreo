@@ -85,7 +85,8 @@ const {
     Routes,
     SlashCommandBuilder,
     Collection,
-    Events
+    Events,
+    ActivityType
 } = require('discord.js');
 
 // ==========================================
@@ -266,6 +267,14 @@ if (fs.existsSync(commandsPath)) {
  */
 async function handleBotReady() {
     console.log(`✅ Dioreo instance fully authenticated!`);
+
+    // Sets the "Watching ..." line under the bot's name in its profile/DM header (Discord has no
+    // custom-text-only option -- ActivityType picks the verb, e.g. Watching/Listening/Playing).
+    // Static rather than derived from live state (guild count, etc.) since this app is user-installed
+    // only (CLAUDE.md) and has no meaningful guild-count metric to show.
+    client.user.setPresence({
+        activities: [{ name: '/help · dioreo.app', type: ActivityType.Watching }],
+    });
 
     // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
     // Application emojis only render for their owning app, so the dev bot (a separate application
