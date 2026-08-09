@@ -75,7 +75,9 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.2.0 — 2026-08-09 11:55 EDT (#PR) — Guild install: the bot can live in servers, and its presence finally renders
+## Pre-Release v3.1.1 — 2026-08-09 12:10 EDT (#105) — Guild install: the bot can live in servers, and its presence finally renders
+
+> **A patch bump, deliberately** (Harkirat's call, 2026-08-09 12:08 EDT). Guild install is *landed but not finished* — the per-server profile/colour work it unlocks is still queued, and the server-admin control surface is an open launch blocker. The `3.2.0-pre` minor is being held until the colours implementation goes in, so the version reflects a partial feature rather than implying a complete one.
 
 **The whole session started as a two-line cosmetic bug and ended by moving a roadmap item forward a whole major version.**
 
