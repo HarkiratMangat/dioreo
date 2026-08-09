@@ -6,8 +6,8 @@ published: true
 
 # Privacy Policy — Dioreo
 
-**Effective date:** 6 August 2026
-**Version:** 1.10
+**Effective date:** on the Dioreo v3 release — this version is not yet in effect
+**Version:** 1.11 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and this documentation website (the "Site")
 
 
@@ -69,6 +69,8 @@ Everything below lives in a single `UserPreference` record keyed to your Discord
 ### 2.2 About the colour data specifically
 
 If you use the accent-colour or "View Colors" features, the Bot downloads your Discord **avatar, banner, avatar decoration, or nameplate image** and analyses it to extract dominant colours.
+
+If you have set a **server profile** — Discord's per-server override for any of those images, or for your Display Name colours — the Bot uses that server's version while you are using it in that server, and your ordinary profile everywhere else. Discord includes your server profile in the data it sends with each command you run in a server. The colours derived from a server profile are cached separately from the ones derived from your ordinary profile, so both are kept rather than one replacing the other; nothing about how they are stored, why, or for how long differs between the two.
 
 - **The images themselves are never stored.** Fetched, analysed in memory, discarded.
 - **Only the resulting colour values are saved** — hex codes and palettes.
@@ -378,6 +380,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.11 *(pending)* | on the v3 release | **Not yet in effect.** This entry describes a change that ships with Dioreo v3 and is dated on release rather than in advance. The Bot will read your **server profile** — Discord's per-server override for your avatar, banner, avatar decoration, nameplate or Display Name colours — when you use it in a server that you have set one for, instead of always using your ordinary profile. §2.2 describes this and Appendix A names the ten new cached fields (`guildAvatarColorHex`/`guildAvatarColorSource` and the same pairing for banner, Display Name, decoration and nameplate). **No new *kind* of data is collected, and nothing new is shared or kept longer** — these hold exactly what the existing colour fields hold, a derived hex code and the Discord asset hash it came from, for images that are still never stored. They are separate fields rather than reused ones so that a colour derived from a server profile and one derived from your ordinary profile can both be kept instead of overwriting each other. Discord sends your server profile as part of each command you run in a server; the Bot requests nothing additional to obtain it. |
 | 1.10 | 6 August 2026 | **Google Cloud Error Reporting** was enabled and is now named in §2.4a, §5's provider table and §7's retention table. It groups repeated errors out of the server logs §2.4a already described, so the administrator sees one fault with a count instead of fifty near-identical stack traces. **No change to what is collected, why, or how long it is kept** — it reads data that was already being logged, in the same Google Cloud project and region, under the same provider, for the same 30 days, and no software from it runs inside the Bot. It is disclosed because §5 names individual Google *services* rather than only the company, and a service that holds a copy of error data belongs in that list. |
 | 1.9 | 5 August 2026 | §5's MongoDB Atlas row said it stores only "your preference record" — true of `UserPreference`, but MongoDB also backs the operational alert log §2.4 already discloses in prose. The row and §5.1 now say so and cross-reference §2.4; §2.4 itself is unchanged, because the alert log's contents and 30-day retention were already described accurately there. **No change to what is collected, why, or how long it is kept** — this closes a gap in *where the provider table said it lives*, not a change to what MongoDB stores. |
 | 1.8 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** §1 now records the former name and states plainly that the controller did not change. **Nothing else changed at all** — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one. |
@@ -425,6 +428,11 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 - `displayNameColorHex` / `displayNameColorSource`
 - `decorationColorHex` / `decorationColorSource`
 - `nameplateColorHex` / `nameplateColorSource`
+- `guildAvatarColorHex` / `guildAvatarColorSource`
+- `guildBannerColorHex` / `guildBannerColorSource`
+- `guildDisplayNameColorHex` / `guildDisplayNameColorSource`
+- `guildDecorationColorHex` / `guildDecorationColorSource`
+- `guildNameplateColorHex` / `guildNameplateColorSource`
 - `avatarPalette` / `avatarPaletteSource`
 - `bannerPalette` / `bannerPaletteSource`
 - `decorationPalette` / `decorationPaletteSource`
@@ -440,6 +448,8 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 | Version | Date | Change |
 |---|---|---|
+| **1.11** *(pending)* | on the v3 release | **Not yet in effect.** The Bot will read your Discord **server profile** in servers you have set one for, so §2.2 describes it and Appendix A names the ten new cached colour fields. **No new kind of data, no new recipient, no longer retention** — they hold the same derived hex code and asset hash the existing colour fields hold, kept separately so a server-profile colour and an ordinary-profile colour do not overwrite one another. |
+| **1.10** | 6 August 2026 | Google Cloud Error Reporting was enabled and is named in §2.4a, §5's provider table and §7's retention table. **No change to what is collected, why, or how long it is kept** — it groups errors already present in the server logs §2.4a described, in the same project and region, for the same 30 days. |
 | **1.9** | 5 August 2026 | §5's MongoDB Atlas row and §5.1 now note that the same cluster also holds the operational alert log §2.4 already describes, not only `UserPreference`. **No change to what is collected, why, who receives it, or how long it is kept.** |
 | **1.8** | 4 August 2026 | Renamed from Dior's Builds to Dioreo. §1 records the former name and confirms the controller is unchanged. **No change to what is stored, why, who receives it, or how long it is kept** — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7. |
 | **1.7** | 4 August 2026 | §2.6 corrected: it still said the Site stored **one** item and that nothing is written unless you press the light/dark switch, neither of which had been true since `db-booted` arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. **No change to what is stored, why, who receives it, or how long it is kept.** |

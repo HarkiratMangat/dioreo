@@ -73,6 +73,30 @@ const UserPreferenceSchema = new mongoose.Schema({
     nameplateColorHex: { type: Number },
     nameplateColorSource: { type: String },
 
+    // PER-SERVER PROFILE COLORS (2026-08-09 13:20 EDT) -- Discord's Server Profiles feature lets a
+    // user override their avatar/banner/decoration/nameplate/name-style per guild, and the invoker's
+    // overrides ride along in every interaction's `member` payload. These five pairs cache the colors
+    // extracted from those GUILD-scoped sources, kept separate from the global pairs above so a user
+    // who moves between a server and a DM doesn't repeatedly evict one context's color with the
+    // other's -- see utils/guildProfile.js and utils/accentColor.js.
+    //
+    // ⚠️ Deliberately NOT keyed by guild id, which looks like the obvious thing to do and is wrong.
+    // The *Source field holds the image hash / asset id, and that hash IS the identity: measured
+    // 2026-08-09 13:10 EDT, the same server avatar reused across two different guilds returns the
+    // IDENTICAL hash, so hash-keying makes the second guild a free cache HIT while guild-keying
+    // would recompute the same pixels under a different key. A different server profile necessarily
+    // means a different hash, so correctness never depends on the guild id.
+    guildAvatarColorHex: { type: Number },
+    guildAvatarColorSource: { type: String },
+    guildBannerColorHex: { type: Number },
+    guildBannerColorSource: { type: String },
+    guildDisplayNameColorHex: { type: Number },
+    guildDisplayNameColorSource: { type: String },
+    guildDecorationColorHex: { type: Number },
+    guildDecorationColorSource: { type: String },
+    guildNameplateColorHex: { type: Number },
+    guildNameplateColorSource: { type: String },
+
     // "View Colors" panel (utils/colorPalette.js, added 2026-07-13) -- a separate cache from the
     // single accent-color hex above. Each *Palette field holds the full 6-swatch breakdown (Vibrant/
     // Light Vibrant/Dark Vibrant/Muted/Light Muted/Dark Muted -- see colorExtract.js's

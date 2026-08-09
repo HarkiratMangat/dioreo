@@ -7,7 +7,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
-const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor } = require('../utils/accentColor');
+const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor, resolveGuildNameColors } = require('../utils/accentColor');
+const { readGuildProfile } = require('../utils/guildProfile');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -111,13 +112,27 @@ module.exports = {
         // see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on
         // this style shows whatever was picked for the message /settings itself is rendered on, same
         // "one pick per message, held steady across re-renders" rule every other command follows.
-        const displayNameColors = prefs.accentColorStyle === 'displayName'
-            ? await fetchDisplayNameColors(interaction.client, userId)
-            : null;
+        // Per-server profile overrides (2026-08-09 13:25 EDT) ride along free in the interaction, in
+        // every guild -- including ones the bot has never joined. Null in DMs, and null on the
+        // admin-override path (readGuildProfile refuses when the clicking member isn't the panel's
+        // owner), so an overridden panel correctly falls back to that user's global profile.
+        const guildProfile = readGuildProfile(interaction);
+        let displayNameColors = null;
+        let isGuildNameStyle = false;
+        if (prefs.accentColorStyle === 'displayName') {
+            // `true` for isChatInputCommand deliberately bypasses the recheck window -- /settings is
+            // the "always fresh on this page" surface, matching how it already treats avatar/banner.
+            displayNameColors = await resolveGuildNameColors(interaction, guildProfile, true);
+            isGuildNameStyle = Boolean(displayNameColors);
+            if (!displayNameColors) {
+                displayNameColors = await fetchDisplayNameColors(interaction.client, userId);
+            }
+        }
         const panelColorHex = prefs.accentColorStyle === 'dynamicProfile'
             ? await resolveDynamicProfileColor(interaction, prefs, 16741953)
             : await resolveAccentColor({
-                prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar', displayNameColors
+                prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar', displayNameColors,
+                guildProfile, isGuildNameStyle
             });
 
         const userCreatedAt = Math.floor(interaction.user.createdAt.getTime() / 1000);
