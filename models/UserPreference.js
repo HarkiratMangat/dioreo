@@ -118,7 +118,24 @@ const UserPreferenceSchema = new mongoose.Schema({
     decorationPalette: { type: mongoose.Schema.Types.Mixed },
     decorationPaletteSource: { type: String },
     nameplatePalette: { type: mongoose.Schema.Types.Mixed },
-    nameplatePaletteSource: { type: String }
+    nameplatePaletteSource: { type: String },
+
+    // Per-server counterparts of the four palettes above (2026-08-09 13:50 EDT), for the "View
+    // Colors" panel's global/server switch. Same reasoning as the guild*Color* pairs further up:
+    // separate fields so a user browsing their server palette in a guild and their ordinary palette
+    // in a DM keeps both, rather than each context evicting the other's much more expensive k-means
+    // result. Keyed on the asset hash, NOT the guild id -- a server profile reused across guilds
+    // has one hash, so it extracts once and hits cache everywhere else.
+    // No "guildDisplayNamePalette" for the same reason there is no global one: Display Name colors
+    // are exact user-picked values, not something extracted from an image.
+    guildAvatarPalette: { type: mongoose.Schema.Types.Mixed },
+    guildAvatarPaletteSource: { type: String },
+    guildBannerPalette: { type: mongoose.Schema.Types.Mixed },
+    guildBannerPaletteSource: { type: String },
+    guildDecorationPalette: { type: mongoose.Schema.Types.Mixed },
+    guildDecorationPaletteSource: { type: String },
+    guildNameplatePalette: { type: mongoose.Schema.Types.Mixed },
+    guildNameplatePaletteSource: { type: String }
 });
 
 module.exports = mongoose.model('UserPreference', UserPreferenceSchema);
