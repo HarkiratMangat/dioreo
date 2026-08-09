@@ -226,7 +226,12 @@ function getAvailableSources(data) {
 // have. These two states stay distinguishable: "doesn't have a banner" (hide the button) is
 // different from "has a banner, couldn't extract colors from it" (keep the button, show a failure
 // message).
-async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0 }) {
+// `variant` is 'global' | 'server' and rides in every custom_id as a single letter (g/s) so a
+// page/subpage/refresh click stays in whichever view the user is looking at. It is a THIRD pipe
+// segment rather than another `_` token on purpose: the source/subpage parsers already split on `_`,
+// so adding one there would have silently changed how existing ids parse.
+async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0, variant = 'global' }) {
+    const v = variant === 'server' ? 's' : 'g';
     const availableSources = getAvailableSources(data);
     const effectiveSource = availableSources.includes(source) ? source : 'avatar';
     const meta = SOURCE_META[effectiveSource] || SOURCE_META.avatar;
@@ -331,7 +336,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // needed). Same shared helper /calendar and /draws already use for their own sub-page nav.
     const subpageRow = buildPaginationRow({
         totalChunks: totalPages, currentPage: effectiveSubpage,
-        makeCustomId: (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}`,
+        makeCustomId: (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}|${v}`,
         indicatorCustomId: 'colors_subpage_indicator'
     });
     if (subpageRow) containerComponents.push(subpageRow);
@@ -348,7 +353,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
             type: 2,
             style: key === effectiveSource ? 4 : 2,
             label: SOURCE_META[key].label,
-            custom_id: `colors_page_${key}|${targetUserId}`,
+            custom_id: `colors_page_${key}|${targetUserId}|${v}`,
             disabled: key === effectiveSource
         }))
     });
@@ -370,9 +375,24 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // explicit user action.
     const refreshRowComponents = [{
         type: 2, style: 1, label: 'Refresh Colors',
-        custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
+        custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}|${v}`,
         emoji: emojis.parseEmoji(emojis.eyedropper)
     }];
+
+    // GLOBAL / SERVER switch (2026-08-09 17:05 EDT). Shown ONLY when the user actually has a server
+    // profile in THIS guild -- with no override the two views resolve to identical images, so the
+    // button would visibly do nothing, which reads as broken. Harkirat's spec: "only if both
+    // options/values exist, otherwise just dont show the button and display global colors."
+    // data.hasServerProfile is read from the interaction payload, so this costs no network call and
+    // is honest about the current server rather than "has a server profile somewhere".
+    if (data.hasServerProfile) {
+        const goingTo = v === 's' ? 'g' : 's';
+        refreshRowComponents.push({
+            type: 2, style: 2,
+            label: v === 's' ? 'Show Global Colors' : 'Show Server Colors',
+            custom_id: `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`
+        });
+    }
     // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the
     // container, beside Refresh, matching /settings' existing avatar/banner download buttons
     // (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link

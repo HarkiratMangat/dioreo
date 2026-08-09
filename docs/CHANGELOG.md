@@ -75,7 +75,39 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.1.1 — 2026-08-09 12:10 EDT (#105) — Guild install: the bot can live in servers, and its presence finally renders
+## Pre-Release v3.2.0 — 2026-08-09 17:15 EDT (#106) — Per-server profile colours, and a premise that was never tested
+
+> **The deferral was wrong, not the feature.** `.claude/rules/accent-and-colors.md` had said since 2026-07-18 that per-server profiles needed guild membership and were "explicitly deferred to v4". The load-bearing half of that — *"`interaction.member` is only reliably populated when invoked inside a guild the bot can resolve membership for"* — **was measured false**. Discord sends the invoker's full server profile in the interaction payload of **every** guild, including ones the bot has never joined. The feature had been blocked for three weeks on a limitation that did not exist.
+
+**Colours now come from your server profile wherever you have one.** Avatar, banner, decoration, nameplate *and* Display Name styles are all per-server, resolved **independently** — a server avatar with no server banner gives you the server avatar and your ordinary banner, which is exactly what Discord itself shows in that server. In a DM you get your global profile, because there is no server to read.
+
+**Measured across three real guilds and DMs**, with different overrides set in each:
+
+| | reachable when the bot **isn't** in the guild | cost |
+|---|---|---|
+| avatar · banner · decoration · nameplate | ✅ in the interaction payload | free |
+| display-name styles | ✅ in the payload | free |
+| display-name styles, in a guild the bot **has** joined | ⚠️ needs a REST member fetch | one call |
+
+That last row is the inversion worth remembering: discord.js's `GuildMember._patch` **discards** `display_name_styles`, so the case with *more* access is the one that costs a round trip — and the REST route it needs returns `404 Unknown Guild` in the other case. Both paths are handled; whichever guild you're in, one of them works.
+
+**`interaction.member` arrives in three shapes and the difference is not cosmetic** — a real `GuildMember` in a joined guild, **raw JSON with no methods** in one the bot hasn't joined (calling `displayAvatarURL()` there throws), and `null` in DMs. `utils/guildProfile.js` is the single normalizer; no call site branches on which.
+
+**Two bugs fell out that were never guild-specific:**
+- A **solid** (single-colour) Display Name style was classified as "not set up" and silently fell back to avatar, because the check demanded `colors.length >= 2`. Global solid styles had been mishandled this way the entire time.
+- `getCachedColor`'s `avatar || 'default'` hash is safe only for a `User`; a `GuildMember` would have collided every override-less member into one `'default'` bucket that stops invalidating when their global avatar changes. Guild sources are routed so that can't happen, and the guard is now written down.
+
+**The cache is keyed on the image hash, deliberately NOT the guild id.** Guild-keying looks obviously right and is wrong: the same server avatar reused across two guilds returns an *identical* hash, so hash-keying makes the second guild a free cache hit. Separate `guild*` field pairs exist only so a DM and a server don't evict each other's colours. No migration was needed — new fields start empty.
+
+**`/settings`** shows your server avatar and banner (previews *and* both download buttons — they had to follow the same source, or the download would quietly hand back a different image than the thumbnail). **`/colors`** defaults to the same contextual rule, gains a `from:` override, and shows a **Global ⇄ Server switch** at the bottom — but only when you actually have a server profile there, since otherwise the two views are identical and the button would visibly do nothing. Asking for `from:server` where there is none explains why and offers to render your global colours instead.
+
+⚠️ **A `profileSource` setting was built and then removed** (Harkirat: *"let's just leave it honestly"*). Which profile applies is decided by where you ran the command; a stored preference would only ever restate that. It is recorded in `models/UserPreference.js` as a "don't re-add this" note rather than silently vanishing.
+
+**Records:** the "button emoji goes blank after a single-hop re-render" bug had been marked CLOSED since 2026-08-07 while still filed under *"🐞 Active Bugs — broken behaviour, not yet fixed"*, and was absent from the archive — swept to `docs/archive/resolved-list.md`. The pagination-perf item still claimed *"not yet click-tested live"* when testing is precisely what forced four routes back to two-hop; it now says so.
+
+**Privacy:** eighteen new cached colour fields, disclosed in Appendix A. The policy is deliberately staged as **`1.11 (pending)`**, dated *"on the v3 release"* rather than today — the site deploys only from `main`, so nothing publishes until v3 ships, and dating it in advance would have made a legal document claim an effective date that hadn't happened. Finalizing it is filed as a v3 launch blocker.
+
+## Pre-Release v3.1.1 — 2026-08-09 12:10 EDT (#105 · `a2b3840`) — Guild install: the bot can live in servers, and its presence finally renders
 
 > **A patch bump, deliberately** (Harkirat's call, 2026-08-09 12:08 EDT). Guild install is *landed but not finished* — the per-server profile/colour work it unlocks is still queued, and the server-admin control surface is an open launch blocker. The `3.2.0-pre` minor is being held until the colours implementation goes in, so the version reflects a partial feature rather than implying a complete one.
 

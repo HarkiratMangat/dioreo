@@ -1584,7 +1584,12 @@ client.on('interactionCreate', async interaction => {
             // inside the traced 3s-ACK margin the rest of this design already measured.
             // (A 3rd `|{expiresAt}` segment used to live here for the old reactive 15-min expiry
             // check -- removed 2026-07-18, see utils/passiveExpiry.js.)
-            const [actionStr, targetUserId] = interaction.customId.split('|');
+            const [actionStr, targetUserId, variantToken] = interaction.customId.split('|');
+            // Third segment carries which view this panel is in ('g' global / 's' server), so a
+            // page, subpage or refresh click stays where the user was instead of snapping back to
+            // global. Absent on any id minted before this shipped, so it degrades to global rather
+            // than throwing -- a message left open across the deploy keeps working.
+            const variant = variantToken === 's' ? 'server' : 'global';
 
             // SECURITY GATEWAY WALL: Block rogue server members from attempting to adjust another user's preference canvas
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
@@ -1774,13 +1779,24 @@ client.on('interactionCreate', async interaction => {
             // stays cache-only as normal; only this entry point and the explicit "Refresh Colors"
             // button (B.8) force a real re-extraction. Extracts ONLY the avatar landing page now (not
             // all 4 sources) -- other pages lazily extract on navigation (see getPalettePanelData).
-            const data = await getPalettePanelData(colorsInteraction, prefs, 'avatar', true);
+            // Opens the SERVER view when the user has a profile for this guild, per Harkirat's spec:
+            // the /settings colour button shows guild colours inside a guild when they exist and
+            // global otherwise. Asking for 'server' is safe even when there is none -- every source
+            // falls back individually -- and hasServerProfile is what decides which view we're
+            // actually in, so the switch button gets the right label.
+            const data = await getPalettePanelData(colorsInteraction, prefs, 'avatar', true, 'server');
+            const variant = data.hasServerProfile ? 'server' : 'global';
 
             const { components, files } = await buildColorPalettePanel({
                 source: 'avatar',
                 data,
                 targetUserId,
-                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                // data.avatarThumbnailUrl already reflects whichever variant was resolved (the
+                // server avatar in the server view), so it wins; the direct read stays as the
+                // fallback for the global view and for the admin-override path, where the synthetic
+                // interaction's .user is deliberately the panel's owner rather than the clicker.
+                avatarThumbnailUrl: data.avatarThumbnailUrl || colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+                variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1793,8 +1809,66 @@ client.on('interactionCreate', async interaction => {
         // message already has (same pattern the loadout pagination handler uses). Deliberately
         // cache-only (no forceRefresh) -- ordinary page navigation should stay fast and NOT re-run
         // extraction on every click, unlike colors_view/colors_refresh_ above/below.
-        if (interaction.customId.startsWith('colors_page_')) {
+        // GLOBAL <-> SERVER switch on the View Colors panel (2026-08-09 17:06 EDT).
+        // custom_id: `colors_variant_{g|s}_{source}_{subpage}|{userId}` -- note the target variant is
+        // the FIRST token, so the button says where it's going, not where it is. This is also the
+        // target of the "Show Global Colors" button on /colors' no-server-profile warning panel, so
+        // there is exactly one implementation of "render this variant" rather than two.
+        //   Deferred, not single-hop: switching variant changes every source hash, so it is normally
+        //   a genuine cache miss and a real k-means extraction -- the heavy path that the pagination
+        //   perf work deliberately kept on defer-then-patch (see docs/db-deferred-list.md).
+        if (interaction.customId.startsWith('colors_variant_')) {
             const [actionStr, targetUserId] = interaction.customId.split('|');
+            // `colors_variant_g_avatar_0` -> ['colors','variant','g','avatar','0']. No source name
+            // contains an underscore, so this split is unambiguous.
+            const parts = actionStr.split('_');
+            const variant = parts[2] === 's' ? 'server' : 'global';
+            const source = parts[3] || 'avatar';
+            const subpage = parseInt(parts[4], 10) || 0;
+
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                try {
+                    await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+
+            await interaction.deferUpdate();
+            const UserPreference = require('./models/UserPreference');
+            const { getPalettePanelData } = require('./utils/colorPalette');
+            const { buildColorPalettePanel } = require('./utils/colorPaletteView');
+
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+
+            const data = await getPalettePanelData(colorsInteraction, prefs, source, false, variant);
+            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
+
+            const { components, files } = await buildColorPalettePanel({
+                source,
+                subpage,
+                data,
+                targetUserId,
+                avatarThumbnailUrl: data.avatarThumbnailUrl || colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+                variant
+            });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            return;
+        }
+
+        if (interaction.customId.startsWith('colors_page_')) {
+            const [actionStr, targetUserId, variantToken] = interaction.customId.split('|');
+            // Third segment carries which view this panel is in ('g' global / 's' server), so a
+            // page, subpage or refresh click stays where the user was instead of snapping back to
+            // global. Absent on any id minted before this shipped, so it degrades to global rather
+            // than throwing -- a message left open across the deploy keeps working.
+            const variant = variantToken === 's' ? 'server' : 'global';
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
             const actingUser = await resolvePanelActor(interaction, targetUserId);
             if (!actingUser) {
@@ -1818,14 +1892,19 @@ client.on('interactionCreate', async interaction => {
 
             // Extract just the source being switched TO (cache-only unless it's this source's first
             // visit -- getCachedPalette still extracts an uncached source even without forceRefresh).
-            const data = await getPalettePanelData(colorsInteraction, prefs, source);
+            const data = await getPalettePanelData(colorsInteraction, prefs, source, false, variant);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
                 source,
                 data,
                 targetUserId,
-                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                // data.avatarThumbnailUrl already reflects whichever variant was resolved (the
+                // server avatar in the server view), so it wins; the direct read stays as the
+                // fallback for the global view and for the admin-override path, where the synthetic
+                // interaction's .user is deliberately the panel's owner rather than the clicker.
+                avatarThumbnailUrl: data.avatarThumbnailUrl || colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+                variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1837,7 +1916,12 @@ client.on('interactionCreate', async interaction => {
         // `colors_subpage_{source}_{subpage}|{userId}`. Same shape as B.7 above (cache-only, no
         // forceRefresh), just staying on the same source instead of switching to a different one.
         if (interaction.customId.startsWith('colors_subpage_') && interaction.customId !== 'colors_subpage_indicator') {
-            const [actionStr, targetUserId] = interaction.customId.split('|');
+            const [actionStr, targetUserId, variantToken] = interaction.customId.split('|');
+            // Third segment carries which view this panel is in ('g' global / 's' server), so a
+            // page, subpage or refresh click stays where the user was instead of snapping back to
+            // global. Absent on any id minted before this shipped, so it degrades to global rather
+            // than throwing -- a message left open across the deploy keeps working.
+            const variant = variantToken === 's' ? 'server' : 'global';
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
             const actingUser = await resolvePanelActor(interaction, targetUserId);
             if (!actingUser) {
@@ -1862,7 +1946,7 @@ client.on('interactionCreate', async interaction => {
 
             // Same source as the current page (just a different sub-page of its swatches) -- a cache
             // hit in the normal case, since navigating here means this source was already extracted.
-            const data = await getPalettePanelData(colorsInteraction, prefs, source);
+            const data = await getPalettePanelData(colorsInteraction, prefs, source, false, variant);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
@@ -1870,7 +1954,12 @@ client.on('interactionCreate', async interaction => {
                 subpage,
                 data,
                 targetUserId,
-                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                // data.avatarThumbnailUrl already reflects whichever variant was resolved (the
+                // server avatar in the server view), so it wins; the direct read stays as the
+                // fallback for the global view and for the admin-override path, where the synthetic
+                // interaction's .user is deliberately the panel's owner rather than the clicker.
+                avatarThumbnailUrl: data.avatarThumbnailUrl || colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+                variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1886,7 +1975,12 @@ client.on('interactionCreate', async interaction => {
         // plain re-render) and reports back whether anything actually changed, via an ephemeral
         // follow-up alongside the panel update.
         if (interaction.customId.startsWith('colors_refresh_')) {
-            const [actionStr, targetUserId] = interaction.customId.split('|');
+            const [actionStr, targetUserId, variantToken] = interaction.customId.split('|');
+            // Third segment carries which view this panel is in ('g' global / 's' server), so a
+            // page, subpage or refresh click stays where the user was instead of snapping back to
+            // global. Absent on any id minted before this shipped, so it degrades to global rather
+            // than throwing -- a message left open across the deploy keeps working.
+            const variant = variantToken === 's' ? 'server' : 'global';
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
             const actingUser = await resolvePanelActor(interaction, targetUserId);
             if (!actingUser) {
@@ -1927,8 +2021,8 @@ client.on('interactionCreate', async interaction => {
             // changed, rather than just claiming success unconditionally. Only the ACTIVE source is
             // re-extracted (the one whose swatches are on screen and that this Refresh button targets)
             // -- refreshing one page no longer needlessly re-extracts the other three sources.
-            const before = await getPalettePanelData(colorsInteraction, prefs, source, false);
-            const after = await getPalettePanelData(colorsInteraction, prefs, source, true);
+            const before = await getPalettePanelData(colorsInteraction, prefs, source, false, variant);
+            const after = await getPalettePanelData(colorsInteraction, prefs, source, true, variant);
             const beforeVal = source === 'name' ? before.displayNameColors : before[source];
             const afterVal = source === 'name' ? after.displayNameColors : after[source];
             const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
@@ -1939,7 +2033,12 @@ client.on('interactionCreate', async interaction => {
                 subpage,
                 data: after,
                 targetUserId,
-                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                // ⚠️ `after`, NOT `data` -- this handler names its panel data `after` (it holds a
+                // `before` too, for the change-detection message). The other three call sites use
+                // `data`, so a blanket edit across all four lands a ReferenceError here and nowhere
+                // else, which only shows up when someone actually clicks Refresh.
+                avatarThumbnailUrl: after.avatarThumbnailUrl || colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+                variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });

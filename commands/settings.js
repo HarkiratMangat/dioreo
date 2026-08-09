@@ -98,7 +98,7 @@ module.exports = {
         // whole feature exists to remove. Null in DMs, and null on the admin-override path
         // (readGuildProfile refuses when the clicking member isn't the panel's owner), so an
         // overridden panel correctly falls back to that user's ordinary profile.
-        const guildProfile = readGuildProfile(interaction, prefs);
+        const guildProfile = readGuildProfile(interaction);
 
         // Resolved per source, not all-or-nothing: a server avatar with no server banner shows the
         // server avatar and the ordinary banner, which is exactly what Discord itself shows there.
@@ -419,6 +419,14 @@ module.exports = {
                     ]
                 }]
             });
+
+            // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12
+            // EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is
+            // purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server
+            // profile when they have one. A stored preference would only ever restate where the
+            // command was already run, so it was built and then removed rather than shipped as a
+            // setting that explains itself. The one real override lives on /colors (`from:`), and
+            // the in-panel toggle switches the view once server colours actually exist.
 
             // Calendar's Active/All Events filter (2026-07-31 14:00 EDT) -- moved here from an
             // in-page /calendar toggle, per Harkirat's explicit request. Same binary-toggle shape as

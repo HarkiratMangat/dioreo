@@ -32,13 +32,11 @@ const { Routes } = require('discord.js');
 // when the user has actually set a server-specific one, so null is the signal to fall through to the
 // global profile. (This is why an early reading of `collectibles: null` was misread as "nameplates
 // cannot be per-server" -- it only meant none was set at the time.)
-function readGuildProfile(interaction, prefs = null) {
-    // The user's own opt-out (UserPreference.profileSource). 'global' means never read the server
-    // profile even where one exists; 'auto' (the default, and what an absent prefs doc implies) uses
-    // it wherever it is set. Gated HERE rather than at each call site so a future caller cannot
-    // forget it and silently ignore the preference.
-    if (prefs?.profileSource === 'global') return null;
-
+function readGuildProfile(interaction) {
+    // ⚠️ There is deliberately NO stored preference gating this (a `profileSource` field was built
+    // and removed 2026-08-09 17:12 EDT). Which profile applies is decided by WHERE the command was
+    // run: no guild context means no server profile, full stop. A saved setting would only restate
+    // that. The single override is /colors' `from:` option, which passes a variant explicitly.
     const member = interaction.member;
     if (!member || !interaction.guildId) return null;
 
