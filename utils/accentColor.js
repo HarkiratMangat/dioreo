@@ -306,7 +306,7 @@ async function buildDynamicColorPool(interaction, prefs, presetHex) {
     // Each source independently prefers this guild's override and falls back to the global profile,
     // so the pool reflects the profile the user actually presents in the place they ran the command
     // -- mixing, say, a server avatar with a global nameplate when only the avatar is overridden.
-    const guildProfile = readGuildProfile(interaction);
+    const guildProfile = readGuildProfile(interaction, prefs);
 
     // Avatar -- always available, free (interaction.user already has the current hash).
     pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null, guildProfile));
@@ -415,7 +415,7 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     const isChatInputCommand = interaction.isChatInputCommand();
     // Free: the invoker's server-profile overrides are already in the interaction payload, in every
     // guild -- including guilds the bot has never joined. Null in DMs.
-    const guildProfile = readGuildProfile(interaction);
+    const guildProfile = readGuildProfile(interaction, prefs);
 
     if (rawStyle === 'banner') {
         // A server banner is already in hand, and it outranks the global one, so the force-fetch

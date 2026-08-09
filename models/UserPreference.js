@@ -62,6 +62,16 @@ const UserPreferenceSchema = new mongoose.Schema({
     // getDominantColor against their own CDN image) -- decorationColorSource/nameplateColorSource
     // store the asset hash they were computed from, same invalidation pattern as avatar/banner.
     accentColorStyle: { type: String, default: 'preset' },
+
+    // WHICH PROFILE the colour styles read from (2026-08-09 16:55 EDT). Composes with
+    // accentColorStyle rather than multiplying it: 5 styles x 2 sources, not 10 styles. It is
+    // deliberately BINARY and that is not a simplification of the ask -- a third "always use this
+    // server" option was specced and dropped because it cannot differ from 'auto'. You cannot force
+    // a server profile that does not exist, so in a guild with no override (or in a DM) it would
+    // behave identically to 'auto'; shipping both would be two menu entries doing one thing.
+    //   'auto'   -- use the server profile wherever the user has one, ordinary profile otherwise.
+    //   'global' -- never read the server profile, even in a guild where one is set.
+    profileSource: { type: String, default: 'auto' },
     avatarColorHex: { type: Number },
     avatarColorSource: { type: String },
     bannerColorHex: { type: Number },

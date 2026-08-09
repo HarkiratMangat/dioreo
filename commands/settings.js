@@ -92,12 +92,28 @@ module.exports = {
         // 3. LIVE PROFILE LOOKUP
         const userFetch = await interaction.client.users.fetch(userId, { force: true });
 
-        const userAvatarUrl = interaction.user.displayAvatarURL({ extension: 'png', size: 256 });
-        const userBannerUrl = userFetch.bannerURL({ extension: 'png', size: 512 }) || "";
+        // Per-server profile overrides (2026-08-09 16:55 EDT). Declared here rather than down in the
+        // accent block because the DASHBOARD IMAGES need it too -- showing someone their global face
+        // while the panel beside it is tinted from their server avatar is the inconsistency this
+        // whole feature exists to remove. Null in DMs, and null on the admin-override path
+        // (readGuildProfile refuses when the clicking member isn't the panel's owner), so an
+        // overridden panel correctly falls back to that user's ordinary profile.
+        const guildProfile = readGuildProfile(interaction, prefs);
+
+        // Resolved per source, not all-or-nothing: a server avatar with no server banner shows the
+        // server avatar and the ordinary banner, which is exactly what Discord itself shows there.
+        const userAvatarUrl = guildProfile?.avatarUrl
+            || interaction.user.displayAvatarURL({ extension: 'png', size: 256 });
+        const userBannerUrl = guildProfile?.bannerUrl
+            || userFetch.bannerURL({ extension: 'png', size: 512 }) || "";
         // Full-quality versions for the download link buttons below — separate from the small
-        // thumbnail/gallery sizes above used for the actual dashboard display.
-        const userAvatarFullUrl = interaction.user.displayAvatarURL({ size: 4096 });
-        const userBannerFullUrl = userFetch.bannerURL({ size: 4096 }) || "";
+        // thumbnail/gallery sizes above used for the actual dashboard display. These must follow the
+        // SAME source as the previews above: a Download button handing back the global image while
+        // the thumbnail shows the server one would be a quiet mismatch nothing would report.
+        const userAvatarFullUrl = guildProfile?.avatarFullUrl
+            || interaction.user.displayAvatarURL({ size: 4096 });
+        const userBannerFullUrl = guildProfile?.bannerFullUrl
+            || userFetch.bannerURL({ size: 4096 }) || "";
 
         // ACCENT COLOR: /settings has no fixed brand color of its own (unlike calendar/draws/etc),
         // so its "default" behavior is to use the avatar color — see utils/accentColor.js for the
@@ -112,11 +128,7 @@ module.exports = {
         // see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on
         // this style shows whatever was picked for the message /settings itself is rendered on, same
         // "one pick per message, held steady across re-renders" rule every other command follows.
-        // Per-server profile overrides (2026-08-09 13:25 EDT) ride along free in the interaction, in
-        // every guild -- including ones the bot has never joined. Null in DMs, and null on the
-        // admin-override path (readGuildProfile refuses when the clicking member isn't the panel's
-        // owner), so an overridden panel correctly falls back to that user's global profile.
-        const guildProfile = readGuildProfile(interaction);
+        // `guildProfile` is resolved further up, alongside the dashboard images that also need it.
         let displayNameColors = null;
         let isGuildNameStyle = false;
         if (prefs.accentColorStyle === 'displayName') {

@@ -18,12 +18,12 @@ const PALETTE_COUNTS = { avatar: 8, banner: 8, nameplate: 4, decoration: 4 };
 // exactly what utils/accentColor.js already resolves for the single-hex accent system -- avatar's
 // hash/URL come straight off interaction.user (free, no fetch), banner/decoration/nameplate need a
 // live fetch (force-fetched User object for banner, one combined raw REST call for the other two).
-async function getSourceImageInfo(interaction, useGuild = false) {
+async function getSourceImageInfo(interaction, useGuild = false, prefs = null) {
     // Per-server overrides (2026-08-09 13:50 EDT). Resolved PER SOURCE, not all-or-nothing: someone
     // with a server avatar but no server banner sees their server avatar and their ordinary banner,
     // which is what Discord itself shows in that server. A source with no override simply falls
     // through to the global block below, so `useGuild` never produces an empty page.
-    const guildProfile = useGuild ? readGuildProfile(interaction) : null;
+    const guildProfile = useGuild ? readGuildProfile(interaction, prefs) : null;
 
     const avatar = guildProfile?.avatarHash
         ? {
@@ -182,7 +182,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
 // so the Deco page shows the real animated decoration even though extraction only ever sees one frame.
 async function getPalettePanelData(interaction, prefs, activeSource, forceRefresh = false, variant = 'global') {
     const useGuild = variant === 'server';
-    const info = await getSourceImageInfo(interaction, useGuild);
+    const info = await getSourceImageInfo(interaction, useGuild, prefs);
     const results = { displayNameColors: info.displayNameColors, variant };
     const sources = { avatar: info.avatar, banner: info.banner, decoration: info.decoration, nameplate: info.nameplate };
 
@@ -190,7 +190,7 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     // and is honest about the CURRENT server rather than "has a server profile somewhere". The view
     // uses this to decide whether to render the global/server switch at all -- with no override the
     // two views would be identical and the button would do visibly nothing.
-    const guildProfile = readGuildProfile(interaction);
+    const guildProfile = readGuildProfile(interaction, prefs);
     results.hasServerProfile = hasAnyGuildOverride(guildProfile);
     results.inGuild = Boolean(guildProfile);
 
