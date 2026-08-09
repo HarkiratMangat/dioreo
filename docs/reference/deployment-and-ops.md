@@ -81,7 +81,7 @@ node --watch --env-file=.env.dev index.js
 **What's separate from prod, and what's shared:**
 | Thing | Dev | Note |
 |---|---|---|
-| Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
+| Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token. ⚠️ **NO LONGER "same as prod" (2026-08-09 12:01 EDT):** the dev app now also has **guild install** (`integration_types_config` key `"0"`) and is a member of the 𝔇𝔯𝔢𝔞𝔪𝔩𝔞𝔫𝔡 test guild, deliberately, so it mirrors the v3 target shape. Prod is still `["1"]` / `guild_count: 0` until v3 launch. |
 | Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Never seeded from prod — see the two cleanup scripts below** (`seedDevData.js` for a fixed fixture set, `anonymizeDevDb.js` to keep live-shaped data without real identifiers) |
 | Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
 | Emojis | its own 72 application-emoji copies | same names, different ids — see below |
