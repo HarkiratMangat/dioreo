@@ -124,26 +124,26 @@ function buildGunsmithsBody(liveNames) {
 }
 
 function buildDrawsBody() {
-    return `### \`/draws\`\nBrowse this season's New and Returning lucky draws\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
-        + `### \`/draw prices\`\nCP cost breakdown for every draw type, split by CP region\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
+    return `### \`/draws\`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
+        + `### \`/draw prices\`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\``;
 }
 
 function buildSeasonalBody() {
-    return `### \`/calendar\`\nThis season's event timeline — Draws, Events, and Game Modes\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your /settings choice)\n${VISIBILITY_BULLET}\n`
-        + `### \`/patch notes\`\nLatest weapon balance changes, plus the full patch-note history\n-# 🔹 \`[season]\` Search a specific previous season, autocomplete\n${VISIBILITY_BULLET}\n`
-        + `### \`/season end\`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n${VISIBILITY_BULLET}\n\n`
+    return `### \`/calendar\`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your /settings choice)\n${VISIBILITY_BULLET}\n`
+        + `### \`/patch notes\`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 \`[season]\` Search for a specific previous season (start typing to see suggestions)\n${VISIBILITY_BULLET}\n`
+        + `### \`/season end\`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
 function buildUtilitiesBody() {
-    return `### \`/colors\`\nView the colors extracted from your Discord profile and pick which one accents your panels\n${VISIBILITY_BULLET}\n`
-        + `### \`/timestamp\`\nConvert any date/time into a Discord timestamp that displays correctly in everyone's own timezone\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "sun 4:30pm", "19:30"\n-# 🔹 \`[timezone]\` Defaults to your saved /settings timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/colors** visibility:\`Public\`\n-# 🔸 **/timestamp** datetime:\`tomorrow 8pm\` timezone:\`Eastern Time\`\n-# 🔸 **/timestamp** datetime:\`19:30\` style:\`Relative Time (R)\` view:\`Text\``;
+    return `### \`/colors\`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n${VISIBILITY_BULLET}\n`
+        + `### \`/timestamp\`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"\n-# 🔹 \`[timezone]\` Defaults to your saved /settings timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/colors** visibility:\`Public\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
 function buildPreferencesBody() {
-    return `### \`/settings\`\nTwo pages: Visibility (who sees your responses by default) and Preferences (timezone, calendar filter, accent style, and more)\n${VISIBILITY_BULLET}\n\n`
+    return `### \`/settings\`\nTwo pages: Visibility (who sees your responses by default) and Preferences (timezone, calendar filter, accent style, and more)\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/settings**`;
 }
 
@@ -206,7 +206,7 @@ async function buildContainer(selectedKey, accentColor) {
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it
         // ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it
         // right below would just be the same instruction twice in one panel.
-        components.push({ type: 10, content: `-# Explore a category below.` });
+        components.push({ type: 10, content: `-# Explore a category below` });
         components.push(buildCategorySelectRow(null));
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
@@ -222,7 +222,7 @@ async function buildContainer(selectedKey, accentColor) {
         // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing
         // page above), so it's worth surfacing here -- reworded from the landing hint rather than
         // reused verbatim, since the two pages need different things said.
-        components.push({ type: 10, content: `-# Browse another category below, or jump straight to a command with \`/help cmd:\`.` });
+        components.push({ type: 10, content: `-# To see other commands, use the dropdown below or **\`/help <cmd>\`**` });
         components.push(buildCategorySelectRow(selectedKey));
     }
 
