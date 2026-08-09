@@ -133,8 +133,36 @@ async function resolvePanelActor(interaction, targetUserId) {
     return interaction.client.users.fetch(targetUserId);
 }
 
+// The "Watching ..." line under the bot's name in its profile popout (Discord has no custom-text-only
+// option -- ActivityType picks the verb, e.g. Watching/Listening/Playing). Static rather than derived
+// from live state (guild count, etc.) since this app is user-installed only (CLAUDE.md).
+//
+// Passed in ClientOptions rather than via a post-ready client.user.setPresence(), because `presence`
+// is a documented IDENTIFY field ("Presence structure for initial presence information") and
+// discord.js otherwise identifies with its default empty `presence: {}` (Options.js), publishing no
+// status at all. Path verified 2026-08-09 11:12 EDT: Client.js login() -> options.ws.presence ->
+// WebSocketManager initialPresence -> @discordjs/ws sets d.presence on the IDENTIFY payload.
+//
+// ⚠️ THIS RENDERS NOWHERE ON PROD TODAY, and that is a DISTRIBUTION fact, not a code bug -- do not
+// "fix" it by adding fields, moving it back, or setting it again post-ready. Presence is delivered
+// only to users who share a GUILD with the account; prod is user-installed only (CLAUDE.md) and sits
+// at guild_count 0 (GET /users/@me/guilds), so it is published to an audience of nobody.
+// CONFIRMED on the dev bot 2026-08-09 11:27 EDT by a controlled add/kick/re-add cycle: with zero
+// guilds the dot is grey and no activity card exists; the instant the app joined one guild BOTH
+// appeared (no restart needed -- it propagates on GUILD_CREATE), they vanished on kick, and returned
+// on re-invite. Discord's own profile card names the mechanism: it prints "1 Mutual Server".
+// So the ceiling is per-viewer: only members of a guild the app is in ever see this. It is kept
+// because it is the documented-correct mechanism and lights up by itself for any guild the app
+// joins under the v4 guild-install roadmap (docs/ROADMAP.md).
+// ⚠️ STILL UNTESTED: whether ClientOptions is REQUIRED, or a post-ready setPresence() would work
+// equally well now that a guild exists -- guild membership was the only variable the test isolated.
+const BOT_PRESENCE = {
+    status: 'online',
+    activities: [{ name: '/help · dioreo.app', type: ActivityType.Watching }],
+};
+
 // Instantiate internal client data models
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds], presence: BOT_PRESENCE });
 
 // CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with
 // `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this
@@ -236,7 +264,7 @@ commands.push(
         .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
         .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
         .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
+        .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]) // Guild + user install, all contexts (v3)
 );
 
 // DYNAMIC COMMAND EXTENSION MODULE LOADER:
@@ -268,14 +296,6 @@ if (fs.existsSync(commandsPath)) {
 async function handleBotReady() {
     console.log(`✅ Dioreo instance fully authenticated!`);
 
-    // Sets the "Watching ..." line under the bot's name in its profile/DM header (Discord has no
-    // custom-text-only option -- ActivityType picks the verb, e.g. Watching/Listening/Playing).
-    // Static rather than derived from live state (guild count, etc.) since this app is user-installed
-    // only (CLAUDE.md) and has no meaningful guild-count metric to show.
-    client.user.setPresence({
-        activities: [{ name: '/help · dioreo.app', type: ActivityType.Watching }],
-    });
-
     // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
     // Application emojis only render for their owning app, so the dev bot (a separate application
     // with its own same-named copies) needs its own ids. No-op on prod. Awaited before anything
@@ -305,7 +325,10 @@ async function handleBotReady() {
                 .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
                 .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
                 .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-                .setIntegrationTypes([1]).setContexts([0, 1, 2])
+                // Guild + user install, all contexts (v3). ⚠️ These per-category commands are built
+                // HERE, not in commands/*.js, so a sweep over that folder misses all 8 of them --
+                // exactly what happened on the first pass of this change (2026-08-09 11:38 EDT).
+                .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
         );
     });
 

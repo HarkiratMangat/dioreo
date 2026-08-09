@@ -75,7 +75,32 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.1.0 — 2026-08-08 22:43 EDT (#104) — The first v3 feature: `/help`, and a bot-wide option rename
+## Pre-Release v3.2.0 — 2026-08-09 11:55 EDT (#PR) — Guild install: the bot can live in servers, and its presence finally renders
+
+**The whole session started as a two-line cosmetic bug and ended by moving a roadmap item forward a whole major version.**
+
+`163cb1a` had added `client.user.setPresence({ activities: [...] })` to set the "Watching …" line under the bot's name. It didn't appear. **Three separate hypotheses were tested and falsified before the real one landed, and all three produced *correct code that changed nothing*:**
+
+1. **Post-ready `setPresence()` was the bug.** Plausible — `presence` is a documented IDENTIFY field, and discord.js otherwise identifies with its default empty `presence: {}`, publishing no status at all. Moved it into `ClientOptions` and verified it end-to-end down the wire (`Client.js` `login()` → `options.ws.presence` → `WebSocketManager` `initialPresence` → `@discordjs/ws` setting `d.presence` on the IDENTIFY payload). Still grey.
+2. **A missing explicit `status`.** Ruled out from the installed package source: `ClientPresence.js` already defaults `status: data.status ?? 'online'`, so an explicit field was a literal no-op.
+3. **An upstream patch would fix it.** A GitHub issue prescribing exactly this fix turned out to be an *open, unverified, AI-co-authored fork commit with zero comments* — proposing, line for line, the change already made and already falsified.
+
+**The actual cause was never in this repo: presence is delivered only to users who share a guild with the app**, and a user-install-only bot sits at `guild_count: 0` — publishing correctly to an audience of nobody. Confirmed by controlled experiment on the dev bot: 0 guilds → grey dot, no activity card; joined one guild → **both appeared instantly** (propagates on `GUILD_CREATE`, no restart needed); kicked → both vanished; re-invited → both returned. Discord's own profile card names the mechanism, printing "1 Mutual Server".
+
+**That finding reshaped the roadmap.** Guild install had been bundled into v4 alongside text/prefix commands and the privileged MESSAGE CONTENT intent. Those are separable — MESSAGE CONTENT exists for reading message text, which only prefix commands need — so **guild install moves to v3 and takes on no Discord-approval dependency**, while text/prefix commands stay v4.
+
+**What shipped here:**
+- **All 18 public commands now register `setIntegrationTypes([0, 1])`** — usable inside a server by people who have *not* user-installed the app. The 3 admin commands (`/manage`, `/alerts`, `/autobuild`) deliberately stay `[1]`, since an admin command advertised in every server's command list is noise plus needless surface; each now carries a comment saying so, to stop a future session "fixing" the inconsistency.
+- ⚠️ **8 of those 18 were nearly missed.** The per-weapon-category commands (`ar`/`lmg`/`smg`/`sniper`/`marksman`/`shotgun`/`secondaries`/`all`) are built dynamically in `index.js`, not in `commands/*.js`, so a sweep over that folder found 13 files and silently left the most-used surface in the bot behind. Caught only by reading back the **live registration from Discord** rather than trusting the source edit. A comment now marks that call site.
+- **Presence lives in `ClientOptions` as `BOT_PRESENCE`**, carrying a comment that records the confirmed finding *and* explicitly flags what is still untested — that guild membership, not the IDENTIFY move, is what the experiment isolated.
+
+**Measured on a real guild** (`permissions=0`, no privileged intents), so the security posture is documented rather than assumed: reading the channel list ✅ · fetching a **single** member with roles ✅ · reading all 43 roles **with permission bitfields** and `owner_id` ✅ · *enumerating* members ⛔ `50001` (the privileged GUILD_MEMBERS intent — proven to be the intent and not a permission, since single-member fetch succeeds under the identical permission set) · acting on a channel outside an interaction ⛔ unchanged. **No new data is stored, so the Privacy Policy is unaffected.**
+
+**Documentation:** root `CLAUDE.md`'s "never a guild member" invariant was rewritten — the load-bearing half (**zero standing guild permissions**) survives intact and is now backed by measurements. ROADMAP split v3/v4 and gained a **server-admin control surface** item marked a launch blocker for guild install (`[P1 · L · Opus5-High]`) — shipping a guild-installable bot with no moderator oversight is how a bot gets mass-kicked.
+
+**Verified:** `node --check` across all 13 command files + `index.js` · live command registration read back from Discord (18 × `[0,1]`, 3 × `[1]`) · prod app confirmed untouched throughout at `integration_types_config: ["1"]`, `guild_count: 0` · `docs-audit` 39/41 (2 pre-existing, unrelated warnings) · `docs:reflow` 45 files, 0 changes.
+
+## Pre-Release v3.1.0 — 2026-08-08 22:43 EDT (#104 · `b724a1e`) — The first v3 feature: `/help`, and a bot-wide option rename
 
 The first real feature to ship on `v3-pre-release`. `/help` (ROADMAP.md's v3 list, filed 2026-07-15) went through three real passes in one session, each driven by direct feedback rather than a single upfront design.
 

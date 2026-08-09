@@ -28,7 +28,7 @@ module.exports = {
                 .setDescription('Jump to a specific build number')
                 .setMinValue(1))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
+        .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     async execute(interaction) {
         const userId = interaction.user.id;

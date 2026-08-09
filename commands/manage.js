@@ -955,7 +955,10 @@ module.exports = {
         // truncated on Discord mobile's command picker row.
         .setDescription('Manage gunsmiths and seasonal bot data')
         .setDefaultMemberPermissions(0)
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app + DM support
+        // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1]
+        // (guild install) for v3, but an admin command advertised in every server's command list is
+        // noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
+        .setIntegrationTypes([1]).setContexts([0, 1, 2])
         // Renamed from `page` to `section` (2026-07-12), then `section` to `data for` (2026-07-18,
         // v2 quick-wins batch) — "section" still didn't describe what's actually being picked (a
         // data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season), not a page or a section of one.
