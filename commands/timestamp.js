@@ -176,7 +176,7 @@ module.exports = {
                     { name: 'Text (Plain, Copyable)', value: 'text' }
                 ))
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]),
+        .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view
     // layouts living in index.js's 'tsmenu|' select handler, because that handler needed to

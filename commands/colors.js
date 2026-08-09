@@ -19,7 +19,7 @@ module.exports = {
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription('View colors extracted from your profile')
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
+        .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     async execute(interaction) {
         const userId = interaction.user.id;

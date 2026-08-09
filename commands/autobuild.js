@@ -21,6 +21,9 @@ module.exports = {
         .addStringOption(option => option.setName('badges').setDescription('meta,best,top5,toxic (optional -- blank inherits from an existing build of this weapon)'))
         .addStringOption(option => option.setName('retry_token').setDescription('Only used when re-submitting an image after a Cloudinary upload failure'))
         .addBooleanOption(option => option.setName('private').setDescription('Reply privately, only you can see it (default: true)'))
+        // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1]
+        // (guild install) for v3, but an admin command advertised in every server's command list is
+        // noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
     async execute(interaction) {

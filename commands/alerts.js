@@ -133,7 +133,10 @@ module.exports = {
         .setName('alerts')
         .setDescription('View and export the bot\'s alert log')
         .setDefaultMemberPermissions(0)
-        .setIntegrationTypes([1]).setContexts([0, 1, 2]) // user-install + DM, same as every public command
+        // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1]
+        // (guild install) for v3, but an admin command advertised in every server's command list is
+        // noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
+        .setIntegrationTypes([1]).setContexts([0, 1, 2])
         .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
 
     async execute(interaction) {
