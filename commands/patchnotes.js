@@ -228,8 +228,8 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('notes')
             .setDescription('View the latest weapon balance changes')
-            .addStringOption(option => option.setName('version').setDescription('Search for specific previous patch notes').setAutocomplete(true))
-            .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
+            .addStringOption(option => option.setName('season').setDescription('Search for a specific previous season').setAutocomplete(true))
+            .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -250,8 +250,9 @@ module.exports = {
 
         // Extract autocomplete values
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('visibility');
-            const searchId = interaction.options.getString('version');
+            const visibilityChoice = interaction.options.getString('visibility');
+            argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
+            const searchId = interaction.options.getString('season');
             if (searchId) targetPatchId = searchId;
         }
 

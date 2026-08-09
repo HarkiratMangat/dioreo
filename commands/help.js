@@ -1,11 +1,15 @@
 // ==========================================
 // COMMAND: PLAYER GUIDE / HELP
 // ==========================================
-// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json,
-// local/gunsmithsUI.json). Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link
-// buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select
-// menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own
-// detail page: a real Usage/Options/Examples breakdown, not just a one-line blurb per command.
+// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups
+// (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from
+// his direct review feedback. Landing page
+// is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat
+// command DIRECTORY grouped by category, then a category select menu. Picking a category (or using
+// the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/
+// Examples breakdown per command, options split under whichever command actually has them (never
+// merged across commands with different option sets -- Gunsmiths is the one deliberate exception,
+// since /all, /dmz, and every per-category command share the identical 3 options).
 //
 // Categories: Gunsmiths (/all, /dmz, and every live per-weapon-category command) / Draws / Seasonal
 // Info / Utilities / Preferences. Gunsmiths' per-category command list (`/ar`, `/lmg`, `/sniper`, …)
@@ -13,28 +17,35 @@
 // hardcoding it would silently go stale the moment a category is added/removed (see the "no
 // duplicated state in prose" lesson + docs/superpowers/specs/2026-08-08-help-command-design.md).
 //
-// The `hidden` boolean option was renamed to `visibility` BOT-WIDE (every command, not just this
-// one) as part of this redesign, since /help's own copy reads far better as "visibility" -- see the
-// rename across commands/*.js and index.js in this same change.
+// The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this
+// one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility:
+// True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option
+// itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded
+// ephemeral-only with no way to make it public, an inconsistency with every other command in the bot.
+// No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the
+// visibility option already covers that case up front.
 //
 // MASCOT_URL is a permanent Cloudinary URL (`site_assets/dioreo-mascot-coral`, f_auto/q_auto
-// delivery defaults applied) -- re-hosted 2026-08-08 20:57 EDT from Harkirat's original upload
-// (which was a Discord CDN attachment link with signed ex=/is=/hm= params that would have expired in
-// roughly a day, same issue this repo already hit and fixed for calendar banners -- see
-// .claude/rules/design-decisions.md's Cloudinary-rehost entry). Square 1:1 (already 2048x2048, full
-// bleed, no transparent padding to trim) and horizontally flipped per Harkirat's request before
-// upload.
+// delivery defaults applied) -- re-hosted from Harkirat's original upload (which was a Discord CDN
+// attachment link with signed ex=/is=/hm= params that would have expired in roughly a day, same
+// issue this repo already hit and fixed for calendar banners -- see .claude/rules/design-
+// decisions.md's Cloudinary-rehost entry). Square 1:1 (already 2048x2048, full bleed, no transparent
+// padding to trim) and horizontally flipped per Harkirat's request before upload.
 //
 // Every emoji is one of the bot's own existing custom icons (emojiMap.js). Per the emoji-capture
 // rule (.claude/rules/rendering-and-ui.md), data below stores `emojiKey` STRINGS, never the emoji
 // mention string itself -- every lookup happens inside a render function, never at require()-time.
+// ⚠️ `dioreoCombo`/`loadouts` were JUST uploaded to the PROD Discord application and don't exist yet
+// on the separate DEV application ("Dioreo (Dev)") -- refreshEmojiIds() reports them "unmatched" on
+// boot there (fail-soft: cosmetics never block the bot), so they render broken on the dev bot
+// specifically until Harkirat also uploads copies there. Not a code bug -- the payload itself is
+// correct (verified directly against the generated JSON).
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const Loadout = require('../models/Loadout');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
-const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
@@ -47,16 +58,23 @@ const WEBSITE_URL = 'https://dioreo.app';
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1786237039/site_assets/dioreo-mascot-coral.png';
 
+// Single source of truth for the visibility option's copy -- reused verbatim as the real
+// SlashCommandBuilder description AND every /help category's own [visibility] bullet, so the two
+// can never drift apart the way "hidden ephemeral message" vs "True/False" once did.
+const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
+const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
+
 // manage.js/autobuild.js/alerts.js are admin-only (ALLOWED_ADMIN_ID-gated) and deliberately excluded
 // -- this is the USER-FACING command list only. `staticCommands` is used for `/help cmd:` matching
 // and autocomplete; Gunsmiths' dynamic per-category commands are resolved separately (see
-// getLiveGunsmithCommandNames below) since they can't be hardcoded here.
+// getLiveGunsmithCommandNames below) since they can't be hardcoded here. `dropdownDescription`s are
+// written to be genuinely useful at a glance, not filler -- what you'll actually find in there.
 const CATEGORY_DEFS = [
-    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Weapon loadout lookup commands', staticCommands: ['/all', '/dmz'] },
-    { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Lucky draw browsing & pricing', staticCommands: ['/draws', '/draw prices'] },
-    { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: 'Calendar, patch notes, and season countdowns', staticCommands: ['/calendar', '/patch notes', '/season end'] },
-    { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamps & profile colors', staticCommands: ['/colors', '/timestamp'] },
-    { key: 'preferences', label: 'Preferences', emojiKey: 'settings', dropdownDescription: 'Your saved bot settings', staticCommands: ['/settings'] }
+    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Find your next MP or DMZ loadout', staticCommands: ['/all', '/dmz'] },
+    { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: ['/draws', '/draw prices'] },
+    { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & countdowns", staticCommands: ['/calendar', '/patch notes', '/season end'] },
+    { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: ['/colors', '/timestamp'] },
+    { key: 'preferences', label: 'Preferences', emojiKey: 'settings', dropdownDescription: 'Manage your saved bot settings', staticCommands: ['/settings'] }
 ];
 
 const DETAIL_HEADERS = {
@@ -95,34 +113,37 @@ async function getAllHelpCommandNames() {
     return [...staticNames, ...liveNames];
 }
 
+// Gunsmiths keeps ONE shared Options block (unlike every other category below) because /all, every
+// per-category command, and /dmz genuinely share the identical 3 options -- splitting it three ways
+// would just repeat the same lines three times, not clarify anything.
 function buildGunsmithsBody(liveNames) {
     const categoryLine = liveNames.map(n => `\`/${n}\``).join(' · ');
     return `### \`/all\`\nSearch across all available MP loadouts\n### ${categoryLine}\nSearch for MP loadouts in a specific category\n### \`/dmz\`\nSearch for DMZ specific loadouts\n\n`
-        + `-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n-# 🔹 \`[visibility]\` View as a hidden ephemeral message or publicly\n\n`
-        + `-# **Examples**\n-# 🔸 **/all** weapon:\`AK117\`\n-# 🔸 **/smg** weapon:\`Switchblade X9\` build:\`2\` visibility:\`True\``;
+        + `-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/all** weapon:\`AK117\`\n-# 🔸 **/smg** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\``;
 }
 
 function buildDrawsBody() {
-    return `### \`/draws\`\nBrowse this season's New and Returning lucky draws\n### \`/draw prices\`\nCP cost breakdown for every draw type, split by CP region\n\n`
-        + `-# **Options**\n-# 🔹 \`[page]\` (/draws) Jump directly to New Draws or Returning Draws\n-# 🔹 \`[region]\` (/draw prices) Jump directly to the 10, 20, or 30 CP region\n-# 🔹 \`[visibility]\` View as a hidden ephemeral message or publicly\n\n`
+    return `### \`/draws\`\nBrowse this season's New and Returning lucky draws\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
+        + `### \`/draw prices\`\nCP cost breakdown for every draw type, split by CP region\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\``;
 }
 
 function buildSeasonalBody() {
-    return `### \`/calendar\`\nThis season's event timeline — Draws, Events, and Game Modes\n### \`/patch notes\`\nLatest weapon balance changes, plus the full patch-note history\n### \`/season end\`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n\n`
-        + `-# **Options**\n-# 🔹 \`[page]\` (/calendar) Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` (/calendar) Show all events, or only active/upcoming (defaults to your /settings choice)\n-# 🔹 \`[version]\` (/patch notes) Search a specific previous patch, autocomplete\n-# 🔹 \`[visibility]\` View as a hidden ephemeral message or publicly\n\n`
-        + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** version:\`Season 6\``;
+    return `### \`/calendar\`\nThis season's event timeline — Draws, Events, and Game Modes\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your /settings choice)\n${VISIBILITY_BULLET}\n`
+        + `### \`/patch notes\`\nLatest weapon balance changes, plus the full patch-note history\n-# 🔹 \`[season]\` Search a specific previous season, autocomplete\n${VISIBILITY_BULLET}\n`
+        + `### \`/season end\`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
 function buildUtilitiesBody() {
-    return `### \`/colors\`\nView the colors extracted from your Discord profile and pick which one accents your panels\n### \`/timestamp\`\nConvert any date/time into a Discord timestamp that displays correctly in everyone's own timezone\n\n`
-        + `-# **Options**\n-# 🔹 \`<datetime>\` (/timestamp) e.g. "tomorrow", "sun 4:30pm", "19:30"\n-# 🔹 \`[timezone]\` (/timestamp) Defaults to your saved /settings timezone\n-# 🔹 \`[style]\` (/timestamp) Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` (/timestamp) Embed or plain Text, one-off only\n-# 🔹 \`[visibility]\` View as a hidden ephemeral message or publicly\n\n`
-        + `-# **Examples**\n-# 🔸 **/timestamp** datetime:\`tomorrow 8pm\` timezone:\`Eastern Time\`\n-# 🔸 **/colors** visibility:\`True\``;
+    return `### \`/colors\`\nView the colors extracted from your Discord profile and pick which one accents your panels\n${VISIBILITY_BULLET}\n`
+        + `### \`/timestamp\`\nConvert any date/time into a Discord timestamp that displays correctly in everyone's own timezone\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "sun 4:30pm", "19:30"\n-# 🔹 \`[timezone]\` Defaults to your saved /settings timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/colors** visibility:\`Public\`\n-# 🔸 **/timestamp** datetime:\`tomorrow 8pm\` timezone:\`Eastern Time\`\n-# 🔸 **/timestamp** datetime:\`19:30\` style:\`Relative Time (R)\` view:\`Text\``;
 }
 
 function buildPreferencesBody() {
-    return `### \`/settings\`\nTwo pages: Visibility (who sees your responses by default) and Preferences (timezone, calendar filter, accent style, and more)\n\n`
-        + `-# **Options**\n-# 🔹 \`[visibility]\` View as a hidden ephemeral message or publicly\n\n`
+    return `### \`/settings\`\nTwo pages: Visibility (who sees your responses by default) and Preferences (timezone, calendar filter, accent style, and more)\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/settings**`;
 }
 
@@ -136,7 +157,7 @@ const BODY_BUILDERS = {
 function buildCategorySelectRow(selectedKey) {
     const isLanding = !selectedKey;
     const options = [
-        { label: 'Commands List', value: 'landing', description: 'Return to the main command overview', emoji: emojis.parseEmoji(emojis.dioreoCombo), default: isLanding },
+        { label: 'Commands List', value: 'landing', description: 'Back to the full command overview', emoji: emojis.parseEmoji(emojis.dioreoCombo), default: isLanding },
         ...CATEGORY_DEFS.map(c => ({
             label: c.label,
             value: c.key,
@@ -167,7 +188,7 @@ async function buildContainer(selectedKey, accentColor) {
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                { type: 2, style: 5, label: 'Install dioreo', url: INSTALL_URL }
+                { type: 2, style: 5, label: 'Install Dioreo', url: INSTALL_URL }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });
@@ -182,10 +203,13 @@ async function buildContainer(selectedKey, accentColor) {
                 + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`
         });
         components.push({ type: 14, spacing: 2, divider: true });
-        components.push({ type: 10, content: `-# Pick a category below to explore its commands, or use \`/help cmd:\` to jump straight to one.` });
+        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it
+        // ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it
+        // right below would just be the same instruction twice in one panel.
+        components.push({ type: 10, content: `-# Explore a category below.` });
         components.push(buildCategorySelectRow(null));
         components.push({ type: 14, spacing: 1, divider: true });
-        components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by @dior` });
+        components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
         const body = selectedKey === 'gunsmiths'
             ? buildGunsmithsBody(await getLiveGunsmithCommandNames())
@@ -195,7 +219,10 @@ async function buildContainer(selectedKey, accentColor) {
         components.push({ type: 14, spacing: 2, divider: true });
         components.push({ type: 10, content: body });
         components.push({ type: 14, spacing: 2, divider: true });
-        components.push({ type: 10, content: `-# Use the dropdown to browse another category, or jump back with \`/help cmd:\`.` });
+        // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing
+        // page above), so it's worth surfacing here -- reworded from the landing hint rather than
+        // reused verbatim, since the two pages need different things said.
+        components.push({ type: 10, content: `-# Browse another category below, or jump straight to a command with \`/help cmd:\`.` });
         components.push(buildCategorySelectRow(selectedKey));
     }
 
@@ -207,6 +234,7 @@ module.exports = {
         .setName('help')
         .setDescription("See what Dioreo can do, and how to reach Harkirat with bugs or ideas")
         .addStringOption(option => option.setName('cmd').setDescription('Jump straight to a specific command').setAutocomplete(true))
+        .addStringOption(option => option.setName('visibility').setDescription(`${VISIBILITY_DESCRIPTION} (Defaults to only you.)`).addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     CATEGORY_DEFS,
@@ -228,14 +256,18 @@ module.exports = {
         }
         if (selectedKey === 'landing') selectedKey = null;
 
-        // Always ephemeral -- this is static, non-personal content with no reason for a per-command
-        // visibility option; "Show Everyone" (below) already covers the "I want to share this" case.
-        if (!interaction.deferred) await interaction.deferReply({ flags: 64 });
+        // Unlike every other command, /help has no saved preference to fall back to -- defaults to
+        // hidden (matches /manage's/`/alerts`' own-panel convention) unless explicitly made public.
+        const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
+        const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
+        if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        const components = withShareButton([await buildContainer(selectedKey, accentColor)], true);
+        // No "Show Everyone" button -- the visibility option above already covers that case up
+        // front, and repeating it here would be redundant (Harkirat's direct request).
+        const components = [await buildContainer(selectedKey, accentColor)];
         return await sendV2Payload(interaction, components);
     }
 };

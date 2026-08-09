@@ -40,7 +40,7 @@ module.exports = {
         // (explicit option > saved settingsVisibility preference > public default, see
         // resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as
         // before for changing the SAVED preference; this just lets one specific invocation override it.
-        .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
@@ -70,7 +70,8 @@ module.exports = {
         // execute() with a button/select interaction that has no real options resolver, so
         // argPrivate naturally falls through to null on those, leaving the saved preference (not
         // this option) in control exactly as before this change.
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('visibility') : null;
+        const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'settingsVisibility' });
         if (!interaction.deferred && !interaction.replied) {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });

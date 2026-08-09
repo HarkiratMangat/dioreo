@@ -29,9 +29,10 @@ module.exports = {
             .setName('end')
             // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
             .setDescription('Check countdowns for when this season ends')
-            .addBooleanOption(option =>
+            .addStringOption(option =>
                 option.setName('visibility')
-                    .setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
+                    .setDescription('Show this response only to you, or publicly to everyone in the chat.')
+                    .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
@@ -46,7 +47,8 @@ module.exports = {
         const prefsPromise = UserPreference.findOne({ discordId: userId });
         const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
         const prefs = await prefsPromise;
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('visibility') : null;
+        const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         // NOTE: switched from the old per-command `seasonendVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A — one switch controls Season End/Draws/Patch Notes/Calendar/Draw

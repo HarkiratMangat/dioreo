@@ -27,7 +27,7 @@ module.exports = {
             option.setName('build')
                 .setDescription('Jump to a specific build number')
                 .setMinValue(1))
-        .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
@@ -56,7 +56,8 @@ module.exports = {
         // same explicit-option > saved-preference > default priority every other command uses --
         // added specifically so a user can invoke the command already-public in one shot instead of
         // relying on the "Share Publicly" button to flip it after the fact.
-        const argPrivate = interaction.options.getBoolean('visibility');
+        const visibilityChoice = interaction.options.getString('visibility');
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
 
         await interaction.deferReply({ ephemeral: isEphemeral });

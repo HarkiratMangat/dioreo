@@ -301,7 +301,7 @@ module.exports = {
         .addStringOption(option => option.setName('view').setDescription('Show all events, or only active/upcoming ones (defaults to your /settings choice)').addChoices(
             { name: 'All Events', value: 'all' }, { name: 'Active/Upcoming Only', value: 'active' }
         ))
-        .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -318,7 +318,8 @@ module.exports = {
         const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
 
         const prefs = await prefsPromise;
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('visibility') : null;
+        const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         // NOTE: switched from the old per-command `calendarVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A).

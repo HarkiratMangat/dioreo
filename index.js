@@ -234,7 +234,7 @@ commands.push(
         // were truncating on mobile; see the matching trim on /dmz's and /<category>'s copies.
         .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
         .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-        .addBooleanOption(opt => opt.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
 );
 
@@ -295,7 +295,7 @@ async function handleBotReady() {
                 // for the same concept.
                 .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
                 .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-                .addBooleanOption(opt => opt.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+                .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
         );
     });
@@ -927,7 +927,8 @@ client.on('interactionCreate', async interaction => {
         const mpBuildsPromise = Loadout.find({ weaponKey, mode: 'MP' }).lean();
 
         const prefs = await prefsPromise;
-        const argPrivate = interaction.options.getBoolean('visibility');
+        const visibilityChoice = interaction.options.getString('visibility');
+        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });
 
@@ -1958,7 +1959,7 @@ client.on('interactionCreate', async interaction => {
                     followUp: async (payload) => interaction.followUp(payload),
                     // Button interactions have no `.options` resolver at all (that only exists on
                     // slash command interactions). Commands re-used via nav buttons call things like
-                    // interaction.options.getBoolean('visibility'), which would otherwise throw
+                    // interaction.options.getString('visibility'), which would otherwise throw
                     // "Cannot read properties of undefined". Stub it out safely.
                     options: {
                         getBoolean: () => null, getString: () => null, getInteger: () => null,

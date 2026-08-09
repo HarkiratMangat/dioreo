@@ -982,7 +982,7 @@ module.exports = {
             // execute() below the same way those are.
             { name: 'Bulk Format Guide', value: 'guide' }
         ))
-        .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
+        .addStringOption(option => option.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
 
     // Getter, not a value: the table must be built per access so emoji ids are read after
     // refreshEmojiIds() has run (see buildPagesTable). Don't destructure this at module load.
@@ -1021,8 +1021,8 @@ module.exports = {
         // Default ephemeral (true) unless explicitly set to public — matches the "default private"
         // convention Harkirat asked for on this specific command (every OTHER command defaults
         // public; this one is the admin panel, so it flips the default).
-        const argPrivate = interaction.options.getBoolean('visibility');
-        const isEphemeral = argPrivate === null ? true : argPrivate;
+        const visibilityChoice = interaction.options.getString('visibility');
+        const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide
