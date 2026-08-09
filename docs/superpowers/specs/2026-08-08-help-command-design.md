@@ -8,6 +8,15 @@ status: approved
 *Dated snapshot of what was decided on 2026-08-08 and why. Superseded by a new dated spec if the
 design changes materially — this file is not edited after the fact.*
 
+⚠️ **The shipped design diverged materially from this snapshot, iterated through direct review
+feedback and Harkirat's own JSON mockups within the same branch before ever merging** — categories
+became Gunsmiths/Draws/Seasonal Info/Utilities/Preferences (not the original 5-category split named
+here), the accent is coral (`#FF7D5C`) not Sunbeam Yellow, a mascot hero + Website/Install link
+buttons were added, and the bot-wide `hidden`→`visibility` rename (a boolean → string choice) was
+not part of this original scope at all. No second dated spec was written for the revision — the code
+(`commands/help.js`) is the current source of truth; this file is kept as the historical record of
+the first design pass, per the "not edited after the fact" rule above.
+
 ## Goal
 
 A user-facing `/help` command (ROADMAP.md:226) that documents the bot's commands/features and

@@ -7,7 +7,7 @@ paths:
 
 # Commands — architecture & per-command notes
 
-*Loads when you touch any `commands/*.js`. The command list + routing conventions, the user-install/DM requirement, `/timestamp`, and loadout `build`/`private` options. Deeper per-command detail lives in: `.claude/rules/manage-panel.md` (`/manage`), `.claude/rules/draw-prices.md`, `.claude/rules/settings-and-expiry.md` (`/settings` locks/expiry), `.claude/rules/loadouts.md` (loadout lookup), `.claude/rules/accent-and-colors.md` (`/colors`, accent styles), and `.claude/rules/interaction-router.md` (`index.js` handler/router logic).*
+*Loads when you touch any `commands/*.js`. The command list + routing conventions, the user-install/DM requirement, `/timestamp`, and loadout `build`/`visibility` options. Deeper per-command detail lives in: `.claude/rules/manage-panel.md` (`/manage`), `.claude/rules/draw-prices.md`, `.claude/rules/settings-and-expiry.md` (`/settings` locks/expiry), `.claude/rules/loadouts.md` (loadout lookup), `.claude/rules/accent-and-colors.md` (`/colors`, accent styles), and `.claude/rules/interaction-router.md` (`index.js` handler/router logic).*
 
 ## Command list
 Base commands use subcommands to group related functionality:
@@ -19,6 +19,7 @@ Base commands use subcommands to group related functionality:
 - `/settings`, `/timestamp` — flat commands
 - `/dmz` — `dmz.js` (flat command; standalone DMZ loadout lookup, up to 9 attachments)
 - `/all`, `/<category>` (`/ar`, `/lmg`, `/sniper`, etc.) — MP loadout lookup. NOT files in `commands/` — auto-generated in `index.js`'s `handleBotReady()` from whatever categories currently exist in MongoDB (`Loadout.distinct('category', {mode:'MP'})`), so they only show up after the bot's first successful boot post-data-import. See `.claude/rules/loadouts.md`.
+- `/help` — `help.js` (flat command; categorized command guide — Gunsmiths/Draws/Seasonal Info/Utilities/Preferences — plus a `cmd:` autocomplete jump. Shipped 2026-08-08 22:35 EDT as Pre-Release v3.1.0.)
 - `/manage` (admin-only) — the single admin data-entry command; full panel design in `.claude/rules/manage-panel.md`.
 
 ## User-install / DM support — must be set per-command, not inherited

@@ -46,7 +46,6 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 - **Draw cost calculator** — cost to finish a draw from region + attempts done/remaining + CP balance, with a suggested top-up package.
 - **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta` above; pick one shape at design time). `/dmz` stays as-is.
 - **`/settings` jump-to options** and **detaching `/colors`' visibility** from settings.
-- **`/help`** detailing commands/features, referenced from the bot's Discord description — must include a way to contact Harkirat (his Discord) for bug reports/requests.
 - A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour pages and the reworded block message.
 - **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
 - **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.

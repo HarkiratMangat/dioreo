@@ -70,9 +70,9 @@ const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 // getLiveGunsmithCommandNames below) since they can't be hardcoded here. `dropdownDescription`s are
 // written to be genuinely useful at a glance, not filler -- what you'll actually find in there.
 const CATEGORY_DEFS = [
-    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Find your next MP or DMZ loadout', staticCommands: ['/all', '/dmz'] },
+    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts', staticCommands: ['/all', '/dmz'] },
     { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: ['/draws', '/draw prices'] },
-    { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & countdowns", staticCommands: ['/calendar', '/patch notes', '/season end'] },
+    { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: ['/calendar', '/patch notes', '/season end'] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: ['/colors', '/timestamp'] },
     { key: 'preferences', label: 'Preferences', emojiKey: 'settings', dropdownDescription: 'Manage your saved bot settings', staticCommands: ['/settings'] }
 ];
@@ -206,7 +206,7 @@ async function buildContainer(selectedKey, accentColor) {
         // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it
         // ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it
         // right below would just be the same instruction twice in one panel.
-        components.push({ type: 10, content: `-# Explore a category below` });
+        components.push({ type: 10, content: `-# Select a category from the dropdown below` });
         components.push(buildCategorySelectRow(null));
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
