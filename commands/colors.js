@@ -18,7 +18,7 @@ module.exports = {
         .setName('colors')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription('View colors extracted from your profile')
-        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
@@ -29,7 +29,7 @@ module.exports = {
         // No dedicated visibility preference field of its own -- reuses settingsVisibility, same as
         // the "View Colors" button inside /settings itself, so behavior stays consistent between the
         // two entry points unless this specific invocation explicitly overrides it.
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('hidden') : null;
+        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('visibility') : null;
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'settingsVisibility' });
 
         if (!interaction.deferred && !interaction.replied) {

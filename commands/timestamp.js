@@ -158,7 +158,7 @@ module.exports = {
         // one) got renamed again to `hidden` with a fuller description explaining who actually sees
         // the response.
         .addBooleanOption(option =>
-            option.setName('hidden')
+            option.setName('visibility')
                 .setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to
         // /settings or UserPreference; every invocation defaults to Embed unless explicitly typed.
@@ -234,7 +234,7 @@ module.exports = {
             // if you didn't type it. Now it falls back to the "Timestamps" toggle from /settings
             // (prefs.timestampVisibility) when the option is left blank, same priority pattern used
             // by the other commands: explicit option > saved preference > public default.
-            const argEphemeral = interaction.options.getBoolean('hidden');
+            const argEphemeral = interaction.options.getBoolean('visibility');
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
             // Accent color: fixed teal UNLESS the user has saved a specific default style in

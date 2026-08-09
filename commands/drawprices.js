@@ -529,7 +529,7 @@ module.exports = {
             .setDescription('View the CP cost breakdown for Lucky Draws')
             // Optional direct-jump flag
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
-            .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
+            .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer, // Expose to the root router
@@ -561,7 +561,7 @@ module.exports = {
 
         // PARAMETER INGESTION: Read optional arguments if initiated via Slash Command
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('hidden');
+            argPrivate = interaction.options.getBoolean('visibility');
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
         }

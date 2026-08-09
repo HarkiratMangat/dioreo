@@ -229,7 +229,7 @@ module.exports = {
             .setName('notes')
             .setDescription('View the latest weapon balance changes')
             .addStringOption(option => option.setName('version').setDescription('Search for specific previous patch notes').setAutocomplete(true))
-            .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
+            .addBooleanOption(option => option.setName('visibility').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -250,7 +250,7 @@ module.exports = {
 
         // Extract autocomplete values
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('hidden');
+            argPrivate = interaction.options.getBoolean('visibility');
             const searchId = interaction.options.getString('version');
             if (searchId) targetPatchId = searchId;
         }

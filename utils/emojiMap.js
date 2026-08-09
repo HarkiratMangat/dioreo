@@ -106,6 +106,11 @@ const emojis = {
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide
     // panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:Guide:1532894836301238477>',
+    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon;
+    // loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon
+    // above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
+    dioreoCombo: '<:DioreoCombo:1534640183230730470>',
+    loadouts: '<a:Loadouts:1535779248982335618>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');
