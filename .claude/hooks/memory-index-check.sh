@@ -128,7 +128,13 @@ elif [ "$size" -gt "$threshold" ]; then
   warn="  APPROACHING BUDGET: MEMORY.md is ${size}B/${BUDGET}B (${pct}%, over the ${THRESHOLD_PCT}%
     advisory line). Still under budget, but the NEXT new index line may not fit - look for a
     retirement/merge candidate now, while there's room to choose one deliberately, rather than being
-    forced into it mid-edit. See project_memory_index_scaling for the retirement criteria."
+    forced into it mid-edit. See project_memory_index_scaling for the retirement criteria.
+    METHOD: run Anthropic's own 'consolidate-memory' skill (take stock -> consolidate -> tidy index).
+    Its Phase 3 target and this budget are the SAME 25,000B number, so follow it as written. ONE
+    override: its 'retire dated files / drop what is easy to re-find' step must NOT touch the
+    feedback_* memories - those are durable by design and are not re-derivable from the repo.
+    The skill lives OUTSIDE ~/.claude and no search there will find it:
+    ~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/<org>/<account>/skills/"
 fi
 
 if [ -n "$err" ]; then
