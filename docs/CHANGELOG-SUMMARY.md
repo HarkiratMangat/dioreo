@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.63.1 — August 9, 2026
+- **Nothing changed in the bot.** Internal housekeeping on the project's own development tooling: a self-imposed limit on an internal notes file was found never to have been measured and was corrected, and two small automated reminders were added to catch mistakes that were previously only caught by hand.
+
 ## v2.63.0 — August 8, 2026
 - **Nothing changed in the bot.** A documentation-only release: the project's own notes and reference files were reformatted so they're easier to search, and each one now says at the top what kind of document it is and whether it's published to the website. Purely internal housekeeping — no command, screen or behaviour is different.
 

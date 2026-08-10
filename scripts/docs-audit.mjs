@@ -646,7 +646,10 @@ check(
     // (e.g. "Earlier milestones") which must NOT be reported as extra, and must survive any rebuild.
     const toc = lines.slice(s + 1, e).filter((l) => /^- 20\d{2}-/.test(l)).map((l) => l.slice(2).trim());
     const out = [];
-    for (const h of heads) if (!toc.includes(h)) out.push({ msg: `in the DEVLOG body but not the TOC: "${h}"` });
+    // Naming the tool in the failure message is the point: this check and the Part-B one below both
+    // fire AFTER the bytes land, so each costs an edit-and-recheck cycle. `devlog-add.mjs` makes
+    // both structurally impossible, and it runs the Edit/Write gates itself so nothing is bypassed.
+    for (const h of heads) if (!toc.includes(h)) out.push({ msg: `in the DEVLOG body but not the TOC: "${h}"\n      FIX ONCE, NOT AGAIN: add entries with \`node scripts/devlog-add.mjs --title "<TITLE>" --body-file <path>\` — it inserts the TOC line and places the entry at the end of Part A, so this check cannot trip.` });
     for (const t of toc) if (!heads.includes(t)) out.push({ msg: `in the DEVLOG TOC but not the body (stale wording or a renamed heading): "${t}"` });
     if (!out.length && heads.join("|") !== toc.join("|")) {
       out.push({ msg: "DEVLOG TOC holds the same entries as the body, but not in the same order." });
@@ -680,7 +683,9 @@ check(
       .map(({ l, n }) => ({
         msg: `docs/DEVLOG.md:${n} is a dated entry ("${l.replace(/^## /, "")}") sitting after the ` +
           `"# Part B" marker. Part B is thematic only — a dated entry belongs in Part A, in chronological ` +
-          `order, not appended after the ledger.`,
+          `order, not appended after the ledger.\n      FIX ONCE, NOT AGAIN: add entries with ` +
+          `\`node scripts/devlog-add.mjs --title "<TITLE>" --body-file <path>\` — it inserts at the end of ` +
+          `Part A and adds the TOC line, and it runs the Edit/Write gates itself so nothing is bypassed.`,
       }));
     return { findings: out, examined: after.length };
   }

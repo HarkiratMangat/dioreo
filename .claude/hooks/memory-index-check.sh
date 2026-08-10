@@ -18,12 +18,21 @@
 # Nothing in normal operation sets these; the defaults are the real store.
 MEM="${MEMCHECK_DIR:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory}"
 STATE="${MEMCHECK_STATE:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory-index-state}"
-# TEMPORARILY bumped 16000 -> 20000 on 2026-08-08 00:52 EDT, Harkirat's direct request: the index's
-# points were judged genuinely worth keeping and not easily trimmable on a quick look, and 98 lines
-# isn't worth a real compaction pass over. The real fix (docs/db-deferred-list.md's P2 "MEMORY.md
-# compaction pass" item) is still open -- this just buys headroom until that session happens. Revert
-# to 16000 once that item lands, don't let this drift into the new permanent value by default.
-BUDGET="${MEMCHECK_BUDGET:-20000}"
+# 25000 since 2026-08-09 23:28 EDT, and this is now a REAL number rather than an inherited one.
+# History, because the provenance is the whole point: 16000 was never measured -- the design spec
+# chose it as "~20% above the post-consolidation target of ~9KB", i.e. a number derived from another
+# number. It was then bumped to 20000 on 2026-08-08 as a reactive patch when a session started
+# treating the self-imposed 16000 as a hard wall and stalled on it. Harkirat, 2026-08-09 23:27 EDT:
+# "i don't mind the 25kb ceiling. i just raised it to 20kb because a session earlier was freaking out
+# about the self restricted 16kb ceiling it had put on itself."
+# 25000 is the figure in Anthropic's own `consolidate-memory` skill (~/Library/Application Support/
+# Claude/local-agent-mode-sessions/skills-plugin/<org>/<account>/skills/), so the tool and the hook
+# now agree instead of contradicting each other.
+# ⚠️ There is NO measured cliff anywhere near here. The old "24.4KB hard read limit" DOES NOT
+# reproduce -- a 33,530-byte memory file reads in full -- so 25000 sits comfortably under
+# demonstrated-working, and this is a housekeeping ceiling, not a platform limit. Do NOT "restore"
+# 16000 or 20000; both are superseded, and neither ever measured anything.
+BUDGET="${MEMCHECK_BUDGET:-25000}"
 
 [ -d "$MEM" ] || exit 0
 [ -f "$MEM/MEMORY.md" ] || {
@@ -119,7 +128,13 @@ elif [ "$size" -gt "$threshold" ]; then
   warn="  APPROACHING BUDGET: MEMORY.md is ${size}B/${BUDGET}B (${pct}%, over the ${THRESHOLD_PCT}%
     advisory line). Still under budget, but the NEXT new index line may not fit - look for a
     retirement/merge candidate now, while there's room to choose one deliberately, rather than being
-    forced into it mid-edit. See project_memory_index_scaling for the retirement criteria."
+    forced into it mid-edit. See project_memory_index_scaling for the retirement criteria.
+    METHOD: run Anthropic's own 'consolidate-memory' skill (take stock -> consolidate -> tidy index).
+    Its Phase 3 target and this budget are the SAME 25,000B number, so follow it as written. ONE
+    override: its 'retire dated files / drop what is easy to re-find' step must NOT touch the
+    feedback_* memories - those are durable by design and are not re-derivable from the repo.
+    The skill lives OUTSIDE ~/.claude and no search there will find it:
+    ~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/<org>/<account>/skills/"
 fi
 
 if [ -n "$err" ]; then

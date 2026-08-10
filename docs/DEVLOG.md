@@ -128,6 +128,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-08 00:46 EDT — A small batch of tweaks, and a completeness sweep that earned its keep (v2.62.0)
 - 2026-08-08 09:49 EDT — Twenty-four alerts, one root cause and eight non-issues (v2.62.1)
 - 2026-08-08 12:05 EDT — Reflowing 44 files, and the regression only the real build could see (v2.63.0)
+- 2026-08-09 23:55 EDT — Three tools that went unused, and none of the reasons were the ones written down (v2.63.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2256,6 +2257,26 @@ That is the takeaway worth keeping: **render-equivalence under a general parser 
 The front-matter work was smaller and mostly about restraint. `kind` and `status` earn their place because something checks them; `description`, `updated`, `title` and `tags` were all rejected because nothing would consume them and each would rot into confident misinformation. The one genuinely useful addition was Harkirat's prompt to think wider: a `published: true` flag on the seven sources that render to dioreo.app, cross-checked against the generator's own page tables so the field cannot drift from what actually publishes. His other suggestion — a `tracked:` field, from noticing that sessions sometimes edit `.md` files before branching — was a real observation pointed at the wrong mechanism: a field cannot prevent anything, and `branch-discipline-guard.sh` already denies exactly that.
 
 The session also closed a loop on itself. I wrote "I'll record it in memory" and then started the next task, and Harkirat asked whether I actually had. I had not. The existing `outstanding-not-filed.sh` could not have caught it: every tell it knows describes work being *left behind*, and this shape is the opposite in tone — an enthusiastic promise to do it later in the same session, which reads as diligence. It now blocks on a promise to write a record that the turn did not write.
+
+## 2026-08-09 23:55 EDT — Three tools that went unused, and none of the reasons were the ones written down (v2.63.1)
+
+The question was why `perseus-vault`, `linksee` and `codebase-memory-mcp` kept going unused despite standing "always use me" directives. The handoff arrived with a confident root cause: a nudge hook wired to `Grep|Glob` while the rules route every search through `rg` on Bash, so the hook never fired. It was a real gap and it was **not** the cause.
+
+**The actual cause was that the hook emitted malformed JSON.** A `hookSpecificOutput` without `hookEventName` is silently discarded — the hook runs, exits 0, prints valid JSON, and reaches nobody. Two hooks had been dead this way. Proven by control rather than argued: `usage-guard.mjs` carries the field and fires, and adding it to the dead hook made it fire on the very next call. **Both dead hooks had been pipe-tested and passed.** That is the whole lesson: a pipe-test proves the *script*, never the *hook*. Two adjacent beliefs died in the same hour — the `Grep|Glob` matcher was never the problem, and `settings.json` edits *are* picked up mid-session.
+
+**A fourth thing nobody was looking for.** `~/.cache/codebase-memory-mcp/` held a `.db.corrupt` quarantined at 22:34:14 — that session's own start. The index had been corrupt through prior sessions and presented as a friendly `{"projects":[]}` with a "just index one" hint, indistinguishable from never-indexed. So every session correctly fell back to `rg` and nothing ever reported it. **The tool had no data; the directive was never being ignored.**
+
+**`hookify` produced the most useful negative.** It works — a `block` probe genuinely denied a call — but its `warn` action emits only `systemMessage`, which surfaces to Harkirat and never enters Claude's context. So hookify can *block* Claude or *notify* the human, and cannot *nudge*. That single fact would have saved the first hour, and it decided the design: the only mechanisms that reach Claude are `additionalContext` + `hookEventName`, a `deny`, or a `Stop` block.
+
+**Then the investigation turned on its own findings, twice.**
+
+First, on a number. Flagging that `consolidate-memory`'s 25KB target "contradicted this project's deliberate 20,000 B ceiling" was defending an invention: the spec had chosen 16,000 as *"~20% above the post-consolidation target of ~9KB"*, and 20,000 was a patch to calm a session that had started treating its own invention as a wall. **A self-imposed constraint that nothing measured is the most expensive kind — it looks like rigour, so nobody re-tests it.**
+
+Second, on a habit. Editing the tracker item whose premise had just been removed, the edit *added* an instruction for a future session to re-tag it. Harkirat: *"you're literally correcting and updating it right now so why not [just] retag it yourself?"* That became `defer-in-place-guard.sh` — the inverse of `outstanding-not-filed.sh`, which catches *named but never filed*; this catches an item that **was** filed, filed as someone else's job. **A written-down deferral is indistinguishable from diligence**, which is exactly why it passed every existing gate. It caught its author within a minute of going live.
+
+**And the closing exchange was the sharpest.** Asked whether three skills had been documented, a single `rg` showed `verification-before-completion` existed only in a chat message — surfaced while cataloguing the skill about not claiming things without checking. Worse, `doc-coauthoring` had been catalogued and reported handled, and the follow-up question — *"is that nudge new? did you change something to actively bring it to the front of mind?"* — had the answer **no**. **A reference-memory entry is passive: it helps only a session that happens to open that file. Cataloguing a tool is not adopting it.** `spec-handoff-coauthor-nudge.sh` is the correction.
+
+Also closed out the sequential-thinking observation window with data: unrestricted, its trigger rate rose **≈10×**, and the rule — not the tool — had caused the low usage. The larger finding was unplanned and sits underneath everything above: **deliberate memory writes had collapsed 0.49 → 0.04 per session, with `perseus-remember` at zero across 26 sessions and 20,669 turns.**
 
 # Part B — Lessons Ledger (thematic)
 
