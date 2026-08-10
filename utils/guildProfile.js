@@ -27,6 +27,7 @@
 // guild, and DMs), with genuinely different overrides set in each.
 
 const { Routes } = require('discord.js');
+const { deriveNameplateName } = require('./nameplatePalettes');
 
 // A null hash means "no override in this guild" -- NOT "no avatar". Discord only populates these
 // when the user has actually set a server-specific one, so null is the signal to fall through to the
@@ -52,10 +53,16 @@ function readGuildProfile(interaction) {
     // camelCase first (GuildMember), snake_case second (raw payload). Reading both is what lets one
     // code path serve both shapes without ever branching on which one it got.
     const decorationAsset = member.avatarDecorationData?.asset ?? member.avatar_decoration_data?.asset ?? null;
+    // sku_id, mirroring accentColor.js's fetchProfileExtras -- see that file's matching comment.
+    const decorationSkuId = member.avatarDecorationData?.sku_id ?? member.avatar_decoration_data?.sku_id ?? null;
     const nameplateAsset = member.collectibles?.nameplate?.asset ?? null;
     // Palette ENUM NAME, mirroring accentColor.js's fetchProfileExtras -- turned into a hex only by
     // utils/nameplatePalettes.js's nameplatePaletteHex(), never guessed here.
     const nameplatePalette = member.collectibles?.nameplate?.palette ?? null;
+    // sku_id + design name, mirroring accentColor.js's fetchProfileExtras -- see that file's matching
+    // comment and nameplatePalettes.js's deriveNameplateName for the full story.
+    const nameplateSkuId = member.collectibles?.nameplate?.sku_id ?? null;
+    const nameplateName = deriveNameplateName(member.collectibles?.nameplate?.label);
     const rawColors = member.display_name_styles?.colors ?? null;
 
     const { guildId } = interaction;

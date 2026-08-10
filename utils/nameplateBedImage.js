@@ -22,25 +22,14 @@ function gradientAlphaAt(t) {
     return stops[stops.length - 1].alpha;
 }
 
-// Same memo pattern as utils/resizedImage.js/colorSwatchImage.js -- the composited result for a given
-// source url + bed color + target width is deterministic and rarely changes, so this is a
-// one-time-per-process cost rather than a per-render one.
-const bedCache = new Map();
-const BED_CACHE_MAX = 64;
-
-// bedHex: a packed 0xRRGGBB integer (already resolved via nameplatePaletteHex + parseInt upstream --
-// this function never looks up or guesses a color itself, it only paints the one it's given).
-async function renderNameplateWithBed(url, bedHex, targetWidth = 512) {
-    const key = `${url}|${bedHex}|${targetWidth}`;
-    const cached = bedCache.get(key);
-    if (cached) return cached;
-
-    const art = await Jimp.read(url);
+// Shared by both call shapes below: paints the fade gradient bed at the art's own resolution (so the
+// gradient's horizontal stops land at the same fractional positions Discord's own CSS gradient uses,
+// regardless of how much the final image gets downscaled after), composites the art on top, and
+// downscales to targetWidth if needed. `art` is an already-decoded Jimp image so this has no opinion
+// on whether its source was a URL (one-shot static preview) or an extracted frame buffer (per-frame
+// animated render) -- that decision lives in the two thin wrappers below.
+function paintGradientBedOnto(art, bedHex, targetWidth) {
     const { width, height } = art.bitmap;
-
-    // Bed built at the ART's native resolution (not the eventual target width) so the gradient's
-    // horizontal stops land at the same fractional positions Discord's own CSS gradient uses,
-    // regardless of how much the final image gets downscaled below.
     const bed = new Jimp({ width, height, color: 0x00000000 });
     const r = (bedHex >> 16) & 0xff, g = (bedHex >> 8) & 0xff, b = bedHex & 0xff;
     const data = bed.bitmap.data;
@@ -63,66 +52,41 @@ async function renderNameplateWithBed(url, bedHex, targetWidth = 512) {
         const targetHeight = Math.max(1, Math.round(targetWidth * height / width));
         bed.resize({ w: targetWidth, h: targetHeight });
     }
+    return bed;
+}
 
-    const buffer = await bed.getBuffer('image/png');
+// Same memo pattern as utils/resizedImage.js/colorSwatchImage.js -- the composited result for a given
+// source url + bed color + target width is deterministic and rarely changes, so this is a
+// one-time-per-process cost rather than a per-render one.
+const bedCache = new Map();
+const BED_CACHE_MAX = 64;
+
+// bedHex: a packed 0xRRGGBB integer (already resolved via nameplatePaletteHex + parseInt upstream --
+// this function never looks up or guesses a color itself, it only paints the one it's given).
+async function renderNameplateWithBed(url, bedHex, targetWidth = 512) {
+    const key = `${url}|${bedHex}|${targetWidth}`;
+    const cached = bedCache.get(key);
+    if (cached) return cached;
+
+    const art = await Jimp.read(url);
+    const buffer = await paintGradientBedOnto(art, bedHex, targetWidth).getBuffer('image/png');
     if (bedCache.size >= BED_CACHE_MAX) bedCache.delete(bedCache.keys().next().value);
     bedCache.set(key, buffer);
     return buffer;
 }
 
-// Signed distance (Inigo Quilez's standard 2D rounded-box SDF) from (px,py) to the boundary of a
-// w x h rounded rect with corner radius r, centered in its own box -- 0 on the edge, negative
-// inside, positive outside. Used below to paint a ~1px antialiased rounded edge without a separate
-// masking library; this bot has no canvas/skia dependency, only Jimp's raw bitmap access.
-function sdRoundedBox(px, py, w, h, r) {
-    const cx = w / 2, cy = h / 2;
-    const qx = Math.abs(px - cx) - (cx - r);
-    const qy = Math.abs(py - cy) - (cy - r);
-    const ax = Math.max(qx, 0), ay = Math.max(qy, 0);
-    const outside = Math.sqrt(ax * ax + ay * ay);
-    const inside = Math.min(Math.max(qx, qy), 0);
-    return outside + inside - r;
-}
-
-// The GIF-caching feature's answer to Finding 3 in the design spec (2026-08-10 08:48 EDT): GIF's
-// binary alpha can't hold the existing gradient bed's fade-to-transparent edges at all (round-trips
-// to exactly 2 alpha values, confirmed live), so this paints a FULLY OPAQUE bed instead -- solid
-// bedHex, no gradient ramp -- with the art composited on top exactly as renderNameplateWithBed does.
-// Rounded corners (14px radius, ~1px antialiased edge, Harkirat's confirmed spec) are the only
-// surviving transparency in the frame; GIF's threshold handles four small corner triangles fine at
-// this scale (verified: alpha values after this composite cluster at 254-255 except right at the
-// corners). Renders ONE frame -- utils/nameplateGifCache.js calls this once per extracted webm frame,
-// yielding to the event loop between calls (same discipline the k-means CPU-burst incident taught,
-// see .claude/rules/accent-and-colors.md's production-incident section) since a real per-render burst
-// here is exactly what blocked other interactions' 3s ACK window before.
-const CORNER_RADIUS = 14;
-
-async function renderSolidRoundedBedFrame(artBuffer, bedHex, targetWidth = 512) {
+// Per-frame variant for the animated WebP cache (utils/nameplateWebpCache.js calls this once per
+// extracted webm frame) -- same fade-gradient math as renderNameplateWithBed above, just reading a
+// buffer instead of fetching a url, and uncached (each frame's art differs, so there's nothing to
+// memoize across calls the way the single-image static path can). WebP holds this fade's real
+// fade-to-transparent alpha ramp fine (unlike the GIF-era predecessor this replaced, which had to
+// paint a fully opaque solid bed instead because GIF's binary alpha can't hold a fade at all --
+// confirmed live at the time). Yields to the event loop between calls (same discipline the k-means
+// CPU-burst incident taught, see .claude/rules/accent-and-colors.md's production-incident section)
+// since a real per-render burst here is exactly what blocked other interactions' 3s ACK window before.
+async function renderGradientBedFrame(artBuffer, bedHex, targetWidth = 512) {
     const art = await Jimp.read(artBuffer);
-    const { width, height } = art.bitmap;
-
-    const bed = new Jimp({ width, height, color: 0x00000000 });
-    const r = (bedHex >> 16) & 0xff, g = (bedHex >> 8) & 0xff, b = bedHex & 0xff;
-    const data = bed.bitmap.data;
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const dist = sdRoundedBox(x + 0.5, y + 0.5, width, height, CORNER_RADIUS);
-            const coverage = Math.max(0, Math.min(1, 0.5 - dist));
-            const idx = (y * width + x) * 4;
-            data[idx] = r;
-            data[idx + 1] = g;
-            data[idx + 2] = b;
-            data[idx + 3] = Math.round(coverage * 255);
-        }
-    }
-    bed.composite(art, 0, 0);
-
-    if (width > targetWidth) {
-        const targetHeight = Math.max(1, Math.round(targetWidth * height / width));
-        bed.resize({ w: targetWidth, h: targetHeight });
-    }
-
-    return bed.getBuffer('image/png');
+    return paintGradientBedOnto(art, bedHex, targetWidth).getBuffer('image/png');
 }
 
-module.exports = { renderNameplateWithBed, renderSolidRoundedBedFrame };
+module.exports = { renderNameplateWithBed, renderGradientBedFrame };

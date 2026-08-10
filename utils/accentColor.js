@@ -3,6 +3,7 @@ const { Routes } = require('discord.js');
 const { getDominantColor } = require('./colorExtract');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, fetchGuildNameStyles, normalizeNameStyleColors } = require('./guildProfile');
+const { deriveNameplateName } = require('./nameplatePalettes');
 
 // Shared throttle for anything that needs a LIVE fetch to see fresh data (2026-07-13) -- unlike
 // avatar (whose hash arrives fresh on every interaction payload for free, see
@@ -55,18 +56,31 @@ async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
 //     for this newer collectible type, so the URL is built manually -- verified live against
 //     Discord's CDN (asset already ends in a trailing slash, `static.png` is the correct static-
 //     preview filename).
-//   - nameplateVideoUrl (2026-08-10 08:46 EDT, nameplate GIF caching feature): the sibling `asset.webm`, same
-//     asset path. Unusable by getDominantColor's still-image pixel sampling (that's still.png's job),
-//     but it's the ONLY source with real alpha -- see utils/nameplateGifCache.js's decode comment for
-//     why the default ffmpeg decoder silently discards that alpha and how it's forced correctly.
+//   - nameplateVideoUrl (2026-08-10 08:46 EDT, nameplate animated-preview caching feature): the sibling
+//     `asset.webm`, same asset path. Unusable by getDominantColor's still-image pixel sampling (that's
+//     still.png's job), but it's the ONLY source with real alpha -- see utils/nameplateWebpCache.js's
+//     decode comment for why the default ffmpeg decoder silently discards that alpha and how it's
+//     forced correctly.
 async function fetchProfileExtras(client, userId) {
     const raw = await client.rest.get(Routes.user(userId));
     const colors = raw.display_name_styles?.colors;
     const decorationAsset = raw.avatar_decoration_data?.asset || null;
+    // sku_id (2026-08-10 13:00 EDT) -- Discord's own official identifier for this specific decoration
+    // design, more precise/stable than the raw asset hash. No friendly-name field exists on this
+    // structure at all (confirmed live: avatar_decoration_data only ever carries asset/sku_id/
+    // expires_at) -- unlike nameplate below, decorations have no bot-accessible name source.
+    const decorationSkuId = raw.avatar_decoration_data?.sku_id || null;
     const nameplateAsset = raw.collectibles?.nameplate?.asset || null;
     // The palette ENUM NAME (e.g. "violet"), not a color -- utils/nameplatePalettes.js's
     // nameplatePaletteHex() is what turns this into a hex, and only when it recognizes the name.
     const nameplatePalette = raw.collectibles?.nameplate?.palette || null;
+    // sku_id + deriveNameplateName(label) (2026-08-10 13:00 EDT) -- sku_id is Discord's own official
+    // identifier for this nameplate DESIGN (distinct from `palette`, the currently-selected color
+    // theme). `label` is a real, structured, bot-accessible accessibility string
+    // ("COLLECTIBLES_NAMEPLATES_TWILIGHT_A11Y") that parses into the design's actual name -- see
+    // nameplatePalettes.js's deriveNameplateName for the full story on why this is trustworthy.
+    const nameplateSkuId = raw.collectibles?.nameplate?.sku_id || null;
+    const nameplateName = deriveNameplateName(raw.collectibles?.nameplate?.label);
     return {
         // A SOLID name style returns a single color, a gradient returns two. This used to demand
         // `colors.length >= 2` and treat one color as "not set up" -- which silently reclassified a
@@ -76,8 +90,11 @@ async function fetchProfileExtras(client, userId) {
         // guild-specific: a global solid style was mishandled the same way the whole time.
         displayNameColors: normalizeNameStyleColors(colors),
         decorationAsset,
+        decorationSkuId,
         decorationUrl: decorationAsset ? client.rest.cdn.avatarDecoration(decorationAsset) : null,
         nameplateAsset,
+        nameplateSkuId,
+        nameplateName,
         nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null,
         nameplateVideoUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}asset.webm` : null,
         nameplatePalette
