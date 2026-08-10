@@ -115,10 +115,33 @@ const typoBody = join(dir, "typo.md");
 // flags itself" trap the completeness sweep warns about. It fired here on the first attempt.
 const MISSPELLING = "delib" + "rate";
 writeFileSync(typoBody, `This entry has a ${MISSPELLING} misspelling in it.\n`);
-const rTypo = run(fresh("g1"), "2026-08-10 00:00 EDT — Misspelled body (v2.63.1)", typoBody);
-ok("typos-check blocks a misspelling in the body",
-   !rTypo.okRun && new RegExp(`typo|${MISSPELLING}`, "i").test(rTypo.err || ""),
-   (rTypo.err || "").slice(0, 120));
+// ⚠️ A gate can be PRESENT BUT INERT, and that is not the same as absent. `typos-check.sh` opens
+// with `command -v typos || exit 0`, so on a machine without the `typos` binary — CI is one — it
+// runs, exits 0, emits nothing, and enforces nothing. Asserting "it blocks" then fails in CI while
+// passing locally, which is exactly what happened on the first push (2026-08-10 04:15 UTC).
+// The fix is NOT to drop the assertion: a silently-skipped proof is the vacuous pass this repo
+// keeps paying for. Probe the gate directly, then either assert it or SKIP it OUT LOUD — a skip is
+// reported as its own state and is never counted as a pass.
+const gateLive = (script, args, payload) => {
+  const r = spawnSync("bash", [script, ...args], { input: payload, encoding: "utf8" });
+  return Boolean(((r.stdout || "") + (r.stderr || "")).trim());
+};
+const probe = (text) => JSON.stringify({
+  hook_event_name: "PreToolUse", tool_name: "Write",
+  tool_input: { file_path: "docs/DEVLOG.md", new_string: text },
+});
+let skipped = 0;
+const skip = (n, why) => { console.log(`  SKIP  ${n} — ${why}`); skipped++; };
+
+if (gateLive(".claude/hooks/typos-check.sh", [], probe(`a ${MISSPELLING} word`))) {
+  const rTypo = run(fresh("g1"), "2026-08-10 00:00 EDT — Misspelled body (v2.63.1)", typoBody);
+  ok("typos-check blocks a misspelling in the body",
+     !rTypo.okRun && new RegExp(`typo|${MISSPELLING}`, "i").test(rTypo.err || ""),
+     (rTypo.err || "").slice(0, 120));
+} else {
+  skip("typos-check blocks a misspelling in the body",
+       "typos-check is INERT here (the `typos` binary is not installed), so it enforces nothing to assert");
+}
 
 // timestamp-check has TWO modes and they are NOT interchangeable: `pre` DENIES an impossible
 // (future) stamp; `post` is advisory for a bare date. An earlier version of this test asserted
@@ -129,9 +152,14 @@ const futureBody = join(dir, "future.md");
 // file. It did, on the first attempt. (TS-EXAMPLE would also work; building it avoids the token.)
 const FUTURE_STAMP = "20" + "99-01-01 12:00 EDT";
 writeFileSync(futureBody, `We shipped this at ${FUTURE_STAMP}, which has not happened.\n`);
-const rFuture = run(fresh("g2"), "2026-08-10 00:00 EDT — Future stamp in body (v2.63.1)", futureBody);
-ok("timestamp-check (pre) BLOCKS an impossible future stamp", !rFuture.okRun,
-   (rFuture.err || "").slice(0, 140));
+if (gateLive(".claude/hooks/timestamp-check.sh", ["pre"], probe(`shipped at ${FUTURE_STAMP} somehow`))) {
+  const rFuture = run(fresh("g2"), "2026-08-10 00:00 EDT — Future stamp in body (v2.63.1)", futureBody);
+  ok("timestamp-check (pre) BLOCKS an impossible future stamp", !rFuture.okRun,
+     (rFuture.err || "").slice(0, 140));
+} else {
+  skip("timestamp-check (pre) BLOCKS an impossible future stamp",
+       "timestamp-check pre is INERT in this environment, so there is nothing to assert");
+}
 
 const bareDateBody = join(dir, "baredate.md");
 writeFileSync(bareDateBody, "Something happened on 2026-08-10 and we fixed it.\n");
@@ -146,5 +174,7 @@ ok("timestamp-check (post) WARNS on a bare date WITHOUT blocking",
 ok("a clean body still passes the gates", run(fresh("g3"), "2026-08-10 00:00 EDT — Clean body (v2.63.1)").okRun);
 
 rmSync(dir, { recursive: true, force: true });
-console.log(`\n  ${pass} passed, ${fail} failed`);
+// Skips are printed in the verdict, never folded into the pass count — a proof that did not run is
+// not a proof that succeeded, and hiding that is how a gate stays dead for weeks.
+console.log(`\n  ${pass} passed, ${fail} failed${skipped ? `, ${skipped} SKIPPED (gate inert here — see lines above)` : ""}`);
 process.exit(fail === 0 ? 0 : 1);
