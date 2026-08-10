@@ -205,6 +205,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/spec-handoff-coauthor-nudge.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
