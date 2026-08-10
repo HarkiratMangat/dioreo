@@ -7,6 +7,8 @@ const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
 const { nameplatePaletteHex } = require('./nameplatePalettes');
+const { resolveNameplateGif } = require('./nameplateGifCache');
+const { resolveDecorationGif } = require('./decorationGifCache');
 
 // Per-source color counts (2026-07-14, Harkirat's request) -- avatar/banner are richer, more
 // complex images that support more genuinely distinct clusters; nameplate/decoration are smaller,
@@ -89,9 +91,9 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         ? { url: extras.decorationUrl, source: extras.decorationAsset, needsStillFrame: true }
         : null;
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette }
+        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette }
+        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -249,6 +251,27 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         results[activeSource] = await getCachedPalette(
             prefs, activeSource, sources[activeSource], forceRefresh, isGuildSource(activeSource)
         );
+    }
+
+    // Animated GIF preview, same lazy-per-active-source discipline as the palette extraction above --
+    // a Cloudinary cache hit is cheap (one Admin API lookup), but a genuine cold render is the ~1.9s
+    // (nameplate) / comparable (decoration) cost the design spec measured, so this must never run for
+    // a source the user isn't currently looking at. `resolveNameplateGif`/`resolveDecorationGif` never
+    // throw -- a null here just means utils/colorPaletteView.js falls back to its existing static
+    // preview, exactly like a failed palette extraction already falls back to a cached-or-null value.
+    if (activeSource === 'nameplate' && sources.nameplate) {
+        results.nameplateGifUrl = await resolveNameplateGif({
+            nameplateAsset: sources.nameplate.source,
+            paletteName: sources.nameplate.palette,
+            webmUrl: sources.nameplate.videoUrl,
+            bedHex: results.nameplateBedHex
+        });
+    }
+    if (activeSource === 'decoration' && sources.decoration) {
+        results.decorationGifUrl = await resolveDecorationGif({
+            decorationAsset: sources.decoration.source,
+            decorationUrl: sources.decoration.url
+        });
     }
 
     return results;

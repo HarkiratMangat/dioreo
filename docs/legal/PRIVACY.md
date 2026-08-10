@@ -192,7 +192,7 @@ Under **PIPEDA**, our basis is your **implied consent**: you install the Bot and
 
 **Your stored personal data stays in Canada.** The `UserPreference` records — the only place your preferences live — are in an Atlas cluster hosted in **Azure Canada Central, Toronto**. Verified 2026-07-28 21:36 EDT by resolving the cluster's DNS records. The alert log described in §2.4 lives in the same cluster, for the same reason: it is a different collection, not a different provider or region.
 
-**Cloudinary holds no personal data.** The images there are game screenshots and weapon artwork supplied by the administrator. Your avatar is never uploaded.
+**Cloudinary holds no personal data.** The images there are game screenshots and weapon artwork supplied by the administrator, plus rendered previews of Discord's own nameplate/decoration cosmetic designs — cached by WHICH DESIGN it is, never by who equipped it, so the same cached image serves every user who has that same design. Your avatar is never uploaded.
 
 **No AI system processes your data.** The `/autobuild` command sends screenshots to a Gemini model for text extraction, but it is **restricted to the administrator's own Discord account**. No end-user data, image, or message is ever sent to any AI service.
 

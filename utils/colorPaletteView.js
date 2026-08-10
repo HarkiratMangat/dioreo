@@ -294,18 +294,27 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // it ourselves (utils/resizedImage.js) and attach the result. Falls back to the raw (native-width)
     // url if the resize fails for any reason, so the nameplate still shows rather than vanishing.
     else if (effectiveSource === 'nameplate' && data.nameplateUrl) {
-        try {
-            // Bed color resolved upstream in colorPalette.js (getPalettePanelData) -- null there means
-            // either no recognized palette or a genuine "none" bed, and both degrade to the plain
-            // resize path rather than compositing a fabricated color.
-            const npBuffer = data.nameplateBedHex != null
-                ? await renderNameplateWithBed(data.nameplateUrl, data.nameplateBedHex, 512)
-                : await renderResizedImage(data.nameplateUrl, 512);
-            files.push({ name: 'nameplate_resized.png', data: npBuffer });
-            containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
-        } catch (err) {
-            console.error('Nameplate resize failed, falling back to native-size url:', err.message);
-            containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateUrl } }] });
+        // Animated GIF preview (2026-08-10 09:00 EDT) -- resolved upstream in colorPalette.js via
+        // utils/nameplateGifCache.js, already a fully-rendered Cloudinary url (solid rounded bed +
+        // real animation), so this just references it directly, same as the Banner branch above.
+        // `nameplateGifUrl` is only ever set when a real bed color exists (see resolveNameplateGif),
+        // so this can't fire for the "no recognized palette" case the static branch below still needs.
+        if (data.nameplateGifUrl) {
+            containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateGifUrl } }] });
+        } else {
+            try {
+                // Bed color resolved upstream in colorPalette.js (getPalettePanelData) -- null there means
+                // either no recognized palette or a genuine "none" bed, and both degrade to the plain
+                // resize path rather than compositing a fabricated color.
+                const npBuffer = data.nameplateBedHex != null
+                    ? await renderNameplateWithBed(data.nameplateUrl, data.nameplateBedHex, 512)
+                    : await renderResizedImage(data.nameplateUrl, 512);
+                files.push({ name: 'nameplate_resized.png', data: npBuffer });
+                containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
+            } catch (err) {
+                console.error('Nameplate resize failed, falling back to native-size url:', err.message);
+                containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateUrl } }] });
+            }
         }
     }
     if (effectiveSource === 'name' && data.displayNameColors) {
@@ -329,8 +338,14 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // selected my server colors" is invisible until you go looking for the switch button.
     const sourceLabel = variant === 'server' ? 'Server Profile' : 'Global Profile';
     const headingContent = `## ${meta.heading} ${`<@${targetUserId}>`}\n> Extracted from: **\`${sourceLabel}\`**`;
+    // Deco's thumbnail prefers the cached animated GIF (2026-08-10 09:00 EDT, resolved upstream in
+    // colorPalette.js via utils/decorationGifCache.js's dithered-alpha pipeline) over the raw APNG --
+    // GIFs autoplay inline in a Section thumbnail the way Discord never lets APNG/webm do (see
+    // .claude/rules/accent-and-colors.md's "Deco" layout note for the manual-tap limitation this
+    // replaces). Falls back to the real decoration url exactly as before whenever the GIF isn't ready
+    // yet (render failure, dev-bot write block, or genuinely still rendering for the first time).
     const headerThumbnailUrl = effectiveSource === 'avatar' ? avatarThumbnailUrl
-        : effectiveSource === 'decoration' ? data.decorationUrl
+        : effectiveSource === 'decoration' ? (data.decorationGifUrl || data.decorationUrl)
         : null;
     if (headerThumbnailUrl) {
         // Tried a leading blank-emoji line to nudge the heading down toward vertical-center against

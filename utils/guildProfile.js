@@ -103,6 +103,12 @@ function readGuildProfile(interaction) {
         nameplateUrl: nameplateAsset
             ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png`
             : null,
+        // Mirrors accentColor.js's fetchProfileExtras -- same asset path, `asset.webm` instead of
+        // `static.png`. The GIF cache below keys on the asset+palette pair, not on guild vs global, so
+        // a server-equipped nameplate transparently reuses the same cached render as the global one.
+        nameplateVideoUrl: nameplateAsset
+            ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}asset.webm`
+            : null,
         nameplatePalette,
 
         // null here does NOT prove there is no server name style -- in a joined guild discord.js has

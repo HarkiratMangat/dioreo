@@ -54,8 +54,11 @@ async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
 //   - nameplateUrl: CDN URL for the nameplate's static PNG preview. No discord.js CDN helper exists
 //     for this newer collectible type, so the URL is built manually -- verified live against
 //     Discord's CDN (asset already ends in a trailing slash, `static.png` is the correct static-
-//     preview filename; `asset.webm` also exists but is an animated video, not usable by
-//     getDominantColor's still-image pixel sampling).
+//     preview filename).
+//   - nameplateVideoUrl (2026-08-10 08:46 EDT, nameplate GIF caching feature): the sibling `asset.webm`, same
+//     asset path. Unusable by getDominantColor's still-image pixel sampling (that's still.png's job),
+//     but it's the ONLY source with real alpha -- see utils/nameplateGifCache.js's decode comment for
+//     why the default ffmpeg decoder silently discards that alpha and how it's forced correctly.
 async function fetchProfileExtras(client, userId) {
     const raw = await client.rest.get(Routes.user(userId));
     const colors = raw.display_name_styles?.colors;
@@ -76,6 +79,7 @@ async function fetchProfileExtras(client, userId) {
         decorationUrl: decorationAsset ? client.rest.cdn.avatarDecoration(decorationAsset) : null,
         nameplateAsset,
         nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null,
+        nameplateVideoUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}asset.webm` : null,
         nameplatePalette
     };
 }
