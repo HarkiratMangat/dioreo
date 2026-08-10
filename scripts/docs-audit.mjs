@@ -2015,14 +2015,20 @@ check(
         continue; // not every export here is guaranteed to load standalone outside the app — skip what won't
       }
       if (!schema || !schema.paths) continue;
+      // ⚠️ WIDENED 2026-08-10 15:54 EDT, from a live miss. The heuristic was the three literal names
+      // below's first group, and models/GuildSettings.js shipped storing a Discord user ID in
+      // `updatedBy` — personal data by this policy's own §2.1 reasoning — without this check ever
+      // EXAMINING it. It did not fail; it reported a VACUOUS PASS, which reads as green. The actor
+      // names in the second group are the ordinary way a schema records "who did this", so a model
+      // carrying one is holding a user ID whatever the key of the collection is.
       const isPerUser = Object.keys(schema.paths)
-        .some((f) => /^(discordId|userId|user_id)$/i.test(f.split(".")[0]));
+        .some((f) => /^(discordId|userId|user_id|updatedBy|createdBy|authorId|ownerId)$/i.test(f.split(".")[0]));
       if (!isPerUser) continue;
       examined++;
       const name = file.replace(/\.js$/, "");
       if (!md.toLowerCase().includes(name.toLowerCase())) {
         out.push({
-          msg: `models/${file} stores a per-user field (discordId/userId) and is not named anywhere ` +
+          msg: `models/${file} stores a user-identifying field (discordId/userId/updatedBy or similar) and is not named anywhere ` +
             "in docs/legal/PRIVACY.md. A new per-user collection needs its own disclosure — extend " +
             "§2 or Appendix A the way UserPreference already is, and add a change-history row.",
         });

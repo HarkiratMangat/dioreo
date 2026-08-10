@@ -35,7 +35,26 @@ const { Routes } = require('discord.js');
 // `.claude/rules/rendering-and-ui.md` and `docs/db-deferred-list.md`'s "Pagination perf hybrid" entry
 // for the ORIGINAL design rationale and the heuristic this partial revert now qualifies.
 function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
-    const body = { content, components, flags };
+    // SERVER VISIBILITY POLICY (2026-08-10 15:50 EDT, v3 -- utils/guildPolicy.js). When a server has
+    // forced this response ephemeral, the "Show Everyone" row must not survive to the client: that
+    // button does not edit the ephemeral message, it posts a brand new genuinely public one, so
+    // leaving it live hands every member a one-click bypass of the admin's rule.
+    //
+    // Stripped HERE, at the send boundary, rather than in utils/shareButton.js where the row is
+    // built: every caller that can add the row already routes through this function, so one filter
+    // covers all of them and no future command has to remember a policy argument. The row is only
+    // ever appended as its own dedicated row (never mixed into an existing one), so dropping any row
+    // that contains the button is both safe and precise -- same reasoning as index.js's share_public
+    // handler, which re-checks server-side for panels opened before the rule was set.
+    let outgoing = components;
+    if (interaction?.dioreoPolicy?.allowShare === false) {
+        const { SHARE_BUTTON_CUSTOM_ID } = require('./shareButton');
+        outgoing = (components || []).filter(row =>
+            !(row?.type === 1 && (row.components || []).some(c => c?.custom_id === SHARE_BUTTON_CUSTOM_ID))
+        );
+    }
+
+    const body = { content, components: outgoing, flags };
     if (embeds !== undefined) body.embeds = embeds;
     if (allowedMentions !== undefined) body.allowed_mentions = allowedMentions;
 

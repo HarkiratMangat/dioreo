@@ -37,7 +37,9 @@ This is a much larger native surface than the roadmap entry assumed, and it reti
 
 1. **Guild-installed Dioreo is not an "external" app.** Once a server installs the bot, "Use External Apps" no longer governs it, so admins lose the native force-ephemeral lever precisely in the configuration v3 is launching. ⚠️ **UNVERIFIED — this is the premise that sizes the feature, and it must be tested before the sizing is quoted anywhere as fact.** Test: in 𝔇𝔯𝔢𝔞𝔪𝔩𝔞𝔫𝔡 (where the dev bot *is* guild-installed), disable **Use External Apps** for a role and run a public Dioreo command as a member holding it. Public output → gap is real. Ephemeral output → gap 1 does not exist and this feature rests on gaps 2 and 3 alone.
 2. **Both native permissions are blunt — they hit every app at once.** An admin who wants to quiet Dioreo specifically, while leaving other apps public, has no native way to express that.
-3. **No per-command targeting for a user-installed app.** Killing one Dioreo command natively means disabling Use Application Commands, which kills every slash command from every app in that channel. `disabledCommands` gives per-app, per-command recourse with no collateral.
+3. **No per-command targeting for a user-installed app.** Quieting one Dioreo command natively means disabling Use Application Commands, which kills every slash command from every app in that channel. `ephemeralCommands` gives per-app, per-command recourse with no collateral.
+
+⚠️ **Nothing in this feature refuses a command, and that is a platform limit rather than a scoping choice** (settled 2026-08-10 15:47 EDT, after Harkirat asked whether a restricted command could be removed from the server's command list outright). **A bot cannot hide a global slash command inside one guild.** Guild-scoped registration does not delete global commands — Discord merges both sets, so omitting a command from a guild's list leaves the global one visible. The only native mechanism that removes one command in one server is application command permissions, which can only be written with an OAuth2 bearer token from a MANAGE_GUILD user; the bot cannot set them for itself. Admins already hold that lever directly in Server Settings → Integrations, and it does not apply to user-installed invocations at all. So every rule in this design resolves to public-or-ephemeral, and a later session should not "finish" it by adding a refusal path.
 
 Gaps 2 and 3 hold regardless of how gap 1 resolves, so the feature ships either way; only its headline justification changes.
 
@@ -48,19 +50,23 @@ guildId           String    // unique, required
 defaultVisibility String    // 'public' | 'ephemeral', default 'public'
 channelRules      [{ channelId: String, visibility: String }]
 roleRules         [{ roleId: String, visibility: String, channelIds: [String] }]  // [] = all channels
-disabledCommands  [String]  // command names refused server-wide
+ephemeralCommands [String]  // command names forced ephemeral server-wide
 updatedBy         String    // discord id of the admin who last saved
 updatedAt         Date
 ```
 
 **No document is created until an admin saves a rule.** A server that never configures anything costs zero writes and one cached negative lookup. ⚠️ Every field above must exist in the Mongoose schema before any code assigns it — the repo's standing schema-save gotcha (`.claude/rules/models.md`): an undeclared field persists in memory and silently reverts on the next fetch.
 
-## Precedence — most specific wins
+## Precedence — highest tier wins
 
-1. A `roleRule` the member holds whose `channelIds` contains the current channel
-2. A `roleRule` the member holds with an empty `channelIds` (server-wide)
-3. A `channelRule` for the current channel
-4. `defaultVisibility`
+0. **Admin bypass** — owner / `ADMINISTRATOR` / `MANAGE_GUILD` skip tier 1 entirely and resolve from tier 2 down. Deliberately narrow (Harkirat, 2026-08-10 15:47 EDT): it exempts admins from the *command* rule only, never from the channel or role rules, because those they set for the whole server including themselves. The intent behind a command rule is "this one is noisy, keep it out of the channel for members" — the admins who set it should still be able to run it publicly.
+1. A command named in `ephemeralCommands` → `ephemeral`, **above** channel and role rules rather than below them
+2. A `roleRule` the member holds whose `channelIds` contains the current channel
+3. A `roleRule` the member holds with an empty `channelIds` (server-wide)
+4. A `channelRule` for the current channel
+5. `defaultVisibility`
+
+Tier 1 applies only where a command name exists — chat-input and autocomplete interactions. A button or select click skips it, which is correct rather than a gap: a component interaction edits a message whose ephemerality Discord fixed when it was first sent, so a command rule has nothing left to decide there.
 
 **Same-tier conflict** — the member holds two roles with opposite values at the same tier — resolves to **`public`**. This mirrors Discord's own role-overwrite semantics, where an explicit allow beats a deny, so admins already hold the right intuition. An admin who needs a hard quiet uses the channel tier (which is less specific and therefore loses to a role grant by design) or removes the role grant itself.
 
@@ -82,17 +88,14 @@ A server can quiet the bot; it can never make someone louder than they chose to 
 
 ## Where the gate lives
 
-`utils/ephemeral.js`'s `resolveEphemeral()` is already the single choke point for this decision, called from nine sites covering every command — **including the eight per-category weapon commands built dynamically in `index.js` (around line 941), which a sweep of `commands/*.js` misses.** Clamping there is the whole integration:
+The obvious design is to make `utils/ephemeral.js`'s `resolveEphemeral()` policy-aware and pass the policy in at its call sites. **It was built that way first and then removed.** `resolveEphemeral` is called by only nine commands — `/help`, `/timestamp`, `/colors` and the **eight per-category weapon commands built dynamically in `index.js`** never touch it — so it would have become an optional argument at nine sites where *forgetting* it looks identical to passing it, silently un-clamping a server's rule. That is the exact failure mode this feature exists to prevent.
 
-```js
-function resolveEphemeral({ argPrivate, prefs, prefsField, guildPolicy }) {
-    if (guildPolicy === 'ephemeral') return true;   // server ceiling wins outright
-    if (argPrivate !== null) return argPrivate;
-    return prefs ? prefs[prefsField] === 'ephemeral' : false;
-}
-```
+Instead there are **two choke points nothing routes around**, on the same reasoning as `utils/logger.js`'s `patchConsole()` — one patch that cannot be forgotten beats a rule that must be remembered:
 
-`guildPolicy` is resolved **once per interaction** in `index.js`'s `interactionCreate` choke point — after the anti-spam guard, before any routing — and attached to the interaction object. Two consequences that must not be missed:
+1. **`attachGuildPolicy()` wraps `reply` / `deferReply` / `followUp`** on the interaction itself when the verdict is `ephemeral`. No command can bypass it and no new command has to remember it. The wrapper preserves an explicit numeric `flags` (Components V2 sends pass `32768`) by OR-ing in the ephemeral bit rather than replacing it — dropping that flag would render a V2 payload as a blank message.
+2. **`utils/sendV2Payload.js` strips the "Show Everyone" row** on the way out. That button does not edit the ephemeral message; it posts a brand new, genuinely public one, so leaving it live under an ephemeral rule hands every member a one-click bypass. Every caller that can add the row already routes through this function. `index.js`'s `share_public` handler re-checks server-side as well, because a panel opened *before* an admin set the rule still has the button sitting on it.
+
+The policy is resolved **once per interaction** in `index.js`'s `interactionCreate` choke point — before the anti-spam guard, before any routing — and attached to the interaction object. Two consequences that must not be missed:
 
 - **`buildSyntheticInteraction()` must copy the resolved policy through.** A button re-invoking a slash command's `execute()` builds a synthetic interaction, and `Object.assign` is already banned here for dropping non-enumerable properties (a real past crash). The policy is one more field that has to survive that hop or every panel navigation silently reverts to the unclamped default.
 - **DM and user-install contexts have no `guildId`.** Policy resolves to `null` there and behaviour is exactly as today.
@@ -101,7 +104,7 @@ Resolution reads the invoking member's role ids from the interaction payload. **
 
 ## The command — `/server`
 
-A Components V2 panel for server admins, deliberately distinct from `/manage` (Harkirat's owner-level panel, gated by `ALLOWED_ADMIN_ID`, staying user-install-only).
+A Components V2 panel for server admins, deliberately distinct from `/manage` (Harkirat's owner-level panel, gated by `ALLOWED_ADMIN_ID`, staying user-install-only). Name confirmed by Harkirat 2026-08-10 15:47 EDT over `/serversettings`.
 
 - `setIntegrationTypes([0, 1])` — it must work in a server where the bot is only user-installed, because that is a configuration that still needs admin controls.
 - **The runtime check is the real gate**, not `setDefaultMemberPermissions`: that field is ignored for user-installed invocations. Admin resolves as `ADMINISTRATOR` or `MANAGE_GUILD` from the interaction's computed member permissions, or an `owner_id` match.
@@ -124,5 +127,5 @@ Behavioural, on the dev bot in 𝔇𝔯𝔢𝔞𝔪𝔩𝔞𝔫𝔡 — the v3.1
 2. `/server` is refused for a non-admin member and accepted for an admin.
 3. A channel rule of `ephemeral` forces a public-by-preference command to ephemeral in that channel, and leaves it public elsewhere.
 4. A role rule scoped to specific channels beats the channel rule inside them and not outside them.
-5. A disabled command is refused with an ephemeral notice, and the refusal covers one of the dynamically-built weapon commands.
+5. A command named in `ephemeralCommands` is forced ephemeral for an ordinary member and stays public for an admin, and the clamp covers one of the dynamically-built weapon commands.
 6. Gap 1's Use External Apps test, above.

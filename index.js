@@ -332,6 +332,19 @@ async function handleBotReady() {
         );
     });
 
+    // The names /server's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin
+    // visibility policy). Derived from `commands` -- the SAME array that is about to be registered --
+    // rather than from client.commands or a readdir of commands/*.js, both of which miss the eight
+    // per-category weapon commands and `all` built directly above. A hand-maintained list here would
+    // silently go stale the first time a command is added; this cannot.
+    // The four admin surfaces are excluded: a server rule has no business quieting Harkirat's own
+    // owner-level commands, and /server must never be able to hide its own answer from the admin
+    // trying to undo a rule.
+    const ADMIN_COMMAND_NAMES = new Set(['server', 'manage', 'alerts', 'autobuild']);
+    client.gateableCommandNames = commands
+        .map(c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name))
+        .filter(name => name && !ADMIN_COMMAND_NAMES.has(name));
+
     const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
     try {
         const payload = commands.map(c => typeof c.toJSON === 'function' ? c.toJSON() : c);
@@ -749,6 +762,18 @@ async function resolveManagePanelAction(interaction, group, action, match) {
 client.on('interactionCreate', async interaction => {
   try {
 
+    // --- SERVER VISIBILITY POLICY (2026-08-10 15:48 EDT, v3) --- resolved ONCE here, before any
+    // routing, and attached as interaction.dioreoPolicy. It also clamps reply/deferReply/followUp on
+    // this interaction when the server has forced ephemeral, which is what makes the rule impossible
+    // for a command to bypass or forget -- including the eight weapon commands built above, which no
+    // sweep of commands/*.js would ever reach. See utils/guildPolicy.js for the precedence tiers and
+    // why nothing here refuses a command. No-ops outside a guild.
+    // Deliberately BEFORE the anti-spam guard: a swallowed click still returns below, and a policy
+    // resolved on every interaction (rather than only the ones that survive the cooldown) keeps the
+    // per-guild cache warm and the behaviour uniform.
+    const { attachGuildPolicy } = require('./utils/guildPolicy');
+    await attachGuildPolicy(interaction);
+
     // --- LIGHT ANTI-SPAM GUARD --- buttons/selects only (modal submits are a deliberate typed
     // action, not spam-clickable; slash commands aren't rapid-fire the same way). A click inside
     // the cooldown window is silently swallowed via a bare deferUpdate() -- acknowledges it so
@@ -761,6 +786,17 @@ client.on('interactionCreate', async interaction => {
             return;
         }
         interactionCooldowns.set(interaction.user.id, now);
+    }
+
+    // --- /server PANEL (2026-08-10 15:49 EDT, v3) --- every `server_*` component routes to the one
+    // dispatcher in commands/server.js, which owns its own server-admin gate. Deliberately NOT
+    // spread across this handler the way older panels are: the whole point of this feature is that
+    // exactly one place decides who may change a server's rules, and a second copy of that check
+    // living here is how the /manage panel ended up with ~25 handlers that each forgot it.
+    if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.())
+        && interaction.customId.startsWith('server_')) {
+        const serverCommand = client.commands.get('server');
+        if (serverCommand) return await serverCommand.handleComponent(interaction);
     }
 
     // --- MANAGE PANEL ADMIN-ONLY LOCK (2026-07-14) --- /manage's own slash-command execute() only
@@ -1552,6 +1588,23 @@ client.on('interactionCreate', async interaction => {
         // mechanism (instead of a raw bot-token channel message) makes it work everywhere the bot
         // can already respond, no permissions to check or configure.
         if (interaction.customId === 'share_public') {
+            // SERVER VISIBILITY POLICY (2026-08-10 15:49 EDT, v3). This button does not edit the
+            // ephemeral message -- it posts a brand new, genuinely public one, so under a forced-
+            // ephemeral rule it is a one-click bypass. utils/shareButton.js already declines to
+            // RENDER it in that case; this re-check is the one that matters, because a panel opened
+            // before the admin set the rule still has the button sitting on it.
+            if (interaction.dioreoPolicy && interaction.dioreoPolicy.allowShare === false) {
+                try {
+                    await interaction.reply({
+                        content: "🔇 **This server keeps Dioreo's answers private here.** A server admin set that, so this one stays visible only to you.",
+                        ephemeral: true,
+                    });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked share (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
             const { SHARE_BUTTON_CUSTOM_ID } = require('./utils/shareButton');
             const msg = interaction.message;
 
