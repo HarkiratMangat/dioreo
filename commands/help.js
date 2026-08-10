@@ -66,6 +66,19 @@ const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_a
 const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
 const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 
+// A body may ask for a REAL divider by embedding this marker; buildContainer splits on it and
+// inserts a type-14 separator. Added 2026-08-10 19:28 EDT because Preferences documents two
+// unrelated commands (`/settings` and `/server`) on one page and they ran together -- a markdown
+// rule inside a Text Display is not a divider, it is a row of dashes.
+// ⚠️ USE IT BETWEEN SUBJECTS, NOT BETWEEN COMMANDS. Harkirat, 19:31 EDT: "i dont want a divider on
+// EVERY command... i just want it between /settings and /server" -- then, on seeing it removed from
+// the shared-Options boundary too, 19:38 EDT: "revert back to how you implemented it, i kind of
+// liked your idea." So the live rule is the middle one: a divider separates two genuinely different
+// SUBJECTS (one command from another, the commands from the options that apply to all of them), and
+// never sits between a command and its own bullets. Once every section has one they stop marking
+// anything at all.
+const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
+
 // `staticCommands` is used for `/help cmd:` matching and autocomplete; Gunsmiths' dynamic
 // per-category commands are resolved separately (see getLiveGunsmithCommandNames below) since they
 // can't be hardcoded here. `dropdownDescription`s are written to be genuinely useful at a glance,
@@ -116,8 +129,11 @@ const CATEGORY_DEFS = [
     // as the `mng*` icons `/manage`'s own panel uses.
     {
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'database',
-        dropdownDescription: "Harkirat's own data-entry & ops commands",
-        staticCommands: [cmd('/manage'), cmd('/alerts'), cmd('/autobuild')],
+        dropdownDescription: "Dioreo's data management & ops commands",
+        // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed
+        // these one way in the directory and another in the body, which reads as the page having
+        // lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT.
+        staticCommands: [cmd('/alerts'), cmd('/autobuild'), cmd('/manage')],
         requires: 'botAdmin',
     },
 ];
@@ -199,27 +215,65 @@ function buildUtilitiesBody() {
 // got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint
 // in practice ("why is a server adding 25 role overrides"), so they read as guidance about the
 // intended workflow -- set a default, hand-pick the exceptions -- not as a warning.
+// TWO commands on one page, so they get a real divider between them and the shared `[visibility]`
+// option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's
+// call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually
+// under each of them makes no sense"), and the same pass cut the /server section roughly in half for
+// being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
 function buildPreferencesBody(perms = {}) {
-    const personal = `### \`/settings\`\nTwo pages: Visibility (who sees your responses by default) and Preferences (timezone, calendar filter, accent style, and more)\n-# **Options**\n${VISIBILITY_BULLET}\n\n`;
-    if (!perms.serverAdmin) return personal + `-# **Examples**\n-# 🔸 **/settings**`;
+    const settings = `### \`/settings\`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, calendar filter, accent style, and more)`;
 
-    return personal
-        + `### \`/server\` **(Admin)**\nDecide where Dioreo answers **publicly** and where it answers **only to the person who asked**. Needs **Manage Server**.\n-# **Options**\n-# 🔹 No options — it opens a panel with four pages: Overview, Channels, Roles and Commands\n\n`
-        + `-# **How \`/server\`'s rules stack** — the most specific one wins\n-# 🔹 **1. Command** — a command listed as always-hidden answers privately everywhere. Admins are exempt.\n-# 🔹 **2. Role** — a role rule limited to certain channels, then a role rule that applies everywhere\n-# 🔹 **3. Channel** — a rule on that channel, or on its parent if you are in a thread\n-# 🔹 **4. Default** — whatever Overview is set to. New servers start fully public.\n-# 🔸 If two roles disagree at the same level, **public wins** — the same way an allow beats a deny in Discord's own permissions.\n\n`
-        + `-# **The intended way to set it up**\n-# 🔸 Pick a server-wide default on **Overview** first, then hand-pick the handful of channels or roles that should differ. Building it exception-by-exception is the slow way round.\n-# 🔸 A rule can only make Dioreo **quieter**. Setting something to Public *permits* a public answer — it never overrides a member who chose hidden in their own \`/settings\`.\n\n`
-        + `-# **Two Discord limits worth knowing**\n-# 🔸 Each menu takes **25 picks**. That is Discord's cap, not ours, and it is why the default-plus-exceptions approach above is the right shape — a server needing 25+ overrides usually wants a different default instead.\n-# 🔸 **Nothing here removes a command from your server.** Discord does not let a bot hide its own commands in one server. \`/server\` hides the *answer*; to remove the command itself, use **Server Settings → Integrations**.\n\n`
-        + `-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/server** → Overview → *Switch default to Hidden*, then Channels → allow \`#bot-spam\` publicly\n-# 🔸 **/server** → Roles → *Always public for these roles* → \`@Moderator\``;
+    if (!perms.serverAdmin) {
+        return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
+    }
+
+    return settings
+        + SECTION_BREAK
+        + `### \`/server\` *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
+        + `-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n`
+        + `-# **Rule order** · the most specific one wins\n`
+        + `-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n`
+        + `-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n`
+        + `-# **Setting it up**\n`
+        + `-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n`
+        + `-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own \`/settings\`\n\n`
+        + `-# **Worth knowing**\n`
+        + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
+        + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
+        + SECTION_BREAK
+        + `-# **Options** · both commands\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n`
+        + `-# 🔸 **/settings** visibility:\`Public\`\n`
+        + `-# 🔸 **/server** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
+        + `-# 🔸 **/server** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
+        + `-# 🔸 **/server** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
 }
 
 // Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared
 // global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to
 // the server they are run in, which is exactly why no per-guild permission could ever grant them.
+// That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the
+// section, it is not something you do.
 function buildBotAdminBody() {
-    return `### \`/manage\`\nThe data-entry panel: seasonal info, draws, calendar, patch notes, loadouts, banners, and the next-season draft\n-# **Options**\n${VISIBILITY_BULLET}\n`
-        + `### \`/alerts\`\nRead the bot's own alert history and health, straight from Discord instead of the VM\n-# **Options**\n${VISIBILITY_BULLET}\n`
-        + `### \`/autobuild\`\nExtract a weapon loadout from a screenshot and stage it for review before it is saved\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
-        + `-# 🔸 These are gated on the bot's own admin whitelist, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.\n\n`
-        + `-# **Examples**\n-# 🔸 **/manage** → Calendar → *Bulk Add*\n-# 🔸 **/alerts**`;
+    return `### \`/alerts\`\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
+        + `-# 🔹 No options of its own\n`
+        + `### \`/autobuild\`\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
+        + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
+        + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
+        + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
+        + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure\n`
+        + `### \`/manage\`\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, and the next-season draft\n`
+        + `-# 🔹 \`[data_for]\` Open a section directly: \`Draws\` · \`Calendar\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Patch Notes\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Bulk Format Guide\``
+        + SECTION_BREAK
+        + `-# **Options** · all three\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n`
+        + `-# 🔸 **/alerts** visibility:\`Public\` — share the health log in a channel\n`
+        + `-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\`\n`
+        + `-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted\n`
+        + `-# 🔸 **/manage** data_for:\`Patch Notes\` — straight to the section, no clicking through\n`
+        + `-# 🔸 **/manage** data_for:\`Season: Next Season Draft\` — stage next season without touching what is live\n\n`
+        + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }
 
 const BODY_BUILDERS = {
@@ -324,7 +378,10 @@ async function buildContainer(selectedKey, accentColor, perms = {}) {
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
         components.push({ type: 14, spacing: 2, divider: true });
-        components.push({ type: 10, content: body });
+        body.split(SECTION_BREAK).forEach((chunk, i) => {
+            if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
+            components.push({ type: 10, content: chunk });
+        });
         components.push({ type: 14, spacing: 2, divider: true });
         // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing
         // page above), so it's worth surfacing here -- reworded from the landing hint rather than
