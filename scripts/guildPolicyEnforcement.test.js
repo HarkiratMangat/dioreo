@@ -347,23 +347,64 @@ async function withNoLoadouts(run) {
     }
 }
 
-t('the Server Admin category is hidden from a non-admin on all three surfaces', async () => {
+const NOBODY = { serverAdmin: false, botAdmin: false };
+const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
+const BOT_ADMIN = { serverAdmin: false, botAdmin: true };
+
+t('an ordinary member sees neither /server nor the Bot Admin category', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const menu = JSON.stringify(help.buildContainer ? await help.buildContainer(null, 0, false) : {});
-        assert.ok(!menu.includes('Server Admin'), 'the dropdown must not offer it');
-        assert.ok(!menu.includes('SERVER ADMIN'), 'the landing directory must not list it');
-        assert.ok(!(await help.getAllHelpCommandNames(false)).includes('/server'), 'autocomplete must not suggest it');
+        const menu = JSON.stringify(await help.buildContainer(null, 0, NOBODY));
+        assert.ok(!menu.includes('/server'), 'the landing directory must not list /server');
+        assert.ok(!menu.includes('Bot Admin') && !menu.includes('BOT ADMIN'), 'the Bot Admin category must be absent entirely');
+        const names = await help.getAllHelpCommandNames(NOBODY);
+        assert.ok(!names.includes('/server') && !names.includes('/manage'), 'autocomplete must suggest neither');
     });
 });
 
-t('the Server Admin category is offered to an admin on all three surfaces', async () => {
+// /server sits INSIDE Preferences rather than in a heading of its own, so the assertions are about
+// the category's contents changing -- not about a category appearing.
+t('a server admin sees /server inside Preferences, with the swapped emoji and description', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const menu = JSON.stringify(await help.buildContainer(null, 0, true));
-        assert.ok(menu.includes('Server Admin'), 'the dropdown must offer it');
-        assert.ok(menu.includes('SERVER ADMIN'), 'the landing directory must list it');
-        assert.ok((await help.getAllHelpCommandNames(true)).includes('/server'), 'autocomplete must suggest it');
+        const container = await help.buildContainer(null, 0, SERVER_ADMIN);
+        const menu = JSON.stringify(container);
+        assert.ok(menu.includes('/server'), 'the landing directory must list /server');
+        assert.ok(!menu.includes('SERVER ADMIN'), 'it must NOT get a heading of its own any more');
+        assert.ok(menu.includes('(Admin)'), '/server must be marked as an admin command');
+        assert.ok(!menu.includes('Bot Admin'), 'Manage Server must NOT grant the bot-admin category');
+
+        const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
+        const preferences = select.components[0].options.find(o => o.label === 'Preferences');
+        assert.strictEqual(preferences.description, 'Manage your personal & server admin settings');
+        assert.strictEqual(preferences.emoji.name, 'ServerSettings', 'Preferences must swap to the ServerSettings emoji');
+
+        assert.ok((await help.getAllHelpCommandNames(SERVER_ADMIN)).includes('/server'));
+    });
+});
+
+t('a plain member sees the ordinary Preferences emoji and description', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const container = await help.buildContainer(null, 0, NOBODY);
+        const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
+        const preferences = select.components[0].options.find(o => o.label === 'Preferences');
+        assert.strictEqual(preferences.description, 'Manage your saved bot settings');
+        assert.strictEqual(preferences.emoji.name, 'Settings');
+    });
+});
+
+// The two levels are independent, not a hierarchy: this is the case that would break if `requires`
+// were ever collapsed back into one boolean.
+t('a bot admin sees the Bot Admin category without holding Manage Server', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const menu = JSON.stringify(await help.buildContainer(null, 0, BOT_ADMIN));
+        assert.ok(menu.includes('BOT ADMIN'), 'the landing directory must list the category');
+        assert.ok(menu.includes('/manage') && menu.includes('/alerts') && menu.includes('/autobuild'));
+        assert.ok(!menu.includes('/server'), 'bot admin alone must NOT reveal the server-admin command');
+        const names = await help.getAllHelpCommandNames(BOT_ADMIN);
+        assert.ok(names.includes('/manage') && !names.includes('/server'));
     });
 });
 
@@ -377,20 +418,33 @@ t('every declared category renders a detail page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         for (const category of help.CATEGORY_DEFS) {
-            const page = await help.buildContainer(category.key, 0, true);
+            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true });
             const text = JSON.stringify(page);
             assert.ok(!text.includes('undefined'), `${category.key} renders "undefined" -- it is missing from DETAIL_HEADERS or BODY_BUILDERS`);
-            assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0]), `${category.key} rendered no recognisable content`);
+            assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0].name), `${category.key} rendered no recognisable content`);
         }
     });
 });
 
-t('a non-admin reaching the admin page is returned to the directory, not refused', async () => {
+t('a non-admin reaching a restricted page is returned to the directory, not refused', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
-        const page = JSON.stringify(await help.buildContainer('serveradmin', 0, false));
+        const page = JSON.stringify(await help.buildContainer('botadmin', 0, NOBODY));
         assert.ok(page.includes('GUNSMITHS'), 'expected the landing directory');
-        assert.ok(!page.includes('Manage Server'), 'the admin body must not render');
+        assert.ok(!page.includes('/manage'), 'the restricted body must not render');
+    });
+});
+
+// The per-COMMAND gate is a different code path from the per-CATEGORY one, and its failure is
+// quieter: Preferences renders either way, just with an extra line. Asserting on the body rather
+// than the category is the only way to see it.
+t('a non-admin opening Preferences gets no /server section in the body', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const plain = JSON.stringify(await help.buildContainer('preferences', 0, NOBODY));
+        const admin = JSON.stringify(await help.buildContainer('preferences', 0, SERVER_ADMIN));
+        assert.ok(!plain.includes('/server') && !plain.includes('Manage Server'), 'the /server section must be absent');
+        assert.ok(admin.includes('/server') && admin.includes('Manage Server'), 'the /server section must be present for an admin');
     });
 });
 

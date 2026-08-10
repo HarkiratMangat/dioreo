@@ -880,10 +880,15 @@ client.on('interactionCreate', async interaction => {
             // per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
                 const { getAllHelpCommandNames } = require('./commands/help');
-                // Admin-only entries (/server) are suggested only to someone who could use them --
-                // see commands/help.js's note on filtering all three surfaces, not just the menu.
+                // Restricted entries (/server for server admins, /manage//alerts//autobuild for the
+                // bot's own whitelist) are suggested only to someone who could use them -- see
+                // commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('./utils/guildPolicy');
-                const allCommands = await getAllHelpCommandNames(isServerAdmin(interaction));
+                const { ALLOWED_ADMIN_ID } = require('./commands/manage');
+                const allCommands = await getAllHelpCommandNames({
+                    serverAdmin: isServerAdmin(interaction),
+                    botAdmin: interaction.user.id === ALLOWED_ADMIN_ID,
+                });
                 const filtered = allCommands.filter(name => fuzzyMatch(focusedValue, name)).slice(0, 25);
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));
             }
