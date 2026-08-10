@@ -17,9 +17,17 @@
 //   - `delete_resources` (both prune sweeps) and `update_metadata` against prod public_ids are
 //     likewise irreversible against live assets.
 //
-// Hence fail CLOSED: in development every Cloudinary write is refused and logged loudly. If a feature
-// ever genuinely needs real dev-side writes, the fix is a properly designed parallel namespace (filed
-// in docs/db-deferred-list.md), not loosening this.
+// Hence fail CLOSED: in development every Cloudinary write is refused and logged loudly, UNLESS the
+// caller opts in via `devNamespaceSafe: true` -- meaning it has already prefixed its OWN public_id/
+// folder into an isolated dev-only namespace (verified case by case, not something this guard can
+// infer from a string) so a dev write genuinely cannot collide with or overwrite a live prod asset.
+// This is the "properly designed parallel namespace" the fix docs/db-deferred-list.md filed for this
+// guard (2026-07-27 18:40 EDT) called for, added 2026-08-10 11:30 EDT for utils/nameplateWebpCache.js /
+// utils/decorationWebpCache.js specifically -- NOT a blanket loosening. Every other existing caller
+// (loadout images, patch notes, calendar banners) passes no third argument and stays unconditionally
+// blocked in dev, unchanged. The deferred item's own caution about `gun-builds` (bare imageKey as
+// public_id, no folder baked into asset identity, needs buildImageUrl() to agree too) is why this
+// opt-in was NOT extended there -- do that separately, deliberately, when it's actually needed.
 //
 // ⚠️ Why this is safe in prod: `NODE_ENV=development` is set by `.env.dev` and by nothing else. Prod's
 // `.env` does not define it, and index.js's `dotenv.config()` backfill can only fill in keys that
@@ -32,8 +40,18 @@ const IS_DEV = process.env.NODE_ENV === 'development';
 // "upload/metadata failed" shape on true, so nothing downstream needs to learn a new contract -- the
 // dev bot then behaves exactly as it would against a Cloudinary hiccup, which every one of these call
 // sites was already designed to survive.
-function isCloudinaryWriteBlocked(operation, target) {
+//
+// `devNamespaceSafe: true` is the opt-in described in this module's header comment -- the caller is
+// asserting `target` is already inside an isolated dev-only namespace (its own `FOLDER` constant is
+// prefixed, e.g. `dev_nameplate_webp` vs prod's `nameplate_webp`), so allowing the write through in
+// dev cannot touch a live prod asset. Defaults to false so every existing caller is completely
+// unaffected by this parameter's mere existence.
+function isCloudinaryWriteBlocked(operation, target, { devNamespaceSafe = false } = {}) {
     if (!IS_DEV) return false;
+    if (devNamespaceSafe) {
+        console.warn(`🧪 [dev] Cloudinary ${operation} ALLOWED (dev-scoped namespace): ${target}`);
+        return false;
+    }
     console.warn(`⛔ [dev] Cloudinary ${operation} BLOCKED -- would have written to the LIVE account: ${target}`);
     return true;
 }

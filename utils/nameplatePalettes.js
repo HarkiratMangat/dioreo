@@ -81,4 +81,28 @@ function nameplatePaletteHex(paletteName, theme = 'dark') {
     return theme === 'light' ? entry.light : entry.dark;
 }
 
-module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex };
+// Derives a human-readable nameplate DESIGN name from Discord's own accessibility label field
+// (e.g. "COLLECTIBLES_NAMEPLATES_TWILIGHT_A11Y" -> "Twilight") -- added 2026-08-10 12:58 EDT.
+// Confirmed live against Harkirat's own equipped nameplate: the parsed result ("Twilight") matched
+// Discord's own shop UI title for that exact nameplate, AND is genuinely distinct from `palette`
+// (his equipped palette was "cobalt" while the label parsed to "Twilight" -- the design name and the
+// currently-selected color theme are two separate things, confirmed by them differing on a real
+// account). Discord's docs call `label` "currently unused" by their own client, but it IS a real,
+// structured, bot-accessible string on the User object's Nameplate structure -- this is the one
+// confirmed way to get a nameplate's real design name without reverse-engineering Discord's web
+// client bundle (which was tried and is a dead end here: the full item catalog is fetched live at
+// runtime, not baked into the static JS the way the palette-color table above was).
+// Returns null if the label doesn't match the expected shape (a different/future naming convention,
+// or no label at all) -- never guesses or fabricates a name.
+function deriveNameplateName(label) {
+    if (!label) return null;
+    const match = String(label).match(/^COLLECTIBLES_NAMEPLATES_(.+)_A11Y$/);
+    if (!match) return null;
+    return match[1]
+        .toLowerCase()
+        .split('_')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+}
+
+module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName };

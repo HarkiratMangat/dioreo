@@ -7,6 +7,8 @@ const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
 const { nameplatePaletteHex } = require('./nameplatePalettes');
+const { resolveNameplateWebp } = require('./nameplateWebpCache');
+const { resolveDecorationWebp } = require('./decorationWebpCache');
 
 // Per-source color counts (2026-07-14, Harkirat's request) -- avatar/banner are richer, more
 // complex images that support more genuinely distinct clusters; nameplate/decoration are smaller,
@@ -84,14 +86,14 @@ async function getSourceImageInfo(interaction, useGuild = false) {
     // Nameplate's `static.png` (built in fetchProfileExtras) is already guaranteed a real static
     // image, so it doesn't need this extra ffmpeg step.
     const decoration = guildProfile?.decorationAsset
-        ? { url: guildProfile.decorationUrl, source: guildProfile.decorationAsset, needsStillFrame: true }
+        ? { url: guildProfile.decorationUrl, source: guildProfile.decorationAsset, skuId: guildProfile.decorationSkuId, needsStillFrame: true }
         : extras.decorationUrl
-        ? { url: extras.decorationUrl, source: extras.decorationAsset, needsStillFrame: true }
+        ? { url: extras.decorationUrl, source: extras.decorationAsset, skuId: extras.decorationSkuId, needsStillFrame: true }
         : null;
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette }
+        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette }
+        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -249,6 +251,44 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         results[activeSource] = await getCachedPalette(
             prefs, activeSource, sources[activeSource], forceRefresh, isGuildSource(activeSource)
         );
+    }
+
+    // Animated WebP preview, same lazy-per-active-source discipline as the palette extraction above --
+    // a Cloudinary cache hit is cheap (one Admin API lookup), but a genuine cold render has a real
+    // cost, so this must never run for a source the user isn't currently looking at.
+    // `resolveNameplateWebp`/`resolveDecorationWebp` never throw -- null here just means
+    // utils/colorPaletteView.js falls back to its existing static preview, exactly like a failed
+    // palette extraction already falls back to a cached-or-null value. Non-null resolves to
+    // { cloudinaryUrl, discordCdnUrl } -- discordCdnUrl may itself be null (storage channel not
+    // configured, or that one-time upload failed), which the view layer must handle separately.
+    if (activeSource === 'nameplate' && sources.nameplate) {
+        results.nameplateWebp = await resolveNameplateWebp({
+            nameplateAsset: sources.nameplate.source,
+            paletteName: sources.nameplate.palette,
+            webmUrl: sources.nameplate.videoUrl,
+            bedHex: results.nameplateBedHex,
+            skuId: sources.nameplate.skuId,
+            nameplateName: sources.nameplate.name,
+            // Majority extracted color (results.nameplate is already populated above by this same
+            // function, before this block runs) -- Harkirat's explicit request 2026-08-10 14:08 EDT:
+            // the cache message's accent should be the nameplate's own extracted majority color, NOT
+            // bedHex (which stays doing its actual job -- compositing the gradient bed onto the art,
+            // unrelated to this message-styling choice). Same field/format decorationWebpCache.js
+            // already uses for its own accent_color.
+            accentHex: results.nameplate?.[0]?.hex ?? null
+        });
+    }
+    if (activeSource === 'decoration' && sources.decoration) {
+        results.decorationWebp = await resolveDecorationWebp({
+            decorationAsset: sources.decoration.source,
+            decorationUrl: sources.decoration.url,
+            skuId: sources.decoration.skuId,
+            // Majority extracted color (results.decoration is already populated above by this same
+            // function, before this block runs) -- decorations have no official bed-color equivalent
+            // the way nameplates do, so the k-means extraction IS the closest thing to a "real" color
+            // for this design. Same numeric 0xRRGGBB packing as nameplateBedHex.
+            accentHex: results.decoration?.[0]?.hex ?? null
+        });
     }
 
     return results;

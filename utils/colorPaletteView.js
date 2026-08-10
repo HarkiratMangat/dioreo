@@ -276,13 +276,10 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // switched to a Section+thumbnail instead (Harkirat: the full-width version "gets too large and
     // looks odd") -- same treatment Avatar's own header already uses, just with the real decoration
     // image instead of the avatar. Name gets a GENERATED gradient banner (see below) since it has no
-    // real image of its own at all. Nameplate uses the STATIC preview -- tried the animated .webm but
-    // Harkirat didn't like that Discord requires a manual tap to play it inline rather than
-    // auto-animating, so this stays on the same static.png used for extraction. Deco's own thumbnail
-    // (below) points at the real animated decoration, but Discord renders THAT as a static poster too
-    // in a Section thumbnail context -- confirmed a genuine Discord-client limitation, not something
-    // fixable here short of converting the source to a real GIF on every render (rejected as not
-    // worth the added latency/complexity; Harkirat's fine with static as the fallback).
+    // real image of its own at all. **Nameplate and Deco both now use a real animated WebP** (see
+    // utils/nameplateWebpCache.js/utils/decorationWebpCache.js) instead of the static preview this
+    // comment used to describe -- that static-only era predates even the animated-GIF version this
+    // pivoted from, both fully superseded 2026-08-10 11:42 EDT.
     // Banner preview: the display url is already the 512px size (see getSourceImageInfo), so a plain
     // Media Gallery URL reference is enough -- Discord's avatar/banner CDN honors the size we request.
     if (effectiveSource === 'banner' && data.bannerUrl) {
@@ -294,18 +291,48 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // it ourselves (utils/resizedImage.js) and attach the result. Falls back to the raw (native-width)
     // url if the resize fails for any reason, so the nameplate still shows rather than vanishing.
     else if (effectiveSource === 'nameplate' && data.nameplateUrl) {
-        try {
-            // Bed color resolved upstream in colorPalette.js (getPalettePanelData) -- null there means
-            // either no recognized palette or a genuine "none" bed, and both degrade to the plain
-            // resize path rather than compositing a fabricated color.
-            const npBuffer = data.nameplateBedHex != null
-                ? await renderNameplateWithBed(data.nameplateUrl, data.nameplateBedHex, 512)
-                : await renderResizedImage(data.nameplateUrl, 512);
-            files.push({ name: 'nameplate_resized.png', data: npBuffer });
-            containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
-        } catch (err) {
-            console.error('Nameplate resize failed, falling back to native-size url:', err.message);
-            containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateUrl } }] });
+        // Animated WebP preview -- resolved upstream in colorPalette.js via utils/nameplateWebpCache.js,
+        // already a fully-rendered, LOSSLESS Cloudinary url (real fade-gradient bed + real animation,
+        // real alpha throughout -- no GIF-era solid-card compromise). A Components V2 media-gallery URL
+        // reference to an EXTERNAL host (Cloudinary) gets proxied through Discord's own
+        // images-ext-N.discordapp.net and RE-ENCODED to lossy before any client sees it -- confirmed
+        // live 2026-08-10 11:38 EDT (2.2MB/lossy vs the 898KB/lossless upload). Discord's OWN
+        // cdn.discordapp.com is never proxied this way, so `data.nameplateWebp.discordCdnUrl` (set once
+        // by utils/nameplateWebpCache.js's storage-channel upload) is preferred when present -- a
+        // plain, fast, cacheable URL reference, no per-render work at all. Only when that isn't
+        // available yet does this fall back to fetching+re-attaching the Cloudinary bytes directly
+        // (still lossless, just costs a fetch+upload on every render instead of being instant -- this
+        // was the ORIGINAL fix before the storage-channel optimization, kept as the fallback for
+        // exactly the case it was built for). `nameplateWebp` is only ever set when a real bed color
+        // exists (see resolveNameplateWebp), so this can't fire for the "no recognized palette" case
+        // the static branch below still needs.
+        if (data.nameplateWebp?.discordCdnUrl) {
+            containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateWebp.discordCdnUrl } }] });
+        } else if (data.nameplateWebp?.cloudinaryUrl) {
+            try {
+                const res = await fetch(data.nameplateWebp.cloudinaryUrl);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const webpBuffer = Buffer.from(await res.arrayBuffer());
+                files.push({ name: 'nameplate_animated.webp', data: webpBuffer });
+                containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_animated.webp' } }] });
+            } catch (err) {
+                console.error('Nameplate WebP re-fetch for direct attachment failed, falling back to proxied url reference:', err.message);
+                containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateWebp.cloudinaryUrl } }] });
+            }
+        } else {
+            try {
+                // Bed color resolved upstream in colorPalette.js (getPalettePanelData) -- null there means
+                // either no recognized palette or a genuine "none" bed, and both degrade to the plain
+                // resize path rather than compositing a fabricated color.
+                const npBuffer = data.nameplateBedHex != null
+                    ? await renderNameplateWithBed(data.nameplateUrl, data.nameplateBedHex, 512)
+                    : await renderResizedImage(data.nameplateUrl, 512);
+                files.push({ name: 'nameplate_resized.png', data: npBuffer });
+                containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
+            } catch (err) {
+                console.error('Nameplate resize failed, falling back to native-size url:', err.message);
+                containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateUrl } }] });
+            }
         }
     }
     if (effectiveSource === 'name' && data.displayNameColors) {
@@ -329,9 +356,34 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // selected my server colors" is invisible until you go looking for the switch button.
     const sourceLabel = variant === 'server' ? 'Server Profile' : 'Global Profile';
     const headingContent = `## ${meta.heading} ${`<@${targetUserId}>`}\n> Extracted from: **\`${sourceLabel}\`**`;
-    const headerThumbnailUrl = effectiveSource === 'avatar' ? avatarThumbnailUrl
-        : effectiveSource === 'decoration' ? data.decorationUrl
+    // Deco's thumbnail prefers the cached animated WebP (resolved upstream in colorPalette.js via
+    // utils/decorationWebpCache.js's lossless pipeline, real alpha, zero dithering) over the raw APNG --
+    // WebP autoplays inline in a Section thumbnail the way Discord never lets APNG/webm do (see
+    // .claude/rules/accent-and-colors.md's "Deco" layout note for the manual-tap limitation this
+    // replaces). Falls back to the real decoration url exactly as before whenever the WebP isn't ready
+    // yet (render failure, dev-bot write block, or genuinely still rendering for the first time).
+    //
+    // Prefers `data.decorationWebp.discordCdnUrl` (Discord's own CDN, never proxied, set once by
+    // utils/decorationWebpCache.js's storage-channel upload) when present -- a plain, fast, cacheable
+    // URL reference, no per-render work. Only falls back to fetching+re-attaching the Cloudinary bytes
+    // directly when that isn't available yet, same reasoning as the Nameplate branch above (a plain
+    // URL reference to the Cloudinary host gets proxied+re-encoded to lossy by Discord, confirmed live
+    // 2026-08-10 11:38 EDT). Only the decoration case needs any of this; `avatarThumbnailUrl` is
+    // Discord's own avatar CDN, not an external reference, so it's never subject to this proxy at all.
+    let headerThumbnailUrl = effectiveSource === 'avatar' ? avatarThumbnailUrl
+        : effectiveSource === 'decoration' ? (data.decorationWebp?.discordCdnUrl || data.decorationWebp?.cloudinaryUrl || data.decorationUrl)
         : null;
+    if (effectiveSource === 'decoration' && !data.decorationWebp?.discordCdnUrl && data.decorationWebp?.cloudinaryUrl) {
+        try {
+            const res = await fetch(data.decorationWebp.cloudinaryUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const webpBuffer = Buffer.from(await res.arrayBuffer());
+            files.push({ name: 'decoration_animated.webp', data: webpBuffer });
+            headerThumbnailUrl = 'attachment://decoration_animated.webp';
+        } catch (err) {
+            console.error('Decoration WebP re-fetch for direct attachment failed, falling back to proxied url reference:', err.message);
+        }
+    }
     if (headerThumbnailUrl) {
         // Tried a leading blank-emoji line to nudge the heading down toward vertical-center against
         // the thumbnail (2026-07-14) -- reverted same day after Harkirat checked it on mobile and it
