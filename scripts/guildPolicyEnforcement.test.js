@@ -34,10 +34,24 @@ const { SHARE_BUTTON_CUSTOM_ID } = require('../utils/shareButton');
 
 let pass = 0;
 const failures = [];
+const pending = [];
 
+// ⚠️ t() MUST track the promise an async case returns. The first version of this harness called
+// fn() and moved on, which meant an async case's assertions ran AFTER its own try/finally had
+// already restored the stubs it depended on -- and after the reporter had counted it as passed.
+// It surfaced as a case "passing" and then the process dying on a 10s Mongo timeout, because the
+// real model method was back in place by the time the code under test reached it. A test harness
+// that reports before its tests finish is worse than no harness: it produces green with no run.
 function t(name, fn) {
     try {
-        fn();
+        const result = fn();
+        if (result && typeof result.then === 'function') {
+            pending.push(result.then(
+                () => { pass++; },
+                error => { failures.push(`${name} -- ${error.message}`); },
+            ));
+            return;
+        }
         pass++;
     } catch (error) {
         failures.push(`${name} -- ${error.message}`);
@@ -73,12 +87,12 @@ function makeInteraction({ roleIds = [], commandName = null, parentId = null, is
 // Stubs the ONE query getGuildSettings makes. Returns a restore function. The cache is invalidated
 // on both sides because it is module-level state shared across every case in this file -- without
 // that, case N would silently resolve against case N-1's settings and still pass.
-function withSettings(settings, run) {
+async function withSettings(settings, run) {
     const original = GuildSettings.findOne;
     GuildSettings.findOne = () => ({ lean: async () => settings });
     guildPolicy.invalidateGuildPolicy('G_1');
     try {
-        return run();
+        return await run();
     } finally {
         GuildSettings.findOne = original;
         guildPolicy.invalidateGuildPolicy('G_1');
@@ -316,12 +330,62 @@ t('every /server page stays under the 40-component ceiling', () => {
     }
 });
 
-// The cases above are async and t() does not await them, so drain the microtask queue before
-// reporting. Without this the process could exit reporting a pass count taken mid-flight.
-setTimeout(() => {
+// --- 7. /help hides the Server Admin category from non-admins --------------------------------
+// Filtered in THREE places -- the dropdown, the landing directory, and the `cmd:` autocomplete --
+// because the landing directory is a hardcoded string rather than a map over CATEGORY_DEFS, so the
+// two can disagree, and because suggesting `/server` in autocomplete and then bouncing the user to
+// the directory is worse than never offering it. One test per surface, since filtering two and
+// forgetting the third is the realistic mistake.
+async function withNoLoadouts(run) {
+    const Loadout = require('../models/Loadout');
+    const original = Loadout.distinct;
+    Loadout.distinct = async () => [];
+    try {
+        return await run();
+    } finally {
+        Loadout.distinct = original;
+    }
+}
+
+t('the Server Admin category is hidden from a non-admin on all three surfaces', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const menu = JSON.stringify(help.buildContainer ? await help.buildContainer(null, 0, false) : {});
+        assert.ok(!menu.includes('Server Admin'), 'the dropdown must not offer it');
+        assert.ok(!menu.includes('SERVER ADMIN'), 'the landing directory must not list it');
+        assert.ok(!(await help.getAllHelpCommandNames(false)).includes('/server'), 'autocomplete must not suggest it');
+    });
+});
+
+t('the Server Admin category is offered to an admin on all three surfaces', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const menu = JSON.stringify(await help.buildContainer(null, 0, true));
+        assert.ok(menu.includes('Server Admin'), 'the dropdown must offer it');
+        assert.ok(menu.includes('SERVER ADMIN'), 'the landing directory must list it');
+        assert.ok((await help.getAllHelpCommandNames(true)).includes('/server'), 'autocomplete must suggest it');
+    });
+});
+
+t('a non-admin reaching the admin page is returned to the directory, not refused', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        const page = JSON.stringify(await help.buildContainer('serveradmin', 0, false));
+        assert.ok(page.includes('GUNSMITHS'), 'expected the landing directory');
+        assert.ok(!page.includes('Manage Server'), 'the admin body must not render');
+    });
+});
+
+// Wait for every async case to actually finish before reporting. This used to be a 50ms setTimeout,
+// which is a race dressed up as a drain -- it reported whatever had happened to complete by then.
+(async () => {
+    await Promise.all(pending);
     if (failures.length) {
         console.error(`❌ guildPolicy enforcement: ${failures.length} case(s) failed\n  - ${failures.join('\n  - ')}`);
         process.exit(1);
     }
     console.log(`✅ guildPolicy enforcement: ${pass} cases passed`);
-}, 50);
+    // Mongoose keeps a connection-buffer timer alive even though nothing here connects; without
+    // this the process would hang after a clean pass.
+    process.exit(0);
+})();

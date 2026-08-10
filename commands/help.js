@@ -79,7 +79,7 @@ const CATEGORY_DEFS = [
     // it up if it is hidden from the directory, and /server's own body says who it is for. This is
     // also where the panel's limits live -- the panel itself deliberately stays short (see
     // commands/server.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT).
-    { key: 'serveradmin', label: 'Server Admin', emojiKey: 'serverSettings', dropdownDescription: 'Control where Dioreo answers publicly', staticCommands: ['/server'] }
+    { key: 'serveradmin', label: 'Server Admin', emojiKey: 'serverSettings', dropdownDescription: 'Control where Dioreo answers publicly', staticCommands: ['/server'], adminOnly: true }
 ];
 
 const DETAIL_HEADERS = {
@@ -113,9 +113,12 @@ async function resolveCommandToCategory(cmdName) {
 
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the
 // live per-category Gunsmiths commands.
-async function getAllHelpCommandNames() {
+// `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third
+// of the three places the Server Admin category has to be filtered -- suggesting `/server` to
+// someone and then handing them the directory when they pick it is worse than never offering it.
+async function getAllHelpCommandNames(isAdmin = false) {
     const liveNames = (await getLiveGunsmithCommandNames()).map(n => `/${n}`);
-    const staticNames = CATEGORY_DEFS.flatMap(c => c.staticCommands);
+    const staticNames = CATEGORY_DEFS.filter(c => !c.adminOnly || isAdmin).flatMap(c => c.staticCommands);
     return [...staticNames, ...liveNames];
 }
 
@@ -176,11 +179,17 @@ const BODY_BUILDERS = {
     serveradmin: buildServerAdminBody
 };
 
-function buildCategorySelectRow(selectedKey) {
+// `isAdmin` hides the Server Admin category from everyone who could not use `/server` anyway.
+// Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown
+// here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the
+// visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than
+// as a deliberate exception. Nothing here is secret; the point is that a member who cannot open the
+// panel should not be shown a page about it.
+function buildCategorySelectRow(selectedKey, isAdmin = false) {
     const isLanding = !selectedKey;
     const options = [
         { label: 'Commands List', value: 'landing', description: 'Back to the full command overview', emoji: emojis.parseEmoji(emojis.dioreoCombo), default: isLanding },
-        ...CATEGORY_DEFS.map(c => ({
+        ...CATEGORY_DEFS.filter(c => !c.adminOnly || isAdmin).map(c => ({
             label: c.label,
             value: c.key,
             description: c.dropdownDescription,
@@ -191,8 +200,16 @@ function buildCategorySelectRow(selectedKey) {
     return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Choose a category to explore…', options }] };
 }
 
-async function buildContainer(selectedKey, accentColor) {
+async function buildContainer(selectedKey, accentColor, isAdmin = false) {
     const components = [];
+
+    // A non-admin who reaches an admin-only category (a stale dropdown on an older panel, or
+    // `/help cmd:server`) is silently returned to the directory rather than refused -- there is
+    // nothing to protect here, and an error message about a page they cannot see is worse than
+    // simply not having the page.
+    if (selectedKey && CATEGORY_DEFS.find(c => c.key === selectedKey)?.adminOnly && !isAdmin) {
+        selectedKey = null;
+    }
 
     if (!selectedKey) {
         const liveNames = await getLiveGunsmithCommandNames();
@@ -220,7 +237,13 @@ async function buildContainer(selectedKey, accentColor) {
                 + `### ${emojis.newDraws} **DRAWS**\n**\`/draws\` · \`/draw prices\`**\n`
                 + `### ${emojis.calendar} **SEASONAL INFO**\n**\`/calendar\` · \`/patch notes\` · \`/season end\`**\n`
                 + `### ${emojis.eyedropper} **UTILITIES**\n**\`/colors\` · \`/timestamp\`**\n`
-                + `### ${emojis.settings} **PREFERENCES**\n**\`/settings\`**\n\n`
+                + `### ${emojis.settings} **PREFERENCES**\n**\`/settings\`**\n`
+                // Shown only to people who can actually open the panel. ⚠️ This directory is a
+                // hardcoded string rather than a map over CATEGORY_DEFS (pre-existing), so a new
+                // category has to be added HERE as well as to that array -- adding it to only one
+                // puts the entry in the dropdown and not the list, or the reverse.
+                + (isAdmin ? `### ${emojis.serverSettings} **SERVER ADMIN**\n**\`/server\`**\n` : '')
+                + `\n`
                 + `-# 💠 **Learn more about a command:** **\`/help <command>\`**\n-# 💠 e.g: **/help** cmd:\`draws\`\n-# 💠 Or use the Dropdown below!\n\n`
                 + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`
         });
@@ -229,7 +252,7 @@ async function buildContainer(selectedKey, accentColor) {
         // ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it
         // right below would just be the same instruction twice in one panel.
         components.push({ type: 10, content: `-# Select a category from the dropdown below` });
-        components.push(buildCategorySelectRow(null));
+        components.push(buildCategorySelectRow(null, isAdmin));
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
@@ -245,7 +268,7 @@ async function buildContainer(selectedKey, accentColor) {
         // page above), so it's worth surfacing here -- reworded from the landing hint rather than
         // reused verbatim, since the two pages need different things said.
         components.push({ type: 10, content: `-# To see other commands, use the dropdown below or **\`/help <cmd>\`**` });
-        components.push(buildCategorySelectRow(selectedKey));
+        components.push(buildCategorySelectRow(selectedKey, isAdmin));
     }
 
     return { type: 17, accent_color: accentColor, components };
@@ -289,7 +312,10 @@ module.exports = {
 
         // No "Show Everyone" button -- the visibility option above already covers that case up
         // front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = [await buildContainer(selectedKey, accentColor)];
+        // Read from the interaction payload's computed permissions -- no REST call, no privileged
+        // intent, and `false` outside a guild, which is correct: /server is guild-only anyway.
+        const { isServerAdmin } = require('../utils/guildPolicy');
+        const components = [await buildContainer(selectedKey, accentColor, isServerAdmin(interaction))];
         return await sendV2Payload(interaction, components);
     }
 };
