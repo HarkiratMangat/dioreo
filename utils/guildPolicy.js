@@ -98,7 +98,19 @@ function isServerAdmin(interaction) {
 // 'public', mirroring Discord's own role-overwrite semantics where an explicit allow beats a deny --
 // so admins already hold the right intuition. An admin who needs a hard quiet removes the role
 // grant rather than fighting it from a less specific tier.
-function resolveVisibility(settings, { channelId, roleIds, commandName = null, isAdmin = false }) {
+// ⚠️ THREADS INHERIT THEIR PARENT CHANNEL'S RULE, and forgetting that was a real hole found before
+// this shipped. In a thread, `interaction.channelId` is the THREAD's id, not the channel it lives
+// under -- so an admin who sets #general to Hidden gets no rule match inside a thread of #general
+// and the answer posts PUBLICLY. It fails in the permissive direction, which is the dangerous one
+// for a moderation feature, and threads are created continuously so an admin can never pre-empt
+// them by listing each one. `parentChannelId` comes free from the interaction payload
+// (`interaction.channel.parentId`) -- no REST call, no intent. A rule on the thread ITSELF still
+// wins over the inherited one, since that is the more specific statement.
+function channelMatcher(channelId, parentChannelId) {
+    return id => id === channelId || (parentChannelId != null && id === parentChannelId);
+}
+
+function resolveVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, isAdmin = false }) {
     if (!settings) return 'public';
 
     if (!isAdmin && commandName && (settings.ephemeralCommands || []).includes(commandName)) {
@@ -106,16 +118,20 @@ function resolveVisibility(settings, { channelId, roleIds, commandName = null, i
     }
 
     const held = new Set(roleIds);
+    const matches = channelMatcher(channelId, parentChannelId);
 
     const roleRules = (settings.roleRules || []).filter(r => held.has(r.roleId));
-    const scoped = roleRules.filter(r => (r.channelIds || []).includes(channelId));
+    const scoped = roleRules.filter(r => (r.channelIds || []).some(matches));
     if (scoped.length) return scoped.some(r => r.visibility === 'public') ? 'public' : 'ephemeral';
 
     const global = roleRules.filter(r => !(r.channelIds || []).length);
     if (global.length) return global.some(r => r.visibility === 'public') ? 'public' : 'ephemeral';
 
-    const channelRule = (settings.channelRules || []).find(r => r.channelId === channelId);
-    if (channelRule) return channelRule.visibility;
+    const channelRules = settings.channelRules || [];
+    const own = channelRules.find(r => r.channelId === channelId);
+    if (own) return own.visibility;
+    const inherited = parentChannelId && channelRules.find(r => r.channelId === parentChannelId);
+    if (inherited) return inherited.visibility;
 
     return settings.defaultVisibility || 'public';
 }
@@ -152,6 +168,9 @@ async function attachGuildPolicy(interaction) {
     const settings = await getGuildSettings(interaction.guildId);
     const visibility = resolveVisibility(settings, {
         channelId: interaction.channelId,
+        // Present only when the interaction happened in a thread; Discord ships it in the payload's
+        // channel object, so this costs nothing. See resolveVisibility's own note on why it matters.
+        parentChannelId: interaction.channel?.parentId ?? null,
         roleIds: memberRoleIds(interaction),
         // Present on chat-input and autocomplete interactions, absent on button/select clicks. That
         // asymmetry is correct rather than a gap: a component interaction edits a message whose

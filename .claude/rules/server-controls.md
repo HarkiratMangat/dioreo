@@ -32,6 +32,8 @@ Admins already hold the real levers natively, **per role and per channel** (meas
 4. A channel rule for this channel
 5. `defaultVisibility` (`public` by default)
 
+⚠️ **THREADS INHERIT THEIR PARENT CHANNEL'S RULE, and this is not optional.** In a thread `interaction.channelId` is the **thread's** id, so without inheritance a rule on `#general` silently stops applying the moment conversation moves into a thread of `#general` — failing **open**, in a feature whose entire job is to restrict, and threads are created continuously so an admin can never pre-empt them by listing each one. `parentChannelId` comes free from `interaction.channel.parentId` in the payload (no REST call, no intent). A rule on the **thread itself** still beats the inherited one. Channel-scoped *role* rules inherit identically, or the two tiers would disagree about what "in this channel" means. Covered by five named cases in the test — **no automated check in this repo could have found this**, because every other case passes `channelId` as an opaque string and cannot tell a thread id from a channel id.
+
 **Same-tier conflict → `public`**, mirroring Discord's own role-overwrite semantics where an explicit allow beats a deny. Tier 1 only applies where a command name exists (chat-input and autocomplete); a button or select click skips it, which is correct — a component interaction edits a message whose ephemerality Discord fixed when it was first sent.
 
 `resolveVisibility()` is a pure function and is covered by `scripts/guildPolicy.test.js`, wired into `npm test`. Every configuration Harkirat named while designing this is pinned there. **Extend that test before changing any tier** — half its cases exist only to catch a tier silently reordering another.

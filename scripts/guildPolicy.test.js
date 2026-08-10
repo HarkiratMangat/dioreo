@@ -69,6 +69,25 @@ t('a command not named is unaffected', resolveVisibility(SETTINGS, { channelId: 
 // Component interactions carry no command name, so the tier is skipped rather than misapplied.
 t('no command name skips the command tier', resolveVisibility(SETTINGS, { channelId: 'C_PUB', roleIds: ['R_ALL'] }), 'public');
 
+// --- threads inherit their parent channel's rule ---------------------------------------------
+// Found by deriving angles before shipping, not by a failing check -- nothing in this repo could
+// have caught it, because every case above passes channelId as an opaque string and so cannot tell
+// a thread id from a channel id. In a real thread, interaction.channelId is the THREAD's id, so
+// without inheritance an admin's rule on #general silently stops applying the moment conversation
+// moves into a thread of #general -- failing OPEN, in a feature whose whole job is to restrict.
+t('a thread inherits its parent channel rule', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] }), 'public');
+t('a thread with no parent rule falls through to default', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_OTHER', roleIds: [] }), 'ephemeral');
+// The thread's OWN rule is the more specific statement and must beat the inherited one -- an admin
+// who singles out one noisy thread inside an otherwise-public channel has to be able to.
+t('a rule on the thread itself beats the inherited one', resolveVisibility(
+    { ...SETTINGS, channelRules: [{ channelId: 'C_PUB', visibility: 'public' }, { channelId: 'T_1', visibility: 'ephemeral' }] },
+    { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] },
+), 'ephemeral');
+// Channel-scoped ROLE rules inherit the same way, or the two tiers disagree about what "in this
+// channel" means -- which would be worse than either answer alone.
+t('a channel-scoped role rule reaches the parent’s threads', resolveVisibility(SETTINGS, { channelId: 'T_2', parentChannelId: 'C_A', roleIds: ['R_SOME'] }), 'public');
+t('a non-thread interaction is unaffected by inheritance', resolveVisibility(SETTINGS, { channelId: 'C_PUB', parentChannelId: null, roleIds: [] }), 'public');
+
 // --- tier 0: the admin bypass, and its deliberate narrowness --------------------------------
 t('admin bypasses the command rule', resolveVisibility(SETTINGS, { channelId: 'C_PUB', roleIds: ['R_ALL'], commandName: 'colors', isAdmin: true }), 'public');
 // The bypass covers the COMMAND tier only. An admin is still bound by the channel and role rules
