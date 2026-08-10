@@ -233,16 +233,25 @@ async function buildContainer(selectedKey, accentColor, isAdmin = false) {
         components.push({ type: 14, spacing: 2, divider: true });
         components.push({
             type: 10,
-            content: `### ${emojis.loadouts} **GUNSMITHS**\n**${gunsmithsLine}**\n`
-                + `### ${emojis.newDraws} **DRAWS**\n**\`/draws\` · \`/draw prices\`**\n`
-                + `### ${emojis.calendar} **SEASONAL INFO**\n**\`/calendar\` · \`/patch notes\` · \`/season end\`**\n`
-                + `### ${emojis.eyedropper} **UTILITIES**\n**\`/colors\` · \`/timestamp\`**\n`
-                + `### ${emojis.settings} **PREFERENCES**\n**\`/settings\`**\n`
-                // Shown only to people who can actually open the panel. ⚠️ This directory is a
-                // hardcoded string rather than a map over CATEGORY_DEFS (pre-existing), so a new
-                // category has to be added HERE as well as to that array -- adding it to only one
-                // puts the entry in the dropdown and not the list, or the reverse.
-                + (isAdmin ? `### ${emojis.serverSettings} **SERVER ADMIN**\n**\`/server\`**\n` : '')
+            // GENERATED FROM CATEGORY_DEFS, not hand-written -- this used to be five hardcoded
+            // lines, and adding the Server Admin category on 2026-08-10 walked straight into the
+            // trap: the entry appeared in the dropdown (which does map over CATEGORY_DEFS) and was
+            // missing from this list, because nothing ties the two together. Harkirat's call the
+            // same day, on being told about it: "that's a real gap that will create staleness and
+            // needs a proper solution." One source of truth is that solution -- a new category is
+            // now a single array entry and cannot be half-added. Byte-for-byte identical output to
+            // the hardcoded version, checked by diffing the rendered container before and after.
+            // scripts/guildPolicyEnforcement.test.js asserts every category reaches this list.
+            content: CATEGORY_DEFS
+                .filter(c => !c.adminOnly || isAdmin)
+                .map(c => {
+                    // Gunsmiths is the one category whose commands are not a fixed list: the
+                    // per-weapon commands are generated at boot from the categories present in
+                    // MongoDB, so its line is built from the live names rather than staticCommands.
+                    const commands = c.key === 'gunsmiths' ? gunsmithsLine : c.staticCommands.map(n => `\`${n}\``).join(' · ');
+                    return `### ${emojis[c.emojiKey]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
+                })
+                .join('')
                 + `\n`
                 + `-# 💠 **Learn more about a command:** **\`/help <command>\`**\n-# 💠 e.g: **/help** cmd:\`draws\`\n-# 💠 Or use the Dropdown below!\n\n`
                 + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`

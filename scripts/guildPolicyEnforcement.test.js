@@ -367,6 +367,24 @@ t('the Server Admin category is offered to an admin on all three surfaces', asyn
     });
 });
 
+// CATEGORY_DEFS is now the single source for the dropdown, the landing directory and autocomplete,
+// so a category can no longer be half-added to the LIST. What it can still be half-added to is the
+// detail page: BODY_BUILDERS and DETAIL_HEADERS are separate objects keyed by the same strings, and
+// a category present in the array but missing from either renders `undefined` as its heading or
+// throws outright when someone picks it. Rendering every declared category is the cheapest check
+// that covers both, and it needs no knowledge of either object's internals.
+t('every declared category renders a detail page', async () => {
+    const help = require('../commands/help');
+    await withNoLoadouts(async () => {
+        for (const category of help.CATEGORY_DEFS) {
+            const page = await help.buildContainer(category.key, 0, true);
+            const text = JSON.stringify(page);
+            assert.ok(!text.includes('undefined'), `${category.key} renders "undefined" -- it is missing from DETAIL_HEADERS or BODY_BUILDERS`);
+            assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0]), `${category.key} rendered no recognisable content`);
+        }
+    });
+});
+
 t('a non-admin reaching the admin page is returned to the directory, not refused', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
