@@ -53,6 +53,9 @@ function readGuildProfile(interaction) {
     // code path serve both shapes without ever branching on which one it got.
     const decorationAsset = member.avatarDecorationData?.asset ?? member.avatar_decoration_data?.asset ?? null;
     const nameplateAsset = member.collectibles?.nameplate?.asset ?? null;
+    // Palette ENUM NAME, mirroring accentColor.js's fetchProfileExtras -- turned into a hex only by
+    // utils/nameplatePalettes.js's nameplatePaletteHex(), never guessed here.
+    const nameplatePalette = member.collectibles?.nameplate?.palette ?? null;
     const rawColors = member.display_name_styles?.colors ?? null;
 
     const { guildId } = interaction;
@@ -100,6 +103,7 @@ function readGuildProfile(interaction) {
         nameplateUrl: nameplateAsset
             ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png`
             : null,
+        nameplatePalette,
 
         // null here does NOT prove there is no server name style -- in a joined guild discord.js has
         // already thrown the field away by this point. Callers that care must go through

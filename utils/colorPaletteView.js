@@ -7,6 +7,7 @@ const namer = require('color-namer');
 const { renderSwatchImage } = require('./colorSwatchImage');
 const { renderGradientBanner } = require('./colorGradientImage');
 const { renderResizedImage } = require('./resizedImage');
+const { renderNameplateWithBed } = require('./nameplateBedImage');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
@@ -163,6 +164,24 @@ function blend(hexA, hexB) {
     return (Math.round((r1 + r2) / 2) << 16) | (Math.round((g1 + g2) / 2) << 8) | Math.round((b1 + b2) / 2);
 }
 
+// tint/shade: same-hue derived companions for a SOLID display name color (see buildDisplayNameEntries
+// below). tint mixes each channel toward white by a fixed fraction (preserves hue, drops saturation --
+// the standard design-tool definition of a tint); shade scales each channel toward black by the same
+// fraction (preserves both hue AND saturation exactly, since uniform scaling is a pure lightness
+// change). Both are pure functions of the one input hex, so Refresh Colors' before/after
+// change-detection still holds.
+const DERIVED_AMOUNT = 0.35;
+function tint(hex, amount = DERIVED_AMOUNT) {
+    const r = (hex >> 16) & 0xff, g = (hex >> 8) & 0xff, b = hex & 0xff;
+    const mix = (c) => Math.round(c + (255 - c) * amount);
+    return (mix(r) << 16) | (mix(g) << 8) | mix(b);
+}
+function shade(hex, amount = DERIVED_AMOUNT) {
+    const r = (hex >> 16) & 0xff, g = (hex >> 8) & 0xff, b = hex & 0xff;
+    const mix = (c) => Math.round(c * (1 - amount));
+    return (mix(r) << 16) | (mix(g) << 8) | mix(b);
+}
+
 // Each entry renders as a Section with a generated solid-color thumbnail accessory (utils/
 // colorSwatchImage.js) instead of plain text, so a listed hex actually SHOWS its color rather than
 // just being typed out -- sent as message attachments referenced via `attachment://`, generated
@@ -203,7 +222,21 @@ function buildSwatchEntries(palette) {
 // with the current 3") -- the 2 real endpoints plus their midpoint blend (the same value actually
 // used as the single accent-color hex elsewhere in the bot, see accentColor.js's
 // blendGradientColors); dropped the earlier light/dark derived variants of the blend.
+//
+// A SOLID name style gives Discord a single color, and normalizeNameStyleColors (guildProfile.js)
+// pairs it with itself so `start === end` here -- Gradient Start/End/Blend would then all render the
+// exact same hex three times (real case, live: #2D596B x3), which reads as broken. Agreed shape
+// (2026-08-09, Harkirat left the choice open and accepted this): show the real color once as
+// "Display Name Color", plus two clearly-derived companions at the same hue so it's obvious they're
+// not three independent extracted values.
 function buildDisplayNameEntries([start, end]) {
+    if (start === end) {
+        return [
+            { label: 'Display Name Color', hex: start },
+            { label: 'Lighter Tint', hex: tint(start) },
+            { label: 'Darker Shade', hex: shade(start) }
+        ];
+    }
     return [
         { label: 'Gradient Start', hex: start },
         { label: 'Gradient End', hex: end },
@@ -262,7 +295,12 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // url if the resize fails for any reason, so the nameplate still shows rather than vanishing.
     else if (effectiveSource === 'nameplate' && data.nameplateUrl) {
         try {
-            const npBuffer = await renderResizedImage(data.nameplateUrl, 512);
+            // Bed color resolved upstream in colorPalette.js (getPalettePanelData) -- null there means
+            // either no recognized palette or a genuine "none" bed, and both degrade to the plain
+            // resize path rather than compositing a fabricated color.
+            const npBuffer = data.nameplateBedHex != null
+                ? await renderNameplateWithBed(data.nameplateUrl, data.nameplateBedHex, 512)
+                : await renderResizedImage(data.nameplateUrl, 512);
             files.push({ name: 'nameplate_resized.png', data: npBuffer });
             containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
         } catch (err) {
@@ -285,7 +323,12 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Header: Avatar and Deco keep a Section+thumbnail (their own image, small); Banner/Nameplate
     // already showed their real media above so the heading here is plain text with no thumbnail;
     // Name has no image of its own besides the generated banner above, also plain text.
-    const headingContent = `## ${meta.heading} ${`<@${targetUserId}>`}\n-# Tap on the \`#HEX\` color code to copy it.`;
+    // Source label (2026-08-09, Harkirat's request after live-testing per-server colors): colors now
+    // resolve CONTEXTUALLY (server profile where the user has one, global otherwise) with no stored
+    // preference, so the panel itself has to say which one it's showing -- otherwise "it auto
+    // selected my server colors" is invisible until you go looking for the switch button.
+    const sourceLabel = variant === 'server' ? 'Server Profile' : 'Global Profile';
+    const headingContent = `## ${meta.heading} ${`<@${targetUserId}>`}\n> Extracted from: **\`${sourceLabel}\`**`;
     const headerThumbnailUrl = effectiveSource === 'avatar' ? avatarThumbnailUrl
         : effectiveSource === 'decoration' ? data.decorationUrl
         : null;
@@ -306,6 +349,9 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // spacing: 2 (2026-07-14, Harkirat's request) -- "large" divider spacing, matching the convention
     // every other command in this bot settled on (calendar/draws/drawprices/manage/etc all use 2).
     containerComponents.push({ type: 14, spacing: 2, divider: true });
+    // Copy hint (moved here 2026-08-09, top of the main palette section it actually describes --
+    // used to be a second line folded into the heading above, cosmetic-only move).
+    containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already
     // does this) -- assigning "Majority Color"/"Vibrant Accent"/etc per-PAGE instead would produce
@@ -314,6 +360,13 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
         : buildSwatchEntries(data[effectiveSource]);
+    // Nameplate bed color (see utils/nameplateBedImage.js) -- surfaced as a real palette entry
+    // alongside the extracted art colors, not just baked into the preview image. Appended AFTER
+    // buildSwatchEntries so it never participates in assignDynamicLabels' relative labeling (it isn't
+    // one of the extracted/clustered colors, so a fixed label is correct here).
+    if (effectiveSource === 'nameplate' && data.nameplateBedHex != null) {
+        allEntries.push({ label: 'Nameplate Background', hex: data.nameplateBedHex });
+    }
     const totalPages = Math.max(1, Math.ceil(allEntries.length / ENTRIES_PER_PAGE));
     const effectiveSubpage = Math.min(Math.max(subpage, 0), totalPages - 1);
     const pageEntries = allEntries.slice(effectiveSubpage * ENTRIES_PER_PAGE, (effectiveSubpage + 1) * ENTRIES_PER_PAGE);

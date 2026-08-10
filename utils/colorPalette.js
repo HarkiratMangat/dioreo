@@ -6,6 +6,7 @@ const { getColorPalette } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
+const { nameplatePaletteHex } = require('./nameplatePalettes');
 
 // Per-source color counts (2026-07-14, Harkirat's request) -- avatar/banner are richer, more
 // complex images that support more genuinely distinct clusters; nameplate/decoration are smaller,
@@ -88,9 +89,9 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         ? { url: extras.decorationUrl, source: extras.decorationAsset, needsStillFrame: true }
         : null;
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, source: guildProfile.nameplateAsset }
+        ? { url: guildProfile.nameplateUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, source: extras.nameplateAsset }
+        ? { url: extras.nameplateUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -219,6 +220,16 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         if (kind !== 'avatar') results[`${kind}Url`] = srcInfo.url; // avatar's thumbnail is passed separately, no gallery url
         results[kind] = prefs[paletteFields(kind, isGuildSource(kind)).paletteField] || null;
     }
+    // Nameplate bed color (2026-08-09) -- resolved here, not in the view, so the view never has to
+    // know about Discord's palette enum at all. `nameplatePaletteHex` returns null for `none`/unknown
+    // palettes, which is exactly "no bed" (never a fabricated color -- see nameplatePalettes.js).
+    // Fixed 'dark' theme: the bot has no way to know which client theme the viewer is using, and dark
+    // is what the overwhelming majority see (same call already made in nameplatePalettes.js's docs).
+    if (sources.nameplate) {
+        const bedHexString = nameplatePaletteHex(sources.nameplate.palette, 'dark');
+        results.nameplateBedHex = bedHexString ? parseInt(bedHexString.slice(1), 16) : null;
+    }
+
     // The avatar thumbnail the panel draws beside its heading. Global-view callers pass their own,
     // but the server view has to override it or the page would show the server's swatches next to
     // the user's ordinary face.

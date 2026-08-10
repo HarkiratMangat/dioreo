@@ -61,6 +61,9 @@ async function fetchProfileExtras(client, userId) {
     const colors = raw.display_name_styles?.colors;
     const decorationAsset = raw.avatar_decoration_data?.asset || null;
     const nameplateAsset = raw.collectibles?.nameplate?.asset || null;
+    // The palette ENUM NAME (e.g. "violet"), not a color -- utils/nameplatePalettes.js's
+    // nameplatePaletteHex() is what turns this into a hex, and only when it recognizes the name.
+    const nameplatePalette = raw.collectibles?.nameplate?.palette || null;
     return {
         // A SOLID name style returns a single color, a gradient returns two. This used to demand
         // `colors.length >= 2` and treat one color as "not set up" -- which silently reclassified a
@@ -72,7 +75,8 @@ async function fetchProfileExtras(client, userId) {
         decorationAsset,
         decorationUrl: decorationAsset ? client.rest.cdn.avatarDecoration(decorationAsset) : null,
         nameplateAsset,
-        nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null
+        nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null,
+        nameplatePalette
     };
 }
 // Kept as a thin convenience wrapper -- settings.js only ever needs the name-color gradient, not the
