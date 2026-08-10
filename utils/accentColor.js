@@ -1,7 +1,8 @@
 // utils/accentColor.js
 const { Routes } = require('discord.js');
 const { getDominantColor } = require('./colorExtract');
-const { extractStillFrame } = require('./stillFrame');
+const { extractFrameMontage } = require('./stillFrame');
+const { readGuildProfile, fetchGuildNameStyles, normalizeNameStyleColors } = require('./guildProfile');
 
 // Shared throttle for anything that needs a LIVE fetch to see fresh data (2026-07-13) -- unlike
 // avatar (whose hash arrives fresh on every interaction payload for free, see
@@ -17,6 +18,15 @@ const { extractStillFrame } = require('./stillFrame');
 // some earlier click happened to warm the cache.
 const bannerRecheckCache = new Map(); // userId -> { checkedAt, value: userFetch }
 const profileExtrasRecheckCache = new Map(); // userId -> { checkedAt, value: fetchProfileExtras() result }
+// Guild name styles are the ONE per-server source that cannot be read from the interaction payload
+// in a guild the bot has joined (discord.js's GuildMember drops display_name_styles), so they need
+// their own throttled REST fetch -- and unlike the two above, this one IS guild-dependent, so its key
+// must carry the guild id. Keyed `${userId}:${guildId}`; a plain userId key would serve one server's
+// name colors in another server for up to 15 minutes, silently and with no error.
+//   ⚠️ The two caches above deliberately stay keyed by userId ALONE and must not be "fixed" to match:
+//   both hold GLOBAL profile data (client.users.fetch and GET /users/{id}), which does not vary by
+//   guild. Adding a guild id there would fragment a correct cache into one entry per server.
+const guildNameStylesRecheckCache = new Map(); // `${userId}:${guildId}` -> { checkedAt, value }
 const RECHECK_WINDOW_MS = 15 * 60 * 1000;
 
 async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
@@ -51,12 +61,22 @@ async function fetchProfileExtras(client, userId) {
     const colors = raw.display_name_styles?.colors;
     const decorationAsset = raw.avatar_decoration_data?.asset || null;
     const nameplateAsset = raw.collectibles?.nameplate?.asset || null;
+    // The palette ENUM NAME (e.g. "violet"), not a color -- utils/nameplatePalettes.js's
+    // nameplatePaletteHex() is what turns this into a hex, and only when it recognizes the name.
+    const nameplatePalette = raw.collectibles?.nameplate?.palette || null;
     return {
-        displayNameColors: Array.isArray(colors) && colors.length >= 2 ? colors : null,
+        // A SOLID name style returns a single color, a gradient returns two. This used to demand
+        // `colors.length >= 2` and treat one color as "not set up" -- which silently reclassified a
+        // deliberate solid choice as absence and fell back to avatar. normalizeNameStyleColors pairs
+        // a solid with itself so the blend path returns that exact color unchanged. Found via a real
+        // per-server style (2026-08-09 13:10 EDT) that was a single color, but the bug was never
+        // guild-specific: a global solid style was mishandled the same way the whole time.
+        displayNameColors: normalizeNameStyleColors(colors),
         decorationAsset,
         decorationUrl: decorationAsset ? client.rest.cdn.avatarDecoration(decorationAsset) : null,
         nameplateAsset,
-        nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null
+        nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null,
+        nameplatePalette
     };
 }
 // Kept as a thin convenience wrapper -- settings.js only ever needs the name-color gradient, not the
@@ -101,15 +121,18 @@ function blendGradientColors([first, second]) {
 // Only the currently-needed source is fetched+extracted on any given call — every source is cached
 // independently on UserPreference so switching styles back and forth doesn't re-hit the Discord
 // CDN/API or re-run pixel averaging/blending unless the underlying source actually changed.
-async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset', displayNameColors = null }) {
+async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset', displayNameColors = null, guildProfile = null, isGuildNameStyle = false }) {
     const rawStyle = prefs.accentColorStyle || 'preset';
     const effectiveStyle = (rawStyle === 'default' || rawStyle === 'preset') ? defaultBehavior : rawStyle;
 
     if (effectiveStyle === 'preset') return presetHex;
 
     // "Banner" style with no banner uploaded has nothing to extract from — fall back to avatar.
-    if (effectiveStyle === 'banner' && !userFetch.banner) {
-        return getCachedColor(prefs, 'avatar', userFetch, presetHex);
+    // A server-specific banner counts: someone with no global banner but one set in this guild has a
+    // real banner to extract from, so checking only userFetch.banner would wrongly send them to the
+    // avatar fallback.
+    if (effectiveStyle === 'banner' && !userFetch.banner && !guildProfile?.bannerHash) {
+        return getCachedColor(prefs, 'avatar', userFetch, presetHex, guildProfile);
     }
 
     // "Display Name Colors" style with no Nitro name style set up has nothing to blend — fall back
@@ -117,11 +140,11 @@ async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior
     // handler (fires right when the user picks this option), not here — this resolver just needs to
     // always return SOME usable color, silently, on every future render.
     if (effectiveStyle === 'displayName') {
-        if (!displayNameColors) return getCachedColor(prefs, 'avatar', userFetch, presetHex);
-        return getCachedDisplayNameColor(prefs, displayNameColors);
+        if (!displayNameColors) return getCachedColor(prefs, 'avatar', userFetch, presetHex, guildProfile);
+        return getCachedDisplayNameColor(prefs, displayNameColors, isGuildNameStyle);
     }
 
-    return getCachedColor(prefs, effectiveStyle, userFetch, presetHex);
+    return getCachedColor(prefs, effectiveStyle, userFetch, presetHex, guildProfile);
 }
 
 // Shared caching primitive: a hex value cached against a source identifier (image hash, asset hash,
@@ -150,8 +173,31 @@ async function getCachedColorFromUrl(prefs, hexField, sourceField, url, sourceHa
     return hex;
 }
 
-async function getCachedColor(prefs, kind, userFetch, fallbackHex) {
+async function getCachedColor(prefs, kind, userFetch, fallbackHex, guildProfile = null) {
     const isAvatar = kind === 'avatar';
+
+    // A per-server override wins over the global profile for this source. A null hash means the user
+    // set no override in this guild -- NOT that they have no image -- so it falls through below.
+    // Cached under its own guild* field pair so the two contexts coexist instead of evicting each
+    // other; still keyed on the image hash, which is what makes the same server profile reused
+    // across several guilds a cache HIT rather than a recompute.
+    const guildHash = guildProfile && (isAvatar ? guildProfile.avatarHash : guildProfile.bannerHash);
+    if (guildHash) {
+        return getCachedColorFromUrl(prefs,
+            isAvatar ? 'guildAvatarColorHex' : 'guildBannerColorHex',
+            isAvatar ? 'guildAvatarColorSource' : 'guildBannerColorSource',
+            isAvatar ? guildProfile.avatarUrl : guildProfile.bannerUrl,
+            guildHash, fallbackHex, `guild ${kind}`);
+    }
+
+    // ⚠️ `|| 'default'` is correct ONLY because userFetch is always a User here, never a GuildMember.
+    // A User with no avatar gets Discord's generated default, whose URL derives from the account id
+    // and never changes, so a single shared 'default' bucket can never go stale. A GuildMember would
+    // break exactly that: its .avatar is the GUILD avatar and is null whenever there is no override,
+    // while displayAvatarURL() still returns the real, changeable GLOBAL image -- so every
+    // override-less member would collide in one bucket and stop invalidating when their global
+    // avatar changed. Per-server sources are routed through guildProfile above so a GuildMember
+    // never reaches this line.
     const sourceHash = isAvatar ? (userFetch.avatar || 'default') : userFetch.banner;
     const url = isAvatar
         ? userFetch.displayAvatarURL({ extension: 'png', size: 256 })
@@ -160,38 +206,74 @@ async function getCachedColor(prefs, kind, userFetch, fallbackHex) {
         isAvatar ? 'avatarColorSource' : 'bannerColorSource', url, sourceHash, fallbackHex, kind);
 }
 
+// Resolves the guild name-style gradient, which is the one per-server source with two possible
+// origins. In a guild the bot has NOT joined it arrives free in the interaction payload; in a guild
+// it HAS joined discord.js has already discarded it, so it needs a throttled REST member fetch (the
+// same call that 404s in the other case). Returns null when there is no server-specific style, which
+// callers read as "use the global one".
+async function resolveGuildNameColors(interaction, guildProfile, isChatInputCommand) {
+    if (!guildProfile) return null;
+    if (guildProfile.displayNameColors) return guildProfile.displayNameColors;
+    if (!guildProfile.botIsMember) return null;
+    return getThrottledFetch(
+        guildNameStylesRecheckCache,
+        `${interaction.user.id}:${guildProfile.guildId}`,
+        isChatInputCommand,
+        () => fetchGuildNameStyles(interaction)
+    );
+}
+
 // Decorations are commonly served as animated PNG -- see utils/stillFrame.js. Cache-hit check runs
 // first (mirroring getCachedColorFromUrl's own check) so a hit never pays for a still-unnecessary
 // ffmpeg download+extract.
-async function getCachedDecorationColor(prefs, url, asset, fallbackHex) {
-    if (prefs.decorationColorHex != null && prefs.decorationColorSource === asset) {
-        return prefs.decorationColorHex;
+async function getCachedDecorationColor(prefs, url, asset, fallbackHex, isGuild = false) {
+    const hexField = isGuild ? 'guildDecorationColorHex' : 'decorationColorHex';
+    const sourceField = isGuild ? 'guildDecorationColorSource' : 'decorationColorSource';
+    if (prefs[hexField] != null && prefs[sourceField] === asset) {
+        return prefs[hexField];
     }
     let stillFrame;
     try {
-        stillFrame = await extractStillFrame(url);
+        // Montage, not one frame -- same reasoning as the palette path (utils/stillFrame.js's own
+        // comment has the measurement). Kept in step deliberately: if the accent engine sampled one
+        // frame while the View Colors panel sampled the whole animation, a user's deco accent could
+        // be a colour their own palette page never shows.
+        // ⚠️ Cached decoration colours are keyed on the ASSET hash, which this does not change, so
+        // existing caches keep their single-frame value until the user changes their decoration.
+        // That is the documented behaviour -- if it ever needs forcing, clear SCOPED to affected
+        // users, never an unscoped updateMany({}) (see feedback_cache_invalidation_on_algorithm_change).
+        stillFrame = await extractFrameMontage(url);
     } catch (err) {
-        console.error('Still-frame extraction failed for decoration:', err.message);
+        console.error('Frame-montage extraction failed for decoration:', err.message);
         return fallbackHex;
     }
-    return getCachedColorFromUrl(prefs, 'decorationColorHex', 'decorationColorSource', stillFrame, asset, fallbackHex, 'decoration');
+    return getCachedColorFromUrl(prefs, hexField, sourceField, stillFrame, asset, fallbackHex,
+        isGuild ? 'guild decoration' : 'decoration');
 }
 
-function getCachedNameplateColor(prefs, url, asset, fallbackHex) {
-    return getCachedColorFromUrl(prefs, 'nameplateColorHex', 'nameplateColorSource', url, asset, fallbackHex, 'nameplate');
+function getCachedNameplateColor(prefs, url, asset, fallbackHex, isGuild = false) {
+    return getCachedColorFromUrl(prefs,
+        isGuild ? 'guildNameplateColorHex' : 'nameplateColorHex',
+        isGuild ? 'guildNameplateColorSource' : 'nameplateColorSource',
+        url, asset, fallbackHex, isGuild ? 'guild nameplate' : 'nameplate');
 }
 
 // displayNameColorSource stores the raw two-color pair joined by a comma -- there's no single
 // "image hash" to key off of here like avatar/banner, so a cache invalidates only when the user's
 // actual chosen colors change, not on every render.
-async function getCachedDisplayNameColor(prefs, colors) {
+async function getCachedDisplayNameColor(prefs, colors, isGuild = false) {
+    // Guild name styles cache under their own field pair for the same reason avatar/banner do -- a
+    // user with both a global and a server style would otherwise evict one with the other on every
+    // context switch. The joined color pair remains the identity either way.
+    const hexField = isGuild ? 'guildDisplayNameColorHex' : 'displayNameColorHex';
+    const sourceField = isGuild ? 'guildDisplayNameColorSource' : 'displayNameColorSource';
     const sourceHash = colors.join(',');
-    if (prefs.displayNameColorHex != null && prefs.displayNameColorSource === sourceHash) {
-        return prefs.displayNameColorHex;
+    if (prefs[hexField] != null && prefs[sourceField] === sourceHash) {
+        return prefs[hexField];
     }
     const hex = blendGradientColors(colors);
-    prefs.displayNameColorHex = hex;
-    prefs.displayNameColorSource = sourceHash;
+    prefs[hexField] = hex;
+    prefs[sourceField] = sourceHash;
     await prefs.save();
     return hex;
 }
@@ -233,21 +315,46 @@ async function buildDynamicColorPool(interaction, prefs, presetHex) {
     // `.filter(hex => hex != null)` below drops every excluded source; resolveDynamicProfileColor's
     // own presetHex fallback only ever kicks in if EVERY source fails (pool ends up empty).
 
-    // Avatar -- always available, free (interaction.user already has the current hash).
-    pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null));
+    // Each source independently prefers this guild's override and falls back to the global profile,
+    // so the pool reflects the profile the user actually presents in the place they ran the command
+    // -- mixing, say, a server avatar with a global nameplate when only the avatar is overridden.
+    const guildProfile = readGuildProfile(interaction);
 
-    // Banner -- only if the user actually has one set.
-    const userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
-        () => interaction.client.users.fetch(interaction.user.id, { force: true }));
-    if (userFetch.banner) pool.push(await getCachedColor(prefs, 'banner', userFetch, null));
+    // Avatar -- always available, free (interaction.user already has the current hash).
+    pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null, guildProfile));
+
+    // Banner -- only if the user actually has one set. A server banner is already in hand, so the
+    // global force-fetch is skipped when one exists.
+    let userFetch = interaction.user;
+    if (!guildProfile?.bannerHash) {
+        userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
+            () => interaction.client.users.fetch(interaction.user.id, { force: true }));
+    }
+    if (guildProfile?.bannerHash || userFetch.banner) {
+        pool.push(await getCachedColor(prefs, 'banner', userFetch, null, guildProfile));
+    }
 
     // Display Name Colors / Avatar Decoration / Nameplate -- one combined raw REST call covers all
-    // three instead of three separate round-trips.
+    // three GLOBAL values instead of three separate round-trips. The guild equivalents came free
+    // with the interaction, so each is preferred over its global counterpart below.
     const extras = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
         () => fetchProfileExtras(interaction.client, interaction.user.id));
-    if (extras.displayNameColors) pool.push(await getCachedDisplayNameColor(prefs, extras.displayNameColors));
-    if (extras.decorationUrl) pool.push(await getCachedDecorationColor(prefs, extras.decorationUrl, extras.decorationAsset, null));
-    if (extras.nameplateUrl) pool.push(await getCachedNameplateColor(prefs, extras.nameplateUrl, extras.nameplateAsset, null));
+
+    const guildNameColors = await resolveGuildNameColors(interaction, guildProfile, isChatInputCommand);
+    if (guildNameColors) pool.push(await getCachedDisplayNameColor(prefs, guildNameColors, true));
+    else if (extras.displayNameColors) pool.push(await getCachedDisplayNameColor(prefs, extras.displayNameColors));
+
+    if (guildProfile?.decorationUrl) {
+        pool.push(await getCachedDecorationColor(prefs, guildProfile.decorationUrl, guildProfile.decorationAsset, null, true));
+    } else if (extras.decorationUrl) {
+        pool.push(await getCachedDecorationColor(prefs, extras.decorationUrl, extras.decorationAsset, null));
+    }
+
+    if (guildProfile?.nameplateUrl) {
+        pool.push(await getCachedNameplateColor(prefs, guildProfile.nameplateUrl, guildProfile.nameplateAsset, null, true));
+    } else if (extras.nameplateUrl) {
+        pool.push(await getCachedNameplateColor(prefs, extras.nameplateUrl, extras.nameplateAsset, null));
+    }
 
     return pool.filter((hex) => hex != null);
 }
@@ -316,15 +423,29 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     const rawStyle = prefs.accentColorStyle || 'preset';
     let userFetch = interaction.user;
     let displayNameColors = null;
+    let isGuildNameStyle = false;
     const isChatInputCommand = interaction.isChatInputCommand();
+    // Free: the invoker's server-profile overrides are already in the interaction payload, in every
+    // guild -- including guilds the bot has never joined. Null in DMs.
+    const guildProfile = readGuildProfile(interaction);
+
     if (rawStyle === 'banner') {
-        userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
-            () => interaction.client.users.fetch(interaction.user.id, { force: true }));
+        // A server banner is already in hand, and it outranks the global one, so the force-fetch
+        // (a genuine Discord REST round-trip on the click path this whole function was once
+        // optimized to avoid) is skipped entirely rather than fetched and then discarded.
+        if (!guildProfile?.bannerHash) {
+            userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
+                () => interaction.client.users.fetch(interaction.user.id, { force: true }));
+        }
     } else if (rawStyle === 'displayName') {
-        displayNameColors = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
-            () => fetchProfileExtras(interaction.client, interaction.user.id)).then(extras => extras.displayNameColors);
+        displayNameColors = await resolveGuildNameColors(interaction, guildProfile, isChatInputCommand);
+        isGuildNameStyle = Boolean(displayNameColors);
+        if (!displayNameColors) {
+            displayNameColors = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
+                () => fetchProfileExtras(interaction.client, interaction.user.id)).then(extras => extras.displayNameColors);
+        }
     }
-    return resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior: 'preset', displayNameColors });
+    return resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior: 'preset', displayNameColors, guildProfile, isGuildNameStyle });
 }
 
 module.exports = {
@@ -332,5 +453,6 @@ module.exports = {
     getAccentColorForCommand,
     fetchDisplayNameColors,
     fetchProfileExtras,
-    resolveDynamicProfileColor
+    resolveDynamicProfileColor,
+    resolveGuildNameColors
 };

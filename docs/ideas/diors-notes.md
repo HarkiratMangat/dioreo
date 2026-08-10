@@ -145,6 +145,8 @@ status: live
 
 - [x] add these emojis to the 10/20/30 cp region switch buttons in the draw prices command: <a:10CpRegion:1535356505614852237> <a:20CpRegion:1535357376369139752> <a:30CpRegion:1535357851352965240> <!-- DONE 2026-08-07 15:47 EDT (Claude): region10Cp/region20Cp/region30Cp added to emojiMap.js, wired per-button in drawprices.js's REGION_EMOJI_KEY map, synced to the dev Discord app, verified 0 unmatched on boot. -->
 
+- [ ] v2 feature: for the 10 minute timeout of the commands that support it, can you physically disable every single button and dropdown menu on the edited command? Because right now, the command does timeout but the buttons remain clickable and just throw up a "Dioreo (Dev) didn't respond in time” error. Id rather them just all go into a disabled state.
+
 ---
 
 ## General / Meta

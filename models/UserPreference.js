@@ -62,6 +62,10 @@ const UserPreferenceSchema = new mongoose.Schema({
     // getDominantColor against their own CDN image) -- decorationColorSource/nameplateColorSource
     // store the asset hash they were computed from, same invalidation pattern as avatar/banner.
     accentColorStyle: { type: String, default: 'preset' },
+    // ⚠️ NO `profileSource` field, deliberately (built and removed 2026-08-09 17:12 EDT, Harkirat's
+    // call). Whether the colours come from a user's server profile or their global one is decided by
+    // WHERE the command was run, not by a stored setting -- see utils/guildProfile.js. Don't re-add
+    // one; the only override is /colors' per-invocation `from:` option, which stores nothing.
     avatarColorHex: { type: Number },
     avatarColorSource: { type: String },
     bannerColorHex: { type: Number },
@@ -72,6 +76,30 @@ const UserPreferenceSchema = new mongoose.Schema({
     decorationColorSource: { type: String },
     nameplateColorHex: { type: Number },
     nameplateColorSource: { type: String },
+
+    // PER-SERVER PROFILE COLORS (2026-08-09 13:20 EDT) -- Discord's Server Profiles feature lets a
+    // user override their avatar/banner/decoration/nameplate/name-style per guild, and the invoker's
+    // overrides ride along in every interaction's `member` payload. These five pairs cache the colors
+    // extracted from those GUILD-scoped sources, kept separate from the global pairs above so a user
+    // who moves between a server and a DM doesn't repeatedly evict one context's color with the
+    // other's -- see utils/guildProfile.js and utils/accentColor.js.
+    //
+    // ⚠️ Deliberately NOT keyed by guild id, which looks like the obvious thing to do and is wrong.
+    // The *Source field holds the image hash / asset id, and that hash IS the identity: measured
+    // 2026-08-09 13:10 EDT, the same server avatar reused across two different guilds returns the
+    // IDENTICAL hash, so hash-keying makes the second guild a free cache HIT while guild-keying
+    // would recompute the same pixels under a different key. A different server profile necessarily
+    // means a different hash, so correctness never depends on the guild id.
+    guildAvatarColorHex: { type: Number },
+    guildAvatarColorSource: { type: String },
+    guildBannerColorHex: { type: Number },
+    guildBannerColorSource: { type: String },
+    guildDisplayNameColorHex: { type: Number },
+    guildDisplayNameColorSource: { type: String },
+    guildDecorationColorHex: { type: Number },
+    guildDecorationColorSource: { type: String },
+    guildNameplateColorHex: { type: Number },
+    guildNameplateColorSource: { type: String },
 
     // "View Colors" panel (utils/colorPalette.js, added 2026-07-13) -- a separate cache from the
     // single accent-color hex above. Each *Palette field holds the full 6-swatch breakdown (Vibrant/
@@ -94,7 +122,24 @@ const UserPreferenceSchema = new mongoose.Schema({
     decorationPalette: { type: mongoose.Schema.Types.Mixed },
     decorationPaletteSource: { type: String },
     nameplatePalette: { type: mongoose.Schema.Types.Mixed },
-    nameplatePaletteSource: { type: String }
+    nameplatePaletteSource: { type: String },
+
+    // Per-server counterparts of the four palettes above (2026-08-09 13:50 EDT), for the "View
+    // Colors" panel's global/server switch. Same reasoning as the guild*Color* pairs further up:
+    // separate fields so a user browsing their server palette in a guild and their ordinary palette
+    // in a DM keeps both, rather than each context evicting the other's much more expensive k-means
+    // result. Keyed on the asset hash, NOT the guild id -- a server profile reused across guilds
+    // has one hash, so it extracts once and hits cache everywhere else.
+    // No "guildDisplayNamePalette" for the same reason there is no global one: Display Name colors
+    // are exact user-picked values, not something extracted from an image.
+    guildAvatarPalette: { type: mongoose.Schema.Types.Mixed },
+    guildAvatarPaletteSource: { type: String },
+    guildBannerPalette: { type: mongoose.Schema.Types.Mixed },
+    guildBannerPaletteSource: { type: String },
+    guildDecorationPalette: { type: mongoose.Schema.Types.Mixed },
+    guildDecorationPaletteSource: { type: String },
+    guildNameplatePalette: { type: mongoose.Schema.Types.Mixed },
+    guildNameplatePaletteSource: { type: String }
 });
 
 module.exports = mongoose.model('UserPreference', UserPreferenceSchema);

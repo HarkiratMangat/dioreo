@@ -7,7 +7,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
-const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor } = require('../utils/accentColor');
+const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor, resolveGuildNameColors } = require('../utils/accentColor');
+const { readGuildProfile } = require('../utils/guildProfile');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -91,12 +92,28 @@ module.exports = {
         // 3. LIVE PROFILE LOOKUP
         const userFetch = await interaction.client.users.fetch(userId, { force: true });
 
-        const userAvatarUrl = interaction.user.displayAvatarURL({ extension: 'png', size: 256 });
-        const userBannerUrl = userFetch.bannerURL({ extension: 'png', size: 512 }) || "";
+        // Per-server profile overrides (2026-08-09 16:55 EDT). Declared here rather than down in the
+        // accent block because the DASHBOARD IMAGES need it too -- showing someone their global face
+        // while the panel beside it is tinted from their server avatar is the inconsistency this
+        // whole feature exists to remove. Null in DMs, and null on the admin-override path
+        // (readGuildProfile refuses when the clicking member isn't the panel's owner), so an
+        // overridden panel correctly falls back to that user's ordinary profile.
+        const guildProfile = readGuildProfile(interaction);
+
+        // Resolved per source, not all-or-nothing: a server avatar with no server banner shows the
+        // server avatar and the ordinary banner, which is exactly what Discord itself shows there.
+        const userAvatarUrl = guildProfile?.avatarUrl
+            || interaction.user.displayAvatarURL({ extension: 'png', size: 256 });
+        const userBannerUrl = guildProfile?.bannerUrl
+            || userFetch.bannerURL({ extension: 'png', size: 512 }) || "";
         // Full-quality versions for the download link buttons below — separate from the small
-        // thumbnail/gallery sizes above used for the actual dashboard display.
-        const userAvatarFullUrl = interaction.user.displayAvatarURL({ size: 4096 });
-        const userBannerFullUrl = userFetch.bannerURL({ size: 4096 }) || "";
+        // thumbnail/gallery sizes above used for the actual dashboard display. These must follow the
+        // SAME source as the previews above: a Download button handing back the global image while
+        // the thumbnail shows the server one would be a quiet mismatch nothing would report.
+        const userAvatarFullUrl = guildProfile?.avatarFullUrl
+            || interaction.user.displayAvatarURL({ size: 4096 });
+        const userBannerFullUrl = guildProfile?.bannerFullUrl
+            || userFetch.bannerURL({ size: 4096 }) || "";
 
         // ACCENT COLOR: /settings has no fixed brand color of its own (unlike calendar/draws/etc),
         // so its "default" behavior is to use the avatar color — see utils/accentColor.js for the
@@ -111,13 +128,23 @@ module.exports = {
         // see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on
         // this style shows whatever was picked for the message /settings itself is rendered on, same
         // "one pick per message, held steady across re-renders" rule every other command follows.
-        const displayNameColors = prefs.accentColorStyle === 'displayName'
-            ? await fetchDisplayNameColors(interaction.client, userId)
-            : null;
+        // `guildProfile` is resolved further up, alongside the dashboard images that also need it.
+        let displayNameColors = null;
+        let isGuildNameStyle = false;
+        if (prefs.accentColorStyle === 'displayName') {
+            // `true` for isChatInputCommand deliberately bypasses the recheck window -- /settings is
+            // the "always fresh on this page" surface, matching how it already treats avatar/banner.
+            displayNameColors = await resolveGuildNameColors(interaction, guildProfile, true);
+            isGuildNameStyle = Boolean(displayNameColors);
+            if (!displayNameColors) {
+                displayNameColors = await fetchDisplayNameColors(interaction.client, userId);
+            }
+        }
         const panelColorHex = prefs.accentColorStyle === 'dynamicProfile'
             ? await resolveDynamicProfileColor(interaction, prefs, 16741953)
             : await resolveAccentColor({
-                prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar', displayNameColors
+                prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar', displayNameColors,
+                guildProfile, isGuildNameStyle
             });
 
         const userCreatedAt = Math.floor(interaction.user.createdAt.getTime() / 1000);
@@ -392,6 +419,14 @@ module.exports = {
                     ]
                 }]
             });
+
+            // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12
+            // EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is
+            // purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server
+            // profile when they have one. A stored preference would only ever restate where the
+            // command was already run, so it was built and then removed rather than shipped as a
+            // setting that explains itself. The one real override lives on /colors (`from:`), and
+            // the in-panel toggle switches the view once server colours actually exist.
 
             // Calendar's Active/All Events filter (2026-07-31 14:00 EDT) -- moved here from an
             // in-page /calendar toggle, per Harkirat's explicit request. Same binary-toggle shape as
