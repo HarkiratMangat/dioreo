@@ -28,7 +28,10 @@ const guildSettingsSchema = new mongoose.Schema({
     // Server-wide baseline. 'public' by default: a bot that is inert or silent on join looks broken
     // and gets removed before anyone finds /server. Discord's own "Use Application Commands" and
     // "Use External Apps" permissions already give admins a per-channel and per-role gate on day
-    // one, so an open default is not an ungoverned one.
+    // one, so an open default is not an ungoverned one. (Measured 2026-08-10 18:04 EDT: "Use
+    // External Apps" governs a GUILD-installed app too, not only user-installed ones -- so that
+    // day-one gate covers the v3 launch configuration as well, which is why an open default here
+    // is safe rather than merely convenient.)
     defaultVisibility: { type: String, enum: ['public', 'ephemeral'], default: 'public' },
 
     // Flips the default inside specific channels. Beats defaultVisibility, loses to any role rule.

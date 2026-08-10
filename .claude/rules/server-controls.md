@@ -21,7 +21,15 @@ paths:
 
 Do not "finish" this feature by adding a refusal path. **A bot cannot hide a global slash command inside one guild.** Guild-scoped registration does not delete global commands — Discord merges both sets, so omitting a command from a guild's list leaves the global one visible. The only native mechanism that removes one command in one server is application command permissions, which can only be written with an **OAuth2 bearer token from a MANAGE_GUILD user**; the bot cannot set them for itself.
 
-Admins already hold the real levers natively, **per role and per channel** (measured by Harkirat 2026-08-10 15:38 EDT): disabling **Use Application Commands** removes every slash command from every app, and disabling **Use External Apps** forces *user-installed* apps' output to ephemeral. What those don't cover — and what this feature exists for — is that they are blunt (every app at once), they offer no per-command targeting for a user-installed app, and "Use External Apps" stops governing the bot once a server actually installs it.
+Admins already hold the real levers natively, **per role and per channel** (measured by Harkirat 2026-08-10 15:38 EDT): disabling **Use Application Commands** removes every slash command from every app, and disabling **Use External Apps** forces app output to ephemeral.
+
+⚠️ **"Use External Apps" governs a GUILD-INSTALLED app too — measured 2026-08-10 18:04 EDT, and it refutes the premise this feature was originally sized on.** The design assumed a guild-installed bot is not "external", so admins would lose that lever in exactly the configuration v3 launches. They do not. Harkirat re-ran the test in 𝔇𝔯𝔢𝔞𝔪𝔩𝔞𝔫𝔡 with a member who does **not** have Dioreo (Dev) user-installed — the invocation could therefore only come from the guild-installed copy — and disabling the permission for the channel forced `/colors` ephemeral. **So this feature's channel and role tiers duplicate, in shape, a native per-role/per-channel overwrite Discord already ships.**
+
+**Two things justify it, and they are narrower than the records first claimed — do not restate the old sizing:**
+1. **Per-app targeting.** The native lever is all-or-nothing: quieting Dioreo in a channel quiets *every* app there. `/server` quiets this bot alone.
+2. **Per-command targeting.** Nothing native can force `/colors` ephemeral while `/help` stays public. `ephemeralCommands` is the only route to that, for guild- and user-installed invocations alike.
+
+Because the tiers mirror a native mechanism, they deliberately mirror its **semantics** too — same-tier conflicts resolve to `public`, exactly as an explicit allow beats a deny in Discord's own role overwrites, so an admin's existing intuition transfers. **Before adding any tier here, check whether a native permission already expresses it**; the first three attempts at sizing this feature all overstated the gap, and the correction cost a full pass over six documents.
 
 ## Precedence — highest tier wins
 
