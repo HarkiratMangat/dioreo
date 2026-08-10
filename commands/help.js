@@ -74,7 +74,12 @@ const CATEGORY_DEFS = [
     { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: ['/draws', '/draw prices'] },
     { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: ['/calendar', '/patch notes', '/season end'] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: ['/colors', '/timestamp'] },
-    { key: 'preferences', label: 'Preferences', emojiKey: 'settings', dropdownDescription: 'Manage your saved bot settings', staticCommands: ['/settings'] }
+    { key: 'preferences', label: 'Preferences', emojiKey: 'settings', dropdownDescription: 'Manage your saved bot settings', staticCommands: ['/settings'] },
+    // Listed for everyone even though only server admins can open the panel: an admin cannot look
+    // it up if it is hidden from the directory, and /server's own body says who it is for. This is
+    // also where the panel's limits live -- the panel itself deliberately stays short (see
+    // commands/server.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT).
+    { key: 'serveradmin', label: 'Server Admin', emojiKey: 'serverSettings', dropdownDescription: 'Control where Dioreo answers publicly', staticCommands: ['/server'] }
 ];
 
 const DETAIL_HEADERS = {
@@ -82,6 +87,7 @@ const DETAIL_HEADERS = {
     draws: 'Draws Commands',
     seasonal: 'Seasonal Info Commands',
     utilities: 'Utility Commands',
+    serveradmin: 'Server Admin Commands',
     preferences: 'Preference Commands'
 };
 
@@ -147,11 +153,27 @@ function buildPreferencesBody() {
         + `-# **Examples**\n-# 🔸 **/settings**`;
 }
 
+// The one /help page written for a server admin rather than a player. It carries the detail the
+// panel deliberately leaves out -- the precedence order in full, and the two Discord limits an
+// admin will otherwise discover by bumping into them (25 picks per menu, and the fact that nothing
+// here removes a command). Harkirat's framing, 2026-08-10 18:23 EDT: the caps are not a real
+// constraint in practice ("why is a server adding 25 role overrides"), so they are stated as
+// guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a wall
+// of warnings on the panel itself.
+function buildServerAdminBody() {
+    return `### \`/server\`\nDecide where Dioreo answers **publicly** and where it answers **only to the person who asked**. Needs **Manage Server**.\n-# **Options**\n-# 🔹 No options — it opens a panel with four pages: Overview, Channels, Roles and Commands\n\n`
+        + `-# **How the rules stack** — the most specific one wins\n-# 🔹 **1. Command** — a command listed as always-hidden answers privately everywhere. Admins are exempt.\n-# 🔹 **2. Role** — a role rule limited to certain channels, then a role rule that applies everywhere\n-# 🔹 **3. Channel** — a rule on that channel, or on its parent if you are in a thread\n-# 🔹 **4. Default** — whatever Overview is set to. New servers start fully public.\n-# 🔸 If two roles disagree at the same level, **public wins** — the same way an allow beats a deny in Discord's own permissions.\n\n`
+        + `-# **The intended way to set it up**\n-# 🔸 Pick a server-wide default on **Overview** first, then hand-pick the handful of channels or roles that should differ. Building it exception-by-exception from scratch is the slow way round.\n-# 🔸 A rule can only make Dioreo **quieter**. Setting something to Public *permits* a public answer — it never overrides a member who chose hidden in their own \`/settings\`.\n\n`
+        + `-# **Two Discord limits worth knowing**\n-# 🔸 Each menu takes **25 picks**. That is Discord's cap, not ours, and it is why the default-plus-exceptions approach above is the right shape — a server needing 25+ overrides usually wants a different default instead.\n-# 🔸 **Nothing here removes a command from your server.** Discord does not let a bot hide its own commands in one server. \`/server\` hides the *answer*; to remove the command itself, use **Server Settings → Integrations**.\n\n`
+        + `-# **Examples**\n-# 🔸 **/server** → Overview → *Switch default to Hidden*, then Channels → allow \`#bot-spam\` publicly\n-# 🔸 **/server** → Roles → *Always public for these roles* → \`@Moderator\``;
+}
+
 const BODY_BUILDERS = {
     draws: buildDrawsBody,
     seasonal: buildSeasonalBody,
     utilities: buildUtilitiesBody,
-    preferences: buildPreferencesBody
+    preferences: buildPreferencesBody,
+    serveradmin: buildServerAdminBody
 };
 
 function buildCategorySelectRow(selectedKey) {

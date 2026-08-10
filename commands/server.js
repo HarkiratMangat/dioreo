@@ -79,14 +79,18 @@ function buildHome(settings) {
             accent_color: ACCENT,
             components: [
                 { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
-                { type: 10, content: '-# Server-admin only · decides whether Dioreo answers **publicly** in the channel or **only to the person who asked**.' },
+                { type: 10, content: '-# Decide where Dioreo answers **publicly**, and where it answers **only to whoever asked**.' },
                 { type: 14, spacing: 2 },
                 { type: 10, content: summaryLines(settings) },
                 { type: 14, spacing: 2 },
+                // The precedence order is the one thing an admin cannot discover by clicking around
+                // -- every page looks self-contained, so a role rule quietly overriding a channel
+                // rule reads as the channel rule "not working". One line, on the landing page only.
+                { type: 10, content: '-# **Most specific rule wins:** command → role → channel → default.' },
                 // Stated in the panel because it is the single most surprising property of the
                 // model: a rule can only ever quiet the bot. "Public" is a permission, not a
                 // command -- a member who prefers hidden answers still gets hidden answers.
-                { type: 10, content: '-# A rule can only make the bot **quieter**. Setting something to Public permits a public answer; it never overrides someone who chose hidden in `/settings`.' },
+                { type: 10, content: '-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone\'s own `/settings`.' },
                 {
                     type: 1,
                     components: [{
@@ -129,9 +133,15 @@ function buildChannels(settings) {
             accent_color: ACCENT,
             components: [
                 { type: 10, content: '## 🔇 Channel rules' },
-                { type: 10, content: '-# Each menu holds the full list for that setting — adding or removing a channel here **replaces** it. A channel can only be in one list.' },
+                // ⚠️ KEEP THIS PAGE SHORT. An earlier draft explained the replace-semantics, the
+                // search affordance, thread inheritance and Discord's 25-per-menu cap as four
+                // separate paragraphs -- correct, and a wall of text that buried the one line an
+                // admin needs. Harkirat's call, 2026-08-10 18:23 EDT: lead with the workflow, drop
+                // the limits to a single footnote, and let /help carry the detail.
+                { type: 10, content: '-# Exceptions to your server default. Set that on **Overview** first, then pick a few channels here.' },
                 { type: 14, spacing: 2 },
                 { type: 10, content: rules.length ? summaryLines(settings).split('\n').pop() : '-# No channel rules yet.' },
+                { type: 10, content: '-# 🔎 Type to search · your picks **replace** the list · threads follow their channel' },
             ],
         },
         channelSelect('server_ch_ephemeral', 'Always hidden in these channels…', ephemeral),
@@ -163,13 +173,14 @@ function buildRoles(settings) {
             accent_color: ACCENT,
             components: [
                 { type: 10, content: '## 👥 Role rules' },
-                { type: 10, content: '-# Roles beat channels. Use these for "this role may always speak publicly, wherever they are".' },
+                { type: 10, content: '-# Give a role its own setting — everywhere, or only in chosen channels. **Roles override channel rules.**' },
                 { type: 14, spacing: 2 },
                 {
                     type: 10, content: scoped.length
                         ? `**Scoped to specific channels:** ${scoped.map(r => `<@&${r.roleId}> → ${VISIBILITY_LABEL[r.visibility]} in ${r.channelIds.length}`).join(' · ')}`
-                        : '-# No channel-scoped role rules. Pick a role below to limit one to certain channels.',
+                        : '-# No channel-scoped role rules yet.',
                 },
+                { type: 10, content: '-# 🔎 Type to search your roles' },
             ],
         },
         roleSelect('server_role_public', 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
@@ -189,7 +200,7 @@ function buildRoleScope(settings, roleId) {
             accent_color: ACCENT,
             components: [
                 { type: 10, content: `## 👥 <@&${roleId}> — channel scope` },
-                { type: 10, content: '-# A scoped rule beats an unscoped one, and both beat channel rules. Clearing both menus removes the scope.' },
+                { type: 10, content: '-# This role gets its own setting in just these channels. Clear both menus to remove it.' },
             ],
         },
         channelSelect(`server_role_scope_public|${roleId}`, 'Public for this role, only in…', pub?.channelIds || []),
@@ -202,18 +213,31 @@ function buildCommands(settings, gateable) {
     const selected = settings?.ephemeralCommands || [];
     // Sorted so the menu order is stable across renders; a set that reorders itself between clicks
     // reads as the panel losing state.
-    const names = [...gateable].sort().slice(0, SELECT_OPTION_CAP);
+    const sorted = [...gateable].sort();
+    const names = sorted.slice(0, SELECT_OPTION_CAP);
+    // ⚠️ A string select takes at most 25 OPTIONS, and unlike the channel/role menus it has no
+    // search -- it is a literal list, so everything must fit. This list is NOT fixed: the
+    // per-category weapon commands are generated at boot from Loadout.distinct('category'), so
+    // adding weapon categories grows it. At 18 gateable commands (measured 2026-08-10 18:18 EDT)
+    // nothing is dropped, but a BARE slice would make commands past the 25th alphabetically
+    // unconfigurable with no signal at all -- the admin would simply never see them and have no
+    // reason to suspect the list was incomplete. Naming the omitted ones is the difference between
+    // a known limit and a silent one. scripts/guildPolicyEnforcement.test.js pins this so it cannot
+    // regress to a bare slice. If it ever fires for real, paginate the menu (utils/paginationRow.js
+    // already provides the pattern) -- the cap itself is Discord's and cannot be raised.
+    const omitted = sorted.slice(SELECT_OPTION_CAP);
     return [
         {
             type: 17,
             accent_color: ACCENT,
             components: [
                 { type: 10, content: '## 🤫 Always-hidden commands' },
-                { type: 10, content: '-# These beat every channel and role rule. **Server admins are exempt** — you can still run them publicly yourself.' },
+                { type: 10, content: '-# These always answer privately, even in public channels. **You are exempt** — admins can still run them publicly.' },
                 { type: 14, spacing: 2 },
                 // Said plainly because an admin will otherwise expect the command to disappear, and
                 // then read its continued presence as a bug rather than a platform limit.
-                { type: 10, content: '-# This hides the **answer**, not the command. Discord does not let a bot remove one of its own commands inside a single server — to take a command off the list entirely, use **Server Settings → Integrations**.' },
+                { type: 10, content: '-# Hides the **answer**, not the command. To remove a command from the list entirely, use **Server Settings → Integrations**.' },
+                ...(omitted.length ? [{ type: 10, content: `-# ⚠️ Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(n => `\`/${n}\``).join(', ')}. Please report this.` }] : []),
             ],
         },
         {
@@ -363,6 +387,11 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0]),
 
     handleComponent,
+    // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these
+    // from outside this file. They are here because both limits these tests pin (25 options on a
+    // select, 40 components per message) are invisible right up until a panel refuses to open, and
+    // a test is the only thing that will notice before an admin does.
+    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands },
 
     async execute(interaction) {
         // Always ephemeral, and never offered as a `visibility` option: this is a configuration
