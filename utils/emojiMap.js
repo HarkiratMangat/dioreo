@@ -103,6 +103,10 @@ const emojis = {
     events: '<a:Events:1532830530108653659>',
     // Re-uploaded 2026-08-08 00:22 EDT (Harkirat deleted the old id from the portal) -- new id only, same key.
     modes: '<a:Modes:1535502470086664252>',
+    // /server's panel headings (added 2026-08-10 17:07 EDT, Harkirat provided it). Prod id as usual,
+    // verified present in BOTH apps by a live read of /applications/@me/emojis before writing it --
+    // dev's copy is 1536468996688453752 and refreshEmojiIds() re-points to it by name at boot.
+    serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide
     // panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:Guide:1532894836301238477>',

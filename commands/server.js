@@ -10,6 +10,11 @@
 // docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+// ⚠️ Required as the whole module and read INSIDE the render functions below, never destructured or
+// captured at module level. refreshEmojiIds() rewrites this object in place at boot, long after this
+// file is require()d, so a module-level capture freezes the pre-sync id and renders broken on the
+// dev bot -- four sites shipped exactly that bug on 2026-07-26. See .claude/rules/rendering-and-ui.md.
+const emojis = require('../utils/emojiMap');
 const { getGuildSettings, isServerAdmin, updateGuildSettings } = require('../utils/guildPolicy');
 
 // Discord blurple -- this panel configures a SERVER's own behaviour, so it deliberately does not
@@ -73,7 +78,7 @@ function buildHome(settings) {
             type: 17,
             accent_color: ACCENT,
             components: [
-                { type: 10, content: '## 🛡️ Server Controls' },
+                { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
                 { type: 10, content: '-# Server-admin only · decides whether Dioreo answers **publicly** in the channel or **only to the person who asked**.' },
                 { type: 14, spacing: 2 },
                 { type: 10, content: summaryLines(settings) },
@@ -259,7 +264,7 @@ function setScopedRoleRule(doc, roleId, visibility, channelIds) {
 // place that decides who may change a server's rules.
 async function handleComponent(interaction) {
     if (!interaction.guildId) {
-        return interaction.reply({ content: '🛡️ **Server Controls only work inside a server.**', ephemeral: true });
+        return interaction.reply({ content: `${emojis.serverSettings} **Server Controls only work inside a server.**`, ephemeral: true });
     }
     if (!isServerAdmin(interaction)) {
         return interaction.reply({
@@ -370,7 +375,7 @@ module.exports = {
                 type: 17,
                 accent_color: ACCENT,
                 components: [
-                    { type: 10, content: '## 🛡️ Server Controls' },
+                    { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
                     { type: 10, content: 'This one only works **inside a server** — there is nothing to configure in a DM.' },
                 ],
             }]);
