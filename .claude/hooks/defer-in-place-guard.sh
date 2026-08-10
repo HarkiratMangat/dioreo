@@ -20,6 +20,13 @@
 # docs/db-deferred-list.md is BUILT of legitimate deferrals and would match on every edit. Only text
 # being ADDED right now is examined. Legitimate deferrals are still fine and common (blocked on
 # Harkirat, genuinely wants its own session, needs a decision) — this only asks the question.
+#
+# ⚠️ IT FIRES ON THE RECORDS THAT DOCUMENT IT. That is ACCEPTED, not a bug to fix.
+# Writing the v2.63.1 CHANGELOG and DEVLOG entries tripped it twice, because describing the guard
+# means quoting its own triggers. Do NOT "fix" that by exempting CHANGELOG.md / DEVLOG.md: a real
+# deferral instruction genuinely did live in a changelog once ("revert to 16000 once that item
+# lands") and propagated for a day — so a record IS an actionable place, and exempting it would
+# trade a one-time warn for a permanent hole. Rephrase the prose, or ignore it; it never blocks.
 set -u
 
 payload=$(cat 2>/dev/null) || exit 0

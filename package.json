@@ -1,6 +1,6 @@
 {
   "name": "dioreo",
-  "version": "2.63.0",
+  "version": "2.63.1",
   "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
@@ -10,7 +10,7 @@
     "docs:audit": "node scripts/docs-audit.mjs",
     "docs:audit:test": "node scripts/docs-audit.test.mjs",
     "test:hooks": "bash .claude/hooks/run-all-tests.sh",
-    "test": "npm run check && npm run docs:audit:test && node scripts/calendarDedup.test.js && node scripts/alertExplain.test.js && node scripts/gatewayRecovery.test.js && node scripts/logger.test.js && npm run docs:reflow:test && npm run docs:reflow && npm run test:hooks",
+    "test": "npm run check && npm run docs:audit:test && node scripts/calendarDedup.test.js && node scripts/alertExplain.test.js && node scripts/gatewayRecovery.test.js && node scripts/logger.test.js && node scripts/devlog-add.test.mjs && npm run docs:reflow:test && npm run docs:reflow && npm run test:hooks",
     "docs:reflow": "node scripts/reflow-prose.mjs --check",
     "docs:reflow:test": "node scripts/reflow-prose.test.mjs"
   },
