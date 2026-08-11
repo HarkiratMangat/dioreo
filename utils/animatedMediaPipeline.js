@@ -77,7 +77,23 @@ function runCommand(cmd, args) {
 // against a real equipped nameplate).
 // `fps`: passed to a `fps=` filter, so it both caps AND (for a slower source) upsamples to a fixed
 // output rate -- callers don't need to know the source's native frame rate.
-async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], fps }) {
+// `asPaths`: return the frames WHERE FFMPEG ALREADY WROTE THEM instead of reading them all into
+// memory. The default (buffers) exists because the nameplate render genuinely needs every frame's
+// pixels -- it composites a gradient bed onto each one. The decoration render does not: in the common
+// no-resize case nothing touches the pixels between ffmpeg writing them and img2webp reading them
+// back, so buffering all N was a full round trip of N reads followed by N writes into a SECOND temp
+// dir, for bytes that never changed. With paths, only the ~9 frames the palette montage samples are
+// ever read, and img2webp consumes the originals in place.
+//
+// ⚠️ THE CALLER OWNS THE DIRECTORY in this mode -- `cleanup()` must run in a `finally`, or the temp
+// dir leaks. That is the cost of the optimisation and the reason it is opt-in rather than the default.
+// A throw before the return still cleans up here; only the success path hands ownership over.
+//
+// ⚠️ `asPaths` is a TRANSPORT choice and changes no pixel, so it must NEVER be folded into the
+// `FRAME_OPTS` a cache passes to paletteContextFields -- that would move the palette cache key and
+// re-derive every stored palette to arrive at identical colours. See utils/decorationWebpCache.js's
+// call site, which spreads it in for this function only.
+async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], fps, asPaths = false }) {
     const id = crypto.randomUUID();
     const dir = path.join(os.tmpdir(), `dior_mediaframes_${id}`);
     await fs.mkdir(dir, { recursive: true });
@@ -85,6 +101,7 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
     const outputPattern = path.join(dir, 'frame_%04d.png');
     await fs.writeFile(inputPath, sourceBuffer);
 
+    let ownedByCaller = false;
     try {
         await runCommand('ffmpeg', [
             '-y', ...preInputArgs, '-i', inputPath,
@@ -92,9 +109,14 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
         ]);
         const names = (await fs.readdir(dir)).filter(n => n.startsWith('frame_')).sort();
         if (names.length === 0) throw new Error('ffmpeg produced zero frames');
-        return await Promise.all(names.map(n => fs.readFile(path.join(dir, n))));
+        const paths = names.map(n => path.join(dir, n));
+        if (asPaths) {
+            ownedByCaller = true;
+            return { paths, cleanup: () => fs.rm(dir, { recursive: true, force: true }).catch(() => {}) };
+        }
+        return await Promise.all(paths.map(p => fs.readFile(p)));
     } finally {
-        await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+        if (!ownedByCaller) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     }
 }
 
@@ -125,9 +147,14 @@ async function encodeWebpFromFrames(frameBuffers, { fps }) {
     const frameDelayMs = Math.round(1000 / fps);
 
     try {
-        const framePaths = await Promise.all(frameBuffers.map(async (buf, i) => {
+        // Accepts Buffers OR paths to PNGs already on disk. A caller that took extractAlphaFrames'
+        // `asPaths` mode and did not touch the pixels has files img2webp can read directly, so writing
+        // them out again would be a copy of bytes onto themselves. A Buffer still gets written, because
+        // img2webp reads real files and not stdin -- that part is a genuine constraint, not waste.
+        const framePaths = await Promise.all(frameBuffers.map(async (frame, i) => {
+            if (typeof frame === 'string') return frame;
             const p = path.join(dir, `frame_${String(i).padStart(4, '0')}.png`);
-            await fs.writeFile(p, buf);
+            await fs.writeFile(p, frame);
             return p;
         }));
 
@@ -231,8 +258,21 @@ async function poolFramesIntoMontage(raw, { frames = POOL_FRAMES, targetWidth = 
 // resize is needed at all -- can skip a full Jimp decode of a 288x288 frame for four bytes of header.
 // Falls back to a real decode on anything that isn't a PNG, so this can never be the reason a render
 // fails; the fast path is an optimisation, not a new format assumption.
+// Accepts a Buffer or a path. Given a path it reads only the first 24 bytes rather than the file --
+// the whole point is to not pay for pixels nobody needs.
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-async function readImageSize(buffer) {
+async function readImageSize(source) {
+    let buffer = source;
+    if (typeof source === 'string') {
+        const handle = await fs.open(source, 'r');
+        try {
+            const header = Buffer.alloc(24);
+            const { bytesRead } = await handle.read(header, 0, 24, 0);
+            buffer = header.subarray(0, bytesRead);
+        } finally {
+            await handle.close();
+        }
+    }
     if (Buffer.isBuffer(buffer) && buffer.length >= 24
         && buffer.subarray(0, 8).equals(PNG_SIGNATURE)
         && buffer.subarray(12, 16).toString('latin1') === 'IHDR') {

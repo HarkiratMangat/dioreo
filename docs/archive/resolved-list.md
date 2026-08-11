@@ -22,6 +22,19 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 💾 Decoration render's double disk write — closed 2026-08-11 16:22 EDT
+
+**Original entry, verbatim:**
+> `[P3 · XS]` **Decoration WebP render writes every frame to disk twice for no reason.** `extractAlphaFrames` has ffmpeg write `frame_%04d.png` into a temp dir, reads them into buffers, then deletes the dir; `encodeWebpFromFrames` then writes those identical bytes back out to a *second* temp dir because img2webp reads real files, not stdin. *(Both in `utils/animatedMediaPipeline.js`. Line numbers deliberately removed 2026-08-11 10:24 EDT — they cited `:62-67` and `:97-101` and were invalidated by a one-line import added at the top of that file, which is exactly the silent rot `feedback_no_duplicated_state_in_prose` describes. Name the functions instead.)* For **nameplate** this is unavoidable — Jimp composites the bed in between, so the buffers genuinely change. For **decoration in the common no-resize case** nothing touches the pixels between the two writes, so it is a pure round-trip: N frame-writes + N reads + N writes that could be one ffmpeg output dir handed straight to img2webp. Real but small (the render is once per asset ever, and `-m 0` already cut the dominant cost ~90%), so this is genuinely low priority — worth doing only if that path is being touched anyway. **Verify:** a decoration render produces byte-identical WebP output with one fewer temp dir created.
+
+**Outcome — shipped in Pre-Release v3.8.0-pre, 2026-08-11 16:22 EDT.** Its own filing condition ("worth doing only if that path is being touched anyway") came true: the render-pipeline work was already in both functions, and Harkirat's call was to fold it in rather than leave it filed. `extractAlphaFrames` gained an `asPaths` mode that returns the frames where ffmpeg already wrote them plus a `cleanup()`; `encodeWebpFromFrames` now accepts paths as well as Buffers and skips the write for the former. On a 60-frame decoration that removes **60 writes and 51 reads** — the montage samples only 9 frames, so the other 51 were read purely to be discarded. The heal path takes the same route for the same reason.
+
+Two things were true here that were not true when it was filed, and both are recorded because they change how the next similar refactor should be judged:
+- **It is opt-in, not the default.** The nameplate render genuinely needs every frame's pixels (it composites a gradient bed onto each), so buffers stay correct there. `asPaths` also transfers **ownership of the temp dir** to the caller, which is a real cost paid in a `finally`.
+- ⚠️ **A byte-identical refactor here is no longer free.** `extractAlphaFrames` is now an input to the palette cache key (v3.8.0-pre), so changing it moved the key and re-derived every stored palette to arrive at identical colours. Metadata-only and automatic, but worth knowing before assuming a pure refactor in this file costs nothing.
+
+**Verified** by `local/colors-investigation/paths-vs-buffers-parity.js` on two real 60-frame decorations: WebP output **byte-identical** by sha256 (1,135,588 and 200,414 bytes), palettes identical, dimensions identical, and **zero** leaked `dior_*` temp dirs. Then live through `resolveDecorationWebp`, which re-derived both palettes to the same colours with `discord_cdn_url` intact.
+
 ### ❄️ Cold nameplate/deco render verified live — closed 2026-08-11 13:38 EDT
 
 *Filed 2026-08-11 10:22 EDT as `[P2 · S]`, closed the same session. Verified against the dev bot, not re-derived from code.*

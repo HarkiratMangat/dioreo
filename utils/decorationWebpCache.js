@@ -139,6 +139,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
     const publicId = publicIdFor(decorationAsset);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const renderStartedAt = Date.now();
+    // Set once the frames are extracted in `asPaths` mode, where this function owns the temp dir. It
+    // hangs on the function's own try/finally rather than a nested one so the happy path, the error
+    // path and the palette-failure path all release it without a second block to keep in sync.
+    let releaseFrames = null;
 
     try {
         const res = await fetch(decorationUrl);
@@ -148,7 +152,13 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // -f apng is REQUIRED (see utils/stillFrame.js's extractFrameMontage comment) -- without it
         // ffmpeg silently reads an animated PNG as a single still frame and this would produce a
         // 1-frame "animated" WebP with no error anywhere to catch it.
-        const rawFrames = await extractAlphaFrames(sourceBuffer, FRAME_OPTS);
+        // ⚠️ `asPaths` leaves the frames where ffmpeg wrote them and hands this function ownership of
+        // the temp dir -- hence the `finally` below, which must not be removed. It is spread in HERE
+        // ONLY and is deliberately absent from FRAME_OPTS: it moves no pixel, and folding it into the
+        // options that key the palette cache would re-derive every stored palette for identical colours.
+        const extracted = await extractAlphaFrames(sourceBuffer, { ...FRAME_OPTS, asPaths: true });
+        releaseFrames = extracted.cleanup;
+        const rawFrames = extracted.paths;
 
         // No bed/compositing step (decorations stay genuinely transparent) and no dithering pass.
         // Dimensions checked from ONE frame only, then resize the WHOLE set only if actually needed --
@@ -169,19 +179,24 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             frames = [];
             // Same event-loop-yield discipline as nameplateWebpCache.js's compositing loop -- this
             // branch only runs when a real resize is happening, so it's real per-frame CPU work again.
-            for (const frameBuf of rawFrames) {
-                const img = await Jimp.read(frameBuf);
+            // Jimp.read takes the path directly, so nothing is buffered that isn't about to be resized.
+            for (const framePath of rawFrames) {
+                const img = await Jimp.read(framePath);
                 img.resize({ w: width, h: height });
                 frames.push(await img.getBuffer('image/png'));
                 await new Promise(setImmediate);
             }
         } else {
+            // The common case: PATHS, handed straight to img2webp. Nothing between ffmpeg writing these
+            // and the encoder reading them touches a pixel, so buffering them would be N reads followed
+            // by N writes of the same bytes into a second temp dir.
             frames = rawFrames;
         }
-
         // Palette from the raw art frames, which the render already holds -- see extractPaletteFromFrames
         // above. Extracted from `rawFrames` rather than the possibly-resized `frames` so the result does
         // not depend on whether a resize branch happened to run; k-means samples ~2500 pixels either way.
+        // Only the ~9 frames the montage samples are read at all; poolFramesIntoMontage's Jimp.read takes
+        // a path as happily as a Buffer.
         // A failure must not sink the WebP, which is the primary product here.
         let palette = null;
         try {
@@ -269,6 +284,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
     } catch (err) {
         console.error(`Decoration WebP render/upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
         return null;
+    } finally {
+        // Owned since `asPaths` handed the temp dir over; by here the encoder has its bytes and the
+        // palette has been sampled, so nothing reads these files again on any path through the above.
+        if (releaseFrames) await releaseFrames();
     }
 }
 
@@ -299,8 +318,15 @@ async function healPalette(cached, decorationAsset, decorationUrl) {
     try {
         const res = await fetch(decorationUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${decorationUrl}`);
-        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), FRAME_OPTS);
-        const palette = await extractPaletteFromFrames(rawFrames);
+        // `asPaths` here too: this path only ever samples the ~9 frames the montage picks, so reading
+        // all 60 into memory to throw 51 of them away was the same waste the render path had.
+        const extracted = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), { ...FRAME_OPTS, asPaths: true });
+        let palette;
+        try {
+            palette = await extractPaletteFromFrames(extracted.paths);
+        } finally {
+            await extracted.cleanup();
+        }
         const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (!context.palette) return cached;
         // Re-send discord_cdn_url -- `context` replaces the whole map, so patching the palette alone
