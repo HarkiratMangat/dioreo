@@ -6,6 +6,7 @@
 // actually sees on their nameplate.
 const { Jimp } = require('jimp');
 const { NAMEPLATE_GRADIENT_STOPS } = require('./nameplatePalettes');
+const { extractAlphaFrames } = require('./animatedMediaPipeline');
 
 // Piecewise-linear interpolation across NAMEPLATE_GRADIENT_STOPS' {at, alpha} pairs -- reproduces the
 // same curve as Discord's `linear-gradient(90deg, transparent 0%, rgba(C,0.08) 20%, rgba(C,0.08) 50%,
@@ -89,4 +90,61 @@ async function renderGradientBedFrame(artBuffer, bedHex, targetWidth = 512) {
     return paintGradientBedOnto(art, bedHex, targetWidth).getBuffer('image/png');
 }
 
-module.exports = { renderNameplateWithBed, renderGradientBedFrame };
+// EXTRACTION-ONLY companion (2026-08-11 07:25 EDT). Pools the whole animation, bed composited, into
+// ONE still so colour extraction sees the nameplate the user actually looks at.
+//
+// ⚠️ WHY THIS EXISTS — measured, and the result is worse than "misses a bit of colour". Extraction
+// used to read Discord's `static.png`, which carries ONLY the upper art layer (measured: 0.0% opaque
+// pixels, 32.9% fully transparent, 67.1% partial alpha — there is no bed in it). The bed is a CSS
+// gradient Discord's client draws, so the same art ships for EVERY palette. Consequence, measured on
+// the real `nameplates/nameplates/twilight/` asset: the extracted palette was BYTE-IDENTICAL
+// (#336CED #5B96F1 #1E4DE9 #83C5F4) for the lemon, crimson AND clover palettes — a user with a
+// crimson nameplate saw red in Discord and got blue from /colors. Compositing first recovers the bed
+// as the leading entry, essentially exactly: lemon -> #F6CD12 (bed #F6CD12), crimson -> #8F020C (bed
+// #900007), clover -> #047A26 (bed #047B20).
+//
+// ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back — see the silent-single-frame
+// trap documented at the top of utils/animatedMediaPipeline.js. A one-frame result here would look
+// like a working extraction while quietly reproducing the bug this replaces.
+//
+// FPS matches nameplateWebpCache's measured native 12 rather than a fresh guess; the tiles are capped
+// at 256px wide because a grid multiplies resolution by its tile count and k-means samples ~2500
+// pixels regardless (the same scale discipline stillFrame.js's montage needs).
+const EXTRACTION_FPS = 12;
+const EXTRACTION_FRAMES = 9;
+const EXTRACTION_TILE_WIDTH = 256;
+
+async function renderNameplateExtractionMontage(webmBuffer, bedHex, { frames = EXTRACTION_FRAMES, targetWidth = EXTRACTION_TILE_WIDTH } = {}) {
+    const raw = await extractAlphaFrames(webmBuffer, {
+        inputExt: '.webm',
+        preInputArgs: ['-c:v', 'libvpx-vp9'],
+        fps: EXTRACTION_FPS
+    });
+    if (raw.length < 2) throw new Error(`nameplate webm yielded ${raw.length} frame(s) — expected an animation`);
+
+    const take = Math.min(frames, raw.length);
+    const picked = Array.from({ length: take }, (_, i) => raw[Math.round(i * (raw.length - 1) / (take - 1))]);
+
+    const composited = [];
+    for (const frame of picked) {
+        composited.push(await renderGradientBedFrame(frame, bedHex, targetWidth));
+        // Same yield discipline as the WebP cache's per-frame loop -- synchronous Jimp compositing is
+        // exactly what blocked unrelated interactions' 3s ACK window before the CPU fix.
+        await new Promise(setImmediate);
+    }
+
+    const first = await Jimp.read(composited[0]);
+    const cols = Math.ceil(Math.sqrt(composited.length));
+    const rows = Math.ceil(composited.length / cols);
+    const sheet = new Jimp({
+        width: first.bitmap.width * cols,
+        height: first.bitmap.height * rows,
+        color: 0x00000000
+    });
+    for (let i = 0; i < composited.length; i++) {
+        sheet.composite(await Jimp.read(composited[i]), (i % cols) * first.bitmap.width, Math.floor(i / cols) * first.bitmap.height);
+    }
+    return sheet.getBuffer('image/png');
+}
+
+module.exports = { renderNameplateWithBed, renderGradientBedFrame, renderNameplateExtractionMontage };

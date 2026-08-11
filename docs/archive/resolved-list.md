@@ -22,6 +22,18 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🎨 Nameplate colour extraction was blind to the user's chosen palette — fixed 2026-08-11 07:28 EDT
+
+*Filed 2026-08-11 02:08 EDT as `[P1 · S]` in the `/colors` extraction block, closed the same session it was filed. Shipped in `v3.6.0-pre` on `feat/colors-extraction-overhaul`. Original wording preserved below; the outcome follows.*
+
+> `[P1 · S]` **Nameplate extraction samples an upper-layer-only poster frame and misses the bed entirely.** Discord's `static.png` and `asset.webm` contain ONLY the nameplate's upper layer — the background "bed" is rendered client-side by Discord with CSS. Extraction reads `static.png`, so it misses both the bed colour *and* any colour appearing later in the animation.
+
+**Outcome — and the defect was materially worse than the filing said.** Verified against the real `nameplates/nameplates/twilight/` asset before writing any code: `static.png` measures **0.0% opaque** (32.9% fully transparent, 67.1% partial alpha), confirming there is no bed in it. But because the same art ships for every palette, extraction returned a **byte-identical** palette — `#336CED #5B96F1 #1E4DE9 #83C5F4` — for the **lemon, crimson AND clover** palettes alike. So it was not "missing some colour": **a user with a crimson nameplate saw red in Discord and got blue from `/colors`.**
+
+Fixed with `renderNameplateExtractionMontage()` in `utils/nameplateBedImage.js` — pools evenly-spaced frames from `asset.webm`, composites the gradient bed onto each, and tiles them into one still. Measured result: each palette now yields a distinct palette led by its actual bed, within 5–10 RGB of exact (lemon `#F4CC17` vs bed `#F6CD12`; crimson `#8E030F` vs `#900007`; clover `#047A25` vs `#047B20`). Deterministic, and it asserts the frame count rather than trusting that bytes came back.
+
+⚠️ **A second, latent bug was closed in the same change:** the extracted palette now depends on the bed, but nameplate palettes cached against the bare asset hash — which does not change when the user switches palette. A crimson user would have been served their old blue swatches indefinitely. Extraction now keys on `(asset, palette name)` via a separate `paletteCacheKey`, deliberately **not** by changing `source`, because `source` feeds `publicIdFor()` and folding the palette into it would have orphaned every cached WebP render.
+
 ### 🧹 The v5 roadmap section's STALE RESIDENTS — swept out 2026-08-10 21:55 EDT
 
 *Harkirat read the v5 section and separated what was genuinely pending from what had gone stale, then asked for the second group to be checked rather than trusted. **Every one of his six calls was right**, though two were right for a different reason than "we implemented it". Each was verified in code or git before being moved here — the tracker being wrong is the standing assumption after this session's earlier sweep.*

@@ -7,6 +7,7 @@ const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
 const { nameplatePaletteHex } = require('./nameplatePalettes');
+const { renderNameplateExtractionMontage } = require('./nameplateBedImage');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
 
@@ -103,10 +104,18 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         : extras.decorationUrl
         ? { url: extras.decorationUrl, source: extras.decorationAsset, skuId: extras.decorationSkuId, needsStillFrame: true }
         : null;
+    // ⚠️ `paletteCacheKey` is SEPARATE from `source` on purpose, and the two must not be merged.
+    // `source` is the bare asset hash and is what feeds resolveNameplateWebp -> publicIdFor(), i.e. the
+    // Cloudinary public id of every cached render; folding the palette name into it would orphan all of
+    // them. But a nameplate's extracted PALETTE now depends on the bed colour (see
+    // renderNameplateExtractionMontage), and switching palette leaves the asset hash unchanged -- so
+    // caching the palette against `source` alone would serve a crimson user their old blue swatches
+    // forever. The extraction cache therefore keys on (asset, palette name); the render cache still
+    // keys on the asset.
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
+        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, paletteCacheKey: `${guildProfile.nameplateAsset}|${guildProfile.nameplatePalette || 'none'}`, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
+        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, paletteCacheKey: `${extras.nameplateAsset}|${extras.nameplatePalette || 'none'}`, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -142,7 +151,11 @@ function paletteFields(kind, isGuild) {
 async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, isGuild = false) {
     const { paletteField, sourceField } = paletteFields(kind, isGuild);
 
-    if (!forceRefresh && prefs[paletteField] && prefs[sourceField] === imageInfo.source) {
+    // Nameplate keys on (asset, palette name); everything else on the bare asset hash. See the note on
+    // `paletteCacheKey` in getSourceImageInfo for why these are deliberately different keys.
+    const cacheIdentity = imageInfo.paletteCacheKey || imageInfo.source;
+
+    if (!forceRefresh && prefs[paletteField] && prefs[sourceField] === cacheIdentity) {
         return prefs[paletteField];
     }
 
@@ -162,6 +175,28 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // the single frame loses 83% of peak chroma and never sees the red at all. Harkirat predicted this
     // from the source GIF before it was measured.
     // `montageUrl` is null for static sources, so the common case still takes the cheap direct path.
+    // NAMEPLATE is the one source whose extraction image has to be BUILT rather than fetched, because
+    // no URL Discord serves actually contains what the user sees. `static.png` and `asset.webm` carry
+    // ONLY the upper art layer -- the bed is a CSS gradient the client draws -- so the same bytes ship
+    // for every palette. Measured on the real twilight asset: extraction returned a BYTE-IDENTICAL blue
+    // palette for lemon, crimson and clover, meaning a crimson nameplate reported blue. See
+    // renderNameplateExtractionMontage for the full measurement.
+    // Degrades deliberately: an unknown/`none` palette yields no bed hex, and we fall through to the
+    // old static.png path rather than inventing a colour (same rule nameplatePaletteHex itself follows).
+    if (kind === 'nameplate' && imageInfo.videoUrl) {
+        const nameplateBedString = nameplatePaletteHex(imageInfo.palette, 'dark');
+        const nameplateBedHex = nameplateBedString ? parseInt(nameplateBedString.slice(1), 16) : null;
+        if (nameplateBedHex != null) {
+            try {
+                const res = await fetch(imageInfo.videoUrl);
+                if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.videoUrl}`);
+                imageSource = await renderNameplateExtractionMontage(Buffer.from(await res.arrayBuffer()), nameplateBedHex);
+            } catch (err) {
+                console.error('Nameplate extraction montage failed:', err.message);
+                return prefs[paletteField] || null;
+            }
+        }
+    }
     const montageSource = imageInfo.montageUrl || (imageInfo.needsStillFrame ? imageInfo.url : null);
     if (montageSource) {
         try {
@@ -181,7 +216,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     }
 
     prefs[paletteField] = palette;
-    prefs[sourceField] = imageInfo.source;
+    prefs[sourceField] = cacheIdentity;
     await prefs.save();
     return palette;
 }
