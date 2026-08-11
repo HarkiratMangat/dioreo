@@ -101,6 +101,33 @@ they not be sold on their own; neither is affected by how they are used here.
 Both fonts are served as subset .woff2 files, unmodified.
 
 
+VENDORED REFERENCE DATA (checked into this repository, not npm dependencies)
+
+  Wikipedia List of colors       CC BY-SA 4.0
+                                 Copyright (c) Wikipedia contributors
+                                 https://en.wikipedia.org/wiki/Lists_of_colors
+                                 utils/data/wikipediaColorNames.json — 812
+                                 colour names and their hex values, used to
+                                 name the swatches in /colors. Extracted and
+                                 reformatted (title-cased, de-duplicated,
+                                 sorted); the names and values are unchanged.
+
+  XKCD colour survey             Public domain (CC0)
+                                 Randall Munroe / xkcd.com
+                                 https://xkcd.com/color/rgb/
+                                 utils/data/xkcdColorNames.json — 908 names
+                                 from the 2010 public colour survey, released
+                                 into the public domain by its author. Crude
+                                 joke entries and 13 spelling slips were
+                                 removed or corrected; see utils/colorNames.js.
+
+CC BY-SA 4.0 requires attribution and that adaptations of the DATA be shared
+under the same terms. That obligation attaches to the colour-name file itself,
+not to this project's source code, which is governed by LICENSE. Anyone
+redistributing that file, or a derivative of it, carries the same duty
+regardless of what LICENSE otherwise permits.
+
+
 ================================================================================
 2. APACHE LICENSE 2.0 OBLIGATIONS
 ================================================================================
