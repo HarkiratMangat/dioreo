@@ -175,6 +175,23 @@ const XREF_SKIP_SOURCES = [
 ];
 const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
 
+// Gitignored paths that have been TRIAGED and confirmed genuinely optional-by-design. These resolve
+// silently; every OTHER gitignored-and-absent path still WARNs, which is the point — the warning
+// exists because skipping wholesale once masked a real bug (CLAUDE.md and the notes file both
+// pointed at `local/Harkirats-Space.md` after it moved to `docs/`, and the `local/` ignore rule hid
+// it). This list is the narrow retirement of an ANSWERED ambiguity, not a widening of the exemption.
+// ⚠️ An entry belongs here ONLY when the referencing docs are correct and the file is optional at
+// RUNTIME — never to quiet a path someone has not actually chased down. Reason + date required.
+const XREF_IGNORED_OPTIONAL = {
+  // Triaged 2026-08-10 21:24 EDT (and previously in v2.42.0, where it was "deliberately left alone"
+  // — it re-warned on every run since, costing the same triage twice). It is a real optional dev
+  // overlay: `utils/emojiMap.js:120` sets DEV_OVERRIDE_FILE to it, reads it only when
+  // NODE_ENV=development, and fails soft on both parse and read errors (lines 176/184). Absent
+  // simply means no local override exists, which is the normal state on every machine including
+  // Harkirat's. The two docs that name it are describing the feature correctly.
+  "utils/emojiMap.dev.json": "optional dev-only emoji overlay read defensively by utils/emojiMap.js",
+};
+
 // The memory store, for the memory-xref check. Outside the repo by design, so this check is SKIPPED
 // (not failed) wherever the directory is absent — notably in CI. That asymmetry is deliberate: it is
 // a real check locally, where the store exists, and silent rather than wrong where it doesn't.
@@ -420,14 +437,21 @@ check(
       }
     }
     const ignored = ignoredSet(hits.map((h) => h.bare));
-    const findings = hits.map((h) =>
+    const findings = hits
+      // A triaged optional path drops out entirely -- no WARN, no ERROR. It must still be BOTH
+      // gitignored AND on the allowlist: if one of these ever becomes tracked-and-missing, that is a
+      // genuine broken reference and falls through to the ERROR branch below, as it should.
+      .filter((h) => !(ignored.has(h.bare) && XREF_IGNORED_OPTIONAL[h.bare]))
+      .map((h) =>
       ignored.has(h.bare)
         ? {
             // Gitignored-and-absent is genuinely ambiguous: it may be a dev-only file that simply
-            // isn't present (utils/emojiMap.dev.json), or a plain wrong path. Skipping it entirely --
-            // the first pass -- MASKED a real bug: CLAUDE.md and the notes file both pointed at
-            // `local/Harkirats-Space.md` while the file had moved to `docs/`, and the `local/` ignore
-            // rule hid it. Warn instead of skipping, so ambiguity is visible rather than invisible.
+            // isn't present, or a plain wrong path. Skipping it entirely -- the first pass -- MASKED
+            // a real bug: CLAUDE.md and the notes file both pointed at `local/Harkirats-Space.md`
+            // while the file had moved to `docs/`, and the `local/` ignore rule hid it. Warn instead
+            // of skipping, so ambiguity is visible rather than invisible.
+            // ⚠️ The XREF_IGNORED_OPTIONAL guard above retires INDIVIDUAL entries that have been
+            // triaged and answered -- it does not restore the blanket skip that caused that bug.
             severity: "WARN",
             msg: `${h.src} references \`${h.rel}\`, which is gitignored AND not present. That is either ` +
               `a dev-only file that just isn't here, or a stale path — the ignore rule makes the two ` +
