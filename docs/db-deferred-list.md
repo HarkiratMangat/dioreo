@@ -554,6 +554,14 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 ---
 
 ## 🚫 Decided-no — don't re-raise
+
+### 🚫 Replacing the two-step APNG→WebP pipeline with a single direct converter (decided 2026-08-11 02:25 EDT)
+*Harkirat asked whether a straight APNG→animated-WebP tool could replace `extractAlphaFrames` + `encodeWebpFromFrames`. Measured, not reasoned — the answer is no, and the rationale is duplicated into `utils/animatedMediaPipeline.js`'s header so it is found at the call site too.*
+
+- **No such path exists with these tools.** ffmpeg has no webp encoder compiled in, and that is **not a quirk of one machine** — Homebrew's *core* ffmpeg formula does not depend on webp at all. ImageMagick's APNG support **delegates to that same ffmpeg**, so `magick apng:in.png out.webp` fails with `Unknown encoder 'webp'`. libwebp's own CLIs ship no APNG reader (`img2webp` assembles PNGs, `gif2webp` is GIF-only, `cwebp` is single-image, `webpmux` only muxes).
+- **Switching to ffmpeg-with-libwebp would make the dependency WORSE.** `img2webp` is a small standalone binary installed explicitly (`apt install webp`); requiring libwebp *inside* ffmpeg means depending on how a distro packaged its ffmpeg. This machine is the proof that assumption breaks.
+- **It cannot help nameplate under any circumstances** — the gradient bed is composited BETWEEN decode and encode, and a single-step converter offers no hook there. For decoration the render is **536 ms once per asset ever**, then cached forever, so the ceiling on the win is negligible.
+- ⚠️ **The shortcut silently lies, which is the reusable lesson.** `magick in.png out.webp` on a 60-frame APNG "succeeds" in 44 ms producing a 22 KB file — 12× faster and 50× smaller, and completely wrong: it read **one frame**. Same silent-single-frame trap as ffmpeg without `-f apng`. **Any change in this area must assert the FRAME COUNT, never merely that an output file appeared.**
 *Standing calls that stay VISIBLE here (rather than moving to the archive) precisely so a future session doesn't re-open them as if they were new.*
 
 - **`/secondaries` → `/secondary` rename, and a `/pistols` alias** — **RECONSIDERED AND DROPPED 2026-07-18 (v2.21.0).** `/secondaries` stays exactly as-is: command name, DB category enum, and its own description. *(Moved here 2026-08-10 21:57 EDT from `docs/ROADMAP.md`'s v5 section, where a settled decision had been sitting among open work for three weeks — a decided-no on a roadmap reads as a pending feature, which is the opposite of its purpose. Harkirat flagged it in the v5 review.)*
