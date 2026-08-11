@@ -33,6 +33,15 @@ const { deriveNameplateName } = require('./nameplatePalettes');
 // when the user has actually set a server-specific one, so null is the signal to fall through to the
 // global profile. (This is why an early reading of `collectibles: null` was misread as "nameplates
 // cannot be per-server" -- it only meant none was set at the time.)
+// Discord marks an animated avatar/banner/decoration by prefixing its asset hash with `a_`. That one
+// prefix is the ONLY signal available before fetching anything, and it decides whether colour
+// extraction has to sample the whole animation (see utils/stillFrame.js) or can take the cheap direct
+// path. Shared rather than duplicated because colorPalette.js needs exactly the same test for the
+// global (non-guild) sources.
+function isAnimatedHash(hash) {
+    return typeof hash === 'string' && hash.startsWith('a_');
+}
+
 function readGuildProfile(interaction) {
     // ⚠️ There is deliberately NO stored preference gating this (a `profileSource` field was built
     // and removed 2026-08-09 17:12 EDT). Which profile applies is decided by WHERE the command was
@@ -77,11 +86,19 @@ function readGuildProfile(interaction) {
 
         avatarHash: member.avatar ?? null,
         // Built from the raw hash through discord.js's own CDN helpers rather than by hand, so this
-        // works identically whether or not a GuildMember exists to call .avatarURL() on. An animated
-        // hash (a_ prefix) still yields a static first frame at extension:'png', which is what the
-        // pixel-sampling extractor needs.
+        // works identically whether or not a GuildMember exists to call .avatarURL() on.
+        // ⚠️ CORRECTED 2026-08-11 01:55 EDT. This comment used to say an animated (a_ prefix) hash
+        // "still yields a static first frame at extension:'png', which is what the pixel-sampling
+        // extractor needs." The first half is true; the second half was wrong and was costing real
+        // colour. One frame is not a fair sample of an animation -- measured on a real animated banner
+        // whose pale opening blooms into crimson flowers only after frame ~34, the first frame loses
+        // 83% of the image's peak chroma. `*AnimatedUrl` below is the source the extractor should
+        // sample across; `*Url` stays the static one, which is still correct for DISPLAY.
         avatarUrl: member.avatar
             ? cdn.guildMemberAvatar(guildId, userId, member.avatar, { extension: 'png', size: 256 })
+            : null,
+        avatarAnimatedUrl: isAnimatedHash(member.avatar)
+            ? cdn.guildMemberAvatar(guildId, userId, member.avatar, { extension: 'gif', size: 256 })
             : null,
         avatarFullUrl: member.avatar
             ? cdn.guildMemberAvatar(guildId, userId, member.avatar, { size: 4096 })
@@ -96,6 +113,9 @@ function readGuildProfile(interaction) {
             : null,
         bannerExtractUrl: member.banner
             ? cdn.guildMemberBanner(guildId, userId, member.banner, { extension: 'png', size: 256 })
+            : null,
+        bannerAnimatedUrl: isAnimatedHash(member.banner)
+            ? cdn.guildMemberBanner(guildId, userId, member.banner, { extension: 'gif', size: 256 })
             : null,
         bannerFullUrl: member.banner
             ? cdn.guildMemberBanner(guildId, userId, member.banner, { size: 4096 })
@@ -165,4 +185,4 @@ function hasAnyGuildOverride(profile) {
     );
 }
 
-module.exports = { readGuildProfile, fetchGuildNameStyles, hasAnyGuildOverride, normalizeNameStyleColors };
+module.exports = { readGuildProfile, fetchGuildNameStyles, hasAnyGuildOverride, normalizeNameStyleColors, isAnimatedHash };

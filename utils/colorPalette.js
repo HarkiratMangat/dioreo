@@ -5,7 +5,7 @@
 const { getColorPalette } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
-const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
+const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
 const { nameplatePaletteHex } = require('./nameplatePalettes');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
@@ -32,14 +32,21 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         ? {
             url: guildProfile.avatarUrl,
             fullUrl: guildProfile.avatarFullUrl,
-            source: guildProfile.avatarHash
+            source: guildProfile.avatarHash,
+            montageUrl: guildProfile.avatarAnimatedUrl
           }
         : {
             url: interaction.user.displayAvatarURL({ extension: 'png', size: 256 }),
             // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Avatar
             // button, same 4096px size /settings' existing download link already uses.
             fullUrl: interaction.user.displayAvatarURL({ size: 4096 }),
-            source: interaction.user.avatar || 'default'
+            source: interaction.user.avatar || 'default',
+            // An animated avatar must be sampled across the animation, not from its first frame --
+            // see the montage note in getCachedPalette below. Null for a static avatar, which keeps
+            // the (much cheaper) direct-url path for the overwhelmingly common case.
+            montageUrl: isAnimatedHash(interaction.user.avatar)
+                ? interaction.user.displayAvatarURL({ extension: 'gif', size: 256 })
+                : null
           };
 
     // The global fetches are skipped entirely when the guild profile already answers every source --
@@ -79,7 +86,13 @@ async function getSourceImageInfo(interaction, useGuild = false) {
             // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Banner
             // button, same 4096px size /settings' existing download link already uses.
             fullUrl: userFetch.bannerURL({ size: 4096 }),
-            source: userFetch.banner
+            source: userFetch.banner,
+            // Animated banners are where the single-frame bug hurt most (measured: 83% of peak chroma
+            // lost on a real 85-frame banner). Extraction samples this; DISPLAY still uses the static
+            // `url` above, which is deliberate -- the media gallery has always shown a still.
+            montageUrl: isAnimatedHash(userFetch.banner)
+                ? userFetch.bannerURL({ extension: 'gif', size: 256 })
+                : null
           }
         : null;
     // needsStillFrame: decorations are commonly served as animated PNG -- see utils/stillFrame.js.
@@ -136,14 +149,23 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // Prefer a small extraction-only copy when the source provides one (banner does -- see
     // getSourceImageInfo) so we decode fewer pixels; fall back to the display url otherwise.
     let imageSource = imageInfo.extractUrl || imageInfo.url;
-    if (imageInfo.needsStillFrame) {
+    // A MONTAGE of evenly-spaced frames, not one frame (2026-08-09 18:15 EDT). Measured on a real
+    // 60-frame decoration: the single frame we used to take yielded four greys (max saturation 0.26)
+    // and missed the animation's gold sparkle entirely; the montage recovers it as #AD904C at hue 42°.
+    // Harkirat spotted the missing colour in the live panel first -- "the frame it sampled simply
+    // lacked that color and thus it missed out."
+    //
+    // EXTENDED TO ANIMATED AVATARS AND BANNERS (2026-08-11 01:55 EDT). Until now `needsStillFrame` was
+    // set ONLY on decoration, so every animated avatar and banner still extracted from a single static
+    // CDN frame -- the exact defect the montage exists to fix, left live on two of the four sources.
+    // Measured on a real 85-frame banner whose pale sky blooms into crimson flowers after frame ~34:
+    // the single frame loses 83% of peak chroma and never sees the red at all. Harkirat predicted this
+    // from the source GIF before it was measured.
+    // `montageUrl` is null for static sources, so the common case still takes the cheap direct path.
+    const montageSource = imageInfo.montageUrl || (imageInfo.needsStillFrame ? imageInfo.url : null);
+    if (montageSource) {
         try {
-            // A MONTAGE of evenly-spaced frames, not one frame (2026-08-09 18:15 EDT). Measured on a
-            // real 60-frame decoration: the single frame we used to take yielded four greys (max
-            // saturation 0.26) and missed the animation's gold sparkle entirely; the montage
-            // recovers it as #AD904C at hue 42°. Harkirat spotted the missing colour in the live
-            // panel first -- "the frame it sampled simply lacked that color and thus it missed out."
-            imageSource = await extractFrameMontage(imageInfo.url);
+            imageSource = await extractFrameMontage(montageSource);
         } catch (err) {
             console.error(`Frame-montage extraction failed for ${kind}:`, err.message);
             return prefs[paletteField] || null;
