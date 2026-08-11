@@ -31,6 +31,15 @@ function shareButtonRow() {
 // Appends the row to a top-level components array (the array passed to `components:` in a
 // message payload, or returned by a command's buildContainer()) -- only when isEphemeral is true.
 // A public message never needs a button offering to make it public.
+//
+// ⚠️ Under the v3 server-admin visibility policy (2026-08-10 15:50 EDT, utils/guildPolicy.js) this
+// row is STRIPPED again on the way out, inside utils/sendV2Payload.js, when the server has forced
+// the response ephemeral -- the button posts a brand new, genuinely public message, so leaving it
+// live would be a one-click bypass of the rule. That strip lives at the send boundary rather than
+// here because every caller of this function already routes through it, and a `guildPolicy`
+// argument here would be eight more call sites that have to remember to pass it. index.js's
+// share_public handler re-checks server-side too: a panel opened BEFORE an admin set the rule still
+// has the button sitting on it.
 function withShareButton(components, isEphemeral) {
     if (!isEphemeral) return components;
     return [...components, shareButtonRow()];
