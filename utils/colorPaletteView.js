@@ -416,13 +416,13 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
         : buildSwatchEntries(data[effectiveSource], effectiveSource);
-    // Nameplate bed color (see utils/nameplateBedImage.js) -- surfaced as a real palette entry
-    // alongside the extracted art colors, not just baked into the preview image. Appended AFTER
-    // buildSwatchEntries so it never participates in assignDynamicLabels' relative labeling (it isn't
-    // one of the extracted/clustered colors, so a fixed label is correct here).
-    if (effectiveSource === 'nameplate' && data.nameplateBedHex != null) {
-        allEntries.push({ label: 'Nameplate Background', hex: data.nameplateBedHex });
-    }
+    // ⚠️ The bed used to be APPENDED here as a fifth entry (2026-08-09). It is now the FIRST entry of
+    // the palette itself -- utils/colorPalette.js prepends it and assignDynamicLabels labels index 0
+    // "Nameplate Background" for this source. Appending it as well produced the colour TWICE and, with
+    // ENTRIES_PER_PAGE = 4, tipped the nameplate page into a needless "1 / 2" pagination; caught only
+    // because Harkirat sent a screenshot of the rendered panel, which a database read of the stored
+    // palette could not have shown. Harkirat's spec 2026-08-11 07:55 EDT is four swatches total: the
+    // bed plus three art colours, so the bed has to be IN the four, not a fifth beside them.
     const totalPages = Math.max(1, Math.ceil(allEntries.length / ENTRIES_PER_PAGE));
     const effectiveSubpage = Math.min(Math.max(subpage, 0), totalPages - 1);
     const pageEntries = allEntries.slice(effectiveSubpage * ENTRIES_PER_PAGE, (effectiveSubpage + 1) * ENTRIES_PER_PAGE);
