@@ -79,7 +79,7 @@ function isCoolHue(h) { return h >= 180 && h < 300; }
 // feedback after the first version (5 categories, rest fell back to numbered "Accent Color N"):
 // "the whole point of my request was to keep them unique yet relevant" -- a numbered fallback is
 // neither.
-function assignDynamicLabels(entries) {
+function assignDynamicLabels(entries, kind) {
     const hsl = entries.map(e => rgbToHslLocal(e.hex));
     const claimed = new Set();
     const labels = new Array(entries.length).fill(null);
@@ -96,7 +96,11 @@ function assignDynamicLabels(entries) {
 
     // 1. Majority Color -- the single highest-prevalence entry (entries already arrive sorted by
     // percent descending from getColorPalette, so index 0 is always the winner).
-    claim(0, 'Majority Color');
+    // ⚠️ NAMEPLATE leads with its BED, not a majority (Harkirat 2026-08-11 07:55 EDT). A nameplate gets
+    // only 4 swatches and its background is a design fact rather than a statistic, so "Majority Color"
+    // does not fit there -- entry 0 IS the bed (prepended exactly, never extracted) and entries 1-3 come
+    // from the upper art layer. See utils/colorPalette.js's nameplate branch for how that is composed.
+    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Majority Color');
     const maj = hsl[0];
 
     // 2. Vibrant Accent -- highest saturation among what's left, only if genuinely saturated.
@@ -211,9 +215,9 @@ async function buildEntryRows(entries) {
 // `palette` is whatever utils/colorExtract.js's getColorPalette() returned -- an array of
 // `{ hex, percent }` sorted by prevalence (see that file's own revision-history comment for the full
 // story of what this replaced). Labels come from assignDynamicLabels above, not the raw percent.
-function buildSwatchEntries(palette) {
+function buildSwatchEntries(palette, kind) {
     const entries = palette || [];
-    const labels = assignDynamicLabels(entries);
+    const labels = assignDynamicLabels(entries, kind);
     return entries.map((e, i) => ({ label: labels[i], hex: e.hex }));
 }
 
@@ -411,7 +415,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Vibrant Accent could end up on page 2, leaving page 1 with no Vibrant Accent label at all).
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
-        : buildSwatchEntries(data[effectiveSource]);
+        : buildSwatchEntries(data[effectiveSource], effectiveSource);
     // Nameplate bed color (see utils/nameplateBedImage.js) -- surfaced as a real palette entry
     // alongside the extracted art colors, not just baked into the preview image. Appended AFTER
     // buildSwatchEntries so it never participates in assignDynamicLabels' relative labeling (it isn't

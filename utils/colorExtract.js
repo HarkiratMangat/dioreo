@@ -429,4 +429,15 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
     });
 }
 
-module.exports = { getDominantColor, getColorPalette };
+// Perceptual distance between two packed RGB hexes. Exported so a caller that composes a palette BY
+// HAND can use the same notion of "these are the same colour" the merge step above uses, instead of
+// inventing a second threshold in RGB. utils/colorPalette.js's nameplate branch needs exactly this:
+// it prepends the bed colour as a known value and must drop any extracted art colour that would
+// render as a near-duplicate of it. Compare against MERGE_DELTA_E for consistency.
+function perceptualDistanceHex(a, b) {
+    const A = rgbToOklab((a >> 16) & 0xff, (a >> 8) & 0xff, a & 0xff);
+    const B = rgbToOklab((b >> 16) & 0xff, (b >> 8) & 0xff, b & 0xff);
+    return deltaE(A, B);
+}
+
+module.exports = { getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E };

@@ -120,37 +120,47 @@ const EXTRACTION_FPS = 12;
 const EXTRACTION_FRAMES = 9;
 const EXTRACTION_TILE_WIDTH = 256;
 
-async function renderNameplateExtractionMontage(webmBuffer, bedHex, { frames = EXTRACTION_FRAMES, targetWidth = EXTRACTION_TILE_WIDTH } = {}) {
+// ⚠️ Returns the ART ONLY -- the bed is deliberately NOT composited in here. Harkirat's spec
+// 2026-08-11 07:55 EDT: a nameplate's four swatches are ONE "Nameplate Background" (the bed) plus
+// THREE drawn from the upper art layer. The bed's hex is known exactly from the design's palette
+// metadata (nameplatePaletteHex), so extracting it from pixels would only approximate a value we
+// already have — earlier drafts composited first and then re-derived the bed to within 5-10 RGB,
+// which is strictly worse than just using it. Compositing also let bed-tinted pixels crowd out real
+// art colours in a 4-slot budget. So: pool the animation's art, and let the caller prepend the bed.
+async function renderNameplateArtMontage(webmBuffer, { frames = EXTRACTION_FRAMES, targetWidth = EXTRACTION_TILE_WIDTH } = {}) {
     const raw = await extractAlphaFrames(webmBuffer, {
         inputExt: '.webm',
         preInputArgs: ['-c:v', 'libvpx-vp9'],
         fps: EXTRACTION_FPS
     });
-    if (raw.length < 2) throw new Error(`nameplate webm yielded ${raw.length} frame(s) — expected an animation`);
+    if (raw.length < 2) throw new Error(`nameplate webm yielded ${raw.length} frame(s) -- expected an animation`);
 
     const take = Math.min(frames, raw.length);
     const picked = Array.from({ length: take }, (_, i) => raw[Math.round(i * (raw.length - 1) / (take - 1))]);
 
-    const composited = [];
+    const tiles = [];
     for (const frame of picked) {
-        composited.push(await renderGradientBedFrame(frame, bedHex, targetWidth));
-        // Same yield discipline as the WebP cache's per-frame loop -- synchronous Jimp compositing is
-        // exactly what blocked unrelated interactions' 3s ACK window before the CPU fix.
+        const img = await Jimp.read(frame);
+        if (img.bitmap.width > targetWidth) img.resize({ w: targetWidth });
+        tiles.push(img);
+        // Same yield discipline as the WebP cache's per-frame loop -- synchronous Jimp work is exactly
+        // what blocked unrelated interactions' 3s ACK window before the CPU fix.
         await new Promise(setImmediate);
     }
 
-    const first = await Jimp.read(composited[0]);
-    const cols = Math.ceil(Math.sqrt(composited.length));
-    const rows = Math.ceil(composited.length / cols);
+    const cols = Math.ceil(Math.sqrt(tiles.length));
+    const rows = Math.ceil(tiles.length / cols);
+    // Transparent background, so fully-transparent art pixels stay alpha 0 and getColorPalette skips
+    // them rather than counting a fabricated backdrop as one of the three art colours.
     const sheet = new Jimp({
-        width: first.bitmap.width * cols,
-        height: first.bitmap.height * rows,
+        width: tiles[0].bitmap.width * cols,
+        height: tiles[0].bitmap.height * rows,
         color: 0x00000000
     });
-    for (let i = 0; i < composited.length; i++) {
-        sheet.composite(await Jimp.read(composited[i]), (i % cols) * first.bitmap.width, Math.floor(i / cols) * first.bitmap.height);
+    for (let i = 0; i < tiles.length; i++) {
+        sheet.composite(tiles[i], (i % cols) * tiles[0].bitmap.width, Math.floor(i / cols) * tiles[0].bitmap.height);
     }
     return sheet.getBuffer('image/png');
 }
 
-module.exports = { renderNameplateWithBed, renderGradientBedFrame, renderNameplateExtractionMontage };
+module.exports = { renderNameplateWithBed, renderGradientBedFrame, renderNameplateArtMontage };

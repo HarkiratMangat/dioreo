@@ -2,12 +2,12 @@
 // utils/accentColor.js (which resolves ONE hex per command render): this computes/caches the FULL
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
-const { getColorPalette } = require('./colorExtract');
+const { getColorPalette, perceptualDistanceHex, MERGE_DELTA_E } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
 const { nameplatePaletteHex } = require('./nameplatePalettes');
-const { renderNameplateExtractionMontage } = require('./nameplateBedImage');
+const { renderNameplateArtMontage } = require('./nameplateBedImage');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
 
@@ -184,18 +184,26 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // bed are a LINKED design rather than an independent pairing.
     // Degrades deliberately: an unknown/`none` palette yields no bed hex, and we fall through to the
     // old static.png path rather than inventing a colour (same rule nameplatePaletteHex itself follows).
+    // A nameplate's four swatches are ONE "Nameplate Background" plus THREE from the upper art layer
+    // (Harkirat 2026-08-11 07:55 EDT). The bed is NOT extracted -- its hex is already known exactly from
+    // the design's palette metadata, so pulling it out of pixels could only approximate a value we have.
+    // What IS extracted is the art, pooled across the whole animation so a colour that only appears
+    // part-way through still counts.
+    // Designs with palette `none` have their background baked into the art, so they get no prepended
+    // bed and simply take all four from the pooled art.
+    let nameplateBedHex = null;
     if (kind === 'nameplate' && imageInfo.videoUrl) {
         const nameplateBedString = nameplatePaletteHex(imageInfo.palette, 'dark');
-        const nameplateBedHex = nameplateBedString ? parseInt(nameplateBedString.slice(1), 16) : null;
-        if (nameplateBedHex != null) {
-            try {
-                const res = await fetch(imageInfo.videoUrl);
-                if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.videoUrl}`);
-                imageSource = await renderNameplateExtractionMontage(Buffer.from(await res.arrayBuffer()), nameplateBedHex);
-            } catch (err) {
-                console.error('Nameplate extraction montage failed:', err.message);
-                return prefs[paletteField] || null;
-            }
+        nameplateBedHex = nameplateBedString ? parseInt(nameplateBedString.slice(1), 16) : null;
+        try {
+            const res = await fetch(imageInfo.videoUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.videoUrl}`);
+            imageSource = await renderNameplateArtMontage(Buffer.from(await res.arrayBuffer()));
+        } catch (err) {
+            // Falls back to the static.png url already in `imageSource` -- one frame and no bed, but a
+            // stale-or-null return would blank the panel outright.
+            console.error('Nameplate art montage failed, falling back to static frame:', err.message);
+            nameplateBedHex = null;
         }
     }
     const montageSource = imageInfo.montageUrl || (imageInfo.needsStillFrame ? imageInfo.url : null);
@@ -208,9 +216,23 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
         }
     }
 
+    const wanted = PALETTE_COUNTS[kind];
     let palette;
     try {
-        palette = await getColorPalette(imageSource, PALETTE_COUNTS[kind]);
+        // With a bed to prepend we only need three art colours, but we ASK for extra: an art colour
+        // that renders as a near-duplicate of the bed gets dropped below, and without headroom that
+        // would hand back a short palette. Same reason the extractor itself over-clusters before
+        // merging.
+        palette = await getColorPalette(imageSource, nameplateBedHex != null ? wanted + 2 : wanted);
+        if (nameplateBedHex != null) {
+            const art = palette
+                .filter(c => perceptualDistanceHex(c.hex, nameplateBedHex) >= MERGE_DELTA_E)
+                .slice(0, wanted - 1);
+            // `percent: 0` is not a measurement and nothing reads it: the bed's share is a design fact,
+            // not a pixel statistic, and assignDynamicLabels claims index 0 outright before any
+            // percent-based rule runs, so the value never reaches a decision.
+            palette = [{ hex: nameplateBedHex, percent: 0 }, ...art];
+        }
     } catch (err) {
         console.error(`Palette extraction failed for ${kind}:`, err.message);
         return prefs[paletteField] || null;
