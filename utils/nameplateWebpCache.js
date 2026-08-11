@@ -206,29 +206,47 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         const bedHexStr = bedHex != null ? `#${bedHex.toString(16).padStart(6, '0')}` : 'none';
         const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
         const heading = nameplateName || 'Nameplate';
+        // Grouped by WHAT THE READER IS ASKING (Harkirat's polish request 2026-08-11 16:59 EDT: better
+        // organised, still concise, no taller). Four lines instead of seven, losing no field:
+        //   identity (what design is this) · colours · output (what came out) · footer (bookkeeping).
+        // Two specific wins beyond the grouping:
+        //   · **Bed had its own field while ALSO being Colors[0]** -- the same hex printed twice, which
+        //     is duplicated state in a record, exactly what a swatch list should never need. It is now
+        //     a marker on the colour that already carried it.
+        //   · The Cloudinary public id and the SKU moved into the `-#` footer. They are bookkeeping you
+        //     copy when something is wrong, not something you read on every render, and the public id
+        //     was the single longest line in the block. Kept in FULL rather than truncated -- an id you
+        //     cannot copy is worse than one that wraps.
+        const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
+        const colours = palette
+            // With a bed, palette[0] IS the bed (v3.6.0's composition) and the rest is art -- say so
+            // inline instead of repeating the hex in a field of its own. A `none` palette prepends
+            // nothing, so every entry is art and no marker is written.
+            ? (bedHex != null
+                ? `${hexOf(palette[0])} bed · ${palette.slice(1).map(hexOf).join(' ')}`
+                : palette.map(hexOf).join(' '))
+            : null;
         const metadataLines = [
-            `**Asset:** \`${nameplateAsset}\``,
-            skuId ? `**SKU:** \`${skuId}\`` : null,
-            `**Palette:** \`${paletteName || 'none'}\` · **Bed:** \`${bedHexStr}\``,
-            `**Cloudinary:** \`${publicId}\``,
-            `**Dimensions:** ${width}×${height} · **Frames:** ${composited.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            // The four extracted hexes, in the panel's own order (bed first, then the three art
-            // colours) -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache channel records
-            // what the design's palette actually resolved to, not just that a render happened.
-            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
+            `**Asset:** \`${nameplateAsset}\` · Palette \`${paletteName || 'none'}\``,
+            colours ? `**Colors:** ${colours}` : `**Bed:** \`${bedHexStr}\``,
+            `**Output:** ${width}×${height} · ${composited.length} frames · ${(webpBuffer.length / 1024).toFixed(1)} KB`,
+            `-# ${skuId ? `SKU \`${skuId}\` · ` : ''}\`${publicId}\` · rendered <t:${Math.floor(Date.now() / 1000)}:R> in ${renderMs}ms`
         ].filter(Boolean);
         const components = [
             {
                 type: 17, // Container
-                // The first ART colour, NOT bedHex -- Harkirat's explicit request 2026-08-10 14:08 EDT.
-                // bedHex keeps doing its real job just above (renderGradientBedFrame's gradient bed);
-                // this is purely which color styles the cache MESSAGE.
-                // ⚠️ It used to read `palette[0]`, which SILENTLY BECAME THE BED when v3.6.0 changed the
-                // composition to prepend the bed at index 0 -- the line kept its "NOT bedHex" comment
-                // while doing exactly that. With a bed present the first art colour is index 1; with a
-                // `none` palette nothing is prepended and index 0 is already art.
-                accent_color: (bedHex != null ? palette?.[1]?.hex : palette?.[0]?.hex) ?? undefined,
+                // 🔄 THE BED COLOUR -- Harkirat 2026-08-11 16:59 EDT, deliberately REVERSING his own
+                // 2026-08-10 14:08 EDT call for "the first ART colour, NOT bedHex". Do not "restore"
+                // the art colour on the strength of that older comment; this is the newer decision and
+                // it matches what the design reads as at a glance, since the bed is the whole
+                // background of the rendered nameplate.
+                // ⚠️ Falls back to the first ART colour when a `none`-palette design has no bed at all
+                // (its background is baked into the art), rather than leaving the container unstyled.
+                // ⚠️ History worth keeping: this line once read `palette[0]` under a comment saying
+                // "NOT bedHex", and v3.6.0 silently MADE that the bed by prepending it at index 0. The
+                // comment stayed correct-looking while the code did the opposite of what it claimed --
+                // which is why this one now names the intent rather than an index.
+                accent_color: bedHex ?? palette?.[0]?.hex ?? undefined,
                 components: [
                     { type: 12, items: [{ media: { url: `attachment://${filename}` } }] },
                     { type: 10, content: `### ${heading}` },

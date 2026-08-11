@@ -211,15 +211,17 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // Parallel, not sequential -- see utils/nameplateWebpCache.js's matching comment for why
         // (measured live 2026-08-10 12:21 EDT: doing this in series visibly slowed the cold-render path).
         const filename = `${slugify(decorationAsset)}.webp`;
+        // Same grouping as utils/nameplateWebpCache.js -- identity · colours · output · footer -- so the
+        // two cache channels read as one system rather than two similar-looking blocks. See that
+        // module's comment for the reasoning; the only difference here is that a decoration has no bed
+        // and no palette name, so the identity line is the asset alone. It also sits beside a thumbnail
+        // in a Section rather than under a full-width gallery, so the narrower column matters more.
+        const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const metadataLines = [
             `**Asset:** \`${decorationAsset}\``,
-            skuId ? `**SKU:** \`${skuId}\`` : null,
-            `**Cloudinary:** \`${publicId}\``,
-            `**Dimensions:** ${width}×${height} · **Frames:** ${frames.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            // The four extracted hexes -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache
-            // channel records what the design's palette resolved to, not just that a render happened.
-            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
+            palette ? `**Colors:** ${palette.map(hexOf).join(' ')}` : null,
+            `**Output:** ${width}×${height} · ${frames.length} frames · ${(webpBuffer.length / 1024).toFixed(1)} KB`,
+            `-# ${skuId ? `SKU \`${skuId}\` · ` : ''}\`${publicId}\` · rendered <t:${Math.floor(Date.now() / 1000)}:R> in ${renderMs}ms`
         ].filter(Boolean);
         // Section+Thumbnail (type 9/11), NOT a full-width Media Gallery item -- Harkirat's request
         // (2026-08-10 13:16 EDT), same inline-preview treatment utils/colorPaletteView.js's own Deco
