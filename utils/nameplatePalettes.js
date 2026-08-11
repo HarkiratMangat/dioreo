@@ -105,6 +105,38 @@ function deriveNameplateName(label) {
         .join(' ');
 }
 
+// Fallback design name derived from the ASSET PATH when no label is available (2026-08-11 09:56 EDT).
+// `nameplates/nameplates/twilight/` -> "Twilight". This exists because `label` is NOT guaranteed to
+// reach us on every path: discord.js's GuildMember carries it, but a nameplate whose label field is
+// absent (or a future payload that trims it) would otherwise head its PERMANENT cache-channel entry
+// as the generic "Nameplate" forever -- a wrong value written into a cache that is never revisited.
+//
+// Confirmed against the two real assets this bot has seen, the same two `deriveNameplateName` itself
+// was verified on: `nameplates/nameplates/twilight/` -> "Twilight" (matches Discord's own shop title)
+// and the `cat_beans` asset -> "Cat Beans". Two independent agreements is the same bar the palette
+// table above was held to.
+//
+// ⚠️ Deliberately the FALLBACK, never the primary. `label` is Discord's own accessibility string and
+// is authoritative; an asset path is a storage detail that Discord is free to make less readable at
+// any time. Returns null rather than guessing whenever the path doesn't yield a clean segment.
+function nameplateNameFromAsset(asset) {
+    if (!asset) return null;
+    const segments = String(asset).split('/').filter(Boolean);
+    // The real shape is `nameplates/nameplates/<slug>/` -- demand the full depth rather than just
+    // taking the last segment. Without this, a truncated `nameplates/` path yields the container word
+    // itself and a nameplate gets confidently named "Nameplates".
+    if (segments.length < 3) return null;
+    const slug = segments[segments.length - 1];
+    if (!/^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(slug)) return null;
+    // ⚠️ A hex ASSET HASH passes the slug test -- caught by this function's own test rather than in
+    // review, where `a0ff7f9be49be57356dd3cf0d9c02605` became the name "A0ff7f9be49be57356dd3cf0d9c02605".
+    // Discord uses hash-shaped assets elsewhere (decorations are exactly that), so a nameplate path
+    // could plausibly carry one. A fabricated name is worse than the generic heading, because it reads
+    // as real and gets written into a permanent cache.
+    if (slug.length >= 16 && /^[0-9a-f]+$/.test(slug)) return null;
+    return slug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 // Discord's OWN word for a bed colour, formatted for display: `bubble_gum` -> "Bubble Gum".
 // Returns null for `none`/unknown, which is the signal to fall back to the generic colour-naming
 // library instead -- a design with no palette has no Discord-supplied name to prefer (Harkirat
@@ -115,4 +147,4 @@ function nameplatePaletteLabel(paletteName) {
     return paletteName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName, nameplatePaletteLabel };
+module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName, nameplateNameFromAsset, nameplatePaletteLabel };

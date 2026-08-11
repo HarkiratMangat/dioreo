@@ -22,6 +22,20 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🏷️ Guild-profile nameplates lost their NAME and SKU in the cache-channel embed — fixed 2026-08-11 10:00 EDT
+
+*Filed 2026-08-11 09:42 EDT as `[P2 · S]` in 🐞 Active Bugs, closed the next session. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
+
+> `[P2 · S]` **Guild-profile nameplates lose their NAME and SKU in the cache-channel embed** (filed 2026-08-11 09:42 EDT). A server-profile nameplate posts to the nameplate-cache channel headed **"Nameplate"** instead of its design name, and with no `SKU:` line; the same design from the **global** profile posts correctly (observed: Cat Beans vs Twilight). **Root cause traced, one step short of proven:** `utils/guildProfile.js` reads the decoration fields in BOTH shapes but reads the nameplate fields in ONE. ⚠️ **Do NOT guess the field name and add `?? skuId` blind** — dump the real object and read the actual keys.
+
+**Outcome — the filed root cause was WRONG, and the "one step short of proven" caveat is exactly what saved it.** The three fields were computed correctly at the top of `readGuildProfile` and then **never returned**: `decorationSkuId`, `nameplateSkuId` and `nameplateName` were all missing from the returned object literal, so every `guildProfile.nameplateSkuId` / `.nameplateName` read in `utils/colorPalette.js` was `undefined` regardless of payload shape. A computed-but-unreturned local is invisible both to callers and to a search for the field name, which is how the filed analysis read the derivation and assumed the plumbing. **Found by a test that asserted the returned value, not by reading the code again.**
+
+**Two real defects were fixed alongside it, both genuine and neither the reported symptom:**
+- **The dual-shape read was fake on the id fields.** discord.js renames keys *inside* the object it rebuilds (`Transformers.js`'s `_transformCollectibles`, and `GuildMember._patch`'s `avatar_decoration_data` block), so a `GuildMember` carries `skuId`, never `sku_id`. The shipped `member.avatarDecorationData?.sku_id ?? member.avatar_decoration_data?.sku_id` read the snake_case name under **both** branches and resolved to null in every guild the bot has joined — it only looked dual-shape. `asset`/`label`/`palette` survive the transform unrenamed, which is why those masked it.
+- **A design with no `label` would head its permanent cache entry as the generic "Nameplate".** Added `nameplateNameFromAsset()` as a fallback (`nameplates/nameplates/cat_beans/` → "Cat Beans"), verified to agree with the authoritative label parser on `twilight`. ⚠️ Its first version happily minted `"A0ff7f9be49be57356dd3cf0d9c02605"` from a hash-shaped asset — caught by its own test, and now rejected along with short paths.
+
+**Verified:** all three member shapes (raw payload · `GuildMember` · `GuildMember` with no label) resolve a real name and both SKUs. Full write-up: `local/handoff/2026-08-11-colors-palette-cache.md` §2b.
+
 ### 🎨 Nameplate colour extraction was blind to the user's chosen palette — fixed 2026-08-11 07:28 EDT
 
 *Filed 2026-08-11 02:08 EDT as `[P1 · S]` in the `/colors` extraction block, closed the same session it was filed. Shipped in `v3.6.0-pre` on `feat/colors-extraction-overhaul`. Original wording preserved below; the outcome follows.*

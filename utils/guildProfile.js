@@ -27,7 +27,7 @@
 // guild, and DMs), with genuinely different overrides set in each.
 
 const { Routes } = require('discord.js');
-const { deriveNameplateName } = require('./nameplatePalettes');
+const { deriveNameplateName, nameplateNameFromAsset } = require('./nameplatePalettes');
 
 // A null hash means "no override in this guild" -- NOT "no avatar". Discord only populates these
 // when the user has actually set a server-specific one, so null is the signal to fall through to the
@@ -61,17 +61,35 @@ function readGuildProfile(interaction) {
 
     // camelCase first (GuildMember), snake_case second (raw payload). Reading both is what lets one
     // code path serve both shapes without ever branching on which one it got.
+    //
+    // ⚠️ THE RENAME IS PER-FIELD, NOT PER-OBJECT -- fixed 2026-08-11 09:57 EDT, and the version of
+    // this block that shipped before it got this exactly backwards on the id fields. discord.js does
+    // not hand back the raw sub-object under a camelCase name; it REBUILDS it and renames the keys
+    // inside (`GuildMember._patch`'s avatar_decoration_data block, and Transformers.js's
+    // `_transformCollectibles`), so on a GuildMember it is `skuId`, never `sku_id`:
+    //
+    //     avatarDecorationData = { asset, skuId }              <- sku_id is GONE at this level
+    //     collectibles.nameplate = { skuId, asset, label, palette }
+    //
+    // The old `member.avatarDecorationData?.sku_id ?? member.avatar_decoration_data?.sku_id` therefore
+    // read the snake_case name under BOTH branches and resolved to null in every guild the bot has
+    // JOINED -- it only ever looked dual-shape. `asset`/`label`/`palette` keep their names through the
+    // transform, which is why those four came through fine and masked the two that didn't.
     const decorationAsset = member.avatarDecorationData?.asset ?? member.avatar_decoration_data?.asset ?? null;
-    // sku_id, mirroring accentColor.js's fetchProfileExtras -- see that file's matching comment.
-    const decorationSkuId = member.avatarDecorationData?.sku_id ?? member.avatar_decoration_data?.sku_id ?? null;
-    const nameplateAsset = member.collectibles?.nameplate?.asset ?? null;
+    const decorationSkuId = member.avatarDecorationData?.skuId ?? member.avatar_decoration_data?.sku_id ?? null;
+
+    // One local for the whole nameplate object -- the shape difference is inside it, not around it.
+    const nameplate = member.collectibles?.nameplate ?? null;
+    const nameplateAsset = nameplate?.asset ?? null;
     // Palette ENUM NAME, mirroring accentColor.js's fetchProfileExtras -- turned into a hex only by
     // utils/nameplatePalettes.js's nameplatePaletteHex(), never guessed here.
-    const nameplatePalette = member.collectibles?.nameplate?.palette ?? null;
-    // sku_id + design name, mirroring accentColor.js's fetchProfileExtras -- see that file's matching
-    // comment and nameplatePalettes.js's deriveNameplateName for the full story.
-    const nameplateSkuId = member.collectibles?.nameplate?.sku_id ?? null;
-    const nameplateName = deriveNameplateName(member.collectibles?.nameplate?.label);
+    const nameplatePalette = nameplate?.palette ?? null;
+    const nameplateSkuId = nameplate?.skuId ?? nameplate?.sku_id ?? null;
+    // Design name, mirroring accentColor.js's fetchProfileExtras. The asset-path fallback covers a
+    // payload that carries no `label` at all -- without it the design heads its PERMANENT
+    // cache-channel entry as the generic "Nameplate", which is a wrong value written into a cache
+    // nothing revisits. See nameplatePalettes.js for why the label stays primary.
+    const nameplateName = deriveNameplateName(nameplate?.label) ?? nameplateNameFromAsset(nameplateAsset);
     const rawColors = member.display_name_styles?.colors ?? null;
 
     const { guildId } = interaction;
@@ -122,9 +140,22 @@ function readGuildProfile(interaction) {
             : null,
 
         decorationAsset,
+        // ⚠️ RETURNED, not just computed -- added 2026-08-11 09:58 EDT. `decorationSkuId`,
+        // `nameplateSkuId` and `nameplateName` were all derived at the top of this function and then
+        // silently dropped on the floor: the returned object never carried them, so
+        // `utils/colorPalette.js`'s `guildProfile.nameplateSkuId`/`.nameplateName` reads were
+        // `undefined` for every server profile. That is what headed a server-equipped nameplate as the
+        // generic "Nameplate" with no SKU line in the permanent cache channel, while a global one
+        // (which goes through accentColor.js's fetchProfileExtras, whose return DOES include them)
+        // rendered correctly. A computed-but-unreturned local is invisible to every caller and to any
+        // search for the field name, which is why this survived a review that read the derivation and
+        // assumed the plumbing.
+        decorationSkuId,
         decorationUrl: decorationAsset ? cdn.avatarDecoration(decorationAsset) : null,
 
         nameplateAsset,
+        nameplateSkuId,
+        nameplateName,
         // Same manual construction the global path uses -- no discord.js CDN helper exists for this
         // newer collectible type. The asset already ends in a trailing slash.
         nameplateUrl: nameplateAsset
