@@ -138,6 +138,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-10 21:09 EDT — The v2 queue was stale, not dead — and the same two-copy failure showed up four times (v3.4.2-pre)
 - 2026-08-10 23:45 EDT — `/help` gets real, clickable slash-command mentions, and a completeness sweep catches its own blind spot (v3.5.0-pre)
 - 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
+- 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2417,6 +2418,22 @@ Harkirat found a genuinely new Discord capability by testing it himself first �
 
 **The completeness sweep after "let's merge" is the more interesting part of this entry.** The implementation itself went cleanly — design, branch, code, `docs:audit`, `npm test`, Harkirat's own Discord confirmation. What the sweep caught that none of that did: `release-ready-check.sh`'s pre-merge gate would have **hard-denied** the merge for two reasons neither the design review nor the test suite would ever surface — no `docs/DEVLOG.md` entry (this one), and no `CLAUDE.md`/`.claude/rules/*.md` note for a change touching `commands/` and `utils/`. Both are exactly the shape of gap the "verify before claiming done" habit exists to catch: a PR can pass every check that runs *on the code* and still be missing the record of *why* the code is the way it is. Also run for real rather than assumed: a repo-wide sweep confirming none of the five signature-changed functions (`buildContainer` ×3, `buildHome`, `buildManagePage`/`buildPagesTable`/`loadoutsPageDef`) have a caller outside the one call site each already updated — `rg` returning nothing is itself the evidence, not silence to read past.
 
+## 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
+
+**Four hypotheses went in; one survived, and the two I ranked highest were both wrong.** The tracker said `/colors` returned 6 of 8 for one avatar and missed a yellow, with a *presumed* root cause. Instrumenting the real extractor found the cause was seed starvation — seeds picked by hue-index allocate by pixel population, and `rgbToHsl` reports hue `0` for every neutral, so a quarter of the image collapsed onto one position and 10 of 12 seeds landed in two regions. The two suspects I had ranked second and third — dropped empty clusters and a chaining merge — were both measured at **exactly zero occurrences**. A non-chaining merge produced byte-identical output: a pure no-op I would otherwise have "fixed".
+
+**The lesson worth keeping is that my recommended fix failed too.** Hue-arc seeding was my lead proposal and it changed nothing, because hue is meaningless for neutrals — the same fact that caused the bug defeated the fix aimed at it. Two further approaches fixed the avatar and *broke* the control case, padding a pure-greyscale banner to eight near-identical greys. Four approaches killed by measurement before a line of production code was written.
+
+**Then the corpus reframed the problem.** Rendering all 22 palettes side by side showed the existing extractor was not "correct on greyscale" at all — it returned 4 for one pure-grey banner and **8 near-identical greys** for another. The right answer had been luck. The real defect was never the count; it was perceptual duplicates, and a structural blindness to small vivid regions.
+
+**The blindness has a shape worth naming: a region covering ~1% of an image can never win a slot under prevalence ranking, however vivid.** No amount of tuning fixes that, because it is arithmetic, not calibration. It needed a second clustering pass over the high-chroma tail alone. Classifier masks confirmed that tail falls exactly on a black cat's eyes and a holographic avatar's iridescence — the colours users noticed were missing.
+
+**Two opposing requirements nearly collided.** "Show fewer swatches for a low-colour image" and "surface a small salient accent" pull against each other: by aggregate chroma the black cat reads as low-colour and would lose the very eyes the work existed to surface. Computing the restriction *after* extraction, on the extracted colours rather than raw pixel statistics, dissolved the conflict — the cat escapes the tier on the strength of the accent it genuinely has.
+
+**Harkirat found the biggest defect by looking at a source file.** He pointed out a test GIF whose flowers only appear late, and that one observation exposed a shipped bug two layers deeper than the task: the frame montage sampled a hardcoded stride into a fixed grid, so it only ever saw the first 25 frames of any animation, while its own comment claimed it spanned the whole cycle. It had been silently shortchanging the 60-frame decoration it was written for. **A comment asserting a property is not a check that the property holds** — and this one had been read approvingly, by me, an hour before it was measured.
+
+**Verification earned its cost twice over.** Testing the fixed montage against a real GIF revealed it produced a 3.8M-pixel image for a synchronous decode — the exact event-loop stall behind a past bot-wide outage. Scaling before tiling made it 29× smaller *and* improved colour recovery. Neither problem was visible in the code.
+
 ## 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
 
 **The session's most useful measurement invalidated four turns of my own tables.** I had been ranking naming strategies by ΔE — how close the named entry's colour is to the swatch. It took an embarrassingly long time to notice that **ΔE cannot tell "Mellow Apricot" from "Macaroni and Cheese"**: both score ~0.02 against the same orange. Every comparison I had shown Harkirat was blind to the exact quality he had been complaining about since the morning. The metric was not merely imperfect; it could not see the problem at all.
@@ -2433,22 +2450,6 @@ Harkirat found a genuinely new Discord capability by testing it himself first �
 
 ### Lesson
 A metric you invented can be gamed by the thing you built to satisfy it. I replaced ΔE with a "self-describing name" score, optimised it, and produced **worse** names — 93% vs 47% on my own metric, while emitting "Texas Rose" and "Fire Bush". The second metric failed the same way as the first, one level up. What actually settled every decision this session was putting real palettes side by side and looking at them. Measure to find defects; judge on output.
-
-## 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
-
-**Four hypotheses went in; one survived, and the two I ranked highest were both wrong.** The tracker said `/colors` returned 6 of 8 for one avatar and missed a yellow, with a *presumed* root cause. Instrumenting the real extractor found the cause was seed starvation — seeds picked by hue-index allocate by pixel population, and `rgbToHsl` reports hue `0` for every neutral, so a quarter of the image collapsed onto one position and 10 of 12 seeds landed in two regions. The two suspects I had ranked second and third — dropped empty clusters and a chaining merge — were both measured at **exactly zero occurrences**. A non-chaining merge produced byte-identical output: a pure no-op I would otherwise have "fixed".
-
-**The lesson worth keeping is that my recommended fix failed too.** Hue-arc seeding was my lead proposal and it changed nothing, because hue is meaningless for neutrals — the same fact that caused the bug defeated the fix aimed at it. Two further approaches fixed the avatar and *broke* the control case, padding a pure-greyscale banner to eight near-identical greys. Four approaches killed by measurement before a line of production code was written.
-
-**Then the corpus reframed the problem.** Rendering all 22 palettes side by side showed the existing extractor was not "correct on greyscale" at all — it returned 4 for one pure-grey banner and **8 near-identical greys** for another. The right answer had been luck. The real defect was never the count; it was perceptual duplicates, and a structural blindness to small vivid regions.
-
-**The blindness has a shape worth naming: a region covering ~1% of an image can never win a slot under prevalence ranking, however vivid.** No amount of tuning fixes that, because it is arithmetic, not calibration. It needed a second clustering pass over the high-chroma tail alone. Classifier masks confirmed that tail falls exactly on a black cat's eyes and a holographic avatar's iridescence — the colours users noticed were missing.
-
-**Two opposing requirements nearly collided.** "Show fewer swatches for a low-colour image" and "surface a small salient accent" pull against each other: by aggregate chroma the black cat reads as low-colour and would lose the very eyes the work existed to surface. Computing the restriction *after* extraction, on the extracted colours rather than raw pixel statistics, dissolved the conflict — the cat escapes the tier on the strength of the accent it genuinely has.
-
-**Harkirat found the biggest defect by looking at a source file.** He pointed out a test GIF whose flowers only appear late, and that one observation exposed a shipped bug two layers deeper than the task: the frame montage sampled a hardcoded stride into a fixed grid, so it only ever saw the first 25 frames of any animation, while its own comment claimed it spanned the whole cycle. It had been silently shortchanging the 60-frame decoration it was written for. **A comment asserting a property is not a check that the property holds** — and this one had been read approvingly, by me, an hour before it was measured.
-
-**Verification earned its cost twice over.** Testing the fixed montage against a real GIF revealed it produced a 3.8M-pixel image for a synchronous decode — the exact event-loop stall behind a past bot-wide outage. Scaling before tiling made it 29× smaller *and* improved colour recovery. Neither problem was visible in the code.
 
 # Part B — Lessons Ledger (thematic)
 
