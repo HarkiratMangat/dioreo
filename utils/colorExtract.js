@@ -440,6 +440,24 @@ function perceptualDistanceHex(a, b) {
     return deltaE(A, B);
 }
 
+// Per-source swatch counts. Avatar/banner are richer images that support more genuinely distinct
+// clusters; nameplate/decoration are smaller, simpler assets that regularly produce fewer real
+// clusters even at higher K, so they ask for fewer up front instead of padding to a count the source
+// doesn't support.
+//
+// ⚠️ THIS LIVES HERE SPECIFICALLY SO THERE IS ONE COPY (moved from utils/colorPalette.js 2026-08-11
+// 10:25 EDT). The nameplate/decoration WebP caches now extract palettes too, and colorPalette.js
+// requires THOSE modules -- so importing the count back from colorPalette.js would close a cycle, and
+// the first draft of the palette cache dodged that by declaring its own local `PALETTE_COUNT = 4` in
+// each cache module. Three copies of one number, nothing enforcing agreement, and a change to any one
+// of them silently producing palettes of different lengths depending on which path ran. colorExtract
+// requires none of them, so everyone can import from here instead.
+const PALETTE_COUNTS = { avatar: 8, banner: 8, nameplate: 4, decoration: 4 };
+
+// How far the nameplate path over-asks before near-duplicates of the bed are dropped -- see
+// composeNameplatePalette. Shared for the same reason as the counts above.
+const NAMEPLATE_OVERASK = 2;
+
 // A nameplate's four swatches are ONE bed + THREE from the art (Harkirat 2026-08-11 07:55 EDT).
 // Lifted out of utils/colorPalette.js 2026-08-11 10:03 EDT so the permanent palette cache in
 // utils/nameplateWebpCache.js composes it IDENTICALLY -- two copies of this rule would eventually
@@ -495,5 +513,6 @@ function deserializePalette(raw) {
 
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
-    composeNameplatePalette, serializePalette, deserializePalette
+    composeNameplatePalette, serializePalette, deserializePalette,
+    PALETTE_COUNTS, NAMEPLATE_OVERASK
 };

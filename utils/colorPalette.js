@@ -2,7 +2,9 @@
 // utils/accentColor.js (which resolves ONE hex per command render): this computes/caches the FULL
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
-const { getColorPalette, composeNameplatePalette } = require('./colorExtract');
+const {
+    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK
+} = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
@@ -11,12 +13,10 @@ const { renderNameplateArtMontage } = require('./nameplateBedImage');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
 
-// Per-source color counts (2026-07-14, Harkirat's request) -- avatar/banner are richer, more
-// complex images that support more genuinely distinct clusters; nameplate/decoration are smaller,
-// simpler assets (confirmed empirically earlier this session: nameplate/decoration extractions
-// regularly produced fewer real distinct clusters even at K=8), so they ask for fewer up front
-// instead of padding out to a count the source doesn't actually support.
-const PALETTE_COUNTS = { avatar: 8, banner: 8, nameplate: 4, decoration: 4 };
+// PALETTE_COUNTS moved to utils/colorExtract.js 2026-08-11 10:25 EDT -- the nameplate/decoration WebP
+// caches extract palettes too and must use the same counts, and this module requires those caches, so
+// colorExtract (which requires neither) is the only home that all three can import from without a
+// cycle. See its own comment for the three-copies hazard that motivated the move.
 
 // Every image-backed source's URL + the asset-hash identity it should be cached against. Mirrors
 // exactly what utils/accentColor.js already resolves for the single-hex accent system -- avatar's
@@ -244,7 +244,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
         // that renders as a near-duplicate of the bed gets dropped below, and without headroom that
         // would hand back a short palette. Same reason the extractor itself over-clusters before
         // merging.
-        palette = await getColorPalette(imageSource, nameplateBedHex != null ? wanted + 2 : wanted);
+        palette = await getColorPalette(imageSource, nameplateBedHex != null ? wanted + NAMEPLATE_OVERASK : wanted);
         if (kind === 'nameplate') {
             // Shared with utils/nameplateWebpCache.js's own extraction so the fallback path and the
             // permanent cache can never compose the four swatches differently -- see

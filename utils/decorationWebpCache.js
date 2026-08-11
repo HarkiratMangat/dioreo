@@ -41,11 +41,11 @@ const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
-const { getColorPalette, serializePalette, deserializePalette } = require('./colorExtract');
+const { getColorPalette, serializePalette, deserializePalette, PALETTE_COUNTS } = require('./colorExtract');
 
-// Mirrors utils/colorPalette.js's PALETTE_COUNTS.decoration -- a local constant rather than an import
-// because colorPalette.js requires THIS module, and importing back would close the cycle.
-const PALETTE_COUNT = 4;
+// Imported, never redeclared -- see utils/colorExtract.js's comment on why the counts live there
+// rather than in colorPalette.js (which requires this module, so importing back would close a cycle).
+const PALETTE_COUNT = PALETTE_COUNTS.decoration;
 
 // A decoration's palette is a pure function of its asset, so it is computed ONCE PER DESIGN EVER and
 // stored beside the render instead of once per user (Harkirat 2026-08-11 01:58 EDT). No bed and no

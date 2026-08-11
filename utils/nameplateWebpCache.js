@@ -41,15 +41,15 @@ const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = requ
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
 const {
-    getColorPalette, composeNameplatePalette, serializePalette, deserializePalette
+    getColorPalette, composeNameplatePalette, serializePalette, deserializePalette,
+    PALETTE_COUNTS, NAMEPLATE_OVERASK
 } = require('./colorExtract');
 
-// How many swatches a nameplate carries, and how far the extractor over-asks before the bed's
-// near-duplicates are dropped. Mirrors utils/colorPalette.js's PALETTE_COUNTS.nameplate -- kept as a
-// local constant rather than imported because colorPalette.js requires THIS module, and importing
-// back would close the cycle.
-const PALETTE_COUNT = 4;
-const PALETTE_OVERASK = 2;
+// Imported, never redeclared. colorPalette.js requires THIS module, so importing the count back from
+// there would close a cycle -- which is why an earlier draft kept a local copy. colorExtract requires
+// neither module, so it holds the single definition; see its comment for why three copies of one
+// number was the wrong answer.
+const PALETTE_COUNT = PALETTE_COUNTS.nameplate;
 
 // The palette is a pure function of (art, bed), both fixed per (asset, palette) -- so it is computed
 // ONCE PER DESIGN EVER and stored beside the render, rather than once per user on their UserPreference
@@ -62,7 +62,7 @@ const PALETTE_OVERASK = 2;
 // exact value by composeNameplatePalette instead.
 async function extractPaletteFromFrames(rawFrames, bedHex) {
     const montage = await poolFramesIntoMontage(rawFrames);
-    const full = await getColorPalette(montage, bedHex != null ? PALETTE_COUNT + PALETTE_OVERASK : PALETTE_COUNT);
+    const full = await getColorPalette(montage, bedHex != null ? PALETTE_COUNT + NAMEPLATE_OVERASK : PALETTE_COUNT);
     return composeNameplatePalette(full, bedHex, PALETTE_COUNT);
 }
 
