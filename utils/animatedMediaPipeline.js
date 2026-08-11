@@ -54,6 +54,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs/promises');
 const crypto = require('crypto');
+const { fingerprint } = require('./algoFingerprint');
 
 function runCommand(cmd, args) {
     return new Promise((resolve, reject) => {
@@ -241,4 +242,14 @@ async function readImageSize(buffer) {
     return { width, height };
 }
 
-module.exports = { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize };
+// This module's contribution to the palette cache key -- see utils/algoFingerprint.js. The montage is
+// upstream of every stored nameplate/decoration palette (both go through poolFramesIntoMontage), so a
+// change to which frames are picked, how they are scaled, or how they are laid onto the sheet changes
+// the extracted colours just as surely as a change to the clustering does. Hashing the extractor alone
+// would have missed the tile-copy fix in this very file, which altered a swatch while touching nothing
+// in colorExtract.js.
+const MONTAGE_FINGERPRINT = fingerprint(poolFramesIntoMontage, { POOL_FRAMES, POOL_TILE_WIDTH });
+
+module.exports = {
+    extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize, MONTAGE_FINGERPRINT
+};

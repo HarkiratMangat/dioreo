@@ -1,5 +1,9 @@
 // utils/colorExtract.js
 const { Jimp } = require('jimp');
+const { fingerprint } = require('./algoFingerprint');
+// Only for MONTAGE_FINGERPRINT. animatedMediaPipeline requires nothing from here, so this is not a
+// cycle; the montage is genuinely part of the algorithm that produces a stored palette (see below).
+const { MONTAGE_FINGERPRINT } = require('./animatedMediaPipeline');
 
 // Discord's legacy `accent_color` field is only ever populated for accounts with NO banner set
 // (the client shows one or the other) -- most active users have a banner, so that field comes
@@ -526,31 +530,56 @@ function serializePalette(palette) {
         .join(',');
 }
 
-// 🏷️ WHICH ALGORITHM PRODUCED A STORED PALETTE (added 2026-08-11 15:34 EDT, Harkirat's request).
-// Written to Cloudinary `context` beside the palette itself, and checked on every read: a palette
-// tagged with anything other than the current value is treated as ABSENT, which routes it through the
-// caches' existing heal path and re-derives it once, in place. That is the whole invalidation
-// mechanism -- there is no purge script and none is wanted, because a deletion would take the render
-// and its `discord_cdn_url` with it.
+// 🏷️ WHICH ALGORITHM PRODUCED A STORED PALETTE -- DERIVED FROM THE CODE, NOT FROM A RELEASE NUMBER.
+// Written to Cloudinary `context` as `palette_version` beside the palette itself, and checked on every
+// read: a palette tagged with anything else is treated as ABSENT, which routes it through the caches'
+// existing heal path and re-derives it once, in place. That is the entire invalidation mechanism --
+// there is no purge script and none is wanted, since deleting the resource would take the render and
+// its `discord_cdn_url` with it.
 //
-// Why this exists: the per-design palette cache keys on the ASSET HASH, which never changes when the
-// algorithm does (the same trap `[[feedback_cache_invalidation_on_algorithm_change]]` records for the
-// per-user colour caches). Before this, v3.8.0-pre's montage fix -- which corrected a real rounding
-// error and moved a swatch by one unit of 255 -- would have left every previously-cached design on
-// the old value forever, with nothing in the record saying which value a given entry was.
+// Why a key is needed at all: the per-design palette cache keys on the ASSET HASH, which never changes
+// when the algorithm does -- the same trap `[[feedback_cache_invalidation_on_algorithm_change]]`
+// records for the per-user colour caches. Without a key, v3.8.0-pre's montage fix (a real rounding
+// correction that moved a swatch by one unit of 255) would have left every already-cached design on
+// the old value forever, with nothing in the record saying which value a given entry held.
 //
-// ⚠️ BUMP THIS ONLY WHEN THE EXTRACTED VALUES THEMSELVES CAN CHANGE -- a new clustering rule, a
-// different montage, a change to what pixels are sampled. Bumping it on an ordinary release re-runs
-// an ffmpeg pass and an extraction for every cached design, for identical output. Naming it after the
-// release that last changed the values is deliberate: it answers "which algorithm made this palette"
-// by pointing at a changelog entry rather than at an opaque counter.
+// ⚠️ WHY IT IS A HASH AND NOT A HAND-WRITTEN STRING (Harkirat, 2026-08-11 15:44 EDT, rejecting the
+// first design): *"there's a unique versioning for the actual algorithm."* A hand-written release tag
+// fails in both directions -- it only moves when someone remembers, so a real change can ship under a
+// stale tag with every cached value quietly wrong; and naming it after a release invites bumping it
+// every release, re-deriving identical output for nothing. Deriving it from the code removes the human
+// from the loop entirely: **shipping v3.9.0, v3.10.0 or any other release does NOT change this value
+// and forces no re-derivation.** It moves if and only if the listed code moves.
 //
-// Ledger:
-//   v3.8.0-pre — montage tiles copied rather than composited (removed Jimp's blend rounding); montage
-//                passed to getColorPalette already decoded. First version marker; anything written
-//                before this carries none and is therefore stale by definition, which is correct --
-//                those entries predate the rounding fix.
-const PALETTE_ALGO_VERSION = 'v3.8.0-pre';
+// ⚠️ THE MONTAGE IS PART OF THE ALGORITHM, not a separate concern. Every stored palette here belongs
+// to a nameplate or decoration, and both reach the extractor through poolFramesIntoMontage -- so which
+// frames are pooled and how they are laid onto the sheet decides the colours as surely as the
+// clustering does. Fingerprinting the extractor alone would have missed this release's tile-copy fix,
+// which altered a swatch while touching nothing in this file.
+//
+// What is deliberately NOT in here: `getDominantColor` and the naming/label layers. The first feeds
+// the per-user accent caches, which have their own invalidation; the second two are recomputed at
+// render time from the stored hexes and so cannot go stale in Cloudinary.
+//
+// To read the current value: `node -p "require('./utils/colorExtract').PALETTE_ALGO_VERSION"`.
+// Ledger (fill in on the way past -- it maps an opaque hash back to a human story):
+//   2b3df0e44f80 — as of v3.8.0-pre: two-pool OKLab extractor with farthest-first seeding; montage
+//                  tiles copied rather than composited. Entries written before any marker existed
+//                  carry none, and are stale by definition -- correctly, since they predate the
+//                  rounding fix.
+const PALETTE_ALGO_VERSION = fingerprint(
+    // Everything the extracted values depend on, including the helpers the top-level functions call --
+    // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
+    srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
+    seedFarthestFirst, clusterLabs, mergePerceptual, getColorPalette,
+    composeNameplatePalette, perceptualDistanceHex,
+    {
+        KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
+        ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
+        PALETTE_COUNTS, NAMEPLATE_OVERASK
+    },
+    MONTAGE_FINGERPRINT
+);
 
 // The two halves of the context round-trip, kept as one pair so the four call sites (each cache's
 // render path and its heal path, times two modules) cannot drift on the key name or the version.

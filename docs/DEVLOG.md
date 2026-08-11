@@ -2468,6 +2468,14 @@ Put to Harkirat as a tradeoff — 95ms against one changed hex — his answer re
 
 **The lesson worth keeping is about where the measurement pointed.** The phase breakdown named the pooling step as the cost, and every instinct said the expensive part of colour extraction must be the colour extraction. It was 37ms. Everything that mattered was encode, decode, blend, and decode again — costs that exist between correct components rather than inside any of them. A profile that stops at "which function is slow" would have found nothing here to fix.
 
+**A postscript, because the correction had a consequence and the first fix for it was wrong.** Moving a swatch by one unit meant every palette already cached in Cloudinary was now the old value, behind a cache that keys on the asset hash — and an asset hash does not change when an extractor does. The obvious fix was a version marker, and it shipped as the string `v3.8.0-pre`, named after the release so it would answer "which algorithm made this" by pointing at a changelog entry.
+
+Harkirat's question was whether shipping v3.9.0 would then force everything to re-derive. It would not — the string is hardcoded, not read from `package.json` — but the question was aimed at something the answer did not reach: *"there's a unique versioning for the actual algorithm."* The tag was describing the release, and the release is not the thing being identified.
+
+The failure is worth writing down because it is symmetric and both halves are silent. A hand-written tag **only moves when someone remembers**, so a real algorithm change ships under a stale marker and every cached value stays quietly wrong behind a key asserting it is current. And naming it after a release **invites** bumping it every release, so identical output gets re-derived for nothing. The first mode is the expensive one and it is the one a careful person is most likely to hit, because it requires no mistake at all — only a normal amount of forgetting.
+
+Deriving the key from the code removes the human from the loop: it hashes the clustering functions, their helpers, the constants that shape the output, and the montage builder, with comments and whitespace stripped so the codebase's own comment density does not invalidate the world every time a sentence gets clarified. **The detail that would have been easy to miss is including the montage at all** — fingerprinting the extractor alone would have failed to notice this very release's tile-copy fix, which changed a swatch while touching nothing in `colorExtract.js`. The first design would have been blind to precisely the change that motivated it.
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
