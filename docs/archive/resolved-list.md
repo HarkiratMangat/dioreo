@@ -22,6 +22,45 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move — RESOLVED 2026-08-10 21:03 EDT
+
+*Original entry: `[P1 · XS]`, filed 2026-08-06 08:08 EDT in the same pass that moved the notes file. Trigger, quoted: "**the very next fresh session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming `docs/ideas/diors-notes.md`. If it is absent while the file still has open items, the hook is broken." Its own closing instruction was to delete the entry once a fresh session's startup context had been seen; it is **moved rather than deleted**, per this file's rules and `archive-conservation`.*
+
+**Outcome — the hook fires. Verified 2026-08-10 21:03 EDT from this session's own startup context**, which carried `NOTES-FILE CHECK: docs/ideas/diors-notes.md has 8 open (unmarked) item(s) in its working sections`, naming the moved path and reading real content from it (it also printed truncated previews and the follow-up-mark block). That is exactly the observation the entry specified, obtained the only way it could be — from a *different* session than the one that made the change.
+
+⚠️ **Note it sat closeable for four days.** The evidence needed was free and arrived unprompted in the startup context of every session from 2026-08-06 onward; the entry stayed open because nothing connected "I can see the hook output right now" to "there is a `[P1]` reminder asking me to confirm exactly this". **This is the general shape worth remembering: a reminder whose evidence appears automatically in every session's context still needs someone to look at the reminder.** The `⇄`-pair check filed alongside the v2 sweep is the same class of problem — two records that agree only if a human compares them.
+
+*(Its mis-titled sibling, filed 2026-08-06 09:35 EDT under this same heading but actually about `completeness-sweep.sh`, is archived directly below.)*
+
+### 📓 *(mis-titled)* "Confirm the `SessionStart` notes hook fires" — actually the `completeness-sweep.sh` firing reminder — RESOLVED 2026-08-10 21:03 EDT
+
+*Original entry: `[P1 · XS]`, filed 2026-08-06 09:35 EDT. Trigger: "the next session that makes a completion claim on a branch with commits — it should be interrupted with a `COMPLETENESS SWEEP` block."*
+
+**Two things were wrong with it, and the sweep that found it was looking for something else entirely.**
+
+1. **Its title was a copy-paste of the notes-hook reminder above** — the two sat nine lines apart in `docs/db-deferred-list.md` under a byte-identical heading, while their bodies were about **different hooks**. Read by title alone, the file appeared to carry the same `[P1]` reminder twice; read by body, neither was a duplicate. A grep for either hook by name found the wrong entry.
+2. **It was already answered by an entry three lines above it.** `🔎 completeness-sweep.sh DOES fire at Stop — confirmed 2026-08-06 12:35 EDT` re-scoped this exact reminder into a live item about the angle detector being wrong on that first fire. So the question closed **~3 hours after it was filed** and the original stayed open for four more days, immediately below its own answer.
+
+**Outcome.** Closed as answered — the hook fires; what remains about its angle detection is tracked by the live 12:35 EDT entry, which is where it belongs. **Its "three stated limits" are preserved verbatim here**, since they are accepted design decisions about the gate rather than open work, and nothing else records them:
+> 1. **The stamp means it fires ONCE per repo state.** Ignore the block, change nothing, re-claim → silence. Matches every other `Stop` gate here and is what keeps it off ordinary messages, but it does mean the gate cannot nag.
+> 2. **Broad angle detectors**: searching FOR a string in a Bash command counts as having run that angle (`rg -n 'buildLegalPages'` reads as covered). Deliberate — a false "covered" beats a gate that fires on everything and gets dismissed unread.
+> 3. **The `ANGLES` registry is a whitelist of failures that already happened**, so a genuinely new KIND of miss has no entry by construction. Same honest edge `docs-audit` documents about itself. Add an angle by appending one `id|detector|demand` line.
+
+**The lesson is about re-scoping, not about hooks.** When a reminder gets re-scoped into a new entry, the original has to be closed **in the same edit** — otherwise the answer and the question coexist, and the question is the one a later reader finds first if it happens to sit lower in the file. Same failure family as the `⇄`-pair mismatch filed out of the v2 sweep: two records that only agree if someone compares them.
+
+### 🧹 v2 STALENESS SWEEP — audit every legacy v2 item against reality — RESOLVED 2026-08-10 21:00 EDT
+
+*Original entry: `[P1 · M · Opus5-Medium · ⏭️ NEXT SESSION]`, filed 2026-08-10 20:23 EDT from Harkirat's "lowkey also need to check current v2 items to see if they're already complete" — and, in the same breath, what should be abandoned and what should be folded into v3. v2 closed 2026-08-10 20:22 EDT, leaving `docs/ROADMAP.md`'s three v2 batches as a legacy queue nobody had reconciled. The entry's own rules: four buckets, an evidenced verdict per item, sweep BOTH files, and conservation applies.*
+
+**Outcome — 10 items, all four buckets applied, every verdict backed by code or `git log` rather than by the tracker.** Full per-item detail now lives on the items themselves in `docs/ROADMAP.md`, under the ✅ SWEPT banner that replaced the "these lists have NOT been audited" warning.
+
+- ✅ **Already done — 5.** Four struck items were re-verified rather than trusted: pagination loop-back (`utils/paginationRow.js:44`'s 2-page clamp), the `/manage` loadout data-entry overhaul (`checkImageExists` present in `utils/loadoutRender.js`), `/manage` per-page accent colours, and the `/settings`-only half of the button-disable item. **The fifth is the sweep's one real find:** the **pagination double round-trip perf fix** was still tagged `[P2 · M]` and un-struck on the ROADMAP four days after it shipped — `adcec5a` (PR #93) put the single-hop `type: 7` UPDATE_MESSAGE into `utils/sendV2Payload.js:85-91`, and `138b25c` (PR #97, v2.60.0) deliberately reverted four routes to two-hop over the blank-emoji bug. Struck, with the revert recorded as *finished state, not outstanding work*.
+- ❓ **Still genuinely open, re-tagged v3 — 3.** **View Colors' unset pages** (`utils/colorPaletteView.js:247`'s `getAvailableSources()` still filters an unset source out entirely, so there is no button to hang a humor page on). **Richer in-bot logging** — half-shipped and previously readable as untouched: v2.41.0's `utils/logger.js` delivered the *transport* (structured severity + service/version/commit) but not the *attribution* this item is about; its exports carry no component field and it is required in exactly one place. **Admin `/status`** — nothing built, no `commands/status.js`, no `setName('status')` anywhere.
+- ⏭️ **Folded into v3 by a prior decision — 2.** The passive button-disable pair and View Colors' wider colour variety; both were already reclassified 2026-08-10 20:22 EDT and needed no re-litigation.
+- 🗑️ **Abandoned — 0**, recorded explicitly so the empty bucket reads as a checked conclusion rather than a skipped step. Nothing in the queue was overtaken or unwanted; **it was stale, not dead**, which is itself the useful finding — the cost of this queue was never carrying dead weight, it was three items whose true state nobody could read off the tracker.
+
+**⚠️ The defect worth carrying forward, because it is now twice-observed.** The pagination item was a *stub* on the ROADMAP while its `⇄` twin here held the full record of the work shipping — the version-horizon file said open, the size-and-design file said done. That is the identical shape as the button-disable miss that prompted this sweep. **A `⇄` item must have both lines closed in the same edit**; the `⇄` marker records that a twin exists, and nothing checks that the two agree. A `docs-audit` check for `⇄` pairs whose struck-through state disagrees would catch the whole class — filed as a follow-up rather than built here, since it was outside the sweep's mandate.
+
 ### 🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED — RESOLVED 2026-08-10 20:31 EDT (Pre-Release v3.4.1)
 
 *Original entry: `[P1 · XS]`, filed 2026-08-04 16:23 EDT, rewritten 2026-08-06 00:36 EDT after its hardcoded version numbers went stale. Trigger: the next session that touches this repo, or any report that a site/bot change "did not land". It carried a standing instruction — **measure first, do not deploy first** — plus a warning never to write either version number back into its own prose, because the previous wording ("v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3") had quietly understated the gap by several releases while looking precise.*
