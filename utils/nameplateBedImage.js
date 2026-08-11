@@ -6,6 +6,7 @@
 // actually sees on their nameplate.
 const { Jimp } = require('jimp');
 const { NAMEPLATE_GRADIENT_STOPS } = require('./nameplatePalettes');
+const { extractAlphaFrames } = require('./animatedMediaPipeline');
 
 // Piecewise-linear interpolation across NAMEPLATE_GRADIENT_STOPS' {at, alpha} pairs -- reproduces the
 // same curve as Discord's `linear-gradient(90deg, transparent 0%, rgba(C,0.08) 20%, rgba(C,0.08) 50%,
@@ -89,4 +90,77 @@ async function renderGradientBedFrame(artBuffer, bedHex, targetWidth = 512) {
     return paintGradientBedOnto(art, bedHex, targetWidth).getBuffer('image/png');
 }
 
-module.exports = { renderNameplateWithBed, renderGradientBedFrame };
+// EXTRACTION-ONLY companion (2026-08-11 07:25 EDT). Pools the whole animation, bed composited, into
+// ONE still so colour extraction sees the nameplate the user actually looks at.
+//
+// ⚠️ WHY THIS EXISTS. Extraction used to read Discord's `static.png`, which carries ONLY the upper art
+// layer -- measured on the real `nameplates/nameplates/twilight/` asset: 0.0% opaque pixels, 32.9%
+// fully transparent, 67.1% partial alpha, i.e. there is no bed in it at all. The bed is a CSS gradient
+// Discord's client draws from the design's palette metadata, so extraction was reading translucent art
+// with nothing behind it. Compositing first grounds the palette in what the user actually sees: on the
+// real twilight/cobalt pairing, #336CED #5B96F1 #1E4DE9 #83C5F4 -> #0738C6 #1D56D6 #2E73DC #4D90E9.
+//
+// 🚫 THE ART AND ITS BED ARE A LINKED DESIGN -- do not model them as independent (Harkirat 2026-08-11
+// 07:42 EDT). The palette names which bed belongs to THAT design; it is not a free choice over
+// arbitrary art, so you will not meet twilight art on a crimson bed. An earlier version of this
+// comment claimed the same art ships for every palette and that "a crimson nameplate reported blue" --
+// WRONG, and derived from a synthetic probe that forced twilight art onto beds it never ships with.
+// The probe proved this code path was bed-blind (true); it was never evidence of a user-facing colour
+// mismatch (false). Designs whose palette is `none` already have their background baked into the art,
+// and the caller correctly leaves those on the old static.png path.
+//
+// ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back — see the silent-single-frame
+// trap documented at the top of utils/animatedMediaPipeline.js. A one-frame result here would look
+// like a working extraction while quietly reproducing the bug this replaces.
+//
+// FPS matches nameplateWebpCache's measured native 12 rather than a fresh guess; the tiles are capped
+// at 256px wide because a grid multiplies resolution by its tile count and k-means samples ~2500
+// pixels regardless (the same scale discipline stillFrame.js's montage needs).
+const EXTRACTION_FPS = 12;
+const EXTRACTION_FRAMES = 9;
+const EXTRACTION_TILE_WIDTH = 256;
+
+// ⚠️ Returns the ART ONLY -- the bed is deliberately NOT composited in here. Harkirat's spec
+// 2026-08-11 07:55 EDT: a nameplate's four swatches are ONE "Nameplate Background" (the bed) plus
+// THREE drawn from the upper art layer. The bed's hex is known exactly from the design's palette
+// metadata (nameplatePaletteHex), so extracting it from pixels would only approximate a value we
+// already have — earlier drafts composited first and then re-derived the bed to within 5-10 RGB,
+// which is strictly worse than just using it. Compositing also let bed-tinted pixels crowd out real
+// art colours in a 4-slot budget. So: pool the animation's art, and let the caller prepend the bed.
+async function renderNameplateArtMontage(webmBuffer, { frames = EXTRACTION_FRAMES, targetWidth = EXTRACTION_TILE_WIDTH } = {}) {
+    const raw = await extractAlphaFrames(webmBuffer, {
+        inputExt: '.webm',
+        preInputArgs: ['-c:v', 'libvpx-vp9'],
+        fps: EXTRACTION_FPS
+    });
+    if (raw.length < 2) throw new Error(`nameplate webm yielded ${raw.length} frame(s) -- expected an animation`);
+
+    const take = Math.min(frames, raw.length);
+    const picked = Array.from({ length: take }, (_, i) => raw[Math.round(i * (raw.length - 1) / (take - 1))]);
+
+    const tiles = [];
+    for (const frame of picked) {
+        const img = await Jimp.read(frame);
+        if (img.bitmap.width > targetWidth) img.resize({ w: targetWidth });
+        tiles.push(img);
+        // Same yield discipline as the WebP cache's per-frame loop -- synchronous Jimp work is exactly
+        // what blocked unrelated interactions' 3s ACK window before the CPU fix.
+        await new Promise(setImmediate);
+    }
+
+    const cols = Math.ceil(Math.sqrt(tiles.length));
+    const rows = Math.ceil(tiles.length / cols);
+    // Transparent background, so fully-transparent art pixels stay alpha 0 and getColorPalette skips
+    // them rather than counting a fabricated backdrop as one of the three art colours.
+    const sheet = new Jimp({
+        width: tiles[0].bitmap.width * cols,
+        height: tiles[0].bitmap.height * rows,
+        color: 0x00000000
+    });
+    for (let i = 0; i < tiles.length; i++) {
+        sheet.composite(tiles[i], (i % cols) * tiles[0].bitmap.width, Math.floor(i / cols) * tiles[0].bitmap.height);
+    }
+    return sheet.getBuffer('image/png');
+}
+
+module.exports = { renderNameplateWithBed, renderGradientBedFrame, renderNameplateArtMontage };

@@ -4,6 +4,7 @@
 // from its data-fetching, and from index.js's routing the same way every other panel's render lives
 // in utils/ rather than inline.
 const namer = require('color-namer');
+const { assignColorNames } = require('./colorNames');
 const { renderSwatchImage } = require('./colorSwatchImage');
 const { renderGradientBanner } = require('./colorGradientImage');
 const { renderResizedImage } = require('./resizedImage');
@@ -43,6 +44,7 @@ function getColorName(hex) {
     return namer(formatHex(hex), { pick: ['ntc'] }).ntc[0].name;
 }
 
+
 function rgbToHslLocal(hex) {
     const r = ((hex >> 16) & 0xff) / 255, g = ((hex >> 8) & 0xff) / 255, b = (hex & 0xff) / 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -79,7 +81,7 @@ function isCoolHue(h) { return h >= 180 && h < 300; }
 // feedback after the first version (5 categories, rest fell back to numbered "Accent Color N"):
 // "the whole point of my request was to keep them unique yet relevant" -- a numbered fallback is
 // neither.
-function assignDynamicLabels(entries) {
+function assignDynamicLabels(entries, kind) {
     const hsl = entries.map(e => rgbToHslLocal(e.hex));
     const claimed = new Set();
     const labels = new Array(entries.length).fill(null);
@@ -94,22 +96,33 @@ function assignDynamicLabels(entries) {
 
     if (entries.length === 0) return labels;
 
-    // 1. Majority Color -- the single highest-prevalence entry (entries already arrive sorted by
-    // percent descending from getColorPalette, so index 0 is always the winner).
-    claim(0, 'Majority Color');
+    // ⚠️ LABELS WERE PLAINED UP 2026-08-11 08:36 EDT, alongside the switch to plain-English colour
+    // NAMES (see utils/colorNames.js). The two are read together on one line -- "Almost Black / Dark
+    // Undertone" mixed a plain name with design jargon, so the labels now answer "why is this colour
+    // here?" in the same register: Most Common, Darkest Tone, Boldest Color. The RULES are unchanged;
+    // only their wording is. Keep any future label in that register rather than reaching for
+    // design-speak, and keep it short -- it renders as a single quoted line under the hex.
+    //
+    // 1. Most Common -- the single highest-prevalence entry (entries already arrive sorted by percent
+    // descending from getColorPalette, so index 0 is always the winner).
+    // ⚠️ NAMEPLATE leads with its BED, not a majority (Harkirat 2026-08-11 07:55 EDT). A nameplate gets
+    // only 4 swatches and its background is a design fact rather than a statistic, so "Majority Color"
+    // does not fit there -- entry 0 IS the bed (prepended exactly, never extracted) and entries 1-3 come
+    // from the upper art layer. See utils/colorPalette.js's nameplate branch for how that is composed.
+    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Most Common');
     const maj = hsl[0];
 
     // 2. Vibrant Accent -- highest saturation among what's left, only if genuinely saturated.
-    tryClaim(unclaimed().filter(i => hsl[i].s > 0.25).sort((a, b) => hsl[b].s - hsl[a].s), 'Vibrant Accent');
-    // 3. Dark Undertone -- lowest lightness among what's left, only if genuinely dark.
-    tryClaim(unclaimed().filter(i => hsl[i].l < 0.35).sort((a, b) => hsl[a].l - hsl[b].l), 'Dark Undertone');
-    // 4. Light Highlight -- highest lightness among what's left, only if genuinely light.
-    tryClaim(unclaimed().filter(i => hsl[i].l > 0.7).sort((a, b) => hsl[b].l - hsl[a].l), 'Light Highlight');
-    // 5. Neutral Tone -- lowest saturation among what's left, only if genuinely muted/gray.
-    tryClaim(unclaimed().filter(i => hsl[i].s < 0.15).sort((a, b) => hsl[a].s - hsl[b].s), 'Neutral Tone');
+    tryClaim(unclaimed().filter(i => hsl[i].s > 0.25).sort((a, b) => hsl[b].s - hsl[a].s), 'Boldest Color');
+    // 3. Darkest Tone -- lowest lightness among what's left, only if genuinely dark.
+    tryClaim(unclaimed().filter(i => hsl[i].l < 0.35).sort((a, b) => hsl[a].l - hsl[b].l), 'Darkest Tone');
+    // 4. Lightest Tone -- highest lightness among what's left, only if genuinely light.
+    tryClaim(unclaimed().filter(i => hsl[i].l > 0.7).sort((a, b) => hsl[b].l - hsl[a].l), 'Lightest Tone');
+    // 5. Most Neutral -- lowest saturation among what's left, only if genuinely muted/gray.
+    tryClaim(unclaimed().filter(i => hsl[i].s < 0.15).sort((a, b) => hsl[a].s - hsl[b].s), 'Most Neutral');
     // 6. Secondary Color -- the next-most-common color, only if it covers a real share of the image
     // (not a negligible sliver that happens to rank 2nd purely because everything else is tiny too).
-    tryClaim(unclaimed().filter(i => entries[i].percent >= 10).sort((a, b) => entries[b].percent - entries[a].percent), 'Secondary Color');
+    tryClaim(unclaimed().filter(i => entries[i].percent >= 10).sort((a, b) => entries[b].percent - entries[a].percent), 'Second Most Common');
     // 7/8. Warm Contrast / Cool Contrast -- a genuine temperature contrast against the majority color
     // specifically (only fires if the majority ISN'T already that temperature, so this means "stands
     // out from the dominant tone", not just "happens to be warm/cool").
@@ -119,27 +132,28 @@ function assignDynamicLabels(entries) {
     if (!isCoolHue(maj.h)) {
         tryClaim(unclaimed().filter(i => isCoolHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cool Contrast');
     }
-    // 9. Complementary Tone -- the most hue-distant entry from the majority overall, if that distance
-    // is large enough to read as a genuinely different hue family rather than a close variant.
-    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Complementary Tone');
-    // 10/11. Deep Shade / Soft Tint -- notably darker/lighter than the MAJORITY specifically (not the
-    // absolute darkest/lightest overall, which rules 3/4 already claimed) -- "a deeper/lighter variant
-    // of the dominant tone" is still a real, distinct relationship worth naming.
-    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Deep Shade');
-    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Soft Tint');
-    // 12/13. Rich Tone / Muted Accent -- notably more/less saturated than the majority specifically.
-    tryClaim(unclaimed().filter(i => hsl[i].s > maj.s + 0.15).sort((a, b) => hsl[b].s - hsl[a].s), 'Rich Tone');
-    tryClaim(unclaimed().filter(i => hsl[i].s < maj.s - 0.1).sort((a, b) => hsl[a].s - hsl[b].s), 'Muted Accent');
-    // 14. Balanced Tone -- whatever's left that most closely echoes the majority color overall
+    // 9. Opposite Hue -- the most hue-distant entry from the majority overall, if that distance is
+    // large enough to read as a genuinely different hue family rather than a close variant.
+    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Opposite Hue');
+    // 10/11. Darker Shade / Lighter Tint -- notably darker/lighter than the MAJORITY specifically (not
+    // the absolute darkest/lightest overall, which rules 3/4 already claimed) -- "a deeper/lighter
+    // variant of the dominant tone" is still a real, distinct relationship worth naming.
+    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Darker Shade');
+    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Lighter Tint');
+    // 12/13. More Vivid / More Muted -- notably more/less saturated than the majority specifically.
+    tryClaim(unclaimed().filter(i => hsl[i].s > maj.s + 0.15).sort((a, b) => hsl[b].s - hsl[a].s), 'More Vivid');
+    tryClaim(unclaimed().filter(i => hsl[i].s < maj.s - 0.1).sort((a, b) => hsl[a].s - hsl[b].s), 'More Muted');
+    // 14. Similar To Main -- whatever's left that most closely echoes the majority color overall
     // (smallest combined hue/saturation/lightness difference) -- a real, if unremarkable, relationship
-    // ("this closely matches your dominant tone"), not a manufactured category.
+    // ("this closely matches your dominant tone"), not a manufactured category. The old wording,
+    // "Balanced Tone", was the weakest of the fourteen: it described nothing a reader could act on.
     if (unclaimed().length > 0) {
         const closest = [...unclaimed()].sort((a, b) => {
             const da = Math.abs(hsl[a].l - maj.l) + Math.abs(hsl[a].s - maj.s) + hueDistance(hsl[a].h, maj.h) / 360;
             const db = Math.abs(hsl[b].l - maj.l) + Math.abs(hsl[b].s - maj.s) + hueDistance(hsl[b].h, maj.h) / 360;
             return da - db;
         });
-        tryClaim(closest, 'Balanced Tone');
+        tryClaim(closest, 'Similar To Main');
     }
 
     // Safety net only -- with 13 real non-majority categories above covering a max of 7 non-majority
@@ -194,13 +208,18 @@ async function buildEntryRows(entries) {
     const rows = [];
     const files = [];
     let i = 0;
-    for (const { label, hex } of entries) {
+    // `name` overrides the color-namer lookup when we know a BETTER name than a nearest-match guess.
+    // The nameplate bed is the case that motivated it (Harkirat 2026-08-11 08:07 EDT): Discord itself
+    // calls that colour "Violet"/"Cobalt", so showing its own word beats color-namer's nearest ntc
+    // match ("Purple Heart", "Persian Blue") -- the palette name is the authoritative label, not an
+    // approximation of one. Everything else still falls through to getColorName.
+    for (const { label, hex, name } of entries) {
         if (hex == null) continue;
         const filename = `swatch_${i}.png`;
         files.push({ name: filename, data: await renderSwatchImage(hex) });
         rows.push({
             type: 9,
-            components: [{ type: 10, content: `**${getColorName(hex)}**\nHex: \`${formatHex(hex)}\`\n> ${label}` }],
+            components: [{ type: 10, content: `**${name || getColorName(hex)}**\nHex: \`${formatHex(hex)}\`\n> ${label}` }],
             accessory: { type: 11, media: { url: `attachment://${filename}` } }
         });
         i++;
@@ -211,10 +230,21 @@ async function buildEntryRows(entries) {
 // `palette` is whatever utils/colorExtract.js's getColorPalette() returned -- an array of
 // `{ hex, percent }` sorted by prevalence (see that file's own revision-history comment for the full
 // story of what this replaced). Labels come from assignDynamicLabels above, not the raw percent.
-function buildSwatchEntries(palette) {
+function buildSwatchEntries(palette, kind, bedName) {
     const entries = palette || [];
-    const labels = assignDynamicLabels(entries);
-    return entries.map((e, i) => ({ label: labels[i], hex: e.hex }));
+    const labels = assignDynamicLabels(entries, kind);
+    const withAuthoritativeNames = entries.map((e, i) => ({
+        label: labels[i],
+        hex: e.hex,
+        // Entry 0 of a nameplate IS the bed, so when Discord named that palette we show its word
+        // rather than a nearest-match guess. Everything else, including every nameplate whose palette
+        // is `none`, leaves this undefined and gets named by assignColorNames below.
+        name: (kind === 'nameplate' && i === 0 && bedName) ? bedName : undefined
+    }));
+    // Resolved across the FULL entry set here, BEFORE pagination -- the same reason labels are: a name
+    // claimed by a swatch on page 1 must not be handed to a different swatch on page 2.
+    const names = assignColorNames(withAuthoritativeNames);
+    return withAuthoritativeNames.map((e, i) => ({ ...e, name: names[i] }));
 }
 
 // Display Name Colors are 2 EXACT user-picked colors, not an extracted palette -- there's nothing to
@@ -411,14 +441,14 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Vibrant Accent could end up on page 2, leaving page 1 with no Vibrant Accent label at all).
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
-        : buildSwatchEntries(data[effectiveSource]);
-    // Nameplate bed color (see utils/nameplateBedImage.js) -- surfaced as a real palette entry
-    // alongside the extracted art colors, not just baked into the preview image. Appended AFTER
-    // buildSwatchEntries so it never participates in assignDynamicLabels' relative labeling (it isn't
-    // one of the extracted/clustered colors, so a fixed label is correct here).
-    if (effectiveSource === 'nameplate' && data.nameplateBedHex != null) {
-        allEntries.push({ label: 'Nameplate Background', hex: data.nameplateBedHex });
-    }
+        : buildSwatchEntries(data[effectiveSource], effectiveSource, data.nameplateBedName);
+    // ⚠️ The bed used to be APPENDED here as a fifth entry (2026-08-09). It is now the FIRST entry of
+    // the palette itself -- utils/colorPalette.js prepends it and assignDynamicLabels labels index 0
+    // "Nameplate Background" for this source. Appending it as well produced the colour TWICE and, with
+    // ENTRIES_PER_PAGE = 4, tipped the nameplate page into a needless "1 / 2" pagination; caught only
+    // because Harkirat sent a screenshot of the rendered panel, which a database read of the stored
+    // palette could not have shown. Harkirat's spec 2026-08-11 07:55 EDT is four swatches total: the
+    // bed plus three art colours, so the bed has to be IN the four, not a fifth beside them.
     const totalPages = Math.max(1, Math.ceil(allEntries.length / ENTRIES_PER_PAGE));
     const effectiveSubpage = Math.min(Math.max(subpage, 0), totalPages - 1);
     const pageEntries = allEntries.slice(effectiveSubpage * ENTRIES_PER_PAGE, (effectiveSubpage + 1) * ENTRIES_PER_PAGE);

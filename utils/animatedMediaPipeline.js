@@ -19,6 +19,35 @@
 //      transparent pixels too (avoids fringing if a viewer ever samples "invisible" pixels).
 // Uses real temp files (ffmpeg's frame-sequence I/O needs a %03d-pattern directory, and img2webp reads
 // real files, not stdin), cleaned up in a `finally` the same way stillFrame.js's two functions already do.
+//
+// ⚠️ "WHY NOT ONE TOOL THAT GOES APNG -> ANIMATED WEBP DIRECTLY?" -- asked and MEASURED 2026-08-11
+// 02:25 EDT, answer is no, don't re-investigate:
+//   · ffmpeg has NO webp encoder here (`ffmpeg -encoders | rg webp` is empty) and this is NOT a quirk
+//     of one machine -- Homebrew's CORE ffmpeg formula does not depend on webp at all. Getting it
+//     means the homebrew-ffmpeg tap built from source with `--with-webp`.
+//   · ImageMagick's APNG support is a DELEGATE to that same ffmpeg, so `magick apng:in.png out.webp`
+//     dies with "Unknown encoder 'webp'". It is not an independent path.
+//   · libwebp's own CLI set ships no APNG reader at all: img2webp assembles PNGs, gif2webp is GIF-only,
+//     cwebp is single-image, webpmux only muxes.
+//   · npm's `apng2webp` (the obvious next thing to try, and the only package of that name anywhere --
+//     not in Homebrew, not on PyPI) is BROWSER-ONLY and cannot run server-side. Its own README says
+//     "This package relies on browser canvas WebP encoder"; it calls document.createElement('canvas'),
+//     Blob and URL.createObjectURL, exposes `bin: null` so there is no CLI, and was last published in
+//     2022. Installed briefly to verify all of the above, then removed; it was never a project
+//     dependency and must not become one -- it can never execute in this runtime.
+// So the two-step is not clumsiness, it is the only path these tools allow -- and switching to
+// ffmpeg-with-libwebp would make the dependency WORSE, not better: img2webp is a small standalone
+// binary you install explicitly (`apt install webp`), whereas requiring libwebp *inside* ffmpeg means
+// depending on how whoever packaged that distro's ffmpeg configured it. This machine is the proof
+// that assumption breaks. It also cannot help nameplate under any circumstances, because the gradient
+// bed has to be composited BETWEEN decode and encode and a single-step converter offers no such hook.
+//
+// ⚠️ AND THE OBVIOUS SHORTCUT SILENTLY LIES. `magick in.png out.webp` on a 60-frame APNG "succeeds" in
+// 44ms producing a 22KB file -- 12x faster and 50x smaller than this pipeline, and completely wrong:
+// it read ONE frame. `magick identify -format '%n'` reports `1`, and `webpmux -info` shows
+// "Features present: transparency" with no `animation`. This is the SAME silent-single-frame trap as
+// ffmpeg without `-f apng` (see extractAlphaFrames' preInputArgs note below), and it is why every
+// change here must assert the FRAME COUNT rather than that a file was produced.
 const { spawn } = require('child_process');
 const os = require('os');
 const path = require('path');

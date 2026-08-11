@@ -2,11 +2,12 @@
 // utils/accentColor.js (which resolves ONE hex per command render): this computes/caches the FULL
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
-const { getColorPalette } = require('./colorExtract');
+const { getColorPalette, perceptualDistanceHex, MERGE_DELTA_E } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
-const { readGuildProfile, hasAnyGuildOverride } = require('./guildProfile');
-const { nameplatePaletteHex } = require('./nameplatePalettes');
+const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
+const { nameplatePaletteHex, nameplatePaletteLabel } = require('./nameplatePalettes');
+const { renderNameplateArtMontage } = require('./nameplateBedImage');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
 
@@ -32,14 +33,21 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         ? {
             url: guildProfile.avatarUrl,
             fullUrl: guildProfile.avatarFullUrl,
-            source: guildProfile.avatarHash
+            source: guildProfile.avatarHash,
+            montageUrl: guildProfile.avatarAnimatedUrl
           }
         : {
             url: interaction.user.displayAvatarURL({ extension: 'png', size: 256 }),
             // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Avatar
             // button, same 4096px size /settings' existing download link already uses.
             fullUrl: interaction.user.displayAvatarURL({ size: 4096 }),
-            source: interaction.user.avatar || 'default'
+            source: interaction.user.avatar || 'default',
+            // An animated avatar must be sampled across the animation, not from its first frame --
+            // see the montage note in getCachedPalette below. Null for a static avatar, which keeps
+            // the (much cheaper) direct-url path for the overwhelmingly common case.
+            montageUrl: isAnimatedHash(interaction.user.avatar)
+                ? interaction.user.displayAvatarURL({ extension: 'gif', size: 256 })
+                : null
           };
 
     // The global fetches are skipped entirely when the guild profile already answers every source --
@@ -79,7 +87,13 @@ async function getSourceImageInfo(interaction, useGuild = false) {
             // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Banner
             // button, same 4096px size /settings' existing download link already uses.
             fullUrl: userFetch.bannerURL({ size: 4096 }),
-            source: userFetch.banner
+            source: userFetch.banner,
+            // Animated banners are where the single-frame bug hurt most (measured: 83% of peak chroma
+            // lost on a real 85-frame banner). Extraction samples this; DISPLAY still uses the static
+            // `url` above, which is deliberate -- the media gallery has always shown a still.
+            montageUrl: isAnimatedHash(userFetch.banner)
+                ? userFetch.bannerURL({ extension: 'gif', size: 256 })
+                : null
           }
         : null;
     // needsStillFrame: decorations are commonly served as animated PNG -- see utils/stillFrame.js.
@@ -90,10 +104,19 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         : extras.decorationUrl
         ? { url: extras.decorationUrl, source: extras.decorationAsset, skuId: extras.decorationSkuId, needsStillFrame: true }
         : null;
+    // ⚠️ `paletteCacheKey` is SEPARATE from `source` on purpose, and the two must not be merged.
+    // `source` is the bare asset hash and is what feeds resolveNameplateWebp -> publicIdFor(), i.e. the
+    // Cloudinary public id of every cached render; folding the palette name into it would orphan all of
+    // them. But a nameplate's extracted PALETTE now depends on the bed colour (see
+    // renderNameplateExtractionMontage), so the extraction cache keys on (asset, palette name) while
+    // the render cache still keys on the asset. ⚠️ Since a nameplate's art and bed are a LINKED design
+    // -- one palette per design, not a free pairing -- this is insurance rather than a fixed bug: the
+    // asset hash would in practice already imply the palette. Discord carries the palette as its own
+    // field though, so keying on both costs nothing and stays correct if that ever varies.
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
+        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, paletteCacheKey: `${guildProfile.nameplateAsset}|${guildProfile.nameplatePalette || 'none'}`, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
+        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, paletteCacheKey: `${extras.nameplateAsset}|${extras.nameplatePalette || 'none'}`, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -129,37 +152,94 @@ function paletteFields(kind, isGuild) {
 async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, isGuild = false) {
     const { paletteField, sourceField } = paletteFields(kind, isGuild);
 
-    if (!forceRefresh && prefs[paletteField] && prefs[sourceField] === imageInfo.source) {
+    // Nameplate keys on (asset, palette name); everything else on the bare asset hash. See the note on
+    // `paletteCacheKey` in getSourceImageInfo for why these are deliberately different keys.
+    const cacheIdentity = imageInfo.paletteCacheKey || imageInfo.source;
+
+    if (!forceRefresh && prefs[paletteField] && prefs[sourceField] === cacheIdentity) {
         return prefs[paletteField];
     }
 
     // Prefer a small extraction-only copy when the source provides one (banner does -- see
     // getSourceImageInfo) so we decode fewer pixels; fall back to the display url otherwise.
     let imageSource = imageInfo.extractUrl || imageInfo.url;
-    if (imageInfo.needsStillFrame) {
+    // A MONTAGE of evenly-spaced frames, not one frame (2026-08-09 18:15 EDT). Measured on a real
+    // 60-frame decoration: the single frame we used to take yielded four greys (max saturation 0.26)
+    // and missed the animation's gold sparkle entirely; the montage recovers it as #AD904C at hue 42°.
+    // Harkirat spotted the missing colour in the live panel first -- "the frame it sampled simply
+    // lacked that color and thus it missed out."
+    //
+    // EXTENDED TO ANIMATED AVATARS AND BANNERS (2026-08-11 01:55 EDT). Until now `needsStillFrame` was
+    // set ONLY on decoration, so every animated avatar and banner still extracted from a single static
+    // CDN frame -- the exact defect the montage exists to fix, left live on two of the four sources.
+    // Measured on a real 85-frame banner whose pale sky blooms into crimson flowers after frame ~34:
+    // the single frame loses 83% of peak chroma and never sees the red at all. Harkirat predicted this
+    // from the source GIF before it was measured.
+    // `montageUrl` is null for static sources, so the common case still takes the cheap direct path.
+    // NAMEPLATE is the one source whose extraction image has to be BUILT rather than fetched, because
+    // no URL Discord serves actually contains what the user sees. `static.png` and `asset.webm` carry
+    // ONLY the upper art layer (measured: 0.0% opaque) -- the bed is a CSS gradient the client draws
+    // from the design's palette metadata -- so extraction was reading translucent art with nothing
+    // behind it. See renderNameplateExtractionMontage for the measurement and for why the art and its
+    // bed are a LINKED design rather than an independent pairing.
+    // Degrades deliberately: an unknown/`none` palette yields no bed hex, and we fall through to the
+    // old static.png path rather than inventing a colour (same rule nameplatePaletteHex itself follows).
+    // A nameplate's four swatches are ONE "Nameplate Background" plus THREE from the upper art layer
+    // (Harkirat 2026-08-11 07:55 EDT). The bed is NOT extracted -- its hex is already known exactly from
+    // the design's palette metadata, so pulling it out of pixels could only approximate a value we have.
+    // What IS extracted is the art, pooled across the whole animation so a colour that only appears
+    // part-way through still counts.
+    // Designs with palette `none` have their background baked into the art, so they get no prepended
+    // bed and simply take all four from the pooled art.
+    let nameplateBedHex = null;
+    if (kind === 'nameplate' && imageInfo.videoUrl) {
+        const nameplateBedString = nameplatePaletteHex(imageInfo.palette, 'dark');
+        nameplateBedHex = nameplateBedString ? parseInt(nameplateBedString.slice(1), 16) : null;
         try {
-            // A MONTAGE of evenly-spaced frames, not one frame (2026-08-09 18:15 EDT). Measured on a
-            // real 60-frame decoration: the single frame we used to take yielded four greys (max
-            // saturation 0.26) and missed the animation's gold sparkle entirely; the montage
-            // recovers it as #AD904C at hue 42°. Harkirat spotted the missing colour in the live
-            // panel first -- "the frame it sampled simply lacked that color and thus it missed out."
-            imageSource = await extractFrameMontage(imageInfo.url);
+            const res = await fetch(imageInfo.videoUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.videoUrl}`);
+            imageSource = await renderNameplateArtMontage(Buffer.from(await res.arrayBuffer()));
+        } catch (err) {
+            // Falls back to the static.png url already in `imageSource` -- one frame and no bed, but a
+            // stale-or-null return would blank the panel outright.
+            console.error('Nameplate art montage failed, falling back to static frame:', err.message);
+            nameplateBedHex = null;
+        }
+    }
+    const montageSource = imageInfo.montageUrl || (imageInfo.needsStillFrame ? imageInfo.url : null);
+    if (montageSource) {
+        try {
+            imageSource = await extractFrameMontage(montageSource);
         } catch (err) {
             console.error(`Frame-montage extraction failed for ${kind}:`, err.message);
             return prefs[paletteField] || null;
         }
     }
 
+    const wanted = PALETTE_COUNTS[kind];
     let palette;
     try {
-        palette = await getColorPalette(imageSource, PALETTE_COUNTS[kind]);
+        // With a bed to prepend we only need three art colours, but we ASK for extra: an art colour
+        // that renders as a near-duplicate of the bed gets dropped below, and without headroom that
+        // would hand back a short palette. Same reason the extractor itself over-clusters before
+        // merging.
+        palette = await getColorPalette(imageSource, nameplateBedHex != null ? wanted + 2 : wanted);
+        if (nameplateBedHex != null) {
+            const art = palette
+                .filter(c => perceptualDistanceHex(c.hex, nameplateBedHex) >= MERGE_DELTA_E)
+                .slice(0, wanted - 1);
+            // `percent: 0` is not a measurement and nothing reads it: the bed's share is a design fact,
+            // not a pixel statistic, and assignDynamicLabels claims index 0 outright before any
+            // percent-based rule runs, so the value never reaches a decision.
+            palette = [{ hex: nameplateBedHex, percent: 0 }, ...art];
+        }
     } catch (err) {
         console.error(`Palette extraction failed for ${kind}:`, err.message);
         return prefs[paletteField] || null;
     }
 
     prefs[paletteField] = palette;
-    prefs[sourceField] = imageInfo.source;
+    prefs[sourceField] = cacheIdentity;
     await prefs.save();
     return palette;
 }
@@ -230,6 +310,10 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     if (sources.nameplate) {
         const bedHexString = nameplatePaletteHex(sources.nameplate.palette, 'dark');
         results.nameplateBedHex = bedHexString ? parseInt(bedHexString.slice(1), 16) : null;
+        // Discord's own word for that bed ("Violet", "Cobalt"), so the panel can show the
+        // authoritative name instead of a nearest-match guess from the colour-naming library. Null for
+        // a `none`/unknown palette, which is the view's signal to fall back to the generic lookup.
+        results.nameplateBedName = nameplatePaletteLabel(sources.nameplate.palette);
     }
 
     // The avatar thumbnail the panel draws beside its heading. Global-view callers pass their own,

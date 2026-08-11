@@ -161,14 +161,93 @@ async function getDominantColor(imageUrl) {
 // means the whole pipeline is reproducible for the same source image. Verified directly: ran twice
 // against the same real avatar/banner URLs, byte-identical results both times.
 //
-// A post-clustering merge step folds any two final clusters that land within `MERGE_THRESHOLD` of
+// A post-clustering merge step folds any two final clusters that land within a distance threshold of
 // each other back into one (population-weighted average) -- k-means can still occasionally split a
 // large, subtly-varied region (a background with soft lighting gradient) into two very similar
 // clusters depending on where the deterministic seeds happened to land; confirmed this happening on
 // a real test run before adding the merge step, and confirmed it no longer happens after.
+// ============================================================================================
+// V3 REWRITE (2026-08-11 01:54 EDT) -- measured against a 22-image corpus of real avatars and
+// banners, not tuned on one picture. What was wrong, and why each constant below exists:
+//
+// 1. SEED STARVATION was the root cause of "asked for 8, got 6". Seeds were picked by sorting pixels
+//    by hue and taking every n/k-th BY INDEX, which allocates them in proportion to pixel POPULATION
+//    rather than colour coverage. Worse, rgbToHsl returns hue 0 for every neutral (max === min), so
+//    an image with a large dark region collapses all of it onto one hue position. Measured on a real
+//    avatar: 10 of the 12 seeds landed in two regions and only 10 were even distinct, leaving skin,
+//    highlights and a yellow feature with no seed at all. Replaced with deterministic FARTHEST-FIRST
+//    seeding (Gonzalez traversal): start at the pixel nearest the mean, then repeatedly take the
+//    pixel farthest from everything chosen so far. No randomness, so determinism is preserved.
+//
+// 2. RGB DISTANCE cannot tell a greyscale RAMP from genuine variety -- black to white is ~440 apart
+//    in RGB while being, perceptually, "black, white and antialiasing". So clustering happens in
+//    OKLab with LIGHTNESS DOWN-WEIGHTED (LIGHTNESS_WEIGHT): a pure-lightness spread stops attracting
+//    seeds it doesn't deserve, without needing an explicit "is this a ramp?" detector.
+//
+// 3. MERGING now happens in TRUE (unweighted) OKLab, deliberately decoupled from the seeding metric,
+//    so "two swatches must differ by at least this much to both be shown" is ONE honest perceptual
+//    promise rather than a side effect of a tuning knob. Measured: the old RGB-30 rule left 8
+//    perceptual duplicate pairs across the corpus; this leaves 0.
+//
+// 4. THE ACCENT POOL is the actual fix for the thing Harkirat cared about most. A region covering ~1%
+//    of an image can NEVER win a slot against a 50% background under prevalence ranking -- which is
+//    why a black cat's red eyes, a holographic avatar's orange and pink, and a cartoon's yellow
+//    eyelids were all missing. Verified by rendering classifier masks: the top few percent of pixels
+//    by chroma land exactly on those features. So they get their own clustering pass, free of
+//    competition from the background.
+//    ⚠️ It self-disables on greyscale: CHROMA_FLOOR is absolute, so a pure-grey image contributes no
+//    tail at all and no colour can be invented where there is none (verified: output chroma 0.0000).
+//    This is also the same instinct getDominantColor above already encodes -- it excludes neutrals and
+//    averages only the most vivid pixels of the winning hue. The palette extractor was the
+//    inconsistent one.
+//
+// 5. LOW-COLOUR SOFT RESTRICT (Harkirat's request): a genuinely near-colourless image drops to 4
+//    entries instead of the full count. Judged on the EXTRACTED colours, not on raw pixel statistics
+//    -- that distinction is load-bearing. By aggregate chroma a black cat scores as "low colour" and
+//    would lose its red eyes; judged on its extracted palette it escapes the restriction because it
+//    genuinely has an accent. Measured: fires on 4 of 22 corpus images (two pure-greyscale banners, a
+//    pale wash, a dark near-monochrome avatar) and correctly leaves the cat alone.
 const KMEANS_COUNT = 8;
 const KMEANS_ITERATIONS = 12;
-const MERGE_THRESHOLD = 30; // Euclidean RGB distance
+const LIGHTNESS_WEIGHT = 0.5;    // <1 compresses pure-lightness spread during seeding/clustering
+const MERGE_DELTA_E = 0.07;      // OKLab distance below which two entries are the "same" colour
+const CHROMA_FLOOR = 0.04;       // absolute: below this a pixel is not colourful in any useful sense
+const ACCENT_TAIL_FRACTION = 0.03;
+const ACCENT_MIN_PIXELS = 20;    // too few and the "tail" is noise, not a feature
+const ACCENT_CLUSTERS = 3;
+const SALIENCE_WEIGHT = 0.6;     // how much chroma counts against prevalence when ordering entries
+const LOW_COLOUR_COUNT = 4;
+
+// --- OKLab (Björn Ottosson). Perceptually uniform, so a distance here means what the eye means.
+function srgbToLinear(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function linearToSrgb(c) {
+    const v = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    return Math.max(0, Math.min(255, Math.round(v * 255)));
+}
+function rgbToOklab(r, g, b) {
+    const R = srgbToLinear(r), G = srgbToLinear(g), B = srgbToLinear(b);
+    const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B);
+    const m = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B);
+    const s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
+    return {
+        L: 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+        a: 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+        b: 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
+    };
+}
+function oklabToRgb(L, a, bb) {
+    const l = (L + 0.3963377774 * a + 0.2158037573 * bb) ** 3;
+    const m = (L - 0.1055613458 * a - 0.0638541728 * bb) ** 3;
+    const s = (L - 0.0894841775 * a - 1.2914855480 * bb) ** 3;
+    return {
+        r: linearToSrgb(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+        g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+        b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)
+    };
+}
+const chromaOf = lab => Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+const deltaE = (p, q) => Math.sqrt((p.L - q.L) ** 2 + (p.a - q.a) ** 2 + (p.b - q.b) ** 2);
+const dist3 = (p, q) => Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2);
 
 // EVENT-LOOP FIX (2026-07-14, found live): this loop used to run fully synchronously start-to-
 // finish -- fine in isolation, but on Render's free-tier shared CPU it was slow enough to block
@@ -182,85 +261,96 @@ const MERGE_THRESHOLD = 30; // Euclidean RGB distance
 // loop in one unbroken burst.
 const yieldToEventLoop = () => new Promise(resolve => setImmediate(resolve));
 
-async function kMeansCluster(pixels, k, iterations) {
-    if (pixels.length === 0) return [];
-    if (pixels.length <= k) {
-        return pixels.map(p => ({ hex: (p.r << 16) | (p.g << 8) | p.b, percent: Math.round(100 / pixels.length) }));
+// Deterministic FARTHEST-FIRST seeding (Gonzalez traversal) -- the fixed-order analogue of k-means++.
+// Start from the pixel nearest the population mean, then repeatedly take the pixel farthest from
+// everything picked so far. Every step is a pure function of the input, so the same image always
+// produces the same seeds -- which is what "Refresh Colors" change-detection depends on (see the
+// determinism note above). This replaces sort-by-hue-and-take-every-nth, which allocated seeds by
+// population and starved small distinct regions; see the V3 block above for the measurement.
+function seedFarthestFirst(vectors, k) {
+    if (vectors.length <= k) return vectors.map(v => ({ ...v }));
+    let mx = 0, my = 0, mz = 0;
+    for (const v of vectors) { mx += v.x; my += v.y; mz += v.z; }
+    const mean = { x: mx / vectors.length, y: my / vectors.length, z: mz / vectors.length };
+    let first = vectors[0], bestD = Infinity;
+    for (const v of vectors) { const d = dist3(v, mean); if (d < bestD) { bestD = d; first = v; } }
+    const seeds = [{ ...first }];
+    // `nearest[i]` = distance from pixel i to its closest seed so far, updated incrementally so the
+    // whole traversal stays O(n*k) rather than O(n*k²).
+    const nearest = vectors.map(v => dist3(v, first));
+    for (let s = 1; s < k; s++) {
+        let idx = 0, far = -1;
+        for (let i = 0; i < vectors.length; i++) if (nearest[i] > far) { far = nearest[i]; idx = i; }
+        seeds.push({ ...vectors[idx] });
+        for (let i = 0; i < vectors.length; i++) {
+            const d = dist3(vectors[i], vectors[idx]);
+            if (d < nearest[i]) nearest[i] = d;
+        }
     }
+    return seeds;
+}
 
-    const byHue = [...pixels].sort((a, b) => rgbToHsl(a.r, a.g, a.b).h - rgbToHsl(b.r, b.g, b.b).h);
-    const centroids = [];
-    for (let i = 0; i < k; i++) {
-        centroids.push({ ...byHue[Math.floor(i * byHue.length / k)] });
-    }
-
-    let assignments = new Array(pixels.length).fill(0);
-    for (let iter = 0; iter < iterations; iter++) {
-        // EARLY-CONVERGENCE (2026-07-14, CPU fix): track whether ANY pixel changed cluster this pass.
-        // k-means on image color data typically stabilizes in ~4-6 passes, well before the fixed 12
-        // cap -- once no assignment changes, the centroid recompute below produces identical centroids
-        // and every remaining iteration is a pure no-op, so we can stop. The returned clusters are
-        // computed from `assignments` after the loop (not from centroids), so breaking here yields a
-        // BYTE-IDENTICAL result to running the full 12 -- determinism (and therefore the Refresh
-        // Colors change-detection that depends on it) is fully preserved; this only removes wasted
-        // repeat passes. Verified directly: capped-12 vs early-break produce identical output on real
-        // avatar/banner pixels.
+// k-means over arbitrary 3-vectors, with the cluster means averaged back in TRUE OKLab (`labs`) even
+// when the clustering itself ran in the weighted space. That split matters: the weighting is a tool
+// for deciding WHICH pixels group together, and must never distort the colour actually reported.
+// `denom` is the full sampled-pixel count, so an accent pool's shares stay comparable to the
+// structure pool's rather than each summing to 100% of its own subset.
+async function clusterLabs(labs, vectors, k, denom) {
+    if (labs.length === 0) return [];
+    const centroids = seedFarthestFirst(vectors, Math.min(k, vectors.length));
+    const assignments = new Array(vectors.length).fill(0);
+    for (let iter = 0; iter < KMEANS_ITERATIONS; iter++) {
+        // EARLY-CONVERGENCE (2026-07-14, CPU fix): once no pixel changes cluster the centroid
+        // recompute is a no-op and every remaining pass is wasted work. Output is identical.
         let changed = false;
-        for (let i = 0; i < pixels.length; i++) {
+        for (let i = 0; i < vectors.length; i++) {
             let minDist = Infinity, minIdx = 0;
             for (let c = 0; c < centroids.length; c++) {
-                const cen = centroids[c];
-                const d = (pixels[i].r - cen.r) ** 2 + (pixels[i].g - cen.g) ** 2 + (pixels[i].b - cen.b) ** 2;
+                const d = dist3(vectors[i], centroids[c]);
                 if (d < minDist) { minDist = d; minIdx = c; }
             }
             if (assignments[i] !== minIdx) { assignments[i] = minIdx; changed = true; }
         }
         if (!changed) break;
-        const sums = Array.from({ length: k }, () => ({ r: 0, g: 0, b: 0, count: 0 }));
-        for (let i = 0; i < pixels.length; i++) {
+        const sums = Array.from({ length: centroids.length }, () => ({ x: 0, y: 0, z: 0, n: 0 }));
+        for (let i = 0; i < vectors.length; i++) {
             const s = sums[assignments[i]];
-            s.r += pixels[i].r; s.g += pixels[i].g; s.b += pixels[i].b; s.count++;
+            s.x += vectors[i].x; s.y += vectors[i].y; s.z += vectors[i].z; s.n++;
         }
-        for (let c = 0; c < k; c++) {
-            if (sums[c].count > 0) centroids[c] = { r: sums[c].r / sums[c].count, g: sums[c].g / sums[c].count, b: sums[c].b / sums[c].count };
+        for (let c = 0; c < centroids.length; c++) {
+            if (sums[c].n > 0) centroids[c] = { x: sums[c].x / sums[c].n, y: sums[c].y / sums[c].n, z: sums[c].z / sums[c].n };
         }
+        // EVENT-LOOP FIX (2026-07-14) -- see the note on yieldToEventLoop above. Do NOT remove: this
+        // is what stops a colour extraction monopolising the loop and killing an unrelated
+        // interaction's 3-second ACK window with a 10062.
         await yieldToEventLoop();
     }
-
-    const sums = Array.from({ length: k }, () => ({ r: 0, g: 0, b: 0, count: 0 }));
-    for (let i = 0; i < pixels.length; i++) {
+    const sums = Array.from({ length: centroids.length }, () => ({ L: 0, a: 0, b: 0, n: 0 }));
+    for (let i = 0; i < labs.length; i++) {
         const s = sums[assignments[i]];
-        s.r += pixels[i].r; s.g += pixels[i].g; s.b += pixels[i].b; s.count++;
+        s.L += labs[i].L; s.a += labs[i].a; s.b += labs[i].b; s.n++;
     }
-    return sums
-        .filter(s => s.count > 0)
-        .map(s => ({
-            hex: (Math.round(s.r / s.count) << 16) | (Math.round(s.g / s.count) << 8) | Math.round(s.b / s.count),
-            percent: Math.round((s.count / pixels.length) * 100)
-        }))
-        .sort((a, b) => b.percent - a.percent);
+    return sums.filter(s => s.n > 0).map(s => ({ L: s.L / s.n, a: s.a / s.n, b: s.b / s.n, share: s.n / denom }));
 }
 
-function mergeCloseClusters(clusters, threshold) {
+// Fold entries closer than `dE` in TRUE OKLab into one, weighted by share. Runs AFTER the two pools
+// are unioned, deliberately -- a structure cluster and an accent cluster can land on the same colour,
+// and deduping per-pool would let that pair straight through.
+function mergePerceptual(clusters, dE) {
     const merged = [];
-    for (const c of clusters) {
-        const r = (c.hex >> 16) & 0xff, g = (c.hex >> 8) & 0xff, b = c.hex & 0xff;
-        const target = merged.find(m => {
-            const mr = (m.hex >> 16) & 0xff, mg = (m.hex >> 8) & 0xff, mb = m.hex & 0xff;
-            return Math.sqrt((r - mr) ** 2 + (g - mg) ** 2 + (b - mb) ** 2) < threshold;
-        });
+    for (const c of [...clusters].sort((x, y) => y.share - x.share)) {
+        const target = merged.find(m => deltaE(c, m) < dE);
         if (target) {
-            const totalPct = target.percent + c.percent;
-            const mr = (target.hex >> 16) & 0xff, mg = (target.hex >> 8) & 0xff, mb = target.hex & 0xff;
-            target.hex = (Math.round((mr * target.percent + r * c.percent) / totalPct) << 16)
-                | (Math.round((mg * target.percent + g * c.percent) / totalPct) << 8)
-                | Math.round((mb * target.percent + b * c.percent) / totalPct);
-            target.percent = totalPct;
+            const total = target.share + c.share;
+            target.L = (target.L * target.share + c.L * c.share) / total;
+            target.a = (target.a * target.share + c.a * c.share) / total;
+            target.b = (target.b * target.share + c.b * c.share) / total;
+            target.share = total;
         } else {
             merged.push({ ...c });
         }
     }
-    return merged.sort((a, b) => b.percent - a.percent);
+    return merged;
 }
 
 // Returns an array of `{ hex, percent }` sorted by prevalence (most-common first), sliced to at MOST
@@ -285,16 +375,69 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
     const pixelStep = Math.max(1, Math.floor(totalPixels / 2500));
     const byteStep = pixelStep * 4;
 
-    const pixels = [];
+    const labs = [];
     for (let i = 0; i < data.length; i += byteStep) {
         // Same alpha-blindness bug fixed in getDominantColor above -- see that fix's comment.
         if (data[i + 3] === 0) continue;
-        pixels.push({ r: data[i], g: data[i + 1], b: data[i + 2] });
+        labs.push(rgbToOklab(data[i], data[i + 1], data[i + 2]));
     }
+    if (labs.length === 0) return [];
 
-    const overCluster = Math.ceil(count * 1.5);
-    const clustered = mergeCloseClusters(await kMeansCluster(pixels, overCluster, KMEANS_ITERATIONS), MERGE_THRESHOLD);
-    return clustered.slice(0, count);
+    // --- Pool A: structure. Lightness down-weighted so a greyscale ramp cannot monopolise the seeds.
+    // Still over-clustered at 1.5x, for the original 2026-07-14 reason: the merge below needs slack to
+    // fold genuine duplicates without eating into the requested count.
+    const structureVectors = labs.map(o => ({ x: o.L * LIGHTNESS_WEIGHT, y: o.a, z: o.b }));
+    const structure = await clusterLabs(labs, structureVectors, Math.ceil(count * 1.5), labs.length);
+
+    // --- Pool B: accent. Only the most chromatic pixels, clustered in TRUE OKLab, so a feature
+    // covering ~1% of the image gets its own centroid instead of losing every slot to the background.
+    // `tailCut` takes the STRICTER of the relative tail and the absolute floor, which is what makes
+    // this self-disabling: a greyscale image has nothing above CHROMA_FLOOR, so `accent` stays empty.
+    const chromas = labs.map(chromaOf);
+    const ranked = [...chromas].sort((a, b) => b - a);
+    const tailCut = Math.max(CHROMA_FLOOR, ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * ACCENT_TAIL_FRACTION))]);
+    const accentLabs = labs.filter((_, i) => chromas[i] >= tailCut);
+    const accent = accentLabs.length >= ACCENT_MIN_PIXELS
+        ? await clusterLabs(accentLabs, accentLabs.map(o => ({ x: o.L, y: o.a, z: o.b })), ACCENT_CLUSTERS, labs.length)
+        : [];
+
+    const merged = mergePerceptual([...structure, ...accent], MERGE_DELTA_E);
+    merged.sort((a, b) => b.share - a.share);
+
+    // Index 0 stays the most prevalent colour -- utils/colorPaletteView.js's assignDynamicLabels
+    // claims index 0 as "Majority Color" unconditionally, so that position is a contract, not a
+    // preference. Everything after it is re-ordered by prevalence blended with chroma, which is what
+    // lifts a small vivid accent onto the FIRST page of the 4+4 pagination rather than the second.
+    const head = merged.slice(0, 1);
+    const rest = merged.slice(1);
+    const maxShare = Math.max(...rest.map(r => r.share), Number.EPSILON);
+    const maxChroma = Math.max(...rest.map(chromaOf), Number.EPSILON);
+    const salience = e => e.share / maxShare + SALIENCE_WEIGHT * (chromaOf(e) / maxChroma);
+    rest.sort((a, b) => salience(b) - salience(a));
+
+    const ordered = [...head, ...rest];
+    // Soft restrict, judged on the EXTRACTED colours rather than raw pixel statistics -- see point 5
+    // in the V3 block above for why that distinction decides whether a dark image with one real accent
+    // keeps its full allowance. Math.min keeps nameplate/decoration (which already ask for 4) at 4
+    // rather than letting this ever RAISE a count.
+    const isLowColour = !ordered.some(e => chromaOf(e) >= CHROMA_FLOOR);
+    const limit = isLowColour ? Math.min(LOW_COLOUR_COUNT, count) : count;
+
+    return ordered.slice(0, limit).map(e => {
+        const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
+        return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100) };
+    });
 }
 
-module.exports = { getDominantColor, getColorPalette };
+// Perceptual distance between two packed RGB hexes. Exported so a caller that composes a palette BY
+// HAND can use the same notion of "these are the same colour" the merge step above uses, instead of
+// inventing a second threshold in RGB. utils/colorPalette.js's nameplate branch needs exactly this:
+// it prepends the bed colour as a known value and must drop any extracted art colour that would
+// render as a near-duplicate of it. Compare against MERGE_DELTA_E for consistency.
+function perceptualDistanceHex(a, b) {
+    const A = rgbToOklab((a >> 16) & 0xff, (a >> 8) & 0xff, a & 0xff);
+    const B = rgbToOklab((b >> 16) & 0xff, (b >> 8) & 0xff, b & 0xff);
+    return deltaE(A, B);
+}
+
+module.exports = { getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E };
