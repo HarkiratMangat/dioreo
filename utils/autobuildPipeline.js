@@ -13,6 +13,7 @@ const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normaliz
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata } = require('./loadoutImageCache');
+const { mentionCommand } = require('./commandMentions');
 
 // token -> { weaponName, gunsmithCode, attachments[5], category, badgesRaw, mode:'MP', sourceImageUrl, adminId }
 // Same short-lived-token pattern as index.js's pendingManageEdits (10 min TTL, set at insertion time
@@ -296,7 +297,7 @@ function buildPostCreationCard(doc, imageWarning) {
 async function confirmAndWrite(interaction, token) {
     const data = pendingAutobuilds.get(token);
     if (!data) {
-        return interaction.followUp({ content: '❌ This review has expired (10 minute window) or was already handled. Run `/autobuild` again.', ephemeral: true });
+        return interaction.followUp({ content: `❌ This review has expired (10 minute window) or was already handled. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
     }
     if (!data.category) {
         return interaction.followUp({ content: '❌ Category is still unresolved -- click **Edit** and set one before confirming.', ephemeral: true });
@@ -356,7 +357,7 @@ async function confirmAndWrite(interaction, token) {
 async function retryImageUpload(interaction, token, newImageUrl) {
     const data = pendingImageRetries.get(token);
     if (!data) {
-        return interaction.followUp({ content: '❌ That retry token has expired or was already used. Run `/autobuild` again from scratch.', ephemeral: true });
+        return interaction.followUp({ content: `❌ That retry token has expired or was already used. Run ${mentionCommand(interaction.client, '/autobuild')} again from scratch.`, ephemeral: true });
     }
     // NOTE: deletion moved to AFTER each write below actually succeeds (was deleted here, before
     // either write attempt) -- same class of bug as confirmAndWrite's success path. If writeLoadoutDoc
@@ -385,7 +386,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         const placeholderKey = `PENDING-UPLOAD-${token}`;
         const doc = await writeLoadoutDoc(data, placeholderKey);
         pendingImageRetries.delete(token);
-        const card = buildPostCreationCard(doc, 'No image could be uploaded (tried twice). Fix it via `/manage` -> Edit Loadout -> set a real Cloudinary Image Key.');
+        const card = buildPostCreationCard(doc, `No image could be uploaded (tried twice). Fix it via ${mentionCommand(interaction.client, '/manage')} -> Edit Loadout -> set a real Cloudinary Image Key.`);
         return await replaceWithV2Card(interaction, card);
     } finally {
         // Always released -- same reasoning as confirmInProgress's finally above.
@@ -427,7 +428,7 @@ function buildEditModal(token, data) {
 async function applyEditSubmission(interaction, token) {
     const data = pendingAutobuilds.get(token);
     if (!data) {
-        return interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
+        return interaction.reply({ content: `❌ This review has expired. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
     }
     await interaction.deferUpdate();
 

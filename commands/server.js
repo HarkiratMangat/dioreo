@@ -16,6 +16,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 // dev bot -- four sites shipped exactly that bug on 2026-07-26. See .claude/rules/rendering-and-ui.md.
 const emojis = require('../utils/emojiMap');
 const { getGuildSettings, isServerAdmin, updateGuildSettings } = require('../utils/guildPolicy');
+const { mentionCommand } = require('../utils/commandMentions');
 
 // Discord blurple -- this panel configures a SERVER's own behaviour, so it deliberately does not
 // borrow any of the content commands' accents (see .claude/rules/rendering-and-ui.md's colour map).
@@ -71,7 +72,7 @@ function navRow(active) {
     };
 }
 
-function buildHome(settings) {
+function buildHome(settings, client) {
     const def = settings?.defaultVisibility || 'public';
     return [
         {
@@ -90,7 +91,7 @@ function buildHome(settings) {
                 // Stated in the panel because it is the single most surprising property of the
                 // model: a rule can only ever quiet the bot. "Public" is a permission, not a
                 // command -- a member who prefers hidden answers still gets hidden answers.
-                { type: 10, content: '-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone\'s own `/settings`.' },
+                { type: 10, content: `-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}.` },
                 {
                     type: 1,
                     components: [{
@@ -360,7 +361,7 @@ async function handleComponent(interaction) {
     const components = page === 'server_channels' ? buildChannels(settings)
         : page === 'server_roles' ? buildRoles(settings)
             : page === 'server_commands' ? buildCommands(settings, interaction.client.gateableCommandNames || [])
-                : buildHome(settings);
+                : buildHome(settings, interaction.client);
 
     return interaction.update({ components, flags: 32768 });
 }
@@ -416,12 +417,12 @@ module.exports = {
                 accent_color: ACCENT,
                 components: [
                     { type: 10, content: '## 🔒 Server admins only' },
-                    { type: 10, content: 'These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n\n-# Looking for your own settings? `/settings` is yours and works anywhere.' },
+                    { type: 10, content: `These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n\n-# Looking for your own settings? ${mentionCommand(interaction.client, '/settings')} is yours and works anywhere.` },
                 ],
             }]);
         }
 
         const settings = await getGuildSettings(interaction.guildId);
-        return sendV2Payload(interaction, buildHome(settings));
+        return sendV2Payload(interaction, buildHome(settings, interaction.client));
     },
 };

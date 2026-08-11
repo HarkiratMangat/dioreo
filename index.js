@@ -348,8 +348,17 @@ async function handleBotReady() {
     const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
     try {
         const payload = commands.map(c => typeof c.toJSON === 'function' ? c.toJSON() : c);
-        await rest.put(Routes.applicationCommands(client.user.id), { body: payload });
+        const registered = await rest.put(Routes.applicationCommands(client.user.id), { body: payload });
         console.log(`🚀 Application routing links successfully integrated into Discord Gateway system!`);
+
+        // Real clickable slash-command mentions (</name:id>, see utils/commandMentions.js) need
+        // each command's live id -- `registered` IS that data, straight off this same PUT
+        // response, so no extra API call is needed. Keyed by top-level command name only; a
+        // subcommand mention still resolves off its PARENT's id. Refreshed every boot, same as
+        // gateableCommandNames above and refreshEmojiIds -- a value that only exists post-
+        // registration must never be frozen at require() time, and it differs between the dev and
+        // prod applications for the identical command name.
+        client.commandIds = new Map(registered.map(c => [c.name, c.id]));
     } catch (error) {
         console.error('--- DISCORD SYSTEM REGISTRATION FAULT LOG ---');
         if (error.rawError && error.rawError.errors) {
@@ -1290,7 +1299,7 @@ client.on('interactionCreate', async interaction => {
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
             }
-            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData));
+            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client));
         }
 
         // Bulk Format Guide's own topic-switcher dropdown (utils/manageGuides.js, added 2026-07-31

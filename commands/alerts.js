@@ -15,6 +15,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts } = require('../utils/alertStore');
 const { ALLOWED_ADMIN_ID } = require('./manage'); // single source of truth for the admin id
+const { mentionCommand } = require('../utils/commandMentions');
 
 const ACCENT = 0x546E7A; // slate blue-grey (5533306) — an "ops/monitoring" identity, distinct from every
                          // /manage page color and the nav palette (which lean blue/plum/green/gold/amber).
@@ -141,7 +142,7 @@ module.exports = {
 
     async execute(interaction) {
         if (interaction.user.id !== ALLOWED_ADMIN_ID) {
-            return interaction.reply({ content: "🔒 **This one's admin-only.** `/alerts` shows the bot's internal health log — try any of the bot's public commands instead!", ephemeral: true });
+            return interaction.reply({ content: `🔒 **This one's admin-only.** ${mentionCommand(interaction.client, '/alerts')} shows the bot's internal health log — try any of the bot's public commands instead!`, ephemeral: true });
         }
         // Default ephemeral (admin panel), same convention as /manage.
         const visibilityChoice = interaction.options.getString('visibility');

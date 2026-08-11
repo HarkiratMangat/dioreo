@@ -41,7 +41,6 @@ New utility `utils/commandMentions.js`, exporting `mentionCommand(client, '/draw
 - `commands/help.js`: the landing page's category/command directory, and each detail page's `` ### `/cmd` `` heading — converted to real mentions. `CATEGORY_DEFS` itself is untouched (still just plain name strings); the conversion happens inside `buildContainer` and the body-builder functions, which already run per-render with `interaction` in scope.
 - Cross-reference call sites — one command's UI text naming a sibling command, currently backtick text:
   - `commands/drawprices.js:485` and `commands/calendar.js:275` — "Tip: check out `/settings`"
-  - `commands/calendar.js:301` — option description referencing `/settings`
   - `commands/server.js:419` (and the `/settings` mention at `server.js:93`)
   - `commands/manage.js:366` — "Fastest path: `/autobuild`"
   - `utils/autobuildPipeline.js` (several lines) — "Run `/autobuild` again"
@@ -50,6 +49,9 @@ New utility `utils/commandMentions.js`, exporting `mentionCommand(client, '/draw
 **Explicitly out of scope (Harkirat's call, 2026-08-10 22:50 EDT):**
 - `/help`'s Examples lines (e.g. `**/all** weapon:\`AK117\``) — a mention can't pre-fill option values, and stacking a live mention next to hand-typed example values needs its own visual pass. Parked, not a hard no — may revisit later.
 - Anywhere else bot-wide beyond the cross-reference list above — none found in `commands/*.js` or `utils/*.js` outside `/help` and this list.
+
+**Discovered during implementation, not architectural — excluded on a real platform constraint:**
+- `commands/calendar.js:301` — the `/view` option's own `.setDescription(...)` text ("...defaults to your /settings choice") mentions `/settings`, but this is a slash-command OPTION description, not message content. Discord never renders markdown/mentions there — it's flat text shown in the command picker UI, sent via a totally different API field than a message. A `</settings:id>` token typed into a `.setDescription()` call would just show as inert literal text. Left as plain text; not converted. (The near-identical wording inside `/help`'s own `buildSeasonalBody` — which IS message content — was converted.)
 
 ## Verification
 

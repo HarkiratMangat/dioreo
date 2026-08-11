@@ -49,6 +49,7 @@ const Loadout = require('../models/Loadout');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { mentionCommand } = require('../utils/commandMentions');
 
 // Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
 // "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
@@ -183,29 +184,29 @@ async function getAllHelpCommandNames(perms = {}) {
 // Gunsmiths keeps ONE shared Options block (unlike every other category below) because /all, every
 // per-category command, and /dmz genuinely share the identical 3 options -- splitting it three ways
 // would just repeat the same lines three times, not clarify anything.
-function buildGunsmithsBody(liveNames) {
-    const categoryLine = liveNames.map(n => `\`/${n}\``).join(' · ');
-    return `### \`/all\`\nSearch across all available MP loadouts\n### ${categoryLine}\nSearch for MP loadouts in a specific category\n### \`/dmz\`\nSearch for DMZ specific loadouts\n\n`
+function buildGunsmithsBody(liveNames, client) {
+    const categoryLine = liveNames.map(n => mentionCommand(client, `/${n}`)).join(' · ');
+    return `### ${mentionCommand(client, '/all')}\nSearch across all available MP loadouts\n### ${categoryLine}\nSearch for MP loadouts in a specific category\n### ${mentionCommand(client, '/dmz')}\nSearch for DMZ specific loadouts\n\n`
         + `-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/all** weapon:\`AK117\`\n-# 🔸 **/smg** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\``;
 }
 
-function buildDrawsBody() {
-    return `### \`/draws\`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
-        + `### \`/draw prices\`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
+function buildDrawsBody(perms, client) {
+    return `### ${mentionCommand(client, '/draws')}\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/draw prices')}\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\``;
 }
 
-function buildSeasonalBody() {
-    return `### \`/calendar\`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your /settings choice)\n${VISIBILITY_BULLET}\n`
-        + `### \`/patch notes\`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 \`[season]\` Search for a specific previous season (start typing to see suggestions)\n${VISIBILITY_BULLET}\n`
-        + `### \`/season end\`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
+function buildSeasonalBody(perms, client) {
+    return `### ${mentionCommand(client, '/calendar')}\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your ${mentionCommand(client, '/settings')} choice)\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/patch notes')}\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 \`[season]\` Search for a specific previous season (start typing to see suggestions)\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/season end')}\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
-function buildUtilitiesBody() {
-    return `### \`/colors\`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n${VISIBILITY_BULLET}\n`
-        + `### \`/timestamp\`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"\n-# 🔹 \`[timezone]\` Defaults to your saved /settings timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
+function buildUtilitiesBody(perms, client) {
+    return `### ${mentionCommand(client, '/colors')}\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/timestamp')}\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"\n-# 🔹 \`[timezone]\` Defaults to your saved ${mentionCommand(client, '/settings')} timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/colors** visibility:\`Public\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
@@ -220,8 +221,8 @@ function buildUtilitiesBody() {
 // call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually
 // under each of them makes no sense"), and the same pass cut the /server section roughly in half for
 // being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
-function buildPreferencesBody(perms = {}) {
-    const settings = `### \`/settings\`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, calendar filter, accent style, and more)`;
+function buildPreferencesBody(perms = {}, client) {
+    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, calendar filter, accent style, and more)`;
 
     if (!perms.serverAdmin) {
         return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
@@ -229,7 +230,7 @@ function buildPreferencesBody(perms = {}) {
 
     return settings
         + SECTION_BREAK
-        + `### \`/server\` *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
+        + `### ${mentionCommand(client, '/server')} *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
         + `-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n`
         + `-# **Rule order** · the most specific one wins\n`
         + `-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n`
@@ -254,16 +255,16 @@ function buildPreferencesBody(perms = {}) {
 // the server they are run in, which is exactly why no per-guild permission could ever grant them.
 // That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the
 // section, it is not something you do.
-function buildBotAdminBody() {
-    return `### \`/alerts\`\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
+function buildBotAdminBody(perms, client) {
+    return `### ${mentionCommand(client, '/alerts')}\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
         + `-# 🔹 No options of its own\n`
-        + `### \`/autobuild\`\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        + `### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
         + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
         + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
         + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
         + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
         + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure\n`
-        + `### \`/manage\`\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, and the next-season draft\n`
+        + `### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, and the next-season draft\n`
         + `-# 🔹 \`[data_for]\` Open a section directly: \`Draws\` · \`Calendar\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Patch Notes\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Bulk Format Guide\``
         + SECTION_BREAK
         + `-# **Options** · all three\n${VISIBILITY_BULLET}\n\n`
@@ -305,7 +306,7 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
     return { type: 1, components: [{ type: 3, custom_id: 'help_category', placeholder: 'Choose a category to explore…', options }] };
 }
 
-async function buildContainer(selectedKey, accentColor, perms = {}) {
+async function buildContainer(selectedKey, accentColor, perms = {}, client) {
     const components = [];
 
     // Someone who reaches a restricted category (a stale dropdown on an older panel, or
@@ -317,7 +318,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}) {
 
     if (!selectedKey) {
         const liveNames = await getLiveGunsmithCommandNames();
-        const gunsmithsLine = ['all', ...liveNames, 'dmz'].map(n => `\`/${n}\``).join(' · ');
+        const gunsmithsLine = ['all', ...liveNames, 'dmz'].map(n => mentionCommand(client, `/${n}`)).join(' · ');
 
         components.push({
             type: 9,
@@ -355,7 +356,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}) {
                     // as an admin command while sitting inside Preferences.
                     const commands = c.key === 'gunsmiths'
                         ? gunsmithsLine
-                        : visibleCommands(c, perms).map(x => `\`${x.name}\`${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
+                        : visibleCommands(c, perms).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
                     return `### ${emojis[categoryEmojiKey(c, perms)]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
                 })
                 .join('')
@@ -373,8 +374,8 @@ async function buildContainer(selectedKey, accentColor, perms = {}) {
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
         const body = selectedKey === 'gunsmiths'
-            ? buildGunsmithsBody(await getLiveGunsmithCommandNames())
-            : BODY_BUILDERS[selectedKey](perms);
+            ? buildGunsmithsBody(await getLiveGunsmithCommandNames(), client)
+            : BODY_BUILDERS[selectedKey](perms, client);
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
         components.push({ type: 14, spacing: 2, divider: true });
@@ -438,7 +439,7 @@ module.exports = {
 
         // No "Show Everyone" button -- the visibility option above already covers that case up
         // front, and repeating it here would be redundant (Harkirat's direct request).
-        const components = [await buildContainer(selectedKey, accentColor, perms)];
+        const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client)];
         return await sendV2Payload(interaction, components);
     }
 };
