@@ -105,4 +105,14 @@ function deriveNameplateName(label) {
         .join(' ');
 }
 
-module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName };
+// Discord's OWN word for a bed colour, formatted for display: `bubble_gum` -> "Bubble Gum".
+// Returns null for `none`/unknown, which is the signal to fall back to the generic colour-naming
+// library instead -- a design with no palette has no Discord-supplied name to prefer (Harkirat
+// 2026-08-11 08:07 EDT). Deliberately derived from the KEYS of the table above rather than a second
+// hand-maintained list, so a palette can never exist here without a name or vice versa.
+function nameplatePaletteLabel(paletteName) {
+    if (!paletteName || !NAMEPLATE_PALETTES[paletteName]) return null;
+    return paletteName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+module.exports = { NAMEPLATE_PALETTES, NAMEPLATE_GRADIENT_STOPS, nameplatePaletteHex, deriveNameplateName, nameplatePaletteLabel };

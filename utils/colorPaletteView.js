@@ -198,13 +198,18 @@ async function buildEntryRows(entries) {
     const rows = [];
     const files = [];
     let i = 0;
-    for (const { label, hex } of entries) {
+    // `name` overrides the color-namer lookup when we know a BETTER name than a nearest-match guess.
+    // The nameplate bed is the case that motivated it (Harkirat 2026-08-11 08:07 EDT): Discord itself
+    // calls that colour "Violet"/"Cobalt", so showing its own word beats color-namer's nearest ntc
+    // match ("Purple Heart", "Persian Blue") -- the palette name is the authoritative label, not an
+    // approximation of one. Everything else still falls through to getColorName.
+    for (const { label, hex, name } of entries) {
         if (hex == null) continue;
         const filename = `swatch_${i}.png`;
         files.push({ name: filename, data: await renderSwatchImage(hex) });
         rows.push({
             type: 9,
-            components: [{ type: 10, content: `**${getColorName(hex)}**\nHex: \`${formatHex(hex)}\`\n> ${label}` }],
+            components: [{ type: 10, content: `**${name || getColorName(hex)}**\nHex: \`${formatHex(hex)}\`\n> ${label}` }],
             accessory: { type: 11, media: { url: `attachment://${filename}` } }
         });
         i++;
@@ -215,10 +220,17 @@ async function buildEntryRows(entries) {
 // `palette` is whatever utils/colorExtract.js's getColorPalette() returned -- an array of
 // `{ hex, percent }` sorted by prevalence (see that file's own revision-history comment for the full
 // story of what this replaced). Labels come from assignDynamicLabels above, not the raw percent.
-function buildSwatchEntries(palette, kind) {
+function buildSwatchEntries(palette, kind, bedName) {
     const entries = palette || [];
     const labels = assignDynamicLabels(entries, kind);
-    return entries.map((e, i) => ({ label: labels[i], hex: e.hex }));
+    return entries.map((e, i) => ({
+        label: labels[i],
+        hex: e.hex,
+        // Entry 0 of a nameplate IS the bed, so when Discord named that palette we show its word
+        // rather than color-namer's nearest match. Everything else, including every nameplate whose
+        // palette is `none`, leaves `name` undefined and falls through to getColorName.
+        name: (kind === 'nameplate' && i === 0 && bedName) ? bedName : undefined
+    }));
 }
 
 // Display Name Colors are 2 EXACT user-picked colors, not an extracted palette -- there's nothing to
@@ -415,7 +427,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Vibrant Accent could end up on page 2, leaving page 1 with no Vibrant Accent label at all).
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
-        : buildSwatchEntries(data[effectiveSource], effectiveSource);
+        : buildSwatchEntries(data[effectiveSource], effectiveSource, data.nameplateBedName);
     // ⚠️ The bed used to be APPENDED here as a fifth entry (2026-08-09). It is now the FIRST entry of
     // the palette itself -- utils/colorPalette.js prepends it and assignDynamicLabels labels index 0
     // "Nameplate Background" for this source. Appending it as well produced the colour TWICE and, with

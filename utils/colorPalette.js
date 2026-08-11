@@ -6,7 +6,7 @@ const { getColorPalette, perceptualDistanceHex, MERGE_DELTA_E } = require('./col
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, hasAnyGuildOverride, isAnimatedHash } = require('./guildProfile');
-const { nameplatePaletteHex } = require('./nameplatePalettes');
+const { nameplatePaletteHex, nameplatePaletteLabel } = require('./nameplatePalettes');
 const { renderNameplateArtMontage } = require('./nameplateBedImage');
 const { resolveNameplateWebp } = require('./nameplateWebpCache');
 const { resolveDecorationWebp } = require('./decorationWebpCache');
@@ -310,6 +310,10 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     if (sources.nameplate) {
         const bedHexString = nameplatePaletteHex(sources.nameplate.palette, 'dark');
         results.nameplateBedHex = bedHexString ? parseInt(bedHexString.slice(1), 16) : null;
+        // Discord's own word for that bed ("Violet", "Cobalt"), so the panel can show the
+        // authoritative name instead of a nearest-match guess from the colour-naming library. Null for
+        // a `none`/unknown palette, which is the view's signal to fall back to the generic lookup.
+        results.nameplateBedName = nameplatePaletteLabel(sources.nameplate.palette);
     }
 
     // The avatar thumbnail the panel draws beside its heading. Global-view callers pass their own,
