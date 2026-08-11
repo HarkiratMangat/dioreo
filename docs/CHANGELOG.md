@@ -75,7 +75,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.4.0 — 2026-08-10 19:57 EDT (#109) — `/server`: server admins can finally quiet the bot, and the one thing they asked for turns out to be impossible
+## Pre-Release v3.4.1 — 2026-08-10 20:32 EDT (#110) — v2 ships and closes, the queue is re-planned, and the live bot finally catches up
+
+**v2 is officially shipped and closed.** Harkirat's call: every remaining feature moves into the v3 release, including the passive button-disable work he had committed to v2 barely two hours earlier the same evening. The reversal was about the *release*, not the feature — its `P1` and its commitment both stand. The three v2 batches in `docs/ROADMAP.md` are now a **legacy queue**, and the "ship to `main`/live normally" parallel-track rule they carry is history rather than instruction.
+
+**The live bot is running v2.63.1 for the first time, and the gap turned out to be smaller than the tracker claimed.** A `[P1]` item had recorded `main` as "WELL AHEAD OF THE DEPLOYED BOT" with the VM's real version **unverified**. Measured before deploying, exactly as that item instructed: the VM was on **v2.62.0**, *one* release behind — not the several the heading implied. It now runs `89f1766` / **v2.63.1**, restarts 0, errors 0 across every window. ⚠️ The confirmation came from an **independent re-query after the deploy**, not from the deploy's own panel — `deploy.sh` runs `vmstatus.sh` on the VM, where it prints `NOT LIVE` for the error counters. A deploy's self-report is not verification of the deploy.
+
+**The pre-launch hardening pass was deferred within ninety minutes of being chosen.** Harkirat picked it as the next unit of work at 19:48 EDT, then read the roadmap and reversed at 20:22: *"let's hold off on the prelaunch hardening until we're closer to launch. I want to do a proper verification audit towards the end."* The reasoning behind the original call was sound — five pre-releases had shipped and not one had been clicked in a real guild — but it assumed v3 was near feature-complete, and it is not. Hardening five features while a sixth and seventh are still coming means hardening them twice. **The checklist is kept and moved *inside* the end-of-v3 verification audit** rather than deleted; it cost nothing to write and will be picked up weeks later by a session with none of this context.
+
+**Next two sessions are scheduled and filed:** a **v2 staleness sweep** — every legacy item gets an evidenced verdict of done / fold-into-v3 / abandon / still-open, because an unreconciled queue answers "is this tracked?" wrongly with the same authority it would answer rightly — then **`/colors` colour variety**, which keeps its `🧩needs-design` flag and should open with a brainstorm rather than an edit.
+
+## Pre-Release v3.4.0 — 2026-08-10 19:57 EDT (#109 · `b85b6d2`) — `/server`: server admins can finally quiet the bot, and the one thing they asked for turns out to be impossible
 
 **The v3 guild install's launch blocker, closed.** Shipping a guild-installable bot with no server-side controls means any member can invoke it in any channel with no moderator recourse — Harkirat's framing was "we don't want the bot to run freely bypassing everyone's oversight." `/server` is the answer: a Components V2 panel for a server's own admins, distinct from `/manage`, which stays Harkirat's owner-level surface gated on `ALLOWED_ADMIN_ID`. Design + the rejected alternatives: `docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md`.
 
