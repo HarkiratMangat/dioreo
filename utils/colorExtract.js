@@ -526,6 +526,49 @@ function serializePalette(palette) {
         .join(',');
 }
 
+// 🏷️ WHICH ALGORITHM PRODUCED A STORED PALETTE (added 2026-08-11 15:34 EDT, Harkirat's request).
+// Written to Cloudinary `context` beside the palette itself, and checked on every read: a palette
+// tagged with anything other than the current value is treated as ABSENT, which routes it through the
+// caches' existing heal path and re-derives it once, in place. That is the whole invalidation
+// mechanism -- there is no purge script and none is wanted, because a deletion would take the render
+// and its `discord_cdn_url` with it.
+//
+// Why this exists: the per-design palette cache keys on the ASSET HASH, which never changes when the
+// algorithm does (the same trap `[[feedback_cache_invalidation_on_algorithm_change]]` records for the
+// per-user colour caches). Before this, v3.8.0-pre's montage fix -- which corrected a real rounding
+// error and moved a swatch by one unit of 255 -- would have left every previously-cached design on
+// the old value forever, with nothing in the record saying which value a given entry was.
+//
+// ⚠️ BUMP THIS ONLY WHEN THE EXTRACTED VALUES THEMSELVES CAN CHANGE -- a new clustering rule, a
+// different montage, a change to what pixels are sampled. Bumping it on an ordinary release re-runs
+// an ffmpeg pass and an extraction for every cached design, for identical output. Naming it after the
+// release that last changed the values is deliberate: it answers "which algorithm made this palette"
+// by pointing at a changelog entry rather than at an opaque counter.
+//
+// Ledger:
+//   v3.8.0-pre — montage tiles copied rather than composited (removed Jimp's blend rounding); montage
+//                passed to getColorPalette already decoded. First version marker; anything written
+//                before this carries none and is therefore stale by definition, which is correct --
+//                those entries predate the rounding fix.
+const PALETTE_ALGO_VERSION = 'v3.8.0-pre';
+
+// The two halves of the context round-trip, kept as one pair so the four call sites (each cache's
+// render path and its heal path, times two modules) cannot drift on the key name or the version.
+// Returns {} rather than a partial map when there is nothing worth storing, so a caller can spread it
+// into a context object unconditionally.
+function paletteContextFields(palette) {
+    const serialized = serializePalette(palette);
+    return serialized ? { palette: serialized, palette_version: PALETTE_ALGO_VERSION } : {};
+}
+
+// Reads a stored palette back, returning null unless it was produced by the CURRENT algorithm. Null is
+// exactly what an absent palette returns, and both caches already treat that as "heal this one" -- so
+// stale entries re-derive themselves on next view with no separate migration path to maintain.
+function readPaletteContext(custom) {
+    if (!custom || custom.palette_version !== PALETTE_ALGO_VERSION) return null;
+    return deserializePalette(custom.palette);
+}
+
 function deserializePalette(raw) {
     if (typeof raw !== 'string' || !raw) return null;
     const out = [];
@@ -554,5 +597,6 @@ function chromaOfHex(hex) {
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
     composeNameplatePalette, serializePalette, deserializePalette,
+    paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex
 };

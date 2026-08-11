@@ -41,7 +41,7 @@ const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = requ
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
 const {
-    getColorPalette, composeNameplatePalette, serializePalette, deserializePalette,
+    getColorPalette, composeNameplatePalette, paletteContextFields, readPaletteContext,
     PALETTE_COUNTS, NAMEPLATE_OVERASK
 } = require('./colorExtract');
 
@@ -123,7 +123,10 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
             // May be null on a resource rendered BEFORE palette caching shipped -- resolveNameplateWebp
             // heals those rather than leaving them permanently palette-less, since the WebP itself is
             // already cached and would never re-render on its own.
-            palette: deserializePalette(result.context?.custom?.palette)
+            // Null both when no palette was ever stored AND when the stored one predates the current
+            // extractor -- readPaletteContext checks the version marker. Both cases route through
+            // healPalette below, which re-derives in place; see colorExtract.js's PALETTE_ALGO_VERSION.
+            palette: readPaletteContext(result.context?.custom)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -252,10 +255,8 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // first permanently falls back to the slower fetch+reattach path with no way to self-heal.
         // ONE patch carrying both keys. Cloudinary's `context` replaces the whole map, so sending them
         // in two calls would have the second silently erase the first.
-        const serialized = serializePalette(palette);
-        const context = {};
+        const context = { ...paletteContextFields(palette) };
         if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
-        if (serialized) context.palette = serialized;
         if (Object.keys(context).length) {
             try {
                 await cloudinary.api.update(publicId, { resource_type: 'image', context });
@@ -309,11 +310,10 @@ async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex)
             inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS
         });
         const palette = await extractPaletteFromFrames(rawFrames, bedHex);
-        const serialized = serializePalette(palette);
-        if (!serialized) return cached;
+        const context = { ...paletteContextFields(palette) };
+        if (!context.palette) return cached;
         // Re-send discord_cdn_url alongside it -- `context` replaces the whole map, so patching the
         // palette alone would wipe the url this module works hard to persist.
-        const context = { palette: serialized };
         if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
         const resolved = { ...cached, palette };
