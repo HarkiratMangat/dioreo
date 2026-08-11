@@ -5,6 +5,7 @@
 // in utils/ rather than inline.
 const namer = require('color-namer');
 const { assignColorNames } = require('./colorNames');
+const { chromaOfHex } = require('./colorExtract');
 const { renderSwatchImage } = require('./colorSwatchImage');
 const { renderGradientBanner } = require('./colorGradientImage');
 const { renderResizedImage } = require('./resizedImage');
@@ -67,22 +68,39 @@ function hueDistance(h1, h2) {
 function isWarmHue(h) { return h < 60 || h >= 330; }
 function isCoolHue(h) { return h >= 180 && h < 300; }
 
-// Dynamic, RELATIVE labels for the k-means color entries (2026-07-14, Harkirat's follow-up after
-// disliking both the earlier synthetic Vibrant/Muted categories AND the "Covers ~X% of the image"
-// captions) -- "majority color", "vibrant accent", "dark undertones" etc, computed from how each
-// color relates to the OTHERS actually extracted from THIS source, not a fixed category a color is
-// forced into or a raw statistic. Greedy priority assignment: each rule claims the best-matching
-// UNCLAIMED entry in turn, so no two entries on the same page ever get the same label, and a label
-// only gets assigned when the entry genuinely earns it (thresholds below) rather than being forced.
+// REDESIGNED 2026-08-11 13:45 EDT. Harkirat rejected the previous set outright -- "improvement doesn't
+// mean slap on more words... the way it classifies, the way it phrases, the words it uses, the
+// intuitiveness, the uniqueness, the expansiveness, the relevance" -- and a first attempt that only
+// renamed them was rejected again. Three things were actually wrong, and only the third is wording:
 //
-// 14 real categories total (Majority + 13 more) -- deliberately more than the largest page (8
-// entries, avatar/banner) will ever need, specifically so every entry gets a genuine, distinct,
-// relationship-based label instead of falling back to something generic. Harkirat's explicit
-// feedback after the first version (5 categories, rest fell back to numbered "Accent Color N"):
-// "the whole point of my request was to keep them unique yet relevant" -- a numbered fallback is
-// neither.
+// 1. HALF THE LABELS RESTATED THE ROW'S OWN POSITION. "Most Common" means *it is first in the list*;
+//    "Second Most Common" means *it is second*. The reader is looking at the order. Those carried zero
+//    information and could not be fixed by renaming -- they had to be replaced with something that
+//    says what the colour DOES. Rank is no longer a label rule at all.
+// 2. THE EXTRACTOR KNEW SOMETHING THE LABELS THREW AWAY. getColorPalette runs two pools, and an
+//    ACCENT-pool colour is by construction a small, highly chromatic feature -- the cat's red eyes, a
+//    gold sparkle. That is real semantic knowledge about what a colour IS, and the old rules ignored it
+//    and re-derived weaker facts from HSL statistics instead. `origin` now reaches this function.
+// 3. IT CLASSIFIED BY STATISTIC, NOT BY ROLE. Coverage and saturation ranks are properties of numbers.
+//    A reader wants to know what the colour is doing in the picture: is it the ground everything sits
+//    on, the thing that catches your eye, the shadow, the edge?
+//
+// So the rules below run in ROLE order -- what KIND of thing is this (from pool + coverage), then how
+// it relates to the dominant colour -- and each label states the role rather than the measurement.
+// Greedy: a rule claims the best-matching UNCLAIMED entry, and only when the entry genuinely earns the
+// threshold, so no two entries on a page share a label and nothing is forced.
+//
+// ⚠️ `origin` is absent for a palette restored from an older Cloudinary cache entry (the wire format
+// gained its accent flag later). Missing is treated as `structure`, which costs at most one label
+// nuance and never breaks -- do not make any rule REQUIRE it.
 function assignDynamicLabels(entries, kind) {
     const hsl = entries.map(e => rgbToHslLocal(e.hex));
+    // ⚠️ COLOURFULNESS IS JUDGED IN CHROMA, NOT HSL SATURATION. HSL's `s` blows up at the lightness
+    // extremes -- `#FDFEFE` reports 0.333 and `#020311` reports 0.789 -- so every saturation threshold
+    // in the previous version of this function was meaningless for near-whites and near-blacks, which
+    // are two of the commonest swatches there are. Chroma (OKLab) behaves the same at every lightness.
+    // Its range is ~0-0.37, NOT 0-1: do not paste an old `s` threshold in here without rescaling.
+    const chroma = entries.map(e => chromaOfHex(e.hex));
     const claimed = new Set();
     const labels = new Array(entries.length).fill(null);
     const unclaimed = () => entries.map((_, i) => i).filter(i => !claimed.has(i));
@@ -96,71 +114,103 @@ function assignDynamicLabels(entries, kind) {
 
     if (entries.length === 0) return labels;
 
-    // ⚠️ LABELS WERE PLAINED UP 2026-08-11 08:36 EDT, alongside the switch to plain-English colour
-    // NAMES (see utils/colorNames.js). The two are read together on one line -- "Almost Black / Dark
-    // Undertone" mixed a plain name with design jargon, so the labels now answer "why is this colour
-    // here?" in the same register: Most Common, Darkest Tone, Boldest Color. The RULES are unchanged;
-    // only their wording is. Keep any future label in that register rather than reaching for
-    // design-speak, and keep it short -- it renders as a single quoted line under the hex.
-    //
-    // 1. Most Common -- the single highest-prevalence entry (entries already arrive sorted by percent
-    // descending from getColorPalette, so index 0 is always the winner).
-    // ⚠️ NAMEPLATE leads with its BED, not a majority (Harkirat 2026-08-11 07:55 EDT). A nameplate gets
-    // only 4 swatches and its background is a design fact rather than a statistic, so "Majority Color"
-    // does not fit there -- entry 0 IS the bed (prepended exactly, never extracted) and entries 1-3 come
-    // from the upper art layer. See utils/colorPalette.js's nameplate branch for how that is composed.
-    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Most Common');
+    // ── SLOT 0: what the source reads as ─────────────────────────────────────────────────────────
+    // ⚠️ NAMEPLATE leads with its BED, not a measurement (Harkirat 2026-08-11 07:55 EDT). A nameplate
+    // gets only 4 swatches and its background is a design fact, so entry 0 IS the bed (prepended
+    // exactly, never extracted) and entries 1-3 come from the upper art layer.
+    // For everything else, "Sets the Tone" replaces the old "Most Common": both point at index 0, but
+    // one restates the row's position and the other says what dominating the image actually MEANS.
+    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Sets the Tone');
     const maj = hsl[0];
+    const isAccent = i => entries[i].origin === 'accent';
+    const chromaRank = i => chroma[i];
 
-    // 2. Vibrant Accent -- highest saturation among what's left, only if genuinely saturated.
-    tryClaim(unclaimed().filter(i => hsl[i].s > 0.25).sort((a, b) => hsl[b].s - hsl[a].s), 'Boldest Color');
-    // 3. Darkest Tone -- lowest lightness among what's left, only if genuinely dark.
-    tryClaim(unclaimed().filter(i => hsl[i].l < 0.35).sort((a, b) => hsl[a].l - hsl[b].l), 'Darkest Tone');
-    // 4. Lightest Tone -- highest lightness among what's left, only if genuinely light.
-    tryClaim(unclaimed().filter(i => hsl[i].l > 0.7).sort((a, b) => hsl[b].l - hsl[a].l), 'Lightest Tone');
-    // 5. Most Neutral -- lowest saturation among what's left, only if genuinely muted/gray.
-    tryClaim(unclaimed().filter(i => hsl[i].s < 0.15).sort((a, b) => hsl[a].s - hsl[b].s), 'Most Neutral');
-    // 6. Secondary Color -- the next-most-common color, only if it covers a real share of the image
-    // (not a negligible sliver that happens to rank 2nd purely because everything else is tiny too).
-    tryClaim(unclaimed().filter(i => entries[i].percent >= 10).sort((a, b) => entries[b].percent - entries[a].percent), 'Second Most Common');
-    // 7/8. Warm Contrast / Cool Contrast -- a genuine temperature contrast against the majority color
-    // specifically (only fires if the majority ISN'T already that temperature, so this means "stands
-    // out from the dominant tone", not just "happens to be warm/cool").
+    // ── KIND: what sort of thing is this colour, before any relationship to the dominant one ─────
+    // The accent pool exists because a region covering ~1% can never win a slot on prevalence. Such a
+    // colour is a FEATURE, and saying so is the single most useful thing a label here can do -- it is
+    // also the only fact in this whole function that statistics cannot recover.
+    //
+    // ⚠️ POOL MEMBERSHIP ALONE IS NOT ENOUGH, and the first version of this shipped that mistake into a
+    // test run: the accent pool is the most chromatic tail OF THIS IMAGE, so on a sepia photo it
+    // returns beige and on a near-greyscale avatar it returns grey-blue. Labelling those "Catches the
+    // Eye" and "Pop of Colour" promises a vividness the colour plainly does not have. Both rules
+    // therefore also require the colour to stand out against THIS palette (above its median
+    // saturation) and to clear an absolute floor, so the claim is true in the picture and on its own.
+    const sats = [...chroma].sort((a, b) => a - b);
+    const medianSat = sats.length ? sats[Math.floor(sats.length / 2)] : 0;
+    const standsOut = (i, margin) => chroma[i] >= medianSat + margin;
+    tryClaim(
+        unclaimed().filter(i => isAccent(i) && entries[i].percent <= 12 && chroma[i] > 0.11 && standsOut(i, 0.035))
+            .sort((a, b) => chromaRank(b) - chromaRank(a)),
+        'Catches the Eye'
+    );
+    tryClaim(
+        unclaimed().filter(i => isAccent(i) && chroma[i] > 0.07 && standsOut(i, 0.02))
+            .sort((a, b) => chromaRank(b) - chromaRank(a)),
+        'Pop of Colour'
+    );
+    // A second colour covering a really large share isn't "second place", it is co-ground: the thing
+    // the subject sits on. Threshold is deliberately high so this means area, not rank.
+    tryClaim(
+        unclaimed().filter(i => entries[i].percent >= 22).sort((a, b) => entries[b].percent - entries[a].percent),
+        'Fills the Space'
+    );
+    // A tiny, low-chroma sliver is edging/antialiasing -- real, and worth naming honestly rather than
+    // dressing up as a design decision.
+    tryClaim(
+        unclaimed().filter(i => entries[i].percent <= 3 && chroma[i] <= 0.09).sort((a, b) => entries[a].percent - entries[b].percent),
+        'Edge Detail'
+    );
+
+    // ── EXTREMES: true of the whole palette, not of a pairwise comparison ────────────────────────
+    tryClaim(unclaimed().filter(i => hsl[i].l < 0.3).sort((a, b) => hsl[a].l - hsl[b].l), 'Deepest Shadow');
+    tryClaim(unclaimed().filter(i => hsl[i].l > 0.72).sort((a, b) => hsl[b].l - hsl[a].l), 'Brightest Light');
+    tryClaim(unclaimed().filter(i => chroma[i] < 0.035).sort((a, b) => chroma[a] - chroma[b]), 'Quiet Neutral');
+
+    // ── RELATIONSHIP to the dominant colour ─────────────────────────────────────────────────────
+    // Temperature only counts as a contrast when the dominant colour ISN'T already that temperature --
+    // otherwise "Warm" describes the whole picture rather than this swatch.
     if (!isWarmHue(maj.h)) {
-        tryClaim(unclaimed().filter(i => isWarmHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Warm Contrast');
+        tryClaim(unclaimed().filter(i => isWarmHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Warms It Up');
     }
     if (!isCoolHue(maj.h)) {
-        tryClaim(unclaimed().filter(i => isCoolHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cool Contrast');
+        tryClaim(unclaimed().filter(i => isCoolHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cools It Down');
     }
-    // 9. Opposite Hue -- the most hue-distant entry from the majority overall, if that distance is
-    // large enough to read as a genuinely different hue family rather than a close variant.
-    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Opposite Hue');
-    // 10/11. Darker Shade / Lighter Tint -- notably darker/lighter than the MAJORITY specifically (not
-    // the absolute darkest/lightest overall, which rules 3/4 already claimed) -- "a deeper/lighter
-    // variant of the dominant tone" is still a real, distinct relationship worth naming.
-    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Darker Shade');
-    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Lighter Tint');
-    // 12/13. More Vivid / More Muted -- notably more/less saturated than the majority specifically.
-    tryClaim(unclaimed().filter(i => hsl[i].s > maj.s + 0.15).sort((a, b) => hsl[b].s - hsl[a].s), 'More Vivid');
-    tryClaim(unclaimed().filter(i => hsl[i].s < maj.s - 0.1).sort((a, b) => hsl[a].s - hsl[b].s), 'More Muted');
-    // 14. Similar To Main -- whatever's left that most closely echoes the majority color overall
-    // (smallest combined hue/saturation/lightness difference) -- a real, if unremarkable, relationship
-    // ("this closely matches your dominant tone"), not a manufactured category. The old wording,
-    // "Balanced Tone", was the weakest of the fourteen: it described nothing a reader could act on.
+    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cuts Against It');
+    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Adds Depth');
+    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Opens It Up');
+    // ⚠️ SATURATION COMPARISONS NEED A COLOURED REFERENCE, and without this guard they produce
+    // nonsense on the commonest palette shape there is. When the dominant colour is near-white or grey
+    // (chroma ~ 0), EVERY other swatch is more colourful than it, so a pale pink on a white avatar
+    // was labelled "Turns It Up" -- true by arithmetic, absurd to read. Below this threshold the
+    // dominant has no colour to turn up or tone down, and these two rules simply don't apply.
+    const MAJ_HAS_COLOUR = chroma[0] >= 0.045;
+    if (MAJ_HAS_COLOUR) {
+        tryClaim(unclaimed().filter(i => chroma[i] > chroma[0] + 0.045).sort((a, b) => chroma[b] - chroma[a]), 'Turns It Up');
+        tryClaim(unclaimed().filter(i => chroma[i] < chroma[0] - 0.03).sort((a, b) => chroma[a] - chroma[b]), 'Tones It Down');
+    }
+    // With no coloured reference, the honest thing to say about a genuinely saturated swatch is that it
+    // is the colour in an otherwise colourless picture -- a role, not a comparison.
+    tryClaim(unclaimed().filter(i => !MAJ_HAS_COLOUR && chroma[i] > 0.12).sort((a, b) => chroma[b] - chroma[a]), 'Brings the Colour');
+    // A colour in the dominant's own hue family that is neither lighter, darker, bolder nor softer
+    // enough to have been claimed above. Without this, a palette of four close cyans runs out of real
+    // categories and drops into the fallback pool -- which is exactly what the swirl deco did.
+    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) <= 30).sort((a, b) => hueDistance(hsl[a].h, maj.h) - hueDistance(hsl[b].h, maj.h)), 'Backs It Up');
+    // Whatever is left that most closely echoes the dominant colour. "Almost the Same" is honest about
+    // being unremarkable -- the previous "Similar To Main" said the same thing in system-speak.
     if (unclaimed().length > 0) {
         const closest = [...unclaimed()].sort((a, b) => {
-            const da = Math.abs(hsl[a].l - maj.l) + Math.abs(hsl[a].s - maj.s) + hueDistance(hsl[a].h, maj.h) / 360;
-            const db = Math.abs(hsl[b].l - maj.l) + Math.abs(hsl[b].s - maj.s) + hueDistance(hsl[b].h, maj.h) / 360;
+            const da = Math.abs(hsl[a].l - maj.l) + Math.abs(chroma[a] - chroma[0]) + hueDistance(hsl[a].h, maj.h) / 360;
+            const db = Math.abs(hsl[b].l - maj.l) + Math.abs(chroma[b] - chroma[0]) + hueDistance(hsl[b].h, maj.h) / 360;
             return da - db;
         });
-        tryClaim(closest, 'Similar To Main');
+        tryClaim(closest, 'Quiet Echo');
     }
 
-    // Safety net only -- with 13 real non-majority categories above covering a max of 7 non-majority
-    // entries per page (avatar/banner's largest, 8 total), this should never actually be reached.
-    // Kept non-numbered even here so a truly pathological edge case still doesn't regress into
-    // "Accent Color N".
-    const fallbackPool = ['Supporting Color', 'Complementary Shade', 'Balancing Note', 'Distinct Tone'];
+    // Safety net only -- 15 real categories cover a maximum of 7 non-leading entries per page, so this
+    // should never be reached. Kept non-numbered so even a pathological case doesn't regress into
+    // "Accent Color N", which is what the very first version of this did and Harkirat rejected.
+    const fallbackPool = ['Holds the Middle', 'Sits Back', 'Breaks the Pattern', 'Fills a Gap'];
     let fi = 0;
     for (const i of unclaimed()) {
         labels[i] = fallbackPool[fi % fallbackPool.length];
@@ -546,4 +596,8 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     return { components: [containerPayload, refreshRow], files };
 }
 
-module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources };
+// `buildSwatchEntries` is exported for verification only -- it is the unit that turns extracted
+// colours into the name+label pair a reader actually sees, and the label rules above are judged on
+// real palettes rather than on the thresholds in isolation. Nothing in the bot calls it from outside
+// this file.
+module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries };

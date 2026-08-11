@@ -346,6 +346,11 @@ function mergePerceptual(clusters, dE) {
             target.a = (target.a * target.share + c.a * c.share) / total;
             target.b = (target.b * target.share + c.b * c.share) / total;
             target.share = total;
+            // Origin is STICKY toward `accent` (2026-08-11 13:45 EDT): if either contributor came from
+            // the chromatic tail, the merged colour is still that feature. The label layer uses this to
+            // say "this is a small vivid detail" rather than re-deriving it from share and chroma, which
+            // cannot distinguish a genuine 1%-coverage accent from a rounding artefact.
+            if (c.origin === 'accent') target.origin = 'accent';
         } else {
             merged.push({ ...c });
         }
@@ -401,7 +406,12 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
         ? await clusterLabs(accentLabs, accentLabs.map(o => ({ x: o.L, y: o.a, z: o.b })), ACCENT_CLUSTERS, labs.length)
         : [];
 
-    const merged = mergePerceptual([...structure, ...accent], MERGE_DELTA_E);
+    // Tagged BEFORE the union so the label layer can tell a small vivid feature (the cat's red eyes)
+    // from an ordinary region -- see mergePerceptual for why the tag survives a merge as `accent`.
+    const merged = mergePerceptual(
+        [...structure.map(c => ({ ...c, origin: 'structure' })), ...accent.map(c => ({ ...c, origin: 'accent' }))],
+        MERGE_DELTA_E
+    );
     merged.sort((a, b) => b.share - a.share);
 
     // Index 0 stays the most prevalent colour -- utils/colorPaletteView.js's assignDynamicLabels
@@ -425,7 +435,9 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
 
     return ordered.slice(0, limit).map(e => {
         const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
-        return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100) };
+        // `origin` is carried out to the label layer, which is the only consumer -- it distinguishes a
+        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot.
+        return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100), origin: e.origin };
     });
 }
 
@@ -489,14 +501,21 @@ function composeNameplatePalette(fullPalette, bedHex, wanted) {
 // `=` or `|` corrupts the whole map -- and JSON of an array of objects is dense with `{`, `"` and `:`
 // with no guarantee about which the encoder escapes. This format uses only hex digits, `:` and `,`:
 //
-//     RRGGBB:PP,RRGGBB:PP,...
+//     RRGGBB:PP[:a],RRGGBB:PP[:a],...
+//
+// The optional `:a` marks an entry that came from the ACCENT pool, so a cached palette can still be
+// labelled "a small vivid detail" rather than losing that distinction on the way to Cloudinary. It is
+// optional rather than required so palettes written before it existed still decode.
 //
 // Returns null for anything malformed rather than a partial palette -- a half-decoded palette would
 // render as a real one and be indistinguishable from a correct short result.
 function serializePalette(palette) {
     if (!Array.isArray(palette) || palette.length === 0) return null;
     return palette
-        .map(c => `${(c.hex >>> 0).toString(16).padStart(6, '0')}:${Math.max(0, Math.round(c.percent ?? 0))}`)
+        .map(c => {
+            const base = `${(c.hex >>> 0).toString(16).padStart(6, '0')}:${Math.max(0, Math.round(c.percent ?? 0))}`;
+            return c.origin === 'accent' ? `${base}:a` : base;
+        })
         .join(',');
 }
 
@@ -504,15 +523,29 @@ function deserializePalette(raw) {
     if (typeof raw !== 'string' || !raw) return null;
     const out = [];
     for (const part of raw.split(',')) {
-        const m = /^([0-9a-fA-F]{6}):(\d{1,3})$/.exec(part.trim());
+        const m = /^([0-9a-fA-F]{6}):(\d{1,3})(:a)?$/.exec(part.trim());
         if (!m) return null;
-        out.push({ hex: parseInt(m[1], 16), percent: parseInt(m[2], 10) });
+        const entry = { hex: parseInt(m[1], 16), percent: parseInt(m[2], 10) };
+        if (m[3]) entry.origin = 'accent';
+        out.push(entry);
     }
     return out.length ? out : null;
+}
+
+// Colourfulness of a packed RGB hex, in OKLab. Exported 2026-08-11 14:00 EDT for the label layer,
+// which had been judging "is this colourful?" with HSL saturation and getting nonsense at the
+// lightness extremes: `#FDFEFE` (white to any eye) reports HSL s = 0.333 and `#020311` (black)
+// reports 0.789, because HSL's denominator collapses as lightness approaches 0 or 1. Chroma has no
+// such blow-up, so any threshold expressed in it means the same thing at every lightness.
+// ⚠️ Range differs from HSL saturation -- roughly 0 to 0.37 across sRGB, not 0 to 1. A threshold
+// copied across from an `s` value without rescaling will be wrong by a factor of about three.
+function chromaOfHex(hex) {
+    const lab = rgbToOklab((hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff);
+    return chromaOf(lab);
 }
 
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
     composeNameplatePalette, serializePalette, deserializePalette,
-    PALETTE_COUNTS, NAMEPLATE_OVERASK
+    PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex
 };

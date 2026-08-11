@@ -22,6 +22,19 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### ❄️ Cold nameplate/deco render verified live — closed 2026-08-11 13:38 EDT
+
+*Filed 2026-08-11 10:22 EDT as `[P2 · S]`, closed the same session. Verified against the dev bot, not re-derived from code.*
+
+> `[P2 · S]` **A COLD nameplate/deco render has not been exercised since palette caching landed.** v3.7.0-pre was proved live on the **heal** path — a pre-existing render acquiring a palette by metadata patch — which does not touch `renderAndCache*Webp` at all. So the two things only a cold render can show remain unverified: that the **`Colors:` line** appears in the cache-channel embed, and that the message **accent is the first ART colour** rather than the bed.
+
+**Outcome — both confirmed, plus a third fix in the same pass.** All four `dev_` Cloudinary resources were purged and the dev bot restarted (its in-process `resolvedCache` would otherwise have handed back a URL for a deleted resource — a real trap, and the restart was necessary rather than precautionary). Harkirat then ran `/colors` and the cache-channel posts showed:
+- **`Colors:` line present** on all four renders, carrying the four extracted hexes.
+- **Accent is the first art colour** — Cat Beans and Twilight both styled by their art rather than the bed, confirming the v3.6.0 regression is gone.
+- **Cat Beans headed "Cat Beans" with a `SKU:` line**, which also closes [the guild nameplate name/SKU bug](#-guild-profile-nameplates-lost-their-name-and-sku-in-the-cache-channel-embed--fixed-2026-08-11-1000-edt)'s own verify condition — it required a cold render and had been left open for exactly that reason.
+
+⚠️ **Still open and deliberately not closed by this:** "two accounts, one extraction" (that palette caching actually saves work for a *second* user) remains observed on one account only.
+
 ### 🎨 Nameplate/decoration palettes now cached globally and permanently — shipped 2026-08-11 10:13 EDT
 
 *Filed 2026-08-11 01:58 EDT as `[P2 · M · 🧩needs-design]`. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
