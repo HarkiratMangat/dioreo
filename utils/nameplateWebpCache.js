@@ -37,9 +37,34 @@ if (!process.env.CLOUDINARY_URL) {
 
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
-const { extractAlphaFrames, encodeWebpFromFrames } = require('./animatedMediaPipeline');
+const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
+const {
+    getColorPalette, composeNameplatePalette, serializePalette, deserializePalette
+} = require('./colorExtract');
+
+// How many swatches a nameplate carries, and how far the extractor over-asks before the bed's
+// near-duplicates are dropped. Mirrors utils/colorPalette.js's PALETTE_COUNTS.nameplate -- kept as a
+// local constant rather than imported because colorPalette.js requires THIS module, and importing
+// back would close the cycle.
+const PALETTE_COUNT = 4;
+const PALETTE_OVERASK = 2;
+
+// The palette is a pure function of (art, bed), both fixed per (asset, palette) -- so it is computed
+// ONCE PER DESIGN EVER and stored beside the render, rather than once per user on their UserPreference
+// (Harkirat 2026-08-11 01:58 EDT). Extracted from the frames the render already holds, which also
+// collapses the duplicate webm fetch + decode that utils/colorPalette.js was paying separately.
+//
+// ⚠️ EXTRACT FROM `rawFrames`, NEVER THE COMPOSITED SET. The render composites the bed onto every
+// frame; extracting from those reintroduces exactly the bed contamination v3.6.0 removed, letting
+// bed-tinted pixels crowd real art colours out of a 4-slot budget. The bed is prepended as a known
+// exact value by composeNameplatePalette instead.
+async function extractPaletteFromFrames(rawFrames, bedHex) {
+    const montage = await poolFramesIntoMontage(rawFrames);
+    const full = await getColorPalette(montage, bedHex != null ? PALETTE_COUNT + PALETTE_OVERASK : PALETTE_COUNT);
+    return composeNameplatePalette(full, bedHex, PALETTE_COUNT);
+}
 
 // Dev-scoped folder (2026-08-10 11:30 EDT) -- the dev bot shares prod's live Cloudinary account (see
 // cloudinaryDevGuard.js's header), so writes here are isolated into their own `dev_` folder rather
@@ -94,7 +119,11 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
         // still used as the fetch+reattach fallback, so it keeps this same carve-out.
         const resolved = {
             cloudinaryUrl: result.secure_url,
-            discordCdnUrl: result.context?.custom?.discord_cdn_url || null
+            discordCdnUrl: result.context?.custom?.discord_cdn_url || null,
+            // May be null on a resource rendered BEFORE palette caching shipped -- resolveNameplateWebp
+            // heals those rather than leaving them permanently palette-less, since the WebP itself is
+            // already cached and would never re-render on its own.
+            palette: deserializePalette(result.context?.custom?.palette)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -111,7 +140,7 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
 // cache. Never throws -- callers treat a render failure exactly like "not cached yet", falling back to
 // the existing static preview (see utils/colorPaletteView.js), same non-blocking philosophy as every
 // other Cloudinary write path here.
-async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, accentHex) {
+async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName) {
     const publicId = publicIdFor(nameplateAsset, paletteName);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const renderStartedAt = Date.now();
@@ -134,6 +163,19 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // same fix the k-means CPU-burst production incident needed (see
         // .claude/rules/accent-and-colors.md), so a cold render here can't block an unrelated
         // interaction's 3s ACK window the way the pre-fix color extraction once did.
+        // Palette FIRST, from the raw art frames, before anything composites a bed onto them. Doing it
+        // here rather than in utils/colorPalette.js also removes a circularity: the storage-channel
+        // message's accent used to be passed IN from a palette extracted separately upstream, so the
+        // render depended on an extraction that depended on the same frames the render had in hand.
+        // A failure must not sink the WebP -- the render is the primary product and the panel falls
+        // back to its own extraction when no palette comes back.
+        let palette = null;
+        try {
+            palette = await extractPaletteFromFrames(rawFrames, bedHex);
+        } catch (err) {
+            console.error(`Nameplate palette extraction failed for "${nameplateAsset}" (render continues): ${err.message}`);
+        }
+
         const composited = [];
         for (const frame of rawFrames) {
             composited.push(await renderGradientBedFrame(frame, bedHex, 512));
@@ -164,15 +206,23 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
             `**Palette:** \`${paletteName || 'none'}\` · **Bed:** \`${bedHexStr}\``,
             `**Cloudinary:** \`${publicId}\``,
             `**Dimensions:** ${width}×${height} · **Frames:** ${composited.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
+            // The four extracted hexes, in the panel's own order (bed first, then the three art
+            // colours) -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache channel records
+            // what the design's palette actually resolved to, not just that a render happened.
+            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
             `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
         ].filter(Boolean);
         const components = [
             {
                 type: 17, // Container
-                // Majority extracted color, NOT bedHex -- Harkirat's explicit request 2026-08-10
-                // 14:08 EDT. bedHex keeps doing its real job just above (renderGradientBedFrame's
-                // gradient bed), this is purely about which color styles the cache MESSAGE itself.
-                accent_color: accentHex ?? undefined,
+                // The first ART colour, NOT bedHex -- Harkirat's explicit request 2026-08-10 14:08 EDT.
+                // bedHex keeps doing its real job just above (renderGradientBedFrame's gradient bed);
+                // this is purely which color styles the cache MESSAGE.
+                // ⚠️ It used to read `palette[0]`, which SILENTLY BECAME THE BED when v3.6.0 changed the
+                // composition to prepend the bed at index 0 -- the line kept its "NOT bedHex" comment
+                // while doing exactly that. With a bed present the first art colour is index 1; with a
+                // `none` palette nothing is prepended and index 0 is already art.
+                accent_color: (bedHex != null ? palette?.[1]?.hex : palette?.[0]?.hex) ?? undefined,
                 components: [
                     { type: 12, items: [{ media: { url: `attachment://${filename}` } }] },
                     { type: 10, content: `### ${heading}` },
@@ -200,14 +250,20 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // this patch completing. The render function must not report success until discordCdnUrl is
         // actually persisted and readable by a future cache hit -- otherwise every render after the
         // first permanently falls back to the slower fetch+reattach path with no way to self-heal.
-        if (discordCdnUrl) {
+        // ONE patch carrying both keys. Cloudinary's `context` replaces the whole map, so sending them
+        // in two calls would have the second silently erase the first.
+        const serialized = serializePalette(palette);
+        const context = {};
+        if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
+        if (serialized) context.palette = serialized;
+        if (Object.keys(context).length) {
             try {
-                await cloudinary.api.update(publicId, { resource_type: 'image', context: { discord_cdn_url: discordCdnUrl } });
+                await cloudinary.api.update(publicId, { resource_type: 'image', context });
             } catch (err) {
                 console.error(`Nameplate context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
             }
         }
-        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl };
+        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
@@ -222,13 +278,51 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
 // or a blocked dev-bot write. Otherwise returns { cloudinaryUrl, discordCdnUrl } -- discordCdnUrl may
 // be null even on success (storage channel not configured, or that one upload failed) and callers
 // must handle that, falling back to the existing static preview only when BOTH are unavailable.
-async function resolveNameplateWebp({ nameplateAsset, paletteName, webmUrl, bedHex, skuId, nameplateName, accentHex }) {
+async function resolveNameplateWebp({ nameplateAsset, paletteName, webmUrl, bedHex, skuId, nameplateName }) {
     if (!nameplateAsset || !webmUrl || bedHex == null) return null;
 
     const cached = await getCachedNameplateWebp(nameplateAsset, paletteName);
-    if (cached) return cached;
+    if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex);
 
-    return renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, accentHex);
+    return renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName);
+}
+
+// A WebP rendered BEFORE palette caching shipped has no palette in its context, and since the render
+// is cached forever it would never re-run to acquire one -- so that design would fall back to per-user
+// extraction indefinitely, which is the cost this cache exists to remove. This backfills it: re-fetch
+// the webm, extract, patch the context. Paid ONCE per pre-existing design, never again.
+//
+// ⚠️ Does NOT re-render or re-upload the WebP -- only the metadata is patched, so the existing
+// cdn.discordapp.com url and the cache-channel message are untouched. That does mean an older cache
+// message keeps its pre-existing accent and carries no Colors line; backfilling those would mean
+// editing history in the storage channel, which is deliberately out of scope.
+//
+// Returns the cached object unchanged on any failure -- a heal that cannot complete must degrade to
+// today's behaviour, never break a working preview.
+async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex) {
+    const publicId = publicIdFor(nameplateAsset, paletteName);
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return cached;
+    try {
+        const res = await fetch(webmUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${webmUrl}`);
+        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
+            inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS
+        });
+        const palette = await extractPaletteFromFrames(rawFrames, bedHex);
+        const serialized = serializePalette(palette);
+        if (!serialized) return cached;
+        // Re-send discord_cdn_url alongside it -- `context` replaces the whole map, so patching the
+        // palette alone would wipe the url this module works hard to persist.
+        const context = { palette: serialized };
+        if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
+        await cloudinary.api.update(publicId, { resource_type: 'image', context });
+        const resolved = { ...cached, palette };
+        memoizeResolved(publicId, resolved);
+        return resolved;
+    } catch (err) {
+        console.error(`Nameplate palette backfill failed for "${publicId}": ${safeErrorMessage(err)}`);
+        return cached;
+    }
 }
 
 module.exports = { resolveNameplateWebp, publicIdFor, FOLDER };

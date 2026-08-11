@@ -440,4 +440,60 @@ function perceptualDistanceHex(a, b) {
     return deltaE(A, B);
 }
 
-module.exports = { getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E };
+// A nameplate's four swatches are ONE bed + THREE from the art (Harkirat 2026-08-11 07:55 EDT).
+// Lifted out of utils/colorPalette.js 2026-08-11 10:03 EDT so the permanent palette cache in
+// utils/nameplateWebpCache.js composes it IDENTICALLY -- two copies of this rule would eventually
+// disagree, and the disagreement would be invisible because each path caches its own result.
+//
+// The bed is PREPENDED EXACTLY, never extracted: its hex is already known precisely from the design's
+// palette metadata, so deriving it from pixels could only approximate a value we hold. Any art colour
+// that would render as a near-duplicate of the bed is dropped, which is why the caller must over-ask
+// (asking for `wanted + 2`) -- without that headroom a dropped near-duplicate hands back a short
+// palette. `percent: 0` on the bed is not a measurement and nothing reads it: the bed's share is a
+// design fact, and assignDynamicLabels claims index 0 outright before any percent-based rule runs.
+//
+// bedHex null (a `none`/unknown palette) means the design's background is already baked into the art,
+// so all four slots come from the art untouched and nothing is invented.
+function composeNameplatePalette(fullPalette, bedHex, wanted) {
+    if (bedHex == null) return fullPalette.slice(0, wanted);
+    const art = fullPalette
+        .filter(c => perceptualDistanceHex(c.hex, bedHex) >= MERGE_DELTA_E)
+        .slice(0, wanted - 1);
+    return [{ hex: bedHex, percent: 0 }, ...art];
+}
+
+// Wire format for persisting a palette in a Cloudinary resource's `context` metadata (2026-08-11
+// 10:03 EDT), so a nameplate/decoration palette is computed once per DESIGN ever rather than once per
+// user. Lives here because this module defines the `{ hex, percent }` shape, so it owns how that shape
+// round-trips.
+//
+// ⚠️ Deliberately NOT JSON. Cloudinary encodes context as `key=value|key=value`, so a value containing
+// `=` or `|` corrupts the whole map -- and JSON of an array of objects is dense with `{`, `"` and `:`
+// with no guarantee about which the encoder escapes. This format uses only hex digits, `:` and `,`:
+//
+//     RRGGBB:PP,RRGGBB:PP,...
+//
+// Returns null for anything malformed rather than a partial palette -- a half-decoded palette would
+// render as a real one and be indistinguishable from a correct short result.
+function serializePalette(palette) {
+    if (!Array.isArray(palette) || palette.length === 0) return null;
+    return palette
+        .map(c => `${(c.hex >>> 0).toString(16).padStart(6, '0')}:${Math.max(0, Math.round(c.percent ?? 0))}`)
+        .join(',');
+}
+
+function deserializePalette(raw) {
+    if (typeof raw !== 'string' || !raw) return null;
+    const out = [];
+    for (const part of raw.split(',')) {
+        const m = /^([0-9a-fA-F]{6}):(\d{1,3})$/.exec(part.trim());
+        if (!m) return null;
+        out.push({ hex: parseInt(m[1], 16), percent: parseInt(m[2], 10) });
+    }
+    return out.length ? out : null;
+}
+
+module.exports = {
+    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
+    composeNameplatePalette, serializePalette, deserializePalette
+};

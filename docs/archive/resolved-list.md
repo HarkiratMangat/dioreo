@@ -22,6 +22,19 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🎨 Nameplate/decoration palettes now cached globally and permanently — shipped 2026-08-11 10:13 EDT
+
+*Filed 2026-08-11 01:58 EDT as `[P2 · M · 🧩needs-design]`. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
+
+> `[P2 · M · 🧩needs-design]` **Nameplate/decoration palettes should be cached GLOBALLY and permanently, not per-user.** Harkirat's observation 2026-08-11 01:58 EDT: because the extractor is deterministic, a nameplate palette is a pure function of `(asset, paletteName)` and a decoration palette of `(asset)` — identical for every user who equips it, forever. Today they cache per-user on `UserPreference`, so the same design is re-extracted once per user. This is already exactly how the WebP cache is keyed, and the Cloudinary resource's `context` metadata already carries `discord_cdn_url` — so the palette can live beside it with **no new infrastructure**. **Verify:** two different accounts with the same nameplate design trigger exactly one extraction.
+
+**Outcome — built as designed, and it removed more than it added.** The palette is computed inside the WebP render from the frames that render already holds, and persisted in the same Cloudinary resource's `context`. That collapsed a duplicate `.webm` fetch + decode the nameplate path had been paying separately, and removed a circularity: the storage-channel message's accent used to be passed *into* the render from a palette extracted upstream over the very frames the render was holding.
+
+- ⚠️ **Extracts from the RAW frames, never the composited set** — the bed is composited on immediately afterwards, and extracting from those would reintroduce exactly the contamination v3.6.0 removed. Parity-tested against the real twilight asset: identical to the old path, and deterministic on re-run.
+- ⚠️ **The wire format is not JSON**, because Cloudinary encodes `context` as `key=value|key=value` and a value containing `=` or `|` corrupts the whole map. `RRGGBB:PP,...` only; malformed decodes to `null` rather than a partial palette.
+- Designs rendered *before* this shipped heal on next view (metadata patch only, no re-render), since their WebP is already cached and would otherwise never re-render to acquire a palette.
+- The shared value **deliberately outranks the per-user cache**, so a per-user palette predating an extraction change cannot persist forever behind an asset hash that never changes.
+
 ### 🏷️ Guild-profile nameplates lost their NAME and SKU in the cache-channel embed — fixed 2026-08-11 10:00 EDT
 
 *Filed 2026-08-11 09:42 EDT as `[P2 · S]` in 🐞 Active Bugs, closed the next session. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
