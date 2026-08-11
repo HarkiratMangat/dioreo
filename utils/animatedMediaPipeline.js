@@ -93,6 +93,9 @@ function runCommand(cmd, args) {
 // `FRAME_OPTS` a cache passes to paletteContextFields -- that would move the palette cache key and
 // re-derive every stored palette to arrive at identical colours. See utils/decorationWebpCache.js's
 // call site, which spreads it in for this function only.
+// The one true description of what ffmpeg writes here, used both to name the output pattern and to
+// read it back, so the two can never disagree. Exported for the self-test.
+const FRAME_FILE_RE = /^frame_\d+\.png$/;
 async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], fps, asPaths = false }) {
     const id = crypto.randomUUID();
     const dir = path.join(os.tmpdir(), `dior_mediaframes_${id}`);
@@ -107,7 +110,14 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
             '-y', ...preInputArgs, '-i', inputPath,
             '-vf', `fps=${fps}`, '-pix_fmt', 'rgba', outputPattern
         ]);
-        const names = (await fs.readdir(dir)).filter(n => n.startsWith('frame_')).sort();
+        // ⚠️ EXACT match on ffmpeg's own `frame_%04d.png` output pattern, NOT `startsWith('frame_')`.
+        // This directory is no longer ffmpeg's alone: in `asPaths` mode encodeWebpFromFrames writes
+        // `out.webp` in here beside the frames (that is what removes the second temp dir). A prefix
+        // test made the two safe only by ACCIDENT of the output being named `out.webp` -- rename it to
+        // anything `frame_`-prefixed, or have the encoder emit intermediates, and its own output would
+        // be read back as a source frame. The pattern is the contract; matching it exactly enforces
+        // the contract instead of documenting it. Numbered PNGs only, so no future sibling can qualify.
+        const names = (await fs.readdir(dir)).filter(n => FRAME_FILE_RE.test(n)).sort();
         if (names.length === 0) throw new Error('ffmpeg produced zero frames');
         const paths = names.map(n => path.join(dir, n));
         if (asPaths) {
@@ -245,10 +255,20 @@ async function poolFramesIntoMontage(raw, { frames = POOL_FRAMES, targetWidth = 
     // geometry is derived from tiles[0], so mismatched tiles would write rows at the wrong offsets.
     // Every frame of a single animation has identical dimensions, so this is a guard, not a live path.
     const tw = tiles[0].bitmap.width, th = tiles[0].bitmap.height;
-    const uniform = tiles.every(t => t.bitmap.width === tw && t.bitmap.height === th);
+    // ⚠️ THROWS rather than falling back to composite(), and that is deliberate. An earlier version
+    // fell back, which looked safer and was worse: composite() is the path that ADDS the ±1 rounding
+    // this copy exists to remove, so the fallback would have quietly produced DIFFERENT COLOURS from
+    // the same code -- and PALETTE_ALGO_VERSION cannot tell two runtime branches apart, so the cache
+    // would have stamped both with the same key. Every frame of one animation shares its stream's
+    // dimensions, so this cannot fire for any real caller; if it ever does, the caller assembled
+    // frames from more than one source and this function does not support that. Both callers wrap
+    // extraction in a try/catch that degrades to no palette, so failing loud costs a palette, never a
+    // render.
+    if (!tiles.every(t => t.bitmap.width === tw && t.bitmap.height === th)) {
+        throw new Error(`montage tiles are not uniform (${tiles.map(t => `${t.bitmap.width}x${t.bitmap.height}`).join(', ')}) -- frames from a single animation always share dimensions`);
+    }
     for (let i = 0; i < tiles.length; i++) {
         const ox = (i % cols) * tw, oy = Math.floor(i / cols) * th;
-        if (!uniform) { sheet.composite(tiles[i], ox, oy); continue; }
         const src = tiles[i].bitmap;
         for (let y = 0; y < th; y++) {
             src.data.copy(sheet.bitmap.data, ((oy + y) * sheet.bitmap.width + ox) * 4, y * tw * 4, (y + 1) * tw * 4);
@@ -313,5 +333,6 @@ const MONTAGE_FINGERPRINT = fingerprint(
 );
 
 module.exports = {
-    extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize, MONTAGE_FINGERPRINT
+    extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize,
+    MONTAGE_FINGERPRINT, FRAME_FILE_RE
 };

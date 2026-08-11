@@ -95,8 +95,26 @@ function errorHttpCode(err) {
     return err?.http_code ?? err?.error?.http_code ?? null;
 }
 
+// Discord serves every nameplate under `nameplates/nameplates/<design>/` -- the repeated segment is
+// THEIRS, and carrying it into our public id produced ids like
+// `dev_nameplate_webp/nameplates-nameplates-twilight-cobalt`, where two thirds of the name is a
+// constant. Shortened to `<design>-<palette>` 2026-08-11 17:34 EDT (Harkirat asked why it was so
+// long, and the honest answer was that nothing had questioned it).
+//
+// ⚠️ ONLY the exact three-segment `nameplates/nameplates/<design>` shape is shortened; anything else
+// keeps the full slug. That is the collision guard: the last segment alone is only unique if the
+// parent path is known-constant, so an unfamiliar shape must not be trusted to be unique by its tail.
+//
+// ⚠️ THE PUBLIC ID IS THE CACHE KEY, so changing it ORPHANS every render stored under the old name.
+// Safe to do exactly here because both prod folders held ZERO resources and the four dev entries had
+// just been purged and re-rendered -- the cheapest moment this change will ever have. Do not repeat
+// it casually once real renders exist without purging the old ids in the same pass.
 function publicIdFor(nameplateAsset, paletteName) {
-    return `${FOLDER}/${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}`;
+    const segments = String(nameplateAsset).split('/').filter(Boolean);
+    const design = segments.length === 3 && segments[0] === 'nameplates' && segments[1] === 'nameplates'
+        ? segments[2]
+        : nameplateAsset;
+    return `${FOLDER}/${slugify(design)}-${slugify(paletteName || 'none')}`;
 }
 
 // Same in-memory memo pattern as utils/nameplateBedImage.js's bedCache/utils/resizedImage.js -- see
