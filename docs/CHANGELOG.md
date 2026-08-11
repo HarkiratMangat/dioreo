@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.6.0 — 2026-08-11 02:05 EDT (#113) — animations get sampled properly, and small vivid colours stop disappearing
+## Pre-Release v3.6.0 — 2026-08-11 09:12 EDT (#113) — animations sampled whole, small colours surfaced, and names people actually use
 
 **Two defects, both measured against a 22-image corpus of real avatars and banners Harkirat supplied**, rather than tuned against the one picture that started the investigation. The scripts, the classifier masks and the before/after comparison sheets are in `local/colors-investigation/`.
 
@@ -117,7 +117,7 @@ The **labels** were plained up in the same pass, since name and label are read t
 
 ---
 
-## Pre-Release v3.5.0 — 2026-08-10 23:31 EDT (#112) — `/help` gets real, clickable slash-command mentions
+## Pre-Release v3.5.0 — 2026-08-10 23:31 EDT (#112 · `8e0c794`) — `/help` gets real, clickable slash-command mentions
 
 **Every command Dioreo can reference now becomes a real, clickable slash-command mention** (`</name:id>`) instead of plain backtick text — click one and it types straight into your chat box, no more copy-typing `/settings` by hand. Harkirat found the format in Discord's own docs and tested it by hand first (a mention placed in the dev bot's own bio); the trickiest part isn't documented well: a subcommand or subcommand-group mention (`/draw prices`, `/patch notes`, `/season end`) still resolves off its TOP-LEVEL command's id — there is no separate id per subcommand, and a wrong one fails completely silently, rendering as plain text with no error.
 
