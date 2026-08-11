@@ -103,7 +103,7 @@ Both fonts are served as subset .woff2 files, unmodified.
 
 VENDORED REFERENCE DATA (checked into this repository, not npm dependencies)
 
-  Wikipedia "List of colors"     CC BY-SA 4.0
+  Wikipedia List of colors       CC BY-SA 4.0
                                  Copyright (c) Wikipedia contributors
                                  https://en.wikipedia.org/wiki/Lists_of_colors
                                  utils/data/wikipediaColorNames.json — 812

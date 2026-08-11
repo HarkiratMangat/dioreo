@@ -415,7 +415,7 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
     merged.sort((a, b) => b.share - a.share);
 
     // Index 0 stays the most prevalent colour -- utils/colorPaletteView.js's assignDynamicLabels
-    // claims index 0 as "Majority Color" unconditionally, so that position is a contract, not a
+    // claims index 0 unconditionally -- "Sets the Tone", or "Nameplate Background" on a nameplate -- so that position is a contract, not a
     // preference. Everything after it is re-ordered by prevalence blended with chroma, which is what
     // lifts a small vivid accent onto the FIRST page of the 4+4 pagination rather than the second.
     const head = merged.slice(0, 1);

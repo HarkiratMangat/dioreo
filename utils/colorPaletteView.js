@@ -251,7 +251,7 @@ function shade(hex, amount = DERIVED_AMOUNT) {
 // just being typed out -- sent as message attachments referenced via `attachment://`, generated
 // fresh per render (no external hosting needed, these are tiny/cheap to generate). Content format:
 // the plain-English color NAME as the bold heading line, hex plainly below it, and the dynamic
-// relative label (Majority Color/Vibrant Accent/etc, or the Display Name page's own Gradient Start/
+// relative label ("Sets the Tone"/"Catches the Eye"/etc, or the Display Name page's own Gradient Start/
 // End/Blend labels) as a small quoted caption. Returns both the component rows AND the raw file
 // buffers the caller needs to attach alongside them.
 async function buildEntryRows(entries) {
@@ -486,9 +486,9 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already
-    // does this) -- assigning "Majority Color"/"Vibrant Accent"/etc per-PAGE instead would produce
+    // does this) -- assigning "Sets the Tone"/"Catches the Eye"/etc per-PAGE instead would produce
     // inconsistent results depending on which page a given color happened to land on (e.g. the real
-    // Vibrant Accent could end up on page 2, leaving page 1 with no Vibrant Accent label at all).
+    // eye-catching accent could end up on page 2, leaving page 1 with no "Catches the Eye" at all).
     const allEntries = effectiveSource === 'name'
         ? buildDisplayNameEntries(data.displayNameColors)
         : buildSwatchEntries(data[effectiveSource], effectiveSource, data.nameplateBedName);
