@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.4.0 — 2026-08-10 15:57 EDT — `/server`: server admins can finally quiet the bot, and the one thing they asked for turns out to be impossible
+## Pre-Release v3.4.0 — 2026-08-10 19:57 EDT (#109) — `/server`: server admins can finally quiet the bot, and the one thing they asked for turns out to be impossible
 
 **The v3 guild install's launch blocker, closed.** Shipping a guild-installable bot with no server-side controls means any member can invoke it in any channel with no moderator recourse — Harkirat's framing was "we don't want the bot to run freely bypassing everyone's oversight." `/server` is the answer: a Components V2 panel for a server's own admins, distinct from `/manage`, which stays Harkirat's owner-level surface gated on `ALLOWED_ADMIN_ID`. Design + the rejected alternatives: `docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md`.
 
@@ -115,7 +115,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 **A privacy check reported a vacuous pass over the very model it exists to catch.** `GuildSettings.updatedBy` stores a Discord user ID — personal data by the policy's own §2.1 reasoning — but `docs-audit`'s `privacy-model-coverage` keys on the three literal names `discordId`/`userId`/`user_id`, so it never *examined* the new model and reported green. The heuristic now includes actor fields (`updatedBy`, `createdBy`, `authorId`, `ownerId`), which both closes the blind spot and clears a standing vacuous-pass warning: the audit went 39/41 → 40/41 verified. `PRIVACY.md` gained §2.1a and an Appendix A entry describing the record in full, folded into the pending v1.11 revision that ships with v3.
 
-## Pre-Release v3.3.0 — 2026-08-10 14:17 EDT (#108) — Nameplate/Deco previews: GIF → lossless WebP, and Discord's own proxy turned out to be the real obstacle
+## Pre-Release v3.3.0 — 2026-08-10 14:17 EDT (#108 · `1dcf68a`) — Nameplate/Deco previews: GIF → lossless WebP, and Discord's own proxy turned out to be the real obstacle
 
 **The GIF cache shipped the same day, and got pivoted the same day.** Commit `8b7ae18` (earlier today) added animated GIF previews for the Nameplate/Deco pages in View Colors. A live test — DMing the bot an attachment and asking Harkirat to check both desktop and mobile — confirmed Discord autoplays animated **WebP** inline exactly like GIF, and WebP holds real 8-bit alpha. That single fact removed every GIF-era compromise this feature had just shipped with: the solid-opaque nameplate bed (GIF's binary alpha genuinely couldn't hold a fade) is gone, restored to the real fade gradient; decoration's Bayer alpha-dithering (the closest a binary-alpha format can get to a soft edge) is gone entirely, replaced with true lossless transparency.
 
