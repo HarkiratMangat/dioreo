@@ -9,6 +9,7 @@ paths:
   - "utils/ephemeral.js"
   - "utils/emojiMap.js"
   - "utils/shareButton.js"
+  - "utils/commandMentions.js"
 ---
 
 # Rendering & shared UI — Components V2, builders, pagination, "Show Everyone"
@@ -29,6 +30,8 @@ This bot uses Discord's Components V2 (`flags: 32768`) throughout: Containers (t
    - **Enforced by `scripts/checkEmojiCaptures.js`**, which proxies `emojiMap` and fails if any module reads an emoji value during `require()`. It found all four sites; manual review had found three. Run it after touching emoji rendering (CI candidate — see `docs/db-deferred-list.md`).
    - **Fail-soft:** any API/parse error leaves the hardcoded prod ids in place. Cosmetics must never take the bot down.
    - An optional **gitignored `utils/emojiMap.dev.json`** overlay (applied after the name sync, only when `NODE_ENV=development`) lets a dev session point individual keys at throwaway test emojis that don't exist on prod at all, without editing — or risking committing — the tracked map.
+
+6. **Real slash-command mentions (`</name:id>`) have the SAME render-time trap as emoji ids, added 2026-08-10 23:46 EDT (v3.5.0-pre).** `utils/commandMentions.js`'s `mentionCommand(client, path)` renders a real clickable Discord command mention, falling back to the old `` `/name` `` backtick text when the id isn't known yet. IDs live on `client.commandIds` (a `Map<name, id>`), captured in `index.js`'s `handleBotReady()` straight off the existing `rest.put(Routes.applicationCommands(...))` registration response — no extra API call. **A subcommand mention (`/draw prices`, `/patch notes`, `/season end`) still resolves off its TOP-LEVEL command's id** — there's no separate id per subcommand — and a wrong one fails completely silently (renders as plain text, no error), so verify by looking, not by assuming the syntax is right. **Rule, same as emoji:** call `mentionCommand` inside a render function with `client` passed in, never from a module-level literal — `client.commandIds` only exists after the bot connects, and the dev/prod bots are separate Discord applications with different ids for identically-named commands. Wired into `/help`'s landing directory + detail headers and six cross-reference spots (`drawprices.js`, `calendar.js`, `server.js`, `manage.js`, `autobuildPipeline.js`, `alerts.js`) — full design: `docs/superpowers/specs/2026-08-10-slash-command-mentions-design.md`. **One real platform wall:** a slash command's OPTION `.setDescription()` text is never message content and never renders markdown/mentions — `calendar.js`'s `[view]` option keeps its plain-text `/settings` reference for that reason.
 
 
 ## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`, `utils/globalNav.js`,

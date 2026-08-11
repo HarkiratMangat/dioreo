@@ -14,6 +14,7 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
+const { mentionCommand } = require('../utils/commandMentions');
 
 // Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the
 // full nav-row hue-spread reasoning. A deep forest emerald ("CP" = currency) -- chosen over a
@@ -412,7 +413,7 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
  * Separated into its own function so the index.js dropdown/button router can call it directly
  * when users swap regions or pages without needing to re-run the entire slash command.
  */
-function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0) {
+function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0, client) {
     const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
     // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention
     // used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice
@@ -482,7 +483,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             { type: 14, spacing: 2, divider: true },
             // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for
             // the 3rd region.
-            { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out \`/settings\`)` },
+            { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out ${mentionCommand(client, '/settings')})` },
             {
                 type: 1,
                 // 3-way region switcher (replaced the old single "switch to the other region" toggle
@@ -574,7 +575,7 @@ module.exports = {
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        const components = buildContainer(targetRegion, accentColor, isEphemeral, subpageOverride);
+        const components = buildContainer(targetRegion, accentColor, isEphemeral, subpageOverride, interaction.client);
 
         return await sendV2Payload(interaction, components);
     }

@@ -17,6 +17,7 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { isSameDrawTitle } = require('../utils/search');
+const { mentionCommand } = require('../utils/commandMentions');
 // ⚠️ REVERTED 2026-08-07 21:30 EDT -- the width-cap fix below (2026-07-31 17:20 EDT, "an uncapped
 // banner was making the whole container render unnecessarily wide on desktop") was built on the
 // assumption that a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click
@@ -202,7 +203,7 @@ function buildSectionToggleRow(currentPage) {
     };
 }
 
-function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all') {
+function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const nowMs = Date.now();
     const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
@@ -272,7 +273,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // toggle row below it, and only ONE divider total separating the section content above from
     // this whole nav block.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Game Modes**. (Tip: check out \`/settings\`)` });
+    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Game Modes**. (Tip: check out ${mentionCommand(client, '/settings')})` });
     calendarComponents.push(buildSectionToggleRow(safePage));
 
     const containerPayload = {
@@ -354,7 +355,7 @@ module.exports = {
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        const components = buildContainer(seasonalDoc, targetPage, accentColor, isEphemeral, filterMode);
+        const components = buildContainer(seasonalDoc, targetPage, accentColor, isEphemeral, filterMode, interaction.client);
 
         return await sendV2Payload(interaction, components);
     }

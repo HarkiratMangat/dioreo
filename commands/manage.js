@@ -36,6 +36,7 @@ const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, Act
 const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
+const { mentionCommand } = require('../utils/commandMentions');
 
 const ALLOWED_ADMIN_ID = '1139845545754632283'; // Your exact Discord ID
 
@@ -70,7 +71,7 @@ const PURGE_LABELS = {
 // copy by value, so building the table at require() time froze the pre-sync PROD ids permanently.
 // Rebuilding it per render costs ~30 template strings against a network round trip -- not worth
 // memoizing, and a cache would just reintroduce a subtler version of the same staleness bug.
-function buildPagesTable() {
+function buildPagesTable(client) {
   return {
     draws: {
         label: 'Draws',
@@ -209,8 +210,8 @@ function buildPagesTable() {
     // Loadouts (MP + DMZ) — structurally identical pages, differing only in `mode`. DMZ literally
     // reuses this same shape (Harkirat: "just copy that for DMZ loadouts since they're essentially
     // the same thing") via `buildLoadoutsPage(mode)` below rather than a second hand-copied entry.
-    loadouts_mp: loadoutsPageDef('MP', 'MP Loadouts', emojis.rank),
-    loadouts_dmz: loadoutsPageDef('DMZ', 'DMZ Loadouts', emojis.dmz),
+    loadouts_mp: loadoutsPageDef('MP', 'MP Loadouts', emojis.rank, client),
+    loadouts_dmz: loadoutsPageDef('DMZ', 'DMZ Loadouts', emojis.dmz, client),
     patchnotes: {
         label: 'Patch Notes',
         icon: emojis.patchNotes,
@@ -342,7 +343,7 @@ function buildDraftStatusText(seasonalDoc) {
 // Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a
 // different `mode` baked into every action id (so index.js's handlers know which collection slice
 // to touch) and a different header icon/label.
-function loadoutsPageDef(mode, headerLabel, icon) {
+function loadoutsPageDef(mode, headerLabel, icon, client) {
     return {
         label: headerLabel,
         icon,
@@ -363,7 +364,7 @@ function loadoutsPageDef(mode, headerLabel, icon) {
                 // deliberate -- this is a pure info block, not an action -- buildManagePage's
                 // `group.buttons.map(...)` on an empty array just produces zero button rows.
                 blocks: [
-                    `### ${emojis.mngInfo} How Images Work\n-# **Fastest path: \`/autobuild\`** — hand it a Gunsmith screenshot (or an image URL) and it uploads the image to Cloudinary AND creates the loadout for you, no image key to type. Use the manual entry below when you already have the image hosted or want fine control.\n-# **Manual entry (this panel):** upload the screenshot to Cloudinary yourself first (its dashboard, or ask Claude to). Cloudinary assigns a **Public ID** — by default your file's original name (e.g. \`IMG_5630\`) unless you rename it — and you type that Public ID EXACTLY into "Cloudinary Image Key" below. The bot builds the card's image straight from that key with no check that it's real, so a mismatch just shows a broken image until it's fixed. Rename to \`WeaponKey-BuildNum\` (e.g. \`BAL-27-1\`, \`FSS-HURRICANE-1\`) to match the rest of the collection. (\`/autobuild\` already names it this way automatically.)`
+                    `### ${emojis.mngInfo} How Images Work\n-# **Fastest path: ${mentionCommand(client, '/autobuild')}** — hand it a Gunsmith screenshot (or an image URL) and it uploads the image to Cloudinary AND creates the loadout for you, no image key to type. Use the manual entry below when you already have the image hosted or want fine control.\n-# **Manual entry (this panel):** upload the screenshot to Cloudinary yourself first (its dashboard, or ask Claude to). Cloudinary assigns a **Public ID** — by default your file's original name (e.g. \`IMG_5630\`) unless you rename it — and you type that Public ID EXACTLY into "Cloudinary Image Key" below. The bot builds the card's image straight from that key with no check that it's real, so a mismatch just shows a broken image until it's fixed. Rename to \`WeaponKey-BuildNum\` (e.g. \`BAL-27-1\`, \`FSS-HURRICANE-1\`) to match the rest of the collection. (${mentionCommand(client, '/autobuild')} already names it this way automatically.)`
                 ],
                 buttons: []
             },
@@ -457,9 +458,9 @@ function buildPastSeasonsOptions(seasonalDoc) {
     }));
 }
 
-function buildManagePage(page, dynamicData = {}) {
+function buildManagePage(page, dynamicData = {}, client) {
     // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
-    const PAGES = buildPagesTable();
+    const PAGES = buildPagesTable(client);
     const pageKey = PAGES[page] ? page : 'draws';
     const pageData = PAGES[pageKey];
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
@@ -1049,6 +1050,6 @@ module.exports = {
             const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
             dynamicData = { draftStatus: buildDraftStatusText(seasonalDoc) };
         }
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData));
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client));
     }
 };

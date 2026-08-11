@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.4.2 — 2026-08-10 21:06 EDT — the legacy v2 queue gets read for the first time, and it was stale rather than dead
+## Pre-Release v3.5.0 — 2026-08-10 23:31 EDT (#112) — `/help` gets real, clickable slash-command mentions
+
+**Every command Dioreo can reference now becomes a real, clickable slash-command mention** (`</name:id>`) instead of plain backtick text — click one and it types straight into your chat box, no more copy-typing `/settings` by hand. Harkirat found the format in Discord's own docs and tested it by hand first (a mention placed in the dev bot's own bio); the trickiest part isn't documented well: a subcommand or subcommand-group mention (`/draw prices`, `/patch notes`, `/season end`) still resolves off its TOP-LEVEL command's id — there is no separate id per subcommand, and a wrong one fails completely silently, rendering as plain text with no error.
+
+IDs come free: `index.js`'s existing command-registration call to Discord already returns every command's real id in its response, so `client.commandIds` is built straight off that with no extra API request. A new `utils/commandMentions.js` resolves the mention at render time, matching the convention `utils/emojiMap.js` already uses for emoji ids — a value that only exists after the bot is connected to Discord must never be frozen into a module-level constant, since the dev and prod bots are separate Discord applications with different ids for identically-named commands.
+
+Landed in `/help`'s landing directory and every detail page's command heading, plus six spots elsewhere in the bot where one command's text names a sibling command (`/draw prices` and `/calendar`'s "check out /settings" tips, `/server`'s two `/settings` mentions, `/manage`'s `/autobuild` pointer, `/autobuild`'s own retry/expiry messages, and `/alerts`' admin-only rejection). One genuine platform wall found along the way: a slash command's OPTION description (the grey helper text Discord shows while typing) is not message content and never renders markdown or mentions — `/calendar`'s `[view]` option keeps its plain-text `/settings` reference for that reason, while the near-identical wording inside `/help`'s own body (real message content) became a live mention. `/help`'s Examples lines (option-value syntax, e.g. `weapon:AK117`) are intentionally untouched — a mention can't pre-fill an option value, and Harkirat parked that one for a later pass rather than a hard no.
+
+**Verified:** boot-tested on the local dev bot; Harkirat confirmed `/help`'s landing page, every detail page including the three subcommand cases, and all six cross-reference spots render as real clickable pills in Discord.
+
+---
+
+## Pre-Release v3.4.2 — 2026-08-10 21:06 EDT (#111 · `9a9244c`) — the legacy v2 queue gets read for the first time, and it was stale rather than dead
 
 **Every legacy v2 item now carries a verdict backed by code, not by the tracker.** v2 closed barely an hour earlier, leaving `docs/ROADMAP.md`'s three v2 batches as a queue nobody had reconciled — and the sweep's own filing warned that an un-struck item there meant *unverified*, not *outstanding*. Ten items, four buckets: **5 already done · 3 still genuinely open (re-tagged v3) · 2 folded into v3 by a prior decision · 0 abandoned.** The empty bucket is written down on purpose so it reads as a checked conclusion rather than a step that got skipped. The useful finding is that shape itself — **nothing in the queue had been overtaken or gone unwanted, so the cost of leaving it unread was never dead weight; it was three items whose true state nobody could read off the tracker.**
 
