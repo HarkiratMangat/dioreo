@@ -22,6 +22,18 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED — RESOLVED 2026-08-10 20:31 EDT (Pre-Release v3.4.1)
+
+*Original entry: `[P1 · XS]`, filed 2026-08-04 16:23 EDT, rewritten 2026-08-06 00:36 EDT after its hardcoded version numbers went stale. Trigger: the next session that touches this repo, or any report that a site/bot change "did not land". It carried a standing instruction — **measure first, do not deploy first** — plus a warning never to write either version number back into its own prose, because the previous wording ("v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3") had quietly understated the gap by several releases while looking precise.*
+
+**Outcome.** Harkirat asked for the deploy so v2 would be *properly* shipped rather than merely merged. Measured first, exactly as the entry instructed: the VM was on `4c00432` / **v2.62.0**, <!-- TS-EXAMPLE: quoted systemd/UTC evidence, not a local clock reading --> active since `Sat 2026-08-08 05:02:14 UTC` — **one release behind, not the several the heading implied.** `main` was `89f1766` / **v2.63.1**, three commits ahead: the soft-wrap/front-matter pass (#103), the CodeQL remediation (#102), and a hooks/memory chore. Deployed with `scripts/deploy.sh`; the VM now reports `89f1766` / **v2.63.1**, <!-- TS-EXAMPLE: quoted systemd/UTC evidence --> service active since `Tue 2026-08-11 00:30:41 UTC` (20:30 EDT), restarts 0, errors 0 across 1h/12h/48h/7d/30d.
+
+**Two things worth carrying forward:**
+- ⚠️ **The verification that counted was the SECOND one.** `deploy.sh` runs `vmstatus.sh` **on the VM** as its own post-restart check, and that panel prints `⚠ NOT LIVE — Cloud Logging is only queried from the Mac`. The version recorded above comes from an **independent re-query afterwards**, not from the deploy's own output. A deploy's self-report is not verification of the deploy — see `feedback_verify_before_claiming`.
+- **The heading was wrong in the safe direction, which is still wrong.** "WELL AHEAD" was true when written and decayed into overstatement — the same rot the entry's own warning described, one layer up. An alarming stale heading costs credibility the same way a reassuring one costs safety.
+
+*Full story: `docs/CHANGELOG.md` → Pre-Release v3.4.1.*
+
 ### 🎨 View Colors panel — four follow-ups from Harkirat's live test of v3.2.0 — SHIPPED 2026-08-09 20:40 EDT (Pre-Release v3.2.0, folded into #106)
 
 **Outcome:** all four shipped, folded into the same v3.2.0 pre-release entry rather than a new one (no version bump). (1) The nameplate bed is now composited with Jimp (`utils/nameplateBedImage.js`, new file) from the `palette` field threaded through `fetchProfileExtras`/`readGuildProfile`/`getSourceImageInfo`, and surfaced as its own "Nameplate Background" palette entry — verified end-to-end with a synthetic art image (transparent left region, opaque right region matching the real asset's measured bounds), confirming the gradient shows through the transparent region and the art occludes it correctly where opaque. (2) A solid Display Name style now shows "Display Name Color" plus deterministic same-hue "Lighter Tint"/"Darker Shade" companions instead of three identical swatches; gradients unchanged. (3) The `#HEX` copy hint moved from the heading to the top of the palette section. (4) The heading now shows `> Extracted from: Server Profile` / `Global Profile`. Component count re-measured with real mock data at the new worst case (nameplate page, bed entry pushing to 2 pages): 30/40, safe margin. Full story: `docs/CHANGELOG.md` and `docs/DEVLOG.md` Pre-Release v3.2.0 entries.
