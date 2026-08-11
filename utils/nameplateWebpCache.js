@@ -77,6 +77,13 @@ const FOLDER = IS_DEV ? 'dev_nameplate_webp' : 'nameplate_webp';
 // palette) ever, so there's no reason to trade smoothness for a cost that's already amortized to
 // nothing after the first real view.
 const FPS = 12;
+// ONE definition, used by the render and the heal path AND folded into the palette cache key. These
+// three values decide which pixels the extractor ever sees -- `-c:v libvpx-vp9` in particular is what
+// makes the webm's alpha channel survive at all (the default vp9 decoder silently drops it) -- so a
+// change here changes every stored palette. Passing this to paletteContextFields/readPaletteContext is
+// what makes that change invalidate them; see colorExtract.js's `extra` parameter for why the cache
+// modules own this rather than the fingerprint reaching in for it.
+const FRAME_OPTS = { inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS };
 
 // SECURITY: never log a raw Cloudinary error object -- same leak shape as every other Cloudinary
 // module here (the Admin API's rejected-promise carries the account's live API key+secret in
@@ -126,7 +133,7 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
             // Null both when no palette was ever stored AND when the stored one predates the current
             // extractor -- readPaletteContext checks the version marker. Both cases route through
             // healPalette below, which re-derives in place; see colorExtract.js's PALETTE_ALGO_VERSION.
-            palette: readPaletteContext(result.context?.custom)
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -156,11 +163,7 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // -c:v libvpx-vp9 forces the decoder that actually surfaces the WebM alpha side-data block --
         // see animatedMediaPipeline.js's own comment for the measured default-decoder bug this works
         // around.
-        const rawFrames = await extractAlphaFrames(webmBuffer, {
-            inputExt: '.webm',
-            preInputArgs: ['-c:v', 'libvpx-vp9'],
-            fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(webmBuffer, FRAME_OPTS);
 
         // Per-frame Jimp compositing is fully synchronous CPU work -- yielding between frames is the
         // same fix the k-means CPU-burst production incident needed (see
@@ -255,7 +258,7 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // first permanently falls back to the slower fetch+reattach path with no way to self-heal.
         // ONE patch carrying both keys. Cloudinary's `context` replaces the whole map, so sending them
         // in two calls would have the second silently erase the first.
-        const context = { ...paletteContextFields(palette) };
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
         if (Object.keys(context).length) {
             try {
@@ -306,11 +309,9 @@ async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex)
     try {
         const res = await fetch(webmUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${webmUrl}`);
-        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
-            inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), FRAME_OPTS);
         const palette = await extractPaletteFromFrames(rawFrames, bedHex);
-        const context = { ...paletteContextFields(palette) };
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (!context.palette) return cached;
         // Re-send discord_cdn_url alongside it -- `context` replaces the whole map, so patching the
         // palette alone would wipe the url this module works hard to persist.

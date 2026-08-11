@@ -563,10 +563,12 @@ function serializePalette(palette) {
 //
 // To read the current value: `node -p "require('./utils/colorExtract').PALETTE_ALGO_VERSION"`.
 // Ledger (fill in on the way past -- it maps an opaque hash back to a human story):
-//   2b3df0e44f80 — as of v3.8.0-pre: two-pool OKLab extractor with farthest-first seeding; montage
-//                  tiles copied rather than composited. Entries written before any marker existed
-//                  carry none, and are stale by definition -- correctly, since they predate the
-//                  rounding fix.
+//   ec022f178423 — as of v3.8.0-pre: two-pool OKLab extractor with farthest-first seeding; montage
+//                  tiles copied rather than composited; frame extraction folded in. Entries written
+//                  before any marker existed carry none, and are stale by definition -- correctly,
+//                  since they predate the rounding fix.
+// ⚠️ Each cache combines this with its own FRAME_OPTS, so the value actually stored is NOT this
+// string -- see paletteKey below. This is the shared base, not the final key.
 const PALETTE_ALGO_VERSION = fingerprint(
     // Everything the extracted values depend on, including the helpers the top-level functions call --
     // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
@@ -585,16 +587,27 @@ const PALETTE_ALGO_VERSION = fingerprint(
 // render path and its heal path, times two modules) cannot drift on the key name or the version.
 // Returns {} rather than a partial map when there is nothing worth storing, so a caller can spread it
 // into a context object unconditionally.
-function paletteContextFields(palette) {
+// ⚠️ `extra` is how a CALLER folds its own output-affecting inputs into the key, and both helpers must
+// be given the same ones or a freshly-written palette reads back as stale forever. It exists because
+// PALETTE_ALGO_VERSION cannot see everything on its own: the ffmpeg fps and decoder flags live in the
+// two cache modules and differ per media type (a nameplate is `-c:v libvpx-vp9` at 12fps, a decoration
+// `-f apng`), and importing them here would close a cycle -- those modules require this one. Each
+// cache passes its FRAME_OPTS, so "which frames existed" is part of the identity of what was stored.
+// Symmetry is enforced locally: the write and the read sit in the same module, a few lines apart.
+function paletteKey(...extra) {
+    return extra.length ? fingerprint(PALETTE_ALGO_VERSION, ...extra) : PALETTE_ALGO_VERSION;
+}
+
+function paletteContextFields(palette, ...extra) {
     const serialized = serializePalette(palette);
-    return serialized ? { palette: serialized, palette_version: PALETTE_ALGO_VERSION } : {};
+    return serialized ? { palette: serialized, palette_version: paletteKey(...extra) } : {};
 }
 
 // Reads a stored palette back, returning null unless it was produced by the CURRENT algorithm. Null is
 // exactly what an absent palette returns, and both caches already treat that as "heal this one" -- so
 // stale entries re-derive themselves on next view with no separate migration path to maintain.
-function readPaletteContext(custom) {
-    if (!custom || custom.palette_version !== PALETTE_ALGO_VERSION) return null;
+function readPaletteContext(custom, ...extra) {
+    if (!custom || custom.palette_version !== paletteKey(...extra)) return null;
     return deserializePalette(custom.palette);
 }
 

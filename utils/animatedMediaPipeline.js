@@ -242,13 +242,21 @@ async function readImageSize(buffer) {
     return { width, height };
 }
 
-// This module's contribution to the palette cache key -- see utils/algoFingerprint.js. The montage is
-// upstream of every stored nameplate/decoration palette (both go through poolFramesIntoMontage), so a
-// change to which frames are picked, how they are scaled, or how they are laid onto the sheet changes
-// the extracted colours just as surely as a change to the clustering does. Hashing the extractor alone
-// would have missed the tile-copy fix in this very file, which altered a swatch while touching nothing
-// in colorExtract.js.
-const MONTAGE_FINGERPRINT = fingerprint(poolFramesIntoMontage, { POOL_FRAMES, POOL_TILE_WIDTH });
+// This module's contribution to the palette cache key -- see utils/algoFingerprint.js. Everything
+// upstream of the extractor belongs in here, because a stored palette depends on the PIXELS as much as
+// on the clustering: extractAlphaFrames decides which frames exist at all, and poolFramesIntoMontage
+// decides which of them are picked, how they are scaled, and how they are laid onto the sheet.
+// Hashing colorExtract alone would have missed the tile-copy fix in this very file, which altered a
+// swatch while touching nothing there.
+//
+// ⚠️ `extractAlphaFrames` is in here even though it looks like plumbing. It is not: its ffmpeg
+// invocation is what turns a source into pixels, so a change to how it decodes changes every palette
+// derived from it. The one input it does NOT close over is its OPTIONS -- fps and the decoder flags
+// live in the two cache modules and differ per media type, so each cache folds its own extraction
+// options into the key at the call site (see colorExtract.js's paletteContextFields).
+const MONTAGE_FINGERPRINT = fingerprint(
+    extractAlphaFrames, poolFramesIntoMontage, { POOL_FRAMES, POOL_TILE_WIDTH }
+);
 
 module.exports = {
     extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize, MONTAGE_FINGERPRINT

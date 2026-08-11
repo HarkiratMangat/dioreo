@@ -23,10 +23,14 @@ const {
 } = require('../utils/colorExtract');
 const { MONTAGE_FINGERPRINT } = require('../utils/animatedMediaPipeline');
 
+// Counted, never hardcoded -- a literal total in the summary is a copy of state that rots the moment
+// a case is added, and it rotted within minutes of this file being written.
 let failed = 0;
+let passed = 0;
 function t(name, fn) {
     try {
         fn();
+        passed++;
         console.log(`  PASS  ${name}`);
     } catch (err) {
         failed++;
@@ -122,6 +126,39 @@ t('a malformed palette reads as absent even under a correct version', () => {
     );
 });
 
+// --- The `extra` channel: a caller folding its own output-affecting inputs into the key. Both halves
+// must be given the same ones, and the asymmetric case is the one that would rot silently -- a palette
+// written with extras and read without them would look permanently stale and re-derive on every view.
+const NAMEPLATE_OPTS = { inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: 12 };
+const DECORATION_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: 12 };
+
+t('a palette written with extras reads back with the same extras', () => {
+    const fields = paletteContextFields(SAMPLE, NAMEPLATE_OPTS);
+    assert.notStrictEqual(fields.palette_version, PALETTE_ALGO_VERSION, 'extras must change the key');
+    assert.deepStrictEqual(readPaletteContext(fields, NAMEPLATE_OPTS), SAMPLE);
+});
+
+t('reading WITHOUT the extras it was written with returns absent', () => {
+    const fields = paletteContextFields(SAMPLE, NAMEPLATE_OPTS);
+    assert.strictEqual(readPaletteContext(fields), null);
+});
+
+t('different extraction options produce different keys', () => {
+    // Guards against a nameplate and a decoration agreeing on a key despite decoding differently --
+    // `-f apng` vs `-c:v libvpx-vp9` is the difference between real alpha and none.
+    assert.notStrictEqual(
+        paletteContextFields(SAMPLE, NAMEPLATE_OPTS).palette_version,
+        paletteContextFields(SAMPLE, DECORATION_OPTS).palette_version
+    );
+});
+
+t('a changed fps DOES change the key', () => {
+    assert.notStrictEqual(
+        paletteContextFields(SAMPLE, NAMEPLATE_OPTS).palette_version,
+        paletteContextFields(SAMPLE, { ...NAMEPLATE_OPTS, fps: 24 }).palette_version
+    );
+});
+
 t('an empty palette produces no context fields at all', () => {
     // Must not write a version marker with nothing under it -- that would read as a valid current
     // palette of length zero on the next hit.
@@ -129,5 +166,5 @@ t('an empty palette produces no context fields at all', () => {
     assert.deepStrictEqual(paletteContextFields(null), {});
 });
 
-console.log(`\n  ${13 - failed} passed, ${failed} failed\n`);
+console.log(`\n  ${passed} passed, ${failed} failed\n`);
 process.exit(failed ? 1 : 0);

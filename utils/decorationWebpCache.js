@@ -71,6 +71,12 @@ const FOLDER = IS_DEV ? 'dev_decoration_webp' : 'decoration_webp';
 // fixed rate nameplate settled on, for the same reason: the render cost is paid once per design and
 // cached forever, so there's no pressure to chase a lower rate for speed.
 const FPS = 12;
+// ONE definition, used by the render and the heal path AND folded into the palette cache key -- see
+// utils/nameplateWebpCache.js's matching comment. `-f apng` is the load-bearing flag here: without it
+// ffmpeg silently reads an animated PNG as a single still frame, which is the exact silent-single-frame
+// trap animatedMediaPipeline.js's header documents. A change to any of these three changes every
+// stored decoration palette, which is why they are part of its key.
+const FRAME_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS };
 // Cap the rendered width the same way utils/resizedImage.js caps the nameplate/avatar previews --
 // decorations are typically already small (avatar-decoration scale, confirmed 288x288 on a real
 // equipped decoration -- comfortably under this cap already), so this is a ceiling, not a forced
@@ -117,7 +123,7 @@ async function getCachedDecorationWebp(decorationAsset) {
             // Null both when no palette was ever stored AND when the stored one predates the current
             // extractor -- readPaletteContext checks the version marker, and both cases route through
             // healPalette below. See colorExtract.js's PALETTE_ALGO_VERSION for the invalidation rule.
-            palette: readPaletteContext(result.context?.custom)
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -142,11 +148,7 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // -f apng is REQUIRED (see utils/stillFrame.js's extractFrameMontage comment) -- without it
         // ffmpeg silently reads an animated PNG as a single still frame and this would produce a
         // 1-frame "animated" WebP with no error anywhere to catch it.
-        const rawFrames = await extractAlphaFrames(sourceBuffer, {
-            inputExt: '.png',
-            preInputArgs: ['-f', 'apng'],
-            fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(sourceBuffer, FRAME_OPTS);
 
         // No bed/compositing step (decorations stay genuinely transparent) and no dithering pass.
         // Dimensions checked from ONE frame only, then resize the WHOLE set only if actually needed --
@@ -252,7 +254,7 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // (measured live 2026-08-10 13:07 EDT: the fire-and-forget version lost the write silently).
         // ONE patch carrying both keys -- Cloudinary's `context` replaces the whole map, so two calls
         // would have the second silently erase the first.
-        const context = { ...paletteContextFields(palette) };
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
         if (Object.keys(context).length) {
             try {
@@ -297,11 +299,9 @@ async function healPalette(cached, decorationAsset, decorationUrl) {
     try {
         const res = await fetch(decorationUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${decorationUrl}`);
-        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
-            inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), FRAME_OPTS);
         const palette = await extractPaletteFromFrames(rawFrames);
-        const context = { ...paletteContextFields(palette) };
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (!context.palette) return cached;
         // Re-send discord_cdn_url -- `context` replaces the whole map, so patching the palette alone
         // would wipe the url this module works hard to persist.
