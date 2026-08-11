@@ -4,6 +4,7 @@
 // from its data-fetching, and from index.js's routing the same way every other panel's render lives
 // in utils/ rather than inline.
 const namer = require('color-namer');
+const { assignColorNames } = require('./colorNames');
 const { renderSwatchImage } = require('./colorSwatchImage');
 const { renderGradientBanner } = require('./colorGradientImage');
 const { renderResizedImage } = require('./resizedImage');
@@ -43,63 +44,6 @@ function getColorName(hex) {
     return namer(formatHex(hex), { pick: ['ntc'] }).ntc[0].name;
 }
 
-// ⚠️ NAMING IS A HYBRID (2026-08-11 08:21 EDT, Harkirat: the names "try too hard to be unique such as
-// 'rajah' or 'robins egg blue'"). Prefer a FAMILIAR CSS colour name; fall back to ntc only when no CSS
-// name is close enough or the good one is already taken on this page.
-//
-// 🚫 DO NOT "just swap the library" — surveyed and measured, every alternative is WORSE for this goal:
-//   · color-namer's own `basic`/`roygbiv` are wrong, not merely coarse (a dodger blue named "violet",
-//     a turquoise named "green").
-//   · `html`/`x11` ALONE collapse a palette: measured over 146 real swatches they produced 19
-//     duplicate-name pairs across 12 of 22 images -- one avatar read "black" three times in 8 slots --
-//     against ntc's 3. That is why this is a hybrid rather than a straight switch.
-//   · `color-name-list` (MIT, so licensing was never the blocker) is further from the goal, not
-//     closer: its 31,914/4,959/3,082-entry lists name real palette colours "Eigengrau", "Dream
-//     Vapour", "Bacon Strips", "20000 Leagues Under the Sea". Those libraries optimise for poetry and
-//     uniqueness; we want recognisability.
-// Measured result of the hybrid at this threshold: 73% familiar CSS names and only 2 duplicate pairs
-// -- fewer than the 3 ntc alone produces, because the fallback fires precisely when a name collides.
-const CSS_NAME_MAX_DISTANCE = 18;
-
-// color-namer returns CSS names lowercase-concatenated ("cornflowerblue"), which is the reason ntc was
-// originally chosen over them. Greedy longest-match against this vocabulary restores the spacing.
-// Verified exhaustively: every one of the 129 CSS names reachable from color-namer's html list splits
-// cleanly, 0 failures -- so this cannot silently emit a mangled name.
-const CSS_NAME_WORDS = ['alice', 'antique', 'aqua', 'marine', 'azure', 'beige', 'bisque', 'blanched', 'almond', 'black', 'blue', 'violet', 'brown', 'burly', 'wood', 'cadet', 'chartreuse', 'chocolate', 'coral', 'cornflower', 'cornsilk', 'crimson', 'cyan', 'dark', 'deep', 'dim', 'dodger', 'fire', 'brick', 'floral', 'white', 'forest', 'fuchsia', 'gainsboro', 'ghost', 'gold', 'goldenrod', 'gray', 'grey', 'green', 'yellow', 'honeydew', 'hot', 'pink', 'indian', 'red', 'indigo', 'ivory', 'khaki', 'lavender', 'blush', 'lawn', 'lemon', 'chiffon', 'light', 'lime', 'linen', 'magenta', 'maroon', 'medium', 'aquamarine', 'midnight', 'mint', 'cream', 'misty', 'rose', 'moccasin', 'navajo', 'navy', 'old', 'lace', 'olive', 'drab', 'orange', 'orchid', 'pale', 'papaya', 'whip', 'peach', 'puff', 'peru', 'plum', 'powder', 'purple', 'rebecca', 'rosy', 'royal', 'saddle', 'salmon', 'sandy', 'sea', 'shell', 'sienna', 'silver', 'sky', 'slate', 'snow', 'spring', 'steel', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'wheat', 'smoke'];
-
-function formatCssColorName(raw) {
-    const parts = [];
-    let i = 0;
-    while (i < raw.length) {
-        let match = null;
-        for (const word of CSS_NAME_WORDS) {
-            if (word.length > (match ? match.length : 0) && raw.startsWith(word, i)) match = word;
-        }
-        if (!match) return null; // unknown vocabulary -- caller falls back rather than guessing
-        parts.push(match);
-        i += match.length;
-    }
-    return parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-}
-
-// Names a whole entry list at once, because a name claimed by one swatch must not be reused by
-// another. `used` is seeded by iteration order, so an entry carrying an authoritative `name` (the
-// nameplate bed, named by Discord itself) claims it BEFORE any extracted colour can take it.
-// ⚠️ That ordering is the fix for a real collision Harkirat caught: a Violet bed and an art colour
-// whose nearest CSS name is also "violet" would otherwise have printed "Violet" twice in one palette.
-function assignColorNames(entries) {
-    const used = new Set();
-    return entries.map(entry => {
-        if (entry.name) { used.add(entry.name); return entry.name; }
-        const hex = formatHex(entry.hex);
-        const css = namer(hex, { pick: ['html'] }).html[0];
-        const familiar = css.distance <= CSS_NAME_MAX_DISTANCE ? formatCssColorName(css.name) : null;
-        if (familiar && !used.has(familiar)) { used.add(familiar); return familiar; }
-        const distinctive = namer(hex, { pick: ['ntc'] }).ntc[0].name;
-        used.add(distinctive);
-        return distinctive;
-    });
-}
 
 function rgbToHslLocal(hex) {
     const r = ((hex >> 16) & 0xff) / 255, g = ((hex >> 8) & 0xff) / 255, b = (hex & 0xff) / 255;
@@ -152,26 +96,33 @@ function assignDynamicLabels(entries, kind) {
 
     if (entries.length === 0) return labels;
 
-    // 1. Majority Color -- the single highest-prevalence entry (entries already arrive sorted by
-    // percent descending from getColorPalette, so index 0 is always the winner).
+    // ⚠️ LABELS WERE PLAINED UP 2026-08-11 08:36 EDT, alongside the switch to plain-English colour
+    // NAMES (see utils/colorNames.js). The two are read together on one line -- "Almost Black / Dark
+    // Undertone" mixed a plain name with design jargon, so the labels now answer "why is this colour
+    // here?" in the same register: Most Common, Darkest Tone, Boldest Color. The RULES are unchanged;
+    // only their wording is. Keep any future label in that register rather than reaching for
+    // design-speak, and keep it short -- it renders as a single quoted line under the hex.
+    //
+    // 1. Most Common -- the single highest-prevalence entry (entries already arrive sorted by percent
+    // descending from getColorPalette, so index 0 is always the winner).
     // ⚠️ NAMEPLATE leads with its BED, not a majority (Harkirat 2026-08-11 07:55 EDT). A nameplate gets
     // only 4 swatches and its background is a design fact rather than a statistic, so "Majority Color"
     // does not fit there -- entry 0 IS the bed (prepended exactly, never extracted) and entries 1-3 come
     // from the upper art layer. See utils/colorPalette.js's nameplate branch for how that is composed.
-    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Majority Color');
+    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Most Common');
     const maj = hsl[0];
 
     // 2. Vibrant Accent -- highest saturation among what's left, only if genuinely saturated.
-    tryClaim(unclaimed().filter(i => hsl[i].s > 0.25).sort((a, b) => hsl[b].s - hsl[a].s), 'Vibrant Accent');
-    // 3. Dark Undertone -- lowest lightness among what's left, only if genuinely dark.
-    tryClaim(unclaimed().filter(i => hsl[i].l < 0.35).sort((a, b) => hsl[a].l - hsl[b].l), 'Dark Undertone');
-    // 4. Light Highlight -- highest lightness among what's left, only if genuinely light.
-    tryClaim(unclaimed().filter(i => hsl[i].l > 0.7).sort((a, b) => hsl[b].l - hsl[a].l), 'Light Highlight');
-    // 5. Neutral Tone -- lowest saturation among what's left, only if genuinely muted/gray.
-    tryClaim(unclaimed().filter(i => hsl[i].s < 0.15).sort((a, b) => hsl[a].s - hsl[b].s), 'Neutral Tone');
+    tryClaim(unclaimed().filter(i => hsl[i].s > 0.25).sort((a, b) => hsl[b].s - hsl[a].s), 'Boldest Color');
+    // 3. Darkest Tone -- lowest lightness among what's left, only if genuinely dark.
+    tryClaim(unclaimed().filter(i => hsl[i].l < 0.35).sort((a, b) => hsl[a].l - hsl[b].l), 'Darkest Tone');
+    // 4. Lightest Tone -- highest lightness among what's left, only if genuinely light.
+    tryClaim(unclaimed().filter(i => hsl[i].l > 0.7).sort((a, b) => hsl[b].l - hsl[a].l), 'Lightest Tone');
+    // 5. Most Neutral -- lowest saturation among what's left, only if genuinely muted/gray.
+    tryClaim(unclaimed().filter(i => hsl[i].s < 0.15).sort((a, b) => hsl[a].s - hsl[b].s), 'Most Neutral');
     // 6. Secondary Color -- the next-most-common color, only if it covers a real share of the image
     // (not a negligible sliver that happens to rank 2nd purely because everything else is tiny too).
-    tryClaim(unclaimed().filter(i => entries[i].percent >= 10).sort((a, b) => entries[b].percent - entries[a].percent), 'Secondary Color');
+    tryClaim(unclaimed().filter(i => entries[i].percent >= 10).sort((a, b) => entries[b].percent - entries[a].percent), 'Second Most Common');
     // 7/8. Warm Contrast / Cool Contrast -- a genuine temperature contrast against the majority color
     // specifically (only fires if the majority ISN'T already that temperature, so this means "stands
     // out from the dominant tone", not just "happens to be warm/cool").
@@ -181,27 +132,28 @@ function assignDynamicLabels(entries, kind) {
     if (!isCoolHue(maj.h)) {
         tryClaim(unclaimed().filter(i => isCoolHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cool Contrast');
     }
-    // 9. Complementary Tone -- the most hue-distant entry from the majority overall, if that distance
-    // is large enough to read as a genuinely different hue family rather than a close variant.
-    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Complementary Tone');
-    // 10/11. Deep Shade / Soft Tint -- notably darker/lighter than the MAJORITY specifically (not the
-    // absolute darkest/lightest overall, which rules 3/4 already claimed) -- "a deeper/lighter variant
-    // of the dominant tone" is still a real, distinct relationship worth naming.
-    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Deep Shade');
-    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Soft Tint');
-    // 12/13. Rich Tone / Muted Accent -- notably more/less saturated than the majority specifically.
-    tryClaim(unclaimed().filter(i => hsl[i].s > maj.s + 0.15).sort((a, b) => hsl[b].s - hsl[a].s), 'Rich Tone');
-    tryClaim(unclaimed().filter(i => hsl[i].s < maj.s - 0.1).sort((a, b) => hsl[a].s - hsl[b].s), 'Muted Accent');
-    // 14. Balanced Tone -- whatever's left that most closely echoes the majority color overall
+    // 9. Opposite Hue -- the most hue-distant entry from the majority overall, if that distance is
+    // large enough to read as a genuinely different hue family rather than a close variant.
+    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Opposite Hue');
+    // 10/11. Darker Shade / Lighter Tint -- notably darker/lighter than the MAJORITY specifically (not
+    // the absolute darkest/lightest overall, which rules 3/4 already claimed) -- "a deeper/lighter
+    // variant of the dominant tone" is still a real, distinct relationship worth naming.
+    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Darker Shade');
+    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Lighter Tint');
+    // 12/13. More Vivid / More Muted -- notably more/less saturated than the majority specifically.
+    tryClaim(unclaimed().filter(i => hsl[i].s > maj.s + 0.15).sort((a, b) => hsl[b].s - hsl[a].s), 'More Vivid');
+    tryClaim(unclaimed().filter(i => hsl[i].s < maj.s - 0.1).sort((a, b) => hsl[a].s - hsl[b].s), 'More Muted');
+    // 14. Similar To Main -- whatever's left that most closely echoes the majority color overall
     // (smallest combined hue/saturation/lightness difference) -- a real, if unremarkable, relationship
-    // ("this closely matches your dominant tone"), not a manufactured category.
+    // ("this closely matches your dominant tone"), not a manufactured category. The old wording,
+    // "Balanced Tone", was the weakest of the fourteen: it described nothing a reader could act on.
     if (unclaimed().length > 0) {
         const closest = [...unclaimed()].sort((a, b) => {
             const da = Math.abs(hsl[a].l - maj.l) + Math.abs(hsl[a].s - maj.s) + hueDistance(hsl[a].h, maj.h) / 360;
             const db = Math.abs(hsl[b].l - maj.l) + Math.abs(hsl[b].s - maj.s) + hueDistance(hsl[b].h, maj.h) / 360;
             return da - db;
         });
-        tryClaim(closest, 'Balanced Tone');
+        tryClaim(closest, 'Similar To Main');
     }
 
     // Safety net only -- with 13 real non-majority categories above covering a max of 7 non-majority
