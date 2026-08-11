@@ -141,8 +141,20 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
 // before this) by roughly 90%.
 async function encodeWebpFromFrames(frameBuffers, { fps }) {
     const id = crypto.randomUUID();
-    const dir = path.join(os.tmpdir(), `dior_webpencode_${id}`);
-    await fs.mkdir(dir, { recursive: true });
+    // When every frame is already a path in ONE directory (extractAlphaFrames' `asPaths` mode), the
+    // output goes in beside them and no second temp dir is created at all -- the caller already owns
+    // one and is going to remove it. Requiring a SHARED parent is the guard that makes this safe: a
+    // caller mixing sources would otherwise have the output land next to an arbitrary one of them.
+    // ⚠️ The dir is then NOT ours to delete; the `finally` below skips it deliberately. This is the
+    // difference between "one fewer WRITE" and "one fewer temp DIRECTORY", and the second half was
+    // the closed item's stated verify condition -- measured at 2 dirs either way until this existed.
+    const framesAreLocal = frameBuffers.length > 0
+        && frameBuffers.every(f => typeof f === 'string')
+        && new Set(frameBuffers.map(f => path.dirname(f))).size === 1;
+    const dir = framesAreLocal
+        ? path.dirname(frameBuffers[0])
+        : path.join(os.tmpdir(), `dior_webpencode_${id}`);
+    if (!framesAreLocal) await fs.mkdir(dir, { recursive: true });
     const outPath = path.join(dir, 'out.webp');
     const frameDelayMs = Math.round(1000 / fps);
 
@@ -167,7 +179,9 @@ async function encodeWebpFromFrames(frameBuffers, { fps }) {
 
         return await fs.readFile(outPath);
     } finally {
-        await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+        // Only ever remove a directory this function created. In the shared-directory case above the
+        // caller owns it and removes it (with out.webp inside) via extractAlphaFrames' cleanup().
+        if (!framesAreLocal) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     }
 }
 
