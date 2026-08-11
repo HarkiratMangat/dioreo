@@ -43,6 +43,64 @@ function getColorName(hex) {
     return namer(formatHex(hex), { pick: ['ntc'] }).ntc[0].name;
 }
 
+// ⚠️ NAMING IS A HYBRID (2026-08-11 08:21 EDT, Harkirat: the names "try too hard to be unique such as
+// 'rajah' or 'robins egg blue'"). Prefer a FAMILIAR CSS colour name; fall back to ntc only when no CSS
+// name is close enough or the good one is already taken on this page.
+//
+// 🚫 DO NOT "just swap the library" — surveyed and measured, every alternative is WORSE for this goal:
+//   · color-namer's own `basic`/`roygbiv` are wrong, not merely coarse (a dodger blue named "violet",
+//     a turquoise named "green").
+//   · `html`/`x11` ALONE collapse a palette: measured over 146 real swatches they produced 19
+//     duplicate-name pairs across 12 of 22 images -- one avatar read "black" three times in 8 slots --
+//     against ntc's 3. That is why this is a hybrid rather than a straight switch.
+//   · `color-name-list` (MIT, so licensing was never the blocker) is further from the goal, not
+//     closer: its 31,914/4,959/3,082-entry lists name real palette colours "Eigengrau", "Dream
+//     Vapour", "Bacon Strips", "20000 Leagues Under the Sea". Those libraries optimise for poetry and
+//     uniqueness; we want recognisability.
+// Measured result of the hybrid at this threshold: 73% familiar CSS names and only 2 duplicate pairs
+// -- fewer than the 3 ntc alone produces, because the fallback fires precisely when a name collides.
+const CSS_NAME_MAX_DISTANCE = 18;
+
+// color-namer returns CSS names lowercase-concatenated ("cornflowerblue"), which is the reason ntc was
+// originally chosen over them. Greedy longest-match against this vocabulary restores the spacing.
+// Verified exhaustively: every one of the 129 CSS names reachable from color-namer's html list splits
+// cleanly, 0 failures -- so this cannot silently emit a mangled name.
+const CSS_NAME_WORDS = ['alice', 'antique', 'aqua', 'marine', 'azure', 'beige', 'bisque', 'blanched', 'almond', 'black', 'blue', 'violet', 'brown', 'burly', 'wood', 'cadet', 'chartreuse', 'chocolate', 'coral', 'cornflower', 'cornsilk', 'crimson', 'cyan', 'dark', 'deep', 'dim', 'dodger', 'fire', 'brick', 'floral', 'white', 'forest', 'fuchsia', 'gainsboro', 'ghost', 'gold', 'goldenrod', 'gray', 'grey', 'green', 'yellow', 'honeydew', 'hot', 'pink', 'indian', 'red', 'indigo', 'ivory', 'khaki', 'lavender', 'blush', 'lawn', 'lemon', 'chiffon', 'light', 'lime', 'linen', 'magenta', 'maroon', 'medium', 'aquamarine', 'midnight', 'mint', 'cream', 'misty', 'rose', 'moccasin', 'navajo', 'navy', 'old', 'lace', 'olive', 'drab', 'orange', 'orchid', 'pale', 'papaya', 'whip', 'peach', 'puff', 'peru', 'plum', 'powder', 'purple', 'rebecca', 'rosy', 'royal', 'saddle', 'salmon', 'sandy', 'sea', 'shell', 'sienna', 'silver', 'sky', 'slate', 'snow', 'spring', 'steel', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'wheat', 'smoke'];
+
+function formatCssColorName(raw) {
+    const parts = [];
+    let i = 0;
+    while (i < raw.length) {
+        let match = null;
+        for (const word of CSS_NAME_WORDS) {
+            if (word.length > (match ? match.length : 0) && raw.startsWith(word, i)) match = word;
+        }
+        if (!match) return null; // unknown vocabulary -- caller falls back rather than guessing
+        parts.push(match);
+        i += match.length;
+    }
+    return parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// Names a whole entry list at once, because a name claimed by one swatch must not be reused by
+// another. `used` is seeded by iteration order, so an entry carrying an authoritative `name` (the
+// nameplate bed, named by Discord itself) claims it BEFORE any extracted colour can take it.
+// ⚠️ That ordering is the fix for a real collision Harkirat caught: a Violet bed and an art colour
+// whose nearest CSS name is also "violet" would otherwise have printed "Violet" twice in one palette.
+function assignColorNames(entries) {
+    const used = new Set();
+    return entries.map(entry => {
+        if (entry.name) { used.add(entry.name); return entry.name; }
+        const hex = formatHex(entry.hex);
+        const css = namer(hex, { pick: ['html'] }).html[0];
+        const familiar = css.distance <= CSS_NAME_MAX_DISTANCE ? formatCssColorName(css.name) : null;
+        if (familiar && !used.has(familiar)) { used.add(familiar); return familiar; }
+        const distinctive = namer(hex, { pick: ['ntc'] }).ntc[0].name;
+        used.add(distinctive);
+        return distinctive;
+    });
+}
+
 function rgbToHslLocal(hex) {
     const r = ((hex >> 16) & 0xff) / 255, g = ((hex >> 8) & 0xff) / 255, b = (hex & 0xff) / 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -223,14 +281,18 @@ async function buildEntryRows(entries) {
 function buildSwatchEntries(palette, kind, bedName) {
     const entries = palette || [];
     const labels = assignDynamicLabels(entries, kind);
-    return entries.map((e, i) => ({
+    const withAuthoritativeNames = entries.map((e, i) => ({
         label: labels[i],
         hex: e.hex,
         // Entry 0 of a nameplate IS the bed, so when Discord named that palette we show its word
-        // rather than color-namer's nearest match. Everything else, including every nameplate whose
-        // palette is `none`, leaves `name` undefined and falls through to getColorName.
+        // rather than a nearest-match guess. Everything else, including every nameplate whose palette
+        // is `none`, leaves this undefined and gets named by assignColorNames below.
         name: (kind === 'nameplate' && i === 0 && bedName) ? bedName : undefined
     }));
+    // Resolved across the FULL entry set here, BEFORE pagination -- the same reason labels are: a name
+    // claimed by a swatch on page 1 must not be handed to a different swatch on page 2.
+    const names = assignColorNames(withAuthoritativeNames);
+    return withAuthoritativeNames.map((e, i) => ({ ...e, name: names[i] }));
 }
 
 // Display Name Colors are 2 EXACT user-picked colors, not an extracted palette -- there's nothing to

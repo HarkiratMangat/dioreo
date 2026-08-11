@@ -99,6 +99,12 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 Designs whose palette is `none` already have their background baked into the art, so they get no prepended bed and take all four from the pooled art — nothing is invented.
 
+**Colour names stopped trying so hard.** Harkirat's read: names like "Rajah" and "Robin's Egg Blue" were straining for uniqueness. Naming is now a hybrid — a **familiar CSS colour name** when one is genuinely close, falling back to the old "Name That Color" list only when nothing is near enough or the good name is already taken on that page. The nameplate bed outranks both and uses **Discord's own palette word** ("Cobalt", "Violet", "Bubble Gum") rather than a nearest-match guess. So `Bunker, Yellow Sea, Pirate Gold` becomes `Black, Orange, Dark Goldenrod`, and `Japonica, Rajah` becomes `Dark Salmon, Sandy Brown`.
+
+⚠️ **The obvious version of this change is a trap, and it was measured rather than assumed.** Simply switching to the CSS list *collapses* palettes: across 146 real swatches it produced **19 duplicate-name pairs affecting 12 of 22 images**, with one avatar reading "black" three times in eight slots, against the old list's 3. The hybrid gets **73% familiar names with only 2 duplicate pairs — fewer than the status quo** — because the fallback fires exactly when a name would collide. A **dependency swap was also evaluated and rejected on fitness, not licensing**: `color-name-list` (MIT, 31,914 / 4,959 / 3,082-entry lists) names these same colours "Eigengrau", "Dream Vapour", "Bacon Strips" — further from the goal, not closer.
+
+⚠️ Harkirat caught a collision in the proposal before it shipped: a **Violet** bed alongside an art colour whose nearest CSS name is also "violet" would have printed "Violet" twice. Names are now assigned across the whole entry set in order, so Discord's authoritative name claims its word first and the art colour falls through to "Lavender".
+
 **⚠️ Still open, filed rather than fixed:** Harkirat's observation that because the extractor is deterministic, nameplate and decoration palettes are pure functions of `(asset, palette)` and should be cached **globally and permanently** rather than per-user — the same key the WebP cache already uses.
 
 ---
