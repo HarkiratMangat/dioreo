@@ -216,12 +216,20 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // module's comment for the reasoning; the only difference here is that a decoration has no bed
         // and no palette name, so the identity line is the asset alone. It also sits beside a thumbnail
         // in a Section rather than under a full-width gallery, so the narrower column matters more.
+        // Same layout Harkirat specified for the nameplate cache 2026-08-11 18:44 EDT, so the two
+        // channels read as one system. ⚠️ DERIVED, not specified -- he gave the nameplate shape only,
+        // and a decoration differs in two ways that force a decision rather than a copy:
+        //   · it has NO NAME (Harkirat 2026-08-10 13:47 EDT: "remove the useless 'Decoration' title"),
+        //     so the heading is the output metrics alone rather than an empty name followed by them;
+        //   · it has no palette NAME and no bed, so the colours line is just the colours.
+        // If he wants it differently, this is the block to change -- the nameplate's is the reference.
         const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const metadataLines = [
-            `**Asset:** \`${decorationAsset}\``,
-            palette ? `**Colors:** ${palette.map(hexOf).join(' ')}` : null,
-            `**Output:** ${width}×${height} · ${frames.length} frames · ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            `-# ${skuId ? `SKU \`${skuId}\` · ` : ''}\`${publicId}\` · rendered <t:${Math.floor(Date.now() / 1000)}:R> in ${renderMs}ms`
+            `### \`${width}×${height}px\` · \`${frames.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            palette ? `-# **Colors:** **${palette.map(hexOf).join(' · ')}**` : null,
+            `-# **Asset:** \`${decorationAsset}\``,
+            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
         ].filter(Boolean);
         // Section+Thumbnail (type 9/11), NOT a full-width Media Gallery item -- Harkirat's request
         // (2026-08-10 13:16 EDT), same inline-preview treatment utils/colorPaletteView.js's own Deco

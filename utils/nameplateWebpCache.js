@@ -235,21 +235,25 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         //     copy when something is wrong, not something you read on every render, and the public id
         //     was the single longest line in the block. Kept in FULL rather than truncated -- an id you
         //     cannot copy is worse than one that wraps.
+        // Layout specified by Harkirat 2026-08-11 18:44 EDT, to the character -- do not "tidy" it.
+        // The shape is deliberate: the HEADING carries the name and the output metrics, so the one
+        // line rendered at full size answers "what is this and what came out of it", and everything
+        // else drops to `-#` small text. That is what keeps the block from growing: five lines, but
+        // only one of them at body size.
+        //
+        // ⚠️ The palette name and its four hexes are ONE line because they are one fact -- the design's
+        // palette. `palette[0]` IS the bed (v3.6.0 prepends it), so the first hex is the bed and no
+        // separate Bed field is needed; a `none`-palette design prepends nothing and every hex is art.
+        // ⚠️ The Cloudinary id is written with a LEADING SLASH (`/dev_nameplate_webp/…`) as specified.
         const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
-        const colours = palette
-            // With a bed, palette[0] IS the bed (v3.6.0's composition) and the rest is art -- say so
-            // inline instead of repeating the hex in a field of its own. A `none` palette prepends
-            // nothing, so every entry is art and no marker is written.
-            ? (bedHex != null
-                ? `${hexOf(palette[0])} bed · ${palette.slice(1).map(hexOf).join(' ')}`
-                : palette.map(hexOf).join(' '))
-            : null;
+        const swatches = palette ? palette.map(hexOf).join(' · ') : `\`${bedHexStr}\``;
         const metadataLines = [
-            `**Asset:** \`${nameplateAsset}\` · Palette \`${paletteName || 'none'}\``,
-            colours ? `**Colors:** ${colours}` : `**Bed:** \`${bedHexStr}\``,
-            `**Output:** ${width}×${height} · ${composited.length} frames · ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            `-# ${skuId ? `SKU \`${skuId}\` · ` : ''}\`${publicId}\` · rendered <t:${Math.floor(Date.now() / 1000)}:R> in ${renderMs}ms`
-        ].filter(Boolean);
+            `### ${heading} — \`${width}×${height}px\` · \`${composited.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            `-# **Palette:** **\`${paletteName || 'none'}\` — ${swatches}**`,
+            `-# **Asset:** \`${nameplateAsset}\``,
+            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
+        ];
         const components = [
             {
                 type: 17, // Container
@@ -267,7 +271,9 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
                 accent_color: bedHex ?? palette?.[0]?.hex ?? undefined,
                 components: [
                     { type: 12, items: [{ media: { url: `attachment://${filename}` } }] },
-                    { type: 10, content: `### ${heading}` },
+                    // ONE TextDisplay, not a heading plus a body -- the heading is the first line of
+                    // the block now (see metadataLines), so a second component would only add spacing
+                    // between two things that belong together.
                     { type: 10, content: metadataLines.join('\n') }
                 ]
             }
