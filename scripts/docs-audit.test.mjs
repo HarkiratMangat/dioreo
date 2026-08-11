@@ -445,6 +445,22 @@ proves("a doc pointing at a path that does not exist", "xref", (root) => {
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
+// The two halves of XREF_IGNORED_OPTIONAL, tested in BOTH directions. The allowlist retires ONE
+// answered ambiguity; the guard that matters is that it did not restore the blanket skip whose
+// removal is the whole reason the WARN exists (`local/Harkirats-Space.md` moved and the ignore rule
+// hid it). Added 2026-08-10 21:26 EDT alongside the allowlist itself.
+provesSilent("a TRIAGED optional gitignored path (utils/emojiMap.dev.json)", "xref", (root) => {
+  write(root, ".gitignore", "utils/emojiMap.dev.json\n");
+  write(root, "CLAUDE.md", "# Fixture\n\nAn optional overlay at `utils/emojiMap.dev.json` may be present.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("an UNTRIAGED gitignored+absent path — the exemption must not widen", "xref", (root) => {
+  write(root, ".gitignore", "utils/somethingElse.dev.json\n");
+  write(root, "CLAUDE.md", "# Fixture\n\nSee `utils/somethingElse.dev.json` for detail.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
 proves("a version in the CHANGELOG but not the SUMMARY", "summary-coverage", (root) => {
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.32.0 — June 1, 2026\n");
 });
