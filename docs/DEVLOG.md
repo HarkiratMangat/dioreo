@@ -138,6 +138,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-10 21:09 EDT — The v2 queue was stale, not dead — and the same two-copy failure showed up four times (v3.4.2-pre)
 - 2026-08-10 23:45 EDT — `/help` gets real, clickable slash-command mentions, and a completeness sweep catches its own blind spot (v3.5.0-pre)
 - 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
+- 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2432,6 +2433,23 @@ Harkirat found a genuinely new Discord capability by testing it himself first �
 **Harkirat found the biggest defect by looking at a source file.** He pointed out a test GIF whose flowers only appear late, and that one observation exposed a shipped bug two layers deeper than the task: the frame montage sampled a hardcoded stride into a fixed grid, so it only ever saw the first 25 frames of any animation, while its own comment claimed it spanned the whole cycle. It had been silently shortchanging the 60-frame decoration it was written for. **A comment asserting a property is not a check that the property holds** — and this one had been read approvingly, by me, an hour before it was measured.
 
 **Verification earned its cost twice over.** Testing the fixed montage against a real GIF revealed it produced a 3.8M-pixel image for a synchronous decode — the exact event-loop stall behind a past bot-wide outage. Scaling before tiling made it 29× smaller *and* improved colour recovery. Neither problem was visible in the code.
+
+## 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
+
+**The session's most useful measurement invalidated four turns of my own tables.** I had been ranking naming strategies by ΔE — how close the named entry's colour is to the swatch. It took an embarrassingly long time to notice that **ΔE cannot tell "Mellow Apricot" from "Macaroni and Cheese"**: both score ~0.02 against the same orange. Every comparison I had shown Harkirat was blind to the exact quality he had been complaining about since the morning. The metric was not merely imperfect; it could not see the problem at all.
+
+**Three separate "I found it" moments were wrong, and each was a parser bug rather than evidence.** Harkirat's colour picker returned names none of our lists had, so I went looking for its source. I concluded Wikipedia's colour list was refuted — twice — on searches that were silently broken: the first was case-sensitive against a page that uses sentence case ("Mellow apricot"), the second captured wikilink *targets* instead of display text. Then I reported "4/4 match, found it" from a sample of four, and a full run of all 54 names came back **14/54**. A negative from a probe you have not validated is not a negative, and a positive from four samples is not a finding.
+
+**The answer to "which list is best" turned out to be the opposite of the intuition, and only measurement got there.** A 31,914-name vocabulary reproduced **3 of 54** reference names — worse than a list 35× smaller — because at that density crowd-sourced novelty ("Crown Chakra", "Fake Love") sits nearer to any given colour than the established names, making the good ones unreachable. Bigger is not better; curated is. Across all 46 vocabularies published on npm the ceiling is 15/54, so the picker's list is simply not obtainable, and I stopped chasing it.
+
+**Meanwhile the actual defects were in code I had written, not in the vocabulary.** Matching still ran in RGB while the extractor had moved to OKLab months earlier — fixing that one thing cut mean error 32% and worst case in half with no vocabulary change. And a "simplest name wins" tiebreak I had added for a single edge case was quietly draining character from every palette: `#FDBE74`'s genuinely nearest match **is** "Apricot", and it lost to "Peach" because `words × 1000 + length` scored two characters. A rule justified by one case, generalised into a global blandness filter.
+
+**Harkirat rejected the labels twice, and the second rejection contained the diagnosis.** My first pass renamed things; he called it correctly — *"improvement doesn't mean slap on more words"*. My second pass he rejected again, and in listing which ones he disliked he exposed the pattern I had missed: **every bad label was a comparison to a swatch that isn't on screen.** "Lighter Version" than what. "Across the Wheel" of a wheel the reader cannot see. The good ones were all verb phrases that stand alone. That is a structural property, not a vocabulary one, and it was visible in his list before it was visible to me.
+
+**Chasing one silly label found a bug older than this whole session.** A pale pink on a white avatar was labelled "more saturated than the dominant". Measuring why produced this: `#FDFEFE` — white to any eye — reports **HSL saturation 0.333**, and `#020311` reports **0.789**. HSL's denominator collapses at the lightness extremes. Every colourfulness threshold in the label function had therefore been meaningless for near-whites and near-blacks since the day it was written, which is two of the commonest swatches there are. It had never surfaced because nobody had asked *why* a specific label fired.
+
+### Lesson
+A metric you invented can be gamed by the thing you built to satisfy it. I replaced ΔE with a "self-describing name" score, optimised it, and produced **worse** names — 93% vs 47% on my own metric, while emitting "Texas Rose" and "Fire Bush". The second metric failed the same way as the first, one level up. What actually settled every decision this session was putting real palettes side by side and looking at them. Measure to find defects; judge on output.
 
 # Part B — Lessons Ledger (thematic)
 

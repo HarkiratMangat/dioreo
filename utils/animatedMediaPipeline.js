@@ -49,6 +49,7 @@
 // ffmpeg without `-f apng` (see extractAlphaFrames' preInputArgs note below), and it is why every
 // change here must assert the FRAME COUNT rather than that a file was produced.
 const { spawn } = require('child_process');
+const { Jimp } = require('jimp');
 const os = require('os');
 const path = require('path');
 const fs = require('fs/promises');
@@ -142,4 +143,56 @@ async function encodeWebpFromFrames(frameBuffers, { fps }) {
     }
 }
 
-module.exports = { extractAlphaFrames, encodeWebpFromFrames };
+// Pools evenly-spaced frames into ONE tiled still, so colour extraction sees the whole animation's
+// range instead of whichever moment frame 0 happened to catch. Moved here from
+// utils/nameplateBedImage.js 2026-08-11 10:06 EDT when the decoration cache needed it too -- it is
+// generic frame plumbing, and leaving it in a nameplate-specific module would have made decoration
+// import "nameplateBedImage" to process a decoration.
+//
+// Why a montage at all: measured on a real 60-frame decoration, the single frame the old code took
+// yielded four greys (max saturation 0.26) and missed the animation's gold sparkle entirely; pooling
+// recovers it as #AD904C. Harkirat spotted the missing colour in the live panel before it was measured.
+//
+// ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back -- see the silent-single-frame
+// trap documented at the top of this file. A one-frame result would look like a working extraction
+// while quietly reproducing the exact bug this exists to replace.
+//
+// Tiles are capped at 256px wide because a grid multiplies the source resolution by its tile count,
+// and k-means samples ~2500 pixels regardless of resolution -- the same scale discipline
+// utils/stillFrame.js's montage needs, and for the same reason (a 3x3 grid of an un-capped source is
+// how a synchronous Jimp decode grows big enough to blow an unrelated interaction's 3s ACK window).
+const POOL_FRAMES = 9;
+const POOL_TILE_WIDTH = 256;
+
+async function poolFramesIntoMontage(raw, { frames = POOL_FRAMES, targetWidth = POOL_TILE_WIDTH } = {}) {
+    if (raw.length < 2) throw new Error(`animated source yielded ${raw.length} frame(s) -- expected an animation`);
+
+    const take = Math.min(frames, raw.length);
+    const picked = Array.from({ length: take }, (_, i) => raw[Math.round(i * (raw.length - 1) / (take - 1))]);
+
+    const tiles = [];
+    for (const frame of picked) {
+        const img = await Jimp.read(frame);
+        if (img.bitmap.width > targetWidth) img.resize({ w: targetWidth });
+        tiles.push(img);
+        // Same yield discipline as the WebP cache's per-frame loop -- synchronous Jimp work is exactly
+        // what blocked unrelated interactions' 3s ACK window before the CPU fix.
+        await new Promise(setImmediate);
+    }
+
+    const cols = Math.ceil(Math.sqrt(tiles.length));
+    const rows = Math.ceil(tiles.length / cols);
+    // Transparent background, so fully-transparent pixels stay alpha 0 and getColorPalette skips them
+    // rather than counting a fabricated backdrop as one of the extracted colours.
+    const sheet = new Jimp({
+        width: tiles[0].bitmap.width * cols,
+        height: tiles[0].bitmap.height * rows,
+        color: 0x00000000
+    });
+    for (let i = 0; i < tiles.length; i++) {
+        sheet.composite(tiles[i], (i % cols) * tiles[0].bitmap.width, Math.floor(i / cols) * tiles[0].bitmap.height);
+    }
+    return sheet.getBuffer('image/png');
+}
+
+module.exports = { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage };

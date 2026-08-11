@@ -22,6 +22,46 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### ❄️ Cold nameplate/deco render verified live — closed 2026-08-11 13:38 EDT
+
+*Filed 2026-08-11 10:22 EDT as `[P2 · S]`, closed the same session. Verified against the dev bot, not re-derived from code.*
+
+> `[P2 · S]` **A COLD nameplate/deco render has not been exercised since palette caching landed.** v3.7.0-pre was proved live on the **heal** path — a pre-existing render acquiring a palette by metadata patch — which does not touch `renderAndCache*Webp` at all. So the two things only a cold render can show remain unverified: that the **`Colors:` line** appears in the cache-channel embed, and that the message **accent is the first ART colour** rather than the bed.
+
+**Outcome — both confirmed, plus a third fix in the same pass.** All four `dev_` Cloudinary resources were purged and the dev bot restarted (its in-process `resolvedCache` would otherwise have handed back a URL for a deleted resource — a real trap, and the restart was necessary rather than precautionary). Harkirat then ran `/colors` and the cache-channel posts showed:
+- **`Colors:` line present** on all four renders, carrying the four extracted hexes.
+- **Accent is the first art colour** — Cat Beans and Twilight both styled by their art rather than the bed, confirming the v3.6.0 regression is gone.
+- **Cat Beans headed "Cat Beans" with a `SKU:` line**, which also closes [the guild nameplate name/SKU bug](#-guild-profile-nameplates-lost-their-name-and-sku-in-the-cache-channel-embed--fixed-2026-08-11-1000-edt)'s own verify condition — it required a cold render and had been left open for exactly that reason.
+
+⚠️ **Still open and deliberately not closed by this:** "two accounts, one extraction" (that palette caching actually saves work for a *second* user) remains observed on one account only.
+
+### 🎨 Nameplate/decoration palettes now cached globally and permanently — shipped 2026-08-11 10:13 EDT
+
+*Filed 2026-08-11 01:58 EDT as `[P2 · M · 🧩needs-design]`. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
+
+> `[P2 · M · 🧩needs-design]` **Nameplate/decoration palettes should be cached GLOBALLY and permanently, not per-user.** Harkirat's observation 2026-08-11 01:58 EDT: because the extractor is deterministic, a nameplate palette is a pure function of `(asset, paletteName)` and a decoration palette of `(asset)` — identical for every user who equips it, forever. Today they cache per-user on `UserPreference`, so the same design is re-extracted once per user. This is already exactly how the WebP cache is keyed, and the Cloudinary resource's `context` metadata already carries `discord_cdn_url` — so the palette can live beside it with **no new infrastructure**. **Verify:** two different accounts with the same nameplate design trigger exactly one extraction.
+
+**Outcome — built as designed, and it removed more than it added.** The palette is computed inside the WebP render from the frames that render already holds, and persisted in the same Cloudinary resource's `context`. That collapsed a duplicate `.webm` fetch + decode the nameplate path had been paying separately, and removed a circularity: the storage-channel message's accent used to be passed *into* the render from a palette extracted upstream over the very frames the render was holding.
+
+- ⚠️ **Extracts from the RAW frames, never the composited set** — the bed is composited on immediately afterwards, and extracting from those would reintroduce exactly the contamination v3.6.0 removed. Parity-tested against the real twilight asset: identical to the old path, and deterministic on re-run.
+- ⚠️ **The wire format is not JSON**, because Cloudinary encodes `context` as `key=value|key=value` and a value containing `=` or `|` corrupts the whole map. `RRGGBB:PP,...` only; malformed decodes to `null` rather than a partial palette.
+- Designs rendered *before* this shipped heal on next view (metadata patch only, no re-render), since their WebP is already cached and would otherwise never re-render to acquire a palette.
+- The shared value **deliberately outranks the per-user cache**, so a per-user palette predating an extraction change cannot persist forever behind an asset hash that never changes.
+
+### 🏷️ Guild-profile nameplates lost their NAME and SKU in the cache-channel embed — fixed 2026-08-11 10:00 EDT
+
+*Filed 2026-08-11 09:42 EDT as `[P2 · S]` in 🐞 Active Bugs, closed the next session. Shipped in `v3.7.0-pre` on `feat/colors-palette-cache`. Original wording preserved below; the outcome follows.*
+
+> `[P2 · S]` **Guild-profile nameplates lose their NAME and SKU in the cache-channel embed** (filed 2026-08-11 09:42 EDT). A server-profile nameplate posts to the nameplate-cache channel headed **"Nameplate"** instead of its design name, and with no `SKU:` line; the same design from the **global** profile posts correctly (observed: Cat Beans vs Twilight). **Root cause traced, one step short of proven:** `utils/guildProfile.js` reads the decoration fields in BOTH shapes but reads the nameplate fields in ONE. ⚠️ **Do NOT guess the field name and add `?? skuId` blind** — dump the real object and read the actual keys.
+
+**Outcome — the filed root cause was WRONG, and the "one step short of proven" caveat is exactly what saved it.** The three fields were computed correctly at the top of `readGuildProfile` and then **never returned**: `decorationSkuId`, `nameplateSkuId` and `nameplateName` were all missing from the returned object literal, so every `guildProfile.nameplateSkuId` / `.nameplateName` read in `utils/colorPalette.js` was `undefined` regardless of payload shape. A computed-but-unreturned local is invisible both to callers and to a search for the field name, which is how the filed analysis read the derivation and assumed the plumbing. **Found by a test that asserted the returned value, not by reading the code again.**
+
+**Two real defects were fixed alongside it, both genuine and neither the reported symptom:**
+- **The dual-shape read was fake on the id fields.** discord.js renames keys *inside* the object it rebuilds (`Transformers.js`'s `_transformCollectibles`, and `GuildMember._patch`'s `avatar_decoration_data` block), so a `GuildMember` carries `skuId`, never `sku_id`. The shipped `member.avatarDecorationData?.sku_id ?? member.avatar_decoration_data?.sku_id` read the snake_case name under **both** branches and resolved to null in every guild the bot has joined — it only looked dual-shape. `asset`/`label`/`palette` survive the transform unrenamed, which is why those masked it.
+- **A design with no `label` would head its permanent cache entry as the generic "Nameplate".** Added `nameplateNameFromAsset()` as a fallback (`nameplates/nameplates/cat_beans/` → "Cat Beans"), verified to agree with the authoritative label parser on `twilight`. ⚠️ Its first version happily minted `"A0ff7f9be49be57356dd3cf0d9c02605"` from a hash-shaped asset — caught by its own test, and now rejected along with short paths.
+
+**Verified:** all three member shapes (raw payload · `GuildMember` · `GuildMember` with no label) resolve a real name and both SKUs. Full write-up: `local/handoff/2026-08-11-colors-palette-cache.md` §2b.
+
 ### 🎨 Nameplate colour extraction was blind to the user's chosen palette — fixed 2026-08-11 07:28 EDT
 
 *Filed 2026-08-11 02:08 EDT as `[P1 · S]` in the `/colors` extraction block, closed the same session it was filed. Shipped in `v3.6.0-pre` on `feat/colors-extraction-overhaul`. Original wording preserved below; the outcome follows.*

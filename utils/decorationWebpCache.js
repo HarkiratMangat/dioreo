@@ -39,8 +39,28 @@ if (!process.env.CLOUDINARY_URL) {
 const { Jimp } = require('jimp');
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
-const { extractAlphaFrames, encodeWebpFromFrames } = require('./animatedMediaPipeline');
+const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
+const { getColorPalette, serializePalette, deserializePalette, PALETTE_COUNTS } = require('./colorExtract');
+
+// Imported, never redeclared -- see utils/colorExtract.js's comment on why the counts live there
+// rather than in colorPalette.js (which requires this module, so importing back would close a cycle).
+const PALETTE_COUNT = PALETTE_COUNTS.decoration;
+
+// A decoration's palette is a pure function of its asset, so it is computed ONCE PER DESIGN EVER and
+// stored beside the render instead of once per user (Harkirat 2026-08-11 01:58 EDT). No bed and no
+// compositing here, so the raw frames ARE the art -- unlike nameplate, nothing has to be prepended.
+//
+// ⚠️ This changes WHICH frames a decoration palette is extracted from. utils/colorPalette.js sampled
+// via stillFrame.js's ffmpeg `tile` filter; this pools the alpha-correct frames the render already
+// decoded (`-c:v libvpx-vp9`-equivalent handling for APNG), so a translucent glow is no longer read
+// against whatever the tile filter's backdrop happened to be. Strictly better, but it means a
+// decoration palette computed after this change can differ from one cached before it -- which is
+// exactly why getCachedPalette prefers THIS value over a stale per-user one.
+async function extractPaletteFromFrames(rawFrames) {
+    const montage = await poolFramesIntoMontage(rawFrames);
+    return getColorPalette(montage, PALETTE_COUNT);
+}
 
 // Dev-scoped folder (2026-08-10 11:30 EDT) -- see utils/nameplateWebpCache.js's matching comment;
 // same reasoning, same pattern, isolated so a dev render never touches the real `decoration_webp`
@@ -91,7 +111,10 @@ async function getCachedDecorationWebp(decorationAsset) {
         });
         const resolved = {
             cloudinaryUrl: result.secure_url,
-            discordCdnUrl: result.context?.custom?.discord_cdn_url || null
+            discordCdnUrl: result.context?.custom?.discord_cdn_url || null,
+            // Null on a resource rendered BEFORE palette caching shipped -- resolveDecorationWebp
+            // backfills those, since the WebP is already cached and would never re-render to get one.
+            palette: deserializePalette(result.context?.custom?.palette)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -103,7 +126,7 @@ async function getCachedDecorationWebp(decorationAsset) {
     }
 }
 
-async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, accentHex) {
+async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId) {
     const publicId = publicIdFor(decorationAsset);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const renderStartedAt = Date.now();
@@ -148,6 +171,17 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             frames = rawFrames;
         }
 
+        // Palette from the raw art frames, which the render already holds -- see extractPaletteFromFrames
+        // above. Extracted from `rawFrames` rather than the possibly-resized `frames` so the result does
+        // not depend on whether a resize branch happened to run; k-means samples ~2500 pixels either way.
+        // A failure must not sink the WebP, which is the primary product here.
+        let palette = null;
+        try {
+            palette = await extractPaletteFromFrames(rawFrames);
+        } catch (err) {
+            console.error(`Decoration palette extraction failed for "${decorationAsset}" (render continues): ${err.message}`);
+        }
+
         const webpBuffer = await encodeWebpFromFrames(frames, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
 
@@ -159,6 +193,9 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             skuId ? `**SKU:** \`${skuId}\`` : null,
             `**Cloudinary:** \`${publicId}\``,
             `**Dimensions:** ${width}×${height} · **Frames:** ${frames.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
+            // The four extracted hexes -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache
+            // channel records what the design's palette resolved to, not just that a render happened.
+            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
             `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
         ].filter(Boolean);
         // Section+Thumbnail (type 9/11), NOT a full-width Media Gallery item -- Harkirat's request
@@ -175,7 +212,9 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
                 // the way nameplates do (see nameplateWebpCache.js's accent_color: bedHex), so this is
                 // the closest thing to a "real" identifying color, per Harkirat's request 2026-08-10
                 // 13:17 EDT ("you already pull the colors... use those").
-                accent_color: accentHex ?? undefined,
+                // Read from the palette this render computed itself, rather than passed in from an
+                // extraction that ran separately upstream over the very same frames.
+                accent_color: palette?.[0]?.hex ?? undefined,
                 // No separate heading (Harkirat, 2026-08-10 13:47 EDT: "remove the useless
                 // 'Decoration' title") and the metadata lives in the SAME Section as the thumbnail,
                 // not a sibling TextDisplay below it -- decorations have no name to head a section
@@ -205,14 +244,20 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         ]);
         // AWAITED, not fire-and-forget -- see utils/nameplateWebpCache.js's matching comment for why
         // (measured live 2026-08-10 13:07 EDT: the fire-and-forget version lost the write silently).
-        if (discordCdnUrl) {
+        // ONE patch carrying both keys -- Cloudinary's `context` replaces the whole map, so two calls
+        // would have the second silently erase the first.
+        const serialized = serializePalette(palette);
+        const context = {};
+        if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
+        if (serialized) context.palette = serialized;
+        if (Object.keys(context).length) {
             try {
-                await cloudinary.api.update(publicId, { resource_type: 'image', context: { discord_cdn_url: discordCdnUrl } });
+                await cloudinary.api.update(publicId, { resource_type: 'image', context });
             } catch (err) {
                 console.error(`Decoration context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
             }
         }
-        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl };
+        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
@@ -225,13 +270,47 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
 // caller falls back to the existing static/APNG decoration display, same non-blocking philosophy as
 // every other Cloudinary write path in this bot. Otherwise returns { cloudinaryUrl, discordCdnUrl } --
 // discordCdnUrl may be null even on success, same caveat as utils/nameplateWebpCache.js.
-async function resolveDecorationWebp({ decorationAsset, decorationUrl, skuId, accentHex }) {
+async function resolveDecorationWebp({ decorationAsset, decorationUrl, skuId }) {
     if (!decorationAsset || !decorationUrl) return null;
 
     const cached = await getCachedDecorationWebp(decorationAsset);
-    if (cached) return cached;
+    if (cached) return cached.palette ? cached : healPalette(cached, decorationAsset, decorationUrl);
 
-    return renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, accentHex);
+    return renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId);
+}
+
+// Backfills a palette onto a WebP rendered BEFORE palette caching shipped. Without this, such a design
+// never re-renders (the WebP is already cached), so it would fall back to per-user extraction forever
+// -- precisely the cost this cache removes. Paid ONCE per pre-existing design.
+//
+// ⚠️ Metadata only: no re-render, no re-upload, and the existing cache-channel message is left alone
+// (so an older one keeps its original accent and has no Colors line -- editing storage-channel history
+// is deliberately out of scope). Returns the cached object unchanged on any failure, so a heal that
+// cannot complete degrades to today's behaviour rather than breaking a working preview.
+async function healPalette(cached, decorationAsset, decorationUrl) {
+    const publicId = publicIdFor(decorationAsset);
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return cached;
+    try {
+        const res = await fetch(decorationUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${decorationUrl}`);
+        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
+            inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS
+        });
+        const palette = await extractPaletteFromFrames(rawFrames);
+        const serialized = serializePalette(palette);
+        if (!serialized) return cached;
+        // Re-send discord_cdn_url -- `context` replaces the whole map, so patching the palette alone
+        // would wipe the url this module works hard to persist.
+        const context = { palette: serialized };
+        if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
+        await cloudinary.api.update(publicId, { resource_type: 'image', context });
+        const resolved = { ...cached, palette };
+        memoizeResolved(publicId, resolved);
+        return resolved;
+    } catch (err) {
+        console.error(`Decoration palette backfill failed for "${publicId}": ${safeErrorMessage(err)}`);
+        return cached;
+    }
 }
 
 module.exports = { resolveDecorationWebp, publicIdFor, FOLDER };

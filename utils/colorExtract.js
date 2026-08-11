@@ -346,6 +346,11 @@ function mergePerceptual(clusters, dE) {
             target.a = (target.a * target.share + c.a * c.share) / total;
             target.b = (target.b * target.share + c.b * c.share) / total;
             target.share = total;
+            // Origin is STICKY toward `accent` (2026-08-11 13:45 EDT): if either contributor came from
+            // the chromatic tail, the merged colour is still that feature. The label layer uses this to
+            // say "this is a small vivid detail" rather than re-deriving it from share and chroma, which
+            // cannot distinguish a genuine 1%-coverage accent from a rounding artefact.
+            if (c.origin === 'accent') target.origin = 'accent';
         } else {
             merged.push({ ...c });
         }
@@ -401,11 +406,16 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
         ? await clusterLabs(accentLabs, accentLabs.map(o => ({ x: o.L, y: o.a, z: o.b })), ACCENT_CLUSTERS, labs.length)
         : [];
 
-    const merged = mergePerceptual([...structure, ...accent], MERGE_DELTA_E);
+    // Tagged BEFORE the union so the label layer can tell a small vivid feature (the cat's red eyes)
+    // from an ordinary region -- see mergePerceptual for why the tag survives a merge as `accent`.
+    const merged = mergePerceptual(
+        [...structure.map(c => ({ ...c, origin: 'structure' })), ...accent.map(c => ({ ...c, origin: 'accent' }))],
+        MERGE_DELTA_E
+    );
     merged.sort((a, b) => b.share - a.share);
 
     // Index 0 stays the most prevalent colour -- utils/colorPaletteView.js's assignDynamicLabels
-    // claims index 0 as "Majority Color" unconditionally, so that position is a contract, not a
+    // claims index 0 unconditionally -- "Sets the Tone", or "Nameplate Background" on a nameplate -- so that position is a contract, not a
     // preference. Everything after it is re-ordered by prevalence blended with chroma, which is what
     // lifts a small vivid accent onto the FIRST page of the 4+4 pagination rather than the second.
     const head = merged.slice(0, 1);
@@ -425,7 +435,9 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
 
     return ordered.slice(0, limit).map(e => {
         const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
-        return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100) };
+        // `origin` is carried out to the label layer, which is the only consumer -- it distinguishes a
+        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot.
+        return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100), origin: e.origin };
     });
 }
 
@@ -440,4 +452,100 @@ function perceptualDistanceHex(a, b) {
     return deltaE(A, B);
 }
 
-module.exports = { getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E };
+// Per-source swatch counts. Avatar/banner are richer images that support more genuinely distinct
+// clusters; nameplate/decoration are smaller, simpler assets that regularly produce fewer real
+// clusters even at higher K, so they ask for fewer up front instead of padding to a count the source
+// doesn't support.
+//
+// ⚠️ THIS LIVES HERE SPECIFICALLY SO THERE IS ONE COPY (moved from utils/colorPalette.js 2026-08-11
+// 10:25 EDT). The nameplate/decoration WebP caches now extract palettes too, and colorPalette.js
+// requires THOSE modules -- so importing the count back from colorPalette.js would close a cycle, and
+// the first draft of the palette cache dodged that by declaring its own local `PALETTE_COUNT = 4` in
+// each cache module. Three copies of one number, nothing enforcing agreement, and a change to any one
+// of them silently producing palettes of different lengths depending on which path ran. colorExtract
+// requires none of them, so everyone can import from here instead.
+const PALETTE_COUNTS = { avatar: 8, banner: 8, nameplate: 4, decoration: 4 };
+
+// How far the nameplate path over-asks before near-duplicates of the bed are dropped -- see
+// composeNameplatePalette. Shared for the same reason as the counts above.
+const NAMEPLATE_OVERASK = 2;
+
+// A nameplate's four swatches are ONE bed + THREE from the art (Harkirat 2026-08-11 07:55 EDT).
+// Lifted out of utils/colorPalette.js 2026-08-11 10:03 EDT so the permanent palette cache in
+// utils/nameplateWebpCache.js composes it IDENTICALLY -- two copies of this rule would eventually
+// disagree, and the disagreement would be invisible because each path caches its own result.
+//
+// The bed is PREPENDED EXACTLY, never extracted: its hex is already known precisely from the design's
+// palette metadata, so deriving it from pixels could only approximate a value we hold. Any art colour
+// that would render as a near-duplicate of the bed is dropped, which is why the caller must over-ask
+// (asking for `wanted + 2`) -- without that headroom a dropped near-duplicate hands back a short
+// palette. `percent: 0` on the bed is not a measurement and nothing reads it: the bed's share is a
+// design fact, and assignDynamicLabels claims index 0 outright before any percent-based rule runs.
+//
+// bedHex null (a `none`/unknown palette) means the design's background is already baked into the art,
+// so all four slots come from the art untouched and nothing is invented.
+function composeNameplatePalette(fullPalette, bedHex, wanted) {
+    if (bedHex == null) return fullPalette.slice(0, wanted);
+    const art = fullPalette
+        .filter(c => perceptualDistanceHex(c.hex, bedHex) >= MERGE_DELTA_E)
+        .slice(0, wanted - 1);
+    return [{ hex: bedHex, percent: 0 }, ...art];
+}
+
+// Wire format for persisting a palette in a Cloudinary resource's `context` metadata (2026-08-11
+// 10:03 EDT), so a nameplate/decoration palette is computed once per DESIGN ever rather than once per
+// user. Lives here because this module defines the `{ hex, percent }` shape, so it owns how that shape
+// round-trips.
+//
+// ⚠️ Deliberately NOT JSON. Cloudinary encodes context as `key=value|key=value`, so a value containing
+// `=` or `|` corrupts the whole map -- and JSON of an array of objects is dense with `{`, `"` and `:`
+// with no guarantee about which the encoder escapes. This format uses only hex digits, `:` and `,`:
+//
+//     RRGGBB:PP[:a],RRGGBB:PP[:a],...
+//
+// The optional `:a` marks an entry that came from the ACCENT pool, so a cached palette can still be
+// labelled "a small vivid detail" rather than losing that distinction on the way to Cloudinary. It is
+// optional rather than required so palettes written before it existed still decode.
+//
+// Returns null for anything malformed rather than a partial palette -- a half-decoded palette would
+// render as a real one and be indistinguishable from a correct short result.
+function serializePalette(palette) {
+    if (!Array.isArray(palette) || palette.length === 0) return null;
+    return palette
+        .map(c => {
+            const base = `${(c.hex >>> 0).toString(16).padStart(6, '0')}:${Math.max(0, Math.round(c.percent ?? 0))}`;
+            return c.origin === 'accent' ? `${base}:a` : base;
+        })
+        .join(',');
+}
+
+function deserializePalette(raw) {
+    if (typeof raw !== 'string' || !raw) return null;
+    const out = [];
+    for (const part of raw.split(',')) {
+        const m = /^([0-9a-fA-F]{6}):(\d{1,3})(:a)?$/.exec(part.trim());
+        if (!m) return null;
+        const entry = { hex: parseInt(m[1], 16), percent: parseInt(m[2], 10) };
+        if (m[3]) entry.origin = 'accent';
+        out.push(entry);
+    }
+    return out.length ? out : null;
+}
+
+// Colourfulness of a packed RGB hex, in OKLab. Exported 2026-08-11 14:00 EDT for the label layer,
+// which had been judging "is this colourful?" with HSL saturation and getting nonsense at the
+// lightness extremes: `#FDFEFE` (white to any eye) reports HSL s = 0.333 and `#020311` (black)
+// reports 0.789, because HSL's denominator collapses as lightness approaches 0 or 1. Chroma has no
+// such blow-up, so any threshold expressed in it means the same thing at every lightness.
+// ⚠️ Range differs from HSL saturation -- roughly 0 to 0.37 across sRGB, not 0 to 1. A threshold
+// copied across from an `s` value without rescaling will be wrong by a factor of about three.
+function chromaOfHex(hex) {
+    const lab = rgbToOklab((hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff);
+    return chromaOf(lab);
+}
+
+module.exports = {
+    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
+    composeNameplatePalette, serializePalette, deserializePalette,
+    PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex
+};

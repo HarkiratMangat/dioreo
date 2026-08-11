@@ -3,7 +3,7 @@ const { Routes } = require('discord.js');
 const { getDominantColor } = require('./colorExtract');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, fetchGuildNameStyles, normalizeNameStyleColors } = require('./guildProfile');
-const { deriveNameplateName } = require('./nameplatePalettes');
+const { deriveNameplateName, nameplateNameFromAsset } = require('./nameplatePalettes');
 
 // Shared throttle for anything that needs a LIVE fetch to see fresh data (2026-07-13) -- unlike
 // avatar (whose hash arrives fresh on every interaction payload for free, see
@@ -80,7 +80,11 @@ async function fetchProfileExtras(client, userId) {
     // ("COLLECTIBLES_NAMEPLATES_TWILIGHT_A11Y") that parses into the design's actual name -- see
     // nameplatePalettes.js's deriveNameplateName for the full story on why this is trustworthy.
     const nameplateSkuId = raw.collectibles?.nameplate?.sku_id || null;
-    const nameplateName = deriveNameplateName(raw.collectibles?.nameplate?.label);
+    // The asset-path fallback mirrors utils/guildProfile.js's -- this path reads the RAW REST payload,
+    // where `label` has always been present, so it is belt-and-braces here rather than a fix. Kept
+    // identical in both places so a design can never be named on one profile and generic on the other.
+    const nameplateName = deriveNameplateName(raw.collectibles?.nameplate?.label)
+        ?? nameplateNameFromAsset(nameplateAsset);
     return {
         // A SOLID name style returns a single color, a gradient returns two. This used to demand
         // `colors.length >= 2` and treat one color as "not set up" -- which silently reclassified a
