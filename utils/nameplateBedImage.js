@@ -93,15 +93,21 @@ async function renderGradientBedFrame(artBuffer, bedHex, targetWidth = 512) {
 // EXTRACTION-ONLY companion (2026-08-11 07:25 EDT). Pools the whole animation, bed composited, into
 // ONE still so colour extraction sees the nameplate the user actually looks at.
 //
-// ⚠️ WHY THIS EXISTS — measured, and the result is worse than "misses a bit of colour". Extraction
-// used to read Discord's `static.png`, which carries ONLY the upper art layer (measured: 0.0% opaque
-// pixels, 32.9% fully transparent, 67.1% partial alpha — there is no bed in it). The bed is a CSS
-// gradient Discord's client draws, so the same art ships for EVERY palette. Consequence, measured on
-// the real `nameplates/nameplates/twilight/` asset: the extracted palette was BYTE-IDENTICAL
-// (#336CED #5B96F1 #1E4DE9 #83C5F4) for the lemon, crimson AND clover palettes — a user with a
-// crimson nameplate saw red in Discord and got blue from /colors. Compositing first recovers the bed
-// as the leading entry, essentially exactly: lemon -> #F6CD12 (bed #F6CD12), crimson -> #8F020C (bed
-// #900007), clover -> #047A26 (bed #047B20).
+// ⚠️ WHY THIS EXISTS. Extraction used to read Discord's `static.png`, which carries ONLY the upper art
+// layer -- measured on the real `nameplates/nameplates/twilight/` asset: 0.0% opaque pixels, 32.9%
+// fully transparent, 67.1% partial alpha, i.e. there is no bed in it at all. The bed is a CSS gradient
+// Discord's client draws from the design's palette metadata, so extraction was reading translucent art
+// with nothing behind it. Compositing first grounds the palette in what the user actually sees: on the
+// real twilight/cobalt pairing, #336CED #5B96F1 #1E4DE9 #83C5F4 -> #0738C6 #1D56D6 #2E73DC #4D90E9.
+//
+// 🚫 THE ART AND ITS BED ARE A LINKED DESIGN -- do not model them as independent (Harkirat 2026-08-11
+// 07:42 EDT). The palette names which bed belongs to THAT design; it is not a free choice over
+// arbitrary art, so you will not meet twilight art on a crimson bed. An earlier version of this
+// comment claimed the same art ships for every palette and that "a crimson nameplate reported blue" --
+// WRONG, and derived from a synthetic probe that forced twilight art onto beds it never ships with.
+// The probe proved this code path was bed-blind (true); it was never evidence of a user-facing colour
+// mismatch (false). Designs whose palette is `none` already have their background baked into the art,
+// and the caller correctly leaves those on the old static.png path.
 //
 // ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back — see the silent-single-frame
 // trap documented at the top of utils/animatedMediaPipeline.js. A one-frame result here would look

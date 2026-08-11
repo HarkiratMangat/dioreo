@@ -108,10 +108,11 @@ async function getSourceImageInfo(interaction, useGuild = false) {
     // `source` is the bare asset hash and is what feeds resolveNameplateWebp -> publicIdFor(), i.e. the
     // Cloudinary public id of every cached render; folding the palette name into it would orphan all of
     // them. But a nameplate's extracted PALETTE now depends on the bed colour (see
-    // renderNameplateExtractionMontage), and switching palette leaves the asset hash unchanged -- so
-    // caching the palette against `source` alone would serve a crimson user their old blue swatches
-    // forever. The extraction cache therefore keys on (asset, palette name); the render cache still
-    // keys on the asset.
+    // renderNameplateExtractionMontage), so the extraction cache keys on (asset, palette name) while
+    // the render cache still keys on the asset. ⚠️ Since a nameplate's art and bed are a LINKED design
+    // -- one palette per design, not a free pairing -- this is insurance rather than a fixed bug: the
+    // asset hash would in practice already imply the palette. Discord carries the palette as its own
+    // field though, so keying on both costs nothing and stays correct if that ever varies.
     const nameplate = guildProfile?.nameplateAsset
         ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, paletteCacheKey: `${guildProfile.nameplateAsset}|${guildProfile.nameplatePalette || 'none'}`, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
         : extras.nameplateUrl
@@ -177,10 +178,10 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // `montageUrl` is null for static sources, so the common case still takes the cheap direct path.
     // NAMEPLATE is the one source whose extraction image has to be BUILT rather than fetched, because
     // no URL Discord serves actually contains what the user sees. `static.png` and `asset.webm` carry
-    // ONLY the upper art layer -- the bed is a CSS gradient the client draws -- so the same bytes ship
-    // for every palette. Measured on the real twilight asset: extraction returned a BYTE-IDENTICAL blue
-    // palette for lemon, crimson and clover, meaning a crimson nameplate reported blue. See
-    // renderNameplateExtractionMontage for the full measurement.
+    // ONLY the upper art layer (measured: 0.0% opaque) -- the bed is a CSS gradient the client draws
+    // from the design's palette metadata -- so extraction was reading translucent art with nothing
+    // behind it. See renderNameplateExtractionMontage for the measurement and for why the art and its
+    // bed are a LINKED design rather than an independent pairing.
     // Degrades deliberately: an unknown/`none` palette yields no bed hex, and we fall through to the
     // old static.png path rather than inventing a colour (same rule nameplatePaletteHex itself follows).
     if (kind === 'nameplate' && imageInfo.videoUrl) {
