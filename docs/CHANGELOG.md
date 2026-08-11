@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.4.1 — 2026-08-10 20:32 EDT — v2 ships and closes, the queue is re-planned, and the live bot finally catches up
+## Pre-Release v3.4.1 — 2026-08-10 20:32 EDT (#110) — v2 ships and closes, the queue is re-planned, and the live bot finally catches up
 
 **v2 is officially shipped and closed.** Harkirat's call: every remaining feature moves into the v3 release, including the passive button-disable work he had committed to v2 barely two hours earlier the same evening. The reversal was about the *release*, not the feature — its `P1` and its commitment both stand. The three v2 batches in `docs/ROADMAP.md` are now a **legacy queue**, and the "ship to `main`/live normally" parallel-track rule they carry is history rather than instruction.
 
