@@ -189,10 +189,56 @@ async function poolFramesIntoMontage(raw, { frames = POOL_FRAMES, targetWidth = 
         height: tiles[0].bitmap.height * rows,
         color: 0x00000000
     });
+    // ⚠️ DIRECT ROW COPY, NOT `sheet.composite()` (2026-08-11 15:17 EDT) -- and this is the ACCURATE
+    // option as well as the fast one, which is the opposite of how a hand-rolled blit usually reads.
+    // Compositing "source OVER a fully transparent destination" is mathematically the source itself,
+    // so nothing here needs blending at all; Jimp's blend runs the full over-operator anyway and its
+    // integer rounding hands back source ±1 on every partially-transparent pixel. Measured on the real
+    // twilight nameplate, 13,134 sheet bytes came back altered by that rounding alone, and on a real
+    // 60-frame decoration the error was large enough to move an extracted swatch (#117AF1 -> #127BF2 --
+    // the copy's value is the correct one). Tiles are laid out on an exact grid with no overlap, so a
+    // per-row `Buffer.copy` reproduces the intended result exactly: measured 83-98ms -> 0.5ms.
+    //
+    // Falls back to composite() if a tile is ever a different size than the first -- the grid's
+    // geometry is derived from tiles[0], so mismatched tiles would write rows at the wrong offsets.
+    // Every frame of a single animation has identical dimensions, so this is a guard, not a live path.
+    const tw = tiles[0].bitmap.width, th = tiles[0].bitmap.height;
+    const uniform = tiles.every(t => t.bitmap.width === tw && t.bitmap.height === th);
     for (let i = 0; i < tiles.length; i++) {
-        sheet.composite(tiles[i], (i % cols) * tiles[0].bitmap.width, Math.floor(i / cols) * tiles[0].bitmap.height);
+        const ox = (i % cols) * tw, oy = Math.floor(i / cols) * th;
+        if (!uniform) { sheet.composite(tiles[i], ox, oy); continue; }
+        const src = tiles[i].bitmap;
+        for (let y = 0; y < th; y++) {
+            src.data.copy(sheet.bitmap.data, ((oy + y) * sheet.bitmap.width + ox) * 4, y * tw * 4, (y + 1) * tw * 4);
+        }
     }
-    return sheet.getBuffer('image/png');
+    // ⚠️ RETURNS A DECODED JIMP IMAGE, NOT A PNG BUFFER (2026-08-11 14:55 EDT). Every consumer feeds
+    // this montage straight to colorExtract.js's getColorPalette, which used to `Jimp.read` it back --
+    // so the sheet was being PNG-encoded here purely to be decoded again one function call later.
+    // Measured 2026-08-11 14:57 EDT on three real assets, that round trip cost 28ms (43-frame
+    // nameplate), 56ms and 101ms (60-frame decorations) for ZERO pixel change -- palettes verified
+    // byte-identical before and after by local/colors-investigation/pipeline-parity.js. If a caller
+    // ever genuinely needs bytes it can call `.getBuffer('image/png')` itself -- but prefer passing
+    // the image, since encoding a montage nobody stores is pure waste.
+    return sheet;
 }
 
-module.exports = { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage };
+// Reads a PNG's dimensions from its IHDR header instead of decoding the whole image. ffmpeg's
+// extracted frames are plain PNGs whose first chunk is always IHDR (width/height are big-endian at
+// byte 16 and 20, right after the 8-byte signature, the 4-byte length and the "IHDR" tag), so the
+// callers that need only "how big is this frame" -- utils/decorationWebpCache.js decides whether a
+// resize is needed at all -- can skip a full Jimp decode of a 288x288 frame for four bytes of header.
+// Falls back to a real decode on anything that isn't a PNG, so this can never be the reason a render
+// fails; the fast path is an optimisation, not a new format assumption.
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+async function readImageSize(buffer) {
+    if (Buffer.isBuffer(buffer) && buffer.length >= 24
+        && buffer.subarray(0, 8).equals(PNG_SIGNATURE)
+        && buffer.subarray(12, 16).toString('latin1') === 'IHDR') {
+        return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+    }
+    const { width, height } = (await Jimp.read(buffer)).bitmap;
+    return { width, height };
+}
+
+module.exports = { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize };

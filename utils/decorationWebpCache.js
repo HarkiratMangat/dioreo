@@ -39,7 +39,7 @@ if (!process.env.CLOUDINARY_URL) {
 const { Jimp } = require('jimp');
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
-const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
+const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
 const { getColorPalette, serializePalette, deserializePalette, PALETTE_COUNTS } = require('./colorExtract');
 
@@ -153,7 +153,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // no-op -- more than double the actual WebP-encode step, for zero pixel change. ffmpeg's raw
         // extracted frames are already valid PNG buffers img2webp can consume directly, so skip Jimp
         // entirely in the (common) no-resize-needed case.
-        const { width: srcWidth, height: srcHeight } = (await Jimp.read(rawFrames[0])).bitmap;
+        // Read from the PNG's IHDR header rather than decoding the frame -- the branch below only
+        // needs the dimensions, and a full Jimp decode of a 288x288 frame to answer a question the
+        // first 24 bytes already answer is the same kind of waste the comment above is about.
+        const { width: srcWidth, height: srcHeight } = await readImageSize(rawFrames[0]);
         let width = srcWidth, height = srcHeight, frames;
         if (srcWidth > MAX_WIDTH) {
             height = Math.max(1, Math.round(MAX_WIDTH * srcHeight / srcWidth));

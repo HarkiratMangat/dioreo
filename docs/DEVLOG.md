@@ -139,6 +139,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-10 23:45 EDT — `/help` gets real, clickable slash-command mentions, and a completeness sweep catches its own blind spot (v3.5.0-pre)
 - 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
 - 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
+- 2026-08-11 15:20 EDT — the expensive part of colour extraction was not the colour extraction (v3.8.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2450,6 +2451,22 @@ Harkirat found a genuinely new Discord capability by testing it himself first �
 
 ### Lesson
 A metric you invented can be gamed by the thing you built to satisfy it. I replaced ΔE with a "self-describing name" score, optimised it, and produced **worse** names — 93% vs 47% on my own metric, while emitting "Texas Rose" and "Fire Bush". The second metric failed the same way as the first, one level up. What actually settled every decision this session was putting real palettes side by side and looking at them. Measure to find defects; judge on output.
+
+## 2026-08-11 15:20 EDT — the expensive part of colour extraction was not the colour extraction (v3.8.0-pre)
+
+The handoff arrived with the hot spot already found and a warning attached to it: *"don't just blindly 140ms trim, genuinely improve and optimize the pipeline."* The measurement said palette extraction added ~350ms to a decoration render, and that the colour maths inside it was **37ms**. The other 313ms was plumbing. That gap is the whole story of this release — not one slow algorithm, but three places where the pipeline did real work to produce something nothing ever looked at.
+
+**The first was the plainest kind of waste there is.** `poolFramesIntoMontage` builds its sampling sheet as a Jimp image, encoded it to PNG, returned the bytes — and `getColorPalette`, the only thing that ever receives them, immediately decoded them back. Nobody stored that PNG, uploaded it, or rendered it. It existed to cross a function boundary. Removing it needed one parameter to accept a decoded image and one function to stop encoding, and it is worth naming why it survived this long: each half is *correct in isolation*. A function that returns bytes is a reasonable function, and a function that reads bytes is a reasonable function. The waste only exists in the seam between them, which is exactly where nobody reads.
+
+**The second was more interesting, because the fast option turned out to be the accurate one.** Compositing nine tiles onto a transparent sheet cost 83–98ms, and a direct row copy does the same job in 0.5ms. The obvious objection is that a hand-rolled blit trades correctness for speed — so it was measured, and the measurement said the opposite. Compositing "source OVER a fully transparent destination" is mathematically the source itself; there is nothing to blend against. Jimp runs the full over-operator anyway, and its integer rounding returns source ±1 on every partially-transparent pixel: **13,134 altered bytes on a real nameplate, 67,175 on a real decoration.** On that decoration the accumulated error was enough to move a swatch, `#117AF1` → `#127BF2`.
+
+Put to Harkirat as a tradeoff — 95ms against one changed hex — his answer reframed it: *"can't you utilize the blitz but fix the rounding issue?"* The reason that lands is that the copy **is** the fix. The rounding was never in the fast path; it was in the path being replaced. What looked like "faster but slightly different" was "faster and no longer wrong", and it read as a tradeoff only because the slower version had been treated as the reference.
+
+**The third was small and is mostly here as a reminder of the same habit.** A decoration render decoded a whole 288×288 frame to find out how big it was, in order to decide whether a resize was needed. PNG carries width and height in its IHDR chunk at fixed offsets, twenty-four bytes in.
+
+**One thing this release deliberately does not claim.** The ~350ms was easy to read as a regression the previous release introduced. It is not: v3.7.0 moved extraction *into* the render from `colorPalette.js`, where it had been paying its own asset fetch and its own ffmpeg pass. The render's timer simply started covering work that used to happen somewhere the timer could not see. Total work went down. It would have been a comfortable story to tell the other way — the numbers even support the sentence — and the honest version is the less impressive one: this release removes waste from a step that was already a net win.
+
+**The lesson worth keeping is about where the measurement pointed.** The phase breakdown named the pooling step as the cost, and every instinct said the expensive part of colour extraction must be the colour extraction. It was 37ms. Everything that mattered was encode, decode, blend, and decode again — costs that exist between correct components rather than inside any of them. A profile that stops at "which function is slow" would have found nothing here to fix.
 
 # Part B — Lessons Ledger (thematic)
 

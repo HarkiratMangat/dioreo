@@ -373,8 +373,15 @@ function mergePerceptual(clusters, dE) {
 // room to fold away real near-duplicates while still leaving enough surplus clusters to fill back up
 // to the requested count from other genuinely distinct regions. Verified live: avatar went from 5/8
 // to a full 8/8 with this fix, using otherwise-identical source pixels.
-async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
-    const img = await Jimp.read(imageUrl);
+// `source` may be a url, a Buffer, or an ALREADY-DECODED Jimp image. The third case exists because
+// utils/animatedMediaPipeline.js's poolFramesIntoMontage builds its montage as a Jimp image and no
+// caller ever stores the montage -- PNG-encoding it there just to `Jimp.read` it back here cost ~140ms
+// per cold render for a bitmap we already had in memory (measured 2026-08-11 14:56 EDT on a real
+// 60-frame decoration). Duck-typed on `.bitmap.data` rather than `instanceof` deliberately: Jimp 1.x
+// hands back class instances built through its own plugin wrapper, so an identity check is a
+// needlessly brittle way to ask "is this already decoded".
+async function getColorPalette(source, count = KMEANS_COUNT) {
+    const img = source?.bitmap?.data ? source : await Jimp.read(source);
     const { width, height, data } = img.bitmap;
     const totalPixels = width * height;
     const pixelStep = Math.max(1, Math.floor(totalPixels / 2500));
