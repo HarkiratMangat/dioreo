@@ -473,11 +473,47 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     return resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior: 'preset', displayNameColors, guildProfile, isGuildNameStyle });
 }
 
+// Drops the cached ACCENT colour for the given sources so the next command that resolves one
+// recomputes it. Added 2026-08-11 19:07 EDT to finish the Refresh Colors story: that button already
+// re-extracts palettes, but the accent colour lives in a different cache with no forceRefresh path of
+// its own (`getCachedColorFromUrl` returns early on a matching source hash and takes no such
+// parameter), so a user could press "Refresh Colors" and watch every embed keep its old tint.
+//
+// ⚠️ INVALIDATES, it does not recompute. That is deliberate on cost: an accent colour is resolved on
+// every accent-using command anyway, so clearing the field is enough to guarantee a fresh value, while
+// extracting here would spend CPU inside a button press for a value the next command would compute
+// regardless. It also keeps this free for `'preset'`-style users, who never resolve one at all.
+//
+// ⚠️ SCOPED to the passed `prefs` document and the named kinds -- never a broad update. Same rule as
+// every other cache clear here (see `feedback_cache_invalidation_on_algorithm_change`).
+// ⚠️ Does NOT save. The caller batches this with its own palette writes into one `prefs.save()`.
+const ACCENT_FIELD_STEM = {
+    avatar: 'avatar', banner: 'banner', decoration: 'decoration',
+    nameplate: 'nameplate', name: 'displayName'
+};
+function invalidateAccentCache(prefs, kinds, isGuild = false) {
+    const cleared = [];
+    for (const kind of kinds) {
+        const stem = ACCENT_FIELD_STEM[kind];
+        if (!stem) continue;
+        // Guild fields are a SEPARATE pair on purpose (see this file's own note on why moving between
+        // a server and a DM must not have each context evict the other's cached colour), so the view
+        // being refreshed decides which pair is cleared rather than clearing both.
+        const prefix = isGuild ? `guild${stem[0].toUpperCase()}${stem.slice(1)}` : stem;
+        if (prefs[`${prefix}ColorHex`] == null && prefs[`${prefix}ColorSource`] == null) continue;
+        prefs[`${prefix}ColorHex`] = undefined;
+        prefs[`${prefix}ColorSource`] = undefined;
+        cleared.push(kind);
+    }
+    return cleared;
+}
+
 module.exports = {
     resolveAccentColor,
     getAccentColorForCommand,
     fetchDisplayNameColors,
     fetchProfileExtras,
     resolveDynamicProfileColor,
-    resolveGuildNameColors
+    resolveGuildNameColors,
+    invalidateAccentCache
 };

@@ -2102,6 +2102,19 @@ client.on('interactionCreate', async interaction => {
             const afterVal = source === 'name' ? after.displayNameColors : after[source];
             const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
 
+            // Finish the job the button's NAME promises. The palettes above are re-extracted, but the
+            // accent colour that tints every OTHER command's embeds lives in a separate cache with no
+            // forceRefresh path of its own, so without this a user presses "Refresh Colors" and every
+            // embed keeps its old tint. INVALIDATED rather than recomputed: an accent colour resolves
+            // on the next accent-using command anyway, so clearing it guarantees a fresh value without
+            // spending CPU inside a button press -- and costs nothing at all for a 'preset'-style user,
+            // who never resolves one. Scoped to this user and to the sources actually refreshed.
+            const { invalidateAccentCache } = require('./utils/accentColor');
+            const clearedAccents = invalidateAccentCache(
+                prefs, [source, ...(after.refreshedSources || [])], variant === 'server'
+            );
+            if (clearedAccents.length) await prefs.save();
+
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
             const { components, files } = await buildColorPalettePanel({
                 source,

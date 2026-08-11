@@ -22,6 +22,19 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🔄 "Refresh Colors" refreshed the palette but not the accent colour — closed 2026-08-11 19:09 EDT
+
+**Original entry, verbatim** (as filed 2026-08-11 18:39 EDT, before the same day's `refreshStale` work narrowed it):
+> `[P3 · S]` **"Refresh Colors" does not refresh the ACCENT colour — only the palette.** `getCachedPalette`'s hit test is `if (!forceRefresh && …)` so the button genuinely re-extracts the swatches, but the accent colour lives in a different cache — `accentColor.js`'s `getCachedColorFromUrl` returns early on `prefs[sourceField] === sourceHash` and **has no `forceRefresh` parameter at all**, so no caller can bypass it. Consequence: a user who clicks Refresh Colors gets new swatches while every embed across `/calendar`, `/draws` etc. keeps its old tint until their avatar image actually changes. **Arguably by design** — the button lives on the View Colors panel, which is about swatches — but a user pressing something called "Refresh Colors" would reasonably expect both, and the honest reading is that nobody decided this, it just fell out of the two caches being separate. **Decide first:** should the button clear the accent cache too (scoped to that user, and only for the source on screen, matching its existing one-source-at-a-time behaviour), or should its wording say what it actually does? **Verify:** change nothing about the image, note the embed tint from `/calendar`, press Refresh Colors, re-run `/calendar`, and confirm the tint changed.
+
+**Outcome — shipped in Pre-Release v3.8.0-pre, 2026-08-11 19:07 EDT.** Harkirat's call was to complete it rather than leave it half-done. `invalidateAccentCache` in `utils/accentColor.js` drops the accent pair for the source on screen **and** for every stale source `refreshStale` picked up in the same press.
+
+The two decisions inside it, both of which could reasonably have gone the other way:
+- **It INVALIDATES rather than recomputing.** An accent colour is resolved on the next accent-using command anyway, so clearing the field guarantees a fresh value without spending CPU inside a button press — and costs a `'preset'`-style user nothing, since they never resolve one at all.
+- **It clears the GUILD pair or the GLOBAL pair, decided by the view being refreshed — never both.** Those pairs exist precisely so that moving between a server and a DM does not have each context evict the other's colour, so clearing both would have silently regressed that design.
+
+**Verified** by `scripts/accentCache.test.js` (7 cases, wired into `npm test`): the named source clears, every other source survives, the guild/global split holds in both directions, an already-empty source is *not* reported as cleared (the caller only saves when something was), an unknown key is ignored rather than throwing, and the `name` → `displayName*` field-stem mismatch is pinned — that one would otherwise clear nothing at all while looking correct.
+
 ### 💾 Decoration render's double disk write — closed 2026-08-11 16:22 EDT
 
 **Original entry, verbatim:**
