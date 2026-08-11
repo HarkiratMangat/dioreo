@@ -29,6 +29,13 @@
 //     dies with "Unknown encoder 'webp'". It is not an independent path.
 //   · libwebp's own CLI set ships no APNG reader at all: img2webp assembles PNGs, gif2webp is GIF-only,
 //     cwebp is single-image, webpmux only muxes.
+//   · npm's `apng2webp` (the obvious next thing to try, and the only package of that name anywhere --
+//     not in Homebrew, not on PyPI) is BROWSER-ONLY and cannot run server-side. Its own README says
+//     "This package relies on browser canvas WebP encoder"; it calls document.createElement('canvas'),
+//     Blob and URL.createObjectURL, exposes `bin: null` so there is no CLI, and was last published in
+//     2022. It is installed globally on the dev machine for reference only -- deliberately NOT a
+//     project dependency, since adding it would pull it into package.json's licence/NOTICE tree and
+//     the copyleft audit for a package that can never execute in this runtime.
 // So the two-step is not clumsiness, it is the only path these tools allow -- and switching to
 // ffmpeg-with-libwebp would make the dependency WORSE, not better: img2webp is a small standalone
 // binary you install explicitly (`apt install webp`), whereas requiring libwebp *inside* ffmpeg means
