@@ -63,6 +63,7 @@ const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
 const { acquireInstanceLock } = require('./utils/instanceLock');
+const { logRenderTiming } = require('./utils/renderTiming'); // /colors panel perf instrumentation, see models/RenderTiming.js
 
 // CONNECT TO MONGO (Atlas in prod; a LOCAL mongodb://localhost database under `.env.dev`)
 // The success line names the actual host rather than hardcoding "Atlas Cluster" -- it used to claim
@@ -1839,6 +1840,7 @@ client.on('interactionCreate', async interaction => {
             const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
 
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+            const panelStartedAt = Date.now();
             const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
 
@@ -1869,7 +1871,11 @@ client.on('interactionCreate', async interaction => {
                 variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
-            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            const result = await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            // Instrumentation only, see models/RenderTiming.js -- not awaited, never allowed to affect
+            // the actual response. `cold: true` unconditionally: colors_view always forceRefresh:true.
+            logRenderTiming({ area: 'colors_panel', action: 'view', source: 'avatar', variant, cold: true, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+            return result;
         }
 
         // B.7 "VIEW COLORS" PAGE SWITCH -- Avatar/Banner/Name/Nameplate/Deco buttons on the panel
@@ -1909,6 +1915,7 @@ client.on('interactionCreate', async interaction => {
             const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             await interaction.deferUpdate();
+            const panelStartedAt = Date.now();
             const UserPreference = require('./models/UserPreference');
             const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
@@ -1929,6 +1936,10 @@ client.on('interactionCreate', async interaction => {
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            // Instrumentation only, see models/RenderTiming.js. `cold` is unknown here (getCachedPalette
+            // decides cache-hit-vs-extract internally, not surfaced to this caller) -- left null rather
+            // than guessed; a switch to a genuinely new variant is usually a real extraction in practice.
+            logRenderTiming({ area: 'colors_panel', action: 'variant', source, subpage, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
             return;
         }
 
@@ -1952,6 +1963,7 @@ client.on('interactionCreate', async interaction => {
             const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             await interaction.deferUpdate();
+            const panelStartedAt = Date.now();
             const source = actionStr.replace('colors_page_', '');
             const UserPreference = require('./models/UserPreference');
             const { getPalettePanelData } = require('./utils/colorPalette');
@@ -1977,7 +1989,11 @@ client.on('interactionCreate', async interaction => {
                 variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
-            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            const result = await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            // Instrumentation only, see models/RenderTiming.js -- this is the handler Harkirat flagged
+            // as "felt slightly slower" switching between e.g. Nameplate and Deco (2026-08-11 22:03 EDT).
+            logRenderTiming({ area: 'colors_panel', action: 'page', source, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+            return result;
         }
 
         // B.7.5 "VIEW COLORS" SUB-PAGE SWITCH -- Prev/Next WITHIN the current source (avatar/banner's
@@ -2005,6 +2021,7 @@ client.on('interactionCreate', async interaction => {
             const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             await interaction.deferUpdate();
+            const panelStartedAt = Date.now();
             const [source, subpageStr] = actionStr.replace('colors_subpage_', '').split('_');
             const subpage = parseInt(subpageStr, 10) || 0;
             const UserPreference = require('./models/UserPreference');
@@ -2032,7 +2049,12 @@ client.on('interactionCreate', async interaction => {
                 variant
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
-            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            const result = await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            // Instrumentation only, see models/RenderTiming.js. This should be the FASTEST of the four
+            // panel actions (same source, cache hit in the normal case) -- a useful baseline to compare
+            // colors_page_'s numbers against when Session C looks at this data.
+            logRenderTiming({ area: 'colors_panel', action: 'subpage', source, subpage, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+            return result;
         }
 
         // B.8 "VIEW COLORS" MANUAL REFRESH (2026-07-14, Harkirat's request) -- the "Refresh Colors"
@@ -2077,6 +2099,7 @@ client.on('interactionCreate', async interaction => {
             colorsRefreshCooldowns.set(interaction.user.id, now);
 
             await interaction.deferUpdate();
+            const panelStartedAt = Date.now();
             const [source, subpageStr] = actionStr.replace('colors_refresh_', '').split('_');
             const subpage = parseInt(subpageStr, 10) || 0;
             const UserPreference = require('./models/UserPreference');
@@ -2130,6 +2153,10 @@ client.on('interactionCreate', async interaction => {
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+            // Instrumentation only, see models/RenderTiming.js. `cold: true` -- this handler always
+            // does two real getPalettePanelData calls (before/after) plus a forced re-extraction, so
+            // it's expected to be the slowest of the four panel actions.
+            logRenderTiming({ area: 'colors_panel', action: 'refresh', source, subpage, variant, cold: true, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
 
             const { SOURCE_META } = require('./utils/colorPaletteView');
             const sourceLabel = SOURCE_META[source]?.label || source;
@@ -2143,7 +2170,14 @@ client.on('interactionCreate', async interaction => {
                 : '';
             const resultMessage = (changed
                 ? `✅ Found new colors for your **${sourceLabel}**!`
-                : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`)
+                // Palette bytes matched, but don't call that "nothing happened" if the accent cache
+                // was cleared -- that's exactly the case where colors_view's own forced palette
+                // refresh already picked up a change on open, so this click's palette comparison sees
+                // no delta even though its accent-invalidation side effect is the real, visible fix
+                // (embeds tinted by this source were stale until this exact press).
+                : clearedAccents.length
+                    ? `🎨 Your **${sourceLabel}** palette already matched, but its accent color was stale and has now been refreshed — commands that tint by it will pick up the update next time they run.`
+                    : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`)
                 + alsoLine;
             try {
                 return await interaction.followUp({ content: resultMessage, ephemeral: true });
