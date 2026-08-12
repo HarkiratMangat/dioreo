@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.10.0 — 2026-08-11 23:23 EDT (#118) — the message and the side effect finally agree
+## Pre-Release v3.11.0 — 2026-08-12 14:09 EDT (#119) — the swatch captions stop asking "than what?"
+
+**Harkirat rejected the shipped label set in four words: "what is 'IT'???"** — *cools it down · cuts against it · warms it up · sets the tone · fills the space · backs it up · adds depth · opens it up*. Every one is a verb phrase whose object is an antecedent the caption never supplies, which is the same defect as the earlier "Lighter Version" (than what?) rejection wearing a verb instead of an adjective. The register is now **self-contained noun phrases**, and the test is blunt: read a caption alone, with no other swatch visible, and if it makes you ask "than what?" it is the rejected pattern again. `Catches the Eye` survives only because "the eye" is the reader's own.
+
+**It shipped as a VOCABULARY rather than a fourth flat set of labels, and that shape came from how Harkirat kept answering.** Given a menu he chose *two* words per rule and said when each applies — on soft vs muted: *"soft implies lighter, gentle, whites, greys, baby pink, powder blue… muted implies matte, sophisticated, darker, slate blue, dusty rose."* So a rule now decides which **role** a swatch plays and a variant, chosen from that swatch's own chroma and lightness, decides the **wording**: `Prominent`/`Backdrop`, `Warm Accent`/`Warm Trace`, `Wild Card`/`Outlier`, `Undertone`/`Deep Tone`, `Loud Accent`/`Vibrant Accent`, `Soft Accent`/`Muted Accent`, `Harmonic`/`Neighboring Shade`/`Muted Harmony`/`Neutral Shade`, `Vivid Echo`/`Echo`/`Quiet Echo`, `Brightest Point`/`Palest Tone`/`Lightest`. One caption, two facts.
+
+**`Synergetic Hue`/`Synergetic Shade` names a relationship the old rules called a mistake.** At 150–210° of hue with real colour on both sides, two colours are COMPLEMENTARY — they reinforce each other — so `Outlier` framed a deliberate scheme as an oddity. It has to outrank the temperature rules to speak at all: a complement is almost always the opposite temperature too, and while `Cool Accent` claimed those swatches first it fired **once in 889**. `Cool Accent` was not wrong there, just vaguer, and the more specific true thing wins.
+
+**A 246-image corpus was built as a falsifier, and it found six classes of caption that were simply false.** `local/colors-investigation/label-corpus.mjs` labels 1,837 real swatches in ~0.2s from a cached extraction. It caught: a colour covering **46% of its image** captioned as a small feature (`Pop of Color` had no size ceiling at all — accent-pool membership says a colour is chromatic, never that it is small); `Quiet Echo` on a neon orange-red; `Harmonic` on greys with no hue to harmonise with; `Stray Color` on near-blacks; and a hue claim made about two greys 130° apart, where hue is meaningless. All now measure zero.
+
+**And it exposed a real extractor bug that predates the labels: palette percentages summed past 100%.** Pool B (accent) clusters a subset of the pixels Pool A already clustered, so a colour winning a centroid in both had its two shares added at merge — 92 of 246 palettes summed over 100%, the worst to **155%**, with two single entries over 100% on their own. Every sampled pixel is now assigned to its nearest final centroid and shares recomputed, so each is counted exactly once. Colour sets barely moved (207 of 246 identical), but **12 palettes changed which colour holds index 0** — the slot that is a contract.
+
+**Verified:** `npm test` green (68 docs-audit self-checks, paletteAlgoVersion 17, animatedMediaPipeline 5, accentCache 7, 26 hook tests, reflow 29). Zero dangling referents, zero false claims across six classes, zero duplicate captions on a page, zero null labels. The nameplate bed path, palettes with `origin` stripped (the older cache wire format — 246 palettes, **zero throws**, which finally tests that documented invariant) and degenerate palettes were all exercised.
+
+---
+
+## Pre-Release v3.10.0 — 2026-08-11 23:23 EDT (#118 · `39dcf0e`) — the message and the side effect finally agree
 
 **Refresh Colors told the truth about the wrong thing.** Its "no change" message compared palette bytes only, and never accounted for its own unconditional accent-cache invalidation — so a user who opened View Colors (which already force-refreshes the palette on open) and then hit Refresh Colors got told "still generates the same colors" on the exact click that actually fixed their stale accent, because the palette itself had nothing left to find. The message now distinguishes "palette unchanged, but the accent was stale and just got refreshed" from a genuine no-op.
 

@@ -22,6 +22,41 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### 🏷️ Another pass on the swatch LABELS — closed 2026-08-12 14:08 EDT
+
+**Original entry** (filed 2026-08-11 17:06 EDT and deferred to its own session; its own guidance turned out to be the thing that got rejected):
+> `[P2 · M · Opus5-High · 🧩needs-design]` **Another pass on the swatch LABELS — Harkirat's own note.** He has notes on improving them further and would rather work on them fresh than bolt it onto the render-pipeline branch. ⚠️ Read `.claude/rules/accent-and-colors.md`'s two label sections before touching anything — the current 17-category role-based system is the *third* attempt… **The ones that work are verb phrases that stand alone.** Also load-bearing: colourfulness is judged in CHROMA, never HSL saturation, and **ΔE cannot see name or label quality**. **Judge changes on real palettes, never on a score.** The known soft spot to start from: `Desert Sand → Pop of Colour` on the kittens banner is the most generous label in the 135-swatch corpus.
+
+**Outcome — shipped as a VOCABULARY rather than a fourth flat label set.** Full design, register test and every rejected candidate: `.claude/rules/accent-and-colors.md` → *"Swatch LABELS are a VOCABULARY, not a rule→label map"*.
+- ⚠️ **The item's own instruction was wrong and had to be reversed.** "Verb phrases that stand alone" is precisely the pattern Harkirat rejected the next day — *"what is 'IT'???"* — so the register is now self-contained **noun** phrases. A filed note that reads as settled guidance is the most expensive kind of stale doc; this one would have had the next session rebuild the rejected set on purpose.
+- **A rule now picks a VARIANT from the swatch's own chroma and lightness**, because Harkirat kept answering the naming menus with two words and the situation each fits (`Soft Accent` vs `Muted Accent`, `Quiet Hint` vs `Hint of Color`, `Stray Shade` vs `Stray Color`). One caption, two facts: which role the swatch plays, and what the swatch is like.
+- **The soft spot named above is gone** — on the kittens banner `Desert Sand` now reads **`Palest Tone`**, an honest description of a pale washed-out colour, and `Pop of Color` moved to `Prairie Gold`, the entry that actually carries the chroma.
+- **Built the falsifier the item asked for**: `local/colors-investigation/label-corpus.mjs`, 246 real images / 1,837 swatches, extracted once to JSON so a wording iteration costs ~0.2s. It found six classes of false caption that a 20-image set could not, including one covering **46%** of its image captioned as a small feature, and the extractor bug closed in the entry below.
+- **Verified:** zero dangling referents, zero false claims in all six checked classes, zero duplicate captions on a page, zero null labels; `npm test` green; nameplate, missing-`origin` and degenerate palettes all exercised.
+- 📌 **Still open, deliberately, and not a defect:** two caption pairs that co-occur often enough to *possibly* read as one claim (`Lightest` + `Highlight`, `Quiet Neutral` + `Undertone`) are parked in `docs/ideas/design-ideas.md` with Harkirat's own verdict — *"a possibility if needed but currently not an issue"* — and the shape of the fix if it ever is.
+
+### 🧮 Palette percentages summed past 100% — the two pools double-counted their shared pixels — closed 2026-08-12 13:26 EDT
+
+**Original entry, verbatim** (as filed 2026-08-12 13:17 EDT, hours before it was fixed — Harkirat: *"lets just fix the extractor issue right now instead of a new session since we're already working on the coloring stuff"*):
+> `[P2 · S · Sonnet5-High]` **`getColorPalette` returns percentages that sum above 100 — the two pools double-count their shared pixels.** *Found 2026-08-12 13:15 EDT while auditing swatch labels against the 246-image corpus.* Pool B (accent) clusters a SUBSET of the pixels Pool A (structure) already clustered, and `mergePerceptual` sums the two shares when a colour wins a centroid in both. **Measured: 92 of 246 corpus palettes sum over 100%, worst 155%, and two individual entries report over 100% on their own** — a share of one image that cannot exist.
+
+**Outcome — fixed at the source in `utils/colorExtract.js`.** After the two pools are merged, every sampled pixel is assigned to its nearest FINAL centroid and the shares are recomputed from those counts, so each pixel is counted exactly once. Distance is true unweighted OKLab, matching `mergePerceptual` rather than the seeding space — `LIGHTNESS_WEIGHT` exists to stop a greyscale ramp monopolising *seeds* and has no business deciding which centroid a finished pixel belongs to. Cost is ~2,500 pixels × ~16 centroids, sub-millisecond.
+
+**Why it reached 155% rather than the ~3% the accent tail implies:** `tailCut` is `Math.max(CHROMA_FLOOR, <97th-percentile chroma>)`, so on a broadly chromatic image a large population ties at or above that cut and "the top 3%" is nothing of the kind.
+
+**Measured before and after across the 246-image / 1,837-swatch corpus** (`local/colors-investigation/label-corpus.mjs`):
+- Palettes summing over 101%: **92 → 1** (that one at 102%, pure `Math.round` accumulation across eight entries).
+- Colour SETS barely moved — **207 of 246 palettes identical**, only 40 of 1,837 individual colours differ. The fix corrects *share and order*, not which colours are found.
+- **12 palettes changed their index-0 colour**, which matters because that slot is a contract: a double-counted colour could outrank a genuinely larger one and take "First Impression".
+- Captions: **8.1% of colours changed**, all toward truth — e.g. black on `#kittens.gif` became `Backdrop` once its honest share really was ≥22%.
+- ⚠️ **Zero-share entries were checked as a suspected regression and were not one: 156 before, 142 after.** They are sub-0.5% regions rounding down, and the fix slightly *reduced* them.
+
+⚠️ **The label layer keeps its own normalisation and that is not redundant.** `assignDynamicLabels` rescales any palette whose percents sum above 100, which is now a no-op for a fresh extraction but remains the compatibility path for palettes restored from a Cloudinary entry written **before** this fix, whose stored percents are still inflated.
+
+⚠️ **`PALETTE_ALGO_VERSION` moved on its own** (it is a hash of the code, never a hand-written tag), so nameplate/decoration palettes re-derive through the existing heal path. **Per-user avatar/banner palettes key on the IMAGE HASH and do not**, so they keep their old percentages until the image changes — a scoped `$unset` is the cure, **never an unscoped `updateMany({})`**.
+
+**Verified:** full `npm test` green (68 docs-audit checks, `paletteAlgoVersion` 17, `animatedMediaPipeline` 5, `accentCache` 7, 26 hook self-tests), and the label audit still reports zero across all six false-claim classes.
+
 ### 🔄 "Refresh Colors" refreshed the palette but not the accent colour — closed 2026-08-11 19:09 EDT
 
 **Original entry, verbatim** (as filed 2026-08-11 18:39 EDT, before the same day's `refreshStale` work narrowed it):

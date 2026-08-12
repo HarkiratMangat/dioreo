@@ -46,3 +46,18 @@ status: live
 **A working implementation exists** in `local/site-redesign/mockup-v2.html` (Contributors → *Index → + Cross-reference*), tap- and hover-driven, with the relation data in `data-rel` / `data-id` attributes. Start from that rather than from scratch.
 
 **When it is built**, it must clear the same gates as everything else on the site: no decorative text in the DOM (the `→` marker is CSS `content` on an `aria-hidden` span, or `verify()` breaks — see `.claude/rules/legal-site.md`), plain `:hover` rules only, and every colour measured at 4.5:1 in both themes.
+
+---
+
+## Splitting the two `/colors` caption pairs that can read as one claim
+
+**Status:** measured 2026-08-12 11:47 EDT during the swatch-label rework · **Condition to revisit:** if either pair actually reads as a repeat when seen in Discord — Harkirat, told about it the same day: *"a possibility if needed but currently not an issue."*
+
+Two caption pairs in `assignDynamicLabels` (`utils/colorPaletteView.js`) co-occur often enough on one page to be worth naming, measured across the 120-image / 889-swatch corpus:
+
+- **`Lightest` + `Highlight` — 17 pages.** Different claims: `Lightest` is the palette's lightest swatch (a superlative about the whole set), `Highlight` is any swatch meaningfully lighter than the dominant. A reader who does not know that distinction may see the same statement twice.
+- **`Quiet Neutral` + `Undertone` — 14 pages.** Both describe something low-chroma and unassertive; they differ in that `Quiet Neutral` is the greyest swatch overall while `Undertone` is a faint colour sitting *darker* than the dominant.
+
+**This is deliberately not filed as work.** Each caption is individually true, and the swap that created the pairing already removed a worse one (`Brightest Light` beside `Highlight`, which repeated the word itself). Nothing is wrong; the note exists so that if the repetition is ever *felt* in the client, the shape of the fix is already written down rather than re-derived.
+
+**The fix if it is ever wanted** is a variant, not a rename — the same mechanism the rest of that function uses. `Highlight` could take a second wording when a `Lightest` swatch is already on the page, and `Undertone` likewise against `Quiet Neutral`. ⚠️ That needs a new signal: variants there are chosen from the swatch's OWN chroma and lightness, never from what another rule claimed, so the picker would have to see `usedLabels` — a real change in what a variant is allowed to know, and the reason this is not a five-minute edit. **Any new wording is Harkirat's call, not a self-decided one** — that is how this whole vocabulary was built (see `.claude/rules/accent-and-colors.md`'s label section).

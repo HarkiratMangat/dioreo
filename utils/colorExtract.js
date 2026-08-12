@@ -423,10 +423,37 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
         [...structure.map(c => ({ ...c, origin: 'structure' })), ...accent.map(c => ({ ...c, origin: 'accent' }))],
         MERGE_DELTA_E
     );
+
+    // ⚠️ SHARES MUST BE RECOMPUTED HERE, BECAUSE THE TWO POOLS SHARE PIXELS. Pool B clusters a SUBSET
+    // of the pixels Pool A already clustered, so every accent pixel was counted twice and the merge
+    // above ADDS the two shares. Measured 2026-08-12 13:15 EDT over a 246-image corpus before this
+    // fix: 92 palettes summed past 100%, the worst to 155%, and two single entries reported over 100%
+    // -- a share of one image that cannot exist. It is worst on broadly chromatic images, because
+    // `tailCut` takes Math.max(CHROMA_FLOOR, percentile): on a vivid picture a large population ties at
+    // or above that cut, so "the top 3%" is nothing of the kind.
+    //
+    // Assigning every sampled pixel to its nearest FINAL centroid counts each one exactly once, which
+    // is the only definition of "share of the image" that can be defended. It also repairs the ORDER --
+    // `merged.sort` below ranks by share, so a double-counted colour could outrank a genuinely larger
+    // one and take index 0, the slot that is a contract ("First Impression").
+    // Distance is true, unweighted OKLab, matching mergePerceptual rather than the seeding space:
+    // LIGHTNESS_WEIGHT exists to stop a greyscale ramp monopolising SEEDS and has no business deciding
+    // which centroid a finished pixel belongs to. Cost is ~2,500 pixels x ~16 centroids, sub-millisecond.
+    const counts = new Array(merged.length).fill(0);
+    for (const o of labs) {
+        let best = 0, bestDist = Infinity;
+        for (let i = 0; i < merged.length; i++) {
+            const dL = o.L - merged[i].L, da = o.a - merged[i].a, db = o.b - merged[i].b;
+            const dist = dL * dL + da * da + db * db;
+            if (dist < bestDist) { bestDist = dist; best = i; }
+        }
+        counts[best]++;
+    }
+    merged.forEach((c, i) => { c.share = counts[i] / labs.length; });
     merged.sort((a, b) => b.share - a.share);
 
     // Index 0 stays the most prevalent colour -- utils/colorPaletteView.js's assignDynamicLabels
-    // claims index 0 unconditionally -- "Sets the Tone", or "Nameplate Background" on a nameplate -- so that position is a contract, not a
+    // claims index 0 unconditionally -- "First Impression", or "Nameplate Background" on a nameplate -- so that position is a contract, not a
     // preference. Everything after it is re-ordered by prevalence blended with chroma, which is what
     // lifts a small vivid accent onto the FIRST page of the 4+4 pagination rather than the second.
     const head = merged.slice(0, 1);

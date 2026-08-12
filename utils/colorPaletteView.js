@@ -90,6 +90,19 @@ function isCoolHue(h) { return h >= 180 && h < 300; }
 // Greedy: a rule claims the best-matching UNCLAIMED entry, and only when the entry genuinely earns the
 // threshold, so no two entries on a page share a label and nothing is forced.
 //
+// 4. REWORDED 2026-08-12 00:45 EDT -- THE RULES ABOVE WERE RIGHT AND THE PHRASING WAS STILL WRONG.
+//    Harkirat, on the shipped set: "cools it down", "cuts against it", "warms it up", "sets the tone",
+//    "fills the space", "backs it up", "adds depth", "holds the middle", "opens it up" -- "what is
+//    'IT'???" Every one of those is a verb phrase whose object is an antecedent the caption never
+//    supplies, which is the SAME defect as the "Lighter Version"/"Same Family" rejection one round
+//    earlier, wearing a verb instead of an adjective. The ones he kept -- catches the eye, brightest
+//    light, quiet echo, edge detail, pop of color, quiet neutral -- are NOUN PHRASES that name the
+//    thing outright ("Catches the Eye" survives because "the eye" is the reader's own, not a swatch).
+//    So every label here is now a self-contained noun phrase, and the classification below did not
+//    change: this was a naming pass over rules that measure the right things.
+//    ⚠️ THE TEST FOR A NEW LABEL: read it alone, with no other swatch visible. If it makes you ask
+//    "than what?" or "of what?", it is the rejected pattern again regardless of how it is worded.
+//
 // ⚠️ `origin` is absent for a palette restored from an older Cloudinary cache entry (the wire format
 // gained its accent flag later). Missing is treated as `structure`, which costs at most one label
 // nuance and never breaks -- do not make any rule REQUIRE it.
@@ -102,15 +115,67 @@ function assignDynamicLabels(entries, kind) {
     // Its range is ~0-0.37, NOT 0-1: do not paste an old `s` threshold in here without rescaling.
     const chroma = entries.map(e => chromaOfHex(e.hex));
     const claimed = new Set();
+    const usedLabels = new Set();
     const labels = new Array(entries.length).fill(null);
     const unclaimed = () => entries.map((_, i) => i).filter(i => !claimed.has(i));
-    const claim = (idx, label) => { labels[idx] = label; claimed.add(idx); };
+    const claim = (idx, label) => { labels[idx] = label; claimed.add(idx); usedLabels.add(label); };
     // Claims the FIRST (best-sorted) candidate from a pre-filtered, pre-sorted list, if any exists.
+    // ⚠️ It also refuses a label already used on this page. Two rules may legitimately want the SAME
+    // caption -- "Catches the Eye" is the honest thing to say about both a small accent feature and
+    // the one vivid colour in a picture whose ground has none -- and whichever fires first should own
+    // it, rather than the set needing a second, weaker synonym invented for the loser.
     const tryClaim = (candidates, label) => {
-        if (candidates.length === 0) return false;
+        if (candidates.length === 0 || usedLabels.has(label)) return false;
         claim(candidates[0], label);
         return true;
     };
+    // Same, but the rule offers VARIANTS and the winning swatch picks which one describes it -- the
+    // first `[test, label]` pair whose test passes and whose label is still free.
+    //
+    // 📐 THIS IS THE SHAPE HARKIRAT ASKED FOR, 2026-08-12 11:08 EDT, and it is why the vocabulary is
+    // bigger than the rule count. Reviewing the second round of candidates he kept picking TWO per
+    // rule and explaining when each applies -- on soft vs muted: "soft implies lighter, gentle, whites,
+    // greys, baby pink, powder blue... muted implies matte, sophisticated, darker, slate blue, dusty
+    // rose. While yes they're kind of the same thing, they also have situations where 1 is better than
+    // the other." Same for Quiet Hint vs Hint of Color ("if it's more punchy yk?") and Stray Shade vs
+    // Stray Color ("shade and color kind of are different things"). So a rule answers WHICH ROLE this
+    // swatch plays and the variant answers WHAT THE SWATCH IS LIKE. One caption, two facts.
+    const claimBest = (candidates, variants) => {
+        if (candidates.length === 0) return false;
+        const i = candidates[0];
+        for (const [test, label] of variants) {
+            if (test(i) && !usedLabels.has(label)) { claim(i, label); return true; }
+        }
+        return false;
+    };
+    // Shared thresholds for the variant tests, named rather than inlined so the whole vocabulary reads
+    // off ONE set of boundaries. ⚠️ Chroma range is ~0-0.37 (see above), so these are not HSL numbers.
+    const PUNCHY = 0.12;   // unmistakably a colour: Wild Card, Hint of Color, Vibrant/Loud Accent
+    const COLOURED = 0.07; // has a colour rather than a cast: Warm Accent over Warm Trace
+    const FAINT = 0.045;   // barely a colour at all: Undertone over Deep Tone, Stray Shade over Color
+    const LIGHT_L = 0.6;   // pastel/airy rather than dusty: Soft Accent over Muted Accent
+    // ⚠️ THE ONE NON-CHROMA THRESHOLD, and it is a ceiling as well as a floor. At or above this share
+    // a colour is GROUND, not a feature -- so it earns "Prominent", and the feature captions must step
+    // aside. Measured on the 246-image corpus: 15 swatches covering 22-46% were captioned "Pop of
+    // Color" or "Catches the Eye", one of them 46% of the image. Both come from the ACCENT pool, which
+    // clusters the most chromatic pixels and therefore returns a large region whenever a picture is
+    // mostly one vivid colour -- pool membership says a colour is chromatic, never that it is small.
+    const LARGE_AREA = 22;
+    // ⚠️ `percent` IS NOT A SHARE OF THE IMAGE, and every area rule below would inherit the error if it
+    // used the raw number. `getColorPalette` runs two pools and the ACCENT pool is a SUBSET of the
+    // structure pool's pixels, so a colour clustered in both has its two shares summed when they merge.
+    // Measured on the 246-image corpus: 92 palettes sum above 100%, the worst to 155%, and two single
+    // entries report over 100% on their own -- a share of the image that cannot exist.
+    // ✅ FIXED AT THE SOURCE the same day (2026-08-12 13:26 EDT): getColorPalette now re-assigns every
+    // sampled pixel to its nearest final centroid, so a fresh palette sums to 100 and this rescale is a
+    // no-op for it. ⚠️ KEEP IT ANYWAY -- it is the compatibility path for a palette restored from a
+    // Cloudinary entry written BEFORE that fix, whose stored percents are still inflated and which the
+    // per-user caches will keep serving until the underlying image changes (they key on the image hash,
+    // not on the algorithm). Rescaling to the palette's own total makes these PROPORTIONS, which is all
+    // any rule here needs: "is this a region or a sliver".
+    const totalPercent = entries.reduce((n, e) => n + (e.percent || 0), 0);
+    const areaScale = totalPercent > 100 ? 100 / totalPercent : 1;
+    const area = i => (entries[i].percent || 0) * areaScale;
 
     if (entries.length === 0) return labels;
 
@@ -118,12 +183,20 @@ function assignDynamicLabels(entries, kind) {
     // ⚠️ NAMEPLATE leads with its BED, not a measurement (Harkirat 2026-08-11 07:55 EDT). A nameplate
     // gets only 4 swatches and its background is a design fact, so entry 0 IS the bed (prepended
     // exactly, never extracted) and entries 1-3 come from the upper art layer.
-    // For everything else, "Sets the Tone" replaces the old "Most Common": both point at index 0, but
-    // one restates the row's position and the other says what dominating the image actually MEANS.
-    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'Sets the Tone');
+    // For everything else: "First Impression" -- the colour you register before any other, which is
+    // what dominating an image actually DOES to a viewer. This slot has now burned through four
+    // wordings and each rejection taught something different: "Most Common" restated the row's own
+    // position, "Sets the Tone" left "the tone" of an unnamed thing hanging, and "Base Color" was
+    // rejected on sight as lazy and generic (Harkirat 2026-08-12 00:50 EDT) -- the same objection that
+    // killed "Majority Color" and "Secondary Color" before it. A category word plus "Color" is not a
+    // label here; it is the absence of one.
+    claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'First Impression');
     const maj = hsl[0];
     const isAccent = i => entries[i].origin === 'accent';
     const chromaRank = i => chroma[i];
+    // ⚠️ Whether the DOMINANT colour has any colour of its own decides which rules can speak at all --
+    // see the saturation guard further down, and the vivid rule immediately below.
+    const MAJ_HAS_COLOUR = chroma[0] >= 0.045;
 
     // ── KIND: what sort of thing is this colour, before any relationship to the dominant one ─────
     // The accent pool exists because a region covering ~1% can never win a slot on prevalence. Such a
@@ -133,88 +206,223 @@ function assignDynamicLabels(entries, kind) {
     // ⚠️ POOL MEMBERSHIP ALONE IS NOT ENOUGH, and the first version of this shipped that mistake into a
     // test run: the accent pool is the most chromatic tail OF THIS IMAGE, so on a sepia photo it
     // returns beige and on a near-greyscale avatar it returns grey-blue. Labelling those "Catches the
-    // Eye" and "Pop of Colour" promises a vividness the colour plainly does not have. Both rules
+    // Eye" and "Pop of Color" promises a vividness the colour plainly does not have. Both rules
     // therefore also require the colour to stand out against THIS palette (above its median
     // saturation) and to clear an absolute floor, so the claim is true in the picture and on its own.
     const sats = [...chroma].sort((a, b) => a - b);
     const medianSat = sats.length ? sats[Math.floor(sats.length / 2)] : 0;
     const standsOut = (i, margin) => chroma[i] >= medianSat + margin;
+    // When the ground itself has no colour, the vivid swatch IS the thing your eye goes to, so it takes
+    // that caption first and the accent rule below settles for "Pop of Color". This used to be a
+    // separate late rule needing a caption of its own, and every candidate was either a uniqueness
+    // claim that a later "Pop of Color" on the same page contradicted (real case: cinnasip.png) or a
+    // near-synonym of it. Reusing the true caption beats inventing a weaker one.
+    // ⚠️ EVERY FEATURE CAPTION IS CAPPED AT LARGE_AREA -- see that constant. A colour covering half the
+    // picture is what the picture IS, so it belongs to "Prominent" below, whatever pool it came from.
     tryClaim(
-        unclaimed().filter(i => isAccent(i) && entries[i].percent <= 12 && chroma[i] > 0.11 && standsOut(i, 0.035))
+        unclaimed().filter(i => !MAJ_HAS_COLOUR && chroma[i] > 0.12 && area(i) < LARGE_AREA)
             .sort((a, b) => chromaRank(b) - chromaRank(a)),
         'Catches the Eye'
     );
     tryClaim(
-        unclaimed().filter(i => isAccent(i) && chroma[i] > 0.07 && standsOut(i, 0.02))
+        unclaimed().filter(i => isAccent(i) && area(i) <= 12 && chroma[i] > 0.11 && standsOut(i, 0.035))
             .sort((a, b) => chromaRank(b) - chromaRank(a)),
-        'Pop of Colour'
+        'Catches the Eye'
+    );
+    tryClaim(
+        unclaimed().filter(i => isAccent(i) && chroma[i] > 0.07 && standsOut(i, 0.02) && area(i) < LARGE_AREA)
+            .sort((a, b) => chromaRank(b) - chromaRank(a)),
+        'Pop of Color'
     );
     // A second colour covering a really large share isn't "second place", it is co-ground: the thing
-    // the subject sits on. Threshold is deliberately high so this means area, not rank.
-    tryClaim(
-        unclaimed().filter(i => entries[i].percent >= 22).sort((a, b) => entries[b].percent - entries[a].percent),
-        'Fills the Space'
+    // the subject sits on. Threshold is deliberately high so this means area, not rank. The variant
+    // asks whether that area comes FORWARD or sits BEHIND: a big block of real colour is prominent, a
+    // big block of near-neutral is the thing everything else is placed against.
+    claimBest(
+        unclaimed().filter(i => area(i) >= LARGE_AREA).sort((a, b) => area(b) - area(a)),
+        [[i => chroma[i] >= COLOURED, 'Prominent'], [() => true, 'Backdrop']]
     );
     // A tiny, low-chroma sliver is edging/antialiasing -- real, and worth naming honestly rather than
     // dressing up as a design decision.
     tryClaim(
-        unclaimed().filter(i => entries[i].percent <= 3 && chroma[i] <= 0.09).sort((a, b) => entries[a].percent - entries[b].percent),
+        unclaimed().filter(i => area(i) <= 3 && chroma[i] <= 0.09).sort((a, b) => area(a) - area(b)),
         'Edge Detail'
     );
 
     // ── EXTREMES: true of the whole palette, not of a pairwise comparison ────────────────────────
     tryClaim(unclaimed().filter(i => hsl[i].l < 0.3).sort((a, b) => hsl[a].l - hsl[b].l), 'Deepest Shadow');
-    tryClaim(unclaimed().filter(i => hsl[i].l > 0.72).sort((a, b) => hsl[b].l - hsl[a].l), 'Brightest Light');
+    // ⚠️ "Brightest Light" is GONE (Harkirat 2026-08-12 11:27 EDT). Two things were wrong with it: it
+    // says the same word twice, and it collided with "Highlight" below -- the palette's lightest swatch
+    // and a swatch merely lighter than the ground could sit two rows apart making what reads as one
+    // claim. His replacement is situational, and the three adjectives are three genuinely different
+    // states rather than synonyms: LIGHTEST when there is no colour there to describe (near-white),
+    // PALEST when there is colour but it is washed out, BRIGHTEST when the colour is really present.
+    // 🚫 He floated a full "Lightest/Palest/Brightest" x "Note/Shade/Tone/Point" matrix; only the
+    // adjectives were kept as variants. Twelve cells would need twelve distinguishable states and
+    // there are three -- the extra nouns would be picked at random, which is precisely the defect the
+    // fallback pool below was rewritten to remove. A variant must answer to a property or it is noise.
+    claimBest(unclaimed().filter(i => hsl[i].l > 0.72).sort((a, b) => hsl[b].l - hsl[a].l), [
+        [i => chroma[i] >= PUNCHY, 'Brightest Point'],
+        [i => chroma[i] >= FAINT, 'Palest Tone'],
+        [() => true, 'Lightest']
+    ]);
     tryClaim(unclaimed().filter(i => chroma[i] < 0.035).sort((a, b) => chroma[a] - chroma[b]), 'Quiet Neutral');
 
     // ── RELATIONSHIP to the dominant colour ─────────────────────────────────────────────────────
+    // ⚠️ These rules MEASURE a relationship but must never NAME one -- that is the whole 2026-08-12
+    // 00:45 EDT rewording. The comparison to the dominant colour decides WHICH entry qualifies; the caption then
+    // states a property the swatch has on its own ("Warm Streak", not "Warms It Up").
+    //
+    // ⚠️ A HUE CLAIM NEEDS A COLOUR TO MAKE IT ABOUT -- the same trap the MAJ_HAS_COLOUR guard below
+    // catches for saturation, found again here on 2026-08-12 00:52 EDT while reading the reworded
+    // corpus. Hue is meaningless at near-zero chroma (two greys that differ by a rounding step can sit
+    // 130° apart), so the old rules called `#BABCB0` "Cuts Against It" against a `#9CA6AC` dominant --
+    // two greys, one of them accused of clashing. The reworded label made the same defect louder
+    // ("Odd One Out" is a stronger claim than the vague verb was), which is how it got noticed.
+    // Measured across the corpus, the split is unambiguous: every near-neutral claimant sat at chroma
+    // 0.016-0.033 and every genuine one at 0.054+, so the floor sits between them and just above what
+    // "Quiet Neutral" itself calls neutral (0.035). Below it these three rules simply don't apply, and
+    // the entry falls through to the lightness and "Close Harmony" rules, which say something true of a grey.
+    const HUE_MEANINGFUL = 0.04;
+    const hasHue = i => chroma[i] >= HUE_MEANINGFUL;
     // Temperature only counts as a contrast when the dominant colour ISN'T already that temperature --
     // otherwise "Warm" describes the whole picture rather than this swatch.
+    const byHueDistance = (a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h);
+    // 🤝 COMPLEMENTS RUN BEFORE TEMPERATURE, and the order is the entire point. At 150-210 degrees with
+    // real colour on both sides this is not an oddity, it is a COMPLEMENTARY PAIR -- the one
+    // relationship in colour theory where two hues actively reinforce each other -- so "Synergetic"
+    // (Harkirat's word, 2026-08-12 12:04 EDT) is the truest thing available to say about it.
+    // ⚠️ IT MUST OUTRANK Warm/Cool Accent OR IT NEVER SPEAKS. A complement is almost always the
+    // opposite TEMPERATURE too, so the temperature rule was claiming these swatches one step earlier
+    // and the tier fired exactly ONCE in 889 swatches. ⚠️ And note how that was nearly missed: a
+    // pre-check counted complements present in each PALETTE (10 across 7 images) rather than ones still
+    // unclaimed when the rule runs, which is a different number entirely -- in a greedy claim pipeline,
+    // eligibility is never a property of the palette alone. "Cool Accent" was not wrong on those
+    // swatches, only vaguer: both are true, and the more specific true thing wins.
+    // Hue or Shade follows the swatch, since "Shade" on a pale complement reads wrong in the ordinary
+    // sense of the word.
+    const isComplement = i => hasHue(i) && chroma[i] >= COLOURED && chroma[0] >= COLOURED && hueDistance(hsl[i].h, maj.h) >= 150;
+    claimBest(unclaimed().filter(isComplement).sort(byHueDistance), [
+        [i => hsl[i].l < 0.45, 'Synergetic Shade'],
+        [() => true, 'Synergetic Hue']
+    ]);
+    // Accent vs Trace is a question of how much colour is actually there: an unmistakable warm hue is a
+    // Warm Accent, a faint warmth over a cool picture is a Warm Trace.
     if (!isWarmHue(maj.h)) {
-        tryClaim(unclaimed().filter(i => isWarmHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Warms It Up');
+        claimBest(unclaimed().filter(i => hasHue(i) && isWarmHue(hsl[i].h)).sort(byHueDistance),
+            [[i => chroma[i] >= COLOURED, 'Warm Accent'], [() => true, 'Warm Trace']]);
     }
     if (!isCoolHue(maj.h)) {
-        tryClaim(unclaimed().filter(i => isCoolHue(hsl[i].h)).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cools It Down');
+        claimBest(unclaimed().filter(i => hasHue(i) && isCoolHue(hsl[i].h)).sort(byHueDistance),
+            [[i => chroma[i] >= COLOURED, 'Cool Accent'], [() => true, 'Cool Trace']]);
     }
-    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) > 60).sort((a, b) => hueDistance(hsl[b].h, maj.h) - hueDistance(hsl[a].h, maj.h)), 'Cuts Against It');
-    tryClaim(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l), 'Adds Depth');
-    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Opens It Up');
+    // The hue unlike everything else on the page -- a comparison the reader CAN make, unlike the
+    // rejected "Cuts Against It"/"Across the Wheel". A vivid one is a Wild Card (it reads as a
+    // deliberate surprise); a muted one is just an Outlier.
+    // (A true complement was already taken above; what reaches here is distant WITHOUT that pairing.)
+    claimBest(unclaimed().filter(i => hasHue(i) && hueDistance(hsl[i].h, maj.h) > 60).sort(byHueDistance),
+        [[i => chroma[i] >= PUNCHY, 'Wild Card'], [() => true, 'Outlier']]);
+    // Darker than the dominant. "Undertone" when it is barely a colour -- the shadow sitting under
+    // everything -- and "Deep Tone" when it is a rich dark colour in its own right. ⚠️ Both are BARE:
+    // "Deeper Shade"/"Lighter Tint" were rejected on sight (Harkirat 2026-08-12 11:08 EDT: "*deeper/
+    // lighter* than *what*?"), which is the dangling-referent test catching a comparative adjective
+    // rather than a pronoun. A comparative IS a comparison, however colour-flavoured the noun is.
+    claimBest(unclaimed().filter(i => hsl[i].l < maj.l - 0.15).sort((a, b) => hsl[a].l - hsl[b].l),
+        [[i => chroma[i] < FAINT, 'Undertone'], [() => true, 'Deep Tone']]);
+    tryClaim(unclaimed().filter(i => hsl[i].l > maj.l + 0.15).sort((a, b) => hsl[b].l - hsl[a].l), 'Highlight');
     // ⚠️ SATURATION COMPARISONS NEED A COLOURED REFERENCE, and without this guard they produce
     // nonsense on the commonest palette shape there is. When the dominant colour is near-white or grey
     // (chroma ~ 0), EVERY other swatch is more colourful than it, so a pale pink on a white avatar
-    // was labelled "Turns It Up" -- true by arithmetic, absurd to read. Below this threshold the
-    // dominant has no colour to turn up or tone down, and these two rules simply don't apply.
-    const MAJ_HAS_COLOUR = chroma[0] >= 0.045;
+    // was labelled the boldest colour in the picture -- true by arithmetic, absurd to read. Below this threshold the
+    // dominant has no colour to turn up or tone down, and these two rules simply don't apply. (The
+    // colourless-ground case is handled at the top, where the vivid swatch takes "Catches the Eye".)
+    // The bolder-than-the-ground rule runs on two different tests and Harkirat asked for a different
+    // word on each (2026-08-12 11:08 EDT, "split them"): against a coloured dominant this is the swatch
+    // that shouts over it -- a LOUD ACCENT -- while against a black/white/grey ground it is simply the
+    // one that has colour at all, a VIBRANT ACCENT. They can never both fire on one page, so the split
+    // costs nothing and says something truer than one word covering both would. The second branch also
+    // stops a genuinely vivid colour on a near-black avatar (real case: Cornflower Blue) falling all
+    // the way through to "Quiet Echo".
+    claimBest(
+        unclaimed().filter(i => MAJ_HAS_COLOUR ? chroma[i] > chroma[0] + 0.045 : chroma[i] > PUNCHY)
+            .sort((a, b) => chroma[b] - chroma[a]),
+        [[() => MAJ_HAS_COLOUR, 'Loud Accent'], [() => true, 'Vibrant Accent']]
+    );
+    // Softer than the ground, and here the variant carries a real distinction Harkirat drew: SOFT is
+    // light and gentle (powder blue, baby pink, off-white), MUTED is dusty and matte (slate blue, dusty
+    // rose). Same rule, different swatch, genuinely different word.
     if (MAJ_HAS_COLOUR) {
-        tryClaim(unclaimed().filter(i => chroma[i] > chroma[0] + 0.045).sort((a, b) => chroma[b] - chroma[a]), 'Turns It Up');
-        tryClaim(unclaimed().filter(i => chroma[i] < chroma[0] - 0.03).sort((a, b) => chroma[a] - chroma[b]), 'Tones It Down');
+        claimBest(unclaimed().filter(i => chroma[i] < chroma[0] - 0.03).sort((a, b) => chroma[a] - chroma[b]),
+            [[i => hsl[i].l >= LIGHT_L, 'Soft Accent'], [() => true, 'Muted Accent']]);
     }
-    // With no coloured reference, the honest thing to say about a genuinely saturated swatch is that it
-    // is the colour in an otherwise colourless picture -- a role, not a comparison.
-    tryClaim(unclaimed().filter(i => !MAJ_HAS_COLOUR && chroma[i] > 0.12).sort((a, b) => chroma[b] - chroma[a]), 'Brings the Colour');
     // A colour in the dominant's own hue family that is neither lighter, darker, bolder nor softer
     // enough to have been claimed above. Without this, a palette of four close cyans runs out of real
     // categories and drops into the fallback pool -- which is exactly what the swirl deco did.
-    tryClaim(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) <= 30).sort((a, b) => hueDistance(hsl[a].h, maj.h) - hueDistance(hsl[b].h, maj.h)), 'Backs It Up');
-    // Whatever is left that most closely echoes the dominant colour. "Almost the Same" is honest about
-    // being unremarkable -- the previous "Similar To Main" said the same thing in system-speak.
+    // "Harmonic" for a hue that is essentially the same note, "Neighboring Shade" for one a step along.
+    // Both are whole ideas on their own; the rejected "Backs It Up" and "Same Family" made the reader
+    // supply the thing being backed up or matched.
+    // ⚠️ THE TWO GREY TIERS COME FIRST, and they exist because the 889-swatch corpus caught this rule
+    // claiming harmony for swatches that have no hue to harmonise WITH -- 7 near-greys at chroma
+    // 0.01-0.04, e.g. "Spanish Gray -> Harmonic". This rule deliberately has no hue floor (it is where
+    // neutrals land after the floored rules pass them over), so the honesty has to live in the wording:
+    // a swatch with a trace of colour is a Muted Harmony, one with none at all is just a Neutral Shade.
+    claimBest(unclaimed().filter(i => hueDistance(hsl[i].h, maj.h) <= 30).sort((a, b) => hueDistance(hsl[a].h, maj.h) - hueDistance(hsl[b].h, maj.h)), [
+        [i => chroma[i] < 0.02, 'Neutral Shade'],
+        [i => chroma[i] < FAINT, 'Muted Harmony'],
+        [i => hueDistance(hsl[i].h, maj.h) <= 15, 'Harmonic'],
+        [() => true, 'Neighboring Shade']
+    ]);
+    // Whatever is left that most closely echoes the dominant colour. "Quiet Echo" is honest about being
+    // unremarkable -- the older "Similar To Main" said the same thing in system-speak.
+    // ⚠️ "QUIET" IS A CLAIM ABOUT THE SWATCH, and the 889-swatch corpus caught it being false 6 times,
+    // worst of them an Orange-Red at chroma 0.19 on `neon red.png` captioned "Quiet Echo". The echo is
+    // real -- the rule finds the entry closest to the dominant in lightness, chroma and hue -- so what
+    // needed fixing was the adjective, not the rule. Harkirat 2026-08-12 11:59 EDT: "Vivid Echo and
+    // just Echo sound good and honestly i feel like they can be used for different circumstances."
+    // Bare "Echo" carries the middle, where the swatch is neither quiet nor loud enough to say so.
     if (unclaimed().length > 0) {
         const closest = [...unclaimed()].sort((a, b) => {
             const da = Math.abs(hsl[a].l - maj.l) + Math.abs(chroma[a] - chroma[0]) + hueDistance(hsl[a].h, maj.h) / 360;
             const db = Math.abs(hsl[b].l - maj.l) + Math.abs(chroma[b] - chroma[0]) + hueDistance(hsl[b].h, maj.h) / 360;
             return da - db;
         });
-        tryClaim(closest, 'Quiet Echo');
+        claimBest(closest, [
+            [i => chroma[i] >= PUNCHY, 'Vivid Echo'],
+            [i => chroma[i] >= COLOURED, 'Echo'],
+            [() => true, 'Quiet Echo']
+        ]);
     }
 
-    // Safety net only -- 15 real categories cover a maximum of 7 non-leading entries per page, so this
-    // should never be reached. Kept non-numbered so even a pathological case doesn't regress into
-    // "Accent Color N", which is what the very first version of this did and Harkirat rejected.
-    const fallbackPool = ['Holds the Middle', 'Sits Back', 'Breaks the Pattern', 'Fills a Gap'];
-    let fi = 0;
+    // Safety net only. Kept non-numbered so even a pathological case doesn't regress into "Accent
+    // Color N", which is what the very first version of this did and Harkirat rejected -- and kept in
+    // the same noun-phrase register as the real labels, because a fallback that IS reached (measured:
+    // one swatch in a 133-swatch corpus, so "should never be reached" was optimistic) is read by a
+    // user exactly like any other caption. The previous pool -- "Holds the Middle", "Sits Back",
+    // "Breaks the Pattern", "Fills a Gap" -- was four more dangling referents waiting to surface.
+    // ⚠️ IT IS NOT A ROTATING LIST ANY MORE. A rotation hands out whichever word is next, so a punchy
+    // magenta could draw "Quiet Hint" purely because the counter was at 0 -- the pool would be the one
+    // place in the function where the caption is unrelated to the swatch. Harkirat specified the
+    // distinctions himself (2026-08-12 11:08 EDT): "Quiet Hint if it's a softer color or very minimal
+    // and Hint of Color if it's more punchy", and Stray Shade vs Stray Color "because shade and color
+    // kind of are different things". So the pool is ordered by what the swatch IS, and "Side Note"
+    // catches whatever matches nothing.
+    const fallbackVariants = [
+        [i => chroma[i] >= PUNCHY, 'Hint of Color'],
+        [i => chroma[i] >= COLOURED, 'Trace of Color'],
+        // ⚠️ DARK BEFORE FAINT-COLOUR, and the order is the whole distinction. Harkirat's own reading
+        // is that "shade and color kind of are different things" -- shade is the dark word. Testing
+        // `Stray Color` first handed it to dark swatches at chroma 0.05 (measured: 3 in the 889-swatch
+        // corpus, e.g. a near-black "Coffee"), which calls a shadow a colour.
+        [i => hsl[i].l < 0.5, 'Stray Shade'],
+        [i => chroma[i] >= FAINT, 'Stray Color'],
+        [() => true, 'Quiet Hint'],
+        [() => true, 'Side Note']
+    ];
     for (const i of unclaimed()) {
-        labels[i] = fallbackPool[fi % fallbackPool.length];
-        fi++;
+        const pick = fallbackVariants.find(([test, label]) => test(i) && !usedLabels.has(label));
+        // Every real path is covered above; the numbered tail exists only so a pathological palette
+        // still renders a caption rather than `null`, and is why the pool is ordered widest-last.
+        claim(i, pick ? pick[1] : `Side Note ${i + 1}`);
     }
     return labels;
 }
@@ -251,7 +459,7 @@ function shade(hex, amount = DERIVED_AMOUNT) {
 // just being typed out -- sent as message attachments referenced via `attachment://`, generated
 // fresh per render (no external hosting needed, these are tiny/cheap to generate). Content format:
 // the plain-English color NAME as the bold heading line, hex plainly below it, and the dynamic
-// relative label ("Sets the Tone"/"Catches the Eye"/etc, or the Display Name page's own Gradient Start/
+// relative label ("First Impression"/"Catches the Eye"/etc, or the Display Name page's own Gradient Start/
 // End/Blend labels) as a small quoted caption. Returns both the component rows AND the raw file
 // buffers the caller needs to attach alongside them.
 async function buildEntryRows(entries) {
@@ -486,7 +694,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already
-    // does this) -- assigning "Sets the Tone"/"Catches the Eye"/etc per-PAGE instead would produce
+    // does this) -- assigning "First Impression"/"Catches the Eye"/etc per-PAGE instead would produce
     // inconsistent results depending on which page a given color happened to land on (e.g. the real
     // eye-catching accent could end up on page 2, leaving page 1 with no "Catches the Eye" at all).
     const allEntries = effectiveSource === 'name'
