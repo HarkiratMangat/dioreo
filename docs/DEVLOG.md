@@ -140,6 +140,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-11 02:07 EDT — the colour extractor learns to look at the whole animation, and to notice small things (v3.6.0-pre)
 - 2026-08-11 14:21 EDT — chasing a colour name into three dead ends, and the bug that was hiding behind all of them (v3.7.0-pre)
 - 2026-08-11 15:20 EDT — the expensive part of colour extraction was not the colour extraction (v3.8.0-pre)
+- 2026-08-11 21:21 EDT — three layers said "use the grid" and none of them carried it (v3.9.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2485,6 +2486,28 @@ He was right, and the interesting part is what made the note feel sufficient. Th
 **A second, quieter version of the same thing happened with the cache-message layout.** I reorganised it into four grouped lines, wrote up why the grouping was right, and shipped it. Harkirat then sent his own layout, spelled out line by line — and it was better, in a way I would not have arrived at: only the heading is body-size, so five lines read shorter than my four. My version was defensible design applied to someone else's daily surface. **The polish was mine; the taste was his.** Worth remembering which of those is actually being asked for.
 
 **And one place where the day's improvements were deliberately NOT applied.** With the extractor rewritten in OKLab, the obvious next move was to port the same chroma fix into the accent-colour algorithm, which still judges everything in HSL saturation — the flaw that had just been fixed one layer up. So it was built, and measured, and it was worse: six of ten corpus images changed visibly, one lost its colour entirely, and the pale-pink Cinnamoroll avatar turned the exact dark navy that an *existing* over-saturation complaint is about. HSL's inflated saturation at high lightness biases toward light, prevalent colours; chroma biases toward small, punchy ones. A palette wants the punchy tail — it is what surfaces a cat's red eyes. A single embed tint does not. **Same flaw, opposite correct answer** — and the only reason that was discovered rather than shipped is that the rewrite was tested on real images instead of justified from the principle that made it correct elsewhere.
+
+## 2026-08-11 21:21 EDT — three layers said "use the grid" and none of them carried it (v3.9.0-pre)
+
+The rule was three layers deep and every layer was a pointer.
+
+`docs/SESSION-START.md` is auto-loaded and says the model recommendation must be *"picked from the grid in `reference_priority_tier_system`, not from a feeling about importance"*. The `MEMORY.md` index line is auto-loaded and names the axes: *"pick the model from the premise-risk × deliberation-load grid"*. The `UserPromptSubmit` hook fires every single turn and re-states the requirement. All three were in context for this entire session.
+
+I still got it wrong twice, in opposite directions. First I recommended `Opus5-Medium` for a live-verification pass — a session where Harkirat clicks through Discord and I make small edits. He asked, reasonably, *"opus5-M for a live pass session?"* I corrected to `Sonnet5-Low`. He asked again: *"so you just ignored our new model recommendation system?"* Only then did I open the grid, and the correct answer was `Sonnet5-Medium` — neither of my picks, with the second one landing on a cell he had explicitly retired in writing.
+
+**The diagnosis is worth more than the fix.** A pointer preserves the CONCEPT and drops the DISCRIMINATING VALUES. "premise-risk × deliberation-load grid" told me the shape of the decision and none of the content that decides it. Two facts live only in the file: that **deliberation load means how many PLACES** (`Low = one place · Med = several · High = many sites`), and that **`Sonnet5-Low` is effectively retired**. The first error came from reading Axis B as *how hard is the thinking*, which let me inflate it with a plausible-sounding phrase — "moderate taste load" — for a session whose hard judgements are all Harkirat's, not mine. The second came from not knowing the floor existed. **Both errors were in the file. Neither was in any of the three places I actually read.**
+
+That is the failure mode: a summary keeps the vocabulary and quietly loses the thresholds. It leaves you *feeling informed*, which is worse than feeling ignorant, because feeling ignorant sends you to the file.
+
+**My first two fixes were both the same non-fix, and the second one is genuinely funny.** I wrote a case into `feedback_suggest_model_switch` ending with "so open the file, every time" — a *read the file* instruction, filed in a file that has to be read, about a failure consisting of not reading files. Harkirat: *"so you edited a memory file, which you admitted you didn't even read until i explicitly flagged it, to improve your behavior about using and reading that specific memory file? make that make sense."*
+
+It doesn't. Only `MEMORY.md` auto-loads. At the moment the gate fires — my first action, before any exploration — no other memory is in context. **Adding a fourth pointer is not a fix; it is the same non-fix in a new location.**
+
+So the table moved to where the decision is made. The hook now carries both axis definitions, all twelve cells, the retired-cell floor, the one-cell-never-a-range rule and the event-driven escalation triggers. Nothing to open, nothing to remember. It is knowingly a second copy of content the memory owns — real duplicated state, real drift risk — and that trade was made with eyes open, because the alternative is a pointer and a pointer is precisely what measurably failed. The self-test pins the values that discriminate, so drift fails the suite instead of a session.
+
+**And the same failure class fired again, live, while I was writing about it.** Reading the hook's own text, I ran `rg -rn`. In ripgrep `-r` is `--replace`, so it silently rewrote "FIRST ACTION" to "n" in my own output and I nearly reasoned from the result. That trap is documented in bold in `CLAUDE.md`. The prose didn't stop me — the `rg-flag-guard` hook did, in the same turn, for the same structural reason the grid change exists: **a rule that turns on a specific value has to be present where the value is used, not described somewhere findable.**
+
+**The generalisation Harkirat drew, which is the open question worth carrying forward:** *"i wonder if thats also the reason you don't honor some of your other memory files."* Structurally it must be. Every memory except `MEMORY.md` is on-demand, and I navigate all of them by their one-line index descriptions. So the ones most likely to be violated are exactly the ones whose *content* carries operational values a one-liner cannot hold — a table, a threshold, a definition. That is a testable prediction rather than a worry, and it names the next piece of work: find the memories whose index line under-describes their content, and decide which of them need to be *present* rather than *findable*.
 
 # Part B — Lessons Ledger (thematic)
 
