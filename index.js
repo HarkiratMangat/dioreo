@@ -2091,11 +2091,29 @@ client.on('interactionCreate', async interaction => {
             // changed, rather than just claiming success unconditionally. Only the ACTIVE source is
             // re-extracted (the one whose swatches are on screen and that this Refresh button targets)
             // -- refreshing one page no longer needlessly re-extracts the other three sources.
+            // `refreshStale: true` on the SECOND call only (2026-08-11 18:44 EDT, Harkirat's design):
+            // besides force-re-extracting the source on screen, pick up any OTHER equipped source
+            // whose image has genuinely changed since it was cached, and leave the untouched ones
+            // alone. Passing it on the `before` snapshot too would defeat the whole comparison -- that
+            // call exists precisely to read what was cached BEFORE anything was recomputed.
             const before = await getPalettePanelData(colorsInteraction, prefs, source, false, variant);
-            const after = await getPalettePanelData(colorsInteraction, prefs, source, true, variant);
+            const after = await getPalettePanelData(colorsInteraction, prefs, source, true, variant, true);
             const beforeVal = source === 'name' ? before.displayNameColors : before[source];
             const afterVal = source === 'name' ? after.displayNameColors : after[source];
             const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
+
+            // Finish the job the button's NAME promises. The palettes above are re-extracted, but the
+            // accent colour that tints every OTHER command's embeds lives in a separate cache with no
+            // forceRefresh path of its own, so without this a user presses "Refresh Colors" and every
+            // embed keeps its old tint. INVALIDATED rather than recomputed: an accent colour resolves
+            // on the next accent-using command anyway, so clearing it guarantees a fresh value without
+            // spending CPU inside a button press -- and costs nothing at all for a 'preset'-style user,
+            // who never resolves one. Scoped to this user and to the sources actually refreshed.
+            const { invalidateAccentCache } = require('./utils/accentColor');
+            const clearedAccents = invalidateAccentCache(
+                prefs, [source, ...(after.refreshedSources || [])], variant === 'server'
+            );
+            if (clearedAccents.length) await prefs.save();
 
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
             const { components, files } = await buildColorPalettePanel({
@@ -2115,9 +2133,18 @@ client.on('interactionCreate', async interaction => {
 
             const { SOURCE_META } = require('./utils/colorPaletteView');
             const sourceLabel = SOURCE_META[source]?.label || source;
-            const resultMessage = changed
+            // Other sources whose image had genuinely changed and were refreshed in passing. Reported
+            // because the work is invisible otherwise -- the panel only ever renders ONE source, so a
+            // silently-updated Banner would look like nothing happened until the user navigated there.
+            const alsoRefreshed = (after.refreshedSources || [])
+                .map(kind => SOURCE_META[kind]?.label || kind);
+            const alsoLine = alsoRefreshed.length
+                ? `\n-# Also picked up changes to your **${alsoRefreshed.join('**, **')}** — open ${alsoRefreshed.length > 1 ? 'those pages' : 'that page'} to see them.`
+                : '';
+            const resultMessage = (changed
                 ? `✅ Found new colors for your **${sourceLabel}**!`
-                : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`;
+                : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`)
+                + alsoLine;
             try {
                 return await interaction.followUp({ content: resultMessage, ephemeral: true });
             } catch (notifyError) {

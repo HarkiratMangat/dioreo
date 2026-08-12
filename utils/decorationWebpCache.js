@@ -39,9 +39,9 @@ if (!process.env.CLOUDINARY_URL) {
 const { Jimp } = require('jimp');
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
-const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
+const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
-const { getColorPalette, serializePalette, deserializePalette, PALETTE_COUNTS } = require('./colorExtract');
+const { getColorPalette, paletteContextFields, readPaletteContext, PALETTE_COUNTS } = require('./colorExtract');
 
 // Imported, never redeclared -- see utils/colorExtract.js's comment on why the counts live there
 // rather than in colorPalette.js (which requires this module, so importing back would close a cycle).
@@ -71,6 +71,12 @@ const FOLDER = IS_DEV ? 'dev_decoration_webp' : 'decoration_webp';
 // fixed rate nameplate settled on, for the same reason: the render cost is paid once per design and
 // cached forever, so there's no pressure to chase a lower rate for speed.
 const FPS = 12;
+// ONE definition, used by the render and the heal path AND folded into the palette cache key -- see
+// utils/nameplateWebpCache.js's matching comment. `-f apng` is the load-bearing flag here: without it
+// ffmpeg silently reads an animated PNG as a single still frame, which is the exact silent-single-frame
+// trap animatedMediaPipeline.js's header documents. A change to any of these three changes every
+// stored decoration palette, which is why they are part of its key.
+const FRAME_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS };
 // Cap the rendered width the same way utils/resizedImage.js caps the nameplate/avatar previews --
 // decorations are typically already small (avatar-decoration scale, confirmed 288x288 on a real
 // equipped decoration -- comfortably under this cap already), so this is a ceiling, not a forced
@@ -114,7 +120,10 @@ async function getCachedDecorationWebp(decorationAsset) {
             discordCdnUrl: result.context?.custom?.discord_cdn_url || null,
             // Null on a resource rendered BEFORE palette caching shipped -- resolveDecorationWebp
             // backfills those, since the WebP is already cached and would never re-render to get one.
-            palette: deserializePalette(result.context?.custom?.palette)
+            // Null both when no palette was ever stored AND when the stored one predates the current
+            // extractor -- readPaletteContext checks the version marker, and both cases route through
+            // healPalette below. See colorExtract.js's PALETTE_ALGO_VERSION for the invalidation rule.
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -130,6 +139,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
     const publicId = publicIdFor(decorationAsset);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const renderStartedAt = Date.now();
+    // Set once the frames are extracted in `asPaths` mode, where this function owns the temp dir. It
+    // hangs on the function's own try/finally rather than a nested one so the happy path, the error
+    // path and the palette-failure path all release it without a second block to keep in sync.
+    let releaseFrames = null;
 
     try {
         const res = await fetch(decorationUrl);
@@ -139,11 +152,13 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // -f apng is REQUIRED (see utils/stillFrame.js's extractFrameMontage comment) -- without it
         // ffmpeg silently reads an animated PNG as a single still frame and this would produce a
         // 1-frame "animated" WebP with no error anywhere to catch it.
-        const rawFrames = await extractAlphaFrames(sourceBuffer, {
-            inputExt: '.png',
-            preInputArgs: ['-f', 'apng'],
-            fps: FPS
-        });
+        // ⚠️ `asPaths` leaves the frames where ffmpeg wrote them and hands this function ownership of
+        // the temp dir -- hence the `finally` below, which must not be removed. It is spread in HERE
+        // ONLY and is deliberately absent from FRAME_OPTS: it moves no pixel, and folding it into the
+        // options that key the palette cache would re-derive every stored palette for identical colours.
+        const extracted = await extractAlphaFrames(sourceBuffer, { ...FRAME_OPTS, asPaths: true });
+        releaseFrames = extracted.cleanup;
+        const rawFrames = extracted.paths;
 
         // No bed/compositing step (decorations stay genuinely transparent) and no dithering pass.
         // Dimensions checked from ONE frame only, then resize the WHOLE set only if actually needed --
@@ -153,7 +168,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // no-op -- more than double the actual WebP-encode step, for zero pixel change. ffmpeg's raw
         // extracted frames are already valid PNG buffers img2webp can consume directly, so skip Jimp
         // entirely in the (common) no-resize-needed case.
-        const { width: srcWidth, height: srcHeight } = (await Jimp.read(rawFrames[0])).bitmap;
+        // Read from the PNG's IHDR header rather than decoding the frame -- the branch below only
+        // needs the dimensions, and a full Jimp decode of a 288x288 frame to answer a question the
+        // first 24 bytes already answer is the same kind of waste the comment above is about.
+        const { width: srcWidth, height: srcHeight } = await readImageSize(rawFrames[0]);
         let width = srcWidth, height = srcHeight, frames;
         if (srcWidth > MAX_WIDTH) {
             height = Math.max(1, Math.round(MAX_WIDTH * srcHeight / srcWidth));
@@ -161,19 +179,24 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             frames = [];
             // Same event-loop-yield discipline as nameplateWebpCache.js's compositing loop -- this
             // branch only runs when a real resize is happening, so it's real per-frame CPU work again.
-            for (const frameBuf of rawFrames) {
-                const img = await Jimp.read(frameBuf);
+            // Jimp.read takes the path directly, so nothing is buffered that isn't about to be resized.
+            for (const framePath of rawFrames) {
+                const img = await Jimp.read(framePath);
                 img.resize({ w: width, h: height });
                 frames.push(await img.getBuffer('image/png'));
                 await new Promise(setImmediate);
             }
         } else {
+            // The common case: PATHS, handed straight to img2webp. Nothing between ffmpeg writing these
+            // and the encoder reading them touches a pixel, so buffering them would be N reads followed
+            // by N writes of the same bytes into a second temp dir.
             frames = rawFrames;
         }
-
         // Palette from the raw art frames, which the render already holds -- see extractPaletteFromFrames
         // above. Extracted from `rawFrames` rather than the possibly-resized `frames` so the result does
         // not depend on whether a resize branch happened to run; k-means samples ~2500 pixels either way.
+        // Only the ~9 frames the montage samples are read at all; poolFramesIntoMontage's Jimp.read takes
+        // a path as happily as a Buffer.
         // A failure must not sink the WebP, which is the primary product here.
         let palette = null;
         try {
@@ -188,15 +211,25 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // Parallel, not sequential -- see utils/nameplateWebpCache.js's matching comment for why
         // (measured live 2026-08-10 12:21 EDT: doing this in series visibly slowed the cold-render path).
         const filename = `${slugify(decorationAsset)}.webp`;
+        // Same grouping as utils/nameplateWebpCache.js -- identity · colours · output · footer -- so the
+        // two cache channels read as one system rather than two similar-looking blocks. See that
+        // module's comment for the reasoning; the only difference here is that a decoration has no bed
+        // and no palette name, so the identity line is the asset alone. It also sits beside a thumbnail
+        // in a Section rather than under a full-width gallery, so the narrower column matters more.
+        // Same layout Harkirat specified for the nameplate cache 2026-08-11 18:44 EDT, so the two
+        // channels read as one system. ⚠️ DERIVED, not specified -- he gave the nameplate shape only,
+        // and a decoration differs in two ways that force a decision rather than a copy:
+        //   · it has NO NAME (Harkirat 2026-08-10 13:47 EDT: "remove the useless 'Decoration' title"),
+        //     so the heading is the output metrics alone rather than an empty name followed by them;
+        //   · it has no palette NAME and no bed, so the colours line is just the colours.
+        // If he wants it differently, this is the block to change -- the nameplate's is the reference.
+        const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const metadataLines = [
-            `**Asset:** \`${decorationAsset}\``,
-            skuId ? `**SKU:** \`${skuId}\`` : null,
-            `**Cloudinary:** \`${publicId}\``,
-            `**Dimensions:** ${width}×${height} · **Frames:** ${frames.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            // The four extracted hexes -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache
-            // channel records what the design's palette resolved to, not just that a render happened.
-            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
+            `### \`${width}×${height}px\` · \`${frames.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            palette ? `-# **Colors:** **${palette.map(hexOf).join(' · ')}**` : null,
+            `-# **Asset:** \`${decorationAsset}\``,
+            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
         ].filter(Boolean);
         // Section+Thumbnail (type 9/11), NOT a full-width Media Gallery item -- Harkirat's request
         // (2026-08-10 13:16 EDT), same inline-preview treatment utils/colorPaletteView.js's own Deco
@@ -246,10 +279,8 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // (measured live 2026-08-10 13:07 EDT: the fire-and-forget version lost the write silently).
         // ONE patch carrying both keys -- Cloudinary's `context` replaces the whole map, so two calls
         // would have the second silently erase the first.
-        const serialized = serializePalette(palette);
-        const context = {};
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
-        if (serialized) context.palette = serialized;
         if (Object.keys(context).length) {
             try {
                 await cloudinary.api.update(publicId, { resource_type: 'image', context });
@@ -263,6 +294,10 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
     } catch (err) {
         console.error(`Decoration WebP render/upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
         return null;
+    } finally {
+        // Owned since `asPaths` handed the temp dir over; by here the encoder has its bytes and the
+        // palette has been sampled, so nothing reads these files again on any path through the above.
+        if (releaseFrames) await releaseFrames();
     }
 }
 
@@ -293,15 +328,19 @@ async function healPalette(cached, decorationAsset, decorationUrl) {
     try {
         const res = await fetch(decorationUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${decorationUrl}`);
-        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
-            inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS
-        });
-        const palette = await extractPaletteFromFrames(rawFrames);
-        const serialized = serializePalette(palette);
-        if (!serialized) return cached;
+        // `asPaths` here too: this path only ever samples the ~9 frames the montage picks, so reading
+        // all 60 into memory to throw 51 of them away was the same waste the render path had.
+        const extracted = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), { ...FRAME_OPTS, asPaths: true });
+        let palette;
+        try {
+            palette = await extractPaletteFromFrames(extracted.paths);
+        } finally {
+            await extracted.cleanup();
+        }
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
+        if (!context.palette) return cached;
         // Re-send discord_cdn_url -- `context` replaces the whole map, so patching the palette alone
         // would wipe the url this module works hard to persist.
-        const context = { palette: serialized };
         if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
         const resolved = { ...cached, palette };

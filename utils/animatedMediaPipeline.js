@@ -54,6 +54,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs/promises');
 const crypto = require('crypto');
+const { fingerprint } = require('./algoFingerprint');
 
 function runCommand(cmd, args) {
     return new Promise((resolve, reject) => {
@@ -76,7 +77,26 @@ function runCommand(cmd, args) {
 // against a real equipped nameplate).
 // `fps`: passed to a `fps=` filter, so it both caps AND (for a slower source) upsamples to a fixed
 // output rate -- callers don't need to know the source's native frame rate.
-async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], fps }) {
+// `asPaths`: return the frames WHERE FFMPEG ALREADY WROTE THEM instead of reading them all into
+// memory. The default (buffers) exists because the nameplate render genuinely needs every frame's
+// pixels -- it composites a gradient bed onto each one. The decoration render does not: in the common
+// no-resize case nothing touches the pixels between ffmpeg writing them and img2webp reading them
+// back, so buffering all N was a full round trip of N reads followed by N writes into a SECOND temp
+// dir, for bytes that never changed. With paths, only the ~9 frames the palette montage samples are
+// ever read, and img2webp consumes the originals in place.
+//
+// ⚠️ THE CALLER OWNS THE DIRECTORY in this mode -- `cleanup()` must run in a `finally`, or the temp
+// dir leaks. That is the cost of the optimisation and the reason it is opt-in rather than the default.
+// A throw before the return still cleans up here; only the success path hands ownership over.
+//
+// ⚠️ `asPaths` is a TRANSPORT choice and changes no pixel, so it must NEVER be folded into the
+// `FRAME_OPTS` a cache passes to paletteContextFields -- that would move the palette cache key and
+// re-derive every stored palette to arrive at identical colours. See utils/decorationWebpCache.js's
+// call site, which spreads it in for this function only.
+// The one true description of what ffmpeg writes here, used both to name the output pattern and to
+// read it back, so the two can never disagree. Exported for the self-test.
+const FRAME_FILE_RE = /^frame_\d+\.png$/;
+async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], fps, asPaths = false }) {
     const id = crypto.randomUUID();
     const dir = path.join(os.tmpdir(), `dior_mediaframes_${id}`);
     await fs.mkdir(dir, { recursive: true });
@@ -84,16 +104,29 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
     const outputPattern = path.join(dir, 'frame_%04d.png');
     await fs.writeFile(inputPath, sourceBuffer);
 
+    let ownedByCaller = false;
     try {
         await runCommand('ffmpeg', [
             '-y', ...preInputArgs, '-i', inputPath,
             '-vf', `fps=${fps}`, '-pix_fmt', 'rgba', outputPattern
         ]);
-        const names = (await fs.readdir(dir)).filter(n => n.startsWith('frame_')).sort();
+        // ⚠️ EXACT match on ffmpeg's own `frame_%04d.png` output pattern, NOT `startsWith('frame_')`.
+        // This directory is no longer ffmpeg's alone: in `asPaths` mode encodeWebpFromFrames writes
+        // `out.webp` in here beside the frames (that is what removes the second temp dir). A prefix
+        // test made the two safe only by ACCIDENT of the output being named `out.webp` -- rename it to
+        // anything `frame_`-prefixed, or have the encoder emit intermediates, and its own output would
+        // be read back as a source frame. The pattern is the contract; matching it exactly enforces
+        // the contract instead of documenting it. Numbered PNGs only, so no future sibling can qualify.
+        const names = (await fs.readdir(dir)).filter(n => FRAME_FILE_RE.test(n)).sort();
         if (names.length === 0) throw new Error('ffmpeg produced zero frames');
-        return await Promise.all(names.map(n => fs.readFile(path.join(dir, n))));
+        const paths = names.map(n => path.join(dir, n));
+        if (asPaths) {
+            ownedByCaller = true;
+            return { paths, cleanup: () => fs.rm(dir, { recursive: true, force: true }).catch(() => {}) };
+        }
+        return await Promise.all(paths.map(p => fs.readFile(p)));
     } finally {
-        await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+        if (!ownedByCaller) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     }
 }
 
@@ -118,15 +151,32 @@ async function extractAlphaFrames(sourceBuffer, { inputExt, preInputArgs = [], f
 // before this) by roughly 90%.
 async function encodeWebpFromFrames(frameBuffers, { fps }) {
     const id = crypto.randomUUID();
-    const dir = path.join(os.tmpdir(), `dior_webpencode_${id}`);
-    await fs.mkdir(dir, { recursive: true });
+    // When every frame is already a path in ONE directory (extractAlphaFrames' `asPaths` mode), the
+    // output goes in beside them and no second temp dir is created at all -- the caller already owns
+    // one and is going to remove it. Requiring a SHARED parent is the guard that makes this safe: a
+    // caller mixing sources would otherwise have the output land next to an arbitrary one of them.
+    // ⚠️ The dir is then NOT ours to delete; the `finally` below skips it deliberately. This is the
+    // difference between "one fewer WRITE" and "one fewer temp DIRECTORY", and the second half was
+    // the closed item's stated verify condition -- measured at 2 dirs either way until this existed.
+    const framesAreLocal = frameBuffers.length > 0
+        && frameBuffers.every(f => typeof f === 'string')
+        && new Set(frameBuffers.map(f => path.dirname(f))).size === 1;
+    const dir = framesAreLocal
+        ? path.dirname(frameBuffers[0])
+        : path.join(os.tmpdir(), `dior_webpencode_${id}`);
+    if (!framesAreLocal) await fs.mkdir(dir, { recursive: true });
     const outPath = path.join(dir, 'out.webp');
     const frameDelayMs = Math.round(1000 / fps);
 
     try {
-        const framePaths = await Promise.all(frameBuffers.map(async (buf, i) => {
+        // Accepts Buffers OR paths to PNGs already on disk. A caller that took extractAlphaFrames'
+        // `asPaths` mode and did not touch the pixels has files img2webp can read directly, so writing
+        // them out again would be a copy of bytes onto themselves. A Buffer still gets written, because
+        // img2webp reads real files and not stdin -- that part is a genuine constraint, not waste.
+        const framePaths = await Promise.all(frameBuffers.map(async (frame, i) => {
+            if (typeof frame === 'string') return frame;
             const p = path.join(dir, `frame_${String(i).padStart(4, '0')}.png`);
-            await fs.writeFile(p, buf);
+            await fs.writeFile(p, frame);
             return p;
         }));
 
@@ -139,7 +189,9 @@ async function encodeWebpFromFrames(frameBuffers, { fps }) {
 
         return await fs.readFile(outPath);
     } finally {
-        await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+        // Only ever remove a directory this function created. In the shared-directory case above the
+        // caller owns it and removes it (with out.webp inside) via extractAlphaFrames' cleanup().
+        if (!framesAreLocal) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     }
 }
 
@@ -189,10 +241,98 @@ async function poolFramesIntoMontage(raw, { frames = POOL_FRAMES, targetWidth = 
         height: tiles[0].bitmap.height * rows,
         color: 0x00000000
     });
-    for (let i = 0; i < tiles.length; i++) {
-        sheet.composite(tiles[i], (i % cols) * tiles[0].bitmap.width, Math.floor(i / cols) * tiles[0].bitmap.height);
+    // ⚠️ DIRECT ROW COPY, NOT `sheet.composite()` (2026-08-11 15:17 EDT) -- and this is the ACCURATE
+    // option as well as the fast one, which is the opposite of how a hand-rolled blit usually reads.
+    // Compositing "source OVER a fully transparent destination" is mathematically the source itself,
+    // so nothing here needs blending at all; Jimp's blend runs the full over-operator anyway and its
+    // integer rounding hands back source ±1 on every partially-transparent pixel. Measured on the real
+    // twilight nameplate, 13,134 sheet bytes came back altered by that rounding alone, and on a real
+    // 60-frame decoration the error was large enough to move an extracted swatch (#117AF1 -> #127BF2 --
+    // the copy's value is the correct one). Tiles are laid out on an exact grid with no overlap, so a
+    // per-row `Buffer.copy` reproduces the intended result exactly: measured 83-98ms -> 0.5ms.
+    //
+    // Falls back to composite() if a tile is ever a different size than the first -- the grid's
+    // geometry is derived from tiles[0], so mismatched tiles would write rows at the wrong offsets.
+    // Every frame of a single animation has identical dimensions, so this is a guard, not a live path.
+    const tw = tiles[0].bitmap.width, th = tiles[0].bitmap.height;
+    // ⚠️ THROWS rather than falling back to composite(), and that is deliberate. An earlier version
+    // fell back, which looked safer and was worse: composite() is the path that ADDS the ±1 rounding
+    // this copy exists to remove, so the fallback would have quietly produced DIFFERENT COLOURS from
+    // the same code -- and PALETTE_ALGO_VERSION cannot tell two runtime branches apart, so the cache
+    // would have stamped both with the same key. Every frame of one animation shares its stream's
+    // dimensions, so this cannot fire for any real caller; if it ever does, the caller assembled
+    // frames from more than one source and this function does not support that. Both callers wrap
+    // extraction in a try/catch that degrades to no palette, so failing loud costs a palette, never a
+    // render.
+    if (!tiles.every(t => t.bitmap.width === tw && t.bitmap.height === th)) {
+        throw new Error(`montage tiles are not uniform (${tiles.map(t => `${t.bitmap.width}x${t.bitmap.height}`).join(', ')}) -- frames from a single animation always share dimensions`);
     }
-    return sheet.getBuffer('image/png');
+    for (let i = 0; i < tiles.length; i++) {
+        const ox = (i % cols) * tw, oy = Math.floor(i / cols) * th;
+        const src = tiles[i].bitmap;
+        for (let y = 0; y < th; y++) {
+            src.data.copy(sheet.bitmap.data, ((oy + y) * sheet.bitmap.width + ox) * 4, y * tw * 4, (y + 1) * tw * 4);
+        }
+    }
+    // ⚠️ RETURNS A DECODED JIMP IMAGE, NOT A PNG BUFFER (2026-08-11 14:55 EDT). Every consumer feeds
+    // this montage straight to colorExtract.js's getColorPalette, which used to `Jimp.read` it back --
+    // so the sheet was being PNG-encoded here purely to be decoded again one function call later.
+    // Measured 2026-08-11 14:57 EDT on three real assets, that round trip cost 28ms (43-frame
+    // nameplate), 56ms and 101ms (60-frame decorations) for ZERO pixel change -- palettes verified
+    // byte-identical before and after by local/colors-investigation/pipeline-parity.js. If a caller
+    // ever genuinely needs bytes it can call `.getBuffer('image/png')` itself -- but prefer passing
+    // the image, since encoding a montage nobody stores is pure waste.
+    return sheet;
 }
 
-module.exports = { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage };
+// Reads a PNG's dimensions from its IHDR header instead of decoding the whole image. ffmpeg's
+// extracted frames are plain PNGs whose first chunk is always IHDR (width/height are big-endian at
+// byte 16 and 20, right after the 8-byte signature, the 4-byte length and the "IHDR" tag), so the
+// callers that need only "how big is this frame" -- utils/decorationWebpCache.js decides whether a
+// resize is needed at all -- can skip a full Jimp decode of a 288x288 frame for four bytes of header.
+// Falls back to a real decode on anything that isn't a PNG, so this can never be the reason a render
+// fails; the fast path is an optimisation, not a new format assumption.
+// Accepts a Buffer or a path. Given a path it reads only the first 24 bytes rather than the file --
+// the whole point is to not pay for pixels nobody needs.
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+async function readImageSize(source) {
+    let buffer = source;
+    if (typeof source === 'string') {
+        const handle = await fs.open(source, 'r');
+        try {
+            const header = Buffer.alloc(24);
+            const { bytesRead } = await handle.read(header, 0, 24, 0);
+            buffer = header.subarray(0, bytesRead);
+        } finally {
+            await handle.close();
+        }
+    }
+    if (Buffer.isBuffer(buffer) && buffer.length >= 24
+        && buffer.subarray(0, 8).equals(PNG_SIGNATURE)
+        && buffer.subarray(12, 16).toString('latin1') === 'IHDR') {
+        return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+    }
+    const { width, height } = (await Jimp.read(buffer)).bitmap;
+    return { width, height };
+}
+
+// This module's contribution to the palette cache key -- see utils/algoFingerprint.js. Everything
+// upstream of the extractor belongs in here, because a stored palette depends on the PIXELS as much as
+// on the clustering: extractAlphaFrames decides which frames exist at all, and poolFramesIntoMontage
+// decides which of them are picked, how they are scaled, and how they are laid onto the sheet.
+// Hashing colorExtract alone would have missed the tile-copy fix in this very file, which altered a
+// swatch while touching nothing there.
+//
+// ⚠️ `extractAlphaFrames` is in here even though it looks like plumbing. It is not: its ffmpeg
+// invocation is what turns a source into pixels, so a change to how it decodes changes every palette
+// derived from it. The one input it does NOT close over is its OPTIONS -- fps and the decoder flags
+// live in the two cache modules and differ per media type, so each cache folds its own extraction
+// options into the key at the call site (see colorExtract.js's paletteContextFields).
+const MONTAGE_FINGERPRINT = fingerprint(
+    extractAlphaFrames, poolFramesIntoMontage, { POOL_FRAMES, POOL_TILE_WIDTH }
+);
+
+module.exports = {
+    extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize,
+    MONTAGE_FINGERPRINT, FRAME_FILE_RE
+};

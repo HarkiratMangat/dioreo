@@ -1,5 +1,9 @@
 // utils/colorExtract.js
 const { Jimp } = require('jimp');
+const { fingerprint } = require('./algoFingerprint');
+// Only for MONTAGE_FINGERPRINT. animatedMediaPipeline requires nothing from here, so this is not a
+// cycle; the montage is genuinely part of the algorithm that produces a stored palette (see below).
+const { MONTAGE_FINGERPRINT } = require('./animatedMediaPipeline');
 
 // Discord's legacy `accent_color` field is only ever populated for accounts with NO banner set
 // (the client shows one or the other) -- most active users have a banner, so that field comes
@@ -373,8 +377,15 @@ function mergePerceptual(clusters, dE) {
 // room to fold away real near-duplicates while still leaving enough surplus clusters to fill back up
 // to the requested count from other genuinely distinct regions. Verified live: avatar went from 5/8
 // to a full 8/8 with this fix, using otherwise-identical source pixels.
-async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
-    const img = await Jimp.read(imageUrl);
+// `source` may be a url, a Buffer, or an ALREADY-DECODED Jimp image. The third case exists because
+// utils/animatedMediaPipeline.js's poolFramesIntoMontage builds its montage as a Jimp image and no
+// caller ever stores the montage -- PNG-encoding it there just to `Jimp.read` it back here cost ~140ms
+// per cold render for a bitmap we already had in memory (measured 2026-08-11 14:56 EDT on a real
+// 60-frame decoration). Duck-typed on `.bitmap.data` rather than `instanceof` deliberately: Jimp 1.x
+// hands back class instances built through its own plugin wrapper, so an identity check is a
+// needlessly brittle way to ask "is this already decoded".
+async function getColorPalette(source, count = KMEANS_COUNT) {
+    const img = source?.bitmap?.data ? source : await Jimp.read(source);
     const { width, height, data } = img.bitmap;
     const totalPixels = width * height;
     const pixelStep = Math.max(1, Math.floor(totalPixels / 2500));
@@ -519,6 +530,87 @@ function serializePalette(palette) {
         .join(',');
 }
 
+// 🏷️ WHICH ALGORITHM PRODUCED A STORED PALETTE -- DERIVED FROM THE CODE, NOT FROM A RELEASE NUMBER.
+// Written to Cloudinary `context` as `palette_version` beside the palette itself, and checked on every
+// read: a palette tagged with anything else is treated as ABSENT, which routes it through the caches'
+// existing heal path and re-derives it once, in place. That is the entire invalidation mechanism --
+// there is no purge script and none is wanted, since deleting the resource would take the render and
+// its `discord_cdn_url` with it.
+//
+// Why a key is needed at all: the per-design palette cache keys on the ASSET HASH, which never changes
+// when the algorithm does -- the same trap `[[feedback_cache_invalidation_on_algorithm_change]]`
+// records for the per-user colour caches. Without a key, v3.8.0-pre's montage fix (a real rounding
+// correction that moved a swatch by one unit of 255) would have left every already-cached design on
+// the old value forever, with nothing in the record saying which value a given entry held.
+//
+// ⚠️ WHY IT IS A HASH AND NOT A HAND-WRITTEN STRING (Harkirat, 2026-08-11 15:44 EDT, rejecting the
+// first design): *"there's a unique versioning for the actual algorithm."* A hand-written release tag
+// fails in both directions -- it only moves when someone remembers, so a real change can ship under a
+// stale tag with every cached value quietly wrong; and naming it after a release invites bumping it
+// every release, re-deriving identical output for nothing. Deriving it from the code removes the human
+// from the loop entirely: **shipping v3.9.0, v3.10.0 or any other release does NOT change this value
+// and forces no re-derivation.** It moves if and only if the listed code moves.
+//
+// ⚠️ THE MONTAGE IS PART OF THE ALGORITHM, not a separate concern. Every stored palette here belongs
+// to a nameplate or decoration, and both reach the extractor through poolFramesIntoMontage -- so which
+// frames are pooled and how they are laid onto the sheet decides the colours as surely as the
+// clustering does. Fingerprinting the extractor alone would have missed this release's tile-copy fix,
+// which altered a swatch while touching nothing in this file.
+//
+// What is deliberately NOT in here: `getDominantColor` and the naming/label layers. The first feeds
+// the per-user accent caches, which have their own invalidation; the second two are recomputed at
+// render time from the stored hexes and so cannot go stale in Cloudinary.
+//
+// To read the current value: `node -p "require('./utils/colorExtract').PALETTE_ALGO_VERSION"`.
+// Ledger (fill in on the way past -- it maps an opaque hash back to a human story):
+//   ec022f178423 — as of v3.8.0-pre: two-pool OKLab extractor with farthest-first seeding; montage
+//                  tiles copied rather than composited; frame extraction folded in. Entries written
+//                  before any marker existed carry none, and are stale by definition -- correctly,
+//                  since they predate the rounding fix.
+// ⚠️ Each cache combines this with its own FRAME_OPTS, so the value actually stored is NOT this
+// string -- see paletteKey below. This is the shared base, not the final key.
+const PALETTE_ALGO_VERSION = fingerprint(
+    // Everything the extracted values depend on, including the helpers the top-level functions call --
+    // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
+    srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
+    seedFarthestFirst, clusterLabs, mergePerceptual, getColorPalette,
+    composeNameplatePalette, perceptualDistanceHex,
+    {
+        KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
+        ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
+        PALETTE_COUNTS, NAMEPLATE_OVERASK
+    },
+    MONTAGE_FINGERPRINT
+);
+
+// The two halves of the context round-trip, kept as one pair so the four call sites (each cache's
+// render path and its heal path, times two modules) cannot drift on the key name or the version.
+// Returns {} rather than a partial map when there is nothing worth storing, so a caller can spread it
+// into a context object unconditionally.
+// ⚠️ `extra` is how a CALLER folds its own output-affecting inputs into the key, and both helpers must
+// be given the same ones or a freshly-written palette reads back as stale forever. It exists because
+// PALETTE_ALGO_VERSION cannot see everything on its own: the ffmpeg fps and decoder flags live in the
+// two cache modules and differ per media type (a nameplate is `-c:v libvpx-vp9` at 12fps, a decoration
+// `-f apng`), and importing them here would close a cycle -- those modules require this one. Each
+// cache passes its FRAME_OPTS, so "which frames existed" is part of the identity of what was stored.
+// Symmetry is enforced locally: the write and the read sit in the same module, a few lines apart.
+function paletteKey(...extra) {
+    return extra.length ? fingerprint(PALETTE_ALGO_VERSION, ...extra) : PALETTE_ALGO_VERSION;
+}
+
+function paletteContextFields(palette, ...extra) {
+    const serialized = serializePalette(palette);
+    return serialized ? { palette: serialized, palette_version: paletteKey(...extra) } : {};
+}
+
+// Reads a stored palette back, returning null unless it was produced by the CURRENT algorithm. Null is
+// exactly what an absent palette returns, and both caches already treat that as "heal this one" -- so
+// stale entries re-derive themselves on next view with no separate migration path to maintain.
+function readPaletteContext(custom, ...extra) {
+    if (!custom || custom.palette_version !== paletteKey(...extra)) return null;
+    return deserializePalette(custom.palette);
+}
+
 function deserializePalette(raw) {
     if (typeof raw !== 'string' || !raw) return null;
     const out = [];
@@ -547,5 +639,6 @@ function chromaOfHex(hex) {
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
     composeNameplatePalette, serializePalette, deserializePalette,
+    paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex
 };

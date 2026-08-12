@@ -41,7 +41,7 @@ const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = requ
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
 const {
-    getColorPalette, composeNameplatePalette, serializePalette, deserializePalette,
+    getColorPalette, composeNameplatePalette, paletteContextFields, readPaletteContext,
     PALETTE_COUNTS, NAMEPLATE_OVERASK
 } = require('./colorExtract');
 
@@ -77,6 +77,13 @@ const FOLDER = IS_DEV ? 'dev_nameplate_webp' : 'nameplate_webp';
 // palette) ever, so there's no reason to trade smoothness for a cost that's already amortized to
 // nothing after the first real view.
 const FPS = 12;
+// ONE definition, used by the render and the heal path AND folded into the palette cache key. These
+// three values decide which pixels the extractor ever sees -- `-c:v libvpx-vp9` in particular is what
+// makes the webm's alpha channel survive at all (the default vp9 decoder silently drops it) -- so a
+// change here changes every stored palette. Passing this to paletteContextFields/readPaletteContext is
+// what makes that change invalidate them; see colorExtract.js's `extra` parameter for why the cache
+// modules own this rather than the fingerprint reaching in for it.
+const FRAME_OPTS = { inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS };
 
 // SECURITY: never log a raw Cloudinary error object -- same leak shape as every other Cloudinary
 // module here (the Admin API's rejected-promise carries the account's live API key+secret in
@@ -88,8 +95,26 @@ function errorHttpCode(err) {
     return err?.http_code ?? err?.error?.http_code ?? null;
 }
 
+// Discord serves every nameplate under `nameplates/nameplates/<design>/` -- the repeated segment is
+// THEIRS, and carrying it into our public id produced ids like
+// `dev_nameplate_webp/nameplates-nameplates-twilight-cobalt`, where two thirds of the name is a
+// constant. Shortened to `<design>-<palette>` 2026-08-11 17:34 EDT (Harkirat asked why it was so
+// long, and the honest answer was that nothing had questioned it).
+//
+// ⚠️ ONLY the exact three-segment `nameplates/nameplates/<design>` shape is shortened; anything else
+// keeps the full slug. That is the collision guard: the last segment alone is only unique if the
+// parent path is known-constant, so an unfamiliar shape must not be trusted to be unique by its tail.
+//
+// ⚠️ THE PUBLIC ID IS THE CACHE KEY, so changing it ORPHANS every render stored under the old name.
+// Safe to do exactly here because both prod folders held ZERO resources and the four dev entries had
+// just been purged and re-rendered -- the cheapest moment this change will ever have. Do not repeat
+// it casually once real renders exist without purging the old ids in the same pass.
 function publicIdFor(nameplateAsset, paletteName) {
-    return `${FOLDER}/${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}`;
+    const segments = String(nameplateAsset).split('/').filter(Boolean);
+    const design = segments.length === 3 && segments[0] === 'nameplates' && segments[1] === 'nameplates'
+        ? segments[2]
+        : nameplateAsset;
+    return `${FOLDER}/${slugify(design)}-${slugify(paletteName || 'none')}`;
 }
 
 // Same in-memory memo pattern as utils/nameplateBedImage.js's bedCache/utils/resizedImage.js -- see
@@ -123,7 +148,10 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
             // May be null on a resource rendered BEFORE palette caching shipped -- resolveNameplateWebp
             // heals those rather than leaving them permanently palette-less, since the WebP itself is
             // already cached and would never re-render on its own.
-            palette: deserializePalette(result.context?.custom?.palette)
+            // Null both when no palette was ever stored AND when the stored one predates the current
+            // extractor -- readPaletteContext checks the version marker. Both cases route through
+            // healPalette below, which re-derives in place; see colorExtract.js's PALETTE_ALGO_VERSION.
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -153,11 +181,7 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // -c:v libvpx-vp9 forces the decoder that actually surfaces the WebM alpha side-data block --
         // see animatedMediaPipeline.js's own comment for the measured default-decoder bug this works
         // around.
-        const rawFrames = await extractAlphaFrames(webmBuffer, {
-            inputExt: '.webm',
-            preInputArgs: ['-c:v', 'libvpx-vp9'],
-            fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(webmBuffer, FRAME_OPTS);
 
         // Per-frame Jimp compositing is fully synchronous CPU work -- yielding between frames is the
         // same fix the k-means CPU-burst production incident needed (see
@@ -200,32 +224,56 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         const bedHexStr = bedHex != null ? `#${bedHex.toString(16).padStart(6, '0')}` : 'none';
         const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
         const heading = nameplateName || 'Nameplate';
+        // Grouped by WHAT THE READER IS ASKING (Harkirat's polish request 2026-08-11 16:59 EDT: better
+        // organised, still concise, no taller). Four lines instead of seven, losing no field:
+        //   identity (what design is this) · colours · output (what came out) · footer (bookkeeping).
+        // Two specific wins beyond the grouping:
+        //   · **Bed had its own field while ALSO being Colors[0]** -- the same hex printed twice, which
+        //     is duplicated state in a record, exactly what a swatch list should never need. It is now
+        //     a marker on the colour that already carried it.
+        //   · The Cloudinary public id and the SKU moved into the `-#` footer. They are bookkeeping you
+        //     copy when something is wrong, not something you read on every render, and the public id
+        //     was the single longest line in the block. Kept in FULL rather than truncated -- an id you
+        //     cannot copy is worse than one that wraps.
+        // Layout specified by Harkirat 2026-08-11 18:44 EDT, to the character -- do not "tidy" it.
+        // The shape is deliberate: the HEADING carries the name and the output metrics, so the one
+        // line rendered at full size answers "what is this and what came out of it", and everything
+        // else drops to `-#` small text. That is what keeps the block from growing: five lines, but
+        // only one of them at body size.
+        //
+        // ⚠️ The palette name and its four hexes are ONE line because they are one fact -- the design's
+        // palette. `palette[0]` IS the bed (v3.6.0 prepends it), so the first hex is the bed and no
+        // separate Bed field is needed; a `none`-palette design prepends nothing and every hex is art.
+        // ⚠️ The Cloudinary id is written with a LEADING SLASH (`/dev_nameplate_webp/…`) as specified.
+        const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
+        const swatches = palette ? palette.map(hexOf).join(' · ') : `\`${bedHexStr}\``;
         const metadataLines = [
-            `**Asset:** \`${nameplateAsset}\``,
-            skuId ? `**SKU:** \`${skuId}\`` : null,
-            `**Palette:** \`${paletteName || 'none'}\` · **Bed:** \`${bedHexStr}\``,
-            `**Cloudinary:** \`${publicId}\``,
-            `**Dimensions:** ${width}×${height} · **Frames:** ${composited.length} · **Size:** ${(webpBuffer.length / 1024).toFixed(1)} KB`,
-            // The four extracted hexes, in the panel's own order (bed first, then the three art
-            // colours) -- Harkirat's explicit ask 2026-08-11 09:20 EDT, so the cache channel records
-            // what the design's palette actually resolved to, not just that a render happened.
-            palette ? `**Colors:** ${palette.map(c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``).join(' ')}` : null,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> · took ${renderMs}ms`
-        ].filter(Boolean);
+            `### ${heading} — \`${width}×${height}px\` · \`${composited.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            `-# **Palette:** **\`${paletteName || 'none'}\` — ${swatches}**`,
+            `-# **Asset:** \`${nameplateAsset}\``,
+            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
+        ];
         const components = [
             {
                 type: 17, // Container
-                // The first ART colour, NOT bedHex -- Harkirat's explicit request 2026-08-10 14:08 EDT.
-                // bedHex keeps doing its real job just above (renderGradientBedFrame's gradient bed);
-                // this is purely which color styles the cache MESSAGE.
-                // ⚠️ It used to read `palette[0]`, which SILENTLY BECAME THE BED when v3.6.0 changed the
-                // composition to prepend the bed at index 0 -- the line kept its "NOT bedHex" comment
-                // while doing exactly that. With a bed present the first art colour is index 1; with a
-                // `none` palette nothing is prepended and index 0 is already art.
-                accent_color: (bedHex != null ? palette?.[1]?.hex : palette?.[0]?.hex) ?? undefined,
+                // 🔄 THE BED COLOUR -- Harkirat 2026-08-11 16:59 EDT, deliberately REVERSING his own
+                // 2026-08-10 14:08 EDT call for "the first ART colour, NOT bedHex". Do not "restore"
+                // the art colour on the strength of that older comment; this is the newer decision and
+                // it matches what the design reads as at a glance, since the bed is the whole
+                // background of the rendered nameplate.
+                // ⚠️ Falls back to the first ART colour when a `none`-palette design has no bed at all
+                // (its background is baked into the art), rather than leaving the container unstyled.
+                // ⚠️ History worth keeping: this line once read `palette[0]` under a comment saying
+                // "NOT bedHex", and v3.6.0 silently MADE that the bed by prepending it at index 0. The
+                // comment stayed correct-looking while the code did the opposite of what it claimed --
+                // which is why this one now names the intent rather than an index.
+                accent_color: bedHex ?? palette?.[0]?.hex ?? undefined,
                 components: [
                     { type: 12, items: [{ media: { url: `attachment://${filename}` } }] },
-                    { type: 10, content: `### ${heading}` },
+                    // ONE TextDisplay, not a heading plus a body -- the heading is the first line of
+                    // the block now (see metadataLines), so a second component would only add spacing
+                    // between two things that belong together.
                     { type: 10, content: metadataLines.join('\n') }
                 ]
             }
@@ -252,10 +300,8 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // first permanently falls back to the slower fetch+reattach path with no way to self-heal.
         // ONE patch carrying both keys. Cloudinary's `context` replaces the whole map, so sending them
         // in two calls would have the second silently erase the first.
-        const serialized = serializePalette(palette);
-        const context = {};
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
         if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
-        if (serialized) context.palette = serialized;
         if (Object.keys(context).length) {
             try {
                 await cloudinary.api.update(publicId, { resource_type: 'image', context });
@@ -305,15 +351,12 @@ async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex)
     try {
         const res = await fetch(webmUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${webmUrl}`);
-        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), {
-            inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS
-        });
+        const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), FRAME_OPTS);
         const palette = await extractPaletteFromFrames(rawFrames, bedHex);
-        const serialized = serializePalette(palette);
-        if (!serialized) return cached;
+        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
+        if (!context.palette) return cached;
         // Re-send discord_cdn_url alongside it -- `context` replaces the whole map, so patching the
         // palette alone would wipe the url this module works hard to persist.
-        const context = { palette: serialized };
         if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
         const resolved = { ...cached, palette };

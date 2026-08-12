@@ -286,7 +286,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
 // internally still-frame-extracts for decoration's color analysis: Discord's own client renders
 // animated PNG/decoration previews fine (the Jimp limitation is specific to OUR pixel-sampling code),
 // so the Deco page shows the real animated decoration even though extraction only ever sees one frame.
-async function getPalettePanelData(interaction, prefs, activeSource, forceRefresh = false, variant = 'global') {
+async function getPalettePanelData(interaction, prefs, activeSource, forceRefresh = false, variant = 'global', refreshStale = false) {
     const useGuild = variant === 'server';
     const info = await getSourceImageInfo(interaction, useGuild);
     const results = { displayNameColors: info.displayNameColors, variant };
@@ -395,6 +395,44 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
             prefs, activeSource, sources[activeSource], forceRefresh, isGuildSource(activeSource), sharedPalette
         );
     }
+
+    // `refreshStale` (2026-08-11 18:44 EDT, Harkirat's design for the Refresh Colors button): ALSO
+    // recompute any OTHER equipped source whose image has actually changed since it was cached, and
+    // leave the rest alone. His framing: a user who changed only their banner should pay for the
+    // banner; a user who changed avatar, banner and nameplate should get all three, without the two
+    // they left alone being re-extracted for nothing.
+    //
+    // ⚠️ This is NOT a return to the pre-2026-07-13 "extract everything on every render" behaviour
+    // that caused the bot-wide `10062` interaction timeouts. Three things keep it bounded: it runs
+    // ONLY on an explicit button press (never on a page turn or a panel open), it extracts only
+    // sources whose stored hash genuinely differs from the live one (usually none), and that button
+    // already carries its own 10-second cooldown. The staleness test itself is free -- every hash is
+    // already in hand from getSourceImageInfo above, which the panel calls regardless to build its
+    // nav buttons.
+    //
+    // ⚠️ `forceRefresh` is deliberately NOT passed here. The active source is force-re-extracted
+    // because that is what the button targets and what makes its "did anything change?" message
+    // honest; the others are refreshed only if their image really moved, so an unchanged source costs
+    // one string comparison. Nameplate/decoration additionally short-circuit on their shared
+    // per-design palette, so a "stale" one of those is a metadata read rather than an extraction.
+    const refreshed = [];
+    if (refreshStale) {
+        for (const [kind, srcInfo] of Object.entries(sources)) {
+            if (!srcInfo || kind === activeSource) continue;
+            const isGuild = isGuildSource(kind);
+            const { paletteField, sourceField } = paletteFields(kind, isGuild);
+            const identity = srcInfo.paletteCacheKey || srcInfo.source;
+            if (prefs[paletteField] && prefs[sourceField] === identity) continue; // image unchanged
+            try {
+                results[kind] = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
+                refreshed.push(kind);
+            } catch (err) {
+                // One stale source failing must not sink the refresh the user actually asked for.
+                console.error(`Stale-source refresh failed for ${kind}:`, err.message);
+            }
+        }
+    }
+    results.refreshedSources = refreshed;
 
     return results;
 }
