@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.9.0 — 2026-08-11 21:10 EDT (#PR) — the model-selection grid stops being a pointer
+## Pre-Release v3.9.0 — 2026-08-11 21:10 EDT (#117) — the model-selection grid stops being a pointer
 
 **A rule that turns on specific values cannot be enforced by naming where those values live.** The session-start gate requires a model + effort recommendation "picked from the grid in `reference_priority_tier_system`". Three layers already said so — `docs/SESSION-START.md` (auto-loaded), the `MEMORY.md` index line (auto-loaded), and the `UserPromptSubmit` hook itself (fires every turn). All three were in context, and the recommendation was still made from a remembered shape of the table: **twice, wrongly, in opposite directions** — first over-specced to `Opus5-Medium` for a live-verification pass, then over-corrected to `Sonnet5-Low`, a cell Harkirat had already retired in writing.
 
