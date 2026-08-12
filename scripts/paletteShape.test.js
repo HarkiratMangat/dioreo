@@ -1,7 +1,12 @@
 // scripts/paletteShape.test.js
-// Regression test for the LOW-COLOUR SOFT RESTRICT in utils/colorExtract.js -- the gate that decides
-// a near-colourless image should show 4 swatches instead of 8, and the rule that decides WHICH 4.
-// Added 2026-08-12 14:59 EDT. Run: `node scripts/lowColourRestrict.test.js` (also via `npm test`).
+// Regression tests for PALETTE SHAPE in utils/colorExtract.js -- how many swatches come back, and
+// which ones. Two mechanisms decide that and they are tested together because they are one concern:
+//   · the LOW-COLOUR SOFT RESTRICT -- the gate that drops a near-colourless image to 4, and the rule
+//     that decides which 4 survive;
+//   · the PAGE LADDER -- which moves an off-rung count to 1/2/4/6/8 so a second page is never a stub,
+//     by looking harder first and manufacturing at most one swatch.
+// Added 2026-08-12 14:59 EDT (restrict), extended 2026-08-12 18:43 EDT (ladder).
+// Run: `node scripts/paletteShape.test.js` (also via `npm test`).
 //
 // ⚠️ WHY THIS EXISTS. Every failure mode here is SILENT, and worse, every one of them produces output
 // that looks entirely reasonable on its own:
