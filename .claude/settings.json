@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[self-check] (1) FIRST ACTION: if you have NOT yet this session output the ready-to-paste /rename string + a one-line model+effort recommendation, do it now before any task content -- this is a hard gate (feedback_suggest_model_switch memory), not optional. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming).\"}}'",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/self-check.sh\"",
             "timeout": 5
           }
         ]
