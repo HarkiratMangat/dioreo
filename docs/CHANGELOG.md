@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.8.0 — 2026-08-11 15:19 EDT (#PR) — the palette stops paying for a picture nobody looks at
+## Pre-Release v3.8.0 — 2026-08-11 15:19 EDT (#116) — the palette stops paying for a picture nobody looks at
 
 **The montage was being PNG-encoded purely so it could be decoded again one function call later, and that round trip is gone.** `poolFramesIntoMontage` builds its sampling sheet as a Jimp image, then returned it as PNG bytes; `getColorPalette` immediately called `Jimp.read` on those bytes. Nothing in between stored, uploaded or looked at that PNG — it existed only to cross a function boundary. `getColorPalette` now accepts an already-decoded image (duck-typed on `.bitmap.data`, since Jimp 1.x builds instances through its own plugin wrapper and an `instanceof` check is the brittle way to ask "is this decoded"), and the montage hands its image over directly. **Measured on three real assets: 28ms saved on the 43-frame twilight nameplate, 56ms and 84ms on two real 60-frame decorations — with the extracted palettes verified byte-identical before and after, on every one.**
 
