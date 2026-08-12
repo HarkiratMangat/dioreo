@@ -206,11 +206,9 @@ async function getDominantColor(imageUrl) {
 //    inconsistent one.
 //
 // 5. LOW-COLOUR SOFT RESTRICT (Harkirat's request): a genuinely near-colourless image drops to 4
-//    entries instead of the full count. Judged on the EXTRACTED colours, not on raw pixel statistics
-//    -- that distinction is load-bearing. By aggregate chroma a black cat scores as "low colour" and
-//    would lose its red eyes; judged on its extracted palette it escapes the restriction because it
-//    genuinely has an accent. Measured: fires on 4 of 22 corpus images (two pure-greyscale banners, a
-//    pale wash, a dark near-monochrome avatar) and correctly leaves the cat alone.
+//    entries instead of the full count. ⚠️ REBUILT 2026-08-12 14:51 EDT -- see the block above
+//    LOW_COLOUR_CHROMA below for what it used to do, why that discarded real colours a human could
+//    plainly see, and why it now asks about the PIXEL TAIL rather than about the extracted centroids.
 const KMEANS_COUNT = 8;
 const KMEANS_ITERATIONS = 12;
 const LIGHTNESS_WEIGHT = 0.5;    // <1 compresses pure-lightness spread during seeding/clustering
@@ -221,6 +219,28 @@ const ACCENT_MIN_PIXELS = 20;    // too few and the "tail" is noise, not a featu
 const ACCENT_CLUSTERS = 3;
 const SALIENCE_WEIGHT = 0.6;     // how much chroma counts against prevalence when ordering entries
 const LOW_COLOUR_COUNT = 4;
+
+// ⚠️ THE LOW-COLOUR GATE HAS ITS OWN FLOOR, AN ORDER OF MAGNITUDE BELOW CHROMA_FLOOR, AND THAT
+// SEPARATION IS THE WHOLE FIX (2026-08-12 14:51 EDT). The restrict used to reuse CHROMA_FLOOR --
+// "is any extracted centroid at least this colourful?" -- which put two different questions behind
+// one constant. CHROMA_FLOOR answers "is this PIXEL worth putting in the accent pool?", where 0.04 is
+// a sensible bar for a small punchy feature. The restrict asks "does this IMAGE have colour at all?",
+// and 0.04 is far too high a bar for that: every sepia photograph, brown avatar and olive banner sits
+// under it while being unmistakably brown to anyone looking at it.
+//
+// Measured on the 246-image corpus (local/colors-investigation/lowcolour-gates.mjs): the old gate
+// fired on 9 images, and FOUR of them were tinted rather than colourless -- a sepia portrait whose
+// candidates topped out at chroma 0.027, two brown avatars at 0.033 and 0.037, a dark olive at 0.017.
+// Harkirat's own server avatar was one of them: its structure pool correctly found a real black and
+// two dark browns, and the restrict then threw all three away for having no saturation, which is not
+// the same fact as having no depth.
+//
+// 0.01 is not fitted to that corpus. It is the point at which a colour is, by THIS MODULE'S OWN merge
+// rule, the same colour as plain grey: MERGE_DELTA_E declares two entries identical below 0.07 of
+// OKLab distance, so a tail sitting within 0.01 of the neutral axis is nowhere near a distinguishable
+// hue. The corpus then confirms the value is not delicate -- the achromatic images measure 0 to
+// 0.0031 and the least colourful genuinely-tinted one measures 0.0213, a 7x empty band around it.
+const LOW_COLOUR_CHROMA = 0.01;
 
 // --- OKLab (Björn Ottosson). Perceptually uniform, so a distance here means what the eye means.
 function srgbToLinear(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
@@ -363,6 +383,34 @@ function mergePerceptual(clusters, dE) {
 }
 
 // Returns an array of `{ hex, percent }` sorted by prevalence (most-common first), sliced to at MOST
+// Picks `limit` entries that SPAN the lightness axis, holding entries[0] fixed and then repeatedly
+// taking whichever remaining entry is farthest in L from everything already chosen. Used only by the
+// low-colour restrict, where lightness is the sole axis carrying information -- see the block at that
+// call site for the measurement that made it necessary.
+//
+// This is the same deterministic Gonzalez traversal seedFarthestFirst runs, in one dimension: no
+// randomness, so the Refresh Colors button's "did anything actually change?" comparison still holds.
+// The chosen set is returned in the INPUT's order rather than in pick order, because that order is a
+// contract (index 0) and a ranking (salience) that this function has no business restating.
+function spanLightness(entries, limit) {
+    if (entries.length <= limit) return entries.slice();
+    const chosen = [0];
+    while (chosen.length < limit) {
+        let best = -1, bestGap = -Infinity;
+        for (let i = 1; i < entries.length; i++) {
+            if (chosen.includes(i)) continue;
+            // Distance to the NEAREST already-chosen entry: maximising it is what spreads the picks
+            // out, where maximising distance to the mean would just pile them at both extremes.
+            let gap = Infinity;
+            for (const c of chosen) gap = Math.min(gap, Math.abs(entries[i].L - entries[c].L));
+            if (gap > bestGap) { bestGap = gap; best = i; }
+        }
+        if (best < 0) break;
+        chosen.push(best);
+    }
+    return chosen.sort((a, b) => a - b).map(i => entries[i]);
+}
+
 // `count` entries -- callers (utils/colorPaletteView.js) render however many actually come back.
 // `count` (2026-07-14, Harkirat's request) lets callers ask for fewer clusters on smaller/simpler
 // sources (nameplate/decoration -- 4) than richer ones (avatar/banner -- 8) instead of one fixed K
@@ -411,7 +459,12 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     // this self-disabling: a greyscale image has nothing above CHROMA_FLOOR, so `accent` stays empty.
     const chromas = labs.map(chromaOf);
     const ranked = [...chromas].sort((a, b) => b - a);
-    const tailCut = Math.max(CHROMA_FLOOR, ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * ACCENT_TAIL_FRACTION))]);
+    // The chroma of the image's most-chromatic 3% of pixels. Hoisted out of tailCut because the
+    // low-colour restrict below asks about this same quantity -- and because reading it in one place
+    // makes it obvious that the two uses take DIFFERENT floors, which is the point (see
+    // LOW_COLOUR_CHROMA's block above).
+    const tailChroma = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * ACCENT_TAIL_FRACTION))];
+    const tailCut = Math.max(CHROMA_FLOOR, tailChroma);
     const accentLabs = labs.filter((_, i) => chromas[i] >= tailCut);
     const accent = accentLabs.length >= ACCENT_MIN_PIXELS
         ? await clusterLabs(accentLabs, accentLabs.map(o => ({ x: o.L, y: o.a, z: o.b })), ACCENT_CLUSTERS, labs.length)
@@ -464,14 +517,46 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     rest.sort((a, b) => salience(b) - salience(a));
 
     const ordered = [...head, ...rest];
-    // Soft restrict, judged on the EXTRACTED colours rather than raw pixel statistics -- see point 5
-    // in the V3 block above for why that distinction decides whether a dark image with one real accent
-    // keeps its full allowance. Math.min keeps nameplate/decoration (which already ask for 4) at 4
-    // rather than letting this ever RAISE a count.
-    const isLowColour = !ordered.some(e => chromaOf(e) >= CHROMA_FLOOR);
+
+    // --- Soft restrict. Judged on the PIXEL TAIL, not on the extracted centroids, and the change of
+    // subject is what fixes it -- LOW_COLOUR_CHROMA's block above has the measurement and the reason.
+    // Math.min keeps nameplate/decoration (which already ask for 4) at 4 rather than letting this ever
+    // RAISE a count.
+    //
+    // ⚠️ IT IS ALSO WHAT REMOVES THE BOUNDARY FLIP, and by construction rather than by moving a
+    // threshold. `tailChroma` is computed from the sampled pixels before a single centroid exists, so
+    // it does not depend on `count` at all; the old test read the extracted candidates, which DO
+    // change with the requested count, so the same image could be called colourful at one target and
+    // colourless at another. Measured over the corpus at targets 6 and 8: the old gate disagreed with
+    // itself on 3 images, this one on 0.
+    const isLowColour = tailChroma < LOW_COLOUR_CHROMA;
     const limit = isLowColour ? Math.min(LOW_COLOUR_COUNT, count) : count;
 
-    return ordered.slice(0, limit).map(e => {
+    // ⚠️ WHEN THE RESTRICT FIRES, THE SURVIVORS ARE CHOSEN BY LIGHTNESS COVERAGE, NOT BY SALIENCE --
+    // the gate and the truncation were BOTH wrong and fixing only the gate leaves half the bug. On a
+    // colourless image the salience blend collapses to prevalence (every chroma term is ~0), so a
+    // plain slice returns the four largest regions, which on a greyscale ramp are four neighbouring
+    // mid-greys. Measured before this: a black-and-white avatar kept four near-whites and discarded a
+    // real black covering 11% of the picture, and another dropped both #000000 (11%) and #111111
+    // (17%) to keep two near-identical light greys. Lightness is the ONLY axis carrying information
+    // on such an image, so spanning it is the only defensible way to spend four slots.
+    //
+    // Farthest-first on L, the same Gonzalez traversal seedFarthestFirst already uses -- index 0 is
+    // held fixed because it is a contract (see above), then each slot goes to whatever is farthest in
+    // lightness from everything already chosen. The winners are then put BACK in salience order, so
+    // this changes which entries survive and never the order they arrive in.
+    //
+    // ⚠️ IT CHOOSES FROM `ordered.slice(0, count)`, NOT FROM ALL OF `ordered`, AND THAT BOUND IS
+    // LOAD-BEARING. Clustering over-asks by 50% so the merge has room (see this function's header), so
+    // `ordered` normally holds MORE than `count` entries and everything past `count` is surplus the
+    // extractor has already ranked out. Handed the unbounded list, this picked #1C1C1C for a
+    // black-and-white avatar -- a colour the same image's UNRESTRICTED palette would never show. A
+    // soft restrict must return a SUBSET of the full palette; showing fewer colours cannot mean
+    // showing different ones. Caught by diffing the restricted output against the unrestricted one,
+    // and pinned by scripts/lowColourRestrict.test.js.
+    const kept = isLowColour ? spanLightness(ordered.slice(0, count), limit) : ordered.slice(0, limit);
+
+    return kept.map(e => {
         const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
         // `origin` is carried out to the label layer, which is the only consumer -- it distinguishes a
         // small vivid FEATURE from an ordinary region, which share and chroma alone cannot.
@@ -600,11 +685,12 @@ const PALETTE_ALGO_VERSION = fingerprint(
     // Everything the extracted values depend on, including the helpers the top-level functions call --
     // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
     srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
-    seedFarthestFirst, clusterLabs, mergePerceptual, getColorPalette,
+    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, getColorPalette,
     composeNameplatePalette, perceptualDistanceHex,
     {
         KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
         ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
+        LOW_COLOUR_CHROMA,
         PALETTE_COUNTS, NAMEPLATE_OVERASK
     },
     MONTAGE_FINGERPRINT
@@ -665,6 +751,10 @@ function chromaOfHex(hex) {
 
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
+    // Exported for scripts/lowColourRestrict.test.js only -- no runtime caller. The low-colour
+    // restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette
+    // of a simple image), so the selection rule is tested directly rather than inferred from output.
+    spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT,
     composeNameplatePalette, serializePalette, deserializePalette,
     paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex

@@ -143,6 +143,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-11 21:21 EDT — three layers said "use the grid" and none of them carried it (v3.9.0-pre)
 - 2026-08-11 23:24 EDT — the message and the side effect finally agree (v3.10.0)
 - 2026-08-12 14:18 EDT — four attempts at naming twenty swatches, and the corpus that proved three of them wrong (v3.11.0-pre)
+- 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.12.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2544,6 +2545,23 @@ The session opened with a handoff and a single complaint. Harkirat had read the 
 
 ### Lesson
 **Rewording a rejected thing is not fixing it, and the check is cheap.** Three of my candidates were the old rejected labels with a new adjective, and I only found that out because Harkirat told me to go compare — the rejection history was written down the whole time. **When a user keeps answering a naming question with two options and the situations each fits, they are not failing to decide: they are describing a rule you have not written yet.**
+
+## 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.12.0-pre)
+
+The tracker item was unusually well-specified: Harkirat's server avatar showed four swatches with black and two "rocky brown" shades missing, the structure pool had found all three correctly, and `isLowColour` was discarding them by judging colour purely on chroma. It even named the two candidate fixes and said picking between them *was* the work — add a lightness-spread check alongside the chroma check, or judge low-colour per candidate instead of set-wide.
+
+**Both share a premise, and measuring it first is what saved the session.** Each assumes lightness diversity is the missing signal. So before writing either, I ran the gate over the 246-image corpus and printed the L-spread of every image on both sides of the decision. The fired images spanned **0.47 to 1.00**. The not-fired images went as low as **0.07**. There is no separation at all — and worse, the widest spreads of all belonged to the pure black-and-white banners the restrict was *right* about. A lightness test would have disabled the feature entirely while looking like a targeted fix.
+
+**The actual fault was one constant doing two jobs.** `CHROMA_FLOOR` (0.04) is the accent pool's bar for "is this pixel worth clustering as a small punchy feature", and that is a good number for that question. The restrict borrowed it to ask "does this image have colour at all", where 0.04 is far too high: every sepia photograph, brown avatar and olive banner sits under it. Four of the nine images the gate fired on were tinted, not colourless. Giving the gate its own floor — `LOW_COLOUR_CHROMA`, 0.01, derived from the module's own `MERGE_DELTA_E` notion of "the same colour as grey" rather than fitted to the corpus — fixed the class, not the instance.
+
+**It also killed the boundary flip without any hysteresis, which was not the plan.** A separate, older item wanted hysteresis for a cherry-blossom banner returning 4 or 6 depending on the requested count. The reason it flipped is that the old gate read the *extracted centroids*, and those change with `count`. The new gate reads a pixel-tail percentile computed before a single centroid exists, so it cannot depend on `count` — measured at targets 6 and 8, the old gate disagreed with itself on 3 images and the new one on 0. **A threshold inherits every parameter its input depends on.** That is the transferable half of this: the flip was never about the threshold's value, so no amount of moving or softening it was the fix.
+
+**Then the corpus showed the bug had a second half nobody had filed.** Fixing the gate meant only five images still restricted — and two of them were still wrong. On a colourless image the salience blend collapses to prevalence, so a plain `slice(0, 4)` returns the four *largest* regions, which on a greyscale ramp are four neighbouring mid-greys. One avatar kept four near-whites and threw away a real black covering 11% of the picture; another dropped both `#000000` (11%) and `#111111` (17%). Survivors are now picked by lightness coverage. So the item's second direction was right about *lightness* and wrong about *where* — it belonged in the truncation, not in the gate.
+
+**And my own first draft shipped a defect that reading the code could not have caught.** Handed the full candidate list, the new selection picked `#1C1C1C` for a black-and-white avatar — a colour that image's own *unrestricted* palette would never show, because clustering over-asks by 50% and everything past `count` is surplus the extractor already ranked out. A soft restrict must return a **subset**; showing fewer colours cannot mean showing different ones. The output looked entirely reasonable. It surfaced only because I was diffing restricted against unrestricted rather than eyeballing the result.
+
+### Lesson
+**When a gate misclassifies, ask whether it is answering the right question before you tune it or add a signal to it.** Both proposed fixes here were additions to a test that was measuring the wrong quantity with a borrowed constant; either would have papered over the fault and left the class of bug intact. **And when the task hands you a choice between two solutions, the premise they share is the thing to measure first** — it is the one assumption neither option will ever question on its own.
 
 # Part B — Lessons Ledger (thematic)
 
