@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.8.0 — 2026-08-11 15:19 EDT (#116) — the palette stops paying for a picture nobody looks at
+## Pre-Release v3.9.0 — 2026-08-11 21:10 EDT (#117) — the model-selection grid stops being a pointer
+
+**A rule that turns on specific values cannot be enforced by naming where those values live.** The session-start gate requires a model + effort recommendation "picked from the grid in `reference_priority_tier_system`". Three layers already said so — `docs/SESSION-START.md` (auto-loaded), the `MEMORY.md` index line (auto-loaded), and the `UserPromptSubmit` hook itself (fires every turn). All three were in context, and the recommendation was still made from a remembered shape of the table: **twice, wrongly, in opposite directions** — first over-specced to `Opus5-Medium` for a live-verification pass, then over-corrected to `Sonnet5-Low`, a cell Harkirat had already retired in writing.
+
+**The diagnosis is the useful part: a pointer preserves the CONCEPT and drops the DISCRIMINATING VALUES.** "premise-risk × deliberation-load grid" is enough to feel informed and not enough to be correct. It carries neither axis definition nor the retired-cell rule — and those two facts are exactly what both wrong picks turned on. Axis B in particular means **how many PLACES** (`Low = one place · Med = several · High = many sites`), not how hard the thinking is, which is what let a phrase like "moderate taste load" inflate the first pick. Whose judgement it is never enters the lookup at all.
+
+**So the table moved to where the decision is made.** The inline `UserPromptSubmit` echo became `.claude/hooks/self-check.sh`, which now carries both axis definitions, all twelve cells, the retired-cell floor, the one-cell-never-a-range rule and the event-driven escalation triggers. **No file needs opening and no memory needs trusting.** ⚠️ It is knowingly a **second copy** of content the `reference_priority_tier_system` memory owns — duplicated state that can drift — and that trade was made with eyes open, because the alternative is a pointer and a pointer is the thing that measurably failed. The memory is named in the hook as canonical, and `self-check.test.sh` pins the values that actually discriminate (axis definitions, four corner cells, the retired-cell rule), so drift fails the suite rather than a session.
+
+**Harkirat's framing is what forced the right fix, and it is worth quoting because the first two attempts were both non-fixes.** After a correction was written into the memory file: *"so you edited a memory file, which you admitted you didn't even read until i explicitly flagged it, to improve your behavior about using and reading that specific memory file? make that make sense."* It didn't — a "read the file" instruction, filed in a file that has to be read, about a failure consisting of not reading files. **Adding a fourth pointer is not a fix; it is the same non-fix in a new location.**
+
+**Verified:** `self-check.test.sh`, 15 cases, and **proven able to fail** — breaking one grid cell fails exactly that assertion and no other. Hook coverage 25/25 (every script in `.claude/hooks/` has a test), full `npm test` green, `docs:audit` clean.
+
+---
+
+## Pre-Release v3.8.0 — 2026-08-11 15:19 EDT (#116 · `e885c8a`) — the palette stops paying for a picture nobody looks at
 
 **The montage was being PNG-encoded purely so it could be decoded again one function call later, and that round trip is gone.** `poolFramesIntoMontage` builds its sampling sheet as a Jimp image, then returned it as PNG bytes; `getColorPalette` immediately called `Jimp.read` on those bytes. Nothing in between stored, uploaded or looked at that PNG — it existed only to cross a function boundary. `getColorPalette` now accepts an already-decoded image (duck-typed on `.bitmap.data`, since Jimp 1.x builds instances through its own plugin wrapper and an `instanceof` check is the brittle way to ask "is this decoded"), and the montage hands its image over directly. **Measured on three real assets: 28ms saved on the 43-frame twilight nameplate, 56ms and 84ms on two real 60-frame decorations — with the extracted palettes verified byte-identical before and after, on every one.**
 
