@@ -242,6 +242,38 @@ const LOW_COLOUR_COUNT = 4;
 // 0.0031 and the least colourful genuinely-tinted one measures 0.0213, a 7x empty band around it.
 const LOW_COLOUR_CHROMA = 0.01;
 
+// --- THE PAGE LADDER (Harkirat, 2026-08-12 17:30 EDT). A palette may only be 1, 2, 4, 6 or 8 entries
+// long, so a second page is never a stub. 1/2/4/6 render on one page; only 8 paginates 4+4.
+// Off-rung counts move to the nearest rung that costs least: 3 -> 4, 5 -> 4, 7 -> 8.
+//
+// ⚠️ AVATAR AND BANNER ONLY. Nameplate and decoration ask for 4 and that is a CEILING, not a quota
+// (Harkirat, same conversation) -- their palettes are a deterministic composition (1 bed + 3 art) and
+// padding one would invent a colour for a design that simply has fewer. The ladder is therefore gated
+// on `count === KMEANS_COUNT` rather than applied to every caller.
+//
+// ⚠️ THE STRICT 2/4/8 QUOTA THIS REPLACES WAS KILLED BY MEASUREMENT -- do not revive it. Across the 83
+// corpus images returning 5/6/7, the honest lever (more seeds, merge threshold untouched) tops out at
+// 22/83 and is NON-MONOTONIC (3.0x is worse than 2.5x), and the only setting that reaches 8 for
+// everyone is MERGE_DELTA_E 0.04, which puts a perceptually-duplicate pair in all 83 palettes and
+// hands back the V3 rewrite's headline win (duplicate pairs 8 -> 0). Those colours are not there.
+const PALETTE_RUNGS = new Set([1, 2, 4, 6, 8]);
+const LADDER = { 1: 1, 2: 2, 3: 4, 4: 4, 5: 4, 6: 6, 7: 8, 8: 8 };
+
+// Clustering over-asks so the merge has room to fold duplicates without eating the requested count.
+// The RETRY factor exists because a count landing off-rung often just means the seeds were spread too
+// thinly -- measured over 401 images, 35 of the 72 off-rung ones land on a rung with more seeds ALONE,
+// needing nothing manufactured and nothing discarded (7 -> 8 for 20 of 35 sevens, and 6 of 22 fives
+// rise to a clean 6).
+//
+// ⚠️ THE RETRY IS CONDITIONAL, AND THAT IS THE WHOLE POINT. Raising the factor globally would move the
+// colours of the 82% of images that are already on a rung, for no benefit. Only an off-rung image
+// pays, and it pays in the region of 4ms: MEASURED 2026-08-12 17:48 EDT, the entire clustering phase
+// is 4.2ms mean at 1.5x and 7.0ms at 2.5x on a real 256px source. The "palette extraction is 64-183ms"
+// figure in the rules file is a whole render phase including fetch and montage pooling -- it is not
+// this. There is no CPU argument against the retry; it is noise beside a ~1000ms cold render.
+const OVERCLUSTER = 1.5;
+const OVERCLUSTER_RETRY = 2.5;
+
 // --- OKLab (Björn Ottosson). Perceptually uniform, so a distance here means what the eye means.
 function srgbToLinear(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
 function linearToSrgb(c) {
@@ -432,8 +464,7 @@ function spanLightness(entries, limit) {
 // 60-frame decoration). Duck-typed on `.bitmap.data` rather than `instanceof` deliberately: Jimp 1.x
 // hands back class instances built through its own plugin wrapper, so an identity check is a
 // needlessly brittle way to ask "is this already decoded".
-async function getColorPalette(source, count = KMEANS_COUNT) {
-    const img = source?.bitmap?.data ? source : await Jimp.read(source);
+async function extractPalette(img, count, overCluster) {
     const { width, height, data } = img.bitmap;
     const totalPixels = width * height;
     const pixelStep = Math.max(1, Math.floor(totalPixels / 2500));
@@ -451,7 +482,7 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     // Still over-clustered at 1.5x, for the original 2026-07-14 reason: the merge below needs slack to
     // fold genuine duplicates without eating into the requested count.
     const structureVectors = labs.map(o => ({ x: o.L * LIGHTNESS_WEIGHT, y: o.a, z: o.b }));
-    const structure = await clusterLabs(labs, structureVectors, Math.ceil(count * 1.5), labs.length);
+    const structure = await clusterLabs(labs, structureVectors, Math.ceil(count * overCluster), labs.length);
 
     // --- Pool B: accent. Only the most chromatic pixels, clustered in TRUE OKLab, so a feature
     // covering ~1% of the image gets its own centroid instead of losing every slot to the background.
@@ -553,13 +584,95 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     // black-and-white avatar -- a colour the same image's UNRESTRICTED palette would never show. A
     // soft restrict must return a SUBSET of the full palette; showing fewer colours cannot mean
     // showing different ones. Caught by diffing the restricted output against the unrestricted one,
-    // and pinned by scripts/lowColourRestrict.test.js.
-    const kept = isLowColour ? spanLightness(ordered.slice(0, count), limit) : ordered.slice(0, limit);
+    // and pinned by scripts/paletteShape.test.js.
+    // Returned as OKLab entries, NOT hexes: getColorPalette below may still drop one or add a derived
+    // one, and both of those decisions are made in lightness. The conversion happens once, at the end.
+    return isLowColour ? spanLightness(ordered.slice(0, count), limit) : ordered.slice(0, limit);
+}
 
-    return kept.map(e => {
+// Places a DERIVED swatch in the palette's emptiest lightness gap. Used only when the ladder needs one
+// more entry than the picture contains (3 -> 4, 7 -> 8, and only after the retry has failed to find a
+// real one).
+//
+// 📐 THE GAP, NOT A FIXED PERCENTAGE, AND THAT CHOICE IS LOAD-BEARING (Harkirat picked it 2026-08-12
+// 17:41 EDT over the alternative). colorPaletteView's `tint`/`shade` mix a fixed 35% toward white or
+// black, which DEGENERATES at the extremes: measured, tint(#FFFFFF) and shade(#000000) are no-ops, and
+// shade(#270100) lands 0.040 from its base -- below this module's own "same colour" threshold, so the
+// panel would show two swatches it elsewhere calls identical. Targeting an EMPTY SLOT cannot degenerate
+// that way, because the slot is chosen for being far from everything already present.
+//
+// 🚫 A BLEND OF TWO EXISTING SWATCHES WAS RULED OUT BY MEASUREMENT, and keeping the antialiasing seams
+// is what rules it out: on a flat two-colour image the seam swatch IS the blend of its two neighbours,
+// so blending them again reproduces it. Tested on five real corpus cases -- four duplicated an existing
+// entry within MERGE_DELTA_E (0.007 / 0.009 / 0.014 / 0.050).
+//
+// Hue and chroma are borrowed from the nearest existing entry so the result reads as a companion to a
+// real colour rather than an unrelated one; only lightness is new. Returns null rather than a
+// near-duplicate if the widest gap is still too narrow to hold a distinguishable colour -- showing
+// three honest swatches beats showing four when one of them is a twin.
+function fillLightnessGap(entries) {
+    if (entries.length === 0) return null;
+    // Sentinels at 0 and 1 so a palette clustered entirely in the midtones can place its derived entry
+    // out at an end, which is usually where the real gap is on such an image.
+    const points = [0, ...entries.map(e => e.L).sort((a, b) => a - b), 1];
+    let bestGap = -1, at = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+        const gap = points[i + 1] - points[i];
+        if (gap > bestGap) { bestGap = gap; at = (points[i] + points[i + 1]) / 2; }
+    }
+    const near = entries.reduce((b, e) => Math.abs(e.L - at) < Math.abs(b.L - at) ? e : b);
+    const made = { L: at, a: near.a, b: near.b, share: 0, origin: 'derived' };
+    // The guard the fixed-percentage version needed and did not have.
+    if (entries.some(e => deltaE(e, made) < MERGE_DELTA_E)) return null;
+    return made;
+}
+
+// Moves a palette onto the nearest page rung -- see PALETTE_RUNGS above for why the rungs are what
+// they are and why this is avatar/banner only.
+function applyLadder(entries) {
+    const target = LADDER[entries.length];
+    if (!target || target === entries.length) return entries;
+    // Down: keep the salience order and drop the tail. ⚠️ THIS MUST NOT USE spanLightness, and the
+    // first version did -- caught 2026-08-12 18:40 EDT by a synthetic control. Lightness coverage is
+    // the right rule for a COLOURLESS image, where lightness is the only axis carrying information;
+    // applied to a colourful one it discards a small vivid accent for sitting near another swatch in
+    // lightness. Measured: a 2% pure red on a beige/brown ground was dropped outright, which is
+    // precisely the colour the accent pool exists to surface.
+    //
+    // Nothing is lost by the simpler rule, because a colourless image never reaches here: the
+    // low-colour restrict has already truncated it to LOW_COLOUR_COUNT, which is a rung, so the ladder
+    // no-ops on it. Everything that gets this far is colourful, and `entries` is already ordered by
+    // prevalence blended with chroma -- the tail is genuinely the least worth keeping.
+    if (target < entries.length) return entries.slice(0, target);
+    // Up: only ever by one, and only ever appended -- index 0 is a contract and a manufactured colour
+    // has no business anywhere but last.
+    const made = fillLightnessGap(entries);
+    return made ? [...entries, made] : entries;
+}
+
+// `source` may be a url, a Buffer, or an already-decoded Jimp image -- decoded ONCE here so a retry
+// costs another clustering pass and never another download or decode.
+async function getColorPalette(source, count = KMEANS_COUNT) {
+    const img = source?.bitmap?.data ? source : await Jimp.read(source);
+    let entries = await extractPalette(img, count, OVERCLUSTER);
+
+    // The ladder and its retry are avatar/banner only (see PALETTE_RUNGS). A nameplate or decoration
+    // asking for 4 gets whatever its design really has.
+    if (count === KMEANS_COUNT && entries.length > 0 && !PALETTE_RUNGS.has(entries.length)) {
+        // An off-rung count often just means the seeds were spread too thinly, so look harder BEFORE
+        // resorting to manufacturing or discarding. The retry is kept only if it actually lands on a
+        // rung -- a retry that returns a different off-rung count is not an improvement, and taking it
+        // anyway would make the output depend on which pass happened to run.
+        const retried = await extractPalette(img, count, OVERCLUSTER_RETRY);
+        if (PALETTE_RUNGS.has(retried.length)) entries = retried;
+    }
+    const final = count === KMEANS_COUNT ? applyLadder(entries) : entries;
+
+    return final.map(e => {
         const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
         // `origin` is carried out to the label layer, which is the only consumer -- it distinguishes a
-        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot.
+        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot, and it is
+        // also how a 'derived' entry announces that it is not a measurement of the picture.
         return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100), origin: e.origin };
     });
 }
@@ -685,12 +798,16 @@ const PALETTE_ALGO_VERSION = fingerprint(
     // Everything the extracted values depend on, including the helpers the top-level functions call --
     // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
     srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
-    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, getColorPalette,
+    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, fillLightnessGap, applyLadder,
+    extractPalette, getColorPalette,
     composeNameplatePalette, perceptualDistanceHex,
     {
         KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
         ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
-        LOW_COLOUR_CHROMA,
+        LOW_COLOUR_CHROMA, OVERCLUSTER, OVERCLUSTER_RETRY, LADDER,
+        // A Set does not survive JSON, so it is fingerprinted as its members -- without this a change
+        // to which counts count as a rung would move no hash and leave every cached palette stale.
+        PALETTE_RUNGS: [...PALETTE_RUNGS].join(','),
         PALETTE_COUNTS, NAMEPLATE_OVERASK
     },
     MONTAGE_FINGERPRINT
@@ -751,10 +868,11 @@ function chromaOfHex(hex) {
 
 module.exports = {
     getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
-    // Exported for scripts/lowColourRestrict.test.js only -- no runtime caller. The low-colour
+    // Exported for scripts/paletteShape.test.js only -- no runtime caller. The low-colour
     // restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette
     // of a simple image), so the selection rule is tested directly rather than inferred from output.
     spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT,
+    fillLightnessGap, applyLadder, PALETTE_RUNGS, LADDER,
     composeNameplatePalette, serializePalette, deserializePalette,
     paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex

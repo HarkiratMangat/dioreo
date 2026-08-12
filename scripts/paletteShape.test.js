@@ -1,4 +1,4 @@
-// scripts/lowColourRestrict.test.js
+// scripts/paletteShape.test.js
 // Regression test for the LOW-COLOUR SOFT RESTRICT in utils/colorExtract.js -- the gate that decides
 // a near-colourless image should show 4 swatches instead of 8, and the rule that decides WHICH 4.
 // Added 2026-08-12 14:59 EDT. Run: `node scripts/lowColourRestrict.test.js` (also via `npm test`).
@@ -23,7 +23,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const {
-    getColorPalette, spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT, PALETTE_COUNTS
+    getColorPalette, spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT, PALETTE_COUNTS,
+    fillLightnessGap, applyLadder, PALETTE_RUNGS
 } = require('../utils/colorExtract');
 
 let failed = 0;
@@ -173,6 +174,110 @@ t('a restricted greyscale palette actually spans lightness', async () => {
     const p = await getColorPalette(greyscale(), 8);
     const lum = p.map(e => (((e.hex >> 16) & 0xff) + ((e.hex >> 8) & 0xff) + (e.hex & 0xff)) / 3);
     assert.ok(Math.max(...lum) - Math.min(...lum) > 128, `restricted greyscale spans only ${(Math.max(...lum) - Math.min(...lum)).toFixed(0)}/255 of the lightness range`);
+});
+
+// ============================================================================================
+// THE PAGE LADDER — a palette may only be 1, 2, 4, 6 or 8 long, so a second page is never a stub.
+//
+// ⚠️ Same silent-failure argument as above, with one addition specific to this half: a palette that
+// has been laddered looks EXACTLY like one that came out that length naturally. A broken rung map, a
+// derived swatch that duplicates a real one, or a ladder that wrongly fires on a nameplate all produce
+// output that is completely unremarkable to look at.
+const RUNGS = [...PALETTE_RUNGS];
+const entriesAt = (...Ls) => Ls.map((L, i) => ({ L, a: 0.05, b: 0.02, share: 0.1, origin: 'structure', tag: i }));
+
+t('every rung length is left alone', () => {
+    for (const n of RUNGS) {
+        const e = entriesAt(...Array.from({ length: n }, (_, i) => i / n));
+        assert.strictEqual(applyLadder(e).length, n, `a ${n}-entry palette was changed`);
+    }
+});
+
+t('off-rung lengths move to the agreed rung', () => {
+    // 3 -> 4, 5 -> 4, 7 -> 8. Hardcoded on purpose: this is the agreed mapping, and a test that
+    // recomputed it from LADDER would pass no matter what LADDER said.
+    for (const [from, to] of [[3, 4], [5, 4], [7, 8]]) {
+        const e = entriesAt(...Array.from({ length: from }, (_, i) => 0.1 + i * 0.11));
+        assert.strictEqual(applyLadder(e).length, to, `${from} entries did not become ${to}`);
+    }
+});
+
+t('going DOWN keeps salience order and drops the tail', () => {
+    // ⚠️ REGRESSION TEST. The first version used spanLightness here and it silently discarded small
+    // vivid accents: measured 2026-08-12 18:40 EDT, a 2% pure red on a beige/brown ground was dropped
+    // outright for sitting near the browns in LIGHTNESS -- the exact colour the accent pool exists to
+    // surface. Lightness coverage is right for a colourless image and wrong for a colourful one, and
+    // a colourless image never reaches the ladder (the restrict has already put it on a rung).
+    const e = entriesAt(0.50, 0.52, 0.54, 0.00, 1.00);
+    const out = applyLadder(e).map(x => x.tag);
+    assert.deepStrictEqual(out, [0, 1, 2, 3], 'the down-step must keep the first `target` entries in salience order');
+});
+
+t('a small vivid accent survives the ladder down-step', async () => {
+    // The end-to-end form of the case above, on real pixels rather than synthetic entries.
+    const px = [];
+    [[[219, 201, 202], 500], [[193, 181, 174], 220], [[143, 124, 116], 160], [[87, 70, 61], 100], [[220, 20, 30], 20]]
+        .forEach(([c, n]) => { for (let k = 0; k < n; k++) px.push(c); });
+    const p = await getColorPalette(image(px), 8);
+    const red = p.find(e => ((e.hex >> 16) & 0xff) > 150 && (e.hex & 0xff) < 100 && ((e.hex >> 8) & 0xff) < 100);
+    assert.ok(red, `the 2% vivid accent did not survive: ${p.map(e => '#' + e.hex.toString(16).padStart(6, '0')).join(' ')}`);
+});
+
+t('going UP appends exactly one derived entry, never at index 0', () => {
+    const e = entriesAt(0.10, 0.20, 0.30);
+    const out = applyLadder(e);
+    assert.strictEqual(out.length, 4);
+    assert.strictEqual(out[0].tag, 0, 'index 0 is a contract and must not be displaced');
+    const made = out[out.length - 1];
+    assert.strictEqual(made.origin, 'derived');
+    assert.strictEqual(made.share, 0, 'a manufactured colour covers none of the image');
+});
+
+t('the derived entry lands in the widest lightness gap', () => {
+    // Everything is bunched dark, so the gap to white is by far the widest and is where it must go.
+    const e = entriesAt(0.05, 0.10, 0.15);
+    const made = fillLightnessGap(e);
+    assert.ok(made.L > 0.5, `expected the derived entry up in the empty range, got L ${made.L}`);
+});
+
+t('the derived entry is never a near-duplicate of a real one', () => {
+    // A palette already spanning the axis evenly has no gap wide enough to hold a distinguishable
+    // colour. Returning null -- three honest swatches -- beats returning a fourth that is a twin.
+    const dense = Array.from({ length: 30 }, (_, i) => ({ L: i / 29, a: 0, b: 0, share: 0.03, origin: 'structure' }));
+    assert.strictEqual(fillLightnessGap(dense), null, 'a near-duplicate was manufactured');
+    // And the ladder must degrade to "leave it short" rather than crash or pad with a twin.
+    assert.strictEqual(applyLadder(dense.slice(0, 3)).length >= 3, true);
+});
+
+t('fillLightnessGap borrows hue and chroma, inventing only lightness', () => {
+    const e = entriesAt(0.05, 0.10, 0.15);
+    const made = fillLightnessGap(e);
+    assert.strictEqual(made.a, 0.05);
+    assert.strictEqual(made.b, 0.02);
+});
+
+t('the ladder is deterministic', () => {
+    // Refresh Colors compares before and after; a ladder that picked differently between runs would
+    // report "found new colors" on every click.
+    const e = entriesAt(0.1, 0.4, 0.9, 0.5, 0.2);
+    const first = JSON.stringify(applyLadder(e));
+    for (let i = 0; i < 5; i++) assert.strictEqual(JSON.stringify(applyLadder(e)), first);
+});
+
+t('nameplate and decoration are a CEILING, never laddered', async () => {
+    // Harkirat 2026-08-12 17:38 EDT: those palettes are a deterministic composition (1 bed + 3 art)
+    // and padding one would invent a colour for a design that simply has fewer. The gate is
+    // count === KMEANS_COUNT, so a 4-asking caller must come back untouched.
+    const p = await getColorPalette(sepia(), PALETTE_COUNTS.nameplate);
+    assert.ok(p.length <= PALETTE_COUNTS.nameplate);
+    assert.ok(!p.some(e => e.origin === 'derived'), 'a nameplate palette was padded with a derived swatch');
+});
+
+t('an avatar palette always lands on a rung', async () => {
+    for (const img of [greyscale, sepia]) {
+        const p = await getColorPalette(img(), 8);
+        assert.ok(PALETTE_RUNGS.has(p.length), `got ${p.length} swatches, which is not a rung`);
+    }
 });
 
 (async () => {

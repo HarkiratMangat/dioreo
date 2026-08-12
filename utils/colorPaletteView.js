@@ -191,6 +191,34 @@ function assignDynamicLabels(entries, kind) {
     // killed "Majority Color" and "Secondary Color" before it. A category word plus "Color" is not a
     // label here; it is the absence of one.
     claim(0, kind === 'nameplate' ? 'Nameplate Background' : 'First Impression');
+
+    // ── DERIVED: not a colour from the picture at all, and it must say so BEFORE anything else ─────
+    // `getColorPalette` appends one manufactured swatch when the page ladder needs a count it could not
+    // find honestly (3 -> 4, 7 -> 8, only after a retry with more seeds has failed). It is placed in
+    // the palette's emptiest lightness gap and borrows hue and chroma from its nearest neighbour.
+    //
+    // ⚠️ THIS RULE FIRES FIRST BECAUSE EVERY OTHER CAPTION HERE IS A CLAIM ABOUT THE IMAGE, AND FOR
+    // THIS SWATCH EVERY SUCH CLAIM IS FALSE. Measured before the rule existed, the 22 derived swatches
+    // across the corpus drew "Edge Detail" (asserts a small feature at an edge), "Deepest Shadow"
+    // (asserts the darkest region), "Highlight", "Palest Tone", "Warm Accent" -- all describing parts
+    // of a picture that do not contain this colour. `percent` is 0 on a derived entry, which is what
+    // funnels it into the small-area rules specifically.
+    //
+    // The variants key off the swatch's own lightness, the same measurable-property discipline the rest
+    // of the vocabulary uses -- a variant that answers to nothing is noise. They are deliberately NOT
+    // comparatives: "Lighter Tint" asks "than what?" and is the rejected pattern (the Display Name
+    // page's own "Lighter Tint"/"Darker Shade" predate this vocabulary and sit beside an explicitly
+    // labelled base, which is why they read cleanly there and would not here).
+    // Only ever one derived entry per palette (the ladder fills by at most one), so no sort is needed
+    // to pick "the best" candidate -- but the filter still runs through `unclaimed` so that a future
+    // change adding a second one cannot silently overwrite a claim.
+    const derived = unclaimed().filter(i => entries[i].origin === 'derived');
+    claimBest(derived, [
+        [i => hsl[i].l >= 0.6, 'Synthetic Tint'],
+        [i => hsl[i].l <= 0.35, 'Synthetic Shade'],
+        [() => true, 'Synthetic Tone']
+    ]);
+
     const maj = hsl[0];
     const isAccent = i => entries[i].origin === 'accent';
     const chromaRank = i => chroma[i];
