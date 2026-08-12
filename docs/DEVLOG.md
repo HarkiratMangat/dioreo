@@ -143,7 +143,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-11 21:21 EDT — three layers said "use the grid" and none of them carried it (v3.9.0-pre)
 - 2026-08-11 23:24 EDT — the message and the side effect finally agree (v3.10.0)
 - 2026-08-12 14:18 EDT — four attempts at naming twenty swatches, and the corpus that proved three of them wrong (v3.11.0-pre)
-- 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.12.0-pre)
+- 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.13.0-pre)
 - 2026-08-12 18:15 EDT — the quota that could not be built, and the four milliseconds that shaped the design (v3.13.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
@@ -2547,7 +2547,7 @@ The session opened with a handoff and a single complaint. Harkirat had read the 
 ### Lesson
 **Rewording a rejected thing is not fixing it, and the check is cheap.** Three of my candidates were the old rejected labels with a new adjective, and I only found that out because Harkirat told me to go compare — the rejection history was written down the whole time. **When a user keeps answering a naming question with two options and the situations each fits, they are not failing to decide: they are describing a rule you have not written yet.**
 
-## 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.12.0-pre)
+## 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.13.0-pre)
 
 The tracker item was unusually well-specified: Harkirat's server avatar showed four swatches with black and two "rocky brown" shades missing, the structure pool had found all three correctly, and `isLowColour` was discarding them by judging colour purely on chroma. It even named the two candidate fixes and said picking between them *was* the work — add a lightness-spread check alongside the chroma check, or judge low-colour per candidate instead of set-wide.
 
