@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.9.0 — 2026-08-11 21:10 EDT (#117) — the model-selection grid stops being a pointer
+## Pre-Release v3.10.0 — 2026-08-11 23:23 EDT (#118) — the message and the side effect finally agree
+
+**Refresh Colors told the truth about the wrong thing.** Its "no change" message compared palette bytes only, and never accounted for its own unconditional accent-cache invalidation — so a user who opened View Colors (which already force-refreshes the palette on open) and then hit Refresh Colors got told "still generates the same colors" on the exact click that actually fixed their stale accent, because the palette itself had nothing left to find. The message now distinguishes "palette unchanged, but the accent was stale and just got refreshed" from a genuine no-op.
+
+**A second, separately-reported symptom traced to no code defect at all.** The same live session produced a report that View Colors showed a stale avatar/palette on FIRST open, updating only after an explicit Refresh — with both calls going through the identical `forceRefresh: true` path. Traced the whole chain (`getCachedPalette`'s cache-hit shortcut is gated `if (!forceRefresh && ...)`; the guild profile comes from `interaction.member` directly, not a locally-cached copy) and found nothing wrong on our side. Documented as a likely Discord CDN propagation-lag incident in `.claude/rules/accent-and-colors.md`, for reference if it recurs.
+
+**The low-colour restrict is confirmed chroma-blind, and it's worse than the boundary-flip symptom already on file.** Instrumenting `getColorPalette` directly on a real avatar showed the structure pool correctly finding a genuine black cluster and two dark browns — discarded anyway, because the truncation judges "low colour" purely by chroma and never checks lightness spread. Filed for its own design session (`P2 · M · Opus5-High`), superseding the older cherry-blossom boundary-flip item rather than sitting beside it.
+
+**Built the instrumentation to answer the third question with data instead of screenshots.** `models/RenderTiming.js` + `utils/renderTiming.js` now time every View Colors panel action and both WebP cache modules' cold-render path, into a collection that a Cloudinary/Discord-channel dev-cache purge can't touch — the exact kind of data this investigation lost partway through. Filed as its own session (`P2 · M · Sonnet5-High`) once enough real clicks have accumulated.
+
+**Process, not code:** cleared the one stale `avatarPalette` field (test account, scoped) predating the current extraction algorithm; disclosed `RenderTiming` in `docs/legal/PRIVACY.md` per the `privacy-model-coverage` gate; added `deferred-list-model-tag-check.sh`, an advisory hook flagging a filed/edited deferred-list item with no model+effort tag, after three items shipped without one in this same session.
+
+**Verified:** `npm test` green (accent-cache 7/7, reflow-prose 29/29, hook self-tests 26/26 including the new one), `docs:audit` clean, dev bot reloaded cleanly under `--watch` after every edit.
+
+---
+
+## Pre-Release v3.9.0 — 2026-08-11 21:10 EDT (#117 · `26ee06a`) — the model-selection grid stops being a pointer
 
 **A rule that turns on specific values cannot be enforced by naming where those values live.** The session-start gate requires a model + effort recommendation "picked from the grid in `reference_priority_tier_system`". Three layers already said so — `docs/SESSION-START.md` (auto-loaded), the `MEMORY.md` index line (auto-loaded), and the `UserPromptSubmit` hook itself (fires every turn). All three were in context, and the recommendation was still made from a remembered shape of the table: **twice, wrongly, in opposite directions** — first over-specced to `Opus5-Medium` for a live-verification pass, then over-corrected to `Sonnet5-Low`, a cell Harkirat had already retired in writing.
 

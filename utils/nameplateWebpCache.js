@@ -40,6 +40,7 @@ const { slugify } = require('./cloudinaryCache');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
+const { logRenderTiming } = require('./renderTiming'); // cold-render perf instrumentation, see models/RenderTiming.js
 const {
     getColorPalette, composeNameplatePalette, paletteContextFields, readPaletteContext,
     PALETTE_COUNTS, NAMEPLATE_OVERASK
@@ -208,6 +209,9 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
 
         const webpBuffer = await encodeWebpFromFrames(composited, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
+        // Instrumentation only, see models/RenderTiming.js -- durable copy of the number the cache
+        // message below also shows, since that message lives in a channel a dev cache purge can wipe.
+        logRenderTiming({ area: 'webp_render', action: 'nameplate', cold: true, durationMs: renderMs });
         // Dimensions read back from the first composited frame -- cheap (one extra small decode),
         // and more honest than assuming the 512px cap always applied (a source narrower than 512
         // never gets upscaled, see renderGradientBedFrame's own targetWidth logic).

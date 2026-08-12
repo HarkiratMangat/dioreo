@@ -41,6 +41,7 @@ const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { slugify } = require('./cloudinaryCache');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
+const { logRenderTiming } = require('./renderTiming'); // cold-render perf instrumentation, see models/RenderTiming.js
 const { getColorPalette, paletteContextFields, readPaletteContext, PALETTE_COUNTS } = require('./colorExtract');
 
 // Imported, never redeclared -- see utils/colorExtract.js's comment on why the counts live there
@@ -207,6 +208,9 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
 
         const webpBuffer = await encodeWebpFromFrames(frames, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
+        // Instrumentation only, see models/RenderTiming.js -- durable copy of the number the cache
+        // message below also shows, since that message lives in a channel a dev cache purge can wipe.
+        logRenderTiming({ area: 'webp_render', action: 'decoration', cold: true, durationMs: renderMs });
 
         // Parallel, not sequential -- see utils/nameplateWebpCache.js's matching comment for why
         // (measured live 2026-08-10 12:21 EDT: doing this in series visibly slowed the cold-render path).

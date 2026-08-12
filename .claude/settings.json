@@ -248,6 +248,10 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-hardwrap-check.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/deferred-list-model-tag-check.sh\""
           }
         ]
       },
