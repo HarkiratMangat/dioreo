@@ -77,7 +77,9 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ## Pre-Release v3.13.0 — 2026-08-12 18:15 EDT — the palette stops discarding colours it found, and lands on a page rung
 
-> **Two changes to one subsystem, shipped as one release because the second is built on the first** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
+> **Three changes to one subsystem, shipped as one release because each is built on the one before** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced, and the third part is the same root cause at the site the first two exposed. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
+>
+> **All three are one mistake in three costumes: a quantity that measures COLOURFULNESS being used to answer a question about IMPORTANCE.** It borrowed a pixel-level chroma floor to ask whether an image has colour at all (Part one), let salience collapse to prevalence on an image with no colour to rank by (Part one's truncation), and credited chroma while having no way to say that something is the darkest thing in the picture (Part three) — plus, found while measuring that, normalised a colourless image's own rounding noise to the full accent bonus. Naming the class is what turned the third one from a surprise into the next place to look.
 
 ### Part one — the low-colour restrict stops mistaking "unsaturated" for "colourless"
 
@@ -113,7 +115,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 **Verified:** 401 images, **zero off-rung palettes**, 22 derived entries and **none within `MERGE_DELTA_E` of a real colour**. `npm test` green, with `scripts/paletteShape.test.js` grown to 23 cases covering the restrict, the ladder, and both regression cases.
 
-⚠️ **Live testing on the dev bot then found a THIRD, separate chroma-blindness site, which is filed and NOT fixed here.** A server avatar returned a full, healthy 8 swatches whose darkest entry was a dark warm brown, while the genuine black of the subject's sunglasses was absent. The extractor finds it perfectly — it lands **rank 9 of 9** on salience and the slice to 8 cuts it, because `salience` credits chroma and a black scores zero there, and the accent pool that rescues small features is chroma-gated by construction. Neither more seeds nor a full `LIGHTNESS_WEIGHT` recovers it; both were measured. See `docs/db-deferred-list.md`.
+### Part three — "the darkest thing in the picture" becomes a fact the ranking can express
+
+**Live testing on the dev bot found a third, separate site of the same chroma-blindness, and it is fixed here.** A server avatar returned a full, healthy 8 swatches whose darkest entry was a dark warm brown, while **the genuine black of the subject's sunglasses was absent entirely**. Nothing was short, nothing errored, the count was already on a rung and the restrict never fired. Harkirat found it by looking at a picture.
+
+**The extractor finds the black perfectly and the slice cuts it.** A clean `#060606` cluster lands at **rank 9 of 9**, because `salience = share/maxShare + SALIENCE_WEIGHT × (chroma/maxChroma)` scores a 1.5% black about 0.05 on the first term and **exactly zero** on the second — and the accent pool that exists to rescue small features cannot take it, since `tailCut` admits only chromatic pixels. **Small and colourless had no path to a slot at all.**
+
+**An additive lightness term is the obvious fix and it was built, swept and refuted.** Across 401 images every shape strong enough to lift a 1.5% black over a 5.5% grey also lifts some dark over some accent — 7 to 14 genuine accents lost at every weight and margin tried, `#380DF3`, `#9907EC` and `#6FE839` among them. **The competition for slots is the mechanism, so no tuning rescues it**; it is the same mechanism the chroma term exists to exploit. So the fix does not compete. `reserveLightnessRange` runs after the truncation and asks whether the palette it just cut still represents the picture's **lightness range**; if an extreme was cut and nothing kept sits within `LIGHTNESS_GAP` of it, one slot is bought back — and the price is **never an accent, never a colour even a structure one, and never the other extreme**, each of those rules bought with a measurement of what happened without it. Accent conservation therefore holds by construction rather than by a lucky parameter, and when nothing may be sold, nothing is bought.
+
+**A second, independent defect surfaced while measuring the first, and it is the same mistake again.** `chroma/maxChroma` is **relative**, so a near-colourless image normalises its own rounding noise to the full accent bonus: on the reproduction, `maxChroma` is **0.0276** — a nearly-neutral taupe — which collected a chroma term of **1.0000**, the identical bonus a **pure red** collects on the same ground. Every mid-grey was being paid the accent premium for chroma that is not there while the real black was paid nothing. The denominator is now floored at `SALIENCE_CHROMA_REF`, which changes nothing on an image whose colours already clear it.
+
+**Verified against a baseline built from `git show HEAD:`, not against an instrumented copy** — over **401 images: 0 accent swatches lost, 1 gained, 36 palettes changed, 0 length changes, 0 off-rung**, and all three real nameplate/decoration assets byte-identical. `npm test` green, `scripts/paletteShape.test.js` grown to **34 cases**, and every new case was proven able to fail by deleting the rule it names — **two were vacuous on the first attempt** and stayed green with their guard removed until the fixtures were rebuilt.
 
 ---
 

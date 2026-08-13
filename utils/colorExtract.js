@@ -242,6 +242,37 @@ const LOW_COLOUR_COUNT = 4;
 // 0.0031 and the least colourful genuinely-tinted one measures 0.0213, a 7x empty band around it.
 const LOW_COLOUR_CHROMA = 0.01;
 
+// --- THE THIRD SITE OF THE SAME CHROMA-BLINDNESS (2026-08-12 20:02 EDT). The gate and the truncation
+// above were the first two; this pair is the RANKING. Harkirat's server avatar returned a full, healthy
+// 8 swatches whose darkest entry was a dark warm brown while the genuinely black sunglasses were absent
+// -- nothing short, nothing erroring, every automated check green. He found it by looking at a picture.
+//
+// 📐 WHY THE BLACK LOST, measured rather than reasoned: the extractor finds it perfectly (a clean
+// #060606 cluster; ask for 10 and it appears at rank 9 of 9) and the SLICE cuts it, because
+// `share/maxShare + SALIENCE_WEIGHT * (chroma/maxChroma)` scores a 1.5% black ~0.05 on the first term
+// and EXACTLY 0 on the second. The accent pool cannot rescue it either: `tailCut` takes
+// Math.max(CHROMA_FLOOR, percentile), so the pool only ever holds chromatic pixels. Small + colourless
+// had no path to a slot at all.
+//
+// `SALIENCE_CHROMA_REF` is a FLOOR UNDER THE SALIENCE DENOMINATOR, and it is a defect in its own right.
+// `chroma/maxChroma` is RELATIVE, so an image with no colour normalises its own rounding noise to the
+// full accent bonus: on the reproduction above, maxChroma is 0.0276 -- a nearly-neutral taupe -- and
+// #57463D therefore collects a chroma term of 1.0000, the identical bonus a PURE RED collects on the
+// same ground. Every mid-grey was being paid the accent premium for chroma that is not there, while the
+// real black was paid nothing. 0.10 is where this system's own accents begin: across the corpus's 733
+// accent-origin swatches the 25th percentile is 0.0987, so an image that reaches it has real colour to
+// measure against and is untouched (Math.max), and an image below it does not. Measured over 401
+// images: 7 palettes change, 0 accent swatches lost, 1 gained. Not delicate -- 0.08 / 0.10 / 0.15 move
+// 5 / 7 / 11 palettes and lose 0 accents at every one.
+//
+// `LIGHTNESS_GAP` is how much of the picture's lightness range the palette may fail to represent before
+// reserveLightnessRange buys a slot back. MERGE_DELTA_E (0.07) is where this module stops calling two
+// entries the same colour, so a gap has to clear that with headroom to count as a genuine absence
+// rather than a near-duplicate. Also a smooth curve, not a knife edge: 0.08 / 0.10 / 0.12 / 0.15 fire
+// 38 / 30 / 20 / 11 times across the 401 images.
+const SALIENCE_CHROMA_REF = 0.10;
+const LIGHTNESS_GAP = 0.10;
+
 // --- THE PAGE LADDER (Harkirat, 2026-08-12 17:30 EDT). A palette may only be 1, 2, 4, 6 or 8 entries
 // long, so a second page is never a stub. 1/2/4/6 render on one page; only 8 paginates 4+4.
 // Off-rung counts move to the nearest rung that costs least: 3 -> 4, 5 -> 4, 7 -> 8.
@@ -443,6 +474,58 @@ function spanLightness(entries, limit) {
     return chosen.sort((a, b) => a - b).map(i => entries[i]);
 }
 
+// Buys back ONE slot at either end of the lightness axis when the truncation has cut the picture's
+// darkest or lightest colour and left nothing near it. See SALIENCE_CHROMA_REF's block above for the
+// bug this closes; what follows is why it is a RESERVATION rather than another salience term.
+//
+// ⛔ AN ADDITIVE LIGHTNESS TERM WAS BUILT, SWEPT AND REFUTED -- do not revive it. Every shape strong
+// enough to lift a 1.5% black over a 5.5% grey also lifts some dark over some accent, because the
+// competition IS the mechanism: measured over 401 images, the family loses 7 to 14 genuine accent
+// swatches (#380DF3, #9907EC, #6FE839 among them) at every weight and margin tried, including the
+// symmetric distance-from-centre and beyond-the-next-entry-by-a-margin shapes. That is the exact
+// behaviour the chroma term exists to produce, so no tuning rescues it. A reservation does not compete
+// for the slot -- it names its own price -- so accent conservation holds BY CONSTRUCTION.
+//
+// Three rules decide the price, and all three were bought with a measurement:
+//   · NEVER AN ACCENT. The reason the whole family was rejected; it cannot be reintroduced through the
+//     back door of who pays.
+//   · NEVER A COLOUR. "Not an accent" alone is insufficient and the counts hide it -- plenty of real
+//     colour lives in the STRUCTURE pool, and that rule traded #50D9AF and #009689 away for a black. A
+//     palette may buy lightness range with a dull entry; it may not buy it with a colour. CHROMA_FLOOR
+//     is this module's own line for "not colourful in any useful sense", so no new constant is needed.
+//   · NEVER THE OTHER EXTREME. Without it the light pass sold the black the dark pass had just bought
+//     (Starmancer.gif went out #000000, in #C4F6FF) -- the rule eating itself. An entry cannot be worth
+//     reserving and worth spending in the same palette.
+// If no entry satisfies all three, nothing is bought. A palette of eight accents keeps its eight
+// accents, which is the correct degradation.
+//
+// The winner is APPENDED, never inserted: it lost on salience and that is still true, so claiming a
+// rank for it would misstate the ranking. Index 0 stays untouched -- it is a contract.
+function reserveLightnessRange(ordered, limit) {
+    if (ordered.length <= limit) return ordered.slice();
+    const kept = ordered.slice(0, limit);
+    // Taken over EVERY candidate, including the ones already cut: the question is what the PICTURE
+    // contains, not what happened to survive.
+    const byL = [...ordered].sort((a, b) => a.L - b.L);
+    const extremes = [byL[0], byL[byL.length - 1]];
+    for (const pick of extremes) {
+        if (kept.includes(pick)) continue;
+        // How much of the picture's lightness range the palette currently fails to represent.
+        if (Math.min(...kept.map(k => Math.abs(k.L - pick.L))) < LIGHTNESS_GAP) continue;
+        let victim = -1;
+        for (let i = kept.length - 1; i >= 1; i--) {
+            if (extremes.includes(kept[i]) || kept[i].origin === 'accent') continue;
+            if (chromaOf(kept[i]) >= CHROMA_FLOOR) continue;
+            victim = i;
+            break;
+        }
+        if (victim < 0) continue;
+        kept.splice(victim, 1);
+        kept.push(pick);
+    }
+    return kept;
+}
+
 // `count` entries -- callers (utils/colorPaletteView.js) render however many actually come back.
 // `count` (2026-07-14, Harkirat's request) lets callers ask for fewer clusters on smaller/simpler
 // sources (nameplate/decoration -- 4) than richer ones (avatar/banner -- 8) instead of one fixed K
@@ -543,7 +626,9 @@ async function extractPalette(img, count, overCluster) {
     const head = merged.slice(0, 1);
     const rest = merged.slice(1);
     const maxShare = Math.max(...rest.map(r => r.share), Number.EPSILON);
-    const maxChroma = Math.max(...rest.map(chromaOf), Number.EPSILON);
+    // ⚠️ THE DENOMINATOR IS FLOORED, and that floor is the whole of the first half of the fix -- see
+    // SALIENCE_CHROMA_REF's block above. It changes NOTHING on an image whose colours already clear it.
+    const maxChroma = Math.max(...rest.map(chromaOf), SALIENCE_CHROMA_REF);
     const salience = e => e.share / maxShare + SALIENCE_WEIGHT * (chromaOf(e) / maxChroma);
     rest.sort((a, b) => salience(b) - salience(a));
 
@@ -587,7 +672,15 @@ async function extractPalette(img, count, overCluster) {
     // and pinned by scripts/paletteShape.test.js.
     // Returned as OKLab entries, NOT hexes: getColorPalette below may still drop one or add a derived
     // one, and both of those decisions are made in lightness. The conversion happens once, at the end.
-    return isLowColour ? spanLightness(ordered.slice(0, count), limit) : ordered.slice(0, limit);
+    //
+    // ⚠️ THE TWO BRANCHES ARE NOT ALTERNATIVES TO EACH OTHER AND MUST NOT BE MERGED. spanLightness
+    // REPLACES the ranking on a colourless image, where lightness is the only axis carrying anything;
+    // reserveLightnessRange KEEPS the ranking on a colourful one and buys back at most one slot at each
+    // end. Handing the colourful case to spanLightness is the regression caught on 2026-08-12 18:40 EDT
+    // (a 2% pure red deleted for sitting near another swatch in lightness).
+    return isLowColour
+        ? spanLightness(ordered.slice(0, count), limit)
+        : reserveLightnessRange(ordered, limit);
 }
 
 // Places a DERIVED swatch in the palette's emptiest lightness gap. Used only when the ladder needs one
@@ -798,13 +891,14 @@ const PALETTE_ALGO_VERSION = fingerprint(
     // Everything the extracted values depend on, including the helpers the top-level functions call --
     // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
     srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
-    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, fillLightnessGap, applyLadder,
+    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, reserveLightnessRange,
+    fillLightnessGap, applyLadder,
     extractPalette, getColorPalette,
     composeNameplatePalette, perceptualDistanceHex,
     {
         KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
         ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
-        LOW_COLOUR_CHROMA, OVERCLUSTER, OVERCLUSTER_RETRY, LADDER,
+        LOW_COLOUR_CHROMA, SALIENCE_CHROMA_REF, LIGHTNESS_GAP, OVERCLUSTER, OVERCLUSTER_RETRY, LADDER,
         // A Set does not survive JSON, so it is fingerprinted as its members -- without this a change
         // to which counts count as a rung would move no hash and leave every cached palette stale.
         PALETTE_RUNGS: [...PALETTE_RUNGS].join(','),
@@ -872,6 +966,7 @@ module.exports = {
     // restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette
     // of a simple image), so the selection rule is tested directly rather than inferred from output.
     spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT,
+    reserveLightnessRange, LIGHTNESS_GAP, SALIENCE_CHROMA_REF, CHROMA_FLOOR,
     fillLightnessGap, applyLadder, PALETTE_RUNGS, LADDER,
     composeNameplatePalette, serializePalette, deserializePalette,
     paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,

@@ -29,7 +29,8 @@ const fs = require('fs');
 const path = require('path');
 const {
     getColorPalette, spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT, PALETTE_COUNTS,
-    fillLightnessGap, applyLadder, PALETTE_RUNGS
+    fillLightnessGap, applyLadder, PALETTE_RUNGS,
+    reserveLightnessRange, LIGHTNESS_GAP, SALIENCE_CHROMA_REF, CHROMA_FLOOR, MERGE_DELTA_E
 } = require('../utils/colorExtract');
 
 let failed = 0;
@@ -88,7 +89,9 @@ t('a MUTED but genuinely tinted image is NOT restricted', async () => {
 t('the gate floor is well below the accent pool floor', () => {
     // If someone "tidies" these back into one constant, the sepia case above regresses and the only
     // symptom is a shorter palette. Naming the relationship is what makes that a test failure.
-    const { CHROMA_FLOOR } = { CHROMA_FLOOR: 0.04 };
+    // ⚠️ Read off the real export now that there is one (2026-08-12 20:10 EDT). It used to be a
+    // hardcoded local copy of 0.04, which is duplicated state: the shipped constant could move and this
+    // assertion would keep passing against the old value it was meant to be checking.
     assert.ok(LOW_COLOUR_CHROMA < CHROMA_FLOOR / 2, `LOW_COLOUR_CHROMA ${LOW_COLOUR_CHROMA} is not meaningfully below the accent floor ${CHROMA_FLOOR}`);
 });
 
@@ -283,6 +286,133 @@ t('an avatar palette always lands on a rung', async () => {
         const p = await getColorPalette(img(), 8);
         assert.ok(PALETTE_RUNGS.has(p.length), `got ${p.length} swatches, which is not a rung`);
     }
+});
+
+// ============================================================================================
+// THE LIGHTNESS-RANGE RESERVATION — a small ACHROMATIC feature can reach a slot.
+//
+// ⚠️ Same silent-failure argument again, and this one hid the longest: the palette that was WRONG came
+// back full, on-rung, perceptually deduped and passing every check in this file. Harkirat found it by
+// looking at a picture of his own avatar and noticing the sunglasses were not in it.
+//
+// ⚠️ AND THE TESTS HERE ASSERT MEMBERSHIP, NEVER SHAPE. A conservation check over counts cannot see a
+// SUBSTITUTION -- the 401-image run reported a clean distribution all the way through the accent-
+// deleting regression this session shipped and caught. Every case below names a hex or an object.
+console.log('\nthe lightness-range reservation — "the darkest thing in the picture" reaches a slot\n');
+
+// Eight close taupe/brown ramp tones, plus a ninth entry that is the variable under test. This is the
+// reproduction from the live bug, reduced: the real avatar's own palette topped out at #26221C and the
+// black behind it was cut by the slice.
+const RAMP = [
+    [[219, 201, 202], 30], [[193, 181, 174], 14], [[171, 154, 147], 12], [[143, 124, 116], 11],
+    [[108, 97, 88], 10], [[87, 70, 61], 9], [[61, 51, 45], 7], [[38, 34, 28], 5.5]
+];
+const ramp = extra => image([...RAMP, extra].flatMap(([rgb, pct]) => Array.from({ length: Math.round(pct * 20) }, () => rgb)));
+
+t('a 1.5% BLACK among eight ramp tones reaches the palette', async () => {
+    // The bug, end to end. Before the reservation this returned eight swatches whose darkest was
+    // #26221C, and the black sat at rank 9 of 9 where the slice to 8 cut it.
+    const p = await getColorPalette(ramp([[6, 6, 6], 1.5]), 8);
+    const darkest = Math.min(...p.map(e => ((e.hex >> 16) & 0xff) + ((e.hex >> 8) & 0xff) + (e.hex & 0xff)));
+    assert.ok(darkest < 60, `the picture's black never reached the palette -- darkest sum is ${darkest}`);
+});
+
+t('the 2% pure RED control is untouched, and still tagged `accent`', async () => {
+    // The conservation case, at the smallest scale that can show it: the reservation must not pay for
+    // range with the very colours the accent pool exists to surface. Measured over 401 corpus images as
+    // well -- 0 accent swatches lost at every threshold tried -- but that number lives in the rules
+    // file, and this is the case that FAILS if the victim rule is ever loosened.
+    const p = await getColorPalette(ramp([[255, 0, 0], 2]), 8);
+    const red = p.find(e => e.hex === 0xff0000);
+    assert.ok(red, `the accent red was evicted -- got ${p.map(e => e.hex.toString(16)).join(' ')}`);
+    assert.strictEqual(red.origin, 'accent', 'the red lost its accent origin, which the label layer reads');
+});
+
+// --- The three price rules, each of which was bought with a measurement and each of which is invisible
+// from the outside if it regresses.
+const ent = (L, chroma, origin) => ({ L, a: chroma, b: 0, share: 0.01, origin: origin || 'structure' });
+
+t('the reservation never sells an ACCENT', () => {
+    // The whole reason an additive salience term was rejected; it must not return via who pays.
+    //
+    // ⚠️ THE ACCENTS HERE ARE DELIBERATELY DULL, and that is what makes this case test anything. A
+    // vivid accent is already protected by the colour rule below, so a fixture built from one passes
+    // whether or not this guard exists -- verified by deleting the guard and watching it stay green. A
+    // low-chroma accent is not contrived either: mergePerceptual keeps the `accent` tag when a pool
+    // entry folds onto a duller centroid, so this is a shape the real extractor produces.
+    const kept = [ent(0.9, 0), ent(0.8, 0.01, 'accent'), ent(0.7, 0.01, 'accent')];
+    const cut = [ent(0.05, 0)];
+    const out = reserveLightnessRange([...kept, ...cut], 3);
+    assert.strictEqual(out.filter(e => e.origin === 'accent').length, 2, 'an accent was spent to buy lightness range');
+});
+
+t('the reservation never sells a COLOUR, even a structure one', () => {
+    // "Not an accent" alone was measured insufficient: it traded #50D9AF and #009689 away for a black.
+    const colourful = ent(0.7, CHROMA_FLOOR + 0.05);
+    const out = reserveLightnessRange([ent(0.9, 0), ent(0.8, 0), colourful, ent(0.05, 0)], 3);
+    assert.ok(out.includes(colourful), 'a colourful structure entry was spent to buy lightness range');
+});
+
+t('the reservation never sells the OTHER extreme', () => {
+    // Without this the light pass sold the black the dark pass had just bought (Starmancer.gif went out
+    // #000000, in #C4F6FF) -- an entry cannot be worth reserving and worth spending in one palette.
+    //
+    // ⚠️ THE DARK MUST BE LAST IN SALIENCE ORDER for this case to test anything: the victim search runs
+    // from the END of the kept list, so a fixture that puts anything duller after the dark never
+    // reaches it and passes with the guard deleted -- verified by deleting it and watching it stay
+    // green. Last is also where the real one sits, since a small black is exactly what ranks lowest.
+    const dark = ent(0.02, 0);
+    const light = ent(0.99, 0);
+    const out = reserveLightnessRange([ent(0.5, 0), ent(0.45, 0), dark, light], 3);
+    assert.ok(out.includes(dark) && out.includes(light), 'one reserved extreme was spent to buy the other');
+});
+
+t('nothing is bought when nothing may be sold', () => {
+    // The correct degradation: a palette of accents keeps its accents and simply does not gain range.
+    const src = [ent(0.9, 0.2, 'accent'), ent(0.8, 0.2, 'accent'), ent(0.7, 0.2, 'accent'), ent(0.05, 0)];
+    const out = reserveLightnessRange(src, 3);
+    assert.deepStrictEqual(out, src.slice(0, 3));
+});
+
+t('an extreme within LIGHTNESS_GAP of a kept entry is NOT reserved', () => {
+    // The threshold is what stops this firing on a near-duplicate. MERGE_DELTA_E is where this module
+    // stops calling two entries the same colour, so the gap must clear it with headroom.
+    const near = ent(0.5 - (LIGHTNESS_GAP / 2), 0);
+    const out = reserveLightnessRange([ent(0.5, 0), ent(0.6, 0), ent(0.7, 0), near], 3);
+    assert.ok(!out.includes(near), 'a barely-darker entry was reserved, which spends a slot for nothing');
+    assert.ok(LIGHTNESS_GAP > MERGE_DELTA_E, `LIGHTNESS_GAP ${LIGHTNESS_GAP} is not above this module's own same-colour threshold ${MERGE_DELTA_E}`);
+});
+
+t('the reservation can only return entries it was given, and never grows the palette', () => {
+    // Same subset property the restrict carries: buying range must not invent a colour, and must not
+    // quietly hand back a ninth swatch that the ladder would then read as off-rung.
+    const src = [ent(0.5, 0), ent(0.6, 0), ent(0.7, 0), ent(0.05, 0), ent(0.99, 0)];
+    const out = reserveLightnessRange(src, 3);
+    assert.strictEqual(out.length, 3);
+    for (const e of out) assert.ok(src.includes(e), 'the reservation returned an object that was not in its input');
+});
+
+t('the reservation is deterministic', () => {
+    const src = [ent(0.5, 0), ent(0.6, 0), ent(0.7, 0), ent(0.05, 0), ent(0.99, 0)];
+    const first = JSON.stringify(reserveLightnessRange(src, 3));
+    for (let i = 0; i < 5; i++) assert.strictEqual(JSON.stringify(reserveLightnessRange(src, 3)), first);
+});
+
+// --- The other half of the fix: the salience denominator's floor.
+t('a near-colourless image cannot normalise its own noise to a full accent bonus', () => {
+    // `chroma/maxChroma` is RELATIVE. On the reproduction above maxChroma is 0.0276 -- a nearly-neutral
+    // taupe -- so before the floor that taupe scored the identical 1.0000 chroma term a PURE RED scores,
+    // and every mid-grey was paid the accent premium for chroma that is not there.
+    assert.ok(SALIENCE_CHROMA_REF > CHROMA_FLOOR, `the salience reference ${SALIENCE_CHROMA_REF} is not above the pool floor ${CHROMA_FLOOR}, so it cannot damp a near-neutral image`);
+});
+
+t('on a colourless ramp, prevalence decides the order again', async () => {
+    // The behavioural half of the same claim. These two entries differ by 1 point of share and by
+    // rounding-level chroma; the unfloored denominator inverted them. Read off the returned order.
+    const p = await getColorPalette(ramp([[6, 6, 6], 1.5]), 8);
+    const at = h => p.findIndex(e => e.hex === h);
+    assert.ok(at(0xab9a93) >= 0 && at(0x8f7c74) >= 0, 'the fixture colours are no longer in the palette -- re-derive this case');
+    assert.ok(at(0xab9a93) < at(0x8f7c74), 'a 11% entry outranks a 12% entry on rounding-level chroma alone');
 });
 
 (async () => {
