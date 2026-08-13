@@ -46,7 +46,7 @@ function resolveTier(shorthand) {
     return toTitleCase(shorthand);
 }
 
-// Shared by parseBulkDrawList below AND index.js's single add-draw/edit-draw modal handlers --
+// Shared by parseBulkDrawList below AND handlers/manage.js's single add-draw/edit-draw modal handlers --
 // used to be copy-pasted verbatim in all three places. Matches the first word as the tier
 // shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
 function parseItemLine(itemStr) {
@@ -162,7 +162,7 @@ function parseBulkDrawList(bulkText) {
 
         // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means
         // "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's
-        // resolveThumbnail), resolved later at save time in index.js, not here. Only pop a trailing
+        // resolveThumbnail), resolved later at save time in handlers/manage.js, not here. Only pop a trailing
         // URL field if the last field actually looks like one.
         let url = null;
         if (parts.length > 1 && looksLikeUrlOrKey(parts[parts.length - 1])) {
@@ -373,7 +373,7 @@ function formatReleaseDateTime(date, userTimezone = 'America/Toronto') {
  * typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3)
  * silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN`
  * (with or without a space before the number), and anything that still doesn't match ends up in
- * `unrecognized` so the caller (index.js's add/edit-loadout handlers) can tell the admin exactly
+ * `unrecognized` so the caller (handlers/manage.js's add/edit-loadout handlers) can tell the admin exactly
  * which token didn't take instead of the change just silently not applying.
  *
  * NOTE (added for DMZ range badges): `bestclose`/`bestmidlong`/`top{N}close`/`top{N}midlong`

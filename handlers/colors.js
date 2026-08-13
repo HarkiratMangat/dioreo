@@ -1,14 +1,14 @@
 // ==========================================
 // VIEW COLORS PANEL — BUTTON HANDLERS
 // ==========================================
-// The five `colors_*` button branches, extracted verbatim from index.js's interactionCreate router
+// The five `colors_*` button branches, extracted verbatim from the interaction router (then `index.js`, now `handlers/router.js`)
 // on 2026-08-13 16:45 EDT (v3.16.0-pre) as the FIRST slice of the per-subsystem handler split — see
 // docs/ROADMAP.md and docs/superpowers/specs. Colours were picked as the first slice because this
 // block was the most self-contained one in the router: it touches neither `client` nor
 // `client.commands`, every branch terminates, and its 10s refresh cooldown is used nowhere else.
 //
-// ⚠️ THE CRASH NET STILL LIVES IN index.js, NOT HERE. handleColorsButton is awaited from inside
-// index.js's single top-level try/catch, which is what keeps an expired-token click (Discord 10062)
+// ⚠️ THE CRASH NET STILL LIVES IN handlers/router.js, NOT HERE. handleColorsButton is awaited from inside
+// handlers/router.js's single top-level try/catch, which is what keeps an expired-token click (Discord 10062)
 // a dead button rather than a dead bot. So: do NOT wrap the body below in its own try/catch, do NOT
 // register listeners here, and keep every error-branch reply as an AWAITED call inside its own small
 // try/catch (the shape already used throughout) — a bare `return interaction.reply(...)` can reject
@@ -16,7 +16,7 @@
 // real crashes behind this: .claude/rules/interaction-router.md.
 //
 // ⚠️ MODULE-LEVEL STATE BELOW. colorsRefreshCooldowns relies on Node caching this module so exactly
-// one instance exists per process. There is one require() of this file (index.js). Do not add a
+// one instance exists per process. There is one require() of this file (handlers/router.js). Do not add a
 // second path to it — utils/nameplateWebpCache.js once lost its resolvedCache to exactly that,
 // getting a fresh module instance and silently short-circuiting.
 
@@ -24,16 +24,16 @@ const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/inter
 const { logRenderTiming } = require('../utils/renderTiming'); // /colors panel perf instrumentation, see models/RenderTiming.js
 
 // "Refresh Colors" cooldown (2026-07-14, Harkirat's request) -- a SEPARATE, longer cooldown from the
-// generic 600ms anti-spam guard in index.js, specific to the colors_refresh_ button, since that
+// generic 600ms anti-spam guard in handlers/router.js, specific to the colors_refresh_ button, since that
 // button does real work (re-downloads + re-extracts a source's palette) that the generic guard's
 // window wouldn't meaningfully throttle. userId-keyed, same "one entry per distinct user, no TTL
-// needed" shape as index.js's interactionCooldowns.
+// needed" shape as handlers/router.js's interactionCooldowns.
 const colorsRefreshCooldowns = new Map(); // userId -> last accepted refresh timestamp
 const COLORS_REFRESH_COOLDOWN_MS = 10 * 1000;
 
 // Returns TRUE when this handler consumed the interaction, FALSE when it did not recognise the
 // custom_id and the router should keep matching its remaining branches. The boolean contract (rather
-// than a blanket `colors_` prefix match in index.js) is what preserves the pre-split behaviour
+// than a blanket `colors_` prefix match in handlers/router.js) is what preserves the pre-split behaviour
 // exactly: an unrecognised `colors_*` id falls through, same as it always did.
 async function handleColorsButton(interaction) {
     // B.6 "VIEW COLORS" PANEL (2026-07-13) -- opens as its OWN new message (deferReply, not

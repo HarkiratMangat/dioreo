@@ -19,7 +19,7 @@
 // ⚠️ WHY THE ENFORCEMENT IS A METHOD WRAP AND NOT A PER-COMMAND CHECK. The obvious design is to
 // make utils/ephemeral.js's resolveEphemeral() policy-aware and pass the policy in. It was built
 // that way first and then removed: resolveEphemeral is called by only nine commands -- /help,
-// /timestamp, /colors and the EIGHT per-category weapon commands built dynamically in index.js
+// /timestamp, /colors and the EIGHT per-category weapon commands built dynamically in bot/registry.js
 // never touch it -- so it would have been an optional argument at nine sites where FORGETTING it
 // looks exactly like passing it, silently un-clamping a server's rule. Instead there are two choke
 // points nothing routes around: attachGuildPolicy() wraps reply/deferReply/followUp on the
@@ -137,7 +137,7 @@ function resolveVisibility(settings, { channelId, parentChannelId = null, roleId
 }
 
 // Forces every response path on this interaction to ephemeral. Assigned as OWN properties so that
-// index.js's buildSyntheticInteraction() -- which copies own enumerable properties onto a fresh
+// utils/interactionContext.js's buildSyntheticInteraction() -- which copies own enumerable properties onto a fresh
 // object -- carries the clamp through to a button re-invoking a command's execute(). Without that,
 // a panel would render clamped on first invocation and unclamped on every navigation click.
 function forceEphemeralResponses(interaction) {
@@ -159,7 +159,7 @@ function forceEphemeralResponses(interaction) {
     }
 }
 
-// Called ONCE per interaction from index.js's interactionCreate choke point, before any routing.
+// Called ONCE per interaction from handlers/router.js's interactionCreate choke point, before any routing.
 // Attaches `interaction.dioreoPolicy` and applies the clamp. Returns the policy, or null outside a
 // guild (a DM or a user-install context has no server to have an opinion).
 async function attachGuildPolicy(interaction) {

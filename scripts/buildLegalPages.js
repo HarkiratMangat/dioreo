@@ -7355,12 +7355,12 @@ const MORPH_JS = `
  * HARDER THAN IT LOOKS. Grepping `commands/*.js` for `.setName(` finds only
  * nine of them and makes the weapon classes look invented. They are not:
  * `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and `/secondaries`
- * are built at BOOT, in index.js's handleBotReady(), from
+ * are built at BOOT, in bot/registry.js's buildCategoryCommands(), from
  * `Loadout.distinct('category', { mode: 'MP' })` with SECONDARIES merged in —
  * so they exist in the live command list and in no source file's registration
  * block. A 2026-08-05 handoff asserted they were fake on exactly that
  * missing-grep-hit evidence and was wrong; Harkirat caught it. If you add a
- * line here, check index.js's dynamic registration too, not just `commands/`.
+ * line here, check bot/registry.js's dynamic registration too, not just `commands/`.
  *
  * The option VALUES are real too, each from its own source and each checked
  * rather than plausible-looking: the weapon lists are the live Loadout
@@ -7387,7 +7387,7 @@ const CMD_JS = `
 
   /* Read from the live Loadout collection grouped by category on 2026-08-05,
      not written from memory of CODM's roster. Case and punctuation are verbatim
-     because index.js's autocomplete responds with "name: w.weaponName" — these
+     because handlers/router.js's autocomplete responds with "name: w.weaponName" — these
      are the exact strings Discord offers, mixed case ("FSS Hurricane") and all.
      Re-read them if the loadout data gains a category or a weapon; a name that
      drifts out of the DB becomes a line the page invites you to type and the

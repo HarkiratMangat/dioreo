@@ -8,7 +8,7 @@
 // of whether the triggering command's own response was public -- announcements are a personal
 // one-time notice, not something that should bloat a public channel.
 //
-// Wired into index.js's STEP 6.2 (slash command route engine) -- called AFTER a command's own reply
+// Wired into handlers/router.js's slash-command route engine -- called AFTER a command's own reply
 // has already gone out, on both the modular-command and dynamic MP-loadout-fallback success paths.
 // Deliberately NOT called from button/select/modal handlers (STEP 6.3+) -- only a fresh top-level
 // command invocation counts, so re-clicking an existing panel or reactivating an idled one (see

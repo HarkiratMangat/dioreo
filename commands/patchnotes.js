@@ -32,7 +32,7 @@ function cleanPatchTitle(title) {
 // Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New
 // Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released
 // before the new season's real name is announced), otherwise falls back to the auto-synced `title`.
-// Every display site (here, index.js's autocomplete, the manage-panel dropdown) should call this
+// Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this
 // instead of reading `patch.title` directly, so the override can never be silently ignored somewhere.
 function displayTitle(patch) {
     return cleanPatchTitle(patch.titleOverride || patch.title);

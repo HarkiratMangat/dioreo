@@ -1,7 +1,7 @@
 // utils/colorPaletteView.js -- render logic for /settings' "View Colors" panel and the standalone
 // /colors command (utils/colorPalette.js does the data side: fetching+caching each source's color
 // breakdown). Kept separate from that file the same way every other command's render logic is split
-// from its data-fetching, and from index.js's routing the same way every other panel's render lives
+// from its data-fetching, and from handlers/router.js's routing the same way every other panel's render lives
 // in utils/ rather than inline.
 const namer = require('color-namer');
 const { assignColorNames } = require('./colorNames');
@@ -795,7 +795,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // and Share Publicly button already use elsewhere in this bot (a new top-level row, never packed
     // into the container). Style 1 (blurple) + the eyedropper emoji to match the "View Colors"
     // button itself. Encodes the current subpage so a refresh doesn't bounce back to page 1. Forces
-    // a real re-extraction, bypassing the cache -- see index.js's colors_refresh_ handler (10s
+    // a real re-extraction, bypassing the cache -- see handlers/colors.js's colors_refresh_ handler (10s
     // cooldown + change-detection message) and utils/colorPalette.js's forceRefresh param. Every
     // other button/select re-render in this bot deliberately does NOT re-run extraction (that's the
     // whole point of the cache), so this is a specific, deliberate exception for exactly this one

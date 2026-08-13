@@ -21,7 +21,7 @@ const DIOR_ID = '1139845545754632283';
 
 // AUTHOR-LOCK (2026-07-14) -- /settings previously had no author-lock at all on some of its own
 // components (set_page_ carried no userId whatsoever); every custom_id this file builds now carries
-// `|{userId}` so index.js's handlers can check identity before acting.
+// `|{userId}` so the settings handlers can check identity before acting.
 //
 // Idle-timeout expiry used to ALSO be encoded here (a `|{expiresAt}` 3rd segment, checked reactively
 // on click) but that's gone (2026-07-18) -- replaced by `utils/passiveExpiry.js`'s PASSIVE
@@ -46,7 +46,7 @@ module.exports = {
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
     // dropdown + hex-code lines + footer pushed the single-page layout close to Discord's
-    // 40-component cap -- see the B.5 button handler in index.js for how page navigation re-invokes
+    // 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes
     // this with a target page.
     async execute(interaction, pageOverride = 0) {
         const userId = interaction.user.id;
@@ -67,7 +67,7 @@ module.exports = {
         // `hidden` option added 2026-07-18 -- same explicit-option > saved-preference > public
         // priority every other command already uses (utils/ephemeral.js's resolveEphemeral).
         // `interaction.isChatInputCommand()` guards reading `.options` at all -- every re-render
-        // path here (toggle/set/set_page/colors button+select handlers in index.js) calls this
+        // path here (the toggle/set/set_page handlers in handlers/settings.js, and handlers/colors.js) calls this
         // execute() with a button/select interaction that has no real options resolver, so
         // argPrivate naturally falls through to null on those, leaving the saved preference (not
         // this option) in control exactly as before this change.
@@ -242,7 +242,7 @@ module.exports = {
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];
         if (userBannerFullUrl) profileLinkButtons.push({ type: 2, style: 5, label: "Banner", url: userBannerFullUrl });
         // "View Colors" (2026-07-13) -- opens utils/colorPaletteView.js's panel as its OWN new
-        // message (index.js's colors_view handler, ephemeral state matches the user's own
+        // message (handlers/colors.js's colors_view handler, ephemeral state matches the user's own
         // settingsVisibility preference) rather than editing this settings panel in place, so the
         // settings dashboard stays open underneath. Style 1 (blurple/Primary) -- the eyedropper icon
         // was recolored to match this exact button color, so Secondary/gray would've clashed.

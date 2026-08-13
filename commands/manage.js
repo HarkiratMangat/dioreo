@@ -20,7 +20,7 @@
 // clicking a button either opens its modal directly, replies with a file (Export actions), shows a
 // Confirm/Cancel prompt (Purge), or, for Edit/Delete-by-search (which need a specific item picked
 // first, and buttons can't autocomplete), opens a small "search by name" modal first — see
-// index.js's `mng_search_`/`mng_pick_` handlers for the resolve-then-chain-a-second-modal logic.
+// handlers/manage.js's `mng_search_`/`mng_pick_` handlers for the resolve-then-chain-a-second-modal logic.
 // This file only builds the modal SHAPES and the page/button layout; index.js owns all the routing
 // and DB-mutating submit logic.
 //
@@ -50,7 +50,7 @@ const ALLOWED_ADMIN_ID = '1139845545754632283'; // Your exact Discord ID
 // Draws gained 3 granular purge SCOPES (2026-07-12, was one "purge everything" button) — `all`,
 // `new`, `returning` — since a Purge that only affects one of the two draw categories didn't exist
 // before. Every other group only has one scope ('all'), but is still keyed the same way so
-// index.js's confirm/cancel handlers can treat every group identically (`PURGE_LABELS[group].all`
+// handlers/manage.js's confirm/cancel handlers can treat every group identically (`PURGE_LABELS[group].all`
 // vs `PURGE_LABELS[group][scope]`).
 const PURGE_LABELS = {
     draws: { all: 'ALL New and Returning draws', new: 'ALL New draws only', returning: 'ALL Returning draws only' },
@@ -233,7 +233,7 @@ function buildPagesTable(client) {
             // "Add New Season" (2026-07-24) -- previously the biggest gap in this page: there was no
             // way to START a new season's patch notes at all, only edit whichever entry already
             // happened to be "current." Pushes a new patchNotes[] entry, which becomes Current Season
-            // and demotes the old one to Past Seasons -- see index.js's modal_patch_addseason handler.
+            // and demotes the old one to Past Seasons -- see handlers/manage.js's modal_patch_addseason handler.
             {
                 blocks: [`### ${emojis.mngAdd} Add New Season\n-# Add release notes for a new season. After saving, this data becomes the Current Season and the previous data moves to Past Seasons.`],
                 buttons: [{ id: 'addseason', label: 'Add New Season', style: 3 }]
@@ -321,7 +321,7 @@ function buildPagesTable(client) {
     // ALLOWED_ADMIN_ID (the owner, above), so trusted people can be granted admin access without a
     // code deploy per grant/revoke. Visible to and reachable by any admin (same as every other page
     // on this panel), but its two mutating actions are further gated to the OWNER ONLY (see
-    // index.js's mng_act_ manageadmins branch and utils/adminAccess.js's isOwner) -- a granted
+    // handlers/manage.js's mng_act_ manageadmins branch and utils/adminAccess.js's isOwner) -- a granted
     // admin can use /manage, /alerts, /autobuild normally, but cannot edit the allowlist itself.
     manageadmins: {
         label: 'Manage Admins',
@@ -451,7 +451,7 @@ function buildDraftStatusText(seasonalDoc) {
 }
 
 // Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a
-// different `mode` baked into every action id (so index.js's handlers know which collection slice
+// different `mode` baked into every action id (so the handlers in handlers/manage.js know which collection slice
 // to touch) and a different header icon/label.
 function loadoutsPageDef(mode, headerLabel, icon, client) {
     return {
@@ -605,7 +605,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
         } else if (group.style === 'select') {
             // Section + select menu (2026-07-24, Patch Notes' "Past Seasons") -- options come from
             // `dynamicData[group.optionsKey]` rather than this static PAGES table, since they're
-            // built fresh from the DB every render (see index.js's mng_pagesel/manage.js's execute()
+            // built fresh from the DB every render (see handlers/manage.js's mng_pagesel/manage.js's execute()
             // call sites). Discord requires at least 1 option and rejects an empty array outright, so
             // an empty result falls back to one disabled placeholder option instead of omitting the
             // row -- same "always render the row, just inert" approach as Loadouts' empty-state info
@@ -630,7 +630,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
             // per-item Edit/Delete list) -- for a page whose group shape is genuinely dynamic (one
             // Text Display + Action Row PER live DB row, not a fixed number of buttons), unlike
             // 'status' above which is still exactly one static block. Built by whichever call site
-            // is rendering this page (manage.js's execute()/index.js's mng_pagesel), same as every
+            // is rendering this page (manage.js's execute()/handlers/manage.js's mng_pagesel), same as every
             // other dynamicData-fed style.
             (dynamicData[group.dynamicKey] || []).forEach(component => components.push(component));
         } else {
@@ -647,7 +647,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     // selection open the editing modal right away instead of a dedicated management page"). Rather
     // than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines /
     // Wipe Season), both of Season's actions get their own flat dropdown entries — picking either
-    // opens its modal directly with nothing in between, see index.js's `mng_pagesel` handler.
+    // opens its modal directly with nothing in between, see handlers/manage.js's `mng_pagesel` handler.
     const showSeasonFlat = !allowedPages || allowedPages.includes('season');
     const pageOptions = [
         ...Object.entries(PAGES)
@@ -659,7 +659,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
             // as a low-stakes settings toggle; the option's own `description` (rendered as a smaller
             // gray line under the label in Discord's select menu) now spells out exactly what it does,
             // specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel
-            // flow as Purge (see index.js's modal_wipe_season handler) — selecting this used to wipe
+            // flow as Purge (see handlers/manage.js's modal_wipe_season handler) — selecting this used to wipe
             // draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
             { label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' }
         ] : [])
@@ -719,18 +719,18 @@ function buildAddDrawModal(drawType) {
         // All 4 of these are now setRequired(false) (2026-07-12) — see the 5th field below. Discord
         // validates required fields BEFORE the modal-submit handler ever runs, so if these stayed
         // required, submitting with only the combined-line field filled would get rejected by
-        // Discord itself before index.js's handler got a chance to fall back to it.
+        // Discord itself before handlers/manage.js's handler got a chance to fall back to it.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note").setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15").setRequired(false)),
         // Optional (2026-07-12, Cloudinary-cache feature) — leaving this blank reuses whatever's
         // already cached for this exact draw title (utils/cloudinaryCache.js). Only fails if nothing
-        // has ever been cached for this title yet — index.js's handler surfaces that as a clear
+        // has ever been cached for this title yet — handlers/manage.js's handler surfaces that as a clear
         // error rather than silently saving a draw with no thumbnail at all.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setRequired(false)),
         // 5th field (2026-07-12) — alternative to filling in the 4 fields above separately: paste
         // the whole draw as one bulk-style line (same format as Bulk Add/Export:
-        // `Title, m Item 1, l Item 2, Date, URL`). index.js's handler runs this through the same
+        // `Title, m Item 1, l Item 2, Date, URL`). handlers/manage.js's handler runs this through the same
         // parseBulkDrawList() parser used everywhere else if it's non-empty, otherwise falls back to
         // the 4 separate fields — so exactly one of "fill in the 4 fields" or "paste one line" needs
         // to actually be used, not both.
@@ -836,7 +836,7 @@ function buildEditCalendarModal(targetEvent, targetId) {
 // --- LOADOUTS modal builders --- (shared by MP + DMZ, `mode` param picks which)
 function buildLoadoutsBulkAddModal(mode) {
     // Header line still carries Mode as its 3rd field to match parseBulkLoadoutList()'s existing
-    // format unchanged (no parser risk) — index.js's submit handler force-overrides every parsed
+    // format unchanged (no parser risk) — handlers/manage.js's submit handler force-overrides every parsed
     // entry's mode to match whichever page (MP/DMZ) this modal was opened from regardless of what's
     // typed here, since the page itself already scopes it; the field just avoids touching the shared
     // parser.
@@ -943,7 +943,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
-        // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
+        // via the Season Titles/Dates modal) -- see handlers/manage.js's modal_patch_dateinfo submit handler.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title Override (blank = auto)').setStyle(TextInputStyle.Short).setValue(currentEntry?.titleOverride || '').setRequired(false))
     );
     return modal;
@@ -1057,7 +1057,7 @@ function buildAdminEditPermissionsModal(adminDoc) {
 
 // --- ANNOUNCEMENT modal builder (2026-08-13, redesigned same day for multi-announcement + expiry)
 // Shared by both Post New (announcementDoc = null) and Edit (prefilled from the existing doc) --
-// same field shape either way, just a different custom_id/title/prefill so index.js's two separate
+// same field shape either way, just a different custom_id/title/prefill so handlers/manage.js's two separate
 // submit handlers (create vs. update-in-place) can tell them apart.
 function buildAnnouncementModal(announcementDoc) {
     const { expiryToInputValue } = require('../utils/announcement');
@@ -1079,7 +1079,7 @@ function buildAnnouncementModal(announcementDoc) {
 
 // --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) ---
 // Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for
-// titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so index.js's submit
+// titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage.js's submit
 // handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead
 // of the top-level fields.
 function buildDraftTitlesDatesModal(seasonalDoc) {
@@ -1123,7 +1123,7 @@ function buildDraftBulkCalendarModal(seasonalDoc) {
 }
 
 module.exports = {
-    ALLOWED_ADMIN_ID, // Exposed so index.js's centralized panel-interaction guard (button/select/
+    ALLOWED_ADMIN_ID, // Exposed so handlers/router.js's centralized panel-interaction guard (button/select/
                       // modal-submit) can check against the same single source of truth instead of
                       // a second hardcoded literal drifting out of sync — see the guard right after
                       // the anti-spam block in interactionCreate.

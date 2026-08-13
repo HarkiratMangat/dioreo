@@ -22,6 +22,14 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### ✅ Split `index.js` into per-subsystem handler modules — closed 2026-08-13 18:05 EDT, v3.16.0-pre
+Filed 2026-07-22 13:55 EDT, promoted to a v3 launch blocker 2026-08-10 21:24 EDT, shipped in four passes in one session. **`index.js` 4,553 → 129 lines**; the interaction router that came out of it 3,684 → ~470 and now a dispatcher only. Thirteen subsystems in `handlers/*.js`, boot split into `bot/registry.js` + `bot/lifecycle.js`, shared helpers in `utils/interactionContext.js`.
+- **The scoping question the entry always carried — "which slice first?" — was answered by measurement, not preference.** Colours: 382 contiguous lines touching neither `client` nor `client.commands`. Draw prices: 60 lines but needing `client.commands.get('draw')`, which would have put a client dependency in the very first handler's contract.
+- **The ROADMAP's risk #2 ("many handlers close over shared state that must move to a shared module or be passed in") turned out not to exist for `/manage`.** All 14 of its helpers and stores were checked against every use site: zero touched by a non-manage branch. They were manage-private all along and moved as a unit — no shared module, no injection.
+- **Ownership by custom_id prefix is what made a 2,300-line move safe**: prefixes are mutually exclusive, so ownership is decided before any branch body runs and **not one `return` had to be rewritten**. `scripts/handlerRouting.test.js` makes that exclusivity a permanent test.
+- ⚠️ **Still owed and tracked separately: the live click-test**, now covering every interactive surface rather than one slice — see 🔔 Reminders in `docs/db-deferred-list.md`. Not deployed; the VM runs `main`.
+- 🧹 **The ~100 stale cross-references were closed in the same session** (40 files). The automated first attempt was reverted for getting a meaningful share wrong; the lesson lives in `.claude/rules/interaction-router.md`, which is canonical for the resulting structure.
+
 ### ✅ Three-item bundle: multi-user admin access, announcement feature, `/colors` sub-option — closed 2026-08-13 15:44 EDT, PR #123
 Filed as a scheduling bundle 2026-08-13 12:25 EDT (Harkirat: "let's build the multi user admin access, the announcement feature, and the /colors sub-page option"), each its own subsystem, built and verified independently in one session:
 - **`/colors` sub-option** (`docs/db-deferred-list.md`'s own `[P2 · S]` entry) — shipped as `page`/`source`/`visibility` string-choice options, reordered so `page` leads (Discord's picker follows registration order). The open naming question resolved: values match `utils/colorPaletteView.js`'s existing `SOURCE_META` labels for consistency, `from` renamed `source` with clearer choice text ("From Main Profile"/"From Server Profile"). `/settings`' "View Colors" button intentionally did NOT get the option, staying a fixed entry point as scoped.

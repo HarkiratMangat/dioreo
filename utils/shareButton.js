@@ -4,7 +4,7 @@
 // existing components (never mixed into an existing row, to avoid tripping the 5-buttons-per-row
 // cap on commands whose nav row is already full). Clicking it doesn't touch the original ephemeral
 // message at all -- it just posts a brand new, real public message with the same content. See
-// index.js's `share_public` handler for the other half: Discord includes the FULL original message
+// handlers/share.js's `share_public` handler for the other half: Discord includes the FULL original message
 // (content/embeds/components) directly in a button click's interaction payload, even when that
 // message was ephemeral, so no state needs to be stored or reconstructed here.
 const emojis = require('./emojiMap');

@@ -105,7 +105,7 @@ function getTimezoneLabel(tz, baseName) {
 }
 
 module.exports = {
-    PRESET_ACCENT, // Exposed so index.js's tsmenu re-render handler can resolve the same accent
+    PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
         .setName('timestamp')
@@ -179,7 +179,7 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view
-    // layouts living in index.js's 'tsmenu|' select handler, because that handler needed to
+    // layouts living in handlers/timestamp.js's 'tsmenu|' select handler, because that handler needed to
     // re-render the SAME already-parsed timestamp under a different style without re-running
     // chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed
     // later). The two copies had already drifted out of sync twice across earlier redesigns.
@@ -191,7 +191,7 @@ module.exports = {
         let queryInput, tz, style, unix, ephemeral, accentColor, isTextMode;
 
         if (overrideState) {
-            // Invoked from index.js's tsmenu dropdown handler — reuse the exact original parse
+            // Invoked from handlers/timestamp.js's tsmenu dropdown handler — reuse the exact original parse
             // instead of re-parsing. Never ephemeral here since the dropdown-driven re-render
             // path never applied the ephemeral flag (matches prior behavior).
             ({ unix, tz, queryInput, style } = overrideState);
@@ -200,7 +200,7 @@ module.exports = {
             // someone switches timestamp styles. index.js passes this in from the message being
             // edited since overrideState skips the normal ephemeral-resolution logic entirely.
             ephemeral = Boolean(overrideState.ephemeral);
-            // accentColor is precomputed by index.js's tsmenu handler (it already needs to fetch
+            // accentColor is precomputed by handlers/timestamp.js's tsmenu handler (it already needs to fetch
             // prefs there to decide this) and passed through the same way ephemeral is — this
             // render path skips the normal option-resolution logic entirely, so there's no `prefs`
             // available here to resolve it from directly.

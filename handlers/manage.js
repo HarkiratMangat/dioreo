@@ -2442,7 +2442,7 @@ async function routeManage(interaction) {
                     created++;
                 }
                 // Weapon-level badges sync across every other build sharing this weaponKey+mode --
-                // same reasoning as index.js's edit_loadout_ handler.
+                // same reasoning as the edit_loadout_ handler in this file.
                 await Loadout.updateMany(
                     { weaponKey, mode, buildName: { $ne: buildName } },
                     { isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic }

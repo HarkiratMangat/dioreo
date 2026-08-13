@@ -1,4 +1,4 @@
-// Shared interaction helpers used by index.js's router AND by every extracted per-subsystem handler
+// Shared interaction helpers used by handlers/router.js AND by every per-subsystem handler
 // under handlers/ (see docs/ROADMAP.md's "Split index.js into per-subsystem handler modules").
 //
 // These two functions lived in index.js's PHASE 3 until 2026-08-13 16:45 EDT, when the first handler slice

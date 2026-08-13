@@ -11,7 +11,7 @@ const { Routes } = require('discord.js');
 // re-OR in the ephemeral bit since that path doesn't go through a normal deferReply).
 //
 // SINGLE-HOP PAGINATION (added 2026-08-06 22:16 EDT, the "pagination perf hybrid" design agreed 2026-07-14)
-// -- pure string-building nav used to cost TWO Discord round-trips per click: index.js's router
+// -- pure string-building nav used to cost TWO Discord round-trips per click: handlers/router.js
 // called `interaction.deferUpdate()` (hop 1, just an ack) BEFORE the command's execute() ever ran,
 // then this function's `rest.patch('@original')` (hop 2) delivered the actual content once building
 // finished. For a path with no image/network work, hop 1 buys nothing but latency -- Discord's
@@ -44,7 +44,7 @@ function sendV2Payload(interaction, components, { content = '', flags = 32768, e
     // built: every caller that can add the row already routes through this function, so one filter
     // covers all of them and no future command has to remember a policy argument. The row is only
     // ever appended as its own dedicated row (never mixed into an existing one), so dropping any row
-    // that contains the button is both safe and precise -- same reasoning as index.js's share_public
+    // that contains the button is both safe and precise -- same reasoning as handlers/share.js's share_public
     // handler, which re-checks server-side for panels opened before the rule was set.
     let outgoing = components;
     if (interaction?.dioreoPolicy?.allowShare === false) {

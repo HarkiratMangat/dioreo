@@ -248,7 +248,7 @@ async function listCachedAssets() {
 async function pruneExpiredThumbnails(currentUrls) {
     // NOTE (fixed during review): the whole body is wrapped here now -- listCachedAssets() had no
     // try/catch of its own, so a Cloudinary error from IT used to propagate all the way up to
-    // index.js's runCloudinaryCleanup(), which logged it with the same `error.message || error`
+    // bot/lifecycle.js's runCloudinaryCleanup(), which logged it with the same `error.message || error`
     // anti-pattern this file's other catch blocks were just fixed for -- printing the raw error
     // object (API key + secret in `request_options.auth`) straight to the console/log aggregator.
     // Every Cloudinary call this module makes must have its error caught and sanitized IN this file,

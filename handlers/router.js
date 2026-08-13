@@ -201,7 +201,7 @@ async function handleInteraction(interaction) {
             // options (draws/loadouts/calendar/patchnotes edit/delete autocomplete). That entire
             // subcommand-group/option structure was replaced by the button+modal panel (see
             // manage.js) -- Edit/Delete now collect their search query through a one-field modal
-            // instead of a slash-command autocomplete option, resolved in index.js's `mng_search_`
+            // instead of a slash-command autocomplete option, resolved in handlers/manage.js's `mng_search_`
             // modal-submit handler. Nothing on /manage triggers autocomplete anymore.
 
             // === ROUTE B: USER FRONT-END AUTOCOMPLETE (/all, /dmz, /patch) ===

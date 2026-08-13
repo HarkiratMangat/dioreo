@@ -15,7 +15,7 @@
 // Info / Utilities / Preferences (which also carries `/server` for server admins) / Bot Admin
 // (whitelist-gated, hidden entirely from everyone else). Gunsmiths' per-category command list
 // (`/ar`, `/lmg`, `/sniper`, …)
-// is queried live from Mongo the same way index.js's handleBotReady() generates those commands --
+// is queried live from Mongo the same way bot/registry.js's buildCategoryCommands() generates those commands --
 // hardcoding it would silently go stale the moment a category is added/removed (see the "no
 // duplicated state in prose" lesson + docs/superpowers/specs/2026-08-08-help-command-design.md).
 //
@@ -156,7 +156,7 @@ const DETAIL_HEADERS = {
 
 const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
-// Queried the SAME way index.js's handleBotReady() derives the live /ar, /lmg, /sniper, etc.
+// Queried the SAME way bot/registry.js's buildCategoryCommands() derives the live /ar, /lmg, /sniper, etc.
 // commands, so this can never drift stale the way a hardcoded copy would the moment a category is
 // added, renamed, or removed. Returns bare lowercase names (no leading slash), sorted.
 async function getLiveGunsmithCommandNames() {
@@ -415,7 +415,7 @@ module.exports = {
     getAllHelpCommandNames,
     resolveCommandToCategory,
 
-    // `categoryOverride` (passed by index.js's `help_category` select-menu handler via a synthetic
+    // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic
     // interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`.
     // 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically
     // to null/no-selection, so it's normalized here rather than threading a 6th special case through

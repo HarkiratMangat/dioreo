@@ -4,7 +4,7 @@
 // Browse + export the persistent alert log (see utils/alertStore.js / utils/alertWebhook.js), and read a
 // plain-language explainer of what each severity means. Added 2026-07-20 (the "webhook alerting, heavier
 // half" roadmap item). Admin-only — gated by the same exported ALLOWED_ADMIN_ID as /manage, and every
-// `alerts_` component is auto-gated by index.js's centralized panel guard (no per-handler admin checks).
+// `alerts_` component is auto-gated by handlers/router.js's centralized panel guard (no per-handler admin checks).
 //
 // This file builds the panel; index.js owns the button routing (alerts_export / alerts_explain /
 // alerts_back / alerts_page_N). buildAlertsPanel() is exported so those re-render handlers share ONE
@@ -116,7 +116,7 @@ function buildExplainComponents() {
     return [container];
 }
 
-// Shared render entry point — used by execute() (slash) AND index.js's re-render handlers, so there's one
+// Shared render entry point — used by execute() (slash) AND handlers/alerts.js's re-render handlers, so there's one
 // render path, not two. Fetches its own data (the store reads are cheap, cache-free counts/finds).
 async function buildAlertsPanel({ page = 0, view = 'main' } = {}) {
     if (view === 'explain') return buildExplainComponents();

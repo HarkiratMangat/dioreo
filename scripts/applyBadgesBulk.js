@@ -9,7 +9,7 @@
 // scoped to the category it's listed under here (categories are known upfront from this list's
 // own grouping, so there's no risk of an abbreviated query like "HVK" matching a weapon in the
 // wrong category). Every build sharing that weaponKey+mode gets updated (same "badges describe
-// the weapon, not one build" propagation index.js's edit_loadout_ handler already does).
+// the weapon, not one build" propagation handlers/manage.js's edit_loadout_ handler already does).
 require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');

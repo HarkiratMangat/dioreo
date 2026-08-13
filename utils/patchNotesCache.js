@@ -14,7 +14,7 @@
 // season rolls off the back of that list, regardless of how many days have passed.
 //
 // Keyed by the patch note SUBDOCUMENT'S OWN `_id`, not its title -- titles can be renamed later
-// (see index.js's `modal_season_titles_deadlines`, which keeps the most recent patchNotes[] entry's
+// (see handlers/manage.js's `modal_season_titles_deadlines`, which keeps the most recent patchNotes[] entry's
 // title synced to `currentSeasonTitle`), and keying by a mutable title would either orphan
 // already-cached images on a rename or require a folder-rename step. `_id` never changes.
 const cloudinary = require('cloudinary').v2;

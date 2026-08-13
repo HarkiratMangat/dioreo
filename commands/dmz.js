@@ -22,7 +22,7 @@ module.exports = {
             option.setName('weapon')
                 .setDescription('The DMZ weapon you want a build for')
                 .setRequired(true)
-                .setAutocomplete(true)) // Autocomplete hooked dynamically in index.js
+                .setAutocomplete(true)) // Autocomplete hooked dynamically in handlers/router.js
         .addIntegerOption(option =>
             option.setName('build')
                 .setDescription('Jump to a specific build number')
