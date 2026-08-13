@@ -25,7 +25,14 @@ function ownsCustomId(customId) {
 
 async function route(interaction) {
         // D. SETTINGS MENU DROPDOWNS (Timezone & Timestamp Formats only)
-        if (interaction.customId.startsWith('set_')) {
+        // ⚠️ `isStringSelectMenu()` IS LOAD-BEARING, NOT DECORATION. `set_page_` (a BUTTON, handled
+        // further down) also starts with `set_`, so without this type test a page-navigation click
+        // matches HERE first, defers, and then throws on `interaction.values[0]` -- buttons have no
+        // `.values`. Pre-split these two lived in separate `isStringSelectMenu()`/`isButton()` blocks
+        // and the type check did this work structurally; flattening them into one function is what
+        // made it necessary here. Found 2026-08-13 18:45 EDT by auditing what the moved comments
+        // still asserted, after the split had already been pushed.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('set_')) {
             await interaction.deferUpdate(); // Extends execution context limits to handle network delays safely
             // 3rd pipe segment (2026-07-12) -- which /settings page this dropdown lives on, so
             // re-rendering after a selection lands back on the same page instead of resetting to
@@ -91,7 +98,7 @@ async function route(interaction) {
         }
 
         // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
-        if (interaction.customId.startsWith('toggle_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('toggle_')) {
             // No deferUpdate() -- single-hop UPDATE_MESSAGE (2026-08-06 22:17 EDT, pagination perf
             // hybrid). The old comment here ("Defer to permanently safeguard against API 10062
             // timeouts") was blanket boilerplate from the 2026-07-06 Components V2 rewrite, not a
@@ -175,7 +182,7 @@ async function route(interaction) {
         // page 0 = Visibility toggles, page 1 = Preferences. custom_id is `set_page_{targetPage}`,
         // same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section
         // stays identical on both pages (re-rendered each time, not truly "shared" state).
-        if (interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
+        if (interaction.isButton() && interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
             // REVERTED to two-hop 2026-08-07 17:44 EDT (v2.60.0) -- same emoji-blank bug as
             // calpage_/price_region_/price_subpage_ above, directly confirmed on THIS handler during
             // that investigation (docs/db-deferred-list.md's "button emoji goes blank after a

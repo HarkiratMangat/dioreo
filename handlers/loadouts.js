@@ -39,7 +39,12 @@ async function route(interaction) {
         // code: no error, no log, nothing -- Discord just timed out the interaction after ~3s with
         // a bare "This interaction failed" and the bot never even attempted to handle it. Moved
         // into the correct `isStringSelectMenu()` block (this one) where it's actually reachable.
-        if (interaction.customId === 'mpbrowse' || interaction.customId === 'dmzbrowse') {
+        // ⚠️ The type test is load-bearing, and the comment above is the reason. `mpbrowse` matches
+        // the pagination branch's `startsWith('mp')` further down, so these two are separated ONLY by
+        // interaction type -- pre-split that separation was structural (two different blocks), and
+        // flattening them into one function is what made it explicit here. Without it the ordering of
+        // these branches would silently decide which one wins.
+        if (interaction.isStringSelectMenu() && (interaction.customId === 'mpbrowse' || interaction.customId === 'dmzbrowse')) {
             const Loadout = require('../models/Loadout');
             const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
             const isDmz = interaction.customId === 'dmzbrowse';
@@ -81,7 +86,7 @@ async function route(interaction) {
         // Shared handling for both custom_id prefixes since /dmz and the MP category commands
         // (/all, /<category>) now use identical card layouts — see utils/loadoutRender.js. `mode`
         // is the only real difference in what gets queried.
-        if (interaction.customId.startsWith('dmz') || interaction.customId.startsWith('mp')) {
+        if (interaction.isButton() && (interaction.customId.startsWith('dmz') || interaction.customId.startsWith('mp'))) {
             const Loadout = require('../models/Loadout');
             const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
             const isDmz = interaction.customId.startsWith('dmz');

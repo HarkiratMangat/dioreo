@@ -117,6 +117,69 @@ check('colors_subpage_indicator is not consumed by handlers/colors.js', async ()
     assert.strictEqual(await handleColorsButton({ customId: 'colors_subpage_indicator' }), false);
 });
 
+// --- 5. TYPE DISCIPLINE ---
+// A REAL BUG this caught on 2026-08-13 18:45 EDT, after the split was already pushed. Pre-split, the
+// router separated interaction types structurally: `set_` (a SELECT) lived in the isStringSelectMenu()
+// block and `set_page_` (a BUTTON) in the isButton() block. Flattening each subsystem into one
+// function removed that separation — and `set_page_2` matches `startsWith('set_')` first, so a page
+// click entered the select handler, deferred, then threw on `interaction.values[0]` (buttons have no
+// `.values`). The router's crash net swallowed it, so the button simply looked dead.
+//
+// The fix was to make the type test explicit in each branch. This test is what stops it regressing:
+// a handler must DECLINE an id whose prefix it owns when the interaction TYPE is wrong for it.
+// 5a. RUNTIME PROBE. `interaction.values` exists only on a select. A button that wrongly enters a
+// select branch reads it and throws — which is exactly what happened. The probe makes that read
+// distinguishable from every other failure (a missing DB, an unstubbed method), so the assertion is
+// about type routing specifically and not about the branch running to completion.
+const VALUES_READ = 'SELECT_ONLY_VALUES_READ';
+const asButton = (customId) => ({
+    customId,
+    isButton: () => true,
+    isStringSelectMenu: () => false,
+    isModalSubmit: () => false,
+    get values() { throw new Error(VALUES_READ); },
+    deferUpdate: async () => {}, deferReply: async () => {}, reply: async () => {},
+    followUp: async () => {}, showModal: async () => {}, editReply: async () => {},
+    message: { flags: { bitfield: 0 } },
+    user: { id: '1' }, guildId: null,
+});
+
+const buttonCases = [
+    ['settings', 'set_page_2', '`set_page_` is a button that ALSO matches the `set_` select branch'],
+    ['loadouts', 'mpbrowse', '`mpbrowse` is a select id that ALSO matches the `mp` button branch'],
+];
+for (const [mod, id, why] of buttonCases) {
+    check(`${mod}: a button "${id}" never enters a select branch — ${why}`, async () => {
+        try {
+            await entries[mod](asButton(id));
+        } catch (err) {
+            assert.notStrictEqual(err.message, VALUES_READ,
+                'a BUTTON reached a select-only branch and read interaction.values');
+        }
+    });
+}
+
+// 5b. STRUCTURAL. A module handling more than one interaction type must type-test every branch —
+// prefix alone cannot separate them, and relying on branch ORDER to do it is how 5a's bug happened.
+check('every branch in a mixed-type handler carries an interaction-type test', () => {
+    const offenders = [];
+    for (const name of moduleNames) {
+        const src = fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8')
+            .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
+        const types = ['isButton', 'isStringSelectMenu', 'isModalSubmit'].filter(t => src.includes(t + '()'));
+        if (types.length < 2) continue; // single-type module: prefix ownership is sufficient
+        // manage.js groups its branches under three type blocks instead of testing per branch.
+        if (/if \(interaction\.isStringSelectMenu\(\)\) \{/.test(src) && /if \(interaction\.isButton\(\)\) \{/.test(src)) continue;
+        for (const line of src.split('\n')) {
+            const m = line.match(/^\s{4,8}if \((.*customId.*)\) \{/);
+            if (m && !/\bis(Button|StringSelectMenu|ModalSubmit)\(\)/.test(m[1])) {
+                offenders.push(`${name}.js: ${m[1].trim().slice(0, 70)}`);
+            }
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
 setTimeout(() => {
     console.log(failures === 0
         ? `\nAll routing-contract checks passed (${moduleNames.length} handlers).`

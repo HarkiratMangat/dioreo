@@ -30,6 +30,14 @@ paths:
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
 ✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
 
+### 🔴 A MIXED-TYPE HANDLER MUST TYPE-TEST EVERY BRANCH — prefix alone is not enough
+**This shipped as a real bug and was caught after the branch was already pushed (2026-08-13 18:45 EDT).** Pre-split, the router separated interaction types *structurally*: `set_` (a SELECT) lived inside `if (interaction.isStringSelectMenu())` and `set_page_` (a BUTTON) inside `if (interaction.isButton())`. Flattening each subsystem into one function removed that separation — and **`set_page_2` matches `startsWith('set_')` first**. A `/settings` page click entered the *select* handler, called `deferUpdate()`, then threw on `interaction.values[0]`, because buttons have no `.values`. The router's crash net swallowed it, so the button simply looked dead.
+
+- **Any handler that serves more than one interaction type must put an `is…()` test in every branch condition** — `settings.js`, `loadouts.js` and `autobuild.js` do. `manage.js` is the exception and is equally correct: it groups its branches under three type blocks, reproducing the old structure.
+- **`loadouts.js` is the other live case**: `mpbrowse` is a select id that also matches the pagination branch's `startsWith('mp')`. It worked only because the exact-match branch happened to sit first — order-dependence where there had been a structural guarantee.
+- **Enforced, not remembered:** `scripts/handlerRouting.test.js` now (a) drives a *button* at `set_page_2` and `mpbrowse` through a mock whose `values` getter throws, asserting no select-only branch is reached, and (b) scans the source so a mixed-type module with an untyped branch fails outright. Both were verified to fail when the guard is removed.
+- ⚠️ **The lesson generalises past this repo:** the split preserved every branch body byte-for-byte and still broke behaviour, because what was lost lived in the *structure around* the code rather than in the code. Byte-identity is not behaviour-identity.
+
 **Which module owns a custom_id — the prefix decides, and the prefixes are mutually exclusive** (enforced by `scripts/handlerRouting.test.js`, which fails if any two modules claim overlapping prefixes):
 
 | Prefix(es) | Module |

@@ -27,7 +27,7 @@ function ownsCustomId(customId) {
 async function route(interaction) {
     const { customId } = interaction;
         // --- AUTOBUILD: CONFIRM ---
-        if (interaction.customId.startsWith('autobuild_confirm_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('autobuild_confirm_')) {
             const token = interaction.customId.replace('autobuild_confirm_', '');
             await interaction.deferUpdate();
             const { confirmAndWrite } = require('../utils/autobuildPipeline');
@@ -35,7 +35,7 @@ async function route(interaction) {
         }
 
         // --- AUTOBUILD: CANCEL ---
-        if (interaction.customId.startsWith('autobuild_cancel_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('autobuild_cancel_')) {
             const token = interaction.customId.replace('autobuild_cancel_', '');
             await interaction.deferUpdate();
             const { cancelReview } = require('../utils/autobuildPipeline');
@@ -45,7 +45,7 @@ async function route(interaction) {
         // --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC
         // message (not an edit of the ephemeral confirmation), same shape /dmz's execute() uses for its
         // own initial send. See the design spec's "Open Loadout" section.
-        if (interaction.customId.startsWith('autobuild_openloadout_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('autobuild_openloadout_')) {
             const loadoutId = interaction.customId.replace('autobuild_openloadout_', '');
             const Loadout = require('../models/Loadout');
             const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
@@ -73,7 +73,7 @@ async function route(interaction) {
         // below -- see this feature's "Critical placement rule" (same class of bug CLAUDE.md documents
         // already happening once for /manage's mng_editbtn_/mng_search_ pair). showModal() is valid as a
         // response to a button click; it is NOT valid as a response to a modal submit.
-        if (interaction.customId.startsWith('autobuild_editbtn_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('autobuild_editbtn_')) {
             const token = interaction.customId.replace('autobuild_editbtn_', '');
             const { pendingAutobuilds, buildEditModal } = require('../utils/autobuildPipeline');
             const data = pendingAutobuilds.get(token);
@@ -85,7 +85,11 @@ async function route(interaction) {
 
         // --- AUTOBUILD: EDIT MODAL SUBMIT --- see the breadcrumb on autobuild_editbtn_ above (isButton()
         // block) for why this is a SEPARATE handler in a SEPARATE block, not a shared one.
-        if (customId.startsWith('autobuild_editmodal_')) {
+        // The type test replaces the `isModalSubmit()` block this used to sit in. The button and the
+        // modal submit are the same feature and now share one file, which is exactly the adjacency
+        // the comment above warns about -- showModal() is valid as a response to a button and NOT to
+        // a modal submit, so the two must never be reachable by the same interaction.
+        if (interaction.isModalSubmit() && customId.startsWith('autobuild_editmodal_')) {
             const token = customId.replace('autobuild_editmodal_', '');
             const { applyEditSubmission } = require('../utils/autobuildPipeline');
             return await applyEditSubmission(interaction, token);
