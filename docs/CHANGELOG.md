@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.13.0 — 2026-08-13 00:12 EDT (#121) — the palette stops discarding colours it found, and the refresh path reaches every one
+## Pre-Release v3.14.0 — 2026-08-13 10:12 EDT (#122) — an invisible pixel stops passing for an opaque one
+
+**Harkirat felt View Colors' panel switching and cold-start renders had gotten slightly less snappy, and asked for real data instead of three inconsistent manual timings.** Built durable instrumentation (`models/RenderTiming.js`) and let it accumulate through real dev-bot use. **Neither complaint held up**: 73 real panel-switch samples show no systematic slowdown (`subpage/avatar`'s clearest series actually trends faster across the session, not slower), and a purpose-built harness that forces repeated cold renders of the same nameplate/decoration design (bypassing the panel, no gateway login needed — `uploadToStorageChannel` only ever required `BOT_TOKEN`) found the same: 13 forced-plus-organic cold renders per source settle into a stable band with essentially zero drift.
+
+**While identifying the investigation's own test image, a real bug turned up.** The corpus avatar at the center of it (`cinnasip.png`) was producing a phantom `#071948` "accent" swatch with no visible source in the picture. Confirmed by direct pixel scan: the handful of pixels near that hex sit at alpha 1–2 out of 255 — about 99.6% transparent, invisible to any viewer. `colorExtract.js`'s pixel samplers had only ever skipped `alpha === 0` exactly (the fix from the original 2026-07-14 transparency bug), so near-zero-but-nonzero alpha still counted at full RGB strength. Widened to `ALPHA_FLOOR = 13` (~5% opacity) — deliberately conservative, since the corpus's partial-alpha pixels form a smooth antialiasing ramp with no natural gap to derive a threshold from.
+
+**Verified over 401 corpus images, matched by nearest colour rather than list position** (position alone can't tell a real colour shift from harmless reordering): only 4 palettes changed at all, total swatch count unchanged, and accent-origin swatches barely moved — a net gain, not a loss. Checked all 4 individually for a genuinely tiny real colour getting silently dropped: none did. Two were pure reordering with zero actual colour difference; one had two nudges just under the "same colour" threshold; `cinnasip.png`'s changed entries were exactly the phantom-bug-contaminated cluster merging into one honest, real swatch.
+
+**Verify:** `npm test` (69 chained cases, unchanged) · `npm run docs:audit` (41/41) · `local/colors-investigation/alpha-floor-verify.mjs` for the corpus diff.
+
+---
+
+## Pre-Release v3.13.0 — 2026-08-13 00:12 EDT (#121 · `b19e940`) — the palette stops discarding colours it found, and the refresh path reaches every one
 
 > **Six changes to one subsystem, shipped as one release because each is built on the one before** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced, and the third part is the same root cause at the site the first two exposed. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
 >
