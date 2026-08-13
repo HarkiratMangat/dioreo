@@ -75,9 +75,9 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.16.0 — 2026-08-13 17:15 EDT (#PR) — index.js stops being a code dump and becomes an entrypoint
+## Pre-Release v3.16.0 — 2026-08-13 17:28 EDT (#PR) — index.js stops being a code dump and becomes an entrypoint
 
-**`index.js` went from 4,553 lines to 503.** It had become a single file holding the bot's boot sequence, its command registration, its lifecycle listeners and a ~3,400-line `interactionCreate` handler that was really a giant custom_id switch. The split was already a launch-blocking v3 item, and the ordering mattered: this refactor rewrites the exact router the v3 launch click-test exercises, so doing it afterwards would have meant testing code that no longer existed.
+**`index.js` went from 4,553 lines to 129.** It had become a single file holding the bot's boot sequence, its command registration, its lifecycle listeners and a ~3,400-line `interactionCreate` handler that was really a giant custom_id switch. The split was already a launch-blocking v3 item, and the ordering mattered: this refactor rewrites the exact router the v3 launch click-test exercises, so doing it afterwards would have meant testing code that no longer existed.
 
 It landed in two passes, deliberately — the first proved the pattern on one subsystem, the second used it on the whole router.
 
@@ -85,13 +85,19 @@ It landed in two passes, deliberately — the first proved the pattern on one su
 
 **Pass two — the whole dispatcher.** `handlers/router.js` now holds the `interactionCreate` handler and the router-private helpers and short-lived stores that only it ever touched (the `/manage` undo and pending-confirmation Maps, its id parsing and search resolution, the bulk upsert helpers, the anti-spam cooldown). Their privacy was verified against every use site first, not assumed. `index.js` registers the router as a plain listener.
 
+**Pass three — the boot sequence.** `bot/registry.js` owns which commands exist and pushing them to Discord, in three stages kept separate because they run at different times: on-disk modules (synchronous, at boot), the DB-derived per-category weapon commands (async, post-ready — they cannot be built at require time), then one REST PUT. `bot/lifecycle.js` owns every client listener that is not routing: the `error` net, the five shard diagnostics, ClientReady, restart labeling, the daily heartbeat, the Cloudinary cleanup — registered in their original order. `index.js` is left with connect, construct, wire, log in.
+
+Both new modules sit one level below the repo root, which moved two `__dirname`-relative paths: the `commands/` scan and the `.restart-reason` marker, now anchored against `..`. Both fail *silently* if wrong — an empty command set, or every deploy mislabeled as an unattended restart — so both carry a comment saying exactly that.
+
 **The three risks the roadmap named were designed around, not discovered afterwards.** The crash net travelled *with* the handler — the single top-level try/catch still wraps every branch, and `index.js` still registers `client.on('error', …)` beside it, because `captureRejections` means neither covers the other. Routing order is untouched: the `/manage` per-page admin guard and the `/server` dispatcher still run first. And the extracted handler returns `true`/`false` rather than the router blanket-matching a `colors_` prefix, so an unrecognised `colors_*` id still falls through exactly as it did — pinned by the new `scripts/colorsHandlerRouting.test.js` (11 cases, no DB or network), whose sharpest case is `colors_subpage_indicator`: the paginator's own disabled button is colours-prefixed and must **not** be consumed.
 
 **`client` is deliberately not imported by the router.** All 19 `client.commands` reads became `interaction.client.commands` — the same Collection, reached through the interaction already in hand, which is what lets the router be a pure module instead of depending on the entrypoint that requires it.
 
 Five now-dead imports were dropped from `index.js` in the process (`renderTiming`, `resolveThumbnail`, and the three above). A pre-existing `docs:audit` `nav-map-sync` failure was fixed in passing: `admin-access-and-announcements.md` shipped with #123 without being added to either index.
 
-**Verify:** `npm test` (exit 0, 70 chained cases) · `npm run docs:audit` (41/41) · dev-bot boot test reaching both `handleBotReady()` lines after each pass. **Not deployed** — pre-release work on `v3-pre-release`; the VM still runs `main`.
+**Checked structurally, not by eye:** 93 `custom_id` branches existed before the split and 93 exist after, none lost or gained · all 171 relative `require` paths in the new and changed files resolve · every new module loads under Node · the dev bot booted clean after each pass, reaching both `handleBotReady()` lines. `docs:audit` was genuinely RED for the new `bot/` directory until CLAUDE.md gained a runtime-layout section — an earlier `tail -4` had hidden that failure behind the summary line, which is its own lesson about reading a gate's exit code rather than its last four lines.
+
+**Verify:** `npm test` (exit 0, 70 chained cases) · `npm run docs:audit` (exit 0). **Not deployed** — pre-release work on `v3-pre-release`; the VM still runs `main`.
 
 ## Pre-Release v3.15.0 — 2026-08-13 15:41 EDT (#123 · `566b3ca`) — admin access becomes per-page, announcements become a real queue
 
