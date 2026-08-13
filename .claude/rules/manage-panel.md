@@ -3,6 +3,7 @@ kind: rule
 status: live
 paths:
   - "commands/manage.js"
+  - "handlers/manage.js"
 ---
 
 # `/manage` — the admin data-entry panel

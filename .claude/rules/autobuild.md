@@ -7,6 +7,7 @@ paths:
   - "utils/visionExtract.js"
   - "scripts/backfillLoadoutSlots.js"
   - "scripts/test-vertex-extract.js"
+  - "handlers/autobuild.js"
 ---
 
 # `/autobuild` — screenshot → live loadout automation

@@ -10,6 +10,9 @@ paths:
   - "utils/emojiMap.js"
   - "utils/shareButton.js"
   - "utils/commandMentions.js"
+  - "handlers/share.js"
+  - "handlers/navigation.js"
+  - "handlers/pagination.js"
 ---
 
 # Rendering & shared UI — Components V2, builders, pagination, "Show Everyone"

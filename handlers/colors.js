@@ -31,6 +31,15 @@ const { logRenderTiming } = require('../utils/renderTiming'); // /colors panel p
 const colorsRefreshCooldowns = new Map(); // userId -> last accepted refresh timestamp
 const COLORS_REFRESH_COOLDOWN_MS = 10 * 1000;
 
+// ⚠️ DECLARATIVE ONLY — this module does NOT gate on it, unlike every other handler. Ownership here
+// is decided branch by branch so an unrecognised `colors_*` id falls THROUGH (see the contract note
+// on handleColorsButton below); gating on the prefix would swallow it and change behaviour.
+// It is exported anyway because `scripts/handlerRouting.test.js` checks that no two handlers claim
+// overlapping prefixes, and that check can only see what a module declares. Before this existed the
+// test carried a hardcoded `['colors_']`, which meant a NEW colours prefix would have been invisible
+// to the one check protecting the whole dispatch design. Keep this list in step with the branches.
+const OWNED_PREFIXES = ['colors_'];
+
 // Returns TRUE when this handler consumed the interaction, FALSE when it did not recognise the
 // custom_id and the router should keep matching its remaining branches. The boolean contract (rather
 // than a blanket `colors_` prefix match in handlers/router.js) is what preserves the pre-split behaviour
@@ -430,4 +439,4 @@ async function handleColorsButton(interaction) {
     return false;
 }
 
-module.exports = { handleColorsButton };
+module.exports = { handleColorsButton, OWNED_PREFIXES };

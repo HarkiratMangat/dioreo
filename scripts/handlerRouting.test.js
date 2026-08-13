@@ -52,18 +52,19 @@ for (const name of moduleNames) {
 }
 
 // --- 2. Prefix exclusivity ---
-// colors.js predates the OWNED_PREFIXES convention and decides ownership branch-by-branch instead,
-// so its prefixes are declared here rather than read off the module. Kept in this test (not silently
-// skipped) because it is exactly as capable of colliding with another handler as the rest.
-const COLORS_PREFIXES = ['colors_'];
-
+// Every prefix is read off the module itself. It used to carry a hardcoded `['colors_']` for the one
+// handler that had no OWNED_PREFIXES export, which meant a NEW colours prefix would have been
+// invisible to this check — a blind spot in the very test that protects the dispatch design. Now
+// nothing is hardcoded: a handler that fails to declare its prefixes fails the test rather than
+// quietly contributing nothing to the collision scan.
 const prefixOwners = [];
 for (const name of moduleNames) {
     const mod = require(path.join(HANDLERS_DIR, name));
-    const prefixes = mod.OWNED_PREFIXES || mod.MANAGE_PREFIXES || (name === 'colors' ? COLORS_PREFIXES : null);
+    const prefixes = mod.OWNED_PREFIXES;
     check(`${name}: declares the custom_id prefixes it owns`, () => {
         assert.ok(Array.isArray(prefixes) && prefixes.length > 0,
-            'no OWNED_PREFIXES export — the router cannot reason about what this module claims');
+            'no OWNED_PREFIXES export — this module contributes nothing to the collision scan below, ' +
+            'so a prefix it claims could silently overlap another handler');
     });
     (prefixes || []).forEach(p => prefixOwners.push({ name, prefix: p }));
 }

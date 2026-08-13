@@ -6,7 +6,7 @@
 // second subsystem slice (docs/ROADMAP.md). At ~2,300 lines it was 56% of the router on its own.
 //
 // ⚠️ DISPATCHED BY PREFIX, NOT BY FALLING THROUGH BRANCH BY BRANCH. Every custom_id this panel mints
-// carries one of MANAGE_PREFIXES, and those prefixes are matched by NO other branch in the router
+// carries one of OWNED_PREFIXES, and those prefixes are matched by NO other branch in the router
 // (checked against all 93 before the move). So handleManageInteraction decides ownership ONCE, from
 // the id alone, and every branch below keeps its original `return` exactly as written. That is
 // deliberate: rewriting ~100 return statements to fit a boolean contract is precisely how a move
@@ -277,10 +277,10 @@ async function resolveManagePanelAction(interaction, group, action, match) {
 // ==========================================
 // The same prefix set the router's admin guard keys its per-command permission map on. Kept as one
 // list so the two can be compared by eye; if a new manage prefix is ever added, it belongs in BOTH.
-const MANAGE_PREFIXES = ['mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_'];
+const OWNED_PREFIXES = ['mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_'];
 
 function ownsCustomId(customId) {
-    return typeof customId === 'string' && MANAGE_PREFIXES.some(prefix => customId.startsWith(prefix));
+    return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
 // ==========================================
@@ -2605,4 +2605,4 @@ async function handleManageInteraction(interaction) {
     return true;
 }
 
-module.exports = { handleManageInteraction, MANAGE_PREFIXES };
+module.exports = { handleManageInteraction, OWNED_PREFIXES };

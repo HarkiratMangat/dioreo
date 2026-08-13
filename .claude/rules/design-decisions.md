@@ -9,6 +9,8 @@ paths:
   - "commands/seasonend.js"
   - "commands/draws.js"
   - "models/UserPreference.js"
+  - "handlers/patchnotes.js"
+  - "handlers/timestamp.js"
 ---
 
 # Design decisions — don't re-litigate these

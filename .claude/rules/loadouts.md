@@ -6,6 +6,7 @@ paths:
   - "utils/search.js"
   - "commands/dmz.js"
   - "models/Loadout.js"
+  - "handlers/loadouts.js"
 ---
 
 # Loadouts (MP + DMZ) — system, badges, search, browse
@@ -69,5 +70,5 @@ A plain name/category match can't help a query like `pistol` at all — most Sec
   - **The dropdown row lives OUTSIDE the container**, as a top-level sibling passed into `withShareButton([containerPayload, browseRow], isEphemeral)` — NOT because Discord disallows a select menu nested inside a Container (a wrong theory floated mid-session; `/settings` and `/manage` both nest selects inside their containers successfully), just per Harkirat's explicit layout preference.
   - **REAL BUG (found live, 2026-07-13): the select-menu handler was originally placed inside `if (interaction.isButton())` in the router instead of `if (interaction.isStringSelectMenu())`** — a plain misplacement from when the handler was first added, sitting right after the `set_page_` button handler which reads as adjacent but is actually one whole top-level block away. A `StringSelectMenuInteraction` never satisfies `isButton()`, so the entire handler was dead code: no error, no log, nothing — Discord just timed out the interaction after ~3s with a bare "This interaction failed", and several rounds of plausible-sounding fixes (container-nesting theory, defer-before-query reordering, empty-result guard) never touched the actual problem because none of them were checked against a real firing interaction. Only adding a `console.log` at the very top of `isStringSelectMenu()` and comparing it against a log inside the (unreachable) handler revealed the mismatch. Moved into the correct block, now working. See `[[feedback_verify_fix_actually_works]]` in memory for the general lesson.
   - **Discord's 25-option select cap is a silent truncation**, not an error — not expected to bite at the collection's current size (~100-200 docs total across ALL categories combined), but if a single category (or all of DMZ) ever exceeds 25 distinct weapons, revisit this rather than assuming every weapon is always reachable through the dropdown.
-  - Added at all 3 render sites that needed it: `commands/dmz.js`'s `execute()`, `index.js`'s MP fallback route (`/all`+`/<category>`), and both the dmz/mp pagination handler AND the browse handler itself (paging or browsing again from an already-browsed card needs the same fresh `categoryBuilds` fetch, not just the initial slash-command response).
+  - Added at all 3 render sites that needed it: `commands/dmz.js`'s `execute()`, `handlers/router.js`'s MP fallback route (`/all`+`/<category>`), and both the dmz/mp pagination handler AND the browse handler itself (paging or browsing again from an already-browsed card needs the same fresh `categoryBuilds` fetch, not just the initial slash-command response).
 

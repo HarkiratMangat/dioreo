@@ -45,7 +45,7 @@ function safeErrorMessage(err) {
 // scripts/createCloudinaryMetadataFields.js (idempotent), same as the loadout fields. Account-global
 // fields -- a patch image just doesn't set the loadout fields and vice versa. Cloudinary-only, kept in
 // sync from the SeasonalData patchNotes[] entry (on image (re)cache, on release-date edit, and on
-// season rename -- see index.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across
+// season rename -- see handlers/manage.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across
 // title renames, same reason the public_id is keyed by it); `Patch_Season` is the human-readable title.
 const PATCH_METADATA_FIELDS = [
     { external_id: 'Patch_Id', label: 'Patch Id', type: 'string' },
@@ -86,7 +86,7 @@ async function setPatchImageMetadata(patchId, imageIndex, { season, releaseDate 
 
 // Re-syncs metadata across EVERY cached image of a patch entry -- used when the release date or the
 // season title changes WITHOUT re-uploading the images (a /manage "date & info" edit, or a season
-// rename). `seasonTitle` is passed already-cleaned by the caller (index.js has cleanPatchTitle; this
+// rename). `seasonTitle` is passed already-cleaned by the caller (handlers/manage.js applies commands/patchnotes.js's cleanPatchTitle; this
 // util deliberately stays decoupled from the command layer). Each image's own order is preserved.
 async function syncPatchEntryMetadata(patchEntry, seasonTitle) {
     if (!patchEntry?._id) return;
@@ -100,7 +100,7 @@ async function syncPatchEntryMetadata(patchEntry, seasonTitle) {
 
 // public_id shape: patch_notes/{patchId}/{imageIndex} -- imageIndex is the ABSOLUTE position in the
 // patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting the
-// same slot (URLs 1 owns 0-4, URLs 2 owns 5-9 -- see index.js) always overwrites the same asset in
+// same slot (URLs 1 owns 0-4, URLs 2 owns 5-9 -- see handlers/manage.js) always overwrites the same asset in
 // place via `overwrite: true` rather than accumulating duplicates under different indices.
 function publicIdFor(patchId, imageIndex) {
     return `${FOLDER}/${patchId}/${imageIndex}`;

@@ -48,12 +48,12 @@ Because the tiers mirror a native mechanism, they deliberately mirror its **sema
 
 ## ⚠️ Enforcement lives at TWO choke points, and NOT in the commands
 
-The obvious design — make `resolveEphemeral()` policy-aware and pass the policy in — **was built and then removed.** `resolveEphemeral` is called by only nine commands: `/help`, `/timestamp`, `/colors` and the **eight per-category weapon commands built dynamically in `index.js`** never touch it. It would have become an optional argument at nine sites where *forgetting* it looks identical to passing it. The two choke points nothing routes around:
+The obvious design — make `resolveEphemeral()` policy-aware and pass the policy in — **was built and then removed.** `resolveEphemeral` is called by only nine commands: `/help`, `/timestamp`, `/colors` and the **eight per-category weapon commands built dynamically in `bot/registry.js`** never touch it. It would have become an optional argument at nine sites where *forgetting* it looks identical to passing it. The two choke points nothing routes around:
 
-1. **`attachGuildPolicy()` wraps `reply` / `deferReply` / `followUp`** on the interaction when the verdict is `ephemeral`. Called once per interaction at the top of `index.js`'s `interactionCreate`, before the anti-spam guard. Same reasoning as `utils/logger.js`'s `patchConsole()`: one patch that cannot be forgotten beats a rule that must be remembered.
+1. **`attachGuildPolicy()` wraps `reply` / `deferReply` / `followUp`** on the interaction when the verdict is `ephemeral`. Called once per interaction at the top of `handlers/router.js`'s `handleInteraction`, before the anti-spam guard. Same reasoning as `utils/logger.js`'s `patchConsole()`: one patch that cannot be forgotten beats a rule that must be remembered.
    - The wrapper **OR-s** the ephemeral bit into an existing numeric `flags` rather than replacing it — Components V2 sends pass `32768`, and dropping that renders a blank message.
    - It assigns **own enumerable** properties, so `buildSyntheticInteraction()` carries the clamp through to a button re-invoking a command's `execute()`. Without that, a panel would render clamped on first invocation and unclamped on every navigation click.
-2. **`utils/sendV2Payload.js` strips the "Show Everyone" row** when `dioreoPolicy.allowShare === false`. That button does not edit the ephemeral message — it posts a **brand new, genuinely public one**, so leaving it live under an ephemeral rule is a one-click bypass. `index.js`'s `share_public` handler re-checks server-side too, because a panel opened *before* the rule was set still has the button on it.
+2. **`utils/sendV2Payload.js` strips the "Show Everyone" row** when `dioreoPolicy.allowShare === false`. That button does not edit the ephemeral message — it posts a **brand new, genuinely public one**, so leaving it live under an ephemeral rule is a one-click bypass. `handlers/share.js`'s `share_public` handler re-checks server-side too, because a panel opened *before* the rule was set still has the button on it.
 
 ## Other things already paid for
 
