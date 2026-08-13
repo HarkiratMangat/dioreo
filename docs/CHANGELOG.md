@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.15.0 — 2026-08-13 15:41 EDT (#123) — admin access becomes per-page, announcements become a real queue
+## Pre-Release v3.16.0 — 2026-08-13 16:55 EDT (#PR) — the interaction router gives up its first subsystem
+
+**`index.js` has been decomposed for the first time — one slice, not a rewrite.** It had reached 4,553 lines, most of it a single `interactionCreate` handler that had grown into a ~3,800-line custom_id switch, and the split was already a launch-blocking v3 item. The ordering mattered more than the size: this refactor rewrites the exact router the v3 launch click-test exercises, so doing it after that test would have meant testing code that no longer existed.
+
+**Colours was chosen as the first slice by measurement, not by feel.** Both candidates named in the roadmap were compared: the five `colors_*` button branches came to 382 contiguous lines touching neither `client` nor `client.commands`, with every branch terminating and a 10s refresh cooldown used nowhere else; draw prices came to 60 lines but needed `client.commands.get('draw')`, which would have put a client dependency into the very first handler's contract. `handlers/colors.js` is the result, and `index.js` is now **4,140 lines**.
+
+**Two helpers moved rather than being copied.** `buildSyntheticInteraction` and `resolvePanelActor` now live in `utils/interactionContext.js`, where every future handler can share them. `buildSyntheticInteraction` in particular encodes the fix for two real past crashes, and a second copy that drifted from the first would have quietly reintroduced them.
+
+**The three invariants the roadmap flagged were designed around, not discovered afterwards.** The crash net stays in `index.js` — the handler is *awaited* inside the router's one top-level try/catch, adds no try/catch of its own, and registers no listeners. Routing order is untouched: the `/manage` per-page admin guard (#123) and the `/server` dispatcher still run first, and the dispatch line sits exactly where the colours block itself used to. And the handler returns `true`/`false` rather than the router blanket-matching a `colors_` prefix — so an unrecognised `colors_*` id still falls through to the branches below it, exactly as before. That last one is the subject of the new `scripts/colorsHandlerRouting.test.js` (11 cases, no DB or network), which pins the fall-through behaviour that a "simplification" would silently break: `colors_subpage_indicator`, the paginator's own disabled indicator button, is colours-prefixed and must NOT be consumed.
+
+A dead `renderTiming` import was removed from `index.js` in the process — the colours panel had been its only caller. A pre-existing `docs:audit` `nav-map-sync` failure was also fixed in passing: `admin-access-and-announcements.md` shipped with #123 without being added to either index.
+
+**Verify:** `npm test` (exit 0, now 70 chained cases) · `npm run docs:audit` (41/41) · dev-bot boot test reaching both `handleBotReady()` lines · live click-test of all five colour buttons. **Not deployed** — this is pre-release work on `v3-pre-release`; the VM still runs `main`.
+
+## Pre-Release v3.15.0 — 2026-08-13 15:41 EDT (#123 · `566b3ca`) — admin access becomes per-page, announcements become a real queue
 
 Three items bundled by scheduling, not design overlap — each built, tested, and verified independently.
 

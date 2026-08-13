@@ -12,6 +12,7 @@ paths:
   - "utils/stillFrame.js"
   - "commands/colors.js"
   - "commands/settings.js"
+  - "handlers/colors.js"
 ---
 
 # Accent colors & the "View Colors" panel — rules & history
