@@ -14,7 +14,8 @@
 // pinged his phone now gets an explicit "Back online" telling him how long it was actually down.
 //
 // Extracted from index.js so it can be TESTED. Inline, the state machine was three lines wrapped around
-// a module-scope variable inside a 2,700-line file, reachable only by a real Discord outage — and it
+// a module-scope variable inside the old monolithic index.js (the shard listeners live in
+// bot/lifecycle.js since 2026-08-13 17:20 EDT), reachable only by a real Discord outage — and it
 // had already shipped one latent hole (see the shardReady note in index.js). `sendAlert` and `now` are
 // injected for exactly that reason; nothing else in here touches the network or the clock.
 

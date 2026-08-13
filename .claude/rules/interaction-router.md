@@ -12,7 +12,7 @@ paths:
 
 > ⚠️ **`console` is PATCHED in this file, at the very top** (added 2026-07-28 15:34 EDT, v2.41.0). `require('./utils/logger')` + `patchConsole()` runs **before the crash handlers** so that an unhandled rejection and an uncaught exception — the two most important lines the bot can emit — are tagged with a real systemd severity instead of `info`. `console.error`/`.warn` therefore are **not** the ones Node gave you: they prepend a `<3>`/`<4>` marker (journald strips it) and tee a structured JSON copy carrying the running version + commit. Keep writing plain `console.error(...)` — that is the point, it works everywhere and cannot be forgotten. **Do not move the require below the crash handlers**, and do not "clean up" the patch into per-call-site imports: ~60 sites across `index.js` and `utils/` would have to be rewired and every future one remembered. Full reasoning: `utils/logger.js`'s header and `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`. `logBootBanner()` fires immediately after, before anything else can log, so `vmstatus.sh` can attribute every later journal line to a version/commit — including a startup that never reaches `ClientReady`.
 
-*Loads when you touch `index.js` (the ~2,700-line `interactionCreate` handler + boot/registration). The survival rules you need whenever editing the router. Per-subsystem handler DETAIL lives in the matching subsystem rule (`manage-panel.md`, `settings-and-expiry.md`, `loadouts.md`, `accent-and-colors.md`, `draw-prices.md`, `loadout-images-and-metadata.md`, `autobuild.md`). The `/manage` admin-guard and per-user `/settings` locks are choke-pointed HERE but documented in those rules.*
+*Loads when you touch the entrypoint, the boot modules under `bot/`, or any handler under `handlers/`. The survival rules you need whenever editing the router. Per-subsystem handler DETAIL lives in the matching subsystem rule (`manage-panel.md`, `settings-and-expiry.md`, `loadouts.md`, `accent-and-colors.md`, `draw-prices.md`, `loadout-images-and-metadata.md`, `autobuild.md`). The `/manage` admin-guard and per-user `/settings` locks are choke-pointed HERE but documented in those rules.*
 
 ## Where the code actually lives now (restructured 2026-08-13 17:20 EDT, v3.16.0-pre)
 ⚠️ **`index.js` is no longer the router, and no longer holds boot logic.** It went 4,553 → 129 lines. If a note anywhere says "in `index.js`'s interactionCreate handler", it means `handlers/router.js` now.
@@ -28,7 +28,28 @@ paths:
 ⚠️ **Two `__dirname`-relative paths were re-anchored in that move and both fail SILENTLY if broken** — `bot/registry.js` resolves `commands/` and `bot/lifecycle.js` resolves `.restart-reason` against `__dirname/..`, because both modules sit one level down from the repo root. A wrong path there registers an empty command set, or mislabels every deploy as an unattended restart, with no error anywhere.
 
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
-`index.js` is being decomposed **one subsystem at a time**, never in a big-bang rewrite — see `docs/ROADMAP.md`. The **first slice shipped**: the five `colors_*` buttons now live in `handlers/colors.js`, and the two helpers every handler needs (`buildSyntheticInteraction`, `resolvePanelActor`) moved to **`utils/interactionContext.js`**. `index.js` went 4,553 → 4,140 lines.
+✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
+
+**Which module owns a custom_id — the prefix decides, and the prefixes are mutually exclusive** (enforced by `scripts/handlerRouting.test.js`, which fails if any two modules claim overlapping prefixes):
+
+| Prefix(es) | Module |
+|---|---|
+| `mng_` `modal_` `add_draw_` `edit_draw_` `add_loadout_` `edit_loadout_` `edit_calendar_` | `manage.js` |
+| `colors_` | `colors.js` |
+| `set_` `toggle_` | `settings.js` |
+| `mpbrowse` `dmzbrowse` `dmz` `mp` | `loadouts.js` |
+| `autobuild_` | `autobuild.js` |
+| `alerts_` | `alerts.js` |
+| `price_` | `drawprices.js` |
+| `nav_` | `navigation.js` |
+| `page_` `subpage_` `calpage_` | `pagination.js` |
+| `share_public` | `share.js` |
+| `tsmenu\|` | `timestamp.js` |
+| `help_category` | `help.js` |
+| `select_patch_history` | `patchnotes.js` |
+| `server_` | dispatched straight to `commands/server.js`, above the chain |
+
+⚠️ **REFERENCES IN OLDER COMMENTS ARE BRIDGED HERE, NOT REWRITTEN.** Roughly seventy comments across `commands/`, `utils/` and `scripts/` still say things like *"index.js's `mng_search_` handler"* or *"index.js's dmz/mp button router"*. **They were deliberately left alone**: a mass find-and-replace over prose was tried on 2026-08-13 17:55 EDT and produced worse text than it fixed — a header that cited its own file, autocomplete attributed to `manage.js`, mangled paths inside rules files. **A wrong reference is more expensive than a stale one.** Read any such mention as "the handler for that custom_id", and use the table above to find it: the prefix names the module.
 
 **The contract every handler follows, and why each half of it is the way it is:**
 - **One exported `async` function per subsystem**, taking `(interaction)` and returning **`true` when it consumed the interaction, `false` when it did not recognise the custom_id.** The boolean — rather than the router prefix-matching `colors_` and always returning — is what preserves pre-split behaviour exactly: an unrecognised `colors_*` id still falls through to the branches below it.
