@@ -98,7 +98,9 @@ async function getDominantColor(imageUrl) {
         // content. Avatar/banner images are typically fully opaque squares, so this never surfaced
         // there -- it only became visible once transparent sources (nameplate/decoration) started
         // running through this same extraction code this session.
-        if (data[i + 3] === 0) continue;
+        // ⚠️ 2026-08-13 09:17 EDT: `=== 0` widened to `< ALPHA_FLOOR` -- see that constant's own comment for why
+        // (a near-zero-but-nonzero alpha pixel is just as invisible as a truly-zero one).
+        if (data[i + 3] < ALPHA_FLOOR) continue;
         const pr = data[i], pg = data[i + 1], pb = data[i + 2];
         fr += pr; fg += pg; fb += pb; fCount++;
 
@@ -214,6 +216,17 @@ const KMEANS_ITERATIONS = 12;
 const LIGHTNESS_WEIGHT = 0.5;    // <1 compresses pure-lightness spread during seeding/clustering
 const MERGE_DELTA_E = 0.07;      // OKLab distance below which two entries are the "same" colour
 const CHROMA_FLOOR = 0.04;       // absolute: below this a pixel is not colourful in any useful sense
+// ALPHA_FLOOR (2026-08-13 09:16 EDT) -- found live: cinnasip.png produced a phantom #071948 "accent"
+// swatch from 7 pixels at alpha 1-2/255 (~99.6% transparent, invisible to any viewer). The two pixel
+// samplers below only ever skipped `alpha === 0` exactly, so near-zero-but-nonzero alpha counted at
+// FULL RGB strength -- the same bug class the alpha===0 fix above addressed, one step short.
+// ⚠️ Measured (local/colors-investigation/alpha-floor-probe.mjs, 334-image corpus) that alpha has NO
+// natural gap the way LOW_COLOUR_CHROMA does -- partial-alpha pixels form a smooth antialiasing ramp
+// from 1 to 254 with no empty band to sit a threshold in. So this is deliberately a conservative
+// "counts as effectively invisible" cut (~5% opacity), not a corpus-derived boundary -- it removes the
+// near-invisible edge noise this bug is about while leaving every pixel with real visible coverage
+// untouched. Verified over the corpus: local/colors-investigation/alpha-floor-verify.mjs.
+const ALPHA_FLOOR = 13;
 const ACCENT_TAIL_FRACTION = 0.03;
 const ACCENT_MIN_PIXELS = 20;    // too few and the "tail" is noise, not a feature
 const ACCENT_CLUSTERS = 3;
@@ -555,8 +568,9 @@ async function extractPalette(img, count, overCluster) {
 
     const labs = [];
     for (let i = 0; i < data.length; i += byteStep) {
-        // Same alpha-blindness bug fixed in getDominantColor above -- see that fix's comment.
-        if (data[i + 3] === 0) continue;
+        // Same alpha-blindness bug fixed in getDominantColor above -- see that fix's comment, and
+        // ALPHA_FLOOR's own comment for why `=== 0` widened to a small floor 2026-08-13 09:17 EDT.
+        if (data[i + 3] < ALPHA_FLOOR) continue;
         labs.push(rgbToOklab(data[i], data[i + 1], data[i + 2]));
     }
     if (labs.length === 0) return [];
