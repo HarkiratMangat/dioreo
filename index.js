@@ -127,8 +127,8 @@ function buildSyntheticInteraction(interaction, overrides = {}) {
 // (see buildSyntheticInteraction above) when the returned user differs from interaction.user.
 async function resolvePanelActor(interaction, targetUserId) {
     if (interaction.user.id === targetUserId) return interaction.user;
-    const { ALLOWED_ADMIN_ID } = require('./commands/manage');
-    if (interaction.user.id !== ALLOWED_ADMIN_ID) return null;
+    const { isAdmin } = require('./utils/adminAccess');
+    if (!(await isAdmin(interaction.user.id))) return null;
     // Fetched fresh (not guessed/cached) so the panel shows the target's genuinely current avatar/
     // banner, same as every other render path in this bot already force-fetches for accuracy.
     return interaction.client.users.fetch(targetUserId);
@@ -820,14 +820,22 @@ client.on('interactionCreate', async interaction => {
     // every button/select/modal bot-wide) so /settings, /colors, draws/calendar pagination, etc.
     // stay completely unaffected.
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) && interaction.customId) {
-        const MANAGE_CUSTOM_ID_PREFIXES = [
-            'mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_',
-            'autobuild_', // /autobuild's review-card buttons + edit modal (2026-07-19) -- same admin-only lock
-            'alerts_' // /alerts panel buttons (export/explain/back/page) (2026-07-20) -- admin-only, auto-gated here
-        ];
-        if (MANAGE_CUSTOM_ID_PREFIXES.some(prefix => interaction.customId.startsWith(prefix))) {
-            const { ALLOWED_ADMIN_ID } = require('./commands/manage');
-            if (interaction.user.id !== ALLOWED_ADMIN_ID) {
+        // ⚠️ EXPANDED 2026-08-13 from one blanket isAdmin() check to a PER-COMMAND gate -- this used
+        // to be a flat prefix LIST checked against isAdmin() alone, which meant someone granted
+        // access to only ONE admin command (say, /alerts) could still click every button on
+        // /manage's own panel, since every prefix shared the exact same check. Per-command
+        // permissions (utils/adminAccess.js's hasCommandAccess) are cosmetic on the slash command
+        // alone unless this shared choke point also enforces them per-prefix.
+        const MANAGE_PREFIX_COMMAND = {
+            'mng_': 'manage', 'modal_': 'manage', 'add_loadout_': 'manage', 'edit_loadout_': 'manage',
+            'edit_calendar_': 'manage', 'edit_draw_': 'manage', 'add_draw_': 'manage',
+            'autobuild_': 'autobuild', // /autobuild's review-card buttons + edit modal (2026-07-19)
+            'alerts_': 'alerts' // /alerts panel buttons (export/explain/back/page) (2026-07-20)
+        };
+        const matchedPrefix = Object.keys(MANAGE_PREFIX_COMMAND).find(prefix => interaction.customId.startsWith(prefix));
+        if (matchedPrefix) {
+            const { hasCommandAccess } = require('./utils/adminAccess');
+            if (!(await hasCommandAccess(interaction.user.id, MANAGE_PREFIX_COMMAND[matchedPrefix]))) {
                 // Reworded 2026-07-18 (v2 quick-wins batch) -- clearer about what's actually going
                 // on (this is Dior's own admin panel, not a permissions bug) and points at what to
                 // do instead, per Harkirat's "easier to understand, some humor, actually useful"
@@ -894,10 +902,13 @@ client.on('interactionCreate', async interaction => {
                 // bot's own whitelist) are suggested only to someone who could use them -- see
                 // commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('./utils/guildPolicy');
-                const { ALLOWED_ADMIN_ID } = require('./commands/manage');
+                const { isAdmin, hasCommandAccess } = require('./utils/adminAccess');
                 const allCommands = await getAllHelpCommandNames({
                     serverAdmin: isServerAdmin(interaction),
-                    botAdmin: interaction.user.id === ALLOWED_ADMIN_ID,
+                    botAdmin: await isAdmin(interaction.user.id),
+                    manage: await hasCommandAccess(interaction.user.id, 'manage'),
+                    alerts: await hasCommandAccess(interaction.user.id, 'alerts'),
+                    autobuild: await hasCommandAccess(interaction.user.id, 'autobuild'),
                 });
                 const filtered = allCommands.filter(name => fuzzyMatch(focusedValue, name)).slice(0, 25);
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));
@@ -960,7 +971,21 @@ client.on('interactionCreate', async interaction => {
         const command = client.commands.get(commandName);
         if (command) {
             try {
-                return await command.execute(interaction);
+                await command.execute(interaction);
+                // Fires AFTER the command's own reply has already gone out, once per fresh
+                // top-level command invocation -- see utils/announcement.js's header for why this
+                // is the only choke point (never buttons/selects/modals) and why the dynamic MP
+                // loadout fallback below needs its own identical call. Wrapped in its OWN try/catch,
+                // separate from the command's own -- a DB hiccup in here must never fall into the
+                // outer catch below and overwrite the command's already-successful reply with
+                // "There was an error executing this command!".
+                try {
+                    const { maybeSendAnnouncement } = require('./utils/announcement');
+                    await maybeSendAnnouncement(interaction);
+                } catch (announcementError) {
+                    console.error('Failed to check/deliver announcement after a successful command:', announcementError);
+                }
+                return;
             } catch (error) {
                 console.error(`Error executing modular slash command ${commandName}:`, error);
                 // NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited.
@@ -1088,7 +1113,17 @@ client.on('interactionCreate', async interaction => {
         const accentColor = getMpCategoryAccent(mpBuilds[0].category);
         const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: accentColor, idPrefix: 'mp', isEphemeral, categoryBuilds });
         const { sendV2Payload } = require('./utils/sendV2Payload');
-        return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+        await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+        // Same choke point as the modular-command branch above -- the dynamically-generated
+        // /all + /<category> commands never reach client.commands.get(), so they need their own
+        // identical call here or they'd silently never deliver an announcement.
+        try {
+            const { maybeSendAnnouncement } = require('./utils/announcement');
+            await maybeSendAnnouncement(interaction);
+        } catch (announcementError) {
+            console.error('Failed to check/deliver announcement after a successful MP loadout lookup:', announcementError);
+        }
+        return;
     }
 
     // ==========================================
@@ -1246,13 +1281,27 @@ client.on('interactionCreate', async interaction => {
             const targetPage = interaction.values[0];
             const manageCommand = client.commands.get('manage');
 
+            // Per-page scoping (2026-08-13) -- re-checked here even though the dropdown itself only
+            // ever OFFERS pages this user is allowed on (buildManagePage's allowedPages filter), for
+            // the same defense-in-depth reasoning as every other re-check in this handler: a stale
+            // panel message from before a permission change could still carry an option no longer
+            // theirs.
+            const { getManagePages } = require('./utils/adminAccess');
+            const allowedPages = await getManagePages(interaction.user.id);
+            const deniedReply = { content: "🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.", ephemeral: true };
+
             if (targetPage === 'season_titlesdeadlines') {
+                if (!allowedPages.includes('season')) return interaction.reply(deniedReply);
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 return await interaction.showModal(manageCommand.buildSeasonTitlesDeadlinesModal(seasonalDoc));
             }
             if (targetPage === 'season_wipe') {
+                if (!allowedPages.includes('season')) return interaction.reply(deniedReply);
                 return await interaction.showModal(manageCommand.buildWipeSeasonModal());
+            }
+            if (targetPage !== 'guide' && !allowedPages.includes(targetPage)) {
+                return interaction.reply(deniedReply);
             }
 
             await interaction.deferUpdate();
@@ -1269,8 +1318,16 @@ client.on('interactionCreate', async interaction => {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
+            } else if (targetPage === 'manageadmins') {
+                const AdminUser = require('./models/AdminUser');
+                const adminDocs = await AdminUser.find({}).sort({ grantedAt: 1 }).lean();
+                dynamicData = { adminListBlocks: await manageCommand.buildAdminListBlocks(adminDocs, interaction.client) };
+            } else if (targetPage === 'announcement') {
+                const { getActiveAnnouncements } = require('./utils/announcement');
+                const announcementDocs = await getActiveAnnouncements();
+                dynamicData = { announcementBlocks: manageCommand.buildAnnouncementListBlocks(announcementDocs) };
             }
-            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client));
+            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client, allowedPages));
         }
 
         // Bulk Format Guide's own topic-switcher dropdown (utils/manageGuides.js, added 2026-07-31
@@ -2493,6 +2550,31 @@ client.on('interactionCreate', async interaction => {
                     });
                 }
             }
+
+            // "Manage Admins" (2026-08-13) -- the page itself is owner-only VISIBILITY (never
+            // offered to a non-owner admin at all, see utils/adminAccess.js's getManagePages), so
+            // reaching this branch at all already implies the owner -- re-checked anyway, matching
+            // every other owner-gated action's defense-in-depth. Per-admin Edit Permissions/Revoke
+            // now live directly on each card (mng_admin_editperms_*/mng_admin_revoke_* below), not
+            // routed through here.
+            if (group === 'manageadmins') {
+                const { isOwner } = require('./utils/adminAccess');
+                if (!isOwner(interaction.user.id)) {
+                    return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
+                }
+                if (action === 'grant') return await interaction.showModal(manageCommand.buildAdminGrantModal());
+            }
+
+            // "Announcement" (2026-08-13) -- reachable by any admin (posting one isn't the
+            // owner-only privilege-boundary grant/revoke is; see the manageadmins branch above).
+            // Post New always opens BLANK (announcementDoc = null) -- each announcement is its own
+            // independent doc now, not a single one being overwritten. Per-item Edit/Delete live in
+            // their own top-level `mng_announce_*` handlers below (their custom_ids embed a Mongo
+            // _id, which parseMngId's group/action split can't handle -- same reasoning as the
+            // mng_admin_revoke*/mng_purge* handlers already living outside mng_act_).
+            if (group === 'announcement' && action === 'post') {
+                return await interaction.showModal(manageCommand.buildAnnouncementModal(null));
+            }
         }
 
         // G. MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation
@@ -2565,6 +2647,148 @@ client.on('interactionCreate', async interaction => {
                 await interaction.update({ content: '❎ Purge cancelled -- nothing was deleted.', components: [] });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel purge cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        // MANAGE ADMINS: per-card EDIT PERMISSIONS / REVOKE buttons (2026-08-13) -- live outside
+        // mng_act_/parseMngId (same reasoning as every other id-embedding custom_id in this file)
+        // since their custom_id is the admin's own Discord id, which parseMngId's group/action
+        // split can't handle. Both owner-gated -- the page itself is owner-only visibility, so
+        // reaching either of these already implies the owner, but re-checked anyway.
+        if (interaction.customId.startsWith('mng_admin_editperms_')) {
+            const { isOwner } = require('./utils/adminAccess');
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
+            }
+            const discordId = interaction.customId.replace('mng_admin_editperms_', '');
+            const AdminUser = require('./models/AdminUser');
+            const doc = await AdminUser.findOne({ discordId }).lean();
+            if (!doc) {
+                return interaction.reply({ content: '❌ That admin no longer exists (they may have just been revoked).', ephemeral: true });
+            }
+            const manageCommand = client.commands.get('manage');
+            return await interaction.showModal(manageCommand.buildAdminEditPermissionsModal(doc));
+        }
+
+        if (interaction.customId.startsWith('mng_admin_revoke_') && !interaction.customId.startsWith('mng_admin_revokeconfirm_') && !interaction.customId.startsWith('mng_admin_revokecancel_')) {
+            const { isOwner } = require('./utils/adminAccess');
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
+            }
+            const discordId = interaction.customId.replace('mng_admin_revoke_', '');
+            return interaction.reply({
+                content: `⚠️ **Revoke admin access from <@${discordId}>?** This cannot be undone (they can always be re-granted).`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Revoke', custom_id: `mng_admin_revokeconfirm_${discordId}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_admin_revokecancel_${discordId}` }
+                    ]
+                }],
+                ephemeral: true
+            });
+        }
+
+        // MANAGE ADMINS: REVOKE CONFIRM / CANCEL -- second step of the prompt above. Owner
+        // re-checked again here (third check total, alongside the button above and the mng_act_
+        // branch) since this is the actual delete -- cheap insurance against a stale/shared confirm
+        // prompt somehow being clicked by someone else.
+        if (interaction.customId.startsWith('mng_admin_revokeconfirm_')) {
+            const { isOwner, invalidateAdminCache } = require('./utils/adminAccess');
+            const discordId = interaction.customId.replace('mng_admin_revokeconfirm_', '');
+            if (!isOwner(interaction.user.id)) {
+                try { await interaction.update({ content: "🔒 **Only the bot owner can manage the admin list.**", components: [] }); }
+                catch (notifyError) { console.error('Failed to notify non-owner admin-revoke attempt:', notifyError); }
+                return;
+            }
+            const AdminUser = require('./models/AdminUser');
+            await AdminUser.deleteOne({ discordId });
+            invalidateAdminCache();
+            try {
+                await interaction.update({ content: `✅ Revoked admin access from <@${discordId}>.`, components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel admin revoke (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_admin_revokecancel_')) {
+            try {
+                await interaction.update({ content: '❎ Revoke cancelled -- nothing was changed.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel admin-revoke cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        // ANNOUNCEMENT: per-item EDIT / DELETE buttons (2026-08-13) -- these live outside
+        // mng_act_/parseMngId (same reasoning as the admin-revoke handlers above) since their
+        // custom_id embeds a Mongo _id, which parseMngId's group/action split can't handle.
+        if (interaction.customId.startsWith('mng_announce_edit_')) {
+            const id = interaction.customId.replace('mng_announce_edit_', '');
+            const Announcement = require('./models/Announcement');
+            const doc = await Announcement.findById(id).lean();
+            if (!doc) {
+                return interaction.reply({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).', ephemeral: true });
+            }
+            // ⚠️ REAL BUG (found 2026-08-13, Harkirat: "I can't edit the announcement") -- this used
+            // to reference the OUTER mng_act_ block's `manageCommand` const, which is scoped to that
+            // block only; this handler is a SIBLING if-block (same reasoning as the admin-revoke/
+            // purge handlers around it living outside mng_act_/parseMngId), so it was a
+            // ReferenceError swallowed by the outer try/catch -- the interaction got NO response at
+            // all, which is exactly what "can't edit" looks like from the Discord client. Declared
+            // locally here now, same as every other sibling handler that needs it.
+            const manageCommand = client.commands.get('manage');
+            return await interaction.showModal(manageCommand.buildAnnouncementModal(doc));
+        }
+
+        if (interaction.customId.startsWith('mng_announce_delete_')) {
+            const id = interaction.customId.replace('mng_announce_delete_', '');
+            // Shows WHICH announcement, not just "an announcement" (2026-08-13, Harkirat: "the
+            // deletion confirmation needs more detail... I don't even remember which announcement I
+            // deleted") -- the per-item list on the page already has a preview, but this confirm
+            // prompt used to repeat none of it, so a misclick (or delaying between click and
+            // confirm) had nothing to double-check against.
+            const Announcement = require('./models/Announcement');
+            const doc = await Announcement.findById(id).lean();
+            const preview = doc ? (doc.text.length > 200 ? `${doc.text.slice(0, 200)}…` : doc.text) : '*(already gone)*';
+            return interaction.reply({
+                content: `⚠️ **Delete this announcement?** Anyone who hasn't seen it yet never will. This cannot be undone.\n\n> ${preview.replace(/\n/g, '\n> ')}`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_announce_delconfirm_${id}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_announce_delcancel_${id}` }
+                    ]
+                }],
+                ephemeral: true
+            });
+        }
+
+        if (interaction.customId.startsWith('mng_announce_delconfirm_')) {
+            const id = interaction.customId.replace('mng_announce_delconfirm_', '');
+            const Announcement = require('./models/Announcement');
+            // Fetched BEFORE deleting so the success message can still show what was removed --
+            // same reasoning as the confirm prompt above, and this is the message that's left
+            // sitting on screen afterward, so it's the more important of the two to get right.
+            const doc = await Announcement.findById(id).lean();
+            const preview = doc ? (doc.text.length > 200 ? `${doc.text.slice(0, 200)}…` : doc.text) : null;
+            await Announcement.deleteOne({ _id: id });
+            try {
+                await interaction.update({
+                    content: preview ? `✅ Deleted:\n> ${preview.replace(/\n/g, '\n> ')}` : '✅ Announcement deleted.',
+                    components: []
+                });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel announcement delete (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_announce_delcancel_')) {
+            try {
+                await interaction.update({ content: '❎ Delete cancelled -- nothing was changed.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel announcement-delete cancellation (interaction likely expired):', notifyError);
             }
             return;
         }
@@ -3041,6 +3265,132 @@ client.on('interactionCreate', async interaction => {
                 }],
                 ephemeral: true
             });
+        }
+
+        // --- MANAGE ADMINS: GRANT (2026-08-13, expanded same day for per-page permissions) ---
+        // owner-only re-checked here even though the button that opens this modal already
+        // re-checks (see the mng_act_ manageadmins branch) -- defense in depth, same reasoning as
+        // the mng_ prefix guard existing alongside per-command admin checks elsewhere in this bot.
+        if (customId === 'modal_admin_grant') {
+            const { isOwner, invalidateAdminCache, parsePermissionsInput } = require('./utils/adminAccess');
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
+            }
+            const rawId = interaction.fields.getTextInputValue('discord_id').trim();
+            const note = interaction.fields.getTextInputValue('note')?.trim() || '';
+            // Strips <@123>/<@!123>/@ mention wrapping down to a bare id -- same tolerant parsing
+            // shape as a plain-typed id, since Discord doesn't resolve a modal text field as a real
+            // mention the way a slash-command user option would.
+            const discordId = rawId.replace(/[<@!>]/g, '');
+            if (!/^\d{17,20}$/.test(discordId)) {
+                return interaction.reply({ content: `❌ "${rawId}" doesn't look like a valid Discord user ID or mention.`, ephemeral: true });
+            }
+            const rawPermissions = interaction.fields.getTextInputValue('permissions');
+            const permissions = parsePermissionsInput(rawPermissions);
+            if (!permissions) {
+                return interaction.reply({ content: `❌ Couldn't understand "${rawPermissions}". Use \`all\`, \`manage\`, \`alerts\`, \`autobuild\`, or specific pages like \`manage.calendar, manage.draws\` (comma-separated).`, ephemeral: true });
+            }
+            await interaction.deferReply({ ephemeral: true });
+            const AdminUser = require('./models/AdminUser');
+            await AdminUser.findOneAndUpdate(
+                { discordId },
+                { $set: { discordId, grantedBy: interaction.user.id, grantedAt: new Date(), note, permissions } },
+                { upsert: true }
+            );
+            invalidateAdminCache();
+            const { formatPermissions } = require('./utils/adminAccess');
+            return interaction.followUp({ content: `✅ Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}.${note ? ` (${note})` : ''}` });
+        }
+
+        // --- MANAGE ADMINS: EDIT PERMISSIONS (2026-08-13) --- updates ONE existing admin's
+        // permissions array in place, by their Discord id (embedded in the customId from
+        // mng_admin_editperms_<id>'s modal) -- this is how add/remove access actually happens now
+        // (Harkirat's question: "what if I want to add more access or remove certain access" --
+        // this button, prefilled with their current list, is the answer). Superseded the old
+        // typed-id "Revoke Admin" modal entirely -- revoke is now a direct per-card button.
+        if (customId.startsWith('modal_admin_editperms_')) {
+            const { isOwner, invalidateAdminCache, parsePermissionsInput, formatPermissions } = require('./utils/adminAccess');
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
+            }
+            const discordId = customId.replace('modal_admin_editperms_', '');
+            const rawPermissions = interaction.fields.getTextInputValue('permissions');
+            const permissions = parsePermissionsInput(rawPermissions);
+            if (!permissions) {
+                return interaction.reply({ content: `❌ Couldn't understand "${rawPermissions}". Use \`all\`, \`manage\`, \`alerts\`, \`autobuild\`, or specific pages like \`manage.calendar, manage.draws\` (comma-separated).`, ephemeral: true });
+            }
+            await interaction.deferReply({ ephemeral: true });
+            const AdminUser = require('./models/AdminUser');
+            const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { permissions } }, { new: true });
+            if (!updated) {
+                return interaction.followUp({ content: '❌ That admin no longer exists (they may have just been revoked).' });
+            }
+            invalidateAdminCache();
+            return interaction.followUp({ content: `✅ Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}.` });
+        }
+
+        // --- ANNOUNCEMENT: POST NEW (2026-08-13, redesigned same day) --- creates an independent
+        // doc rather than overwriting anything -- see models/Announcement.js's header for why the
+        // old singleton design was replaced.
+        if (customId === 'modal_announce_post') {
+            const text = interaction.fields.getTextInputValue('text').trim();
+            const rawExpiry = interaction.fields.getTextInputValue('expiry');
+            const { computeExpiresAt, generateAccentColor } = require('./utils/announcement');
+            const expiresAt = computeExpiresAt(rawExpiry);
+            if (expiresAt === undefined) {
+                return interaction.reply({ content: `❌ "${rawExpiry}" wasn't understood -- leave it blank for the 60-day default, type a whole number of days, or type "never".`, ephemeral: true });
+            }
+            await interaction.deferReply({ ephemeral: true });
+            const Announcement = require('./models/Announcement');
+            try {
+                // Color is generated ONCE here, at creation -- never on edit (see
+                // generateAccentColor's header in utils/announcement.js).
+                await Announcement.create({ text, createdBy: interaction.user.id, expiresAt, color: generateAccentColor() });
+            } catch (createError) {
+                // REAL BUG found and fixed 2026-08-13 (Harkirat: "isn't creating... it's stuck") --
+                // a stale MongoDB unique index (`docType_1`) survived the singleton->collection
+                // redesign (Mongoose never drops indexes for fields removed from the schema), so
+                // every SECOND announcement collided on `docType: null` and threw here, AFTER
+                // deferReply() had already acknowledged the interaction -- with nothing wrapping
+                // this call, that exception fell all the way to the outer crash-safety catch, which
+                // just logs it, leaving the interaction deferred FOREVER (Discord's "thinking..."
+                // spinner, indistinguishable from a hang). The stale index itself is fixed (dropped
+                // from the dev DB); this try/catch is the hardening so ANY future failure here
+                // surfaces a real error to the admin instead of silently hanging again.
+                console.error('Failed to create announcement:', createError);
+                return interaction.followUp({ content: `❌ Something went wrong saving that announcement: ${createError.message}` });
+            }
+            return interaction.followUp({ content: `✅ Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}. Anyone who hasn't seen it yet will, on their next command.` });
+        }
+
+        // --- ANNOUNCEMENT: EDIT (2026-08-13) --- updates ONE existing doc in place by its own _id
+        // (from mng_announce_edit_<id>'s modal) -- never touches any other announcement, and never
+        // resets who's already seen this one (an edit is a correction, e.g. fixing a date, not a
+        // new notice that should re-ping everyone who already read it).
+        if (customId.startsWith('modal_announce_edit_')) {
+            const id = customId.replace('modal_announce_edit_', '');
+            const text = interaction.fields.getTextInputValue('text').trim();
+            const rawExpiry = interaction.fields.getTextInputValue('expiry');
+            const { computeExpiresAt } = require('./utils/announcement');
+            const expiresAt = computeExpiresAt(rawExpiry);
+            if (expiresAt === undefined) {
+                return interaction.reply({ content: `❌ "${rawExpiry}" wasn't understood -- leave it blank for the 60-day default, type a whole number of days, or type "never".`, ephemeral: true });
+            }
+            await interaction.deferReply({ ephemeral: true });
+            const Announcement = require('./models/Announcement');
+            let updated;
+            try {
+                updated = await Announcement.findByIdAndUpdate(id, { $set: { text, expiresAt } }, { new: true });
+            } catch (updateError) {
+                // Same hardening as modal_announce_post above -- never let a DB failure here fall
+                // through to the outer catch and leave the interaction deferred forever.
+                console.error('Failed to update announcement:', updateError);
+                return interaction.followUp({ content: `❌ Something went wrong updating that announcement: ${updateError.message}` });
+            }
+            if (!updated) {
+                return interaction.followUp({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).' });
+            }
+            return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.` });
         }
 
         // --- ADMIN ROUTE B: BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---

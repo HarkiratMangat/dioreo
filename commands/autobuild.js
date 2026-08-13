@@ -5,7 +5,7 @@
 // Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with index.js's button/
 // modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
 const { SlashCommandBuilder } = require('discord.js');
-const { ALLOWED_ADMIN_ID } = require('./manage');
+const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
 const { runExtraction } = require('../utils/autobuildPipeline');
 
 const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
@@ -30,7 +30,7 @@ module.exports = {
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
     async execute(interaction) {
-        if (interaction.user.id !== ALLOWED_ADMIN_ID) {
+        if (!(await hasCommandAccess(interaction.user.id, 'autobuild'))) {
             return interaction.reply({ content: "🔒 **This one's admin-only.** Try any of the bot's public commands instead!", ephemeral: true });
         }
 

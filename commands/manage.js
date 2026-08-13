@@ -316,8 +316,118 @@ function buildPagesTable(client) {
                 ]
             }
         ]
+    },
+    // "Manage Admins" (added 2026-08-13) -- a runtime-editable Mongo allowlist that SUPPLEMENTS
+    // ALLOWED_ADMIN_ID (the owner, above), so trusted people can be granted admin access without a
+    // code deploy per grant/revoke. Visible to and reachable by any admin (same as every other page
+    // on this panel), but its two mutating actions are further gated to the OWNER ONLY (see
+    // index.js's mng_act_ manageadmins branch and utils/adminAccess.js's isOwner) -- a granted
+    // admin can use /manage, /alerts, /autobuild normally, but cannot edit the allowlist itself.
+    manageadmins: {
+        label: 'Manage Admins',
+        icon: emojis.serverSettings,
+        headerLabel: 'Manage Admins',
+        groups: [
+            // Rich per-admin cards (2026-08-13) -- Edit Permissions/Revoke now live directly ON
+            // each card (buildAdminListBlocks), so the generic "Revoke Admin" button below (which
+            // used to open a type-the-id search modal) is gone -- there's no reason to type an ID
+            // when the card with a working button for it is right there.
+            { style: 'raw', dynamicKey: 'adminListBlocks' },
+            {
+                blocks: [`### ${emojis.mngAdd} Grant Admin\n-# Give a Discord user ID admin access -- pick specific /manage pages, whole commands, or "all". Owner-only.`],
+                buttons: [{ id: 'grant', label: 'Grant Admin', style: 3 }]
+            }
+        ]
+    },
+    // "Announcement" (added 2026-08-13, redesigned same day into a real multi-announcement list --
+    // see models/Announcement.js's header for why). Each active announcement gets its own
+    // Edit/Delete pair (buildAnnouncementListBlocks below); posting a new one never touches the
+    // others. Every user sees each one they haven't individually seen yet, together in one
+    // ephemeral message, on their next command -- see utils/announcement.js.
+    announcement: {
+        label: 'Announcement',
+        icon: emojis.mngInfo,
+        headerLabel: 'Announcement',
+        groups: [
+            { style: 'raw', dynamicKey: 'announcementBlocks' },
+            {
+                blocks: [`### ${emojis.mngAdd} Post New Announcement\n-# Write a new announcement (expiry defaults to 60 days, or set your own / "never"). Existing ones above are untouched.`],
+                buttons: [{ id: 'post', label: 'Post New Announcement', style: 3 }]
+            }
+        ]
     }
   };
+}
+
+// Renders the "Announcement" page's live per-item list -- one Text Display + Action Row
+// (Edit/Delete) PER active announcement, fed through buildManagePage's 'raw' group style above.
+// Only ACTIVE (non-expired) announcements are listed here -- an expired one has already stopped
+// delivering (utils/announcement.js filters the same way), so showing it here would offer to
+// edit/delete something that's already functionally gone.
+function buildAnnouncementListBlocks(announcementDocs) {
+    if (!announcementDocs || announcementDocs.length === 0) {
+        return [{ type: 10, content: `${emojis.mngInfo} **No active announcements.** Use Post New Announcement below to write one.` }];
+    }
+    const blocks = [];
+    announcementDocs.forEach((a, i) => {
+        const postedTs = Math.floor(new Date(a.createdAt).getTime() / 1000);
+        const expiryText = a.expiresAt ? `expires <t:${Math.floor(new Date(a.expiresAt).getTime() / 1000)}:R>` : 'never expires';
+        // 200 chars, matching the delete confirmation's own preview cap (2026-08-13, Harkirat's
+        // request) -- one shared "how much text counts as a preview" convention across this page.
+        const preview = a.text.length > 200 ? `${a.text.slice(0, 200)}…` : a.text;
+        blocks.push({ type: 10, content: `### ${emojis.mngInfo} Announcement ${i + 1}\n-# Posted <t:${postedTs}:R> — ${expiryText}\n${preview}` });
+        blocks.push({
+            type: 1, components: [
+                { type: 2, style: 1, label: 'Edit', custom_id: `mng_announce_edit_${a._id}` },
+                { type: 2, style: 4, label: 'Delete', custom_id: `mng_announce_delete_${a._id}` }
+            ]
+        });
+        if (i < announcementDocs.length - 1) blocks.push({ type: 14, spacing: 1, divider: true });
+    });
+    return blocks;
+}
+
+// Renders the "Manage Admins" page's live per-admin cards -- REDESIGNED 2026-08-13 from a single
+// plain-text block into rich per-item cards (Harkirat's request: "show the people I've given access
+// to in a proper text+accent thumbnail setup... avatar picture, clickable username, user id, the
+// permissions they've been granted + the custom note"). Same fed-through-'raw'-group-style
+// mechanism buildAnnouncementListBlocks already established -- ASYNC now, since each card needs a
+// real Discord user fetch for its avatar (no free signal for avatar the way `interaction.user`
+// would carry one; there's no interaction per listed admin, only their stored id).
+async function buildAdminListBlocks(adminDocs, client) {
+    const { formatPermissions } = require('../utils/adminAccess');
+    if (!adminDocs || adminDocs.length === 0) {
+        return [{ type: 10, content: `${emojis.mngInfo} **No additional admins granted.** Only the bot owner has admin access right now. Use Grant Admin below to add someone.` }];
+    }
+    const blocks = [];
+    for (let i = 0; i < adminDocs.length; i++) {
+        const a = adminDocs[i];
+        // A user who left every mutual server/uninstalled the bot can still be fetched by id (this
+        // is a global REST lookup, not a guild-member one) -- only a genuinely deleted/invalid
+        // Discord account fails, so the fallback below is a real edge case, not the common path.
+        let avatarUrl = null;
+        try {
+            const user = await client.users.fetch(a.discordId);
+            avatarUrl = user.displayAvatarURL({ extension: 'png', size: 128 });
+        } catch (fetchError) {
+            console.error(`Failed to fetch Discord user ${a.discordId} for Manage Admins card:`, fetchError?.message || fetchError);
+        }
+        const grantedTs = Math.floor(new Date(a.grantedAt).getTime() / 1000);
+        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatPermissions(a.permissions)}\n**Note:** ${a.note || '*(none)*'}`;
+        // Section+thumbnail when the avatar resolved; a plain Text Display when it didn't -- a
+        // Section's accessory is required, so there's no way to render one with a "missing" image.
+        blocks.push(avatarUrl
+            ? { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: avatarUrl } } }
+            : { type: 10, content });
+        blocks.push({
+            type: 1, components: [
+                { type: 2, style: 1, label: 'Edit Permissions', custom_id: `mng_admin_editperms_${a.discordId}` },
+                { type: 2, style: 4, label: 'Revoke', custom_id: `mng_admin_revoke_${a.discordId}` }
+            ]
+        });
+        if (i < adminDocs.length - 1) blocks.push({ type: 14, spacing: 1, divider: true });
+    }
+    return blocks;
 }
 
 // Renders the "Next Season Draft" page's live status block -- the one dynamic block on this panel
@@ -458,10 +568,16 @@ function buildPastSeasonsOptions(seasonalDoc) {
     }));
 }
 
-function buildManagePage(page, dynamicData = {}, client) {
+// `allowedPages` (added 2026-08-13, per-page /manage permissions) -- an array of PAGES keys (+ the
+// 'season' pseudo-key) this caller may reach, from utils/adminAccess.js's getManagePages(), or
+// `null` for "unrestricted" (the owner, or any not-yet-updated caller). A scoped admin's dropdown
+// only ever OFFERS pages they can open -- they are never shown a page just to be denied on click.
+function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
     const PAGES = buildPagesTable(client);
-    const pageKey = PAGES[page] ? page : 'draws';
+    const visibleKeys = allowedPages ? Object.keys(PAGES).filter(k => allowedPages.includes(k)) : Object.keys(PAGES);
+    const fallbackKey = visibleKeys.includes('draws') ? 'draws' : visibleKeys[0];
+    const pageKey = (PAGES[page] && visibleKeys.includes(page)) ? page : fallbackKey;
     const pageData = PAGES[pageKey];
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
 
@@ -509,6 +625,14 @@ function buildManagePage(page, dynamicData = {}, client) {
             // whichever call site is rendering this page (see manage.js's execute()/index.js's
             // mng_pagesel), never baked into the static PAGES table.
             components.push({ type: 10, content: dynamicData[group.dynamicKey] || 'Loading…' });
+        } else if (group.style === 'raw') {
+            // Pre-built raw Discord components, spliced in verbatim (2026-08-13, Announcement's
+            // per-item Edit/Delete list) -- for a page whose group shape is genuinely dynamic (one
+            // Text Display + Action Row PER live DB row, not a fixed number of buttons), unlike
+            // 'status' above which is still exactly one static block. Built by whichever call site
+            // is rendering this page (manage.js's execute()/index.js's mng_pagesel), same as every
+            // other dynamicData-fed style.
+            (dynamicData[group.dynamicKey] || []).forEach(component => components.push(component));
         } else {
             group.blocks.forEach(content => components.push({ type: 10, content }));
             const buttons = group.buttons.map(a => ({ type: 2, style: a.style, label: a.label, custom_id: `mng_act_${pageKey}_${a.id}` }));
@@ -524,16 +648,21 @@ function buildManagePage(page, dynamicData = {}, client) {
     // than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines /
     // Wipe Season), both of Season's actions get their own flat dropdown entries — picking either
     // opens its modal directly with nothing in between, see index.js's `mng_pagesel` handler.
+    const showSeasonFlat = !allowedPages || allowedPages.includes('season');
     const pageOptions = [
-        ...Object.entries(PAGES).map(([key, data]) => ({ label: data.label, value: key, default: key === pageKey })),
-        { label: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines', default: false },
-        // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read
-        // as a low-stakes settings toggle; the option's own `description` (rendered as a smaller
-        // gray line under the label in Discord's select menu) now spells out exactly what it does,
-        // specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel
-        // flow as Purge (see index.js's modal_wipe_season handler) — selecting this used to wipe
-        // draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
-        { label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' }
+        ...Object.entries(PAGES)
+            .filter(([key]) => !allowedPages || allowedPages.includes(key))
+            .map(([key, data]) => ({ label: data.label, value: key, default: key === pageKey })),
+        ...(showSeasonFlat ? [
+            { label: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines', default: false },
+            // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read
+            // as a low-stakes settings toggle; the option's own `description` (rendered as a smaller
+            // gray line under the label in Discord's select menu) now spells out exactly what it does,
+            // specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel
+            // flow as Purge (see index.js's modal_wipe_season handler) — selecting this used to wipe
+            // draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
+            { label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' }
+        ] : [])
     ];
     components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Jump to a section...', options: pageOptions }] });
 
@@ -900,6 +1029,54 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
     return modal;
 }
 
+// --- MANAGE ADMINS modal builders (2026-08-13, expanded same day for per-page permissions) ---
+// Token vocabulary lives in utils/adminAccess.js's parsePermissionsInput -- kept out of this
+// comment so it can't drift from the actual parser; the placeholder text below is the user-facing
+// summary of it.
+function buildAdminGrantModal() {
+    const modal = new ModalBuilder().setCustomId('modal_admin_grant').setTitle('Grant Admin Access');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('discord_id').setLabel('Discord User ID or @mention').setStyle(TextInputStyle.Short).setPlaceholder('e.g. 123456789012345678 or @username').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | alerts | autobuild | manage.calendar, manage.draws, ...').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('note').setLabel('Note (optional)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. their name, why they were granted').setRequired(false))
+    );
+    return modal;
+}
+
+// Edit Permissions (2026-08-13) -- reopens on an EXISTING admin, prefilled with their current
+// permissions as a comma list, so add/remove is "edit the list, resubmit" rather than a separate
+// mechanism. Superseded the old typed-id "Revoke Admin" modal, which no longer exists now that
+// every admin has their own card with working Edit Permissions/Revoke buttons directly on it.
+function buildAdminEditPermissionsModal(adminDoc) {
+    const modal = new ModalBuilder().setCustomId(`modal_admin_editperms_${adminDoc.discordId}`).setTitle('Edit Permissions');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | alerts | autobuild | manage.calendar, manage.draws, ...').setValue((adminDoc.permissions || []).join(', ')).setRequired(true))
+    );
+    return modal;
+}
+
+// --- ANNOUNCEMENT modal builder (2026-08-13, redesigned same day for multi-announcement + expiry)
+// Shared by both Post New (announcementDoc = null) and Edit (prefilled from the existing doc) --
+// same field shape either way, just a different custom_id/title/prefill so index.js's two separate
+// submit handlers (create vs. update-in-place) can tell them apart.
+function buildAnnouncementModal(announcementDoc) {
+    const { expiryToInputValue } = require('../utils/announcement');
+    const isEdit = Boolean(announcementDoc);
+    const modal = new ModalBuilder()
+        .setCustomId(isEdit ? `modal_announce_edit_${announcementDoc._id}` : 'modal_announce_post')
+        .setTitle(isEdit ? 'Edit Announcement' : 'Post New Announcement');
+    modal.addComponents(
+        // No separate title field (considered, then removed 2026-08-13 -- Harkirat's call: it's
+        // plain markdown, a custom title can just be typed into the text itself, e.g. "# My Title").
+        // Discord's modal Paragraph cap is 4000 chars, safely under the embed description cap
+        // (4096) this text is later rendered into (utils/announcement.js) -- don't raise this
+        // without checking that cap too.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('text').setLabel('Announcement Text').setStyle(TextInputStyle.Paragraph).setValue(announcementDoc?.text || '').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('expiry').setLabel('Expires In (days, or "never")').setStyle(TextInputStyle.Short).setPlaceholder('Blank = 60 days').setValue(isEdit ? expiryToInputValue(announcementDoc.expiresAt) : '').setRequired(false))
+    );
+    return modal;
+}
+
 // --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) ---
 // Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for
 // titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so index.js's submit
@@ -980,6 +1157,8 @@ module.exports = {
             { name: 'Patch Notes', value: 'patchnotes' },
             { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
             { name: 'Season: Next Season Draft', value: 'seasondraft' },
+            { name: 'Manage Admins', value: 'manageadmins' },
+            { name: 'Announcement', value: 'announcement' },
             // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a
             // normal data-entry page -- added 2026-07-31 17:20 EDT, Harkirat's direct request. Not a
             // key in PAGES (same reason Season's two entries above aren't), so it's special-cased in
@@ -1002,24 +1181,45 @@ module.exports = {
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
     buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
+    buildAdminGrantModal, buildAdminEditPermissionsModal, buildAdminListBlocks,
+    buildAnnouncementModal, buildAnnouncementListBlocks,
 
     async execute(interaction) {
-        if (interaction.user.id !== ALLOWED_ADMIN_ID) {
+        const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+        if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of index.js's
             // centralized button/select/modal guard for this same panel (see interactionCreate).
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
+        // Per-page scoping (2026-08-13) -- computed once, threaded through every branch below. A
+        // scoped admin (e.g. Calendar-only) reaching `manage` at all via hasCommandAccess above
+        // does NOT mean every section is theirs; each one is checked against this list.
+        const allowedPages = await getManagePages(interaction.user.id);
 
-        const section = interaction.options.getString('data_for') || 'draws';
+        const section = interaction.options.getString('data_for') || (allowedPages.includes('draws') ? 'draws' : allowedPages[0]);
 
         // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) —
         // skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel
         // dropdown does. showModal() must be the FIRST response to the interaction (can't follow a
         // deferReply()), so this has to branch before the deferReply() below runs at all.
         if (section === 'season_titlesdeadlines') {
+            if (!allowedPages.includes('season')) {
+                return interaction.reply({ content: "🔒 **You don't have access to Season Titles & Deadlines.** Ask the bot owner to grant it if you need it.", ephemeral: true });
+            }
             const SeasonalData = require('../models/SeasonalData');
             const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
             return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
+        }
+
+        // manageadmins has NO permission token at all (owner-only visibility, see
+        // utils/adminAccess.js's header) -- getManagePages() already excludes it for anyone but the
+        // owner, so this can only be reached here if someone typed the value directly and isn't
+        // the owner.
+        if (section === 'manageadmins' && !allowedPages.includes('manageadmins')) {
+            return interaction.reply({ content: "🔒 **Manage Admins is owner-only.**", ephemeral: true });
+        }
+        if (section !== 'manageadmins' && section !== 'guide' && !allowedPages.includes(section)) {
+            return interaction.reply({ content: `🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.`, ephemeral: true });
         }
 
         // Default ephemeral (true) unless explicitly set to public — matches the "default private"
@@ -1033,6 +1233,9 @@ module.exports = {
         // panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal
         // page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's
         // no page context to infer a topic from when jumping straight here via the slash option.
+        // Read-only reference material, not data-mutating -- available to anyone with ANY manage
+        // access at all (allowedPages is non-empty, guaranteed by the hasCommandAccess check above),
+        // not gated per-page like the real data pages below.
         if (section === 'guide') {
             const { buildGuideContainer } = require('../utils/manageGuides');
             return sendV2Payload(interaction, buildGuideContainer('draws'));
@@ -1049,7 +1252,15 @@ module.exports = {
             const SeasonalData = require('../models/SeasonalData');
             const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
             dynamicData = { draftStatus: buildDraftStatusText(seasonalDoc) };
+        } else if (section === 'manageadmins') {
+            const AdminUser = require('../models/AdminUser');
+            const adminDocs = await AdminUser.find({}).sort({ grantedAt: 1 }).lean();
+            dynamicData = { adminListBlocks: await buildAdminListBlocks(adminDocs, interaction.client) };
+        } else if (section === 'announcement') {
+            const { getActiveAnnouncements } = require('../utils/announcement');
+            const announcementDocs = await getActiveAnnouncements();
+            dynamicData = { announcementBlocks: buildAnnouncementListBlocks(announcementDocs) };
         }
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client));
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages));
     }
 };

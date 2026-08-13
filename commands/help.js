@@ -134,7 +134,13 @@ const CATEGORY_DEFS = [
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed
         // these one way in the directory and another in the body, which reads as the page having
         // lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT.
-        staticCommands: [cmd('/alerts'), cmd('/autobuild'), cmd('/manage')],
+        // ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin
+        // granted only /alerts must not see /manage or /autobuild listed here even though the whole
+        // category is visible to them. Category-level `requires: 'botAdmin'` still gates the
+        // SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's
+        // isAdmin()); each command's own key gates that ONE line, same pattern `/server` already
+        // uses inside Preferences.
+        staticCommands: [cmd('/alerts', { requires: 'alerts' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
 ];
@@ -205,9 +211,9 @@ function buildSeasonalBody(perms, client) {
 }
 
 function buildUtilitiesBody(perms, client) {
-    return `### ${mentionCommand(client, '/colors')}\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n${VISIBILITY_BULLET}\n`
+    return `### ${mentionCommand(client, '/colors')}\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 \`[source]\` Read from your main profile, or your profile for this server\n${VISIBILITY_BULLET}\n`
         + `### ${mentionCommand(client, '/timestamp')}\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"\n-# 🔹 \`[timezone]\` Defaults to your saved ${mentionCommand(client, '/settings')} timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/colors** visibility:\`Public\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
+        + `-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
 // Server admins get a second command appended rather than a page of their own. The `/server` detail
@@ -264,8 +270,9 @@ function buildBotAdminBody(perms, client) {
         + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
         + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
         + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure\n`
-        + `### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, and the next-season draft\n`
-        + `-# 🔹 \`[data_for]\` Open a section directly: \`Draws\` · \`Calendar\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Patch Notes\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Bulk Format Guide\``
+        + `### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n`
+        + `-# 🔹 \`[data_for]\` Open a section directly: \`Draws\` · \`Calendar\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Patch Notes\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Manage Admins\` · \`Announcement\` · \`Bulk Format Guide\`\n`
+        + `-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement.`
         + SECTION_BREAK
         + `-# **Options** · all three\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
@@ -418,8 +425,17 @@ module.exports = {
         // admin comes off the interaction's own computed permissions (no REST call, no privileged
         // intent, false outside a guild), and bot admin is an id comparison.
         const { isServerAdmin } = require('../utils/guildPolicy');
-        const { ALLOWED_ADMIN_ID } = require('./manage');
-        const perms = { serverAdmin: isServerAdmin(interaction), botAdmin: interaction.user.id === ALLOWED_ADMIN_ID };
+        const { isAdmin, hasCommandAccess } = require('../utils/adminAccess');
+        // Per-command keys (2026-08-13) alongside the coarse `botAdmin` (any access, gates the
+        // whole category) -- an admin granted only /alerts must not see /manage or /autobuild
+        // listed under it, even though the section itself is visible to them.
+        const perms = {
+            serverAdmin: isServerAdmin(interaction),
+            botAdmin: await isAdmin(interaction.user.id),
+            manage: await hasCommandAccess(interaction.user.id, 'manage'),
+            alerts: await hasCommandAccess(interaction.user.id, 'alerts'),
+            autobuild: await hasCommandAccess(interaction.user.id, 'autobuild')
+        };
 
         let selectedKey = categoryOverride;
         if (selectedKey === null && interaction.isChatInputCommand()) {

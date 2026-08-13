@@ -14,7 +14,7 @@ const { displayTitle } = require('../utils/alertExplain'); // plain-language lab
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts } = require('../utils/alertStore');
-const { ALLOWED_ADMIN_ID } = require('./manage'); // single source of truth for the admin id
+const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'alerts'
 const { mentionCommand } = require('../utils/commandMentions');
 
 const ACCENT = 0x546E7A; // slate blue-grey (5533306) — an "ops/monitoring" identity, distinct from every
@@ -141,7 +141,7 @@ module.exports = {
         .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
 
     async execute(interaction) {
-        if (interaction.user.id !== ALLOWED_ADMIN_ID) {
+        if (!(await hasCommandAccess(interaction.user.id, 'alerts'))) {
             return interaction.reply({ content: `🔒 **This one's admin-only.** ${mentionCommand(interaction.client, '/alerts')} shows the bot's internal health log — try any of the bot's public commands instead!`, ephemeral: true });
         }
         // Default ephemeral (admin panel), same convention as /manage.

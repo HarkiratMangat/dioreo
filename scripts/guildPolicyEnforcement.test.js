@@ -349,7 +349,11 @@ async function withNoLoadouts(run) {
 
 const NOBODY = { serverAdmin: false, botAdmin: false };
 const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
-const BOT_ADMIN = { serverAdmin: false, botAdmin: true };
+// Per-command keys (manage/alerts/autobuild) added 2026-08-13 alongside the coarse `botAdmin` --
+// this fixture represents a FULL bot admin (owner or a Mongo-granted admin with `all`), so every
+// one of the three command lines within the Bot Admin category must be individually true too, or
+// commands/help.js's per-command `requires` filtering hides them even though the category shows.
+const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, alerts: true, autobuild: true };
 
 t('an ordinary member sees neither /server nor the Bot Admin category', async () => {
     const help = require('../commands/help');
@@ -418,7 +422,7 @@ t('every declared category renders a detail page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         for (const category of help.CATEGORY_DEFS) {
-            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true });
+            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true, manage: true, alerts: true, autobuild: true });
             const text = JSON.stringify(page);
             assert.ok(!text.includes('undefined'), `${category.key} renders "undefined" -- it is missing from DETAIL_HEADERS or BODY_BUILDERS`);
             assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0].name), `${category.key} rendered no recognisable content`);
