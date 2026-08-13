@@ -3,7 +3,7 @@
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
 const {
-    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK
+    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK, PALETTE_ALGO_VERSION
 } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
@@ -149,12 +149,42 @@ function paletteFields(kind, isGuild) {
     return { paletteField: `${name}Palette`, sourceField: `${name}PaletteSource` };
 }
 
+// The identity a cached per-user palette is stored under. TWO facts, not one: WHICH IMAGE it came from
+// and WHICH ALGORITHM produced it.
+//
+// 🐛 THE ALGORITHM HALF WAS MISSING, and it made every extractor change invisible to every existing
+// user (found 2026-08-12 20:32 EDT, Harkirat: "why did I have to tap refresh colors individually for
+// the avatar and then the banner page"). The identity was the image hash alone, so after v3.13.0-pre's
+// extraction changes his stored palettes were stale and NOTHING could tell: a cache hit needs only a
+// matching hash, and `refreshStale` below asks the same question ("has the image moved?") of the other
+// sources, so it correctly skipped every one of them. The only way to get a corrected palette was to
+// press Refresh Colors once per source, which is exactly what he had to do. This is the trap
+// [[feedback_cache_invalidation_on_algorithm_change]] records, and the fix is the mechanism already
+// proven on the other side of this subsystem: nameplate and decoration were IMMUNE to all of this,
+// because their shared per-design palette carries `palette_version` in its Cloudinary context and
+// readPaletteContext treats a mismatch as absent, so they heal themselves on next view.
+//
+// ⚠️ ONE RULE, TWO CALL SITES, AND THAT IS WHY THIS IS A FUNCTION. getCachedPalette and the
+// `refreshStale` loop each computed `imageInfo.paletteCacheKey || imageInfo.source` independently, so
+// versioning only one of them would leave the other permanently mismatched -- and a permanently
+// mismatched staleness test re-extracts EVERY source on EVERY press, which is the unbounded behaviour
+// that design deliberately avoids. Read and write both go through here, the same symmetry
+// paletteContextFields/readPaletteContext keep on the Cloudinary side and for the same reason.
+//
+// 💸 The cost is one extraction per user per source, ONCE, on first view after an extractor change --
+// the identical work a cache miss already does, on the lazily-extracted active source only. It is NOT
+// a return to the pre-2026-07-13 "extract all four on every render" behaviour that caused the bot-wide
+// 10062 timeouts.
+function paletteIdentity(imageInfo) {
+    return `${imageInfo.paletteCacheKey || imageInfo.source}@${PALETTE_ALGO_VERSION}`;
+}
+
 async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, isGuild = false, sharedPalette = null) {
     const { paletteField, sourceField } = paletteFields(kind, isGuild);
 
     // Nameplate keys on (asset, palette name); everything else on the bare asset hash. See the note on
     // `paletteCacheKey` in getSourceImageInfo for why these are deliberately different keys.
-    const cacheIdentity = imageInfo.paletteCacheKey || imageInfo.source;
+    const cacheIdentity = paletteIdentity(imageInfo);
 
     // The GLOBAL, permanent palette for a nameplate/decoration design, computed once ever inside the
     // WebP render and read back from its Cloudinary `context` metadata (2026-08-11 10:07 EDT,
@@ -421,8 +451,10 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
             if (!srcInfo || kind === activeSource) continue;
             const isGuild = isGuildSource(kind);
             const { paletteField, sourceField } = paletteFields(kind, isGuild);
-            const identity = srcInfo.paletteCacheKey || srcInfo.source;
-            if (prefs[paletteField] && prefs[sourceField] === identity) continue; // image unchanged
+            const identity = paletteIdentity(srcInfo);
+            // Unchanged image AND unchanged algorithm -- see paletteIdentity for why the second half
+            // has to be here too, and what it cost when it was not.
+            if (prefs[paletteField] && prefs[sourceField] === identity) continue;
             try {
                 results[kind] = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
                 refreshed.push(kind);
@@ -437,4 +469,4 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     return results;
 }
 
-module.exports = { getSourceImageInfo, getCachedPalette, getPalettePanelData, paletteFields };
+module.exports = { getSourceImageInfo, getCachedPalette, getPalettePanelData, paletteFields, paletteIdentity };
