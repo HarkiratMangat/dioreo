@@ -139,6 +139,19 @@ This codebase has inline comments explaining **why** something is written a cert
 ## 🗺️ Navigation map
 *Every subsystem's detail, and the redirect target for any older "see CLAUDE.md's X section" reference.*
 
+### 🧭 Runtime code layout — where the bot's own code lives (restructured 2026-08-13 17:20 EDT)
+*`index.js` was 4,553 lines holding the boot sequence, command registration, every lifecycle listener and a ~3,400-line `interactionCreate` handler. It is now **an entrypoint** — 129 lines that connect, construct, wire and log in. Full reasoning in `.claude/rules/interaction-router.md`.*
+
+| Path | Holds | Notes |
+|---|---|---|
+| **`index.js`** | **Entrypoint only** — crash handlers, Mongo connect, the `Client`, three wiring calls, login | If you are about to add logic here, it almost certainly belongs in one of the rows below |
+| **`bot/registry.js`** | Which slash commands exist, and pushing them to Discord | ⚠️ **`/all` and the eight per-category weapon commands are built HERE, not in `commands/*.js`** — a `readdir` sweep of that folder misses all nine |
+| **`bot/lifecycle.js`** | Every client listener that is *not* interaction routing: the `error` net, gateway/shard diagnostics, ready, restart labeling, the daily heartbeat, Cloudinary cleanup | ⚠️ Installs `client.on('error', …)`, which is **required** and is *not* covered by the router's try/catch |
+| **`handlers/router.js`** | The one `interactionCreate` dispatcher + the router-private stores (`/manage`'s undo + pending Maps, id parsing, bulk upserts, anti-spam cooldown) | Holds the top-level try/catch — the crash net. Branch ORDER is load-bearing |
+| **`handlers/<subsystem>.js`** | One subsystem's branches, lifted out of the router | Contract: one `async` fn, returns **`true` if it consumed the interaction**, `false` to fall through. `colors.js` is the reference implementation |
+| **`utils/interactionContext.js`** | `buildSyntheticInteraction` · `resolvePanelActor` | Shared by the router and every handler — **never copy these into a handler** |
+| `commands/` · `models/` · `utils/` · `scripts/` | unchanged | |
+
 ### `.claude/rules/` — load automatically when you touch matching code
 | Rule file | Loads when you touch… | Covers |
 |---|---|---|

@@ -3,6 +3,7 @@ kind: rule
 status: live
 paths:
   - "index.js"
+  - "bot/*.js"
   - "handlers/*.js"
   - "utils/interactionContext.js"
 ---
@@ -12,6 +13,19 @@ paths:
 > ⚠️ **`console` is PATCHED in this file, at the very top** (added 2026-07-28 15:34 EDT, v2.41.0). `require('./utils/logger')` + `patchConsole()` runs **before the crash handlers** so that an unhandled rejection and an uncaught exception — the two most important lines the bot can emit — are tagged with a real systemd severity instead of `info`. `console.error`/`.warn` therefore are **not** the ones Node gave you: they prepend a `<3>`/`<4>` marker (journald strips it) and tee a structured JSON copy carrying the running version + commit. Keep writing plain `console.error(...)` — that is the point, it works everywhere and cannot be forgotten. **Do not move the require below the crash handlers**, and do not "clean up" the patch into per-call-site imports: ~60 sites across `index.js` and `utils/` would have to be rewired and every future one remembered. Full reasoning: `utils/logger.js`'s header and `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`. `logBootBanner()` fires immediately after, before anything else can log, so `vmstatus.sh` can attribute every later journal line to a version/commit — including a startup that never reaches `ClientReady`.
 
 *Loads when you touch `index.js` (the ~2,700-line `interactionCreate` handler + boot/registration). The survival rules you need whenever editing the router. Per-subsystem handler DETAIL lives in the matching subsystem rule (`manage-panel.md`, `settings-and-expiry.md`, `loadouts.md`, `accent-and-colors.md`, `draw-prices.md`, `loadout-images-and-metadata.md`, `autobuild.md`). The `/manage` admin-guard and per-user `/settings` locks are choke-pointed HERE but documented in those rules.*
+
+## Where the code actually lives now (restructured 2026-08-13 17:20 EDT, v3.16.0-pre)
+⚠️ **`index.js` is no longer the router, and no longer holds boot logic.** It went 4,553 → 129 lines. If a note anywhere says "in `index.js`'s interactionCreate handler", it means `handlers/router.js` now.
+
+| File | Holds |
+|---|---|
+| `index.js` | Entrypoint: `process.on` crash handlers, Mongo connect, the `Client`, three wiring calls, gated login |
+| `bot/registry.js` | Command loading + the REST registration (stages: on-disk modules → DB-derived category commands → one PUT) |
+| `bot/lifecycle.js` | The client `error` net, gateway/shard diagnostics, ClientReady, restart labeling, daily heartbeat, Cloudinary cleanup |
+| `handlers/router.js` | The `interactionCreate` dispatcher + router-private stores |
+| `handlers/*.js` | Per-subsystem branches |
+
+⚠️ **Two `__dirname`-relative paths were re-anchored in that move and both fail SILENTLY if broken** — `bot/registry.js` resolves `commands/` and `bot/lifecycle.js` resolves `.restart-reason` against `__dirname/..`, because both modules sit one level down from the repo root. A wrong path there registers an empty command set, or mislabels every deploy as an unattended restart, with no error anywhere.
 
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
 `index.js` is being decomposed **one subsystem at a time**, never in a big-bang rewrite — see `docs/ROADMAP.md`. The **first slice shipped**: the five `colors_*` buttons now live in `handlers/colors.js`, and the two helpers every handler needs (`buildSyntheticInteraction`, `resolvePanelActor`) moved to **`utils/interactionContext.js`**. `index.js` went 4,553 → 4,140 lines.
