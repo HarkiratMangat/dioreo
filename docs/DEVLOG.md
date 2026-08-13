@@ -146,6 +146,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-12 15:14 EDT — the item asked which of two fixes was right, and the answer was neither (v3.13.0-pre)
 - 2026-08-12 18:15 EDT — the quota that could not be built, and the four milliseconds that shaped the design (v3.13.0-pre)
 - 2026-08-12 20:19 EDT — The obvious fix lost 14 accents, so the fix stopped competing (v3.13.0-pre)
+- 2026-08-12 21:57 EDT — A staleness test that asked the wrong question, and a message that lectured (v3.13.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2612,6 +2613,24 @@ Both of those were caught the same way, and it is the lesson this release keeps 
 **Two habits are worth keeping from the verification.** The parameter sweeps all ran against an instrumented twin of `colorExtract.js` with knobs patched in, which is right for exploration — but the final before/after loads the **shipped** module and a baseline extracted from `git show HEAD:`, with nothing patched at all, because a knob wired even slightly differently from the shipped wiring gives you a measurement that is correct about a build nobody ships. And every new regression case was proven able to **fail** by deleting the rule it names. That loop earned its keep immediately: **two of the five were vacuous.** A fixture built from a vivid accent was already protected by the colour rule, and the victim search runs from the *end* of the kept list, so a fixture with anything duller sitting after the dark never reached the guard it claimed to test. Both stayed green with their guard deleted.
 
 The result over 401 images: **0 accent swatches lost, 1 gained, 36 palettes changed, 0 length changes, 0 off-rung**, and all three real nameplate and decoration assets byte-identical.
+
+## 2026-08-12 21:57 EDT — A staleness test that asked the wrong question, and a message that lectured (v3.13.0-pre)
+
+The extraction fix worked, and the first thing live testing showed was that it would not have reached anybody. Harkirat pressed Refresh Colors on the Avatar page, got new colours, switched to the Banner page — and found the old ones still there. He had to press the button again. Then he asked the obvious question: shouldn't one press have done both?
+
+**The button was not at fault, and neither was his expectation.** Refresh Colors already sweeps the other sources; it just asks them the wrong question. It asks *"has this image moved?"* — and his images had not moved. The extractor had. A palette was cached under the image hash alone, with nothing recording which algorithm produced it, so after the extractor changed, every stored palette was stale and nothing in the system could tell. The sweep looked at each source, saw a matching hash, and correctly concluded there was nothing to do.
+
+Nameplate and decoration were immune the entire time, which is the part worth keeping. Their shared per-design palettes live in Cloudinary metadata beside a `palette_version` stamp, and a mismatch reads as absent, so they heal themselves on next view. The mechanism already existed; it had simply been built on one half of the subsystem. The per-user half now carries the same stamp — through **one** identity helper, because the rule had two independent copies and versioning only one would have left the staleness test permanently mismatched, re-extracting every source on every press. That is the unbounded behaviour the 2026-07-13 CPU work exists to prevent, arrived at by fixing a bug.
+
+**Then he pushed further, and the second ask was the more interesting one.** Even with staleness detection working, a user with both global and server colours had to refresh each view separately, because a source with a server override caches under its own field. One button, two halves, and you had to know the other half existed. It now sweeps both — free when there is no server profile, since that is readable straight off the interaction payload, and self-deduplicating where a source has no override and therefore resolves to the same image in both views.
+
+That change **exposed a wrong-pair bug sitting next to it**. The accent invalidation picked between the guild and global field pairs using the view you were *in*, rather than where the colour had actually been cached. Refresh in the server view on a source with no server override, and it cleared the guild pair while the stale global value stayed live. No error. The symptom is an embed that keeps its old tint, which nobody would ever connect back to a button on a different panel.
+
+**The message got rewritten too, and the lesson there is about what a confirmation is for.** The old one led with a lecture — *"this button is for after you actually change it, not to reroll the same source"* — and buried the genuinely useful part, the list of what else had moved, in a second long sentence. It also showed the explanation and the pointer at the same time, which is how a message ends up scolding you while withholding the thing you wanted. The new one leads with a verdict, gives each view its own dim row, and shows **exactly one** trailing line: a pointer when other pages moved, the explanation only when nothing did.
+
+The shape came from a menu rather than from me. That is the standing pattern for anything with wording in it here, and it paid again: what came back was "something between option 1 and option 3", which is not a choice I would have arrived at by picking one.
+
+Extracting the message out of the interaction handler was not tidying. Inline, it could not be exercised without a live interaction, a Mongo document and a Discord round trip — three verdicts, two per-view lists and an exclusivity rule, none of which any check could see. As a function of its inputs it is twelve cases, and every one was proven able to fail before being trusted. All of its failure modes look cosmetic, which is exactly why they would have survived: a missing "Server profile" row does not throw, it just tells someone nothing happened to colours that did change, and sends them hunting for a button to press.
 
 # Part B — Lessons Ledger (thematic)
 

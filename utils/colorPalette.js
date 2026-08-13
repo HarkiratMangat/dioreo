@@ -338,6 +338,13 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         decoration: guildProfile?.decorationAsset, nameplate: guildProfile?.nameplateAsset
     };
     const isGuildSource = (kind) => Boolean(useGuild && guildHash[kind] && sources[kind]?.source === guildHash[kind]);
+    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and index.js
+    // was using it as though it were (fixed 2026-08-12 21:44 EDT). The accent-cache invalidation picks
+    // the guild or the global field pair from a boolean; handed `variant`, a source with no server
+    // override — which resolved to the global image and cached under the GLOBAL field — had its GUILD
+    // accent cleared instead, leaving the stale global value in place. Wrong pair, no error, and the
+    // symptom is an embed that keeps its old tint.
+    results.activeIsGuild = isGuildSource(activeSource);
 
     // Availability keys + preview URLs for EVERY equipped source, WITHOUT extracting. getAvailableSources()
     // keys off KEY PRESENCE (not value), and the previews off the URL, so all nav buttons + the current
@@ -443,27 +450,74 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     // ⚠️ `forceRefresh` is deliberately NOT passed here. The active source is force-re-extracted
     // because that is what the button targets and what makes its "did anything change?" message
     // honest; the others are refreshed only if their image really moved, so an unchanged source costs
-    // one string comparison. Nameplate/decoration additionally short-circuit on their shared
-    // per-design palette, so a "stale" one of those is a metadata read rather than an extraction.
+    // one string comparison.
+    //
+    // ⚠️ CORRECTED 2026-08-12 21:47 EDT — this used to claim "nameplate/decoration additionally
+    // short-circuit on their shared per-design palette, so a stale one of those is a metadata read
+    // rather than an extraction." It is not true and never was: `sharedPalette` is resolved for the
+    // ACTIVE source only (see the resolver block above, which must never run for a source the user is
+    // not looking at, because it can trigger a whole WebP render), so a swept nameplate or decoration
+    // is handed `null` and pays a real extraction — an ffmpeg still-frame included, for a decoration.
+    // That is the honest cost of this loop and it is why the button carries a 10s cooldown. Resolving
+    // the shared palette here to make the old sentence true would trade a ~300ms extraction for a
+    // possible render, which is the more expensive direction.
+    // ⚠️ IT SWEEPS BOTH VIEWS, NOT JUST THE ONE ON SCREEN (2026-08-12 21:47 EDT, Harkirat: "it's just
+    // unintuitive to make the user press it for global colors and then switch to server colors and
+    // press it again"). A source WITH a server override is cached under a separate `guild*` field, so
+    // refreshing the server view left the global copy stale and vice versa — one button, two halves,
+    // and the user had to find the other one. The cross-view pass costs ONE extra profile resolve, and
+    // only when a server profile actually exists: with none, both views resolve to the same images and
+    // the pass is skipped outright.
+    //
+    // ⚠️ A source with NO override resolves to the SAME global image in both views and caches under the
+    // same global field, so the two passes overlap heavily. `done` is what stops the second one paying
+    // again for work the first just did — without it, every unoverridden source would be re-extracted a
+    // second time on every press.
     const refreshed = [];
     if (refreshStale) {
-        for (const [kind, srcInfo] of Object.entries(sources)) {
-            if (!srcInfo || kind === activeSource) continue;
-            const isGuild = isGuildSource(kind);
-            const { paletteField, sourceField } = paletteFields(kind, isGuild);
-            const identity = paletteIdentity(srcInfo);
-            // Unchanged image AND unchanged algorithm -- see paletteIdentity for why the second half
-            // has to be here too, and what it cost when it was not.
-            if (prefs[paletteField] && prefs[sourceField] === identity) continue;
-            try {
-                results[kind] = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
-                refreshed.push(kind);
-            } catch (err) {
-                // One stale source failing must not sink the refresh the user actually asked for.
-                console.error(`Stale-source refresh failed for ${kind}:`, err.message);
+        const done = new Set([`${activeSource}:${results.activeIsGuild}`]);
+        // `intoResults` is false for the cross-view pass on purpose: `results` is what the panel
+        // RENDERS, and it renders one view. Writing the other view's palettes into it would paint
+        // server colours onto a global page.
+        const sweep = async (srcSet, isGuildOf, intoResults) => {
+            for (const [kind, srcInfo] of Object.entries(srcSet)) {
+                if (!srcInfo) continue;
+                const isGuild = isGuildOf(kind);
+                const key = `${kind}:${isGuild}`;
+                if (done.has(key)) continue;
+                done.add(key);
+                const { paletteField, sourceField } = paletteFields(kind, isGuild);
+                // Unchanged image AND unchanged algorithm -- see paletteIdentity for why the second
+                // half has to be here too, and what it cost when it was not.
+                if (prefs[paletteField] && prefs[sourceField] === paletteIdentity(srcInfo)) continue;
+                try {
+                    const palette = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
+                    if (intoResults) results[kind] = palette;
+                    refreshed.push({ kind, isGuild });
+                } catch (err) {
+                    // One stale source failing must not sink the refresh the user actually asked for.
+                    console.error(`Stale-source refresh failed for ${kind} (${isGuild ? 'server' : 'global'}):`, err.message);
+                }
             }
+        };
+        await sweep(sources, isGuildSource, true);
+
+        if (results.hasServerProfile) {
+            const otherInfo = await getSourceImageInfo(interaction, !useGuild);
+            const otherSources = {
+                avatar: otherInfo.avatar, banner: otherInfo.banner,
+                decoration: otherInfo.decoration, nameplate: otherInfo.nameplate
+            };
+            await sweep(
+                otherSources,
+                (kind) => Boolean(!useGuild && guildHash[kind] && otherSources[kind]?.source === guildHash[kind]),
+                false
+            );
         }
     }
+    // `{ kind, isGuild }` rather than bare kinds, because the caller has to tell the two apart: the
+    // accent cache keeps a separate guild and global pair and clears whichever the flag names, and the
+    // confirmation message reports the two views on their own lines.
     results.refreshedSources = refreshed;
 
     return results;

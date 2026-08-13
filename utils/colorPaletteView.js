@@ -836,4 +836,46 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
 // colours into the name+label pair a reader actually sees, and the label rules above are judged on
 // real palettes rather than on the thresholds in isolation. Nothing in the bot calls it from outside
 // this file.
-module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries };
+// The ephemeral follow-up the "Refresh Colors" button sends. Lives here rather than inline in
+// index.js because it is presentation, and because every one of its branches is INVISIBLE until
+// somebody presses the button on exactly the right combination of state -- three verdicts, two
+// per-view lists and a trailing line that is mutually exclusive with them. That is untestable inline
+// and trivially testable as a function of its inputs.
+//
+// ⚠️ THE SHAPE IS HARKIRAT'S, picked from a menu 2026-08-12 21:44 EDT: "something between option 1 and
+// option 3", with global and server colours "named separately". A VERDICT line for the source that was
+// pressed, then one dim row per view, then AT MOST one trailing hint. The version it replaces was two
+// long sentences that buried the useful part -- what else moved -- behind a lecture ("this button is
+// for after you actually change it, not to reroll the same source"). Four lines maximum.
+//
+// ⚠️ The trailing line is EXCLUSIVE, and that is the fix rather than a detail: an actionable pointer
+// when other pages moved, the explanation only when nothing did. Showing both is what made the old
+// message read as a telling-off while also being the least useful in the case the user cared about.
+function buildRefreshNotice({ source, changed, accentCleared, refreshed = [] }) {
+    const label = kind => SOURCE_META[kind]?.label || kind;
+    const sourceLabel = label(source);
+    const globalAlso = refreshed.filter(r => !r.isGuild).map(r => label(r.kind));
+    const guildAlso = refreshed.filter(r => r.isGuild).map(r => label(r.kind));
+    const row = (title, names) => names.length ? `\n-# ${title}: **${names.join('** · **')}**` : '';
+
+    const verdict = changed
+        ? `✅ **${sourceLabel}** — new colors found.`
+        // Palette bytes matched, but that is not "nothing happened" when the accent cache was cleared:
+        // a forced palette refresh may already have picked the change up on open, so this click's
+        // comparison sees no delta even though its accent invalidation is the real, visible fix --
+        // embeds tinted by this source were stale until this exact press.
+        : accentCleared
+            ? `🎨 **${sourceLabel}** — palette matched, but its accent color was stale and is now refreshed.`
+            : `✔️ **${sourceLabel}** — already up to date.`;
+
+    const anyAlso = globalAlso.length + guildAlso.length;
+    const tail = anyAlso
+        ? `\n-# Open ${anyAlso > 1 ? 'those pages' : 'that page'} to see them.`
+        : changed || accentCleared
+            ? ''
+            : '\n-# The same picture always gives the same colors — refresh after you change it.';
+
+    return verdict + row('Also refreshed', globalAlso) + row('Server profile', guildAlso) + tail;
+}
+
+module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries, buildRefreshNotice };

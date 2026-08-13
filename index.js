@@ -2132,10 +2132,22 @@ client.on('interactionCreate', async interaction => {
             // on the next accent-using command anyway, so clearing it guarantees a fresh value without
             // spending CPU inside a button press -- and costs nothing at all for a 'preset'-style user,
             // who never resolves one. Scoped to this user and to the sources actually refreshed.
+            //
+            // ⚠️ ONE CALL PER FIELD PAIR, because the sweep now covers BOTH views. invalidateAccentCache
+            // clears the guild pair or the global pair from its boolean and deliberately never both (see
+            // its own comment: the two pairs exist so moving between a server and a DM does not have
+            // each context evict the other's colour). That contract is unchanged -- what changed is that
+            // there are now genuinely two sets of refreshed sources to hand it.
+            // ⚠️ The ACTIVE source uses `after.activeIsGuild`, NOT `variant === 'server'`, and that was a
+            // real bug: a source with no server override resolves to the global image even in the server
+            // view and caches under the GLOBAL field, so the old flag cleared the GUILD accent pair and
+            // left the stale global one live. No error, and the symptom is an embed keeping its old tint.
             const { invalidateAccentCache } = require('./utils/accentColor');
-            const clearedAccents = invalidateAccentCache(
-                prefs, [source, ...(after.refreshedSources || [])], variant === 'server'
-            );
+            const refreshedAll = after.refreshedSources || [];
+            const clearedAccents = [
+                ...invalidateAccentCache(prefs, [...(after.activeIsGuild ? [] : [source]), ...refreshedAll.filter(r => !r.isGuild).map(r => r.kind)], false),
+                ...invalidateAccentCache(prefs, [...(after.activeIsGuild ? [source] : []), ...refreshedAll.filter(r => r.isGuild).map(r => r.kind)], true)
+            ];
             if (clearedAccents.length) await prefs.save();
 
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
@@ -2158,27 +2170,18 @@ client.on('interactionCreate', async interaction => {
             // it's expected to be the slowest of the four panel actions.
             logRenderTiming({ area: 'colors_panel', action: 'refresh', source, subpage, variant, cold: true, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
 
-            const { SOURCE_META } = require('./utils/colorPaletteView');
-            const sourceLabel = SOURCE_META[source]?.label || source;
+            const { buildRefreshNotice } = require('./utils/colorPaletteView');
             // Other sources whose image had genuinely changed and were refreshed in passing. Reported
             // because the work is invisible otherwise -- the panel only ever renders ONE source, so a
             // silently-updated Banner would look like nothing happened until the user navigated there.
-            const alsoRefreshed = (after.refreshedSources || [])
-                .map(kind => SOURCE_META[kind]?.label || kind);
-            const alsoLine = alsoRefreshed.length
-                ? `\n-# Also picked up changes to your **${alsoRefreshed.join('**, **')}** — open ${alsoRefreshed.length > 1 ? 'those pages' : 'that page'} to see them.`
-                : '';
-            const resultMessage = (changed
-                ? `✅ Found new colors for your **${sourceLabel}**!`
-                // Palette bytes matched, but don't call that "nothing happened" if the accent cache
-                // was cleared -- that's exactly the case where colors_view's own forced palette
-                // refresh already picked up a change on open, so this click's palette comparison sees
-                // no delta even though its accent-invalidation side effect is the real, visible fix
-                // (embeds tinted by this source were stale until this exact press).
-                : clearedAccents.length
-                    ? `🎨 Your **${sourceLabel}** palette already matched, but its accent color was stale and has now been refreshed — commands that tint by it will pick up the update next time they run.`
-                    : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`)
-                + alsoLine;
+            // Wording, the per-view rows and the trailing-line rule all live in buildRefreshNotice --
+            // see its own comment for the shape Harkirat picked and why the trailing line is exclusive.
+            const resultMessage = buildRefreshNotice({
+                source,
+                changed,
+                accentCleared: clearedAccents.length > 0,
+                refreshed: refreshedAll
+            });
             try {
                 return await interaction.followUp({ content: resultMessage, ephemeral: true });
             } catch (notifyError) {
