@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.13.0 — 2026-08-12 18:15 EDT — the palette stops discarding colours it found, and lands on a page rung
+## Pre-Release v3.13.0 — 2026-08-13 00:12 EDT (#121) — the palette stops discarding colours it found, and the refresh path reaches every one
 
 > **Six changes to one subsystem, shipped as one release because each is built on the one before** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced, and the third part is the same root cause at the site the first two exposed. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
 >
@@ -169,7 +169,7 @@ It was extracted out of the interaction handler into a pure function so its bran
 
 ---
 
-## Pre-Release v3.11.0 — 2026-08-12 14:09 EDT (#119) — the swatch captions stop asking "than what?"
+## Pre-Release v3.11.0 — 2026-08-12 14:09 EDT (#119 · `06db012`) — the swatch captions stop asking "than what?"
 
 **Harkirat rejected the shipped label set in four words: "what is 'IT'???"** — *cools it down · cuts against it · warms it up · sets the tone · fills the space · backs it up · adds depth · opens it up*. Every one is a verb phrase whose object is an antecedent the caption never supplies, which is the same defect as the earlier "Lighter Version" (than what?) rejection wearing a verb instead of an adjective. The register is now **self-contained noun phrases**, and the test is blunt: read a caption alone, with no other swatch visible, and if it makes you ask "than what?" it is the rejected pattern again. `Catches the Eye` survives only because "the eye" is the reader's own.
 
