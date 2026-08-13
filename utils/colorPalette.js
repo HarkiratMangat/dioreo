@@ -3,7 +3,8 @@
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
 const {
-    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK
+    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK, PALETTE_ALGO_VERSION,
+    paletteFields
 } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
@@ -140,13 +141,41 @@ async function getSourceImageInfo(interaction, useGuild = false) {
 // "Refresh Colors" button, NOT by ordinary page-switch navigation (see index.js's colors_view/
 // colors_refresh_ vs colors_page_ handlers) -- still writes the fresh result back to cache
 // afterward, so page-switching within the same viewing session stays fast either way.
-// Which pair of cache fields a source's palette belongs in. A source is only stored under the
-// guild* pair when its image ACTUALLY came from the server profile -- a source with no override
-// resolves to the global image even while browsing the server view, and caching that under a guild
-// key would extract the same pixels twice and store them under two names.
-function paletteFields(kind, isGuild) {
-    const name = isGuild ? `guild${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
-    return { paletteField: `${name}Palette`, sourceField: `${name}PaletteSource` };
+// ⚠️ `paletteFields` MOVED TO utils/colorExtract.js 2026-08-12 23:58 EDT and is re-exported below for
+// the callers that already import it from here. utils/accentColor.js needs the same field-name rule now
+// that Dynamic Profile Colors draws on stored swatches, and it cannot import THIS module -- this one
+// requires it, so that would close a cycle. colorExtract requires neither, which is exactly why
+// PALETTE_COUNTS lives there for the same reason. Two hand-rolled copies of `guild${Kind}Palette` would
+// drift silently, and a wrong field name reads as "no swatches saved" rather than as an error.
+
+// The identity a cached per-user palette is stored under. TWO facts, not one: WHICH IMAGE it came from
+// and WHICH ALGORITHM produced it.
+//
+// 🐛 THE ALGORITHM HALF WAS MISSING, and it made every extractor change invisible to every existing
+// user (found 2026-08-12 20:32 EDT, Harkirat: "why did I have to tap refresh colors individually for
+// the avatar and then the banner page"). The identity was the image hash alone, so after v3.13.0-pre's
+// extraction changes his stored palettes were stale and NOTHING could tell: a cache hit needs only a
+// matching hash, and `refreshStale` below asks the same question ("has the image moved?") of the other
+// sources, so it correctly skipped every one of them. The only way to get a corrected palette was to
+// press Refresh Colors once per source, which is exactly what he had to do. This is the trap
+// [[feedback_cache_invalidation_on_algorithm_change]] records, and the fix is the mechanism already
+// proven on the other side of this subsystem: nameplate and decoration were IMMUNE to all of this,
+// because their shared per-design palette carries `palette_version` in its Cloudinary context and
+// readPaletteContext treats a mismatch as absent, so they heal themselves on next view.
+//
+// ⚠️ ONE RULE, TWO CALL SITES, AND THAT IS WHY THIS IS A FUNCTION. getCachedPalette and the
+// `refreshStale` loop each computed `imageInfo.paletteCacheKey || imageInfo.source` independently, so
+// versioning only one of them would leave the other permanently mismatched -- and a permanently
+// mismatched staleness test re-extracts EVERY source on EVERY press, which is the unbounded behaviour
+// that design deliberately avoids. Read and write both go through here, the same symmetry
+// paletteContextFields/readPaletteContext keep on the Cloudinary side and for the same reason.
+//
+// 💸 The cost is one extraction per user per source, ONCE, on first view after an extractor change --
+// the identical work a cache miss already does, on the lazily-extracted active source only. It is NOT
+// a return to the pre-2026-07-13 "extract all four on every render" behaviour that caused the bot-wide
+// 10062 timeouts.
+function paletteIdentity(imageInfo) {
+    return `${imageInfo.paletteCacheKey || imageInfo.source}@${PALETTE_ALGO_VERSION}`;
 }
 
 async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, isGuild = false, sharedPalette = null) {
@@ -154,7 +183,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
 
     // Nameplate keys on (asset, palette name); everything else on the bare asset hash. See the note on
     // `paletteCacheKey` in getSourceImageInfo for why these are deliberately different keys.
-    const cacheIdentity = imageInfo.paletteCacheKey || imageInfo.source;
+    const cacheIdentity = paletteIdentity(imageInfo);
 
     // The GLOBAL, permanent palette for a nameplate/decoration design, computed once ever inside the
     // WebP render and read back from its Cloudinary `context` metadata (2026-08-11 10:07 EDT,
@@ -308,6 +337,13 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         decoration: guildProfile?.decorationAsset, nameplate: guildProfile?.nameplateAsset
     };
     const isGuildSource = (kind) => Boolean(useGuild && guildHash[kind] && sources[kind]?.source === guildHash[kind]);
+    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and index.js
+    // was using it as though it were (fixed 2026-08-12 21:44 EDT). The accent-cache invalidation picks
+    // the guild or the global field pair from a boolean; handed `variant`, a source with no server
+    // override — which resolved to the global image and cached under the GLOBAL field — had its GUILD
+    // accent cleared instead, leaving the stale global value in place. Wrong pair, no error, and the
+    // symptom is an embed that keeps its old tint.
+    results.activeIsGuild = isGuildSource(activeSource);
 
     // Availability keys + preview URLs for EVERY equipped source, WITHOUT extracting. getAvailableSources()
     // keys off KEY PRESENCE (not value), and the previews off the URL, so all nav buttons + the current
@@ -413,28 +449,77 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
     // ⚠️ `forceRefresh` is deliberately NOT passed here. The active source is force-re-extracted
     // because that is what the button targets and what makes its "did anything change?" message
     // honest; the others are refreshed only if their image really moved, so an unchanged source costs
-    // one string comparison. Nameplate/decoration additionally short-circuit on their shared
-    // per-design palette, so a "stale" one of those is a metadata read rather than an extraction.
+    // one string comparison.
+    //
+    // ⚠️ CORRECTED 2026-08-12 21:47 EDT — this used to claim "nameplate/decoration additionally
+    // short-circuit on their shared per-design palette, so a stale one of those is a metadata read
+    // rather than an extraction." It is not true and never was: `sharedPalette` is resolved for the
+    // ACTIVE source only (see the resolver block above, which must never run for a source the user is
+    // not looking at, because it can trigger a whole WebP render), so a swept nameplate or decoration
+    // is handed `null` and pays a real extraction — an ffmpeg still-frame included, for a decoration.
+    // That is the honest cost of this loop and it is why the button carries a 10s cooldown. Resolving
+    // the shared palette here to make the old sentence true would trade a ~300ms extraction for a
+    // possible render, which is the more expensive direction.
+    // ⚠️ IT SWEEPS BOTH VIEWS, NOT JUST THE ONE ON SCREEN (2026-08-12 21:47 EDT, Harkirat: "it's just
+    // unintuitive to make the user press it for global colors and then switch to server colors and
+    // press it again"). A source WITH a server override is cached under a separate `guild*` field, so
+    // refreshing the server view left the global copy stale and vice versa — one button, two halves,
+    // and the user had to find the other one. The cross-view pass costs ONE extra profile resolve, and
+    // only when a server profile actually exists: with none, both views resolve to the same images and
+    // the pass is skipped outright.
+    //
+    // ⚠️ A source with NO override resolves to the SAME global image in both views and caches under the
+    // same global field, so the two passes overlap heavily. `done` is what stops the second one paying
+    // again for work the first just did — without it, every unoverridden source would be re-extracted a
+    // second time on every press.
     const refreshed = [];
     if (refreshStale) {
-        for (const [kind, srcInfo] of Object.entries(sources)) {
-            if (!srcInfo || kind === activeSource) continue;
-            const isGuild = isGuildSource(kind);
-            const { paletteField, sourceField } = paletteFields(kind, isGuild);
-            const identity = srcInfo.paletteCacheKey || srcInfo.source;
-            if (prefs[paletteField] && prefs[sourceField] === identity) continue; // image unchanged
-            try {
-                results[kind] = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
-                refreshed.push(kind);
-            } catch (err) {
-                // One stale source failing must not sink the refresh the user actually asked for.
-                console.error(`Stale-source refresh failed for ${kind}:`, err.message);
+        const done = new Set([`${activeSource}:${results.activeIsGuild}`]);
+        // `intoResults` is false for the cross-view pass on purpose: `results` is what the panel
+        // RENDERS, and it renders one view. Writing the other view's palettes into it would paint
+        // server colours onto a global page.
+        const sweep = async (srcSet, isGuildOf, intoResults) => {
+            for (const [kind, srcInfo] of Object.entries(srcSet)) {
+                if (!srcInfo) continue;
+                const isGuild = isGuildOf(kind);
+                const key = `${kind}:${isGuild}`;
+                if (done.has(key)) continue;
+                done.add(key);
+                const { paletteField, sourceField } = paletteFields(kind, isGuild);
+                // Unchanged image AND unchanged algorithm -- see paletteIdentity for why the second
+                // half has to be here too, and what it cost when it was not.
+                if (prefs[paletteField] && prefs[sourceField] === paletteIdentity(srcInfo)) continue;
+                try {
+                    const palette = await getCachedPalette(prefs, kind, srcInfo, false, isGuild, null);
+                    if (intoResults) results[kind] = palette;
+                    refreshed.push({ kind, isGuild });
+                } catch (err) {
+                    // One stale source failing must not sink the refresh the user actually asked for.
+                    console.error(`Stale-source refresh failed for ${kind} (${isGuild ? 'server' : 'global'}):`, err.message);
+                }
             }
+        };
+        await sweep(sources, isGuildSource, true);
+
+        if (results.hasServerProfile) {
+            const otherInfo = await getSourceImageInfo(interaction, !useGuild);
+            const otherSources = {
+                avatar: otherInfo.avatar, banner: otherInfo.banner,
+                decoration: otherInfo.decoration, nameplate: otherInfo.nameplate
+            };
+            await sweep(
+                otherSources,
+                (kind) => Boolean(!useGuild && guildHash[kind] && otherSources[kind]?.source === guildHash[kind]),
+                false
+            );
         }
     }
+    // `{ kind, isGuild }` rather than bare kinds, because the caller has to tell the two apart: the
+    // accent cache keeps a separate guild and global pair and clears whichever the flag names, and the
+    // confirmation message reports the two views on their own lines.
     results.refreshedSources = refreshed;
 
     return results;
 }
 
-module.exports = { getSourceImageInfo, getCachedPalette, getPalettePanelData, paletteFields };
+module.exports = { getSourceImageInfo, getCachedPalette, getPalettePanelData, paletteFields, paletteIdentity };

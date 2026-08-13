@@ -17,7 +17,10 @@
 // Both directions are asserted below, on purpose. A test that only checked "the hash is a string"
 // would pass under either failure.
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const { fingerprint } = require('../utils/algoFingerprint');
+const { paletteIdentity } = require('../utils/colorPalette');
 const {
     PALETTE_ALGO_VERSION, paletteContextFields, readPaletteContext
 } = require('../utils/colorExtract');
@@ -164,6 +167,46 @@ t('an empty palette produces no context fields at all', () => {
     // palette of length zero on the next hit.
     assert.deepStrictEqual(paletteContextFields([]), {});
     assert.deepStrictEqual(paletteContextFields(null), {});
+});
+
+// ============================================================================================
+// THE PER-USER CACHE IDENTITY — the same key, on the other side of the subsystem.
+//
+// ⚠️ WHY THIS EXISTS. Everything above protects the SHARED nameplate/decoration palettes stored in
+// Cloudinary context. The per-user avatar/banner palettes on `UserPreference` had no such protection
+// at all: their identity was the image hash alone, so every extractor change was invisible to every
+// existing user, forever, until they happened to change their picture. Found live 2026-08-12 20:32 EDT
+// when v3.13.0-pre's extraction fix shipped and Harkirat had to press Refresh Colors once per source
+// to see it. Same failure mode as "too STICKY" above and just as silent — the colours are simply the
+// old ones, and they look exactly as plausible as correct ones.
+t('the per-user palette identity carries the ALGORITHM, not just the image', () => {
+    const id = paletteIdentity({ source: 'abc123' });
+    assert.ok(id.includes(PALETTE_ALGO_VERSION), `identity "${id}" does not name the algorithm that produced the palette`);
+    assert.notStrictEqual(id, 'abc123', 'the identity is the bare image hash again — every extractor change is now invisible to existing users');
+});
+
+t('a nameplate keys on (asset, palette) and still carries the algorithm', () => {
+    // paletteCacheKey outranks source for nameplate, because its palette depends on the bed. Both
+    // halves have to survive: the key that was chosen AND the version stamp.
+    const id = paletteIdentity({ source: 'bare-asset', paletteCacheKey: 'asset:violet' });
+    assert.ok(id.startsWith('asset:violet'), `identity "${id}" ignored paletteCacheKey and fell back to the bare asset hash`);
+    assert.ok(id.includes(PALETTE_ALGO_VERSION), `identity "${id}" does not name the algorithm`);
+});
+
+t('there is exactly ONE identity rule in utils/colorPalette.js', () => {
+    // ⚠️ THE DRIFT THIS PREVENTS IS NOT HYPOTHETICAL — it was the state of the file. getCachedPalette
+    // and the `refreshStale` loop each computed `paletteCacheKey || source` independently, so versioning
+    // one and not the other would leave the staleness test permanently mismatched, which re-extracts
+    // EVERY source on EVERY press: the unbounded behaviour that design deliberately avoids, arrived at
+    // by fixing a bug. Read from the source because there is no output that can show it.
+    const src = fs.readFileSync(path.join(__dirname, '..', 'utils', 'colorPalette.js'), 'utf8');
+    // ⚠️ Comment lines are excluded, and finding that out was the point: the first run of this case
+    // failed on paletteIdentity's OWN comment describing the drift it prevents. A source scan that
+    // cannot tell code from prose reports the documentation as the defect.
+    const inlineRules = src.split('\n')
+        .filter(l => !/^\s*(\/\/|\*)/.test(l))
+        .filter(l => /paletteCacheKey\s*\|\|/.test(l) && !l.trim().startsWith('return `'));
+    assert.strictEqual(inlineRules.length, 0, `a second copy of the identity rule is back:\n        ${inlineRules.join('\n        ')}`);
 });
 
 console.log(`\n  ${passed} passed, ${failed} failed\n`);

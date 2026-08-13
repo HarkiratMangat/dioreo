@@ -206,11 +206,9 @@ async function getDominantColor(imageUrl) {
 //    inconsistent one.
 //
 // 5. LOW-COLOUR SOFT RESTRICT (Harkirat's request): a genuinely near-colourless image drops to 4
-//    entries instead of the full count. Judged on the EXTRACTED colours, not on raw pixel statistics
-//    -- that distinction is load-bearing. By aggregate chroma a black cat scores as "low colour" and
-//    would lose its red eyes; judged on its extracted palette it escapes the restriction because it
-//    genuinely has an accent. Measured: fires on 4 of 22 corpus images (two pure-greyscale banners, a
-//    pale wash, a dark near-monochrome avatar) and correctly leaves the cat alone.
+//    entries instead of the full count. ⚠️ REBUILT 2026-08-12 14:51 EDT -- see the block above
+//    LOW_COLOUR_CHROMA below for what it used to do, why that discarded real colours a human could
+//    plainly see, and why it now asks about the PIXEL TAIL rather than about the extracted centroids.
 const KMEANS_COUNT = 8;
 const KMEANS_ITERATIONS = 12;
 const LIGHTNESS_WEIGHT = 0.5;    // <1 compresses pure-lightness spread during seeding/clustering
@@ -221,6 +219,91 @@ const ACCENT_MIN_PIXELS = 20;    // too few and the "tail" is noise, not a featu
 const ACCENT_CLUSTERS = 3;
 const SALIENCE_WEIGHT = 0.6;     // how much chroma counts against prevalence when ordering entries
 const LOW_COLOUR_COUNT = 4;
+
+// ⚠️ THE LOW-COLOUR GATE HAS ITS OWN FLOOR, AN ORDER OF MAGNITUDE BELOW CHROMA_FLOOR, AND THAT
+// SEPARATION IS THE WHOLE FIX (2026-08-12 14:51 EDT). The restrict used to reuse CHROMA_FLOOR --
+// "is any extracted centroid at least this colourful?" -- which put two different questions behind
+// one constant. CHROMA_FLOOR answers "is this PIXEL worth putting in the accent pool?", where 0.04 is
+// a sensible bar for a small punchy feature. The restrict asks "does this IMAGE have colour at all?",
+// and 0.04 is far too high a bar for that: every sepia photograph, brown avatar and olive banner sits
+// under it while being unmistakably brown to anyone looking at it.
+//
+// Measured on the 246-image corpus (local/colors-investigation/lowcolour-gates.mjs): the old gate
+// fired on 9 images, and FOUR of them were tinted rather than colourless -- a sepia portrait whose
+// candidates topped out at chroma 0.027, two brown avatars at 0.033 and 0.037, a dark olive at 0.017.
+// Harkirat's own server avatar was one of them: its structure pool correctly found a real black and
+// two dark browns, and the restrict then threw all three away for having no saturation, which is not
+// the same fact as having no depth.
+//
+// 0.01 is not fitted to that corpus. It is the point at which a colour is, by THIS MODULE'S OWN merge
+// rule, the same colour as plain grey: MERGE_DELTA_E declares two entries identical below 0.07 of
+// OKLab distance, so a tail sitting within 0.01 of the neutral axis is nowhere near a distinguishable
+// hue. The corpus then confirms the value is not delicate -- the achromatic images measure 0 to
+// 0.0031 and the least colourful genuinely-tinted one measures 0.0213, a 7x empty band around it.
+const LOW_COLOUR_CHROMA = 0.01;
+
+// --- THE THIRD SITE OF THE SAME CHROMA-BLINDNESS (2026-08-12 20:02 EDT). The gate and the truncation
+// above were the first two; this pair is the RANKING. Harkirat's server avatar returned a full, healthy
+// 8 swatches whose darkest entry was a dark warm brown while the genuinely black sunglasses were absent
+// -- nothing short, nothing erroring, every automated check green. He found it by looking at a picture.
+//
+// 📐 WHY THE BLACK LOST, measured rather than reasoned: the extractor finds it perfectly (a clean
+// #060606 cluster; ask for 10 and it appears at rank 9 of 9) and the SLICE cuts it, because
+// `share/maxShare + SALIENCE_WEIGHT * (chroma/maxChroma)` scores a 1.5% black ~0.05 on the first term
+// and EXACTLY 0 on the second. The accent pool cannot rescue it either: `tailCut` takes
+// Math.max(CHROMA_FLOOR, percentile), so the pool only ever holds chromatic pixels. Small + colourless
+// had no path to a slot at all.
+//
+// `SALIENCE_CHROMA_REF` is a FLOOR UNDER THE SALIENCE DENOMINATOR, and it is a defect in its own right.
+// `chroma/maxChroma` is RELATIVE, so an image with no colour normalises its own rounding noise to the
+// full accent bonus: on the reproduction above, maxChroma is 0.0276 -- a nearly-neutral taupe -- and
+// #57463D therefore collects a chroma term of 1.0000, the identical bonus a PURE RED collects on the
+// same ground. Every mid-grey was being paid the accent premium for chroma that is not there, while the
+// real black was paid nothing. 0.10 is where this system's own accents begin: across the corpus's 733
+// accent-origin swatches the 25th percentile is 0.0987, so an image that reaches it has real colour to
+// measure against and is untouched (Math.max), and an image below it does not. Measured over 401
+// images: 7 palettes change, 0 accent swatches lost, 1 gained. Not delicate -- 0.08 / 0.10 / 0.15 move
+// 5 / 7 / 11 palettes and lose 0 accents at every one.
+//
+// `LIGHTNESS_GAP` is how much of the picture's lightness range the palette may fail to represent before
+// reserveLightnessRange buys a slot back. MERGE_DELTA_E (0.07) is where this module stops calling two
+// entries the same colour, so a gap has to clear that with headroom to count as a genuine absence
+// rather than a near-duplicate. Also a smooth curve, not a knife edge: 0.08 / 0.10 / 0.12 / 0.15 fire
+// 38 / 30 / 20 / 11 times across the 401 images.
+const SALIENCE_CHROMA_REF = 0.10;
+const LIGHTNESS_GAP = 0.10;
+
+// --- THE PAGE LADDER (Harkirat, 2026-08-12 17:30 EDT). A palette may only be 1, 2, 4, 6 or 8 entries
+// long, so a second page is never a stub. 1/2/4/6 render on one page; only 8 paginates 4+4.
+// Off-rung counts move to the nearest rung that costs least: 3 -> 4, 5 -> 4, 7 -> 8.
+//
+// ⚠️ AVATAR AND BANNER ONLY. Nameplate and decoration ask for 4 and that is a CEILING, not a quota
+// (Harkirat, same conversation) -- their palettes are a deterministic composition (1 bed + 3 art) and
+// padding one would invent a colour for a design that simply has fewer. The ladder is therefore gated
+// on `count === KMEANS_COUNT` rather than applied to every caller.
+//
+// ⚠️ THE STRICT 2/4/8 QUOTA THIS REPLACES WAS KILLED BY MEASUREMENT -- do not revive it. Across the 83
+// corpus images returning 5/6/7, the honest lever (more seeds, merge threshold untouched) tops out at
+// 22/83 and is NON-MONOTONIC (3.0x is worse than 2.5x), and the only setting that reaches 8 for
+// everyone is MERGE_DELTA_E 0.04, which puts a perceptually-duplicate pair in all 83 palettes and
+// hands back the V3 rewrite's headline win (duplicate pairs 8 -> 0). Those colours are not there.
+const PALETTE_RUNGS = new Set([1, 2, 4, 6, 8]);
+const LADDER = { 1: 1, 2: 2, 3: 4, 4: 4, 5: 4, 6: 6, 7: 8, 8: 8 };
+
+// Clustering over-asks so the merge has room to fold duplicates without eating the requested count.
+// The RETRY factor exists because a count landing off-rung often just means the seeds were spread too
+// thinly -- measured over 401 images, 35 of the 72 off-rung ones land on a rung with more seeds ALONE,
+// needing nothing manufactured and nothing discarded (7 -> 8 for 20 of 35 sevens, and 6 of 22 fives
+// rise to a clean 6).
+//
+// ⚠️ THE RETRY IS CONDITIONAL, AND THAT IS THE WHOLE POINT. Raising the factor globally would move the
+// colours of the 82% of images that are already on a rung, for no benefit. Only an off-rung image
+// pays, and it pays in the region of 4ms: MEASURED 2026-08-12 17:48 EDT, the entire clustering phase
+// is 4.2ms mean at 1.5x and 7.0ms at 2.5x on a real 256px source. The "palette extraction is 64-183ms"
+// figure in the rules file is a whole render phase including fetch and montage pooling -- it is not
+// this. There is no CPU argument against the retry; it is noise beside a ~1000ms cold render.
+const OVERCLUSTER = 1.5;
+const OVERCLUSTER_RETRY = 2.5;
 
 // --- OKLab (Björn Ottosson). Perceptually uniform, so a distance here means what the eye means.
 function srgbToLinear(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
@@ -363,6 +446,86 @@ function mergePerceptual(clusters, dE) {
 }
 
 // Returns an array of `{ hex, percent }` sorted by prevalence (most-common first), sliced to at MOST
+// Picks `limit` entries that SPAN the lightness axis, holding entries[0] fixed and then repeatedly
+// taking whichever remaining entry is farthest in L from everything already chosen. Used only by the
+// low-colour restrict, where lightness is the sole axis carrying information -- see the block at that
+// call site for the measurement that made it necessary.
+//
+// This is the same deterministic Gonzalez traversal seedFarthestFirst runs, in one dimension: no
+// randomness, so the Refresh Colors button's "did anything actually change?" comparison still holds.
+// The chosen set is returned in the INPUT's order rather than in pick order, because that order is a
+// contract (index 0) and a ranking (salience) that this function has no business restating.
+function spanLightness(entries, limit) {
+    if (entries.length <= limit) return entries.slice();
+    const chosen = [0];
+    while (chosen.length < limit) {
+        let best = -1, bestGap = -Infinity;
+        for (let i = 1; i < entries.length; i++) {
+            if (chosen.includes(i)) continue;
+            // Distance to the NEAREST already-chosen entry: maximising it is what spreads the picks
+            // out, where maximising distance to the mean would just pile them at both extremes.
+            let gap = Infinity;
+            for (const c of chosen) gap = Math.min(gap, Math.abs(entries[i].L - entries[c].L));
+            if (gap > bestGap) { bestGap = gap; best = i; }
+        }
+        if (best < 0) break;
+        chosen.push(best);
+    }
+    return chosen.sort((a, b) => a - b).map(i => entries[i]);
+}
+
+// Buys back ONE slot at either end of the lightness axis when the truncation has cut the picture's
+// darkest or lightest colour and left nothing near it. See SALIENCE_CHROMA_REF's block above for the
+// bug this closes; what follows is why it is a RESERVATION rather than another salience term.
+//
+// ⛔ AN ADDITIVE LIGHTNESS TERM WAS BUILT, SWEPT AND REFUTED -- do not revive it. Every shape strong
+// enough to lift a 1.5% black over a 5.5% grey also lifts some dark over some accent, because the
+// competition IS the mechanism: measured over 401 images, the family loses 7 to 14 genuine accent
+// swatches (#380DF3, #9907EC, #6FE839 among them) at every weight and margin tried, including the
+// symmetric distance-from-centre and beyond-the-next-entry-by-a-margin shapes. That is the exact
+// behaviour the chroma term exists to produce, so no tuning rescues it. A reservation does not compete
+// for the slot -- it names its own price -- so accent conservation holds BY CONSTRUCTION.
+//
+// Three rules decide the price, and all three were bought with a measurement:
+//   · NEVER AN ACCENT. The reason the whole family was rejected; it cannot be reintroduced through the
+//     back door of who pays.
+//   · NEVER A COLOUR. "Not an accent" alone is insufficient and the counts hide it -- plenty of real
+//     colour lives in the STRUCTURE pool, and that rule traded #50D9AF and #009689 away for a black. A
+//     palette may buy lightness range with a dull entry; it may not buy it with a colour. CHROMA_FLOOR
+//     is this module's own line for "not colourful in any useful sense", so no new constant is needed.
+//   · NEVER THE OTHER EXTREME. Without it the light pass sold the black the dark pass had just bought
+//     (Starmancer.gif went out #000000, in #C4F6FF) -- the rule eating itself. An entry cannot be worth
+//     reserving and worth spending in the same palette.
+// If no entry satisfies all three, nothing is bought. A palette of eight accents keeps its eight
+// accents, which is the correct degradation.
+//
+// The winner is APPENDED, never inserted: it lost on salience and that is still true, so claiming a
+// rank for it would misstate the ranking. Index 0 stays untouched -- it is a contract.
+function reserveLightnessRange(ordered, limit) {
+    if (ordered.length <= limit) return ordered.slice();
+    const kept = ordered.slice(0, limit);
+    // Taken over EVERY candidate, including the ones already cut: the question is what the PICTURE
+    // contains, not what happened to survive.
+    const byL = [...ordered].sort((a, b) => a.L - b.L);
+    const extremes = [byL[0], byL[byL.length - 1]];
+    for (const pick of extremes) {
+        if (kept.includes(pick)) continue;
+        // How much of the picture's lightness range the palette currently fails to represent.
+        if (Math.min(...kept.map(k => Math.abs(k.L - pick.L))) < LIGHTNESS_GAP) continue;
+        let victim = -1;
+        for (let i = kept.length - 1; i >= 1; i--) {
+            if (extremes.includes(kept[i]) || kept[i].origin === 'accent') continue;
+            if (chromaOf(kept[i]) >= CHROMA_FLOOR) continue;
+            victim = i;
+            break;
+        }
+        if (victim < 0) continue;
+        kept.splice(victim, 1);
+        kept.push(pick);
+    }
+    return kept;
+}
+
 // `count` entries -- callers (utils/colorPaletteView.js) render however many actually come back.
 // `count` (2026-07-14, Harkirat's request) lets callers ask for fewer clusters on smaller/simpler
 // sources (nameplate/decoration -- 4) than richer ones (avatar/banner -- 8) instead of one fixed K
@@ -384,8 +547,7 @@ function mergePerceptual(clusters, dE) {
 // 60-frame decoration). Duck-typed on `.bitmap.data` rather than `instanceof` deliberately: Jimp 1.x
 // hands back class instances built through its own plugin wrapper, so an identity check is a
 // needlessly brittle way to ask "is this already decoded".
-async function getColorPalette(source, count = KMEANS_COUNT) {
-    const img = source?.bitmap?.data ? source : await Jimp.read(source);
+async function extractPalette(img, count, overCluster) {
     const { width, height, data } = img.bitmap;
     const totalPixels = width * height;
     const pixelStep = Math.max(1, Math.floor(totalPixels / 2500));
@@ -403,7 +565,7 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     // Still over-clustered at 1.5x, for the original 2026-07-14 reason: the merge below needs slack to
     // fold genuine duplicates without eating into the requested count.
     const structureVectors = labs.map(o => ({ x: o.L * LIGHTNESS_WEIGHT, y: o.a, z: o.b }));
-    const structure = await clusterLabs(labs, structureVectors, Math.ceil(count * 1.5), labs.length);
+    const structure = await clusterLabs(labs, structureVectors, Math.ceil(count * overCluster), labs.length);
 
     // --- Pool B: accent. Only the most chromatic pixels, clustered in TRUE OKLab, so a feature
     // covering ~1% of the image gets its own centroid instead of losing every slot to the background.
@@ -411,7 +573,12 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     // this self-disabling: a greyscale image has nothing above CHROMA_FLOOR, so `accent` stays empty.
     const chromas = labs.map(chromaOf);
     const ranked = [...chromas].sort((a, b) => b - a);
-    const tailCut = Math.max(CHROMA_FLOOR, ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * ACCENT_TAIL_FRACTION))]);
+    // The chroma of the image's most-chromatic 3% of pixels. Hoisted out of tailCut because the
+    // low-colour restrict below asks about this same quantity -- and because reading it in one place
+    // makes it obvious that the two uses take DIFFERENT floors, which is the point (see
+    // LOW_COLOUR_CHROMA's block above).
+    const tailChroma = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * ACCENT_TAIL_FRACTION))];
+    const tailCut = Math.max(CHROMA_FLOOR, tailChroma);
     const accentLabs = labs.filter((_, i) => chromas[i] >= tailCut);
     const accent = accentLabs.length >= ACCENT_MIN_PIXELS
         ? await clusterLabs(accentLabs, accentLabs.map(o => ({ x: o.L, y: o.a, z: o.b })), ACCENT_CLUSTERS, labs.length)
@@ -459,22 +626,146 @@ async function getColorPalette(source, count = KMEANS_COUNT) {
     const head = merged.slice(0, 1);
     const rest = merged.slice(1);
     const maxShare = Math.max(...rest.map(r => r.share), Number.EPSILON);
-    const maxChroma = Math.max(...rest.map(chromaOf), Number.EPSILON);
+    // ⚠️ THE DENOMINATOR IS FLOORED, and that floor is the whole of the first half of the fix -- see
+    // SALIENCE_CHROMA_REF's block above. It changes NOTHING on an image whose colours already clear it.
+    const maxChroma = Math.max(...rest.map(chromaOf), SALIENCE_CHROMA_REF);
     const salience = e => e.share / maxShare + SALIENCE_WEIGHT * (chromaOf(e) / maxChroma);
     rest.sort((a, b) => salience(b) - salience(a));
 
     const ordered = [...head, ...rest];
-    // Soft restrict, judged on the EXTRACTED colours rather than raw pixel statistics -- see point 5
-    // in the V3 block above for why that distinction decides whether a dark image with one real accent
-    // keeps its full allowance. Math.min keeps nameplate/decoration (which already ask for 4) at 4
-    // rather than letting this ever RAISE a count.
-    const isLowColour = !ordered.some(e => chromaOf(e) >= CHROMA_FLOOR);
+
+    // --- Soft restrict. Judged on the PIXEL TAIL, not on the extracted centroids, and the change of
+    // subject is what fixes it -- LOW_COLOUR_CHROMA's block above has the measurement and the reason.
+    // Math.min keeps nameplate/decoration (which already ask for 4) at 4 rather than letting this ever
+    // RAISE a count.
+    //
+    // ⚠️ IT IS ALSO WHAT REMOVES THE BOUNDARY FLIP, and by construction rather than by moving a
+    // threshold. `tailChroma` is computed from the sampled pixels before a single centroid exists, so
+    // it does not depend on `count` at all; the old test read the extracted candidates, which DO
+    // change with the requested count, so the same image could be called colourful at one target and
+    // colourless at another. Measured over the corpus at targets 6 and 8: the old gate disagreed with
+    // itself on 3 images, this one on 0.
+    const isLowColour = tailChroma < LOW_COLOUR_CHROMA;
     const limit = isLowColour ? Math.min(LOW_COLOUR_COUNT, count) : count;
 
-    return ordered.slice(0, limit).map(e => {
+    // ⚠️ WHEN THE RESTRICT FIRES, THE SURVIVORS ARE CHOSEN BY LIGHTNESS COVERAGE, NOT BY SALIENCE --
+    // the gate and the truncation were BOTH wrong and fixing only the gate leaves half the bug. On a
+    // colourless image the salience blend collapses to prevalence (every chroma term is ~0), so a
+    // plain slice returns the four largest regions, which on a greyscale ramp are four neighbouring
+    // mid-greys. Measured before this: a black-and-white avatar kept four near-whites and discarded a
+    // real black covering 11% of the picture, and another dropped both #000000 (11%) and #111111
+    // (17%) to keep two near-identical light greys. Lightness is the ONLY axis carrying information
+    // on such an image, so spanning it is the only defensible way to spend four slots.
+    //
+    // Farthest-first on L, the same Gonzalez traversal seedFarthestFirst already uses -- index 0 is
+    // held fixed because it is a contract (see above), then each slot goes to whatever is farthest in
+    // lightness from everything already chosen. The winners are then put BACK in salience order, so
+    // this changes which entries survive and never the order they arrive in.
+    //
+    // ⚠️ IT CHOOSES FROM `ordered.slice(0, count)`, NOT FROM ALL OF `ordered`, AND THAT BOUND IS
+    // LOAD-BEARING. Clustering over-asks by 50% so the merge has room (see this function's header), so
+    // `ordered` normally holds MORE than `count` entries and everything past `count` is surplus the
+    // extractor has already ranked out. Handed the unbounded list, this picked #1C1C1C for a
+    // black-and-white avatar -- a colour the same image's UNRESTRICTED palette would never show. A
+    // soft restrict must return a SUBSET of the full palette; showing fewer colours cannot mean
+    // showing different ones. Caught by diffing the restricted output against the unrestricted one,
+    // and pinned by scripts/paletteShape.test.js.
+    // Returned as OKLab entries, NOT hexes: getColorPalette below may still drop one or add a derived
+    // one, and both of those decisions are made in lightness. The conversion happens once, at the end.
+    //
+    // ⚠️ THE TWO BRANCHES ARE NOT ALTERNATIVES TO EACH OTHER AND MUST NOT BE MERGED. spanLightness
+    // REPLACES the ranking on a colourless image, where lightness is the only axis carrying anything;
+    // reserveLightnessRange KEEPS the ranking on a colourful one and buys back at most one slot at each
+    // end. Handing the colourful case to spanLightness is the regression caught on 2026-08-12 18:40 EDT
+    // (a 2% pure red deleted for sitting near another swatch in lightness).
+    return isLowColour
+        ? spanLightness(ordered.slice(0, count), limit)
+        : reserveLightnessRange(ordered, limit);
+}
+
+// Places a DERIVED swatch in the palette's emptiest lightness gap. Used only when the ladder needs one
+// more entry than the picture contains (3 -> 4, 7 -> 8, and only after the retry has failed to find a
+// real one).
+//
+// 📐 THE GAP, NOT A FIXED PERCENTAGE, AND THAT CHOICE IS LOAD-BEARING (Harkirat picked it 2026-08-12
+// 17:41 EDT over the alternative). colorPaletteView's `tint`/`shade` mix a fixed 35% toward white or
+// black, which DEGENERATES at the extremes: measured, tint(#FFFFFF) and shade(#000000) are no-ops, and
+// shade(#270100) lands 0.040 from its base -- below this module's own "same colour" threshold, so the
+// panel would show two swatches it elsewhere calls identical. Targeting an EMPTY SLOT cannot degenerate
+// that way, because the slot is chosen for being far from everything already present.
+//
+// 🚫 A BLEND OF TWO EXISTING SWATCHES WAS RULED OUT BY MEASUREMENT, and keeping the antialiasing seams
+// is what rules it out: on a flat two-colour image the seam swatch IS the blend of its two neighbours,
+// so blending them again reproduces it. Tested on five real corpus cases -- four duplicated an existing
+// entry within MERGE_DELTA_E (0.007 / 0.009 / 0.014 / 0.050).
+//
+// Hue and chroma are borrowed from the nearest existing entry so the result reads as a companion to a
+// real colour rather than an unrelated one; only lightness is new. Returns null rather than a
+// near-duplicate if the widest gap is still too narrow to hold a distinguishable colour -- showing
+// three honest swatches beats showing four when one of them is a twin.
+function fillLightnessGap(entries) {
+    if (entries.length === 0) return null;
+    // Sentinels at 0 and 1 so a palette clustered entirely in the midtones can place its derived entry
+    // out at an end, which is usually where the real gap is on such an image.
+    const points = [0, ...entries.map(e => e.L).sort((a, b) => a - b), 1];
+    let bestGap = -1, at = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+        const gap = points[i + 1] - points[i];
+        if (gap > bestGap) { bestGap = gap; at = (points[i] + points[i + 1]) / 2; }
+    }
+    const near = entries.reduce((b, e) => Math.abs(e.L - at) < Math.abs(b.L - at) ? e : b);
+    const made = { L: at, a: near.a, b: near.b, share: 0, origin: 'derived' };
+    // The guard the fixed-percentage version needed and did not have.
+    if (entries.some(e => deltaE(e, made) < MERGE_DELTA_E)) return null;
+    return made;
+}
+
+// Moves a palette onto the nearest page rung -- see PALETTE_RUNGS above for why the rungs are what
+// they are and why this is avatar/banner only.
+function applyLadder(entries) {
+    const target = LADDER[entries.length];
+    if (!target || target === entries.length) return entries;
+    // Down: keep the salience order and drop the tail. ⚠️ THIS MUST NOT USE spanLightness, and the
+    // first version did -- caught 2026-08-12 18:40 EDT by a synthetic control. Lightness coverage is
+    // the right rule for a COLOURLESS image, where lightness is the only axis carrying information;
+    // applied to a colourful one it discards a small vivid accent for sitting near another swatch in
+    // lightness. Measured: a 2% pure red on a beige/brown ground was dropped outright, which is
+    // precisely the colour the accent pool exists to surface.
+    //
+    // Nothing is lost by the simpler rule, because a colourless image never reaches here: the
+    // low-colour restrict has already truncated it to LOW_COLOUR_COUNT, which is a rung, so the ladder
+    // no-ops on it. Everything that gets this far is colourful, and `entries` is already ordered by
+    // prevalence blended with chroma -- the tail is genuinely the least worth keeping.
+    if (target < entries.length) return entries.slice(0, target);
+    // Up: only ever by one, and only ever appended -- index 0 is a contract and a manufactured colour
+    // has no business anywhere but last.
+    const made = fillLightnessGap(entries);
+    return made ? [...entries, made] : entries;
+}
+
+// `source` may be a url, a Buffer, or an already-decoded Jimp image -- decoded ONCE here so a retry
+// costs another clustering pass and never another download or decode.
+async function getColorPalette(source, count = KMEANS_COUNT) {
+    const img = source?.bitmap?.data ? source : await Jimp.read(source);
+    let entries = await extractPalette(img, count, OVERCLUSTER);
+
+    // The ladder and its retry are avatar/banner only (see PALETTE_RUNGS). A nameplate or decoration
+    // asking for 4 gets whatever its design really has.
+    if (count === KMEANS_COUNT && entries.length > 0 && !PALETTE_RUNGS.has(entries.length)) {
+        // An off-rung count often just means the seeds were spread too thinly, so look harder BEFORE
+        // resorting to manufacturing or discarding. The retry is kept only if it actually lands on a
+        // rung -- a retry that returns a different off-rung count is not an improvement, and taking it
+        // anyway would make the output depend on which pass happened to run.
+        const retried = await extractPalette(img, count, OVERCLUSTER_RETRY);
+        if (PALETTE_RUNGS.has(retried.length)) entries = retried;
+    }
+    const final = count === KMEANS_COUNT ? applyLadder(entries) : entries;
+
+    return final.map(e => {
         const { r, g, b } = oklabToRgb(e.L, e.a, e.b);
         // `origin` is carried out to the label layer, which is the only consumer -- it distinguishes a
-        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot.
+        // small vivid FEATURE from an ordinary region, which share and chroma alone cannot, and it is
+        // also how a 'derived' entry announces that it is not a measurement of the picture.
         return { hex: (r << 16) | (g << 8) | b, percent: Math.round(e.share * 100), origin: e.origin };
     });
 }
@@ -600,11 +891,17 @@ const PALETTE_ALGO_VERSION = fingerprint(
     // Everything the extracted values depend on, including the helpers the top-level functions call --
     // a change inside clusterLabs or mergePerceptual never shows up in getColorPalette's own source.
     srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb, chromaOf, deltaE,
-    seedFarthestFirst, clusterLabs, mergePerceptual, getColorPalette,
+    seedFarthestFirst, clusterLabs, mergePerceptual, spanLightness, reserveLightnessRange,
+    fillLightnessGap, applyLadder,
+    extractPalette, getColorPalette,
     composeNameplatePalette, perceptualDistanceHex,
     {
         KMEANS_COUNT, KMEANS_ITERATIONS, LIGHTNESS_WEIGHT, MERGE_DELTA_E, CHROMA_FLOOR,
         ACCENT_TAIL_FRACTION, ACCENT_MIN_PIXELS, ACCENT_CLUSTERS, SALIENCE_WEIGHT, LOW_COLOUR_COUNT,
+        LOW_COLOUR_CHROMA, SALIENCE_CHROMA_REF, LIGHTNESS_GAP, OVERCLUSTER, OVERCLUSTER_RETRY, LADDER,
+        // A Set does not survive JSON, so it is fingerprinted as its members -- without this a change
+        // to which counts count as a rung would move no hash and leave every cached palette stale.
+        PALETTE_RUNGS: [...PALETTE_RUNGS].join(','),
         PALETTE_COUNTS, NAMEPLATE_OVERASK
     },
     MONTAGE_FINGERPRINT
@@ -663,8 +960,32 @@ function chromaOfHex(hex) {
     return chromaOf(lab);
 }
 
+// Which pair of cache fields a source's palette belongs in. A source is only stored under the guild*
+// pair when its image ACTUALLY came from the server profile -- a source with no override resolves to
+// the global image even while browsing the server view, and caching that under a guild key would
+// extract the same pixels twice and store them under two names.
+//
+// ⚠️ IT LIVES HERE RATHER THAN IN utils/colorPalette.js (moved 2026-08-12 23:58 EDT) for the same
+// reason PALETTE_COUNTS does: utils/accentColor.js needs the rule too, now that Dynamic Profile Colors
+// draws on stored swatches, and it cannot import colorPalette -- colorPalette imports IT, so that would
+// close a cycle. This module requires neither, so it is the only home all three can share.
+//
+// ⚠️ DELIBERATELY NOT PART OF PALETTE_ALGO_VERSION. It names where a palette is stored, not how one is
+// computed, so folding it into the fingerprint would re-derive every cached palette in the world the
+// next time somebody renames a local variable in it.
+function paletteFields(kind, isGuild) {
+    const name = isGuild ? `guild${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
+    return { paletteField: `${name}Palette`, sourceField: `${name}PaletteSource` };
+}
+
 module.exports = {
-    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
+    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E, paletteFields,
+    // Exported for scripts/paletteShape.test.js only -- no runtime caller. The low-colour
+    // restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette
+    // of a simple image), so the selection rule is tested directly rather than inferred from output.
+    spanLightness, LOW_COLOUR_CHROMA, LOW_COLOUR_COUNT,
+    reserveLightnessRange, LIGHTNESS_GAP, SALIENCE_CHROMA_REF, CHROMA_FLOOR,
+    fillLightnessGap, applyLadder, PALETTE_RUNGS, LADDER,
     composeNameplatePalette, serializePalette, deserializePalette,
     paletteContextFields, readPaletteContext, PALETTE_ALGO_VERSION,
     PALETTE_COUNTS, NAMEPLATE_OVERASK, chromaOfHex

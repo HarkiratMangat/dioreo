@@ -359,13 +359,19 @@ module.exports = {
             // pre-existing saved docs). "Pre-Designed Palette" keeps each command's own themed color
             // (Settings still falls back to avatar since it has no theme color of its own);
             // "Avatar"/"Banner" override every command's accent to match that image instead.
-            const accentStyle = prefs.accentColorStyle || 'preset';
+            // ⚠️ SIMPLIFIED TO THREE OPTIONS 2026-08-12 23:56 EDT (Harkirat). "Banner Color" and
+            // "Display Name Colors" are RETIRED: both already fell back to Avatar whenever their own
+            // source was missing, and neither earned a dropdown slot. Verified against PROD before
+            // removing them -- accentColorStyle held avatar x17 and preset x1, and not one document
+            // carried either value, so this strands nobody. A stored value is still normalized here
+            // rather than displayed, so the panel shows what resolveAccentColor will actually DO
+            // instead of naming an option the dropdown can no longer select.
+            const rawAccentStyle = prefs.accentColorStyle || 'preset';
+            const accentStyle = (rawAccentStyle === 'banner' || rawAccentStyle === 'displayName') ? 'avatar' : rawAccentStyle;
             const accentStyleDisplayMap = {
                 default: 'Pre-Designed Palette',
                 preset: 'Pre-Designed Palette',
                 avatar: 'Avatar Color',
-                banner: 'Banner Color',
-                displayName: 'Display Name Colors',
                 dynamicProfile: 'Dynamic Profile Colors'
             };
             // Hex code shown next to Avatar/Banner style (2026-07-12) -- pulled straight from the
@@ -380,30 +386,21 @@ module.exports = {
             // markdown (the first inner backtick would prematurely close the outer span), so this
             // stays as adjacent same-styled spans instead of one merged span.
             let accentDisplay = `\`${accentStyleDisplayMap[accentStyle] || 'Avatar Color'}\``;
+            // ⚠️ The 'banner' and 'displayName' display branches were REMOVED with their dropdown
+            // options (2026-08-12 23:59 EDT). `accentStyle` is normalized above, so a legacy stored
+            // value lands here as 'avatar' and shows the avatar hex -- which is what it now resolves
+            // to. Do not re-add a branch keyed on a value the dropdown cannot produce.
             if (accentStyle === 'avatar') accentDisplay += hexSuffix(prefs.avatarColorHex);
-            if (accentStyle === 'banner') accentDisplay += hexSuffix(prefs.bannerColorHex);
-            // 'displayName' shows BOTH real gradient stops (not just the blended hex actually applied
-            // to containers) since these are the user's own literal chosen colors -- more informative
-            // than the blend alone. displayNameColors was already resolved above (panelColorHex), so
-            // prefs.displayNameColorHex/Source are already fresh on this same in-memory prefs object
-            // -- no second fetch needed here. A null displayNameColors means the Nitro feature isn't
-            // set up at all, so this falls back to Avatar Color (matching resolveAccentColor's own
-            // fallback) with a short inline note instead of a broken/blank hex.
-            if (accentStyle === 'displayName') {
-                if (displayNameColors) {
-                    const [c1, c2] = displayNameColors;
-                    accentDisplay += ` \`(#${c1.toString(16).padStart(6, '0').toUpperCase()} → #${c2.toString(16).padStart(6, '0').toUpperCase()})\``;
-                } else {
-                    accentDisplay = `\`${accentStyleDisplayMap.avatar}\`${hexSuffix(prefs.avatarColorHex)} *(Display Name Colors not set up)*`;
-                }
-            }
             // 'dynamicProfile' shows the hex ACTUALLY picked for this render (panelColorHex,
             // resolved above via resolveDynamicProfileColor) plus a short explainer, since there's no
             // single fixed hex to show like every other style -- the whole point is it changes on
             // every new command launch. Always has at least Avatar to draw from, so unlike
             // displayName there's no "not set up" fallback state to handle here.
             if (accentStyle === 'dynamicProfile') {
-                accentDisplay += ` \`(#${panelColorHex.toString(16).padStart(6, '0').toUpperCase()})\`\n-# Randomly picks from your Avatar, Banner, Display Name, Decoration & Nameplate colors — new pick on every command, held steady while paging/toggling`;
+                // ⚠️ The explainer names what the pool ACTUALLY holds as of 2026-08-12 23:56 EDT: every
+                // swatch saved for this user across their global and server profiles, not one colour
+                // per source. Display Name Colors are excluded, so do not re-add them to this sentence.
+                accentDisplay += ` \`(#${panelColorHex.toString(16).padStart(6, '0').toUpperCase()})\`\n-# Randomly picks from every color saved for your Avatar, Banner, Deco & Nameplate — across both your main and server profiles, new pick on every command, held steady while paging/toggling`;
             }
             containerComponents.push({ type: 10, content: `**Accent Color Style** = ${accentDisplay}` });
             containerComponents.push({
@@ -412,10 +409,8 @@ module.exports = {
                     type: 3, custom_id: `set_accent_style|${userId}|1`, placeholder: "Choose how embed accent colors are picked...",
                     options: [
                         { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
-                        { label: "Avatar Color", value: "avatar", description: "Every command matches your avatar's dominant color", default: accentStyle === 'avatar' },
-                        { label: "Banner Color", value: "banner", description: "Every command matches your banner's dominant color", default: accentStyle === 'banner' },
-                        { label: "Display Name Colors", value: "displayName", description: "Matches your Nitro name-style gradient (requires setup)", default: accentStyle === 'displayName' },
-                        { label: "Dynamic Profile Colors", value: "dynamicProfile", description: "Randomly picks from all your profile colors on each command", default: accentStyle === 'dynamicProfile' }
+                        { label: "Avatar Color", value: "avatar", description: "Matches your avatar — your server one where you've set one", default: accentStyle === 'avatar' },
+                        { label: "Dynamic Profile Colors", value: "dynamicProfile", description: "Randomly picks from every color saved across your profiles", default: accentStyle === 'dynamicProfile' }
                     ]
                 }]
             });
