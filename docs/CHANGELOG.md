@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.14.0 — 2026-08-13 10:12 EDT (#122) — an invisible pixel stops passing for an opaque one
+## Pre-Release v3.15.0 — 2026-08-13 15:41 EDT (#123) — admin access becomes per-page, announcements become a real queue
+
+Three items bundled by scheduling, not design overlap — each built, tested, and verified independently.
+
+**`/colors` gains a landing option.** A `page` string-choice reordered ahead of `source`/`visibility` (Discord's option picker follows registration order, not alphabetical) jumps straight to Avatar/Banner/Name/Nameplate/Deco instead of always opening on Avatar. `from` was renamed `source` with clearer choice labels ("From Main Profile"/"From Server Profile") in the same pass.
+
+**Multi-user admin access is scoped per-PAGE within `/manage`, not just per top-level command.** A token vocabulary (`all` / `manage` / `alerts` / `autobuild` / `manage.<page>`, `utils/adminAccess.js`) lets the owner grant a trusted person exactly the `/manage` pages they need — e.g. Calendar only — rather than all-or-nothing `/manage` access. Enforced at every command guard, the shared button/modal prefix guard (previously one blanket check covering `/manage`+`/alerts`+`/autobuild` together — a real gap, since it meant an `/alerts`-only grant could still click `/manage`'s own buttons), and `/help`'s Bot Admin category, which now filters each command line individually. Manage Admins stays owner-only visibility — never grantable at any scope. Rich per-admin cards show a live avatar thumbnail, clickable mention, raw Discord ID, formatted permissions and note, with Edit Permissions (reopens prefilled, add/remove by editing the list) and Revoke directly on each card.
+
+**Announcement was rebuilt twice the same day.** The first version was a singleton (`docType: 'global'`) that silently lost data — posting a second announcement before a user saw the first overwrote it entirely, and there was no way to delete just one. It's now a real collection: one doc per announcement, per-user `seenAnnouncementIds` tracking instead of a single version number. Delivery bundles every unseen announcement into ONE ephemeral follow-up as separate embeds (never one message per announcement), each with a random-but-constrained-HSL accent colour generated once at creation and never regenerated on edit. Expiry defaults to 60 days, accepts a custom day count or `never`, filtered at query time in both delivery and the `/manage` list — no cleanup job needed.
+
+Two real bugs found by direct reproduction against the dev DB, not by reading code: a `manageCommand` reference living outside the block scope where it was declared, and a stale MongoDB unique index (`docType_1`) surviving the Announcement singleton→collection schema rewrite — both produced a silent "stuck" interaction (`deferReply` acknowledged, nothing ever resolved it) rather than a visible error, since neither exception was caught locally and both fell through to the outer crash-safety handler. A real regression in `guildPolicyEnforcement.test.js`'s Bot Admin test fixture (missing the new per-command permission keys) was also caught and fixed before merge.
+
+`docs/legal/PRIVACY.md` gained §2.1b and Appendix A entries for the two new records (`AdminUser`, `Announcement`) and the new `UserPreference.seenAnnouncementIds` field — folded into the existing pending v1.11 entry rather than a new version number, since all of it ships together on the v3 release.
+
+## Pre-Release v3.14.0 — 2026-08-13 10:12 EDT (#122 · `2b31770`) — an invisible pixel stops passing for an opaque one
 
 **Harkirat felt View Colors' panel switching and cold-start renders had gotten slightly less snappy, and asked for real data instead of three inconsistent manual timings.** Built durable instrumentation (`models/RenderTiming.js`) and let it accumulate through real dev-bot use. **Neither complaint held up**: 73 real panel-switch samples show no systematic slowdown (`subpage/avatar`'s clearest series actually trends faster across the session, not slower), and a purpose-built harness that forces repeated cold renders of the same nameplate/decoration design (bypassing the panel, no gateway login needed — `uploadToStorageChannel` only ever required `BOT_TOKEN`) found the same: 13 forced-plus-organic cold renders per source settle into a stable band with essentially zero drift.
 

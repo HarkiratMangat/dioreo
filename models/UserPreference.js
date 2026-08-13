@@ -139,7 +139,15 @@ const UserPreferenceSchema = new mongoose.Schema({
     guildDecorationPalette: { type: mongoose.Schema.Types.Mixed },
     guildDecorationPaletteSource: { type: String },
     guildNameplatePalette: { type: mongoose.Schema.Types.Mixed },
-    guildNameplatePaletteSource: { type: String }
+    guildNameplatePaletteSource: { type: String },
+
+    // Announcement one-time delivery tracking. ⚠️ REDESIGNED 2026-08-13 from a single version
+    // number to a per-announcement id list -- Announcement moved from a singleton to a real
+    // collection (see models/Announcement.js's header), so "have you seen the CURRENT one" no
+    // longer makes sense when multiple can be queued/outstanding at once. An id lands here only
+    // after a successful delivery (utils/announcement.js) -- never pruned, but the collection this
+    // compares against stays tiny (a handful of announcements at most), so this never grows large.
+    seenAnnouncementIds: [{ type: mongoose.Schema.Types.ObjectId }]
 });
 
 module.exports = mongoose.model('UserPreference', UserPreferenceSchema);
