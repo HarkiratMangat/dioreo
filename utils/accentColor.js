@@ -1,6 +1,6 @@
 // utils/accentColor.js
 const { Routes } = require('discord.js');
-const { getDominantColor } = require('./colorExtract');
+const { getDominantColor, paletteFields } = require('./colorExtract');
 const { extractFrameMontage } = require('./stillFrame');
 const { readGuildProfile, fetchGuildNameStyles, normalizeNameStyleColors } = require('./guildProfile');
 const { deriveNameplateName, nameplateNameFromAsset } = require('./nameplatePalettes');
@@ -148,7 +148,17 @@ function blendGradientColors([first, second]) {
 // CDN/API or re-run pixel averaging/blending unless the underlying source actually changed.
 async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset', displayNameColors = null, guildProfile = null, isGuildNameStyle = false }) {
     const rawStyle = prefs.accentColorStyle || 'preset';
-    const effectiveStyle = (rawStyle === 'default' || rawStyle === 'preset') ? defaultBehavior : rawStyle;
+    // ⚠️ 'banner' AND 'displayName' ARE RETIRED STYLES (2026-08-12 23:56 EDT, Harkirat's simplification
+    // to three options: Pre-Designed Palette, Avatar Color, Dynamic Profile Colors). They are mapped
+    // rather than deleted because `accentColorStyle` is a plain String with no enum, so nothing stops a
+    // stored value surviving -- measured before removing them, PROD held avatar x17 and preset x1 and
+    // not one document carried either, so this maps a case that should not exist rather than migrating
+    // real users. ⚠️ Do NOT "clean up" the branches below that still handle them: they are what makes an
+    // old value resolve to something sensible instead of extracting from a source the UI can no longer
+    // pick. Avatar is the target because both already fell back to it whenever their own source was
+    // missing.
+    const normalized = (rawStyle === 'banner' || rawStyle === 'displayName') ? 'avatar' : rawStyle;
+    const effectiveStyle = (normalized === 'default' || normalized === 'preset') ? defaultBehavior : normalized;
 
     if (effectiveStyle === 'preset') return presetHex;
 
@@ -340,13 +350,33 @@ async function buildDynamicColorPool(interaction, prefs, presetHex) {
     // `.filter(hex => hex != null)` below drops every excluded source; resolveDynamicProfileColor's
     // own presetHex fallback only ever kicks in if EVERY source fails (pool ends up empty).
 
-    // Each source independently prefers this guild's override and falls back to the global profile,
-    // so the pool reflects the profile the user actually presents in the place they ran the command
-    // -- mixing, say, a server avatar with a global nameplate when only the avatar is overridden.
+    // 🎨 SWATCHES FIRST, THE PER-SOURCE ACCENT AS THE TOP-UP (2026-08-12 23:56 EDT, Harkirat's design
+    // and his choice between three candidates). The pool used to be ONE accent colour per source --
+    // five colours at most. It now draws every stored swatch this user has for a source, from BOTH the
+    // global and the server-profile field pair, which is up to 8 avatar + 8 banner + 4 nameplate +
+    // 4 decoration. Display Name Colors are excluded outright: they are two exact values the user
+    // picked in Discord's own UI rather than colours extracted from an image, and the style that
+    // surfaced them is being retired in the same change.
+    //
+    // ⚠️ THE TOP-UP IS THE WHOLE REASON THIS IS OPTION 3 AND NOT A STRAIGHT SWAP. `*Palette` fields are
+    // written ONLY by the View Colors panel, so a user who has never opened `/colors` has no stored
+    // swatches at all -- measured on prod at the time of writing, 12 of 18 preference documents (67%)
+    // had none. A pure swatch pool would therefore be EMPTY for most people and silently fall through
+    // to the preset, i.e. an option that appears to do nothing. So a source with no stored palette
+    // contributes its single accent colour exactly as before, and the pool gets richer as the user
+    // browses their own colours.
+    //
+    // 🚫 EXTRACTING ON DEMAND TO FILL THE POOL WAS REJECTED, not overlooked: up to four extractions
+    // (ffmpeg included) inside a command render is precisely the synchronous CPU burst that caused the
+    // bot-wide 10062 interaction timeouts on 2026-07-13.
     const guildProfile = readGuildProfile(interaction);
 
+    const storedSwatches = (kind) => storedSwatchesFor(prefs, kind);
+
     // Avatar -- always available, free (interaction.user already has the current hash).
-    pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null, guildProfile));
+    const avatarSwatches = storedSwatches('avatar');
+    if (avatarSwatches.length) pool.push(...avatarSwatches);
+    else pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null, guildProfile));
 
     // Banner -- only if the user actually has one set. A server banner is already in hand, so the
     // global force-fetch is skipped when one exists.
@@ -356,32 +386,60 @@ async function buildDynamicColorPool(interaction, prefs, presetHex) {
             () => interaction.client.users.fetch(interaction.user.id, { force: true }));
     }
     if (guildProfile?.bannerHash || userFetch.banner) {
-        pool.push(await getCachedColor(prefs, 'banner', userFetch, null, guildProfile));
+        const bannerSwatches = storedSwatches('banner');
+        if (bannerSwatches.length) pool.push(...bannerSwatches);
+        else pool.push(await getCachedColor(prefs, 'banner', userFetch, null, guildProfile));
     }
 
-    // Display Name Colors / Avatar Decoration / Nameplate -- one combined raw REST call covers all
-    // three GLOBAL values instead of three separate round-trips. The guild equivalents came free
-    // with the interaction, so each is preferred over its global counterpart below.
-    const extras = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
-        () => fetchProfileExtras(interaction.client, interaction.user.id));
+    // Avatar Decoration / Nameplate -- one combined raw REST call covers both GLOBAL values instead of
+    // two separate round-trips, and it is skipped entirely when stored swatches already answer for
+    // both. The guild equivalents came free with the interaction.
+    const decoSwatches = storedSwatches('decoration');
+    const nameplateSwatches = storedSwatches('nameplate');
+    const needsExtras = !decoSwatches.length || !nameplateSwatches.length;
+    const extras = needsExtras
+        ? await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
+            () => fetchProfileExtras(interaction.client, interaction.user.id))
+        : {};
 
-    const guildNameColors = await resolveGuildNameColors(interaction, guildProfile, isChatInputCommand);
-    if (guildNameColors) pool.push(await getCachedDisplayNameColor(prefs, guildNameColors, true));
-    else if (extras.displayNameColors) pool.push(await getCachedDisplayNameColor(prefs, extras.displayNameColors));
-
-    if (guildProfile?.decorationUrl) {
+    if (decoSwatches.length) {
+        pool.push(...decoSwatches);
+    } else if (guildProfile?.decorationUrl) {
         pool.push(await getCachedDecorationColor(prefs, guildProfile.decorationUrl, guildProfile.decorationAsset, null, true));
     } else if (extras.decorationUrl) {
         pool.push(await getCachedDecorationColor(prefs, extras.decorationUrl, extras.decorationAsset, null));
     }
 
-    if (guildProfile?.nameplateUrl) {
+    if (nameplateSwatches.length) {
+        pool.push(...nameplateSwatches);
+    } else if (guildProfile?.nameplateUrl) {
         pool.push(await getCachedNameplateColor(prefs, guildProfile.nameplateUrl, guildProfile.nameplateAsset, null, true));
     } else if (extras.nameplateUrl) {
         pool.push(await getCachedNameplateColor(prefs, extras.nameplateUrl, extras.nameplateAsset, null));
     }
 
-    return pool.filter((hex) => hex != null);
+    // De-duplicated: the same colour appearing in both the global and the server palette of one source
+    // would otherwise weight the random pick toward it for no reason a user could see.
+    return [...new Set(pool.filter((hex) => hex != null))];
+}
+
+// Every stored swatch this user has for one source, from BOTH the global and the server-profile field
+// pair. A guild palette is keyed on the IMAGE HASH rather than on a guild id, so it is "the server
+// profile this user most recently viewed colours for" -- included regardless of which guild we are in
+// now, per Harkirat's "from both global & server profiles".
+//
+// ⚠️ A NAMED, EXPORTED FUNCTION RATHER THAN AN INLINE ARROW, so scripts/dynamicPool.test.js exercises
+// THIS code instead of a copy of it. It was an inline closure first, and the test that "covered" it
+// re-implemented the expression -- so deleting the guild half of the read, and deleting the malformed-
+// entry guard, both left the suite green. A test of a re-implementation reports on the re-implementation.
+function storedSwatchesFor(prefs, kind) {
+    return [false, true]
+        .flatMap(isGuild => prefs[paletteFields(kind, isGuild).paletteField] || [])
+        // `entry?.hex` and the null filter are not defensive noise: a palette restored from a cache
+        // written before the wire format gained its flags can hold an entry with no hex at all, and an
+        // undefined reaching the pool becomes an undefined accent colour on a real embed.
+        .map(entry => entry?.hex)
+        .filter(hex => hex != null);
 }
 
 async function resolveDynamicProfileColor(interaction, prefs, presetHex) {
@@ -515,5 +573,7 @@ module.exports = {
     fetchProfileExtras,
     resolveDynamicProfileColor,
     resolveGuildNameColors,
-    invalidateAccentCache
+    invalidateAccentCache,
+    // Exported for scripts/dynamicPool.test.js only -- no runtime caller outside this module.
+    storedSwatchesFor
 };

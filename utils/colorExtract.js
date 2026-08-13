@@ -960,8 +960,26 @@ function chromaOfHex(hex) {
     return chromaOf(lab);
 }
 
+// Which pair of cache fields a source's palette belongs in. A source is only stored under the guild*
+// pair when its image ACTUALLY came from the server profile -- a source with no override resolves to
+// the global image even while browsing the server view, and caching that under a guild key would
+// extract the same pixels twice and store them under two names.
+//
+// ⚠️ IT LIVES HERE RATHER THAN IN utils/colorPalette.js (moved 2026-08-12 23:58 EDT) for the same
+// reason PALETTE_COUNTS does: utils/accentColor.js needs the rule too, now that Dynamic Profile Colors
+// draws on stored swatches, and it cannot import colorPalette -- colorPalette imports IT, so that would
+// close a cycle. This module requires neither, so it is the only home all three can share.
+//
+// ⚠️ DELIBERATELY NOT PART OF PALETTE_ALGO_VERSION. It names where a palette is stored, not how one is
+// computed, so folding it into the fingerprint would re-derive every cached palette in the world the
+// next time somebody renames a local variable in it.
+function paletteFields(kind, isGuild) {
+    const name = isGuild ? `guild${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
+    return { paletteField: `${name}Palette`, sourceField: `${name}PaletteSource` };
+}
+
 module.exports = {
-    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E,
+    getDominantColor, getColorPalette, perceptualDistanceHex, MERGE_DELTA_E, paletteFields,
     // Exported for scripts/paletteShape.test.js only -- no runtime caller. The low-colour
     // restrict's every failure is silent (a palette that is merely SHORT looks exactly like a palette
     // of a simple image), so the selection rule is tested directly rather than inferred from output.

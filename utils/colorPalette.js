@@ -3,7 +3,8 @@
 // 6-swatch breakdown per source for a dedicated browsing UI, not something every command needs on
 // every render.
 const {
-    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK, PALETTE_ALGO_VERSION
+    getColorPalette, composeNameplatePalette, PALETTE_COUNTS, NAMEPLATE_OVERASK, PALETTE_ALGO_VERSION,
+    paletteFields
 } = require('./colorExtract');
 const { fetchProfileExtras, resolveGuildNameColors } = require('./accentColor');
 const { extractFrameMontage } = require('./stillFrame');
@@ -140,14 +141,12 @@ async function getSourceImageInfo(interaction, useGuild = false) {
 // "Refresh Colors" button, NOT by ordinary page-switch navigation (see index.js's colors_view/
 // colors_refresh_ vs colors_page_ handlers) -- still writes the fresh result back to cache
 // afterward, so page-switching within the same viewing session stays fast either way.
-// Which pair of cache fields a source's palette belongs in. A source is only stored under the
-// guild* pair when its image ACTUALLY came from the server profile -- a source with no override
-// resolves to the global image even while browsing the server view, and caching that under a guild
-// key would extract the same pixels twice and store them under two names.
-function paletteFields(kind, isGuild) {
-    const name = isGuild ? `guild${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
-    return { paletteField: `${name}Palette`, sourceField: `${name}PaletteSource` };
-}
+// ⚠️ `paletteFields` MOVED TO utils/colorExtract.js 2026-08-12 23:58 EDT and is re-exported below for
+// the callers that already import it from here. utils/accentColor.js needs the same field-name rule now
+// that Dynamic Profile Colors draws on stored swatches, and it cannot import THIS module -- this one
+// requires it, so that would close a cycle. colorExtract requires neither, which is exactly why
+// PALETTE_COUNTS lives there for the same reason. Two hand-rolled copies of `guild${Kind}Palette` would
+// drift silently, and a wrong field name reads as "no swatches saved" rather than as an error.
 
 // The identity a cached per-user palette is stored under. TWO facts, not one: WHICH IMAGE it came from
 // and WHICH ALGORITHM produced it.

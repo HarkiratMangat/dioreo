@@ -77,7 +77,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ## Pre-Release v3.13.0 — 2026-08-12 18:15 EDT — the palette stops discarding colours it found, and lands on a page rung
 
-> **Five changes to one subsystem, shipped as one release because each is built on the one before** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced, and the third part is the same root cause at the site the first two exposed. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
+> **Six changes to one subsystem, shipped as one release because each is built on the one before** — the ladder's down-step and its low-colour path both use the selection rule the restrict fix introduced, and the third part is the same root cause at the site the first two exposed. They were developed on separate branches and consolidated before merge; nothing was released in between, so there is no v3.12.0.
 >
 > **All three are one mistake in three costumes: a quantity that measures COLOURFULNESS being used to answer a question about IMPORTANCE.** It borrowed a pixel-level chroma floor to ask whether an image has colour at all (Part one), let salience collapse to prevalence on an image with no colour to rank by (Part one's truncation), and credited chroma while having no way to say that something is the darkest thing in the picture (Part three) — plus, found while measuring that, normalised a colourless image's own rounding noise to the full accent bonus. Naming the class is what turned the third one from a surprise into the next place to look.
 
@@ -154,6 +154,18 @@ It was extracted out of the interaction handler into a pure function so its bran
 **Download Avatar/Banner stay in the bottom action row.** They were moved into the container for one evening and reverted the same night on sight. ⚠️ The finding on the way is kept because the move will be proposed again: they could never have gone into the heading itself, since a Section carries exactly **one** accessory, a thumbnail **or** a button — a constraint this repo had already paid for once in `/settings` — and the avatar and decoration headings spend theirs on the source's own thumbnail, which is the subject of the page.
 
 **The 40-component ceiling is now asserted rather than remembered.** Exceeding it is a hard send failure this bot has already taken as a production crash, and the panel had only prose standing between it and the next addition. A full avatar page measures **30 of 40** and a banner page **31**, and the test asserts real headroom rather than merely being under the line — a page sitting at 39 passes a ceiling check and crashes on whatever anyone adds next.
+
+### Part six — Accent Color Style drops to three options, and Dynamic gets a real pool
+
+**Five styles became three: Pre-Designed Palette, Avatar Color, Dynamic Profile Colors.** Banner Color and Display Name Colors are retired — both already fell back to Avatar whenever their own source was missing, and neither earned a slot. Checked against production before removing them: `accentColorStyle` held **avatar ×17 and preset ×1**, and not one document carried either value, so this strands nobody. A stored value is still **normalized** rather than deleted, because the field is a plain String with no enum and nothing stops an old one existing; unnormalized it would resolve against a source the UI can no longer offer.
+
+**Avatar Color needed no change at all** — it already used your server avatar where you have one and your global avatar otherwise, decided per source by where you ran the command, with DMs always global. That is `getCachedColor`'s existing behaviour and it is also why there is deliberately no stored "which profile" setting.
+
+**Dynamic Profile Colors now draws on every swatch you have saved**, across both your main and server profiles — up to 8 avatar + 8 banner + 4 nameplate + 4 decoration, rather than one colour per source. Display Name Colors are excluded: they are exact values picked in Discord's own UI, not colours extracted from an image.
+
+⚠️ **The fallback is the whole design, not a safety net.** `*Palette` fields are written **only** by the View Colors panel, so a user who has never opened `/colors` has no stored swatches at all — measured on production, **12 of 18 preference documents (67%)** had none. A pure swatch pool would therefore be empty for most people and fall through to the preset, i.e. an option that appears to do nothing, silently. So a source with no stored palette contributes its single accent colour exactly as before, and the pool gets richer as you browse your own colours. Extracting on demand to fill it was **rejected rather than overlooked**: up to four extractions, ffmpeg included, inside a command render is precisely the synchronous CPU burst that caused the bot-wide `10062` interaction timeouts on 2026-07-13.
+
+⚠️ **One test in this batch was VACUOUS and was caught by the standing habit of deleting each rule to watch its case fail.** Two of the pool cases exercised a *copy of the expression written inside the test file*, so removing the server-profile half of the read and removing the malformed-entry guard both left the suite green. The reader was extracted into an exported function specifically so the test reaches the shipped code. A test of a re-implementation reports on the re-implementation.
 
 ---
 

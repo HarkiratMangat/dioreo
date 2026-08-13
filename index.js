@@ -1214,43 +1214,13 @@ client.on('interactionCreate', async interaction => {
 
             await prefs.save();
 
-            // One-time "hey, this needs Nitro setup" notice (2026-07-13) -- Display Name Colors is
-            // the one accent style that isn't guaranteed to exist at all (unlike avatar, which every
-            // user has, or banner, which silently falls back to avatar if unset with no notice).
-            // Fires only right when the user PICKS this option, not on every future render --
-            // resolveAccentColor's own silent avatar-fallback (utils/accentColor.js) already covers
-            // every render after this one without repeating the notice. A brand-new follow-up message
-            // (not editing @original, unlike sendV2Payload) needs the raw POST webhook route for the
-            // same reason every other V2 send bypasses discord.js's high-level methods -- no builder
-            // class exists for a type-17 Container, so interaction.followUp({components}) doesn't
-            // reliably serialize it.
-            if (action === 'set_accent_style' && selectedValue === 'displayName') {
-                const { fetchDisplayNameColors } = require('./utils/accentColor');
-                const colors = await fetchDisplayNameColors(interaction.client, targetUserId);
-                if (!colors) {
-                    try {
-                        const { Routes } = require('discord.js');
-                        await interaction.client.rest.post(
-                            Routes.webhook(interaction.applicationId, interaction.token),
-                            {
-                                body: {
-                                    flags: 32768 | 64, // Components V2 + ephemeral
-                                    components: [{
-                                        type: 17,
-                                        accent_color: 16724218, // Discord Nitro's own pink (#FF73FA) -- thematically fitting for a Nitro-gated notice
-                                        components: [{
-                                            type: 10,
-                                            content: `## 🎨 Display Name Colors Not Set Up\nThis matches Discord's **Nitro** name-style gradient — your profile doesn't have one yet.\n-# Using **Avatar Color** for now. Set one up in Discord's own Profile settings, or pick a different palette anytime in \`/settings\`.`
-                                        }]
-                                    }]
-                                }
-                            }
-                        );
-                    } catch (notifyError) {
-                        console.error('Failed to notify user about missing Display Name Colors setup (interaction likely expired):', notifyError);
-                    }
-                }
-            }
+            // ⚠️ THE "Display Name Colors not set up" ONE-TIME NOTICE WAS REMOVED HERE 2026-08-13 00:00
+            // EDT, with the style itself. It fired when a user PICKED that option and had no Nitro name
+            // gradient; the option no longer exists in /settings' dropdown, so the branch was
+            // unreachable rather than merely unused. `fetchDisplayNameColors` is still exported and
+            // still called by commands/settings.js -- but only behind its own
+            // `accentColorStyle === 'displayName'` gate, so a retired style costs no REST call on an
+            // ordinary render. The notice went; the capability did not.
 
             // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated
             // parameters instantly -- passes the current page through so picking an option on the
