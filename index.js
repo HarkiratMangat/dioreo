@@ -2178,6 +2178,9 @@ client.on('interactionCreate', async interaction => {
             // see its own comment for the shape Harkirat picked and why the trailing line is exclusive.
             const resultMessage = buildRefreshNotice({
                 source,
+                // Which profile the PRESSED source actually resolved from -- not which view the panel
+                // is in. Same distinction the accent invalidation above turns on.
+                activeIsGuild: Boolean(after.activeIsGuild),
                 changed,
                 accentCleared: clearedAccents.length > 0,
                 refreshed: refreshedAll

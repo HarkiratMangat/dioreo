@@ -125,6 +125,11 @@ const emojis = {
     // else had already gone wrong. Application emoji ids are per-application; the same name is not the
     // same id.
     showColors: '<a:ShowColors:1537280503105847486>',
+    // The Refresh Colors notice's "everything is already up to date" state (added 2026-08-12 23:41
+    // EDT). Harkirat supplied BOTH ids this time and both were confirmed by a live read before writing
+    // -- prod 1537301451506847947 (the literal, per this file's convention) and dev
+    // 1537301616229617695, which refreshEmojiIds() re-points to by name at boot.
+    swatches: '<a:Swatches:1537301451506847947>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

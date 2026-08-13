@@ -79,16 +79,17 @@ t('there is real headroom left, not a page sitting on the line', async () => {
 });
 
 // --- The placements themselves. Each was a deliberate decision and each is invisible from the outside.
-t('Download Avatar rides the copy-hint section, not the bottom row', async () => {
-    // A Section carries exactly ONE accessory, thumbnail OR button, so the download button cannot join
-    // the avatar heading -- that slot holds the avatar itself. It sits on the copy-hint line instead.
+t('Download Avatar sits in the bottom action row, not inside the container', async () => {
+    // ⚠️ IT WAS MOVED INSIDE FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED AT 23:41 on
+    // Harkirat's call after seeing it rendered. Asserted in this direction so the move cannot creep
+    // back in unnoticed -- and the finding that came out of it still stands: a Section carries exactly
+    // ONE accessory, thumbnail OR button, so it could never have joined the avatar heading anyway.
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const [container, actionRow] = components;
-    const carrier = container.components.find(c => c.type === 9 && c.accessory?.type === 2);
-    assert.ok(carrier, 'no section carries a button accessory inside the container');
-    assert.strictEqual(carrier.accessory.label, 'Download Avatar');
-    assert.ok(/HEX/.test(JSON.stringify(carrier.components)), 'the download button is not on the copy-hint line');
-    assert.ok(!JSON.stringify(actionRow).includes('Download'), 'a download button is still in the bottom row');
+    assert.ok(actionRow.components.some(b => b.label === 'Download Avatar'), 'Download Avatar is missing from the bottom row');
+    assert.ok(!JSON.stringify(container).includes('Download'), 'a download button is back inside the container');
+    const hint = container.components.find(c => c.type === 10 && /HEX/.test(c.content || ''));
+    assert.ok(hint, 'the copy hint is no longer a plain text component');
 });
 
 t('the heading keeps its thumbnail — the download button never displaces it', async () => {
@@ -99,25 +100,24 @@ t('the heading keeps its thumbnail — the download button never displaces it', 
     assert.ok(heading, 'the avatar heading lost its thumbnail accessory');
 });
 
-t('a page with no full-res original gets a plain copy hint and no button', async () => {
-    // Name/Nameplate/Deco have nothing worth downloading, so the section must degrade back to plain
-    // text rather than rendering an accessory with a null url.
+t('a page with no full-res original shows no download button at all', async () => {
+    // Name/Nameplate/Deco have nothing worth downloading -- the button is per-source, not per-panel.
     const { components } = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN });
-    const withButton = components[0].components.find(c => c.type === 9 && c.accessory?.type === 2);
-    assert.ok(!withButton, 'a download button rendered on a page with no full-res original');
-    assert.ok(JSON.stringify(components[0]).includes('HEX'), 'the copy hint vanished along with the button');
+    assert.ok(!JSON.stringify(components).includes('Download'), 'a download button rendered on a page with no full-res original');
+    assert.ok(JSON.stringify(components[0]).includes('HEX'), 'the copy hint vanished');
 });
 
-t('the bottom row is one primary and one secondary, both carrying icons', async () => {
-    // Refresh is the row's single PRIMARY action; the view switch is lateral navigation and stays grey
-    // on purpose (Harkirat, 2026-08-12 22:11 EDT). Two blurple buttons would leave neither reading as
-    // the main thing.
+t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons', async () => {
+    // The view switch is lateral navigation and stays grey on purpose (Harkirat was 50/50 on it,
+    // 2026-08-12 22:11 EDT); two blurple buttons would leave neither reading as the main thing. The
+    // download button is a style-5 Link, which Discord renders grey and which carries no emoji.
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const buttons = components[1].components;
-    assert.strictEqual(buttons.length, 2, `expected exactly two buttons, got ${buttons.length}`);
-    assert.strictEqual(buttons[0].style, 1, 'Refresh Colors is no longer the primary action');
-    assert.strictEqual(buttons[1].style, 2, 'the global/server switch is no longer secondary/grey');
-    for (const b of buttons) assert.ok(b.emoji?.id, `"${b.label}" lost its emoji`);
+    assert.strictEqual(buttons.filter(b => b.style === 1).length, 1, 'the row no longer has exactly one primary action');
+    assert.strictEqual(buttons[0].label, 'Refresh Colors', 'Refresh Colors is no longer the leading button');
+    const swtch = buttons.find(b => String(b.custom_id || '').startsWith('colors_variant_'));
+    assert.strictEqual(swtch?.style, 2, 'the global/server switch is no longer secondary/grey');
+    for (const b of buttons.filter(b => b.custom_id)) assert.ok(b.emoji?.id, `"${b.label}" lost its emoji`);
 });
 
 t('the view switch is absent entirely without a server profile', async () => {

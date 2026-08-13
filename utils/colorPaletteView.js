@@ -719,34 +719,13 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     // Copy hint (moved here 2026-08-09, top of the main palette section it actually describes --
     // used to be a second line folded into the heading above, cosmetic-only move).
-    // Download Avatar/Banner (moved up here 2026-08-12 22:15 EDT, Harkirat: "move the download
-    // avatar/banner buttons into the heading section for those 2 pages"). Full-res 4096px CDN link,
-    // style 5 -- see the note where these used to live, in the bottom row.
-    //
-    // ⚠️ IT RIDES THE COPY-HINT LINE RATHER THAN THE HEADING ITSELF, AND THAT IS A PLATFORM
-    // CONSTRAINT, not a preference. A Section carries exactly ONE accessory, a thumbnail OR a button
-    // -- this repo already paid for that finding once, in commands/settings.js's own header. The avatar
-    // and decoration headings spend their accessory on the source's thumbnail, which is the whole
-    // subject of the page, so the button cannot join them there. The copy hint is the first line under
-    // the heading divider and takes the button on BOTH pages, which keeps them identical; putting it on
-    // the banner heading (whose accessory IS free) would place it differently on each page.
-    const downloadUrl = effectiveSource === 'avatar' ? data.avatarFullUrl
-        : effectiveSource === 'banner' ? data.bannerFullUrl
-        : null;
-    const copyHint = "-# Tap on the `#HEX` color code to copy it.";
-    if (downloadUrl) {
-        containerComponents.push({
-            type: 9,
-            components: [{ type: 10, content: copyHint }],
-            accessory: {
-                type: 2, style: 5,
-                label: effectiveSource === 'avatar' ? 'Download Avatar' : 'Download Banner',
-                url: downloadUrl
-            }
-        });
-    } else {
-        containerComponents.push({ type: 10, content: copyHint });
-    }
+    // ⚠️ DOWNLOAD AVATAR/BANNER WAS BRIEFLY MOVED ONTO THIS LINE as a Section button accessory
+    // (2026-08-12 22:15 EDT) and REVERTED at 23:41 the same evening on Harkirat's call after seeing it
+    // rendered. Kept as a note rather than deleted because the constraint found on the way is real and
+    // someone will propose the move again: a Section carries exactly ONE accessory, a thumbnail OR a
+    // button, so the button can never join the avatar/decoration heading — that slot holds the source's
+    // own thumbnail. The buttons live in the bottom action row instead; see their block further down.
+    containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already
     // does this) -- assigning "First Impression"/"Catches the Eye"/etc per-PAGE instead would produce
@@ -848,14 +827,25 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
             emoji: emojis.parseEmoji(emojis.showColors)
         });
     }
-    // ⚠️ DOWNLOAD AVATAR/BANNER USED TO SIT HERE (2026-07-18 → 2026-08-12 22:15 EDT) and now rides the
-    // copy-hint Section INSIDE the container -- see that block for the placement and the one-accessory
-    // constraint that decided it. What is still true and worth keeping: they are style-5 Link buttons
-    // pointed straight at the 4096px CDN url, which Discord renders grey exactly like a Secondary
-    // button but which need `url` rather than `custom_id` since they are not interactions at all; and
-    // they appear only on that source's OWN page (Harkirat's spec: "on their respective color-menu
-    // pages"), because Name/Nameplate/Deco have no equivalent full-res original worth downloading.
-    // This row is therefore now exactly one primary and, when a server profile exists, one secondary.
+    // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the
+    // container, beside Refresh, matching /settings' existing avatar/banner download buttons
+    // (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link
+    // button in grey same as a plain Secondary button, it just needs `url` instead of `custom_id`
+    // since it's not an interaction at all, only a direct CDN link). Only shown on that source's
+    // OWN page (Harkirat's spec: "on their respective color-menu pages"), not on every page --
+    // Name/Nameplate/Deco have no equivalent full-res original worth downloading here.
+    //
+    // ⚠️ THEY WERE MOVED INSIDE THE CONTAINER FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED HERE
+    // AT 23:41, on Harkirat's call after seeing it rendered. Kept as a note because the finding on the
+    // way is real and the move will be proposed again: a Section carries exactly ONE accessory, a
+    // thumbnail OR a button, so these can never sit in the avatar/decoration heading -- that slot holds
+    // the source's own thumbnail, which is the subject of the page.
+    if (effectiveSource === 'avatar' && data.avatarFullUrl) {
+        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Avatar', url: data.avatarFullUrl });
+    }
+    if (effectiveSource === 'banner' && data.bannerFullUrl) {
+        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Banner', url: data.bannerFullUrl });
+    }
     const refreshRow = { type: 1, components: refreshRowComponents };
 
     return { components: [containerPayload, refreshRow], files };
@@ -871,40 +861,64 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
 // per-view lists and a trailing line that is mutually exclusive with them. That is untestable inline
 // and trivially testable as a function of its inputs.
 //
-// ⚠️ THE SHAPE IS HARKIRAT'S, picked from a menu 2026-08-12 21:44 EDT: "something between option 1 and
-// option 3", with global and server colours "named separately". A VERDICT line for the source that was
-// pressed, then one dim row per view, then AT MOST one trailing hint. The version it replaces was two
-// long sentences that buried the useful part -- what else moved -- behind a lecture ("this button is
-// for after you actually change it, not to reroll the same source"). Four lines maximum.
+// ⚠️ THE COPY IS HARKIRAT'S, SPECIFIED TO THE CHARACTER 2026-08-12 23:41 EDT. Do not "tidy" the
+// wording, the emoji choice or the line breaks, and do not restore either earlier version: the menu
+// shape from 21:44 the same evening (a per-source verdict plus two dim rows) is superseded, and the
+// two-long-sentences version before that is superseded twice over. Three states:
+//   · anything refreshed -> Eyedropper, "New colors found!", then a "Refreshed Main Profile:" and/or
+//     "Refreshed Server Profile:" row, each naming its sources on the FOLLOWING line as bold-wrapped
+//     code spans, then "Everything else is already up-to-date."
+//   · nothing refreshed but the accent cache was cleared -> Eyedropper, the per-source accent line.
+//   · nothing at all -> Swatches, "All colors are already up-to-date!" plus the determinism note.
 //
-// ⚠️ The trailing line is EXCLUSIVE, and that is the fix rather than a detail: an actionable pointer
-// when other pages moved, the explanation only when nothing did. Showing both is what made the old
-// message read as a telling-off while also being the least useful in the case the user cared about.
-function buildRefreshNotice({ source, changed, accentCleared, refreshed = [] }) {
+// ⚠️ THE HEADLINE IS ABOUT THE PRESS, NOT ABOUT ONE SOURCE, and that is the substantive change from
+// the 21:44 version. A sweep that refreshed the banner while the avatar on screen was unchanged is
+// still "new colors found" -- reporting it per-source is exactly what made the old message insist
+// nothing had happened while it had quietly updated three other pages.
+//
+// ⚠️ "Everything else is already up-to-date." is UNCONDITIONAL in that state, per the spec as written.
+// It is the reassurance the whole rework exists to give -- the doubt that started this was "did it do
+// the others?" -- so it answers that even when the two rows happen to cover every equipped source.
+function buildRefreshNotice({ source, activeIsGuild = false, changed, accentCleared, refreshed = [] }) {
     const label = kind => SOURCE_META[kind]?.label || kind;
-    const sourceLabel = label(source);
-    const globalAlso = refreshed.filter(r => !r.isGuild).map(r => label(r.kind));
-    const guildAlso = refreshed.filter(r => r.isGuild).map(r => label(r.kind));
-    const row = (title, names) => names.length ? `\n-# ${title}: **${names.join('** · **')}**` : '';
 
-    const verdict = changed
-        ? `✅ **${sourceLabel}** — new colors found.`
-        // Palette bytes matched, but that is not "nothing happened" when the accent cache was cleared:
-        // a forced palette refresh may already have picked the change up on open, so this click's
-        // comparison sees no delta even though its accent invalidation is the real, visible fix --
-        // embeds tinted by this source were stale until this exact press.
-        : accentCleared
-            ? `🎨 **${sourceLabel}** — palette matched, but its accent color was stale and is now refreshed.`
-            : `✔️ **${sourceLabel}** — already up to date.`;
+    // The source that was PRESSED belongs in whichever profile it actually resolved from -- which is
+    // not the view the panel is in. A source with no server override resolves to the global image even
+    // in the server view, so `activeIsGuild` is computed by the extractor from hashes and passed in.
+    // It is listed only when it genuinely changed; the swept sources are in `refreshed` by definition.
+    const mainProfile = [
+        ...(changed && !activeIsGuild ? [label(source)] : []),
+        ...refreshed.filter(r => !r.isGuild).map(r => label(r.kind))
+    ];
+    const serverProfile = [
+        ...(changed && activeIsGuild ? [label(source)] : []),
+        ...refreshed.filter(r => r.isGuild).map(r => label(r.kind))
+    ];
+    const row = (title, names) => names.length
+        ? `\n-# Refreshed ${title}:\n**\`${names.join('` · `')}\`**`
+        : '';
 
-    const anyAlso = globalAlso.length + guildAlso.length;
-    const tail = anyAlso
-        ? `\n-# Open ${anyAlso > 1 ? 'those pages' : 'that page'} to see them.`
-        : changed || accentCleared
-            ? ''
-            : '\n-# The same picture always gives the same colors — refresh after you change it.';
+    // ⚠️ The headline is about the PRESS, not about one source, and that is the change from the first
+    // version. A sweep that refreshed the banner while the avatar on screen was unchanged is still
+    // "new colors found" -- reporting it per-source is what made the old message insist nothing had
+    // happened while quietly updating three other pages.
+    if (mainProfile.length || serverProfile.length) {
+        return `${emojis.eyedropper} **New colors found!**`
+            + row('Main Profile', mainProfile)
+            + row('Server Profile', serverProfile)
+            + '\n-# Everything else is already up-to-date.';
+    }
 
-    return verdict + row('Also refreshed', globalAlso) + row('Server profile', guildAlso) + tail;
+    // Palette bytes matched, but that is not "nothing happened" when the accent cache was cleared: a
+    // forced palette refresh may already have picked the change up on open, so this click's comparison
+    // sees no delta even though its accent invalidation is the real, visible fix -- embeds tinted by
+    // this source were stale until this exact press.
+    if (accentCleared) {
+        return `${emojis.eyedropper} **${label(source)}** — palette matched, but its accent color was stale and is now refreshed!`;
+    }
+
+    return `${emojis.swatches} **All colors are already up-to-date!**`
+        + '\n-# The same image always gives the same colors — refresh *after* you change it.';
 }
 
 module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries, buildRefreshNotice };
