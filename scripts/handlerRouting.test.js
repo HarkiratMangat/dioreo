@@ -181,6 +181,57 @@ check('every branch in a mixed-type handler carries an interaction-type test', (
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
+// --- 6. INTRA-MODULE SHADOWING ---
+// Check 2 asks whether two MODULES claim the same id. This asks the same question one level down:
+// inside a single module, does an earlier branch swallow a later one? That is precisely the shape of
+// the `set_`/`set_page_` bug — the branches were in one module, the earlier prefix matched the later
+// id, and only interaction type separated them. A shadowed branch is DEAD CODE that looks live: no
+// error, no log, the button simply does nothing.
+//
+// A pair is fine when any of these hold: they are gated to different interaction types; the earlier
+// branch matches by `===` rather than `startsWith`; or it explicitly excludes the later id
+// (`&& customId !== 'x'`), which is how the paginator indicators are handled.
+check('no branch is shadowed by an earlier branch in the same module', () => {
+    const shadowed = [];
+    for (const name of moduleNames) {
+        const src = fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8')
+            .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n').split('\n');
+        const branches = [];
+        let blockType = null;
+        src.forEach((line, i) => {
+            const g = line.match(/if \(interaction\.(isStringSelectMenu|isButton|isModalSubmit)\(\)\) \{/);
+            if (g) { blockType = g[1]; return; }
+            const m = line.match(/^\s{4,12}if \((.*customId.*)\) \{/);
+            if (!m) return;
+            const cond = m[1];
+            const ids = [...cond.matchAll(/customId(?:\s*===\s*|\.startsWith\()\s*['"]([^'"]+)['"]/g)].map(x => x[1]);
+            if (!ids.length) return;
+            branches.push({
+                line: i + 1,
+                ids,
+                excl: [...cond.matchAll(/customId\s*!==\s*['"]([^'"]+)['"]/g)].map(x => x[1]),
+                exact: /customId\s*===/.test(cond),
+                negated: /!\s*(interaction\.)?customId\.startsWith/.test(cond),
+                type: (cond.match(/interaction\.(isStringSelectMenu|isButton|isModalSubmit)\(\)/) || [])[1] || blockType,
+            });
+        });
+        for (let i = 0; i < branches.length; i++) {
+            for (let j = i + 1; j < branches.length; j++) {
+                const a = branches[i], b = branches[j];
+                if (a.type && b.type && a.type !== b.type) continue;
+                if (a.exact || a.negated) continue;
+                for (const bid of b.ids) {
+                    const by = a.ids.find(aid => bid.startsWith(aid));
+                    if (by && !a.excl.includes(bid)) {
+                        shadowed.push(`${name}.js: L${a.line} "${by}" makes L${b.line} "${bid}" unreachable`);
+                    }
+                }
+            }
+        }
+    }
+    assert.deepStrictEqual(shadowed, [], `\n      ${shadowed.join('\n      ')}`);
+});
+
 setTimeout(() => {
     console.log(failures === 0
         ? `\nAll routing-contract checks passed (${moduleNames.length} handlers).`
