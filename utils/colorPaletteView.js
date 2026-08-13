@@ -719,7 +719,34 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     // Copy hint (moved here 2026-08-09, top of the main palette section it actually describes --
     // used to be a second line folded into the heading above, cosmetic-only move).
-    containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
+    // Download Avatar/Banner (moved up here 2026-08-12 22:15 EDT, Harkirat: "move the download
+    // avatar/banner buttons into the heading section for those 2 pages"). Full-res 4096px CDN link,
+    // style 5 -- see the note where these used to live, in the bottom row.
+    //
+    // ⚠️ IT RIDES THE COPY-HINT LINE RATHER THAN THE HEADING ITSELF, AND THAT IS A PLATFORM
+    // CONSTRAINT, not a preference. A Section carries exactly ONE accessory, a thumbnail OR a button
+    // -- this repo already paid for that finding once, in commands/settings.js's own header. The avatar
+    // and decoration headings spend their accessory on the source's thumbnail, which is the whole
+    // subject of the page, so the button cannot join them there. The copy hint is the first line under
+    // the heading divider and takes the button on BOTH pages, which keeps them identical; putting it on
+    // the banner heading (whose accessory IS free) would place it differently on each page.
+    const downloadUrl = effectiveSource === 'avatar' ? data.avatarFullUrl
+        : effectiveSource === 'banner' ? data.bannerFullUrl
+        : null;
+    const copyHint = "-# Tap on the `#HEX` color code to copy it.";
+    if (downloadUrl) {
+        containerComponents.push({
+            type: 9,
+            components: [{ type: 10, content: copyHint }],
+            accessory: {
+                type: 2, style: 5,
+                label: effectiveSource === 'avatar' ? 'Download Avatar' : 'Download Banner',
+                url: downloadUrl
+            }
+        });
+    } else {
+        containerComponents.push({ type: 10, content: copyHint });
+    }
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already
     // does this) -- assigning "First Impression"/"Catches the Eye"/etc per-PAGE instead would produce
@@ -811,22 +838,24 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
         refreshRowComponents.push({
             type: 2, style: 2,
             label: v === 's' ? 'Show Global Colors' : 'Show Server Colors',
-            custom_id: `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`
+            custom_id: `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
+            // ⚠️ STYLE 2 (grey) IS DELIBERATE, not an unmade decision (Harkirat was 50/50 on it
+            // 2026-08-12 22:11 EDT). Refresh Colors beside it is the row's one PRIMARY action; a second
+            // blurple button gives the row two of them and neither reads as the main thing. This one is
+            // lateral navigation -- it changes which colours you are looking at, it does not do work --
+            // and the animated icon added the same day is what gives it identity, so it does not need
+            // colour to do that job as well.
+            emoji: emojis.parseEmoji(emojis.showColors)
         });
     }
-    // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the
-    // container, beside Refresh, matching /settings' existing avatar/banner download buttons
-    // (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link
-    // button in grey same as a plain Secondary button, it just needs `url` instead of `custom_id`
-    // since it's not an interaction at all, only a direct CDN link). Only shown on that source's
-    // OWN page (Harkirat's spec: "on their respective color-menu pages"), not on every page --
-    // Name/Nameplate/Deco have no equivalent full-res original worth downloading here.
-    if (effectiveSource === 'avatar' && data.avatarFullUrl) {
-        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Avatar', url: data.avatarFullUrl });
-    }
-    if (effectiveSource === 'banner' && data.bannerFullUrl) {
-        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Banner', url: data.bannerFullUrl });
-    }
+    // ⚠️ DOWNLOAD AVATAR/BANNER USED TO SIT HERE (2026-07-18 → 2026-08-12 22:15 EDT) and now rides the
+    // copy-hint Section INSIDE the container -- see that block for the placement and the one-accessory
+    // constraint that decided it. What is still true and worth keeping: they are style-5 Link buttons
+    // pointed straight at the 4096px CDN url, which Discord renders grey exactly like a Secondary
+    // button but which need `url` rather than `custom_id` since they are not interactions at all; and
+    // they appear only on that source's OWN page (Harkirat's spec: "on their respective color-menu
+    // pages"), because Name/Nameplate/Deco have no equivalent full-res original worth downloading.
+    // This row is therefore now exactly one primary and, when a server profile exists, one secondary.
     const refreshRow = { type: 1, components: refreshRowComponents };
 
     return { components: [containerPayload, refreshRow], files };

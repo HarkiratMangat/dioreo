@@ -115,6 +115,16 @@ const emojis = {
     // above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     loadouts: '<a:Loadouts:1535779248982335618>',
+    // The View Colors panel's global/server switch button (added 2026-08-12 22:14 EDT, Harkirat
+    // provided it). Prod id as usual, verified present in BOTH apps by a live read of
+    // /applications/{id}/emojis before writing it -- dev's copy is 1537280678557917275 and
+    // refreshEmojiIds() re-points to it by name at boot.
+    // ⚠️ THE ID HARKIRAT SUPPLIED WAS THE DEV ONE, and writing that here would have been wrong in a way
+    // that hides: the name sync would mask it on every healthy boot, but its `catch` deliberately KEEPS
+    // the hardcoded ids when the sync fails, so prod would render a dev emoji exactly when something
+    // else had already gone wrong. Application emoji ids are per-application; the same name is not the
+    // same id.
+    showColors: '<a:ShowColors:1537280503105847486>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');
