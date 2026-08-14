@@ -31,11 +31,29 @@ function check(name, fn) {
     }
 }
 
-// Every module in handlers/ except the router itself is a subsystem handler.
-const moduleNames = fs.readdirSync(HANDLERS_DIR)
-    .filter(f => f.endsWith('.js') && f !== 'router.js')
-    .map(f => f.replace(/\.js$/, ''))
+// Every module in handlers/ except the router itself is a subsystem handler. A module is either a
+// single file (handlers/foo.js) or a directory whose require() resolves via its own index.js --
+// handlers/manage/ took the directory shape 2026-08-14 17:01 EDT (stage 2 of docs/superpowers/specs/
+// 2026-08-14-manage-slash-decomposition-design.md) once its single file outgrew ~2,400 lines. Node's
+// own resolution already treats `require(path.join(HANDLERS_DIR, 'manage'))` identically to a file,
+// so every check below that calls require() needs no change -- only the checks that read SOURCE off
+// disk by assuming `${name}.js` is one file need to learn about the directory shape.
+const moduleNames = fs.readdirSync(HANDLERS_DIR, { withFileTypes: true })
+    .filter(e => (e.isFile() && e.name.endsWith('.js') && e.name !== 'router.js') || e.isDirectory())
+    .map(e => e.name.replace(/\.js$/, ''))
     .sort();
+
+// Every .js file a module's source is spread across -- one file for a single-file module, every
+// top-level .js inside the directory for a directory module (encounter order matches
+// fs.readdirSync, used consistently below so a stateful per-line scan resets predictably at each
+// file boundary rather than leaking state -- e.g. an isButton()/isStringSelectMenu() block-type
+// marker -- across an unrelated file).
+function moduleFiles(name) {
+    const asFile = path.join(HANDLERS_DIR, `${name}.js`);
+    if (fs.existsSync(asFile)) return [asFile];
+    const dir = path.join(HANDLERS_DIR, name);
+    return fs.readdirSync(dir).filter(f => f.endsWith('.js')).map(f => path.join(dir, f));
+}
 
 console.log('handlers/*.js — routing contract\n');
 
@@ -165,16 +183,24 @@ for (const [mod, id, why] of buttonCases) {
 check('every branch in a mixed-type handler carries an interaction-type test', () => {
     const offenders = [];
     for (const name of moduleNames) {
-        const src = fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8')
-            .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
-        const types = ['isButton', 'isStringSelectMenu', 'isModalSubmit'].filter(t => src.includes(t + '()'));
-        if (types.length < 2) continue; // single-type module: prefix ownership is sufficient
-        // manage.js groups its branches under three type blocks instead of testing per branch.
-        if (/if \(interaction\.isStringSelectMenu\(\)\) \{/.test(src) && /if \(interaction\.isButton\(\)\) \{/.test(src)) continue;
-        for (const line of src.split('\n')) {
-            const m = line.match(/^\s{4,8}if \((.*customId.*)\) \{/);
-            if (m && !/\bis(Button|StringSelectMenu|ModalSubmit)\(\)/.test(m[1])) {
-                offenders.push(`${name}.js: ${m[1].trim().slice(0, 70)}`);
+        // Per FILE, not per module -- a directory module's page files (handlers/manage/draws.js
+        // etc.) never call isButton()/isStringSelectMenu()/isModalSubmit() at all (they receive an
+        // already-typed interaction from the module's index.js), so they trivially fall under
+        // `types.length < 2` and need no exception; only index.js itself carries the 3 type blocks.
+        for (const filePath of moduleFiles(name)) {
+            const fileLabel = path.relative(HANDLERS_DIR, filePath);
+            const src = fs.readFileSync(filePath, 'utf8')
+                .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
+            const types = ['isButton', 'isStringSelectMenu', 'isModalSubmit'].filter(t => src.includes(t + '()'));
+            if (types.length < 2) continue; // single-type file: prefix ownership is sufficient
+            // manage/index.js (like the old manage.js) groups its branches under three type blocks
+            // instead of testing per branch.
+            if (/if \(interaction\.isStringSelectMenu\(\)\) \{/.test(src) && /if \(interaction\.isButton\(\)\) \{/.test(src)) continue;
+            for (const line of src.split('\n')) {
+                const m = line.match(/^\s{4,8}if \((.*customId.*)\) \{/);
+                if (m && !/\bis(Button|StringSelectMenu|ModalSubmit)\(\)/.test(m[1])) {
+                    offenders.push(`${fileLabel}: ${m[1].trim().slice(0, 70)}`);
+                }
             }
         }
     }
@@ -194,7 +220,14 @@ check('every branch in a mixed-type handler carries an interaction-type test', (
 check('no branch is shadowed by an earlier branch in the same module', () => {
     const shadowed = [];
     for (const name of moduleNames) {
-        const src = fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8')
+      // Per FILE, not per module -- the `blockType` state below tracks which isXxx() block a
+      // branch sits under, and that state must reset at each FILE boundary. A directory module's
+      // page files are called with an already-resolved customId (no re-dispatch inside them beyond
+      // their own small per-page button groupers like manage/admins.js's handleButton), so a
+      // "shadow" can only be real within one physical file, never across two.
+      for (const filePath of moduleFiles(name)) {
+        const fileLabel = path.relative(HANDLERS_DIR, filePath);
+        const src = fs.readFileSync(filePath, 'utf8')
             .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n').split('\n');
         const branches = [];
         let blockType = null;
@@ -223,11 +256,12 @@ check('no branch is shadowed by an earlier branch in the same module', () => {
                 for (const bid of b.ids) {
                     const by = a.ids.find(aid => bid.startsWith(aid));
                     if (by && !a.excl.includes(bid)) {
-                        shadowed.push(`${name}.js: L${a.line} "${by}" makes L${b.line} "${bid}" unreachable`);
+                        shadowed.push(`${fileLabel}: L${a.line} "${by}" makes L${b.line} "${bid}" unreachable`);
                     }
                 }
             }
         }
+      }
     }
     assert.deepStrictEqual(shadowed, [], `\n      ${shadowed.join('\n      ')}`);
 });
@@ -255,18 +289,30 @@ check('no comment uses positional language about a custom_id owned by another mo
         return best ? owners[best] : null;
     };
 
+    // Expands a directory module into its own files (self stays the MODULE name, e.g. 'manage', so
+    // a comment inside handlers/manage/draws.js referencing an `mng_`-prefixed id it also owns is
+    // not flagged as pointing at "another module" just because the id's declaration lives in a
+    // sibling file within the same directory). router.js is scanned too, same as before -- it isn't
+    // in moduleNames (it's the dispatcher, not a subsystem), but its own comments can still use
+    // positional language about a subsystem's id.
     const offenders = [];
-    for (const file of fs.readdirSync(HANDLERS_DIR)) {
-        const self = file.replace(/\.js$/, '');
-        fs.readFileSync(path.join(HANDLERS_DIR, file), 'utf8').split('\n').forEach((line, i) => {
-            if (!/^\s*\/\//.test(line) || !POSITIONAL.test(line)) return;
-            for (const m of line.matchAll(/`?\b([a-z]+_[a-z_]*)\b`?/g)) {
-                const owner = ownerOf(m[1]);
-                if (!owner || owner === self) continue;
-                if (line.includes(`${owner}.js`)) continue; // names the file — that is the fix
-                offenders.push(`${file}:${i + 1} says "${m[1]}" is ${POSITIONAL.exec(line)[0]}, but it lives in ${owner}.js`);
-            }
-        });
+    for (const entry of fs.readdirSync(HANDLERS_DIR, { withFileTypes: true })) {
+        const self = entry.name.replace(/\.js$/, '');
+        const filePaths = entry.isDirectory()
+            ? fs.readdirSync(path.join(HANDLERS_DIR, entry.name)).filter(f => f.endsWith('.js')).map(f => path.join(HANDLERS_DIR, entry.name, f))
+            : [path.join(HANDLERS_DIR, entry.name)];
+        for (const filePath of filePaths) {
+            const fileLabel = path.relative(HANDLERS_DIR, filePath);
+            fs.readFileSync(filePath, 'utf8').split('\n').forEach((line, i) => {
+                if (!/^\s*\/\//.test(line) || !POSITIONAL.test(line)) return;
+                for (const m of line.matchAll(/`?\b([a-z]+_[a-z_]*)\b`?/g)) {
+                    const owner = ownerOf(m[1]);
+                    if (!owner || owner === self) continue;
+                    if (line.includes(`${owner}.js`)) continue; // names the file — that is the fix
+                    offenders.push(`${fileLabel}:${i + 1} says "${m[1]}" is ${POSITIONAL.exec(line)[0]}, but it lives in ${owner}.js`);
+                }
+            });
+        }
     }
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
@@ -295,6 +341,10 @@ check('no numbered or lettered section headers (they encode position, which rots
         { dir: path.join(__dirname, '..'), files: ['index.js'] },
         { dir: path.join(__dirname, '..', 'bot'), files: null },
         { dir: HANDLERS_DIR, files: null },
+        // handlers/manage/ is a directory module (2026-08-14 17:03 EDT) -- fs.readdirSync(HANDLERS_DIR)
+        // above only lists it as a bare directory name with no `.js` suffix, so its own files need
+        // their own root or this check silently stops scanning ~1,900 lines of manage/*.js.
+        { dir: path.join(HANDLERS_DIR, 'manage'), files: null },
     ];
     const offenders = [];
     for (const { dir, files } of roots) {
@@ -359,11 +409,16 @@ const branchLiterals = (src) => {
     return [...found];
 };
 
+// Concatenated, comment-stripped source for a module -- safe here (unlike checks 5b/6 above)
+// because branchLiterals() is a stateless per-line regex scan with no cross-line/cross-file state
+// to leak; file order doesn't matter for building a Set of literals.
+const moduleSource = (name) => moduleFiles(name).map(f => stripComments(fs.readFileSync(f, 'utf8'))).join('\n');
+
 check('every branch literal is covered by its own module\'s OWNED_PREFIXES', () => {
     const offenders = [];
     for (const name of moduleNames) {
         const declared = require(path.join(HANDLERS_DIR, name)).OWNED_PREFIXES || [];
-        const src = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8'));
+        const src = moduleSource(name);
         for (const literal of branchLiterals(src)) {
             if (!declared.some(p => literal.startsWith(p))) {
                 offenders.push(`${name}.js branches on "${literal}" but declares [${declared.join(', ')}] — check 2 cannot see it`);
@@ -377,7 +432,7 @@ check('every declared prefix has at least one branch behind it', () => {
     const offenders = [];
     for (const name of moduleNames) {
         const declared = require(path.join(HANDLERS_DIR, name)).OWNED_PREFIXES || [];
-        const src = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8'));
+        const src = moduleSource(name);
         const literals = branchLiterals(src);
         for (const prefix of declared) {
             if (!literals.some(l => l.startsWith(prefix))) {

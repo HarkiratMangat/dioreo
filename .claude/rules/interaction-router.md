@@ -4,7 +4,7 @@ status: live
 paths:
   - "index.js"
   - "bot/*.js"
-  - "handlers/*.js"
+  - "handlers/**"
   - "utils/interactionContext.js"
 ---
 
@@ -29,7 +29,7 @@ paths:
 
 ### `/manage`'s `mng_act_` dispatch goes through the action registry (2026-08-14)
 
-`handlers/manage.js`'s `mng_act_` branch no longer hardcodes each page's actions. It parses the custom_id, calls `resolveAction()` from `utils/manageActions.js`, and runs whatever comes back — 30 lines where there used to be 222. **That resolver is also the per-page permission check**, which is what made those permissions hold per click rather than only at page-view time. The router's own prefix guard is a different check at a different granularity and both are required; see `.claude/rules/manage-panel.md` for the registry's full contract.
+`handlers/manage/index.js`'s `mng_act_` branch (moved there from the old single-file handlers/manage.js by the 2026-08-14 17:31 EDT stage-2 directory split — see `.claude/rules/manage-panel.md`) no longer hardcodes each page's actions. It parses the custom_id, calls `resolveAction()` from `utils/manageActions.js`, and runs whatever comes back — 30 lines where there used to be 222. **That resolver is also the per-page permission check**, which is what made those permissions hold per click rather than only at page-view time. The router's own prefix guard is a different check at a different granularity and both are required; see `.claude/rules/manage-panel.md` for the registry's full contract.
 
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
 ✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
@@ -55,14 +55,14 @@ paths:
 
 **Two checks make the declaration trustworthy rather than merely present** (added 2026-08-13 22:55 EDT, checks 9 and 10, each proven to fail in isolation on its own invariant):
 - **Declared ⊇ actual, and every declared prefix has a branch.** Every other check here reads `OWNED_PREFIXES`; Discord routes on the branches. They are two pieces of state and nothing kept them in step. This matters most for `colors.js`, whose declaration is **deliberately decorative** — it does not gate on it, so an unrecognised `colors_*` id falls through — and whose comment ends *"Keep this list in step with the branches."* That sentence was an obligation on whoever edits the file and is now an assertion. ⚠️ **Do not "fix" `colors.js` by giving it the `ownsCustomId()` the other twelve have.** An audit recommended exactly that on 2026-08-13 before reading the seven lines above the declaration; it would have swallowed unrecognised ids, changing behaviour the comment exists to protect, and broken the `colors_subpage_indicator` case in check 4.
-- **The admin gate's list must equal the modules' own.** `router.js`'s `MANAGE_PREFIX_COMMAND` carries a second copy of `manage`/`autobuild`/`alerts`'s prefixes — it has to, because it maps each to a **command name** for the per-command permission lookup, which `OWNED_PREFIXES` does not encode. The split created the duplication: the module became the obvious place to declare ownership while the gate's list stayed in the router. Add a prefix to `handlers/manage.js` and forget the map and the new branch ships with **no admin check**, while every other test stays green.
+- **The admin gate's list must equal the modules' own.** `router.js`'s `MANAGE_PREFIX_COMMAND` carries a second copy of `manage`/`autobuild`/`alerts`'s prefixes — it has to, because it maps each to a **command name** for the per-command permission lookup, which `OWNED_PREFIXES` does not encode. The split created the duplication: the module became the obvious place to declare ownership while the gate's list stayed in the router. Add a prefix to `handlers/manage/index.js` (where `OWNED_PREFIXES` lives since the stage-2 directory split) and forget the map and the new branch ships with **no admin check**, while every other test stays green.
 - ⚠️ **Strip comments before matching custom_ids in any checker.** `drawprices.js` documents in prose the `toggle_` prefix it deliberately avoided; read as code that reads as a live collision, and an audit chased it as a real bug on 2026-08-13. A checker that treats comments as code manufactures findings out of the very comments written to prevent them — so the better this repo's context comments get, the more false alarms a comment-blind scan produces.
 
 **Which module owns a custom_id — the prefix decides, and the prefixes are mutually exclusive** (enforced by `scripts/handlerRouting.test.js`, which fails if any two modules claim overlapping prefixes):
 
 | Prefix(es) | Module |
 |---|---|
-| `mng_` `modal_` `add_draw_` `edit_draw_` `add_loadout_` `edit_loadout_` `edit_calendar_` | `manage.js` |
+| `mng_` `modal_` `add_draw_` `edit_draw_` `add_loadout_` `edit_loadout_` `edit_calendar_` | `manage/` (directory since 2026-08-14 17:20 EDT — `index.js` dispatches to `shared.js` + one module per page) |
 | `colors_` | `colors.js` |
 | `set_` `toggle_` | `settings.js` |
 | `mpbrowse` `dmzbrowse` `dmz` `mp` | `loadouts.js` |
@@ -77,7 +77,7 @@ paths:
 | `select_patch_history` | `patchnotes.js` |
 | `admin_` | dispatched straight to `commands/admin.js`, above the chain |
 
-✅ **THE ~100 CROSS-REFERENCES IN COMMENTS AND RULES WERE UPDATED TOO** (2026-08-13 18:00 EDT), across 40 files in `commands/`, `utils/`, `scripts/`, `handlers/`, `docs/reference/` and these rule files. A mention of *"index.js's `mng_search_` handler"* now names `handlers/manage.js`, and so on.
+✅ **THE ~100 CROSS-REFERENCES IN COMMENTS AND RULES WERE UPDATED TOO** (2026-08-13 18:00 EDT), across 40 files in `commands/`, `utils/`, `scripts/`, `handlers/`, `docs/reference/` and these rule files. A mention of *"index.js's `mng_search_` handler"* now names `handlers/manage/shared.js`'s `handleSearchSubmit()` (further split into a directory 2026-08-14, see above), and so on.
 
 ⚠️ **THE FIRST ATTEMPT WAS AUTOMATED AND HAD TO BE REVERTED — do not redo it that way.** A script mapped each mention to a module by the custom_id prefix appearing on the same line. It rewrote 49 references and got a meaningful share of them wrong: `handlers/colors.js`'s own header ended up citing itself, autocomplete was attributed to `manage.js` when it lives in `router.js`, and paths inside rule files were mangled mid-sentence. **A wrong reference costs more than a stale one** — it sends a reader to a file that genuinely does not contain the thing. The working approach was to list every match, decide each target by hand against the table above, and apply them as explicit `from → to` pairs that fail loudly if the text does not match.
 
