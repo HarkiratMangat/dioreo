@@ -8,7 +8,7 @@
 // choke points and a Mongoose schema, and all three fail in ways a precedence test cannot see:
 //
 //   1. A field missing from the schema is silently dropped on save (the repo's oldest recurring
-//      bug class -- root CLAUDE.md's "Database schema gotcha"). /server would appear to save a
+//      bug class -- root CLAUDE.md's "Database schema gotcha"). /admin would appear to save a
 //      channel rule and the rule would simply not exist on the next fetch.
 //   2. The method wrap could clamp `ephemeral` while DESTROYING the Components V2 flag, which
 //      renders as a blank message rather than as an error.
@@ -20,10 +20,10 @@
 // unsaved document (Mongoose casts and validates in memory, so an undeclared field is still
 // visibly dropped), getGuildSettings' single query is stubbed at the model seam, and sendV2Payload
 // gets a fake `rest`. A test that skips itself when Mongo is absent would report green in CI while
-// examining nothing, which is the exact failure mode .claude/rules/server-controls.md warns about
+// examining nothing, which is the exact failure mode .claude/rules/admin-controls.md warns about
 // after `privacy-model-coverage` did it to this very feature.
 //
-// ⚠️ WHAT THIS STILL DOES NOT PROVE: that a human clicking /server in Discord gets the right
+// ⚠️ WHAT THIS STILL DOES NOT PROVE: that a human clicking /admin in Discord gets the right
 // result. Registration and in-process tests are not a click -- see the v3.1.1 lesson in
 // docs/DEVLOG.md. Behavioural verification in a real guild is tracked separately.
 const assert = require('node:assert');
@@ -99,11 +99,11 @@ async function withSettings(settings, run) {
     }
 }
 
-// --- 1. the schema actually declares everything /server writes ------------------------------
+// --- 1. the schema actually declares everything /admin writes ------------------------------
 // Mongoose only persists DECLARED fields. An undeclared one is accepted in memory and vanishes on
 // the next fetch, so this asserts against toObject() -- the shape that would reach the database --
 // rather than against the assignment, which always "works".
-t('every field /server writes survives a schema round-trip', () => {
+t('every field /admin writes survives a schema round-trip', () => {
     const doc = new GuildSettings({ guildId: 'G_1' });
     doc.defaultVisibility = 'ephemeral';
     doc.channelRules = [{ channelId: 'C_1', visibility: 'public' }];
@@ -278,7 +278,7 @@ t('sendV2Payload is unaffected when no policy is attached at all', async () => {
 // commands has no way to tell the list is incomplete, because a short list looks exactly like a
 // complete one.
 t('the command menu names anything it had to leave out', () => {
-    const { buildCommands } = require('../commands/server').__testRenderers;
+    const { buildCommands } = require('../commands/admin').__testRenderers;
     const many = Array.from({ length: 30 }, (_, i) => `cmd${String(i).padStart(2, '0')}`);
     const rendered = JSON.stringify(buildCommands(null, many));
     const select = buildCommands(null, many).find(c => c.type === 1 && c.components?.[0]?.type === 3);
@@ -288,7 +288,7 @@ t('the command menu names anything it had to leave out', () => {
 });
 
 t('the command menu stays quiet when everything fits', () => {
-    const { buildCommands } = require('../commands/server').__testRenderers;
+    const { buildCommands } = require('../commands/admin').__testRenderers;
     const few = ['colors', 'help', 'timestamp'];
     const rendered = JSON.stringify(buildCommands(null, few));
     assert.ok(!rendered.includes('not listed') && !rendered.includes('missing from the list'), 'no truncation warning should appear when nothing was truncated');
@@ -304,8 +304,8 @@ function countComponents(nodes) {
     return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
 }
 
-t('every /server page stays under the 40-component ceiling', () => {
-    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/server').__testRenderers;
+t('every /admin page stays under the 40-component ceiling', () => {
+    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/admin').__testRenderers;
     // A deliberately maximal configuration: the most components each page can possibly render.
     const ids = n => Array.from({ length: n }, (_, i) => `ID_${i}`);
     const settings = {
@@ -333,7 +333,7 @@ t('every /server page stays under the 40-component ceiling', () => {
 // --- 7. /help hides the Server Admin category from non-admins --------------------------------
 // Filtered in THREE places -- the dropdown, the landing directory, and the `cmd:` autocomplete --
 // because the landing directory is a hardcoded string rather than a map over CATEGORY_DEFS, so the
-// two can disagree, and because suggesting `/server` in autocomplete and then bouncing the user to
+// two can disagree, and because suggesting `/admin` in autocomplete and then bouncing the user to
 // the directory is worse than never offering it. One test per surface, since filtering two and
 // forgetting the third is the realistic mistake.
 async function withNoLoadouts(run) {
@@ -355,27 +355,27 @@ const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
 // commands/help.js's per-command `requires` filtering hides them even though the category shows.
 const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, alerts: true, autobuild: true };
 
-t('an ordinary member sees neither /server nor the Bot Admin category', async () => {
+t('an ordinary member sees neither /admin nor the Bot Admin category', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         const menu = JSON.stringify(await help.buildContainer(null, 0, NOBODY));
-        assert.ok(!menu.includes('/server'), 'the landing directory must not list /server');
+        assert.ok(!menu.includes('/admin'), 'the landing directory must not list /admin');
         assert.ok(!menu.includes('Bot Admin') && !menu.includes('BOT ADMIN'), 'the Bot Admin category must be absent entirely');
         const names = await help.getAllHelpCommandNames(NOBODY);
-        assert.ok(!names.includes('/server') && !names.includes('/manage'), 'autocomplete must suggest neither');
+        assert.ok(!names.includes('/admin') && !names.includes('/manage'), 'autocomplete must suggest neither');
     });
 });
 
-// /server sits INSIDE Preferences rather than in a heading of its own, so the assertions are about
+// /admin sits INSIDE Preferences rather than in a heading of its own, so the assertions are about
 // the category's contents changing -- not about a category appearing.
-t('a server admin sees /server inside Preferences, with the swapped emoji and description', async () => {
+t('a server admin sees /admin inside Preferences, with the swapped emoji and description', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         const container = await help.buildContainer(null, 0, SERVER_ADMIN);
         const menu = JSON.stringify(container);
-        assert.ok(menu.includes('/server'), 'the landing directory must list /server');
+        assert.ok(menu.includes('/admin'), 'the landing directory must list /admin');
         assert.ok(!menu.includes('SERVER ADMIN'), 'it must NOT get a heading of its own any more');
-        assert.ok(menu.includes('(Admin)'), '/server must be marked as an admin command');
+        assert.ok(menu.includes('(server)'), '/admin must be marked as an admin command');
         assert.ok(!menu.includes('Bot Admin'), 'Manage Server must NOT grant the bot-admin category');
 
         const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
@@ -383,7 +383,7 @@ t('a server admin sees /server inside Preferences, with the swapped emoji and de
         assert.strictEqual(preferences.description, 'Manage your personal & server admin settings');
         assert.strictEqual(preferences.emoji.name, 'ServerSettings', 'Preferences must swap to the ServerSettings emoji');
 
-        assert.ok((await help.getAllHelpCommandNames(SERVER_ADMIN)).includes('/server'));
+        assert.ok((await help.getAllHelpCommandNames(SERVER_ADMIN)).includes('/admin'));
     });
 });
 
@@ -406,9 +406,9 @@ t('a bot admin sees the Bot Admin category without holding Manage Server', async
         const menu = JSON.stringify(await help.buildContainer(null, 0, BOT_ADMIN));
         assert.ok(menu.includes('BOT ADMIN'), 'the landing directory must list the category');
         assert.ok(menu.includes('/manage') && menu.includes('/alerts') && menu.includes('/autobuild'));
-        assert.ok(!menu.includes('/server'), 'bot admin alone must NOT reveal the server-admin command');
+        assert.ok(!menu.includes('/admin'), 'bot admin alone must NOT reveal the server-admin command');
         const names = await help.getAllHelpCommandNames(BOT_ADMIN);
-        assert.ok(names.includes('/manage') && !names.includes('/server'));
+        assert.ok(names.includes('/manage') && !names.includes('/admin'));
     });
 });
 
@@ -442,13 +442,13 @@ t('a non-admin reaching a restricted page is returned to the directory, not refu
 // The per-COMMAND gate is a different code path from the per-CATEGORY one, and its failure is
 // quieter: Preferences renders either way, just with an extra line. Asserting on the body rather
 // than the category is the only way to see it.
-t('a non-admin opening Preferences gets no /server section in the body', async () => {
+t('a non-admin opening Preferences gets no /admin section in the body', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         const plain = JSON.stringify(await help.buildContainer('preferences', 0, NOBODY));
         const admin = JSON.stringify(await help.buildContainer('preferences', 0, SERVER_ADMIN));
-        assert.ok(!plain.includes('/server') && !plain.includes('Manage Server'), 'the /server section must be absent');
-        assert.ok(admin.includes('/server') && admin.includes('Manage Server'), 'the /server section must be present for an admin');
+        assert.ok(!plain.includes('/admin') && !plain.includes('Manage Server'), 'the /admin section must be absent');
+        assert.ok(admin.includes('/admin') && admin.includes('Manage Server'), 'the /admin section must be present for an admin');
     });
 });
 

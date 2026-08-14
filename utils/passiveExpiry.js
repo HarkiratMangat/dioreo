@@ -68,4 +68,38 @@ function schedulePanelExpiry(interaction, messageId, components) {
     pendingTimers.set(messageId, timeoutHandle);
 }
 
-module.exports = { schedulePanelExpiry, disableAllComponents, IDLE_TIMEOUT_MS };
+// Cancels a pending timer without scheduling a replacement -- for a caller that knows a message
+// just changed (proving it wasn't idle) but can't supply a fresh `components` snapshot to
+// reschedule from (see utils/sendV2Payload.js's header comment on why: some render paths, notably
+// handlers/manage.js's confirm/cancel/undo micro-prompts, PATCH the message via discord.js's raw
+// `interaction.update()` rather than sendV2Payload, so they never flow through schedulePanelExpiry
+// on their own). Cancelling outright (rather than leaving the old timer live) prevents it firing
+// mid-prompt and overwriting whatever is CURRENTLY on screen with a disabled clone of the PREVIOUS
+// render -- a visible, confusing regression, and worse than simply having no countdown running.
+function cancelPanelExpiry(messageId) {
+    const existing = pendingTimers.get(messageId);
+    if (existing) {
+        clearTimeout(existing);
+        pendingTimers.delete(messageId);
+    }
+}
+
+// Recursively checks a Components V2 (or plain action-row) tree for at least one button (type 2)
+// or select menu (3 = string, 5 = user, 6 = role, 7 = mentionable, 8 = channel) that isn't ALREADY
+// disabled. Mirrors disableAllComponents' own tree-walk exactly, so anything one function reaches
+// the other reaches too. Used by sendV2Payload to decide whether a render is even worth scheduling
+// a timer for -- an informational message with no components (an error reply, a "not an admin"
+// bounce) has nothing to disable, and scheduling one anyway would just be a timer that fires and
+// no-ops forever.
+function hasInteractiveComponents(components) {
+    return (components || []).some(component => {
+        if (!component) return false;
+        const INTERACTIVE_TYPES = new Set([2, 3, 5, 6, 7, 8]);
+        if (INTERACTIVE_TYPES.has(component.type) && !component.disabled) return true;
+        if (Array.isArray(component.components) && hasInteractiveComponents(component.components)) return true;
+        if (component.accessory && hasInteractiveComponents([component.accessory])) return true;
+        return false;
+    });
+}
+
+module.exports = { schedulePanelExpiry, cancelPanelExpiry, hasInteractiveComponents, disableAllComponents, IDLE_TIMEOUT_MS };

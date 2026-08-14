@@ -1,6 +1,6 @@
 // models/GuildSettings.js
 //
-// Per-GUILD (server) settings, set by that server's own admins via /server. Distinct from
+// Per-GUILD (server) settings, set by that server's own admins via /admin. Distinct from
 // models/UserPreference.js, which is per-USER and travels with the person across every server.
 //
 // This model holds a RESPONSE-VISIBILITY POLICY, not an access-control list, and the distinction is
@@ -26,7 +26,7 @@ const guildSettingsSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true, index: true },
 
     // Server-wide baseline. 'public' by default: a bot that is inert or silent on join looks broken
-    // and gets removed before anyone finds /server. Discord's own "Use Application Commands" and
+    // and gets removed before anyone finds /admin. Discord's own "Use Application Commands" and
     // "Use External Apps" permissions already give admins a per-channel and per-role gate on day
     // one, so an open default is not an ungoverned one. (Measured 2026-08-10 18:04 EDT: "Use
     // External Apps" governs a GUILD-installed app too, not only user-installed ones -- so that

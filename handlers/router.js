@@ -20,7 +20,7 @@
 // entrypoint that requires it.
 //
 // WHAT IS LEFT HERE, AND WHY. This file is now the dispatcher and nothing else: the guards that must
-// run before anything (visibility policy, anti-spam, /server, the admin lock), the per-subsystem
+// run before anything (visibility policy, anti-spam, /admin, the admin lock), the per-subsystem
 // dispatch chain, and the two routes that are not custom_id-shaped and so have no subsystem to
 // belong to -- autocomplete and the slash-command engine. Every button, select and modal branch
 // lives in a handlers/*.js module.
@@ -32,7 +32,8 @@
 // (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
 const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
 const { handleColorsButton } = require("./colors");
-const { handleManageInteraction } = require("./manage");
+const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
+const { cancelPanelExpiry } = require("../utils/passiveExpiry");
 const { handleTimestampInteraction } = require("./timestamp");
 const { handleHelpInteraction } = require("./help");
 const { handlePatchnotesInteraction } = require("./patchnotes");
@@ -98,15 +99,15 @@ async function handleInteraction(interaction) {
         interactionCooldowns.set(interaction.user.id, now);
     }
 
-    // --- /server PANEL (2026-08-10 15:49 EDT, v3) --- every `server_*` component routes to the one
-    // dispatcher in commands/server.js, which owns its own server-admin gate. Deliberately NOT
+    // --- /admin PANEL (2026-08-10 15:49 EDT, v3) --- every `admin_*` component routes to the one
+    // dispatcher in commands/admin.js, which owns its own server-admin gate. Deliberately NOT
     // spread across this handler the way older panels are: the whole point of this feature is that
     // exactly one place decides who may change a server's rules, and a second copy of that check
     // living here is how the /manage panel ended up with ~25 handlers that each forgot it.
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.())
-        && interaction.customId.startsWith('server_')) {
-        const serverCommand = interaction.client.commands.get('server');
-        if (serverCommand) return await serverCommand.handleComponent(interaction);
+        && interaction.customId.startsWith('admin_')) {
+        const adminCommand = interaction.client.commands.get('admin');
+        if (adminCommand) return await adminCommand.handleComponent(interaction);
     }
 
     // --- MANAGE PANEL ADMIN-ONLY LOCK (2026-07-14) --- /manage's own slash-command execute() only
@@ -121,8 +122,8 @@ async function handleInteraction(interaction) {
     // stay completely unaffected.
     // ⚠️ NO TYPE TEST HERE, DELIBERATELY (2026-08-14 09:59 EDT). This used to read
     // `isButton() || isStringSelectMenu() || isModalSubmit()`, which is NARROWER than the
-    // `server_` dispatcher fifteen lines above — that one also covers channel- and role-selects,
-    // and commands/server.js mints both. Nothing was ungated, because /manage happens to use only
+    // `admin_` dispatcher fifteen lines above — that one also covers channel- and role-selects,
+    // and commands/admin.js mints both. Nothing was ungated, because /manage happens to use only
     // those three types today; the day it grows a channel-select (picking an announcement channel,
     // say) that component would have routed straight past this gate, silently. The prefix match
     // below is what selects the guarded set, so the type list added no protection and only supplied
@@ -160,6 +161,25 @@ async function handleInteraction(interaction) {
             }
         }
     }
+
+        // PASSIVE EXPIRY SAFETY NET (2026-08-14 11:05 EDT) -- /manage's OWN branches (below) mostly edit the
+        // panel message via discord.js's raw `interaction.update()`, a legacy content+components
+        // shape that never flows through sendV2Payload -- see that file's own header comment for why
+        // ~24 call sites inside handlers/manage.js aren't individually instrumented this session. So
+        // for THIS subsystem alone, a passive-expiry timer scheduled by an earlier sendV2Payload-based
+        // page render could still be pending when one of those raw updates lands, and if the user then
+        // sits on THAT screen (a confirm/cancel prompt, say) for the rest of the window, the stale
+        // timer would fire and PATCH the message back to the EARLIER page's components -- just
+        // disabled, and visibly wrong. Cancelling outright here (never rescheduling, since this
+        // dispatch doesn't know what the eventual render will look like) closes that: the narrow,
+        // documented cost is that a manage-panel confirm/cancel/undo prompt reached this way runs
+        // with no countdown of its own until the next real page render re-arms one, never a stale
+        // overwrite. Scoped to manage's own prefixes specifically -- /alerts and /autobuild render
+        // exclusively through sendV2Payload already and reschedule themselves a few lines later in
+        // this same dispatch, so cancelling first there would just be immediately superseded.
+        if (interaction.message?.id && MANAGE_OWNED_PREFIXES.some(p => interaction.customId?.startsWith(p))) {
+            cancelPanelExpiry(interaction.message.id);
+        }
 
         // --- /manage PANEL (2026-08-13 17:40 EDT) --- every branch this panel mints lives in
         // handlers/manage.js. Dispatched HERE, immediately after the permission guard above and
@@ -235,7 +255,7 @@ async function handleInteraction(interaction) {
             // per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
                 const { getAllHelpCommandNames } = require('../commands/help');
-                // Restricted entries (/server for server admins, /manage//alerts//autobuild for the
+                // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the
                 // bot's own whitelist) are suggested only to someone who could use them -- see
                 // commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('../utils/guildPolicy');

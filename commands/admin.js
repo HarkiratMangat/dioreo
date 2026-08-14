@@ -1,6 +1,6 @@
-// commands/server.js
+// commands/admin.js
 //
-// /server -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is
+// /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is
 // Harkirat's owner-level panel gated on ALLOWED_ADMIN_ID and stays user-install-only. This one
 // belongs to whoever administers the server the command was run in.
 //
@@ -64,10 +64,10 @@ function navRow(active) {
     return {
         type: 1,
         components: [
-            btn('server_home', 'Overview'),
-            btn('server_channels', 'Channels'),
-            btn('server_roles', 'Roles'),
-            btn('server_commands', 'Commands'),
+            btn('admin_home', 'Overview'),
+            btn('admin_channels', 'Channels'),
+            btn('admin_roles', 'Roles'),
+            btn('admin_commands', 'Commands'),
         ],
     };
 }
@@ -79,7 +79,7 @@ function buildHome(settings, client) {
             type: 17,
             accent_color: ACCENT,
             components: [
-                { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
+                { type: 10, content: `## ${emojis.serverSettings} Server Admin` },
                 { type: 10, content: '-# Decide where Dioreo answers **publicly**, and where it answers **only to whoever asked**.' },
                 { type: 14, spacing: 2 },
                 { type: 10, content: summaryLines(settings) },
@@ -98,12 +98,12 @@ function buildHome(settings, client) {
                         type: 2,
                         style: def === 'public' ? 2 : 1,
                         label: def === 'public' ? 'Switch default to Hidden' : 'Switch default to Public',
-                        custom_id: 'server_default_toggle',
+                        custom_id: 'admin_default_toggle',
                     }],
                 },
             ],
         },
-        navRow('server_home'),
+        navRow('admin_home'),
     ];
 }
 
@@ -145,9 +145,9 @@ function buildChannels(settings) {
                 { type: 10, content: '-# 🔎 Type to search · your picks **replace** the list · threads follow their channel' },
             ],
         },
-        channelSelect('server_ch_ephemeral', 'Always hidden in these channels…', ephemeral),
-        channelSelect('server_ch_public', 'Always public in these channels…', publicIds),
-        navRow('server_channels'),
+        channelSelect('admin_ch_ephemeral', 'Always hidden in these channels…', ephemeral),
+        channelSelect('admin_ch_public', 'Always public in these channels…', publicIds),
+        navRow('admin_channels'),
     ];
 }
 
@@ -184,10 +184,10 @@ function buildRoles(settings) {
                 { type: 10, content: '-# 🔎 Type to search your roles' },
             ],
         },
-        roleSelect('server_role_public', 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
-        roleSelect('server_role_ephemeral', 'Always hidden for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
-        roleSelect('server_role_pick', 'Limit one role to specific channels…', [], 1),
-        navRow('server_roles'),
+        roleSelect('admin_role_public', 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
+        roleSelect('admin_role_ephemeral', 'Always hidden for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
+        roleSelect('admin_role_pick', 'Limit one role to specific channels…', [], 1),
+        navRow('admin_roles'),
     ];
 }
 
@@ -204,9 +204,9 @@ function buildRoleScope(settings, roleId) {
                 { type: 10, content: '-# This role gets its own setting in just these channels. Clear both menus to remove it.' },
             ],
         },
-        channelSelect(`server_role_scope_public|${roleId}`, 'Public for this role, only in…', pub?.channelIds || []),
-        channelSelect(`server_role_scope_ephemeral|${roleId}`, 'Hidden for this role, only in…', eph?.channelIds || []),
-        { type: 1, components: [{ type: 2, style: 2, label: 'Back to roles', custom_id: 'server_roles' }] },
+        channelSelect(`admin_role_scope_public|${roleId}`, 'Public for this role, only in…', pub?.channelIds || []),
+        channelSelect(`admin_role_scope_ephemeral|${roleId}`, 'Hidden for this role, only in…', eph?.channelIds || []),
+        { type: 1, components: [{ type: 2, style: 2, label: 'Back to roles', custom_id: 'admin_roles' }] },
     ];
 }
 
@@ -245,14 +245,14 @@ function buildCommands(settings, gateable) {
             type: 1,
             components: [{
                 type: 3,
-                custom_id: 'server_cmd_select',
+                custom_id: 'admin_cmd_select',
                 placeholder: 'Commands that are always hidden here…',
                 min_values: 0,
                 max_values: names.length,
                 options: names.map(n => ({ label: `/${n}`, value: n, default: selected.includes(n) })),
             }],
         },
-        navRow('server_commands'),
+        navRow('admin_commands'),
     ];
 }
 
@@ -284,12 +284,12 @@ function setScopedRoleRule(doc, roleId, visibility, channelIds) {
     doc.roleRules = channelIds.length ? [...kept, { roleId, visibility, channelIds }] : kept;
 }
 
-// Single entry point for every `server_*` component. handlers/router.js routes here rather than growing
+// Single entry point for every `admin_*` component. handlers/router.js routes here rather than growing
 // another dozen branches in its own handler, and the admin gate lives here so there is exactly one
 // place that decides who may change a server's rules.
 async function handleComponent(interaction) {
     if (!interaction.guildId) {
-        return interaction.reply({ content: `${emojis.serverSettings} **Server Controls only work inside a server.**`, ephemeral: true });
+        return interaction.reply({ content: `${emojis.serverSettings} **Server Admin only works inside a server.**`, ephemeral: true });
     }
     if (!isServerAdmin(interaction)) {
         return interaction.reply({
@@ -305,45 +305,45 @@ async function handleComponent(interaction) {
 
     let settings;
     switch (id) {
-        case 'server_home':
-        case 'server_channels':
-        case 'server_roles':
-        case 'server_commands':
+        case 'admin_home':
+        case 'admin_channels':
+        case 'admin_roles':
+        case 'admin_commands':
             settings = await getGuildSettings(guildId);
             break;
 
-        case 'server_default_toggle':
+        case 'admin_default_toggle':
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 doc.defaultVisibility = (doc.defaultVisibility || 'public') === 'public' ? 'ephemeral' : 'public';
             });
             break;
 
-        case 'server_ch_public':
-        case 'server_ch_ephemeral':
+        case 'admin_ch_public':
+        case 'admin_ch_ephemeral':
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                setChannelRules(doc, id === 'server_ch_public' ? 'public' : 'ephemeral', values);
+                setChannelRules(doc, id === 'admin_ch_public' ? 'public' : 'ephemeral', values);
             });
             break;
 
-        case 'server_role_public':
-        case 'server_role_ephemeral':
+        case 'admin_role_public':
+        case 'admin_role_ephemeral':
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                setUnscopedRoleRules(doc, id === 'server_role_public' ? 'public' : 'ephemeral', values);
+                setUnscopedRoleRules(doc, id === 'admin_role_public' ? 'public' : 'ephemeral', values);
             });
             break;
 
-        case 'server_role_pick':
+        case 'admin_role_pick':
             settings = await getGuildSettings(guildId);
-            return interaction.update({ components: buildRoleScope(settings, values[0]), flags: 32768 });
+            return sendV2Payload(interaction, buildRoleScope(settings, values[0]));
 
-        case 'server_role_scope_public':
-        case 'server_role_scope_ephemeral':
+        case 'admin_role_scope_public':
+        case 'admin_role_scope_ephemeral':
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                setScopedRoleRule(doc, arg, id === 'server_role_scope_public' ? 'public' : 'ephemeral', values);
+                setScopedRoleRule(doc, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values);
             });
-            return interaction.update({ components: buildRoleScope(settings, arg), flags: 32768 });
+            return sendV2Payload(interaction, buildRoleScope(settings, arg));
 
-        case 'server_cmd_select':
+        case 'admin_cmd_select':
             settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = values; });
             break;
 
@@ -352,23 +352,32 @@ async function handleComponent(interaction) {
     }
 
     // Which page to re-render after a write: the one the control lives on.
-    const page = id.startsWith('server_ch_') ? 'server_channels'
-        : id.startsWith('server_role_') ? 'server_roles'
-            : id === 'server_cmd_select' ? 'server_commands'
-                : id === 'server_default_toggle' ? 'server_home'
+    const page = id.startsWith('admin_ch_') ? 'admin_channels'
+        : id.startsWith('admin_role_') ? 'admin_roles'
+            : id === 'admin_cmd_select' ? 'admin_commands'
+                : id === 'admin_default_toggle' ? 'admin_home'
                     : id;
 
-    const components = page === 'server_channels' ? buildChannels(settings)
-        : page === 'server_roles' ? buildRoles(settings)
-            : page === 'server_commands' ? buildCommands(settings, interaction.client.gateableCommandNames || [])
+    const components = page === 'admin_channels' ? buildChannels(settings)
+        : page === 'admin_roles' ? buildRoles(settings)
+            : page === 'admin_commands' ? buildCommands(settings, interaction.client.gateableCommandNames || [])
                 : buildHome(settings, interaction.client);
 
-    return interaction.update({ components, flags: 32768 });
+    // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT --
+    // switched to sendV2Payload for two reasons at once: (1) it's the established pattern every
+    // other handler in the bot uses for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet: discord.js's
+    // own high-level reply/followUp/update don't RELIABLY serialize raw V2 JSON), and this command
+    // had never been real-world click-tested live (docs/ROADMAP.md's click-test checklist names it
+    // the one deliberate holdout) -- so matching the battle-tested path is strictly safer regardless
+    // of whether the raw call actually worked; (2) it's what makes this panel pick up the passive
+    // 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment). The three
+    // `interaction.update()` calls above got the same swap for the same reasons.
+    return sendV2Payload(interaction, components);
 }
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('server')
+        .setName('admin')
         .setDescription('Server admins: control where Dioreo answers publicly and where it stays hidden')
         // Keeps the command out of ordinary members' pickers where the bot IS guild-installed. It is
         // NOT the gate -- Discord ignores this field for a user-installed invocation, which is
@@ -379,7 +388,7 @@ module.exports = {
         // would create servers where the policy is ACTIVE but nobody can ever configure it.
         //
         // ⚠️ The cost of keeping [1], found by Harkirat live 2026-08-10 16:06 EDT: a user-installed
-        // command travels with the USER into every server they are in, so /server appears for anyone
+        // command travels with the USER into every server they are in, so /admin appears for anyone
         // who has installed the bot even where it is not guild-installed, and
         // setDefaultMemberPermissions cannot hide it (Discord ignores that field for user-installed
         // invocations -- which is why the runtime admin check above is the real gate).
@@ -405,7 +414,7 @@ module.exports = {
                 type: 17,
                 accent_color: ACCENT,
                 components: [
-                    { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
+                    { type: 10, content: `## ${emojis.serverSettings} Server Admin` },
                     { type: 10, content: 'This one only works **inside a server** — there is nothing to configure in a DM.' },
                 ],
             }]);

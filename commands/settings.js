@@ -475,18 +475,12 @@ module.exports = {
         // mention in the header above while still rendering it as a normal clickable blue mention —
         // a "silent" mention. Without this, every /settings run would ping the user for mentioning
         // themselves, which is pure noise since they're the one who ran the command.
-        const sentMessage = await sendV2Payload(interaction, payload, { allowedMentions: { users: [] } });
-
-        // PASSIVE IDLE-TIMEOUT (2026-07-18) -- schedules/reschedules the auto-disable timer for
-        // THIS message, using THIS render's own fresh interaction token. Runs on every render
-        // (initial command + every button/select re-render), so an actively-used panel never goes
-        // idle mid-session; only 10 straight minutes of no interaction on this specific message
-        // triggers it. `sentMessage.id` comes straight back from the PATCH response above -- no
-        // extra `fetchReply()` round-trip needed even on the very first render, unlike the
-        // `dynamicProfile` accent style's message-id caching (see CLAUDE.md), which had no such
-        // response to read from. See utils/passiveExpiry.js for the full mechanism.
-        schedulePanelExpiry(interaction, sentMessage.id, payload);
-
-        return sentMessage;
+        // PASSIVE IDLE-TIMEOUT -- used to be scheduled explicitly right here (`schedulePanelExpiry`,
+        // 2026-07-18). As of 2026-08-14, sendV2Payload itself schedules/reschedules the auto-disable
+        // timer for whatever message it just sent, for ANY command -- this was the reference
+        // implementation the bot-wide version generalized from, so no behavior changed by removing
+        // the now-redundant explicit call here. See utils/sendV2Payload.js's header comment for the
+        // mechanism, and .claude/rules/settings-and-expiry.md for the full history.
+        return sendV2Payload(interaction, payload, { allowedMentions: { users: [] } });
     }
 };

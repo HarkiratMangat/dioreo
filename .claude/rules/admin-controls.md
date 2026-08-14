@@ -2,16 +2,16 @@
 kind: rule
 status: live
 paths:
-  - "commands/server.js"
+  - "commands/admin.js"
   - "utils/guildPolicy.js"
   - "models/GuildSettings.js"
   - "utils/ephemeral.js"
   - "utils/shareButton.js"
 ---
 
-# `/server` — the server-admin response-visibility policy
+# `/admin` — the server-admin response-visibility policy
 
-*Loads when you touch `commands/server.js`, `utils/guildPolicy.js`, `models/GuildSettings.js`, `utils/ephemeral.js` or `utils/shareButton.js`. Shipped on the v3 line 2026-08-10 15:55 EDT, as the launch blocker for the guild install. Full design + the rejected alternatives: `docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md`. The per-USER side of visibility is `.claude/rules/settings-and-expiry.md`; Harkirat's own owner-level panel is `.claude/rules/manage-panel.md`.*
+*Loads when you touch `commands/admin.js`, `utils/guildPolicy.js`, `models/GuildSettings.js`, `utils/ephemeral.js` or `utils/shareButton.js`. Shipped on the v3 line 2026-08-10 15:55 EDT, as the launch blocker for the guild install. Full design + the rejected alternatives: `docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md`. The per-USER side of visibility is `.claude/rules/settings-and-expiry.md`; Harkirat's own owner-level panel is `.claude/rules/manage-panel.md`.*
 
 ## The one-line model
 
@@ -26,7 +26,7 @@ Admins already hold the real levers natively, **per role and per channel** (meas
 ⚠️ **"Use External Apps" governs a GUILD-INSTALLED app too — measured 2026-08-10 18:04 EDT, and it refutes the premise this feature was originally sized on.** The design assumed a guild-installed bot is not "external", so admins would lose that lever in exactly the configuration v3 launches. They do not. Harkirat re-ran the test in 𝔇𝔯𝔢𝔞𝔪𝔩𝔞𝔫𝔡 with a member who does **not** have Dioreo (Dev) user-installed — the invocation could therefore only come from the guild-installed copy — and disabling the permission for the channel forced `/colors` ephemeral. **So this feature's channel and role tiers duplicate, in shape, a native per-role/per-channel overwrite Discord already ships.**
 
 **Two things justify it, and they are narrower than the records first claimed — do not restate the old sizing:**
-1. **Per-app targeting.** The native lever is all-or-nothing: quieting Dioreo in a channel quiets *every* app there. `/server` quiets this bot alone.
+1. **Per-app targeting.** The native lever is all-or-nothing: quieting Dioreo in a channel quiets *every* app there. `/admin` quiets this bot alone.
 2. **Per-command targeting.** Nothing native can force `/colors` ephemeral while `/help` stays public. `ephemeralCommands` is the only route to that, for guild- and user-installed invocations alike.
 
 Because the tiers mirror a native mechanism, they deliberately mirror its **semantics** too — same-tier conflicts resolve to `public`, exactly as an explicit allow beats a deny in Discord's own role overwrites, so an admin's existing intuition transfers. **Before adding any tier here, check whether a native permission already expresses it**; the first three attempts at sizing this feature all overstated the gap, and the correction cost a full pass over six documents.
@@ -58,7 +58,7 @@ The obvious design — make `resolveEphemeral()` policy-aware and pass the polic
 ## Other things already paid for
 
 - **The admin check costs zero REST calls.** `interaction.memberPermissions` carries Discord's computed permissions, so `isServerAdmin()` reads the payload. **No `GUILD_MEMBERS` intent** — that gates *enumerating* members, which this never does. `memberRoleIds()` handles both shapes: a real `GuildMember` (`roles.cache`) and a raw `APIInteractionGuildMember` (`roles` as an id array), the latter being the norm for a user-installed invocation in a server the bot has not joined.
-- **`setDefaultMemberPermissions(ManageGuild)` on `/server` is NOT the gate.** Discord ignores it for user-installed invocations — exactly the case this feature covers — so `execute()` and `handleComponent()` both re-check for real. The field is there only to keep the command out of ordinary members' pickers where the bot *is* guild-installed.
+- **`setDefaultMemberPermissions(ManageGuild)` on `/admin` is NOT the gate.** Discord ignores it for user-installed invocations — exactly the case this feature covers — so `execute()` and `handleComponent()` both re-check for real. The field is there only to keep the command out of ordinary members' pickers where the bot *is* guild-installed.
 - **`client.gateableCommandNames` is built in `bot/registry.js` from the `commands` array that is about to be registered**, not from `client.commands` or a readdir of `commands/*.js` — both of those miss the eight weapon commands and `all`. A hand-maintained list would go stale the first time a command is added.
 - **A null settings lookup is cached deliberately.** The common case is a server with no rules at all; caching only the hits would leave exactly that case hitting Mongo on every interaction. Writes go through `updateGuildSettings()`, which invalidates in the same place it mutates.
 - **`GuildSettings.updatedBy` is a Discord user ID and therefore personal data** — disclosed in `docs/legal/PRIVACY.md` §2.1a and Appendix A. ⚠️ `docs-audit`'s `privacy-model-coverage` did not catch this on its own: its heuristic was the three literal names `discordId`/`userId`/`user_id`, so it reported a **vacuous pass** while the new model went unexamined. The heuristic was widened to include actor fields in the same change. If you add a model, do not read that check's green as proof of disclosure.

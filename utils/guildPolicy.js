@@ -35,7 +35,7 @@ const EPHEMERAL_FLAG = 64;
 
 // Per-guild settings cache. A policy lookup sits in front of EVERY interaction, so an uncached
 // design would put a Mongo round trip on the hot path of every command in every server. Entries are
-// invalidated explicitly whenever /server writes, so the TTL is only a backstop against another
+// invalidated explicitly whenever /admin writes, so the TTL is only a backstop against another
 // process (a second bot instance, a manual DB edit) changing the document underneath us.
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const policyCache = new Map();
@@ -194,7 +194,7 @@ async function attachGuildPolicy(interaction) {
     return policy;
 }
 
-// Read-modify-write helper for /server, so every write invalidates the cache in the same place it
+// Read-modify-write helper for /admin, so every write invalidates the cache in the same place it
 // mutates. `mutate` receives the document and may change it freely.
 async function updateGuildSettings(guildId, actorId, mutate) {
     const doc = await GuildSettings.findOne({ guildId }) || new GuildSettings({ guildId });

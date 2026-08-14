@@ -20,6 +20,12 @@ ba = "ba"
 # "PNGs" (plural) — flagged 2026-08-07 19:52 EDT writing DEVLOG's v2.60.0 entry ("static PNGs").
 # Same reasoning as `mis`/`cpy`/`ba` above: a real, correctly-spelled term the checker doesn't know.
 pn = "pn"
+# `hed` fires as a misspelling of "head" inside "PATCHed"/"PATCHes" — this repo's own convention for
+# turning the HTTP verb PATCH into past tense/plural when describing a raw REST call (sendV2Payload.js,
+# passiveExpiry.js, several rule files). Flagged 2026-08-14 11:08 EDT editing
+# .claude/rules/settings-and-expiry.md, where the word was already used unchanged elsewhere in the
+# same file. Same reasoning as `mis`/`cpy`/`ba`/`pn` above.
+hed = "hed"
 
 # Hook self-tests carry DELIBERATE misspellings as fixtures — typos-check.test.sh has to feed the
 # checker a real typo to prove it still fires. Without this exclusion the spellchecker reports the

@@ -87,7 +87,7 @@ check('no two handlers claim overlapping custom_id prefixes', () => {
 // One id per handler, plus ids that belong to no handler at all. Each must be declined by every
 // handler that does not own it.
 const FOREIGN_IDS = [
-    'server_visibility_menu',   // owned by commands/server.js, dispatched before the chain
+    'admin_visibility_menu',   // owned by commands/admin.js, dispatched before the chain
     'totally_unknown_button',
     '',
 ];
