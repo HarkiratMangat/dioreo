@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.19.0 — 2026-08-14 16:27 EDT (#PR) — A presence check for the memory layer, and an expiring hook stopped asserting its own reversal
+## Pre-Release v3.19.0 — 2026-08-14 16:27 EDT (#127) — A presence check for the memory layer, and an expiring hook stopped asserting its own reversal
 
 Two failures, found the same day, both invisible from inside a session. `sequential-thinking`'s JSON-Schema dialect fix (2026-08-13) had landed in the Claude **Desktop** config, not `~/.claude.json`, so no Claude Code session ever saw it — the shim was real and correct, just on the wrong client. `perseus-vault` was worse: it sat at "⏸ Pending approval," a state only an interactive `claude` run can clear and that no session can detect, so `memory-write-gate` nagged about writes that were never possible to make.
 
