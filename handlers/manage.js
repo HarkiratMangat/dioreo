@@ -436,226 +436,34 @@ async function routeManage(interaction) {
         // handled in the isStringSelectMenu() block above) rather than a row of nav buttons, since a
         // button row caps out at 5 sections and this panel has more than that.
         if (interaction.customId.startsWith('mng_act_')) {
+            // ⚠️ REWRITTEN 2026-08-14 -- this used to be a 220-line if/else that hardcoded every
+            // page's action list a second time, in parallel with the button definitions in
+            // commands/manage.js's buildPagesTable(). Both now read utils/manageActions.js, so a
+            // button and the handler behind it cannot drift apart; scripts/manageActions.test.js
+            // asserts that in both directions.
+            //
+            // resolveAction() is also where per-page permissions are enforced PER CLICK. They used
+            // to be checked only when the page was opened, which meant a panel message left sitting
+            // in a channel kept working after the clicker's access was narrowed (filed 2026-08-13,
+            // closed here). router.js's prefix guard still runs first and independently -- that one
+            // answers "may this user touch /manage at all", this one answers "may they touch THIS
+            // page". Keep both.
             const [group, action] = parseMngId(interaction.customId.replace('mng_act_', ''));
-            const manageCommand = interaction.client.commands.get('manage');
-            const isLoadoutsGroup = group === 'loadouts_mp' || group === 'loadouts_dmz';
-            const loadoutMode = group === 'loadouts_mp' ? 'MP' : 'DMZ';
+            const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
 
-            // Edit/Delete need a specific item picked first -- a button can't autocomplete the way
-            // a slash-command option could, so these open a one-field "search by name" modal
-            // instead of the real edit/delete modal directly. Resolved in this file's
-            // `mng_search_` modal-submit handler further down. (Patch Notes has no edit/delete
-            // button anymore -- see its dateinfo/urls1/urls2 branch below.)
-            if (action === 'edit' || action === 'delete') {
-                return await interaction.showModal(manageCommand.buildSearchModal(group, action));
+            const resolved = await resolveAction(group, action, interaction.user.id);
+            if (!resolved.ok) {
+                return await interaction.reply({ content: DENIAL_MESSAGE[resolved.reason], ephemeral: true });
             }
 
-            // Bulk Format Guide (rebuilt into a rich Components V2 view 2026-07-31 17:20 EDT, same-
-            // day follow-up -- was a plain-text reply, the notes file) -- a real structured reference, not a
-            // modal/DB action, so it's handled here before any of the group-specific branches. Opens
-            // pre-selected to the page that was clicked; utils/manageGuides.js's select-menu row
-            // lets switching to any other topic without leaving the guide (mng_guide_pick handler,
-            // isStringSelectMenu() block below). Deferred + sendV2Payload, same pattern every other
-            // V2 render in this bot uses -- discord.js's high-level reply() can't reliably serialize
-            // raw V2 JSON (see rendering-and-ui.md).
-            if (action === 'formatguide') {
-                const { resolveGuideTopic, buildGuideContainer } = require('../utils/manageGuides');
-                await interaction.deferReply({ ephemeral: true });
-                const { sendV2Payload } = require('../utils/sendV2Payload');
-                return await sendV2Payload(interaction, buildGuideContainer(resolveGuideTopic(group)));
-            }
-
-            // "Purge" (draws/calendar/patchnotes only -- Loadouts deliberately has none, see
-            // manage.js's PURGE_LABELS note) needs a second confirmation before it actually deletes
-            // anything -- a single misclick on a destructive button shouldn't be enough to wipe a
-            // whole collection. This first click just shows a Confirm/Cancel prompt; the actual
-            // deletion only happens from `mng_purgeconfirm_` below.
-            // Draws gained 3 granular scopes (2026-07-12: purgenew/purgereturning/purgeall) instead
-            // of one generic 'purge' action -- every other group still only has 'purge' (scope
-            // 'all'). custom_id always encodes BOTH group and scope now (`mng_purgeconfirm_{group}_
-            // {scope}`) so the confirm/cancel handlers below have one consistent shape to parse
-            // regardless of which group triggered it.
-            if (action === 'purge' || action === 'purgenew' || action === 'purgereturning' || action === 'purgeall') {
-                const scope = action === 'purgenew' ? 'new' : action === 'purgereturning' ? 'returning' : 'all';
-                const label = manageCommand.PURGE_LABELS[group][scope];
-                return interaction.reply({
-                    content: `⚠️ **Are you sure?** This will permanently delete ${label}. This cannot be undone.`,
-                    components: [{
-                        type: 1, components: [
-                            { type: 2, style: 4, label: 'Yes, Purge', custom_id: `mng_purgeconfirm_${group}_${scope}` },
-                            { type: 2, style: 2, label: 'Cancel', custom_id: `mng_purgecancel_${group}_${scope}` }
-                        ]
-                    }],
-                    ephemeral: true
-                });
-            }
-
-            if (group === 'draws') {
-                if (action === 'addnew') return await interaction.showModal(manageCommand.buildAddDrawModal('new'));
-                if (action === 'addreturning') return await interaction.showModal(manageCommand.buildAddDrawModal('returning'));
-                // New/Returning/Either triplets condensed to ONE button each (2026-07-12) --
-                // Either/Both's modal already covers the single-category case by leaving one field
-                // blank, so the 3-way split was pure redundancy. `bulkadd`/`bulkreplace`/`bulkdelete`
-                // are now the only 3 draws bulk action ids that exist.
-                if (action === 'bulkadd') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('add'));
-                if (action === 'bulkreplace') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('replace'));
-                if (action === 'bulkdelete') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal('either'));
-
-                // Export -- replies directly with the exported file, no modal, nothing to submit.
-                // Now lives INSIDE the Draws page itself (2026-07-12) rather than a separate Export
-                // page, reusing the same bulk-import-compatible formatter as before.
-                if (action === 'exportnew' || action === 'exportreturning') {
-                    const SeasonalData = require('../models/SeasonalData');
-                    const { formatDrawsAsBulkText } = require('../utils/adminParser');
-                    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                    const isNew = action === 'exportnew';
-                    const text = formatDrawsAsBulkText(isNew ? seasonalDoc?.newDraws || [] : seasonalDoc?.returningDraws || []) || `(no ${isNew ? 'New' : 'Returning'} Draws currently saved)`;
-                    return interaction.reply({
-                        content: `📤 **Exported ${isNew ? 'New' : 'Returning'} Draws** in Bulk Add format. Paste this back into the matching Bulk action.`,
-                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${isNew ? 'new' : 'returning'}_draws_bulk.txt` }],
-                        ephemeral: true
-                    });
-                }
-            }
-
-            if (group === 'calendar') {
-                if (action === 'add') return await interaction.showModal(manageCommand.buildCalendarAddModal());
-                if (action === 'addmultiple') return await interaction.showModal(manageCommand.buildCalendarBulkModal('add'));
-                if (action === 'replacemultiple') return await interaction.showModal(manageCommand.buildCalendarBulkModal('replace'));
-                if (action === 'deletemultiple') return await interaction.showModal(manageCommand.buildCalendarBulkRemoveModal());
-                if (action === 'export') {
-                    const SeasonalData = require('../models/SeasonalData');
-                    const { formatCalendarAsBulkText } = require('../utils/adminParser');
-                    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                    const text = formatCalendarAsBulkText(seasonalDoc?.calendar || []) || '(no calendar events currently saved)';
-                    return interaction.reply({
-                        content: `📤 **Exported Calendar** in Bulk Add format. Paste this back into the Replace action.`,
-                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: 'calendar_bulk.txt' }],
-                        ephemeral: true
-                    });
-                }
-                // Page Banners (2026-07-31 17:20 EDT) -- opens pre-filled with whatever's currently saved.
-                if (action === 'banners') {
-                    const SeasonalData = require('../models/SeasonalData');
-                    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                    return await interaction.showModal(manageCommand.buildCalendarBannersModal(seasonalDoc));
-                }
-            }
-
-            if (isLoadoutsGroup) {
-                if (action === 'add') return await interaction.showModal(manageCommand.buildAddLoadoutModal(loadoutMode));
-                if (action === 'bulkadd') return await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutMode));
-                // "Replace Multiple" reuses the exact same upsert-by-name modal as "Add Multiple" for
-                // now -- the upsert behavior (update in place if that build already exists, insert
-                // if not) already covers "replace" semantics for anything you paste back in. The
-                // real search-then-pick-from-a-list interaction described in the mockup is the
-                // deferred future work (see this file's top-of-file note) -- Harkirat's explicit
-                // call was to hold that off until the rest of this panel redesign lands cleanly.
-                if (action === 'bulkreplace') return await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal(loadoutMode));
-                if (action === 'bulkdelete') return await interaction.showModal(manageCommand.buildLoadoutsBulkRemoveModal(loadoutMode));
-                if (action === 'exportupto5') return await interaction.showModal(manageCommand.buildLoadoutsExportUpTo5Modal(loadoutMode));
-                if (action === 'exportcategory') return await interaction.showModal(manageCommand.buildLoadoutsExportCategoryModal(loadoutMode));
-                if (action === 'exportall') {
-                    const Loadout = require('../models/Loadout');
-                    const { formatLoadoutsAsBulkText } = require('../utils/adminParser');
-                    const loadouts = await Loadout.find({ mode: loadoutMode }).lean();
-                    const text = formatLoadoutsAsBulkText(loadouts) || `(no ${loadoutMode} loadouts currently saved)`;
-                    return interaction.reply({
-                        content: `📤 **Exported all ${loadoutMode} loadouts** in Bulk Add format. Paste this back into the Bulk Add action.`,
-                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${loadoutMode.toLowerCase()}_loadouts_bulk.txt` }],
-                        ephemeral: true
-                    });
-                }
-            }
-
-            // Patch Notes now operates on a single "current" entry (the last item in patchNotes[],
-            // the one whose title stays synced to currentSeasonTitle) rather than add-a-new-entry or
-            // search-and-edit -- see manage.js's buildPatchDateInfoModal/buildPatchUrlsModal. If no
-            // entry exists yet at all, these modals just open blank/empty; the submit handler below
-            // creates the first entry the first time any of the three is actually submitted.
-            if (group === 'patchnotes') {
-                const SeasonalData = require('../models/SeasonalData');
-                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                const currentEntry = seasonalDoc?.patchNotes?.length ? seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1] : null;
-                if (action === 'dateinfo') {
-                    const PatchDateInfoUserPreference = require('../models/UserPreference');
-                    const patchDateInfoAdminPrefs = await PatchDateInfoUserPreference.findOne({ discordId: interaction.user.id });
-                    return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry, patchDateInfoAdminPrefs?.timezone));
-                }
-                if (action === 'urls1') return await interaction.showModal(manageCommand.buildPatchUrlsModal(1, currentEntry));
-                if (action === 'urls2') return await interaction.showModal(manageCommand.buildPatchUrlsModal(2, currentEntry));
-                // "Add New Season" (2026-07-24) -- always opens blank, unlike dateinfo/urls1/urls2
-                // which reuse/prefill the existing current entry. Submitting it always PUSHES a new
-                // entry -- see modal_patch_addseason below.
-                if (action === 'addseason') return await interaction.showModal(manageCommand.buildPatchAddSeasonModal());
-            }
-
-            // "Next Season Draft" (2026-07-30 22:24 EDT) -- settitles/bulkdraws/bulkcalendar open
-            // their modal pre-filled from the CURRENT draft (so re-running one to fix a typo doesn't
-            // start from blank); promote/discard are destructive-ish enough to need the same
-            // 2-step Confirm/Cancel every other irreversible action on this panel already uses.
-            if (group === 'seasondraft') {
-                const SeasonalData = require('../models/SeasonalData');
-                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                if (action === 'settitles') return await interaction.showModal(manageCommand.buildDraftTitlesDatesModal(seasonalDoc));
-                if (action === 'bulkdraws') return await interaction.showModal(manageCommand.buildDraftBulkDrawsModal(seasonalDoc));
-                if (action === 'bulkcalendar') return await interaction.showModal(manageCommand.buildDraftBulkCalendarModal(seasonalDoc));
-                if (action === 'promote') {
-                    if (!seasonalDoc.draft?.active) {
-                        return interaction.reply({ content: '❌ No draft in progress — nothing to promote.', ephemeral: true });
-                    }
-                    return interaction.reply({
-                        content: `⚠️ **Promote the staged draft to live?** This swaps in the draft's title, deadlines, ${seasonalDoc.draft.newDraws?.length || 0} New draw(s), ${seasonalDoc.draft.returningDraws?.length || 0} Returning draw(s), and ${seasonalDoc.draft.calendar?.length || 0} calendar event(s) as what's live RIGHT NOW, and clears the draft. Undo is available after.`,
-                        components: [{
-                            type: 1, components: [
-                                { type: 2, style: 3, label: 'Yes, Promote', custom_id: 'mng_draftpromoteconfirm' },
-                                { type: 2, style: 2, label: 'Cancel', custom_id: 'mng_draftpromotecancel' }
-                            ]
-                        }],
-                        ephemeral: true
-                    });
-                }
-                if (action === 'discard') {
-                    if (!seasonalDoc.draft?.active) {
-                        return interaction.reply({ content: '❌ No draft in progress — nothing to discard.', ephemeral: true });
-                    }
-                    return interaction.reply({
-                        content: `⚠️ **Discard the staged draft?** This erases everything staged for next season. What's currently live is untouched. Cannot be undone.`,
-                        components: [{
-                            type: 1, components: [
-                                { type: 2, style: 4, label: 'Yes, Discard', custom_id: 'mng_draftdiscardconfirm' },
-                                { type: 2, style: 2, label: 'Cancel', custom_id: 'mng_draftdiscardcancel' }
-                            ]
-                        }],
-                        ephemeral: true
-                    });
-                }
-            }
-
-            // "Manage Admins" (2026-08-13) -- the page itself is owner-only VISIBILITY (never
-            // offered to a non-owner admin at all, see utils/adminAccess.js's getManagePages), so
-            // reaching this branch at all already implies the owner -- re-checked anyway, matching
-            // every other owner-gated action's defense-in-depth. Per-admin Edit Permissions/Revoke
-            // now live directly on each card (mng_admin_editperms_*/mng_admin_revoke_* below), not
-            // routed through here.
-            if (group === 'manageadmins') {
-                const { isOwner } = require('../utils/adminAccess');
-                if (!isOwner(interaction.user.id)) {
-                    return interaction.reply({ content: "🔒 **Only the bot owner can manage the admin list.**", ephemeral: true });
-                }
-                if (action === 'grant') return await interaction.showModal(manageCommand.buildAdminGrantModal());
-            }
-
-            // "Announcement" (2026-08-13) -- reachable by any admin (posting one isn't the
-            // owner-only privilege-boundary grant/revoke is; see the manageadmins branch above).
-            // Post New always opens BLANK (announcementDoc = null) -- each announcement is its own
-            // independent doc now, not a single one being overwritten. Per-item Edit/Delete live in
-            // their own top-level `mng_announce_*` handlers below (their custom_ids embed a Mongo
-            // _id, which parseMngId's group/action split can't handle -- same reasoning as the
-            // mng_admin_revoke*/mng_purge* handlers already living outside mng_act_).
-            if (group === 'announcement' && action === 'post') {
-                return await interaction.showModal(manageCommand.buildAnnouncementModal(null));
-            }
+            // Every action decides its own response mode (see the registry's `kind` note) -- nothing
+            // is deferred here, because a modal-opening action needs showModal() to be the FIRST
+            // response and cannot follow a deferReply().
+            return await resolved.entry.run({
+                interaction,
+                page: group,
+                manageCommand: interaction.client.commands.get('manage')
+            });
         }
 
         // MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation

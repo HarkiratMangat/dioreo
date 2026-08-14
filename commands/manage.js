@@ -37,6 +37,7 @@ const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
 const { mentionCommand } = require('../utils/commandMentions');
+const { buttonFor } = require('../utils/manageActions'); // the /manage action registry (2026-08-14)
 
 const ALLOWED_ADMIN_ID = '1139845545754632283'; // Your exact Discord ID
 
@@ -87,12 +88,7 @@ function buildPagesTable(client) {
                 // Not shown in Harkirat's mockup (the single-item section there has no button row at
                 // all) — added to match the same convention every other page's single-item section
                 // uses, since Add/Edit/Delete need to actually be reachable somehow.
-                buttons: [
-                    { id: 'addnew', label: 'Add New', style: 3 },
-                    { id: 'addreturning', label: 'Add Returning', style: 3 },
-                    { id: 'edit', label: 'Edit', style: 1 },
-                    { id: 'delete', label: 'Delete', style: 4 }
-                ]
+                buttons: ['addnew', 'addreturning', 'edit', 'delete']
             },
             {
                 // Bulk section grouped together like the single-item section above (2026-07-12,
@@ -109,11 +105,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngBulkReplace} Replace Multiple Draws\n-# Updates existing draws by matching title, or adds them if they don't exist yet. Draws not included in the paste are left untouched — use Purge below for a full wipe.`,
                     `### ${emojis.mngBulkDelete} Delete Multiple Draws\n-# Remove multiple draws at once by pasting their titles. Only removes what's matched by search — everything else is left untouched.`
                 ],
-                buttons: [
-                    { id: 'bulkadd', label: 'Add Multiple', style: 3 },
-                    { id: 'bulkreplace', label: 'Replace Multiple', style: 1 },
-                    { id: 'bulkdelete', label: 'Delete Multiple', style: 4 }
-                ]
+                buttons: ['bulkadd', 'bulkreplace', 'bulkdelete']
             },
             {
                 // Purge moved into its own fully separate section (2026-07-12, was folded into the
@@ -121,18 +113,11 @@ function buildPagesTable(client) {
                 // granular scopes, since only being able to wipe New+Returning together was a real
                 // gap once you just wanted to reset one of the two.
                 blocks: [`### ${emojis.mngPurge} Purge Draws Data\n-# Permanently erase draws to start fresh for a new season. Choose a scope below.`],
-                buttons: [
-                    { id: 'purgenew', label: 'Purge New Draws Only', style: 4 },
-                    { id: 'purgereturning', label: 'Purge Returning Draws Only', style: 4 },
-                    { id: 'purgeall', label: 'Purge All Draws Data', style: 4 }
-                ]
+                buttons: ['purgenew', 'purgereturning', 'purgeall']
             },
             {
                 blocks: [`### ${emojis.mngExport} Export Draws\n-# Extract the new/returning draws info, formatted for an easy re-import.`],
-                buttons: [
-                    { id: 'exportnew', label: 'Export New Draws', style: 2 },
-                    { id: 'exportreturning', label: 'Export Returning Draws', style: 2 }
-                ]
+                buttons: ['exportnew', 'exportreturning']
             },
             // Bulk Format Guide -- last section on every page that has one (2026-07-31 17:20 EDT,
             // direct correction: was mid-page, wrong). Ordering convention across every page now:
@@ -140,7 +125,7 @@ function buildPagesTable(client) {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: 'formatguide' }
                 ]
             }
         ]
@@ -158,11 +143,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngEdit} Edit Single Event\n-# Update an existing event's info. Search by event title.`,
                     `### ${emojis.mngDelete} Delete Single Event\n-# Remove a single event. Search by event title.`
                 ],
-                buttons: [
-                    { id: 'add', label: 'Add', style: 3 },
-                    { id: 'edit', label: 'Edit', style: 1 },
-                    { id: 'delete', label: 'Delete', style: 4 }
-                ]
+                buttons: ['add', 'edit', 'delete']
             },
             {
                 // Page Banners folded in as a 4th button here (2026-07-31 17:20 EDT, direct
@@ -177,12 +158,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`,
                     `### ${emojis.mngUrls} Page Banners\n-# Set a banner image for the Draws, Events, and Playlists pages independently. Leave a field blank to show nothing for that page.`
                 ],
-                buttons: [
-                    { id: 'addmultiple', label: 'Add', style: 3 },
-                    { id: 'replacemultiple', label: 'Replace', style: 1 },
-                    { id: 'deletemultiple', label: 'Delete', style: 4 },
-                    { id: 'banners', label: 'Banners', style: 1 }
-                ]
+                buttons: ['addmultiple', 'replacemultiple', 'deletemultiple', 'banners']
             },
             // Purge, then Export, then Guide -- ordering convention across every page now: single-item
             // management > bulk management > purge > export > guide (2026-07-31 17:20 EDT, direct
@@ -190,19 +166,19 @@ function buildPagesTable(client) {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
+                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: 'purge' }
                 ]
             },
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngExport} Export All Events\n-# Extract the events info, formatted for an easy re-import.`, button: { id: 'export', label: 'Export', style: 2 } }
+                    { text: `### ${emojis.mngExport} Export All Events\n-# Extract the events info, formatted for an easy re-import.`, button: 'export' }
                 ]
             },
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: 'formatguide' }
                 ]
             }
         ]
@@ -224,11 +200,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngUrls} URLs\n-# View, edit, or clear the URLs for the current balance changes. First 5 only.`,
                     `### ${emojis.mngUrls} URLs (Additional)\n-# View, edit, or clear the URLs for the current balance changes. *Use this when there are more than 5 URLs.*`
                 ],
-                buttons: [
-                    { id: 'dateinfo', label: 'Date/Info', style: 3 },
-                    { id: 'urls1', label: 'URLs 1', style: 1 },
-                    { id: 'urls2', label: 'URLs 2', style: 1 }
-                ]
+                buttons: ['dateinfo', 'urls1', 'urls2']
             },
             // "Add New Season" (2026-07-24) -- previously the biggest gap in this page: there was no
             // way to START a new season's patch notes at all, only edit whichever entry already
@@ -236,7 +208,7 @@ function buildPagesTable(client) {
             // and demotes the old one to Past Seasons -- see handlers/manage.js's modal_patch_addseason handler.
             {
                 blocks: [`### ${emojis.mngAdd} Add New Season\n-# Add release notes for a new season. After saving, this data becomes the Current Season and the previous data moves to Past Seasons.`],
-                buttons: [{ id: 'addseason', label: 'Add New Season', style: 3 }]
+                buttons: ['addseason']
             },
             // "Past Seasons" (2026-07-24) -- a select menu (not a search modal like Edit/Delete
             // elsewhere on this panel) since the full list of past seasons is short enough to just
@@ -252,7 +224,7 @@ function buildPagesTable(client) {
             },
             {
                 blocks: [`### ${emojis.mngPurge} Purge All Patch Notes\n-# Permanently erase the release date, additional info, and URL history to start fresh for a new season.`],
-                buttons: [{ id: 'purge', label: 'Purge', style: 4 }]
+                buttons: ['purge']
             },
             // Guide (added 2026-07-31 17:20 EDT) -- this page has no bulk PASTE format, but the
             // Release Date / URLs / Additional Info fields have real syntax rules admins get
@@ -261,7 +233,7 @@ function buildPagesTable(client) {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.guide} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: 'formatguide' }
                 ]
             }
         ]
@@ -289,11 +261,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngBulkAdd} New + Returning Draws\n-# Stage the next season's full New/Returning draws list. Replaces the whole staged list each submit — doesn't touch what's currently live.`,
                     `### ${emojis.mngBulkAdd} Calendar\n-# Stage the next season's full calendar. Replaces the whole staged list each submit — doesn't touch what's currently live.`
                 ],
-                buttons: [
-                    { id: 'settitles', label: 'Titles & Deadlines', style: 1 },
-                    { id: 'bulkdraws', label: 'Draws', style: 1 },
-                    { id: 'bulkcalendar', label: 'Calendar', style: 1 }
-                ]
+                buttons: ['settitles', 'bulkdraws', 'bulkcalendar']
             },
             {
                 heading: 'Go Live',
@@ -301,10 +269,7 @@ function buildPagesTable(client) {
                     `### ${emojis.mngAdd} Promote to Live\n-# Swaps the staged draft in as the live season — title, deadlines, draws, and calendar all switch over together. The draft is cleared after.`,
                     `### ${emojis.mngPurge} Discard Draft\n-# Erase the staged draft without touching what's live.`
                 ],
-                buttons: [
-                    { id: 'promote', label: 'Promote to Live', style: 3 },
-                    { id: 'discard', label: 'Discard Draft', style: 4 }
-                ]
+                buttons: ['promote', 'discard']
             },
             // Guide (added 2026-07-31 17:20 EDT) -- same paste formats as the live Draws/Calendar
             // pages, plus the TBD-deadline convention; worth its own quick pointer rather than
@@ -312,7 +277,7 @@ function buildPagesTable(client) {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: 'formatguide' }
                 ]
             }
         ]
@@ -335,7 +300,7 @@ function buildPagesTable(client) {
             { style: 'raw', dynamicKey: 'adminListBlocks' },
             {
                 blocks: [`### ${emojis.mngAdd} Grant Admin\n-# Give a Discord user ID admin access -- pick specific /manage pages, whole commands, or "all". Owner-only.`],
-                buttons: [{ id: 'grant', label: 'Grant Admin', style: 3 }]
+                buttons: ['grant']
             }
         ]
     },
@@ -352,7 +317,7 @@ function buildPagesTable(client) {
             { style: 'raw', dynamicKey: 'announcementBlocks' },
             {
                 blocks: [`### ${emojis.mngAdd} Post New Announcement\n-# Write a new announcement (expiry defaults to 60 days, or set your own / "never"). Existing ones above are untouched.`],
-                buttons: [{ id: 'post', label: 'Post New Announcement', style: 3 }]
+                buttons: ['post']
             }
         ]
     }
@@ -485,11 +450,7 @@ function loadoutsPageDef(mode, headerLabel, icon, client) {
                     `### ${emojis.mngEdit} Edit Single Loadout\n-# Update an existing loadout's info. Search by weapon name to pick a ${mode} loadout.`,
                     `### ${emojis.mngDelete} Delete Single Loadout\n-# Remove a single loadout from the database. Search by weapon name to pick a ${mode} loadout.`
                 ],
-                buttons: [
-                    { id: 'add', label: 'Add', style: 3 },
-                    { id: 'edit', label: 'Edit', style: 1 },
-                    { id: 'delete', label: 'Delete', style: 4 }
-                ]
+                buttons: ['add', 'edit', 'delete']
             },
             {
                 heading: 'Manage Multiple Loadouts',
@@ -498,11 +459,7 @@ function loadoutsPageDef(mode, headerLabel, icon, client) {
                     `### ${emojis.mngBulkReplace} Replace Multiple Loadouts\n-# Update existing loadouts by weapon/build match, or add them if they don't exist yet. Image data is kept based on the Cloudinary key.`,
                     `### ${emojis.mngBulkDelete} Delete Multiple Loadouts\n-# Remove multiple loadouts at once by pasting their weapon (and optionally build) names. The image stays on Cloudinary.`
                 ],
-                buttons: [
-                    { id: 'bulkadd', label: 'Add', style: 3 },
-                    { id: 'bulkreplace', label: 'Replace', style: 1 },
-                    { id: 'bulkdelete', label: 'Delete', style: 4 }
-                ]
+                buttons: ['bulkadd', 'bulkreplace', 'bulkdelete']
             },
             {
                 heading: 'Export Loadouts',
@@ -511,18 +468,14 @@ function loadoutsPageDef(mode, headerLabel, icon, client) {
                     `### ${emojis.mngExport} Export A Category\n-# Extract every loadout in one weapon category, formatted for an easy re-import.`,
                     `### ${emojis.mngExport} Export All Loadouts\n-# Extract every loadout in the database, formatted for an easy re-import.`
                 ],
-                buttons: [
-                    { id: 'exportupto5', label: 'Up To 5', style: 2 },
-                    { id: 'exportcategory', label: 'Category', style: 2 },
-                    { id: 'exportall', label: 'All', style: 2 }
-                ]
+                buttons: ['exportupto5', 'exportcategory', 'exportall']
                 // No Purge here — see PURGE_LABELS comment above.
             },
             // Guide -- last section, matching every other page's convention (2026-07-31 17:20 EDT).
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: 'formatguide' }
                 ]
             }
         ]
@@ -572,6 +525,16 @@ function buildPastSeasonsOptions(seasonalDoc) {
 // 'season' pseudo-key) this caller may reach, from utils/adminAccess.js's getManagePages(), or
 // `null` for "unrestricted" (the owner, or any not-yet-updated caller). A scoped admin's dropdown
 // only ever OFFERS pages they can open -- they are never shown a page just to be denied on click.
+// Turns a registry action id into the rendered panel button. Label and style come from
+// utils/manageActions.js (2026-08-14) rather than being written inline in buildPagesTable above --
+// that table now names only WHICH actions a group offers, and the registry owns what each one looks
+// like and what it does. buttonFor() throws on an unregistered id, so a button that no handler can
+// serve fails loudly at render instead of shipping as a dead button.
+function actionButton(pageKey, id) {
+    const b = buttonFor(pageKey, id);
+    return { type: 2, style: b.style, label: b.label, custom_id: `mng_act_${pageKey}_${b.id}` };
+}
+
 function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
     const PAGES = buildPagesTable(client);
@@ -599,7 +562,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
                 components.push({
                     type: 9,
                     components: [{ type: 10, content: item.text }],
-                    accessory: { type: 2, style: item.button.style, label: item.button.label, custom_id: `mng_act_${pageKey}_${item.button.id}` }
+                    accessory: actionButton(pageKey, item.button)
                 });
             });
         } else if (group.style === 'select') {
@@ -635,7 +598,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
             (dynamicData[group.dynamicKey] || []).forEach(component => components.push(component));
         } else {
             group.blocks.forEach(content => components.push({ type: 10, content }));
-            const buttons = group.buttons.map(a => ({ type: 2, style: a.style, label: a.label, custom_id: `mng_act_${pageKey}_${a.id}` }));
+            const buttons = group.buttons.map(id => actionButton(pageKey, id));
             for (let i = 0; i < buttons.length; i += 5) components.push({ type: 1, components: buttons.slice(i, i + 5) });
         }
         components.push({ type: 14, spacing: 2, divider: true });

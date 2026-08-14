@@ -27,6 +27,10 @@ paths:
 
 ⚠️ **Two `__dirname`-relative paths were re-anchored in that move and both fail SILENTLY if broken** — `bot/registry.js` resolves `commands/` and `bot/lifecycle.js` resolves `.restart-reason` against `__dirname/..`, because both modules sit one level down from the repo root. A wrong path there registers an empty command set, or mislabels every deploy as an unattended restart, with no error anywhere.
 
+### `/manage`'s `mng_act_` dispatch goes through the action registry (2026-08-14)
+
+`handlers/manage.js`'s `mng_act_` branch no longer hardcodes each page's actions. It parses the custom_id, calls `resolveAction()` from `utils/manageActions.js`, and runs whatever comes back — 30 lines where there used to be 222. **That resolver is also the per-page permission check**, which is what made those permissions hold per click rather than only at page-view time. The router's own prefix guard is a different check at a different granularity and both are required; see `.claude/rules/manage-panel.md` for the registry's full contract.
+
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
 ✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
 
