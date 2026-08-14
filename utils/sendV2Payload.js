@@ -46,16 +46,20 @@ const { schedulePanelExpiry, hasInteractiveComponents } = require('./passiveExpi
 // re-invoking the ORIGINATING command's own execute() via a synthetic interaction
 // (utils/interactionContext.js) -- the re-invocation calls sendV2Payload again, so it reschedules
 // automatically with no extra code at the pagination/nav call site either.
-// NOT covered by this hook: any render that edits a message WITHOUT going through this function --
-// concretely, handlers/manage.js's confirm/cancel/undo micro-prompts, which use discord.js's raw
-// `interaction.update()` (a legacy, non-V2 shape) because they're plain content+buttons, not a
-// Components V2 container. Left uninstrumented deliberately rather than hand-touching ~24 call
-// sites inside one 2,600-line function under this session's time budget -- handlers/router.js
-// cancels (never reschedules) any pending timer right before dispatching into /manage's panel, so
-// the WORST case is one of those short-lived prompts has no countdown of its own, never a stale
-// timer firing mid-prompt and overwriting it with an earlier page's (now wrong) components, just
-// disabled. Filed as a named follow-up in docs/db-deferred-list.md, bundled with the /manage
-// slash-action decomposition session that is rebuilding this file's interaction model anyway.
+// ✅ GAP CLOSED 2026-08-14 17:17 EDT (stage 2 of docs/superpowers/specs/
+// 2026-08-14-manage-slash-decomposition-design.md). This paragraph used to name
+// handlers/manage.js's ~24 confirm/cancel/undo micro-prompts as the one uninstrumented exception --
+// they used discord.js's raw `interaction.update()` (a legacy, non-V2 shape) instead of this
+// function. That file is now handlers/manage/, and every one of those call sites routes through
+// handlers/manage/shared.js's `prompt(interaction, {text, components})` helper, which wraps `text`
+// in a single Text Display (type 10) and calls straight into sendV2Payload -- so they get this
+// function's passive-expiry scheduling like every other panel render in the bot. **No render in
+// this bot bypasses this function anymore, as far as this session found.**
+// ⚠️ handlers/router.js still carries a cancel-only safety net scoped to /manage's prefixes, kept
+// (not deleted) pending a live click-test that confirms the V2-rendered prompts behave correctly --
+// see that file's own comment on the block and docs/db-deferred-list.md's LIVE CLICK-TEST OWED
+// entry. It is provably redundant now (a cancelled timer immediately gets rescheduled by the new V2
+// render), not load-bearing, so it costs nothing to leave in place until that verification lands.
 async function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
     // SERVER VISIBILITY POLICY (2026-08-10 15:50 EDT, v3 -- utils/guildPolicy.js). When a server has
     // forced this response ephemeral, the "Show Everyone" row must not survive to the client: that

@@ -162,21 +162,25 @@ async function handleInteraction(interaction) {
         }
     }
 
-        // PASSIVE EXPIRY SAFETY NET (2026-08-14 11:05 EDT) -- /manage's OWN branches (below) mostly edit the
-        // panel message via discord.js's raw `interaction.update()`, a legacy content+components
-        // shape that never flows through sendV2Payload -- see that file's own header comment for why
-        // ~24 call sites inside handlers/manage.js aren't individually instrumented this session. So
-        // for THIS subsystem alone, a passive-expiry timer scheduled by an earlier sendV2Payload-based
-        // page render could still be pending when one of those raw updates lands, and if the user then
-        // sits on THAT screen (a confirm/cancel prompt, say) for the rest of the window, the stale
-        // timer would fire and PATCH the message back to the EARLIER page's components -- just
-        // disabled, and visibly wrong. Cancelling outright here (never rescheduling, since this
-        // dispatch doesn't know what the eventual render will look like) closes that: the narrow,
-        // documented cost is that a manage-panel confirm/cancel/undo prompt reached this way runs
-        // with no countdown of its own until the next real page render re-arms one, never a stale
-        // overwrite. Scoped to manage's own prefixes specifically -- /alerts and /autobuild render
-        // exclusively through sendV2Payload already and reschedule themselves a few lines later in
-        // this same dispatch, so cancelling first there would just be immediately superseded.
+        // PASSIVE EXPIRY SAFETY NET -- PENDING REMOVAL, KEPT AS A BELT-AND-SUSPENDERS MARGIN
+        // (added 2026-08-14 11:05 EDT; its original justification retired 2026-08-14 17:17 EDT).
+        // ⚠️ The paragraph this replaced described /manage's confirm/cancel/undo prompts as raw,
+        // uninstrumented `interaction.update()` calls -- that is no longer true. Stage 2 of
+        // docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md moved
+        // handlers/manage.js into handlers/manage/ and replaced every one of those ~25 call sites
+        // with handlers/manage/shared.js's `prompt()` helper, which routes through sendV2Payload the
+        // same as every other panel render in the bot -- so those prompts now get real passive-expiry
+        // scheduling of their own, and this cancel-only block is no longer covering a real gap.
+        // **NOT YET DELETED**, on purpose: the design doc's own instruction was to verify the swap on
+        // the dev bot before removing this net, and that live click-test is still owed (Harkirat,
+        // 2026-08-14 17:15 EDT: "i'm not available to click-test at the moment so that part needs to
+        // be deferred") -- see docs/db-deferred-list.md's LIVE CLICK-TEST OWED entry. Until that
+        // click-test happens, cancelling here is provably harmless (a cancelled timer that a moment
+        // later gets rescheduled by the new V2 render, same as it always did for /alerts/
+        // /autobuild below) rather than load-bearing, so leaving it costs nothing while removing it
+        // unverified would violate the very caution the design doc wrote in for this step. Delete
+        // this whole block (and update this comment's cross-references) once that click-test confirms
+        // the V2-rendered prompts behave correctly.
         if (interaction.message?.id && MANAGE_OWNED_PREFIXES.some(p => interaction.customId?.startsWith(p))) {
             cancelPanelExpiry(interaction.message.id);
         }
