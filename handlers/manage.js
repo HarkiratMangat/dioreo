@@ -37,7 +37,7 @@ const { resolveThumbnail } = require('../utils/cloudinaryCache');
 // stripped) into [group, action] on the LAST underscore, not a naive `.split('_')` -- some group
 // keys now contain their own underscore (`loadouts_mp`, `loadouts_dmz`, added 2026-07-12 once MP
 // and DMZ Loadouts became separate panel pages), and every action id is deliberately kept
-// underscore-free (camelCase, e.g. `bulkaddnew`) specifically so this split stays unambiguous.
+// underscore-free (camelCase, e.g. `bulkadd`) specifically so this split stays unambiguous.
 function parseMngId(raw) {
     const idx = raw.lastIndexOf('_');
     return [raw.slice(0, idx), raw.slice(idx + 1)];

@@ -74,6 +74,21 @@ check('every page scope is a real permission scope', () => {
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
+check('every action is filed under the page it claims', () => {
+    // Not redundant with the scope check above, which only asks whether `entry.page` is a REAL scope.
+    // This asks whether it is the RIGHT one. The two loadout pages are built by a factory precisely so
+    // they get separate objects — if that ever became a shared const, the `entry.page = page` loop in
+    // the registry would tag MP's entries as DMZ, permissions would resolve against the wrong page,
+    // and every other check here would still pass.
+    const offenders = [];
+    for (const [page, list] of Object.entries(registry.ACTIONS_BY_PAGE)) {
+        for (const entry of list) {
+            if (entry.page !== page) offenders.push(`${page}:${entry.id} claims page "${entry.page}"`);
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
 check('every RENDERED button resolves to a registry action', () => {
     // buttonFor() throws on an unregistered id, so this also proves every page renders at all.
     const offenders = [];
