@@ -1207,13 +1207,22 @@ module.exports = {
         if (actionId) {
             const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
             const resolved = await resolveAction(section, actionId, interaction.user.id);
-            if (resolved.ok) {
+            // resolveAction() only checks ownership/page-scope permission -- it does NOT check
+            // `slash`, because the button dispatch (handlers/manage/index.js) never needed to: a
+            // button's custom_id can only ever be one a page actually rendered. This IS the slash
+            // path, so it is the one caller that must enforce `slash` itself -- without this,
+            // Discord's autocomplete never SUGGESTING a confirm-kind id (purge/wipe/promote/discard)
+            // is not the same as REJECTING one a user types directly; autocomplete suggestions are
+            // not server-enforced. Treated as 'unknown' below so this never confirms a hidden
+            // action exists, matching the registry's "destructive actions stay panel-only" rule.
+            if (resolved.ok && resolved.entry.slash) {
                 return await resolved.entry.run({
                     interaction,
                     page: section,
                     manageCommand: interaction.client.commands.get('manage')
                 });
             }
+            if (resolved.ok && !resolved.entry.slash) resolved.reason = 'unknown';
             // An unknown/unpermitted action falls through to the normal page render below with a
             // short note instead of erroring out the whole invocation -- a typo shouldn't cost the
             // page the user actually asked for. (guide/season_titlesdeadlines have no registry
