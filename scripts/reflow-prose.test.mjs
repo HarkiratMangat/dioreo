@@ -168,7 +168,8 @@ t("keeps an HTML comment on its own physical line", () => {
 });
 
 t("does NOT tear a paragraph on a wrapped <placeholder>", () => {
-  // Real lines from docs/db-deferred-list.md:203 and :731 — prose that merely
+  // Real lines from docs/db-deferred-list.md (cited by content — they carried line
+  // numbers until 2026-08-14 10:12 EDT, by which point both had rotted) — prose that merely
   // wraps onto an angle bracket. A blanket /^\s*</ rule emitted these standalone.
   const a = clean("run the command (`git show\n<sha>:package.json` matched the tag name)");
   assert.strictEqual(a, "run the command (`git show <sha>:package.json` matched the tag name)");
