@@ -470,7 +470,15 @@ function main() {
     `\n${files.length} file(s): ${changed} ${write ? "changed" : "would change"}, ` +
       `${failed} failed verification\n`
   );
-  process.exit(failed ? 1 : 0);
+  // ⚠️ --check FAILS on "would change", not only on "failed verification" (fixed 2026-08-14
+  // 10:01 EDT). CLAUDE.md has claimed since the soft-wrap convention shipped that `npm test`
+  // makes a hard-wrapped paragraph fail the suite; it did not. `docs:reflow` is wired into
+  // `npm test` in --check mode, and this line exited 0 whenever the only finding was that a file
+  // WOULD change — which is exactly the finding it exists to report. The gate printed its warning
+  // into a passing run and blocked nothing, and one file (docs/ROADMAP.md) was sitting hard-wrapped
+  // under it. `failed` still means the reflow could not round-trip safely, which is a different and
+  // worse condition; both now fail, and --write still exits 0 because it has just fixed them.
+  process.exit(failed || (!write && changed) ? 1 : 0);
 }
 
 // The CLI runs ONLY when this file is the entry point. Without the guard, a test

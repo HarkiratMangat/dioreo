@@ -27,7 +27,15 @@ function ownsCustomId(customId) {
 async function route(interaction) {
         // --- /alerts PANEL (admin-only; already auto-gated by the centralized `alerts_` guard above) ---
         // Export: a FRESH ephemeral message carrying the .txt, so the panel itself is left untouched.
-        if (interaction.customId === 'alerts_export') {
+        // ⚠️ EVERY branch here type-tests, added 2026-08-14 10:01 EDT. This module previously
+        // carried NO `is…()` test anywhere: it gated on the `alerts_` prefix alone, so ANY
+        // interaction type bearing an `alerts_` id was consumed. Harmless while every `alerts_*`
+        // id is a button, which is true today — but it is the same shape as the `set_`/`set_page_`
+        // bug that shipped in this split, where prefix ownership was doing work that only an
+        // interaction type could correctly do. `scripts/handlerRouting.test.js`'s mixed-type scan
+        // could not see it either: it skips modules using fewer than two types, and a ZERO-type
+        // module reads to that check exactly like a single-type one.
+        if (interaction.isButton() && interaction.customId === 'alerts_export') {
             await interaction.deferReply({ flags: 64 });
             const { buildAlertExport } = require('../utils/alertStore');
             const text = await buildAlertExport();
@@ -37,7 +45,7 @@ async function route(interaction) {
 
         // Explain <-> Back: re-render the SAME panel message between its main + explainer views. sendV2Payload
         // patches @original (keeps the message's own ephemerality — Discord ignores flag changes on edit).
-        if (interaction.customId === 'alerts_explain' || interaction.customId === 'alerts_back') {
+        if (interaction.isButton() && (interaction.customId === 'alerts_explain' || interaction.customId === 'alerts_back')) {
             await interaction.deferUpdate();
             const { buildAlertsPanel } = require('../commands/alerts');
             const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -46,7 +54,7 @@ async function route(interaction) {
         }
 
         // Pagination through the recent-alert list (custom_id encodes the target page, stateless).
-        if (interaction.customId.startsWith('alerts_page_')) {
+        if (interaction.isButton() && interaction.customId.startsWith('alerts_page_')) {
             await interaction.deferUpdate();
             const { buildAlertsPanel } = require('../commands/alerts');
             const { sendV2Payload } = require('../utils/sendV2Payload');

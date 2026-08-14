@@ -119,7 +119,16 @@ async function handleInteraction(interaction) {
     // these same prefixes, which they always have. Deliberately scoped to ONLY these prefixes (not
     // every button/select/modal bot-wide) so /settings, /colors, draws/calendar pagination, etc.
     // stay completely unaffected.
-    if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) && interaction.customId) {
+    // ⚠️ NO TYPE TEST HERE, DELIBERATELY (2026-08-14 09:59 EDT). This used to read
+    // `isButton() || isStringSelectMenu() || isModalSubmit()`, which is NARROWER than the
+    // `server_` dispatcher fifteen lines above — that one also covers channel- and role-selects,
+    // and commands/server.js mints both. Nothing was ungated, because /manage happens to use only
+    // those three types today; the day it grows a channel-select (picking an announcement channel,
+    // say) that component would have routed straight past this gate, silently. The prefix match
+    // below is what selects the guarded set, so the type list added no protection and only supplied
+    // a way to fall out of scope. `customId` is present on every component and modal interaction
+    // and absent on slash commands and autocomplete, which is exactly the boundary wanted.
+    if (interaction.customId) {
         // ⚠️ EXPANDED 2026-08-13 from one blanket isAdmin() check to a PER-COMMAND gate -- this used
         // to be a flat prefix LIST checked against isAdmin() alone, which meant someone granted
         // access to only ONE admin command (say, /alerts) could still click every button on
