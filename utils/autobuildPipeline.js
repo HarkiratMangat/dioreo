@@ -1,8 +1,8 @@
 // utils/autobuildPipeline.js
 // Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial
-// invocation) and index.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8).
-// Kept out of commands/autobuild.js itself so index.js can reach the same pendingAutobuilds Map
-// without a circular require -- index.js is the entry point and exports nothing today; every command
+// invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8).
+// Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map
+// without a circular require -- the router imports handlers, not the reverse; every command
 // file already requires shared logic FROM utils/, never the reverse. Full design:
 // docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const crypto = require('crypto');
@@ -16,7 +16,7 @@ const { uploadLoadoutImage, syncLoadoutMetadata } = require('./loadoutImageCache
 const { mentionCommand } = require('./commandMentions');
 
 // token -> { weaponName, gunsmithCode, attachments[5], category, badgesRaw, mode:'MP', sourceImageUrl, adminId }
-// Same short-lived-token pattern as index.js's pendingManageEdits (10 min TTL, set at insertion time
+// Same short-lived-token pattern as handlers/manage.js's pendingManageEdits (10 min TTL, set at insertion time
 // by whichever function stashes a new entry).
 const pendingAutobuilds = new Map();
 
@@ -205,7 +205,7 @@ const pendingImageRetries = new Map(); // retryToken -> confirmed data + { weapo
 
 // Same duplicate-write guard as confirmInProgress above, scoped to retryImageUpload's own token
 // space. This path is actually the MORE exposed of the two -- it's driven by the `/autobuild
-// retry_token:` slash command, not a button, so it gets none of index.js's generic anti-spam
+// retry_token:` slash command, not a button, so it gets none of handlers/router.js's generic anti-spam
 // cooldown (that guard is scoped to isButton()/isStringSelectMenu() only). Two quick resubmits of
 // the same retry_token (an accidental double-submit) would otherwise race freely for the entire
 // upload+write duration.
@@ -253,7 +253,7 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
 
     // Badges describe the WEAPON, not one build variant -- sync them to every sibling build so a
     // badge set here (e.g. Meta added during review) shows on the weapon's OTHER builds too (live-test
-    // 3: the badge only landed on the new build). Mirrors index.js's edit_loadout_ propagation.
+    // 3: the badge only landed on the new build). Mirrors handlers/manage.js's edit_loadout_ propagation.
     // Guarded on "at least one badge is actually set" so a blank never WIPES siblings -- and because
     // /autobuild already RESOLVES blank badges by inheriting from an existing sibling
     // (resolveCategoryAndBadges), a still-blank value here genuinely means no weapon-level badge
@@ -292,7 +292,7 @@ function buildPostCreationCard(doc, imageWarning) {
     return { components: [container], flags: 32768 };
 }
 
-// Confirm click -- `interaction` is the BUTTON interaction. Caller (index.js) must call
+// Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call
 // interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const data = pendingAutobuilds.get(token);

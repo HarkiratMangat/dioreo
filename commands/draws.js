@@ -167,7 +167,7 @@ module.exports = {
         const prefs = await prefsPromise;
 
         let argPrivate = null;
-        let activePage = pageOverride || 'new'; // pageOverride is used by the button router in index.js
+        let activePage = pageOverride || 'new'; // pageOverride is used by the button router in handlers/pagination.js
 
         // Ingest manual slash command parameters
         if (interaction.isChatInputCommand()) {

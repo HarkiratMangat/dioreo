@@ -138,7 +138,7 @@ async function getSourceImageInfo(interaction, useGuild = false) {
 // still-unnecessary ffmpeg download+extract -- only a genuinely stale/first-time decoration actually
 // re-downloads and re-extracts. `forceRefresh` (2026-07-14, Harkirat's request) skips the cache-hit
 // check entirely and always re-extracts -- used by the main "View Colors" button and its explicit
-// "Refresh Colors" button, NOT by ordinary page-switch navigation (see index.js's colors_view/
+// "Refresh Colors" button, NOT by ordinary page-switch navigation (see handlers/colors.js's colors_view/
 // colors_refresh_ vs colors_page_ handlers) -- still writes the fresh result back to cache
 // afterward, so page-switching within the same viewing session stays fast either way.
 // ⚠️ `paletteFields` MOVED TO utils/colorExtract.js 2026-08-12 23:58 EDT and is re-exported below for
@@ -308,7 +308,7 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
 // getAvailableSources() renders the full set of nav buttons and the current page's Media Gallery
 // preview correctly. But only the active source pays extraction cost. The other sources are extracted
 // LAZILY the moment the user navigates to them -- each page/subpage switch calls this again with that
-// source as `activeSource` (see index.js's colors_page_/colors_subpage_ handlers). Decoration's
+// source as `activeSource` (see handlers/colors.js's colors_page_/colors_subpage_ handlers). Decoration's
 // ffmpeg subprocess in particular now never runs unless the user actually opens the Deco page.
 //
 // The preview URLs are deliberately each source's raw DISPLAY url, NOT whatever getCachedPalette
@@ -337,7 +337,7 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         decoration: guildProfile?.decorationAsset, nameplate: guildProfile?.nameplateAsset
     };
     const isGuildSource = (kind) => Boolean(useGuild && guildHash[kind] && sources[kind]?.source === guildHash[kind]);
-    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and index.js
+    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and handlers/colors.js
     // was using it as though it were (fixed 2026-08-12 21:44 EDT). The accent-cache invalidation picks
     // the guild or the global field pair from a boolean; handed `variant`, a source with no server
     // override — which resolved to the global image and cached under the GLOBAL field — had its GUILD

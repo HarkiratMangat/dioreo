@@ -5,7 +5,7 @@
 # Why this exists: the bot can't natively tell WHY systemd started it (deliberate deploy vs an unattended
 # crash-restart). This script writes a `.restart-reason` marker (gitignored) right before the restart, so
 # the bot's "Bot online" alert can LABEL the restart. On boot the bot reads + consumes that marker
-# (index.js's readRestartReason). No marker => the alert reads "automatic/unattended restart".
+# (bot/lifecycle.js's readRestartReason). No marker => the alert reads "automatic/unattended restart".
 #
 #   ./scripts/deploy.sh          → deploy: git pull, mark "deploy", restart, status
 #   ./scripts/deploy.sh manual   → restart WITHOUT pulling (mark "manual") — e.g. to apply an .env change

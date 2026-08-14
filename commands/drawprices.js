@@ -410,7 +410,7 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
 
 /**
  * UI BUILDER: Constructs the V2 JSON Payload
- * Separated into its own function so the index.js dropdown/button router can call it directly
+ * Separated into its own function so handlers/drawprices.js can call it directly
  * when users swap regions or pages without needing to re-run the entire slash command.
  */
 function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0, client) {
@@ -490,7 +490,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 // button 2026-08-07, now that a 3rd region exists -- a binary toggle has no meaning
                 // once there are 3 options). Always renders all 3 region buttons, in REGION_ORDER,
                 // each `custom_id` encoding the region it JUMPS TO plus the current subpage (same
-                // encoding scheme the old toggle button used) so index.js's handler needs no changes
+                // encoding scheme the old toggle button used) so handlers/drawprices.js's handler needs no changes
                 // beyond recognizing a 3rd prefix. Follows the bot's own established multi-option
                 // button-row convention (see `.claude/rules/rendering-and-ui.md`'s Components V2
                 // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 1
@@ -539,7 +539,7 @@ module.exports = {
         const userId = interaction.user.id;
         const prefs = await UserPreference.findOne({ discordId: userId });
 
-        // NOTE (fixed during review): this previously only accepted `interaction` — but index.js's
+        // NOTE (fixed during review): this previously only accepted `interaction` — but handlers/drawprices.js's
         // price_region_*/price_subpage_* button handlers call execute(interaction, targetRegion,
         // targetSubpage) after already persisting the region pick to prefs.defaultRegion (same
         // persisted-toggle pattern as calendar's active/all filter button) — regionOverride is what

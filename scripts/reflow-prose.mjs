@@ -87,8 +87,13 @@ const isTableRow = (l) =>
 // than "starts with `<`", which is what the older tool used and what the first
 // version of this file used — measured against the real docs, that rule tore
 // ordinary sentences apart:
-//   docs/db-deferred-list.md:203  "…(`git show\n  <sha>:package.json` matched…"
-//   docs/db-deferred-list.md:731  "…`dior text unwrap\n  <file> [--out <dir>]…"
+//   docs/db-deferred-list.md  "…(`git show\n  <sha>:package.json` matched…"
+//   docs/db-deferred-list.md  "…`dior text unwrap\n  <file> [--out <dir>]…"
+// (Cited by CONTENT, not by line. These carried `:203` and `:731` until 2026-08-14
+// 10:12 EDT, by which point both pointed at unrelated items — one at a live-test
+// entry, the other at a blank line — because the list is edited constantly. A line
+// number in a comment is a copy of state that nothing updates; the quoted text is
+// the durable reference and is what a reader would search for anyway.)
 // Both are paragraph continuations that merely happen to wrap onto a `<`, and
 // both would have been ripped out of their paragraph and emitted standalone.
 //
@@ -470,7 +475,15 @@ function main() {
     `\n${files.length} file(s): ${changed} ${write ? "changed" : "would change"}, ` +
       `${failed} failed verification\n`
   );
-  process.exit(failed ? 1 : 0);
+  // ⚠️ --check FAILS on "would change", not only on "failed verification" (fixed 2026-08-14
+  // 10:01 EDT). CLAUDE.md has claimed since the soft-wrap convention shipped that `npm test`
+  // makes a hard-wrapped paragraph fail the suite; it did not. `docs:reflow` is wired into
+  // `npm test` in --check mode, and this line exited 0 whenever the only finding was that a file
+  // WOULD change — which is exactly the finding it exists to report. The gate printed its warning
+  // into a passing run and blocked nothing, and one file (docs/ROADMAP.md) was sitting hard-wrapped
+  // under it. `failed` still means the reflow could not round-trip safely, which is a different and
+  // worse condition; both now fail, and --write still exits 0 because it has just fixed them.
+  process.exit(failed || (!write && changed) ? 1 : 0);
 }
 
 // The CLI runs ONLY when this file is the entry point. Without the guard, a test

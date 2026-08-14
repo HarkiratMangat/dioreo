@@ -1,6 +1,6 @@
 // utils/ephemeral.js
 // Shared "explicit option > saved preference > default (public)" priority resolution, hand-rolled
-// identically 7 times across calendar/draws/patchnotes/drawprices/seasonend/dmz/index.js's MP
+// identically 7 times across calendar/draws/patchnotes/drawprices/seasonend/dmz/handlers/router.js's MP
 // loadout fallback, differing only in which UserPreference field to check. One place to change if
 // the priority rule itself ever needs to change, instead of 7.
 // ⚠️ This resolves the USER's preference only, and deliberately knows nothing about the v3

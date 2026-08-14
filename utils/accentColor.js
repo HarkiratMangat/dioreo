@@ -171,7 +171,7 @@ async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior
     }
 
     // "Display Name Colors" style with no Nitro name style set up has nothing to blend — fall back
-    // to avatar. The one-time "hey, set this up" notice lives in index.js's set_accent_style
+    // to avatar. The one-time "hey, set this up" notice lives in handlers/settings.js's set_accent_style
     // handler (fires right when the user picks this option), not here — this resolver just needs to
     // always return SOME usable color, silently, on every future render.
     if (effectiveStyle === 'displayName') {

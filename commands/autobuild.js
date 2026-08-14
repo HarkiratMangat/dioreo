@@ -2,7 +2,7 @@
 // Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated
 // behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout-
 // automation-poc-design.md. Admin-only (same ALLOWED_ADMIN_ID as /manage), MP-only for this PoC.
-// Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with index.js's button/
+// Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/
 // modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
 const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'

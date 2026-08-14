@@ -6,7 +6,7 @@ const emojis = require('./emojiMap');
 // MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated
 // mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the
 // exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus
-// SECONDARIES which has no loadouts yet — see index.js's category-registration merge for why the
+// SECONDARIES which has no loadouts yet — see bot/registry.js's category-registration merge for why the
 // /secondaries command still exists ahead of any data). `/all` looks a weapon's OWN category up in
 // here at render time (it isn't locked to one category the way /ar or /smg are), so its accent
 // color changes per weapon instead of using one fixed color. `/<category>` commands hit the exact
@@ -52,7 +52,7 @@ function buildImageUrl(imageKey) {
 
 // Deterministic weaponKey + next-build-number + Cloudinary-key computation for /autobuild -- no AI
 // involved (per the design spec). weaponKey matches the exact convention every other write site in
-// this codebase already uses (index.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces
+// this codebase already uses (handlers/manage.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces
 // stripped). buildName follows a plain "Build N" convention specific to auto-created loadouts (there's
 // no human-typed variant label like "Aggressive Flex" available from a screenshot) -- N is computed
 // from the HIGHEST existing "Build N" number among this weapon's current builds, not a count, so a
@@ -258,7 +258,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
 
 // Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
 // same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs
-// 'mp') so index.js's interaction router can tell a click apart and query the right mode.
+// 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
 //
 // NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now
 // the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine
@@ -319,11 +319,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the
     // worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap.
     // "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/
-    // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see index.js's
+    // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's
     // dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the
     // Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there.
     // Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId):
-    // the id encodes a DIRECTION + the current index, and the dmz/mp button handler in index.js
+    // the id encodes a DIRECTION + the current index, and the dmz/mp button handler in handlers/loadouts.js
     // already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs
     // nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the
     // handler already sends you from the last build to the first and vice-versa.

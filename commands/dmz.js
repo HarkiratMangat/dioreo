@@ -16,13 +16,13 @@ module.exports = {
         .setDescription('Search through all DMZ specific gunsmiths')
         // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
         // were truncating on mobile. Kept the same standardized "weapon you want a build for"
-        // formula /all and /<category> use (index.js), just tightened -- see those two sites for
+        // formula /all and /<category> use (handlers/router.js), just tightened -- see those two sites for
         // the matching trim.
         .addStringOption(option =>
             option.setName('weapon')
                 .setDescription('The DMZ weapon you want a build for')
                 .setRequired(true)
-                .setAutocomplete(true)) // Autocomplete hooked dynamically in index.js
+                .setAutocomplete(true)) // Autocomplete hooked dynamically in handlers/router.js
         .addIntegerOption(option =>
             option.setName('build')
                 .setDescription('Jump to a specific build number')

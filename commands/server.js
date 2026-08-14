@@ -284,7 +284,7 @@ function setScopedRoleRule(doc, roleId, visibility, channelIds) {
     doc.roleRules = channelIds.length ? [...kept, { roleId, visibility, channelIds }] : kept;
 }
 
-// Single entry point for every `server_*` component. index.js routes here rather than growing
+// Single entry point for every `server_*` component. handlers/router.js routes here rather than growing
 // another dozen branches in its own handler, and the admin gate lives here so there is exactly one
 // place that decides who may change a server's rules.
 async function handleComponent(interaction) {

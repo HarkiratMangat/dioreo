@@ -215,7 +215,7 @@ t('no policy is attached outside a guild', async () => {
 });
 
 // --- 3. the clamp survives buildSyntheticInteraction ----------------------------------------
-// index.js builds synthetic interactions with Object.assign, which copies OWN ENUMERABLE properties
+// the router builds synthetic interactions with Object.assign, which copies OWN ENUMERABLE properties
 // only. That is why discord.js's non-enumerable `client`/`token` had to be re-defined by hand there
 // after two real crashes. The same mechanism decides whether the clamp survives a navigation click,
 // so this asserts the property Object.assign depends on rather than re-implementing the helper --

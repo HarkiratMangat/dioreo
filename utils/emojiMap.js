@@ -82,7 +82,7 @@ const emojis = {
     top: '<a:Top:1524183479997169714>',
     toxic: '<a:Toxic:1524535298380402859>',
     blank: '<:blank:1524243739206352906>',
-    // "View Colors" button in /settings (utils/colorPaletteView.js, index.js's colors_view/
+    // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/
     // colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per
     // Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',

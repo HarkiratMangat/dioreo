@@ -5,7 +5,7 @@
 //
 // ⚠️ WHY THIS EXISTS. This message has three states, two per-profile lists and a decision about which
 // list the PRESSED source belongs in — and every combination is invisible until somebody presses the
-// button while their account happens to be in exactly that state. It lived inline in index.js's refresh
+// button while their account happens to be in exactly that state. It lived inline in handlers/colors.js's refresh
 // handler, where none of it could be exercised without a live interaction, a Mongo document and a
 // Discord round trip. It was extracted specifically so the branches could be read off as a function of
 // their inputs.
@@ -139,7 +139,7 @@ t('sources are labelled, never printed as raw keys', () => {
 });
 
 t('an unknown source degrades to its key instead of throwing', () => {
-    // index.js passes whatever the custom_id carried; a message that throws would take the whole
+    // handlers/colors.js passes whatever the custom_id carried; a message that throws would take the whole
     // follow-up with it after the panel has already been edited.
     const m = notice({ source: 'somethingNew', accentCleared: true });
     assert.ok(m.includes('somethingNew'), m);

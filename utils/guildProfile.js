@@ -51,7 +51,7 @@ function readGuildProfile(interaction) {
     if (!member || !interaction.guildId) return null;
 
     // ⚠️ `member` always describes whoever CLICKED, while `.user` is whose data we are rendering --
-    // and those diverge on the admin-override path, where index.js's resolvePanelActor builds a
+    // and those diverge on the admin-override path, where utils/interactionContext.js's resolvePanelActor builds a
     // synthetic interaction with `.user` swapped to the panel's owner but `.member` left as the
     // admin's. Reading the guild profile there would paint the admin's own server avatar onto
     // someone else's panel: no error, just quietly the wrong person's colors. Bail to the global

@@ -1,7 +1,7 @@
 // scripts/devCommands.js — list or clear the DEV app's registered slash commands.
 //
 // Why this exists: slash-command registration lives on Discord's servers, attached to the
-// APPLICATION, not to the running process. `index.js` writes it once per boot with
+// APPLICATION, not to the running process. `bot/registry.js` writes it once per boot with
 // `rest.put(Routes.applicationCommands(client.user.id), { body: payload })` and Discord keeps it
 // forever after — so killing the dev bot does NOT remove `Dioreo (Dev)`'s commands from the `/` picker.
 // Since it's a user-installed app (`setIntegrationTypes([1])`), those duplicates follow Harkirat into

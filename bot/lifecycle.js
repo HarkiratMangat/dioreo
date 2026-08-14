@@ -1,0 +1,274 @@
+// ==========================================
+// CLIENT LIFECYCLE — CRASH NET, GATEWAY, READY, ALERTING
+// ==========================================
+// Every listener bound to the client that is NOT interaction routing. Split out of index.js on
+// 2026-08-13 17:20 EDT; the logic and the registration ORDER are unchanged.
+//
+// Registered as one call, registerLifecycle(client, commands), so the entrypoint stays a list of
+// wiring steps rather than 350 lines of listener bodies. Same listeners, same registration order as
+// index.js carried: the client `error` net, gateway/shard diagnostics, ready (emoji sync ->
+// command registration -> cleanup), restart labeling + the boot alert, and the daily heartbeat.
+
+const fs = require('fs');
+const path = require('path');
+const { Events } = require('discord.js');
+const { version: BOT_VERSION } = require('../package.json');
+const { sendAlert } = require('../utils/alertWebhook');
+const { createGatewayRecovery } = require('../utils/gatewayRecovery');
+const { pruneExpiredThumbnails } = require('../utils/cloudinaryCache');
+const { pruneOrphanedPatchFolders } = require('../utils/patchNotesCache');
+const { buildCategoryCommands, registerApplicationCommands } = require('./registry');
+
+// --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) ---
+// Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before
+// building this feature) -- so "auto-delete after 45 days" only happens because THIS runs on a
+// schedule, not because Cloudinary does it on its own. Deletes only assets that are BOTH 45+ days
+// old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived
+// draw's cached image is never at risk just because it's been up a while. Wrapped in its own
+// try/catch since this runs unawaited from handleBotReady -- a failure here must never be able to
+// crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
+async function runCloudinaryCleanup() {
+    try {
+        const SeasonalData = require('../models/SeasonalData');
+        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        const currentUrls = new Set([
+            ...(seasonalDoc?.newDraws || []).map(d => d.thumbnailUrl),
+            ...(seasonalDoc?.returningDraws || []).map(d => d.thumbnailUrl)
+        ]);
+
+        const result = await pruneExpiredThumbnails(currentUrls);
+        if (result.deletedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: pruned ${result.deletedCount} expired, unused draw thumbnail(s).`);
+        }
+
+        // PATCH NOTES: season-based retention, not age-based -- keep exactly the same set of
+        // patch note `_id`s that /patch notes' own history dropdown shows (the last 5 entries,
+        // matching patchnotes.js's `recentPatches = seasonalDoc.patchNotes.slice(-5)`). A season
+        // that rolls off the back of that list gets its whole Cloudinary folder pruned on the very
+        // next sweep, regardless of how many days it's been cached -- see utils/patchNotesCache.js.
+        const keepPatchIds = new Set((seasonalDoc?.patchNotes || []).slice(-5).map(p => p._id.toString()));
+        const patchResult = await pruneOrphanedPatchFolders(keepPatchIds);
+        if (patchResult.deletedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: pruned ${patchResult.deletedCount} patch-notes image(s) from seasons no longer in the history dropdown.`);
+        }
+    } catch (error) {
+        // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's
+        // shape can carry the account's API key/secret in a nested `request_options.auth` field (see
+        // utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice
+        // now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the
+        // last line of defense for a SeasonalData/Mongoose error from the same block, so it stays
+        // just as strict rather than assuming the callee always behaves.
+        console.error(`Cloudinary cleanup pass failed (bot stays alive): ${error?.message || 'Unknown error'}`);
+    }
+}
+
+// `client.ws.ping` is -1 until the FIRST gateway heartbeat round-trip completes — and ClientReady fires
+// before that, so the "Bot online" alert used to say a nonsensical "gateway -1ms". Show "measuring…"
+// until a real ping exists. Shared by the daily heartbeat below (defensive there too).
+function formatPing(ms) { return ms >= 0 ? `${Math.round(ms)}ms` : 'measuring…'; }
+
+function formatUptime(sec) {
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    return [d ? `${d}d` : '', h ? `${h}h` : '', `${m}m`].filter(Boolean).join(' ');
+}
+
+// Manual-vs-automatic restart labeling (2026-07-20). The bot can't natively know WHY systemd started it,
+// so scripts/deploy.sh writes a `.restart-reason` marker (gitignored) right before restarting; on boot we
+// read + CONSUME it here. A marker => a deliberate restart (deploy/manual); no marker => an unattended
+// restart (systemd auto-restart after a crash, OR a bare `systemctl restart` that skipped deploy.sh).
+// Fully swallowed — a marker problem must never affect boot.
+// ⚠️ Resolved against this file's PARENT: deploy.sh writes the marker at the REPO ROOT, and this
+// module lives in bot/. __dirname alone would look in the wrong directory and silently mislabel
+// every deploy as an unattended restart.
+const RESTART_MARKER = path.join(__dirname, '..', '.restart-reason');
+function readRestartReason() {
+    try {
+        if (!fs.existsSync(RESTART_MARKER)) return null;
+        const raw = fs.readFileSync(RESTART_MARKER, 'utf8').trim();
+        fs.unlinkSync(RESTART_MARKER); // consume-once, whatever we found
+        const [reason, tsStr] = raw.split(/\s+/); // "<reason> <unix-seconds>" (deploy.sh format)
+        const ts = parseInt(tsStr, 10);
+        // Only honor a FRESH marker (<10 min) so a stale one left by a failed/earlier deploy can't
+        // mislabel a much-later crash-restart as a deploy. Too old => treat as no marker.
+        if (Number.isFinite(ts) && (Date.now() / 1000 - ts) > 600) return null;
+        return reason || null;
+    } catch { return null; }
+}
+
+// systemd auto-restart count — informational context on the automatic path only. VM-only; off the VM (no
+// systemd unit) execSync throws and we return ''. Its reset semantics are fuzzy, so it's raw context, not
+// something we interpret as crash-vs-fresh.
+function restartContext() {
+    try {
+        // execFileSync (no shell) — the args are static anyway, but this is the shell-free form.
+        const { execFileSync } = require('child_process');
+        const n = execFileSync('systemctl', ['show', 'diors-bot', '-p', 'NRestarts', '--value'],
+            { encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        return /^\d+$/.test(n) ? `systemd NRestarts=${n}` : '';
+    } catch { return ''; }
+}
+
+// ==========================================
+// THE ONE ENTRY POINT
+// ==========================================
+function registerLifecycle(client, commands) {
+    // --- THE CLIENT `error` NET ---
+    // CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with
+    // `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this
+    // is a Node EventEmitter option that reroutes a rejected promise from an async event listener
+    // (e.g. the interactionCreate handler in handlers/router.js) into an `error` event emitted ON THE
+    // CLIENT ITSELF, instead of surfacing through Node's normal global
+    // `process.on('unhandledRejection')` mechanism. Since nothing was listening for a plain `error`
+    // event on the client, and EventEmitter's default behavior for an unhandled `error` event is to
+    // throw synchronously, ANY interaction handler code that ever let a rejection escape (even
+    // somewhere the router's top-level try/catch doesn't cover, or in a future edit that misses it)
+    // would crash the whole process — completely bypassing the `process.on('unhandledRejection')` net
+    // in index.js, since captureRejections intercepts it before it ever becomes a "global" unhandled
+    // rejection. This IS the standard discord.js gotcha their own guide warns about; the fix is simply
+    // to always have a listener here so EventEmitter's default "throw when no listener" never triggers.
+    // ⚠️ THIS IS NOT OPTIONAL AND IS NOT COVERED BY THE ROUTER'S try/catch. Removing it re-opens the
+    // crash. See .claude/rules/interaction-router.md.
+    client.on('error', (error) => {
+        console.error('Discord client error (bot stays alive):', error);
+        sendAlert('Discord client error', error, 'error');
+    });
+
+    // --- GATEWAY / SHARD DIAGNOSTICS ---
+    // DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take
+    // 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above --
+    // MongoDB connects fine, but handleBotReady() (which logs "fully authenticated"/"routing links
+    // integrated") never fires until the WS layer's internal retry/backoff eventually succeeds. That
+    // internal retry activity was completely invisible, so a real multi-minute production gap looked
+    // identical to "nothing is happening" from the logs alone.
+    // These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT
+    // listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood
+    // production logs; these five only fire on real state transitions.
+    // Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is
+    // visible in real time, not just in journald. shardReady stays console-only (the initial connect is
+    // announced by the "Bot online" alert below); the rest map to warn/error/info by severity.
+    // ⚠️ RECOVERY IS PAIRED TO THE ANNOUNCEMENT (2026-08-06 14:54 EDT). Harkirat: he learns the bot broke
+    // and never that it healed — "there is no signal at all when the bot recovers".
+    //
+    // The naive fix (make 'Gateway resumed' loud) is WRONG and would undo a correct decision: that pair
+    // fires every 1-3h as routine churn, and posting it would restore exactly the noise the 2026-07-20
+    // `silent` call removed. Noise is not a lesser problem than silence — it is how someone learns to stop
+    // reading the channel, and then the loud alerts stop working too.
+    //
+    // So the rule is symmetry: **a problem that was ANNOUNCED gets a recovery that is ANNOUNCED; a problem
+    // that was silent stays silent.** A routine blip is still invisible; the disconnect that pinged his
+    // phone at 03:00 now gets an explicit "Back online", with how long it was actually down.
+    //
+    // ⚠️ BOTH recovery paths must be handled, and the worse one is the easy one to miss. `shardResume`
+    // fires when the session is replayed — the GOOD case. When a disconnect is bad enough that the session
+    // can't be resumed, discord.js re-identifies from scratch and only `shardReady` fires. Wiring the
+    // recovery to `shardResume` alone would therefore leave precisely the WORST outages — the ones most
+    // worth closing out — with no recovery signal, which is the bug this is fixing, reintroduced one level
+    // down.
+    // The state machine itself lives in utils/gatewayRecovery.js so it can be unit-tested — inline here it
+    // was reachable only by a real Discord outage. See that file for the full reasoning.
+    const { noteTrouble: noteGatewayTrouble, noteRecovered: noteGatewayRecovered } = createGatewayRecovery({ sendAlert });
+
+    // shardReady is no longer console-only: it is the re-identify recovery path described above. On the
+    // FIRST connect gatewayTroubleAt is null, so noteGatewayRecovered() no-ops and the initial connect is
+    // still announced solely by "Bot online" below — no duplicate.
+    client.on('shardReady', (id) => { console.log(`🔌 Shard ${id} ready`); noteGatewayRecovered(`shard ${id} reconnected with a fresh session`); });
+    // The reconnect→resume PAIR is `silent` (2026-07-20, Harkirat's call): still logged to the alert store
+    // (so /alerts + a future /status can print the reconnect history on demand), but NOT posted to the Discord
+    // channel. These fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions /
+    // tiny network blips, sub-second, resumed with full event replay = zero data loss) — genuinely nothing to
+    // act on, so they're pure channel noise. The GENUINELY-bad case is still loud: a reconnect that FAILS to
+    // resume surfaces via 'Gateway disconnected' (shardDisconnect, orange, pings) below — a separate handler,
+    // so suppressing the routine pair from Discord doesn't hide a real outage.
+    // The silent 'Gateway resumed' is kept for the routine case (it is what /alerts reads back), and is
+    // SKIPPED when a loud "Back online" already covered the same recovery — two log rows for one event
+    // would make the reconnect history read as twice as much churn as actually happened.
+    client.on('shardResume', (id, replayed) => {
+        console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`);
+        if (noteGatewayRecovered(`shard ${id} resumed and replayed ${replayed} events`)) return;
+        sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info', { silent: true });
+    });
+    // 'caution' (yellow), not 'warn' (orange): reconnecting is transient and self-recovering, so it's a
+    // lower severity than a full 'Gateway disconnected'. Now silent (logged, not posted) — see the pair note
+    // above. "Reconnecting to Discord", NOT "restarting" (2026-07-20): the gateway WEBSOCKET dropped and is
+    // re-establishing on its own — the bot PROCESS never died, systemd never fired. Calling it "restarting"
+    // would falsely imply a crash.
+    client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Reconnecting to Discord', `Shard ${id}'s gateway websocket dropped and is reconnecting. The bot process itself is fine (nothing crashed, systemd didn't fire).`, 'caution', { silent: true }); });
+    client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); noteGatewayTrouble(); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
+    client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); noteGatewayTrouble(); sendAlert('Gateway shard error', error, 'error'); });
+
+    // --- READY: EMOJI SYNC → COMMAND REGISTRATION → CLEANUP ---
+    client.once(Events.ClientReady, async () => {
+        console.log(`✅ Dioreo instance fully authenticated!`);
+
+        // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
+        // Application emojis only render for their owning app, so the dev bot (a separate application
+        // with its own same-named copies) needs its own ids. No-op on prod. Awaited before anything
+        // renders; fail-soft internally, so a failure here can never block command registration.
+        const { refreshEmojiIds } = require('../utils/emojiMap');
+        const emojiSync = await refreshEmojiIds(client);
+        if (emojiSync.synced || emojiSync.overridden || emojiSync.missing.length) {
+            console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
+        }
+
+        await buildCategoryCommands(commands);
+        await registerApplicationCommands(client, commands);
+
+        // Kick off the Cloudinary temp-draws cleanup on boot, then every 24h -- not awaited, since a
+        // slow/failing Cloudinary call has no business delaying command registration above.
+        // NOTE: deliberately NOT .unref()'d, matching the pre-split behaviour exactly. The heartbeat
+        // timer below is unref'd; this one never was. Left as-is so this move stays a pure move --
+        // if it should be unref'd for consistency, that is its own change with its own reasoning.
+        runCloudinaryCleanup();
+        setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
+    });
+
+    // --- RESTART LABELING + "BOT ONLINE" ALERT ---
+    // Alerting: a one-time "online" ping on each (re)start, so deploys/crashes/restarts are visible in
+    // Discord. systemd auto-restarts the bot on crash, so an "online" alert you DIDN'T trigger is itself a
+    // useful signal that the process restarted unexpectedly.
+    client.once(Events.ClientReady, (c) => {
+        const reason = readRestartReason();
+        const kind = reason === 'deploy' ? '🚀 Manual deploy (git pull + restart)'
+            : reason === 'manual' ? '🔧 Manual restart'
+            : (() => { const ctx = restartContext(); return `♻️ Automatic/unattended restart${ctx ? ` (${ctx})` : ''}`; })();
+        sendAlert('Bot online', `${kind}\nv${BOT_VERSION} · Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
+    });
+
+    // --- DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) ---
+    // An info-level, NON-pinging alert once every 24h so a long, quiet uptime is proven-alive rather than
+    // merely assumed. The other alerts only fire on trouble (crashes, gateway loss) or on (re)start
+    // ("Bot online"); with none of those, silence is ambiguous — "healthy" and "the alerter/VM is dead"
+    // look identical. This heartbeat resolves that: no daily green means something is wrong. Deliberately
+    // info+no-ping (routine, must not notify his phone); sendAlert's 1/min throttle never trips at a 24h
+    // cadence. NOT fired immediately on boot — "Bot online" already covers startup; the interval's whole
+    // value is the stretches with NO restart in between (a restart resets this timer but also emits its
+    // own "Bot online", so no health gap is left uncovered).
+    const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
+    function sendHeartbeat() {
+        // If the gateway is NOT currently ready, stay silent — that's a real problem the gateway/shard
+        // handlers alert on themselves; a heartbeat firing anyway would be misleading, and a green "healthy"
+        // during an outage is worse than no heartbeat at all.
+        if (!client.isReady()) return;
+        const mem = process.memoryUsage();
+        const rss = Math.round(mem.rss / 1024 / 1024);
+        const heap = Math.round(mem.heapUsed / 1024 / 1024);
+        sendAlert(
+            'Daily health check',
+            `Still online and healthy.\n`
+            + `• Uptime: ${formatUptime(process.uptime())}\n`
+            + `• Servers: ${client.guilds.cache.size}\n`
+            + `• Gateway latency: ${formatPing(client.ws.ping)}\n`
+            + `• Memory: ${rss}MB RSS · ${heap}MB heap`,
+            'info'
+        );
+    }
+    client.once(Events.ClientReady, () => {
+        // .unref() so the heartbeat timer alone never keeps the process alive — the gateway connection is
+        // what keeps it running; same convention as the router's short-lived-store timers.
+        setInterval(sendHeartbeat, HEARTBEAT_MS).unref();
+    });
+}
+
+module.exports = { registerLifecycle, runCloudinaryCleanup, formatPing, formatUptime, readRestartReason, restartContext };

@@ -4,7 +4,7 @@
 // existing components (never mixed into an existing row, to avoid tripping the 5-buttons-per-row
 // cap on commands whose nav row is already full). Clicking it doesn't touch the original ephemeral
 // message at all -- it just posts a brand new, real public message with the same content. See
-// index.js's `share_public` handler for the other half: Discord includes the FULL original message
+// handlers/share.js's `share_public` handler for the other half: Discord includes the FULL original message
 // (content/embeds/components) directly in a button click's interaction payload, even when that
 // message was ephemeral, so no state needs to be stored or reconstructed here.
 const emojis = require('./emojiMap');
@@ -37,7 +37,7 @@ function shareButtonRow() {
 // the response ephemeral -- the button posts a brand new, genuinely public message, so leaving it
 // live would be a one-click bypass of the rule. That strip lives at the send boundary rather than
 // here because every caller of this function already routes through it, and a `guildPolicy`
-// argument here would be eight more call sites that have to remember to pass it. index.js's
+// argument here would be eight more call sites that have to remember to pass it. handlers/share.js's
 // share_public handler re-checks server-side too: a panel opened BEFORE an admin set the rule still
 // has the button sitting on it.
 function withShareButton(components, isEphemeral) {
