@@ -1128,6 +1128,14 @@ module.exports = {
             // execute() below the same way those are.
             { name: 'Bulk Format Guide', value: 'guide' }
         ))
+        // Stage 3 of the /manage decomposition (2026-08-14 18:04 EDT, docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md)
+        // -- opens one of that section's own actions directly instead of costing three separate
+        // interactions (open /manage -> pick the section -> click the button). Scoped autocomplete
+        // (handlers/router.js) reads `data_for` to only ever suggest that section's own actions --
+        // Discord cannot scope one option's static choices by another option's live value, which is
+        // the whole reason this is autocomplete and not a `choices()` list (~40 actions total against
+        // a 25-choice cap, and it would offer Loadout actions while looking at the Calendar page).
+        .addStringOption(option => option.setName('action').setDescription("Jump straight to one of that section's own actions (pick data_for first)").setAutocomplete(true))
         .addStringOption(option => option.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })),
 
     // Getter, not a value: the table must be built per access so emoji ids are read after
@@ -1185,6 +1193,36 @@ module.exports = {
             return interaction.reply({ content: `🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.`, ephemeral: true });
         }
 
+        // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly.
+        // Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to
+        // be the interaction's FIRST response (same constraint season_titlesdeadlines works around
+        // above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction()
+        // is the one choke point (it also re-checks the per-page permission just verified above, so a
+        // scoped admin can't reach another section's action by typing its id directly) and run() is
+        // trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers
+        // itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file'
+        // entry's run() calls interaction.reply(), which throws if this has already acknowledged.
+        let actionFallbackNote = '';
+        const actionId = interaction.options.getString('action');
+        if (actionId) {
+            const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
+            const resolved = await resolveAction(section, actionId, interaction.user.id);
+            if (resolved.ok) {
+                return await resolved.entry.run({
+                    interaction,
+                    page: section,
+                    manageCommand: interaction.client.commands.get('manage')
+                });
+            }
+            // An unknown/unpermitted action falls through to the normal page render below with a
+            // short note instead of erroring out the whole invocation -- a typo shouldn't cost the
+            // page the user actually asked for. (guide/season_titlesdeadlines have no registry
+            // entries at all, so a stray action there also resolves 'unknown' and is silently
+            // dropped on the guide/modal branches below -- not worth threading the note through two
+            // more send sites for an edge case autocomplete never suggests in the first place.)
+            actionFallbackNote = `${DENIAL_MESSAGE[resolved.reason]}\n\n`;
+        }
+
         // Default ephemeral (true) unless explicitly set to public — matches the "default private"
         // convention Harkirat asked for on this specific command (every OTHER command defaults
         // public; this one is the admin panel, so it flips the default).
@@ -1224,6 +1262,6 @@ module.exports = {
             const announcementDocs = await getActiveAnnouncements();
             dynamicData = { announcementBlocks: buildAnnouncementListBlocks(announcementDocs) };
         }
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages));
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages), { content: actionFallbackNote });
     }
 };
