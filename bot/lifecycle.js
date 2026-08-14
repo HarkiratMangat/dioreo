@@ -1,14 +1,13 @@
 // ==========================================
-// PHASE 5: CLIENT LIFECYCLE — CRASH NET, GATEWAY, READY, ALERTING
+// CLIENT LIFECYCLE — CRASH NET, GATEWAY, READY, ALERTING
 // ==========================================
 // Every listener bound to the client that is NOT interaction routing. Split out of index.js on
 // 2026-08-13 17:20 EDT; the logic and the registration ORDER are unchanged.
 //
 // Registered as one call, registerLifecycle(client, commands), so the entrypoint stays a list of
-// wiring steps rather than 350 lines of listener bodies. The sections below are the same ones
-// index.js carried:
-//   A. the client `error` net          C. ready: emoji, registration, cleanup
-//   B. gateway/shard diagnostics       D. restart labeling + boot alert    E. daily heartbeat
+// wiring steps rather than 350 lines of listener bodies. Same listeners, same registration order as
+// index.js carried: the client `error` net, gateway/shard diagnostics, ready (emoji sync ->
+// command registration -> cleanup), restart labeling + the boot alert, and the daily heartbeat.
 
 const fs = require('fs');
 const path = require('path');
@@ -115,7 +114,7 @@ function restartContext() {
 // THE ONE ENTRY POINT
 // ==========================================
 function registerLifecycle(client, commands) {
-    // --- A. THE CLIENT `error` NET ---
+    // --- THE CLIENT `error` NET ---
     // CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with
     // `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this
     // is a Node EventEmitter option that reroutes a rejected promise from an async event listener
@@ -136,7 +135,7 @@ function registerLifecycle(client, commands) {
         sendAlert('Discord client error', error, 'error');
     });
 
-    // --- B. GATEWAY / SHARD DIAGNOSTICS ---
+    // --- GATEWAY / SHARD DIAGNOSTICS ---
     // DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take
     // 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above --
     // MongoDB connects fine, but handleBotReady() (which logs "fully authenticated"/"routing links
@@ -199,7 +198,7 @@ function registerLifecycle(client, commands) {
     client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); noteGatewayTrouble(); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
     client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); noteGatewayTrouble(); sendAlert('Gateway shard error', error, 'error'); });
 
-    // --- C. READY: EMOJI SYNC → COMMAND REGISTRATION → CLEANUP ---
+    // --- READY: EMOJI SYNC → COMMAND REGISTRATION → CLEANUP ---
     client.once(Events.ClientReady, async () => {
         console.log(`✅ Dioreo instance fully authenticated!`);
 
@@ -225,7 +224,7 @@ function registerLifecycle(client, commands) {
         setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
     });
 
-    // --- D. RESTART LABELING + "BOT ONLINE" ALERT ---
+    // --- RESTART LABELING + "BOT ONLINE" ALERT ---
     // Alerting: a one-time "online" ping on each (re)start, so deploys/crashes/restarts are visible in
     // Discord. systemd auto-restarts the bot on crash, so an "online" alert you DIDN'T trigger is itself a
     // useful signal that the process restarted unexpectedly.
@@ -237,7 +236,7 @@ function registerLifecycle(client, commands) {
         sendAlert('Bot online', `${kind}\nv${BOT_VERSION} · Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
     });
 
-    // --- E. DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) ---
+    // --- DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) ---
     // An info-level, NON-pinging alert once every 24h so a long, quiet uptime is proven-alive rather than
     // merely assumed. The other alerts only fire on trouble (crashes, gateway loss) or on (re)start
     // ("Bot online"); with none of those, silence is ambiguous — "healthy" and "the alerter/VM is dead"

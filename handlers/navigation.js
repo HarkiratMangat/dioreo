@@ -24,7 +24,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // C. GLOBAL UI NAVIGATION BAR
+        // GLOBAL UI NAVIGATION BAR
         if (interaction.customId.startsWith('nav_')) {
             await interaction.deferUpdate();
 

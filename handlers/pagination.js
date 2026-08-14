@@ -24,7 +24,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // B. DRAWS PAGINATION (New vs Returning)
+        // DRAWS PAGINATION (New vs Returning)
         if (interaction.customId === 'page_returning_draws' || interaction.customId === 'page_new_draws') {
             // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
             const targetPage = interaction.customId === 'page_returning_draws' ? 'returning' : 'new';
@@ -35,7 +35,7 @@ async function route(interaction) {
             return await drawsCommand.execute(syntheticInteraction, targetPage);
         }
 
-        // B.2 DRAWS SUB-PAGE PAGINATION (Prev/Next within a category, once it exceeds CHUNK_SIZE)
+        // DRAWS SUB-PAGE PAGINATION (Prev/Next within a category, once it exceeds CHUNK_SIZE)
         // custom_id format: subpage_<new|returning>_<targetIndex>, e.g. "subpage_new_2"
         if (interaction.customId.startsWith('subpage_new_') || interaction.customId.startsWith('subpage_returning_')) {
             // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
@@ -48,7 +48,7 @@ async function route(interaction) {
             return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage);
         }
 
-        // B.3 CALENDAR PAGE TOGGLE (Draws / Events / Playlists-Modes -- replaces the old Prev/Next
+        // CALENDAR PAGE TOGGLE (Draws / Events / Playlists-Modes -- replaces the old Prev/Next
         // sub-page pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request for named
         // section-toggle buttons instead of arrows). custom_id format: calpage_<0|1|2>.
         if (interaction.customId.startsWith('calpage_')) {

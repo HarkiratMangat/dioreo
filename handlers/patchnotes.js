@@ -24,7 +24,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // C. PATCH NOTES HISTORY SELECTOR
+        // PATCH NOTES HISTORY SELECTOR
         if (interaction.customId === 'select_patch_history') {
             await interaction.deferUpdate();
             const patchId = interaction.values[0].replace('patch_', '');

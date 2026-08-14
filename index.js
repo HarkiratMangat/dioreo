@@ -1,10 +1,9 @@
-// NOTE (removed 2026-07-20): a "PHASE 1: WEB SERVER ARCHITECTURE (KEEP-ALIVE)" banner used to sit
-// here, wrapping a small Express server whose only job was stopping Render/Railway's free tier from
-// idling the bot container during inactivity — a hosting-specific workaround, not part of the bot's
-// own logic. Removed once the bot moved to a GCP VM under systemd (2026-07-17), which runs the
-// process continuously and doesn't idle/spin down, so the keep-alive ping had nothing left to do.
-// Left as a breadcrumb, same convention as the PHASE 5 removal note further down, so Phase numbering
-// starting at 2 doesn't read like something's missing.
+// NOTE (removed 2026-07-20): a small Express keep-alive server used to sit here, whose only job was
+// stopping Render/Railway's free tier from idling the bot container during inactivity — a
+// hosting-specific workaround, not part of the bot's own logic. Removed once the bot moved to a GCP
+// VM under systemd (2026-07-17), which runs the process continuously and doesn't idle/spin down, so
+// the keep-alive ping had nothing left to do. Kept as a breadcrumb so nobody re-adds it wondering
+// why a bot with no HTTP surface has no health endpoint.
 // FIRST, before anything else can log. patchConsole() tags error/warn output with a systemd severity
 // prefix (so `journalctl -p err` and Cloud Logging severity stop being permanently zero) and tees a
 // structured copy to the Ops Agent's JSON sink. It must run ahead of the crash handlers below, or the
@@ -29,7 +28,7 @@ const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerti
 // settles, so nothing downstream is listening. This is exactly what took the bot offline on
 // Railway (10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> crash).
 // Logging instead of crashing here is a last-resort net, not a substitute for fixing the actual
-// unawaited call sites -- see the fixed handlers in PHASE 6 for the real fix.
+// unawaited call sites -- see handlers/router.js and the handlers it dispatches for the real fix.
 process.on('unhandledRejection', (reason) => {
     console.error('Unhandled promise rejection (bot stays alive):', reason);
     sendAlert('Unhandled promise rejection', reason, 'error');
@@ -46,7 +45,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // ==========================================
-// PHASE 2: CORE MODULES & DEPENDENCY IMPORTS
+// CORE MODULES & DEPENDENCY IMPORTS
 // ==========================================
 require("dotenv").config({ quiet: true }); // quiet: true suppresses dotenv's runtime log line (incl. its rotating promotional "tip" text)
 
@@ -75,7 +74,7 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => { console.error("❌ Database connection failure detailed error:", err); sendAlert("MongoDB connection failure", err, "error"); });
 
 // ==========================================
-// PHASE 3: THE CLIENT
+// THE CLIENT
 // ==========================================
 // The "Watching ..." line under the bot's name in its profile popout (Discord has no custom-text-only
 // option -- ActivityType picks the verb, e.g. Watching/Listening/Playing).
@@ -99,7 +98,7 @@ const BOT_PRESENCE = {
 const client = new Client({ intents: [GatewayIntentBits.Guilds], presence: BOT_PRESENCE });
 
 // ==========================================
-// PHASE 4: WIRING
+// WIRING
 // ==========================================
 // Order matters here and is the same order these ran in pre-split:
 //   1. load the command modules, so `commands` exists before any ClientReady listener can use it;
@@ -113,7 +112,7 @@ registerLifecycle(client, commands);
 client.on("interactionCreate", handleInteraction);
 
 // ==========================================
-// PHASE 5: LOGIN
+// LOGIN
 // ==========================================
 // Gated on the single-instance lock so a stray leftover local `node index.js` can't silently race an
 // already-running instance (VM or another local process) the way it did in the 2026-07-14 incident

@@ -290,7 +290,7 @@ function ownsCustomId(customId) {
 // were there (the interactionCreate listener never read them either).
 async function routeManage(interaction) {
     if (interaction.isStringSelectMenu()) {
-        // E.0 MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel
+        // MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel
         // has more sections than a button row's 5-cap allows. Season has NO page of its own at all
         // (not a key in manage.js's PAGES) -- both its actions are flat dropdown entries that open
         // their modal directly instead of rendering anything, per Harkirat's request ("let that
@@ -360,7 +360,7 @@ async function routeManage(interaction) {
             return sendV2Payload(interaction, buildGuideContainer(interaction.values[0]));
         }
 
-        // E. MANAGE PANEL DISAMBIGUATION SELECT -- shown by the `mng_search_` modal-submit handler
+        // MANAGE PANEL DISAMBIGUATION SELECT -- shown by the `mng_search_` modal-submit handler
         // (below) when a search query matched more than one item. Looks the pick up directly by
         // _id (encoded in the option value, `|type` appended for draws since those need to know
         // which of the two arrays they came from) rather than re-running the fuzzy search, then
@@ -403,7 +403,7 @@ async function routeManage(interaction) {
             return await resolveManagePanelAction(interaction, group, action, match);
         }
 
-        // E.1 MANAGE PANEL: PATCH NOTES "PAST SEASONS" PICK (2026-07-24) -- Patch Notes' own select
+        // MANAGE PANEL: PATCH NOTES "PAST SEASONS" PICK (2026-07-24) -- Patch Notes' own select
         // menu, separate from the generic mng_pick_ disambiguation above (that one only exists
         // because a search-modal query can match multiple items; this one's options ARE the full
         // list already, so picking one goes straight to its edit modal, no search step at all).
@@ -429,7 +429,7 @@ async function routeManage(interaction) {
     }
 
     if (interaction.isButton()) {
-        // F. MANAGE PANEL -- action buttons (2026-07-09 redesign, rebuilt again 2026-07-12 per the
+        // MANAGE PANEL -- action buttons (2026-07-09 redesign, rebuilt again 2026-07-12 per the
         // 4 mockup JSONs -- see manage.js's buildManagePage/build*Modal helpers). /manage opens one
         // ephemeral panel message, and every data-entry action is reached by clicking a button on
         // it instead of picking a subcommand. Page switching itself is a select menu (`mng_pagesel`,
@@ -658,7 +658,7 @@ async function routeManage(interaction) {
             }
         }
 
-        // G. MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation
+        // MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation
         // above. Each group purges only its OWN data, independent of Season's "Wipe Season" (which
         // resets draws+calendar together as part of starting a new season but deliberately keeps
         // patch notes forever) -- Patch Notes' purge in particular is the one place that history can
@@ -874,7 +874,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // G.1 MANAGE PANEL: NEXT SEASON DRAFT -- PROMOTE / DISCARD CONFIRM-CANCEL (2026-07-30 22:24
+        // MANAGE PANEL: NEXT SEASON DRAFT -- PROMOTE / DISCARD CONFIRM-CANCEL (2026-07-30 22:24
         // EDT). Promote snapshots the pre-swap LIVE values (not the draft) so Undo restores exactly
         // what was live before -- the draft itself is simply cleared, not restorable via Undo (it's
         // reachable again the normal way: just re-stage it).
@@ -964,7 +964,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // H. MANAGE PANEL: "START NEW SEASON" CONFIRM / CANCEL -- second step added 2026-07-12 (see
+        // MANAGE PANEL: "START NEW SEASON" CONFIRM / CANCEL -- second step added 2026-07-12 (see
         // the modal_wipe_season handler for why). Snapshots the pre-wipe state so this can be
         // undone, same as Purge -- a season reset is at least as destructive as any single Purge and
         // deserves the same safety net.
@@ -1026,7 +1026,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // I. MANAGE PANEL: UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start
+        // MANAGE PANEL: UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start
         // New Season, and the delete/replace confirmations added below). Tokens expire after 10
         // minutes (see registerUndo) -- this is a same-session mistake-reversal tool, not a real
         // audit log.
@@ -1057,7 +1057,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // J. MANAGE PANEL: SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of the confirmation
+        // MANAGE PANEL: SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of the confirmation
         // added to resolveManagePanelAction's delete branch above (2026-07-12). Performs the actual
         // deletion only from here, snapshotting the removed doc first so it can be undone.
         if (interaction.customId.startsWith('mng_delconfirm_')) {
@@ -1132,7 +1132,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // K. MANAGE PANEL: BULK DELETE CONFIRM / CANCEL -- second step for draws/calendar/loadouts
+        // MANAGE PANEL: BULK DELETE CONFIRM / CANCEL -- second step for draws/calendar/loadouts
         // Bulk Delete (2026-07-12). The modal-submit handlers above only computed WHAT would be
         // removed (dry run); the actual save/delete calls happen here via the pending entry's own
         // apply(), which also registers its own Undo snapshot.
@@ -1309,7 +1309,7 @@ async function routeManage(interaction) {
             if (!seasonalDoc) seasonalDoc = new SeasonalData({ docType: 'global' });
         }
 
-        // --- ADMIN ROUTE A: START NEW SEASON (renamed from "Wipe Season", 2026-07-12) ---
+        // --- START NEW SEASON (renamed from "Wipe Season", 2026-07-12) ---
         // Used to wipe draws+calendar the INSTANT this modal was submitted -- no confirmation at
         // all, unlike every other destructive action in this panel. Now just stashes the entered
         // title in `pendingSeasonWipes` (declared near the other manage-panel module-scope stores,
@@ -1459,7 +1459,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.` });
         }
 
-        // --- ADMIN ROUTE B: BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---
+        // --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---
         // custom_id is `modal_draws_bulk_{add|replace}_both`. One modal, two independently-optional
         // fields -- only whichever field was actually filled in gets touched. This is now the ONLY
         // draws bulk add/replace route (2026-07-12) -- the old per-category New-only/Returning-only
@@ -1536,7 +1536,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: confirmation, components: [undoButtonRow(undoToken)] });
         }
 
-        // --- ADMIN ROUTE B.2: BULK DELETE DRAWS ---
+        // --- BULK DELETE DRAWS ---
         // custom_id is `modal_draws_bulk_remove_{new|returning|either}` -- only the field(s) that
         // variant's modal actually included exist on `interaction.fields`, so this reads the type
         // from the custom_id rather than blindly calling getTextInputValue on both (which throws for
@@ -1622,7 +1622,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // --- ADMIN ROUTE C: BULK ADD/REPLACE CALENDAR EVENTS ---
+        // --- BULK ADD/REPLACE CALENDAR EVENTS ---
         // custom_id is `modal_calendar_bulk_{add|replace}` -- `add` (new 2026-07-12, "Add Multiple")
         // appends onto the existing calendar; `replace`'s semantics changed the same day Draws'
         // did -- was a wholesale wipe-then-replace of the whole array, now upserts by fuzzy-matched
@@ -1698,7 +1698,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // --- ADMIN ROUTE C.1: BULK REMOVE CALENDAR EVENTS ---
+        // --- BULK REMOVE CALENDAR EVENTS ---
         // Same fuzzy-match-and-report convention as the draws bulk-remove route above, and the same
         // 2-step confirm (2026-07-12) -- dry-run first, actual save only on mng_bulkdelconfirm_.
         if (customId === 'modal_calendar_bulk_remove') {
@@ -1754,7 +1754,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // --- ADMIN ROUTE C.2: ADD SINGLE CALENDAR EVENT ---
+        // --- ADD SINGLE CALENDAR EVENT ---
         // A blank End Date means the event runs until the Battle Pass ends (isOngoing), same
         // semantics as the bulk parser's "All Season" handling -- see parseBulkEvents.
         if (customId === 'modal_calendar_add') {
@@ -1778,7 +1778,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
         }
 
-        // --- ADMIN ROUTE C.2b: PAGE BANNERS (2026-07-31 17:20 EDT) ---
+        // --- PAGE BANNERS (2026-07-31 17:20 EDT) ---
         // 3 independently-clearable fields in one modal -- each is handled on its own: a filled
         // field re-hosts through calendarBannerCache (falls back to the raw URL on a Cloudinary
         // hiccup, never blocks the save); a blank field that previously had a value clears it (best-
@@ -1815,7 +1815,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // --- ADMIN ROUTE C.3: SAVE EDITED CALENDAR EVENT ---
+        // --- SAVE EDITED CALENDAR EVENT ---
         if (customId.startsWith('edit_calendar_')) {
             await interaction.deferReply({ ephemeral: true });
             const targetId = customId.replace('edit_calendar_', '');
@@ -1842,7 +1842,7 @@ async function routeManage(interaction) {
             }
         }
 
-        // --- ADMIN ROUTE D: PATCH NOTES (single "current entry" model, 2026-07-12 redesign) ---
+        // --- PATCH NOTES (single "current entry" model, 2026-07-12 redesign) ---
         // All 3 actions operate on the LAST item in patchNotes[] -- the one whose title stays synced
         // to currentSeasonTitle (see the Season Titles+Deadlines handler below) -- rather than a
         // search-and-pick flow. If none exists yet at all (fresh install, or right after a Wipe
@@ -1996,7 +1996,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: `✅ **Past Season Updated!** "${displayTitle(entry)}" now has ${cachedUrls.length} image(s).` });
         }
 
-        // --- ADMIN ROUTE E: SEASON TITLES + DEADLINES (merged) ---
+        // --- SEASON TITLES + DEADLINES (merged) ---
         // Replaces the old separate "/manage season titles" (4-title modal) and "Edit Season
         // Deadlines" (3-date modal) with one action -- each of the 3 deadline fields carries both a
         // title and an end date on one line ("Battle Pass, August 28"), split apart via
@@ -2144,7 +2144,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: `✅ **Draft Calendar Staged!** ${eventDocs.length} event(s). Nothing is live yet — use Promote to Live when ready.` });
         }
 
-        // --- ADMIN ROUTE F: SAVE EDITED DRAW ---
+        // --- SAVE EDITED DRAW ---
         if (customId.startsWith('edit_draw_')) {
             await interaction.deferReply({ ephemeral: true });
             const [_, __, targetId, drawType] = customId.split('_');
@@ -2187,7 +2187,7 @@ async function routeManage(interaction) {
             }
         }
 
-        // --- ADMIN ROUTE G: SAVE EDITED LOADOUT ---
+        // --- SAVE EDITED LOADOUT ---
         if (customId.startsWith('edit_loadout_')) {
             await interaction.deferReply({ ephemeral: true });
             const targetId = customId.replace('edit_loadout_', '');
@@ -2285,7 +2285,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: confirmation });
         }
 
-        // --- ADMIN ROUTE H: SAVE NEW SINGLE DRAW ---
+        // --- SAVE NEW SINGLE DRAW ---
         if (customId === 'add_draw_new' || customId === 'add_draw_returning') {
             await interaction.deferReply({ ephemeral: true });
             const drawType = customId.replace('add_draw_', '');
@@ -2349,7 +2349,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: confirmation });
         }
 
-        // --- ADMIN ROUTE I: SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}
+        // --- SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}
         if (customId.startsWith('add_loadout_')) {
             await interaction.deferReply({ ephemeral: true });
             const pageMode = customId.replace('add_loadout_', '');
@@ -2406,7 +2406,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: confirmation });
         }
 
-        // --- ADMIN ROUTE K: BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) ---
+        // --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) ---
         // custom_id: modal_loadouts_bulk_add_{MP|DMZ} -- "Replace Multiple" also routes into this
         // exact same modal/handler for now (see the mng_act_ handler's comment on why), so this one
         // handler covers both buttons. Unlike the draws/calendar bulk routes above, this NEVER
@@ -2472,7 +2472,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content: confirmation });
         }
 
-        // --- ADMIN ROUTE K.1: BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ}
+        // --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ}
         // Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes
         // just that one build) -- mode no longer needs its own line segment since it's fixed by which
         // page this modal was opened from. Fuzzy-matches the weapon name (utils/search.js's
@@ -2547,7 +2547,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // --- ADMIN ROUTE K.2: EXPORT UP TO 5 LOADOUTS --- custom_id: modal_loadouts_export5_{MP|DMZ}
+        // --- EXPORT UP TO 5 LOADOUTS --- custom_id: modal_loadouts_export5_{MP|DMZ}
         // Fuzzy-matches each pasted weapon name (up to 5) against that mode's collection -- the real
         // search+multi-select-from-a-list version this mockup describes is the deferred future work
         // (see this file's top-of-file note); this is a working placeholder for the same outcome.
@@ -2576,7 +2576,7 @@ async function routeManage(interaction) {
             return interaction.followUp({ content, files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${mode.toLowerCase()}_loadouts_export.txt` }] });
         }
 
-        // --- ADMIN ROUTE K.3: EXPORT A LOADOUT CATEGORY --- custom_id: modal_loadouts_exportcategory_{MP|DMZ}
+        // --- EXPORT A LOADOUT CATEGORY --- custom_id: modal_loadouts_exportcategory_{MP|DMZ}
         if (customId.startsWith('modal_loadouts_exportcategory_')) {
             await interaction.deferReply({ ephemeral: true });
             const mode = customId.replace('modal_loadouts_exportcategory_', '');

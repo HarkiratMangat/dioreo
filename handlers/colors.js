@@ -45,7 +45,7 @@ const OWNED_PREFIXES = ['colors_'];
 // than a blanket `colors_` prefix match in handlers/router.js) is what preserves the pre-split behaviour
 // exactly: an unrecognised `colors_*` id falls through, same as it always did.
 async function handleColorsButton(interaction) {
-    // B.6 "VIEW COLORS" PANEL (2026-07-13) -- opens as its OWN new message (deferReply, not
+    // "VIEW COLORS" PANEL ENTRY (2026-07-13) -- opens as its OWN new message (deferReply, not
     // deferUpdate) so /settings itself stays open underneath, unlike every other settings button
     // here which edits @original in place. custom_id: `colors_view|{userId}`. Ephemeral state
     // matches the user's own `/settings` visibility preference (Harkirat's request) -- same
@@ -87,9 +87,9 @@ async function handleColorsButton(interaction) {
         // forceRefresh: true (2026-07-14, Harkirat's explicit request) -- the main "View Colors"
         // button is a deliberate exception to this bot's general "buttons never re-run
         // extraction/re-fetch" rule, since clicking it is a genuine new look-up action, not a
-        // rapid re-render of something already on screen. Page-switch navigation below (B.7)
+        // rapid re-render of something already on screen. Page-switch navigation below (`colors_page_`)
         // stays cache-only as normal; only this entry point and the explicit "Refresh Colors"
-        // button (B.8) force a real re-extraction. Extracts ONLY the avatar landing page now (not
+        // button (`colors_refresh_`) force a real re-extraction. Extracts ONLY the avatar landing page now (not
         // all 4 sources) -- other pages lazily extract on navigation (see getPalettePanelData).
         // Opens the SERVER view when the user has a profile for this guild, per Harkirat's spec:
         // the /settings colour button shows guild colours inside a guild when they exist and
@@ -118,7 +118,7 @@ async function handleColorsButton(interaction) {
         return true;
     }
 
-    // B.7 "VIEW COLORS" PAGE SWITCH -- Avatar/Banner/Name/Nameplate/Deco buttons on the panel
+    // "VIEW COLORS" SOURCE PAGE SWITCH -- Avatar/Banner/Name/Nameplate/Deco buttons on the panel
     // above. Edits that panel message in place (deferUpdate, unlike colors_view's deferReply
     // above, since this interaction's own @original IS the already-open palette message) --
     // ephemeral state can't change via an edit anyway, so this just preserves whatever the
@@ -236,10 +236,10 @@ async function handleColorsButton(interaction) {
         return true;
     }
 
-    // B.7.5 "VIEW COLORS" SUB-PAGE SWITCH -- Prev/Next WITHIN the current source (avatar/banner's
+    // "VIEW COLORS" SUB-PAGE SWITCH -- Prev/Next WITHIN the current source (avatar/banner's
     // 8 colors need this at 4-per-page; display name/nameplate/decoration's smaller counts never
     // show this row at all, see buildPaginationRow's own totalChunks<=1 check). custom_id:
-    // `colors_subpage_{source}_{subpage}|{userId}`. Same shape as B.7 above (cache-only, no
+    // `colors_subpage_{source}_{subpage}|{userId}`. Same shape as `colors_page_` above (cache-only, no
     // forceRefresh), just staying on the same source instead of switching to a different one.
     if (interaction.customId.startsWith('colors_subpage_') && interaction.customId !== 'colors_subpage_indicator') {
         const [actionStr, targetUserId, variantToken] = interaction.customId.split('|');
@@ -297,12 +297,12 @@ async function handleColorsButton(interaction) {
         return true;
     }
 
-    // B.8 "VIEW COLORS" MANUAL REFRESH (2026-07-14, Harkirat's request) -- the "Refresh Colors"
+    // "VIEW COLORS" MANUAL REFRESH (2026-07-14, Harkirat's request) -- the "Refresh Colors"
     // button on the panel. custom_id: `colors_refresh_{source}_{subpage}|{userId}` (stays on the
     // same page/subpage that was showing when clicked). forceRefresh: true bypasses the cache and
     // actually re-runs
     // extraction -- the one other deliberate exception to "buttons never re-fetch", alongside
-    // colors_view (B.6) above. Also gated by a dedicated 10s cooldown (colorsRefreshCooldowns,
+    // colors_view (`colors_view|`) above. Also gated by a dedicated 10s cooldown (colorsRefreshCooldowns,
     // separate from the generic 600ms anti-spam guard -- this button does real work, unlike a
     // plain re-render) and reports back whether anything actually changed, via an ephemeral
     // follow-up alongside the panel update.

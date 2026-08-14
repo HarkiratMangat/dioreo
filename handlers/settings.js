@@ -24,7 +24,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // D. SETTINGS MENU DROPDOWNS (Timezone & Timestamp Formats only)
+        // SETTINGS MENU DROPDOWNS (Timezone & Timestamp Formats only)
         // ⚠️ `isStringSelectMenu()` IS LOAD-BEARING, NOT DECORATION. `set_page_` (a BUTTON, handled
         // further down) also starts with `set_`, so without this type test a page-navigation click
         // matches HERE first, defers, and then throws on `interaction.values[0]` -- buttons have no
@@ -97,7 +97,7 @@ async function route(interaction) {
             return await settingsCommand.execute(renderInteraction, currentPage);
         }
 
-        // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
+        // SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
         if (interaction.isButton() && interaction.customId.startsWith('toggle_')) {
             // No deferUpdate() -- single-hop UPDATE_MESSAGE (2026-08-06 22:17 EDT, pagination perf
             // hybrid). The old comment here ("Defer to permanently safeguard against API 10062
@@ -158,7 +158,7 @@ async function route(interaction) {
             await prefs.save(); // Write preferences live to the Atlas cluster
 
             // LIVE RE-DRAW ROUTE: Call the settings engine module to rewrite the canvas on screen.
-            // Renders via actingUser (see the D. handler's matching comment above) so an admin
+            // Renders via actingUser (see the `set_` dropdown handler's matching comment above) so an admin
             // override never swaps in Harkirat's own data. settings.js's own execute() reschedules
             // the passive idle-timeout using THIS interaction's fresh token at the end of its render.
             // ⚠️ ALWAYS synthetic, even when actingUser === interaction.user (fixed 2026-08-06 22:18
@@ -177,14 +177,15 @@ async function route(interaction) {
         // Active/All Events filter moved to /settings entirely, per Harkirat's explicit request. See
         // the generic `toggle_` handler below for `calfilter_active`/`calfilter_all`.)
 
-        // B.5 SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new
+        // SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new
         // region dropdown + hex codes + footer line pushed it close to Discord's 40-component cap):
         // page 0 = Visibility toggles, page 1 = Preferences. custom_id is `set_page_{targetPage}`,
         // same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section
         // stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.isButton() && interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
             // REVERTED to two-hop 2026-08-07 17:44 EDT (v2.60.0) -- same emoji-blank bug as
-            // calpage_/price_region_/price_subpage_ above, directly confirmed on THIS handler during
+            // `calpage_` (handlers/pagination.js) and `price_region_`/`price_subpage_`
+            // (handlers/drawprices.js), directly confirmed on THIS handler during
             // that investigation (docs/db-deferred-list.md's "button emoji goes blank after a
             // single-hop re-render" entry) even though it was found mid-investigation rather than
             // part of the original report. Applying the same already-decided fix rather than leaving
@@ -210,7 +211,7 @@ async function route(interaction) {
                 return;
             }
 
-            // Renders via actingUser (see the D. handler's matching comment above) -- deferReply is
+            // Renders via actingUser (see the `set_` dropdown handler's matching comment above) -- deferReply is
             // no-op'd on the synthetic interaction since the REAL interaction was already deferred
             // above (two-hop); settingsCommand.execute() must not try to ack it a second time.
             const settingsCommand = interaction.client.commands.get('settings');

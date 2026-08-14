@@ -32,7 +32,7 @@ async function route(interaction) {
         // the CURRENT subpage (added 2026-07-12 once entries got split across 2 pages -- e.g.
         // `price_region_30_1` -- so switching region doesn't reset which page of entries you were
         // on). Deliberately NOT prefixed `toggle_` -- that prefix is claimed by the generic
-        // /settings binary-toggle handler further down (`customId.startsWith('toggle_')`), which
+        // /settings binary-toggle handler in `handlers/settings.js` (`customId.startsWith('toggle_')`), which
         // expects a `|{userId}` suffix; a bare `toggle_price_region_10` would have matched that
         // check first, found no userId to compare against, and always hit its "Action Blocked"
         // branch (caught during a bug-check pass before ever being pushed, not found live). Persists

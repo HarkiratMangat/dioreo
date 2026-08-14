@@ -30,6 +30,17 @@ paths:
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
 ✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
 
+### ✍️ SECTION HEADERS ARE DESCRIPTIVE — never numbered or lettered (Harkirat, 2026-08-13 21:36 EDT)
+> *"ditch the numbering/lettering system and just do section headers. as code changes, the numbering/lettering go stale."*
+
+`index.js` used to organise itself with `PHASE 2`…`PHASE 6`, `STEP 6.1`…`6.5`, `ADMIN ROUTE A`…`K`, and per-handler letters `A.`–`K.`. **A label encodes POSITION, which is exactly the thing that rots**, and the split proved it four ways at once:
+- `index.js` and `bot/registry.js` both ended up with a **`PHASE 4`** meaning different things; `PHASE 5` was both "LOGIN" and "CLIENT LIFECYCLE".
+- **`A.`, `C.` and `F.` each labelled two unrelated sections** in two different files.
+- `colors.js` carried **`B.6`–`B.8`** while its implied siblings `B.1`–`B.5` sat in `settings.js` and `pagination.js` — a reader looking for them finds nothing.
+- `router.js` kept **`STEP 6.1`/`6.2`** after 6.3–6.5 were deleted, leaving holes that need a paragraph to explain. Two `index.js` breadcrumbs existed *solely* to explain earlier gaps in that numbering; removing the scheme removed the need for them.
+
+**44 labels were stripped to plain descriptive headers**, and the comments that cross-referenced them by letter now cite the **custom_id** instead — greppable, and it cannot drift. Enforced by `scripts/handlerRouting.test.js` across `index.js`, `bot/` and `handlers/`. An ordered list *inside* a paragraph ("1. load the modules, 2. register the listeners") is fine and is not matched: it describes a real sequence rather than labelling a section.
+
 ### 🔴 A MIXED-TYPE HANDLER MUST TYPE-TEST EVERY BRANCH — prefix alone is not enough
 **This shipped as a real bug and was caught after the branch was already pushed (2026-08-13 18:45 EDT).** Pre-split, the router separated interaction types *structurally*: `set_` (a SELECT) lived inside `if (interaction.isStringSelectMenu())` and `set_page_` (a BUTTON) inside `if (interaction.isButton())`. Flattening each subsystem into one function removed that separation — and **`set_page_2` matches `startsWith('set_')` first**. A `/settings` page click entered the *select* handler, called `deferUpdate()`, then threw on `interaction.values[0]`, because buttons have no `.values`. The router's crash net swallowed it, so the button simply looked dead.
 

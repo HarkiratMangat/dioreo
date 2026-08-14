@@ -3,8 +3,8 @@
 // ==========================================
 // The single `interactionCreate` dispatcher, moved out of index.js on 2026-08-13 17:10 EDT so that
 // file can be what an entrypoint is supposed to be: boot, wiring, login. Nothing about the routing
-// itself changed in that move -- the STEP 6.x sections below are the same ones index.js carried, in
-// the same order, because that order is load-bearing (see .claude/rules/interaction-router.md).
+// itself changed in that move -- the sections below are the same ones index.js carried, in the same
+// order, because that order is load-bearing (see .claude/rules/interaction-router.md).
 //
 // ⚠️ THE CRASH NET LIVES HERE NOW. handleInteraction keeps the one top-level try/catch that made an
 // expired-token click (Discord 10062) a dead button rather than a dead bot. index.js registers this
@@ -67,7 +67,7 @@ const INTERACTION_COOLDOWN_MS = 600;
 
 
 // ==========================================
-// PHASE 6: INTERACTION SYSTEM OVERSEER (ROUTING)
+// INTERACTION SYSTEM OVERSEER (ROUTING)
 // ==========================================
 async function handleInteraction(interaction) {
   try {
@@ -181,7 +181,7 @@ async function handleInteraction(interaction) {
 
 
     // ==========================================
-    // --- STEP 6.1: DATABASE AUTOCOMPLETE ROUTE ---
+    // --- DATABASE AUTOCOMPLETE ROUTE ---
     // ==========================================
     // Intercepts typing inside search string options to offer live autocomplete choices
     // directly from the MongoDB clusters before the user even presses enter.
@@ -197,14 +197,14 @@ async function handleInteraction(interaction) {
         const { fuzzyMatch, findWeaponMatches } = require('../utils/search');
 
         try {
-            // NOTE (removed 2026-07-09): /manage used to have a "ROUTE A" here for its search
+            // NOTE (removed 2026-07-09): /manage used to have its own autocomplete route here, for its search
             // options (draws/loadouts/calendar/patchnotes edit/delete autocomplete). That entire
             // subcommand-group/option structure was replaced by the button+modal panel (see
             // manage.js) -- Edit/Delete now collect their search query through a one-field modal
             // instead of a slash-command autocomplete option, resolved in handlers/manage.js's `mng_search_`
             // modal-submit handler. Nothing on /manage triggers autocomplete anymore.
 
-            // === ROUTE B: USER FRONT-END AUTOCOMPLETE (/all, /dmz, /patch) ===
+            // === USER FRONT-END AUTOCOMPLETE (/all, /dmz, /patch) ===
             // Required because we changed the base command name to 'patch' for subcommands
             if (commandName === 'patch') {
                 const SeasonalData = require('../models/SeasonalData');
@@ -290,7 +290,7 @@ async function handleInteraction(interaction) {
     }
 
     // ==========================================
-    // --- STEP 6.2: SLASH COMMAND ROUTE ENGINE ---
+    // --- SLASH COMMAND ROUTE ENGINE ---
     // ==========================================
     if (interaction.isChatInputCommand()) {
         const { commandName } = interaction;
@@ -458,9 +458,9 @@ async function handleInteraction(interaction) {
     // COMPONENT INTERACTIONS (buttons · selects · modal submits)
     // ==========================================
     // Handled entirely by the per-subsystem dispatch chain above. The three separate
-    // `isStringSelectMenu()` / `isButton()` / `isModalSubmit()` blocks that used to live here --
-    // STEP 6.3, 6.4 and 6.5 -- are gone: every branch they held now lives in a handlers/*.js module,
-    // and each module checks the interaction TYPE itself where that still matters.
+    // `isStringSelectMenu()` / `isButton()` / `isModalSubmit()` blocks that used to live here are
+    // gone: every branch they held now lives in a handlers/*.js module, and each module checks the
+    // interaction TYPE itself where that still matters.
     // ⚠️ That type check is not ceremony. `mpbrowse` was once written inside the isButton() block
     // when it is a SELECT, and the branch was simply dead -- no error, no log, just a timed-out
     // interaction. If you add a branch to a handler, make sure it sits under the right type.

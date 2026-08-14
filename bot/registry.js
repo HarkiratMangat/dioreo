@@ -1,5 +1,5 @@
 // ==========================================
-// PHASE 4: APPLICATION COMMAND REGISTRATION
+// APPLICATION COMMAND REGISTRATION
 // ==========================================
 // Everything that decides WHICH slash commands exist and pushes them to Discord. Split out of
 // index.js on 2026-08-13 17:20 EDT; the logic is unchanged, only its address.
@@ -9,7 +9,7 @@
 //   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk.
 //   2. buildCategoryCommands(commands) -- after ClientReady, async. Needs a live MongoDB query, so
 //      it CANNOT run at require time (which is why the category commands were de-Excel'd here).
-//   3. registerApplicationCommands(client, commands) -- one REST PUT, after stage 2.
+//   3. registerApplicationCommands(client, commands) -- one REST PUT, after the two above.
 //
 // ⚠️ THE EIGHT PER-CATEGORY WEAPON COMMANDS (/ar, /lmg, /sniper, …) AND `/all` ARE BUILT HERE, NOT
 // IN commands/*.js. Any sweep that readdirs that folder misses all nine of them -- exactly what
@@ -21,10 +21,11 @@ const path = require('path');
 const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 
 // ==========================================
-// STAGE 1: STATIC + ON-DISK COMMAND MODULES
+// STATIC + ON-DISK COMMAND MODULES
 // ==========================================
 
-// Initializes client.commands and returns the staging array that stages 2 and 3 keep filling.
+// Initializes client.commands and returns the staging array that buildCategoryCommands() and
+// registerApplicationCommands() go on to fill and serialize.
 // The array and the Collection are deliberately BOTH maintained: the Collection is what the router
 // dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized
 // to Discord and what /server derives its gateable-command list from.
@@ -70,7 +71,7 @@ function loadCommandModules(client) {
 }
 
 // ==========================================
-// STAGE 2: PER-CATEGORY WEAPON COMMANDS (DB-DERIVED)
+// PER-CATEGORY WEAPON COMMANDS (DB-DERIVED)
 // ==========================================
 
 /**
@@ -112,7 +113,7 @@ async function buildCategoryCommands(commands) {
 }
 
 // ==========================================
-// STAGE 3: PUSH TO DISCORD
+// PUSH TO DISCORD
 // ==========================================
 
 // Coordinates secure synchronization of compiled structures directly over to active Discord cloud

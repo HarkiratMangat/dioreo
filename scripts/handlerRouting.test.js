@@ -232,6 +232,83 @@ check('no branch is shadowed by an earlier branch in the same module', () => {
     assert.deepStrictEqual(shadowed, [], `\n      ${shadowed.join('\n      ')}`);
 });
 
+// --- 7. COMMENTS THAT POINT ACROSS A FILE BOUNDARY ---
+// The split moved code, and the comments came with it — including their POSITIONAL language. A
+// comment saying a handler is "further down" was true in the 4,553-line index.js and is a lie once
+// that handler lives in another file. This is invisible to every other check here: the code is
+// correct, only the prose is wrong, and prose is what the next person navigates by.
+//
+// Flags a line ONLY when it combines positional language with a custom_id owned by a DIFFERENT
+// module AND does not name that module's file. Naming the file is the fix and the escape hatch:
+// "`toggle_` is handled in handlers/settings.js" is fine; "`toggle_` further down" is not.
+// Found 4 real cases on 2026-08-13 21:35 EDT, which is why it is here rather than a one-off sweep.
+check('no comment uses positional language about a custom_id owned by another module', () => {
+    const POSITIONAL = /\b(above|below|further down|further up|up there|earlier in this file|later in this file)\b/i;
+    const owners = {};
+    for (const name of moduleNames) {
+        (require(path.join(HANDLERS_DIR, name)).OWNED_PREFIXES || []).forEach(p => { owners[p] = name; });
+    }
+    // Longest prefix wins, so `set_page_` resolves to settings rather than any shorter match.
+    const ownerOf = (id) => {
+        let best = null;
+        for (const p of Object.keys(owners)) if (id.startsWith(p) && (!best || p.length > best.length)) best = p;
+        return best ? owners[best] : null;
+    };
+
+    const offenders = [];
+    for (const file of fs.readdirSync(HANDLERS_DIR)) {
+        const self = file.replace(/\.js$/, '');
+        fs.readFileSync(path.join(HANDLERS_DIR, file), 'utf8').split('\n').forEach((line, i) => {
+            if (!/^\s*\/\//.test(line) || !POSITIONAL.test(line)) return;
+            for (const m of line.matchAll(/`?\b([a-z]+_[a-z_]*)\b`?/g)) {
+                const owner = ownerOf(m[1]);
+                if (!owner || owner === self) continue;
+                if (line.includes(`${owner}.js`)) continue; // names the file — that is the fix
+                offenders.push(`${file}:${i + 1} says "${m[1]}" is ${POSITIONAL.exec(line)[0]}, but it lives in ${owner}.js`);
+            }
+        });
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
+// --- 8. NO NUMBERED OR LETTERED SECTION HEADERS ---
+// Standing convention, Harkirat 2026-08-13 21:36 EDT: *"ditch the numbering/lettering system and
+// just do section headers. as code changes, the numbering/lettering go stale."*
+//
+// A label like `PHASE 4` or `// B.6` encodes POSITION, which is precisely the thing that rots. The
+// split proved it three ways at once: `index.js` and `bot/registry.js` both ended up with a `PHASE
+// 4` meaning different things; `A.`/`C.`/`F.` each labelled two unrelated sections in two files;
+// `colors.js` carried `B.6`–`B.8` while its supposed siblings `B.1`–`B.5` lived in other files; and
+// `router.js` kept `STEP 6.1`/`6.2` with 6.3–6.5 deleted, leaving holes a reader has to explain to
+// themselves. A descriptive header cannot go stale this way — it says what the code IS, not where
+// it sits. 44 labels were removed to establish this; the check exists so they do not come back.
+//
+// An ordered list INSIDE a paragraph ("1. load the modules, 2. register listeners") is fine and is
+// not matched — it describes a real sequence rather than labelling a section.
+check('no numbered or lettered section headers (they encode position, which rots)', () => {
+    const SCHEMES = [
+        [/^\s*\/\/ (?:---\s*)?(?:PHASE|STEP|STAGE) [\d.]+:/, 'PHASE/STEP/STAGE numbering'],
+        [/^\s*\/\/ (?:---\s*)?ADMIN ROUTE [A-Z]/, 'ADMIN ROUTE lettering'],
+        [/^\s*\/\/ (?:---\s*|=== )?[A-K]\.(?:\d+[a-z]?)? [A-Z"`]/, 'letter-prefixed section label'],
+    ];
+    const roots = [
+        { dir: path.join(__dirname, '..'), files: ['index.js'] },
+        { dir: path.join(__dirname, '..', 'bot'), files: null },
+        { dir: HANDLERS_DIR, files: null },
+    ];
+    const offenders = [];
+    for (const { dir, files } of roots) {
+        for (const file of files || fs.readdirSync(dir).filter(f => f.endsWith('.js'))) {
+            fs.readFileSync(path.join(dir, file), 'utf8').split('\n').forEach((line, i) => {
+                for (const [re, label] of SCHEMES) {
+                    if (re.test(line)) offenders.push(`${file}:${i + 1} ${label} — ${line.trim().slice(0, 60)}`);
+                }
+            });
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
 setTimeout(() => {
     console.log(failures === 0
         ? `\nAll routing-contract checks passed (${moduleNames.length} handlers).`

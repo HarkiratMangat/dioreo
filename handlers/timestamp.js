@@ -24,7 +24,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // A. TIMESTAMP STYLE SELECTOR
+        // TIMESTAMP STYLE SELECTOR
         // Look for the new pipe delimiter prefix to handle stateless timestamp dropdowns
         // NOTE (de-duplicated during review): this used to fully re-implement both of
         // commands/timestamp.js's view layouts inline instead of calling back into that file —

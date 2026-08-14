@@ -25,7 +25,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-        // F. LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
+        // LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
         // straight to a different weapon's card without re-running the slash command. Selected
         // value is just a bare `weaponKey` (see utils/loadoutRender.js's buildCategoryBrowseRow --
         // this used to also encode a build index for a specific build variant, simplified to
@@ -82,7 +82,7 @@ async function route(interaction) {
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
 
-        // D/E. LOADOUT PAGINATION & COPY (DMZ and MP, both MongoDB-backed)
+        // LOADOUT PAGINATION & COPY (DMZ and MP, both MongoDB-backed)
         // Shared handling for both custom_id prefixes since /dmz and the MP category commands
         // (/all, /<category>) now use identical card layouts — see utils/loadoutRender.js. `mode`
         // is the only real difference in what gets queried.
