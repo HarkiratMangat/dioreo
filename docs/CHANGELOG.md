@@ -75,7 +75,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.18.0 — 2026-08-14 13:45 EDT (#PR) — `/manage`'s actions become one table instead of two copies of the same list
+## Pre-Release v3.19.0 — 2026-08-14 16:27 EDT (#PR) — A presence check for the memory layer, and an expiring hook stopped asserting its own reversal
+
+Two failures, found the same day, both invisible from inside a session. `sequential-thinking`'s JSON-Schema dialect fix (2026-08-13) had landed in the Claude **Desktop** config, not `~/.claude.json`, so no Claude Code session ever saw it — the shim was real and correct, just on the wrong client. `perseus-vault` was worse: it sat at "⏸ Pending approval," a state only an interactive `claude` run can clear and that no session can detect, so `memory-write-gate` nagged about writes that were never possible to make.
+
+**`.claude/hooks/mcp-layer-check.sh` now checks server presence by name every session** — it warns, with the exact `claude mcp add --scope user` fix command, when an expected server is missing from Claude Code's config, and separately when a server is configured for Desktop but never mirrored to Code. A second, unrelated bug in the same hook was fixed in the same pass: its `sequential-thinking` observation-window block had auto-expired on 2026-08-09 and then spent five days injecting the opposite of what Harkirat had decided that same day, with data. An auto-expiring guard must expire into silence or a question, never a claim about a decision it cannot know happened — replaced with the standing verdict, plus an assertion that makes restoring the retired rule a test failure.
+
+All five local servers (`linksee`, `perseus-vault`, `sequential-thinking`, `codebase-memory-mcp`, `jina-reader`) now report ✔ Connected in a real session. This branch also carried a full MCP connector and plugin audit once the parity gap was closed — three hard-failing plugins disabled, `mongodb`/`cloudinary` enabled, Cloudinary's connector surface trimmed from six overlapping entries to two after discovering the apparent "duplicate" pair actually differed by credential storage. None of it touches bot code; full record in `local/handoff/2026-08-14-mcp-connector-audit.md`.
+
+**Verification.** `npm run test:hooks` green (26 hooks, 10 new mutation-validated cases for this fix), `docs:audit` at 0 errors.
+
+## Pre-Release v3.18.0 — 2026-08-14 13:45 EDT (#126) — `/manage`'s actions become one table instead of two copies of the same list
 
 Stage 1 of four in the `/manage` decomposition designed this session (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): a single action registry, then a per-page handler split, then the scoped `action:` slash option, then a DB-change audit log behind a new `/audit` command. This release is the first of those and changes nothing a user can see — every button renders with the same label, opens the same modal, and writes the same data as before.
 
