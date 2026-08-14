@@ -32,7 +32,8 @@
 // (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
 const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
 const { handleColorsButton } = require("./colors");
-const { handleManageInteraction } = require("./manage");
+const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
+const { cancelPanelExpiry } = require("../utils/passiveExpiry");
 const { handleTimestampInteraction } = require("./timestamp");
 const { handleHelpInteraction } = require("./help");
 const { handlePatchnotesInteraction } = require("./patchnotes");
@@ -160,6 +161,25 @@ async function handleInteraction(interaction) {
             }
         }
     }
+
+        // PASSIVE EXPIRY SAFETY NET (2026-08-14 11:05 EDT) -- /manage's OWN branches (below) mostly edit the
+        // panel message via discord.js's raw `interaction.update()`, a legacy content+components
+        // shape that never flows through sendV2Payload -- see that file's own header comment for why
+        // ~24 call sites inside handlers/manage.js aren't individually instrumented this session. So
+        // for THIS subsystem alone, a passive-expiry timer scheduled by an earlier sendV2Payload-based
+        // page render could still be pending when one of those raw updates lands, and if the user then
+        // sits on THAT screen (a confirm/cancel prompt, say) for the rest of the window, the stale
+        // timer would fire and PATCH the message back to the EARLIER page's components -- just
+        // disabled, and visibly wrong. Cancelling outright here (never rescheduling, since this
+        // dispatch doesn't know what the eventual render will look like) closes that: the narrow,
+        // documented cost is that a manage-panel confirm/cancel/undo prompt reached this way runs
+        // with no countdown of its own until the next real page render re-arms one, never a stale
+        // overwrite. Scoped to manage's own prefixes specifically -- /alerts and /autobuild render
+        // exclusively through sendV2Payload already and reschedule themselves a few lines later in
+        // this same dispatch, so cancelling first there would just be immediately superseded.
+        if (interaction.message?.id && MANAGE_OWNED_PREFIXES.some(p => interaction.customId?.startsWith(p))) {
+            cancelPanelExpiry(interaction.message.id);
+        }
 
         // --- /manage PANEL (2026-08-13 17:40 EDT) --- every branch this panel mints lives in
         // handlers/manage.js. Dispatched HERE, immediately after the permission guard above and
