@@ -337,7 +337,7 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         decoration: guildProfile?.decorationAsset, nameplate: guildProfile?.nameplateAsset
     };
     const isGuildSource = (kind) => Boolean(useGuild && guildHash[kind] && sources[kind]?.source === guildHash[kind]);
-    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and index.js
+    // ⚠️ SURFACED FOR THE CALLER, because `variant === 'server'` is NOT the same question and handlers/colors.js
     // was using it as though it were (fixed 2026-08-12 21:44 EDT). The accent-cache invalidation picks
     // the guild or the global field pair from a boolean; handed `variant`, a source with no server
     // override — which resolved to the global image and cached under the GLOBAL field — had its GUILD

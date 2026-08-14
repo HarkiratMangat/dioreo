@@ -13,7 +13,7 @@
 //
 // Cloudinary has NO native per-asset TTL/auto-expiry (confirmed against the current cloudinary_npm
 // docs before building this -- don't assume otherwise if you revisit this). Time-based cleanup is
-// therefore done by us: pruneExpiredThumbnails() below, run on a schedule (see index.js's
+// therefore done by us: pruneExpiredThumbnails() below, run on a schedule (see bot/lifecycle.js's
 // handleBotReady), not something Cloudinary does on its own.
 const cloudinary = require('cloudinary').v2;
 

@@ -25,7 +25,7 @@ paths:
 
 ### The four functions, and which one to use where
 - `isAdmin(userId)` — "any admin access at all." Correct for coarse checks: does the Bot Admin category show up in `/help`, may this person admin-override someone else's `/settings` panel. **Wrong for gating one command's own surface** — a `/alerts`-only admin passes this.
-- `hasCommandAccess(userId, commandName)` — exact match for `alerts`/`autobuild`; for `manage` means "has `manage` OR any `manage.*` token." Gates the slash command itself and the shared button/modal prefix guard in `index.js`.
+- `hasCommandAccess(userId, commandName)` — exact match for `alerts`/`autobuild`; for `manage` means "has `manage` OR any `manage.*` token." Gates the slash command itself and the shared button/modal prefix guard in `handlers/router.js`.
 - `hasManagePageAccess(userId, pageKey)` — the real per-page gate. `manageadmins` always returns owner-only.
 - `getManagePages(userId)` — every page (+ `season`, + `manageadmins` for the owner) this user may reach. Drives `buildManagePage`'s dropdown filter (`commands/manage.js`) so a scoped admin is never OFFERED a page they can't open, not just blocked after clicking into it.
 
@@ -56,7 +56,7 @@ Each admin renders as a Section+thumbnail (live avatar via `client.users.fetch(d
 
 ## Two real bugs found by direct DB reproduction, not by reading code (2026-08-13)
 
-Both produced the SAME symptom — a silent "stuck" interaction (Discord's thinking spinner never resolves) rather than a visible error — because both threw AFTER `deferReply()` had already acknowledged the interaction, with nothing local catching the exception, so it fell through to the outer crash-safety `try/catch` in `index.js` (which only logs) and nothing ever called `followUp()` to resolve the deferred reply.
+Both produced the SAME symptom — a silent "stuck" interaction (Discord's thinking spinner never resolves) rather than a visible error — because both threw AFTER `deferReply()` had already acknowledged the interaction, with nothing local catching the exception, so it fell through to the outer crash-safety `try/catch` in `handlers/router.js` (which only logs) and nothing ever called `followUp()` to resolve the deferred reply.
 
 1. **`manageCommand` referenced outside its declaring block scope.** The `mng_announce_edit_` button handler was a SIBLING `if`-block to the `mng_act_` block where `manageCommand` was `const`-declared — a `ReferenceError`, invisible until reproduced. Fixed by declaring it locally in the sibling handler, same as every other id-embedding handler that needs it.
 2. **A stale MongoDB unique index (`docType_1`) survived the singleton→collection schema rewrite.** Mongoose doesn't drop indexes for fields removed from the schema. Every new announcement doc has no `docType` field at all, and a non-sparse unique index treats "missing key" as a real value it enforces uniqueness on — so the SECOND announcement ever created collided with the first on `docType: null` and threw. Fixed by dropping the stale index directly (`db.announcements.dropIndex('docType_1')`); no code change needed since the schema itself was already correct.

@@ -87,7 +87,7 @@ module.exports = {
         // "{emoji} **{title}**", short enough to stay on one line even on mobile, which means it's
         // safe to go back to the bigger H2 (##) size.
         // isTBD (added 2026-07-31 14:00 EDT) -- distinct from "not set yet": TBD means the admin
-        // explicitly typed "TBD" for this deadline (adminParser's applyLine, index.js), so it gets
+        // explicitly typed "TBD" for this deadline (adminParser's applyLine, handlers/manage.js), so it gets
         // its own honest message instead of reading as simply forgotten/unconfigured.
         const buildEndBlock = (emoji, title, unix, isTBD) => {
             let body;

@@ -156,7 +156,7 @@ async function getDominantColor(imageUrl) {
 // return shape changed from a named-fields object (`{vibrant, muted, ...}`) to a plain array of
 // `{hex, percent}` sorted by prevalence, since there's no more fixed category set to key off of.
 //
-// DETERMINISM matters here specifically because of the "Refresh Colors" button (index.js) --  it
+// DETERMINISM matters here specifically because of the "Refresh Colors" button (handlers/colors.js) --  it
 // needs to honestly report whether a source's colors actually changed, which requires the SAME
 // image to always produce the SAME result. Textbook k-means uses randomized initialization
 // (k-means++), which would make even an unchanged avatar look "different" on every refresh. Fixed

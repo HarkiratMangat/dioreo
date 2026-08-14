@@ -35,7 +35,7 @@ const emojis = require('./emojiMap');
 //    into (and drifting across) every caller.
 //  • prevCustomId / nextCustomId — legacy, for callers whose id encodes a DIRECTION + current index
 //    rather than a target page (loadout cards: `${prefix}prev_...` / `${prefix}next_...`, whose own
-//    index.js handler already does the modulo wrap on click). These are passed through verbatim; the
+//    handlers/loadouts.js already does the modulo wrap on click). These are passed through verbatim; the
 //    only thing looping needs for them is that the buttons are no longer disabled — which is now the
 //    default here. Don't mix the two: pass makeCustomId OR the prev/next pair, not both.
 function buildPaginationRow({ totalChunks, currentPage, makeCustomId, prevCustomId, nextCustomId, indicatorCustomId }) {

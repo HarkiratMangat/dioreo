@@ -4,7 +4,7 @@ const SeasonalDataSchema = new mongoose.Schema({
     docType: { type: String, default: 'global', unique: true },
 
     // NOTE (added during review): these four titles are set by the "Initialize New Season" and
-    // "Edit Season Titles" admin modals (index.js ADMIN ROUTE A / J), and read as fallback display
+    // "Edit Season Titles" admin modals (handlers/manage.js ADMIN ROUTE A / J), and read as fallback display
     // text in seasonend.js and draws.js — but were missing from the schema, so .save() was
     // silently discarding them every time (Mongoose only persists declared paths).
     currentSeasonTitle: { type: String, default: '' },
@@ -31,7 +31,7 @@ const SeasonalDataSchema = new mongoose.Schema({
     patchNotes: [{
         title: { type: String }, // Now holds just the season # & name (e.g. "Season 6: Take Your Heart"),
         // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to
-        // currentSeasonTitle for the current entry (see index.js's modal_season_titles_deadlines) --
+        // currentSeasonTitle for the current entry (see handlers/manage.js's modal_season_titles_deadlines) --
         // titleOverride below is what actually decides what's DISPLAYED.
         titleOverride: { type: String, default: '' }, // Manual per-entry title override (2026-07-24,
         // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season

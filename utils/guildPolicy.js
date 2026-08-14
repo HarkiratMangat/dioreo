@@ -183,7 +183,7 @@ async function attachGuildPolicy(interaction) {
     const policy = {
         visibility,
         // Under an ephemeral policy the "Show Everyone" button must not render OR fire -- it posts a
-        // genuinely new public message, which would be a complete bypass of the rule. index.js's
+        // genuinely new public message, which would be a complete bypass of the rule. handlers/share.js's
         // share_public handler re-checks this rather than trusting the button's absence, because a
         // panel opened before the rule was set still has the button on it.
         allowShare: visibility === 'public',

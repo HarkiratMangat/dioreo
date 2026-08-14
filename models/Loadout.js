@@ -13,14 +13,14 @@ const LoadoutSchema = new mongoose.Schema({
     // 2026-07-24 18:07 EDT, closing the "accepted gap" in loadout-images-and-metadata.md) is what lets a later
     // /manage attachment edit re-sync per-slot Cloudinary metadata for the common case -- editing an
     // existing build WITHOUT changing which attachments are equipped -- instead of always leaving it
-    // stale. See index.js's edit_loadout_ handler for the actual re-sync/invalidation logic.
+    // stale. See handlers/manage.js's edit_loadout_ handler for the actual re-sync/invalidation logic.
     attachmentSlots: [{ type: String }],
     // `imageKey` supports EITHER a bare Cloudinary key (the original design, prefixed with the
     // Cloudinary base URL at render time) OR a full external URL -- added for the builds.xlsx
     // migration, which briefly had 2 imgur-hosted LOCUS rows before those were re-uploaded to
     // Cloudinary directly (2026-07-09). No current row uses the external-URL path, but it stays
     // supported in case a future import ever has one again -- see the buildImageUrl() helper
-    // wherever this is rendered (dmz.js, index.js's MP/DMZ lookup + pagination).
+    // wherever this is rendered (dmz.js, handlers/loadouts.js's MP/DMZ lookup + pagination).
     imageKey: { type: String, required: true }, // e.g. "HOLGER-26-1" or a full "https://..." URL
     // Added during the builds.xlsx -> MongoDB migration: `description` preserves the old
     // spreadsheet's per-build usage blurb (e.g. "No suppressor build... FMJ allows 1 tap through
@@ -40,7 +40,7 @@ const LoadoutSchema = new mongoose.Schema({
     // free-form 'top{N}' (e.g. 'top3', 'top4', 'top5'), validated by adminParser.js's
     // parseLoadoutBadges() rather than a rigid Mongoose enum. Parsed from the 3rd pipe-delimited
     // segment of /manage's "Category | Mode | Badges" modal field, and propagated across every
-    // build sharing the same weaponKey/mode on edit (see index.js's edit_loadout_ handler) since
+    // build sharing the same weaponKey/mode on edit (see handlers/manage.js's edit_loadout_ handler) since
     // badges describe the weapon, not one specific build variant.
     isMeta: { type: Boolean, default: false },
     categoryRank: { type: String, default: null },
@@ -49,7 +49,7 @@ const LoadoutSchema = new mongoose.Schema({
     // category ranking, so this is its own boolean rather than folded into categoryRank.
     isToxic: { type: Boolean, default: false },
     // The ONLY rank-badge field DMZ builds ever use -- categoryRank is never set for mode: 'DMZ'
-    // (index.js's add/edit-loadout handlers reroute a bare "best"/"topN" token here instead), since
+    // (handlers/manage.js's add/edit-loadout handlers reroute a bare "best"/"topN" token here instead), since
     // /dmz isn't split into per-category commands the way MP is, so "Best/Top N in category"
     // doesn't read as meaningfully there. Stores a bare 'best'/'top{N}' (renders as "... DMZ") or a
     // combat-range-role-qualified 'best-close'/'best-midlong'/'top{N}-close'/'top{N}-midlong'

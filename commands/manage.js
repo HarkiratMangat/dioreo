@@ -21,7 +21,7 @@
 // Confirm/Cancel prompt (Purge), or, for Edit/Delete-by-search (which need a specific item picked
 // first, and buttons can't autocomplete), opens a small "search by name" modal first — see
 // handlers/manage.js's `mng_search_`/`mng_pick_` handlers for the resolve-then-chain-a-second-modal logic.
-// This file only builds the modal SHAPES and the page/button layout; index.js owns all the routing
+// This file only builds the modal SHAPES and the page/button layout; handlers/manage.js owns all the routing
 // and DB-mutating submit logic.
 //
 // NOTE on the deferred "search + multi-select" flow: the mockups describe "Delete Multiple" (all
@@ -555,7 +555,7 @@ const PAGE_ACCENT = {
 };
 
 // Builds Patch Notes' "Past Seasons" select-menu options from a live seasonalDoc (2026-07-24) --
-// shared by both call sites that render the patchnotes page (manage.js's own execute() and index.js's
+// shared by both call sites that render the patchnotes page (manage.js's own execute() and handlers/manage.js's
 // mng_pagesel handler) so there's exactly one definition of "which entries count as past, in what
 // order." Excludes the current (last) entry -- only PAST seasons belong here -- most-recent-first,
 // capped at Discord's 25-option select-menu limit.
@@ -622,7 +622,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
             // Live-computed text block (2026-07-24 pattern extended 2026-07-30 22:24 EDT) -- same
             // dynamicData mechanism as the 'select' branch above, just rendered as a Text Display
             // instead of a select menu. `dynamicData[group.dynamicKey]` is built fresh per render by
-            // whichever call site is rendering this page (see manage.js's execute()/index.js's
+            // whichever call site is rendering this page (see manage.js's execute()/handlers/manage.js's
             // mng_pagesel), never baked into the static PAGES table.
             components.push({ type: 10, content: dynamicData[group.dynamicKey] || 'Loading…' });
         } else if (group.style === 'raw') {
@@ -670,7 +670,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
 }
 
 // --- Generic one-field "search by name" modal, shown when Edit/Delete is clicked — buttons can't
-// autocomplete like a slash command option could, so this collects a query text first. index.js's
+// autocomplete like a slash command option could, so this collects a query text first. handlers/manage.js's
 // `mng_search_` submit handler fuzzy-matches it against the target collection and either chains
 // straight into the real edit modal (single match), shows a disambiguation dropdown (multiple
 // matches), or reports no matches found.
@@ -1014,7 +1014,7 @@ function buildWipeSeasonModal() {
 function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
     // Each deadline field combines its title and end date on one line ("Battle Pass, August 28") —
     // pre-filled so re-submitting without touching a field preserves it — see adminParser.js's
-    // splitTitleDate() for how index.js parses these back apart.
+    // splitTitleDate() for how handlers/manage.js parses these back apart.
     const bpLine = [seasonalDoc?.bpTitle || 'Battle Pass', formatAdminDate(seasonalDoc?.bpEnd)].filter(Boolean).join(', ');
     const rankLine = [seasonalDoc?.rankTitle || 'Ranked Series', formatAdminDate(seasonalDoc?.rankEnd)].filter(Boolean).join(', ');
     const dmzLine = [seasonalDoc?.dmzTitle || 'DMZ Season', formatAdminDate(seasonalDoc?.dmzEnd)].filter(Boolean).join(', ');
@@ -1187,7 +1187,7 @@ module.exports = {
     async execute(interaction) {
         const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
-            // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of index.js's
+            // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/manage.js's
             // centralized button/select/modal guard for this same panel (see interactionCreate).
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }

@@ -119,7 +119,7 @@ function writeStructured(severity, text) {
     } catch { /* best-effort: never let a log write surface */ }
 }
 
-// Patch console rather than rewriting ~60 call sites across index.js and utils/. Two reasons this is
+// Patch console rather than rewriting ~60 call sites across the tree. Two reasons this is
 // the right call and not laziness: (1) it cannot MISS a site, including ones added later and ones in
 // third-party code paths that log through console; (2) the alternative is a sprawling mechanical diff
 // across the whole codebase whose only content is an import change, which is far harder to review for

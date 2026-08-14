@@ -319,7 +319,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the
     // worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap.
     // "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/
-    // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see index.js's
+    // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's
     // dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the
     // Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there.
     // Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId):

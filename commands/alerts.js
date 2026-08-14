@@ -6,7 +6,7 @@
 // half" roadmap item). Admin-only — gated by the same exported ALLOWED_ADMIN_ID as /manage, and every
 // `alerts_` component is auto-gated by handlers/router.js's centralized panel guard (no per-handler admin checks).
 //
-// This file builds the panel; index.js owns the button routing (alerts_export / alerts_explain /
+// This file builds the panel; handlers/alerts.js owns the button routing (alerts_export / alerts_explain /
 // alerts_back / alerts_page_N). buildAlertsPanel() is exported so those re-render handlers share ONE
 // render path with the slash command instead of a drifting copy.
 const { SlashCommandBuilder } = require('discord.js');

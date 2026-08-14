@@ -258,7 +258,7 @@ function guessCalendarCategory(title) {
     return 'event';
 }
 
-// Shared by the single add/edit calendar-event modals (index.js) -- accepts a full word
+// Shared by the single add/edit calendar-event modals (handlers/manage.js) -- accepts a full word
 // ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls
 // through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
 function normalizeCalendarCategory(raw, title) {

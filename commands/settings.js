@@ -60,7 +60,7 @@ module.exports = {
         }
 
         // 2. SAFE DEFERRAL (Fixes InteractionAlreadyReplied Crash)
-        // Check if index.js button router already deferred this interaction. If not, defer it.
+        // Check if the settings handler already deferred this interaction. If not, defer it.
         // We now respect the user's custom settings visibility preference natively! Default
         // flipped from 'ephemeral' to 'public' per Harkirat's request — matches the schema
         // default in UserPreference.js, kept in sync here for existing docs missing the field.

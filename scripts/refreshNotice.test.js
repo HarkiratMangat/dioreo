@@ -139,7 +139,7 @@ t('sources are labelled, never printed as raw keys', () => {
 });
 
 t('an unknown source degrades to its key instead of throwing', () => {
-    // index.js passes whatever the custom_id carried; a message that throws would take the whole
+    // handlers/colors.js passes whatever the custom_id carried; a message that throws would take the whole
     // follow-up with it after the panel has already been edited.
     const m = notice({ source: 'somethingNew', accentCleared: true });
     assert.ok(m.includes('somethingNew'), m);

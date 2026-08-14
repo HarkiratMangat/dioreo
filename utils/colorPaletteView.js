@@ -856,7 +856,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
 // real palettes rather than on the thresholds in isolation. Nothing in the bot calls it from outside
 // this file.
 // The ephemeral follow-up the "Refresh Colors" button sends. Lives here rather than inline in
-// index.js because it is presentation, and because every one of its branches is INVISIBLE until
+// handlers/colors.js because it is presentation, and because every one of its branches is INVISIBLE until
 // somebody presses the button on exactly the right combination of state -- three verdicts, two
 // per-view lists and a trailing line that is mutually exclusive with them. That is untestable inline
 // and trivially testable as a function of its inputs.

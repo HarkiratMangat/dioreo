@@ -20,7 +20,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 // `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
 const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 
-// Shared option list for the style-switch dropdown, used by both view modes below. index.js's
+// Shared option list for the style-switch dropdown, used by both view modes below. handlers/timestamp.js's
 // 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather
 // than duplicating this list, so there's only ever one copy to keep in sync.
 const STYLE_SELECT_OPTIONS = [
@@ -184,7 +184,7 @@ module.exports = {
     // chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed
     // later). The two copies had already drifted out of sync twice across earlier redesigns.
     // Fixed properly now via the same synthetic-interaction pattern every other command uses:
-    // `overrideState` lets index.js pass in the already-known { unix, tz, queryInput, style }
+    // `overrideState` lets handlers/timestamp.js pass in the already-known { unix, tz, queryInput, style }
     // instead of re-deriving them from slash command options, while both code paths still share
     // this single render implementation below.
     async execute(interaction, overrideState = null) {
@@ -197,7 +197,7 @@ module.exports = {
             ({ unix, tz, queryInput, style } = overrideState);
             // Preserve whatever ephemeral state the message already had (Discord can't change it
             // via edit anyway) — needed so the "Share Publicly" button doesn't disappear the moment
-            // someone switches timestamp styles. index.js passes this in from the message being
+            // someone switches timestamp styles. handlers/timestamp.js passes this in from the message being
             // edited since overrideState skips the normal ephemeral-resolution logic entirely.
             ephemeral = Boolean(overrideState.ephemeral);
             // accentColor is precomputed by handlers/timestamp.js's tsmenu handler (it already needs to fetch
@@ -207,7 +207,7 @@ module.exports = {
             accentColor = overrideState.accentColor ?? PRESET_ACCENT;
             // textMode (2026-07-14) -- same "preserve whatever the message already had" logic as
             // ephemeral above, so switching styles via the dropdown doesn't silently bounce a text
-            // response back to the embed layout. index.js derives this from the message's OWN
+            // response back to the embed layout. handlers/timestamp.js derives this from the message's OWN
             // Components V2 flag (32768) before calling in, the same way it derives ephemeral from
             // the 64 bit — there's no `format` option to read here since overrideState skips normal
             // option resolution entirely.
@@ -306,7 +306,7 @@ module.exports = {
             // VIEW MODE: SINGULAR TARGET LAYOUT
             // NOTE (redesigned during review): this view previously told users to "use the dropdown
             // below" without actually including one — the only place a dropdown ever appeared for
-            // this view was if you arrived here via the all-formats select menu (see index.js's
+            // this view was if you arrived here via the all-formats select menu (see handlers/timestamp.js's
             // 'tsmenu|' handler, which reuses the incoming select component). Landing here directly
             // via `/timestamp style:...` showed no dropdown at all. Now always included, nested at
             // the bottom of the container per the redesign, with the selected style pre-marked.

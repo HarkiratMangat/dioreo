@@ -1,8 +1,8 @@
 // utils/autobuildPipeline.js
 // Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial
 // invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8).
-// Kept out of commands/autobuild.js itself so index.js can reach the same pendingAutobuilds Map
-// without a circular require -- index.js is the entry point and exports nothing today; every command
+// Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map
+// without a circular require -- the router imports handlers, not the reverse; every command
 // file already requires shared logic FROM utils/, never the reverse. Full design:
 // docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const crypto = require('crypto');
@@ -292,7 +292,7 @@ function buildPostCreationCard(doc, imageWarning) {
     return { components: [container], flags: 32768 };
 }
 
-// Confirm click -- `interaction` is the BUTTON interaction. Caller (index.js) must call
+// Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call
 // interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const data = pendingAutobuilds.get(token);
