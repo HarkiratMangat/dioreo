@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#129) — `/manage data_for:draws action:add-new` opens the modal directly
+## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#PR-pending) — `/manage data_for:draws action:add-new` opens the modal directly
 
 Stage 3 of the four-stage `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): a new `action` string option on `/manage`, scoped autocomplete, and a dispatch branch in `execute()` that resolves and runs a page's own action without ever rendering the panel — the original ask this whole decomposition existed to reach.
 
