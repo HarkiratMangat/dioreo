@@ -98,15 +98,15 @@ async function handleInteraction(interaction) {
         interactionCooldowns.set(interaction.user.id, now);
     }
 
-    // --- /server PANEL (2026-08-10 15:49 EDT, v3) --- every `server_*` component routes to the one
-    // dispatcher in commands/server.js, which owns its own server-admin gate. Deliberately NOT
+    // --- /admin PANEL (2026-08-10 15:49 EDT, v3) --- every `admin_*` component routes to the one
+    // dispatcher in commands/admin.js, which owns its own server-admin gate. Deliberately NOT
     // spread across this handler the way older panels are: the whole point of this feature is that
     // exactly one place decides who may change a server's rules, and a second copy of that check
     // living here is how the /manage panel ended up with ~25 handlers that each forgot it.
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.())
-        && interaction.customId.startsWith('server_')) {
-        const serverCommand = interaction.client.commands.get('server');
-        if (serverCommand) return await serverCommand.handleComponent(interaction);
+        && interaction.customId.startsWith('admin_')) {
+        const adminCommand = interaction.client.commands.get('admin');
+        if (adminCommand) return await adminCommand.handleComponent(interaction);
     }
 
     // --- MANAGE PANEL ADMIN-ONLY LOCK (2026-07-14) --- /manage's own slash-command execute() only
@@ -121,8 +121,8 @@ async function handleInteraction(interaction) {
     // stay completely unaffected.
     // ⚠️ NO TYPE TEST HERE, DELIBERATELY (2026-08-14 09:59 EDT). This used to read
     // `isButton() || isStringSelectMenu() || isModalSubmit()`, which is NARROWER than the
-    // `server_` dispatcher fifteen lines above — that one also covers channel- and role-selects,
-    // and commands/server.js mints both. Nothing was ungated, because /manage happens to use only
+    // `admin_` dispatcher fifteen lines above — that one also covers channel- and role-selects,
+    // and commands/admin.js mints both. Nothing was ungated, because /manage happens to use only
     // those three types today; the day it grows a channel-select (picking an announcement channel,
     // say) that component would have routed straight past this gate, silently. The prefix match
     // below is what selects the guarded set, so the type list added no protection and only supplied

@@ -71,7 +71,7 @@ paths:
 | `tsmenu\|` | `timestamp.js` |
 | `help_category` | `help.js` |
 | `select_patch_history` | `patchnotes.js` |
-| `server_` | dispatched straight to `commands/server.js`, above the chain |
+| `admin_` | dispatched straight to `commands/admin.js`, above the chain |
 
 ✅ **THE ~100 CROSS-REFERENCES IN COMMENTS AND RULES WERE UPDATED TOO** (2026-08-13 18:00 EDT), across 40 files in `commands/`, `utils/`, `scripts/`, `handlers/`, `docs/reference/` and these rule files. A mention of *"index.js's `mng_search_` handler"* now names `handlers/manage.js`, and so on.
 
@@ -81,7 +81,7 @@ paths:
 
 **The contract every handler follows, and why each half of it is the way it is:**
 - **One exported `async` function per subsystem**, taking `(interaction)` and returning **`true` when it consumed the interaction, `false` when it did not recognise the custom_id.** The boolean — rather than the router prefix-matching `colors_` and always returning — is what preserves pre-split behaviour exactly: an unrecognised `colors_*` id still falls through to the branches below it.
-- **The dispatch line goes exactly where that subsystem's branches used to sit.** Routing ORDER is load-bearing: the `/manage` per-command admin guard and the `/server` dispatcher run before every subsystem, and moving a dispatch above them would hand a handler interactions the guard was meant to reject first.
+- **The dispatch line goes exactly where that subsystem's branches used to sit.** Routing ORDER is load-bearing: the `/manage` per-command admin guard and the `/admin` dispatcher run before every subsystem, and moving a dispatch above them would hand a handler interactions the guard was meant to reject first.
 - **The crash net stays in `handlers/router.js`.** `if (await handleXButton(interaction)) return;` is **awaited** inside the router's single top-level try/catch. A handler therefore must NOT wrap itself in a try/catch that swallows, must NOT register its own listeners, and must keep every error-branch reply as an awaited call in its own small try/catch — a bare `return interaction.reply(...)` can reject after the enclosing try has exited and escape the net entirely (see the two crashes documented below).
 - **Subsystem-only state MOVES INTO the handler; shared state does not.** `colorsRefreshCooldowns` (the 10s Refresh Colors cooldown) was read by nothing else, so it lives in `handlers/colors.js` now. The generic 600ms `interactionCooldowns` stays in `handlers/router.js` because it covers every button bot-wide. ⚠️ A module-level Map depends on Node caching the module — require a handler by exactly one path, or you get a second instance and the state silently splits (`utils/nameplateWebpCache.js` lost a cache to exactly that).
 - **Never duplicate a shared helper into a handler.** That is why `interactionContext.js` exists.

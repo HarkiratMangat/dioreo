@@ -12,7 +12,7 @@
 // since /all, /dmz, and every per-category command share the identical 3 options).
 //
 // Categories: Gunsmiths (/all, /dmz, and every live per-weapon-category command) / Draws / Seasonal
-// Info / Utilities / Preferences (which also carries `/server` for server admins) / Bot Admin
+// Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin
 // (whitelist-gated, hidden entirely from everyone else). Gunsmiths' per-category command list
 // (`/ar`, `/lmg`, `/sniper`, …)
 // is queried live from Mongo the same way bot/registry.js's buildCategoryCommands() generates those commands --
@@ -69,7 +69,7 @@ const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 
 // A body may ask for a REAL divider by embedding this marker; buildContainer splits on it and
 // inserts a type-14 separator. Added 2026-08-10 19:28 EDT because Preferences documents two
-// unrelated commands (`/settings` and `/server`) on one page and they ran together -- a markdown
+// unrelated commands (`/settings` and `/admin`) on one page and they ran together -- a markdown
 // rule inside a Text Display is not a divider, it is a row of dashes.
 // ⚠️ USE IT BETWEEN SUBJECTS, NOT BETWEEN COMMANDS. Harkirat, 19:31 EDT: "i dont want a divider on
 // EVERY command... i just want it between /settings and /server" -- then, on seeing it removed from
@@ -93,7 +93,7 @@ const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 // `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }`
 // object, rather than a single boolean that would silently conflate them.
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
-//   · `requires` on a COMMAND hides just that line, leaving its category visible (`/server` inside
+//   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
 // Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads
 // these same fields, so a new restricted command is one entry and cannot be half-added.
@@ -112,7 +112,7 @@ const CATEGORY_DEFS = [
     { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices')] },
     { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: [cmd('/calendar'), cmd('/patch notes'), cmd('/season end')] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: [cmd('/colors'), cmd('/timestamp')] },
-    // `/server` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It
+    // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It
     // is still hidden from non-admins -- the gating is per-COMMAND now, not per-category -- but a
     // whole section for one command made the directory look top-heavy for the two people in a
     // server who can see it. The suffix is what tells an admin why it is sitting next to
@@ -122,9 +122,9 @@ const CATEGORY_DEFS = [
         emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
         dropdownDescription: 'Manage your saved bot settings',
         dropdownDescriptionServerAdmin: 'Manage your personal & server admin settings',
-        staticCommands: [cmd('/settings'), cmd('/server', { requires: 'serverAdmin', suffix: '(Admin)' })],
+        staticCommands: [cmd('/settings'), cmd('/admin', { requires: 'serverAdmin', suffix: '(Admin)' })],
     },
-    // Whole-category gating, unlike `/server` above: these are useless to anyone who is not on the
+    // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the
     // bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that
     // permission. `database` is the emoji because this is the data-entry surface -- the same family
     // as the `mng*` icons `/manage`'s own panel uses.
@@ -138,7 +138,7 @@ const CATEGORY_DEFS = [
         // granted only /alerts must not see /manage or /autobuild listed here even though the whole
         // category is visible to them. Category-level `requires: 'botAdmin'` still gates the
         // SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's
-        // isAdmin()); each command's own key gates that ONE line, same pattern `/server` already
+        // isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already
         // uses inside Preferences.
         staticCommands: [cmd('/alerts', { requires: 'alerts' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
@@ -179,7 +179,7 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the
 // live per-category Gunsmiths commands.
 // `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third
-// of the three places the Server Admin category has to be filtered -- suggesting `/server` to
+// of the three places the Server Admin category has to be filtered -- suggesting `/admin` to
 // someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
     const liveNames = (await getLiveGunsmithCommandNames()).map(n => `/${n}`);
@@ -216,16 +216,16 @@ function buildUtilitiesBody(perms, client) {
         + `-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
-// Server admins get a second command appended rather than a page of their own. The `/server` detail
+// Server admins get a second command appended rather than a page of their own. The `/admin` detail
 // is the one place carrying the full precedence order and the two Discord limits, because the panel
-// itself deliberately stays short -- see commands/server.js's note on the wall-of-text draft that
+// itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that
 // got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint
 // in practice ("why is a server adding 25 role overrides"), so they read as guidance about the
 // intended workflow -- set a default, hand-pick the exceptions -- not as a warning.
 // TWO commands on one page, so they get a real divider between them and the shared `[visibility]`
 // option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's
 // call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually
-// under each of them makes no sense"), and the same pass cut the /server section roughly in half for
+// under each of them makes no sense"), and the same pass cut the /admin section roughly in half for
 // being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
 function buildPreferencesBody(perms = {}, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, calendar filter, accent style, and more)`;
@@ -236,7 +236,7 @@ function buildPreferencesBody(perms = {}, client) {
 
     return settings
         + SECTION_BREAK
-        + `### ${mentionCommand(client, '/server')} *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
+        + `### ${mentionCommand(client, '/admin')} *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
         + `-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n`
         + `-# **Rule order** · the most specific one wins\n`
         + `-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n`
@@ -251,9 +251,9 @@ function buildPreferencesBody(perms = {}, client) {
         + `-# **Options** · both commands\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
-        + `-# 🔸 **/server** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
-        + `-# 🔸 **/server** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
-        + `-# 🔸 **/server** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
+        + `-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
+        + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
+        + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
 }
 
 // Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared
@@ -292,7 +292,7 @@ const BODY_BUILDERS = {
     botadmin: buildBotAdminBody
 };
 
-// `isAdmin` hides the Server Admin category from everyone who could not use `/server` anyway.
+// `isAdmin` hides the Server Admin category from everyone who could not use `/admin` anyway.
 // Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown
 // here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the
 // visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than
@@ -359,7 +359,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
                     // Gunsmiths is the one category whose commands are not a fixed list: the
                     // per-weapon commands are generated at boot from the categories present in
                     // MongoDB, so its line is built from the live names rather than staticCommands.
-                    // A command's `suffix` rides here too -- that is how `/server` announces itself
+                    // A command's `suffix` rides here too -- that is how `/admin` announces itself
                     // as an admin command while sitting inside Preferences.
                     const commands = c.key === 'gunsmiths'
                         ? gunsmithsLine
