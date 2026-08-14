@@ -61,6 +61,50 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
   fi
 fi
 
+# --- MCP SERVER PRESENCE ------------------------------------------------------------------------
+# ADDED 2026-08-14 15:10 EDT. Every routing rule below is worthless if the server is not REGISTERED
+# WITH CLAUDE CODE, and that failure is invisible from inside a session: an absent tool and a
+# forgotten tool look identical. Measured that day — `sequential-thinking` had been fixed on
+# 2026-08-13 (a JSON-Schema dialect shim, which works), but the fix was written into the Claude
+# DESKTOP config only. Claude Code reads ~/.claude.json and never saw it. `perseus-vault` was worse:
+# it surfaced in `claude mcp list` as "⏸ Pending approval", a state only an INTERACTIVE `claude` run
+# can clear, so every non-interactive session silently ran without it — while memory-write-gate
+# nagged about zero perseus writes that were impossible to make.
+# Reads the config directly rather than shelling out to `claude mcp list`: that command runs health
+# checks over every remote connector and takes tens of seconds, which is not payable on SessionStart.
+CC_CONFIG="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
+DESKTOP_CONFIG="${MCPCHECK_DESKTOP_CONFIG:-$HOME/Library/Application Support/Claude/claude_desktop_config.json}"
+EXPECTED="${MCPCHECK_EXPECTED:-linksee perseus-vault sequential-thinking codebase-memory-mcp jina-reader}"
+
+if [ -r "$CC_CONFIG" ] && command -v jq >/dev/null 2>&1; then
+  have=" $(jq -r '(.mcpServers // {}) | keys[]' "$CC_CONFIG" 2>/dev/null | tr '\n' ' ')"
+  missing=""
+  for want in $EXPECTED; do
+    case "$have" in *" $want "*) ;; *) missing="$missing $want";; esac
+  done
+  if [ -n "$missing" ]; then
+    warn="  🔴 MCP SERVER(S) NOT REGISTERED WITH CLAUDE CODE:${missing}
+     These are ABSENT, not merely unused — no amount of remembering will make them callable, and
+     from inside a session absent and forgotten look the same. Register each in the USER scope:
+       claude mcp add --scope user <name> -- <command> <args...>
+     ⚠️ Editing the Claude DESKTOP config does NOT fix this. They are separate lists.
+     ⚠️ If \`claude mcp list\` shows one as '⏸ Pending approval', only an INTERACTIVE \`claude\` run
+        can clear that — a non-interactive session never can.$warn"
+  fi
+  # Divergence the other way: configured for Desktop but never mirrored to Claude Code. This is the
+  # exact shape of the 2026-08-14 failure, so it is reported even for servers not on the expected list.
+  if [ -r "$DESKTOP_CONFIG" ]; then
+    only_desktop=""
+    for d in $(jq -r '(.mcpServers // {}) | keys[]' "$DESKTOP_CONFIG" 2>/dev/null); do
+      case "$have" in *" $d "*) ;; *) only_desktop="$only_desktop $d";; esac
+    done
+    if [ -n "$only_desktop" ]; then
+      warn="  ⚠️ Configured for Claude DESKTOP but NOT for Claude Code:${only_desktop}
+     Desktop-only servers are invisible here. Mirror them with \`claude mcp add --scope user\`.$warn"
+    fi
+  fi
+fi
+
 read -r -d '' RULES <<'EOF'
 MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · linksee RECALL BY query, NEVER entity_name — entity attribution is path-derived and
@@ -88,36 +132,23 @@ installed and unrun for weeks while the bug it catches shipped; being on disk is
   · bats    is installed but the hook test suites are still hand-rolled — see db-deferred-list
 EOF
 
-# --- the 7-day sequential-thinking measurement window ------------------------------------------
-# AUTO-EXPIRES ON PURPOSE. A suspension that has to be manually revoked becomes a permanent silent
-# change the moment someone forgets — the exact stale-state failure this whole hook exists to stop.
-# The date comparison does the revoking, and after the end date this block starts CHASING the
-# close-out instead of announcing the window.
-WINDOW_END="${MCPCHECK_WINDOW_END:-2026-08-09}"
-TODAY="${MCPCHECK_TODAY:-$(date +%Y-%m-%d)}"
-PROTO="docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md"
-
-# NOTE the comparison direction: OPEN while today <= WINDOW_END, so the final day stays open. An
-# earlier version used `today < end`, which flipped to CLOSED at 00:00 on the last day and would have
-# silently reverted behaviour for the window's final 17 hours — biasing exactly the data being
-# collected. Off-by-one in an experiment's own instrument is a data-integrity bug, not a cosmetic one.
-if [ ! "$TODAY" \> "$WINDOW_END" ]; then
-  window="
-🧪 OBSERVATION WINDOW OPEN until ${WINDOW_END} 17:00 EDT — sequential-thinking is UNRESTRICTED.
-   Use it on judgement, no permission needed. This is a measurement: the tool has never existed
-   without its rule, so the 'used twice' figure measures the RULE, not the tool.
-   ⚠️ EVERY use must be logged in local/mcp-observation-log.md with why + outcome. An unlogged use is
-   a lost data point. Baseline: 0.014 calls/100 turns, median 276 turns/session, 290,915 cacheRead/turn.
-   MEASURED from 2026-08-02 (this day counts) — the two sessions that ran BEFORE 17:00 EDT are
-   filtered out by session id inside the instrument, so no flag is needed at close-out.
-   Protocol: ${PROTO}"
-else
-  window="
-⏰ OBSERVATION WINDOW CLOSED (ended ${WINDOW_END}). The sequential-thinking suspension has EXPIRED —
-   explicit-request-only is in force again unless a close-out recorded otherwise WITH DATA.
-   Close it out: node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment
-   then compare against the pre-registered baseline in ${PROTO} and record the verdict."
-fi
+# --- sequential-thinking: PERMANENTLY UNRESTRICTED -----------------------------------------------
+# ⚠️ THE MEASUREMENT WINDOW BLOCK THAT USED TO LIVE HERE WAS REMOVED 2026-08-14 15:10 EDT, AND IT WAS
+# ACTIVELY WRONG, NOT MERELY STALE. It auto-expired on 2026-08-09 and from then on injected
+# "the suspension has EXPIRED — explicit-request-only is in force again" into every single session.
+# Harkirat closed the window that same day with the opposite verdict, on data: unrestricted, the
+# trigger rate rose ~10x and every logged use was high-value, at a cost of ~4k tokens against a
+# window total of 8.23 BILLION. So the hook spent five days telling sessions the tool was restricted
+# when it had been permanently freed — a self-expiring block whose expiry text asserted a decision
+# nobody had made.
+#
+# THE LESSON, kept because this hook's whole purpose is to stop stale state: an auto-expiring guard
+# must expire into SILENCE or into "ask", never into a substantive claim about a decision. The
+# expiry can only know that a date passed; it cannot know what was decided.
+window="
+🧠 sequential-thinking is UNRESTRICTED — permanently, decided 2026-08-09 23:08 EDT with data.
+   Use it on judgement, no permission needed, no observation log required. Do NOT restore the old
+   ask-first rule; the measurement that would justify it was already run and came out the other way."
 
 printf '%s\n%s%s%s' "$frag_line" "$RULES" "$warn" "$window" \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'

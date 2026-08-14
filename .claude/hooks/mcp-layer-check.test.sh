@@ -70,17 +70,57 @@ MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
-# 6. The observation window must AUTO-EXPIRE, and must stay open through its final day.
-#    An earlier version compared `today < end`, flipping to CLOSED at 00:00 on the last day — which
-#    would have reverted behaviour for the window's final 17 hours and biased the very data being
-#    collected. Off-by-one in an experiment's own instrument is a data-integrity bug.
+# 6. The retired observation window must STAY retired.
+#    The block that lived here auto-expired on 2026-08-09 and then spent five days injecting
+#    "explicit-request-only is in force again" into every session -- asserting a decision that had
+#    been made the OTHER way, with data, the same day. These two assertions exist so restoring it is
+#    a test failure rather than a quiet regression.
 mkfixture 0
-wrun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_TODAY="$1" MCPCHECK_WINDOW_END=2026-08-09 bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
-assert "window OPEN mid-window"        "WINDOW OPEN"   yes "$(wrun 2026-08-05)"
-assert "window OPEN on its LAST day"   "WINDOW OPEN"   yes "$(wrun 2026-08-09)"
-assert "window CLOSED the day after"   "WINDOW CLOSED" yes "$(wrun 2026-08-10)"
-assert "closed state chases close-out" "close it out"  no  "$(wrun 2026-08-05)"
-assert "closed state names the script" "mcp-observation-metrics.mjs" yes "$(wrun 2026-08-10)"
+out="$(run 0)"
+assert "sequential-thinking stated UNRESTRICTED" "UNRESTRICTED"                yes "$out"
+assert "the retired ask-first rule is NOT back"  "explicit-request-only"       no  "$out"
+assert "no auto-expiring window remains"         "OBSERVATION WINDOW"          no  "$out"
+
+# 7. MCP SERVER PRESENCE -- the 2026-08-14 failure: a server fixed in the Claude DESKTOP config only,
+#    invisible to Claude Code, indistinguishable from a tool nobody bothered to call.
+CCOK="$TMP/cc-ok.json"; CCBAD="$TMP/cc-bad.json"; DESK="$TMP/desktop.json"
+cat > "$CCOK"  <<'JSON'
+{"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{}}}
+JSON
+cat > "$CCBAD" <<'JSON'
+{"mcpServers":{"linksee":{},"codebase-memory-mcp":{}}}
+JSON
+cat > "$DESK"  <<'JSON'
+{"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{},"desktop-only-thing":{}}}
+JSON
+prun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
+         bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+
+# Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the
+# discriminating half; without it the needles below could match a banner that always prints.
+out="$(prun "$CCOK" "$CCOK")"
+assert "healthy config: no missing-server warning" "NOT REGISTERED WITH CLAUDE CODE" no "$out"
+assert "healthy config: no divergence warning"     "Configured for Claude DESKTOP"   no "$out"
+
+# Broken: two expected servers absent from Claude Code's own config.
+out="$(prun "$CCBAD" "$CCBAD")"
+assert "missing servers detected"        "NOT REGISTERED WITH CLAUDE CODE" yes "$out"
+assert "names the missing server"        "sequential-thinking"             yes "$out"
+assert "gives the fix command"           "claude mcp add --scope user"     yes "$out"
+assert "warns the configs are separate"  "separate lists"                  yes "$out"
+assert "explains pending-approval trap"  "Pending approval"                yes "$out"
+
+# Divergence: present in the desktop config, never mirrored to Claude Code.
+out="$(prun "$CCOK" "$DESK")"
+assert "desktop-only server detected"    "Configured for Claude DESKTOP"   yes "$out"
+assert "names the desktop-only server"   "desktop-only-thing"              yes "$out"
+
+# Absent/unreadable configs must degrade silently, not crash -- a fresh clone or CI has neither file.
+out="$(prun /nonexistent/cc.json /nonexistent/desktop.json)"
+assert "no config: no false alarm"       "NOT REGISTERED WITH CLAUDE CODE" no "$out"
+prun /nonexistent/cc.json /nonexistent/desktop.json >/dev/null 2>&1 \
+  && { echo "  PASS  no config still emits valid JSON"; pass=$((pass+1)); } \
+  || { echo "  FAIL  no config crashed"; fail=$((fail+1)); }
 
 echo
 echo "  $pass passed, $fail failed"
