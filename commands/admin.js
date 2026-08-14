@@ -79,7 +79,7 @@ function buildHome(settings, client) {
             type: 17,
             accent_color: ACCENT,
             components: [
-                { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
+                { type: 10, content: `## ${emojis.serverSettings} Server Admin` },
                 { type: 10, content: '-# Decide where Dioreo answers **publicly**, and where it answers **only to whoever asked**.' },
                 { type: 14, spacing: 2 },
                 { type: 10, content: summaryLines(settings) },
@@ -289,7 +289,7 @@ function setScopedRoleRule(doc, roleId, visibility, channelIds) {
 // place that decides who may change a server's rules.
 async function handleComponent(interaction) {
     if (!interaction.guildId) {
-        return interaction.reply({ content: `${emojis.serverSettings} **Server Controls only work inside a server.**`, ephemeral: true });
+        return interaction.reply({ content: `${emojis.serverSettings} **Server Admin only works inside a server.**`, ephemeral: true });
     }
     if (!isServerAdmin(interaction)) {
         return interaction.reply({
@@ -334,14 +334,14 @@ async function handleComponent(interaction) {
 
         case 'admin_role_pick':
             settings = await getGuildSettings(guildId);
-            return interaction.update({ components: buildRoleScope(settings, values[0]), flags: 32768 });
+            return sendV2Payload(interaction, buildRoleScope(settings, values[0]));
 
         case 'admin_role_scope_public':
         case 'admin_role_scope_ephemeral':
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 setScopedRoleRule(doc, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values);
             });
-            return interaction.update({ components: buildRoleScope(settings, arg), flags: 32768 });
+            return sendV2Payload(interaction, buildRoleScope(settings, arg));
 
         case 'admin_cmd_select':
             settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = values; });
@@ -363,7 +363,16 @@ async function handleComponent(interaction) {
             : page === 'admin_commands' ? buildCommands(settings, interaction.client.gateableCommandNames || [])
                 : buildHome(settings, interaction.client);
 
-    return interaction.update({ components, flags: 32768 });
+    // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT --
+    // switched to sendV2Payload for two reasons at once: (1) it's the established pattern every
+    // other handler in the bot uses for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet: discord.js's
+    // own high-level reply/followUp/update don't RELIABLY serialize raw V2 JSON), and this command
+    // had never been real-world click-tested live (docs/ROADMAP.md's click-test checklist names it
+    // the one deliberate holdout) -- so matching the battle-tested path is strictly safer regardless
+    // of whether the raw call actually worked; (2) it's what makes this panel pick up the passive
+    // 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment). The three
+    // `interaction.update()` calls above got the same swap for the same reasons.
+    return sendV2Payload(interaction, components);
 }
 
 module.exports = {
@@ -405,7 +414,7 @@ module.exports = {
                 type: 17,
                 accent_color: ACCENT,
                 components: [
-                    { type: 10, content: `## ${emojis.serverSettings} Server Controls` },
+                    { type: 10, content: `## ${emojis.serverSettings} Server Admin` },
                     { type: 10, content: 'This one only works **inside a server** — there is nothing to configure in a DM.' },
                 ],
             }]);

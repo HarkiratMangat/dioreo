@@ -20,7 +20,7 @@
 // entrypoint that requires it.
 //
 // WHAT IS LEFT HERE, AND WHY. This file is now the dispatcher and nothing else: the guards that must
-// run before anything (visibility policy, anti-spam, /server, the admin lock), the per-subsystem
+// run before anything (visibility policy, anti-spam, /admin, the admin lock), the per-subsystem
 // dispatch chain, and the two routes that are not custom_id-shaped and so have no subsystem to
 // belong to -- autocomplete and the slash-command engine. Every button, select and modal branch
 // lives in a handlers/*.js module.
@@ -235,7 +235,7 @@ async function handleInteraction(interaction) {
             // per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
                 const { getAllHelpCommandNames } = require('../commands/help');
-                // Restricted entries (/server for server admins, /manage//alerts//autobuild for the
+                // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the
                 // bot's own whitelist) are suggested only to someone who could use them -- see
                 // commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('../utils/guildPolicy');

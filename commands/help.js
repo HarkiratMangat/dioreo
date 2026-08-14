@@ -122,7 +122,7 @@ const CATEGORY_DEFS = [
         emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
         dropdownDescription: 'Manage your saved bot settings',
         dropdownDescriptionServerAdmin: 'Manage your personal & server admin settings',
-        staticCommands: [cmd('/settings'), cmd('/admin', { requires: 'serverAdmin', suffix: '(Admin)' })],
+        staticCommands: [cmd('/settings'), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)' })],
     },
     // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the
     // bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that

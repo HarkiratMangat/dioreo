@@ -28,7 +28,7 @@ const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 // registerApplicationCommands() go on to fill and serialize.
 // The array and the Collection are deliberately BOTH maintained: the Collection is what the router
 // dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized
-// to Discord and what /server derives its gateable-command list from.
+// to Discord and what /admin derives its gateable-command list from.
 function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
@@ -119,7 +119,7 @@ async function buildCategoryCommands(commands) {
 // Coordinates secure synchronization of compiled structures directly over to active Discord cloud
 // endpoints, then caches the two derived lookups that can only exist AFTER registration.
 async function registerApplicationCommands(client, commands) {
-    // The names /server's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin
+    // The names /admin's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin
     // visibility policy). Derived from `commands` -- the SAME array that is about to be registered --
     // rather than from client.commands or a readdir of commands/*.js, both of which miss the eight
     // per-category weapon commands and `all` built above. A hand-maintained list here would

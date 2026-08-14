@@ -9,7 +9,7 @@
 // this is pinned below, so a later change to one tier cannot quietly reorder another. If you change
 // the precedence order, a case here must change with it -- that is the point.
 //
-// Design + the reasoning behind each tier: .claude/rules/server-controls.md and
+// Design + the reasoning behind each tier: .claude/rules/admin-controls.md and
 // docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
 const { resolveVisibility } = require('../utils/guildPolicy');
 
@@ -35,7 +35,7 @@ const SETTINGS = {
 };
 
 // --- the baseline: no configuration at all -------------------------------------------------
-// A server that has never touched /server has no document, and must behave exactly as before this
+// A server that has never touched /admin has no document, and must behave exactly as before this
 // feature existed. This is the case that runs in every server, so it is the one that matters most.
 t('no settings document -> public', resolveVisibility(null, { channelId: 'X', roleIds: [] }), 'public');
 

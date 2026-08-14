@@ -1,5 +1,6 @@
 // utils/sendV2Payload.js
 const { Routes } = require('discord.js');
+const { schedulePanelExpiry, hasInteractiveComponents } = require('./passiveExpiry');
 
 // Shared "answer THIS interaction's own deferred response with raw Components V2 JSON" send --
 // discord.js's high-level reply()/followUp()/update() don't reliably serialize raw V2 JSON (no
@@ -34,7 +35,28 @@ const { Routes } = require('discord.js');
 // either way -- don't assume it's safe just because it wasn't flagged. See
 // `.claude/rules/rendering-and-ui.md` and `docs/db-deferred-list.md`'s "Pagination perf hybrid" entry
 // for the ORIGINAL design rationale and the heuristic this partial revert now qualifies.
-function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
+// PASSIVE EXPIRY, EXTENDED BOT-WIDE (2026-08-14 10:58 EDT) -- was /settings-only (utils/passiveExpiry.js's
+// own header + .claude/rules/settings-and-expiry.md said so explicitly). Hooked in HERE, at the one
+// send boundary nearly every V2 panel in the bot already funnels through (same reasoning as the
+// "Show Everyone" strip a few lines below: one choke point beats a call Harkirat's own comment on
+// /manage's admin-only guard warned about repeating -- "a second copy of that check is how /manage
+// ended up with ~25 handlers that each forgot it"), rather than adding an explicit
+// schedulePanelExpiry() call at every individual command's send site the way commands/settings.js
+// used to. That means it also covers every command whose nav/pagination buttons re-render by
+// re-invoking the ORIGINATING command's own execute() via a synthetic interaction
+// (utils/interactionContext.js) -- the re-invocation calls sendV2Payload again, so it reschedules
+// automatically with no extra code at the pagination/nav call site either.
+// NOT covered by this hook: any render that edits a message WITHOUT going through this function --
+// concretely, handlers/manage.js's confirm/cancel/undo micro-prompts, which use discord.js's raw
+// `interaction.update()` (a legacy, non-V2 shape) because they're plain content+buttons, not a
+// Components V2 container. Left uninstrumented deliberately rather than hand-touching ~24 call
+// sites inside one 2,600-line function under this session's time budget -- handlers/router.js
+// cancels (never reschedules) any pending timer right before dispatching into /manage's panel, so
+// the WORST case is one of those short-lived prompts has no countdown of its own, never a stale
+// timer firing mid-prompt and overwriting it with an earlier page's (now wrong) components, just
+// disabled. Filed as a named follow-up in docs/db-deferred-list.md, bundled with the /manage
+// slash-action decomposition session that is rebuilding this file's interaction model anyway.
+async function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
     // SERVER VISIBILITY POLICY (2026-08-10 15:50 EDT, v3 -- utils/guildPolicy.js). When a server has
     // forced this response ephemeral, the "Show Everyone" row must not survive to the client: that
     // button does not edit the ephemeral message, it posts a brand new genuinely public one, so
@@ -81,21 +103,38 @@ function sendV2Payload(interaction, components, { content = '', flags = 32768, e
         body.attachments = [];
     }
 
+    // For a component-triggered render, `interaction.message` already carries the id of the message
+    // being edited -- true whether this ends up going through the light POST path below (which does
+    // NOT return a body, so there is nothing to read an id off) or the deferred PATCH path (which
+    // does, but the id would be identical). Only the very first render of a fresh slash command has
+    // no `.message` yet, so THAT case falls through to reading the PATCH response's own id below.
+    const knownMessageId = interaction.message?.id;
+    const maybeSchedule = (messageId) => {
+        if (messageId && hasInteractiveComponents(outgoing)) schedulePanelExpiry(interaction, messageId, outgoing);
+    };
+
     // Not yet acknowledged (router skipped deferUpdate/deferReply for a light path) -> this IS the
     // interaction's first and only response. type 7 = UPDATE_MESSAGE. Files still work the same way
     // here -- discord.js's REST manager switches to multipart the moment `options.files` is present,
     // regardless of which route it's posted to.
     if (!interaction.deferred && !interaction.replied) {
-        return interaction.client.rest.post(
+        const response = await interaction.client.rest.post(
             Routes.interactionCallback(interaction.id, interaction.token),
             { ...options, body: { type: 7, data: body } }
         );
+        // This path is only ever reached responding to an existing component, so `knownMessageId`
+        // is always set here -- `response` itself is Discord's bare 204 (no body) unless a caller
+        // opts into `with_response`, which none here do.
+        maybeSchedule(knownMessageId);
+        return response;
     }
 
-    return interaction.client.rest.patch(
+    const response = await interaction.client.rest.patch(
         Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
         options
     );
+    maybeSchedule(knownMessageId || response?.id);
+    return response;
 }
 
 module.exports = { sendV2Payload };

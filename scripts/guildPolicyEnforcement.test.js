@@ -375,7 +375,7 @@ t('a server admin sees /admin inside Preferences, with the swapped emoji and des
         const menu = JSON.stringify(container);
         assert.ok(menu.includes('/admin'), 'the landing directory must list /admin');
         assert.ok(!menu.includes('SERVER ADMIN'), 'it must NOT get a heading of its own any more');
-        assert.ok(menu.includes('(Admin)'), '/admin must be marked as an admin command');
+        assert.ok(menu.includes('(server)'), '/admin must be marked as an admin command');
         assert.ok(!menu.includes('Bot Admin'), 'Manage Server must NOT grant the bot-admin category');
 
         const select = container.components.find(c => c.type === 1 && c.components?.[0]?.type === 3);
