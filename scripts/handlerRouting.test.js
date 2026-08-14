@@ -309,6 +309,125 @@ check('no numbered or lettered section headers (they encode position, which rots
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
+// --- 9. DECLARED PREFIXES vs THE BRANCHES THAT ACTUALLY EXIST ---
+// Check 2 trusts OWNED_PREFIXES. This is what makes that trust earned. A declaration and the
+// branches beneath it are two separate pieces of state, and nothing kept them in step: every check
+// here reads the declaration, while Discord routes on the branches.
+//
+// It matters most for handlers/colors.js, which is deliberately DECLARATIVE-ONLY — it does not gate
+// on OWNED_PREFIXES at all (an unrecognised `colors_*` id must fall through, see the comment on the
+// declaration there), so its list exists solely to feed check 2. That comment ends "Keep this list
+// in step with the branches", which was an obligation on whoever edits the file and is now an
+// assertion. Add a `colorsx_` branch without declaring it and the collision scan silently stops
+// covering it — no error, and the one check protecting the dispatch design quietly narrows.
+//
+// Two directions, because each fails differently:
+//   declared ⊇ actual — an undeclared branch is invisible to check 2 (a real collision can hide).
+//   every declared prefix has ≥1 branch — a stale entry claims a namespace nothing serves, which
+//   can block a LATER module from legitimately taking it.
+//
+// Comments are stripped before matching. handlers/drawprices.js documents, in prose, the `toggle_`
+// prefix it deliberately avoided; read as code that reads as a collision, and an audit chased it as
+// a real bug on 2026-08-13. A checker that treats comments as code manufactures findings out of the
+// very comments written to prevent them.
+const stripComments = (src) => src.split('\n').map(line => {
+    let out = '', quote = null, i = 0;
+    while (i < line.length) {
+        const c = line[i], next = line[i + 1];
+        if (quote) {
+            if (c === '\\') { out += c + (next || ''); i += 2; continue; }
+            if (c === quote) quote = null;
+            out += c; i++; continue;
+        }
+        if (c === '"' || c === "'" || c === '`') { quote = c; out += c; i++; continue; }
+        if (c === '/' && next === '/') break;
+        out += c; i++;
+    }
+    return out;
+}).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
+
+// Every literal this module branches on. `typeof customId === 'string'` is excluded explicitly —
+// it matches the shape of a branch test and is not one, and it produced 66 phantom collisions in
+// the audit that led to this check.
+const branchLiterals = (src) => {
+    const found = new Set();
+    for (const m of src.matchAll(/(?:interaction\.)?customId\.startsWith\(\s*(['"`])([^'"`]+)\1/g)) found.add(m[2]);
+    for (const m of src.matchAll(/(typeof\s+)?(?:interaction\.)?customId\s*===?\s*(['"`])([^'"`]+)\2/g)) {
+        if (!m[1]) found.add(m[3]);
+    }
+    for (const m of src.matchAll(/(?:interaction\.)?customId\.match\(\s*\/\^([A-Za-z0-9_|-]+)/g)) found.add(m[1]);
+    return [...found];
+};
+
+check('every branch literal is covered by its own module\'s OWNED_PREFIXES', () => {
+    const offenders = [];
+    for (const name of moduleNames) {
+        const declared = require(path.join(HANDLERS_DIR, name)).OWNED_PREFIXES || [];
+        const src = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8'));
+        for (const literal of branchLiterals(src)) {
+            if (!declared.some(p => literal.startsWith(p))) {
+                offenders.push(`${name}.js branches on "${literal}" but declares [${declared.join(', ')}] — check 2 cannot see it`);
+            }
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
+check('every declared prefix has at least one branch behind it', () => {
+    const offenders = [];
+    for (const name of moduleNames) {
+        const declared = require(path.join(HANDLERS_DIR, name)).OWNED_PREFIXES || [];
+        const src = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, name + '.js'), 'utf8'));
+        const literals = branchLiterals(src);
+        for (const prefix of declared) {
+            if (!literals.some(l => l.startsWith(prefix))) {
+                offenders.push(`${name}.js declares "${prefix}" but no branch matches it — a namespace claimed and unserved`);
+            }
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
+// --- 10. THE ADMIN GATE'S PREFIX LIST MUST EQUAL THE MODULES' OWN ---
+// handlers/router.js's MANAGE_PREFIX_COMMAND is the choke point that decides who may click a
+// /manage, /autobuild or /alerts component. It carries its own copy of those three modules'
+// prefixes — it has to, because it maps each prefix to a COMMAND NAME for the per-command
+// permission lookup, which OWNED_PREFIXES does not encode.
+//
+// The split created the duplication: OWNED_PREFIXES became the obvious place a module states what
+// it owns, while the guard's list stayed behind in the router. They are byte-identical today and
+// nothing checked that they stay so. Add `mng_newthing` to handlers/manage.js and forget the map,
+// and the new branch ships with NO admin check — anyone who can see the panel can click it, while
+// check 2, check 9 and every other test here stay green. That is a permission hole opened by an
+// omission, which is the failure mode this whole file exists to make impossible.
+check('the admin guard covers exactly the prefixes its modules declare', () => {
+    const routerSrc = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, 'router.js'), 'utf8'));
+    const block = /MANAGE_PREFIX_COMMAND\s*=\s*\{([\s\S]*?)\}/.exec(routerSrc);
+    assert.ok(block, 'MANAGE_PREFIX_COMMAND not found in handlers/router.js — the admin gate moved or was renamed');
+
+    const guarded = {};
+    for (const m of block[1].matchAll(/['"]([^'"]+)['"]\s*:\s*['"]([^'"]+)['"]/g)) {
+        (guarded[m[2]] = guarded[m[2]] || []).push(m[1]);
+    }
+    assert.ok(Object.keys(guarded).length > 0, 'parsed no prefixes out of MANAGE_PREFIX_COMMAND');
+
+    const offenders = [];
+    for (const [command, prefixes] of Object.entries(guarded)) {
+        if (!moduleNames.includes(command)) {
+            offenders.push(`guard maps ${prefixes.length} prefix(es) to "${command}", which is not a handler module`);
+            continue;
+        }
+        const declared = require(path.join(HANDLERS_DIR, command)).OWNED_PREFIXES || [];
+        for (const p of prefixes) {
+            if (!declared.includes(p)) offenders.push(`guard gates "${p}" but ${command}.js no longer declares it — a dead gate`);
+        }
+        for (const p of declared) {
+            if (!prefixes.includes(p)) offenders.push(`${command}.js declares "${p}" but the admin guard does not gate it — UNGATED ADMIN SURFACE`);
+        }
+    }
+    assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
+});
+
 setTimeout(() => {
     console.log(failures === 0
         ? `\nAll routing-contract checks passed (${moduleNames.length} handlers).`
