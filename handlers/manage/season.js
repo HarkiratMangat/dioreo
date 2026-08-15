@@ -12,6 +12,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
 // .claude/rules/interaction-router.md.
 
+const { recordChange } = require('../../utils/changeStore');
 const { registerUndo, undoButtonRow, prompt, pendingSeasonWipes, loadOrCreateSeasonalDoc } = require('./shared');
 
 // --- START NEW SEASON, STEP 1 --- custom_id: modal_wipe_season
@@ -69,6 +70,7 @@ async function handleWipeButton(interaction) {
         seasonalDoc.calendar = [];
         // Note: patch notes history is deliberately preserved for the dropdown archive.
         await seasonalDoc.save();
+        recordChange({ actorId: interaction.user.id, page: 'season', action: 'wipe', model: 'SeasonalData', target: pending.newTitle, summary: `Started new season "${pending.newTitle}" (wiped Draws + Calendar)` });
 
         const undoToken = registerUndo(`Start New Season ("${pending.newTitle}")`, async () => {
             const SeasonalData = require('../../models/SeasonalData');
@@ -161,6 +163,7 @@ async function setTitlesDeadlines(interaction) {
         const latestPatch = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
         await syncPatchEntryMetadata(latestPatch, cleanPatchTitle(latestPatch.title));
     }
+    recordChange({ actorId: interaction.user.id, page: 'season', action: 'edit', model: 'SeasonalData', target: seasonalDoc.currentSeasonTitle, summary: 'Updated season titles & deadlines' });
     let confirmation = `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.`;
     if (skippedDates.length > 0) confirmation += `\n⚠️ Date not understood, left unchanged: ${skippedDates.join(', ')}.`;
     return interaction.followUp({ content: confirmation });
@@ -221,6 +224,7 @@ async function handleDraftButton(interaction) {
         seasonalDoc.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
         seasonalDoc.markModified('draft');
         await seasonalDoc.save();
+        recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'promote', model: 'SeasonalData', target: seasonalDoc.currentSeasonTitle, summary: `Promoted draft to live: "${seasonalDoc.currentSeasonTitle}"` });
         const undoToken = registerUndo('Promote Draft to Live', async () => {
             const doc = await SeasonalData.findOne({ docType: 'global' });
             Object.assign(doc, prevLive);
@@ -249,6 +253,7 @@ async function handleDraftButton(interaction) {
         seasonalDoc.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
         seasonalDoc.markModified('draft');
         await seasonalDoc.save();
+        recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'discard', model: 'SeasonalData', target: 'draft', summary: 'Discarded the staged season draft' });
         try { await prompt(interaction, { text: "✅ Draft discarded. What's live is untouched." }); }
         catch (notifyError) { console.error('Failed to confirm draft discard (interaction likely expired):', notifyError); }
         return;
@@ -297,6 +302,7 @@ async function setDraftTitlesDeadlines(interaction) {
     seasonalDoc.draft.active = true;
     seasonalDoc.markModified('draft');
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'edit', model: 'SeasonalData', target: 'draft titles/deadlines', summary: 'Staged draft titles & deadlines' });
     let draftConfirmation = '✅ **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.';
     if (skippedDraftDates.length > 0) draftConfirmation += `\n⚠️ Date not understood, left unchanged: ${skippedDraftDates.join(', ')}.`;
     return interaction.followUp({ content: draftConfirmation });
@@ -330,6 +336,7 @@ async function bulkDraftDraws(interaction) {
     seasonalDoc.draft.active = true;
     seasonalDoc.markModified('draft');
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'edit', model: 'SeasonalData', target: 'draft draws', summary: 'Staged draft draws', detail: summary.join(' | ') });
     return interaction.followUp({ content: `✅ **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
 }
 
@@ -348,6 +355,7 @@ async function bulkDraftCalendar(interaction) {
     seasonalDoc.draft.active = true;
     seasonalDoc.markModified('draft');
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'edit', model: 'SeasonalData', target: 'draft calendar', summary: `Staged ${eventDocs.length} draft calendar event(s)` });
     return interaction.followUp({ content: `✅ **Draft Calendar Staged!** ${eventDocs.length} event(s). Nothing is live yet — use Promote to Live when ready.` });
 }
 

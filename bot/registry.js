@@ -127,7 +127,7 @@ async function registerApplicationCommands(client, commands) {
     // The four admin surfaces are excluded: a server rule has no business quieting Harkirat's own
     // owner-level commands, and /admin must never be able to hide its own answer from the admin
     // trying to undo a rule.
-    const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'alerts', 'autobuild']);
+    const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'alerts', 'autobuild', 'audit']);
     client.gateableCommandNames = commands
         .map(c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name))
         .filter(name => name && !ADMIN_COMMAND_NAMES.has(name));

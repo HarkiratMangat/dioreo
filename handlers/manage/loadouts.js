@@ -14,6 +14,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
 // .claude/rules/interaction-router.md.
 
+const { recordChange } = require('../../utils/changeStore');
 const { registerUndo } = require('./shared');
 
 // --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
@@ -88,6 +89,7 @@ async function editLoadout(interaction) {
     const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
     for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib, sib.attachmentSlots);
 
+    recordChange({ actorId: interaction.user.id, page: mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'edit', model: 'Loadout', target: `${weaponName} (${buildName})`, summary: `Edited loadout "${weaponName} (${buildName})"` });
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
     if (propagateResult.modifiedCount > 0) {
         confirmation += `\n-# Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.`;
@@ -144,6 +146,7 @@ async function addLoadout(interaction) {
     });
 
     await newLoadout.save();
+    recordChange({ actorId: interaction.user.id, page: pageMode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'add', model: 'Loadout', target: `${newLoadout.weaponName} (${newLoadout.buildName})`, summary: `Added loadout "${newLoadout.weaponName} (${newLoadout.buildName})"` });
     // Sync Cloudinary structured metadata for the new build. Best-effort: if the admin hasn't
     // uploaded the image to that key yet, the asset doesn't exist and this is a silent no-op (the
     // metadata gets set on the next edit once the image is there). No slot data (only /autobuild has
@@ -208,6 +211,7 @@ async function bulkAddLoadouts(interaction) {
         for (const b of await Loadout.find({ weaponKey: wk, mode: pageMode })) await syncLoadoutMetadata(b);
     }
 
+    recordChange({ actorId: interaction.user.id, page: pageMode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'bulkAdd', model: 'Loadout', target: `${pageMode} Loadouts`, summary: `Bulk import ${pageMode} loadouts`, detail: `${created} created, ${updated} updated` });
     let confirmation = `✅ **Bulk Loadout Import Complete!**\n${created} new build(s) added, ${updated} existing build(s) updated.`;
     if (errors.length > 0) {
         confirmation += `\n⚠️ ${errors.length} block(s) skipped:\n${errors.map(e => `- ${e}`).join('\n')}`;
@@ -271,6 +275,7 @@ async function bulkDeleteLoadouts(interaction) {
                 if (entry.buildName) await Loadout.deleteOne({ weaponKey: entry.weaponKey, mode, buildName: entry.buildName });
                 else await Loadout.deleteMany({ weaponKey: entry.weaponKey, mode });
             }
+            recordChange({ actorId: interaction.user.id, page: mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'bulkDelete', model: 'Loadout', target: `${mode} Loadouts`, summary: `Bulk delete ${mode} loadouts`, detail: summary.join(' | ') });
             return registerUndo(`Bulk Delete ${mode} Loadouts`, async () => {
                 const restoreDocs = toDelete.flatMap(t => t.docs).map(d => { const c = { ...d }; delete c._id; return c; });
                 if (restoreDocs.length) await Loadout.insertMany(restoreDocs);
@@ -343,10 +348,11 @@ async function exportCategory(interaction) {
 }
 
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
-async function deleteItem(match) {
+async function deleteItem(match, actorId) {
     const Loadout = require('../../models/Loadout');
     const removedDoc = match.doc;
     await Loadout.findByIdAndDelete(match.id);
+    recordChange({ actorId, page: removedDoc.mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'delete', model: 'Loadout', target: match.label, summary: `Deleted loadout "${match.label}"` });
     return registerUndo(`Delete loadout "${match.label}"`, async () => {
         const restoreDoc = { ...removedDoc };
         delete restoreDoc._id; // let Mongo assign a fresh _id on re-insert
