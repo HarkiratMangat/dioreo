@@ -81,4 +81,134 @@ function formatMoney(cents, currency) {
     return `${symbol}${major.toFixed(exponent)}`;
 }
 
-module.exports = { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney };
+// ==========================================
+// THE OPTIMIZER
+// ==========================================
+// Minimize real money subject to totalCp >= shortfall, IN A GIVEN CURRENCY -- every price lookup
+// below goes through priceCents(pkg, currency); nothing here reads a static per-package price,
+// because the whole point of the 41-currency table is that the cheapest combination differs by
+// storefront (in 17 of 41 currencies "buy the biggest pack" is wrong).
+//
+// WHY A DP AND NOT A RULE OF THUMB. Under normal USD pricing CP-per-dollar rises monotonically
+// (80.8 -> 108.0), so bigger is strictly better value. Under 2X it is almost perfectly FLAT, with the
+// smallest tier marginally best -- so the winning strategy inverts. Several other currencies are
+// non-monotonic even under normal pricing. Multiple genuinely different strategies from one table is
+// exactly the case a solver earns its place on.
+//
+// STRUCTURE. Normal packages are unbounded per type, but the TOTAL number of purchases (across every
+// package and every 2X entitlement) is bounded by maxTransactions -- see the DP below. Unused 2X
+// entitlements are additionally bounded at one each. Enumerate all 64 subsets of the AVAILABLE
+// entitlements, and for each look up the bounded-unbounded DP for whatever CP and transaction budget
+// remain. That DP is built ONCE per currency/objective/transaction-cap combination and reused across
+// all 64 subsets.
+const MAX_DP_CP = 60000; // Comfortably above any real shortfall; the largest full draw + upgrades is ~24k.
+
+// dp[k][c] = the best way (per `better`) to obtain AT LEAST c CP using AT MOST k normal-package
+// purchases, in `currency`. Bounding by transaction count is what makes maxTransactions (decision 20)
+// real: without this dimension, the DP's mathematically optimal answer for a 5,000 CP shortfall in
+// CAD is 63 separate $0.99 purchases -- correct, and nobody would ever do it. dp[k] carries forward
+// dp[k-1]'s best states (using fewer than k purchases is always still valid at budget k).
+function buildBoundedDp(limit, maxTransactions, currency, better) {
+    const dp = [new Array(limit + 1).fill(null)];
+    dp[0][0] = { cents: 0, cp: 0, from: -1, prevK: -1, prevC: -1 };
+    for (let k = 1; k <= maxTransactions; k++) {
+        const layer = new Array(limit + 1);
+        for (let c = 0; c <= limit; c++) {
+            let best = dp[k - 1][c]; // at-most-(k-1) is also valid at budget k.
+            for (let i = 0; i < CP_PACKAGES.length; i++) {
+                const pkg = CP_PACKAGES[i];
+                const prevC = Math.max(0, c - normalCp(pkg));
+                const prev = dp[k - 1][prevC];
+                if (!prev) continue;
+                const cand = { cents: prev.cents + priceCents(pkg, currency), cp: prev.cp + normalCp(pkg), from: i, prevK: k - 1, prevC };
+                if (!best || better(cand, best)) best = cand;
+            }
+            layer[c] = best;
+        }
+        dp.push(layer);
+    }
+    return dp;
+}
+
+function walkBoundedDp(dp, k, c) {
+    const counts = new Map();
+    let state = dp[k][c];
+    while (state && state.from !== -1) {
+        const pkg = CP_PACKAGES[state.from];
+        counts.set(pkg.id, (counts.get(pkg.id) || 0) + 1);
+        state = dp[state.prevK][state.prevC];
+    }
+    return counts;
+}
+
+const CHEAPEST = (a, b) => (a.cents !== b.cents ? a.cents < b.cents : a.cp < b.cp);
+const LEAST_WASTE = (a, b) => (a.cp !== b.cp ? a.cp < b.cp : a.cents < b.cents);
+
+function popcount(mask) { let n = 0; while (mask) { n += mask & 1; mask >>= 1; } return n; }
+
+function solve(shortfallCp, availableIds, currency, maxTransactions, better) {
+    const bounded = CP_PACKAGES.filter(p => availableIds.includes(p.id));
+    const limit = Math.min(shortfallCp, MAX_DP_CP);
+    const dp = buildBoundedDp(limit, maxTransactions, currency, better);
+    let best = null;
+    let bestState = null;
+
+    // Enumerate every subset of the available 2X entitlements. At most 2^6 = 64 iterations. Each
+    // entitlement used counts as one transaction, so it eats into the same budget as normal packages.
+    for (let mask = 0; mask < (1 << bounded.length); mask++) {
+        const usedCount = popcount(mask);
+        if (usedCount > maxTransactions) continue;
+        let cents = 0, cp = 0;
+        const used = [];
+        for (let i = 0; i < bounded.length; i++) {
+            if (mask & (1 << i)) {
+                cents += priceCents(bounded[i], currency);
+                cp += doubleCp(bounded[i]);
+                used.push(bounded[i]);
+            }
+        }
+        const remainingTransactions = maxTransactions - usedCount;
+        const remainingCp = Math.max(0, limit - cp);
+        const tail = dp[remainingTransactions][remainingCp];
+        if (!tail) continue; // remainingCp is not reachable within the remaining transaction budget
+        const cand = { cents: cents + tail.cents, cp: cp + tail.cp, used, remainingTransactions, remainingCp };
+        if (!best || better(cand, best)) { best = cand; bestState = { remainingTransactions, remainingCp }; }
+    }
+    if (!best) return null; // shortfall unreachable within maxTransactions -- not expected at the default of 6
+
+    const combo = best.used.map(p => ({ id: p.id, count: 1, mode: 'double', cpEach: doubleCp(p), priceCents: priceCents(p, currency) }));
+    for (const [id, count] of walkBoundedDp(dp, bestState.remainingTransactions, bestState.remainingCp)) {
+        const pkg = CP_PACKAGES.find(p => p.id === id);
+        combo.push({ id, count, mode: 'normal', cpEach: normalCp(pkg), priceCents: priceCents(pkg, currency) });
+    }
+    const transactions = combo.reduce((n, c) => n + c.count, 0);
+    return { combo, totalCents: best.cents, totalCp: best.cp, leftoverCp: best.cp - shortfallCp, transactions };
+}
+
+// The baseline the savings callout measures against: the smallest SINGLE package that covers the
+// whole shortfall on its own -- the move a player makes without a calculator. Falls back to the
+// largest package when nothing covers it alone.
+function naiveCover(shortfallCp, currency) {
+    const fit = CP_PACKAGES.find(p => normalCp(p) >= shortfallCp) || CP_PACKAGES[CP_PACKAGES.length - 1];
+    return {
+        combo: [{ id: fit.id, count: 1, mode: 'normal', cpEach: normalCp(fit), priceCents: priceCents(fit, currency) }],
+        totalCents: priceCents(fit, currency),
+        totalCp: normalCp(fit),
+        leftoverCp: normalCp(fit) - shortfallCp,
+        transactions: 1
+    };
+}
+
+// maxTransactions caps how many separate purchases a recommendation may involve -- enforced as a real
+// dimension of the DP above, not a post-hoc filter. Without it the true optimum in CAD for a 5,000 CP
+// shortfall is SIXTY-THREE $0.99 purchases ($62.37 vs $69.99 for the 5,000 pack) -- arithmetically
+// right and nobody would ever do it. Every result reports its own transaction count so the tradeoff
+// stays visible rather than hidden.
+function optimizePurchase(shortfallCp, { currency = 'USD', doubleCpAvailable = [], maxTransactions = 6 } = {}) {
+    if (shortfallCp <= 0) return null;
+    const cheapest = solve(shortfallCp, doubleCpAvailable, currency, maxTransactions, CHEAPEST);
+    const leastWaste = solve(shortfallCp, doubleCpAvailable, currency, maxTransactions, LEAST_WASTE);
+    return { ...cheapest, cheapest, leastWaste, naive: naiveCover(shortfallCp, currency) };
+}
+
+module.exports = { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney, optimizePurchase };
