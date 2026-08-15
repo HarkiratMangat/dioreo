@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#PR-pending) — `/manage data_for:draws action:add-new` opens the modal directly
+## Pre-Release v3.22.0 — 2026-08-15 01:50 EDT (#PR-pending) — The full nameplate/decoration catalog lands, with a script to keep it synced
+
+Harkirat hand-authored a complete snapshot of Discord's entire nameplate + decoration collectibles catalog and dropped it into the repo. This entry tracks getting it into shape as tracked, documented reference data, plus the tooling to refresh it going forward — no bot runtime code changed.
+
+**`docs/reference/nameplate-decoration-catalog.json`** (renamed from `all-nameplates-decorations.json`) — 88 collections, 235 nameplate design groups (262 SKUs), 490 decoration design groups (663 SKUs), 925 SKUs total, 0 duplicates, verified by parsing the file programmatically rather than sampling it. Tracked in git deliberately (not `local/`) specifically so a future refresh produces a real diff of what Discord added. A companion **`docs/reference/nameplate-decoration-catalog.md`** documents the schema, the `palette_hex` (bed color) vs. `variant_value` (art colorway) distinction, the display-name rule (`"<group_name> (<variant_label>)"`), and the SKU-addressed asset-fetch URLs (`/animated` returns a real multi-frame APNG, unlike the slug-based route this codebase already uses elsewhere).
+
+**`scripts/syncNameplateCatalog.py`** — the repo's first Python script. Fetches Discord's live `collectibles-categories/v2` endpoint and additively merges anything genuinely new into the catalog file; existing entries are never rewritten, and a run that finds nothing new leaves the file byte-identical (field order was matched to the existing file's exact convention for this reason). **Requires a Discord user token, not a bot token** — live-verified on both `api/v9` and `api/v10` that a bot token gets a hard `403 {"code": 20001, "message": "Bots cannot use this endpoint"}`; no bot-token path exists. Because a user token calling this private client API to automate fetches is Discord's definition of self-botting, the script is **deliberately run manually only — no cron, no launchd** (Harkirat's call, so it never becomes standing account automation). Credentials live in the gitignored `scripts/.env.discord-sync`.
+
+**Filed, not built this round:** a bulk pre-cache of the full catalog into the existing Cloudinary/Discord-storage-channel pipeline, and whether the catalog itself should move to a Mongoose collection once that pipeline exists. Both need Harkirat's sign-off — see `docs/db-deferred-list.md`'s re-scoped nameplate/decoration item.
+
+**Verification.** `docs:audit` (40/41 verified, 1 correctly skipped — no `--diff`) and `docs:reflow --check` (51 files, 0 would change) both pass. `syncNameplateCatalog.py` run live end-to-end (`--dry-run` and a real run) against Harkirat's actual credentials — correctly found 0 new SKUs and left the file untouched.
+
+## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#129) — `/manage data_for:draws action:add-new` opens the modal directly
 
 Stage 3 of the four-stage `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): a new `action` string option on `/manage`, scoped autocomplete, and a dispatch branch in `execute()` that resolves and runs a page's own action without ever rendering the panel — the original ask this whole decomposition existed to reach.
 
