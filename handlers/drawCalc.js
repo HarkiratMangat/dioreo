@@ -15,7 +15,6 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { getAccentColorForCommand } = require('../utils/accentColor');
-const { resolveEphemeral } = require('../utils/ephemeral');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, buildSetupPanel, buildResultsPanel, findLiveDoubleCPEntry
@@ -50,12 +49,18 @@ function buildNumbersModal(state) {
         new ActionRowBuilder().addComponents(
             new TextInputBuilder().setCustomId('pulls_done').setLabel(`Pulls already done (0-${total})`)
                 .setStyle(TextInputStyle.Short).setValue(String(state.pullsDone)).setRequired(true)
-        ),
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder().setCustomId('balance').setLabel('Current CP balance')
-                .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 3,000 or 3k').setValue(state.balance ? String(state.balance) : '').setRequired(false)
         )
     ];
+    // Budget mode ('B') asks "how far does spending X more CP get me" -- it has no use for an
+    // existing balance (design decision 10's own framing is the new spend amount alone), so the
+    // field is skipped rather than collected and silently discarded. F/P modes DO use it (see
+    // buildResultsPanel's shortfall = totalNeeded - state.balance).
+    if (state.target !== 'B') {
+        fields.push(new ActionRowBuilder().addComponents(
+            new TextInputBuilder().setCustomId('balance').setLabel('Current CP balance')
+                .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 3,000 or 3k').setValue(state.balance ? String(state.balance) : '').setRequired(false)
+        ));
+    }
     if (state.target !== 'F') {
         fields.push(new ActionRowBuilder().addComponents(
             new TextInputBuilder().setCustomId('target_value').setLabel(state.target === 'P' ? `Target pull number (1-${total})` : 'Budget to spend (CP)')
@@ -105,7 +110,10 @@ async function route(interaction) {
             } catch (notifyError) { console.error('Failed to notify user of invalid pullsDone (interaction likely expired):', notifyError); }
             return true;
         }
-        const balanceRaw = parseAmount(interaction.fields.getTextInputValue('balance'));
+        // 'balance' isn't on the modal at all in budget mode (buildNumbersModal skips it -- see that
+        // function's own comment) -- getTextInputValue() throws on a field that doesn't exist, so
+        // this must match the modal's own conditional exactly, not just default missing to 0.
+        const balanceRaw = state.target === 'B' ? 0 : parseAmount(interaction.fields.getTextInputValue('balance'));
         let targetValueRaw = state.targetValue;
         if (state.target !== 'F') {
             targetValueRaw = parseAmount(interaction.fields.getTextInputValue('target_value'));
