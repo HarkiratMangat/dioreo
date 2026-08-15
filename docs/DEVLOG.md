@@ -159,6 +159,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 12:38 EDT — Closing the /manage decomposition: an audit log, and the operation functions with no interaction to hook into (v3.24.0-pre)
 - 2026-08-15 13:40 EDT — A bugs-fix batch: the rename Harkirat picked, and a self-audit that caught a real defect (v3.25.0-pre)
 - 2026-08-15 16:43 EDT — Designing a calculator, and the day a regex quietly lied about German prices (v3.26.0-pre)
+- 2026-08-15 17:22 EDT — Turning three of my own misses into gates, and finding nine that were already blind (v3.27.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2814,6 +2815,30 @@ The brief was a lucky-draw cost calculator: *how much more CP to finish this dra
 - **The most valuable test result is the one that fails for a boring reason.** `de-de` "failing" was worth more than the three passes, because the passes only confirmed what I expected and the failure revealed a whole class of silent partial data.
 - **Gates only see tracked files.** `reflow-prose.mjs` and `docs-audit` resolve their file lists from `git ls-files`, so a brand-new document is invisible to both until it is committed. I ran both on a new plan, saw green, committed — and only then did they actually check it and find two problems. On a new doc: commit first, then run the gates.
 - **Never pipe a gate to `tail`.** Doing so printed the trailing summary and hid an ERROR block above it; a front-matter failure sat undetected across two commits. Read the exit code. This lesson was already written down before this session, and I did it anyway.
+
+## 2026-08-15 17:22 EDT — Turning three of my own misses into gates, and finding nine that were already blind (v3.27.0-pre)
+
+Harkirat asked which behaviours from the session were worth standardising. Three answered themselves, because each was a rule the session had *already* written down and then broken anyway.
+
+The clearest was piping a gate to `tail`. `feedback_wrong_reference_beats_stale_one` records the rule in as many words — read a gate's exit code, never its trailing summary line — and I did it anyway, twice, and a real `doc-frontmatter` failure sat undetected across two commits as a result. The reason it is so easy to fall for is worth stating: these gates print the ERROR block **above** the summary, and the summary reports how many checks *ran*. Truncated, a failing run and a clean run are the same text.
+
+That is this repo's own stated bar for turning prose into a hook, so both that and the untracked-docs miss became hooks, each with proofs. And then the interesting part happened while verifying them.
+
+**The truncation guard did not fire.** Its test suite passed ten proofs, the script worked when invoked by hand, and the real tool call produced nothing. Which is exactly the failure this project has a documented lesson about — a pipe test proves the SCRIPT works, never that the HOOK fires. Chasing it turned up something neither of us expected: Harkirat had a nagging suspicion that this session behaved unusually well because the worktree was letting it bypass something. It was not bypassing restrictions. It was running with nine gates **silently blind**.
+
+Every `${CLAUDE_PROJECT_DIR}`-based hook `cd`s there and reads git state. In a worktree session the harness points that at the worktree — while the session, as is normal, had `cd`'d to the real repo for every single command. So `branch-discipline-guard`, `main-push-guard`, `records-close-check` and six others spent the session inspecting a tree containing none of the work, finding nothing, and saying nothing. **A gate looking at the wrong tree is indistinguishable from a gate that passed.**
+
+The proof was one command: same hook, same stdin, only the env differing — fires under the main repo, silent under the worktree.
+
+What makes it genuinely nasty is the inconsistency. Hooks with a **hardcoded** `cd` (release-ready, squash-trailer) fired correctly throughout, and loudly — the squash-trailer gate blocked a merge that would have produced ten duplicated co-author blocks. So the gate set *looked* alive. Half of it was.
+
+Harkirat's follow-up was the right question: did the blindness make the session better? No. A blind hook emits silence, not better guidance. Branch and push discipline held because the workflow was followed by hand, not because anything checked. The session's actual quality came from somewhere else entirely — he was in the loop with real data and corrected two of my premises mid-flight.
+
+### Lesson
+- **A rule you have already written down and broken is not a rule, it is a note.** All three practices standardised here were recorded in prose before the session started. Prose that has demonstrably failed once should become a hook, not a bolder heading.
+- **Verify a hook by triggering the real tool call.** The suite passing and the script working by hand both proved nothing about whether the hook was wired. That distinction is already in the global CLAUDE.md and it still took a live miss to remember it.
+- **Silence from a gate is not evidence of anything.** It means "found nothing", which is the same output as "looked in the wrong place", "never ran", and "matched nothing because the matcher is broken". Every one of those has now happened in this project.
+- **A hunch about tooling deserves a measurement, not a reassurance.** The instinct that something was structurally different was correct, and the obvious answer — "no, the hooks all fired, here they are" — was the wrong one. Two commands settled what argument could not.
 
 # Part B — Lessons Ledger (thematic)
 
