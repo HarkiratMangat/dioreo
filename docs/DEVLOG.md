@@ -158,6 +158,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 12:18 EDT — The 925-SKU catalog gets pre-rendered, not discovered one equip at a time (v3.23.0-pre)
 - 2026-08-15 12:38 EDT — Closing the /manage decomposition: an audit log, and the operation functions with no interaction to hook into (v3.24.0-pre)
 - 2026-08-15 13:40 EDT — A bugs-fix batch: the rename Harkirat picked, and a self-audit that caught a real defect (v3.25.0-pre)
+- 2026-08-15 16:43 EDT — Designing a calculator, and the day a regex quietly lied about German prices (v3.26.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2791,6 +2792,28 @@ Second: a self-audit, run with sequential-thinking after the fixes felt complete
 
 ### Lesson
 Automated tests prove a claim only about the property they were written to check. `node --check` proves a file parses; it says nothing about whether the object shape an API expects matches the object shape a file constructs. Passing every existing test on a new code path is not the same as having verified that path — it's evidence for whatever those tests happen to cover, and no more. The fix here wasn't a smarter test; it was checking the actual convention already established elsewhere in the codebase (`buildSearchModal`) rather than trusting that a payload which *looked* consistent with the rest of the bot's V2-JSON style would work everywhere `interaction.showModal()` is called.
+
+## 2026-08-15 16:43 EDT — Designing a calculator, and the day a regex quietly lied about German prices (v3.26.0-pre)
+
+A design session that produced no runtime code and two corrected beliefs.
+
+The brief was a lucky-draw cost calculator: *how much more CP to finish this draw, and what is the cheapest way to buy it.* The first half is arithmetic over data the bot already holds. The second half needed the six CP bundle prices, which Harkirat supplied from his own store screenshots — and that is where it got interesting twice.
+
+**The first correction was mine to make and I made it wrong.** The store advertises 10,800 CP for $99.99, and I modelled the 2X CP event as doubling that to 21,600. It does not: the advertised figure already includes the normal +35% bonus, so 2X replaces that bonus rather than stacking on the total, giving 8,000 × 2 = 16,000. Harkirat's event screenshot said `8000+8000` in plain text and I had read past it. Wrong by 5,600 CP at the top tier, on the exact number a player would spend real money against.
+
+**The second correction came from a question, not a screenshot.** I had written that package prices were identical worldwide with only the currency label differing "via the platform's own FX". Harkirat asked how Apple actually handles that, noting his $99.99 tier is a flat $129.99 CAD that never moves. Looking it up: Apple assigns price-point values directly per storefront, tier-locked rather than rate-locked. That alone would have been a footnote — except the tiers are **not proportional to each other**, which means the cheapest *combination* of packages differs by country. The framing I had written would have produced wrong purchase advice for most of the player base.
+
+**Then the data made the case better than the argument had.** With 41 currencies captured, CP-per-unit turns out to be monotonic in only 24 of them. In EUR the €9.99 pack beats both the €29.99 and €59.99 packs. In NOK and SEK the *smallest* pack is the best value in the entire store, because Apple's floor tier is the same number in those currencies while everything above it carries a 30–40% markup. No static tip could carry that; it has to be computed per currency.
+
+**The crawl itself was smaller than expected, and its most useful moment was a failure.** Harkirat gave explicit permission to install Firecrawl and asked me to try the existing tools first. Plain `fetch` returned server-rendered prices with an embedded JSON payload — no crawler, no headless browser, no API key. Validating against three known tables, `de-de` came back missing two prices. Not a data problem: German renders `99,99 €` with a trailing symbol and a comma decimal, and my regex assumed a leading symbol. A naive scraper would have silently returned partial data for a large share of 71 locales and looked fine doing it. That failure is why the final extractor reads numeric JSON fields and an ISO currency code instead of parsing display text at all.
+
+**A records defect surfaced on the way out.** Writing this release's entry, `v3.24.0` turned out to have no CHANGELOG heading at all — its body had been reading as part of v3.25.0's entry since it shipped. `docs-audit` passed at zero errors throughout, because its version check runs CHANGELOG → CHANGELOG-SUMMARY and cannot see a heading that never existed.
+
+### Lesson
+- **A screenshot you have already read is not a screenshot you have used.** The `8000+8000` label was in the image the whole time; the wrong model survived because I reasoned from the advertised total instead of from the evidence in front of me.
+- **The most valuable test result is the one that fails for a boring reason.** `de-de` "failing" was worth more than the three passes, because the passes only confirmed what I expected and the failure revealed a whole class of silent partial data.
+- **Gates only see tracked files.** `reflow-prose.mjs` and `docs-audit` resolve their file lists from `git ls-files`, so a brand-new document is invisible to both until it is committed. I ran both on a new plan, saw green, committed — and only then did they actually check it and find two problems. On a new doc: commit first, then run the gates.
+- **Never pipe a gate to `tail`.** Doing so printed the trailing summary and hid an ERROR block above it; a front-matter failure sat undetected across two commits. Read the exit code. This lesson was already written down before this session, and I did it anyway.
 
 # Part B — Lessons Ledger (thematic)
 

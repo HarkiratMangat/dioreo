@@ -222,10 +222,13 @@ const makeFixture = () => {
   // resolution half — which is the check working correctly, and was caught by this very self-test.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2 · `SHA`) — two\n\n## v2.32.0 — 2026-06-01 (#1 · `SHA`) — one\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.0 — June 1, 2026\n");
+  // The "(v2.33.0)" stamps are LOAD-BEARING: devlog-orphan reads DEVLOG headings as its reference
+  // list of which versions exist, so without a stamped entry that check examines 0 items and
+  // scores a VACUOUS PASS. Keep them, and keep the TOC line matching the body heading.
   write(
     root,
     "docs/DEVLOG.md",
-    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n## 2026-07-01 — a thing\n\nbody\n\n" +
+    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing (v2.33.0)\n\n**Part B — Lessons Ledger**\n\n## 2026-07-01 — a thing (v2.33.0)\n\nbody\n\n" +
       "# Part B\n\nthematic takeaways, no dated entries\n"
   );
   write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- `[P2 · S]` **A queued item** that is still open.\n");
@@ -471,6 +474,16 @@ provesSilent("a LEGACY range heading (pre-v2.19.0), still allowed", "summary-cov
   // have their own heading -- the sibling `proves` case above covers that direction.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
+});
+
+proves("a PRE-RELEASE version in the DEVLOG with no CHANGELOG heading", "devlog-orphan", (root) => {
+  // The real v3.24.0 damage, 2026-08-15: the heading went, the body stayed and welded itself onto
+  // the entry above, and every check stayed green because CHANGELOG-SUMMARY -- summary-orphan's
+  // only reference list -- is not written during pre-release. DEVLOG is, which is why it is the
+  // reference here. The body below deliberately does not name its own version, exactly like the
+  // real one did not, so a substring test would not rescue it.
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — closing a decomposition (v3.24.0-pre)\n\nthe body that survived\n");
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133) — later work\n\nbody of the entry that absorbed it\n");
 });
 
 proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {

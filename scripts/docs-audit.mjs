@@ -569,6 +569,53 @@ check(
   }
 );
 
+/* --------------------------- devlog-orphan -------------------------- */
+check(
+  "devlog-orphan",
+  "ERROR",
+  "every version named in a DEVLOG heading has a real heading in CHANGELOG",
+  () => {
+    // THE PRE-RELEASE HOLE, found 2026-08-15 when v3.24.0's CHANGELOG heading turned out to be
+    // missing entirely -- its whole body had been reading as part of v3.25.0's entry since it
+    // shipped, and every check stayed green.
+    //
+    // summary-orphan is the same idea but cannot see this: it uses CHANGELOG-SUMMARY as its
+    // reference list, and CHANGELOG-SUMMARY is deliberately NOT written during pre-release (see
+    // this file's own pre-release note). So for the whole v3 line there was no reference list at
+    // all, and a missing heading was invisible. Its heading regex also matches only "## vX.Y.Z"
+    // and never "## Pre-Release vX.Y.Z", so it would have missed these headings even if it ran.
+    //
+    // DEVLOG is the right reference precisely because it IS maintained through pre-release: every
+    // release gets a narrative entry stamped with its version, so it is an independent record of
+    // which versions exist.
+    const ch = read("docs/CHANGELOG.md");
+    const dv = read("docs/DEVLOG.md");
+    if (ch === null || dv === null) return [{ msg: "CHANGELOG.md or DEVLOG.md is missing." }];
+
+    // Both heading forms. The `-pre` suffix is stripped: pre-release CHANGELOG headings carry the
+    // bare version ("## Pre-Release v3.24.0") while DEVLOG stamps it "(v3.24.0-pre)".
+    const headings = new Set(
+      [...ch.matchAll(/^## (?:Pre-Release )?(v\d+\.\d+\.\d+)/gm)].map((m) => m[1])
+    );
+    // Only DEVLOG *headings*, not prose -- the table of contents lists the same versions, and a
+    // substring test over the file would be satisfied by the TOC line alone while the body entry
+    // and the changelog heading were both gone.
+    const claimed = [...dv.matchAll(/^## .*?\(v(\d+\.\d+\.\d+)(?:-pre)?\)\s*$/gm)].map((m) => "v" + m[1]);
+
+    const out = [];
+    for (const v of new Set(claimed)) {
+      if (headings.has(v)) continue;
+      out.push({
+        msg: `${v} has a DEVLOG entry but NO heading in CHANGELOG.md. Either the heading was ` +
+          `deleted -- in which case its body is now welded onto the entry above it, which is how ` +
+          `v3.24.0 was lost -- or the changelog entry was never written. Restore the heading; do ` +
+          `not delete the DEVLOG entry to silence this.`,
+      });
+    }
+    return { findings: out, examined: new Set(claimed).size };
+  }
+);
+
 /* --------------------------- summary-orphan ------------------------- */
 check(
   "summary-orphan",
