@@ -521,6 +521,11 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 }
 
 module.exports = {
+    // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a
+    // second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to
+    // prevent.
+    DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY,
+
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()
         .setName('draw')
