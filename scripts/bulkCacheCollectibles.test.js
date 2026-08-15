@@ -158,13 +158,26 @@ check('variantMetadataLines: always carries dimensions/frame-count/size in the h
 
 // --- buildGroupComponents --------------------------------------------------------------------
 
-check('buildGroupComponents: N variants produce exactly N sections and N-1 dividers', () => {
-    const renders = [1, 2, 3].map(i => ({ doc: doc({ skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` }) }));
-    const [container] = buildGroupComponents(group({ variants: renders.map(r => r.doc) }), renders);
+check('buildGroupComponents: decorations -- N variants produce exactly N sections and N-1 dividers', () => {
+    const renders = [1, 2, 3].map(i => ({ doc: doc({ kind: 'decoration', skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` }) }));
+    const [container] = buildGroupComponents(group({ kind: 'decoration', variants: renders.map(r => r.doc) }), renders);
     const sections = container.components.filter(c => c.type === 9);
     const dividers = container.components.filter(c => c.type === 14);
     assert.strictEqual(sections.length, 3);
     assert.strictEqual(dividers.length, 2, 'N variants need N-1 dividers between them, never N or N+1');
+});
+
+check('buildGroupComponents: nameplates -- N variants produce exactly N Media Galleries + N TextDisplays, NEVER a Section', () => {
+    const renders = [1, 2, 3].map(i => ({ doc: doc({ skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` }) }));
+    const [container] = buildGroupComponents(group({ variants: renders.map(r => r.doc) }), renders);
+    const sections = container.components.filter(c => c.type === 9);
+    const galleries = container.components.filter(c => c.type === 12);
+    const texts = container.components.filter(c => c.type === 10);
+    const dividers = container.components.filter(c => c.type === 14);
+    assert.strictEqual(sections.length, 0, 'nameplates must use the full-width Media Gallery layout, never Section+Thumbnail (that is decoration-only)');
+    assert.strictEqual(galleries.length, 3);
+    assert.strictEqual(texts.length, 4, '1 header + 3 per-variant metadata blocks');
+    assert.strictEqual(dividers.length, 2);
 });
 
 check('buildGroupComponents: a single-variant group gets zero dividers and no "N variants" suffix', () => {
@@ -175,10 +188,17 @@ check('buildGroupComponents: a single-variant group gets zero dividers and no "N
     assert.ok(!header.includes('variant'), `single-variant header should not say "variants": ${header}`);
 });
 
-check('buildGroupComponents: each section\'s accessory references that variant\'s OWN filename, in order', () => {
+check('buildGroupComponents: decoration Section accessories reference that variant\'s OWN filename, in order', () => {
+    const renders = ['a', 'b', 'c'].map(f => ({ doc: doc({ kind: 'decoration', skuId: f }), render: render({ filename: `${f}.webp` }) }));
+    const [container] = buildGroupComponents(group({ kind: 'decoration', variants: renders.map(r => r.doc) }), renders);
+    const urls = container.components.filter(c => c.type === 9).map(s => s.accessory.media.url);
+    assert.deepStrictEqual(urls, ['attachment://a.webp', 'attachment://b.webp', 'attachment://c.webp']);
+});
+
+check('buildGroupComponents: nameplate Media Galleries reference that variant\'s OWN filename, in order', () => {
     const renders = ['a', 'b', 'c'].map(f => ({ doc: doc({ skuId: f }), render: render({ filename: `${f}.webp` }) }));
     const [container] = buildGroupComponents(group({ variants: renders.map(r => r.doc) }), renders);
-    const urls = container.components.filter(c => c.type === 9).map(s => s.accessory.media.url);
+    const urls = container.components.filter(c => c.type === 12).map(g => g.items[0].media.url);
     assert.deepStrictEqual(urls, ['attachment://a.webp', 'attachment://b.webp', 'attachment://c.webp']);
 });
 

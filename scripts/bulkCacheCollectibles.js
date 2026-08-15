@@ -161,11 +161,25 @@ function buildGroupComponents(group, renders) {
     const components = [{ type: 10, content: header }];
     renders.forEach(({ doc, render }, i) => {
         if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
-        components.push({
-            type: 9, // Section
-            components: [{ type: 10, content: variantMetadataLines(doc, render).join('\n') }],
-            accessory: { type: 11, media: { url: `attachment://${render.filename}` } }
-        });
+        const metadataContent = variantMetadataLines(doc, render).join('\n');
+        if (doc.kind === 'nameplate') {
+            // Full-width Media Gallery on top, metadata below -- the ORIGINAL single-item nameplate
+            // layout (screenshot-verified against the live cache channel 2026-08-15 11:49 EDT), not
+            // decoration's compact Section+Thumbnail. Nameplates are wide banner-shaped images that
+            // read badly shrunk into a side thumbnail; a Section's accessory thumbnail is small and
+            // square, built for decoration's icon-shaped art, not a 512x96-ish banner. Costs 3
+            // components/variant here (gallery + text + divider) vs decoration's 4 -- MAX_VARIANTS_PER_
+            // MESSAGE in catalogGrouping.js is still computed off the more expensive 4, so this stays a
+            // safe (if slightly conservative) cap for nameplate-only groups too.
+            components.push({ type: 12, items: [{ media: { url: `attachment://${render.filename}` } }] });
+            components.push({ type: 10, content: metadataContent });
+        } else {
+            components.push({
+                type: 9, // Section
+                components: [{ type: 10, content: metadataContent }],
+                accessory: { type: 11, media: { url: `attachment://${render.filename}` } }
+            });
+        }
     });
     const first = renders[0];
     const accent = first.doc.kind === 'nameplate'
