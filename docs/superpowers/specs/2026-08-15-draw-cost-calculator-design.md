@@ -170,7 +170,13 @@ This is the strongest argument for the feature: the right answer is currency-spe
 
 The user's currency lives in `UserPreference`, with an explicit override option on the slash command for viewing another storefront. ⚠️ **This is a new per-user stored field**, so `PRIVACY.md` Appendix A and §2 must be updated in the same change — the `privacy-inventory` docs-audit check covers every per-user field, not only sensitive ones. This is the one place the otherwise-stateless design deliberately stores something, and the reason is that re-picking a currency on every invocation is a poor trade for a value that essentially never changes.
 
-> 📌 **Derivation is possible but deliberately NOT a prerequisite.** Apple's `/appPricePoints/{id}/equalizations` endpoint returns the equalized price for a price point across all 175 territories, which would yield the whole matrix from the USD column alone. It needs App Store Connect API credentials, and a developer *may* override the equalized default per territory — so before trusting it, check the equalized EUR and CAD figures against the twelve known values in the table above. If they all match, the matrix is derivable; if any differ, derivation is unsafe. Either way this is later data-sourcing work, not a launch blocker.
+> 📌 **Sourcing the remaining currencies — resolved 2026-08-15 16:11 EDT.** Apple's `/appPricePoints/{id}/equalizations` endpoint would have derived all 175 territories from one price point, but it needs App Store Connect credentials and Harkirat has no Apple Developer account, so that route is closed.
+>
+> The fallback is **validated and simpler than expected**: the official CODM web store (`store.callofdutymobile.com/<locale>/codm/`) server-renders its prices, so a plain `fetch` retrieves them — no Firecrawl, no headless browser, no API key. **71 locales** are discoverable from a single page, and the extraction was checked against all three of Harkirat's real tables (`en-us`, `en-ca`, `en-ie`) and reproduced each exactly.
+>
+> ⚠️ The store's *CP quantities* are web-exclusive and differ from in-game (88 vs 80, 460 vs 420, …), but the **price points are identical** — so bundles map by ascending price position, never by CP amount. Full method and the four traps that silently corrupt the data: `local/handoff/2026-08-15-cp-price-crawl.md`.
+>
+> **Harkirat's preference is to gather this data BEFORE the calculator is built**, since currency demonstrably changes the optimizer's recommendation. The design does not depend on it — the price vector accepts new rows as data — but the build session should expect the table to be wider than three.
 
 ### Transaction count
 
