@@ -166,7 +166,9 @@ This is the strongest argument for the feature: the right answer is currency-spe
 
 ### Currency handling
 
-`priceCents` becomes a **per-currency price vector** rather than a single number, so adding a storefront is data entry rather than a redesign. USD, EUR and CAD are populated from Harkirat's real tables; nothing else is guessed.
+✅ **The price data now EXISTS — captured 2026-08-15 16:29 EDT, all 41 currencies.** `docs/reference/cp-package-prices.json` holds the six in-game bundle prices for every currency the official CODM web store sells in (41 currencies across 70 locales), with `cp-package-prices.md` documenting schema, provenance and the eight traps involved in re-crawling it. Validated against Harkirat's three real tables plus ten live re-fetches. **The calculator loads that file rather than carrying a hardcoded table.**
+
+⚠️ **41 currencies vs Discord's 25-option select limit.** A string select menu caps at 25 options, so a flat currency dropdown cannot list them all. The slash-command override should use an **autocomplete** string option (which filters as the user types and shows 25 matches at a time), and `/settings` needs either a grouped/paginated select or the same autocomplete route. **Do not silently truncate the list to 25** — that would leave players in 16 currencies unable to select their own storefront.
 
 The user's currency lives in `UserPreference`, with an explicit override option on the slash command for viewing another storefront. ⚠️ **This is a new per-user stored field**, so `PRIVACY.md` Appendix A and §2 must be updated in the same change — the `privacy-inventory` docs-audit check covers every per-user field, not only sensitive ones. This is the one place the otherwise-stateless design deliberately stores something, and the reason is that re-picking a currency on every invocation is a poor trade for a value that essentially never changes.
 

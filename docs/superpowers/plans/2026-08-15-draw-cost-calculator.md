@@ -66,7 +66,7 @@ Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `CP_PACKAGES` (array), `CURRENCIES` (`['USD','EUR','CAD']`), `normalCp(pkg) -> number`, `doubleCp(pkg) -> number`, `priceCents(pkg, currency) -> number`, `formatMoney(cents, currency) -> string`
+- Produces: `CP_PACKAGES` (array), `CURRENCIES` (all 41 codes, sorted), `normalCp(pkg) -> number`, `doubleCp(pkg) -> number`, `priceOf(pkg, currency) -> number`, `countryOf(currency) -> string`, `formatMoney(amount, currency) -> string`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -175,28 +175,31 @@ Create `utils/cpPackages.js`:
 //
 // Money is INTEGER CENTS everywhere. Floats would accumulate error across a multi-package combo and
 // make two equally-priced combos compare unequal.
-// PRICES ARE A PER-CURRENCY VECTOR, NOT ONE NUMBER. Apple assigns price-point values directly per
-// storefront -- tier-locked, not rate-locked -- and the tiers are NOT proportional to each other.
-// Measured consequence: in EUR the 880 CP pack (88.1 CP/EUR) beats BOTH the 2,400 pack (80.0) and the
-// 5,000 pack (83.3), and in CAD the 80 CP pack is the second-best value in the whole store. The
-// cheapest combination is therefore genuinely different per currency, which is the entire reason this
-// module solves rather than publishes a tip. Do NOT collapse this back to a single price.
-const CP_PACKAGES = [
-    { id: 'cp80',   baseCp: 80,   bonusPct: 0,    price: { USD: 99,   EUR: 99,   CAD: 99 } },
-    { id: 'cp400',  baseCp: 400,  bonusPct: 0.05, price: { USD: 499,  EUR: 599,  CAD: 699 } },
-    { id: 'cp800',  baseCp: 800,  bonusPct: 0.10, price: { USD: 999,  EUR: 999,  CAD: 1299 } },
-    { id: 'cp2000', baseCp: 2000, bonusPct: 0.20, price: { USD: 2499, EUR: 2999, CAD: 3499 } },
-    { id: 'cp4000', baseCp: 4000, bonusPct: 0.25, price: { USD: 4999, EUR: 5999, CAD: 6999 } },
-    { id: 'cp8000', baseCp: 8000, bonusPct: 0.35, price: { USD: 9999, EUR: 9999, CAD: 12999 } }
-];
+// PRICES COME FROM THE COMMITTED REFERENCE FILE, NOT FROM A TABLE IN THIS MODULE.
+// docs/reference/cp-package-prices.json holds all 41 currencies the official CODM web store sells
+// in, captured 2026-08-15 and validated against three known-real tables plus ten live re-fetches.
+// Its companion .md documents provenance and the eight re-crawl traps.
+//
+// WHY A FILE AND NOT A LITERAL: Apple/Google assign price points directly PER STOREFRONT -- they are
+// tier-locked, not rate-locked -- and the tiers are NOT proportional to each other. Measured: in 17
+// of the 41 currencies "buy the biggest pack" is WRONG, and in NOK and SEK the SMALLEST pack is the
+// best value in the store. Never derive a currency by converting from USD.
+const PRICE_DATA = require('../docs/reference/cp-package-prices.json');
 
-// Only these three are real, sourced from Harkirat's own stores. NEVER add a currency by converting
-// from USD -- that is the exact mistake this table exists to prevent. A new currency needs its six
-// real figures, from a screenshot or from Apple's /appPricePoints/{id}/equalizations endpoint.
-const CURRENCIES = ['USD', 'EUR', 'CAD'];
-const CURRENCY_SYMBOL = { USD: '$', EUR: '\u20ac', CAD: 'CA$' };
+// Bundle CP amounts are identical in every storefront -- only prices vary.
+const CP_PACKAGES = PRICE_DATA.inGameBundlesCp.map((baseTotal, i) => ({
+    id: `cp${[80, 400, 800, 2000, 4000, 8000][i]}`,
+    baseCp: [80, 400, 800, 2000, 4000, 8000][i],
+    bonusPct: [0, 0.05, 0.10, 0.20, 0.25, 0.35][i],
+    tierIndex: i
+}));
 
-function priceCents(pkg, currency) { return pkg.price[currency]; }
+const CURRENCIES = Object.keys(PRICE_DATA.currencies).sort();
+
+// prices[] are MAJOR units as the store displays them, deliberately -- currencies here differ in
+// exponent (JPY and CLP have none, KWD and BHD have three), so a blanket "multiply by 100" is wrong.
+function priceOf(pkg, currency) { return PRICE_DATA.currencies[currency].prices[pkg.tierIndex]; }
+function countryOf(currency) { return PRICE_DATA.currencies[currency].country; }
 
 // Math.round rather than a bare multiply: 0.05/0.10/0.20/0.25/0.35 are not exact in binary floating
 // point, so 400 * 1.05 can land on 420.00000000000006. Every real value here is a whole number of CP.
