@@ -72,6 +72,8 @@ Prices are read from the **embedded JSON payload**, not from rendered text. The 
 
 **`sv-se` is not captured.** Its page loads normally with both JSON blocks and prices present, but its product titles do not match the `^\d+\s*CP$` pattern the extractor keys on, so it yields no products. **No data is lost** — SEK is captured from `en-se`, the same storefront. Worth revisiting only if a locale-specific title format turns out to affect other locales too; the 70 that succeeded cover all 41 currencies the store sells in.
 
+✅ **Independently confirmed 2026-08-15 17:49 EDT** — Harkirat manually checked `sv-se`'s live prices (9,00 kr / 69,00 kr / 129,00 kr / 299,00 kr / 599,00 kr / 1295,00 kr) and they match the committed `en-se`-sourced SEK row exactly.
+
 ## Refreshing
 
 Prices change rarely (tier-locked, not rate-linked) but not never — a storefront repricing, or Apple/Google adjusting a territory's tiers, would make this stale. There is no automated refresh. **Re-run the capture before any release that leans on these figures**, and diff against the committed file rather than overwriting it blind: a changed price is a real event worth reading, not noise.
