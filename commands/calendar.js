@@ -293,13 +293,13 @@ module.exports = {
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription("View this season's in-game event timeline")
         // `page`/`view` (added 2026-07-31 14:20 EDT) are one-off, per-invocation overrides only --
-        // neither is saved anywhere. `view` falls back to the /settings-saved calendarEventFilter
-        // preference when omitted; `page` just opens on Draws (page 0) when omitted, same as before
-        // this option existed.
+        // neither is saved anywhere. `view`'s old /settings-saved default (`calendarEventFilter`) was
+        // SILENCED 2026-08-15 13:01 EDT -- it now just defaults to 'all' when omitted, same as `page`
+        // opening on Draws (page 0) when omitted.
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
             { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
-        .addStringOption(option => option.setName('view').setDescription('Show all events, or only active/upcoming ones (defaults to your /settings choice)').addChoices(
+        .addStringOption(option => option.setName('view').setDescription('Show all events, or only active/upcoming ones').addChoices(
             { name: 'All Events', value: 'all' }, { name: 'Active/Upcoming Only', value: 'active' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
@@ -334,14 +334,14 @@ module.exports = {
             return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
         }
 
-        // The Active/All Events filter moved to /settings entirely (2026-07-31 14:00 EDT, notes
-        // follow-up) -- /calendar just reads the saved preference fresh on every render now, no more
-        // in-page toggle button/handler to keep in sync with it. `view` (added 2026-07-31 14:20 EDT)
-        // is a one-off per-invocation override on top of that -- never saved, only ever read on a
-        // real slash-command launch (a button/select re-render always passes pageOverride explicitly
-        // and never carries a `view` option to read here anyway).
+        // The Active/All Events filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT
+        // (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written
+        // anywhere; see commands/settings.js). `view` is now the ONLY way to pick Active/Upcoming for a
+        // given invocation, a genuine one-off, defaulting to 'all' when omitted. Never saved, only ever
+        // read on a real slash-command launch (a button/select re-render always passes pageOverride
+        // explicitly and never carries a `view` option to read here anyway).
         const viewChoice = interaction.isChatInputCommand() ? interaction.options.getString('view') : null;
-        const filterMode = viewChoice || prefs?.calendarEventFilter || 'all';
+        const filterMode = viewChoice || 'all';
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted
         // when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction

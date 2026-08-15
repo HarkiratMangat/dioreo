@@ -283,13 +283,15 @@ const MANAGEADMINS_ACTIONS = [
     // every other owner-gated action on this panel uses. A granted admin can use /manage, /alerts
     // and /autobuild normally but must never be able to edit the allowlist itself.
     { id: 'grant', label: 'Grant Admin', style: 3, kind: 'modal', slash: true, ownerOnly: true,
-      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAdminGrantModal()) }
+      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAdminGrantModal()) },
+    { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }
 ];
 
 const ANNOUNCEMENT_ACTIONS = [
     // Always opens BLANK — each announcement is its own doc, never a single one being overwritten.
     { id: 'post', label: 'Post New Announcement', style: 3, kind: 'modal', slash: true,
-      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAnnouncementModal(null)) }
+      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAnnouncementModal(null)) },
+    { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }
 ];
 
 const ACTIONS_BY_PAGE = {

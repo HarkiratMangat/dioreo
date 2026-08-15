@@ -16,8 +16,9 @@
 // See .claude/rules/interaction-router.md.
 
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
+const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
-const OWNED_PREFIXES = ["set_", "toggle_"];
+const OWNED_PREFIXES = ["set_", "toggle_", "settingstz_"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -33,7 +34,6 @@ async function route(interaction) {
         // made it necessary here. Found 2026-08-13 18:45 EDT by auditing what the moved comments
         // still asserted, after the split had already been pushed.
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('set_')) {
-            await interaction.deferUpdate(); // Extends execution context limits to handle network delays safely
             // 3rd pipe segment (2026-07-12) -- which /settings page this dropdown lives on, so
             // re-rendering after a selection lands back on the same page instead of resetting to
             // page 0. Only the dropdowns that live on the Preferences page (region mode/timezone/
@@ -44,6 +44,29 @@ async function route(interaction) {
             const [action, targetUserId, pageStr] = interaction.customId.split('|');
             const currentPage = pageStr ? parseInt(pageStr, 10) : 0;
             const selectedValue = interaction.values[0];
+
+            // Timezone "Search for your city..." sentinel (added 2026-08-15 13:14 EDT) -- MUST be
+            // checked before deferUpdate() below, since showModal() has to be the interaction's
+            // FIRST response. Every other value on this dropdown still defers+updates normally.
+            if (action === 'set_timezone' && selectedValue === '__search__') {
+                // Builder classes, not raw snake_case API JSON -- matches every other showModal() call
+                // in this bot (e.g. commands/manage.js's buildSearchModal). discord.js's high-level
+                // showModal() expects a ModalBuilder; sendV2Payload's raw-JSON convention is specific
+                // to its own raw REST PATCH path and does not apply here.
+                const modal = new ModalBuilder()
+                    .setCustomId(`settingstz_search|${targetUserId}|${currentPage}`)
+                    .setTitle('Search for your timezone');
+                modal.addComponents(
+                    new ActionRowBuilder().addComponents(
+                        new TextInputBuilder().setCustomId('query').setLabel('City, country, or abbreviation')
+                            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. "Sydney", "Brazil", "PST"')
+                            .setRequired(true).setMaxLength(60)
+                    )
+                );
+                return await interaction.showModal(modal);
+            }
+
+            await interaction.deferUpdate(); // Extends execution context limits to handle network delays safely
 
             // SECURITY GATEWAY LOCK: Prevent external users from clicking inside an active configuration trace.
             // Admin-override (2026-07-18) -- resolvePanelActor lets ALLOWED_ADMIN_ID through without
@@ -217,6 +240,55 @@ async function route(interaction) {
             const settingsCommand = interaction.client.commands.get('settings');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
             return await settingsCommand.execute(syntheticInteraction, targetPage);
+        }
+
+        // TIMEZONE SEARCH MODAL SUBMIT (added 2026-08-15 13:14 EDT) -- reached from the "Search for
+        // your city..." sentinel above. Fuzzy-matches the typed query against utils/timezoneData.js's
+        // full expanded list (city names, country names, and abbreviations, not just IANA ids).
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('settingstz_search')) {
+            const [, targetUserId, pageStr] = interaction.customId.split('|');
+            const currentPage = pageStr ? parseInt(pageStr, 10) : 1;
+
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                try {
+                    await interaction.reply({ content: "🔒 **Not your dashboard!** Run `/settings` yourself to search your own timezone.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked timezone search (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            const query = interaction.fields.getTextInputValue('query');
+            const { searchTimezones } = require('../utils/timezoneData');
+            const matches = searchTimezones(query, 10);
+
+            if (matches.length === 0) {
+                return await interaction.reply({ content: `❌ No timezone matched **"${query}"** — try a bigger city near you, a country name, or an abbreviation like \`PST\`.`, ephemeral: true });
+            }
+            if (matches.length > 1) {
+                // Multiple hits -- rather than a second select+pick round-trip (which would need its
+                // own message identity to edit back into the real panel), just list the candidates
+                // and ask for a more specific search. Keeps this a single, coherent flow.
+                return await interaction.reply({
+                    content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
+                        + matches.map(m => `-# 🔹 \`${m.label}\``).join('\n'),
+                    ephemeral: true
+                });
+            }
+
+            // Exactly one match -- save it and redraw the real /settings panel in place, same
+            // save+redraw shape the plain dropdown branch above uses.
+            await interaction.deferUpdate();
+            const UserPreference = require('../models/UserPreference');
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+            prefs.timezone = matches[0].tz;
+            await prefs.save();
+
+            const settingsCommand = interaction.client.commands.get('settings');
+            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+            return await settingsCommand.execute(renderInteraction, currentPage);
         }
 }
 

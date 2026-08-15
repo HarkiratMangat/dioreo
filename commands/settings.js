@@ -157,25 +157,12 @@ module.exports = {
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
-        // Prettify the visual labels
-        const tzDisplayMap = {
-            "America/Toronto": "Eastern (Toronto/NY) (EDT)",
-            "America/Winnipeg": "Central (Winnipeg/Chicago) (CDT)",
-            "America/Edmonton": "Mountain (Edmonton/Denver) (MDT)",
-            "America/Vancouver": "Pacific (Vancouver/LA) (PDT)",
-            "Europe/London": "United Kingdom (London) (GMT)",
-            "Europe/Paris": "Central Europe (Paris/Berlin) (CET)",
-            "Europe/Athens": "Eastern Europe (Athens/Cairo) (EET)",
-            "Asia/Dubai": "Gulf Standard Time (Dubai) (GST)",
-            "Asia/Kolkata": "India Standard Time (New Delhi) (IST)",
-            "Asia/Singapore": "Singapore Standard Time (SGT)",
-            "Asia/Tokyo": "Japan Standard Time (Tokyo) (JST)",
-            "Australia/Sydney": "Eastern Australia Time (Sydney) (AEST)",
-            "Australia/Perth": "Western Australia Time (Perth) (AWST)",
-            "Pacific/Auckland": "New Zealand Time (Auckland) (NZST)",
-            "America/Sao_Paulo": "Brazil Standard Time (São Paulo) (BRT)"
-        };
-        const currentTzLabel = tzDisplayMap[tz] || tz;
+        // Expanded 2026-08-15 13:13 EDT -- see utils/timezoneData.js. QUICK_TIMEZONES is the
+        // dropdown's direct one-click picks; the full ALL_TIMEZONES list is only reachable through
+        // the dropdown's "Search for your city..." sentinel (see below), fuzzy-matched against city
+        // names/aliases via a modal since Discord's own select menu caps at 25 options.
+        const { QUICK_TIMEZONES, findTimezoneLabel } = require('../utils/timezoneData');
+        const currentTzLabel = findTimezoneLabel(tz);
 
         // NOTE (redesigned during review): aligned these value keys to match the exact style
         // options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/
@@ -333,7 +320,13 @@ module.exports = {
                 type: 1,
                 components: [{
                     type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
-                    options: Object.entries(tzDisplayMap).map(([val, lab]) => ({ label: lab, value: val, default: tz === val }))
+                    options: [
+                        ...QUICK_TIMEZONES.map(z => ({ label: z.label, value: z.tz, default: tz === z.tz })),
+                        // Sentinel value (not a real IANA zone) -- handlers/settings.js's `set_` branch
+                        // intercepts this BEFORE deferUpdate() and opens a search modal instead of
+                        // saving it. 25th option, right at the select-menu cap.
+                        { label: '🔍 Search for your city...', value: '__search__', description: 'Not in the list above? Type a city, country, or abbreviation.' }
+                    ]
                 }]
             });
 
@@ -409,7 +402,7 @@ module.exports = {
                     type: 3, custom_id: `set_accent_style|${userId}|1`, placeholder: "Choose how embed accent colors are picked...",
                     options: [
                         { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
-                        { label: "Avatar Color", value: "avatar", description: "Matches your avatar — your server one where you've set one", default: accentStyle === 'avatar' },
+                        { label: "Avatar Color", value: "avatar", description: "Matches your avatar (uses your server avatar if you've set one)", default: accentStyle === 'avatar' },
                         { label: "Dynamic Profile Colors", value: "dynamicProfile", description: "Randomly picks from every color saved across your profiles", default: accentStyle === 'dynamicProfile' }
                     ]
                 }]
@@ -423,22 +416,25 @@ module.exports = {
             // setting that explains itself. The one real override lives on /colors (`from:`), and
             // the in-panel toggle switches the view once server colours actually exist.
 
-            // Calendar's Active/All Events filter (2026-07-31 14:00 EDT) -- moved here from an
-            // in-page /calendar toggle, per Harkirat's explicit request. Same binary-toggle shape as
-            // page 0's buildToggleRow above, but that helper is hardcoded to PUBLIC/EPHEMERAL
-            // wording, so this is its own small block rather than a reused call. Default 'all',
-            // matching the UserPreference schema default.
-            const eventFilter = prefs.calendarEventFilter || 'all';
-            const isActiveOnly = eventFilter === 'active';
-            containerComponents.push({
-                type: 9,
-                components: [{ type: 10, content: `**Calendar Events** = \`${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}\`` }],
-                accessory: {
-                    type: 2, style: 2,
-                    label: isActiveOnly ? 'Show All' : 'Show Active Only',
-                    custom_id: `${isActiveOnly ? 'toggle_calfilter_all' : 'toggle_calfilter_active'}|${userId}`
-                }
-            });
+            // Calendar's Active/All Events filter -- SILENCED 2026-08-15 13:01 EDT (Harkirat's direct
+            // request): a saved default preference wasn't earning its keep as its own /settings row,
+            // so this toggle no longer renders and the preference is no longer written or read (see
+            // commands/calendar.js's `filterMode`, which now ignores `calendarEventFilter` entirely --
+            // `/calendar`'s own `view` slash option is the one-off per-invocation replacement).
+            // Deliberately NOT deleted -- kept intact behind this comment in case the preference comes
+            // back. `handlers/settings.js`'s `toggle_calfilter_active`/`_all` branches are correspondingly
+            // unreachable now (nothing renders the button that would fire them) but are also left in place.
+            // const eventFilter = prefs.calendarEventFilter || 'all';
+            // const isActiveOnly = eventFilter === 'active';
+            // containerComponents.push({
+            //     type: 9,
+            //     components: [{ type: 10, content: `**Calendar Events** = \`${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}\`` }],
+            //     accessory: {
+            //         type: 2, style: 2,
+            //         label: isActiveOnly ? 'Show All' : 'Show Active Only',
+            //         custom_id: `${isActiveOnly ? 'toggle_calfilter_all' : 'toggle_calfilter_active'}|${userId}`
+            //     }
+            // });
 
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }

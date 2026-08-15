@@ -16,8 +16,9 @@
 // See .claude/rules/interaction-router.md.
 
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
+const { hasCommandAccess } = require('../utils/adminAccess');
 
-const OWNED_PREFIXES = ["help_category"];
+const OWNED_PREFIXES = ["help_category", "help_guide_pick"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -30,6 +31,22 @@ async function route(interaction) {
             const helpCommand = interaction.client.commands.get('help');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await helpCommand.execute(syntheticInteraction, interaction.values[0]);
+        }
+
+        // B2b. BOT ADMIN'S "jump to a /manage guide" DROPDOWN (item 10, added 2026-08-15 13:11 EDT).
+        // Re-checks perms.manage server-side rather than trusting the dropdown having been hidden --
+        // same defense-in-depth every other admin-gated action in this bot uses (the dropdown is
+        // only ever RENDERED for someone who already has it, this is the click-time re-check).
+        // Opens as its own new ephemeral reply, same pattern /manage's own Guide button uses
+        // (utils/manageActions.js's openFormatGuide) -- never edits the /help page underneath it.
+        if (interaction.customId === 'help_guide_pick') {
+            if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
+                return await interaction.reply({ content: "🔒 You don't have access to `/manage`.", ephemeral: true });
+            }
+            const { buildGuideContainer } = require('../utils/manageGuides');
+            const { sendV2Payload } = require('../utils/sendV2Payload');
+            await interaction.deferReply({ ephemeral: true });
+            return await sendV2Payload(interaction, buildGuideContainer(interaction.values[0]));
         }
 }
 

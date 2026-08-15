@@ -50,6 +50,37 @@ const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
+const { fuzzyMatch } = require('../utils/search');
+
+// Extra keywords that should also resolve a `/help cmd:` query -- typed words that don't literally
+// match a command/category name but obviously mean it (added 2026-08-15 13:09 EDT, Harkirat's
+// request to expand every cmd: alias, /admin's "server"/"owner" specifically named). Checked only
+// AFTER every real command/category name fails to match, so a real name always wins over a loose
+// keyword -- see resolveCommandToCategory and suggestHelpCommandNames below, the two places this
+// is consulted. Not meant to be exhaustive linguistic coverage, just the words someone would
+// plausibly type looking for that command.
+const COMMAND_ALIASES = {
+    '/admin': ['server', 'owner', 'serveradmin', 'permissions', 'visibility', 'moderation'],
+    '/manage': ['database', 'data', 'db', 'admins', 'announcement', 'announcements'],
+    '/alerts': ['alert', 'health', 'log', 'logs', 'uptime'],
+    '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
+    '/settings': ['preferences', 'prefs', 'config', 'timezone'],
+    '/colors': ['color', 'accent', 'palette', 'avatar'],
+    '/timestamp': ['time', 'clock', 'date'],
+    '/all': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds'],
+    '/dmz': ['dmzloadout', 'dmzloadouts'],
+    '/draws': ['draw', 'luckydraw', 'luckydraws'],
+    '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
+    '/calendar': ['events', 'schedule', 'timeline'],
+    '/patch notes': ['patch', 'patchnotes', 'balance', 'changes', 'notes'],
+    '/season end': ['seasonend', 'battlepass', 'bp', 'deadlines']
+};
+// Category-level aliases -- a word that should land on a whole category's page rather than a
+// single command's (e.g. "bot admin" -> the Bot Admin category itself, not any one of its commands).
+const CATEGORY_ALIASES = {
+    botadmin: ['botadmin', 'admin', 'adminpanel', 'bot admin'],
+    preferences: ['pref']
+};
 
 // Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
 // "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
@@ -173,7 +204,37 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
     }
     const liveNames = await getLiveGunsmithCommandNames();
     if (liveNames.some(n => `/${n}` === cmdName)) return 'gunsmiths';
+
+    // Alias fallback -- only reached once no real command/category name matched, so "server" only
+    // ever means /admin when nothing is literally named "server". Scoped by the same `perms` as
+    // above, so an alias can never surface a page its own command wouldn't have.
+    const normalized = cmdName.toLowerCase().replace(/^\//, '').trim();
+    for (const cat of visibleCategories(perms)) {
+        for (const c of visibleCommands(cat, perms)) {
+            if ((COMMAND_ALIASES[c.name] || []).includes(normalized)) return cat.key;
+        }
+        if ((CATEGORY_ALIASES[cat.key] || []).includes(normalized)) return cat.key;
+    }
     return null;
+}
+
+// Every real command name a query could resolve to, INCLUDING a match via alias -- used by
+// /help's `cmd:` autocomplete so typing "server" suggests real entry "/admin" rather than nothing.
+// The suggested VALUE is always a real command name (never a bare alias word), so selecting it and
+// pressing enter always hits the direct-match branch above with no alias lookup needed at that point.
+async function suggestHelpCommandNames(query, perms = {}) {
+    const allNames = await getAllHelpCommandNames(perms);
+    const direct = allNames.filter(name => fuzzyMatch(query, name));
+
+    const aliasMatched = new Set();
+    for (const cat of visibleCategories(perms)) {
+        for (const c of visibleCommands(cat, perms)) {
+            const aliases = COMMAND_ALIASES[c.name] || [];
+            if (aliases.some(a => fuzzyMatch(query, a))) aliasMatched.add(c.name);
+        }
+    }
+
+    return [...new Set([...direct, ...aliasMatched])].slice(0, 25);
 }
 
 // Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the
@@ -228,7 +289,7 @@ function buildUtilitiesBody(perms, client) {
 // under each of them makes no sense"), and the same pass cut the /admin section roughly in half for
 // being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
 function buildPreferencesBody(perms = {}, client) {
-    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, calendar filter, accent style, and more)`;
+    const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
 
     if (!perms.serverAdmin) {
         return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
@@ -236,7 +297,7 @@ function buildPreferencesBody(perms = {}, client) {
 
     return settings
         + SECTION_BREAK
-        + `### ${mentionCommand(client, '/admin')} *(Admin)*\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
+        + `### ${mentionCommand(client, '/admin')}\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n`
         + `-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n`
         + `-# **Rule order** · the most specific one wins\n`
         + `-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n`
@@ -261,26 +322,47 @@ function buildPreferencesBody(perms = {}, client) {
 // the server they are run in, which is exactly why no per-guild permission could ever grant them.
 // That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the
 // section, it is not something you do.
+// ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render
+// all three commands' full detail unconditionally, so an admin granted only /alerts still read the
+// complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those
+// commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page
+// exists at all; each command's own perms key (perms.alerts/perms.autobuild/perms.manage) has to be
+// checked again HERE, same as visibleCommands() already does for the directory and dropdown.
 function buildBotAdminBody(perms, client) {
-    return `### ${mentionCommand(client, '/alerts')}\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
-        + `-# 🔹 No options of its own\n`
-        + `### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
-        + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
-        + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
-        + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
-        + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
-        + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure\n`
-        + `### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n`
-        + `-# 🔹 \`[data_for]\` Open a section directly: \`Draws\` · \`Calendar\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Patch Notes\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Manage Admins\` · \`Announcement\` · \`Bulk Format Guide\`\n`
-        + `-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement.`
+    const sections = [];
+    if (perms.alerts) {
+        sections.push(`### ${mentionCommand(client, '/alerts')}\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
+            + `-# 🔹 No options of its own`);
+    }
+    if (perms.autobuild) {
+        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+            + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
+            + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
+            + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
+            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
+            + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
+    }
+    if (perms.manage) {
+        sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n`
+            + `-# 🔹 \`[content]\` Open a section directly: \`Draws\` · \`Calendar\` · \`Patch Notes\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Manage Admins\` · \`Announcement\` · \`Bulk Format Guide\`\n`
+            + `-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement.`);
+    }
+
+    const examples = [];
+    if (perms.alerts) examples.push(`-# 🔸 **/alerts** visibility:\`Public\` — share the health log in a channel`);
+    if (perms.autobuild) {
+        examples.push(`-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\``);
+        examples.push(`-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted`);
+    }
+    if (perms.manage) {
+        examples.push(`-# 🔸 **/manage** content:\`Patch Notes\` — straight to the section, no clicking through`);
+        examples.push(`-# 🔸 **/manage** content:\`Season: Next Season Draft\` — stage next season without touching what is live`);
+    }
+
+    return sections.join('\n')
         + SECTION_BREAK
-        + `-# **Options** · all three\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n`
-        + `-# 🔸 **/alerts** visibility:\`Public\` — share the health log in a channel\n`
-        + `-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\`\n`
-        + `-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted\n`
-        + `-# 🔸 **/manage** data_for:\`Patch Notes\` — straight to the section, no clicking through\n`
-        + `-# 🔸 **/manage** data_for:\`Season: Next Season Draft\` — stage next season without touching what is live\n\n`
+        + `-# **Options** · every command above\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n${examples.join('\n')}\n\n`
         + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }
 
@@ -396,6 +478,27 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
         // reused verbatim, since the two pages need different things said.
         components.push({ type: 10, content: `-# To see other commands, use the dropdown below or **\`/help <cmd>\`**` });
         components.push(buildCategorySelectRow(selectedKey, perms));
+
+        // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump
+        // straight to one of /manage's rich guide topics from THIS page, without having to open
+        // /manage first. Only offered when perms.manage is true (Manage Admins/Announcement's own
+        // guides are manage-gated, same as every other /manage guide topic) -- gating this on
+        // perms.botAdmin instead would offer it to an admin granted only /alerts, who cannot open
+        // /manage at all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
+        if (selectedKey === 'botadmin' && perms.manage) {
+            const { topicDefs } = require('../utils/manageGuides');
+            components.push({ type: 14, spacing: 1, divider: true });
+            components.push({ type: 10, content: `-# ${emojis.guide} Jump straight to a \`/manage\` bulk format guide:` });
+            components.push({
+                type: 1,
+                components: [{
+                    type: 3,
+                    custom_id: 'help_guide_pick',
+                    placeholder: 'Open a /manage guide topic...',
+                    options: topicDefs().map(t => ({ label: t.label, value: t.key, description: t.description, emoji: t.emoji || undefined }))
+                }]
+            });
+        }
     }
 
     return { type: 17, accent_color: accentColor, components };
@@ -404,7 +507,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription("See what Dioreo can do, and how to reach Harkirat with bugs or ideas")
+        .setDescription("See what Dioreo can do, and how to reach Dior with bugs or ideas")
         .addStringOption(option => option.setName('cmd').setDescription('Jump straight to a specific command').setAutocomplete(true))
         .addStringOption(option => option.setName('visibility').setDescription(`${VISIBILITY_DESCRIPTION} (Defaults to only you.)`).addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
@@ -414,6 +517,7 @@ module.exports = {
     buildContainer,
     getAllHelpCommandNames,
     resolveCommandToCategory,
+    suggestHelpCommandNames,
 
     // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic
     // interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`.

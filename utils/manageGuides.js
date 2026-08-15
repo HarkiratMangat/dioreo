@@ -27,7 +27,9 @@ const GROUP_TO_TOPIC = {
     loadouts_mp: 'loadouts',
     loadouts_dmz: 'loadouts',
     patchnotes: 'patchnotes',
-    seasondraft: 'seasondraft'
+    seasondraft: 'seasondraft',
+    manageadmins: 'admins',
+    announcement: 'announcements'
 };
 
 function resolveGuideTopic(group) {
@@ -44,7 +46,9 @@ function topicDefs() {
         { key: 'calendar', label: 'Calendar', description: 'Bullet-separated event paste format', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
         { key: 'loadouts', label: 'Loadouts', description: 'MP/DMZ block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
-        { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) }
+        { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
+        { key: 'admins', label: 'Manage Admins', description: 'Granting/editing admin access', rawEmoji: emojis.serverSettings, emoji: emojis.parseEmoji(emojis.serverSettings) },
+        { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.mngInfo, emoji: emojis.parseEmoji(emojis.mngInfo) }
     ];
 }
 
@@ -157,12 +161,41 @@ function seasondraftSections() {
     ];
 }
 
+function adminsSections() {
+    return [
+        section('📋 This Isn\'t A Bulk Paste Either — It\'s An Access List',
+            'Manage Admins is a runtime-editable allowlist that SUPPLEMENTS the owner -- trusted people can be granted admin access without a code deploy per grant/revoke. Owner-only to change; any admin can see this page.'),
+        section('➕ Grant Admin',
+            'Type a Discord user ID, then pick what they can access: specific `/manage` pages, whole admin commands (`/manage`/`/alerts`/`/autobuild`/`/audit`), or "all".\n' +
+            '-# A granted admin can use the admin commands they were given -- they can never edit this allowlist itself, even if granted "all".'),
+        section('✏️ Edit Permissions / Revoke',
+            'Live directly on each admin\'s own card (no search-by-ID modal needed) -- **Edit Permissions** re-opens the same scoped picker Grant used; **Revoke** removes that person entirely, immediately, no second confirm.'),
+        section('💡 Tip',
+            'This list is separate from the one hardcoded owner ID -- revoking or narrowing an admin here never affects the owner\'s own access.')
+    ];
+}
+
+function announcementsSections() {
+    return [
+        section('📋 This Isn\'t A Bulk Paste Either — It\'s A Notice Feed',
+            'Announcement posts a message every user sees (once) on their next command, until it expires. Each one is its own independent entry -- posting a new one never touches the others.'),
+        section('📝 Post New Announcement',
+            'Write the message, then optionally set an expiry -- defaults to **60 days**, or type your own number of days, or `never`.'),
+        section('✏️ Edit / Delete',
+            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above -- **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** removes it immediately, no second confirm.'),
+        section('💡 Tip',
+            'Only ACTIVE (non-expired) announcements are listed here -- an expired one has already stopped showing to users and drops off this list on its own.')
+    ];
+}
+
 const TOPIC_SECTIONS = {
     draws: drawsSections,
     calendar: calendarSections,
     loadouts: loadoutsSections,
     patchnotes: patchnotesSections,
-    seasondraft: seasondraftSections
+    seasondraft: seasondraftSections,
+    admins: adminsSections,
+    announcements: announcementsSections
 };
 
 // Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide
@@ -173,7 +206,9 @@ const TOPIC_ACCENT = {
     calendar: 3821672,    // Slate Harbor -- calendar.js's PRESET_ACCENT
     loadouts: 16725040,   // MP red, sampled from the Rank_7Legendary emoji (manage.js's PAGE_ACCENT.loadouts_mp)
     patchnotes: 15909424, // Patch Gold -- patchnotes.js's PRESET_ACCENT
-    seasondraft: 3821672  // Slate Harbor -- same family as Calendar (draft mirrors draws+calendar)
+    seasondraft: 3821672, // Slate Harbor -- same family as Calendar (draft mirrors draws+calendar)
+    admins: 2831409,       // #2b2d31 -- manage.js's PANEL_ACCENT fallback (manageadmins has no PAGE_ACCENT entry of its own)
+    announcements: 2831409 // #2b2d31 -- same PANEL_ACCENT fallback (announcement has no PAGE_ACCENT entry of its own)
 };
 
 function buildGuideContainer(topicKey) {

@@ -20,14 +20,16 @@ const emojis = require('./emojiMap');
 // page size handles both cases correctly without any per-source special-casing.
 const ENTRIES_PER_PAGE = 4;
 
-// heading: the {@user}-suffixed pattern Harkirat asked for ("Colors From Your Avatar {@user}").
-// label: the page-switch button text -- "Deco" not "Decoration" per his request.
+// heading: the possessive pattern ("{@user}'s Avatar Colors") -- reworded 2026-08-15 from the older
+// "Colors From Your Avatar {@user}" phrasing, which read oddly once a mention followed "Your" directly
+// (whose profile is it, "your" or the mentioned user's?). label: the page-switch button text --
+// "Deco" not "Decoration" per Harkirat's request.
 const SOURCE_META = {
-    avatar: { label: 'Avatar', heading: 'Colors From Your Avatar' },
-    banner: { label: 'Banner', heading: 'Colors From Your Banner' },
-    name: { label: 'Name', heading: 'Colors From Your Display Name' },
-    nameplate: { label: 'Nameplate', heading: 'Colors From Your Nameplate' },
-    decoration: { label: 'Deco', heading: 'Colors From Your Deco' }
+    avatar: { label: 'Avatar', heading: 'Avatar' },
+    banner: { label: 'Banner', heading: 'Banner' },
+    name: { label: 'Name', heading: 'Display Name' },
+    nameplate: { label: 'Nameplate', heading: 'Nameplate' },
+    decoration: { label: 'Deco', heading: 'Decoration' }
 };
 const SOURCE_ORDER = ['avatar', 'banner', 'name', 'nameplate', 'decoration'];
 
@@ -670,8 +672,8 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // resolve CONTEXTUALLY (server profile where the user has one, global otherwise) with no stored
     // preference, so the panel itself has to say which one it's showing -- otherwise "it auto
     // selected my server colors" is invisible until you go looking for the switch button.
-    const sourceLabel = variant === 'server' ? 'Server Profile' : 'Global Profile';
-    const headingContent = `## ${meta.heading} ${`<@${targetUserId}>`}\n> Extracted from: **\`${sourceLabel}\`**`;
+    const sourceLabel = variant === 'server' ? 'Server Profile' : 'Main Profile';
+    const headingContent = `## <@${targetUserId}>'s ${meta.heading} Colors\n> Extracted from: **\`${sourceLabel}\`**`;
     // Deco's thumbnail prefers the cached animated WebP (resolved upstream in colorPalette.js via
     // utils/decorationWebpCache.js's lossless pipeline, real alpha, zero dithering) over the raw APNG --
     // WebP autoplays inline in a Section thumbnail the way Discord never lets APNG/webm do (see
@@ -773,7 +775,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors
     // for the (real, and otherwise easy to miss) case where they've since updated their avatar/
     // banner/etc and the panel is still showing the old cached extraction.
-    containerComponents.push({ type: 10, content: "-# Switch below to see colors from your other profile elements.\n-# (Tip: Updated your profile? `Refresh Colors`)" });
+    containerComponents.push({ type: 10, content: "-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)" });
     containerComponents.push({
         type: 1,
         components: availableSources.map(key => ({
@@ -816,7 +818,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
         const goingTo = v === 's' ? 'g' : 's';
         refreshRowComponents.push({
             type: 2, style: 2,
-            label: v === 's' ? 'Show Global Colors' : 'Show Server Colors',
+            label: v === 's' ? 'Show Main Colors' : 'Show Server Colors',
             custom_id: `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
             // ⚠️ STYLE 2 (grey) IS DELIBERATE, not an unmade decision (Harkirat was 50/50 on it
             // 2026-08-12 22:11 EDT). Refresh Colors beside it is the row's one PRIMARY action; a second
@@ -902,11 +904,15 @@ function buildRefreshNotice({ source, activeIsGuild = false, changed, accentClea
     // version. A sweep that refreshed the banner while the avatar on screen was unchanged is still
     // "new colors found" -- reporting it per-source is what made the old message insist nothing had
     // happened while quietly updating three other pages.
+    // Formatting reworked 2026-08-15 (Harkirat): a real ### heading instead of an inline bolded emoji
+    // line, and the closing hint switched from "-#" small-text to italics -- the old hint used the SAME
+    // "-#" style as the "Refreshed X:" row labels just above it, so the two blurred together visually.
+    // Italics is now the one distinct "this is a hint, not a list label" signal.
     if (mainProfile.length || serverProfile.length) {
-        return `${emojis.eyedropper} **New colors found!**`
+        return `### ${emojis.eyedropper} **New colors found!**`
             + row('Main Profile', mainProfile)
             + row('Server Profile', serverProfile)
-            + '\n-# Everything else is already up-to-date.';
+            + '\n*Everything else is already up-to-date.*';
     }
 
     // Palette bytes matched, but that is not "nothing happened" when the accent cache was cleared: a
@@ -914,11 +920,11 @@ function buildRefreshNotice({ source, activeIsGuild = false, changed, accentClea
     // sees no delta even though its accent invalidation is the real, visible fix -- embeds tinted by
     // this source were stale until this exact press.
     if (accentCleared) {
-        return `${emojis.eyedropper} **${label(source)}** — palette matched, but its accent color was stale and is now refreshed!`;
+        return `### ${emojis.eyedropper} **Accent refreshed**\n**${label(source)}** — palette matched, but its accent color was stale and is now refreshed.`;
     }
 
-    return `${emojis.swatches} **All colors are already up-to-date!**`
-        + '\n-# The same image always gives the same colors — refresh *after* you change it.';
+    return `### ${emojis.swatches} **All colors are already up-to-date!**`
+        + '\n*The same image always gives the same colors — refresh after you change it.*';
 }
 
 module.exports = { buildColorPalettePanel, SOURCE_ORDER, SOURCE_META, getAvailableSources, buildSwatchEntries, buildRefreshNotice };

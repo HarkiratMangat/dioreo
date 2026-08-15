@@ -261,33 +261,35 @@ async function handleInteraction(interaction) {
             // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live
             // per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
-                const { getAllHelpCommandNames } = require('../commands/help');
+                const { suggestHelpCommandNames } = require('../commands/help');
                 // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the
                 // bot's own whitelist) are suggested only to someone who could use them -- see
                 // commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('../utils/guildPolicy');
                 const { isAdmin, hasCommandAccess } = require('../utils/adminAccess');
-                const allCommands = await getAllHelpCommandNames({
+                // suggestHelpCommandNames also matches on alias keywords (e.g. "server" -> /admin,
+                // "database" -> /manage) -- see commands/help.js's COMMAND_ALIASES.
+                const filtered = await suggestHelpCommandNames(focusedValue, {
                     serverAdmin: isServerAdmin(interaction),
                     botAdmin: await isAdmin(interaction.user.id),
                     manage: await hasCommandAccess(interaction.user.id, 'manage'),
                     alerts: await hasCommandAccess(interaction.user.id, 'alerts'),
                     autobuild: await hasCommandAccess(interaction.user.id, 'autobuild'),
                 });
-                const filtered = allCommands.filter(name => fuzzyMatch(focusedValue, name)).slice(0, 25);
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));
             }
 
             // === ROUTE B3 (stage 3, 2026-08-14 18:05 EDT): /manage's action: option -- scoped by the
-            // sibling data_for option, since Discord cannot scope one option's static choices by
-            // another option's live value (the whole reason this is autocomplete, not a `choices()`
-            // list -- see the registry's comment in utils/manageActions.js). NOTE (removed
-            // 2026-07-09, re-added here for a different reason): /manage's old autocomplete route was
-            // for search-by-name (draws/loadouts/calendar/patchnotes edit/delete), replaced by the
-            // one-field search modal and never coming back. This route only ever suggests ACTION
-            // IDS off the registry, never touches a collection. ===
+            // sibling content option (renamed from `data_for` 2026-08-15 13:27 EDT), since Discord
+            // cannot scope one option's static choices by another option's live value (the whole
+            // reason this is autocomplete, not a `choices()` list -- see the registry's comment in
+            // utils/manageActions.js). NOTE (removed 2026-07-09, re-added here for a different
+            // reason): /manage's old autocomplete route was for search-by-name (draws/loadouts/
+            // calendar/patchnotes edit/delete), replaced by the one-field search modal and never
+            // coming back. This route only ever suggests ACTION IDS off the registry, never touches
+            // a collection. ===
             if (commandName === 'manage') {
-                const page = interaction.options.getString('data_for');
+                const page = interaction.options.getString('content');
                 if (!page) return await interaction.respond([]); // description tells the user to pick a page first
                 // Same admin gate execute() itself opens with, checked here too so a non-admin
                 // (or an admin scoped away from this page) never even sees the action names --
