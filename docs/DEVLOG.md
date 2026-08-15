@@ -154,6 +154,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-14 17:26 EDT — `/manage` stops being one 2,416-line file (v3.20.0)
 - 2026-08-14 18:10 EDT — /manage's action option, and a spec that assumed too much (v3.21.0)
 - 2026-08-14 18:21 EDT — Every slash command in the bot was one stray interaction away from silently failing (v3.21.0)
+- 2026-08-15 02:05 EDT — The full nameplate/decoration catalog lands, and a bot token gets a hard no (v3.22.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2736,6 +2737,22 @@ The bug has existed since `colors.js` was the first handler extracted from the o
 Fixed with the one line every other handler already carries: `if (typeof interaction.customId !== 'string') return false;`. Deliberately NOT `ownsCustomId()`/`OWNED_PREFIXES` gating -- this module's whole contract is that an unrecognised `colors_*` id still falls through to the router's remaining branches, and gating on the prefix would swallow ids this handler was never meant to own (a documented trap from an earlier audit that recommended exactly that). The interaction-router rule file's existing "don't fix colors.js by adding ownsCustomId()" warning turned out to be ambiguous in exactly this way -- it meant "don't gate on the prefix," and reading it as "don't add any guard at all" is how this survived a full day of subsequent sessions working in this exact area. Rule file updated to draw that distinction explicitly.
 
 Verified: dev bot boots clean and stays clean over a 40-second window post-fix, versus crashing within seconds pre-fix. Full `npm test` green, `docs:audit` 40/41 verified + 1 correctly skipped. This fix rides in the same PR as the `/manage` stage 3 `action:` option (see that entry, same version) since it was found while verifying that work and blocked the verification outright -- without it, no slash command interaction of any kind could reach `execute()` to be tested.
+
+## 2026-08-15 02:05 EDT — The full nameplate/decoration catalog lands, and a bot token gets a hard no (v3.22.0-pre)
+
+Harkirat hand-authored a complete snapshot of Discord's nameplate/decoration collectibles catalog — 925 SKUs across 88 collections — and dropped it into the repo. Getting it in properly meant fixing a process slip first: the previous turn's edits had landed directly on `v3-pre-release` instead of a feature branch, exactly the workflow this repo has stood on since 2026-07-24. Caught immediately, moved to `docs/nameplate-catalog-sync` before anything was committed.
+
+The catalog file was renamed to `nameplate-decoration-catalog.json` and paired with a companion reference doc covering its schema, the `palette_hex` (bed color) vs. `variant_value` (art colorway) distinction, and the display-name rule — all re-derived from the real data and checked against it, not assumed from the handoff that described it.
+
+Harkirat also brought a Python script — his own, using a Discord user token — that pulls the live catalog and merges in anything new. Before touching it, the obvious question got tested rather than guessed: can a bot token hit the same endpoint? Live, on the exact API version the script uses: `403 {"code": 20001, "message": "Bots cannot use this endpoint"}`. Discord hard-blocks it. So the self-bot approach isn't a workaround, it's the only path — which settled the design question in the script's favor rather than trying to route around it with the existing bot token.
+
+Rebuilt as `scripts/syncNameplateCatalog.py`, the repo's first Python file: credentials moved out of source into a gitignored `.env`, field order matched to the existing catalog exactly so a no-op run stays byte-identical, and — Harkirat's own call, mid-session — deliberately left unscheduled. No cron, no launchd. A once-in-a-while manual run stays a personal utility; a weekly cron job on a user token starts looking like standing account automation, and that line mattered enough to change the plan on the spot.
+
+Then the actual "run the merge flow" ask turned into two more catches, both from hooks that exist for exactly this: `package.json` got bumped to `3.22.0-pre` but `package-lock.json` didn't move with it — caught by `docs:audit`'s `lock-version` check before the PR was mergeable, not after. And the release-readiness gate wanted a design note for the new script under `scripts/**`, which is what `.claude/rules/scripts-and-migrations.md` exists to hold — added a line there rather than letting a real script go undocumented in the one place a future session would look for it.
+
+Also fixed in passing, unrelated to the catalog but sitting right at the top of the changelog: the previous entry (`v3.21.0`) cited `(#PR-pending)` instead of its real PR number. Checked `gh pr list` before assuming it was another direct-push violation — it wasn't, PR #129 was real and merged, just never backfilled. A one-line fix once verified, not a process problem.
+
+The open design work — whether to bulk-cache the whole catalog into the existing Cloudinary/Discord-storage-channel pipeline, and whether to move it to a Mongoose collection — got filed against the existing tracked item in `docs/db-deferred-list.md` rather than left to live only in chat, including Harkirat's direct requirement that the existing lazy per-user-equip discovery stay as a failsafe fallback for any SKU the catalog misses.
 
 # Part B — Lessons Ledger (thematic)
 
