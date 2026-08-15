@@ -157,6 +157,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 02:05 EDT — The full nameplate/decoration catalog lands, and a bot token gets a hard no (v3.22.0-pre)
 - 2026-08-15 12:18 EDT — The 925-SKU catalog gets pre-rendered, not discovered one equip at a time (v3.23.0-pre)
 - 2026-08-15 12:38 EDT — Closing the /manage decomposition: an audit log, and the operation functions with no interaction to hook into (v3.24.0-pre)
+- 2026-08-15 13:40 EDT — A bugs-fix batch: the rename Harkirat picked, and a self-audit that caught a real defect (v3.25.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2779,6 +2780,17 @@ The one real judgement call was where `recordChange()` actually gets called from
 Harkirat's call on shape: a separate `/audit` command, not an "Audit Log" page inside `/manage`, reversing the design spec's own stated recommendation. Worth remembering for the next time a spec's recommendation and the person who commissioned it disagree — the spec is a starting point, not a verdict.
 
 The privacy side was budgeted for up front rather than discovered at merge time, because stage 4's own handoff flagged it as "the one thing that will bite you" — `ChangeLog.actorId` is a per-user Discord ID, so `docs/legal/PRIVACY.md` needed a real update in the same change (§2.1b + Appendix A, version bump), plus `dior legal build` and a `public/` commit, which none of the first three stages needed. Also widened `docs-audit.mjs`'s `privacy-model-coverage` heuristic to match `actorId` itself, alongside the existing `discordId`/`userId`/`updatedBy`/`createdBy`/`authorId`/`ownerId` set — the check already existed specifically to catch a new per-user model shipping undisclosed, and a field it can't even recognize as personal data would have been exactly the kind of silent gap it exists to close.
+
+## 2026-08-15 13:40 EDT — A bugs-fix batch: the rename Harkirat picked, and a self-audit that caught a real defect (v3.25.0-pre)
+
+Eighteen items from a screenshots-plus-written-list bug pass, worked in one continuous session across `/colors`, `/manage`, `/help`, and `/settings` — the kind of batch that's easy to under-scope by fixing only the wording and missing the real bugs sitting next to it.
+
+Two things stood out. First, `/manage`'s `data_for` option got renamed a fourth time, to `content` — and this time the choice was Harkirat's, not another guess. The rule file already documented that `page` and `section` had each failed the same test (neither named the actual thing being picked), so rather than propose a fifth candidate on no new information, the session asked directly. The layout complaint turned out to be similarly specific once asked about: not "too many pickers," but that the `content` slash option and the in-panel `mng_pagesel` dropdown had drifted into disagreeing orders — Season entries grouped together in one, scattered to the end in the other. Fixing the actual disagreement took less code than the guessed "collapse three surfaces into one" redesign would have, and fixed the thing that was actually bothering him.
+
+Second: a self-audit, run with sequential-thinking after the fixes felt complete, caught a real defect before it shipped. The new timezone-search modal had been built from raw snake_case API JSON — the shape `sendV2Payload`'s raw REST path uses — when every other `showModal()` call in this codebase uses discord.js's `ModalBuilder`/`ActionRowBuilder`/`TextInputBuilder` classes instead. `node --check` and the full test suite were both blind to it, because it's a runtime API-shape mismatch, not a syntax error. The audit also caught two rule-doc bullets and one `/help` description that had gone stale the moment the Calendar Events toggle was silenced earlier in the same session — the kind of "I changed the behavior but not every place that describes it" gap that's easy to leave for someone else to trip over.
+
+### Lesson
+Automated tests prove a claim only about the property they were written to check. `node --check` proves a file parses; it says nothing about whether the object shape an API expects matches the object shape a file constructs. Passing every existing test on a new code path is not the same as having verified that path — it's evidence for whatever those tests happen to cover, and no more. The fix here wasn't a smarter test; it was checking the actual convention already established elsewhere in the codebase (`buildSearchModal`) rather than trusting that a payload which *looked* consistent with the rest of the bot's V2-JSON style would work everywhere `interaction.showModal()` is called.
 
 # Part B — Lessons Ledger (thematic)
 
