@@ -14,11 +14,12 @@ const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { mentionCommand } = require('../utils/commandMentions');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, PRESET_ACCENT } = require('./drawprices');
-const { pullCount, upgradeCost } = require('../utils/drawCost');
-const { CP_PACKAGES } = require('../utils/cpPackages');
+const { DRAW_META, DRAW_DATA, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT } = require('./drawprices');
+const { pullCount, upgradeCost, spentSoFar, remainingToFinish, remainingToPull, reachableWithBudget } = require('../utils/drawCost');
+const { CP_PACKAGES, normalCp, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 
 const DRAW_KEYS = Object.keys(DRAW_META);
 
@@ -207,6 +208,157 @@ function buildSetupPanel(state, accentColor, { liveDoubleCPEntry = null, assertD
     };
 }
 
+// ==========================================
+// STAGE B -- RESULTS PANEL
+// ==========================================
+function formatCP(n) { return n.toLocaleString('en-US'); }
+
+// Same visual convention as drawprices.js's boldDrawSequence/cumulativeSequence (not imported --
+// those read a full `entry.draws` array; this reads a SLICE starting at pullsDone, which is a
+// different enough shape that reusing them would need the same shim either way).
+function cumulativeFrom(draws, fromIndex, startingTotal) {
+    let running = startingTotal;
+    return draws.slice(fromIndex).map(n => { running += n; return formatCP(running); }).join(' › ');
+}
+
+// The savings callout's baseline (design item 8): the smallest single package that covers the
+// shortfall alone -- optimizePurchase's own `naive` result already computes exactly this.
+function buildEntitlementList(mask) {
+    return CP_PACKAGES.filter((p, i) => (mask & (1 << i)) !== 0).map(p => p.id);
+}
+
+function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}) {
+    const meta = DRAW_META[state.drawKey];
+    const entry = DRAW_DATA[state.region][state.drawKey];
+    const components = [
+        buildTitleBlock('Cost Calculator — Results', emojis.drawPrices, meta.name, 2, true),
+        { type: 14, spacing: 2, divider: true }
+    ];
+
+    // Absent data (design "Degradation" section) -- doubleEpicCharacters at region_20/region_30.
+    // Never interpolate: say so plainly and render no purchase recommendation at all.
+    if (!entry) {
+        components.push({ type: 10, content: `-# We haven't sourced real pricing data for **${meta.name}** at this region yet. Switch regions below, or check back later.` });
+        components.push({
+            type: 1,
+            components: REGION_ORDER.map(key => ({
+                type: 2, style: key === state.region ? 1 : 2, disabled: key === state.region,
+                custom_id: encodeState('region', { ...state, region: key }),
+                label: `${key.split('_')[1]} CP`,
+                emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
+            }))
+        });
+        components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Edit Inputs', custom_id: encodeState('edit', state) }] });
+        return { type: 17, accent_color: accentColor, components };
+    }
+
+    const total = entry.draws.length;
+    const spent = spentSoFar(state.region, state.drawKey, state.pullsDone);
+    const upgrade = state.includeUpgrades ? upgradeCost(state.region, state.drawKey) : null;
+
+    let headline, shortfall, pullsRemainingText, remainingCp;
+    let budgetResult = null;
+
+    if (state.target === 'B') {
+        // Budget mode -- targetValue is a CP amount (see this module's header note: the "budget in
+        // real money" half of design decision 10 is not built in this pass; see the PR description).
+        budgetResult = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
+        headline = `Spending **${formatCP(state.targetValue)} CP** from pull ${state.pullsDone} gets you to **pull ${budgetResult.pullsReachable}** of ${total}.`;
+        remainingCp = 0; // budget mode has no "shortfall to buy" -- it answers a different question
+        shortfall = 0;
+    } else {
+        const targetPull = state.target === 'P' ? Math.min(Math.max(state.targetValue, state.pullsDone), total) : total;
+        remainingCp = state.target === 'P' ? remainingToPull(state.region, state.drawKey, state.pullsDone, targetPull) : remainingToFinish(state.region, state.drawKey, state.pullsDone);
+        const totalNeeded = remainingCp + (upgrade || 0);
+        shortfall = totalNeeded - state.balance;
+        pullsRemainingText = `**${targetPull - state.pullsDone}** pull(s) remaining (to pull ${targetPull} of ${total})`;
+        // "CP still needed" is the SHORTFALL (netted against balance already held), not the raw
+        // totalNeeded -- otherwise this headline contradicts the already-covered branch below it,
+        // which reads the same shortfall value.
+        headline = `You need **${formatCP(Math.max(shortfall, 0))} CP** more to reach pull ${targetPull}. ${pullsRemainingText}.`;
+    }
+
+    components.push({ type: 10, content: headline });
+    components.push({ type: 10, content: `-# Spent so far (${state.pullsDone} pull${state.pullsDone === 1 ? '' : 's'}): **${formatCP(spent)} CP**` });
+
+    if (state.target !== 'B' && state.pullsDone < total) {
+        const bold = entry.draws.slice(state.pullsDone).map(n => `**${formatCP(n)}**`).join(' / ');
+        const cumulative = cumulativeFrom(entry.draws, state.pullsDone, spent);
+        components.push({ type: 10, content: `${bold}\n-# **CP Spent:** ${cumulative}` });
+    }
+
+    if (upgrade !== null) {
+        components.push({ type: 10, content: `-# **Upgrade add-on:** +${formatCP(upgrade)} CP` });
+    }
+
+    if (state.target === 'B') {
+        components.push({ type: 10, content: budgetResult.cpShortOfNext !== null
+            ? `-# You'd be **${formatCP(budgetResult.cpShortOfNext)} CP** short of pull ${budgetResult.pullsReachable + 1}.`
+            : `-# That budget finishes the draw outright, with **${formatCP(state.targetValue - budgetResult.cpUsed)} CP** left over.` });
+        components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Edit Inputs', custom_id: encodeState('edit', state) }] });
+        return { type: 17, accent_color: accentColor, components };
+    }
+
+    components.push({ type: 10, content: `-# Balance to shortfall: ${formatCP(remainingCp)}${upgrade ? ` + ${formatCP(upgrade)} upgrade` : ''} − ${formatCP(state.balance)} balance = **${formatCP(Math.max(shortfall, 0))} CP short**` });
+
+    // The already-covered branch (design item 6) -- the best answer a spend-minimizer can give, and
+    // the easiest to forget to build. No optimizer output at all when the balance already covers it.
+    if (shortfall <= 0) {
+        components.push({ type: 10, content: `✅ **You already have enough. Buy nothing.**` });
+    } else {
+        const doubleCpAvailable = buildEntitlementList(state.entitlementMask);
+        const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
+        const describeCombo = (r) => r.combo.map(c => `${c.count}× ${normalCp(CP_PACKAGES.find(p => p.id === c.id))} CP${c.mode === 'double' ? ' (2X)' : ''} pack`).join(', ');
+
+        components.push({ type: 10, content: `**Cheapest:** ${describeCombo(result.cheapest)} — ${formatMoney(result.cheapest.totalCents, currency)}, ${formatCP(result.cheapest.leftoverCp)} CP leftover (${result.cheapest.transactions} purchase${result.cheapest.transactions === 1 ? '' : 's'})` });
+        if (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp) {
+            components.push({ type: 10, content: `**Least Waste:** ${describeCombo(result.leastWaste)} — ${formatMoney(result.leastWaste.totalCents, currency)}, ${formatCP(result.leastWaste.leftoverCp)} CP leftover (${result.leastWaste.transactions} purchase${result.leastWaste.transactions === 1 ? '' : 's'})` });
+        }
+
+        const savings = result.naive.totalCents - result.cheapest.totalCents;
+        if (savings > 0) {
+            components.push({ type: 10, content: `-# 💰 Saves **${formatMoney(savings, currency)}** versus just buying the ${normalCp(CP_PACKAGES.find(p => p.id === result.naive.combo[0].id)).toLocaleString('en-US')} CP pack on its own.` });
+        }
+    }
+
+    // Region reality check (design item 9) -- computed live since the region toggle recomputes
+    // everything from scratch anyway (see this file's Statelessness note).
+    const otherRegions = REGION_ORDER.filter(r => r !== state.region);
+    const otherShortfalls = otherRegions.map(r => {
+        const e = DRAW_DATA[r][state.drawKey];
+        if (!e) return null;
+        const rem = state.target === 'P'
+            ? remainingToPull(r, state.drawKey, state.pullsDone, Math.min(Math.max(state.targetValue, state.pullsDone), e.draws.length))
+            : remainingToFinish(r, state.drawKey, state.pullsDone);
+        return `${r.split('_')[1]} CP: ${formatCP(rem)}`;
+    }).filter(Boolean);
+    if (otherShortfalls.length) {
+        components.push({ type: 10, content: `-# Packages cost the same everywhere, but draws don't — the same result at a higher region costs more real money for identical rewards (${otherShortfalls.join(', ')}).` });
+    }
+
+    components.push({ type: 10, content: `-# Estimate only — actual store prices vary with local tax and currency conversion.` });
+
+    // Region toggle row (design item, mirrors drawprices.js's own 3-way switcher exactly).
+    components.push({
+        type: 1,
+        components: REGION_ORDER.map(key => ({
+            type: 2, style: key === state.region ? 1 : 2, disabled: key === state.region,
+            custom_id: encodeState('region', { ...state, region: key }),
+            label: `${key.split('_')[1]} CP`,
+            emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
+        }))
+    });
+    components.push({
+        type: 1,
+        components: [{ type: 2, style: 2, label: 'Edit Inputs', custom_id: encodeState('edit', state) }]
+    });
+    if (client) {
+        components.push({ type: 10, content: `-# See the full breakdown any time with ${mentionCommand(client, '/draw prices')}.` });
+    }
+
+    return { type: 17, accent_color: accentColor, components };
+}
+
 async function execute(interaction) {
     const userId = interaction.user.id;
     const prefs = await UserPreference.findOne({ discordId: userId });
@@ -233,4 +385,4 @@ async function execute(interaction) {
     return sendV2Payload(interaction, withShareButton([containerPayload, globalNavigationRow], isEphemeral));
 }
 
-module.exports = { encodeState, decodeState, defaultState, buildSetupPanel, isDoubleCPEventLive, findLiveDoubleCPEntry, execute };
+module.exports = { encodeState, decodeState, defaultState, buildSetupPanel, buildResultsPanel, isDoubleCPEventLive, findLiveDoubleCPEntry, execute };
