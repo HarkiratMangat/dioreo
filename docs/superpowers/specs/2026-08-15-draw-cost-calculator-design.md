@@ -28,7 +28,7 @@ Settled with Harkirat on 2026-08-15. Recorded here so they are not re-litigated.
 | 5 | The two Advanced Double Legendary draws are **out of v1** | Their three purchase modes make "pulls done" ambiguous. `/draw prices` already carries their hand-built strategy breakdowns, so the gap is small |
 | 6 | Headline is the **guaranteed worst case**, no luck modelling | Matches the "assume no lucky pull" framing already used on `/draw prices`' strategy lines. Expected value would need per-item odds nothing stores |
 | 7 | Show **cheapest-money and least-waste side by side** when they differ | Leftover CP is not destroyed — it stays in the account. Money is the only real cost, but the tradeoff is the user's to make |
-| 8 | **One global package table**, priced in USD | Harkirat, measured against the real store: package CP and price are identical across regions and countries; only the currency label changes via Apple/Google FX. Currency is a display concern, not a data one |
+| 8 | **Per-currency price vector**, USD/EUR/CAD populated | ⚠️ Supersedes an earlier "one global table" reading. Apple prices are tier-locked per storefront, NOT converted, and the tiers are not proportional — so the cheapest combo differs by country. See the correction section below |
 | 9 | Targets and the upgrade path are **separate inputs** | Three mutually exclusive targets, plus an independent on/off for the mythic upgrade cost that stacks on any of them |
 | 10 | Budget mode accepts **CP or real money** | "I have $50, how far does that get me" runs the optimizer forward and the draw math backward. Both engines, one question |
 | 11 | **No database, no persistence** | See "Statelessness" below. This is a privacy decision as much as an architectural one |
@@ -40,6 +40,8 @@ Settled with Harkirat on 2026-08-15. Recorded here so they are not re-litigated.
 | 17 | A live 2X event is detected from the **calendar**, via a new explicit `isDoubleCP` flag | Harkirat: the calculator should parse calendar events and offer the 2X calculation. An explicit boolean rather than title matching, because a title pattern fails silently when a season words it differently |
 | 18 | Detection **offers**, never forces | The user can always calculate at normal pricing regardless of what the calendar says. Harkirat's explicit requirement |
 | 19 | During an event, **both stores are live** | Six one-shot 2X bundles plus the normal six, unbounded. Confirmed with Harkirat |
+| 20 | Recommendations are **capped by transaction count**, and the count is always shown | The true optimum in CAD is 63 separate $0.99 purchases. Correct and useless. The DP still explores everything; the cap filters what is offered |
+| 21 | Currency lives in **`UserPreference`** with a slash-command override | Harkirat's call. It is the one deliberate exception to the stateless design, and it obliges a `PRIVACY.md` update in the same change |
 
 ## Architecture
 
@@ -138,7 +140,43 @@ Shape: `{ id, baseCp, bonusPct, priceUSD }`. Normal total = `baseCp * (1 + bonus
 
 > ⚠️ **2X doubles the BASE, not the advertised total.** The $99.99 tier yields 16,000 during an event, not 21,600. Every base above is corroborated by the event screenshot's own `80+80` / `400+400` / `800+800` / `2000+2000` / `4000+4000` / `8000+8000` labelling. Getting this wrong overstates the top tier by 5,600 CP and would send a player a materially wrong purchase recommendation.
 
-**Prices are identical worldwide.** Only the currency label changes — the same tiers render as `Rs 300 … Rs 24,900` on an Indian store and `$0.99 … $99.99` on a US one, via the platform's own FX. USD is therefore the canonical unit, and any local-currency display is presentation, not data.
+### ⚠️ Corrected 2026-08-15 15:52 EDT — prices are NOT a currency conversion
+
+An earlier draft of this spec said package prices were identical worldwide with only the currency label changing "via the platform's own FX". **That is wrong, and it would have produced wrong purchase advice.**
+
+Apple assigns App Store price-point values **directly per storefront**; they are *tier-locked, not rate-locked*, so a local price stays fixed regardless of exchange-rate movement until someone explicitly changes it. Harkirat's own store confirms it: the $99.99 USD tier is a flat $129.99 CAD and has not moved with FX.
+
+**The tiers are not proportional across storefronts, so the cheapest combination genuinely differs by country.** Measured from Harkirat's three real price tables:
+
+| Pack CP | USD | CP/$ | EUR | CP/€ | CAD | CP/$ |
+|---|---|---|---|---|---|---|
+| 80 | $0.99 | 80.8 | €0.99 | 80.8 | $0.99 | **80.8** |
+| 420 | $4.99 | 84.2 | €5.99 | **70.1** | $6.99 | **60.1** |
+| 880 | $9.99 | 88.1 | €9.99 | **88.1** | $12.99 | 67.7 |
+| 2,400 | $24.99 | 96.0 | €29.99 | 80.0 | $34.99 | 68.6 |
+| 5,000 | $49.99 | 100.0 | €59.99 | 83.3 | $69.99 | 71.4 |
+| 10,800 | $99.99 | **108.0** | €99.99 | **108.0** | $129.99 | 83.1 |
+
+**USD rises monotonically — bigger is always better value. Neither of the others does, and that breaks every possible rule of thumb:**
+
+- **In EUR the €9.99 pack (88.1) beats both the €29.99 pack (80.0) and the €59.99 pack (83.3).** Six €9.99 packs give 5,280 CP for €59.94 — more CP for less money than the €59.99 pack. The €5.99 pack is the worst value on the board, below even the €0.99 one.
+- **In CAD the $0.99 pack is the second-best value in the store** (80.8), beaten only by the $129.99 tier, because Apple's floor tier is $0.99 in both currencies while every tier above it carries a 30–40% markup.
+
+This is the strongest argument for the feature: the right answer is currency-specific and no static tip could carry it.
+
+### Currency handling
+
+`priceCents` becomes a **per-currency price vector** rather than a single number, so adding a storefront is data entry rather than a redesign. USD, EUR and CAD are populated from Harkirat's real tables; nothing else is guessed.
+
+The user's currency lives in `UserPreference`, with an explicit override option on the slash command for viewing another storefront. ⚠️ **This is a new per-user stored field**, so `PRIVACY.md` Appendix A and §2 must be updated in the same change — the `privacy-inventory` docs-audit check covers every per-user field, not only sensitive ones. This is the one place the otherwise-stateless design deliberately stores something, and the reason is that re-picking a currency on every invocation is a poor trade for a value that essentially never changes.
+
+> 📌 **Derivation is possible but deliberately NOT a prerequisite.** Apple's `/appPricePoints/{id}/equalizations` endpoint returns the equalized price for a price point across all 175 territories, which would yield the whole matrix from the USD column alone. It needs App Store Connect API credentials, and a developer *may* override the equalized default per territory — so before trusting it, check the equalized EUR and CAD figures against the twelve known values in the table above. If they all match, the matrix is derivable; if any differ, derivation is unsafe. Either way this is later data-sourcing work, not a launch blocker.
+
+### Transaction count
+
+The mathematically optimal combination can be absurd in practice: in CAD, 63 separate $0.99 purchases yield 5,040 CP for $62.37 against $69.99 for the 5,000 pack. Correct, and nobody would do it.
+
+Recommendations are therefore **capped at a sane number of purchases**, and every combo **displays its transaction count** so the tradeoff is visible rather than hidden. The cap is a rendering-and-advice concern, not a correctness one — the DP still explores the full space, the cap filters what is offered.
 
 ### Why the optimizer is not a rule of thumb
 

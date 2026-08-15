@@ -1,6 +1,6 @@
 ---
 kind: plan
-status: live
+status: frozen
 ---
 
 # `/draw calculator` Implementation Plan
@@ -66,7 +66,7 @@ Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `CP_PACKAGES` (array), `normalCp(pkg) -> number`, `doubleCp(pkg) -> number`, `formatUsd(cents) -> string`
+- Produces: `CP_PACKAGES` (array), `CURRENCIES` (`['USD','EUR','CAD']`), `normalCp(pkg) -> number`, `doubleCp(pkg) -> number`, `priceCents(pkg, currency) -> number`, `formatMoney(cents, currency) -> string`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -82,7 +82,7 @@ Create `scripts/cpPackages.test.js`:
 // top tier. These tests pin both derivations against the real store figures.
 
 const assert = require('assert');
-const { CP_PACKAGES, normalCp, doubleCp, formatUsd } = require('../utils/cpPackages');
+const { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceCents, formatMoney } = require('../utils/cpPackages');
 
 let failures = 0;
 function check(name, fn) {
@@ -93,7 +93,7 @@ function check(name, fn) {
 // Real figures read off Harkirat's own store screenshots, 2026-08-15 15:06 EDT.
 const ADVERTISED_NORMAL = [80, 420, 880, 2400, 5000, 10800];
 const ADVERTISED_2X = [160, 800, 1600, 4000, 8000, 16000];
-const PRICES_CENTS = [99, 499, 999, 2499, 4999, 9999];
+const PRICES_CENTS = { USD: [99, 499, 999, 2499, 4999, 9999], EUR: [99, 599, 999, 2999, 5999, 9999], CAD: [99, 699, 1299, 3499, 6999, 12999] };
 
 check('the table has exactly six packages', () => {
     assert.strictEqual(CP_PACKAGES.length, 6);
@@ -107,9 +107,28 @@ check('2X totals are double the BASE, not double the advertised total', () => {
     assert.deepStrictEqual(CP_PACKAGES.map(doubleCp), ADVERTISED_2X);
 });
 
-check('prices are integer cents, never floats', () => {
-    assert.deepStrictEqual(CP_PACKAGES.map(p => p.priceCents), PRICES_CENTS);
-    CP_PACKAGES.forEach(p => assert.ok(Number.isInteger(p.priceCents), `${p.id} price is not an integer`));
+check('prices are integer cents in every supported currency', () => {
+    for (const cur of CURRENCIES) {
+        assert.deepStrictEqual(CP_PACKAGES.map(p => priceCents(p, cur)), PRICES_CENTS[cur], `${cur} prices differ`);
+        CP_PACKAGES.forEach(p => assert.ok(Number.isInteger(priceCents(p, cur)), `${p.id}/${cur} is not an integer`));
+    }
+});
+
+check('every package has a price in every supported currency', () => {
+    CP_PACKAGES.forEach(p => CURRENCIES.forEach(cur => {
+        assert.ok(typeof p.price[cur] === 'number', `${p.id} has no ${cur} price -- a missing currency would make the optimizer silently skip that package`);
+    }));
+});
+
+// Pins the finding that justifies the whole optimizer: value is monotonic in USD but NOT in EUR or
+// CAD. If a future price edit makes all three monotonic, "just buy the biggest" becomes correct and
+// this test SHOULD fail so someone re-reads the design rather than leaving a solver with no job.
+check('value ordering is non-monotonic outside USD', () => {
+    const rate = (p, cur) => normalCp(p) / priceCents(p, cur);
+    const isMonotonic = cur => CP_PACKAGES.every((p, i) => i === 0 || rate(p, cur) >= rate(CP_PACKAGES[i - 1], cur));
+    assert.ok(isMonotonic('USD'), 'USD should be monotonically better value as packs get bigger');
+    assert.ok(!isMonotonic('EUR'), 'EUR was monotonic -- re-check the price table against the real store');
+    assert.ok(!isMonotonic('CAD'), 'CAD was monotonic -- re-check the price table against the real store');
 });
 
 check('no package stores a pre-computed total', () => {
@@ -119,10 +138,9 @@ check('no package stores a pre-computed total', () => {
     });
 });
 
-check('formatUsd renders cents as a dollar string', () => {
-    assert.strictEqual(formatUsd(99), '$0.99');
-    assert.strictEqual(formatUsd(9999), '$99.99');
-    assert.strictEqual(formatUsd(2499), '$24.99');
+check('formatMoney renders cents with the right symbol', () => {
+    assert.strictEqual(formatMoney(99, 'USD'), '$0.99');
+    assert.strictEqual(formatMoney(12999, 'CAD'), 'CA$129.99');
 });
 
 console.log(failures === 0 ? `\nAll CP package checks passed (${CP_PACKAGES.length} packages).` : `\n${failures} check(s) FAILED.`);
@@ -157,14 +175,28 @@ Create `utils/cpPackages.js`:
 //
 // Money is INTEGER CENTS everywhere. Floats would accumulate error across a multi-package combo and
 // make two equally-priced combos compare unequal.
+// PRICES ARE A PER-CURRENCY VECTOR, NOT ONE NUMBER. Apple assigns price-point values directly per
+// storefront -- tier-locked, not rate-locked -- and the tiers are NOT proportional to each other.
+// Measured consequence: in EUR the 880 CP pack (88.1 CP/EUR) beats BOTH the 2,400 pack (80.0) and the
+// 5,000 pack (83.3), and in CAD the 80 CP pack is the second-best value in the whole store. The
+// cheapest combination is therefore genuinely different per currency, which is the entire reason this
+// module solves rather than publishes a tip. Do NOT collapse this back to a single price.
 const CP_PACKAGES = [
-    { id: 'cp80',   baseCp: 80,   bonusPct: 0,    priceCents: 99 },
-    { id: 'cp400',  baseCp: 400,  bonusPct: 0.05, priceCents: 499 },
-    { id: 'cp800',  baseCp: 800,  bonusPct: 0.10, priceCents: 999 },
-    { id: 'cp2000', baseCp: 2000, bonusPct: 0.20, priceCents: 2499 },
-    { id: 'cp4000', baseCp: 4000, bonusPct: 0.25, priceCents: 4999 },
-    { id: 'cp8000', baseCp: 8000, bonusPct: 0.35, priceCents: 9999 }
+    { id: 'cp80',   baseCp: 80,   bonusPct: 0,    price: { USD: 99,   EUR: 99,   CAD: 99 } },
+    { id: 'cp400',  baseCp: 400,  bonusPct: 0.05, price: { USD: 499,  EUR: 599,  CAD: 699 } },
+    { id: 'cp800',  baseCp: 800,  bonusPct: 0.10, price: { USD: 999,  EUR: 999,  CAD: 1299 } },
+    { id: 'cp2000', baseCp: 2000, bonusPct: 0.20, price: { USD: 2499, EUR: 2999, CAD: 3499 } },
+    { id: 'cp4000', baseCp: 4000, bonusPct: 0.25, price: { USD: 4999, EUR: 5999, CAD: 6999 } },
+    { id: 'cp8000', baseCp: 8000, bonusPct: 0.35, price: { USD: 9999, EUR: 9999, CAD: 12999 } }
 ];
+
+// Only these three are real, sourced from Harkirat's own stores. NEVER add a currency by converting
+// from USD -- that is the exact mistake this table exists to prevent. A new currency needs its six
+// real figures, from a screenshot or from Apple's /appPricePoints/{id}/equalizations endpoint.
+const CURRENCIES = ['USD', 'EUR', 'CAD'];
+const CURRENCY_SYMBOL = { USD: '$', EUR: '\u20ac', CAD: 'CA$' };
+
+function priceCents(pkg, currency) { return pkg.price[currency]; }
 
 // Math.round rather than a bare multiply: 0.05/0.10/0.20/0.25/0.35 are not exact in binary floating
 // point, so 400 * 1.05 can land on 420.00000000000006. Every real value here is a whole number of CP.
@@ -174,9 +206,9 @@ function normalCp(pkg) { return Math.round(pkg.baseCp * (1 + pkg.bonusPct)); }
 // normalCp(pkg) x 2. See this module's header comment; getting this wrong overstates the top tier.
 function doubleCp(pkg) { return pkg.baseCp * 2; }
 
-function formatUsd(cents) { return `$${(cents / 100).toFixed(2)}`; }
+function formatMoney(cents, currency) { return `${CURRENCY_SYMBOL[currency]}${(cents / 100).toFixed(2)}`; }
 
-module.exports = { CP_PACKAGES, normalCp, doubleCp, formatUsd };
+module.exports = { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceCents, formatMoney };
 ```
 
 - [ ] **Step 4: Run the test to verify it passes**
@@ -199,7 +231,7 @@ git add utils/cpPackages.js scripts/cpPackages.test.js && git commit -m "feat(ca
 
 **Interfaces:**
 - Consumes: `CP_PACKAGES`, `normalCp`, `doubleCp` from Task 1
-- Produces: `optimizePurchase(shortfallCp, { doubleCpAvailable }) -> { cheapest, leastWaste, naive }` where each result is `{ combo: [{ id, count, mode, cpEach, priceCents }], totalCents, totalCp, leftoverCp }`, or `null` when `shortfallCp <= 0`
+- Produces: `optimizePurchase(shortfallCp, { currency, doubleCpAvailable, maxTransactions }) -> { cheapest, leastWaste, naive }` where each result is `{ combo: [{ id, count, mode, cpEach, priceCents }], totalCents, totalCp, leftoverCp, transactions }`, or `null` when `shortfallCp <= 0`. `currency` defaults to `'USD'`, `maxTransactions` to `6`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -395,11 +427,17 @@ function naiveCover(shortfallCp) {
     };
 }
 
-function optimizePurchase(shortfallCp, { doubleCpAvailable = [] } = {}) {
+// maxTransactions caps how many separate purchases a recommendation may involve. Without it the true
+// optimum in CAD for a 5,000 CP shortfall is SIXTY-THREE $0.99 purchases ($62.37 vs $69.99 for the
+// 5,000 pack) -- arithmetically right and nobody would ever do it. The DP still explores the whole
+// space; the cap only filters what is OFFERED, and every result reports its own transaction count so
+// the tradeoff stays visible rather than hidden.
+function optimizePurchase(shortfallCp, { currency = 'USD', doubleCpAvailable = [], maxTransactions = 6 } = {}) {
     if (shortfallCp <= 0) return null;
-    const cheapest = solve(shortfallCp, doubleCpAvailable, CHEAPEST);
-    const leastWaste = solve(shortfallCp, doubleCpAvailable, LEAST_WASTE);
-    return { ...cheapest, cheapest, leastWaste, naive: naiveCover(shortfallCp) };
+    const opts = { currency, maxTransactions };
+    const cheapest = solve(shortfallCp, doubleCpAvailable, CHEAPEST, opts);
+    const leastWaste = solve(shortfallCp, doubleCpAvailable, LEAST_WASTE, opts);
+    return { ...cheapest, cheapest, leastWaste, naive: naiveCover(shortfallCp, currency) };
 }
 ```
 
@@ -635,7 +673,7 @@ git add utils/drawCost.js scripts/drawCost.test.js commands/drawprices.js packag
 
 ---
 
-## Task 4: The `isDoubleCP` calendar flag
+## Task 4: Schema changes — the `isDoubleCP` flag and the currency preference
 
 **Files:**
 - Modify: `models/SeasonalData.js`
@@ -643,7 +681,7 @@ git add utils/drawCost.js scripts/drawCost.test.js commands/drawprices.js packag
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks
-- Produces: `SeasonalData.calendar[].isDoubleCP` (Boolean, default false)
+- Produces: `SeasonalData.calendar[].isDoubleCP` (Boolean, default false) and `UserPreference.cpCurrency` (String, default `'USD'`)
 
 - [ ] **Step 1: Add the schema field**
 
@@ -658,6 +696,19 @@ In `models/SeasonalData.js`, inside the `calendar` sub-schema:
 ```
 
 ⚠️ Mongoose persists only declared fields. This must land in the same change as the code that writes it, or it will work in memory and vanish on the next fetch.
+
+- [ ] **Step 1b: Add the currency preference**
+
+In `models/UserPreference.js`:
+
+```js
+    // Which storefront's prices /draw calculator quotes. Apple prices are tier-locked PER STOREFRONT
+    // and are not proportional to each other, so the cheapest package combination genuinely differs
+    // by currency -- this is not a display setting. Overridable per-invocation on the slash command.
+    cpCurrency: { type: String, default: 'USD' },
+```
+
+🔴 **This is a new per-user stored field, so `docs/legal/PRIVACY.md` Appendix A and §2 must be updated in the SAME change.** The `privacy-inventory` docs-audit check covers every per-user field, not only sensitive ones, and it is an ERROR-level gate — it will fail CI otherwise. Add the `/settings` control alongside, following how a neighbouring preference is rendered there.
 
 - [ ] **Step 2: Add the toggle to `/manage`'s Calendar page**
 
@@ -686,7 +737,7 @@ Run: `node scripts/manageActions.test.js` Expected: PASS — the new action is r
 - [ ] **Step 6: Commit**
 
 ```bash
-git add models/SeasonalData.js commands/manage.js handlers/manage/calendar.js utils/manageActions.js && git commit -m "feat(calendar): mark a calendar entry as a double CP event"
+git add models/SeasonalData.js models/UserPreference.js commands/manage.js commands/settings.js handlers/manage/calendar.js utils/manageActions.js docs/legal/PRIVACY.md && git commit -m "feat(calendar): double CP event flag and CP currency preference"
 ```
 
 ---
@@ -985,6 +1036,7 @@ git add scripts/drawCalcBudget.test.js package.json && git commit -m "test(calcu
 
 **Files:**
 - Modify: `commands/help.js`, `.claude/rules/draw-prices.md`, `docs/CHANGELOG.md`, `docs/CHANGELOG-SUMMARY.md`, `docs/DEVLOG.md`, `package.json`, `package-lock.json`
+- Verify (changed in Task 4): `docs/legal/PRIVACY.md`
 
 - [ ] **Step 1: Add the `/help` entry**
 
@@ -992,7 +1044,7 @@ git add scripts/drawCalcBudget.test.js package.json && git commit -m "test(calcu
 
 - [ ] **Step 2: Document in the rule file**
 
-Add a `/draw calculator` section to `.claude/rules/draw-prices.md`, and add `commands/drawCalculator.js` + `handlers/drawCalc.js` to its `paths:` glob so it loads when those files are touched. It must record: the no-`data`-export constraint and why · that 2X doubles the base, not the advertised total · that pull counts are not uniformly ten · the stateless-by-design privacy decision.
+Add a `/draw calculator` section to `.claude/rules/draw-prices.md`, and add `commands/drawCalculator.js` + `handlers/drawCalc.js` to its `paths:` glob so it loads when those files are touched. It must record: the no-`data`-export constraint and why · that 2X doubles the base, not the advertised total · that pull counts are not uniformly ten · the stateless-by-design privacy decision and its one deliberate exception (`cpCurrency`) · that Apple prices are tier-locked per storefront and must never be derived by converting from USD.
 
 - [ ] **Step 3: Changelog, summary, devlog, version**
 
@@ -1009,7 +1061,7 @@ Add a `/draw calculator` section to `.claude/rules/draw-prices.md`, and add `com
 npm test && npm run docs:audit
 ```
 
-Expected: both green. Read the **exit code**, not the trailing summary line.
+Expected: both green. Read the **exit code**, not the trailing summary line. `docs:audit`'s `privacy-inventory` check is the one most likely to fail here — it fires on the new `cpCurrency` field if `PRIVACY.md` was not updated in Task 4.
 
 - [ ] **Step 5: Open the PR against the right base**
 
