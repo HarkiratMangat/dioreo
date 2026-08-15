@@ -52,8 +52,8 @@ t('any refresh at all reports "New colors found", not a per-source verdict', () 
     // ⚠️ THE HEADLINE IS ABOUT THE PRESS. Reporting it per-source is what made the old message insist
     // nothing had happened while it had quietly updated three other pages.
     const m = notice({ changed: false, refreshed: [{ kind: 'banner', isGuild: false }] });
-    assert.ok(m.startsWith(emojis.eyedropper), `wrong leading emoji: ${m}`);
-    assert.ok(/\*\*New colors found!\*\*/.test(m), m);
+    assert.ok(m.startsWith(`### ${emojis.eyedropper}`), `wrong leading emoji: ${m}`);
+    assert.ok(/New colors found!/.test(m), m);
     assert.ok(!/\*\*Avatar\*\* —/.test(m), `the headline still names the pressed source: ${m}`);
 });
 
@@ -97,13 +97,13 @@ t('the reassurance line closes the refreshed state', () => {
     // Unconditional by design: the doubt that started this rework was "did it do the others?", so the
     // message answers it every time rather than only when it can enumerate a leftover.
     const m = notice({ changed: true });
-    assert.ok(m.trimEnd().endsWith('Everything else is already up-to-date.'), m);
+    assert.ok(m.trimEnd().endsWith('Everything else is already up-to-date.*'), m);
 });
 
 // --- State 2: nothing refreshed, but the accent cache was cleared.
 t('an accent-only refresh keeps the per-source line and the eyedropper', () => {
     const m = notice({ accentCleared: true });
-    assert.ok(m.startsWith(emojis.eyedropper), m);
+    assert.ok(m.startsWith(`### ${emojis.eyedropper}`), m);
     assert.ok(m.includes(`**${L('avatar')}**`), m);
     assert.ok(/accent color was stale/.test(m), m);
     assert.ok(!/New colors found/.test(m), `an accent-only refresh claimed new colors: ${m}`);
@@ -112,7 +112,7 @@ t('an accent-only refresh keeps the per-source line and the eyedropper', () => {
 // --- State 3: nothing happened at all.
 t('a fully unchanged press uses the Swatches emoji and says so plainly', () => {
     const m = notice({});
-    assert.ok(m.startsWith(emojis.swatches), `wrong leading emoji: ${m}`);
+    assert.ok(m.startsWith(`### ${emojis.swatches}`), `wrong leading emoji: ${m}`);
     assert.ok(/\*\*All colors are already up-to-date!\*\*/.test(m), m);
     assert.ok(/The same image always gives the same colors/.test(m), m);
     // The wording two revisions ago. Asserted ABSENT because removing the lecture was the point.

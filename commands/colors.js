@@ -89,7 +89,7 @@ module.exports = {
                 components: [
                     { type: 10, content: `### No server colors to show\n${reason}` },
                     { type: 14, spacing: 1, divider: true },
-                    { type: 10, content: "-# Your global profile colors are ready whenever you want them." },
+                    { type: 10, content: "-# Your main profile colors are ready whenever you want them." },
                     {
                         type: 1,
                         components: [{

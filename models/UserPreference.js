@@ -27,10 +27,12 @@ const UserPreferenceSchema = new mongoose.Schema({
     // 'region_30' PIN the display to that region regardless of what gets toggled elsewhere --
     // drawprices.js's execute() checks this before falling back to defaultRegion.
     defaultRegionMode: { type: String, default: 'last_viewed' },
-    // /calendar's "Show Active Events Only" vs "Show All Events" toggle. Deliberately NOT exposed
-    // in /settings (Harkirat's request) -- /calendar's own toggle button reads/writes this directly
-    // instead of routing through the settings dashboard, unlike every other visibility preference.
-    // Defaults to 'all' until the user has explicitly toggled it at least once.
+    // /calendar's "Show Active Events Only" vs "Show All Events" default. ⚠️ SILENCED 2026-08-15
+    // 13:01 EDT (Harkirat's direct request) -- no code writes this field anymore (the /settings
+    // toggle that used to write it is commented out, see commands/settings.js) and no code reads it
+    // (/calendar's `view` slash option is a one-off per-invocation choice now, defaulting to 'all').
+    // Field kept in the schema, not deleted, in case the preference comes back; existing values were
+    // cleared via a one-time `$unset` (scripts/clearCalendarEventFilter.js).
     calendarEventFilter: { type: String, default: 'all' },
 
     // ACCENT COLOR SYSTEM (utils/accentColor.js): 'preset' is the default (changed 2026-08-08 00:24

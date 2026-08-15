@@ -22,6 +22,9 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### ✅ `scripts/clearCalendarEventFilter.js` run against prod — closed 2026-08-15 13:32 EDT
+Filed at 13:30 EDT (same turn `/settings`' Calendar Events default-preference toggle was silenced) and run two minutes later once Harkirat granted explicit `.env` permission this session. `Cleared calendarEventFilter from 17 of 17 matched preference doc(s).` — every stored value removed; the field stays in the schema (unwritten, unread) in case the preference comes back.
+
 ### ✅ The `/manage` slash-action decomposition — all 4 stages shipped, closed 2026-08-15 12:39 EDT (v3.24.0-pre)
 All four staged PRs into `v3-pre-release` landed: **1** action registry (`utils/manageActions.js`, v3.18.0-pre) · **2** per-page handler split (`handlers/manage/<page>.js`, v3.20.0-pre, #128) · **3** the scoped `action:` slash option (v3.21.0-pre, #129) · **4** DB-change audit log + `/audit` (v3.24.0-pre, #132). Design: `docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md` (frozen). Stages 1-3 click-tested 2026-08-15 11:54 EDT (Harkirat, dev bot); stage 4's live click-test is deferred to a session where Harkirat can drive it (`docs/db-deferred-list.md`'s LIVE CLICK-TEST OWED entry covers this too). Full story: `docs/CHANGELOG.md`'s four Pre-Release entries (v3.18.0/v3.20.0/v3.21.0/v3.24.0), `docs/DEVLOG.md`'s 2026-08-15 12:38 EDT entry, and memory `project_manage_decomposition.md`/`project_manage_action_registry.md`. Original wording preserved below.
 
