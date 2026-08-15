@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.27.0 — 2026-08-15 17:22 EDT (#135) — two guards built from this session's own misses, and a worktree finding
+## Pre-Release v3.28.0 — 2026-08-15 19:16 EDT (#136) — `/draw calculator` ships
+
+`/draw calculator` — tells a player how much more CP they need to finish a lucky draw, and the cheapest real-money way to buy it. Two pure engines: `utils/drawCost.js` slices `DRAW_DATA`'s existing per-pull arrays; `utils/cpPackages.js` holds the six-package table (loaded from the committed 41-currency price file, never hand-typed) and a DP purchase optimizer with a cheapest-money and a least-waste pass. A two-stage Components V2 panel sits on top, entirely stateless via the `customId` — no model, no cache, except one deliberate exception: `UserPreference.cpCurrency`, disclosed in `PRIVACY.md` in the same commit that added it.
+
+`commands/drawCalculator.js` deliberately exports no `data` — the `calculator` subcommand lives on `commands/drawprices.js`'s existing builder instead, since `bot/registry.js` keys command registration by `data.name` and a second file exporting `setName('draw')` would silently overwrite the first. Verified live with the real `loadCommandModules()`: exactly one `draw` command registers, carrying both subcommands.
+
+**Two real bugs in the build plan's own pasted optimizer code, fixed before shipping rather than transcribed:** the DP never actually threaded the `currency` parameter through its price lookups (it would have silently priced every storefront the same, defeating the entire point of the 41-currency table), and `maxTransactions` was documented but never enforced (the DP's unconstrained optimum for a 5,000 CP shortfall in CAD is 63 separate $0.99 purchases). Both fixed and pinned with a regression test reproducing the design spec's own CAD worked example exactly.
+
+A post-build adversarial review (Task 9.5, sequential-thinking) found three more real issues: the results headline showed the raw remaining-CP figure instead of the balance-netted shortfall, contradicting the line directly below it; the budget-mode modal collected a "Current CP balance" field the budget-mode result never read (silently discarded input); and an out-of-range target pull silently clamped to "finish the draw" instead of rejecting, inconsistent with the adjacent `pullsDone` field's own strict validation. All three fixed and verified.
+
+Also ships: `isDoubleCP` on `SeasonalData.calendar[]` (a 2X CP event flag, set via a 5th field on the existing Calendar Add/Edit modals rather than a new registry action, since it's a property of the same entity those actions already edit) and its calendar-detection logic; the `/help` entry; and `.claude/rules/draw-prices.md`'s new section documenting every trap a future session would otherwise re-derive.
+
+⚠️ **Two disclosed, deliberate gaps, not silent ones.** Budget mode only accepts a CP amount — the "convert a dollar figure through the optimizer first" half of the design's decision 10 isn't built. And this build was not click-tested live in Discord — no Discord client was available this session; verification instead used mock interactions against the real local dev Mongo (schema persistence round-trips, the seven-pull-draw and out-of-range-target-pull modal-validation regressions, every handler branch dispatching through its correct typed check) plus repeated clean dev-bot boots.
+
+**Verification.** `npm test` and `npm run docs:audit` both exit 0 at every commit checkpoint (13 commits); `npm run site` re-run after the `PRIVACY.md` change, `public/privacy.html` rebuilt and committed. CI `syntax-check` passed on the PR.
+
+## Pre-Release v3.27.0 — 2026-08-15 17:22 EDT (#135 · `63009d9`) — two guards built from this session's own misses, and a worktree finding
 
 Enforcement only: no product behaviour changes.
 
