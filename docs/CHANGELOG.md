@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.22.0 — 2026-08-15 01:50 EDT (#PR-pending) — The full nameplate/decoration catalog lands, with a script to keep it synced
+## Pre-Release v3.22.0 — 2026-08-15 01:50 EDT (#130) — The full nameplate/decoration catalog lands, with a script to keep it synced
 
 Harkirat hand-authored a complete snapshot of Discord's entire nameplate + decoration collectibles catalog and dropped it into the repo. This entry tracks getting it into shape as tracked, documented reference data, plus the tooling to refresh it going forward — no bot runtime code changed.
 
