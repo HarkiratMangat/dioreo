@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#TBD) — a bugs-fix batch: /colors wording, /manage guides + rename, /help aliases, timezone search
+## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133 · `3962df4`) — a bugs-fix batch: /colors wording, /manage guides + rename, /help aliases, timezone search
 
 Eighteen small-to-medium bug reports worked through in one session (screenshots + a written list), spanning `/colors`, `/manage`, `/help`, and `/settings`.
 
@@ -92,6 +92,8 @@ Eighteen small-to-medium bug reports worked through in one session (screenshots 
 **Verification.** Full `npm test` green (docs-audit self-test's 68 checks, every hook self-test, every existing suite including `refreshNotice.test.js` — updated to match the Refresh Colors wording rework), `scripts/manageActions.test.js` (59 actions) and `scripts/handlerRouting.test.js` (14 handlers) both green after the `/manage`/`/help` routing changes, `npm run docs:audit` at zero errors. Not yet live-click-tested on the dev bot — filed alongside the existing LIVE CLICK-TEST OWED entry in `docs/db-deferred-list.md`.
 
 
+
+## Pre-Release v3.24.0 — 2026-08-15 12:38 EDT (#132 · `6cc1400`) — DB change log and `/audit`
 
 Stage 4 of 4, and the last stage, of the `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): every DB-mutating operation function `handlers/manage/*.js`'s stage-2 split produced now calls `utils/changeStore.js`'s `recordChange()` once, right after its own save succeeds — the hook point that split existed to create in the first place.
 
