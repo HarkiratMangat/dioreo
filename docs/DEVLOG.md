@@ -160,6 +160,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 13:40 EDT — A bugs-fix batch: the rename Harkirat picked, and a self-audit that caught a real defect (v3.25.0-pre)
 - 2026-08-15 16:43 EDT — Designing a calculator, and the day a regex quietly lied about German prices (v3.26.0-pre)
 - 2026-08-15 17:22 EDT — Turning three of my own misses into gates, and finding nine that were already blind (v3.27.0-pre)
+- 2026-08-15 19:16 EDT — `/draw calculator` ships, two build-plan bugs caught, three more from a requested adversarial pass (v3.28.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2839,6 +2840,13 @@ Harkirat's follow-up was the right question: did the blindness make the session 
 - **Verify a hook by triggering the real tool call.** The suite passing and the script working by hand both proved nothing about whether the hook was wired. That distinction is already in the global CLAUDE.md and it still took a live miss to remember it.
 - **Silence from a gate is not evidence of anything.** It means "found nothing", which is the same output as "looked in the wrong place", "never ran", and "matched nothing because the matcher is broken". Every one of those has now happened in this project.
 - **A hunch about tooling deserves a measurement, not a reassurance.** The instinct that something was structurally different was correct, and the obvious answer — "no, the hooks all fired, here they are" — was the wrong one. Two commands settled what argument could not.
+
+## 2026-08-15 19:16 EDT — `/draw calculator` ships, two build-plan bugs caught, three more from a requested adversarial pass (v3.28.0-pre)
+
+`/draw calculator` shipped — two pure engines (draw remainder math, a DP purchase optimizer over a real 41-currency price table) under a stateless two-stage panel. Caught two real bugs in the build plan's own pasted optimizer code before shipping them (currency never threaded through the DP; a transaction cap documented but never enforced), then a requested adversarial pass after the build caught three more (a headline reading the wrong number, a modal field the result silently discarded, an out-of-range input that clamped instead of rejecting). All fixed and verified against the local dev Mongo and a live dev-bot boot — no Discord client was available this session, so live click-testing is still owed.
+
+### Lesson
+A "frozen" plan being correct about its *decisions* says nothing about its *pasted code* — verify the code actually implements the decision before transcribing it, especially where the plan's own test suite has a gap that would hide the exact bug (here: never testing at a non-default currency). And a forward-only build pass misses coupling bugs a backward adversarial pass catches for free — fixing one field's behavior without checking what reads it (or what would throw parsing a field that no longer exists) shipped a real crash risk that only surfaced by deliberately re-reading the code looking for contradictions.
 
 # Part B — Lessons Ledger (thematic)
 

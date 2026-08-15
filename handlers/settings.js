@@ -18,7 +18,7 @@
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
-const OWNED_PREFIXES = ["set_", "toggle_", "settingstz_"];
+const OWNED_PREFIXES = ["set_", "toggle_", "settingstz_", "settingscur_"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -66,6 +66,23 @@ async function route(interaction) {
                 return await interaction.showModal(modal);
             }
 
+            // CP currency "Search for your currency..." sentinel -- same reasoning as timezone's
+            // above: showModal() must be the interaction's FIRST response, so this has to be
+            // intercepted before deferUpdate() too.
+            if (action === 'set_cpcurrency' && selectedValue === '__search__') {
+                const modal = new ModalBuilder()
+                    .setCustomId(`settingscur_search|${targetUserId}|${currentPage}`)
+                    .setTitle('Search for your currency');
+                modal.addComponents(
+                    new ActionRowBuilder().addComponents(
+                        new TextInputBuilder().setCustomId('query').setLabel('Country or currency code')
+                            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. "Canada", "CAD"')
+                            .setRequired(true).setMaxLength(60)
+                    )
+                );
+                return await interaction.showModal(modal);
+            }
+
             await interaction.deferUpdate(); // Extends execution context limits to handle network delays safely
 
             // SECURITY GATEWAY LOCK: Prevent external users from clicking inside an active configuration trace.
@@ -96,6 +113,7 @@ async function route(interaction) {
             // Added 2026-07-12 -- the new 3-option "Draw Prices Region" dropdown (replaces the old
             // binary toggle_region_10/toggle_region_30 buttons, see settings.js).
             if (action === 'set_region_mode') prefs.defaultRegionMode = selectedValue;
+            if (action === 'set_cpcurrency') prefs.cpCurrency = selectedValue;
 
             await prefs.save();
 
@@ -284,6 +302,47 @@ async function route(interaction) {
             let prefs = await UserPreference.findOne({ discordId: targetUserId });
             if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
             prefs.timezone = matches[0].tz;
+            await prefs.save();
+
+            const settingsCommand = interaction.client.commands.get('settings');
+            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+            return await settingsCommand.execute(renderInteraction, currentPage);
+        }
+
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('settingscur_search')) {
+            const [, targetUserId, pageStr] = interaction.customId.split('|');
+            const currentPage = pageStr ? parseInt(pageStr, 10) : 1;
+
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                try {
+                    await interaction.reply({ content: "🔒 **Not your dashboard!** Run `/settings` yourself to search your own currency.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked currency search (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            const query = interaction.fields.getTextInputValue('query');
+            const { searchCurrencies, currencyLabel } = require('../utils/cpCurrencyData');
+            const matches = searchCurrencies(query, 10);
+
+            if (matches.length === 0) {
+                return await interaction.reply({ content: `❌ No currency matched **"${query}"** — try a country name or a 3-letter code like \`CAD\`.`, ephemeral: true });
+            }
+            if (matches.length > 1) {
+                return await interaction.reply({
+                    content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
+                        + matches.map(code => `-# 🔹 \`${currencyLabel(code)}\``).join('\n'),
+                    ephemeral: true
+                });
+            }
+
+            await interaction.deferUpdate();
+            const UserPreference = require('../models/UserPreference');
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+            prefs.cpCurrency = matches[0];
             await prefs.save();
 
             const settingsCommand = interaction.client.commands.get('settings');

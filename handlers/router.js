@@ -43,6 +43,7 @@ const { handleAlertsInteraction } = require("./alerts");
 const { handleAuditInteraction } = require("./audit");
 const { handleAutobuildInteraction } = require("./autobuild");
 const { handleDrawpricesInteraction } = require("./drawprices");
+const { handleDrawCalcInteraction } = require("./drawCalc");
 const { handleShareInteraction } = require("./share");
 const { handlePaginationInteraction } = require("./pagination");
 const { handleNavigationInteraction } = require("./navigation");
@@ -209,6 +210,7 @@ async function handleInteraction(interaction) {
         if (await handleAuditInteraction(interaction)) return;
         if (await handleAutobuildInteraction(interaction)) return;
         if (await handleDrawpricesInteraction(interaction)) return;
+        if (await handleDrawCalcInteraction(interaction)) return;
         if (await handleShareInteraction(interaction)) return;
         if (await handlePaginationInteraction(interaction)) return;
         if (await handleNavigationInteraction(interaction)) return;

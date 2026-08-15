@@ -149,7 +149,14 @@ const UserPreferenceSchema = new mongoose.Schema({
     // longer makes sense when multiple can be queued/outstanding at once. An id lands here only
     // after a successful delivery (utils/announcement.js) -- never pruned, but the collection this
     // compares against stays tiny (a handful of announcements at most), so this never grows large.
-    seenAnnouncementIds: [{ type: mongoose.Schema.Types.ObjectId }]
+    seenAnnouncementIds: [{ type: mongoose.Schema.Types.ObjectId }],
+
+    // Which storefront's prices /draw calculator quotes. Apple/Google prices are tier-locked PER
+    // STOREFRONT and are not proportional to each other, so the cheapest package combination
+    // genuinely differs by currency -- this is not a display setting. Overridable per-invocation on
+    // the slash command. See docs/reference/cp-package-prices.md for why this can't be derived from
+    // locale/timezone.
+    cpCurrency: { type: String, default: 'USD' }
 });
 
 module.exports = mongoose.model('UserPreference', UserPreferenceSchema);

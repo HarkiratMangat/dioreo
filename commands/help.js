@@ -71,6 +71,7 @@ const COMMAND_ALIASES = {
     '/dmz': ['dmzloadout', 'dmzloadouts'],
     '/draws': ['draw', 'luckydraw', 'luckydraws'],
     '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
+    '/draw calculator': ['calculator', 'calc', 'shortfall', 'optimizer', 'howmuch'],
     '/calendar': ['events', 'schedule', 'timeline'],
     '/patch notes': ['patch', 'patchnotes', 'balance', 'changes', 'notes'],
     '/season end': ['seasonend', 'battlepass', 'bp', 'deadlines']
@@ -140,7 +141,7 @@ const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescri
 
 const CATEGORY_DEFS = [
     { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts', staticCommands: [cmd('/all'), cmd('/dmz')] },
-    { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices')] },
+    { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices'), cmd('/draw calculator')] },
     { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: [cmd('/calendar'), cmd('/patch notes'), cmd('/season end')] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: [cmd('/colors'), cmd('/timestamp')] },
     // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It
@@ -260,8 +261,9 @@ function buildGunsmithsBody(liveNames, client) {
 
 function buildDrawsBody(perms, client) {
     return `### ${mentionCommand(client, '/draws')}\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/draw prices')}\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\``;
+        + `### ${mentionCommand(client, '/draw prices')}\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/draw calculator')}\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw calculator**`;
 }
 
 function buildSeasonalBody(perms, client) {
