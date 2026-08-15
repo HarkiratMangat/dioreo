@@ -523,8 +523,9 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a
     // second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to
-    // prevent.
-    DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY,
+    // prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald
+    // accent (design decision 1: the calculator "sits beside the pricing data it reads").
+    DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()
@@ -536,11 +537,23 @@ module.exports = {
             // Optional direct-jump flag
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
+        .addSubcommand(sub => sub
+            .setName('calculator')
+            .setDescription('Work out how much more CP you need, and the cheapest way to buy it')
+            .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer, // Expose to the root router
 
     async execute(interaction, regionOverride = null, subpageOverride = 0) {
+        // The `draw` group owns two subcommands. The calculator lives in its own module -- but that
+        // module deliberately exports no `data`, because bot/registry.js keys commands by
+        // data.name and a second file exporting setName('draw') would register a DUPLICATE command
+        // and silently overwrite this one in client.commands. Do NOT "fix" that missing export.
+        if (interaction.isChatInputCommand() && interaction.options.getSubcommand() === 'calculator') {
+            return require('./drawCalculator').execute(interaction);
+        }
+
         const userId = interaction.user.id;
         const prefs = await UserPreference.findOne({ discordId: userId });
 
