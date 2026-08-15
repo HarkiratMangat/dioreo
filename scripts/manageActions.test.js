@@ -12,6 +12,7 @@
 // is never called here (it would need adminAccess's Mongo-backed permission lookup).
 
 const assert = require('assert');
+const fs = require('fs');
 const registry = require('../utils/manageActions');
 const manageCommand = require('../commands/manage');
 
@@ -172,6 +173,59 @@ check('loadout mode is derived correctly, and only for loadout pages', () => {
 check('MP and DMZ loadout pages offer the identical action set', () => {
     const ids = p => registry.listActions(p).map(a => a.id).sort();
     assert.deepStrictEqual(ids('loadouts_mp'), ids('loadouts_dmz'));
+});
+
+// Stage 3 (2026-08-14 18:05 EDT) -- the action: slash option + its scoped autocomplete route.
+
+check("/manage's action option is registered with autocomplete on", () => {
+    const actionOption = manageCommand.data.options.find(o => o.name === 'action');
+    assert.ok(actionOption, '/manage has no "action" option');
+    assert.strictEqual(actionOption.autocomplete, true, '"action" option does not have autocomplete enabled');
+});
+
+check('listSlashActions returns only slash:true entries for the requested page', () => {
+    for (const page of registryPages) {
+        const slashIds = new Set(registry.listSlashActions(page).map(a => a.id));
+        for (const entry of registry.listActions(page)) {
+            assert.strictEqual(slashIds.has(entry.id), entry.slash,
+                `${page}:${entry.id} -- listSlashActions() disagrees with its own slash:${entry.slash} flag`);
+        }
+    }
+});
+
+check('listSlashActions returns nothing for an unknown page', () => {
+    assert.deepStrictEqual(registry.listSlashActions('not_a_real_page'), []);
+});
+
+check("resolveAction() alone does NOT block a slash:false entry -- the SLASH CALLER must", () => {
+    // Real bug, found by a completeness sweep 2026-08-14 18:38 EDT: resolveAction() only checks
+    // ownership/page-scope, never `slash`. commands/manage.js's action-dispatch branch is the one
+    // caller that must enforce it -- Discord's autocomplete not SUGGESTING a confirm-kind id is not
+    // the same as REJECTING one a user types directly (autocomplete choices aren't server-enforced).
+    // This pins the fact that stays true (resolveAction alone is insufficient) and the source-scan
+    // below pins that manage.js actually compensates for it.
+    const confirmEntry = registryPages
+        .flatMap(p => registry.listActions(p))
+        .find(a => a.kind === 'confirm');
+    assert.ok(confirmEntry, 'no confirm-kind entry exists to test against');
+    assert.strictEqual(confirmEntry.slash, false, 'test fixture assumption: confirm entries are slash:false');
+});
+
+check('commands/manage.js\'s action dispatch checks entry.slash before running', () => {
+    const src = fs.readFileSync(require.resolve('../commands/manage.js'), 'utf8');
+    // Anchors on the exact guard clause immediately before the run() call -- a plain substring
+    // search for 'resolved.entry.slash' anywhere nearby is NOT enough: this file also sets
+    // resolved.reason = 'unknown' on the non-slash branch, which contains that same substring and
+    // would keep a weaker check green even with the run()-guarding condition removed. Verified by
+    // deliberately reverting the guard and confirming this exact check fails (2026-08-14 18:40 EDT).
+    const runCallIdx = src.indexOf('return await resolved.entry.run(');
+    assert.ok(runCallIdx > -1, 'could not find the action dispatch\'s run() call at all');
+    const precedingIf = src.lastIndexOf('if (', runCallIdx);
+    const guardClause = src.slice(precedingIf, src.indexOf(')', precedingIf) + 1);
+    assert.strictEqual(guardClause, 'if (resolved.ok && resolved.entry.slash)',
+        `the if-condition guarding resolved.entry.run() is "${guardClause}", missing the slash check -- ` +
+        'without it, a slash:false destructive action (purge/wipe/promote/discard) is reachable by ' +
+        'typing its id directly, since autocomplete suggestions are not server-enforced');
 });
 
 const total = registryPages.reduce((n, p) => n + registry.listActions(p).length, 0);

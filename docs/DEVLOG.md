@@ -152,6 +152,8 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-14 13:45 EDT — The list that existed twice, and the flag that must not be derived (v3.18.0-pre)
 - 2026-08-14 16:27 EDT — An absent tool and a forgotten one look identical, and a "duplicate" connector wasn't (v3.19.0-pre)
 - 2026-08-14 17:26 EDT — `/manage` stops being one 2,416-line file (v3.20.0)
+- 2026-08-14 18:10 EDT — /manage's action option, and a spec that assumed too much (v3.21.0)
+- 2026-08-14 18:21 EDT — Every slash command in the bot was one stray interaction away from silently failing (v3.21.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2710,6 +2712,30 @@ The split also surfaced a real testing gap: `scripts/handlerRouting.test.js` had
 A version-numbering assumption also turned out stale mid-flight: the design spec and every handoff written for this project assumed stage 2 would land as v3.19.0-pre, but an unrelated PR (#127, a memory-layer hook fix) merged in between and took that number first. Every downstream stage number — 3, 4 — shifted by one as a result, a small reminder that a version number written into a plan is a prediction, not a reservation, until the merge that actually claims it.
 
 **Lesson for next time:** when a live-verification step gets deferred, the responsible move isn't to delete the thing it was protecting and hope, and it isn't to leave a stale comment describing a gap that no longer exists either — it's updating every place that references the old justification to say, precisely, what changed and what's still pending. Three files (`handlers/router.js`, `utils/sendV2Payload.js`, `.claude/rules/settings-and-expiry.md`) carried the same now-false claim about raw `interaction.update()` calls; all three needed the same correction, not just the one a reader happens to open first.
+
+## 2026-08-14 18:10 EDT — /manage's action option, and a spec that assumed too much (v3.21.0)
+
+The third of four `/manage` decomposition stages (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`) shipped the actual feature Harkirat asked for at the start of the project: `/manage data_for:draws action:add-new` now opens the Add Draw modal directly, no panel render in between.
+
+The interesting part wasn't the option itself -- it was that the frozen design spec's dispatch plan didn't match the code it was dispatching to. The spec said to defer before running `kind:'file'`/`'view'` registry actions and skip the defer only for `'modal'`. Reading the real `run()` bodies in `utils/manageActions.js` before wiring anything up showed that's already false: `exportFile()` calls `interaction.reply()` directly, and `openFormatGuide()` already defers itself. Pre-deferring either would have thrown "already acknowledged" the first time someone typed `/manage data_for:draws action:exportnew`. The actual fix was simpler than the spec's plan: mirror the button dispatch in `handlers/manage/index.js` exactly -- resolve the action, then call `run()` with no defer of any kind, ever, and trust it to manage its own response the way it already does for every button click.
+
+A frozen spec is a snapshot of intent at write time, not a verified contract. Worth remembering for stage 4, which reads this same spec for the audit log's shape.
+
+Also folded in: a scoped autocomplete route in `handlers/router.js` (reads `data_for`, checks the same admin/per-page gate `execute()` already opens with, filters the registry through the existing `fuzzyMatch`), and a fallback note when a typo'd `action` doesn't resolve -- the page still renders instead of failing the whole invocation.
+
+`npm test` green (15/15 registry checks, `docs:reflow`, 26/26 hooks), `docs:audit` 40/41 verified + 1 correctly skipped. Live click-test still deferred, same as stages 1-2, to a session where Harkirat is available to drive the dev bot.
+
+## 2026-08-14 18:21 EDT — Every slash command in the bot was one stray interaction away from silently failing (v3.21.0)
+
+Boot-testing the `/manage` stage 3 branch on the dev bot surfaced a severe, unrelated, bot-wide bug in the same session that shipped the `action:` option -- found because the bot crashed within seconds of boot on a real stray interaction, with nothing done to trigger it.
+
+`handlers/colors.js`'s `handleColorsButton` was the only one of the thirteen per-subsystem handlers in the router's dispatch chain with no `customId` presence check at all. Every other handler opens with `if (!ownsCustomId(interaction.customId)) return false;`, and that helper checks `typeof customId === 'string'` before ever touching it. Colours sits LAST in the chain, so any interaction that reached that point without a `customId` -- which is every plain slash-command invocation and every autocomplete interaction, for every command in the bot, not just `/manage` -- crashed unconditionally on `interaction.customId.startsWith(...)`. The crash net in `handlers/router.js` caught it, logged it, and returned without ever acknowledging the interaction, so the failure mode was total silence: no reply, no error shown to the user, nothing in the logs unless someone was watching them at that exact moment.
+
+The bug has existed since `colors.js` was the first handler extracted from the old monolithic router (2026-08-13 16:45 EDT) -- which is BEFORE the type-test convention that protects the other twelve was even discovered. That convention came from a different bug found later the same day (18:45 EDT, documented in `.claude/rules/interaction-router.md`), and it got applied to settings/loadouts/autobuild but never backported to colours, because nothing forced a second look at the first extraction once the fix landed elsewhere.
+
+Fixed with the one line every other handler already carries: `if (typeof interaction.customId !== 'string') return false;`. Deliberately NOT `ownsCustomId()`/`OWNED_PREFIXES` gating -- this module's whole contract is that an unrecognised `colors_*` id still falls through to the router's remaining branches, and gating on the prefix would swallow ids this handler was never meant to own (a documented trap from an earlier audit that recommended exactly that). The interaction-router rule file's existing "don't fix colors.js by adding ownsCustomId()" warning turned out to be ambiguous in exactly this way -- it meant "don't gate on the prefix," and reading it as "don't add any guard at all" is how this survived a full day of subsequent sessions working in this exact area. Rule file updated to draw that distinction explicitly.
+
+Verified: dev bot boots clean and stays clean over a 40-second window post-fix, versus crashing within seconds pre-fix. Full `npm test` green, `docs:audit` 40/41 verified + 1 correctly skipped. This fix rides in the same PR as the `/manage` stage 3 `action:` option (see that entry, same version) since it was found while verifying that work and blocked the verification outright -- without it, no slash command interaction of any kind could reach `execute()` to be tested.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -45,6 +45,21 @@ const OWNED_PREFIXES = ['colors_'];
 // than a blanket `colors_` prefix match in handlers/router.js) is what preserves the pre-split behaviour
 // exactly: an unrecognised `colors_*` id falls through, same as it always did.
 async function handleColorsButton(interaction) {
+    // ⚠️ FOUND LIVE 2026-08-14 18:15 EDT boot-testing stage 3 of the /manage decomposition: this was
+    // the ONLY per-subsystem handler with no customId guard at all -- every other handlers/*.js module
+    // opens with `if (!ownsCustomId(interaction.customId)) return false;`, whose ownsCustomId() checks
+    // `typeof customId === 'string'` first. Without it, ANY interaction with no customId (a plain slash
+    // command OR an autocomplete interaction -- neither carries one) that reaches this point in
+    // handlers/router.js's dispatch chain (colours sits last) threw here unconditionally, and the
+    // outer crash net just logged it -- so the interaction was never acknowledged, bot-wide, for every
+    // command, since colors.js was first extracted 2026-08-13 16:45 EDT (predating the type-test fix
+    // documented in .claude/rules/interaction-router.md, found later that same day at 18:45 EDT and
+    // applied to the other twelve handlers but never backported here). Deliberately just a presence
+    // check, NOT `ownsCustomId`/OWNED_PREFIXES gating -- this module's whole contract is that an
+    // unrecognised `colors_*` id still falls through to `return false` at the bottom (see that
+    // function's own comment); gating on the prefix would swallow ids this handler doesn't own.
+    if (typeof interaction.customId !== 'string') return false;
+
     // "VIEW COLORS" PANEL ENTRY (2026-07-13) -- opens as its OWN new message (deferReply, not
     // deferUpdate) so /settings itself stays open underneath, unlike every other settings button
     // here which edits @original in place. custom_id: `colors_view|{userId}`. Ephemeral state

@@ -275,6 +275,32 @@ async function handleInteraction(interaction) {
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));
             }
 
+            // === ROUTE B3 (stage 3, 2026-08-14 18:05 EDT): /manage's action: option -- scoped by the
+            // sibling data_for option, since Discord cannot scope one option's static choices by
+            // another option's live value (the whole reason this is autocomplete, not a `choices()`
+            // list -- see the registry's comment in utils/manageActions.js). NOTE (removed
+            // 2026-07-09, re-added here for a different reason): /manage's old autocomplete route was
+            // for search-by-name (draws/loadouts/calendar/patchnotes edit/delete), replaced by the
+            // one-field search modal and never coming back. This route only ever suggests ACTION
+            // IDS off the registry, never touches a collection. ===
+            if (commandName === 'manage') {
+                const page = interaction.options.getString('data_for');
+                if (!page) return await interaction.respond([]); // description tells the user to pick a page first
+                // Same admin gate execute() itself opens with, checked here too so a non-admin
+                // (or an admin scoped away from this page) never even sees the action names --
+                // an autocomplete interaction carries no customId, so the router's prefix guard
+                // doesn't cover this route the way it covers buttons/selects/modals.
+                const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+                if (!(await hasCommandAccess(interaction.user.id, 'manage'))) return await interaction.respond([]);
+                const allowedPages = await getManagePages(interaction.user.id);
+                if (!allowedPages.includes(page)) return await interaction.respond([]);
+                const { listSlashActions } = require('../utils/manageActions');
+                const filtered = listSlashActions(page)
+                    .filter(a => fuzzyMatch(focusedValue, a.label))
+                    .slice(0, 25); // Hard Discord API limit -- defensive even though no page is close today
+                return await interaction.respond(filtered.map(a => ({ name: a.label, value: a.id })));
+            }
+
             // Standard Loadout Dictionary Autocomplete Mapping
             const Loadout = require('../models/Loadout');
             let queryFilter = {};
