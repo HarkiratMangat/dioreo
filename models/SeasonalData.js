@@ -80,7 +80,12 @@ const SeasonalDataSchema = new mongoose.Schema({
         // to 'event' so every pre-existing un-prefixed entry keeps rendering in the same section it
         // always has. calendar.js also synthesizes 'draw' entries at RENDER time from newDraws/
         // returningDraws for anything with no explicit calendar row -- those are never saved here.
-        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
+        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' },
+        // Marks a live 2X CP event so /draw calculator can offer double-CP pricing without the user
+        // having to know an event is on. An explicit flag rather than matching the title text: a
+        // title pattern fails SILENTLY the first season the wording changes, and a silent miss here
+        // means quoting someone the wrong purchase. Set from /manage's Calendar Add/Edit modal.
+        isDoubleCP: { type: Boolean, default: false }
     }],
 
     // Per-page /calendar banners (added 2026-07-31 17:20 EDT, the notes file follow-up) -- ONE banner per page

@@ -27,9 +27,12 @@ async function addCalendarEvent(interaction) {
     const endDate = isOngoing ? null : parseAdminDate(endDateStr);
     if (!isOngoing && !endDate) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
     const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
+    // Lenient Y/N parse (added for /draw calculator's 2X detection) -- blank or anything not
+    // starting with "y" is No, matching the modal's own "blank = No" placeholder.
+    const isDoubleCP = /^y/i.test(interaction.fields.getTextInputValue('double_cp')?.trim() || '');
 
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing, category });
+    seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing, category, isDoubleCP });
     seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
     await seasonalDoc.save();
     recordChange({ actorId: interaction.user.id, page: 'calendar', action: 'add', model: 'SeasonalData', target: title, summary: `Added calendar event "${title}"` });
@@ -61,6 +64,7 @@ async function editCalendarEvent(interaction) {
         targetEvent.isOngoing = isOngoing;
         targetEvent.endDate = parsedEnd;
         targetEvent.category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), targetEvent.title);
+        targetEvent.isDoubleCP = /^y/i.test(interaction.fields.getTextInputValue('double_cp')?.trim() || '');
 
         seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
         await seasonalDoc.save();

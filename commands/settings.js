@@ -313,6 +313,23 @@ module.exports = {
                 }]
             });
 
+            // CP currency: which storefront /draw calculator quotes prices from. Same
+            // shortlist+search-sentinel shape as Timezone right below (Discord's select menu caps at
+            // 25 options, and there are 41 real currencies) -- see utils/cpCurrencyData.js.
+            const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
+            const cpCurrency = prefs.cpCurrency || 'USD';
+            containerComponents.push({ type: 10, content: `**CP Currency** = \`${currencyLabel(cpCurrency)}\`` });
+            containerComponents.push({
+                type: 1,
+                components: [{
+                    type: 3, custom_id: `set_cpcurrency|${userId}|1`, placeholder: "Set which storefront /draw calculator quotes prices from...",
+                    options: [
+                        ...QUICK_CURRENCIES.map(code => ({ label: currencyLabel(code), value: code, default: cpCurrency === code })),
+                        { label: '🔍 Search for your currency...', value: '__search__', description: 'Not in the list above? Type a country or currency code.' }
+                    ]
+                }]
+            });
+
             containerComponents.push({ type: 10, content: `**Timezone** = \`${currentTzLabel}\`` });
             // NOTE (redesigned during review): moved inside the container, directly under its summary
             // line, instead of living as a separate action row below/outside the embed.
