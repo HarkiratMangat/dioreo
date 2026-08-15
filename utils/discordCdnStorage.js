@@ -87,4 +87,53 @@ async function uploadToStorageChannel(channelId, filename, buffer, contentType, 
     }
 }
 
-module.exports = { uploadToStorageChannel };
+// Same walk as findFirstMediaUrl, generalized to collect EVERY resolved cdn.discordapp.com media url
+// instead of stopping at the first (2026-08-15 10:35 EDT, added for scripts/bulkCacheCollectibles.js's
+// grouped multi-variant cache-channel messages -- "keeping the channel tidy" per Harkirat's request).
+// Visits arrays/object values in the SAME deterministic order findFirstMediaUrl always has, which is
+// what makes positional zipping safe: the caller builds `files` and `components` in one loop over its
+// variants (file[i]'s `attachment://filename` sits in components entry i), and Discord neither reorders
+// components in its response nor gives any other reliable way to map a resolved url back to which
+// attachment it came from (`message.attachments` is frequently `[]` for a `attachment://` ref used only
+// inside a component -- see findFirstMediaUrl's own comment). So `findAllMediaUrls(msg.components)[i]`
+// is that same i-th variant's resolved url, as long as the caller preserves that ordering -- it is the
+// caller's responsibility, not enforced here.
+function findAllMediaUrls(node, out = []) {
+    if (!node || typeof node !== 'object') return out;
+    if (node.media?.url && /^https:\/\/cdn\.discordapp\.com\//.test(node.media.url)) out.push(node.media.url);
+    for (const value of Object.values(node)) {
+        if (Array.isArray(value)) {
+            for (const item of value) findAllMediaUrls(item, out);
+        } else if (value && typeof value === 'object') {
+            findAllMediaUrls(value, out);
+        }
+    }
+    return out;
+}
+
+// Multi-file sibling of uploadToStorageChannel (2026-08-15 10:35 EDT) -- posts several rendered files as
+// ONE message (one design's several color variants, grouped) instead of one message per file. `files`:
+// `[{name, contentType, data}, ...]`, in the SAME order the caller's `components` tree references them
+// via `attachment://<name>`. Returns an array of resolved cdn.discordapp.com urls in that same order (a
+// `null` entry where a particular file's url could not be resolved), or `null` on total failure (channel
+// not configured, or the whole request failed) -- never throws, same non-blocking contract as the
+// single-file function above.
+async function uploadMultipleToStorageChannel(channelId, files, components) {
+    if (!channelId || !files?.length) return null;
+    try {
+        const msg = await getRest().post(Routes.channelMessages(channelId), {
+            body: { flags: 32768, components },
+            files: files.map(f => ({ name: f.name, contentType: f.contentType, data: f.data }))
+        });
+        const urls = findAllMediaUrls(msg.components);
+        // Pad/truncate to files.length rather than trusting the walk found exactly one url per file --
+        // a partially-malformed component tree should degrade to "some urls missing", never throw or
+        // silently misalign the rest of the array against the caller's file order.
+        return files.map((_, i) => urls[i] || null);
+    } catch (err) {
+        console.error(`Discord CDN storage-channel grouped upload failed (${files.length} file(s)): ${err.message}`);
+        return null;
+    }
+}
+
+module.exports = { uploadToStorageChannel, uploadMultipleToStorageChannel };

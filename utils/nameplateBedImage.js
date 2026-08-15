@@ -126,10 +126,12 @@ const EXTRACTION_FPS = 12;
 // already have — earlier drafts composited first and then re-derived the bed to within 5-10 RGB,
 // which is strictly worse than just using it. Compositing also let bed-tinted pixels crowd out real
 // art colours in a 4-slot budget. So: pool the animation's art, and let the caller prepend the bed.
-async function renderNameplateArtMontage(webmBuffer, opts = {}) {
-    const raw = await extractAlphaFrames(webmBuffer, {
-        inputExt: '.webm',
-        preInputArgs: ['-c:v', 'libvpx-vp9'],
+async function renderNameplateArtMontage(apngBuffer, opts = {}) {
+    // -f apng (pivoted 2026-08-15 09:30 EDT from webm/-c:v libvpx-vp9, see nameplateWebpCache.js's
+    // header for why) -- without it ffmpeg silently reads an animated PNG as a single still frame.
+    const raw = await extractAlphaFrames(apngBuffer, {
+        inputExt: '.png',
+        preInputArgs: ['-f', 'apng'],
         fps: EXTRACTION_FPS
     });
     return poolFramesIntoMontage(raw, opts);

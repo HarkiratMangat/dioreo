@@ -161,11 +161,13 @@ function readGuildProfile(interaction) {
         nameplateUrl: nameplateAsset
             ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png`
             : null,
-        // Mirrors accentColor.js's fetchProfileExtras -- same asset path, `asset.webm` instead of
-        // `static.png`. The GIF cache below keys on the asset+palette pair, not on guild vs global, so
-        // a server-equipped nameplate transparently reuses the same cached render as the global one.
-        nameplateVideoUrl: nameplateAsset
-            ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}asset.webm`
+        // Mirrors accentColor.js's fetchProfileExtras -- the SKU-addressed `/animated` endpoint, not the
+        // asset path (pivoted 2026-08-15 09:30 EDT from the old `asset.webm` route once a real APNG
+        // variant was confirmed for nameplates too, matching decorations). The cache below keys on the
+        // asset+palette pair, not on guild vs global, so a server-equipped nameplate transparently
+        // reuses the same cached render as the global one.
+        nameplateAnimatedUrl: nameplateSkuId
+            ? `https://cdn.discordapp.com/media/v1/collectibles-shop/${nameplateSkuId}/animated`
             : null,
         nameplatePalette,
 

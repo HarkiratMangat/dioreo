@@ -56,11 +56,14 @@ async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
 //     for this newer collectible type, so the URL is built manually -- verified live against
 //     Discord's CDN (asset already ends in a trailing slash, `static.png` is the correct static-
 //     preview filename).
-//   - nameplateVideoUrl (2026-08-10 08:46 EDT, nameplate animated-preview caching feature): the sibling
-//     `asset.webm`, same asset path. Unusable by getDominantColor's still-image pixel sampling (that's
-//     still.png's job), but it's the ONLY source with real alpha -- see utils/nameplateWebpCache.js's
-//     decode comment for why the default ffmpeg decoder silently discards that alpha and how it's
-//     forced correctly.
+//   - nameplateAnimatedUrl (2026-08-10 08:46 EDT, nameplate animated-preview caching feature; pivoted
+//     2026-08-15 09:30 EDT from the slug-based `asset.webm` route to the SKU-addressed
+//     `media/v1/collectibles-shop/{sku_id}/animated` endpoint -- confirmed live to return a real
+//     multi-frame APNG for nameplates too, not just decorations, so the render pipeline now shares
+//     decorationWebpCache.js's simpler apng extraction instead of needing the webm/libvpx-vp9
+//     alpha-decoder workaround. Requires `nameplateSkuId`, not just the asset path, so it's null
+//     whenever the sku is unavailable rather than falling back to the old route.
+//     Unusable by getDominantColor's still-image pixel sampling (that's still.png's job).
 async function fetchProfileExtras(client, userId) {
     const raw = await client.rest.get(Routes.user(userId));
     const colors = raw.display_name_styles?.colors;
@@ -100,7 +103,7 @@ async function fetchProfileExtras(client, userId) {
         nameplateSkuId,
         nameplateName,
         nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null,
-        nameplateVideoUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}asset.webm` : null,
+        nameplateAnimatedUrl: nameplateSkuId ? `https://cdn.discordapp.com/media/v1/collectibles-shop/${nameplateSkuId}/animated` : null,
         nameplatePalette
     };
 }

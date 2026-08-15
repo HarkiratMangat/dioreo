@@ -155,6 +155,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-14 18:10 EDT — /manage's action option, and a spec that assumed too much (v3.21.0)
 - 2026-08-14 18:21 EDT — Every slash command in the bot was one stray interaction away from silently failing (v3.21.0)
 - 2026-08-15 02:05 EDT — The full nameplate/decoration catalog lands, and a bot token gets a hard no (v3.22.0-pre)
+- 2026-08-15 12:18 EDT — The 925-SKU catalog gets pre-rendered, not discovered one equip at a time (v3.23.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2753,6 +2754,18 @@ Then the actual "run the merge flow" ask turned into two more catches, both from
 Also fixed in passing, unrelated to the catalog but sitting right at the top of the changelog: the previous entry (`v3.21.0`) cited `(#PR-pending)` instead of its real PR number. Checked `gh pr list` before assuming it was another direct-push violation — it wasn't, PR #129 was real and merged, just never backfilled. A one-line fix once verified, not a process problem.
 
 The open design work — whether to bulk-cache the whole catalog into the existing Cloudinary/Discord-storage-channel pipeline, and whether to move it to a Mongoose collection — got filed against the existing tracked item in `docs/db-deferred-list.md` rather than left to live only in chat, including Harkirat's direct requirement that the existing lazy per-user-equip discovery stay as a failsafe fallback for any SKU the catalog misses.
+
+## 2026-08-15 12:18 EDT — The 925-SKU catalog gets pre-rendered, not discovered one equip at a time (v3.23.0-pre)
+
+Pre-rendered the entire 925-SKU nameplate/decoration catalog into the bot's existing Cloudinary + Discord storage-channel cache instead of leaving every design to be discovered lazily, one real user equip at a time.
+
+The nameplate half of the render pipeline needed a pivot first: it had been sourcing from a slug-based WebM route that only worked with ffmpeg's `-c:v libvpx-vp9` flag forcing the one decoder that doesn't silently drop the alpha channel. Discord's newer SKU-addressed `/animated` endpoint turned out to return a genuine multi-frame APNG for nameplates too, not just decorations, so both cache modules now share the same simpler extraction and the WebM workaround is gone entirely. Splitting each cache module into a shared render core plus separate single-item and bulk upload paths meant the live per-user path and the new bulk path could never quietly drift apart from each other.
+
+The bulk script groups by design rather than by SKU, so a multi-variant nameplate or decoration posts as one tidy message with dividers between variants instead of flooding the channel with one message per color. Verified that up to a real 7-variant group renders correctly, ordered, matched to the right SKUs. A `render_source` marker distinguishes a design the catalog already knew about from one a live user rendered before it was catalogued, and the bulk script heals the second kind into the first automatically the next time it runs, no re-render needed.
+
+Two real bugs surfaced along the way and got fixed before they shipped: Mongoose silently reserves `collection` as a schema pathname, which would have broken in ways that don't show up until a real query runs; and an editing tool introduced two literal null bytes into a template literal, which both `file` and git correctly flagged as a binary file and an earlier pass wrongly waved off without ever checking with a hex dump. The nameplate cache-channel layout also went out wrong on the first pass — decoration's compact thumbnail style got applied to nameplates too, when nameplates need the original full-width banner-image-on-top layout instead.
+
+The full run against production is deliberately not part of this — the production bot doesn't have access to the dedicated storage server yet, and fixing that means enabling guild-install for the production app, which would also let real users install the live bot early. That gets bundled with v3's own public launch instead of done ahead of it.
 
 # Part B — Lessons Ledger (thematic)
 
