@@ -123,6 +123,16 @@ async function route(interaction) {
                 } catch (notifyError) { console.error('Failed to notify user of invalid target value (interaction likely expired):', notifyError); }
                 return true;
             }
+            // 'P' (stop at a specific pull) must reject an out-of-range pull the same way pullsDone
+            // does above -- buildResultsPanel silently clamps this, and clamping a REJECTABLE input
+            // is the exact anti-pattern pullsDone validation exists to avoid (a typo'd "500" silently
+            // becoming "finish the draw" with no indication anything was out of range).
+            if (state.target === 'P' && (targetValueRaw < 1 || targetValueRaw > total)) {
+                try {
+                    await interaction.reply({ content: `❌ Target pull must be a number from 1 to ${total} for **${DRAW_META[state.drawKey].name}** -- it doesn't have a pull ${targetValueRaw} if that's not what you meant.`, ephemeral: true });
+                } catch (notifyError) { console.error('Failed to notify user of invalid target pull (interaction likely expired):', notifyError); }
+                return true;
+            }
         }
         await interaction.deferUpdate();
         const newState = { ...state, pullsDone: pullsDoneRaw, balance: balanceRaw === null ? 0 : balanceRaw, targetValue: targetValueRaw };
