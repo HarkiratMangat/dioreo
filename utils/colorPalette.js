@@ -115,9 +115,9 @@ async function getSourceImageInfo(interaction, useGuild = false) {
     // asset hash would in practice already imply the palette. Discord carries the palette as its own
     // field though, so keying on both costs nothing and stays correct if that ever varies.
     const nameplate = guildProfile?.nameplateAsset
-        ? { url: guildProfile.nameplateUrl, videoUrl: guildProfile.nameplateVideoUrl, source: guildProfile.nameplateAsset, paletteCacheKey: `${guildProfile.nameplateAsset}|${guildProfile.nameplatePalette || 'none'}`, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
+        ? { url: guildProfile.nameplateUrl, animatedUrl: guildProfile.nameplateAnimatedUrl, source: guildProfile.nameplateAsset, paletteCacheKey: `${guildProfile.nameplateAsset}|${guildProfile.nameplatePalette || 'none'}`, palette: guildProfile.nameplatePalette, skuId: guildProfile.nameplateSkuId, name: guildProfile.nameplateName }
         : extras.nameplateUrl
-        ? { url: extras.nameplateUrl, videoUrl: extras.nameplateVideoUrl, source: extras.nameplateAsset, paletteCacheKey: `${extras.nameplateAsset}|${extras.nameplatePalette || 'none'}`, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
+        ? { url: extras.nameplateUrl, animatedUrl: extras.nameplateAnimatedUrl, source: extras.nameplateAsset, paletteCacheKey: `${extras.nameplateAsset}|${extras.nameplatePalette || 'none'}`, palette: extras.nameplatePalette, skuId: extras.nameplateSkuId, name: extras.nameplateName }
         : null;
 
     // Name colours are the one source with two possible origins in a guild -- free from the payload
@@ -227,8 +227,10 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // from the source GIF before it was measured.
     // `montageUrl` is null for static sources, so the common case still takes the cheap direct path.
     // NAMEPLATE is the one source whose extraction image has to be BUILT rather than fetched, because
-    // no URL Discord serves actually contains what the user sees. `static.png` and `asset.webm` carry
-    // ONLY the upper art layer (measured: 0.0% opaque) -- the bed is a CSS gradient the client draws
+    // no URL Discord serves actually contains what the user sees. `static.png` and the animated source
+    // (the `/animated` SKU endpoint, pivoted 2026-08-15 09:30 EDT from the old `asset.webm` route --
+    // see utils/nameplateWebpCache.js's header) carry ONLY the upper art layer (measured: 0.0% opaque)
+    // -- the bed is a CSS gradient the client draws
     // from the design's palette metadata -- so extraction was reading translucent art with nothing
     // behind it. See renderNameplateExtractionMontage for the measurement and for why the art and its
     // bed are a LINKED design rather than an independent pairing.
@@ -242,12 +244,12 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false, is
     // Designs with palette `none` have their background baked into the art, so they get no prepended
     // bed and simply take all four from the pooled art.
     let nameplateBedHex = null;
-    if (kind === 'nameplate' && imageInfo.videoUrl) {
+    if (kind === 'nameplate' && imageInfo.animatedUrl) {
         const nameplateBedString = nameplatePaletteHex(imageInfo.palette, 'dark');
         nameplateBedHex = nameplateBedString ? parseInt(nameplateBedString.slice(1), 16) : null;
         try {
-            const res = await fetch(imageInfo.videoUrl);
-            if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.videoUrl}`);
+            const res = await fetch(imageInfo.animatedUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${imageInfo.animatedUrl}`);
             imageSource = await renderNameplateArtMontage(Buffer.from(await res.arrayBuffer()));
         } catch (err) {
             // Falls back to the static.png url already in `imageSource` -- one frame and no bed, but a
@@ -403,7 +405,7 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         results.nameplateWebp = await resolveNameplateWebp({
             nameplateAsset: sources.nameplate.source,
             paletteName: sources.nameplate.palette,
-            webmUrl: sources.nameplate.videoUrl,
+            apngUrl: sources.nameplate.animatedUrl,
             bedHex: results.nameplateBedHex,
             skuId: sources.nameplate.skuId,
             nameplateName: sources.nameplate.name

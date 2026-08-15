@@ -30,6 +30,17 @@
 // prefers that url when present -- a plain, fast, cacheable URL reference, no per-render fetch+
 // reattach needed at all -- and only falls back to fetching+reattaching this module's Cloudinary bytes
 // when the Discord CDN url isn't available yet (channel not configured, or that one upload failed).
+//
+// ⚠️ SPLIT INTO A "CORE" RENDER STEP + A CALLER-OWNED UPLOAD STEP (2026-08-15 10:31 EDT), mirroring the
+// identical restructure in utils/nameplateWebpCache.js (see that file's header for the full reasoning)
+// so scripts/bulkCacheCollectibles.js can render every variant of one design and post them together as
+// ONE grouped Discord message. `renderDecorationWebpCore` does fetch -> extract -> resize-if-needed ->
+// palette -> encode and touches neither Cloudinary nor Discord. `renderAndCacheDecorationWebp` (the
+// live per-user path via resolveDecorationWebp) calls it and does exactly what it always did --
+// Cloudinary + Discord storage-channel upload, context patch, memoize -- unchanged except its context
+// now also carries `render_source: 'fallback'` (this path renders a design not yet in the bulk-cache
+// catalog snapshot). `renderDecorationWebpForBulk` is the bulk script's hook: core + Cloudinary upload
+// only, no storage-channel post, no context patch.
 const cloudinary = require('cloudinary').v2;
 
 if (!process.env.CLOUDINARY_URL) {
@@ -109,6 +120,9 @@ function memoizeResolved(publicId, resolved) {
     resolvedCache.set(publicId, resolved);
 }
 
+// Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already
+// cached without paying for a full resolve. `renderSource` surfaces the context's `render_source`
+// marker ('catalog'|'fallback'|undefined for a pre-existing resource that predates this field).
 async function getCachedDecorationWebp(decorationAsset) {
     const publicId = publicIdFor(decorationAsset);
     if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
@@ -124,7 +138,8 @@ async function getCachedDecorationWebp(decorationAsset) {
             // Null both when no palette was ever stored AND when the stored one predates the current
             // extractor -- readPaletteContext checks the version marker, and both cases route through
             // healPalette below. See colorExtract.js's PALETTE_ALGO_VERSION for the invalidation rule.
-            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS),
+            renderSource: result.context?.custom?.render_source || null
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -136,9 +151,9 @@ async function getCachedDecorationWebp(decorationAsset) {
     }
 }
 
-async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId) {
-    const publicId = publicIdFor(decorationAsset);
-    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+// CORE render step (2026-08-15 10:31 EDT): fetch, extract, resize-if-needed, palette, encode. Touches
+// neither Cloudinary nor Discord -- see this file's header for why this is split out and who calls it.
+async function renderDecorationWebpCore(decorationUrl, decorationAsset) {
     const renderStartedAt = Date.now();
     // Set once the frames are extracted in `asPaths` mode, where this function owns the temp dir. It
     // hangs on the function's own try/finally rather than a nested one so the happy path, the error
@@ -153,10 +168,6 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // -f apng is REQUIRED (see utils/stillFrame.js's extractFrameMontage comment) -- without it
         // ffmpeg silently reads an animated PNG as a single still frame and this would produce a
         // 1-frame "animated" WebP with no error anywhere to catch it.
-        // ⚠️ `asPaths` leaves the frames where ffmpeg wrote them and hands this function ownership of
-        // the temp dir -- hence the `finally` below, which must not be removed. It is spread in HERE
-        // ONLY and is deliberately absent from FRAME_OPTS: it moves no pixel, and folding it into the
-        // options that key the palette cache would re-derive every stored palette for identical colours.
         const extracted = await extractAlphaFrames(sourceBuffer, { ...FRAME_OPTS, asPaths: true });
         releaseFrames = extracted.cleanup;
         const rawFrames = extracted.paths;
@@ -169,18 +180,12 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
         // no-op -- more than double the actual WebP-encode step, for zero pixel change. ffmpeg's raw
         // extracted frames are already valid PNG buffers img2webp can consume directly, so skip Jimp
         // entirely in the (common) no-resize-needed case.
-        // Read from the PNG's IHDR header rather than decoding the frame -- the branch below only
-        // needs the dimensions, and a full Jimp decode of a 288x288 frame to answer a question the
-        // first 24 bytes already answer is the same kind of waste the comment above is about.
         const { width: srcWidth, height: srcHeight } = await readImageSize(rawFrames[0]);
         let width = srcWidth, height = srcHeight, frames;
         if (srcWidth > MAX_WIDTH) {
             height = Math.max(1, Math.round(MAX_WIDTH * srcHeight / srcWidth));
             width = MAX_WIDTH;
             frames = [];
-            // Same event-loop-yield discipline as nameplateWebpCache.js's compositing loop -- this
-            // branch only runs when a real resize is happening, so it's real per-frame CPU work again.
-            // Jimp.read takes the path directly, so nothing is buffered that isn't about to be resized.
             for (const framePath of rawFrames) {
                 const img = await Jimp.read(framePath);
                 img.resize({ w: width, h: height });
@@ -188,17 +193,8 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
                 await new Promise(setImmediate);
             }
         } else {
-            // The common case: PATHS, handed straight to img2webp. Nothing between ffmpeg writing these
-            // and the encoder reading them touches a pixel, so buffering them would be N reads followed
-            // by N writes of the same bytes into a second temp dir.
             frames = rawFrames;
         }
-        // Palette from the raw art frames, which the render already holds -- see extractPaletteFromFrames
-        // above. Extracted from `rawFrames` rather than the possibly-resized `frames` so the result does
-        // not depend on whether a resize branch happened to run; k-means samples ~2500 pixels either way.
-        // Only the ~9 frames the montage samples are read at all; poolFramesIntoMontage's Jimp.read takes
-        // a path as happily as a Buffer.
-        // A failure must not sink the WebP, which is the primary product here.
         let palette = null;
         try {
             palette = await extractPaletteFromFrames(rawFrames);
@@ -208,55 +204,82 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
 
         const webpBuffer = await encodeWebpFromFrames(frames, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
-        // Instrumentation only, see models/RenderTiming.js -- durable copy of the number the cache
-        // message below also shows, since that message lives in a channel a dev cache purge can wipe.
         logRenderTiming({ area: 'webp_render', action: 'decoration', cold: true, durationMs: renderMs });
 
-        // Parallel, not sequential -- see utils/nameplateWebpCache.js's matching comment for why
-        // (measured live 2026-08-10 12:21 EDT: doing this in series visibly slowed the cold-render path).
+        return { webpBuffer, palette, width, height, frameCount: frames.length, renderMs };
+    } catch (err) {
+        console.error(`Decoration WebP render failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
+        return null;
+    } finally {
+        if (releaseFrames) await releaseFrames();
+    }
+}
+
+// Patches a rendered resource's Cloudinary context -- mirrors utils/nameplateWebpCache.js's
+// attachNameplateDiscordCdnUrl exactly (same ONE-CALL rule, same `extra` shape for the render-source
+// marker + catalog metadata). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js.
+async function attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+    const context = { ...paletteContextFields(palette, FRAME_OPTS) };
+    if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
+    for (const [key, value] of Object.entries(extra)) {
+        if (value !== undefined && value !== null && value !== '') context[key] = String(value);
+    }
+    if (!Object.keys(context).length) return;
+    try {
+        await cloudinary.api.update(publicId, { resource_type: 'image', context });
+    } catch (err) {
+        console.error(`Decoration context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
+    }
+}
+
+// BULK hook (2026-08-15 10:31 EDT): core render + Cloudinary upload only -- see
+// utils/nameplateWebpCache.js's renderNameplateWebpForBulk for the full reasoning, identical shape here.
+// `assetFolder`: Cloudinary's `asset_folder` (Media Library organization only -- never affects
+// `public_id`, the actual cache key, for the same reason documented on the nameplate side).
+async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, assetFolder) {
+    const publicId = publicIdFor(decorationAsset);
+    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+    const core = await renderDecorationWebpCore(decorationUrl, decorationAsset);
+    if (!core) return null;
+    try {
+        const uploadResult = await cloudinary.uploader.upload(
+            `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
+            { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+        );
         const filename = `${slugify(decorationAsset)}.webp`;
-        // Same grouping as utils/nameplateWebpCache.js -- identity · colours · output · footer -- so the
-        // two cache channels read as one system rather than two similar-looking blocks. See that
-        // module's comment for the reasoning; the only difference here is that a decoration has no bed
-        // and no palette name, so the identity line is the asset alone. It also sits beside a thumbnail
-        // in a Section rather than under a full-width gallery, so the narrower column matters more.
-        // Same layout Harkirat specified for the nameplate cache 2026-08-11 18:44 EDT, so the two
-        // channels read as one system. ⚠️ DERIVED, not specified -- he gave the nameplate shape only,
-        // and a decoration differs in two ways that force a decision rather than a copy:
-        //   · it has NO NAME (Harkirat 2026-08-10 13:47 EDT: "remove the useless 'Decoration' title"),
-        //     so the heading is the output metrics alone rather than an empty name followed by them;
-        //   · it has no palette NAME and no bed, so the colours line is just the colours.
-        // If he wants it differently, this is the block to change -- the nameplate's is the reference.
+        return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
+    } catch (err) {
+        console.error(`Decoration Cloudinary upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
+        return null;
+    }
+}
+
+async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId) {
+    const publicId = publicIdFor(decorationAsset);
+    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+
+    const core = await renderDecorationWebpCore(decorationUrl, decorationAsset);
+    if (!core) return null;
+    const { webpBuffer, palette, width, height, frameCount, renderMs } = core;
+
+    try {
+        const filename = `${slugify(decorationAsset)}.webp`;
         const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const metadataLines = [
-            `### \`${width}×${height}px\` · \`${frames.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            `### \`${width}×${height}px\` · \`${frameCount}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
             palette ? `-# **Colors:** **${palette.map(hexOf).join(' · ')}**` : null,
             `-# **Asset:** \`${decorationAsset}\``,
             `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``,
+            // 2026-08-15 10:31 EDT: this path only ever renders a design NOT (yet) in the bulk-cache
+            // catalog -- see this file's header. Flags it so a catalog refresh can find + reconcile it.
+            `-# ⚠️ Fallback render — not in the catalog snapshot yet`
         ].filter(Boolean);
-        // Section+Thumbnail (type 9/11), NOT a full-width Media Gallery item -- Harkirat's request
-        // (2026-08-10 13:16 EDT), same inline-preview treatment utils/colorPaletteView.js's own Deco
-        // header already uses for the real View Colors panel. Confirmed animated correctly there once
-        // it references a genuine cdn.discordapp.com attachment (not an externally-proxied url) --
-        // same mechanism here (`attachment://${filename}`), so there's no reason to expect this to
-        // regress to the old static-poster limitation that only ever applied to proxied external refs.
         const components = [
             {
                 type: 17, // Container
-                // Majority extracted color (colorPalette.js's own k-means result, the same one shown
-                // on the real View Colors panel) -- decorations have no official bed-color equivalent
-                // the way nameplates do (see nameplateWebpCache.js's accent_color: bedHex), so this is
-                // the closest thing to a "real" identifying color, per Harkirat's request 2026-08-10
-                // 13:17 EDT ("you already pull the colors... use those").
-                // Read from the palette this render computed itself, rather than passed in from an
-                // extraction that ran separately upstream over the very same frames.
                 accent_color: palette?.[0]?.hex ?? undefined,
-                // No separate heading (Harkirat, 2026-08-10 13:47 EDT: "remove the useless
-                // 'Decoration' title") and the metadata lives in the SAME Section as the thumbnail,
-                // not a sibling TextDisplay below it -- decorations have no name to head a section
-                // with anyway (see this module's header comment on why), so the metadata block IS
-                // the content here.
                 components: [
                     {
                         type: 9, // Section
@@ -276,32 +299,20 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             ),
             cloudinary.uploader.upload(
                 `data:image/webp;base64,${webpBuffer.toString('base64')}`,
-                { public_id: publicId, asset_folder: FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+                // This path only ever renders a design NOT (yet) in the bulk-cache catalog -- see this
+                // file's header -- so it organizes into a dedicated Media Library subfolder rather than
+                // the flat root, matching the bulk path's per-collection organization for the same
+                // reason. Never affects `public_id`, the cache key.
+                { public_id: publicId, asset_folder: `${FOLDER}/_uncataloged`, overwrite: true, invalidate: true, resource_type: 'image' }
             )
         ]);
-        // AWAITED, not fire-and-forget -- see utils/nameplateWebpCache.js's matching comment for why
-        // (measured live 2026-08-10 13:07 EDT: the fire-and-forget version lost the write silently).
-        // ONE patch carrying both keys -- Cloudinary's `context` replaces the whole map, so two calls
-        // would have the second silently erase the first.
-        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
-        if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
-        if (Object.keys(context).length) {
-            try {
-                await cloudinary.api.update(publicId, { resource_type: 'image', context });
-            } catch (err) {
-                console.error(`Decoration context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
-            }
-        }
+        await attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, { render_source: 'fallback' });
         const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
         console.error(`Decoration WebP render/upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
         return null;
-    } finally {
-        // Owned since `asPaths` handed the temp dir over; by here the encoder has its bytes and the
-        // palette has been sampled, so nothing reads these files again on any path through the above.
-        if (releaseFrames) await releaseFrames();
     }
 }
 
@@ -356,4 +367,7 @@ async function healPalette(cached, decorationAsset, decorationUrl) {
     }
 }
 
-module.exports = { resolveDecorationWebp, publicIdFor, FOLDER };
+module.exports = {
+    resolveDecorationWebp, publicIdFor, FOLDER,
+    getCachedDecorationWebp, renderDecorationWebpForBulk, attachDecorationDiscordCdnUrl
+};

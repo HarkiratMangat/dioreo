@@ -1,10 +1,14 @@
 // utils/nameplateWebpCache.js -- persistent Cloudinary cache for the animated nameplate WebP preview
-// in View Colors' Nameplate page. Originally a GIF cache (2026-08-10 09:00 EDT, design spec
-// docs/superpowers/specs/2026-08-09-nameplate-decoration-animated-gif-caching-design.md), pivoted the
-// same day (2026-08-10 11:01 EDT) to WebP once a live Discord test confirmed the client autoplays
-// animated WebP inline exactly like GIF. WebP's real alpha means the fade gradient bed
-// (utils/nameplateBedImage.js's renderGradientBedFrame) is used as-is -- no more GIF-era "solid
-// opaque card" compromise (GIF's binary alpha genuinely couldn't hold the fade; WebP can).
+// in View Colors' Nameplate page. Originally a webm-sourced pipeline (pivoted from GIF the same day it
+// shipped, 2026-08-10) that needed `-c:v libvpx-vp9` to force the one ffmpeg decoder that actually
+// surfaces WebM's alpha side-data (the default silently drops it). Pivoted AGAIN 2026-08-15 10:31 EDT to source
+// from the SKU-addressed `media/v1/collectibles-shop/{sku_id}/animated` endpoint instead -- confirmed
+// live to return a genuine multi-frame APNG for nameplates too, not just decorations (see
+// docs/reference/nameplate-decoration-catalog.md), so this now shares decorationWebpCache.js's simpler
+// `-f apng` extraction and the webm/vp9 decoder workaround is gone entirely for this source. The bed
+// compositing step below (renderGradientBedFrame) is unaffected -- that's about what happens to each
+// decoded frame, not how frames are decoded. Nameplate still needs it where decoration doesn't
+// (nameplate art has a transparent background the client fills with a CSS gradient; decoration doesn't).
 //
 // Same render-once-cache-forever shape every other Cloudinary module here already follows
 // (utils/cloudinaryCache.js/patchNotesCache.js/calendarBannerCache.js/loadoutImageCache.js) --
@@ -16,7 +20,7 @@
 // has ever equipped the same nameplate design in the same palette gets the identical rendered WebP, so
 // the first person to view any given combination pays the render cost once; everyone after that
 // (any user, any server, any bot restart) gets a Cloudinary CDN url. Confirmed the render is genuinely
-// deterministic per (asset, palette) -- the source webm and the bed color are both fixed inputs.
+// deterministic per (asset, palette) -- the source APNG and the bed color are both fixed inputs.
 //
 // ⚠️ ALSO uploads once to a dedicated Discord storage channel (utils/discordCdnStorage.js,
 // NAMEPLATE_CACHE_CHANNEL_ID, added 2026-08-10 12:08 EDT) and persists the resulting cdn.discordapp.com
@@ -28,6 +32,22 @@
 // is never proxied this way, so `utils/colorPaletteView.js` prefers that url when present (a plain,
 // fast, cacheable URL reference -- no per-render fetch+reattach needed at all) and only falls back to
 // fetching+reattaching this module's Cloudinary bytes when the Discord CDN url isn't available yet.
+//
+// ⚠️ SPLIT INTO A "CORE" RENDER STEP + A CALLER-OWNED UPLOAD STEP (2026-08-15 10:31 EDT) so
+// scripts/bulkCacheCollectibles.js can render every color variant of one design and post them together
+// as ONE grouped Discord message ("keeping the cache channel tidy" -- Harkirat's request) instead of
+// one message per SKU. `renderNameplateWebpCore` does fetch -> extract -> palette -> composite -> encode
+// and returns raw materials; it touches neither Cloudinary nor Discord. `renderAndCacheNameplateWebp`
+// (the live per-user path via resolveNameplateWebp) calls it and then does exactly what it always did --
+// Cloudinary + Discord storage-channel upload IN PARALLEL, context patch, memoize -- so the single-SKU
+// live path is byte-for-byte unchanged except for one addition: its context now also carries
+// `render_source: 'fallback'` (this path renders a design that, by definition, wasn't in the bulk-cache
+// catalog snapshot yet), which is how a future catalog refresh can find and reconcile it -- see
+// attachNameplateDiscordCdnUrl below. `renderNameplateWebpForBulk` is the bulk script's hook: core +
+// Cloudinary upload only, no storage-channel post, no context patch -- the caller collects several of
+// these across one design's variants, uploads them together, then calls `attachNameplateDiscordCdnUrl`
+// once per variant (with `render_source: 'catalog'` + the full catalog metadata) to patch each one's own
+// Cloudinary context, same as the single-item path always did.
 const cloudinary = require('cloudinary').v2;
 const { Jimp } = require('jimp');
 
@@ -55,7 +75,7 @@ const PALETTE_COUNT = PALETTE_COUNTS.nameplate;
 // The palette is a pure function of (art, bed), both fixed per (asset, palette) -- so it is computed
 // ONCE PER DESIGN EVER and stored beside the render, rather than once per user on their UserPreference
 // (Harkirat 2026-08-11 01:58 EDT). Extracted from the frames the render already holds, which also
-// collapses the duplicate webm fetch + decode that utils/colorPalette.js was paying separately.
+// collapses the duplicate fetch + decode that utils/colorPalette.js was paying separately.
 //
 // ⚠️ EXTRACT FROM `rawFrames`, NEVER THE COMPOSITED SET. The render composites the bed onto every
 // frame; extracting from those reintroduces exactly the bed contamination v3.6.0 removed, letting
@@ -73,18 +93,18 @@ async function extractPaletteFromFrames(rawFrames, bedHex) {
 // naturally never collides with, or gets confused for, a prod one -- each environment only ever sees
 // its own namespace.
 const FOLDER = IS_DEV ? 'dev_nameplate_webp' : 'nameplate_webp';
-// Matches the source webm's own native rate (measured live: 12fps, 43 frames over ~3.6s) -- Harkirat's
-// call after the original design's cost/quality tradeoff: the render cost is paid ONCE per (design,
-// palette) ever, so there's no reason to trade smoothness for a cost that's already amortized to
-// nothing after the first real view.
+// Matches the source's own native rate (measured live on the webm era: 12fps -- kept unchanged across
+// the apng pivot since the render cost is paid ONCE per (design, palette) ever, so there's no reason to
+// trade smoothness for a cost that's already amortized to nothing after the first real view).
 const FPS = 12;
 // ONE definition, used by the render and the heal path AND folded into the palette cache key. These
-// three values decide which pixels the extractor ever sees -- `-c:v libvpx-vp9` in particular is what
-// makes the webm's alpha channel survive at all (the default vp9 decoder silently drops it) -- so a
-// change here changes every stored palette. Passing this to paletteContextFields/readPaletteContext is
-// what makes that change invalidate them; see colorExtract.js's `extra` parameter for why the cache
-// modules own this rather than the fingerprint reaching in for it.
-const FRAME_OPTS = { inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: FPS };
+// three values decide which pixels the extractor ever sees, so a change here changes every stored
+// palette. Passing this to paletteContextFields/readPaletteContext is what makes that change invalidate
+// them; see colorExtract.js's `extra` parameter for why the cache modules own this rather than the
+// fingerprint reaching in for it.
+// -f apng is REQUIRED (pivoted 2026-08-15 10:31 EDT from `.webm`/`-c:v libvpx-vp9` -- see this file's header) --
+// without it ffmpeg silently reads an animated PNG as a single still frame.
+const FRAME_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: FPS };
 
 // SECURITY: never log a raw Cloudinary error object -- same leak shape as every other Cloudinary
 // module here (the Admin API's rejected-promise carries the account's live API key+secret in
@@ -110,6 +130,13 @@ function errorHttpCode(err) {
 // Safe to do exactly here because both prod folders held ZERO resources and the four dev entries had
 // just been purged and re-rendered -- the cheapest moment this change will ever have. Do not repeat
 // it casually once real renders exist without purging the old ids in the same pass.
+//
+// ⚠️ DELIBERATELY does not vary by collection (2026-08-15 10:31 EDT) -- see attachNameplateDiscordCdnUrl's
+// `assetFolder` param for WHERE the collection actually shows up. Folding it in here would mean a live
+// user's equip of an already-bulk-cached design computes a DIFFERENT public_id than the bulk run used
+// (the live path never knows the collection), silently missing the cache and re-rendering from scratch
+// -- defeating the entire point of bulk pre-caching. Cloudinary's `asset_folder` is a separate field
+// from `public_id` specifically so the Media Library can be organized without touching the cache key.
 function publicIdFor(nameplateAsset, paletteName) {
     const segments = String(nameplateAsset).split('/').filter(Boolean);
     const design = segments.length === 3 && segments[0] === 'nameplates' && segments[1] === 'nameplates'
@@ -131,6 +158,10 @@ function memoizeResolved(publicId, resolved) {
 // Cache-only lookup, no render/upload -- mirrors cloudinaryCache.js's getCachedUrl. A 404 here is the
 // expected, common "never rendered yet" case, not a real error. `context: true` pulls back the
 // persisted Discord CDN url alongside the resource info -- one Admin API call covers both.
+// Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already cached
+// without going through the full resolve->render->single-message path. `renderSource` surfaces the
+// context's `render_source` marker ('catalog'|'fallback'|undefined for a pre-existing resource that
+// predates this field) so the bulk script can detect and heal a stale fallback entry.
 async function getCachedNameplateWebp(nameplateAsset, paletteName) {
     const publicId = publicIdFor(nameplateAsset, paletteName);
     if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
@@ -152,7 +183,8 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
             // Null both when no palette was ever stored AND when the stored one predates the current
             // extractor -- readPaletteContext checks the version marker. Both cases route through
             // healPalette below, which re-derives in place; see colorExtract.js's PALETTE_ALGO_VERSION.
-            palette: readPaletteContext(result.context?.custom, FRAME_OPTS)
+            palette: readPaletteContext(result.context?.custom, FRAME_OPTS),
+            renderSource: result.context?.custom?.render_source || null
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -164,36 +196,24 @@ async function getCachedNameplateWebp(nameplateAsset, paletteName) {
     }
 }
 
-// Full cold-render path: fetch the source webm, extract alpha-correct frames, composite each onto the
-// fade gradient bed, encode to WebP, upload to Cloudinary AND (once) to the Discord storage channel,
-// cache. Never throws -- callers treat a render failure exactly like "not cached yet", falling back to
-// the existing static preview (see utils/colorPaletteView.js), same non-blocking philosophy as every
-// other Cloudinary write path here.
-async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName) {
-    const publicId = publicIdFor(nameplateAsset, paletteName);
-    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+// CORE render step (2026-08-15 10:31 EDT): fetch the source APNG, extract alpha-correct frames, composite each
+// onto the fade gradient bed, encode to WebP. Touches neither Cloudinary nor Discord -- both callers
+// below (the single-item live path and the bulk grouped path) own their own upload strategy. Never
+// throws -- returns null on any failure, same non-blocking philosophy as everything else in this
+// pipeline; callers treat null exactly like "could not render this one."
+async function renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex) {
     const renderStartedAt = Date.now();
-
     try {
-        const res = await fetch(webmUrl);
-        if (!res.ok) throw new Error(`Failed to download ${webmUrl}: HTTP ${res.status}`);
-        const webmBuffer = Buffer.from(await res.arrayBuffer());
+        const res = await fetch(apngUrl);
+        if (!res.ok) throw new Error(`Failed to download ${apngUrl}: HTTP ${res.status}`);
+        const apngBuffer = Buffer.from(await res.arrayBuffer());
 
-        // -c:v libvpx-vp9 forces the decoder that actually surfaces the WebM alpha side-data block --
-        // see animatedMediaPipeline.js's own comment for the measured default-decoder bug this works
-        // around.
-        const rawFrames = await extractAlphaFrames(webmBuffer, FRAME_OPTS);
+        const rawFrames = await extractAlphaFrames(apngBuffer, FRAME_OPTS);
 
         // Per-frame Jimp compositing is fully synchronous CPU work -- yielding between frames is the
         // same fix the k-means CPU-burst production incident needed (see
         // .claude/rules/accent-and-colors.md), so a cold render here can't block an unrelated
         // interaction's 3s ACK window the way the pre-fix color extraction once did.
-        // Palette FIRST, from the raw art frames, before anything composites a bed onto them. Doing it
-        // here rather than in utils/colorPalette.js also removes a circularity: the storage-channel
-        // message's accent used to be passed IN from a palette extracted separately upstream, so the
-        // render depended on an extraction that depended on the same frames the render had in hand.
-        // A failure must not sink the WebP -- the render is the primary product and the panel falls
-        // back to its own extraction when no palette comes back.
         let palette = null;
         try {
             palette = await extractPaletteFromFrames(rawFrames, bedHex);
@@ -217,6 +237,84 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // never gets upscaled, see renderGradientBedFrame's own targetWidth logic).
         const { width, height } = (await Jimp.read(composited[0])).bitmap;
 
+        return { webpBuffer, palette, width, height, frameCount: composited.length, renderMs };
+    } catch (err) {
+        console.error(`Nameplate WebP render failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
+        return null;
+    }
+}
+
+// Patches a rendered resource's Cloudinary context with its Discord storage-channel url, same ONE-CALL
+// rule the single-item path always followed (`context` REPLACES the whole map, so palette,
+// discord_cdn_url and everything in `extra` must travel in the same `api.update`). Exported (2026-08-15 10:31 EDT)
+// for scripts/bulkCacheCollectibles.js, which uploads several variants' files in ONE grouped Discord
+// message and then has to patch each variant's OWN Cloudinary resource individually afterward.
+//
+// `extra` carries the render-source marker + (for the bulk path) the catalog metadata: `render_source`
+// ('catalog'|'fallback'), and when known, `sku_id`/`base_sku_id`/`collection`/`group_name`/
+// `variant_label`/`variant_value`/`label`/`display_name`. Cloudinary context values are flat strings
+// (`key=value|key=value` wire format, same as paletteContextFields' own encoding) -- undefined/null
+// entries in `extra` are dropped rather than written as "undefined".
+async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+    const context = { ...paletteContextFields(palette, FRAME_OPTS) };
+    if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
+    for (const [key, value] of Object.entries(extra)) {
+        if (value !== undefined && value !== null && value !== '') context[key] = String(value);
+    }
+    if (!Object.keys(context).length) return;
+    try {
+        await cloudinary.api.update(publicId, { resource_type: 'image', context });
+    } catch (err) {
+        console.error(`Nameplate context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
+    }
+}
+
+// BULK hook (2026-08-15 10:31 EDT): core render + Cloudinary upload only -- no storage-channel post, no context
+// patch. scripts/bulkCacheCollectibles.js calls this once per not-yet-cached variant of a design,
+// collects the results across the whole design's variants, then posts them together as ONE grouped
+// message and calls attachNameplateDiscordCdnUrl per variant afterward. Cloudinary caching happens
+// immediately per-variant regardless (no reason to defer the part that doesn't need grouping).
+//
+// `assetFolder`: Cloudinary's `asset_folder` (Media Library organization ONLY -- see publicIdFor's
+// comment on why this must never affect `public_id`, the actual cache key). The bulk script passes
+// `${FOLDER}/<collection-slug>`; omitted here it falls back to the flat `FOLDER`, matching what the
+// live path has always used.
+async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder) {
+    const publicId = publicIdFor(nameplateAsset, paletteName);
+    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+    const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
+    if (!core) return null;
+    try {
+        const uploadResult = await cloudinary.uploader.upload(
+            `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
+            { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+        );
+        const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
+        return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
+    } catch (err) {
+        console.error(`Nameplate Cloudinary upload failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
+        return null;
+    }
+}
+
+// Full cold-render path: core render + upload to Cloudinary AND (once) to the Discord storage channel,
+// cache. Never throws -- callers treat a render failure exactly like "not cached yet", falling back to
+// the existing static preview (see utils/colorPaletteView.js), same non-blocking philosophy as every
+// other Cloudinary write path here. Unchanged in every observable way by the 2026-08-15 10:31 EDT core-extraction
+// refactor above (still one message per SKU, on purpose) except one addition: its context now always
+// carries `render_source: 'fallback'` and the message gets a small marker line -- this path renders
+// designs that, by definition, are not (yet) in the bulk-cache catalog snapshot, so flagging them makes
+// a later catalog refresh able to find and reconcile them (see attachNameplateDiscordCdnUrl above).
+async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName) {
+    const publicId = publicIdFor(nameplateAsset, paletteName);
+    if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
+
+    const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
+    if (!core) return null;
+    const { webpBuffer, palette, width, height, frameCount, renderMs } = core;
+
+    try {
         // Discord storage-channel upload and Cloudinary upload are INDEPENDENT of each other (neither
         // needs the other's result) -- run them in PARALLEL, not sequentially. Measured live
         // 2026-08-10 12:21 EDT: doing this in series (Discord upload, THEN a Cloudinary upload that
@@ -229,34 +327,19 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
         const heading = nameplateName || 'Nameplate';
         // Grouped by WHAT THE READER IS ASKING (Harkirat's polish request 2026-08-11 16:59 EDT: better
-        // organised, still concise, no taller). Four lines instead of seven, losing no field:
-        //   identity (what design is this) · colours · output (what came out) · footer (bookkeeping).
-        // Two specific wins beyond the grouping:
-        //   · **Bed had its own field while ALSO being Colors[0]** -- the same hex printed twice, which
-        //     is duplicated state in a record, exactly what a swatch list should never need. It is now
-        //     a marker on the colour that already carried it.
-        //   · The Cloudinary public id and the SKU moved into the `-#` footer. They are bookkeeping you
-        //     copy when something is wrong, not something you read on every render, and the public id
-        //     was the single longest line in the block. Kept in FULL rather than truncated -- an id you
-        //     cannot copy is worse than one that wraps.
-        // Layout specified by Harkirat 2026-08-11 18:44 EDT, to the character -- do not "tidy" it.
-        // The shape is deliberate: the HEADING carries the name and the output metrics, so the one
-        // line rendered at full size answers "what is this and what came out of it", and everything
-        // else drops to `-#` small text. That is what keeps the block from growing: five lines, but
-        // only one of them at body size.
-        //
-        // ⚠️ The palette name and its four hexes are ONE line because they are one fact -- the design's
-        // palette. `palette[0]` IS the bed (v3.6.0 prepends it), so the first hex is the bed and no
-        // separate Bed field is needed; a `none`-palette design prepends nothing and every hex is art.
-        // ⚠️ The Cloudinary id is written with a LEADING SLASH (`/dev_nameplate_webp/…`) as specified.
+        // organised, still concise, no taller). Layout specified by Harkirat 2026-08-11 18:44 EDT, to
+        // the character -- do not "tidy" it beyond the 2026-08-15 10:31 EDT fallback-marker addition below.
         const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const swatches = palette ? palette.map(hexOf).join(' · ') : `\`${bedHexStr}\``;
         const metadataLines = [
-            `### ${heading} — \`${width}×${height}px\` · \`${composited.length}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
+            `### ${heading} — \`${width}×${height}px\` · \`${frameCount}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
             `-# **Palette:** **\`${paletteName || 'none'}\` — ${swatches}**`,
             `-# **Asset:** \`${nameplateAsset}\``,
             `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
-            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``
+            `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``,
+            // 2026-08-15 10:31 EDT: this path only ever renders a design NOT (yet) in the bulk-cache catalog --
+            // see this file's header. Flags it so a future catalog refresh can find + reconcile it.
+            `-# ⚠️ Fallback render — not in the catalog snapshot yet`
         ];
         const components = [
             {
@@ -268,16 +351,9 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
                 // background of the rendered nameplate.
                 // ⚠️ Falls back to the first ART colour when a `none`-palette design has no bed at all
                 // (its background is baked into the art), rather than leaving the container unstyled.
-                // ⚠️ History worth keeping: this line once read `palette[0]` under a comment saying
-                // "NOT bedHex", and v3.6.0 silently MADE that the bed by prepending it at index 0. The
-                // comment stayed correct-looking while the code did the opposite of what it claimed --
-                // which is why this one now names the intent rather than an index.
                 accent_color: bedHex ?? palette?.[0]?.hex ?? undefined,
                 components: [
                     { type: 12, items: [{ media: { url: `attachment://${filename}` } }] },
-                    // ONE TextDisplay, not a heading plus a body -- the heading is the first line of
-                    // the block now (see metadataLines), so a second component would only add spacing
-                    // between two things that belong together.
                     { type: 10, content: metadataLines.join('\n') }
                 ]
             }
@@ -292,7 +368,11 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
             ),
             cloudinary.uploader.upload(
                 `data:image/webp;base64,${webpBuffer.toString('base64')}`,
-                { public_id: publicId, asset_folder: FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+                // This path only ever renders a design NOT (yet) in the bulk-cache catalog -- see this
+                // file's header -- so it organizes into a dedicated Media Library subfolder rather than
+                // the flat root, matching the bulk path's per-collection organization for the same
+                // reason. Never affects `public_id`, the cache key -- see publicIdFor's comment.
+                { public_id: publicId, asset_folder: `${FOLDER}/_uncataloged`, overwrite: true, invalidate: true, resource_type: 'image' }
             )
         ]);
         // AWAITED, not fire-and-forget -- a fire-and-forget version of this patch was tested live
@@ -302,17 +382,7 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
         // this patch completing. The render function must not report success until discordCdnUrl is
         // actually persisted and readable by a future cache hit -- otherwise every render after the
         // first permanently falls back to the slower fetch+reattach path with no way to self-heal.
-        // ONE patch carrying both keys. Cloudinary's `context` replaces the whole map, so sending them
-        // in two calls would have the second silently erase the first.
-        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
-        if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
-        if (Object.keys(context).length) {
-            try {
-                await cloudinary.api.update(publicId, { resource_type: 'image', context });
-            } catch (err) {
-                console.error(`Nameplate context-metadata patch failed for "${publicId}": ${safeErrorMessage(err)}`);
-            }
-        }
+        await attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, { render_source: 'fallback' });
         const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -328,19 +398,19 @@ async function renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName,
 // or a blocked dev-bot write. Otherwise returns { cloudinaryUrl, discordCdnUrl } -- discordCdnUrl may
 // be null even on success (storage channel not configured, or that one upload failed) and callers
 // must handle that, falling back to the existing static preview only when BOTH are unavailable.
-async function resolveNameplateWebp({ nameplateAsset, paletteName, webmUrl, bedHex, skuId, nameplateName }) {
-    if (!nameplateAsset || !webmUrl || bedHex == null) return null;
+async function resolveNameplateWebp({ nameplateAsset, paletteName, apngUrl, bedHex, skuId, nameplateName }) {
+    if (!nameplateAsset || !apngUrl || bedHex == null) return null;
 
     const cached = await getCachedNameplateWebp(nameplateAsset, paletteName);
-    if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex);
+    if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, paletteName, apngUrl, bedHex);
 
-    return renderAndCacheNameplateWebp(webmUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName);
+    return renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName);
 }
 
 // A WebP rendered BEFORE palette caching shipped has no palette in its context, and since the render
 // is cached forever it would never re-run to acquire one -- so that design would fall back to per-user
 // extraction indefinitely, which is the cost this cache exists to remove. This backfills it: re-fetch
-// the webm, extract, patch the context. Paid ONCE per pre-existing design, never again.
+// the source, extract, patch the context. Paid ONCE per pre-existing design, never again.
 //
 // ⚠️ Does NOT re-render or re-upload the WebP -- only the metadata is patched, so the existing
 // cdn.discordapp.com url and the cache-channel message are untouched. That does mean an older cache
@@ -349,12 +419,12 @@ async function resolveNameplateWebp({ nameplateAsset, paletteName, webmUrl, bedH
 //
 // Returns the cached object unchanged on any failure -- a heal that cannot complete must degrade to
 // today's behaviour, never break a working preview.
-async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex) {
+async function healPalette(cached, nameplateAsset, paletteName, apngUrl, bedHex) {
     const publicId = publicIdFor(nameplateAsset, paletteName);
     if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return cached;
     try {
-        const res = await fetch(webmUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${webmUrl}`);
+        const res = await fetch(apngUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${apngUrl}`);
         const rawFrames = await extractAlphaFrames(Buffer.from(await res.arrayBuffer()), FRAME_OPTS);
         const palette = await extractPaletteFromFrames(rawFrames, bedHex);
         const context = { ...paletteContextFields(palette, FRAME_OPTS) };
@@ -372,4 +442,7 @@ async function healPalette(cached, nameplateAsset, paletteName, webmUrl, bedHex)
     }
 }
 
-module.exports = { resolveNameplateWebp, publicIdFor, FOLDER };
+module.exports = {
+    resolveNameplateWebp, publicIdFor, FOLDER,
+    getCachedNameplateWebp, renderNameplateWebpForBulk, attachNameplateDiscordCdnUrl
+};
