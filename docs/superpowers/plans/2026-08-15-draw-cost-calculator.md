@@ -131,8 +131,7 @@ process.exit(failures === 0 ? 0 : 1);
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/cpPackages.test.js`
-Expected: FAIL — `Cannot find module '../utils/cpPackages'`
+Run: `node scripts/cpPackages.test.js` Expected: FAIL — `Cannot find module '../utils/cpPackages'`
 
 - [ ] **Step 3: Write the implementation**
 
@@ -182,8 +181,7 @@ module.exports = { CP_PACKAGES, normalCp, doubleCp, formatUsd };
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node scripts/cpPackages.test.js`
-Expected: PASS — all six checks green.
+Run: `node scripts/cpPackages.test.js` Expected: PASS — all six checks green.
 
 - [ ] **Step 5: Commit**
 
@@ -297,8 +295,7 @@ check('naive baseline is the smallest single package that covers it alone', () =
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/cpPackages.test.js`
-Expected: FAIL — `optimizePurchase is not a function`
+Run: `node scripts/cpPackages.test.js` Expected: FAIL — `optimizePurchase is not a function`
 
 - [ ] **Step 3: Write the implementation**
 
@@ -410,8 +407,7 @@ Update the export line to `module.exports = { CP_PACKAGES, normalCp, doubleCp, f
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `node scripts/cpPackages.test.js`
-Expected: PASS — all checks green, including the brute-force agreement.
+Run: `node scripts/cpPackages.test.js` Expected: PASS — all checks green, including the brute-force agreement.
 
 - [ ] **Step 5: Commit**
 
@@ -524,8 +520,7 @@ process.exit(failures === 0 ? 0 : 1);
 
 - [ ] **Step 3: Run it to verify it fails**
 
-Run: `node scripts/drawCost.test.js`
-Expected: FAIL — `Cannot find module '../utils/drawCost'`
+Run: `node scripts/drawCost.test.js` Expected: FAIL — `Cannot find module '../utils/drawCost'`
 
 - [ ] **Step 4: Write the implementation**
 
@@ -618,8 +613,7 @@ module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, up
 
 - [ ] **Step 5: Run the test to verify it passes**
 
-Run: `node scripts/drawCost.test.js`
-Expected: PASS — all checks green.
+Run: `node scripts/drawCost.test.js` Expected: PASS — all checks green.
 
 - [ ] **Step 6: Wire both test scripts into `npm test`**
 
@@ -631,8 +625,7 @@ node scripts/cpPackages.test.js && node scripts/drawCost.test.js &&
 
 - [ ] **Step 7: Run the full suite**
 
-Run: `npm test`
-Expected: PASS — the whole chain green, including the two new scripts.
+Run: `npm test` Expected: PASS — the whole chain green, including the two new scripts.
 
 - [ ] **Step 8: Commit**
 
@@ -688,8 +681,7 @@ Expected: the toggled entry shows `isDoubleCP: true`. If the field is absent, th
 
 - [ ] **Step 5: Run the registry test**
 
-Run: `node scripts/manageActions.test.js`
-Expected: PASS — the new action is registered on both sides, so neither a dead button nor an unreachable handler exists.
+Run: `node scripts/manageActions.test.js` Expected: PASS — the new action is registered on both sides, so neither a dead button nor an unreachable handler exists.
 
 - [ ] **Step 6: Commit**
 
@@ -896,8 +888,7 @@ Run `/draw calculator`, open the modal, submit `3,000` then `3k` then `3000` and
 
 - [ ] **Step 6: Run the routing tests**
 
-Run: `node scripts/handlerRouting.test.js && node scripts/handlerState.test.js`
-Expected: PASS.
+Run: `node scripts/handlerRouting.test.js && node scripts/handlerState.test.js` Expected: PASS.
 
 - [ ] **Step 7: Commit**
 
@@ -976,8 +967,7 @@ function countComponents(node) {
 
 - [ ] **Step 2: Run it**
 
-Run: `node scripts/drawCalcBudget.test.js`
-Expected: PASS. The script should **print the actual counts**, so headroom is visible rather than merely asserted.
+Run: `node scripts/drawCalcBudget.test.js` Expected: PASS. The script should **print the actual counts**, so headroom is visible rather than merely asserted.
 
 - [ ] **Step 3: Wire into `npm test`**
 
