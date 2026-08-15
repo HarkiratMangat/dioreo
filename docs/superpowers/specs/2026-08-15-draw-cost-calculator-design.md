@@ -35,6 +35,11 @@ Settled with Harkirat on 2026-08-15. Recorded here so they are not re-litigated.
 | 12 | Region is **three toggle buttons on the results panel**, not a setup select | Region only changes output numbers. Harkirat: it belongs at the bottom of the result, matching `/draw prices`' existing three-button region switcher |
 | 13 | The draw-type dropdown **doubles as a contextual guide** | Harkirat: picking a draw type changes what the panel explains, not just what it computes. It teaches the calculator for that specific draw while selecting it |
 | 14 | Inputs that don't apply to a draw type **are not rendered** | The upgrade toggle exists only for the two mythic draws. Same principle applies to any future per-type input |
+| 15 | 2X **doubles the base CP, not the advertised total** | Sourced from Harkirat's store screenshots. The $99.99 tier is 8,000 base at +35% = 10,800 normally, and 8,000 at +100% = 16,000 during the event — not 21,600 |
+| 16 | Store the **base CP and the bonus percentage**, never a total | The same rule that governs `DRAW_DATA`. Both the normal and 2X totals are then derived, so a wrong figure can exist in only one place |
+| 17 | A live 2X event is detected from the **calendar**, via a new explicit `isDoubleCP` flag | Harkirat: the calculator should parse calendar events and offer the 2X calculation. An explicit boolean rather than title matching, because a title pattern fails silently when a season words it differently |
+| 18 | Detection **offers**, never forces | The user can always calculate at normal pricing regardless of what the calendar says. Harkirat's explicit requirement |
+| 19 | During an event, **both stores are live** | Six one-shot 2X bundles plus the normal six, unbounded. Confirmed with Harkirat |
 
 ## Architecture
 
@@ -53,6 +58,8 @@ Settled with Harkirat on 2026-08-15. Recorded here so they are not re-litigated.
 | `utils/drawCost.js` | new | Pure remainder math over `DRAW_DATA`. Knows nothing about money |
 | `utils/cpPackages.js` | new | The package table and the optimizer. Knows nothing about draws |
 | `handlers/drawCalc.js` | new | Owns the `calc_*` interaction prefixes. Registered in `handlers/router.js` beside `handleDrawpricesInteraction` |
+| `models/SeasonalData.js` | modified | `calendar[]` sub-schema gains `isDoubleCP: { type: Boolean, default: false }` |
+| `commands/manage.js` + `handlers/manage/calendar.js` | modified | A toggle to set `isDoubleCP` on a calendar entry, audited like the page's other writes |
 
 > ⚠️ **`commands/drawCalculator.js` must not export `data`.** The folder sweep in `loadCommandModules()` only registers modules having *both* `data` and `execute`, so a module exporting only `execute` and builders is safely ignored by registration while staying requireable. A future session will read the missing export as an oversight and "fix" it, which would register a second `draw` command. This is called out in the rule file for the same reason.
 
@@ -114,18 +121,55 @@ The user enters **pulls already done**, and the panel echoes back the derived fi
 
 ### The package model
 
-Six packages, one global table, each `{ id, label, cp, priceUSD }`. Values to be supplied by Harkirat; the algorithm and interface below are complete without them.
+Six packages, one global table. Sourced from Harkirat's own store screenshots on 2026-08-15.
 
-**The Double CP event** is a recurring limited-time promotion, not a once-per-account bonus. While it runs, each of the six packages may be bought **once** at double CP for the same price; after those are used the packages revert to normal rates and unlimited purchases. When the event returns, the entitlements reset.
+Each entry stores **base CP and bonus percentage only** — never a total. This is the same rule that governs `DRAW_DATA`, and it matters here for a specific reason: the advertised store number already has the bonus folded in, so storing it directly would make the 2X figure impossible to derive correctly.
 
-The panel therefore asks two things: whether an event is currently running, and which of the six the user has already used during this run. The unused ones become bounded items.
+| Base CP | Normal bonus | Normal total | 2X total | Price |
+|---|---|---|---|---|
+| 80 | — | 80 | 160 | $0.99 |
+| 400 | +5% | 420 | 800 | $4.99 |
+| 800 | +10% | 880 | 1,600 | $9.99 |
+| 2,000 | +20% | 2,400 | 4,000 | $24.99 |
+| 4,000 | +25% | 5,000 | 8,000 | $49.99 |
+| 8,000 | +35% | 10,800 | 16,000 | $99.99 |
+
+Shape: `{ id, baseCp, bonusPct, priceUSD }`. Normal total = `baseCp * (1 + bonusPct)`. 2X total = `baseCp * 2`.
+
+> ⚠️ **2X doubles the BASE, not the advertised total.** The $99.99 tier yields 16,000 during an event, not 21,600. Every base above is corroborated by the event screenshot's own `80+80` / `400+400` / `800+800` / `2000+2000` / `4000+4000` / `8000+8000` labelling. Getting this wrong overstates the top tier by 5,600 CP and would send a player a materially wrong purchase recommendation.
+
+**Prices are identical worldwide.** Only the currency label changes — the same tiers render as `Rs 300 … Rs 24,900` on an Indian store and `$0.99 … $99.99` on a US one, via the platform's own FX. USD is therefore the canonical unit, and any local-currency display is presentation, not data.
+
+### Why the optimizer is not a rule of thumb
+
+CP per dollar is **monotonically increasing** under normal pricing — 80.8, 84.2, 88.1, 96.0, 100.0, 108.0 — so bigger packages are strictly better value and the optimizer will tend toward the largest that fits.
+
+Under 2X it is **almost perfectly flat** — 161.6, 160.3, 160.2, 160.1, 160.0, 160.0 — with the *smallest* tier marginally the best. So during an event the winning strategy inverts: minimize overshoot rather than buy big.
+
+Two genuinely different strategies from one algorithm is the argument for computing this rather than publishing a tip.
+
+### The Double CP event
+
+A recurring limited-time promotion, not a once-per-account bonus. While it runs, each of the six packages may be bought **once** at +100% instead of its normal bonus, at the same price. Those entitlements reset when a later event begins. The normal store stays fully available and unbounded throughout.
+
+The optimizer therefore sees, during an event: **six bounded one-shot items** (the unused 2X entitlements) plus **six unbounded items** (the normal packages). Outside an event, only the latter.
+
+### Calendar detection
+
+`SeasonalData.calendar[]` entries are `{ title, date, endDate, isOngoing, category }`. A new boolean **`isDoubleCP`** is added to that sub-schema, set by a toggle on `/manage`'s Calendar page.
+
+Detection reuses the liveness logic `commands/calendar.js` already has for its `active` filter mode (`calendar.js:69-73`) rather than reimplementing a date comparison: an entry is live when it is ongoing, or when now falls within `date`..`endDate`.
+
+When a live `isDoubleCP` entry exists, the panel **offers** the 2X calculation and surfaces the event's own end date. The user may always switch back to normal pricing — detection never forces the mode. When no such entry exists, the panel still lets the user assert an event is running, because the calendar may simply not have been updated yet.
+
+> ⚠️ **Schema-gotcha invariant applies.** `isDoubleCP` must be added to the Mongoose sub-schema in the same change as the code that sets it, or it will appear to work in memory and silently vanish on the next fetch. This repo has shipped that exact bug before. The `/manage` write path should also flow through the existing `ChangeLog` audit capture like the page's other fields.
 
 ### The algorithm
 
 Minimize real money subject to `totalCP >= shortfall`.
 
 - Base packages are **unbounded** — buyable repeatedly
-- Unused Double CP entitlements are **bounded at one each** — double `cp`, same `priceUSD`
+- Unused Double CP entitlements are **bounded at one each** — `baseCp * 2` CP, same `priceUSD`
 - DP over CP `0..shortfall`, where buying package *i* moves state `c -> min(shortfall, c + cp_i)`, so overshoot collapses into the terminal state naturally and `dp[shortfall]` is the cheapest cover
 - The bounded items add a subset dimension: at most `2^6 = 64` DP runs over an array of at most ~30,000. A few million integer operations — instant, and no cleverness is warranted
 - **Least waste** is a second pass minimizing `totalCP - shortfall`, tiebreaking on price
@@ -169,13 +213,15 @@ Both absences are deliberate prior decisions — Harkirat explicitly refused to 
 - `drawCost` against every `(region, drawKey)` pair including the seven-pull draws and the null entries, asserting that remaining + spent equals the full total for every `pullsDone` from 0 to `len`
 - `cpPackages` against hand-checked shortfalls, plus a brute-force cross-check on small inputs to prove the DP agrees with exhaustive enumeration
 - Boundary cases: zero shortfall, shortfall below the smallest package, shortfall above any single package, every entitlement used, none used
+- A derivation guard asserting each package's computed normal total equals the store's advertised figure (80 / 420 / 880 / 2,400 / 5,000 / 10,800) and each 2X total equals `baseCp * 2` (160 / 800 / 1,600 / 4,000 / 8,000 / 16,000). This is the check that would have caught the double-the-total misreading
 
 **Phase 2** needs the dev bot (`node --watch --env-file=.env.dev index.js`) and a real click-through, plus a `buildContainer()` JSON dump to **verify** the component count against the 40 cap rather than eyeballing it — the method already used for the Advanced page.
 
 ## Phases
 
-1. **Pure math** — `utils/drawCost.js`, `utils/cpPackages.js`, and their test scripts. No Discord surface
-2. **The Discord surface** — subcommand wiring, two-stage panel, modal, `handlers/drawCalc.js`, router registration
-3. **Records** — `/help` entry, `.claude/rules/draw-prices.md` (or a new calculator rule), `docs/README.md` if a new rule file lands, changelog entry, `package.json` bump
+1. **Pure math** — `utils/drawCost.js`, `utils/cpPackages.js`, and their test scripts. No Discord surface, no bot required
+2. **Calendar plumbing** — the `isDoubleCP` schema field and its `/manage` toggle. Independent of Phase 1 and independently testable against the dev bot's local Mongo
+3. **The Discord surface** — subcommand wiring, two-stage panel, modal, `handlers/drawCalc.js`, router registration, calendar detection wired in
+4. **Records** — `/help` entry, `.claude/rules/draw-prices.md` (or a new calculator rule), `docs/README.md` if a new rule file lands, changelog entry, `package.json` bump
 
-Phase 1 is blocked on nothing but the package values, and only for `cpPackages`' data table — its algorithm and tests can be written and exercised against placeholder values first.
+**Nothing is blocked.** The package values arrived on 2026-08-15 and are recorded above, so Phase 1 can be written and verified end to end. Phases 1 and 2 are independent of each other and could be done in either order, or in parallel by different sessions.
