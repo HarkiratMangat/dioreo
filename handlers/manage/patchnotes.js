@@ -10,6 +10,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
 // .claude/rules/interaction-router.md.
 
+const { recordChange } = require('../../utils/changeStore');
 const { registerUndo, loadOrCreateSeasonalDoc, prompt } = require('./shared');
 
 // All 3 dateinfo/urls1/urls2 actions operate on the LAST item in patchNotes[] -- the one whose title
@@ -46,6 +47,7 @@ async function setDateInfo(interaction) {
     const { displayTitle } = require('../../commands/patchnotes');
     const effectiveTitle = displayTitle(current);
     await syncPatchEntryMetadata(current, effectiveTitle);
+    recordChange({ actorId: interaction.user.id, page: 'patchnotes', action: 'edit', model: 'SeasonalData', target: effectiveTitle, summary: `Updated Patch Notes date/info for "${effectiveTitle}"` });
     return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${effectiveTitle}` });
 }
 
@@ -84,6 +86,7 @@ async function setUrls(interaction) {
     current.images = slot === 1 ? [...newSlice, ...otherSlice] : [...otherSlice, ...newSlice];
 
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'patchnotes', action: 'edit', model: 'SeasonalData', target: displayTitle(current), summary: `Updated Patch Notes URLs ${slot} for "${displayTitle(current)}"` });
     return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${displayTitle(current)} now has ${current.images.length} image(s) total.` });
 }
 
@@ -121,6 +124,7 @@ async function addSeason(interaction) {
     newEntry.images = cachedUrls;
 
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'patchnotes', action: 'add', model: 'SeasonalData', target: displayTitle(newEntry), summary: `Added new Patch Notes season "${displayTitle(newEntry)}"` });
     return interaction.followUp({ content: `✅ **New Season Added!** "${displayTitle(newEntry)}" is now the Current Season (${cachedUrls.length} image(s)). The previous entry has moved to Past Seasons.` });
 }
 
@@ -156,19 +160,21 @@ async function editSeason(interaction) {
     entry.images = cachedUrls;
 
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'patchnotes', action: 'edit', model: 'SeasonalData', target: displayTitle(entry), summary: `Edited past Patch Notes season "${displayTitle(entry)}"` });
     return interaction.followUp({ content: `✅ **Past Season Updated!** "${displayTitle(entry)}" now has ${cachedUrls.length} image(s).` });
 }
 
 // --- PURGE (patch notes) --- called from index.js's mng_purgeconfirm_ dispatch. Only scope 'all' --
 // the one place patch notes HISTORY can actually be cleared (distinct from "Wipe Season", which
 // deliberately keeps patch notes forever).
-async function purge() {
+async function purge(actorId) {
     const SeasonalData = require('../../models/SeasonalData');
     const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
     const prevPatchNotes = seasonalDoc.patchNotes;
     seasonalDoc.patchNotes = [];
     await seasonalDoc.save();
     const confirmMsg = `✅ Purged the patch notes history (${prevPatchNotes.length} entry(s) removed).`;
+    recordChange({ actorId, page: 'patchnotes', action: 'purge', model: 'SeasonalData', target: 'all', summary: confirmMsg });
     const undoToken = registerUndo('Purge (patch notes history)', async () => {
         const doc = await SeasonalData.findOne({ docType: 'global' });
         doc.patchNotes = prevPatchNotes;

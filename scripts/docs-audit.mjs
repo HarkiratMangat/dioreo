@@ -2046,7 +2046,7 @@ check(
       // names in the second group are the ordinary way a schema records "who did this", so a model
       // carrying one is holding a user ID whatever the key of the collection is.
       const isPerUser = Object.keys(schema.paths)
-        .some((f) => /^(discordId|userId|user_id|updatedBy|createdBy|authorId|ownerId)$/i.test(f.split(".")[0]));
+        .some((f) => /^(discordId|userId|user_id|updatedBy|createdBy|authorId|ownerId|actorId)$/i.test(f.split(".")[0]));
       if (!isPerUser) continue;
       examined++;
       const name = file.replace(/\.js$/, "");

@@ -21,7 +21,7 @@
 // has no permission token at all; hasManagePageAccess/getManagePages both hardcode this.
 const AdminUser = require('../models/AdminUser');
 
-const ADMIN_COMMANDS = ['manage', 'alerts', 'autobuild'];
+const ADMIN_COMMANDS = ['manage', 'alerts', 'autobuild', 'audit'];
 
 // One entry per REAL /manage page a permission can name, EXCEPT 'manageadmins' (owner-only,
 // never grantable -- see header) and 'guide' (the Bulk Format Guide is read-only reference
@@ -139,6 +139,7 @@ function formatPermissions(perms) {
     const parts = [];
     if (perms.includes('alerts')) parts.push('/alerts');
     if (perms.includes('autobuild')) parts.push('/autobuild');
+    if (perms.includes('audit')) parts.push('/audit');
     if (perms.includes('manage')) {
         parts.push('/manage (full)');
     } else {

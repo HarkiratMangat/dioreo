@@ -40,6 +40,7 @@ const { handlePatchnotesInteraction } = require("./patchnotes");
 const { handleSettingsInteraction } = require("./settings");
 const { handleLoadoutsInteraction } = require("./loadouts");
 const { handleAlertsInteraction } = require("./alerts");
+const { handleAuditInteraction } = require("./audit");
 const { handleAutobuildInteraction } = require("./autobuild");
 const { handleDrawpricesInteraction } = require("./drawprices");
 const { handleShareInteraction } = require("./share");
@@ -140,7 +141,8 @@ async function handleInteraction(interaction) {
             'mng_': 'manage', 'modal_': 'manage', 'add_loadout_': 'manage', 'edit_loadout_': 'manage',
             'edit_calendar_': 'manage', 'edit_draw_': 'manage', 'add_draw_': 'manage',
             'autobuild_': 'autobuild', // /autobuild's review-card buttons + edit modal (2026-07-19)
-            'alerts_': 'alerts' // /alerts panel buttons (export/explain/back/page) (2026-07-20)
+            'alerts_': 'alerts', // /alerts panel buttons (export/explain/back/page) (2026-07-20)
+            'audit_': 'audit' // /audit panel buttons/select/modal (2026-08-15 12:31 EDT, stage 4 of the /manage decomposition)
         };
         const matchedPrefix = Object.keys(MANAGE_PREFIX_COMMAND).find(prefix => interaction.customId.startsWith(prefix));
         if (matchedPrefix) {
@@ -204,6 +206,7 @@ async function handleInteraction(interaction) {
         if (await handleSettingsInteraction(interaction)) return;
         if (await handleLoadoutsInteraction(interaction)) return;
         if (await handleAlertsInteraction(interaction)) return;
+        if (await handleAuditInteraction(interaction)) return;
         if (await handleAutobuildInteraction(interaction)) return;
         if (await handleDrawpricesInteraction(interaction)) return;
         if (await handleShareInteraction(interaction)) return;

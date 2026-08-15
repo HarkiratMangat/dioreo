@@ -32,7 +32,7 @@ paths:
 `handlers/manage/index.js`'s `mng_act_` branch (moved there from the old single-file handlers/manage.js by the 2026-08-14 17:31 EDT stage-2 directory split — see `.claude/rules/manage-panel.md`) no longer hardcodes each page's actions. It parses the custom_id, calls `resolveAction()` from `utils/manageActions.js`, and runs whatever comes back — 30 lines where there used to be 222. **That resolver is also the per-page permission check**, which is what made those permissions hold per click rather than only at page-view time. The router's own prefix guard is a different check at a different granularity and both are required; see `.claude/rules/manage-panel.md` for the registry's full contract.
 
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
-✅ **DONE.** Thirteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
+✅ **DONE.** Fourteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `audit` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. (`audit` added 2026-08-15 12:31 EDT, stage 4 of the `/manage` decomposition — see `manage-panel.md`'s audit-log section.) The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
 
 ### ✍️ SECTION HEADERS ARE DESCRIPTIVE — never numbered or lettered (Harkirat, 2026-08-13 21:36 EDT)
 > *"ditch the numbering/lettering system and just do section headers. as code changes, the numbering/lettering go stale."*
@@ -69,6 +69,7 @@ paths:
 | `mpbrowse` `dmzbrowse` `dmz` `mp` | `loadouts.js` |
 | `autobuild_` | `autobuild.js` |
 | `alerts_` | `alerts.js` |
+| `audit_` | `audit.js` |
 | `price_` | `drawprices.js` |
 | `nav_` | `navigation.js` |
 | `page_` `subpage_` `calpage_` | `pagination.js` |

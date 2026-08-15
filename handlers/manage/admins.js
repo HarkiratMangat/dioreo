@@ -10,6 +10,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
 // .claude/rules/interaction-router.md.
 
+const { recordChange } = require('../../utils/changeStore');
 const { prompt } = require('./shared');
 
 // --- GRANT --- custom_id: modal_admin_grant
@@ -40,6 +41,7 @@ async function grantAdmin(interaction) {
         { upsert: true }
     );
     invalidateAdminCache();
+    recordChange({ actorId: interaction.user.id, page: 'manageadmins', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}` });
     return interaction.followUp({ content: `✅ Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}.${note ? ` (${note})` : ''}` });
 }
 
@@ -64,6 +66,7 @@ async function editAdminPermissions(interaction) {
         return interaction.followUp({ content: '❌ That admin no longer exists (they may have just been revoked).' });
     }
     invalidateAdminCache();
+    recordChange({ actorId: interaction.user.id, page: 'manageadmins', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}` });
     return interaction.followUp({ content: `✅ Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}.` });
 }
 
@@ -120,6 +123,7 @@ async function handleButton(interaction) {
         const AdminUser = require('../../models/AdminUser');
         await AdminUser.deleteOne({ discordId });
         invalidateAdminCache();
+        recordChange({ actorId: interaction.user.id, page: 'manageadmins', action: 'revoke', model: 'AdminUser', target: discordId, summary: `Revoked admin access from <@${discordId}>` });
         try {
             await prompt(interaction, { text: `✅ Revoked admin access from <@${discordId}>.` });
         } catch (notifyError) {

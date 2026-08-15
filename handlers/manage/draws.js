@@ -14,6 +14,7 @@
 // .claude/rules/interaction-router.md.
 
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
+const { recordChange } = require('../../utils/changeStore');
 const {
     registerUndo, undoButtonRow, thumbnailNote, resolveThumbnailsForDraws,
     upsertDrawsByTitle, loadOrCreateSeasonalDoc
@@ -77,6 +78,7 @@ async function addDraw(interaction) {
     arrayTarget.push(newDrawObj);
     arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'draws', action: 'add', model: 'SeasonalData', target: newDrawObj.title, summary: `Added ${drawType} draw "${newDrawObj.title}"` });
 
     let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
     if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
@@ -117,6 +119,7 @@ async function editDraw(interaction) {
 
         arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
         await seasonalDoc.save();
+        recordChange({ actorId: interaction.user.id, page: 'draws', action: 'edit', model: 'SeasonalData', target: newTitle, summary: `Edited ${drawType} draw "${newTitle}"` });
         let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases <t:${Math.floor(new Date(arrayTarget[drawIndex].date).getTime() / 1000)}:D>).`;
         const editThumbNote = thumbnailNote(thumbResult);
         if (editThumbNote) confirmation += `\n${editThumbNote}`;
@@ -180,6 +183,7 @@ async function bulkAddOrReplaceDraws(interaction) {
     }
 
     await seasonalDoc.save();
+    recordChange({ actorId: interaction.user.id, page: 'draws', action: mode === 'add' ? 'bulkAdd' : 'bulkReplace', model: 'SeasonalData', target: 'New/Returning Draws', summary: `Bulk ${mode === 'add' ? 'add' : 'replace'} draws`, detail: updated.join(' | ') });
     const undoToken = registerUndo(`Bulk ${mode === 'add' ? 'Add' : 'Replace'} Draws`, async () => {
         const SeasonalData = require('../../models/SeasonalData');
         const doc = await SeasonalData.findOne({ docType: 'global' });
@@ -256,6 +260,7 @@ async function bulkDeleteDraws(interaction) {
             if (newRemaining !== null) doc.newDraws = newRemaining;
             if (returningRemaining !== null) doc.returningDraws = returningRemaining;
             await doc.save();
+            recordChange({ actorId: interaction.user.id, page: 'draws', action: 'bulkDelete', model: 'SeasonalData', target: 'New/Returning Draws', summary: 'Bulk delete draws', detail: summary.join(' | ') });
             return registerUndo('Bulk Delete Draws', async () => {
                 const d = await SeasonalData.findOne({ docType: 'global' });
                 if (newRemaining !== null) d.newDraws = prevNew;
@@ -279,7 +284,7 @@ async function bulkDeleteDraws(interaction) {
 }
 
 // --- PURGE (draws) --- called from index.js's mng_purgeconfirm_ dispatch. scope: 'new'|'returning'|'all'.
-async function purgeDraws(scope) {
+async function purgeDraws(scope, actorId) {
     const SeasonalData = require('../../models/SeasonalData');
     const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
     // Snapshot whatever's about to be wiped so Undo can restore it exactly.
@@ -292,6 +297,7 @@ async function purgeDraws(scope) {
     if (scope === 'new' || scope === 'all') removedCounts.push(`${prevNew.length} New`);
     if (scope === 'returning' || scope === 'all') removedCounts.push(`${prevReturning.length} Returning`);
     const confirmMsg = `✅ Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
+    recordChange({ actorId, page: 'draws', action: 'purge', model: 'SeasonalData', target: scope, summary: confirmMsg });
     const undoToken = registerUndo(`Purge (${scope} draws)`, async () => {
         const doc = await SeasonalData.findOne({ docType: 'global' });
         if (scope === 'new' || scope === 'all') doc.newDraws = prevNew;
@@ -302,13 +308,14 @@ async function purgeDraws(scope) {
 }
 
 // --- DELETE (draws) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
-async function deleteDraw(match) {
+async function deleteDraw(match, actorId) {
     const SeasonalData = require('../../models/SeasonalData');
     const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
     const removedDoc = match.doc;
     if (match.type === 'new') seasonalDoc.newDraws = seasonalDoc.newDraws.filter(d => d._id.toString() !== match.id);
     else seasonalDoc.returningDraws = seasonalDoc.returningDraws.filter(d => d._id.toString() !== match.id);
     await seasonalDoc.save();
+    recordChange({ actorId, page: 'draws', action: 'delete', model: 'SeasonalData', target: match.label, summary: `Deleted draw "${match.label}"` });
     return registerUndo(`Delete draw "${match.label}"`, async () => {
         const doc = await SeasonalData.findOne({ docType: 'global' });
         if (match.type === 'new') doc.newDraws.push(removedDoc); else doc.returningDraws.push(removedDoc);

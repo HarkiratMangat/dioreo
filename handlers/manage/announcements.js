@@ -8,6 +8,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
 // .claude/rules/interaction-router.md.
 
+const { recordChange } = require('../../utils/changeStore');
 const { prompt } = require('./shared');
 
 // --- POST NEW --- custom_id: modal_announce_post
@@ -38,6 +39,7 @@ async function postAnnouncement(interaction) {
         console.error('Failed to create announcement:', createError);
         return interaction.followUp({ content: `❌ Something went wrong saving that announcement: ${createError.message}` });
     }
+    recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'add', model: 'Announcement', target: text.length > 60 ? `${text.slice(0, 57)}...` : text, summary: 'Posted a new announcement' });
     return interaction.followUp({ content: `✅ Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}. Anyone who hasn't seen it yet will, on their next command.` });
 }
 
@@ -65,6 +67,7 @@ async function editAnnouncement(interaction) {
     if (!updated) {
         return interaction.followUp({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).' });
     }
+    recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'edit', model: 'Announcement', target: text.length > 60 ? `${text.slice(0, 57)}...` : text, summary: 'Edited an announcement' });
     return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.` });
 }
 
@@ -108,6 +111,7 @@ async function handleButton(interaction) {
         const doc = await Announcement.findById(id).lean();
         const preview = doc ? (doc.text.length > 200 ? `${doc.text.slice(0, 200)}…` : doc.text) : null;
         await Announcement.deleteOne({ _id: id });
+        recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'delete', model: 'Announcement', target: preview || id, summary: 'Deleted an announcement' });
         try {
             await prompt(interaction, { text: preview ? `✅ Deleted:\n> ${preview.replace(/\n/g, '\n> ')}` : '✅ Announcement deleted.' });
         } catch (notifyError) {

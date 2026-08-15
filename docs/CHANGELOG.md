@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.23.0 — 2026-08-15 12:07 EDT (#131) — Bulk-cache pipeline for the nameplate/decoration catalog
+## Pre-Release v3.24.0 — 2026-08-15 12:37 EDT (#132) — DB-change audit log + `/audit` — closes the `/manage` decomposition
+
+Stage 4 of 4, and the last stage, of the `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): every DB-mutating operation function `handlers/manage/*.js`'s stage-2 split produced now calls `utils/changeStore.js`'s `recordChange()` once, right after its own save succeeds — the hook point that split existed to create in the first place.
+
+**`models/ChangeLog.js` + `utils/changeStore.js`** copy the `/alerts` trio's shape (`models/AlertLog.js` / `utils/alertStore.js` / `commands/alerts.js`) directly, since that pattern already solves human-referenceable ids, read-back pagination, export and retention: a `changeId` (`MmmDD-NN`) allocated race-free through the existing `AlertCounter` `$inc` upsert, namespaced under a `chg-` key so the two logs' daily counters never collide; `recordChange()` is fire-and-forget and never-throwing, same contract as `recordAlert()`, so a logging failure can never break the admin action that triggered it; retention at 180 days or 5,000 rows, throttled hourly.
+
+**`commands/audit.js` + `handlers/audit.js`** are `/alerts`' shape rebuilt for this log: summary tiles, a paginated list with the page number encoded statelessly in the customId, export to a `.txt` attachment, and filters by page and by actor (a select-menu dropdown for the page filter, a one-field modal for the actor filter — both ride along in every subsequent customId so the pager, export and clear-filters buttons all respect whatever's active). Harkirat chose this shape over the design spec's own recommendation, which was an "Audit Log" page inside `/manage` — he picked a separate command mirroring `/alerts` instead. `setIntegrationTypes([1])` (stays user-install-only like every other admin command), gated by its own `'audit'` token in `utils/adminAccess.js`, and added to `bot/registry.js`'s `ADMIN_COMMAND_NAMES` so `/admin` can never gate it.
+
+**Every hook was checked against the real operation-function signatures rather than the handoff's table taken on faith** — `purgeDraws(scope)`/`deleteDraw(match)` (draws), `calendar.purge()`/`deleteItem(match)`, `patchnotes.purge()`, and `loadouts.deleteItem(match)` had no `interaction` in scope at all (they're called from `handlers/manage/index.js`'s `PURGE_HANDLERS`/`DELETE_HANDLERS` maps with only a `scope`/`match`), so each gained an `actorId` parameter threaded through from `index.js`'s dispatch, which already has `interaction.user.id` in hand at the call site. Every other operation function already had `interaction` directly.
+
+🔴 **`ChangeLog.actorId` is a per-user Discord ID, so `docs/legal/PRIVACY.md` was updated in the same change** (§2.1b + Appendix A, version bumped) — `npm run docs:audit`'s `privacy-model-coverage` check exists specifically to catch a new model gaining a per-user field, and now also matches `actorId` itself (widened from its existing `discordId`/`userId`/`updatedBy`/`createdBy`/`authorId`/`ownerId` set) so this model can never silently drift undisclosed. `dior legal build` ran and `public/` is committed alongside it — unlike a changelog/DEVLOG-only change, which never needs that.
+
+**Verification.** `scripts/changeStore.test.js` (new, wired into `npm test`) mutation-validates `recordChange()`'s never-throwing contract and `pruneChanges()`'s throttle, each proven to fail when the guarded behaviour is broken. Full `npm test` green, `docs:audit` at zero errors including `privacy-inventory` and `privacy-model-coverage`. Live click-test on the dev bot — a real `/manage` edit followed by `/audit` showing the row with the right actor/page/action/target, pagination, export, and an Undo flipping the row's `undone` flag — is deferred to a session where Harkirat can drive it, same as stages 1–3's click-testing (`docs/db-deferred-list.md`'s LIVE CLICK-TEST OWED entry covers this too).
+
+This closes the four-stage `/manage` decomposition project: `docs/db-deferred-list.md`'s Queued entry for it moves to `docs/archive/resolved-list.md` in this same change.
+
+## Pre-Release v3.23.0 — 2026-08-15 12:07 EDT (#131 · `403d50d`) — Bulk-cache pipeline for the nameplate/decoration catalog
 
 Pre-renders the 925-SKU catalog into the bot's existing Cloudinary + Discord storage-channel cache, replacing the lazy per-user-equip discovery path for anything catalogued (the lazy path stays as the fallback for anything not yet catalogued).
 
