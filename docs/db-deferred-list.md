@@ -46,6 +46,30 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 *Moved in from the cross-project tracker's 🐞 section 2026-07-25 21:43 EDT. **Rule:** the moment a bot bug is reported or found, it lands here with a repro + a `[Priority · Effort]` tag (most start P0); it only leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a scratchpad for 2 days.*
 
+- `[P3 · XS · Sonnet5-Medium]` **`timestamp-check.test.sh`'s "just-outside tolerance" case is TIME-FLAKY — it fails intermittently with no code change.** *Filed 2026-08-15 17:20 EDT, hit live during an unrelated `npm test`.*
+
+  The case builds a stamp intended to sit just beyond the 180-second tolerance and asserts the hook denies it. Because the stamp is computed relative to *now* and the hook re-reads the clock a moment later, the two can land on opposite sides of the boundary depending on execution timing — the assertion then gets `SILENT` and the whole suite exits 1. Observed failing once, then passing on three consecutive re-runs with **zero** modifications to `timestamp-check.sh` or its test (`git diff HEAD` on both files was empty).
+
+  **Why it matters more than a one-line flake normally would:** `npm test` is a CI gate and a pre-merge gate here. A suite that fails for a reason unrelated to the change teaches everyone to re-run it and move on — and re-running until green is exactly how a *real* failure gets waved through. This repo already has that lesson recorded about the timestamp gate specifically.
+
+  **Fix:** make the boundary deterministic rather than racing the clock — freeze the reference time the case computes against (inject it, or pick an offset far enough outside the window that scheduling jitter cannot cross it, e.g. tolerance + 60s rather than tolerance + a second or two). ⚠️ Do **not** widen the hook's tolerance to make the test pass; the tolerance is the product behaviour and the test is what is wrong.
+
+  **Verify by:** running `bash .claude/hooks/timestamp-check.test.sh` 20 times in a loop and getting 20 clean exits.
+
+- `[P1 · M · Opus5-Medium]` **In a WORKTREE session, every `${CLAUDE_PROJECT_DIR}`-based hook inspects the WORKTREE — not the tree the work is actually happening in — and its silence reads as all-clear.** *Filed 2026-08-15 17:11 EDT, proven live.*
+
+  27 of the registered hooks resolve their root as `${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}` and then `cd` there to read git state. In a worktree session the harness sets that to the **worktree**. If the session is actually editing the main repo — which is the normal shape, since a worktree session that needs the real tree just `cd`s to it — then every one of those gates checks a tree with none of the work in it, finds nothing, and stays quiet. **A gate that inspects the wrong tree is indistinguishable from a gate that passed.**
+
+  **Proof (not inference).** `untracked-doc-guard.sh`, same stdin, only the env differing: `CLAUDE_PROJECT_DIR=<main repo>` → fires, correctly naming the untracked a temporary untracked probe file under `docs/reference/`; `CLAUDE_PROJECT_DIR=<worktree>` → silent, because the worktree has 0 untracked `.md`. The live session was silent, which is how the session's own resolution was identified.
+
+  **This also explains the inconsistency** that made it hard to spot: hooks carrying a **hardcoded** `cd "/Applications/Claude Code/Diors-Builds"` (release-ready-check, squash-trailer-gate) fired correctly all session, while `CLAUDE_PROJECT_DIR`-based ones did not. So the gate set was *partially* live, which reads as "hooks are working" rather than "half of them are looking somewhere else."
+
+  ⚠️ **Do NOT fix this by hardcoding the path everywhere** — that breaks any remote/CI/non-Mac session, which is exactly the `[P1 · XS]` `git tag -a` bug already in this list. The two failure modes pull in opposite directions and a fix has to satisfy both.
+
+  **The open decision is Harkirat's, which is why this is filed rather than fixed:** should a worktree session be governed by the *worktree* (correct when the session genuinely works inside it) or by the *main repo* (correct when it `cd`s out, as sessions in practice do)? A defensible answer is to resolve the root from the git toplevel of the path being acted on, falling back to `CLAUDE_PROJECT_DIR` — but that changes behaviour for 27 registrations at once and needs a deliberate call.
+
+  **Verify a fix by:** running the two-env probe above and confirming both resolutions report the tree that actually holds the change; then a real worktree session that edits the main repo and sees the git-based gates fire.
+
 - `[P2 · S · Sonnet5-Medium]` **The `gh pr merge` hook matchers fire on documentation TEXT, because `grep` is line-oriented and the matcher is line-anchored.** *Filed 2026-08-15 15:38 EDT, hit live while writing `docs/superpowers/plans/2026-08-15-draw-cost-calculator.md`.*
 
   Every one of these hooks matches with `grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr merge'` against the whole of `.tool_input.command`. `grep` evaluates that pattern **per line**, so `^` anchors at the start of *any* line in the payload — not at the start of the command. A `cat > file <<'EOF'` heredoc whose body contains a line beginning with those three words therefore trips the gate, and `release-ready-check.sh` **hard-blocks the write**. Nothing is being merged; a plan document is merely describing how to merge.

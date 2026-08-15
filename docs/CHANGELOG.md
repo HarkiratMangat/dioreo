@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.26.0 — 2026-08-15 16:43 EDT (#134) — `/draw calculator` designed, and CP prices captured for 41 currencies
+## Pre-Release v3.27.0 — 2026-08-15 17:22 EDT (#135) — two guards built from this session's own misses, and a worktree finding
+
+Enforcement only: no product behaviour changes.
+
+**Two new hooks, both advisory and both proven.** `gate-truncation-guard.sh` fires when a gate (`npm test`, `docs:audit`, `docs:reflow`, a `scripts/*.test.js`) is piped straight into `tail`/`head` without `$?` or `PIPESTATUS` being captured — a pipeline exits with its *last* command's status, and these gates print their ERROR block **above** the trailing summary, which counts checks that RAN rather than checks that PASSED, so a truncated view reads exactly like a clean run. `untracked-doc-guard.sh` fires when a docs gate runs while untracked `.md` files exist, because `reflow-prose.mjs` and docs-audit both resolve their file list from `git ls-files` and cannot see a new document at all — the gate reports a healthy count over the corpus it *can* see.
+
+**Both enforce rules that were already written down and violated anyway by the session that wrote them**, which is this repo's stated trigger for promoting prose to a hook: the truncation rule is recorded verbatim in `feedback_wrong_reference_beats_stale_one`, and it still hid a real `doc-frontmatter` failure across two commits. Each carries a `.test.sh` wired into `run-all-tests.sh` (28 hook tests now), and the truncation guard was confirmed firing on a **real tool call** — a pipe test proves the script works, never that the hook fires.
+
+**Two practices documented rather than hooked**, because they are judgement and not mechanism: prove a tool on a KNOWN case before trusting it on unknown ones (an extractor was asserted against three real price tables before being run on 68 unknown storefronts — the only reason "70 of 71 succeeded" carried weight), and re-verify data that crossed from tool output into a file by hand. Both live in the global CLAUDE.md and as cases in `feedback_verify_before_claiming`.
+
+🔴 **A `[P1 · M]` bug filed, and it is the interesting one.** In a worktree session, every `${CLAUDE_PROJECT_DIR}`-based hook `cd`s to the **worktree** and reads git state there — not the tree the work is actually happening in. Nine git-reading gates therefore go silently blind, and a blind gate is indistinguishable from a passing one. Proven rather than inferred: the same hook, identical stdin, fires under `CLAUDE_PROJECT_DIR=<main repo>` and is silent under `CLAUDE_PROJECT_DIR=<worktree>`. It also explains an inconsistency that made this hard to notice — hooks carrying a hardcoded `cd` fired correctly all session while the resolved ones did not, so the gate set looked alive. **Filed rather than fixed:** whether a worktree session should be governed by the worktree or by the tree it edits is a real decision affecting 27 registrations, and hardcoding the path everywhere would re-create the existing `[P1 · XS]` non-Mac tag-hook bug.
+
+**Also filed `[P3 · XS]`:** `timestamp-check.test.sh` has a time-flaky boundary case that fails intermittently with no code change — observed failing once, then passing three consecutive re-runs with an empty `git diff` on both files. A gate that fails for unrelated reasons teaches people to re-run until green, which is how a real failure gets waved through.
+
+**Verification.** `npm test` exit 0, `npm run docs:audit` exit 0 with no ERROR block, both new suites green (10 and 8 proofs, including the silent cases that keep them from becoming noise).
+
+## Pre-Release v3.26.0 — 2026-08-15 16:43 EDT (#134 · `25dcd25`) — `/draw calculator` designed, and CP prices captured for 41 currencies
 
 Design-only: the spec and implementation plan for a lucky-draw cost calculator, plus the price data its optimizer cannot work without. No runtime code ships here.
 

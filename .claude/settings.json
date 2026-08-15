@@ -171,6 +171,26 @@
         "hooks": [
           {
             "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/gate-truncation-guard.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/untracked-doc-guard.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/release-ready-check.sh\"; [ -r \"$S\" ] && bash \"$S\" || exit 0",
             "timeout": 15
           }
