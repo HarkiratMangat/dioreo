@@ -75,7 +75,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.22.0 — 2026-08-15 01:50 EDT (#130) — The full nameplate/decoration catalog lands, with a script to keep it synced
+## Pre-Release v3.23.0 — 2026-08-15 12:07 EDT (#131) — Bulk-cache pipeline for the nameplate/decoration catalog
+
+Pre-renders the 925-SKU catalog into the bot's existing Cloudinary + Discord storage-channel cache, replacing the lazy per-user-equip discovery path for anything catalogued (the lazy path stays as the fallback for anything not yet catalogued).
+
+- **`models/CollectibleCatalog.js` + `scripts/syncCatalogToMongo.js`** — a Mongo mirror of the catalog JSON, one doc per SKU, additive sync that never resets bulk-cache progress on re-run.
+- **`scripts/bulkCacheCollectibles.js`** — grouped by design so a multi-variant design posts as ONE cache-channel message (dividers between variants) instead of one per SKU, with expanded metadata (description, parent category, variant colors) and a `render_source: 'catalog'|'fallback'` marker that lets a live-user render from before the catalog existed be found and healed automatically. Nameplate variants use the original full-width Media Gallery + metadata layout; decorations keep Section+Thumbnail.
+- **Nameplate render pivoted** from the old slug-based webm/`libvpx-vp9` route to the same SKU-addressed `/animated` APNG endpoint decorations already used, dropping that decoder workaround entirely. Both cache modules split into a shared render core plus separate single-item/bulk upload paths so the live and bulk pipelines can't drift apart.
+- Verified live against the dev bot: a fresh apng render end-to-end, real multi-variant grouped messages up to 7 variants, fallback-to-catalog healing, and a 150-group/169-SKU batching stress run with zero failures.
+- The full run against **prod** is a v3 pre-launch item, not part of this release — the prod bot currently has no access to the dedicated storage server, and fixing that requires enabling guild-install for the prod app, which is deliberately bundled with v3's own public guild-install launch rather than done early.
+
+## Pre-Release v3.22.0 — 2026-08-15 01:50 EDT (#130 · `8ecfad6`) — The full nameplate/decoration catalog lands, with a script to keep it synced
 
 Harkirat hand-authored a complete snapshot of Discord's entire nameplate + decoration collectibles catalog and dropped it into the repo. This entry tracks getting it into shape as tracked, documented reference data, plus the tooling to refresh it going forward — no bot runtime code changed.
 
@@ -87,7 +97,7 @@ Harkirat hand-authored a complete snapshot of Discord's entire nameplate + decor
 
 **Verification.** `docs:audit` (40/41 verified, 1 correctly skipped — no `--diff`) and `docs:reflow --check` (51 files, 0 would change) both pass. `syncNameplateCatalog.py` run live end-to-end (`--dry-run` and a real run) against Harkirat's actual credentials — correctly found 0 new SKUs and left the file untouched.
 
-## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#129) — `/manage data_for:draws action:add-new` opens the modal directly
+## Pre-Release v3.21.0 — 2026-08-14 18:09 EDT (#129 · `0ddfa97`) — `/manage data_for:draws action:add-new` opens the modal directly
 
 Stage 3 of the four-stage `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): a new `action` string option on `/manage`, scoped autocomplete, and a dispatch branch in `execute()` that resolves and runs a page's own action without ever rendering the panel — the original ask this whole decomposition existed to reach.
 
