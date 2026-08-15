@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#TBD) — a bugs-fix batch: /colors wording, /manage guides + rename, /help aliases, timezone search
+## Pre-Release v3.26.0 — 2026-08-15 16:43 EDT (#134) — `/draw calculator` designed, and CP prices captured for 41 currencies
+
+Design-only: the spec and implementation plan for a lucky-draw cost calculator, plus the price data its optimizer cannot work without. No runtime code ships here.
+
+**The feature.** `/draw calculator` answers the question players actually arrive with — *"I've done two pulls on this draw, how much more do I need, and what should I buy to get there without wasting money?"* Two independent pure engines: `utils/drawCost.js` slices the existing `DRAW_DATA` per-pull arrays, `utils/cpPackages.js` holds the package table and a DP purchase optimizer. Neither imports the other. A two-stage Components V2 panel sits on top, and all wizard state rides in the `customId` — no model, no persistence, which is a privacy decision as much as an architectural one (storing a CP balance would need a `PRIVACY.md` Appendix A entry). The single deliberate exception is `UserPreference.cpCurrency`, and the plan's Task 4 carries the matching PRIVACY obligation.
+
+**`docs/reference/cp-package-prices.json` + `.md`** — the six in-game CP bundles priced in **41 currencies across 70 locales**, captured from the official CODM web store. This exists because Apple and Google assign price points **directly per storefront** — tier-locked, not rate-locked — and the tiers are **not proportional to one another**. Measured: **in 17 of the 41 currencies "buy the biggest pack" is wrong.** In NOK and SEK the *smallest* 80-CP pack is the best value in the store; PLN and HUF peak at a middle tier. Only 24 currencies (USD, GBP, JPY, BRL among them) are monotonic. That is the whole argument for solving rather than publishing a rule of thumb.
+
+**Two corrections caught before they could ship, both now pinned by tests in the plan.** (1) The 2X CP event doubles the **base**, not the advertised total — the store number already folds in the normal bonus (10,800 CP is 8,000 base +35%), so during an event that package yields 16,000, not 21,600; the first draft was wrong by 5,600 CP at the top tier. (2) An earlier draft claimed package prices were identical worldwide with only the currency label changing via FX. They are not, and that framing would have produced wrong purchase advice everywhere outside USD.
+
+**Extraction method, for whoever re-crawls it.** Prices come from the store page's embedded JSON payload field `publisherPrice`, never from rendered display text — formatting varies by locale (`de-de` renders `99,99 €` with a trailing symbol and comma decimal; `ja-jp` uses `¥160` with no decimals) and an early regex over display strings silently returned partial data for `de-de`. ⚠️ `hasDiscount` is unreliable and reads `false` on visibly discounted items, so `publisherPrice` is taken unconditionally. The web store's CP *quantities* are web-exclusive and differ from in-game (88 vs 80, 460 vs 420, …) while the price points are identical, so bundles map by ascending tier position and never by CP amount. All eight traps are documented in the companion `.md`.
+
+**Also restores a lost record.** `v3.24.0`'s CHANGELOG heading was missing entirely, so its whole body had been reading as part of v3.25.0's entry; it is restored with its real PR and hash, and v3.25.0's own `(#TBD)` is backfilled. `docs-audit` did not catch this, and the reason is now fixed rather than filed. `summary-orphan` exists for exactly this failure mode but reads CHANGELOG-SUMMARY as its reference list — and SUMMARY is deliberately not written during pre-release, so for the whole v3 line it had nothing to compare against; its heading regex also matches `## vX.Y.Z` but never `## Pre-Release vX.Y.Z`. A new **`devlog-orphan`** ERROR check reads DEVLOG headings instead, since DEVLOG *is* maintained through pre-release, and matches both heading forms. Its self-test caught a defect in the check itself on the first run — a vacuous pass, because the test fixture's DEVLOG entry carried no version stamp — which is precisely what `docs-audit.test.mjs` exists to do; the fixture now carries one, and all 69 checks are proven capable of failing.
+
+**Verification.** Extraction reproduced all three price tables Harkirat supplied from his own stores (`en-us`, `en-ca`, `en-ie`) exactly; ten further rows (JPY, NOK, TRY, ZAR, MXN, CHF, PKR, HUF, COP, KWD) were re-fetched live and compared against the committed file *after* transcription, because hand-copying 41 rows is exactly where a silent error hides. Structural checks: 41 currencies, 70 locales, no duplicate locale mappings, every row six strictly-ascending prices. `npm test` green, `npm run docs:audit` at zero errors.
+
+## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133 · `3962df4`) — a bugs-fix batch: /colors wording, /manage guides + rename, /help aliases, timezone search
 
 Eighteen small-to-medium bug reports worked through in one session (screenshots + a written list), spanning `/colors`, `/manage`, `/help`, and `/settings`.
 
@@ -92,6 +108,8 @@ Eighteen small-to-medium bug reports worked through in one session (screenshots 
 **Verification.** Full `npm test` green (docs-audit self-test's 68 checks, every hook self-test, every existing suite including `refreshNotice.test.js` — updated to match the Refresh Colors wording rework), `scripts/manageActions.test.js` (59 actions) and `scripts/handlerRouting.test.js` (14 handlers) both green after the `/manage`/`/help` routing changes, `npm run docs:audit` at zero errors. Not yet live-click-tested on the dev bot — filed alongside the existing LIVE CLICK-TEST OWED entry in `docs/db-deferred-list.md`.
 
 
+
+## Pre-Release v3.24.0 — 2026-08-15 12:38 EDT (#132 · `6cc1400`) — DB change log and `/audit`
 
 Stage 4 of 4, and the last stage, of the `/manage` decomposition (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): every DB-mutating operation function `handlers/manage/*.js`'s stage-2 split produced now calls `utils/changeStore.js`'s `recordChange()` once, right after its own save succeeds — the hook point that split existed to create in the first place.
 
