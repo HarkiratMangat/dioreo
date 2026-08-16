@@ -75,40 +75,34 @@ function loadCommandModules(client) {
 // ==========================================
 
 /**
- * NOTE (de-Excel'd during review): category commands (/ar, /lmg, /sniper, etc.) used to be
- * auto-compiled synchronously from builds.xlsx's category list at require-time. Now derived from
- * MongoDB instead — queried after ClientReady rather than at module load time, since a DB query
- * can't run synchronously. Safe even if the Mongo connection hasn't finished establishing yet:
- * Mongoose buffers queries by default until the connection is ready, it doesn't throw or return early.
+ * Was buildCategoryCommands(): it used to CREATE the eight per-category commands (/ar, /lmg,
+ * /sniper, etc.). It now fills in /gunsmiths list's `scope` choices from the same live query, so a
+ * new category appears on its own without a code change. Still runs after ClientReady and before
+ * the REST PUT -- it needs a DB round-trip, and `commands` holds the SAME SlashCommandBuilder
+ * object client.commands does (see loadCommandModules), so mutating its nested option here keeps
+ * both consistent.
  *
  * Mutates and returns the same `commands` array loadCommandModules built.
  */
-async function buildCategoryCommands(commands) {
+async function applyGunsmithsScopeChoices(commands) {
     const Loadout = require('../models/Loadout');
+    const { FIXED_SCOPES } = require('../utils/loadoutScopes');
     const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
-    // Secondaries has no loadouts saved yet -- Harkirat wants the command ready to go the moment
-    // he starts adding them, rather than it silently appearing only after the first /manage entry.
-    // Merged in (not just appended) so re-running this after real Secondaries data exists doesn't
-    // register it twice.
-    const mpCategories = Array.from(new Set([...dbCategories, 'SECONDARIES']));
-    mpCategories.forEach(cat => {
-        const cmdName = cat.toLowerCase().replace(/\s+/g, '');
-        commands.push(
-            new SlashCommandBuilder()
-                .setName(cmdName)
-                .setDescription(`Search through ${cat} gunsmiths only`)
-                // Reworded (2026-07-12) to match the same "The name of the weapon you want a build
-                // for" pattern as /dmz and /all -- was "Select a {cat}", a third distinct phrasing
-                // for the same concept.
-                .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
-                .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-                .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-                // Guild + user install, all contexts (v3). ⚠️ These per-category commands are built
-                // HERE, not in commands/*.js, so a sweep over that folder misses all 8 of them --
-                // exactly what happened on the first pass of this change (2026-08-09 11:38 EDT).
-                .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
-        );
-    });
+    // SECONDARIES is merged in (not appended) so it is ready the moment Harkirat adds one, and so
+    // re-running this after real data exists cannot register it twice. Sorted for a stable,
+    // predictable choice order in the Discord picker.
+    const cats = Array.from(new Set([...dbCategories, 'SECONDARIES'])).sort();
+    const choices = [
+        ...cats.map(c => ({ name: c, value: `MP.${c}.std` })),
+        ...FIXED_SCOPES.map(s => ({ name: s.label, value: s.value })),
+    ];
+    const gunsmiths = commands.find(c => (c.toJSON ? c.toJSON().name : c.name) === 'gunsmiths');
+    if (!gunsmiths) {
+        console.error('⚠️ /gunsmiths not found in the command array — scope choices NOT applied');
+        return commands;
+    }
+    const listSub = gunsmiths.options.find(o => o.name === 'list');
+    listSub.options.find(o => o.name === 'scope').setChoices(...choices);
     return commands;
 }
 
@@ -156,4 +150,4 @@ async function registerApplicationCommands(client, commands) {
     }
 }
 
-module.exports = { loadCommandModules, buildCategoryCommands, registerApplicationCommands };
+module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands };

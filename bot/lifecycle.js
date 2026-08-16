@@ -17,7 +17,7 @@ const { sendAlert } = require('../utils/alertWebhook');
 const { createGatewayRecovery } = require('../utils/gatewayRecovery');
 const { pruneExpiredThumbnails } = require('../utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('../utils/patchNotesCache');
-const { buildCategoryCommands, registerApplicationCommands } = require('./registry');
+const { applyGunsmithsScopeChoices, registerApplicationCommands } = require('./registry');
 
 // --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) ---
 // Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before
@@ -212,7 +212,7 @@ function registerLifecycle(client, commands) {
             console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
         }
 
-        await buildCategoryCommands(commands);
+        await applyGunsmithsScopeChoices(commands);
         await registerApplicationCommands(client, commands);
 
         // Kick off the Cloudinary temp-draws cleanup on boot, then every 24h -- not awaited, since a
