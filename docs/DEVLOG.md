@@ -164,6 +164,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 21:42 EDT — `/gunsmiths` replaces nine commands, a spike settles the registry question in five minutes, and a merge finds two comments the deletion made false (v3.29.0-pre)
 - 2026-08-15 23:47 EDT — A cache key renamed to Discord's own naming, a collision I claimed and could not prove, and a duplicate line only the real render showed (v3.30.0-pre)
 - 2026-08-16 11:17 EDT — The blocker that was never there, and a database called `test` (v3.31.0-pre)
+- 2026-08-16 11:28 EDT — The memory index was the problem, not the memories (v3.32.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2912,6 +2913,20 @@ The second was a search that structurally could not see what it was searching fo
 The third was in how I asked a question rather than in any code. I offered a menu option that welded two independent items together — interaction timing bundled with external-dependency tracking — and a "no" to the second read as a "no" to both, dropping the largest measured gap in the design for two rounds until Harkirat said what he had actually meant. Compressing an option list is the same defect as compressing a summary table, pointed the other way: there it corrupts what gets reported, here it corrupts what gets heard.
 
 **What the design itself settled**, briefly, since the changelog carries the detail: one event document per interaction rather than four parallel stores, because a usage row and a timing row turned out to be the same row; identity as a keyed hash with the key held outside the database, so a database-only compromise yields nothing; attribution from an async context established once in the router, which is one edit instead of 146 and cannot decay as new modules are written. And a decision that only became possible once the numbers were real — 776 KB of 512 MB, 0.15% — to stay on the free tier and let the first month of actual fill rate set the retention horizon, rather than guessing it now from the same estimates the measurement had just replaced.
+
+## 2026-08-16 11:28 EDT — The memory index was the problem, not the memories (v3.32.0-pre)
+
+`MEMORY.md` had been creeping toward its ceiling for weeks, and the framing everyone reached for — including me, an hour earlier in the same session — was that there were too many memories. The obvious remedies follow from that framing: retire old files, merge overlapping ones, decide which lessons are still worth keeping. All of them lose something.
+
+The framing was wrong, and one measurement showed it. Of 90 index entries, **78 exceeded the 150-character guideline, carrying 8,113 characters of excess** — and the longest single line was 891 characters. The index had been accumulating narrative detail for months, one session at a time, each appending a little more context to a hook that was supposed to be a pointer. Nothing was wrong with the memories. The problem was that the *index* had quietly become a second copy of them, and the index is the part loaded into every single session.
+
+So the pass deleted nothing. All 90 entries and all 90 files survived; the detail moved back into the topic files, which are read on demand rather than paid for every session. **22,868 bytes to 17,369 — 24% — with link integrity verified in both directions**, every file reachable from the index and every link resolving to a file.
+
+There is a small lesson about diagnosis in that, and a larger one about how this kind of file rots. Nobody ever decided to put 891 characters in an index line. It happened because each individual addition was reasonable: a session learned something sharp, wanted the next session to see it immediately, and the index is what the next session sees. The incentive points one way every time, and the ceiling is the only thing pushing back. That is worth knowing because it will happen again — the fix is not discipline about writing hooks, it is noticing that "is this file too big?" and "does this file contain the right things?" are different questions with different answers.
+
+Two stale claims fell out of the pass, which is the other half of what a consolidation is for: the `/gunsmiths` entry still said "not merged/deployed" after it had shipped, and the `/manage` decomposition still read as a live four-stage project after all four stages closed. Both had been true when written. Both would have misinformed the next session to read them, and neither was going to be caught by anything except somebody looking.
+
+One deliberate exemption: the `feedback_*` memories were left out of the "retire dated files, drop what is easy to re-find" step entirely. They record corrections and working agreements — the things that exist precisely because they could not be re-derived from the repository. A consolidation that trims those is optimising the wrong quantity.
 
 # Part B — Lessons Ledger (thematic)
 
