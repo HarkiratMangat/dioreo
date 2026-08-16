@@ -3,12 +3,10 @@
 // ==========================================
 // This handles dedicated DMZ weapon configurations, restricting lookups strictly
 // to DMZ variants allowing up to 9 attachments per weapon schema layout.
+// Reduced to a thin wrapper over utils/loadoutLookup.js's lookupAndRenderWeapon() during the
+// /gunsmiths consolidation -- that function is the same lookup logic this file used to own
+// directly, now shared with /gunsmiths search (mode: 'MP') so the two paths can't drift apart.
 const { SlashCommandBuilder } = require('discord.js');
-const Loadout = require('../models/Loadout');
-const UserPreference = require('../models/UserPreference');
-const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
-const { resolveEphemeral } = require('../utils/ephemeral');
-const { sendV2Payload } = require('../utils/sendV2Payload');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,8 +14,7 @@ module.exports = {
         .setDescription('Search through all DMZ specific gunsmiths')
         // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
         // were truncating on mobile. Kept the same standardized "weapon you want a build for"
-        // formula /all and /<category> use (handlers/router.js), just tightened -- see those two sites for
-        // the matching trim.
+        // formula /gunsmiths search uses, just tightened -- see that command for the matching trim.
         .addStringOption(option =>
             option.setName('weapon')
                 .setDescription('The DMZ weapon you want a build for')
@@ -31,96 +28,12 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     async execute(interaction) {
-        const userId = interaction.user.id;
-        const rawQuery = interaction.options.getString('weapon');
-        const weaponInput = rawQuery.toLowerCase().replace(/\s+/g, '');
-
-        // 1. Resolve user visibility preference configurations
-        // NOTE (fixed during review): this checked `prefs.dmzVisibility`, a field that was never
-        // actually exposed anywhere in /settings — the UI only ever shows a single "Weapon Builds"
-        // toggle, which writes to `prefs.loadoutVisibility`. So toggling it in /settings had zero
-        // effect on /dmz; the dead `dmzVisibility` field just silently sat at its schema default
-        // forever. Now reads the same field the visible toggle actually writes to, shared with the
-        // MP loadout commands below (one "Weapon Builds" toggle covers all loadout lookups).
-        // NOTE (added during review): kicked off alongside `prefs` instead of after it -- the
-        // builds query doesn't depend on prefs at all, so starting it here lets it resolve
-        // concurrently with the deferReply() ack below instead of only starting once that's done.
-        // Only `prefs` is actually awaited before deferReply (keeps the 3-second ack window fast);
-        // `buildsPromise` is awaited further down, by which point it's had a head start. .lean()
-        // since these builds are only ever read here, never saved.
-        const prefsPromise = UserPreference.findOne({ discordId: userId });
-        const buildsPromise = Loadout.find({ weaponKey: weaponInput, mode: 'DMZ' }).lean();
-
-        const prefs = await prefsPromise;
-        // NOTE (added during review): explicit `private` option now overrides the saved preference,
-        // same explicit-option > saved-preference > default priority every other command uses --
-        // added specifically so a user can invoke the command already-public in one shot instead of
-        // relying on the "Share Publicly" button to flip it after the fact.
-        const visibilityChoice = interaction.options.getString('visibility');
-        const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
-        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
-
-        await interaction.deferReply({ ephemeral: isEphemeral });
-
-        // 2. Query MongoDB for the exact weapon matching the key and restricted to DMZ mode
-        let builds = await buildsPromise;
-
-        // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey
-        // lookup above only succeeds when this option's value came from actually picking an
-        // autocomplete suggestion (which submits the real weaponKey). Discord still lets a query
-        // through as raw typed text if the user hits enter without picking one (a real live
-        // complaint on mobile, where the dropdown is easy to dismiss by accident) -- a short/
-        // partial query like "loc" almost never equals a normalized weaponKey exactly, so this
-        // used to just fail with no explanation. Fuzzy-match the raw query against every DMZ
-        // weapon's real name before giving up: an unambiguous single match auto-resolves (safe --
-        // there's only one thing it could mean), 2+ matches asks the user to pick one instead of
-        // silently guessing which they meant.
-        if (!builds || builds.length === 0) {
-            const { findWeaponMatches } = require('../utils/search');
-            const allDmzWeapons = await Loadout.find({ mode: 'DMZ' }).select('weaponKey weaponName').lean();
-            const uniqueDmzWeapons = Array.from(new Map(allDmzWeapons.map(w => [w.weaponKey, w])).values());
-            const fuzzyMatches = findWeaponMatches(rawQuery, uniqueDmzWeapons);
-
-            if (fuzzyMatches.length === 1) {
-                builds = await Loadout.find({ weaponKey: fuzzyMatches[0].weaponKey, mode: 'DMZ' }).lean();
-            } else if (fuzzyMatches.length > 1) {
-                const names = fuzzyMatches.slice(0, 10).map(w => w.weaponName).join(', ');
-                return interaction.followUp({ content: `❌ That's not specific enough — did you mean one of these? **${names}**\nPick a suggestion from the dropdown as you type instead of typing the full name.` });
-            }
-        }
-
-        if (!builds || builds.length === 0) {
-            const hint = rawQuery.length < 3
-                ? ' Try typing a bit more of the weapon\'s name, or pick a suggestion from the dropdown as you type.'
-                : ' Double-check the spelling, or pick a suggestion from the dropdown as you type.';
-            return interaction.followUp({ content: `❌ No specialized DMZ builds were found for that weapon.${hint}` });
-        }
-
-        // NOTE (added during review): `build` lets a user jump straight to a specific build number
-        // (1-based, matching the "Build N of M" footer text) instead of always landing on the
-        // first and having to click Next repeatedly. Clamped into range rather than rejected
-        // outright if it's out of bounds (e.g. `build:5` on a weapon with only 2 builds).
-        const requestedBuild = interaction.options.getInteger('build');
-        const buildIndex = requestedBuild ? Math.min(Math.max(requestedBuild - 1, 0), builds.length - 1) : 0;
-
-        // 3. Build the card (shared with the MP category commands — see utils/loadoutRender.js).
-        // Components V2 accent_color needs a decimal, not a hex string like EmbedBuilder took.
-        // LIBRARY SERIALIZATION BYPASS: raw rest.patch instead of interaction.followUp(), same
-        // reasoning as every other Components V2 command — discord.js's high-level methods don't
-        // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
-        //
-        // Repalette (2026-07-12, Section 5 of the batch): switched from a fixed identity color
-        // (#1c1c1c) to the SAME per-weapon-category palette MP loadouts already use
-        // (MP_CATEGORY_ACCENT in utils/loadoutRender.js) -- a DMZ result's embed color now depends
-        // on the weapon's category the same way /all's does, instead of every DMZ build looking
-        // identical regardless of weapon type. Deliberately still NOT part of the avatar/banner
-        // accent-color system (same as MP loadouts) -- category identity, not personalization.
-        // Category-wide build list for the "Browse other builds" dropdown -- /dmz has no
-        // per-category commands the way MP does, so its dropdown scope is every DMZ build, not
-        // just this weapon's own category.
-        const categoryBuilds = await Loadout.find({ mode: 'DMZ' }).lean();
-        const accentColor = getMpCategoryAccent(builds[0].category);
-        const cardPayload = buildLoadoutCard(builds, buildIndex, { color: accentColor, idPrefix: 'dmz', isEphemeral, categoryBuilds });
-        return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
-    }
+        const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');
+        return lookupAndRenderWeapon(interaction, {
+            mode: 'DMZ',
+            rawQuery: interaction.options.getString('weapon'),
+            requestedBuild: interaction.options.getInteger('build'),
+            visibilityChoice: interaction.options.getString('visibility'),
+        });
+    },
 };
