@@ -18,7 +18,7 @@
 // (no shared interaction helpers needed here -- these branches never build a synthetic
 // interaction or resolve a panel owner. See utils/interactionContext.js if that changes.)
 
-const OWNED_PREFIXES = ["mpbrowse", "dmzbrowse", "dmz", "mp"];
+const OWNED_PREFIXES = ["mpbrowse", "dmzbrowse", "gsb~", "dmz", "mp"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -80,6 +80,43 @@ async function route(interaction) {
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+        }
+
+        // /gunsmiths list SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would
+        // otherwise fall through to the button branch below if this file ever lost the explicit
+        // isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a
+        // select handler written under isButton() becomes dead code with no error).
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~jump~')) {
+            const scopeToken = interaction.customId.split('~')[2];
+            const { parseScopeToken, resolveScopeBuilds } = require('../utils/loadoutScopes');
+            const { renderScopeBrowse } = require('../commands/gunsmiths');
+            const scope = parseScopeToken(scopeToken);
+            const builds = await resolveScopeBuilds(scope);
+            if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
+            const target = Math.max(0, builds.findIndex(b => b.weaponKey === interaction.values[0]));
+            return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
+        }
+
+        // /gunsmiths list SCOPE PAGING -- a BUTTON. Type-tested for the same reason as the select
+        // branch above; `action !== 'next' && action !== 'prev'` guards the disabled `gsb~ind~`
+        // page-count label, which is not clickable but shares the `gsb~` prefix.
+        if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
+            const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
+            if (action !== 'next' && action !== 'prev') return;
+            const { parseScopeToken, resolveScopeBuilds } = require('../utils/loadoutScopes');
+            const { renderScopeBrowse } = require('../commands/gunsmiths');
+            const scope = parseScopeToken(scopeToken);
+            const builds = await resolveScopeBuilds(scope);
+            // Guard BEFORE the modulo. /manage can purge a scope empty between render and click:
+            // `(cur + 1) % 0` is NaN, and flatIndexToPosition's clamp would yield -1 -> builds[-1]
+            // is undefined -> throws. renderScopeBrowse has its own empty guard, but it sits
+            // DOWNSTREAM of this arithmetic and never gets the chance to fire.
+            if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
+            const cur = parseInt(flatIndexRaw, 10) || 0;
+            const next = action === 'next'
+                ? (cur + 1) % builds.length
+                : (cur - 1 + builds.length) % builds.length;
+            return await renderScopeBrowse(interaction, scope, next, { isUpdate: true });
         }
 
         // LOADOUT PAGINATION & COPY (DMZ and MP, both MongoDB-backed)

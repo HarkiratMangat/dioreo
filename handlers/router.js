@@ -308,15 +308,20 @@ async function handleInteraction(interaction) {
                 return await interaction.respond(filtered.map(a => ({ name: a.label, value: a.id })));
             }
 
-            // Standard Loadout Dictionary Autocomplete Mapping
+            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmiths search)
             const Loadout = require('../models/Loadout');
             let queryFilter = {};
 
-            if (commandName === 'dmz') queryFilter.mode = 'DMZ';
-            else if (commandName !== 'all') {
-                queryFilter.category = commandName.toUpperCase();
+            if (commandName === 'dmz') {
+                queryFilter.mode = 'DMZ';
+            } else if (commandName === 'gunsmiths') {
+                // `list` uses static choices (injected at registration by bot/registry.js's
+                // applyGunsmithsScopeChoices) and must never reach here -- only `search` autocompletes.
+                if (interaction.options.getSubcommand() !== 'search') return await interaction.respond([]);
                 queryFilter.mode = 'MP';
-            } else queryFilter.mode = 'MP';
+            } else {
+                return await interaction.respond([]);
+            }
 
             const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category').lean();
             const uniqueMap = new Map();
@@ -336,18 +341,35 @@ async function handleInteraction(interaction) {
                 return a.weaponName.localeCompare(b.weaponName);
             });
 
+            const { displayCategoryLabel } = require('../utils/loadoutRender');
+
+            // /gunsmiths search gets "sticky" category rows ahead of weapon matches -- WE author
+            // every slot on every keystroke (Discord has no real pinning). Filtered by the same
+            // fuzzyMatch as weapons, so a typed "ak" spends all 25 slots on weapons and an empty
+            // box shows all seven categories -- the discovery surface that replaces losing /smg.
+            // `~` can never appear in a weaponKey (checked against all 70), so the `~cat~` sentinel
+            // this produces cannot collide with a real weapon value.
+            if (commandName === 'gunsmiths') {
+                const categoryCounts = new Map();
+                for (const w of distinctChoices) categoryCounts.set(w.category, (categoryCounts.get(w.category) || 0) + 1);
+                const catRows = Array.from(categoryCounts.keys())
+                    .sort()
+                    .filter(c => !focusedValue || fuzzyMatch(focusedValue, c))
+                    .map(c => ({ name: `▸ All ${displayCategoryLabel(c)} builds (${categoryCounts.get(c)} weapons)`, value: `~cat~${c}` }));
+                const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
+                    .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
+                return await interaction.respond([...catRows, ...weaponRows].slice(0, 25));
+            }
+
+            // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and
+            // /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ).
             // findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g.
             // "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon
             // in that category, not just weapons whose own name happens to contain that word --
             // see utils/search.js's own comment for the full reasoning + the synonym list.
             const filteredChoices = findWeaponMatches(focusedValue, distinctChoices)
                 .slice(0, 25); // Hard Discord API limit of 25 choices maximum
-
-            const { displayCategoryLabel } = require('../utils/loadoutRender');
-            return await interaction.respond(filteredChoices.map(w => ({
-                name: commandName === 'all' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName,
-                value: w.weaponKey
-            })));
+            return await interaction.respond(filteredChoices.map(w => ({ name: w.weaponName, value: w.weaponKey })));
 
         } catch (error) {
             console.error('Autocomplete Error:', error);
