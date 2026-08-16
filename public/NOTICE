@@ -51,6 +51,13 @@ Runtime dependencies, as declared in package.json:
                                  Copyright (c) Scott Motte and contributors
                                  https://github.com/motdotla/dotenv
 
+  google-auth-library 11.0.2      Apache License 2.0
+                                 Copyright (c) Google LLC
+                                 https://github.com/googleapis/google-auth-library-nodejs
+                                 *** See Section 2 — Apache-2.0 obligations ***
+                                 Application Default Credentials for the Health
+                                 page's Cloud Logging/Monitoring reads.
+
   jimp 1.6.1                     MIT
                                  Copyright (c) Andrew Lisowski
                                  https://github.com/jimp-dev/jimp
@@ -132,9 +139,9 @@ regardless of what LICENSE otherwise permits.
 2. APACHE LICENSE 2.0 OBLIGATIONS
 ================================================================================
 
-discord.js and xlsx are licensed under the Apache License, Version 2.0. If you
-redistribute this project or any work containing those components, Apache-2.0
-§4 requires you to:
+discord.js, xlsx and google-auth-library are licensed under the Apache License,
+Version 2.0. If you redistribute this project or any work containing those
+components, Apache-2.0 §4 requires you to:
 
   (a) give recipients a copy of the Apache License 2.0;
   (b) retain all copyright, patent, trademark, and attribution notices;

@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.36.0 — 2026-08-16 15:47 EDT (#144) — the `/bot` command tree ships, and `manageadmins` moves out of `/manage`
+## Pre-Release v3.37.0 — 2026-08-16 16:40 EDT (#145) — the observability layer closes: Health, roll-ups, and a reporting CLI
+
+Stage 4 of 4 of the observability layer: `docs/superpowers/specs/2026-08-16-observability-layer-design.md` §6 and §"Roll-ups". Closes ROADMAP line 48 (richer in-bot logging), line 132 (usage analytics), and line 49 (the long-deferred admin `/status` command, which `/bot analytics`'s Health page now fulfils).
+
+**Health page — Cloud Logging/Monitoring reads via ADC.** `utils/cloudObservability.js` confirms the design's own "measured FALSE" premise live: the VM's `roles/editor` service account can already read its own logs and metrics with no role broadening, via Application Default Credentials (`google-auth-library`, a new runtime dependency, Apache-2.0). Ports `scripts/vmpeaks.sh`'s query shapes (not its `gcloud`-CLI transport) — CPU/RAM peaks over 24h/7d/30d (trimmed from that script's five windows, per the panel design rule that dead space beats density), and a three-tier error model: what Cloud Logging says actually happened (`errors24h`), what got announced to Discord (`getAlertSummary()`, already existed), and the gap between them — real ERROR-severity log lines the 1/min alert throttle or a below-threshold severity never surfaced. The whole result is cached for 60s and the module never throws past its own boundary — a GCP outage degrades the Health page to a plain-language line, not a crash.
+
+**Roll-ups — one document per (day, command, subcommand).** `models/AnalyticsRollup.js`/`RollupState.js` + `utils/rollupStore.js`. Rides the existing daily heartbeat in `bot/lifecycle.js` rather than adding a second scheduler; `catchUpRollups()` is a full recompute-and-upsert per day, so it's safe to re-run and catches up any gap left by downtime, bounded to `CATCH_UP_WINDOW_DAYS` (14) so a very stale resume point doesn't re-roll an unbounded backlog. Two decisions the frozen spec left explicitly open, resolved here: the day key is UTC and includes the **year** (`'2026-08-16'`, not alertId/changeId's year-less `'Aug16'` — those retain for 30d/180d and can never see two Aug 16ths, a roll-up kept indefinitely can); and `distinctUsers` stores the day's bounded hash set (`userHashes`, cap 5,000) so a multi-day distinct-user figure can be a real set union — past the cap, `distinctUsersExact` flips false and the array is dropped rather than kept partial, since a partial set unioned with another day's would silently undercount.
+
+**`scripts/analytics.mjs`** — the "read analytics outside Discord" half of §6. `summary [--days N]` prefers roll-ups and falls back to a live `AnalyticsEvent` query for any day not yet rolled up (today, by design, is never rolled up). `failed-searches [--limit N]` reads the `SearchTerm` aggregate stage 2 built. A read-only Atlas user for this script is filed as a reminder rather than built — creating one is an Atlas console action outside this repo's reach.
+
+**Usage/Timing pages** gain an Export button, matching the shape Alerts/Changes already use (`buildUsageExport()`/`buildTimingExport()`, downloadable `.txt`).
+
+**Housekeeping:** backfilled the `79fc55d` hash into v3.36.0's heading above. Fixed a stale comment in `models/AnalyticsEvent.js`'s `isAdmin` field that still named the retired `/alerts`/`/audit` command names. `NOTICE` §1/§2 updated for the new `google-auth-library` dependency (Apache-2.0, no copyleft anywhere in the tree — reverified). Two reminders filed in `docs/db-deferred-list.md`: `ANALYTICS_HMAC_KEY` still isn't backed up to a password manager, and the read-only Atlas user above. Deploy remains gated on `PRIVACY.md` v1.12 being in effect, unchanged from stage 2 — merging here does not deploy.
+
+## Pre-Release v3.36.0 — 2026-08-16 15:47 EDT (#144 · `79fc55d`) — the `/bot` command tree ships, and `manageadmins` moves out of `/manage`
 
 Stage 3 of 4 of the observability layer: `docs/superpowers/specs/2026-08-16-observability-layer-design.md` §6.
 

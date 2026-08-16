@@ -292,6 +292,12 @@ function registerLifecycle(client, commands) {
             + `• Memory: ${rss}MB RSS · ${heap}MB heap`,
             'info'
         );
+        // --- ROLL-UP CATCH-UP (2026-08-16, observability layer stage 4) ---
+        // Riding the existing daily heartbeat rather than adding a second scheduler, per the design's
+        // §6. Fire-and-forget/swallowed like every other write in this layer — utils/rollupStore.js's
+        // catchUpRollups() already catches its own errors internally, this call just avoids an
+        // unhandled-rejection warning if it somehow throws before that internal catch runs.
+        require('../utils/rollupStore').catchUpRollups().catch(() => { /* never */ });
     }
     client.once(Events.ClientReady, () => {
         // .unref() so the heartbeat timer alone never keeps the process alive — the gateway connection is
