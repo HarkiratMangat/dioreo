@@ -6,7 +6,8 @@
 // Run: `node scripts/bulkCacheCollectibles.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
-    pickDiverseSample, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines
+    pickDiverseSample, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines,
+    groupHeaderLines, variantHeadingLines
 } = require('./bulkCacheCollectibles');
 
 let failures = 0;
@@ -114,6 +115,9 @@ check('catalogExtra: a single-variant doc with no variantLabel/variantValue leav
 });
 
 // --- variantMetadataLines --------------------------------------------------------------------
+// These pin the 2026-08-15 22:32 EDT layout Harkirat specified. The fields that LEFT this function
+// (Description/Parent Category/Group/Variant/Base SKU) are asserted absent on purpose -- they moved
+// up into the headings, and a future edit that "restores" them here would silently duplicate them.
 
 check('variantMetadataLines: nameplate shows Palette line with the palette name + swatches', () => {
     const lines = variantMetadataLines(doc({}), render({}));
@@ -129,45 +133,70 @@ check('variantMetadataLines: decoration shows Colors line, never Palette', () =>
     assert.ok(lines.some(l => l.includes('**Colors:**')), `no Colors line found in ${JSON.stringify(lines)}`);
 });
 
-check('variantMetadataLines: includes the description (label) when present, omits the line when absent', () => {
-    const withLabel = variantMetadataLines(doc({ label: 'A pile of grey skulls' }), render({}));
-    assert.ok(withLabel.some(l => l.includes('**Description:**') && l.includes('A pile of grey skulls')));
-    const withoutLabel = variantMetadataLines(doc({ label: undefined }), render({}));
-    assert.ok(!withoutLabel.some(l => l.includes('**Description:**')), 'no label must mean no Description line, not an empty one');
+check('variantMetadataLines: SKU is its OWN line, never appended to the Cloudinary line', () => {
+    const lines = variantMetadataLines(doc({ skuId: 'SKU1' }), render({}));
+    const cloudinary = lines.find(l => l.includes('**Cloudinary:**'));
+    assert.ok(!cloudinary.includes('SKU'), `Cloudinary line must not carry the sku: ${cloudinary}`);
+    assert.ok(lines.some(l => l.trim().startsWith('-# **SKU:**') && l.includes('SKU1')), JSON.stringify(lines));
 });
 
-check('variantMetadataLines: Variant line only appears when variantLabel exists (single-variant designs have none)', () => {
-    const withVariant = variantMetadataLines(doc({ variantLabel: 'Blue', variantValue: '#79e4e3' }), render({}));
-    assert.ok(withVariant.some(l => l.includes('**Variant:**') && l.includes('Blue')));
-    const noVariant = variantMetadataLines(doc({ variantLabel: undefined, variantValue: undefined }), render({}));
-    assert.ok(!noVariant.some(l => l.includes('**Variant:**')));
+check('variantMetadataLines: the description/collection/group/variant/base-sku fields moved to the headings and must NOT reappear here', () => {
+    const lines = variantMetadataLines(doc({ label: 'A pile of grey skulls', baseSkuId: 'BASE_SKU' }), render({}));
+    for (const gone of ['**Description:**', '**Parent Category:**', '**Group:**', '**Variant:**', 'Base SKU']) {
+        assert.ok(!lines.some(l => l.includes(gone)), `"${gone}" belongs in the headings now, not the footnotes: ${JSON.stringify(lines)}`);
+    }
+    assert.ok(!lines.some(l => l.includes('A pile of grey skulls')), 'the description is a blockquote in the heading block, not a footnote');
 });
 
-check('variantMetadataLines: Base SKU is only shown when it differs from the SKU itself (avoids a redundant duplicate line)', () => {
-    const differentBase = variantMetadataLines(doc({ skuId: 'VARIANT_SKU', baseSkuId: 'BASE_SKU' }), render({}));
-    assert.ok(differentBase.some(l => l.includes('Base SKU')));
-    const sameBase = variantMetadataLines(doc({ skuId: 'SKU1', baseSkuId: 'SKU1' }), render({}));
-    assert.ok(!sameBase.some(l => l.includes('Base SKU')), 'a base sku identical to the sku itself should not print a redundant line');
-});
-
-check('variantMetadataLines: always carries dimensions/frame-count/size in the heading, and the render-time footer', () => {
+check('variantMetadataLines: dimensions/frame-count/size ride the Rendered line, not a heading', () => {
     const lines = variantMetadataLines(doc({}), render({ width: 288, height: 288, frameCount: 60 }));
-    assert.ok(lines[0].includes('288×288px') && lines[0].includes('60f'), lines[0]);
-    assert.ok(lines[lines.length - 1].includes('Rendered'), lines[lines.length - 1]);
+    const rendered = lines[lines.length - 1];
+    assert.ok(rendered.includes('Rendered'), rendered);
+    assert.ok(rendered.includes('288×288px') && rendered.includes('60f'), rendered);
+    assert.ok(!lines.some(l => l.startsWith('###')), 'variantMetadataLines emits footnotes only -- the heading is built separately');
+});
+
+// --- groupHeaderLines / variantHeadingLines --------------------------------------------------
+
+check('groupHeaderLines: names the design and underlines the collection; single-variant gets no count line', () => {
+    const lines = groupHeaderLines(group({}), [{ doc: doc({}), render: render({}) }]);
+    assert.deepStrictEqual(lines, ['## Eternal Damnation — __Underworld__']);
+});
+
+check('groupHeaderLines: a multi-variant design states the count and the base SKU once, in the header', () => {
+    const renders = [1, 2].map(i => ({ doc: doc({ skuId: `SKU${i}`, baseSkuId: 'BASE' }), render: render({}) }));
+    const lines = groupHeaderLines(group({}), renders);
+    assert.strictEqual(lines.length, 2);
+    assert.ok(lines[1].includes('**2 Variants**') && lines[1].includes('BASE'), lines[1]);
+});
+
+check('variantHeadingLines: a multi-variant heading carries the variant label + UPPERCASED hex', () => {
+    const lines = variantHeadingLines(doc({ variantLabel: 'Blue', variantValue: '#79e4e3' }), true);
+    assert.ok(lines[0].startsWith('### Eternal Damnation (Blue)'), lines[0]);
+    assert.ok(lines[0].includes('`Blue`') && lines[0].includes('`#79E4E3`'), lines[0]);
+});
+
+check('variantHeadingLines: a single-variant design gets NO ### heading -- the ## header already named it', () => {
+    const lines = variantHeadingLines(doc({ label: 'A description' }), false);
+    assert.deepStrictEqual(lines, ['> A description']);
+});
+
+check('variantHeadingLines: no label means no blockquote, not an empty one', () => {
+    assert.deepStrictEqual(variantHeadingLines(doc({ label: undefined }), false), []);
 });
 
 // --- buildGroupComponents --------------------------------------------------------------------
 
-check('buildGroupComponents: decorations -- N variants produce exactly N sections and N-1 dividers', () => {
+check('buildGroupComponents: decorations -- N variants produce exactly N sections and N dividers', () => {
     const renders = [1, 2, 3].map(i => ({ doc: doc({ kind: 'decoration', skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` }) }));
     const [container] = buildGroupComponents(group({ kind: 'decoration', variants: renders.map(r => r.doc) }), renders);
     const sections = container.components.filter(c => c.type === 9);
     const dividers = container.components.filter(c => c.type === 14);
     assert.strictEqual(sections.length, 3);
-    assert.strictEqual(dividers.length, 2, 'N variants need N-1 dividers between them, never N or N+1');
+    assert.strictEqual(dividers.length, 3, 'a divider precedes EVERY variant, including the first -- it also separates the header from the variant list');
 });
 
-check('buildGroupComponents: nameplates -- N variants produce exactly N Media Galleries + N TextDisplays, NEVER a Section', () => {
+check('buildGroupComponents: nameplates -- N variants produce exactly N Media Galleries + N heading/N metadata TextDisplays, NEVER a Section', () => {
     const renders = [1, 2, 3].map(i => ({ doc: doc({ skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` }) }));
     const [container] = buildGroupComponents(group({ variants: renders.map(r => r.doc) }), renders);
     const sections = container.components.filter(c => c.type === 9);
@@ -176,16 +205,44 @@ check('buildGroupComponents: nameplates -- N variants produce exactly N Media Ga
     const dividers = container.components.filter(c => c.type === 14);
     assert.strictEqual(sections.length, 0, 'nameplates must use the full-width Media Gallery layout, never Section+Thumbnail (that is decoration-only)');
     assert.strictEqual(galleries.length, 3);
-    assert.strictEqual(texts.length, 4, '1 header + 3 per-variant metadata blocks');
-    assert.strictEqual(dividers.length, 2);
+    assert.strictEqual(texts.length, 7, '1 header + 3 heading/description blocks + 3 metadata blocks');
+    assert.strictEqual(dividers.length, 3);
 });
 
-check('buildGroupComponents: a single-variant group gets zero dividers and no "N variants" suffix', () => {
-    const renders = [{ doc: doc({}), render: render({}) }];
+check('buildGroupComponents: a multi-variant message stays inside the 4-components-per-variant budget catalogGrouping.js assumes', () => {
+    const { MAX_VARIANTS_PER_MESSAGE } = require('./catalogGrouping');
+    const countAll = nodes => nodes.reduce((n, c) => n + 1 + countAll(c.components || []) + (c.accessory ? 1 : 0), 0);
+    for (const kind of ['nameplate', 'decoration']) {
+        const renders = Array.from({ length: MAX_VARIANTS_PER_MESSAGE }, (_, i) => ({
+            doc: doc({ kind, skuId: `SKU${i}` }), render: render({ filename: `f${i}.webp` })
+        }));
+        const total = countAll(buildGroupComponents(group({ kind, variants: renders.map(r => r.doc) }), renders));
+        assert.ok(total <= 40, `${kind}: a full ${MAX_VARIANTS_PER_MESSAGE}-variant message is ${total} components, over Discord's hard 40 ceiling`);
+    }
+});
+
+check('buildGroupComponents: a single-variant group gets zero dividers, no "Variants" count, and folds its description into the header', () => {
+    const renders = [{ doc: doc({ label: 'A snarling hellhound' }), render: render({}) }];
     const [container] = buildGroupComponents(group({ variants: renders.map(r => r.doc) }), renders);
     assert.strictEqual(container.components.filter(c => c.type === 14).length, 0);
     const header = container.components.find(c => c.type === 10).content;
-    assert.ok(!header.includes('variant'), `single-variant header should not say "variants": ${header}`);
+    assert.ok(!header.includes('Variants'), `single-variant header should not say "Variants": ${header}`);
+    assert.ok(!header.includes('###'), `single-variant needs no per-variant heading: ${header}`);
+    assert.ok(header.includes('> A snarling hellhound'), `description should fold into the header block: ${header}`);
+});
+
+check('buildGroupComponents: a variant\'s description appears EXACTLY once in the tree, on both kinds and both shapes', () => {
+    const collect = nodes => nodes.flatMap(c => [c.content || '', ...collect(c.components || [])]);
+    for (const kind of ['nameplate', 'decoration']) {
+        for (const n of [1, 3]) {
+            const renders = Array.from({ length: n }, (_, i) => ({
+                doc: doc({ kind, skuId: `SKU${i}`, label: 'A snarling hellhound' }), render: render({ filename: `f${i}.webp` })
+            }));
+            const text = collect(buildGroupComponents(group({ kind, variants: renders.map(r => r.doc) }), renders)).join('\n');
+            const hits = text.split('> A snarling hellhound').length - 1;
+            assert.strictEqual(hits, n, `${kind} x${n}: description printed ${hits} time(s), expected ${n}`);
+        }
+    }
 });
 
 check('buildGroupComponents: decoration Section accessories reference that variant\'s OWN filename, in order', () => {

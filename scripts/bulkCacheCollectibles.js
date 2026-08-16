@@ -83,16 +83,25 @@ function assetFolderFor(kind, parentCategory) {
     return `${root}/${slugify(parentCategory)}`;
 }
 
+// The catalog descriptor the Cloudinary public id is built from -- see utils/collectibleCacheKey.js.
+// The bulk path has it directly on the doc; the LIVE path resolves the same pair by SKU. They must
+// agree or the two paths stop sharing a cache, which is the entire point of pre-caching.
+function catalogKeyFor(doc) {
+    return { groupName: doc.groupName, variantLabel: doc.variantLabel || null };
+}
+
 async function getCachedFor(doc) {
-    return doc.kind === 'nameplate' ? getCachedNameplateWebp(doc.asset, doc.palette) : getCachedDecorationWebp(doc.asset);
+    return doc.kind === 'nameplate'
+        ? getCachedNameplateWebp(doc.asset, catalogKeyFor(doc))
+        : getCachedDecorationWebp(doc.asset, catalogKeyFor(doc));
 }
 
 async function renderVariant(doc, assetFolder) {
     const url = assetUrlFor(doc.skuId);
     if (doc.kind === 'nameplate') {
-        return renderNameplateWebpForBulk(url, doc.asset, doc.palette, hexToInt(doc.paletteHex), assetFolder);
+        return renderNameplateWebpForBulk(url, doc.asset, doc.palette, hexToInt(doc.paletteHex), assetFolder, catalogKeyFor(doc));
     }
-    return renderDecorationWebpForBulk(url, doc.asset, assetFolder);
+    return renderDecorationWebpForBulk(url, doc.asset, assetFolder, catalogKeyFor(doc));
 }
 
 async function attachFor(doc, publicId, palette, discordCdnUrl, extra) {
@@ -102,7 +111,9 @@ async function attachFor(doc, publicId, palette, discordCdnUrl, extra) {
 }
 
 function publicIdFor(doc) {
-    return doc.kind === 'nameplate' ? nameplatePublicIdFor(doc.asset, doc.palette) : decorationPublicIdFor(doc.asset);
+    return doc.kind === 'nameplate'
+        ? nameplatePublicIdFor(doc.asset, catalogKeyFor(doc))
+        : decorationPublicIdFor(doc.asset, catalogKeyFor(doc));
 }
 
 // Every field the expanded metadata (Harkirat's feedback point 2) needs, patched into Cloudinary
@@ -123,64 +134,115 @@ function catalogExtra(doc) {
 }
 
 function hexOf(c) { return `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``; }
+function upperHex(hex) { return hex ? `#${String(hex).replace('#', '').toUpperCase()}` : null; }
 
-// One variant's Section content -- keeps every field the original single-item layout carried
-// (dimensions/frame-count/size, palette+swatches for nameplates, asset path, Cloudinary public id,
-// SKU, render time) AND adds the expanded set from the catalog: the description (`label`), Parent
-// Category + Group, and the variant's own color identity when it has one. This is the redesigned
-// layout reviewed via the sample run, per Harkirat's feedback point 1 -- not a silent reuse of the old
-// single-item text.
+// ⚠️ LAYOUT SPECIFIED BY HARKIRAT 2026-08-15 22:32 EDT, to the character -- do not "tidy" it. It
+// REPLACES the flat all-footnotes layout this file shipped with earlier the same day (that one was
+// explicitly a placeholder pending his review of a real sample run, which this is the result of).
+// What moved, and why, so a later edit doesn't undo it by reasoning from the old shape:
+//   · the description (`label`) is now a BLOCKQUOTE next to the image, not a `-# **Description:**`
+//     footnote -- it is the one human sentence in the block and was buried among machine identifiers;
+//   · Parent Category / Group / Variant / Base SKU all left the per-variant footnotes: they are
+//     properties of the DESIGN or of the heading line, so they are stated ONCE in the headings above
+//     instead of repeated identically under every variant;
+//   · dimensions/frames/size moved OFF the heading and onto the Rendered line, which frees the
+//     heading to carry the variant's own colour identity (`Blue` · `#79E4E3`);
+//   · SKU is its own line. It used to be tacked onto the end of the Cloudinary line, where it read as
+//     part of the url rather than as a separate identifier -- Harkirat called this out on the
+//     fallback layout too (see nameplateWebpCache.js/decorationWebpCache.js).
 function variantMetadataLines(doc, render) {
-    const lines = [
-        `### ${doc.displayName} — \`${render.width}×${render.height}px\` · \`${render.frameCount}f\` · \`${(render.webpBuffer.length / 1024).toFixed(1)}kB\``
-    ];
+    const lines = [];
     if (doc.kind === 'nameplate') {
         const swatches = render.palette ? render.palette.map(hexOf).join(' · ') : `\`${doc.paletteHex || 'none'}\``;
         lines.push(`-# **Palette:** **\`${doc.palette || 'none'}\` — ${swatches}**`);
     } else if (render.palette) {
         lines.push(`-# **Colors:** **${render.palette.map(hexOf).join(' · ')}**`);
     }
-    if (doc.label) lines.push(`-# **Description:** ${doc.label}`);
-    lines.push(`-# **Parent Category:** \`${doc.parentCategory}\` · **Group:** \`${doc.groupName}\``);
-    if (doc.variantLabel) lines.push(`-# **Variant:** \`${doc.variantLabel}\`${doc.variantValue ? ` (\`${doc.variantValue}\`)` : ''}`);
     lines.push(`-# **Asset:** \`${doc.asset}\``);
-    lines.push(`-# **Cloudinary:** \`/${render.publicId}\` · **SKU:** \`${doc.skuId}\`${doc.baseSkuId && doc.baseSkuId !== doc.skuId ? ` · **Base SKU:** \`${doc.baseSkuId}\`` : ''}`);
-    lines.push(`-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${render.renderMs}ms\``);
+    lines.push(`-# **Cloudinary:** \`/${render.publicId}\``);
+    lines.push(`-# **SKU:** \`${doc.skuId}\``);
+    lines.push(`-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${render.renderMs}ms\` — \`${render.width}×${render.height}px\` · \`${render.frameCount}f\` · \`${(render.webpBuffer.length / 1024).toFixed(1)}kB\``);
+    return lines;
+}
+
+// The design-level header: `## <design> — __<collection>__`, plus a second line for a multi-variant
+// design carrying the variant count and the base SKU. Both of those are properties of the DESIGN, not
+// of any one variant, which is exactly why they sit here once instead of under each variant.
+// ⚠️ `renders` is the CHUNK being posted, not necessarily the whole group -- chunkVariants() splits a
+// design with more variants than one message's component budget. The count therefore describes this
+// message, matching what a reader can actually see in it.
+function groupHeaderLines(group, renders) {
+    const lines = [`## ${group.groupName} — __${group.parentCategory}__`];
+    if (renders.length > 1) {
+        const baseSkuId = renders[0].doc.baseSkuId;
+        lines.push(`**${renders.length} Variants**${baseSkuId ? ` · **Base SKU:** \`${baseSkuId}\`` : ''}`);
+    }
+    return lines;
+}
+
+// The per-variant heading + description. A SINGLE-variant design gets no `###` heading at all -- the
+// `##` group header one line above already names it, and repeating the same name immediately below it
+// was pure noise; it keeps only its description blockquote, which merges up into the header block.
+function variantHeadingLines(doc, isMulti) {
+    const lines = [];
+    if (isMulti) {
+        const identity = [
+            doc.variantLabel ? `\`${doc.variantLabel}\`` : null,
+            doc.variantValue ? `\`${upperHex(doc.variantValue)}\`` : null
+        ].filter(Boolean);
+        lines.push(`### ${doc.displayName}${identity.length ? ` — ${identity.join(' · ')}` : ''}`);
+    }
+    if (doc.label) lines.push(`> ${doc.label}`);
     return lines;
 }
 
 // ONE grouped Components V2 message for a design's freshly-rendered variants -- a Container headed by
-// the design name + Parent Category, then a divider-separated Section per variant (thumbnail + the
-// full metadata above). Section+Thumbnail (type 9/11) is used for EVERY variant here, including
-// nameplates, rather than nameplate's single-item full-width Media Gallery -- a full-width gallery per
-// variant would make a multi-variant message far too tall; this is the actual redesign feedback point 1
-// asked for, reviewed against the real rendered sample rather than locked as text here.
+// the design name + collection, then a divider-separated block per variant.
+//
+// Nameplates keep the full-width Media Gallery (type 12) and decorations keep Section+Thumbnail
+// (type 9/11): a nameplate is a wide banner that reads badly shrunk into a Section's small square
+// accessory thumbnail, which is built for decoration's icon-shaped art. Screenshot-verified against
+// the live cache channel 2026-08-15 11:49 EDT.
+//
+// ⚠️ Component budget, counted RECURSIVELY (Discord's hard ceiling is 40 -- this bot has hit
+// COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED in production). Multi-variant costs 4 per variant on BOTH
+// kinds -- nameplate: divider + heading/description text + gallery + metadata text; decoration:
+// divider + Section + its text child + its thumbnail accessory -- plus a fixed Container + header
+// text. That is exactly what catalogGrouping.js's COMPONENTS_PER_VARIANT=4 / FIXED_COMPONENTS=2
+// assume, so MAX_VARIANTS_PER_MESSAGE stays correct; keep them in step if this tree changes.
 function buildGroupComponents(group, renders) {
-    const count = renders.length;
-    const header = `## ${group.groupName}${count > 1 ? ` — ${count} variants` : ''}\n-# **Parent Category:** \`${group.parentCategory}\``;
-    const components = [{ type: 10, content: header }];
+    const isMulti = renders.length > 1;
+    const headerLines = groupHeaderLines(group, renders);
+    // A single-variant design's description belongs in the header block itself (there is no `###`
+    // heading to hang it under), which also keeps that layout at 3 components instead of 4.
+    if (!isMulti) headerLines.push(...variantHeadingLines(renders[0].doc, false));
+    const components = [{ type: 10, content: headerLines.join('\n') }];
+
     renders.forEach(({ doc, render }, i) => {
-        if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
-        const metadataContent = variantMetadataLines(doc, render).join('\n');
+        // A divider before EVERY variant of a multi-variant design, INCLUDING the first -- it
+        // separates the design-level header from the variant list, not just one variant from the
+        // next. (The old layout used N-1 dividers because it had no header/variant boundary to mark.)
+        if (isMulti) components.push({ type: 14, spacing: 1, divider: true });
+        // EMPTY for a single-variant design -- its heading lines were already folded into the header
+        // block above. Calling variantHeadingLines() again here emitted the description blockquote a
+        // SECOND time (caught 2026-08-15 22:39 EDT by rendering the real Underworld group, not by the
+        // unit tests, which asserted the header CONTAINED the description but never that it appeared
+        // exactly once). The "exactly once" assertion now exists -- keep it.
+        const heading = isMulti ? variantHeadingLines(doc, true) : [];
+        const metadata = variantMetadataLines(doc, render).join('\n');
         if (doc.kind === 'nameplate') {
-            // Full-width Media Gallery on top, metadata below -- the ORIGINAL single-item nameplate
-            // layout (screenshot-verified against the live cache channel 2026-08-15 11:49 EDT), not
-            // decoration's compact Section+Thumbnail. Nameplates are wide banner-shaped images that
-            // read badly shrunk into a side thumbnail; a Section's accessory thumbnail is small and
-            // square, built for decoration's icon-shaped art, not a 512x96-ish banner. Costs 3
-            // components/variant here (gallery + text + divider) vs decoration's 4 -- MAX_VARIANTS_PER_
-            // MESSAGE in catalogGrouping.js is still computed off the more expensive 4, so this stays a
-            // safe (if slightly conservative) cap for nameplate-only groups too.
+            if (heading.length) components.push({ type: 10, content: heading.join('\n') });
             components.push({ type: 12, items: [{ media: { url: `attachment://${render.filename}` } }] });
-            components.push({ type: 10, content: metadataContent });
+            components.push({ type: 10, content: metadata });
         } else {
             components.push({
                 type: 9, // Section
-                components: [{ type: 10, content: metadataContent }],
+                components: [{ type: 10, content: [...heading, metadata].join('\n') }],
                 accessory: { type: 11, media: { url: `attachment://${render.filename}` } }
             });
         }
     });
+
     const first = renders[0];
     const accent = first.doc.kind === 'nameplate'
         ? (hexToInt(first.doc.paletteHex) ?? first.render.palette?.[0]?.hex)
@@ -321,7 +383,10 @@ async function main() {
     await mongoose.disconnect();
 }
 
-module.exports = { parseArgs, pickDiverseSample, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines };
+module.exports = {
+    parseArgs, catalogKeyFor, pickDiverseSample, assetFolderFor, catalogExtra,
+    buildGroupComponents, variantMetadataLines, groupHeaderLines, variantHeadingLines
+};
 
 if (require.main === module) {
     main().catch(err => { console.error('Fatal:', err?.message || err); process.exit(1); });
