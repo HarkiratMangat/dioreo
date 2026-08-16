@@ -78,9 +78,10 @@ async function handleInteraction(interaction) {
     // --- SERVER VISIBILITY POLICY (2026-08-10 15:48 EDT, v3) --- resolved ONCE here, before any
     // routing, and attached as interaction.dioreoPolicy. It also clamps reply/deferReply/followUp on
     // this interaction when the server has forced ephemeral, which is what makes the rule impossible
-    // for a command to bypass or forget -- including the eight weapon commands built above, which no
-    // sweep of commands/*.js would ever reach. See utils/guildPolicy.js for the precedence tiers and
-    // why nothing here refuses a command. No-ops outside a guild.
+    // for ANY command to bypass or forget -- applied here in the router rather than per-command
+    // precisely so a command module can't (accidentally or otherwise) skip it. See
+    // utils/guildPolicy.js for the precedence tiers and why nothing here refuses a command. No-ops
+    // outside a guild.
     // Deliberately BEFORE the anti-spam guard: a swallowed click still returns below, and a policy
     // resolved on every interaction (rather than only the ones that survive the cooldown) keeps the
     // per-guild cache warm and the behaviour uniform.

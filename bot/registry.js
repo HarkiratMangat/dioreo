@@ -102,9 +102,10 @@ async function applyGunsmithsScopeChoices(commands) {
 async function registerApplicationCommands(client, commands) {
     // The names /admin's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin
     // visibility policy). Derived from `commands` -- the SAME array that is about to be registered --
-    // rather than from client.commands or a readdir of commands/*.js, both of which miss the eight
-    // per-category weapon commands and `all` built above. A hand-maintained list here would
-    // silently go stale the first time a command is added; this cannot.
+    // rather than a hand-maintained list, which would silently go stale the first time a command is
+    // added or removed. (Until the 2026-08-15 /gunsmiths consolidation, this also covered `/all` +
+    // the eight per-category commands, which lived only in this array and not in commands/*.js --
+    // deriving from the array rather than a readdir was what made that safe.)
     // The four admin surfaces are excluded: a server rule has no business quieting Harkirat's own
     // owner-level commands, and /admin must never be able to hide its own answer from the admin
     // trying to undo a rule.
