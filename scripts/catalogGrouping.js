@@ -11,7 +11,8 @@ function groupKey(doc) {
 }
 
 // Groups an array of CollectibleCatalog-shaped docs by (kind, collection, groupName), preserving each
-// group's first-seen order and each group's variants in input order -- both matter, since a
+// group's first-seen order and each group's variants in input order APART from the base variant, which
+// is promoted to the front (see below) -- both matter, since a
 // deterministic, reproducible processing order makes --sample/--dry-run output predictable across runs
 // of the same input.
 function groupCatalogDocs(docs) {
@@ -25,6 +26,19 @@ function groupCatalogDocs(docs) {
             order.push(group);
         }
         byKey.get(key).variants.push(doc);
+    }
+    // The BASE variant leads every group (Harkirat 2026-08-15 23:43 EDT). The cache-channel embed no
+    // longer prints the base SKU as its own line -- instead the variant that SKU refers to is simply
+    // listed first, which says the same thing without a line of machine id. Stable otherwise, so the
+    // catalog's own order still decides the rest.
+    //
+    // ⚠️ Sorted HERE, not in the message builder, so the ordering survives chunkVariants() and so the
+    // render order, the header's variant-label list and the container's accent colour (taken from
+    // renders[0]) can never disagree about which variant is the design's primary one. It was already
+    // true by accident of catalog order for every group checked; this makes it guaranteed.
+    for (const group of order) {
+        const baseIndex = group.variants.findIndex(v => v.baseSkuId && v.skuId === v.baseSkuId);
+        if (baseIndex > 0) group.variants.unshift(group.variants.splice(baseIndex, 1)[0]);
     }
     return order;
 }

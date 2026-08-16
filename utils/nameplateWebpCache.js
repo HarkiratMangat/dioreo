@@ -56,7 +56,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
-const { slugify } = require('./cloudinaryCache');
+const { catalogCacheKey, legacyCacheKey, filenameForPublicId, lookupCatalogEntry } = require('./collectibleCacheKey');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
@@ -122,27 +122,25 @@ function errorHttpCode(err) {
 // constant. Shortened to `<design>-<palette>` 2026-08-11 17:34 EDT (Harkirat asked why it was so
 // long, and the honest answer was that nothing had questioned it).
 //
-// ⚠️ ONLY the exact three-segment `nameplates/nameplates/<design>` shape is shortened; anything else
-// keeps the full slug. That is the collision guard: the last segment alone is only unique if the
-// parent path is known-constant, so an unfamiliar shape must not be trusted to be unique by its tail.
+// ⚠️ THE PUBLIC ID IS THE CACHE KEY. Built by utils/collectibleCacheKey.js -- read its header before
+// changing anything here; it documents the naming scheme, the uniqueness check it was verified
+// against, and why the palette name is no longer part of the key.
 //
-// ⚠️ THE PUBLIC ID IS THE CACHE KEY, so changing it ORPHANS every render stored under the old name.
-// Safe to do exactly here because both prod folders held ZERO resources and the four dev entries had
-// just been purged and re-rendered -- the cheapest moment this change will ever have. Do not repeat
-// it casually once real renders exist without purging the old ids in the same pass.
+// `catalog` ({ groupName, variantLabel } | null) is what decides which id space this is: catalogued
+// designs get `<group-name>-<variant-label>`, anything else gets `legacy-<name-or-asset>`. The BULK
+// path passes it straight from the CollectibleCatalog doc; the LIVE path resolves it by SKU inside
+// resolveNameplateWebp. Both MUST end up with the same value for the same design or they stop
+// sharing a cache -- that is the whole reason the construction lives in one shared module.
 //
-// ⚠️ DELIBERATELY does not vary by collection (2026-08-15 10:31 EDT) -- see attachNameplateDiscordCdnUrl's
-// `assetFolder` param for WHERE the collection actually shows up. Folding it in here would mean a live
-// user's equip of an already-bulk-cached design computes a DIFFERENT public_id than the bulk run used
-// (the live path never knows the collection), silently missing the cache and re-rendering from scratch
-// -- defeating the entire point of bulk pre-caching. Cloudinary's `asset_folder` is a separate field
-// from `public_id` specifically so the Media Library can be organized without touching the cache key.
-function publicIdFor(nameplateAsset, paletteName) {
-    const segments = String(nameplateAsset).split('/').filter(Boolean);
-    const design = segments.length === 3 && segments[0] === 'nameplates' && segments[1] === 'nameplates'
-        ? segments[2]
-        : nameplateAsset;
-    return `${FOLDER}/${slugify(design)}-${slugify(paletteName || 'none')}`;
+// ⚠️ DELIBERATELY does not vary by collection -- see attachNameplateDiscordCdnUrl's `assetFolder`
+// param for WHERE the collection actually shows up. Folding it in here would mean a live user's equip
+// computes a DIFFERENT public_id than the bulk run used, silently missing the cache and re-rendering
+// from scratch. Cloudinary's `asset_folder` is a separate field from `public_id` specifically so the
+// Media Library can be organized without touching the cache key.
+function publicIdFor(nameplateAsset, catalog, nameplateName) {
+    return catalog
+        ? catalogCacheKey(FOLDER, catalog.groupName, catalog.variantLabel)
+        : legacyCacheKey(FOLDER, nameplateName, nameplateAsset);
 }
 
 // Same in-memory memo pattern as utils/nameplateBedImage.js's bedCache/utils/resizedImage.js -- see
@@ -162,8 +160,8 @@ function memoizeResolved(publicId, resolved) {
 // without going through the full resolve->render->single-message path. `renderSource` surfaces the
 // context's `render_source` marker ('catalog'|'fallback'|undefined for a pre-existing resource that
 // predates this field) so the bulk script can detect and heal a stale fallback entry.
-async function getCachedNameplateWebp(nameplateAsset, paletteName) {
-    const publicId = publicIdFor(nameplateAsset, paletteName);
+async function getCachedNameplateWebp(nameplateAsset, catalog, nameplateName) {
+    const publicId = publicIdFor(nameplateAsset, catalog, nameplateName);
     if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
     try {
         const result = await cloudinary.api.resource(publicId, {
@@ -280,8 +278,8 @@ async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, ex
 // comment on why this must never affect `public_id`, the actual cache key). The bulk script passes
 // `${FOLDER}/<collection-slug>`; omitted here it falls back to the flat `FOLDER`, matching what the
 // live path has always used.
-async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder) {
-    const publicId = publicIdFor(nameplateAsset, paletteName);
+async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder, catalog) {
+    const publicId = publicIdFor(nameplateAsset, catalog);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
     if (!core) return null;
@@ -290,7 +288,7 @@ async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, 
             `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
             { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
         );
-        const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
+        const filename = filenameForPublicId(publicId);
         return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
     } catch (err) {
         console.error(`Nameplate Cloudinary upload failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
@@ -306,8 +304,8 @@ async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, 
 // carries `render_source: 'fallback'` and the message gets a small marker line -- this path renders
 // designs that, by definition, are not (yet) in the bulk-cache catalog snapshot, so flagging them makes
 // a later catalog refresh able to find and reconcile them (see attachNameplateDiscordCdnUrl above).
-async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName) {
-    const publicId = publicIdFor(nameplateAsset, paletteName);
+async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, catalog) {
+    const publicId = publicIdFor(nameplateAsset, catalog, nameplateName);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
 
     const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
@@ -324,7 +322,7 @@ async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName,
         // separate, lightweight `api.update()` metadata patch (no re-upload of the actual bytes) --
         // cheaper than making the Cloudinary upload itself wait on a second, unrelated network call.
         const bedHexStr = bedHex != null ? `#${bedHex.toString(16).padStart(6, '0')}` : 'none';
-        const filename = `${slugify(nameplateAsset)}-${slugify(paletteName || 'none')}.webp`;
+        const filename = filenameForPublicId(publicId);
         const heading = nameplateName || 'Nameplate';
         // Grouped by WHAT THE READER IS ASKING (Harkirat's polish request 2026-08-11 16:59 EDT: better
         // organised, still concise, no taller). Layout specified by Harkirat 2026-08-11 18:44 EDT, to
@@ -335,12 +333,15 @@ async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName,
             `### ${heading} — \`${width}×${height}px\` · \`${frameCount}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
             `-# **Palette:** **\`${paletteName || 'none'}\` — ${swatches}**`,
             `-# **Asset:** \`${nameplateAsset}\``,
-            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# **Cloudinary:** \`/${publicId}\``,
+            // Its OWN line since 2026-08-15 22:32 EDT (Harkirat) -- tacked onto the end of the
+            // Cloudinary line above, the sku read as part of the url rather than as a separate id.
+            skuId ? `-# **SKU:** \`${skuId}\`` : null,
             `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``,
             // 2026-08-15 10:31 EDT: this path only ever renders a design NOT (yet) in the bulk-cache catalog --
             // see this file's header. Flags it so a future catalog refresh can find + reconcile it.
             `-# ⚠️ Fallback render — not in the catalog snapshot yet`
-        ];
+        ].filter(Boolean); // `skuId` above is conditional -- drop it rather than emit a blank line
         const components = [
             {
                 type: 17, // Container
@@ -401,10 +402,16 @@ async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName,
 async function resolveNameplateWebp({ nameplateAsset, paletteName, apngUrl, bedHex, skuId, nameplateName }) {
     if (!nameplateAsset || !apngUrl || bedHex == null) return null;
 
-    const cached = await getCachedNameplateWebp(nameplateAsset, paletteName);
-    if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, paletteName, apngUrl, bedHex);
+    // Resolved ONCE here and threaded down, so every step below (cache lookup, render, heal) computes
+    // the identical public id. This is the live path's only route to the group/variant pair the
+    // catalogued id is built from -- without it a live equip would compute a `legacy-` id, miss the
+    // bulk-cached render entirely and re-render from scratch. Memoized per sku inside.
+    const catalog = await lookupCatalogEntry(skuId);
 
-    return renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName);
+    const cached = await getCachedNameplateWebp(nameplateAsset, catalog, nameplateName);
+    if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, catalog, nameplateName, apngUrl, bedHex);
+
+    return renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, catalog);
 }
 
 // A WebP rendered BEFORE palette caching shipped has no palette in its context, and since the render
@@ -419,8 +426,8 @@ async function resolveNameplateWebp({ nameplateAsset, paletteName, apngUrl, bedH
 //
 // Returns the cached object unchanged on any failure -- a heal that cannot complete must degrade to
 // today's behaviour, never break a working preview.
-async function healPalette(cached, nameplateAsset, paletteName, apngUrl, bedHex) {
-    const publicId = publicIdFor(nameplateAsset, paletteName);
+async function healPalette(cached, nameplateAsset, catalog, nameplateName, apngUrl, bedHex) {
+    const publicId = publicIdFor(nameplateAsset, catalog, nameplateName);
     if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return cached;
     try {
         const res = await fetch(apngUrl);

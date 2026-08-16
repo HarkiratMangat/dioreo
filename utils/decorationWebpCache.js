@@ -49,7 +49,7 @@ if (!process.env.CLOUDINARY_URL) {
 
 const { Jimp } = require('jimp');
 const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
-const { slugify } = require('./cloudinaryCache');
+const { catalogCacheKey, legacyCacheKey, filenameForPublicId, lookupCatalogEntry } = require('./collectibleCacheKey');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
 const { logRenderTiming } = require('./renderTiming'); // cold-render perf instrumentation, see models/RenderTiming.js
@@ -102,8 +102,15 @@ function errorHttpCode(err) {
     return err?.http_code ?? err?.error?.http_code ?? null;
 }
 
-function publicIdFor(decorationAsset) {
-    return `${FOLDER}/${slugify(decorationAsset)}`;
+// ⚠️ THE PUBLIC ID IS THE CACHE KEY. Built by utils/collectibleCacheKey.js -- read its header first.
+// Same scheme and same reasoning as nameplateWebpCache.js's publicIdFor, with one difference: a
+// decoration has NO name field anywhere in Discord's payload (confirmed when nameplate names shipped
+// -- there is genuinely nothing to parse), so an uncatalogued decoration's legacy id falls back to its
+// asset hash. That hash is unique per variant, so the legacy space stays collision-free here.
+function publicIdFor(decorationAsset, catalog) {
+    return catalog
+        ? catalogCacheKey(FOLDER, catalog.groupName, catalog.variantLabel)
+        : legacyCacheKey(FOLDER, null, decorationAsset);
 }
 
 // Same in-memory memo pattern as utils/nameplateBedImage.js's bedCache/utils/resizedImage.js -- a
@@ -123,8 +130,8 @@ function memoizeResolved(publicId, resolved) {
 // Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already
 // cached without paying for a full resolve. `renderSource` surfaces the context's `render_source`
 // marker ('catalog'|'fallback'|undefined for a pre-existing resource that predates this field).
-async function getCachedDecorationWebp(decorationAsset) {
-    const publicId = publicIdFor(decorationAsset);
+async function getCachedDecorationWebp(decorationAsset, catalog) {
+    const publicId = publicIdFor(decorationAsset, catalog);
     if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
     try {
         const result = await cloudinary.api.resource(publicId, {
@@ -237,8 +244,8 @@ async function attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, e
 // utils/nameplateWebpCache.js's renderNameplateWebpForBulk for the full reasoning, identical shape here.
 // `assetFolder`: Cloudinary's `asset_folder` (Media Library organization only -- never affects
 // `public_id`, the actual cache key, for the same reason documented on the nameplate side).
-async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, assetFolder) {
-    const publicId = publicIdFor(decorationAsset);
+async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, assetFolder, catalog) {
+    const publicId = publicIdFor(decorationAsset, catalog);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const core = await renderDecorationWebpCore(decorationUrl, decorationAsset);
     if (!core) return null;
@@ -247,7 +254,7 @@ async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, asset
             `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
             { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
         );
-        const filename = `${slugify(decorationAsset)}.webp`;
+        const filename = filenameForPublicId(publicId);
         return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
     } catch (err) {
         console.error(`Decoration Cloudinary upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
@@ -255,8 +262,8 @@ async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, asset
     }
 }
 
-async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId) {
-    const publicId = publicIdFor(decorationAsset);
+async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, catalog) {
+    const publicId = publicIdFor(decorationAsset, catalog);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
 
     const core = await renderDecorationWebpCore(decorationUrl, decorationAsset);
@@ -264,13 +271,16 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
     const { webpBuffer, palette, width, height, frameCount, renderMs } = core;
 
     try {
-        const filename = `${slugify(decorationAsset)}.webp`;
+        const filename = filenameForPublicId(publicId);
         const hexOf = c => `\`#${(c.hex >>> 0).toString(16).padStart(6, '0').toUpperCase()}\``;
         const metadataLines = [
             `### \`${width}×${height}px\` · \`${frameCount}f\` · \`${(webpBuffer.length / 1024).toFixed(1)}kB\``,
             palette ? `-# **Colors:** **${palette.map(hexOf).join(' · ')}**` : null,
             `-# **Asset:** \`${decorationAsset}\``,
-            `-# **Cloudinary:** \`/${publicId}\`${skuId ? ` · **SKU:** \`${skuId}\`` : ''}`,
+            `-# **Cloudinary:** \`/${publicId}\``,
+            // Its OWN line since 2026-08-15 22:32 EDT (Harkirat) -- same call as nameplate's fallback
+            // layout: on the end of the Cloudinary line the sku read as part of the url.
+            skuId ? `-# **SKU:** \`${skuId}\`` : null,
             `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``,
             // 2026-08-15 10:31 EDT: this path only ever renders a design NOT (yet) in the bulk-cache
             // catalog -- see this file's header. Flags it so a catalog refresh can find + reconcile it.
@@ -323,10 +333,15 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
 async function resolveDecorationWebp({ decorationAsset, decorationUrl, skuId }) {
     if (!decorationAsset || !decorationUrl) return null;
 
-    const cached = await getCachedDecorationWebp(decorationAsset);
-    if (cached) return cached.palette ? cached : healPalette(cached, decorationAsset, decorationUrl);
+    // Resolved ONCE and threaded down so cache lookup, render and heal all compute the identical
+    // public id -- see nameplateWebpCache.js's resolveNameplateWebp for the full reasoning. Memoized
+    // per sku inside lookupCatalogEntry.
+    const catalog = await lookupCatalogEntry(skuId);
 
-    return renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId);
+    const cached = await getCachedDecorationWebp(decorationAsset, catalog);
+    if (cached) return cached.palette ? cached : healPalette(cached, decorationAsset, catalog, decorationUrl);
+
+    return renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, catalog);
 }
 
 // Backfills a palette onto a WebP rendered BEFORE palette caching shipped. Without this, such a design
@@ -337,8 +352,8 @@ async function resolveDecorationWebp({ decorationAsset, decorationUrl, skuId }) 
 // (so an older one keeps its original accent and has no Colors line -- editing storage-channel history
 // is deliberately out of scope). Returns the cached object unchanged on any failure, so a heal that
 // cannot complete degrades to today's behaviour rather than breaking a working preview.
-async function healPalette(cached, decorationAsset, decorationUrl) {
-    const publicId = publicIdFor(decorationAsset);
+async function healPalette(cached, decorationAsset, catalog, decorationUrl) {
+    const publicId = publicIdFor(decorationAsset, catalog);
     if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return cached;
     try {
         const res = await fetch(decorationUrl);

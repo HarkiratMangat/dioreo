@@ -31,6 +31,21 @@ check('groupCatalogDocs: variants of the same (kind, collection, groupName) land
     assert.deepStrictEqual(groups[0].variants.map(v => v.skuId), ['1', '2'], 'variant order must be preserved');
 });
 
+check('groupCatalogDocs: the BASE variant is promoted to the front, whatever order it arrived in', () => {
+    const docs = [
+        { kind: 'nameplate', parentCategory: 'U', groupName: 'D', skuId: 'RED', baseSkuId: 'BLUE' },
+        { kind: 'nameplate', parentCategory: 'U', groupName: 'D', skuId: 'BLUE', baseSkuId: 'BLUE' },
+        { kind: 'nameplate', parentCategory: 'U', groupName: 'D', skuId: 'GREEN', baseSkuId: 'BLUE' }
+    ];
+    const [g] = groupCatalogDocs(docs);
+    assert.deepStrictEqual(g.variants.map(v => v.skuId), ['BLUE', 'RED', 'GREEN'], 'base first, everything else stable behind it');
+});
+
+check('groupCatalogDocs: a group whose base sku matches no variant is left in input order, not reshuffled', () => {
+    const docs = ['A', 'B'].map(skuId => ({ kind: 'nameplate', parentCategory: 'U', groupName: 'D', skuId, baseSkuId: 'MISSING' }));
+    assert.deepStrictEqual(groupCatalogDocs(docs)[0].variants.map(v => v.skuId), ['A', 'B']);
+});
+
 check('groupCatalogDocs: same groupName in a DIFFERENT collection is a SEPARATE group', () => {
     const docs = [
         doc({ skuId: '1', parentCategory: 'Underworld' }),
