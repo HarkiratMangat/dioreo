@@ -50,6 +50,9 @@ process.on('uncaughtException', (err) => {
 require("dotenv").config({ quiet: true }); // quiet: true suppresses dotenv's runtime log line (incl. its rotating promotional "tip" text)
 
 const mongoose = require("mongoose");
+// Atlas dependency timing (2026-08-16, observability stage 2). Installed HERE, before any model is
+// required or any query runs, because it patches Query/Aggregate exec -- see utils/mongoTiming.js.
+require("./utils/mongoTiming").installMongoTiming();
 const { Client, GatewayIntentBits, ActivityType } = require("discord.js");
 const { acquireInstanceLock } = require("./utils/instanceLock");
 

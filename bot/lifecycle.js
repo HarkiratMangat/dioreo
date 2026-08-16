@@ -198,6 +198,13 @@ function registerLifecycle(client, commands) {
     client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); noteGatewayTrouble(); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
     client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); noteGatewayTrouble(); sendAlert('Gateway shard error', error, 'error'); });
 
+    // ⚠️ readRestartReason() CONSUMES the .restart-reason marker file, so it can only be called once
+    // per boot. The "Bot online" listener below calls it, and it runs BEFORE this listener finishes
+    // (that one is synchronous; this one awaits). So the kind is stashed there and read here, rather
+    // than read twice -- a second call would always return null and the boot record would say every
+    // restart was unattended.
+    let restartKind = null;
+
     // --- READY: EMOJI SYNC → COMMAND REGISTRATION → CLEANUP ---
     client.once(Events.ClientReady, async () => {
         console.log(`✅ Dioreo instance fully authenticated!`);
@@ -222,6 +229,27 @@ function registerLifecycle(client, commands) {
         // if it should be unref'd for consistency, that is its own change with its own reasoning.
         runCloudinaryCleanup();
         setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
+
+        // --- BOOT RECORD (2026-08-16, observability layer stage 2) ---
+        // One row per process start, written HERE rather than in the listener below because this is
+        // the point where the two boot facts worth having actually exist: the emoji sync result (the
+        // known stale-prod-id trap) and the registered command count. Fire-and-forget like every other
+        // write in the event plane. This collection is also where restart COUNT comes from -- see
+        // models/BootRecord.js for why process.uptime() cannot answer that.
+        const { recordBoot, installShutdownFlush } = require('../utils/eventStore');
+        recordBoot({
+            kind: restartKind || 'automatic',
+            restartContext: restartKind ? '' : restartContext(),
+            guilds: client.guilds.cache.size,
+            emojiSynced: emojiSync.synced,
+            emojiMissing: emojiSync.missing.length,
+            commandsRegistered: client.registeredCommandCount ?? null,
+            mongoOk: true,   // trivially true: this very row went through Mongoose
+            cloudinaryConfigured: Boolean(process.env.CLOUDINARY_URL),
+        });
+        // systemd SIGTERMs the unit on every deploy, and the events immediately before a restart are
+        // among the most interesting ones there are. Without this the last buffer is lost every time.
+        installShutdownFlush();
     });
 
     // --- RESTART LABELING + "BOT ONLINE" ALERT ---
@@ -230,6 +258,7 @@ function registerLifecycle(client, commands) {
     // useful signal that the process restarted unexpectedly.
     client.once(Events.ClientReady, (c) => {
         const reason = readRestartReason();
+        restartKind = reason;   // stashed for the boot record above -- see the comment on its declaration
         const kind = reason === 'deploy' ? '🚀 Manual deploy (git pull + restart)'
             : reason === 'manual' ? '🔧 Manual restart'
             : (() => { const ctx = restartContext(); return `♻️ Automatic/unattended restart${ctx ? ` (${ctx})` : ''}`; })();

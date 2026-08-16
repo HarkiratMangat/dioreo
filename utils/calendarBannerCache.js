@@ -8,7 +8,7 @@
 // (draw thumbnails) and utils/patchNotesCache.js (patch screenshots), but far simpler retention:
 // exactly 3 possible public_ids ever exist (calendar_banners/draws|events|playlists), each just
 // overwritten in place on every re-set -- no age/season-based pruning needed.
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 if (!process.env.CLOUDINARY_URL) {
     console.error('⚠️ CLOUDINARY_URL is not set -- calendar banner caching will fail on every attempt.');

@@ -48,7 +48,7 @@
 // these across one design's variants, uploads them together, then calls `attachNameplateDiscordCdnUrl`
 // once per variant (with `render_source: 'catalog'` + the full catalog metadata) to patch each one's own
 // Cloudinary context, same as the single-item path always did.
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 const { Jimp } = require('jimp');
 
 if (!process.env.CLOUDINARY_URL) {
@@ -60,7 +60,7 @@ const { catalogCacheKey, legacyCacheKey, filenameForPublicId, lookupCatalogEntry
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 const { renderGradientBedFrame } = require('./nameplateBedImage');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
-const { logRenderTiming } = require('./renderTiming'); // cold-render perf instrumentation, see models/RenderTiming.js
+const { recordRenderTiming } = require('./eventStore'); // cold-render perf, folded into the event plane 2026-08-16 (was models/RenderTiming.js)
 const {
     getColorPalette, composeNameplatePalette, paletteContextFields, readPaletteContext,
     PALETTE_COUNTS, NAMEPLATE_OVERASK
@@ -227,9 +227,11 @@ async function renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bed
 
         const webpBuffer = await encodeWebpFromFrames(composited, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
-        // Instrumentation only, see models/RenderTiming.js -- durable copy of the number the cache
-        // message below also shows, since that message lives in a channel a dev cache purge can wipe.
-        logRenderTiming({ area: 'webp_render', action: 'nameplate', cold: true, durationMs: renderMs });
+        // Instrumentation only -- a durable copy of the number the cache message below also shows,
+        // since that message lives in a channel a dev cache purge can wipe. Inside an interaction
+        // this folds into that interaction's deps; from the bulk-cache runner (no interaction in
+        // scope) it becomes its own small background event. Replaced RenderTiming 2026-08-16.
+        recordRenderTiming('webp_nameplate', renderMs, { area: 'webp_render', action: 'nameplate', cold: true });
         // Dimensions read back from the first composited frame -- cheap (one extra small decode),
         // and more honest than assuming the 512px cap always applied (a source narrower than 512
         // never gets upscaled, see renderGradientBedFrame's own targetWidth logic).

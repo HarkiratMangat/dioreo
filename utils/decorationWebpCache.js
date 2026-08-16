@@ -41,7 +41,7 @@
 // now also carries `render_source: 'fallback'` (this path renders a design not yet in the bulk-cache
 // catalog snapshot). `renderDecorationWebpForBulk` is the bulk script's hook: core + Cloudinary upload
 // only, no storage-channel post, no context patch.
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 if (!process.env.CLOUDINARY_URL) {
     console.error('⚠️ CLOUDINARY_URL is not set -- decoration WebP caching will fail on every attempt.');
@@ -52,7 +52,7 @@ const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { catalogCacheKey, legacyCacheKey, filenameForPublicId, lookupCatalogEntry } = require('./collectibleCacheKey');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
-const { logRenderTiming } = require('./renderTiming'); // cold-render perf instrumentation, see models/RenderTiming.js
+const { recordRenderTiming } = require('./eventStore'); // cold-render perf, folded into the event plane 2026-08-16 (was models/RenderTiming.js)
 const { getColorPalette, paletteContextFields, readPaletteContext, PALETTE_COUNTS } = require('./colorExtract');
 
 // Imported, never redeclared -- see utils/colorExtract.js's comment on why the counts live there
@@ -211,7 +211,7 @@ async function renderDecorationWebpCore(decorationUrl, decorationAsset) {
 
         const webpBuffer = await encodeWebpFromFrames(frames, { fps: FPS });
         const renderMs = Date.now() - renderStartedAt;
-        logRenderTiming({ area: 'webp_render', action: 'decoration', cold: true, durationMs: renderMs });
+        recordRenderTiming('webp_decoration', renderMs, { area: 'webp_render', action: 'decoration', cold: true });
 
         return { webpBuffer, palette, width, height, frameCount: frames.length, renderMs };
     } catch (err) {

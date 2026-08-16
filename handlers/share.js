@@ -53,6 +53,10 @@ async function route(interaction) {
             // RENDER it in that case; this re-check is the one that matters, because a panel opened
             // before the admin set the rule still has the button sitting on it.
             if (interaction.dioreoPolicy && interaction.dioreoPolicy.allowShare === false) {
+                // Reports the policy block into the interaction's analytics event -- "how often is a
+                // server's visibility rule actually biting" is only answerable if the enforcement
+                // point says so. The guard itself is unchanged.
+                require('../utils/eventStore').markOutcome('blocked_by_policy');
                 try {
                     await interaction.reply({
                         content: "🔇 **This server keeps Dioreo's answers private here.** A server admin set that, so this one stays visible only to you.",

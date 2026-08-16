@@ -32,6 +32,7 @@
 // (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
 const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
 const { runWithContext, getContext, hashUserId } = require("../utils/requestContext");
+const { recordInteractionEvent, markOutcome, instrumentAck, instrumentAutocomplete } = require("../utils/eventStore");
 const { handleColorsButton } = require("./colors");
 const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
@@ -87,12 +88,23 @@ const INTERACTION_COOLDOWN_MS = 600;
 // log line emitted from inside e.g. handlers/manage/*.js says "manage", not just the raw customId. It
 // stays null for a guard that rejects the interaction before any subsystem ever gets it (anti-spam
 // cooldown, the /manage admin-only lock) -- there is no handler to attribute those lines to.
+// ⚠️ STAGE 2 (2026-08-16) ADDED THE MUTABLE HALF. Everything from `startedAt` down is written to by
+// guards and dependency wrappers DURING the interaction and read once by the finally below. It lives
+// on the same object for the same reason `handler` does: getContext() returns it by reference, so a
+// guard eleven frames deep can report an outcome without threading a return value back up through
+// every caller. None of it is logged by patchConsole -- utils/logger.js reads only the four stage-1
+// fields, which is deliberate: a log line wants attribution, not a timing accumulator.
 function buildInteractionContext(interaction) {
     return {
         interactionId: interaction.id,
         command: interaction.commandName || interaction.customId || null,
         handler: null,
         userHash: hashUserId(interaction.user?.id),
+        startedAt: Date.now(),
+        outcome: null,     // set by the guards below and by the catch; first writer wins
+        ackMs: null,       // stamped by instrumentAck() on the first defer/reply
+        deps: null,        // aggregated per dependency name by noteDep()
+        detail: null,      // subsystem fields via mergeDetail() -- absorbs the retired RenderTiming
     };
 }
 
@@ -105,8 +117,21 @@ function markHandler(name) {
     if (ctx) ctx.handler = name;
 }
 
+// The event is written in a FINALLY, so an interaction that threw still records -- those are the
+// events most worth having. It sits out here rather than inside handleInteractionInner's own try
+// because that function returns from ~20 different places; a finally at this level is the only spot
+// that is genuinely unmissable.
+// ⚠️ The raw Discord id is passed to recordInteractionEvent for ONE purpose: so the finished document
+// can be SCRUBBED against it. It is never stored. See utils/eventStore.js's buildEventDocument().
 async function handleInteraction(interaction) {
-    return runWithContext(buildInteractionContext(interaction), () => handleInteractionInner(interaction));
+    const ctx = buildInteractionContext(interaction);
+    return runWithContext(ctx, async () => {
+        try {
+            return await handleInteractionInner(interaction);
+        } finally {
+            recordInteractionEvent(interaction, ctx, interaction.user?.id);
+        }
+    });
 }
 
 async function handleInteractionInner(interaction) {
@@ -125,6 +150,11 @@ async function handleInteractionInner(interaction) {
     const { attachGuildPolicy } = require('../utils/guildPolicy');
     await attachGuildPolicy(interaction);
 
+    // Deliberately AFTER attachGuildPolicy: that call replaces reply/deferReply/followUp with its
+    // ephemeral-forcing versions, so instrumenting first would wrap functions that get overwritten a
+    // line later. Wrapping second puts the measurement outside the clamp, and both still run.
+    instrumentAck(interaction);
+
     // --- LIGHT ANTI-SPAM GUARD --- buttons/selects only (modal submits are a deliberate typed
     // action, not spam-clickable; slash commands aren't rapid-fire the same way). A click inside
     // the cooldown window is silently swallowed via a bare deferUpdate() -- acknowledges it so
@@ -133,6 +163,10 @@ async function handleInteractionInner(interaction) {
         const now = Date.now();
         const lastAccepted = interactionCooldowns.get(interaction.user.id) || 0;
         if (now - lastAccepted < INTERACTION_COOLDOWN_MS) {
+            // The guard already existed; all it needed was to REPORT rather than only act. Without
+            // this the click leaves no trace anywhere -- no handler ran, nothing logged -- which is
+            // exactly the "dead click" the event plane exists to make countable.
+            markOutcome('swallowed_by_cooldown');
             await interaction.deferUpdate().catch(() => {});
             return;
         }
@@ -194,6 +228,7 @@ async function handleInteractionInner(interaction) {
                 // request. This is /manage's own admin-only lock -- unlike the per-user panel locks
                 // below, there's no "someone else's panel" concept here to admin-override; only
                 // ALLOWED_ADMIN_ID was ever meant to pass this one.
+                markOutcome('rejected_admin');
                 try {
                     await interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
                 } catch (notifyError) {
@@ -279,6 +314,11 @@ async function handleInteractionInner(interaction) {
     // directly from the MongoDB clusters before the user even presses enter.
     if (interaction.isAutocomplete()) {
         markHandler('autocomplete');
+        // Discord fires one of these per KEYSTROKE. This does not emit an event -- it opens (or
+        // extends) a debounced search session that flushes ONE row when typing stops, and patches
+        // respond() so the result count comes along for free. One call here covers every autocomplete
+        // route in the bot. See utils/eventStore.js's autocomplete section.
+        instrumentAutocomplete(interaction);
         const focusedValue = interaction.options.getFocused().toLowerCase();
         const commandName = interaction.commandName;
         // NOTE (fixed during review): every autocomplete site below used a plain `.includes()` (or
@@ -501,6 +541,7 @@ async function handleInteractionInner(interaction) {
     // offline until a manual restart. Discord interaction tokens are only valid for a few
     // seconds/minutes, so this is expected to happen occasionally under normal use, not
     // just as a bug symptom -- log it and keep the bot alive instead of crashing.
+    markOutcome('error');
     console.error('Unhandled error in interactionCreate:', err);
   }
 }

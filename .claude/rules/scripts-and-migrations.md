@@ -46,6 +46,18 @@ Writes one gzipped archive per run to `local/db-backups/` (gitignored) and keeps
 - Retention counts files rather than using `find -mtime`, so a long gap between runs can never delete the only copy you have.
 - **Not yet scheduled.** Running it on a timer (launchd locally, or cron on the VM) is the obvious next step and is not done.
 
+## `migrateRenderTimings.js` — the one-shot RenderTiming retirement (added 2026-08-16 13:24 EDT, v3.35.0-pre)
+
+Migrates the `rendertimings` collection into the event plane **with its raw `discordId` replaced by the same keyed hash every other pseudonym in this project uses**, then drops the source collection. Documented in `.claude/rules/models.md` and `docs/legal/PRIVACY.md` §2.4b; the design is `docs/superpowers/specs/2026-08-16-observability-layer-design.md`.
+
+- Dry run by default; `--write` migrates and drops. Safe to re-run — it no-ops once the source collection is gone.
+- 🔴 **It refuses to start without `ANALYTICS_HMAC_KEY`, and must be run with the SAME key the target environment's bot uses.** A wrong key produces 64 hex characters that look perfectly correct and correlate with nothing, and there is no way to detect that afterwards.
+- It runs the project's own raw-ID assertion **on the real data** before writing: every distinct source `discordId` is string-searched across the finished documents, and it exits non-zero rather than writing if any survives.
+
+## `eventStore.test.js` — the raw-ID guard (added 2026-08-16 13:24 EDT, v3.35.0-pre)
+
+23 pure-logic cases over `utils/eventStore.js`, wired into `npm test`. The one that matters serialises a finished event document and **string-searches** it for a raw Discord ID, because the realistic regression is a `detail` value that happens to carry one or a `customIdPrefix` capture grabbing a segment that embeds one — neither of which a field-by-field schema review would catch. It stubs `models/AnalyticsEvent` and `models/SearchTerm` through `require.cache`, so it needs no Mongo. ⚠️ **It was verified able to FAIL** (the scrub was disabled and the test went red) — a falsifier that cannot fail manufactures confidence.
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 

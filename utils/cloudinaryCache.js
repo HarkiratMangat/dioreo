@@ -15,7 +15,7 @@
 // docs before building this -- don't assume otherwise if you revisit this). Time-based cleanup is
 // therefore done by us: pruneExpiredThumbnails() below, run on a schedule (see bot/lifecycle.js's
 // handleBotReady), not something Cloudinary does on its own.
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 // The Cloudinary Node SDK auto-configures itself from process.env.CLOUDINARY_URL the moment it's
 // required -- no explicit cloudinary.config() call needed. This just fails loudly at boot if that

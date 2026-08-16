@@ -167,6 +167,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 11:28 EDT — The memory index was the problem, not the memories (v3.32.0-pre)
 - 2026-08-16 11:52 EDT — The instruction file that argued with itself (v3.33.0-pre)
 - 2026-08-16 12:30 EDT — interaction-context attribution ships (v3.34.0-pre)
+- 2026-08-16 13:24 EDT — stage 2: not doing the obvious thing, three times (v3.35.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2957,6 +2958,18 @@ Stage 1 of 4 of the observability layer (design: `docs/superpowers/specs/2026-08
 The `AsyncLocalStorage` propagation risk the design spec called out as the stage's go/no-go gate — "does it survive the discord.js event boundary" — is asserted directly in a new `scripts/requestContext.test.js`, not assumed: it reproduces the exact shape (an `EventEmitter` listener registered inside `runWithContext()`), proves context survives an `await` three levels deep, and proves two concurrent interactions never leak into each other's context.
 
 Verifying the stack-derived `component` field surfaced two real bugs in the frame-parsing regex, both from the same root cause: this repo's own path contains a space (`Claude Code`). A character-class exclusion for whitespace matched zero frames on every call in this checkout; the fix that allowed whitespace let the capture group's greedy match swallow the `"at functionName ("` prefix along with the path. Both were caught by a test asserting `component` actually resolves to a real repo file, not by code inspection — neither would have been caught by running the existing test suite alone, since nothing in it exercised a real in-repo call site until this stage added one.
+
+## 2026-08-16 13:24 EDT — stage 2: not doing the obvious thing, three times (v3.35.0-pre)
+
+Stage 1 made the logs say what the user was doing. Stage 2 is where that stops being a log line and becomes a record — and where, unusually for a change that *adds* data collection, a raw Discord ID leaves the database entirely.
+
+The interesting decisions were all about not doing the obvious thing.
+
+**45 edits versus one.** The design named seven `"interaction likely expired"` catches to instrument. Grepping found 45, across 18 files. Editing all 45 would have worked on the day and then decayed: the coverage is only as good as whoever writes the 46th catch remembering. Wrapping the interaction's own response methods once and reading Discord's rejection code instead covers every one of them — plus every expired path that has no such catch — and cannot decay. The same reasoning applies to `utils/cloudinaryClient.js`: six require lines, not eighteen call sites.
+
+**A test that was proven able to fail.** The raw-ID assertion is the one the whole privacy design rests on, so passing it was not evidence of anything until the scrub was disabled and the test was confirmed to go red. A falsifier that cannot fail manufactures confidence, which is worse than no test.
+
+**And the enforcement that was not enforcing.** The spec cited `docs-audit`'s `privacy-model-coverage` as the reason no discipline was required — CI would fail until the new model was disclosed. It would not have. The check finds a per-user model by looking for a raw-ID *field name*, and the whole point of this collection is that it does not have one. It would have reported green over a collection made entirely of per-user rows. That is the second time this exact check has had a vacuous pass, and its own comment already warns about the first. The fix is one word in a regex; the lesson is that "a check covers this" is a claim to verify, not to cite.
 
 # Part B — Lessons Ledger (thematic)
 
