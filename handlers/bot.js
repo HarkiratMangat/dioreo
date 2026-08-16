@@ -74,6 +74,22 @@ async function route(interaction) {
         return await renderAnalyticsPage(interaction, 'alerts', { alertsState: { page, view: 'main' } });
     }
 
+    // --- USAGE / TIMING PAGE EXPORTS (stage 4) ---
+    if (interaction.isButton() && customId === 'bot_usage_export') {
+        await interaction.deferReply({ flags: 64 });
+        const { buildUsageExport } = require('../commands/bot');
+        const text = await buildUsageExport();
+        const stamp = new Date().toISOString().slice(0, 10);
+        return interaction.editReply({ content: '📄 Usage export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-usage-${stamp}.txt` }] });
+    }
+    if (interaction.isButton() && customId === 'bot_timing_export') {
+        await interaction.deferReply({ flags: 64 });
+        const { buildTimingExport } = require('../commands/bot');
+        const text = await buildTimingExport();
+        const stamp = new Date().toISOString().slice(0, 10);
+        return interaction.editReply({ content: '📄 Timing export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-timing-${stamp}.txt` }] });
+    }
+
     // --- CHANGES PAGE (ported from the retired handlers/audit.js) ---
     if (interaction.isButton() && customId.startsWith('bot_changes_export~')) {
         await interaction.deferReply({ flags: 64 });

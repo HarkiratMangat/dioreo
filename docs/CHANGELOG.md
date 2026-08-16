@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.36.0 — 2026-08-16 15:47 EDT (#144) — the `/bot` command tree ships, and `manageadmins` moves out of `/manage`
+## Pre-Release v3.36.0 — 2026-08-16 15:47 EDT (#144 · `79fc55d`) — the `/bot` command tree ships, and `manageadmins` moves out of `/manage`
 
 Stage 3 of 4 of the observability layer: `docs/superpowers/specs/2026-08-16-observability-layer-design.md` §6.
 

@@ -63,28 +63,43 @@ function pageSelectRow(current) {
     };
 }
 
-// ── Health (partial — see docs/superpowers/specs/2026-08-16-observability-layer-design.md §6) ──
-// ⚠️ NO Cloud Logging / Cloud Monitoring reads here — that's the ADC wiring stage 4 owns. Everything
-// below is already free: getAlertSummary() (existing), live client.ws/process state (existing,
-// no API call), and BootRecord counts (stage 2's own collection). Historical CPU/RAM peaks arrive
-// with stage 4.
+// ── Health (see docs/superpowers/specs/2026-08-16-observability-layer-design.md §6) ──
+// Cloud Logging/Monitoring reads via ADC arrived in stage 4 (utils/cloudObservability.js), which
+// caches its own result for 60s and never throws — computeHealthStats() awaits it alongside the
+// existing free-to-compute facts (getAlertSummary(), live client.ws/process state, BootRecord counts).
 async function computeHealthStats(client) {
     const BootRecord = require('../models/BootRecord');
+    const { getHealthCloudStats } = require('../utils/cloudObservability');
     const now = Date.now();
     const since24h = new Date(now - 24 * 3600 * 1000);
     const since7d = new Date(now - 7 * 86400 * 1000);
-    const [summary, boots24h, boots7d, lastBoot] = await Promise.all([
+    const [summary, boots24h, boots7d, lastBoot, cloud] = await Promise.all([
         getAlertSummary(),
         BootRecord.countDocuments({ createdAt: { $gte: since24h } }),
         BootRecord.countDocuments({ createdAt: { $gte: since7d } }),
         BootRecord.findOne().sort({ createdAt: -1 }).lean(),
+        getHealthCloudStats(),
     ]);
     return {
-        summary, boots24h, boots7d, lastBoot,
+        summary, boots24h, boots7d, lastBoot, cloud,
         gatewayStatus: client.ws.status,
         uptimeSec: process.uptime(),
         rssMb: Math.round(process.memoryUsage().rss / 1024 / 1024),
     };
+}
+
+// The three-tier error model the design's §6 calls for: what the Discord alert channel was TOLD
+// (summary.last24h.error, from getAlertSummary() — already existed), what Cloud Logging says actually
+// HAPPENED (cloud.errors24h — new this stage), and the gap between them, which is neither wrong nor
+// redundant: sendAlert()'s 1/min throttle and some errors never reaching an alert threshold both
+// produce real ERROR-severity log lines that were never announced. That gap is the "noise" tier — not
+// noise in the sense of unimportant, but in the sense of "happened quietly, nobody was told."
+function errorTiers(summary, cloud) {
+    const announced = summary.last24h.error;
+    if (!cloud || !cloud.available) return { announced, logged: null, noise: null };
+    const logged = cloud.errors24h;
+    const noise = Math.max(0, logged - announced);
+    return { announced, logged, noise };
 }
 
 // A plain-language verdict line before any facts, matching the panel design rule ("Health opens
@@ -97,6 +112,20 @@ function healthVerdict({ summary }) {
     return `🟢 **All systems normal.** No warnings or errors in the last 24 hours.`;
 }
 
+function fmtPct(v) { return v == null ? '—' : `${v}%`; }
+
+// CPU/RAM peaks across the trimmed 24h/7d/30d window set (see cloudObservability.js's WINDOWS for why
+// it's three, not vmpeaks.sh's five). One compact code-fenced line per metric keeps this inside the
+// panel design's ~40-column phone-wrap budget instead of a wide table.
+function peaksLine(cloud) {
+    if (!cloud.available) return `-# Cloud Monitoring unavailable right now (${truncate(cloud.error || 'unknown error', 80)}) — retrying next open.`;
+    const { cpu, ram } = cloud.peaks;
+    return '```\n'
+        + `CPU peak   24h ${fmtPct(cpu['24h']).padStart(6)}   7d ${fmtPct(cpu['7d']).padStart(6)}   30d ${fmtPct(cpu['30d']).padStart(6)}\n`
+        + `RAM peak   24h ${fmtPct(ram['24h']).padStart(6)}   7d ${fmtPct(ram['7d']).padStart(6)}   30d ${fmtPct(ram['30d']).padStart(6)}\n`
+        + '```';
+}
+
 async function buildHealthBody(client) {
     const stats = await computeHealthStats(client);
     const s = stats.summary;
@@ -104,6 +133,10 @@ async function buildHealthBody(client) {
     const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
     const gatewayLabel = GATEWAY_STATUS_LABEL[stats.gatewayStatus] ?? `code ${stats.gatewayStatus}`;
     const lastBootTs = stats.lastBoot ? unix(stats.lastBoot.createdAt) : null;
+    const tiers = errorTiers(s, stats.cloud);
+    const tierLine = tiers.logged == null
+        ? `**Errors, last 24h:** ${tiers.announced} announced to Discord`
+        : `**Errors, last 24h:** ${tiers.logged} logged · ${tiers.announced} announced${tiers.noise ? ` · ${tiers.noise} logged but never announced (throttled or below threshold)` : ''}`;
     return [
         { type: 10, content: healthVerdict(stats) },
         { type: 14, spacing: 1 },
@@ -111,8 +144,9 @@ async function buildHealthBody(client) {
         { type: 10, content: `**Restarts:** ${stats.boots24h} (24h) · ${stats.boots7d} (7d)${lastBootTs ? ` — last boot <t:${lastBootTs}:R>` : ''}` },
         { type: 14, spacing: 1 },
         { type: 10, content: `**Alerts, last 24h:** ${line(s.last24h)}\n**Alerts, last 7d:** ${line(s.last7d)}\n**Last error:** ${lastErr}` },
+        { type: 10, content: tierLine },
         { type: 14, spacing: 1 },
-        { type: 10, content: `-# Historical CPU/RAM peaks and full Cloud Logging search arrive in the next stage.` },
+        { type: 10, content: `**VM resource peaks**\n${peaksLine(stats.cloud)}` },
     ];
 }
 
@@ -273,7 +307,33 @@ async function buildUsageBody() {
         { type: 10, content: `**Outcome:** ${outcomeLine}` },
         { type: 14, spacing: 1 },
         { type: 10, content: `-# Admin surfaces (/manage, /bot, /autobuild) are excluded from these figures.` },
+        { type: 14, spacing: 1 },
+        { type: 1, components: [{ type: 2, style: 1, label: '📄 Export', custom_id: 'bot_usage_export' }] },
     ];
+}
+
+function fmtUtc(d) { return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?'; }
+
+// Matches buildAlertExport()/buildChangeExport()'s downloadable-.txt shape — the fuller record beyond
+// what fits in the panel, same convention every export button in this command uses.
+async function buildUsageExport() {
+    const { current, previous, byCommand, byEntry, byOutcome } = await computeUsageStats();
+    const lines = [
+        `Dioreo — usage export`,
+        `Generated: ${fmtUtc(new Date())}`,
+        `Window: last 7 days · previous 7 days: ${previous.toLocaleString()} · current: ${current.toLocaleString()}`,
+        `(Admin surfaces excluded.)`,
+        '='.repeat(72), '',
+        'Top commands:',
+        ...(byCommand.length ? byCommand.map((c, i) => `  ${i + 1}. /${c._id || '?'} — ${c.c}`) : ['  (no data yet)']),
+        '',
+        'Entry point breakdown:',
+        ...(byEntry.length ? byEntry.map(e => `  ${e._id || '?'}: ${e.c}`) : ['  (no data yet)']),
+        '',
+        'Outcome breakdown:',
+        ...(byOutcome.length ? byOutcome.map(o => `  ${o._id || '?'}: ${o.c}`) : ['  (no data yet)']),
+    ];
+    return lines.join('\n');
 }
 
 // ── Timing page — p50/p95 via Mongo's $percentile (MongoDB 8.0+, confirmed on this cluster). ──
@@ -321,7 +381,30 @@ async function buildTimingBody() {
         { type: 10, content: `**Slowest commands (p95 duration, last 7d)**\n${cmdLines}` },
         { type: 14, spacing: 1 },
         { type: 10, content: `**Dependency time, last 7 days**\n${depLines}` },
+        { type: 14, spacing: 1 },
+        { type: 1, components: [{ type: 2, style: 1, label: '📄 Export', custom_id: 'bot_timing_export' }] },
     ];
+}
+
+async function buildTimingExport() {
+    const { overall, byCommand, byDep } = await computeTimingStats();
+    const ackP = overall?.ackP || [null, null];
+    const durP = overall?.durP || [null, null];
+    const lines = [
+        `Dioreo — timing export`,
+        `Generated: ${fmtUtc(new Date())}`,
+        `Window: last 7 days`,
+        '='.repeat(72), '',
+        `Ack time p50/p95: ${fmtMs(ackP[0])} / ${fmtMs(ackP[1])} (Discord's 3,000ms deadline)`,
+        `Total duration p50/p95: ${fmtMs(durP[0])} / ${fmtMs(durP[1])}`,
+        '',
+        'Slowest commands (p95 duration):',
+        ...(byCommand.length ? byCommand.map(c => `  /${c._id || '?'} — p95 ${fmtMs(c.p?.[0])} (${c.n} samples)`) : ['  (no data yet)']),
+        '',
+        'Dependency time totals:',
+        ...(byDep.length ? byDep.map(d => `  ${d._id} — ${d.calls} calls, ${Math.round(d.totalMs).toLocaleString()}ms total`) : ['  (no external dependency calls recorded yet)']),
+    ];
+    return lines.join('\n');
 }
 
 // Shared render entry point — used by execute() (slash) AND handlers/bot.js's re-render branches,
@@ -425,6 +508,8 @@ async function buildAccessPanel(client) {
 module.exports = {
     buildAnalyticsPanel,
     buildAccessPanel,
+    buildUsageExport,
+    buildTimingExport,
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,

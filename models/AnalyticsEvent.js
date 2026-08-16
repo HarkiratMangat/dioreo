@@ -33,9 +33,11 @@ const AnalyticsEventSchema = new mongoose.Schema({
     installType: { type: String },       // 'guild' | 'user' -- adoption tracking, from
                                          // interaction.authorizingIntegrationOwners (verified present
                                          // in discord.js 14.27.0; null when Discord omits it)
-    isAdmin: { type: Boolean, default: false }, // /manage, /bot, /autobuild, /alerts, /audit --
-                                                // excluded from product stats by default so a
-                                                // self-observing system doesn't distort its own numbers
+    isAdmin: { type: Boolean, default: false }, // /manage, /bot, /autobuild -- excluded from product
+                                                // stats by default so a self-observing system doesn't
+                                                // distort its own numbers. (/alerts and /audit retired
+                                                // as command names in stage 3; their panels are now
+                                                // /bot analytics pages, still under the 'bot' token.)
     command: { type: String },
     subcommand: { type: String },
     entry: { type: String },             // 'slash' | 'button' | 'select' | 'autocomplete' | 'modal' | 'synthetic' | 'background'
