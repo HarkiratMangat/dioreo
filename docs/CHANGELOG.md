@@ -75,7 +75,13 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.37.0 — 2026-08-16 16:40 EDT (#145) — the observability layer closes: Health, roll-ups, and a reporting CLI
+## Pre-Release v3.38.0 — 2026-08-16 18:29 EDT (#146) — draw thumbnails skip a repeat Cloudinary round trip
+
+`utils/cloudinaryCache.js`'s `getCachedUrl()` (also used by `getCachedUrlFuzzy()`'s exact-slug check) had a bare `cloudinary.api.resource()` call with no in-memory memo — 138-470ms paid on every single lookup even though the result never changes once cached, the same bug already fixed in `nameplateWebpCache.js`/`decorationWebpCache.js`. Closes the deferred item at `docs/db-deferred-list.md` (filed 2026-08-10, now in `docs/archive/resolved-list.md`).
+
+Adds the identical `resolvedCache` Map pattern: populated on a cache-read hit and right after a fresh upload (`cacheThumbnail()`), invalidated on `pruneExpiredThumbnails()`'s own deletes — one addition the original deferred item didn't call out, so a pruned asset can't linger as a stale in-memory URL. Same restart-required caveat as the WebP caches (an out-of-band Cloudinary-dashboard edit is invisible to an already-running process) now documented in `.claude/rules/loadout-images-and-metadata.md`.
+
+## Pre-Release v3.37.0 — 2026-08-16 16:40 EDT (#145 · `641a4bf`) — the observability layer closes: Health, roll-ups, and a reporting CLI
 
 Stage 4 of 4 of the observability layer: `docs/superpowers/specs/2026-08-16-observability-layer-design.md` §6 and §"Roll-ups". Closes ROADMAP line 48 (richer in-bot logging), line 132 (usage analytics), and line 49 (the long-deferred admin `/status` command, which `/bot analytics`'s Health page now fulfils).
 
