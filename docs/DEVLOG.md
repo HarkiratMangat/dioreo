@@ -162,6 +162,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 17:22 EDT — Turning three of my own misses into gates, and finding nine that were already blind (v3.27.0-pre)
 - 2026-08-15 19:16 EDT — `/draw calculator` ships, two build-plan bugs caught, three more from a requested adversarial pass (v3.28.0-pre)
 - 2026-08-15 21:42 EDT — `/gunsmiths` replaces nine commands, a spike settles the registry question in five minutes, and a merge finds two comments the deletion made false (v3.29.0-pre)
+- 2026-08-15 23:47 EDT — A cache key renamed to Discord's own naming, a collision I claimed and could not prove, and a duplicate line only the real render showed (v3.30.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2867,6 +2868,26 @@ Followed the plan's eight tasks in strict ADD-before-DELETE order — `/gunsmith
 - **A registry-mutation spike belongs at the START of the riskiest task, sized to fail fast.** Five minutes settled a question that would otherwise have been discovered mid-way through wiring the actual command, with real code already built on the wrong assumption.
 - **Deleting code can make an UNTOUCHED comment false.** The two stale comments this session found were not in the deleted block — they were nearby, describing it as an *example*, and neither `node --check` nor a passing test suite can catch prose whose only fault is describing something that no longer exists. Only re-reading the surrounding file with the deletion in mind caught them.
 - **A plan that reconciles three overlapping backlog items at design time, rather than building the first one reached, avoids building the same feature three times under three names.** `docs/ROADMAP.md`'s "optional paginated multi-weapon view," the standalone `/meta` idea, and the `/loadout` consolidation item had all separately proposed the same scoped browser; none of them would have discovered that by being built in isolation.
+
+## 2026-08-15 23:47 EDT — A cache key renamed to Discord's own naming, a collision I claimed and could not prove, and a duplicate line only the real render showed (v3.30.0-pre)
+
+Harkirat specified a new layout for the nameplate/decoration cache-channel messages to the character, and the work split cleanly into a part with one right answer and a part that did not.
+
+The layout half was unambiguous: description promoted to a blockquote beside the image, collection/group/variant folded into the headings, dimensions bolded onto the `Rendered` line, SKU pulled onto its own line because tacked on the end of the Cloudinary line it read as part of the url. I built it, the unit tests passed, and then I rendered it against the real Underworld group — which is when the description appeared **twice** on every single-variant design. The tests had asserted the header *contained* the description; none had asserted it appeared *once*. A passing suite and a correct render are different claims, and only one of them was actually being checked.
+
+**The second half I got materially wrong in the other direction, and Harkirat caught it.** He asked for shorter Cloudinary ids: `<group-name>-<variant-label>`. I raised a collision — two variants of one design would key identically — and recommended appending the SKU. He pushed back: *"How does it collide? One literally reads eternal damnation blue while the other reads eternal damnation red, it's literally different names?"* So I measured instead of arguing, and the honest answer was split. On the path I had in my head — deriving the name from the `asset` field — the collision is real: `nameplateNameFromAsset` returns **null** for all three real catalog assets, because their last segment is the SKU and the hex guard rejects it. But he was reasoning about `group_name` + `variant_label`, straight off the catalog, where the names genuinely do differ. He was right about the thing he was actually proposing; I had been answering about a derivation nobody asked for. His next message made it explicit — *"confused why we're deriving the cloudinary url directly using the asset field"* — and that was the correction.
+
+**What I verified before touching the key, because the public id IS the cache key:** every id, over the whole 925-SKU catalog, **globally across collections** since the folder is flat — 262 nameplates → 262 distinct ids, 663 decorations → 663 distinct ids, 0 collisions. A per-collection check would have passed while missing exactly the case that matters, two collections owning a same-named design.
+
+**The subtle part was not the naming, it was who computes it.** Discord's profile payload carries no `group_name`/`variant_label`, so a live user equip could not derive the catalogued id at all. Left alone, every live equip would have computed a `legacy-` id, missed the bulk-cached render entirely and re-rendered from scratch — silently defeating the whole point of pre-caching, and breaking the `render_source: 'fallback'` heal path, which finds nothing when the two paths disagree. The fix is a memoized catalog lookup by SKU in the live path, and the construction now lives in one shared module so the two can never drift.
+
+**And a migration step that nothing would have reported.** Renaming the id orphans every stored render — but the Mongo rows still said `cacheStatus: 'cached'`, so the bulk script would have skipped those designs *forever*, against ids nothing could find. Rows do not self-heal. Reset in the same change.
+
+Harkirat then reviewed the rendered result in Discord and sent four more tweaks, including dropping the base-SKU line in favour of simply ordering the base variant first. That ordering was already true by accident of catalog order in every group I checked; I sorted it explicitly in `catalogGrouping.js` rather than the message builder, so render order, the header's label list and the container's accent colour cannot disagree about which variant is primary.
+
+### Lesson
+A passing unit test and a correct render are different claims. The duplicate line survived a green suite and died the moment real data went through the real builder — and the assertion that would have caught it ("appears exactly once") was one line I had not thought to write. Separately: when someone disputes a risk I raised, measuring beats restating. The measurement here did not simply vindicate either of us — it showed the collision was real on a derivation nobody had proposed, which is a more useful answer than winning would have been.
+
 
 # Part B — Lessons Ledger (thematic)
 
