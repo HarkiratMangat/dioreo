@@ -217,14 +217,18 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
         generationConfig: { responseMimeType: 'application/json' }
     };
 
-    const res = await fetch(endpoint, {
+    // Dependency timing (2026-08-16, observability stage 2) -- extractLoadoutFromImage() is the one
+    // and only runtime path to Vertex, so this single wrap is the whole integration. Tokens are added
+    // below, once usageMetadata is actually in hand.
+    const { timeDependency, noteDep } = require('./eventStore');
+    const res = await timeDependency('vertex', () => fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify(requestBody)
-    });
+    }));
 
     if (!res.ok) {
         const errText = await res.text().catch(() => '');
@@ -235,6 +239,10 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
     // Logged as soon as we have a response, regardless of what happens to the text below -- tokens are
     // already spent the moment Vertex AI replies, whether or not the JSON that follows parses cleanly.
     logVisionCallCost(taskName, gcpLocation, gcpModel, data?.usageMetadata);
+    // Same reasoning as logVisionCallCost's own placement: tokens are spent the moment Vertex replies,
+    // whether or not the JSON below parses. Reported as a zero-duration second call so the token total
+    // lands on the dep row the timing wrapper already created, without double-counting the latency.
+    if (data?.usageMetadata?.totalTokenCount) noteDep('vertex', 0, true, { tokens: data.usageMetadata.totalTokenCount });
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Gemini response had no extractable text content');
 

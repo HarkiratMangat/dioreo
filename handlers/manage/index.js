@@ -85,6 +85,7 @@ async function routeManage(interaction) {
             const { resolveAction, DENIAL_MESSAGE } = require('../../utils/manageActions');
             const resolved = await resolveAction(group, action, interaction.user.id);
             if (!resolved.ok) {
+                require('../../utils/eventStore').markOutcome('rejected_admin');
                 return await interaction.reply({ content: DENIAL_MESSAGE[resolved.reason], ephemeral: true });
             }
             // Every action decides its own response mode (see the registry's `kind` note) -- nothing

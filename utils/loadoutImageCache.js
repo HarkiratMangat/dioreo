@@ -17,7 +17,7 @@
 // SECURITY: same rule as utils/cloudinaryCache.js and utils/patchNotesCache.js -- never log a raw
 // Cloudinary error object. The Admin/Upload API's rejected-promise can carry the account's live API
 // key+secret in `request_options.auth`; only ever read `.message`/`.error.message` off a caught error.
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
 

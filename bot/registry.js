@@ -128,6 +128,7 @@ async function registerApplicationCommands(client, commands) {
         // registration must never be frozen at require() time, and it differs between the dev and
         // prod applications for the identical command name.
         client.commandIds = new Map(registered.map(c => [c.name, c.id]));
+        client.registeredCommandCount = registered.length; // read by the boot record in bot/lifecycle.js
     } catch (error) {
         console.error('--- DISCORD SYSTEM REGISTRATION FAULT LOG ---');
         if (error.rawError && error.rawError.errors) {

@@ -21,7 +21,7 @@
 // getting a fresh module instance and silently short-circuiting.
 
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
-const { logRenderTiming } = require('../utils/renderTiming'); // /colors panel perf instrumentation, see models/RenderTiming.js
+const { mergeDetail } = require('../utils/eventStore'); // panel detail folded into THIS interaction's analytics event -- replaced the retired RenderTiming 2026-08-16
 
 // "Refresh Colors" cooldown (2026-07-14, Harkirat's request) -- a SEPARATE, longer cooldown from the
 // generic 600ms anti-spam guard in handlers/router.js, specific to the colors_refresh_ button, since that
@@ -127,9 +127,13 @@ async function handleColorsButton(interaction) {
         });
         const { sendV2Payload } = require('../utils/sendV2Payload');
         await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
-        // Instrumentation only, see models/RenderTiming.js -- not awaited, never allowed to affect
-        // the actual response. `cold: true` unconditionally: colors_view always forceRefresh:true.
-        logRenderTiming({ area: 'colors_panel', action: 'view', source: 'avatar', variant, cold: true, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+        // Instrumentation only -- these fields ride along on THIS interaction's analytics event via
+        // mergeDetail() (utils/eventStore.js). Nothing is written here and nothing is awaited, so it
+        // can never affect the response. Replaced the retired RenderTiming collection 2026-08-16;
+        // `durationMs`, the user and the guild all come from the event itself now, and the user is
+        // a keyed HASH there rather than the raw discordId this used to store.
+        // `cold: true` unconditionally: colors_view always forceRefresh:true.
+        mergeDetail({ area: 'colors_panel', action: 'view', source: 'avatar', variant, cold: true });
         return true;
     }
 
@@ -191,10 +195,10 @@ async function handleColorsButton(interaction) {
         });
         const { sendV2Payload } = require('../utils/sendV2Payload');
         await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
-        // Instrumentation only, see models/RenderTiming.js. `cold` is unknown here (getCachedPalette
+        // Instrumentation only (see the mergeDetail note above). `cold` is unknown here (getCachedPalette
         // decides cache-hit-vs-extract internally, not surfaced to this caller) -- left null rather
         // than guessed; a switch to a genuinely new variant is usually a real extraction in practice.
-        logRenderTiming({ area: 'colors_panel', action: 'variant', source, subpage, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+        mergeDetail({ area: 'colors_panel', action: 'variant', source, subpage, variant, cold: null });
         return true;
     }
 
@@ -245,9 +249,9 @@ async function handleColorsButton(interaction) {
         });
         const { sendV2Payload } = require('../utils/sendV2Payload');
         await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
-        // Instrumentation only, see models/RenderTiming.js -- this is the handler Harkirat flagged
+        // Instrumentation only (see the mergeDetail note above) -- this is the handler Harkirat flagged
         // as "felt slightly slower" switching between e.g. Nameplate and Deco (2026-08-11 22:03 EDT).
-        logRenderTiming({ area: 'colors_panel', action: 'page', source, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+        mergeDetail({ area: 'colors_panel', action: 'page', source, variant, cold: null });
         return true;
     }
 
@@ -305,10 +309,10 @@ async function handleColorsButton(interaction) {
         });
         const { sendV2Payload } = require('../utils/sendV2Payload');
         await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
-        // Instrumentation only, see models/RenderTiming.js. This should be the FASTEST of the four
+        // Instrumentation only (see the mergeDetail note above). This should be the FASTEST of the four
         // panel actions (same source, cache hit in the normal case) -- a useful baseline to compare
         // colors_page_'s numbers against when Session C looks at this data.
-        logRenderTiming({ area: 'colors_panel', action: 'subpage', source, subpage, variant, cold: null, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+        mergeDetail({ area: 'colors_panel', action: 'subpage', source, subpage, variant, cold: null });
         return true;
     }
 
@@ -420,10 +424,10 @@ async function handleColorsButton(interaction) {
         });
         const { sendV2Payload } = require('../utils/sendV2Payload');
         await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
-        // Instrumentation only, see models/RenderTiming.js. `cold: true` -- this handler always
+        // Instrumentation only (see the mergeDetail note above). `cold: true` -- this handler always
         // does two real getPalettePanelData calls (before/after) plus a forced re-extraction, so
         // it's expected to be the slowest of the four panel actions.
-        logRenderTiming({ area: 'colors_panel', action: 'refresh', source, subpage, variant, cold: true, durationMs: Date.now() - panelStartedAt, discordId: targetUserId, guildId: interaction.guildId });
+        mergeDetail({ area: 'colors_panel', action: 'refresh', source, subpage, variant, cold: true });
 
         const { buildRefreshNotice } = require('../utils/colorPaletteView');
         // Other sources whose image had genuinely changed and were refreshed in passing. Reported

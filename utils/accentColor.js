@@ -65,7 +65,10 @@ async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
 //     whenever the sku is unavailable rather than falling back to the old route.
 //     Unusable by getDominantColor's still-image pixel sampling (that's still.png's job).
 async function fetchProfileExtras(client, userId) {
-    const raw = await client.rest.get(Routes.user(userId));
+    // Timed separately from sendV2Payload's writes: this is the read that dominates a cold /colors
+    // render, so collapsing it into one 'discord_rest' bucket would hide the thing worth seeing.
+    const { timeDependency } = require('./eventStore');
+    const raw = await timeDependency('discord_user_fetch', () => client.rest.get(Routes.user(userId)));
     const colors = raw.display_name_styles?.colors;
     const decorationAsset = raw.avatar_decoration_data?.asset || null;
     // sku_id (2026-08-10 13:00 EDT) -- Discord's own official identifier for this specific decoration

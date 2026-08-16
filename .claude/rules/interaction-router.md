@@ -121,5 +121,18 @@ Also note: `ButtonInteraction`/`StringSelectMenuInteraction` have no `.options` 
 
 Non-interaction paths (`bot/lifecycle.js`'s heartbeat, boot, gateway/shard diagnostics, Cloudinary cleanup) need no code change to get attribution — they simply never call `runWithContext()`, so `getContext()` correctly returns `undefined` there and `logger.js` falls back to a `context: 'lifecycle'` tag automatically.
 
+## The event plane — one analytics document per interaction (added 2026-08-16 13:24 EDT, observability layer stage 2, v3.35.0-pre)
+`handleInteraction` now also writes ONE `AnalyticsEvent` per interaction, from a **`finally`** wrapped around `handleInteractionInner` — so an interaction that threw still records, and those are the events most worth having. The finally sits at the `handleInteraction` level rather than inside `handleInteractionInner`'s own try, because that function returns from ~20 different places and this is the only spot that is genuinely unmissable.
+
+**The context object gained a mutable half** (`startedAt` · `outcome` · `ackMs` · `deps` · `detail`). It is the same object stage 1 created and `getContext()` still returns it by reference, which is the whole mechanism: a guard eleven frames deep calls `markOutcome('rejected_admin')` and the router's finally reads it, with no return value threaded through every caller in between. `utils/logger.js` deliberately reads only the four stage-1 fields — a log line wants attribution, not a timing accumulator.
+
+**Outcomes come from the guards that already exist** — they report, they were not rewritten. In this file: the 600ms anti-spam cooldown (`swallowed_by_cooldown`, which previously left no trace anywhere) and `/manage`'s prefix admin lock (`rejected_admin`). Elsewhere: `handlers/manage/index.js`'s `resolveAction` denial, `commands/admin.js`'s server-admin gate, `handlers/share.js`'s visibility-policy block (`blocked_by_policy`), and the outer catch (`error`, which also forces an immediate buffer flush).
+
+🔴 **DO NOT hand-instrument the `"interaction likely expired"` catches — there are 45 of them across 18 files and they are covered centrally.** `instrumentAck(interaction)` (called right after `attachGuildPolicy`, deliberately after so it wraps the ephemeral clamp rather than being overwritten by it) wraps the interaction's own `reply`/`deferReply`/`deferUpdate`/`update`/`showModal`/`editReply`/`followUp` and observes the **rejection code**: 10062 or 40060 sets `outcome: 'expired'`. That covers every expired path in the bot including the ones with no such catch, and unlike 45 edits it cannot decay when somebody writes the 46th. It also stamps `ackMs` on the first response, which is the 3-second-deadline measurement.
+
+⚠️ **Autocomplete does NOT emit a per-interaction event** — Discord fires one per keystroke. `instrumentAutocomplete(interaction)` at the top of the autocomplete route opens a debounced session keyed on (user, command, field) that flushes ONE row when typing stops. If you add a new dispatch branch here, add `markHandler()` as stage 1 requires; the event itself needs nothing.
+
+Everything else — the buffer, the flush rules, the dependency wrappers, the search-term aggregate — lives in `utils/eventStore.js` and is documented in its header.
+
 ## Command routing — `client.commands` keys & `NAV_COMMAND_ALIASES`
 **Important:** `client.commands` is keyed by the exact `SlashCommandBuilder.setName()` value. Several nav buttons use shorter custom_id suffixes than their actual command name (e.g. button `nav_prices` → command `draw`). `handlers/navigation.js` has a `NAV_COMMAND_ALIASES` map bridging these — check it before assuming `client.commands.get(strippedCustomId)` will just work.

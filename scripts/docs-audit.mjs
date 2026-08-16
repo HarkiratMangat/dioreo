@@ -2092,8 +2092,15 @@ check(
       // EXAMINING it. It did not fail; it reported a VACUOUS PASS, which reads as green. The actor
       // names in the second group are the ordinary way a schema records "who did this", so a model
       // carrying one is holding a user ID whatever the key of the collection is.
+      // ⚠️ WIDENED AGAIN 2026-08-16, for the SECOND vacuous-pass class this check has had. The list
+      // above is every way a schema spells a RAW user id -- and models/AnalyticsEvent.js stores a
+      // PSEUDONYM (`userHash`, an HMAC of the Discord id) instead, which matched nothing, so a model
+      // built entirely out of per-user rows would have sailed past this check reporting green. A
+      // keyed hash is still personal data under GDPR Recital 26 and still has to be disclosed. The
+      // observability design named this check as the ENFORCEMENT for its privacy disclosure; without
+      // this line that enforcement did not exist.
       const isPerUser = Object.keys(schema.paths)
-        .some((f) => /^(discordId|userId|user_id|updatedBy|createdBy|authorId|ownerId|actorId)$/i.test(f.split(".")[0]));
+        .some((f) => /^(discordId|userId|user_id|userHash|updatedBy|createdBy|authorId|ownerId|actorId)$/i.test(f.split(".")[0]));
       if (!isPerUser) continue;
       examined++;
       const name = file.replace(/\.js$/, "");

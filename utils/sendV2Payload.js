@@ -122,10 +122,17 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
     // here -- discord.js's REST manager switches to multipart the moment `options.files` is present,
     // regardless of which route it's posted to.
     if (!interaction.deferred && !interaction.replied) {
-        const response = await interaction.client.rest.post(
+        // Dependency timing (2026-08-16, observability stage 2). This module is imported by 30 runtime
+        // modules, so wrapping the two REST calls HERE covers the dominant Discord write path in one
+        // edit rather than at every panel render -- the design's §5 rule of wrapping the client, not
+        // the call sites. noteAck() because this raw REST path bypasses interaction.reply() entirely,
+        // so it is the only place that knows this interaction has now been answered.
+        const { timeDependency, noteAck, noteResponseFailure } = require('./eventStore');
+        noteAck();
+        const response = await timeDependency('discord_rest', () => interaction.client.rest.post(
             Routes.interactionCallback(interaction.id, interaction.token),
             { ...options, body: { type: 7, data: body } }
-        );
+        )).catch((err) => { noteResponseFailure(err); throw err; });
         // This path is only ever reached responding to an existing component, so `knownMessageId`
         // is always set here -- `response` itself is Discord's bare 204 (no body) unless a caller
         // opts into `with_response`, which none here do.
@@ -133,10 +140,11 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         return response;
     }
 
-    const response = await interaction.client.rest.patch(
+    const { timeDependency, noteResponseFailure } = require('./eventStore');
+    const response = await timeDependency('discord_rest', () => interaction.client.rest.patch(
         Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
         options
-    );
+    )).catch((err) => { noteResponseFailure(err); throw err; });
     maybeSchedule(knownMessageId || response?.id);
     return response;
 }

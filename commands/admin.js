@@ -292,6 +292,7 @@ async function handleComponent(interaction) {
         return interaction.reply({ content: `${emojis.serverSettings} **Server Admin only works inside a server.**`, ephemeral: true });
     }
     if (!isServerAdmin(interaction)) {
+        require('../utils/eventStore').markOutcome('rejected_admin');
         return interaction.reply({
             content: '🔒 **Server admins only.** These controls change how Dioreo behaves for everyone here, so they need **Manage Server**.',
             ephemeral: true,
