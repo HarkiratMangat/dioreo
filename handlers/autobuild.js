@@ -57,8 +57,8 @@ async function route(interaction) {
             // and the correct "Build N of M" footer render, opening ON the just-created build. The PoC
             // passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so
             // buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a
-            // weapon that has several builds. Same weaponKey scope the normal /all + /<category> route
-            // already uses. openIndex falls back to 0 if the doc somehow isn't in its own result set.
+            // weapon that has several builds. Same weaponKey scope /gunsmiths search's own lookup
+            // uses. openIndex falls back to 0 if the doc somehow isn't in its own result set.
             const builds = await Loadout.find({ weaponKey: doc.weaponKey, mode: 'MP' }).lean();
             const openIndex = Math.max(0, builds.findIndex(b => String(b._id) === String(doc._id)));
             const categoryBuilds = await Loadout.find({ category: doc.category, mode: 'MP' }).lean();

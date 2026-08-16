@@ -130,7 +130,7 @@ Delete the `/all` builder and the eight-command generation loop. `buildCategoryC
 
 The `data` builder is constructed synchronously at require time in `commands/gunsmiths.js` (it must be, for `client.commands`), and the choices are injected into that same object before the `PUT`. The Collection and the registration array hold the **same reference**, so mutation keeps both consistent. The forced `SECONDARIES` merge is kept — it now has real data (6 weapons), so it is currently redundant, but it costs nothing and preserves the original "ready the moment he adds one" intent.
 
-> ⚠️ **Pre-flight assertion required.** Mutating a nested subcommand option on an already-constructed `SlashCommandBuilder` must be proven before it is trusted — see Verification. If `setChoices` on the nested builder proves awkward, the fallback is to build `data` inside an async factory that `registry.js` awaits, at the cost of `commands/gunsmiths.js` no longer being a plain synchronous module.
+Proven 2026-08-15 20:56 EDT: mutating a nested subcommand option's choices on an already-constructed `SlashCommandBuilder` via `setChoices()` works, and `toJSON()` still reports top-level option types as `[1]` (subcommand-only).
 
 ### `utils/loadoutLookup.js` — new, and the real de-duplication
 

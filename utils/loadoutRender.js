@@ -6,12 +6,11 @@ const emojis = require('./emojiMap');
 // MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated
 // mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the
 // exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus
-// SECONDARIES which has no loadouts yet — see bot/registry.js's category-registration merge for why the
-// /secondaries command still exists ahead of any data). `/all` looks a weapon's OWN category up in
-// here at render time (it isn't locked to one category the way /ar or /smg are), so its accent
-// color changes per weapon instead of using one fixed color. `/<category>` commands hit the exact
-// same lookup — they just always resolve to the same entry since every result they query shares
-// one category.
+// SECONDARIES which has no loadouts yet — see bot/registry.js's applyGunsmithsScopeChoices() for why the
+// SECONDARIES scope choice still exists ahead of any data). `/gunsmiths search` looks a weapon's
+// OWN category up here at render time, so its accent color changes per weapon rather than using one
+// fixed color. `/gunsmiths list scope:<category>` hits the exact same lookup via the same
+// utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
 const MP_CATEGORY_ACCENT = {
     AR: 16726876,          // FF3B5C — Crimson Pop
     SMG: 16765503,         // FFD23F — Electric Gold
@@ -266,7 +265,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
     };
 }
 
-// Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
+// Shared Components V2 card builder for /dmz and /gunsmiths (search + list's scoped browse) --
 // same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs
 // 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
 //

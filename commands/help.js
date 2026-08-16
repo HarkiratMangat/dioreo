@@ -8,16 +8,15 @@
 // command DIRECTORY grouped by category, then a category select menu. Picking a category (or using
 // the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/
 // Examples breakdown per command, options split under whichever command actually has them (never
-// merged across commands with different option sets -- Gunsmiths is the one deliberate exception,
-// since /all, /dmz, and every per-category command share the identical 3 options).
+// merged across commands with different option sets -- `/gunsmiths search` and `/dmz` share one
+// options block since their shapes are identical (weapon/build/visibility); `/gunsmiths list` gets
+// its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight
+// per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-
+// consolidation-design.md.
 //
-// Categories: Gunsmiths (/all, /dmz, and every live per-weapon-category command) / Draws / Seasonal
+// Categories: Gunsmiths (/gunsmiths search, /gunsmiths list, /dmz) / Draws / Seasonal
 // Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin
-// (whitelist-gated, hidden entirely from everyone else). Gunsmiths' per-category command list
-// (`/ar`, `/lmg`, `/sniper`, …)
-// is queried live from Mongo the same way bot/registry.js's buildCategoryCommands() generates those commands --
-// hardcoding it would silently go stale the moment a category is added/removed (see the "no
-// duplicated state in prose" lesson + docs/superpowers/specs/2026-08-08-help-command-design.md).
+// (whitelist-gated, hidden entirely from everyone else).
 //
 // The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this
 // one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility:
@@ -67,7 +66,7 @@ const COMMAND_ALIASES = {
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/colors': ['color', 'accent', 'palette', 'avatar'],
     '/timestamp': ['time', 'clock', 'date'],
-    '/all': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds'],
+    '/gunsmiths': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
     '/dmz': ['dmzloadout', 'dmzloadouts'],
     '/draws': ['draw', 'luckydraw', 'luckydraws'],
     '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
@@ -112,10 +111,8 @@ const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 // anything at all.
 const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 
-// `staticCommands` is used for `/help cmd:` matching and autocomplete; Gunsmiths' dynamic
-// per-category commands are resolved separately (see getLiveGunsmithCommandNames below) since they
-// can't be hardcoded here. `dropdownDescription`s are written to be genuinely useful at a glance,
-// not filler -- what you'll actually find in there.
+// `staticCommands` is used for `/help cmd:` matching and autocomplete. `dropdownDescription`s are
+// written to be genuinely useful at a glance, not filler -- what you'll actually find in there.
 // ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately
 // excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated
 // on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather
@@ -140,7 +137,7 @@ const categoryEmojiKey = (c, perms) => (perms.serverAdmin && c.emojiKeyServerAdm
 const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescriptionServerAdmin) || c.dropdownDescription;
 
 const CATEGORY_DEFS = [
-    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts', staticCommands: [cmd('/all'), cmd('/dmz')] },
+    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts', staticCommands: [cmd('/gunsmiths'), cmd('/dmz')] },
     { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices'), cmd('/draw calculator')] },
     { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: [cmd('/calendar'), cmd('/patch notes'), cmd('/season end')] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: [cmd('/colors'), cmd('/timestamp')] },
@@ -188,24 +185,12 @@ const DETAIL_HEADERS = {
 
 const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
-// Queried the SAME way bot/registry.js's buildCategoryCommands() derives the live /ar, /lmg, /sniper, etc.
-// commands, so this can never drift stale the way a hardcoded copy would the moment a category is
-// added, renamed, or removed. Returns bare lowercase names (no leading slash), sorted.
-async function getLiveGunsmithCommandNames() {
-    const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
-    const mpCategories = Array.from(new Set([...dbCategories, 'SECONDARIES']));
-    return mpCategories.map(cat => cat.toLowerCase().replace(/\s+/g, '')).sort();
-}
-
 async function resolveCommandToCategory(cmdName, perms = {}) {
     // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to
     // nothing and lands on the directory rather than opening a page they were never offered.
     for (const cat of visibleCategories(perms)) {
         if (visibleCommands(cat, perms).some(c => c.name === cmdName)) return cat.key;
     }
-    const liveNames = await getLiveGunsmithCommandNames();
-    if (liveNames.some(n => `/${n}` === cmdName)) return 'gunsmiths';
-
     // Alias fallback -- only reached once no real command/category name matched, so "server" only
     // ever means /admin when nothing is literally named "server". Scoped by the same `perms` as
     // above, so an alias can never surface a page its own command wouldn't have.
@@ -244,19 +229,17 @@ async function suggestHelpCommandNames(query, perms = {}) {
 // of the three places the Server Admin category has to be filtered -- suggesting `/admin` to
 // someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
-    const liveNames = (await getLiveGunsmithCommandNames()).map(n => `/${n}`);
-    const staticNames = visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
-    return [...staticNames, ...liveNames];
+    return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
 
-// Gunsmiths keeps ONE shared Options block (unlike every other category below) because /all, every
-// per-category command, and /dmz genuinely share the identical 3 options -- splitting it three ways
-// would just repeat the same lines three times, not clarify anything.
-function buildGunsmithsBody(liveNames, client) {
-    const categoryLine = liveNames.map(n => mentionCommand(client, `/${n}`)).join(' · ');
-    return `### ${mentionCommand(client, '/all')}\nSearch across all available MP loadouts\n### ${categoryLine}\nSearch for MP loadouts in a specific category\n### ${mentionCommand(client, '/dmz')}\nSearch for DMZ specific loadouts\n\n`
-        + `-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/all** weapon:\`AK117\`\n-# 🔸 **/smg** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\``;
+// `/gunsmiths search` and `/dmz` share one Options block -- their shapes are genuinely identical
+// (weapon/build/visibility). `/gunsmiths list` gets its own -- a `scope` choice replaces weapon+build,
+// so folding it into the shared block would describe an option neither /search nor /dmz has.
+function buildGunsmithsBody(perms, client) {
+    return `### ${mentionCommand(client, '/gunsmiths search')}\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/gunsmiths list')}\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 \`<scope>\` Pick what to browse\n${VISIBILITY_BULLET}\n`
+        + `### ${mentionCommand(client, '/dmz')}\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:\`AK117\`\n-# 🔸 **/gunsmiths search** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths list** scope:\`SMG\`\n-# 🔸 **/gunsmiths list** scope:\`Meta — MP\`\n-# 🔸 **/dmz** weapon:\`Fennec\``;
 }
 
 function buildDrawsBody(perms, client) {
@@ -369,6 +352,7 @@ function buildBotAdminBody(perms, client) {
 }
 
 const BODY_BUILDERS = {
+    gunsmiths: buildGunsmithsBody,
     draws: buildDrawsBody,
     seasonal: buildSeasonalBody,
     utilities: buildUtilitiesBody,
@@ -408,9 +392,6 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
     if (requested && !permitted(requested, perms)) selectedKey = null;
 
     if (!selectedKey) {
-        const liveNames = await getLiveGunsmithCommandNames();
-        const gunsmithsLine = ['all', ...liveNames, 'dmz'].map(n => mentionCommand(client, `/${n}`)).join(' · ');
-
         components.push({
             type: 9,
             components: [{
@@ -440,14 +421,9 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             // scripts/guildPolicyEnforcement.test.js asserts every category reaches this list.
             content: visibleCategories(perms)
                 .map(c => {
-                    // Gunsmiths is the one category whose commands are not a fixed list: the
-                    // per-weapon commands are generated at boot from the categories present in
-                    // MongoDB, so its line is built from the live names rather than staticCommands.
                     // A command's `suffix` rides here too -- that is how `/admin` announces itself
                     // as an admin command while sitting inside Preferences.
-                    const commands = c.key === 'gunsmiths'
-                        ? gunsmithsLine
-                        : visibleCommands(c, perms).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
+                    const commands = visibleCommands(c, perms).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
                     return `### ${emojis[categoryEmojiKey(c, perms)]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
                 })
                 .join('')
@@ -464,9 +440,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
-        const body = selectedKey === 'gunsmiths'
-            ? buildGunsmithsBody(await getLiveGunsmithCommandNames(), client)
-            : BODY_BUILDERS[selectedKey](perms, client);
+        const body = BODY_BUILDERS[selectedKey](perms, client);
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
         components.push({ type: 14, spacing: 2, divider: true });

@@ -7351,16 +7351,16 @@ const MORPH_JS = `
  * that does not look the same on two visits, so the variety has to be
  * generated, not enumerated.
  *
- * ⚠️ EVERY COMMAND AND EVERY OPTION NAME IS REAL, AND VERIFYING THE COMMANDS IS
- * HARDER THAN IT LOOKS. Grepping `commands/*.js` for `.setName(` finds only
- * nine of them and makes the weapon classes look invented. They are not:
- * `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and `/secondaries`
- * are built at BOOT, in bot/registry.js's buildCategoryCommands(), from
- * `Loadout.distinct('category', { mode: 'MP' })` with SECONDARIES merged in —
- * so they exist in the live command list and in no source file's registration
- * block. A 2026-08-05 handoff asserted they were fake on exactly that
- * missing-grep-hit evidence and was wrong; Harkirat caught it. If you add a
- * line here, check bot/registry.js's dynamic registration too, not just `commands/`.
+ * ⚠️ EVERY COMMAND AND EVERY OPTION NAME IS REAL, VERIFIED AGAINST THE ACTUAL
+ * REGISTERED COMMAND SHAPE, NOT ASSUMED. `/gunsmiths search` (weapon lookup,
+ * MP-only) and `/gunsmiths list` (scope: 11 named choices — 7 categories, All
+ * MP builds, Meta MP, Meta DMZ, DMZ) replaced `/all` + 8 per-category commands
+ * in the 2026-08-15 consolidation (docs/superpowers/specs/2026-08-15-gunsmiths-
+ * command-consolidation-design.md). ⚠️ **HISTORICAL TRAP, NOW RETIRED:** this
+ * comment used to warn that `/ar`/`/smg`/etc. were real commands invisible to a
+ * `commands/*.js` grep (built dynamically in bot/registry.js). That trap is
+ * GONE — those commands no longer exist at all, dynamically or otherwise — do
+ * not resurrect them here on the strength of the old warning.
  *
  * The option VALUES are real too, each from its own source and each checked
  * rather than plausible-looking: the weapon lists are the live Loadout
@@ -7369,10 +7369,6 @@ const MORPH_JS = `
  * and every `datetime:` example parses under chrono-node, which is the parser
  * /timestamp actually feeds them to. A homepage inviting you to type something
  * owes you a string that works when you type it.
- *
- * ⚠️ `/all` IS DELIBERATELY ABSENT, and it is not an oversight — Harkirat's
- * call, 2026-08-05 17:23 EDT. It is a real command and it was in an earlier
- * draft.
  *
  * ⚠️ ADMIN AND PoC COMMANDS ARE ALSO DELIBERATELY ABSENT — `/manage`,
  * `/alerts` and `/autobuild` are registered and would "work" here, but
@@ -7428,14 +7424,22 @@ const CMD_JS = `
      ⚠️ THE CHOICE LABELS ARE THE "name:" HALF OF addChoices, NEVER THE "value:".
      Discord renders the name — /draws is offered as "New Draws", not "new" — so
      using the value here would put a string on the page no reader ever sees. */
+  /* /gunsmiths search's pool is every MP weapon combined -- unlike the old
+     per-category commands, one search command covers all of them, so its
+     option pool is the union rather than one category's slice. */
+  var MP_ALL=[].concat(WEAPONS.ar,WEAPONS.smg,WEAPONS.lmg,WEAPONS.marksman,WEAPONS.sniper,WEAPONS.shotgun,WEAPONS.secondaries);
+
+  /* /gunsmiths list's scope: option has no free-typed value -- it's a static
+     11-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
+     pairs are declared directly rather than built from a p:/o: pool, same
+     shape as /draws' page pairs below. Labels are the real choice NAMES. */
+  var GUNSMITHS_LIST_PAIRS=[['scope','AR'],['scope','LMG'],['scope','MARKSMAN'],['scope','SECONDARIES'],
+    ['scope','SHOTGUN'],['scope','SMG'],['scope','SNIPER'],['scope','All MP builds'],
+    ['scope','Meta — MP'],['scope','Meta — DMZ'],['scope','DMZ']];
+
   var SPECS=[
-    {c:'/ar',          o:'weapon',   p:WEAPONS.ar,          w:1},
-    {c:'/smg',         o:'weapon',   p:WEAPONS.smg,         w:1},
-    {c:'/lmg',         o:'weapon',   p:WEAPONS.lmg,         w:1},
-    {c:'/marksman',    o:'weapon',   p:WEAPONS.marksman,    w:1},
-    {c:'/sniper',      o:'weapon',   p:WEAPONS.sniper,      w:1},
-    {c:'/shotgun',     o:'weapon',   p:WEAPONS.shotgun,     w:1},
-    {c:'/secondaries', o:'weapon',   p:WEAPONS.secondaries, w:1},
+    {c:'/gunsmiths search', o:'weapon', p:MP_ALL, w:1},
+    {c:'/gunsmiths list',   pairs:GUNSMITHS_LIST_PAIRS},
     {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},

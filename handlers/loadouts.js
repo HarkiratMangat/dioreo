@@ -120,9 +120,8 @@ async function route(interaction) {
         }
 
         // LOADOUT PAGINATION & COPY (DMZ and MP, both MongoDB-backed)
-        // Shared handling for both custom_id prefixes since /dmz and the MP category commands
-        // (/all, /<category>) now use identical card layouts — see utils/loadoutRender.js. `mode`
-        // is the only real difference in what gets queried.
+        // Shared handling for both custom_id prefixes since /dmz and /gunsmiths use identical card
+        // layouts — see utils/loadoutRender.js. `mode` is the only real difference in what gets queried.
         if (interaction.isButton() && (interaction.customId.startsWith('dmz') || interaction.customId.startsWith('mp'))) {
             const Loadout = require('../models/Loadout');
             const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');

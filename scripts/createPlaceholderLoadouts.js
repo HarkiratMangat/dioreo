@@ -1,8 +1,8 @@
 // scripts/createPlaceholderLoadouts.js
 // One-off/re-runnable seeder for weapons that already have a badge assignment (see
 // scripts/applyBadgesBulk.js's "unmatched" report) but no actual loadout data yet -- Harkirat
-// wants these weapons live and searchable in the bot NOW (name + badges visible via /all,
-// /<category>, and autocomplete) even before attachments/Gunsmith code/a real image exist for
+// wants these weapons live and searchable in the bot NOW (name + badges visible via /gunsmiths
+// search/list and autocomplete) even before attachments/Gunsmith code/a real image exist for
 // them. Creates exactly one placeholder build per weapon (imageKey/attachments/buildName are all
 // required schema fields -- see models/Loadout.js -- so there's no way to have a loadout with
 // truly empty content; a single clearly-labeled "Coming Soon" build is the least-special-cased way
