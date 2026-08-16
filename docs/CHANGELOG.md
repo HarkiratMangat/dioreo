@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.35.0 — 2026-08-16 13:24 EDT (#TBD) — the bot starts recording what it actually does, and a raw user ID leaves the database
+## Pre-Release v3.35.0 — 2026-08-16 13:24 EDT (#143) — the bot starts recording what it actually does, and a raw user ID leaves the database
 
 **Stage 2 of 4 of the observability layer** (design: `docs/superpowers/specs/2026-08-16-observability-layer-design.md`). Stage 1 made every log line say *what the user was doing*; this stage turns that same context into a durable record. Nothing anywhere recorded what users actually do — the `/gunsmiths` consolidation was decided with no usage data at all — and collection is the time-sensitive half: a panel can be built any month, but last month's data can never be collected retroactively.
 
