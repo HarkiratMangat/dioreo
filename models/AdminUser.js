@@ -19,7 +19,7 @@ const adminUserSchema = new mongoose.Schema({
     grantedAt: { type: Date, default: Date.now },
     note: { type: String, default: '' }, // optional label the owner can add when granting (e.g. a name)
     // Per-command access (added 2026-08-13) -- subset of utils/adminAccess.js's ADMIN_COMMANDS
-    // ('manage'/'alerts'/'autobuild'). Always non-empty -- an admin with zero permissions should
+    // ('manage'/'bot'/'autobuild'). Always non-empty -- an admin with zero permissions should
     // be revoked, not left in a zero-permission limbo state.
     permissions: { type: [String], required: true }
 });

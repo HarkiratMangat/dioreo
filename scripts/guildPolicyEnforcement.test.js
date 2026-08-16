@@ -349,11 +349,13 @@ async function withNoLoadouts(run) {
 
 const NOBODY = { serverAdmin: false, botAdmin: false };
 const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
-// Per-command keys (manage/alerts/autobuild) added 2026-08-13 alongside the coarse `botAdmin` --
-// this fixture represents a FULL bot admin (owner or a Mongo-granted admin with `all`), so every
-// one of the three command lines within the Bot Admin category must be individually true too, or
-// commands/help.js's per-command `requires` filtering hides them even though the category shows.
-const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, alerts: true, autobuild: true };
+// Per-command keys (manage/bot/botAccess/autobuild) added 2026-08-13, 'bot'/'botAccess' replacing
+// the retired 'alerts'/'audit' 2026-08-16 -- this fixture represents a FULL bot admin (owner or a
+// Mongo-granted admin with `all`), so every one of the four command lines within the Bot Admin
+// category must be individually true too, or commands/help.js's per-command `requires` filtering
+// hides them even though the category shows. `botAccess` is isOwner() in real code, not a token --
+// true here because this fixture represents the OWNER, the only identity that can ever be true.
+const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
 
 t('an ordinary member sees neither /admin nor the Bot Admin category', async () => {
     const help = require('../commands/help');
@@ -405,7 +407,7 @@ t('a bot admin sees the Bot Admin category without holding Manage Server', async
     await withNoLoadouts(async () => {
         const menu = JSON.stringify(await help.buildContainer(null, 0, BOT_ADMIN));
         assert.ok(menu.includes('BOT ADMIN'), 'the landing directory must list the category');
-        assert.ok(menu.includes('/manage') && menu.includes('/alerts') && menu.includes('/autobuild'));
+        assert.ok(menu.includes('/manage') && menu.includes('/bot analytics') && menu.includes('/bot access') && menu.includes('/autobuild'));
         assert.ok(!menu.includes('/admin'), 'bot admin alone must NOT reveal the server-admin command');
         const names = await help.getAllHelpCommandNames(BOT_ADMIN);
         assert.ok(names.includes('/manage') && !names.includes('/admin'));
@@ -422,7 +424,7 @@ t('every declared category renders a detail page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         for (const category of help.CATEGORY_DEFS) {
-            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true, manage: true, alerts: true, autobuild: true });
+            const page = await help.buildContainer(category.key, 0, { serverAdmin: true, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true });
             const text = JSON.stringify(page);
             assert.ok(!text.includes('undefined'), `${category.key} renders "undefined" -- it is missing from DETAIL_HEADERS or BODY_BUILDERS`);
             assert.ok(text.includes(category.label) || text.includes(category.staticCommands[0].name), `${category.key} rendered no recognisable content`);

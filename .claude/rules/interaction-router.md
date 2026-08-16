@@ -68,8 +68,7 @@ paths:
 | `set_` `toggle_` | `settings.js` |
 | `mpbrowse` `dmzbrowse` `gsb~` `dmz` `mp` | `loadouts.js` |
 | `autobuild_` | `autobuild.js` |
-| `alerts_` | `alerts.js` |
-| `audit_` | `audit.js` |
+| `bot_` | `bot.js` (`/bot analytics` + `/bot access` — replaced the retired `alerts_`/`audit_` prefixes 2026-08-16) |
 | `price_` | `drawprices.js` |
 | `nav_` | `navigation.js` |
 | `page_` `subpage_` `calpage_` | `pagination.js` |

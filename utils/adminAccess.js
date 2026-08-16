@@ -10,21 +10,22 @@
 // their AdminUser.permissions array.
 //
 // Permission token vocabulary (validated by parsePermissionsInput):
-//   'alerts' / 'autobuild'   -- full access to that command, no finer scope exists for either
+//   'bot' / 'autobuild'      -- full access to that command, no finer scope exists for either
+//                                ('bot' replaced the retired 'alerts'/'audit' tokens 2026-08-16,
+//                                observability stage 3, when those commands became /bot analytics)
 //   'manage'                 -- full access to EVERY /manage page (shorthand, Harkirat's choice:
 //                                bare "manage" means "all pages", not "invalid without naming pages")
 //   'manage.<page>'          -- one specific /manage page, <page> from MANAGE_PAGE_SCOPES
-//   'all'                    -- input-only convenience, expands to ['alerts','autobuild','manage']
+//   'all'                    -- input-only convenience, expands to ['manage','autobuild','bot']
 //
-// MANAGE_PAGE_SCOPES intentionally does NOT include 'manageadmins' -- Harkirat's explicit call:
-// the allowlist page itself is OWNER-ONLY VISIBILITY, never grantable to anyone at any scope. It
-// has no permission token at all; hasManagePageAccess/getManagePages both hardcode this.
+// /bot access -- the runtime admin allowlist itself (moved out of /manage's former owner-only
+// `manageadmins` page 2026-08-16) -- has NO permission token at all, ever: it is OWNER-ONLY
+// VISIBILITY, checked directly via isOwner(), never grantable to anyone at any scope.
 const AdminUser = require('../models/AdminUser');
 
-const ADMIN_COMMANDS = ['manage', 'alerts', 'autobuild', 'audit'];
+const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot'];
 
-// One entry per REAL /manage page a permission can name, EXCEPT 'manageadmins' (owner-only,
-// never grantable -- see header) and 'guide' (the Bulk Format Guide is read-only reference
+// One entry per REAL /manage page a permission can name, EXCEPT 'guide' (the Bulk Format Guide is read-only reference
 // material, not data-mutating, so it's available to anyone with ANY manage access at all rather
 // than needing its own grantable scope). 'season' is a PSEUDO-page -- it covers the two flat
 // dropdown entries ("Season: Titles & Deadlines" / "Start New Season") that aren't a key in
@@ -70,7 +71,7 @@ async function isAdmin(userId) {
     return (map.get(userId) || []).length > 0;
 }
 
-// Command-level gate. For 'alerts'/'autobuild' this is an exact match. For 'manage' it means "has
+// Command-level gate. For 'bot'/'autobuild' this is an exact match. For 'manage' it means "has
 // ANY manage access at all" -- full ('manage') or any single page ('manage.xxx') -- because that's
 // what decides whether the /manage SLASH COMMAND itself may even be opened; which PAGES they can
 // then reach is a separate, finer question answered by hasManagePageAccess/getManagePages below.
@@ -83,22 +84,22 @@ async function hasCommandAccess(userId, commandName) {
 }
 
 // The real per-PAGE gate inside /manage. `pageKey` is a real PAGES table key (draws/calendar/
-// loadouts_mp/loadouts_dmz/patchnotes/seasondraft/announcement), the pseudo-key 'season' (the two
-// flat Season dropdown entries), or 'manageadmins' -- which ALWAYS returns owner-only, since no
-// permission token can ever name it.
+// loadouts_mp/loadouts_dmz/patchnotes/seasondraft/announcement), or the pseudo-key 'season' (the
+// two flat Season dropdown entries). 'manageadmins' is RETIRED (moved to /bot access, 2026-08-16) --
+// if you see it passed here, that call site is stale.
 async function hasManagePageAccess(userId, pageKey) {
     if (isOwner(userId)) return true;
-    if (pageKey === 'manageadmins') return false;
     const map = await getAdminPermissionsMap();
     const perms = map.get(userId) || [];
     return perms.includes('manage') || perms.includes(`manage.${pageKey}`);
 }
 
-// Every /manage page (+ the 'season' pseudo-page, + 'manageadmins' for the owner only) this user
-// may reach -- drives the panel's own page-select dropdown, so a scoped admin is never even OFFERED
-// a page they can't open (not just blocked after clicking into it).
+// Every /manage page (+ the 'season' pseudo-page) this user may reach -- drives the panel's own
+// page-select dropdown, so a scoped admin is never even OFFERED a page they can't open (not just
+// blocked after clicking into it). 'manageadmins' retired from this table 2026-08-16 -- see
+// /bot access, which is owner-only by its own isOwner() check, not by anything returned here.
 async function getManagePages(userId) {
-    if (isOwner(userId)) return [...MANAGE_PAGE_SCOPES, 'manageadmins'];
+    if (isOwner(userId)) return [...MANAGE_PAGE_SCOPES];
     const map = await getAdminPermissionsMap();
     const perms = map.get(userId) || [];
     if (perms.includes('manage')) return [...MANAGE_PAGE_SCOPES];
@@ -137,9 +138,8 @@ const MANAGE_PAGE_LABELS = {
 function formatPermissions(perms) {
     if (!perms || perms.length === 0) return '*(none)*';
     const parts = [];
-    if (perms.includes('alerts')) parts.push('/alerts');
+    if (perms.includes('bot')) parts.push('/bot analytics');
     if (perms.includes('autobuild')) parts.push('/autobuild');
-    if (perms.includes('audit')) parts.push('/audit');
     if (perms.includes('manage')) {
         parts.push('/manage (full)');
     } else {

@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.35.0 — 2026-08-16 13:24 EDT (#143) — the bot starts recording what it actually does, and a raw user ID leaves the database
+## Pre-Release v3.36.0 — 2026-08-16 15:47 EDT (#144) — the `/bot` command tree ships, and `manageadmins` moves out of `/manage`
+
+Stage 3 of 4 of the observability layer: `docs/superpowers/specs/2026-08-16-observability-layer-design.md` §6.
+
+**`/bot analytics`** — one paged panel: Health · Alerts · Changes · Usage · Timing, switched via a dropdown that stays in place across every click. Alerts and Changes are near-verbatim ports of the retired `/alerts` and `/audit` panels (same query logic, `alerts_`/`audit_` custom_ids renamed to `bot_alerts_`/`bot_changes_`). Usage and Timing are new: both query `models/AnalyticsEvent` live via Mongo's `$percentile` aggregation (confirmed working on this cluster's MongoDB 8.0.29) rather than waiting on stage 4's roll-up collection, matching the design's own note that recent-window questions don't need one. Health ships **partial** — severity tallies (`getAlertSummary()`), live process state (`client.ws`/`process`, no API call) and restart counts (`models/BootRecord`) are all free and shipped now; Cloud Logging/Monitoring reads via ADC are explicitly stage 4's job.
+
+**`/bot access`** — the admin allowlist, extracted out of `/manage`'s former owner-only `manageadmins` page. This was the highest-severity change in the project, and not the analytics half: extracting `manageadmins` moves an owner-only permission gate, and a regression here grants someone admin access rather than producing a wrong number. `commands/bot.js`'s `access` subcommand checks `isOwner()` directly — never a grantable permission token, the same invariant `manageadmins` always had — and `handlers/bot.js` re-checks `isOwner()` independently at every mutating branch (grant/edit/revoke, both the buttons and their modals), matching the defense-in-depth the retired `handlers/manage/admins.js` used. New `scripts/botAccessPermissions.test.js` pins this by source-scanning both files for the guard rather than only unit-testing `utils/adminAccess.js`'s primitives — a swap from `isOwner()` to `hasCommandAccess(..., 'bot')` would still pass every test that only exercises the primitives in isolation.
+
+**Retired:** `/alerts` and `/audit` as command names (`commands/alerts.js`, `commands/audit.js`, `handlers/alerts.js`, `handlers/audit.js`, `handlers/manage/admins.js` all deleted). Their retired `alerts`/`audit` permission tokens consolidate into one `bot` token in `utils/adminAccess.js`'s `ADMIN_COMMANDS` — a deliberate breaking change to any already-granted admin's permissions, acceptable because this feature is still pre-release and unshipped to prod.
+
+**Housekeeping:** backfilled the `a718c25` hash into v3.35.0's heading above. Swept every remaining `/alerts`/`/audit`/`manageadmins` reference across code, rule files, `commands/help.js`'s alias table and per-command gating, `utils/manageGuides.js`'s live guide text, and `utils/alertStore.js`'s exported `.txt` footer — an initial regex sweep missed quoted forms like `'/alerts'` (a leading slash inside the quotes), which let one test (`scripts/guildPolicyEnforcement.test.js`) go stale; caught by the full test run, not by the sweep, and fixed before merge.
+
+**Not done here, staying in stage 4:** the Health page's Cloud Logging/Monitoring reads, the roll-up collection and its UTC day-boundary decision, `scripts/analytics.mjs`, and a panel export button for Usage/Timing. `ANALYTICS_HMAC_KEY` is still not backed up to a password manager — owed before stage 2's event-plane code deploys to prod, not before this merges. A live Discord click-test of this PR is still owed (no Discord client access this session) — every page, both entry points, and a grant/edit/revoke round-trip.
+
+---
+
+## Pre-Release v3.35.0 — 2026-08-16 13:24 EDT (#143 · `a718c25`) — the bot starts recording what it actually does, and a raw user ID leaves the database
 
 **Stage 2 of 4 of the observability layer** (design: `docs/superpowers/specs/2026-08-16-observability-layer-design.md`). Stage 1 made every log line say *what the user was doing*; this stage turns that same context into a durable record. Nothing anywhere recorded what users actually do — the `/gunsmiths` consolidation was decided with no usage data at all — and collection is the time-sensitive half: a panel can be built any month, but last month's data can never be collected retroactively.
 

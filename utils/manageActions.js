@@ -277,16 +277,6 @@ const SEASONDRAFT_ACTIONS = [
     { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }
 ];
 
-const MANAGEADMINS_ACTIONS = [
-    // ownerOnly on top of the page scope: getManagePages() only ever offers 'manageadmins' to the
-    // owner, so reaching this already implies it — declared anyway, matching the defense-in-depth
-    // every other owner-gated action on this panel uses. A granted admin can use /manage, /alerts
-    // and /autobuild normally but must never be able to edit the allowlist itself.
-    { id: 'grant', label: 'Grant Admin', style: 3, kind: 'modal', slash: true, ownerOnly: true,
-      run: async ({ interaction, manageCommand }) => await interaction.showModal(manageCommand.buildAdminGrantModal()) },
-    { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }
-];
-
 const ANNOUNCEMENT_ACTIONS = [
     // Always opens BLANK — each announcement is its own doc, never a single one being overwritten.
     { id: 'post', label: 'Post New Announcement', style: 3, kind: 'modal', slash: true,
@@ -301,7 +291,6 @@ const ACTIONS_BY_PAGE = {
     loadouts_dmz: loadoutsActions(),
     patchnotes: PATCHNOTES_ACTIONS,
     seasondraft: SEASONDRAFT_ACTIONS,
-    manageadmins: MANAGEADMINS_ACTIONS,
     announcement: ANNOUNCEMENT_ACTIONS
 };
 

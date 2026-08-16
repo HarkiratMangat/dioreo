@@ -44,8 +44,8 @@ const SIZE_GUARD_DOCS = 400000;    // ~240MB at the measured 307-byte avgObjSize
 // when reading analytics -- an os.hostname() of "Harkirats-MacBook" answers the same question worse.
 const HOST = process.env.NODE_ENV === 'development' ? 'local' : 'GCP VM';
 
-const ADMIN_COMMANDS = new Set(['manage', 'bot', 'autobuild', 'alerts', 'audit']);
-const ADMIN_PREFIXES = new Set(['mng', 'bot', 'autobuild', 'alerts', 'audit']);
+const ADMIN_COMMANDS = new Set(['manage', 'bot', 'autobuild']);
+const ADMIN_PREFIXES = new Set(['mng', 'bot', 'autobuild']);
 
 // ==========================================
 // PURE HELPERS -- no Mongo, no Discord, no clock beyond what is passed in. These are what

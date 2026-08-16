@@ -61,7 +61,8 @@ const { fuzzyMatch } = require('../utils/search');
 const COMMAND_ALIASES = {
     '/admin': ['server', 'owner', 'serveradmin', 'permissions', 'visibility', 'moderation'],
     '/manage': ['database', 'data', 'db', 'admins', 'announcement', 'announcements'],
-    '/alerts': ['alert', 'health', 'log', 'logs', 'uptime'],
+    '/bot analytics': ['alert', 'alerts', 'health', 'log', 'logs', 'uptime', 'usage', 'timing', 'audit', 'changes'],
+    '/bot access': ['access', 'admins', 'permissions'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/colors': ['color', 'accent', 'palette', 'avatar'],
@@ -164,12 +165,13 @@ const CATEGORY_DEFS = [
         // these one way in the directory and another in the body, which reads as the page having
         // lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT.
         // ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin
-        // granted only /alerts must not see /manage or /autobuild listed here even though the whole
-        // category is visible to them. Category-level `requires: 'botAdmin'` still gates the
+        // granted only /bot analytics must not see /manage or /autobuild listed here even though the
+        // whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the
         // SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's
         // isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already
-        // uses inside Preferences.
-        staticCommands: [cmd('/alerts', { requires: 'alerts' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
+        // uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a
+        // permission token -- see utils/adminAccess.js's header on why it can never have one).
+        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
 ];
@@ -308,15 +310,20 @@ function buildPreferencesBody(perms = {}, client) {
 // That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the
 // section, it is not something you do.
 // ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render
-// all three commands' full detail unconditionally, so an admin granted only /alerts still read the
-// complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those
-// commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page
-// exists at all; each command's own perms key (perms.alerts/perms.autobuild/perms.manage) has to be
-// checked again HERE, same as visibleCommands() already does for the directory and dropdown.
+// all three commands' full detail unconditionally, so an admin granted only /bot analytics still
+// read the complete /manage and /autobuild writeups even though the directory/dropdown correctly
+// hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether
+// this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/
+// perms.manage) has to be checked again HERE, same as visibleCommands() already does for the
+// directory and dropdown.
 function buildBotAdminBody(perms, client) {
     const sections = [];
-    if (perms.alerts) {
-        sections.push(`### ${mentionCommand(client, '/alerts')}\nThe bot's own alert log and health history, read from Discord instead of the VM\n`
+    if (perms.bot) {
+        sections.push(`### ${mentionCommand(client, '/bot analytics')}\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n`
+            + `-# 🔹 \`[page]\` Jump directly to a page: \`Health\` · \`Alerts\` · \`Changes\` · \`Usage\` · \`Timing\``);
+    }
+    if (perms.botAccess) {
+        sections.push(`### ${mentionCommand(client, '/bot access')}\nThe admin allowlist -- owner-only\n`
             + `-# 🔹 No options of its own`);
     }
     if (perms.autobuild) {
@@ -334,7 +341,7 @@ function buildBotAdminBody(perms, client) {
     }
 
     const examples = [];
-    if (perms.alerts) examples.push(`-# 🔸 **/alerts** visibility:\`Public\` — share the health log in a channel`);
+    if (perms.bot) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
     if (perms.autobuild) {
         examples.push(`-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\``);
         examples.push(`-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted`);
@@ -457,10 +464,10 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
 
         // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump
         // straight to one of /manage's rich guide topics from THIS page, without having to open
-        // /manage first. Only offered when perms.manage is true (Manage Admins/Announcement's own
-        // guides are manage-gated, same as every other /manage guide topic) -- gating this on
-        // perms.botAdmin instead would offer it to an admin granted only /alerts, who cannot open
-        // /manage at all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
+        // /manage first. Only offered when perms.manage is true (Announcement's own guide is
+        // manage-gated, same as every other /manage guide topic) -- gating this on perms.botAdmin
+        // instead would offer it to an admin granted only /bot analytics, who cannot open /manage at
+        // all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
         if (selectedKey === 'botadmin' && perms.manage) {
             const { topicDefs } = require('../utils/manageGuides');
             components.push({ type: 14, spacing: 1, divider: true });
@@ -505,15 +512,17 @@ module.exports = {
         // admin comes off the interaction's own computed permissions (no REST call, no privileged
         // intent, false outside a guild), and bot admin is an id comparison.
         const { isServerAdmin } = require('../utils/guildPolicy');
-        const { isAdmin, hasCommandAccess } = require('../utils/adminAccess');
+        const { isAdmin, hasCommandAccess, isOwner } = require('../utils/adminAccess');
         // Per-command keys (2026-08-13) alongside the coarse `botAdmin` (any access, gates the
-        // whole category) -- an admin granted only /alerts must not see /manage or /autobuild
-        // listed under it, even though the section itself is visible to them.
+        // whole category) -- an admin granted only /bot analytics must not see /manage or
+        // /autobuild listed under it, even though the section itself is visible to them.
+        // `botAccess` is isOwner(), never a permission token -- /bot access can't be granted.
         const perms = {
             serverAdmin: isServerAdmin(interaction),
             botAdmin: await isAdmin(interaction.user.id),
             manage: await hasCommandAccess(interaction.user.id, 'manage'),
-            alerts: await hasCommandAccess(interaction.user.id, 'alerts'),
+            bot: await hasCommandAccess(interaction.user.id, 'bot'),
+            botAccess: isOwner(interaction.user.id),
             autobuild: await hasCommandAccess(interaction.user.id, 'autobuild')
         };
 

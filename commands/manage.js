@@ -282,32 +282,10 @@ function buildPagesTable(client) {
             }
         ]
     },
-    // "Manage Admins" (added 2026-08-13) -- a runtime-editable Mongo allowlist that SUPPLEMENTS
-    // ALLOWED_ADMIN_ID (the owner, above), so trusted people can be granted admin access without a
-    // code deploy per grant/revoke. Visible to and reachable by any admin (same as every other page
-    // on this panel), but its two mutating actions are further gated to the OWNER ONLY (see
-    // handlers/manage.js's mng_act_ manageadmins branch and utils/adminAccess.js's isOwner) -- a granted
-    // admin can use /manage, /alerts, /autobuild normally, but cannot edit the allowlist itself.
-    manageadmins: {
-        label: 'Manage Admins',
-        icon: emojis.serverSettings,
-        headerLabel: 'Manage Admins',
-        groups: [
-            // Rich per-admin cards (2026-08-13) -- Edit Permissions/Revoke now live directly ON
-            // each card (buildAdminListBlocks), so the generic "Revoke Admin" button below (which
-            // used to open a type-the-id search modal) is gone -- there's no reason to type an ID
-            // when the card with a working button for it is right there.
-            { style: 'raw', dynamicKey: 'adminListBlocks' },
-            {
-                blocks: [`### ${emojis.mngAdd} Grant Admin\n-# Give a Discord user ID admin access -- pick specific /manage pages, whole commands, or "all". Owner-only.`],
-                buttons: ['grant']
-            },
-            {
-                blocks: [`### ${emojis.guide} Bulk Format Guide\n-# What Grant/Edit/Revoke actually do, and how the allowlist relates to the owner.`],
-                buttons: ['formatguide']
-            }
-        ]
-    },
+    // "Manage Admins" RETIRED 2026-08-16 (observability layer stage 3) -- extracted out of /manage
+    // entirely into /bot access (commands/bot.js, handlers/bot.js). It was owner-only visibility
+    // here (getManagePages() only ever offered it to the owner); that invariant is unchanged, just
+    // enforced directly by /bot access's own isOwner() check instead of by this table.
     // "Announcement" (added 2026-08-13, redesigned same day into a real multi-announcement list --
     // see models/Announcement.js's header for why). Each active announcement gets its own
     // Edit/Delete pair (buildAnnouncementListBlocks below); posting a new one never touches the
@@ -360,48 +338,8 @@ function buildAnnouncementListBlocks(announcementDocs) {
     return blocks;
 }
 
-// Renders the "Manage Admins" page's live per-admin cards -- REDESIGNED 2026-08-13 from a single
-// plain-text block into rich per-item cards (Harkirat's request: "show the people I've given access
-// to in a proper text+accent thumbnail setup... avatar picture, clickable username, user id, the
-// permissions they've been granted + the custom note"). Same fed-through-'raw'-group-style
-// mechanism buildAnnouncementListBlocks already established -- ASYNC now, since each card needs a
-// real Discord user fetch for its avatar (no free signal for avatar the way `interaction.user`
-// would carry one; there's no interaction per listed admin, only their stored id).
-async function buildAdminListBlocks(adminDocs, client) {
-    const { formatPermissions } = require('../utils/adminAccess');
-    if (!adminDocs || adminDocs.length === 0) {
-        return [{ type: 10, content: `${emojis.mngInfo} **No additional admins granted.** Only the bot owner has admin access right now. Use Grant Admin below to add someone.` }];
-    }
-    const blocks = [];
-    for (let i = 0; i < adminDocs.length; i++) {
-        const a = adminDocs[i];
-        // A user who left every mutual server/uninstalled the bot can still be fetched by id (this
-        // is a global REST lookup, not a guild-member one) -- only a genuinely deleted/invalid
-        // Discord account fails, so the fallback below is a real edge case, not the common path.
-        let avatarUrl = null;
-        try {
-            const user = await client.users.fetch(a.discordId);
-            avatarUrl = user.displayAvatarURL({ extension: 'png', size: 128 });
-        } catch (fetchError) {
-            console.error(`Failed to fetch Discord user ${a.discordId} for Manage Admins card:`, fetchError?.message || fetchError);
-        }
-        const grantedTs = Math.floor(new Date(a.grantedAt).getTime() / 1000);
-        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatPermissions(a.permissions)}\n**Note:** ${a.note || '*(none)*'}`;
-        // Section+thumbnail when the avatar resolved; a plain Text Display when it didn't -- a
-        // Section's accessory is required, so there's no way to render one with a "missing" image.
-        blocks.push(avatarUrl
-            ? { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: avatarUrl } } }
-            : { type: 10, content });
-        blocks.push({
-            type: 1, components: [
-                { type: 2, style: 1, label: 'Edit Permissions', custom_id: `mng_admin_editperms_${a.discordId}` },
-                { type: 2, style: 4, label: 'Revoke', custom_id: `mng_admin_revoke_${a.discordId}` }
-            ]
-        });
-        if (i < adminDocs.length - 1) blocks.push({ type: 14, spacing: 1, divider: true });
-    }
-    return blocks;
-}
+// buildAdminListBlocks() RETIRED from here 2026-08-16 (observability stage 3) -- moved to
+// commands/bot.js alongside the rest of /bot access, which is what renders the admin allowlist now.
 
 // Renders the "Next Season Draft" page's live status block -- the one dynamic block on this panel
 // (see buildManagePage's 'status' group style, same dynamicData mechanism Patch Notes' "Past
@@ -646,7 +584,6 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
         // draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
         pageOptions.push({ label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' });
     }
-    pushPage('manageadmins');
     pushPage('announcement');
     components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Jump to a section...', options: pageOptions }] });
 
@@ -1018,31 +955,9 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
     return modal;
 }
 
-// --- MANAGE ADMINS modal builders (2026-08-13, expanded same day for per-page permissions) ---
-// Token vocabulary lives in utils/adminAccess.js's parsePermissionsInput -- kept out of this
-// comment so it can't drift from the actual parser; the placeholder text below is the user-facing
-// summary of it.
-function buildAdminGrantModal() {
-    const modal = new ModalBuilder().setCustomId('modal_admin_grant').setTitle('Grant Admin Access');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('discord_id').setLabel('Discord User ID or @mention').setStyle(TextInputStyle.Short).setPlaceholder('e.g. 123456789012345678 or @username').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | alerts | autobuild | manage.calendar, manage.draws, ...').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('note').setLabel('Note (optional)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. their name, why they were granted').setRequired(false))
-    );
-    return modal;
-}
-
-// Edit Permissions (2026-08-13) -- reopens on an EXISTING admin, prefilled with their current
-// permissions as a comma list, so add/remove is "edit the list, resubmit" rather than a separate
-// mechanism. Superseded the old typed-id "Revoke Admin" modal, which no longer exists now that
-// every admin has their own card with working Edit Permissions/Revoke buttons directly on it.
-function buildAdminEditPermissionsModal(adminDoc) {
-    const modal = new ModalBuilder().setCustomId(`modal_admin_editperms_${adminDoc.discordId}`).setTitle('Edit Permissions');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | alerts | autobuild | manage.calendar, manage.draws, ...').setValue((adminDoc.permissions || []).join(', ')).setRequired(true))
-    );
-    return modal;
-}
+// buildAdminGrantModal()/buildAdminEditPermissionsModal() RETIRED from here 2026-08-16
+// (observability stage 3) -- moved to commands/bot.js, custom_ids renamed modal_admin_* ->
+// bot_adminmodal_* to match /bot's single owned prefix.
 
 // --- ANNOUNCEMENT modal builder (2026-08-13, redesigned same day for multi-announcement + expiry)
 // Shared by both Post New (announcementDoc = null) and Edit (prefilled from the existing doc) --
@@ -1153,7 +1068,6 @@ module.exports = {
             { name: 'DMZ Loadouts', value: 'loadouts_dmz' },
             { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
             { name: 'Season: Next Season Draft', value: 'seasondraft' },
-            { name: 'Manage Admins', value: 'manageadmins' },
             { name: 'Announcement', value: 'announcement' },
             // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a
             // normal data-entry page -- added 2026-07-31 17:20 EDT, Harkirat's direct request. Not a
@@ -1185,7 +1099,6 @@ module.exports = {
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
     buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
-    buildAdminGrantModal, buildAdminEditPermissionsModal, buildAdminListBlocks,
     buildAnnouncementModal, buildAnnouncementListBlocks,
 
     async execute(interaction) {
@@ -1215,14 +1128,7 @@ module.exports = {
             return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
         }
 
-        // manageadmins has NO permission token at all (owner-only visibility, see
-        // utils/adminAccess.js's header) -- getManagePages() already excludes it for anyone but the
-        // owner, so this can only be reached here if someone typed the value directly and isn't
-        // the owner.
-        if (section === 'manageadmins' && !allowedPages.includes('manageadmins')) {
-            return interaction.reply({ content: "🔒 **Manage Admins is owner-only.**", ephemeral: true });
-        }
-        if (section !== 'manageadmins' && section !== 'guide' && !allowedPages.includes(section)) {
+        if (section !== 'guide' && !allowedPages.includes(section)) {
             return interaction.reply({ content: `🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.`, ephemeral: true });
         }
 
@@ -1295,10 +1201,6 @@ module.exports = {
             const SeasonalData = require('../models/SeasonalData');
             const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
             dynamicData = { draftStatus: buildDraftStatusText(seasonalDoc) };
-        } else if (section === 'manageadmins') {
-            const AdminUser = require('../models/AdminUser');
-            const adminDocs = await AdminUser.find({}).sort({ grantedAt: 1 }).lean();
-            dynamicData = { adminListBlocks: await buildAdminListBlocks(adminDocs, interaction.client) };
         } else if (section === 'announcement') {
             const { getActiveAnnouncements } = require('../utils/announcement');
             const announcementDocs = await getActiveAnnouncements();

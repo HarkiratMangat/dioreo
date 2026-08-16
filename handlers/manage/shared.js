@@ -348,10 +348,6 @@ async function renderManagePage(interaction) {
         const SeasonalData = require('../../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
         dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
-    } else if (targetPage === 'manageadmins') {
-        const AdminUser = require('../../models/AdminUser');
-        const adminDocs = await AdminUser.find({}).sort({ grantedAt: 1 }).lean();
-        dynamicData = { adminListBlocks: await manageCommand.buildAdminListBlocks(adminDocs, interaction.client) };
     } else if (targetPage === 'announcement') {
         const { getActiveAnnouncements } = require('../../utils/announcement');
         const announcementDocs = await getActiveAnnouncements();

@@ -151,7 +151,7 @@ async function buildAlertExport() {
         `Dioreo — alert log export`,
         `Generated: ${fmtUtc(new Date())}`,
         `Total alerts: ${rows.length}`,
-        `Severity legend: info=🟢 caution=🟡 warn=🟠 error=🔴  (details in /alerts → "What alerts mean?")`,
+        `Severity legend: info=🟢 caution=🟡 warn=🟠 error=🔴  (details in /bot analytics → "What alerts mean?")`,
         '='.repeat(72),
         '',
     ];

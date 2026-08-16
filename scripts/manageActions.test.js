@@ -64,8 +64,9 @@ check('every /manage page has registry actions', () => {
 
 check('every page scope is a real permission scope', () => {
     const { MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
-    // 'manageadmins' has no permission token on purpose — it is owner-only, checked by isOwner().
-    const valid = new Set([...MANAGE_PAGE_SCOPES, 'manageadmins']);
+    // 'manageadmins' retired 2026-08-16 -- moved to /bot access, which is owner-only by its own
+    // isOwner() check and is no longer a /manage page or a registry entry at all.
+    const valid = new Set(MANAGE_PAGE_SCOPES);
     const offenders = [];
     for (const page of registryPages) {
         for (const entry of registry.listActions(page)) {
