@@ -75,7 +75,25 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.33.0 — 2026-08-16 11:52 EDT (#141) — the global instruction file contradicted itself, and nothing had ever checked it
+## Pre-Release v3.34.0 — 2026-08-16 12:30 EDT (#TBD) — interaction-context attribution: one edit, not 146
+
+**Stage 1 of 4 of the observability layer** (design: `docs/superpowers/specs/2026-08-16-observability-layer-design.md`). Every structured log line now carries WHAT the user was doing and WHICH file actually logged it, without touching any of the ~146 existing `console.*` call sites.
+
+**`utils/requestContext.js` (new)** wraps `handlers/router.js`'s `handleInteraction` in a Node `AsyncLocalStorage` context, established once per interaction: `{ interactionId, command, handler, userHash }`. `handler` is filled in per dispatch branch by a new `markHandler()` call placed right before each of the router's ~17 dispatch points (every subsystem, `/admin`, autocomplete, and the slash-command engine), so a log line from deep inside `handlers/manage/*.js` says `"manage"`, not just the raw `customId`. `userHash` is `HMAC-SHA256(ANALYTICS_HMAC_KEY, discordId)` — never the raw Discord ID, per the design's NEVER list. The key is a new 32-byte value in `.env`/`.env.dev` (deliberately different per environment, to avoid the dotenv-backfill trap that already bit the alert webhook once); it needs a password-manager backup, which is Harkirat's own action.
+
+**`utils/logger.js`'s `patchConsole()` enrichment.** Every structured record now carries a stack-derived `component` (the file that actually called `console.*`, isolated by walking the frame past `logger.js`'s own call sites and past anything outside the repo root) plus either the live interaction context or, for non-interaction paths (the daily heartbeat, boot, gateway/shard diagnostics, Cloudinary cleanup in `bot/lifecycle.js`), a `context: 'lifecycle'` fallback tag — these are exactly the lines that matter most when the bot is unhealthy, so unlabelled was the wrong default. `Error.stackTraceLimit` is clamped to 5 during capture so a hot loop (e.g. `scripts/bulkCacheCollectibles.js`'s 925-item run, were it ever patched) doesn't pay for more stack frames than needed.
+
+🐛 **Two real bugs found and fixed while verifying, both from the same root cause: this repo's own path contains a space** (`/Applications/Claude Code/Diors-Builds`). The first frame-parsing regex excluded whitespace from the file-path capture group and matched **zero frames on every single call in this checkout** — caught by a test asserting `component` actually resolves for a real repo file, not by inspection. The second version fixed the whitespace exclusion but let the capture group's greedy `.+` swallow the `"at functionName ("` prefix along with the path, so `filePath.startsWith(REPO_ROOT)` still failed. Fixed by anchoring on the LAST `(` in the frame line (or `"at "` when there is none) to isolate the path *before* matching it, rather than trying to exclude characters from a single regex.
+
+**Verification:** `AsyncLocalStorage` propagation was the stage's explicit go/no-go gate per the design spec, so it's asserted directly rather than assumed — `scripts/requestContext.test.js` (new) proves context survives an `await` three levels deep, that two concurrent `runWithContext()` calls never leak into each other (the real router shape when two interactions arrive close together), and specifically that a listener registered on a plain `EventEmitter` *inside* `runWithContext()` still sees the context — reproducing the exact "across the discord.js event boundary" propagation risk the spec called out, since discord.js dispatches `interactionCreate` through an ordinary `EventEmitter`. `scripts/logger.test.js` gained matching coverage for the `lifecycle` fallback, the enriched interaction-context shape, and `component` resolution. Live dev-bot boot test + a deliberate thrown error, confirming attribution lands on a real interaction, not just in the synthetic test harness.
+
+**Scope held deliberately narrow**, per the stage's own NEVER list: no new model, no Mongo collection, no privacy-policy change, no read surface. The event plane that actually *stores* any of this is stage 2.
+
+---
+
+---
+
+## Pre-Release v3.33.0 — 2026-08-16 11:52 EDT (#141 · `898b3be`) — the global instruction file contradicted itself, and nothing had ever checked it
 
 ⚠️ **The main artefact of this release lives OUTSIDE the repo** — `~/.claude/CLAUDE.md`, the global instruction file loaded into every session of every project. It will not appear in the diff. Backups sit beside it (`CLAUDE.md.bak-2026-08-16T1145` pre-edit, `.bak2-preflow-2026-08-16T1150` pre-reflow) and should be deleted deliberately once reviewed.
 
