@@ -152,7 +152,8 @@ check('variantMetadataLines: dimensions/frame-count/size ride the Rendered line,
     const lines = variantMetadataLines(doc({}), render({ width: 288, height: 288, frameCount: 60 }));
     const rendered = lines[lines.length - 1];
     assert.ok(rendered.includes('Rendered'), rendered);
-    assert.ok(rendered.includes('288×288px') && rendered.includes('60f'), rendered);
+    assert.ok(rendered.includes('**`288×288px` · `60f`'), `the file info must be BOLD as well as code-formatted: ${rendered}`);
+    assert.ok(rendered.trimEnd().endsWith('kB`**'), rendered);
     assert.ok(!lines.some(l => l.startsWith('###')), 'variantMetadataLines emits footnotes only -- the heading is built separately');
 });
 
@@ -163,17 +164,32 @@ check('groupHeaderLines: names the design and underlines the collection; single-
     assert.deepStrictEqual(lines, ['## Eternal Damnation — __Underworld__']);
 });
 
-check('groupHeaderLines: a multi-variant design states the count and the base SKU once, in the header', () => {
-    const renders = [1, 2].map(i => ({ doc: doc({ skuId: `SKU${i}`, baseSkuId: 'BASE' }), render: render({}) }));
+check('groupHeaderLines: a multi-variant design lists the count and every variant LABEL, never the base SKU', () => {
+    const renders = [['Blue', 'SKU1'], ['Red', 'SKU2']].map(([variantLabel, skuId]) => ({ doc: doc({ skuId, variantLabel, baseSkuId: 'SKU1' }), render: render({}) }));
     const lines = groupHeaderLines(group({}), renders);
     assert.strictEqual(lines.length, 2);
-    assert.ok(lines[1].includes('**2 Variants**') && lines[1].includes('BASE'), lines[1]);
+    assert.strictEqual(lines[1], '**2 Variants** — **`Blue` · `Red`**');
+    assert.ok(!lines[1].includes('Base SKU'), 'the base sku is conveyed by ordering the variant first, not by a line of its own');
 });
 
-check('variantHeadingLines: a multi-variant heading carries the variant label + UPPERCASED hex', () => {
+check('groupHeaderLines: labels are listed in RENDER order, so the base variant leads', () => {
+    const renders = [['Red', 'SKU2'], ['Blue', 'SKU1']].map(([variantLabel, skuId]) => ({ doc: doc({ skuId, variantLabel, baseSkuId: 'SKU1' }), render: render({}) }));
+    assert.strictEqual(groupHeaderLines(group({}), renders)[1], '**2 Variants** — **`Red` · `Blue`**');
+});
+
+check('groupHeaderLines: a design whose variants carry no labels still states the count, with no dangling dash', () => {
+    const renders = [1, 2].map(i => ({ doc: doc({ skuId: `SKU${i}`, variantLabel: undefined }), render: render({}) }));
+    assert.strictEqual(groupHeaderLines(group({}), renders)[1], '**2 Variants**');
+});
+
+check('variantHeadingLines: the heading carries the UPPERCASED hex only -- displayName already ends in the label', () => {
     const lines = variantHeadingLines(doc({ variantLabel: 'Blue', variantValue: '#79e4e3' }), true);
-    assert.ok(lines[0].startsWith('### Eternal Damnation (Blue)'), lines[0]);
-    assert.ok(lines[0].includes('`Blue`') && lines[0].includes('`#79E4E3`'), lines[0]);
+    assert.strictEqual(lines[0], '### Eternal Damnation (Blue) — `#79E4E3`');
+    assert.ok(!lines[0].includes('`Blue`'), `the bare label would print "Blue" twice on one line: ${lines[0]}`);
+});
+
+check('variantHeadingLines: no variantValue means no dangling dash', () => {
+    assert.strictEqual(variantHeadingLines(doc({ variantValue: undefined }), true)[0], '### Eternal Damnation (Blue)');
 });
 
 check('variantHeadingLines: a single-variant design gets NO ### heading -- the ## header already named it', () => {

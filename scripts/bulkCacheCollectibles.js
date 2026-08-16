@@ -145,8 +145,8 @@ function upperHex(hex) { return hex ? `#${String(hex).replace('#', '').toUpperCa
 //   · Parent Category / Group / Variant / Base SKU all left the per-variant footnotes: they are
 //     properties of the DESIGN or of the heading line, so they are stated ONCE in the headings above
 //     instead of repeated identically under every variant;
-//   · dimensions/frames/size moved OFF the heading and onto the Rendered line, which frees the
-//     heading to carry the variant's own colour identity (`Blue` · `#79E4E3`);
+//   · dimensions/frames/size moved OFF the heading and onto the Rendered line (BOLD since
+//     2026-08-15 23:43 EDT), which frees the heading to carry the variant's own colour swatch;
 //   · SKU is its own line. It used to be tacked onto the end of the Cloudinary line, where it read as
 //     part of the url rather than as a separate identifier -- Harkirat called this out on the
 //     fallback layout too (see nameplateWebpCache.js/decorationWebpCache.js).
@@ -161,7 +161,7 @@ function variantMetadataLines(doc, render) {
     lines.push(`-# **Asset:** \`${doc.asset}\``);
     lines.push(`-# **Cloudinary:** \`/${render.publicId}\``);
     lines.push(`-# **SKU:** \`${doc.skuId}\``);
-    lines.push(`-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${render.renderMs}ms\` — \`${render.width}×${render.height}px\` · \`${render.frameCount}f\` · \`${(render.webpBuffer.length / 1024).toFixed(1)}kB\``);
+    lines.push(`-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${render.renderMs}ms\` — **\`${render.width}×${render.height}px\` · \`${render.frameCount}f\` · \`${(render.webpBuffer.length / 1024).toFixed(1)}kB\`**`);
     return lines;
 }
 
@@ -174,8 +174,12 @@ function variantMetadataLines(doc, render) {
 function groupHeaderLines(group, renders) {
     const lines = [`## ${group.groupName} — __${group.parentCategory}__`];
     if (renders.length > 1) {
-        const baseSkuId = renders[0].doc.baseSkuId;
-        lines.push(`**${renders.length} Variants**${baseSkuId ? ` · **Base SKU:** \`${baseSkuId}\`` : ''}`);
+        // The variant LABELS, in render order -- which is base-variant-first, guaranteed by
+        // catalogGrouping.js. This replaced a `**Base SKU:** <id>` line (Harkirat 2026-08-15 23:43 EDT):
+        // the base sku is always some variant's own sku, so listing that variant first says the same
+        // thing without spending a line on a 19-digit number the reader cannot use.
+        const labels = renders.map(({ doc }) => doc.variantLabel).filter(Boolean);
+        lines.push(`**${renders.length} Variants**${labels.length ? ` — **${labels.map(l => `\`${l}\``).join(' · ')}**` : ''}`);
     }
     return lines;
 }
@@ -186,11 +190,10 @@ function groupHeaderLines(group, renders) {
 function variantHeadingLines(doc, isMulti) {
     const lines = [];
     if (isMulti) {
-        const identity = [
-            doc.variantLabel ? `\`${doc.variantLabel}\`` : null,
-            doc.variantValue ? `\`${upperHex(doc.variantValue)}\`` : null
-        ].filter(Boolean);
-        lines.push(`### ${doc.displayName}${identity.length ? ` — ${identity.join(' · ')}` : ''}`);
+        // The colour SWATCH only -- the variant label was dropped 2026-08-15 23:43 EDT because
+        // `displayName` already ends in it ("Eternal Damnation (Blue)"), so printing both said "Blue"
+        // twice on one line. The group header carries the full label list instead.
+        lines.push(`### ${doc.displayName}${doc.variantValue ? ` — \`${upperHex(doc.variantValue)}\`` : ''}`);
     }
     if (doc.label) lines.push(`> ${doc.label}`);
     return lines;
