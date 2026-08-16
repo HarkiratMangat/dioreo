@@ -6,15 +6,17 @@
 //
 // Three stages, deliberately kept separate because they run at different TIMES and that timing is
 // load-bearing:
-//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk.
-//   2. buildCategoryCommands(commands) -- after ClientReady, async. Needs a live MongoDB query, so
-//      it CANNOT run at require time (which is why the category commands were de-Excel'd here).
+//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including
+//      commands/gunsmiths.js.
+//   2. applyGunsmithsScopeChoices(commands) -- after ClientReady, async. Needs a live MongoDB
+//      query for the 7 category scope choices, so it CANNOT run at require time.
 //   3. registerApplicationCommands(client, commands) -- one REST PUT, after the two above.
 //
-// ⚠️ THE EIGHT PER-CATEGORY WEAPON COMMANDS (/ar, /lmg, /sniper, …) AND `/all` ARE BUILT HERE, NOT
-// IN commands/*.js. Any sweep that readdirs that folder misses all nine of them -- exactly what
-// happened on the first pass of the v3 guild-install change (2026-08-09 11:38 EDT). If you are
-// changing something "on every command", change it here too.
+// The /gunsmiths consolidation (2026-08-15) removed the nine commands (/all + 8 per-category)
+// that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-
+// consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those
+// nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmiths is a
+// normal commands/*.js module, found by the same readdir as everything else.
 
 const fs = require('fs');
 const path = require('path');
@@ -24,7 +26,7 @@ const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 // STATIC + ON-DISK COMMAND MODULES
 // ==========================================
 
-// Initializes client.commands and returns the staging array that buildCategoryCommands() and
+// Initializes client.commands and returns the staging array that applyGunsmithsScopeChoices() and
 // registerApplicationCommands() go on to fill and serialize.
 // The array and the Collection are deliberately BOTH maintained: the Collection is what the router
 // dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized
@@ -32,21 +34,6 @@ const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
-
-    // Register primary comprehensive fallback lookup module
-    commands.push(
-        new SlashCommandBuilder()
-            .setName('all')
-            .setDescription('Search through all available MP gunsmiths')
-            // Reworded (2026-07-12, slash-command wording overpass) to match /dmz's phrasing pattern --
-            // was just "Type weapon name", inconsistent with every other weapon-search option in the bot.
-            // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
-            // were truncating on mobile; see the matching trim on /dmz's and /<category>'s copies.
-            .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
-            .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-            .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-            .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]) // Guild + user install, all contexts (v3)
-    );
 
     // DYNAMIC COMMAND EXTENSION MODULE LOADER:
     // Scans internal subdirectory directories to dynamically extract and merge independent slash files
