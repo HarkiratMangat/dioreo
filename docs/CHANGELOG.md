@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.31.0 — 2026-08-16 11:02 EDT (#139) — the observability layer is designed, the database has a real name, and backups exist at all
+## Pre-Release v3.32.0 — 2026-08-16 11:28 EDT (#PR-pending) — the memory index gets 24% smaller without losing a single memory
+
+**`MEMORY.md` was at 22,868 of its 25,000-byte budget (91%)** and past the SessionStart advisory line. It is the only auto-loaded memory file, so its size is a tax on every session — and the previous session had already had to route around it, folding new facts into an existing memory purely to avoid adding an index line that might not fit. That is the wrong default: it pushes unrelated facts into whichever file happens to have room.
+
+**Now 17,369 bytes (69%) — 5,499 saved — with all 90 entries and all 90 files retained.** Nothing was deleted. Verified in both directions: every file on disk is linked from the index, and every index link resolves to a file.
+
+**The diagnosis is the useful part.** This was never a "too many memories" problem. 78 of 90 index entries exceeded the 150-char guideline and carried **8,113 characters of excess** — narrative detail that had accumulated in the hooks over many sessions and belonged in the topic files, which are read on demand rather than loaded every session. The longest single entry was 891 characters. Trimming the hooks recovered the space with no loss of recall.
+
+⚠️ **The `feedback_*` memories were deliberately exempted** from the consolidation skill's "retire dated files / drop what is easy to re-find" step. They record corrections and working agreements that cannot be re-derived from the repo, which is exactly what makes them worth the bytes.
+
+**Two stale facts were corrected in passing**, which is the consolidation's other job: the `/gunsmiths` entry still claimed "not merged/deployed" after it shipped as v3.29.0 ([#137](https://github.com/HarkiratMangat/dioreo/pull/137)), and the `/manage` decomposition still read as a live four-stage project after all four stages closed on 2026-08-15.
+
+## Pre-Release v3.31.0 — 2026-08-16 11:02 EDT (#139 · `1da506b`) — the observability layer is designed, the database has a real name, and backups exist at all
 
 **A design session, plus two operational findings it turned up that could not wait.** No bot behaviour changes here; one new script and one production migration do.
 
