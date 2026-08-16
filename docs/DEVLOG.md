@@ -170,6 +170,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 13:24 EDT — stage 2: not doing the obvious thing, three times (v3.35.0-pre)
 - 2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage (v3.36.0-pre)
 - 2026-08-16 16:48 EDT — Observability layer closes: Health, roll-ups, a reporting CLI (v3.37.0-pre)
+- 2026-08-16 18:29 EDT — A small memo fix, an honest audit, and a branch checked out from under itself (v3.38.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2999,6 +3000,17 @@ The roll-up job (`utils/rollupStore.js` + `models/AnalyticsRollup.js`/`RollupSta
 
 ### Lesson
 Everything got smoke-tested against the real dev database and the real GCP project before this shipped — not mocked. Booting the dev bot, calling `buildAnalyticsPanel({page:'health'})` directly, and running `catchUpRollups()` against 14 real days of dev data all worked first try, and `cloudObservability.getHealthCloudStats()` came back with genuine CPU/RAM peaks pulled from the actual VM via this machine's own `gcloud` credentials — the same Application Default Credentials path the roadmap item had assumed, for a year, required a keyless-ADC redesign that turned out not to be needed at all once someone actually checked.
+
+## 2026-08-16 18:29 EDT — A small memo fix, an honest audit, and a branch checked out from under itself (v3.38.0-pre)
+
+The deferred item at `docs/db-deferred-list.md:545` (filed 2026-08-10) was small on paper: `cloudinaryCache.js`'s `getCachedUrl()` had a bare `cloudinary.api.resource()` call with no in-memory memo, the same bug already fixed once in `nameplateWebpCache.js`/`decorationWebpCache.js`. Harkirat didn't remember the specifics — "i just remember reading it in the roadmap or the deferred list" — which is exactly what the deferred list is for. Found it by grepping the deferred list for "cloudinary" + latency-shaped words, and the fix was a direct, copy-adjacent port of the proven `resolvedCache` Map pattern: populated on a cache-read hit and right after a fresh upload, plus one addition the original item hadn't called out — invalidating the memo on `pruneExpiredThumbnails()`'s own deletes, so a pruned asset can't linger as a stale URL.
+
+**Asked to audit the work with sequential-thinking, and it earned its keep.** Two real gaps surfaced that a "looks right, tests pass" pass would have missed: the code comment claimed the 138-470ms figure was "measured live" for *this* endpoint, when it was actually inherited from the nameplate/decoration work — same underlying Cloudinary Admin API call, never independently re-measured here. And the sibling WebP caches already carry a documented trap in the deferred list (a manual Cloudinary-dashboard edit is invisible to an already-running process until restart) that nobody had written down for draws' cache, even though it was now equally true. Both got fixed in the same pass rather than filed for later — a doc-precision gap and a doc-coverage gap, neither a code defect, both the kind of thing that turns into a confused debugging session three weeks from now if left alone.
+
+**Then a genuine dead-end, caught immediately.** Mid-session the work had been committed directly onto `v3-pre-release` instead of a feature branch — Harkirat caught it ("youve been editing on the v3 branch itself") before any push. Moving it was one `git checkout -b` plus a re-add/re-commit, no real cost. The second hiccup was worse-looking but harmless: right after committing on the new branch, something (Harkirat's own words: "that was my fault, sorry") checked HEAD back to `v3-pre-release`, and the working tree reverted to match — which looked, for one tool call, like the commit had vanished. `git reflog` settled it in seconds: the commit was still there at `HEAD@{1}`, the branch just wasn't checked out. `git checkout perf/cloudinary-cache-memo` restored it, and `git diff origin/perf/cloudinary-cache-memo` (empty) confirmed nothing had actually been lost — the remote push from before the mixup was already safe.
+
+### Lesson
+A small, well-scoped fix is exactly the kind of change an audit pass is cheap to run on and easy to skip, because "it's small" reads as "it's obviously fine." The two things sequential-thinking found here weren't code bugs at all — they were a comment overclaiming its own evidence and a doc that hadn't caught up to a change made three sibling files ago. Neither would fail a test. Both would mislead a future session. And when a git branch mixup makes a commit *look* gone, `git reflog` is the first move, not a re-diagnosis of what "must have" happened — the commit object doesn't disappear just because HEAD moved.
 
 # Part B — Lessons Ledger (thematic)
 
