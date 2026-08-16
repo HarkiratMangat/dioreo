@@ -60,6 +60,28 @@ function publicIdFor(title) {
     return `${FOLDER}/${slugify(title)}`;
 }
 
+// Same in-memory memo pattern as utils/nameplateWebpCache.js/utils/decorationWebpCache.js's
+// resolvedCache -- this is the identical `cloudinary.api.resource()` Admin API call measured live at
+// 138-470ms per call on that pair (db-deferred-list.md, 2026-08-10), paid on every single lookup even
+// though the result never changes once cached. Not independently re-measured against temp_draws/
+// specifically, but it's the same account/endpoint/network path, so the same cost applies here.
+// Populated on both a cache-read hit (getCachedUrl) and right after a fresh upload (cacheThumbnail),
+// so a same-process re-lookup right after a save never round-trips to Cloudinary at all. Only
+// successful resolutions are memoized -- a 404 miss is NOT cached, since cacheThumbnail can create the
+// resource moments later and a cached miss would then shadow it.
+//
+// ⚠️ Same caveat as the WebP caches (db-deferred-list.md): this Map is never invalidated by an
+// out-of-band change made directly in the Cloudinary dashboard, only by THIS module's own writes
+// (cacheThumbnail's overwrite, pruneExpiredThumbnails' delete). A manual dashboard re-upload/delete of
+// a temp_draws/ asset needs a bot restart to be picked up by a long-running process that already
+// resolved it once.
+const resolvedCache = new Map();
+const RESOLVED_CACHE_MAX = 128;
+function memoizeResolved(publicId, url) {
+    if (resolvedCache.size >= RESOLVED_CACHE_MAX) resolvedCache.delete(resolvedCache.keys().next().value);
+    resolvedCache.set(publicId, url);
+}
+
 // Uploads a REMOTE url straight into Cloudinary -- Cloudinary fetches the bytes itself server-side,
 // the bot never downloads the image locally. `overwrite: true` means re-adding/replacing the same
 // draw with a NEW url replaces the cached file in place (same public_id), matching Harkirat's spec
@@ -91,7 +113,11 @@ async function cacheThumbnail(title, sourceUrl) {
             invalidate: true,
             resource_type: 'image'
         });
-        return { url: withDeliveryDefaults(result.secure_url), cached: true, error: null };
+        const url = withDeliveryDefaults(result.secure_url);
+        // Populate the memo right away -- `overwrite: true` means this may be replacing whatever
+        // getCachedUrl had previously memoized under this same public_id, so this write must win.
+        memoizeResolved(publicIdFor(title), url);
+        return { url, cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary cache upload failed for "${title}" (${sourceUrl}): ${message}`);
@@ -105,9 +131,13 @@ async function cacheThumbnail(title, sourceUrl) {
 // resource doesn't exist, which the SDK surfaces as a rejected promise -- treated as "not found",
 // not a real error, since that's the expected, common case for a draw that's never been cached yet.
 async function getCachedUrl(title) {
+    const publicId = publicIdFor(title);
+    if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
     try {
-        const result = await cloudinary.api.resource(publicIdFor(title));
-        return withDeliveryDefaults(result.secure_url);
+        const result = await cloudinary.api.resource(publicId);
+        const url = withDeliveryDefaults(result.secure_url);
+        memoizeResolved(publicId, url);
+        return url;
     } catch (err) {
         // NOTE (fixed during review): the Admin API's error nests http_code under `.error`, not on
         // the caught object directly -- `err.http_code` is always undefined here, so an unguarded
@@ -267,6 +297,9 @@ async function pruneExpiredThumbnails(currentUrls) {
             return { deletedCount: 0, deleted: [] };
         }
         await cloudinary.api.delete_resources(publicIds, { invalidate: true });
+        // A deleted asset must not linger in the memo -- a since-restarted process is fine either
+        // way, but THIS process could otherwise keep serving a URL for an asset that no longer exists.
+        for (const id of publicIds) resolvedCache.delete(id);
         return { deletedCount: publicIds.length, deleted: publicIds };
     } catch (err) {
         const message = safeErrorMessage(err);
