@@ -169,6 +169,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 12:30 EDT — interaction-context attribution ships (v3.34.0-pre)
 - 2026-08-16 13:24 EDT — stage 2: not doing the obvious thing, three times (v3.35.0-pre)
 - 2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage (v3.36.0-pre)
+- 2026-08-16 16:48 EDT — Observability layer closes: Health, roll-ups, a reporting CLI (v3.37.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2985,6 +2986,19 @@ Usage and Timing pages query `models/AnalyticsEvent` live via Mongo's `$percenti
 Housekeeping: backfilled the `a718c25` commit hash into v3.35.0's changelog heading (the previous stage's session couldn't know it yet). Swept every remaining `/alerts`/`/audit`/`manageadmins` reference across the tree — code, rule files, `commands/help.js`'s alias table and per-command gating, `utils/manageGuides.js`'s live guide text, and `utils/alertStore.js`'s exported `.txt` footer — after an initial regex sweep missed quoted forms like `'/alerts'` (leading slash inside the quotes) and let one test (`scripts/guildPolicyEnforcement.test.js`) go stale; caught by the full test run, not by the sweep.
 
 Not done here, staying in stage 4: the Health page's Cloud Logging/Monitoring reads, the roll-up collection and its UTC day-boundary decision, `scripts/analytics.mjs`, and a panel export button for the new Usage/Timing pages. `ANALYTICS_HMAC_KEY` is still not backed up to a password manager — still owed before the event-plane code (stage 2) deploys to prod, not before this merges.
+
+## 2026-08-16 16:48 EDT — Observability layer closes: Health, roll-ups, a reporting CLI (v3.37.0-pre)
+
+Stage 4 of 4 of the observability layer — the last piece: Health page Cloud Logging/Monitoring reads, daily roll-ups, and a reporting CLI.
+
+`utils/cloudObservability.js` reads Cloud Logging and Cloud Monitoring via Application Default Credentials — confirming, live, the premise the design session had already measured false: the VM's `roles/editor` service account can already read its own logs and metrics with no role broadening. It ports `scripts/vmpeaks.sh`'s CPU/RAM peak queries (24h/7d/30d, trimmed from that script's five windows for panel density) and adds a three-tier error model to Health: what Cloud Logging says actually happened, what got announced to Discord via `getAlertSummary()`, and the gap between them — real errors the alert throttle or a below-threshold severity never surfaced. Everything is cached 60s and the module never throws past its own boundary, so a GCP outage degrades the page to a line of text instead of crashing it.
+
+The roll-up job (`utils/rollupStore.js` + `models/AnalyticsRollup.js`/`RollupState.js`) writes one document per (day, command, subcommand), riding the existing daily heartbeat rather than a second scheduler. Two decisions the frozen spec had left open got resolved here. The day key is UTC and carries the **year** — `'2026-08-16'`, not alertId/changeId's year-less `'Aug16'` shape, because those retain for 30 and 180 days and can never collide across a year boundary, while a roll-up is kept indefinitely and would. And `distinctUsers` stores each day's hash set, bounded to 5,000 entries, so a multi-day distinct-user figure can be a real set union instead of a naive sum that over-counts anyone who returned — past the cap the set is dropped entirely rather than kept partial, because a partial set unioned with another day's would silently undercount, which is worse than admitting the day has no exact figure.
+
+`scripts/analytics.mjs` is the "read this outside Discord" half — a `summary` report that prefers roll-ups and falls back to live queries for any day not yet rolled up, and a `failed-searches` report over the search-term aggregate stage 2 built. Usage and Timing gained an Export button matching what Alerts and Changes already had.
+
+### Lesson
+Everything got smoke-tested against the real dev database and the real GCP project before this shipped — not mocked. Booting the dev bot, calling `buildAnalyticsPanel({page:'health'})` directly, and running `catchUpRollups()` against 14 real days of dev data all worked first try, and `cloudObservability.getHealthCloudStats()` came back with genuine CPU/RAM peaks pulled from the actual VM via this machine's own `gcloud` credentials — the same Application Default Credentials path the roadmap item had assumed, for a year, required a keyless-ADC redesign that turned out not to be needed at all once someone actually checked.
 
 # Part B — Lessons Ledger (thematic)
 
