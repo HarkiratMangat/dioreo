@@ -165,6 +165,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 23:47 EDT — A cache key renamed to Discord's own naming, a collision I claimed and could not prove, and a duplicate line only the real render showed (v3.30.0-pre)
 - 2026-08-16 11:17 EDT — The blocker that was never there, and a database called `test` (v3.31.0-pre)
 - 2026-08-16 11:28 EDT — The memory index was the problem, not the memories (v3.32.0-pre)
+- 2026-08-16 11:52 EDT — The instruction file that argued with itself (v3.33.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2927,6 +2928,24 @@ There is a small lesson about diagnosis in that, and a larger one about how this
 Two stale claims fell out of the pass, which is the other half of what a consolidation is for: the `/gunsmiths` entry still said "not merged/deployed" after it had shipped, and the `/manage` decomposition still read as a live four-stage project after all four stages closed. Both had been true when written. Both would have misinformed the next session to read them, and neither was going to be caught by anything except somebody looking.
 
 One deliberate exemption: the `feedback_*` memories were left out of the "retire dated files, drop what is easy to re-find" step entirely. They record corrections and working agreements — the things that exist precisely because they could not be re-derived from the repository. A consolidation that trims those is optimising the wrong quantity.
+
+## 2026-08-16 11:52 EDT — The instruction file that argued with itself (v3.33.0-pre)
+
+The global instruction file — the one loaded into every session of every project — was asserting something it had already corrected elsewhere in itself. One section said `sequential-thinking` had "zero invocations in all recorded history"; another, further down, said plainly that this was a stale count and the tool had run twice. Both sentences had been true when written. Only one was true now, and nothing marked which.
+
+That is a worse failure than a file merely being long, and it is the reason "make it smaller" was the wrong objective to start from. A reader — me, on some future turn — hits whichever copy comes first and has no signal that a refutation exists two screens down. Size is a cost; self-contradiction is a defect. I had proposed a compaction pass and only found the contradiction because the instruction to look for other angles pushed past where I had stopped.
+
+The bulk of what came out was a closed experiment. The whole arc of the sequential-thinking restriction — the rule, the measurement window, the logging obligation, the close-out with data, the final verdict — sat in full, across bullets explicitly marked "THIS WINDOW IS CLOSED", "CLOSED OUT", "SUPERSEDED", "no longer governs". Roughly 5.4 KB of resolved history in a file that is paid for on every turn of every session. Only the verdict governs anything.
+
+**But it could not be deleted as a block, and that is the part worth remembering.** Buried in the middle of that dead narrative was a standing carve-out — an authorisation for the completeness-sweep hook to invoke the tool — whose own text says it *survives* the window's close and *must not be "fixed" by deleting it*. A block deletion would have removed a live permission that a hook depends on, and the removal would have been invisible until some future session read the hook's demand as unauthorised. Dead text and live text were interleaved at the bullet level, so the cut had to be made at the bullet level, reading each one's own claim about whether it still applied.
+
+Then the deletion caused a second problem I did not anticipate. The surviving bullets *annotated the ones I removed*: "the bullet below is retained as the historical record", "the expiry clause below required", "this SURVIVES the window's close". Three confident sentences now pointing at nothing. Every automated check passed — the reflow verified, the structure was conserved, all twenty-four governing rules were present — because none of them can see that a reference has become an orphan. **Only reading the survivors caught it.** When you delete from a document that annotates itself, the annotations are collateral, and they do not look damaged.
+
+The last piece was mechanical but overdue. Soft-wrapping is a global convention here, and the global file had never been reflowed: 45% of its prose lines continued a sentence onto the next, which is precisely the searchability defect the tree-wide pass fixed back in August. I proved the gain rather than asserting it — the phrase "and a false negative is far more expensive", from the file's own warning about incomplete searches, could not be found by `rg` before and can be after. There is something fitting about a warning against false negatives being itself unfindable.
+
+A note on method, because it was the session's most consistent failure. Five times I wrote a check by hand and five times it was wrong — a diff filter that could not see markdown bullets, a regex that miscounted backticks, a quoted phrase off by two words, a search for a rule that had never been in the file at all, and a straddle-detector that reported the memory store at 17% when the project's own verified tool reports it clean at 91 files. **Four of those five reported a false absence.** That asymmetry is what makes hand-rolled checks dangerous: a bad pattern rarely raises a false alarm you would investigate, it hands you a clean bill of health you would believe. The last one is the sharpest, because a verified tool was sitting right there and I wrote my own anyway.
+
+Finally, the thing none of this fixes: the memory store and the global instruction file are both invisible to `npm test`, because the reflow gate resolves its file list from `git ls-files`. The store happens to be compliant — verified, 91 files, zero drift — so the convention is holding on discipline alone. The global file was not, and nobody knew for months. Filed, because an ungated rule that has already drifted once is not a hypothetical.
 
 # Part B — Lessons Ledger (thematic)
 
