@@ -28,7 +28,6 @@ const GROUP_TO_TOPIC = {
     loadouts_dmz: 'loadouts',
     patchnotes: 'patchnotes',
     seasondraft: 'seasondraft',
-    manageadmins: 'admins',
     announcement: 'announcements'
 };
 
@@ -166,7 +165,7 @@ function adminsSections() {
         section('📋 This Isn\'t A Bulk Paste Either — It\'s An Access List',
             'Manage Admins is a runtime-editable allowlist that SUPPLEMENTS the owner -- trusted people can be granted admin access without a code deploy per grant/revoke. Owner-only to change; any admin can see this page.'),
         section('➕ Grant Admin',
-            'Type a Discord user ID, then pick what they can access: specific `/manage` pages, whole admin commands (`/manage`/`/alerts`/`/autobuild`/`/audit`), or "all".\n' +
+            'Type a Discord user ID, then pick what they can access: specific `/manage` pages, or whole admin commands (`/manage`/`/bot`/`/autobuild`), or "all".\n' +
             '-# A granted admin can use the admin commands they were given -- they can never edit this allowlist itself, even if granted "all".'),
         section('✏️ Edit Permissions / Revoke',
             'Live directly on each admin\'s own card (no search-by-ID modal needed) -- **Edit Permissions** re-opens the same scoped picker Grant used; **Revoke** removes that person entirely, immediately, no second confirm.'),

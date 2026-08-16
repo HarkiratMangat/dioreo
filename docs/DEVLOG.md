@@ -168,6 +168,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 11:52 EDT — The instruction file that argued with itself (v3.33.0-pre)
 - 2026-08-16 12:30 EDT — interaction-context attribution ships (v3.34.0-pre)
 - 2026-08-16 13:24 EDT — stage 2: not doing the obvious thing, three times (v3.35.0-pre)
+- 2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage (v3.36.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2970,6 +2971,20 @@ The interesting decisions were all about not doing the obvious thing.
 **A test that was proven able to fail.** The raw-ID assertion is the one the whole privacy design rests on, so passing it was not evidence of anything until the scrub was disabled and the test was confirmed to go red. A falsifier that cannot fail manufactures confidence, which is worse than no test.
 
 **And the enforcement that was not enforcing.** The spec cited `docs-audit`'s `privacy-model-coverage` as the reason no discipline was required — CI would fail until the new model was disclosed. It would not have. The check finds a per-user model by looking for a raw-ID *field name*, and the whole point of this collection is that it does not have one. It would have reported green over a collection made entirely of per-user rows. That is the second time this exact check has had a vacuous pass, and its own comment already warns about the first. The fix is one word in a regex; the lesson is that "a check covers this" is a claim to verify, not to cite.
+
+## 2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage (v3.36.0-pre)
+
+Stage 3 of 4 of the observability layer: the `/bot` command tree. `/bot analytics` (paged panel: Health · Alerts · Changes · Usage · Timing) and `/bot access` (the admin allowlist, extracted from `/manage`'s former owner-only `manageadmins` page). `/alerts` and `/audit` retire as command names — their panels ported into the Alerts and Changes pages, with `bot_` replacing the `alerts_`/`audit_` custom_id prefixes.
+
+This was the highest-severity stage in the project, and not because of the analytics half: extracting `manageadmins` moved an owner-only permission gate. `commands/bot.js`'s `access` subcommand checks `isOwner()` directly, never a grantable token — the same invariant the retired `manageadmins` page always had, now enforced at a new call site. `handlers/bot.js` re-checks `isOwner()` independently at every mutating branch (grant/edit/revoke, both the buttons and their modals), matching the defense-in-depth the retired `handlers/manage/admins.js` used. New tests (`scripts/botAccessPermissions.test.js`) pin this by source-scanning both files for the guard, not just by unit-testing `utils/adminAccess.js`'s primitives in isolation — a regression that swapped `isOwner()` for `hasCommandAccess(..., 'bot')` would still pass every existing test that only exercises the primitives.
+
+The retired `alerts`/`audit` permission tokens consolidated into one `bot` token (`utils/adminAccess.js`'s `ADMIN_COMMANDS`). This is a real, deliberate breaking change to any already-granted admin's permissions — acceptable because the feature is still pre-release and unshipped to prod, and it removes a needless split (there was never a reason to grant analytics access to one page but not the other).
+
+Usage and Timing pages query `models/AnalyticsEvent` live via Mongo's `$percentile` aggregation (confirmed available on this cluster's MongoDB 8.0.29) rather than waiting on stage 4's roll-up collection — matching the design's own note that recent-window questions don't need roll-ups. Health ships partial: severity tallies (`getAlertSummary()`), live process state (`client.ws`/`process`, no API call), and restart counts from `BootRecord` are all free and already shipped; Cloud Logging/Monitoring reads via ADC are explicitly stage 4's job and were not attempted here.
+
+Housekeeping: backfilled the `a718c25` commit hash into v3.35.0's changelog heading (the previous stage's session couldn't know it yet). Swept every remaining `/alerts`/`/audit`/`manageadmins` reference across the tree — code, rule files, `commands/help.js`'s alias table and per-command gating, `utils/manageGuides.js`'s live guide text, and `utils/alertStore.js`'s exported `.txt` footer — after an initial regex sweep missed quoted forms like `'/alerts'` (leading slash inside the quotes) and let one test (`scripts/guildPolicyEnforcement.test.js`) go stale; caught by the full test run, not by the sweep.
+
+Not done here, staying in stage 4: the Health page's Cloud Logging/Monitoring reads, the roll-up collection and its UTC day-boundary decision, `scripts/analytics.mjs`, and a panel export button for the new Usage/Timing pages. `ANALYTICS_HMAC_KEY` is still not backed up to a password manager — still owed before the event-plane code (stage 2) deploys to prod, not before this merges.
 
 # Part B — Lessons Ledger (thematic)
 

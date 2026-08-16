@@ -7371,10 +7371,10 @@ const MORPH_JS = `
  * owes you a string that works when you type it.
  *
  * ⚠️ ADMIN AND PoC COMMANDS ARE ALSO DELIBERATELY ABSENT — `/manage`,
- * `/alerts` and `/autobuild` are registered and would "work" here, but
- * `/manage` is admin-locked, `/alerts` is Harkirat's, and `/autobuild` is an
- * unfinished proof of concept. Advertising any of them on the front door sends
- * a reader to a refusal or to something half-built.
+ * `/bot` and `/autobuild` are registered and would "work" here, but
+ * `/manage` and `/bot` are admin-locked and `/autobuild` is an unfinished
+ * proof of concept. Advertising any of them on the front door sends a reader
+ * to a refusal or to something half-built.
  */
 const CMD_JS = `
 (function(){

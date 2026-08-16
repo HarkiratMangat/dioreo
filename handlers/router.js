@@ -41,8 +41,7 @@ const { handleHelpInteraction } = require("./help");
 const { handlePatchnotesInteraction } = require("./patchnotes");
 const { handleSettingsInteraction } = require("./settings");
 const { handleLoadoutsInteraction } = require("./loadouts");
-const { handleAlertsInteraction } = require("./alerts");
-const { handleAuditInteraction } = require("./audit");
+const { handleBotInteraction } = require("./bot");
 const { handleAutobuildInteraction } = require("./autobuild");
 const { handleDrawpricesInteraction } = require("./drawprices");
 const { handleDrawCalcInteraction } = require("./drawCalc");
@@ -215,8 +214,9 @@ async function handleInteractionInner(interaction) {
             'mng_': 'manage', 'modal_': 'manage', 'add_loadout_': 'manage', 'edit_loadout_': 'manage',
             'edit_calendar_': 'manage', 'edit_draw_': 'manage', 'add_draw_': 'manage',
             'autobuild_': 'autobuild', // /autobuild's review-card buttons + edit modal (2026-07-19)
-            'alerts_': 'alerts', // /alerts panel buttons (export/explain/back/page) (2026-07-20)
-            'audit_': 'audit' // /audit panel buttons/select/modal (2026-08-15 12:31 EDT, stage 4 of the /manage decomposition)
+            'bot_': 'bot' // /bot analytics+access panel buttons/selects/modals (2026-08-16, observability
+                          // stage 3 -- replaces the retired alerts_/audit_ prefixes, which mapped to the
+                          // now-retired /alerts and /audit commands)
         };
         const matchedPrefix = Object.keys(MANAGE_PREFIX_COMMAND).find(prefix => interaction.customId.startsWith(prefix));
         if (matchedPrefix) {
@@ -286,10 +286,8 @@ async function handleInteractionInner(interaction) {
         if (await handleSettingsInteraction(interaction)) return;
         markHandler('loadouts');
         if (await handleLoadoutsInteraction(interaction)) return;
-        markHandler('alerts');
-        if (await handleAlertsInteraction(interaction)) return;
-        markHandler('audit');
-        if (await handleAuditInteraction(interaction)) return;
+        markHandler('bot');
+        if (await handleBotInteraction(interaction)) return;
         markHandler('autobuild');
         if (await handleAutobuildInteraction(interaction)) return;
         markHandler('drawprices');
@@ -370,7 +368,7 @@ async function handleInteractionInner(interaction) {
                     serverAdmin: isServerAdmin(interaction),
                     botAdmin: await isAdmin(interaction.user.id),
                     manage: await hasCommandAccess(interaction.user.id, 'manage'),
-                    alerts: await hasCommandAccess(interaction.user.id, 'alerts'),
+                    bot: await hasCommandAccess(interaction.user.id, 'bot'),
                     autobuild: await hasCommandAccess(interaction.user.id, 'autobuild'),
                 });
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));

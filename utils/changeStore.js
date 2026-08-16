@@ -84,7 +84,7 @@ async function markUndone(changeId) {
     }
 }
 
-// -- Read helpers (back the /audit command) --------------------------------
+// -- Read helpers (back /bot analytics' Changes page; formerly the retired /audit command) --
 
 // Newest-first page of changes, optionally filtered by page key and/or actor id.
 async function getRecentChanges({ page = 0, perPage = 8, filterPage = null, filterActor = null } = {}) {

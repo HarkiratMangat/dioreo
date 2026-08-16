@@ -29,7 +29,6 @@ const calendar = require('./calendar');
 const loadouts = require('./loadouts');
 const patchnotes = require('./patchnotes');
 const season = require('./season');
-const admins = require('./admins');
 const announcements = require('./announcements');
 
 // The same prefix set the router's admin guard keys its per-command permission map on. Kept as one
@@ -119,9 +118,6 @@ async function routeManage(interaction) {
             }
             return;
         }
-
-        // MANAGE ADMINS: per-card buttons (embed a Discord id, so they live outside mng_act_).
-        if (customId.startsWith('mng_admin_')) return await admins.handleButton(interaction);
 
         // ANNOUNCEMENT: per-item buttons (embed a Mongo _id, so they live outside mng_act_).
         if (customId.startsWith('mng_announce_')) return await announcements.handleButton(interaction);
@@ -237,10 +233,6 @@ async function routeManage(interaction) {
         if (customId === 'modal_draft_titles_dates') return await season.setDraftTitlesDeadlines(interaction);
         if (customId === 'modal_draft_bulk_draws') return await season.bulkDraftDraws(interaction);
         if (customId === 'modal_draft_bulk_calendar') return await season.bulkDraftCalendar(interaction);
-
-        // MANAGE ADMINS
-        if (customId === 'modal_admin_grant') return await admins.grantAdmin(interaction);
-        if (customId.startsWith('modal_admin_editperms_')) return await admins.editAdminPermissions(interaction);
 
         // ANNOUNCEMENT
         if (customId === 'modal_announce_post') return await announcements.postAnnouncement(interaction);
