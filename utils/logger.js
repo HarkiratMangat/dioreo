@@ -25,6 +25,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { getContext } = require('./requestContext');
 
 // systemd sets JOURNAL_STREAM on a service whose stdout/stderr go to the journal. It is the precise
 // "am I running under systemd" test -- better than NODE_ENV, which the dev bot also sets and which
@@ -101,9 +102,54 @@ const { format } = require('util');
 // start stringifying errors differently at the ~60 call sites.
 const SERVICE_CONTEXT = { service: 'dioreo-bot', version: VERSION };
 
+// Attribution (stage 1 of the observability layer, 2026-08-16 — see
+// docs/superpowers/specs/2026-08-16-observability-layer-design.md §4). Every structured entry gets a
+// stack-derived `component` (which FILE actually logged, regardless of who called it) plus either the
+// interaction context (what the user was doing, from utils/requestContext.js) or a `lifecycle` tag for
+// the boot/heartbeat/gateway/Cloudinary-cleanup paths that run with no interaction in scope.
+//
+// ⚠️ Error.stackTraceLimit is CLAMPED during capture, deliberately. V8's stack-capture cost scales with
+// the limit, and this fires on every single console call once patched — a hot loop (scripts/
+// bulkCacheCollectibles.js's 925-item run) must not pay for more frames than are actually needed to
+// skip past this module's own call sites and land on the real caller. 5 is enough: writeStructured's
+// own frame, the console[method] wrapper's frame, and 1-2 to spare for an intermediate wrapper.
+function captureComponent() {
+    const prevLimit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 5;
+    let stack;
+    try {
+        stack = new Error().stack;
+    } finally {
+        Error.stackTraceLimit = prevLimit;
+    }
+    if (!stack) return null;
+    for (const rawLine of stack.split('\n').slice(1)) {
+        // V8 frame shapes: "at foo (/path/to/file.js:10:5)" or bare "at /path/to/file.js:10:5". The
+        // repo lives under a path containing a space ("Claude Code"), so the file-path portion cannot
+        // be isolated with a character-class exclusion (an earlier version tried `[^():\s]+` and
+        // matched nothing, ever, in this checkout) -- anchoring on the LAST "(" (or "at " when there
+        // is none) is what correctly separates the function-name prefix from the path itself.
+        const line = rawLine.trim();
+        const paren = line.lastIndexOf('(');
+        const inner = paren !== -1 ? line.slice(paren + 1).replace(/\)\s*$/, '') : line.replace(/^at\s+/, '');
+        const match = inner.match(/^(.+):(\d+):(\d+)$/);
+        if (!match) continue;
+        const filePath = match[1];
+        if (!filePath.endsWith('.js')) continue; // node:internal frames, eval wrappers, etc.
+        // Skip this module's own frames (writeStructured + the console[method] wrapper below) so the
+        // reported component is the real caller, not the logger patching console in the first place.
+        if (filePath === __filename) continue;
+        if (!filePath.startsWith(REPO_ROOT)) continue; // node_modules / outside-repo frames
+        return path.basename(filePath, '.js');
+    }
+    return null;
+}
+
 function writeStructured(severity, text) {
     if (!fileStream) return;
     try {
+        const ctx = getContext();
+        const component = captureComponent();
         // Cloud Logging's LogEntry shape: `severity` and `timestamp` are lifted into real LogEntry
         // fields by the Ops Agent's modify_fields processor; everything else stays in jsonPayload.
         // `version`/`commit` on EVERY entry is the point — it means a log line from six weeks ago
@@ -112,6 +158,11 @@ function writeStructured(severity, text) {
             timestamp: new Date().toISOString(),
             severity,
             message: text,
+            ...(component ? { component } : {}),
+            // No live interaction context (heartbeat, boot, gateway diagnostics, Cloudinary cleanup) —
+            // these are exactly the lines that matter most when the bot is unhealthy, so a `lifecycle`
+            // tag is the deliberate default rather than leaving the record unlabelled.
+            ...(ctx ? { interactionId: ctx.interactionId, command: ctx.command, handler: ctx.handler, userHash: ctx.userHash } : { context: 'lifecycle' }),
             version: VERSION,
             commit: COMMIT,
             ...(severity === 'ERROR' ? { serviceContext: SERVICE_CONTEXT } : {}),

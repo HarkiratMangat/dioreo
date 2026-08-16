@@ -166,6 +166,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 11:17 EDT — The blocker that was never there, and a database called `test` (v3.31.0-pre)
 - 2026-08-16 11:28 EDT — The memory index was the problem, not the memories (v3.32.0-pre)
 - 2026-08-16 11:52 EDT — The instruction file that argued with itself (v3.33.0-pre)
+- 2026-08-16 12:30 EDT — interaction-context attribution ships (v3.34.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2946,6 +2947,16 @@ The last piece was mechanical but overdue. Soft-wrapping is a global convention 
 A note on method, because it was the session's most consistent failure. Five times I wrote a check by hand and five times it was wrong — a diff filter that could not see markdown bullets, a regex that miscounted backticks, a quoted phrase off by two words, a search for a rule that had never been in the file at all, and a straddle-detector that reported the memory store at 17% when the project's own verified tool reports it clean at 91 files. **Four of those five reported a false absence.** That asymmetry is what makes hand-rolled checks dangerous: a bad pattern rarely raises a false alarm you would investigate, it hands you a clean bill of health you would believe. The last one is the sharpest, because a verified tool was sitting right there and I wrote my own anyway.
 
 Finally, the thing none of this fixes: the memory store and the global instruction file are both invisible to `npm test`, because the reflow gate resolves its file list from `git ls-files`. The store happens to be compliant — verified, 91 files, zero drift — so the convention is holding on discipline alone. The global file was not, and nobody knew for months. Filed, because an ungated rule that has already drifted once is not a hypothetical.
+
+## 2026-08-16 12:30 EDT — interaction-context attribution ships (v3.34.0-pre)
+
+Stage 1 of 4 of the observability layer (design: `docs/superpowers/specs/2026-08-16-observability-layer-design.md`) — interaction-context attribution. An `AsyncLocalStorage` context established once per interaction in `handlers/router.js` now carries `{ interactionId, command, handler, userHash }` through every downstream `console.*` call, and `utils/logger.js`'s `patchConsole()` tags every structured log line with a stack-derived `component` plus that context (or a `lifecycle` fallback tag for boot/heartbeat/gateway paths that run with no interaction in scope). One edit instead of touching ~146 call sites.
+
+`userHash` is a real `HMAC-SHA256(ANALYTICS_HMAC_KEY, discordId)` — never a raw Discord ID — via a new `utils/requestContext.js`. The key had to be provisioned now (32 random bytes, distinct values in `.env`/`.env.dev`) even though the design assigns "HMAC identity" to stage 2, because the router's context object needs a real hash the moment stage 1 ships; stage 2 will reuse this same function rather than inventing a second one.
+
+The `AsyncLocalStorage` propagation risk the design spec called out as the stage's go/no-go gate — "does it survive the discord.js event boundary" — is asserted directly in a new `scripts/requestContext.test.js`, not assumed: it reproduces the exact shape (an `EventEmitter` listener registered inside `runWithContext()`), proves context survives an `await` three levels deep, and proves two concurrent interactions never leak into each other's context.
+
+Verifying the stack-derived `component` field surfaced two real bugs in the frame-parsing regex, both from the same root cause: this repo's own path contains a space (`Claude Code`). A character-class exclusion for whitespace matched zero frames on every call in this checkout; the fix that allowed whitespace let the capture group's greedy match swallow the `"at functionName ("` prefix along with the path. Both were caught by a test asserting `component` actually resolves to a real repo file, not by code inspection — neither would have been caught by running the existing test suite alone, since nothing in it exercised a real in-repo call site until this stage added one.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -31,6 +31,7 @@
 
 // (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
 const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
+const { runWithContext, getContext, hashUserId } = require("../utils/requestContext");
 const { handleColorsButton } = require("./colors");
 const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
@@ -70,9 +71,45 @@ const INTERACTION_COOLDOWN_MS = 600;
 
 
 // ==========================================
-// INTERACTION SYSTEM OVERSEER (ROUTING)
+// INTERACTION-CONTEXT ATTRIBUTION (2026-08-16 12:21 EDT, observability layer stage 1)
 // ==========================================
+// Established ONCE per interaction, wrapping the entire handler body below -- every console.* call
+// anywhere downstream (any handler, any util, any await depth) inherits { interactionId, command,
+// handler, userHash } automatically through utils/logger.js's patchConsole(). See
+// docs/superpowers/specs/2026-08-16-observability-layer-design.md §4 and utils/requestContext.js's
+// header for the full reasoning -- this is one edit instead of touching ~146 call sites.
+//
+// `command` is best-effort: the slash command name for a chat-input interaction, or the raw customId
+// for a button/select/modal (still greppable, just not a "friendly" name -- the richer per-type schema
+// belongs to stage 2's event plane, not this attribution-only stage).
+//
+// `handler` starts null and is filled in by markHandler() right before each dispatch call below, so a
+// log line emitted from inside e.g. handlers/manage/*.js says "manage", not just the raw customId. It
+// stays null for a guard that rejects the interaction before any subsystem ever gets it (anti-spam
+// cooldown, the /manage admin-only lock) -- there is no handler to attribute those lines to.
+function buildInteractionContext(interaction) {
+    return {
+        interactionId: interaction.id,
+        command: interaction.commandName || interaction.customId || null,
+        handler: null,
+        userHash: hashUserId(interaction.user?.id),
+    };
+}
+
+// Mutates the SAME context object runWithContext() is already running with (getContext() returns it
+// by reference), so every console.* call made from inside the handler about to run sees the updated
+// value -- setting it has to happen before the call, not after, or a log line from deep inside the
+// handler would still read the stale value.
+function markHandler(name) {
+    const ctx = getContext();
+    if (ctx) ctx.handler = name;
+}
+
 async function handleInteraction(interaction) {
+    return runWithContext(buildInteractionContext(interaction), () => handleInteractionInner(interaction));
+}
+
+async function handleInteractionInner(interaction) {
   try {
 
     // --- SERVER VISIBILITY POLICY (2026-08-10 15:48 EDT, v3) --- resolved ONCE here, before any
@@ -109,6 +146,7 @@ async function handleInteraction(interaction) {
     // living here is how the /manage panel ended up with ~25 handlers that each forgot it.
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.())
         && interaction.customId.startsWith('admin_')) {
+        markHandler('admin');
         const adminCommand = interaction.client.commands.get('admin');
         if (adminCommand) return await adminCommand.handleComponent(interaction);
     }
@@ -194,6 +232,7 @@ async function handleInteraction(interaction) {
         // before any other routing, because every /manage custom_id is uniquely prefixed: no branch
         // below could ever match one, so consulting the panel first changes nothing about which
         // handler wins. It must stay BELOW the guard -- that check is what decides who may click.
+        markHandler('manage');
         if (await handleManageInteraction(interaction)) return;
 
         // --- PER-SUBSYSTEM HANDLERS (2026-08-13 17:45 EDT) --- each module owns a set of custom_id
@@ -202,19 +241,33 @@ async function handleInteraction(interaction) {
         // chain carries no meaning -- unlike the guards above it, which are strictly ordered.
         // Every call is AWAITED inside this handler's one try/catch, which is what keeps the crash
         // net over all of them. Colours is last only because it predates the others.
+        markHandler('timestamp');
         if (await handleTimestampInteraction(interaction)) return;
+        markHandler('help');
         if (await handleHelpInteraction(interaction)) return;
+        markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
+        markHandler('settings');
         if (await handleSettingsInteraction(interaction)) return;
+        markHandler('loadouts');
         if (await handleLoadoutsInteraction(interaction)) return;
+        markHandler('alerts');
         if (await handleAlertsInteraction(interaction)) return;
+        markHandler('audit');
         if (await handleAuditInteraction(interaction)) return;
+        markHandler('autobuild');
         if (await handleAutobuildInteraction(interaction)) return;
+        markHandler('drawprices');
         if (await handleDrawpricesInteraction(interaction)) return;
+        markHandler('drawCalc');
         if (await handleDrawCalcInteraction(interaction)) return;
+        markHandler('share');
         if (await handleShareInteraction(interaction)) return;
+        markHandler('pagination');
         if (await handlePaginationInteraction(interaction)) return;
+        markHandler('navigation');
         if (await handleNavigationInteraction(interaction)) return;
+        markHandler('colors');
         if (await handleColorsButton(interaction)) return;
 
 
@@ -225,6 +278,7 @@ async function handleInteraction(interaction) {
     // Intercepts typing inside search string options to offer live autocomplete choices
     // directly from the MongoDB clusters before the user even presses enter.
     if (interaction.isAutocomplete()) {
+        markHandler('autocomplete');
         const focusedValue = interaction.options.getFocused().toLowerCase();
         const commandName = interaction.commandName;
         // NOTE (fixed during review): every autocomplete site below used a plain `.includes()` (or
@@ -387,6 +441,7 @@ async function handleInteraction(interaction) {
         // Query modular internal command collections first (Checks the /commands folder)
         const command = interaction.client.commands.get(commandName);
         if (command) {
+            markHandler(commandName);
             try {
                 await command.execute(interaction);
                 // Fires AFTER the command's own reply has already gone out, once per fresh
