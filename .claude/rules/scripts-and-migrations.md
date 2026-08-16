@@ -34,6 +34,17 @@ paths:
 
 ⚠️ **It targets bash 3.2** (stock macOS `/bin/bash`, and the only bash on Harkirat's Mac). No `declare -A`, no `${var^^}`, no `mapfile` — and `bash -n` does **not** catch these, they fail at runtime.
 
+## `backupDb.sh` — the ONLY backup this database has (added 2026-08-16 11:02 EDT)
+
+**The Atlas cluster is on the FREE (M0) tier, which provides no automated backups whatsoever** — confirmed by Harkirat 2026-08-16 10:57 EDT. Paid tiers get continuous or snapshot backups; M0 gets nothing. So this script is not a convenience, it is the entire disaster-recovery story, and a period during which it has not run is a period with no recoverable copy.
+
+Writes one gzipped archive per run to `local/db-backups/` (gitignored) and keeps the newest `DIOREO_BACKUP_KEEP` (default 14). Restore with `mongorestore --uri=… --archive=<file> --gzip`, optionally with `--nsFrom`/`--nsTo` to land it under a different database name — which is exactly how the 2026-08-16 `test` → `diors-builds` rename was performed.
+
+- ⚠️ **It never prints `MONGODB_URI`**, and reads it with `grep` rather than `source`ing `.env` — sourcing would execute the file and export every other secret into the shell for no reason.
+- ⚠️ **It verifies the archive rather than trusting the exit code.** `mongodump` can exit 0 having written an unusable stub, so a sub-1KB archive is treated as a FAILED backup and deleted — a backup you believe in but cannot restore is worse than a missing one.
+- Retention counts files rather than using `find -mtime`, so a long gap between runs can never delete the only copy you have.
+- **Not yet scheduled.** Running it on a timer (launchd locally, or cron on the VM) is the obvious next step and is not done.
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 
