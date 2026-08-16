@@ -1,6 +1,6 @@
 // utils/search.js
 // Shared autocomplete matching used everywhere the bot offers a live dropdown (loadout weapon
-// search across /dmz, /all, /<category>; /manage's draws + loadouts search; /patch notes' version
+// search across /dmz, /gunsmiths search; /manage's draws + loadouts search; /patch notes' version
 // search). Plain substring matching alone missed real queries like "dlq" against a stored name of
 // "DL Q33" -- the space between "DL" and "Q33" breaks the literal character sequence a naive
 // `.includes()` needs. Stripping spaces/hyphens/underscores/periods from both sides before
@@ -93,7 +93,7 @@ function resolveCategorySynonym(query) {
 }
 
 // findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) --
-// backs the loadout-lookup fallback in /dmz, /all, and /<category> for a short/partial weapon name
+// backs the loadout-lookup fallback in /dmz and /gunsmiths search for a short/partial weapon name
 // (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is
 // autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits
 // whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real

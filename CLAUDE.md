@@ -145,7 +145,7 @@ This codebase has inline comments explaining **why** something is written a cert
 | Path | Holds | Notes |
 |---|---|---|
 | **`index.js`** | **Entrypoint only** — crash handlers, Mongo connect, the `Client`, three wiring calls, login | If you are about to add logic here, it almost certainly belongs in one of the rows below |
-| **`bot/registry.js`** | Which slash commands exist, and pushing them to Discord | ⚠️ **`/all` and the eight per-category weapon commands are built HERE, not in `commands/*.js`** — a `readdir` sweep of that folder misses all nine |
+| **`bot/registry.js`** | Which slash commands exist, and pushing them to Discord | `/gunsmiths` (search + list, replacing `/all` + the 8 per-category commands, 2026-08-15) is an ordinary `commands/*.js` module — the ⚠️ that used to live here about a `readdir` sweep missing nine commands is retired; that trap is why the consolidation happened |
 | **`bot/lifecycle.js`** | Every client listener that is *not* interaction routing: the `error` net, gateway/shard diagnostics, ready, restart labeling, the daily heartbeat, Cloudinary cleanup | ⚠️ Installs `client.on('error', …)`, which is **required** and is *not* covered by the router's try/catch |
 | **`handlers/router.js`** | The one `interactionCreate` dispatcher + the router-private stores (`/manage`'s undo + pending Maps, id parsing, bulk upserts, anti-spam cooldown) | Holds the top-level try/catch — the crash net. Branch ORDER is load-bearing |
 | **`handlers/<subsystem>.js`** | One subsystem's branches, lifted out of the router | Contract: one `async` fn, returns **`true` if it consumed the interaction**, `false` to fall through. `colors.js` is the reference implementation |

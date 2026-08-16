@@ -6,15 +6,17 @@
 //
 // Three stages, deliberately kept separate because they run at different TIMES and that timing is
 // load-bearing:
-//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk.
-//   2. buildCategoryCommands(commands) -- after ClientReady, async. Needs a live MongoDB query, so
-//      it CANNOT run at require time (which is why the category commands were de-Excel'd here).
+//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including
+//      commands/gunsmiths.js.
+//   2. applyGunsmithsScopeChoices(commands) -- after ClientReady, async. Needs a live MongoDB
+//      query for the 7 category scope choices, so it CANNOT run at require time.
 //   3. registerApplicationCommands(client, commands) -- one REST PUT, after the two above.
 //
-// ⚠️ THE EIGHT PER-CATEGORY WEAPON COMMANDS (/ar, /lmg, /sniper, …) AND `/all` ARE BUILT HERE, NOT
-// IN commands/*.js. Any sweep that readdirs that folder misses all nine of them -- exactly what
-// happened on the first pass of the v3 guild-install change (2026-08-09 11:38 EDT). If you are
-// changing something "on every command", change it here too.
+// The /gunsmiths consolidation (2026-08-15) removed the nine commands (/all + 8 per-category)
+// that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-
+// consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those
+// nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmiths is a
+// normal commands/*.js module, found by the same readdir as everything else.
 
 const fs = require('fs');
 const path = require('path');
@@ -24,7 +26,7 @@ const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 // STATIC + ON-DISK COMMAND MODULES
 // ==========================================
 
-// Initializes client.commands and returns the staging array that buildCategoryCommands() and
+// Initializes client.commands and returns the staging array that applyGunsmithsScopeChoices() and
 // registerApplicationCommands() go on to fill and serialize.
 // The array and the Collection are deliberately BOTH maintained: the Collection is what the router
 // dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized
@@ -32,21 +34,6 @@ const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
-
-    // Register primary comprehensive fallback lookup module
-    commands.push(
-        new SlashCommandBuilder()
-            .setName('all')
-            .setDescription('Search through all available MP gunsmiths')
-            // Reworded (2026-07-12, slash-command wording overpass) to match /dmz's phrasing pattern --
-            // was just "Type weapon name", inconsistent with every other weapon-search option in the bot.
-            // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
-            // were truncating on mobile; see the matching trim on /dmz's and /<category>'s copies.
-            .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
-            .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-            .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-            .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]) // Guild + user install, all contexts (v3)
-    );
 
     // DYNAMIC COMMAND EXTENSION MODULE LOADER:
     // Scans internal subdirectory directories to dynamically extract and merge independent slash files
@@ -75,40 +62,34 @@ function loadCommandModules(client) {
 // ==========================================
 
 /**
- * NOTE (de-Excel'd during review): category commands (/ar, /lmg, /sniper, etc.) used to be
- * auto-compiled synchronously from builds.xlsx's category list at require-time. Now derived from
- * MongoDB instead — queried after ClientReady rather than at module load time, since a DB query
- * can't run synchronously. Safe even if the Mongo connection hasn't finished establishing yet:
- * Mongoose buffers queries by default until the connection is ready, it doesn't throw or return early.
+ * Was buildCategoryCommands(): it used to CREATE the eight per-category commands (/ar, /lmg,
+ * /sniper, etc.). It now fills in /gunsmiths list's `scope` choices from the same live query, so a
+ * new category appears on its own without a code change. Still runs after ClientReady and before
+ * the REST PUT -- it needs a DB round-trip, and `commands` holds the SAME SlashCommandBuilder
+ * object client.commands does (see loadCommandModules), so mutating its nested option here keeps
+ * both consistent.
  *
  * Mutates and returns the same `commands` array loadCommandModules built.
  */
-async function buildCategoryCommands(commands) {
+async function applyGunsmithsScopeChoices(commands) {
     const Loadout = require('../models/Loadout');
+    const { FIXED_SCOPES } = require('../utils/loadoutScopes');
     const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
-    // Secondaries has no loadouts saved yet -- Harkirat wants the command ready to go the moment
-    // he starts adding them, rather than it silently appearing only after the first /manage entry.
-    // Merged in (not just appended) so re-running this after real Secondaries data exists doesn't
-    // register it twice.
-    const mpCategories = Array.from(new Set([...dbCategories, 'SECONDARIES']));
-    mpCategories.forEach(cat => {
-        const cmdName = cat.toLowerCase().replace(/\s+/g, '');
-        commands.push(
-            new SlashCommandBuilder()
-                .setName(cmdName)
-                .setDescription(`Search through ${cat} gunsmiths only`)
-                // Reworded (2026-07-12) to match the same "The name of the weapon you want a build
-                // for" pattern as /dmz and /all -- was "Select a {cat}", a third distinct phrasing
-                // for the same concept.
-                .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
-                .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-                .addStringOption(opt => opt.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-                // Guild + user install, all contexts (v3). ⚠️ These per-category commands are built
-                // HERE, not in commands/*.js, so a sweep over that folder misses all 8 of them --
-                // exactly what happened on the first pass of this change (2026-08-09 11:38 EDT).
-                .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
-        );
-    });
+    // SECONDARIES is merged in (not appended) so it is ready the moment Harkirat adds one, and so
+    // re-running this after real data exists cannot register it twice. Sorted for a stable,
+    // predictable choice order in the Discord picker.
+    const cats = Array.from(new Set([...dbCategories, 'SECONDARIES'])).sort();
+    const choices = [
+        ...cats.map(c => ({ name: c, value: `MP.${c}.std` })),
+        ...FIXED_SCOPES.map(s => ({ name: s.label, value: s.value })),
+    ];
+    const gunsmiths = commands.find(c => (c.toJSON ? c.toJSON().name : c.name) === 'gunsmiths');
+    if (!gunsmiths) {
+        console.error('⚠️ /gunsmiths not found in the command array — scope choices NOT applied');
+        return commands;
+    }
+    const listSub = gunsmiths.options.find(o => o.name === 'list');
+    listSub.options.find(o => o.name === 'scope').setChoices(...choices);
     return commands;
 }
 
@@ -121,9 +102,10 @@ async function buildCategoryCommands(commands) {
 async function registerApplicationCommands(client, commands) {
     // The names /admin's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin
     // visibility policy). Derived from `commands` -- the SAME array that is about to be registered --
-    // rather than from client.commands or a readdir of commands/*.js, both of which miss the eight
-    // per-category weapon commands and `all` built above. A hand-maintained list here would
-    // silently go stale the first time a command is added; this cannot.
+    // rather than a hand-maintained list, which would silently go stale the first time a command is
+    // added or removed. (Until the 2026-08-15 /gunsmiths consolidation, this also covered `/all` +
+    // the eight per-category commands, which lived only in this array and not in commands/*.js --
+    // deriving from the array rather than a readdir was what made that safe.)
     // The four admin surfaces are excluded: a server rule has no business quieting Harkirat's own
     // owner-level commands, and /admin must never be able to hide its own answer from the admin
     // trying to undo a rule.
@@ -156,4 +138,4 @@ async function registerApplicationCommands(client, commands) {
     }
 }
 
-module.exports = { loadCommandModules, buildCategoryCommands, registerApplicationCommands };
+module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands };

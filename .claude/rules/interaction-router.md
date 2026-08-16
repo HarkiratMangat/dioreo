@@ -66,7 +66,7 @@ paths:
 | `mng_` `modal_` `add_draw_` `edit_draw_` `add_loadout_` `edit_loadout_` `edit_calendar_` | `manage/` (directory since 2026-08-14 17:20 EDT — `index.js` dispatches to `shared.js` + one module per page) |
 | `colors_` | `colors.js` |
 | `set_` `toggle_` | `settings.js` |
-| `mpbrowse` `dmzbrowse` `dmz` `mp` | `loadouts.js` |
+| `mpbrowse` `dmzbrowse` `gsb~` `dmz` `mp` | `loadouts.js` |
 | `autobuild_` | `autobuild.js` |
 | `alerts_` | `alerts.js` |
 | `audit_` | `audit.js` |

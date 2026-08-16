@@ -4,7 +4,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     discordId: { type: String, required: true, unique: true },
     timezone: { type: String, default: 'America/Toronto' },
     timestampStyle: { type: String, default: 'all_formats' },
-    // Shared by /dmz AND the MP loadout lookup commands (/all, /<category>) — one "Weapon Builds"
+    // Shared by /dmz AND /gunsmiths search — one "Weapon Builds"
     // toggle in /settings covers every loadout command, same Option A pattern as
     // `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it
     // was never actually wired to anything in the /settings UI (the visible toggle always wrote to

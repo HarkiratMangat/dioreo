@@ -161,6 +161,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-15 16:43 EDT — Designing a calculator, and the day a regex quietly lied about German prices (v3.26.0-pre)
 - 2026-08-15 17:22 EDT — Turning three of my own misses into gates, and finding nine that were already blind (v3.27.0-pre)
 - 2026-08-15 19:16 EDT — `/draw calculator` ships, two build-plan bugs caught, three more from a requested adversarial pass (v3.28.0-pre)
+- 2026-08-15 21:42 EDT — `/gunsmiths` replaces nine commands, a spike settles the registry question in five minutes, and a merge finds two comments the deletion made false (v3.29.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -2847,6 +2848,25 @@ Harkirat's follow-up was the right question: did the blindness make the session 
 
 ### Lesson
 A "frozen" plan being correct about its *decisions* says nothing about its *pasted code* — verify the code actually implements the decision before transcribing it, especially where the plan's own test suite has a gap that would hide the exact bug (here: never testing at a non-default currency). And a forward-only build pass misses coupling bugs a backward adversarial pass catches for free — fixing one field's behavior without checking what reads it (or what would throw parsing a field that no longer exists) shipped a real crash risk that only surfaced by deliberately re-reading the code looking for contradictions.
+
+## 2026-08-15 21:42 EDT — `/gunsmiths` replaces nine commands, a spike settles the registry question in five minutes, and a merge finds two comments the deletion made false (v3.29.0-pre)
+
+Nine commands became two: `/all` and the eight per-category MP loadout commands (`/ar`, `/lmg`, `/sniper`, ...) — never real files in `commands/`, always dynamically built in `bot/registry.js` and a standing trap for any sweep of that folder — are now `/gunsmiths search` (MP weapon lookup, fuzzy autocomplete) and `/gunsmiths list` (11 named scopes: 7 categories, All MP, Meta MP, Meta DMZ, DMZ). `/dmz` stays standalone. Meta, a category view, and DMZ turned out to be one feature wearing three names in the roadmap — a scoped card browser over `{mode, category, metaOnly}` — which is why building it satisfied three separate long-standing ROADMAP items at once, not by design but because they were always the same request.
+
+**The whole shape is forced by one Discord rule: a command with any subcommand may carry no top-level options.** That single constraint is why there is no flat `/gunsmiths weapon:...` with a bolted-on `meta` subcommand, and why every browsable set had to become a whole named `scope:` choice rather than a `mode:`×`category:` option pair — a pair can be combined into a meaningless state (DMZ-plus-a-category) that then needs defined behaviour; a scope picked whole cannot.
+
+**DMZ's placement moved three times in the same design session before this build ever started** — its own command, then a category choice, then finally a `list` scope with `search` staying MP-only. The frozen spec records this explicitly so nobody re-opens it; the reason the final shape won is concrete, not just cleaner-sounding: 5 of the 7 DMZ weapons also exist in MP, so a mode-spanning `search` would have needed mode-tagged autocomplete values and two rows per gun. Keeping DMZ out of `search` sidesteps that entirely.
+
+**Task 1 was a real spike, not ceremony, and it paid for itself in five minutes.** The whole registry approach depended on discord.js allowing a nested subcommand option's choices to be mutated with `setChoices()` *after* the builder is already constructed — untested, and the plan had a documented async-factory fallback ready in case it failed. It didn't: `toJSON()` still reported top-level option types as `[1]` (subcommand-only) after mutation, so `bot/registry.js`'s `applyGunsmithsScopeChoices()` (the old `buildCategoryCommands()`, repurposed) could keep the array-derivation pattern that already made `/admin`'s gateable-command list self-updating.
+
+Followed the plan's eight tasks in strict ADD-before-DELETE order — `/gunsmiths` registered and verified live (clean dev-bot boot, no fault log) *before* the nine old commands and the router's ~114-line MP fallback were deleted — because the dev bot runs `node --watch` and a wrong order would have left it with no MP loadout lookup at all for however long the deletion commit took to land.
+
+**A completeness sweep after the deletion found two comments the code change itself had made false**, in files the deletion touched but two different code paths within them: `bot/registry.js`'s `gatewayCommandNames` derivation comment and `handlers/router.js`'s guild-visibility-policy comment both illustrated their reasoning with "the eight per-category weapon commands built above" — a concrete example that stopped existing the moment those commands were deleted, in the same file, by the same change, but in a block neither edit had reason to touch directly. Fixed in a follow-up commit rather than left to rot; see [[feedback_wrong_reference_beats_stale_one]] and the general shape of the miss in [[feedback_no_duplicated_state_in_prose]].
+
+### Lesson
+- **A registry-mutation spike belongs at the START of the riskiest task, sized to fail fast.** Five minutes settled a question that would otherwise have been discovered mid-way through wiring the actual command, with real code already built on the wrong assumption.
+- **Deleting code can make an UNTOUCHED comment false.** The two stale comments this session found were not in the deleted block — they were nearby, describing it as an *example*, and neither `node --check` nor a passing test suite can catch prose whose only fault is describing something that no longer exists. Only re-reading the surrounding file with the deletion in mind caught them.
+- **A plan that reconciles three overlapping backlog items at design time, rather than building the first one reached, avoids building the same feature three times under three names.** `docs/ROADMAP.md`'s "optional paginated multi-weapon view," the standalone `/meta` idea, and the `/loadout` consolidation item had all separately proposed the same scoped browser; none of them would have discovered that by being built in isolation.
 
 # Part B — Lessons Ledger (thematic)
 

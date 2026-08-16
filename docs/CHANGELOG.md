@@ -75,7 +75,27 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.28.0 — 2026-08-15 19:16 EDT (#136) — `/draw calculator` ships
+## Pre-Release v3.29.0 — 2026-08-15 21:56 EDT (#137) — `/gunsmiths` consolidates nine loadout commands into two
+
+`/all` and the eight per-category MP loadout commands (`/ar`, `/lmg`, `/marksman`, `/secondaries`, `/shotgun`, `/smg`, `/sniper`) — never real files in `commands/`, always dynamically built in `bot/registry.js`, and a standing trap for any sweep of that folder — are now `/gunsmiths search` (MP weapon lookup, fuzzy autocomplete) and `/gunsmiths list` (11 named scopes: 7 categories, All MP builds, Meta MP, Meta DMZ, DMZ). `/dmz` stays standalone. Ten loadout commands become two.
+
+One shared scope descriptor `{mode, category, metaOnly}` (`utils/loadoutScopes.js`) drives every browsable set — a category view, meta, and DMZ are the same scoped card browser reached two ways: `list`'s named choices, or "sticky" category rows inside `search`'s autocomplete (an empty box shows all 7 categories, replacing the discoverability `/smg` used to offer). One shared weapon-lookup path (`utils/loadoutLookup.js`) replaces the previously duplicated logic in `commands/dmz.js` and `handlers/router.js`'s ~114-line MP fallback, which is deleted entirely along with its own duplicate announcement-delivery call site.
+
+The whole shape is forced by one Discord rule: a command with any subcommand may carry no top-level options — which is why there is no `category:`/`mode:` option pair anywhere (a pair can combine into a meaningless state like DMZ-plus-a-category) and every browsable set is instead one whole named `scope:` choice.
+
+**Task 1 was a real spike, not ceremony.** The whole registry approach depended on discord.js allowing a nested subcommand option's choices to be mutated with `setChoices()` after the builder is already constructed — untested going in, with a documented async-factory fallback ready in case it failed. It didn't: `toJSON()` still reports top-level option types as `[1]` (subcommand-only) after mutation.
+
+Followed ADD-before-DELETE strictly: `/gunsmiths` was registered and verified live (clean dev-bot boot, no fault log) before the nine old commands and the router fallback were deleted, since the dev bot runs `node --watch` and a wrong order would have left it with no MP loadout lookup at all mid-deployment.
+
+**A post-implementation sweep found and fixed real defects the deletion left behind**, none caught by the automated suite because none were syntax or logic errors: two comments in `bot/registry.js`/`handlers/router.js` that illustrated their reasoning with "the eight per-category weapon commands" after those commands no longer existed; a stale, actively-inverted warning in `.claude/rules/legal-site.md` that used to correctly insist those seven commands were real and invisible to a naive grep; and — the most consequential — the public site's homepage (`dioreo.app`) animates a typewriter that types real slash commands, and its data literally included `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun`, `/secondaries` (`scripts/buildLegalPages.js`'s `CMD_JS`). Fixed to type `/gunsmiths search`/`list` instead, and `public/` rebuilt to match.
+
+Also ships: `/help`'s Gunsmiths page rewritten for the two-subcommand surface (retired-command names like `smg`/`ar` now alias to `/gunsmiths` rather than dead-ending), a non-silent fix for `buildCategoryBrowseRow`'s old silent-truncation-past-25-weapons bug (found in passing, fixed since the code was already being touched), and doc/rule-file/memory-store updates across `CLAUDE.md`, four rule files, `ROADMAP.md` (reconciling three previously-overlapping backlog items that all turned out to be the same feature), and the project memory store.
+
+⚠️ **Two things deliberately NOT done, at Harkirat's explicit request** (unavailable to check live at merge time): the 14-step interactive Discord click-test (nothing automated can prove Discord accepts the registered JSON, that autocomplete orders correctly on a real client, or that a `gsb~` button actually fires), and a live preview of the rewritten `/help` Gunsmiths copy before merging (the prior page was built from Harkirat's own mockup; this one wasn't shown to him first). Both filed in `docs/db-deferred-list.md`.
+
+**Verification.** `npm test` and `npm run docs:audit` both exit 0 at every commit checkpoint (11 commits); dev-bot boot verified clean registration both before and after the deletion; `scripts/gunsmithsCommandShape.test.js` and `scripts/loadoutRenderSnapshot.test.js` are new, falsifier-proven regression tests.
+
+## Pre-Release v3.28.0 — 2026-08-15 19:16 EDT (#136 · `06cf38e`) — `/draw calculator` ships
 
 `/draw calculator` — tells a player how much more CP they need to finish a lucky draw, and the cheapest real-money way to buy it. Two pure engines: `utils/drawCost.js` slices `DRAW_DATA`'s existing per-pull arrays; `utils/cpPackages.js` holds the six-package table (loaded from the committed 41-currency price file, never hand-typed) and a DP purchase optimizer with a cheapest-money and a least-waste pass. A two-stage Components V2 panel sits on top, entirely stateless via the `customId` — no model, no cache, except one deliberate exception: `UserPreference.cpCurrency`, disclosed in `PRIVACY.md` in the same commit that added it.
 

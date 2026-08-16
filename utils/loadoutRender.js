@@ -6,12 +6,11 @@ const emojis = require('./emojiMap');
 // MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated
 // mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the
 // exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus
-// SECONDARIES which has no loadouts yet — see bot/registry.js's category-registration merge for why the
-// /secondaries command still exists ahead of any data). `/all` looks a weapon's OWN category up in
-// here at render time (it isn't locked to one category the way /ar or /smg are), so its accent
-// color changes per weapon instead of using one fixed color. `/<category>` commands hit the exact
-// same lookup — they just always resolve to the same entry since every result they query shares
-// one category.
+// SECONDARIES which has no loadouts yet — see bot/registry.js's applyGunsmithsScopeChoices() for why the
+// SECONDARIES scope choice still exists ahead of any data). `/gunsmiths search` looks a weapon's
+// OWN category up here at render time, so its accent color changes per weapon rather than using one
+// fixed color. `/gunsmiths list scope:<category>` hits the exact same lookup via the same
+// utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
 const MP_CATEGORY_ACCENT = {
     AR: 16726876,          // FF3B5C — Crimson Pop
     SMG: 16765503,         // FFD23F — Electric Gold
@@ -220,7 +219,7 @@ function toBlockquote(str) {
 // for. Selecting a weapon here always opens it at build index 0. `weaponKey` is deduped via a Map
 // (first doc encountered per key wins, which is fine -- every doc for a given weaponKey shares
 // the same weaponName/category), then sorted alphabetically by weapon name.
-function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel) {
+function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null) {
     if (!categoryBuilds || categoryBuilds.length === 0) return null;
 
     const weaponMap = new Map();
@@ -240,23 +239,33 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
             default: weaponKey === activeWeaponKey
         }));
 
-    // Discord select menus cap at 25 options -- silently truncated rather than erroring, since a
-    // category/mode this large isn't expected at the collection's current size (~100-200 docs
-    // total across ALL categories combined, see models/Loadout.js).
-    const truncated = options.slice(0, 25);
+    // Never drop weapons silently -- commands/admin.js:219 sets the house rule for this exact
+    // situation. Window around the active weapon so paging forward reveals the rest, and say so
+    // in the placeholder (Discord select menus cap at 25 options; there is no scroll/search on a
+    // string select the way native role/channel selects have).
+    let truncated = options;
+    let placeholder = `Browse other ${scopeLabel} weapons`;
+    if (options.length > 25) {
+        const active = Math.max(0, options.findIndex(o => o.value === activeWeaponKey));
+        const start = Math.min(Math.max(0, active - 12), options.length - 25);
+        truncated = options.slice(start, start + 25);
+        // A select `placeholder` caps at 150 characters -- this phrasing is well under that even
+        // at 3-digit counts, asserted in the snapshot test rather than assumed.
+        placeholder = `Browse ${scopeLabel} — 25 of ${options.length}, use /gunsmiths search for the rest`;
+    }
 
     return {
         type: 1,
         components: [{
             type: 3,
-            custom_id: `${idPrefix}browse`,
-            placeholder: `Browse other ${scopeLabel} weapons`,
+            custom_id: customIdOverride || `${idPrefix}browse`,
+            placeholder,
             options: truncated
         }]
     };
 }
 
-// Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
+// Shared Components V2 card builder for /dmz and /gunsmiths (search + list's scoped browse) --
 // same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs
 // 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
 //
@@ -268,13 +277,16 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
 // bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block
 // styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack
 // vertically rather than sitting side-by-side.
-function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null }) {
+function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null }) {
     const activeBuild = builds[index];
     const attachmentLines = activeBuild.attachments.map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
     let titleContent = `# ${activeBuild.weaponName}`;
-    const badgesLine = buildBadgesLine(activeBuild);
+    // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per
+    // Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge.
+    // Category browses keep badges ("Best AR" is still informative in an AR list).
+    const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
 
     const containerComponents = [
@@ -327,13 +339,23 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs
     // nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the
     // handler already sends you from the last build to the first and vice-versa.
-    const paginationRow = buildPaginationRow({
-        totalChunks: builds.length,
-        currentPage: index,
-        prevCustomId: `${idPrefix}prev_${activeBuild.weaponKey}_${index}`,
-        nextCustomId: `${idPrefix}next_${activeBuild.weaponKey}_${index}`,
-        indicatorCustomId: `${idPrefix}_page_indicator`
-    });
+    // A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index and
+    // its indicator counts the scope. A normal card is untouched -- same ids, same totals as before.
+    const paginationRow = browse
+        ? buildPaginationRow({
+            totalChunks: browse.flatTotal,
+            currentPage: browse.flatIndex,
+            prevCustomId: `gsb~prev~${browse.scopeToken}~${browse.flatIndex}`,
+            nextCustomId: `gsb~next~${browse.scopeToken}~${browse.flatIndex}`,
+            indicatorCustomId: `gsb~ind~${browse.scopeToken}`
+        })
+        : buildPaginationRow({
+            totalChunks: builds.length,
+            currentPage: index,
+            prevCustomId: `${idPrefix}prev_${activeBuild.weaponKey}_${index}`,
+            nextCustomId: `${idPrefix}next_${activeBuild.weaponKey}_${index}`,
+            indicatorCustomId: `${idPrefix}_page_indicator`
+        });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
     buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}` });
     if (activeBuild.mode !== 'DMZ') {
@@ -350,8 +372,9 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // containerComponents array as their surrounding Text Displays). The first live attempt at
     // this dropdown (nested inside the container, same as those) failed with "This interaction
     // failed" on click -- root cause not yet confirmed, don't assume it was the nesting itself.
-    const scopeLabel = activeBuild.mode === 'DMZ' ? 'DMZ' : activeBuild.category;
-    const browseRow = buildCategoryBrowseRow(categoryBuilds, activeBuild.weaponKey, idPrefix, scopeLabel);
+    const scopeLabel = browse ? browse.scopeLabel : (activeBuild.mode === 'DMZ' ? 'DMZ' : activeBuild.category);
+    const browseRow = buildCategoryBrowseRow(categoryBuilds, activeBuild.weaponKey, idPrefix, scopeLabel,
+        browse ? `gsb~jump~${browse.scopeToken}` : null);
 
     const outerComponents = [containerPayload];
     if (browseRow) outerComponents.push(browseRow);
