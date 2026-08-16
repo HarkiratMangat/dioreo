@@ -163,6 +163,19 @@ check('markOutcome and noteDep are no-ops outside an interaction context, never 
     S.markOutcome('error'); S.noteDep('atlas', 5); S.mergeDetail({ a: 1 });
 });
 
+check('the stored deps array is a COPY, so later instrumentation cannot mutate a queued document', () => {
+    // notePicked() fires from inside the router's own finally and triggers a SearchTerm upsert, which
+    // goes through the timed Mongoose exec and calls noteDep() -- after the document was buffered.
+    // Aliasing the context's live array would have let that write itself into an already-queued row.
+    const live = [{ name: 'atlas', ms: 5, calls: 1, ok: true }];
+    const doc = S.buildEventDocument(fakeInteraction({ isChatInputCommand: () => true }),
+        { command: 'x', userHash: hashUserId(RAW_ID), startedAt: Date.now() }, { deps: live }, RAW_ID);
+    live[0].ms = 9999;
+    live.push({ name: 'later', ms: 1, calls: 1, ok: true });
+    assert.strictEqual(doc.deps.length, 1, 'a dep noted after the document was built must not appear in it');
+    assert.strictEqual(doc.deps[0].ms, 5, 'a dep mutated after the document was built must not change it');
+});
+
 // --- the buffer's flush-on-error rule -------------------------------------------------------
 function emit(outcome) {
     const before = inserted.length;

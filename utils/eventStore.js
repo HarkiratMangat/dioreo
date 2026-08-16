@@ -175,7 +175,11 @@ function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
         outcome: extra.outcome || 'ok',
         ackMs: typeof extra.ackMs === 'number' ? extra.ackMs : null,
         durationMs: typeof extra.durationMs === 'number' ? extra.durationMs : null,
-        deps: extra.deps && extra.deps.length ? extra.deps : undefined,
+        // COPIED, not referenced. `extra.deps` is the context's LIVE array: a noteDep() firing after
+        // this document is buffered -- the SearchTerm upsert that notePicked() triggers from the
+        // router's own finally does exactly that -- would otherwise mutate a document already queued
+        // for insert, so the stored row would include the cost of the instrumentation observing it.
+        deps: extra.deps && extra.deps.length ? extra.deps.map(d => ({ ...d })) : undefined,
         detail: clampDetail(extra.detail),
         search: extra.search || undefined,
         version: VERSION,
@@ -239,6 +243,10 @@ function flushEvents() {
         const AnalyticsEvent = require('../models/AnalyticsEvent');
         // ordered:false so one bad document cannot discard the rest of the batch.
         await AnalyticsEvent.insertMany(batch, { ordered: false });
+        // ⚠️ THE BATCH IS SPLICED OUT BEFORE THE AWAIT, SO A FAILED INSERT DROPS THOSE EVENTS. That is
+        // deliberate, not an oversight: re-queueing on failure turns a database that is down into an
+        // ever-growing buffer and an unbounded retry loop, inside the process whose interactions we are
+        // supposed to be leaving alone. Losing some analytics is the cheap failure; the bot is not.
         await checkSize(AnalyticsEvent);
     })().catch(() => { /* instrumentation must never affect the bot */ });
 }
@@ -345,6 +353,13 @@ function instrumentAck(interaction) {
             },
             configurable: true,
             writable: true,
+            // ⚠️ enumerable MATTERS and defaults to false on a NEW own property. utils/interactionContext.js's
+            // buildSyntheticInteraction() copies the interaction with Object.assign, which only sees
+            // ENUMERABLE own properties -- so without this, the three methods guildPolicy had already
+            // made own properties (reply/deferReply/followUp) would carry their wrapper onto a synthetic
+            // interaction while the other four silently reverted to the unwrapped prototype versions.
+            // Half-instrumented is the worst of the three options.
+            enumerable: true,
         });
     }
 }

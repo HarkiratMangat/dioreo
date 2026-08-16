@@ -22,6 +22,13 @@ function buildSyntheticInteraction(interaction, overrides = {}) {
     const synthetic = Object.assign(Object.create(Object.getPrototypeOf(interaction)), interaction, overrides);
     Object.defineProperty(synthetic, 'client', { value: interaction.client, enumerable: true });
     Object.defineProperty(synthetic, 'token', { value: interaction.token, enumerable: true });
+    // Read by utils/eventStore.js's deriveEntry() (2026-08-16, observability stage 2) so a synthetic
+    // re-invocation is labelled as one rather than as whatever it is impersonating. Today nothing
+    // re-enters handlers/router.js this way -- a synthetic interaction goes straight into a command's
+    // execute() -- so this records intent rather than firing; without it the event schema's
+    // `entry: 'synthetic'` value would be documented and permanently unreachable, which is worse than
+    // a flag that is set and rarely read.
+    Object.defineProperty(synthetic, '__dioreoSynthetic', { value: true, enumerable: true });
     return synthetic;
 }
 
