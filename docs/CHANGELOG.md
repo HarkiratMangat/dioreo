@@ -75,7 +75,23 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.32.0 — 2026-08-16 11:28 EDT (#PR-pending) — the memory index gets 24% smaller without losing a single memory
+## Pre-Release v3.33.0 — 2026-08-16 11:52 EDT (#141) — the global instruction file contradicted itself, and nothing had ever checked it
+
+⚠️ **The main artefact of this release lives OUTSIDE the repo** — `~/.claude/CLAUDE.md`, the global instruction file loaded into every session of every project. It will not appear in the diff. Backups sit beside it (`CLAUDE.md.bak-2026-08-16T1145` pre-edit, `.bak2-preflow-2026-08-16T1150` pre-reflow) and should be deleted deliberately once reviewed.
+
+**The finding is the contradiction, not the size.** The file asserted that `sequential-thinking` had *"zero invocations in all recorded history"* in one section, while a later section explicitly corrected that same claim to *"it has run TWICE, not never."* An always-on instruction file stating X and not-X is worse than a long one: whichever copy a reader hits first carries no signal that it was already refuted.
+
+**A closed experiment occupied 5.4 KB of an always-on file.** The full sequential-thinking narrative — restriction, measurement window, logging obligation, close-out, verdict — remained verbatim across bullets marked *"THIS WINDOW IS CLOSED"*, *"CLOSED OUT"*, *"SUPERSEDED"* and *"no longer governs"*. Only the verdict governs. It was cut **bullet by bullet, not as a block** — because buried inside was a **STANDING CARVE-OUT** whose own text says it *survives* the window's close and *"must not be 'fixed' by deleting it."* A bulk deletion would have silently removed a live authorisation the completeness-sweep hook depends on. The provenance was not lost: it already exists twice in this repo (`local/mcp-observation-log.md` and the dated protocol spec), and the compacted text now points at both.
+
+🔴 **Deleting self-annotating text orphans its annotations, and the orphans read as confident sentences.** Removing those bullets left three dangling cross-references in the *surviving* prose — "the bullet below is retained as the historical record", "the expiry clause below required", "SURVIVES the window's close" — each pointing at text that no longer existed. Reflow passed, structure was conserved, every rule survived; **only reading the survivors caught it.** Both remaining bullets were rewritten to stand alone.
+
+**Soft-wrap is a global convention, and the global file had never been reflowed** — 45% of its prose lines continued a sentence onto the next, the exact searchability defect the 2026-08-08 tree-wide pass fixed. Demonstrated with a falsifiable case rather than asserted: the phrase *"and a false negative is far more expensive"*, from the file's own rg-completeness warning, matched **0 times before and 1 after**. Reflowed with `scripts/reflow-prose.mjs` after proving it on a copy first — line 1 is `@RTK.md`, an import read by line structure that a reflow could have folded into a paragraph.
+
+**Verified by exit code, not summary text.** 24/24 governing rules present afterwards; word delta across the reflow exactly **0**; `@RTK.md` intact on line 1; no dangling references; `reflow --check` exit 0 on both the global file and all 91 memory files. **35,037 → 29,208 bytes (−17%)**, every removed byte justified by its own text saying it no longer governs.
+
+**Also filed:** the gate gap this exposed — `docs:reflow` resolves its file list from `git ls-files`, so the memory store and the global CLAUDE.md are invisible to `npm test`. The store passed clean at 91/91, so the convention is holding by discipline; nothing would report when it stops.
+
+## Pre-Release v3.32.0 — 2026-08-16 11:28 EDT (#140 · `f32be5b`) — the memory index gets 24% smaller without losing a single memory
 
 **`MEMORY.md` was at 22,868 of its 25,000-byte budget (91%)** and past the SessionStart advisory line. It is the only auto-loaded memory file, so its size is a tax on every session — and the previous session had already had to route around it, folding new facts into an existing memory purely to avoid adding an index line that might not fit. That is the wrong default: it pushes unrelated facts into whichever file happens to have room.
 
