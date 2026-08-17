@@ -83,14 +83,26 @@ const CATEGORY_ALIASES = {
     preferences: ['pref']
 };
 
-// Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
-// "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
-const PRESET_ACCENT = 16743772; // #FF7D5C
+// Signal Green #58D05A, hue 121° -- adopted 2026-08-16 20:38 EDT (Harkirat) to tie `/help` to the
+// dioreo.app `/commands` page, whose locked accent is the same 121° hue (see the
+// [[project_website_commands_page]] memory: the midpoint of the widest gap on the site's tab hue
+// wheel, 59° of clearance each way).
+// PROVENANCE, because two mockups exist and they differ: this is `local/commands-page-directions.
+// html`'s DARK-theme token, hsl(121 56% 58%) -- the exact rendering Harkirat pointed at, and the one
+// he eyedropped as #57CE59 (agrees within 2/255 per channel; the drift is screenshot colour
+// management, not a different colour). ⚠️ `local/commands-page-hybrid.html` carries a slightly
+// different pair (dark hsl(121 52% 60%) = #64CE66). Same hue, same identity -- do NOT "correct" this
+// value to that one, the directions file is the one that was chosen.
+// The site defines its accent as two theme-dependent tokens and a Discord container accent bar is
+// ONE fixed colour on both themes; the dark value is used because it is the one that was reviewed
+// and approved, and it stays perfectly legible on Discord's light theme too.
+// ⚠️ The previous value was Coral #FF7D5C, picked to match the mascot artwork's own branding. That
+// coral did not disappear -- it moved to `commands/invite.js`, which now carries it. Do not "restore"
+// it here; the two commands would collide.
+const PRESET_ACCENT = 5820506; // #58D05A
 
 const HARKIRAT_ID = '1139845545754632283';
 const WEBSITE_URL = 'https://dioreo.app';
-// Matches .env's own CLIENT_ID -- verified 2026-08-08 20:57 EDT, not guessed.
-const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1786237039/site_assets/dioreo-mascot-coral.png';
 
 // Single source of truth for the visibility option's copy -- reused verbatim as the real
@@ -407,11 +419,16 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             }],
             accessory: { type: 11, media: { url: MASCOT_URL } }
         });
+        // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant
+        // the DEV bot's own help panel offered an install link for the production application --
+        // silent, and wrong. utils/inviteLinks.js resolves the id off the live client instead; its
+        // `chooser` shape is byte-identical to the old literal, so this button is unchanged on prod.
+        const { buildInviteUrls } = require('../utils/inviteLinks');
         components.push({
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                { type: 2, style: 5, label: 'Install Dioreo', url: INSTALL_URL }
+                { type: 2, style: 5, label: 'Install Dioreo', url: buildInviteUrls(client).chooser }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });

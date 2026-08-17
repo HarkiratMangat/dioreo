@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.39.0 — 2026-08-16 20:04 EDT (#147) — deferred-list upkeep: one reminder closed, one drift filed
+## Pre-Release v3.40.0 — 2026-08-16 21:00 EDT (#148) — `/invite`: one panel, both install paths
+
+**New command: `/invite`.** Dioreo's own share surface, and the first place the bot presents its two install paths as a real choice rather than a single opaque "Add App" link. One Components V2 panel: a mascot hero, then **Add to a Server** (guild install — everyone in the server can use it, needs Manage Server, `permissions=0` because the bot holds zero standing guild permissions by design) and **Add to Your Account** (user install — the commands follow you into any server, DM or group chat), each explained in prose above a matching link button, with a Website button alongside. Carries the bot-wide `visibility` option, defaults **public** (the point of running it is to show other people), and offers "Show Everyone" when run hidden.
+
+**Install URLs are now derived, not hardcoded — this fixed a latent bug.** New `utils/inviteLinks.js` resolves the application id off the live client at render time and builds all three URL shapes. `commands/help.js`'s install button previously carried the **production** client_id as a string literal, so the local dev bot's own help panel offered an install link for the production application — silent, and wrong. Both commands read the one helper now, so a second copy cannot drift.
+
+**`/help` and `/invite` swapped accent identities** (Harkirat's call, 20:38 EDT). `/help` moves to **Signal Green `#58D05A`**, hue 121° — the accent locked for the dioreo.app `/commands` page — so the in-bot command guide and the site's command page read as one surface. The freed **Coral `#FF7D5C`** goes to `/invite`, where it belongs with the coral mascot on the panel most about Dioreo's own identity. The green was taken from `local/commands-page-directions.html`'s dark-theme token, `hsl(121 56% 58%)`; Harkirat's eyedropped `#57CE59` agreed within 2/255 per channel.
+
+⚠️ **Two things about `/invite` are deliberate and will read as bugs without this note.** It is **not wired into `/help`** — no directory line, no dropdown row, no detail page, no `cmd:` autocomplete — because the placement decision was deferred on purpose; the three options are filed in `docs/db-deferred-list.md`'s 🗂️ Queued. And its **"Add to Server" link is inert on production** until Guild Install is enabled in the Developer Portal at v3 launch, which is a per-application toggle no code can set. The dev application already has it on, and that flip is the same one the v3 launch step already tracks.
+
+**Records:** `.claude/rules/rendering-and-ui.md`'s accent map gained a **non-nav commands** table — it had documented only the five nav commands plus `/timestamp`, leaving four shipped accents recorded nowhere, so anyone picking a new colour was working from an incomplete picture of what was taken. `docs/ROADMAP.md`'s "Easy bot sharing" item is corrected rather than just ticked: its premise that this must "reconcile at design time" with a v4 guild-install direction is superseded, and the genuinely open half (a share path that works outside Discord entirely) is called out as still open.
+
+**Housekeeping:** backfilled the `bddde56` hash into v3.39.0's heading below.
+
+## Pre-Release v3.39.0 — 2026-08-16 20:04 EDT (#147 · `bddde56`) — deferred-list upkeep: one reminder closed, one drift filed
 
 No code changes. Two movements on `docs/db-deferred-list.md`, both settled during the website commands-page design session.
 

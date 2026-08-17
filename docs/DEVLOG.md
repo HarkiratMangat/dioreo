@@ -172,6 +172,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 16:48 EDT — Observability layer closes: Health, roll-ups, a reporting CLI (v3.37.0-pre)
 - 2026-08-16 18:29 EDT — A small memo fix, an honest audit, and a branch checked out from under itself (v3.38.0-pre)
 - 2026-08-16 20:16 EDT — a correction filed louder than the work it came with (v3.39.0-pre)
+- 2026-08-16 21:01 EDT — /invite: two doors, and the URL bug behind them (v3.40.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3024,6 +3025,18 @@ What the animation *is* missing turned out to be a different, smaller list, and 
 So the filed entry leads with the correction rather than with the work. An item that opens with "add `/help`" invites the next reader to also tidy up the `/ar` commands they can see mentioned in the surrounding comment. An item that opens with "these are already gone, verified against both the generator and the built output, do not remove them again" spends its first paragraph stopping a plausible wrong action. That ordering is the entry's real content; the six gaps underneath it are the easy part.
 
 The same entry carries the two traps a fix will actually meet, both of which fail silently rather than loudly: the measured character caps filter an over-long value out of the rotation instead of erroring, so a badly-sized addition simply never appears; and no backtick may occur anywhere inside the `CMD_JS` template literal, comments included, because a backtick terminates the string and fails the build with a syntax error pointing at prose.
+
+## 2026-08-16 21:01 EDT — /invite: two doors, and the URL bug behind them (v3.40.0)
+
+Dioreo had no way to share itself. The install link was a raw OAuth URL you had to know to construct, and `/help`'s landing page offered a single "Install Dioreo" button that opened Discord's own Add App chooser — one opaque door onto what are really two quite different products. Guild install means everyone in a server gets the commands and nobody else installs anything; user install means the commands follow *you* into every chat you're in, including servers Dioreo has never been added to. Those are different answers to different questions, and a single button made the user guess.
+
+`/invite` presents them as a real choice: each path explained in prose, then a matching link button underneath. The prose comes first deliberately — someone running this is usually deciding *between* the two, and a pair of unexplained buttons makes that decision for them badly.
+
+**The interesting bug was in the URL, not the panel.** `/help` carried its install link as a string literal with the production application's client_id baked in. That is correct on prod and quietly wrong everywhere else: "Dioreo (Dev)" is a separate Discord application with its own id, so the dev bot's own help panel had been offering an install link for the *production* bot. Nothing errors — you just install the wrong thing. Writing `/invite` would have created a second copy of that same literal, so both now call `utils/inviteLinks.js`, which resolves the id off the live client at render time. It is the same trap this repo has already paid for twice with emoji ids and command-mention ids, and the fix is the same shape: resolve at render, never at require.
+
+**The accents swapped, and the swap says something.** `/help` had Coral, picked to match the mascot artwork. Harkirat moved `/help` onto Signal Green at hue 121° — the accent already locked for the dioreo.app `/commands` page — so that the in-bot command guide and the website's command page read as one surface rather than two products that happen to share a name. That freed Coral for `/invite`, which is the panel most about Dioreo's own identity and carries the coral mascot as its hero. The colour was pulled from the mockup's own dark-theme token rather than eyedropped from a screenshot; Harkirat's read of `#57CE59` and the source's `#58D05A` agreed within two parts in 255, which is a pleasant way to confirm you are both looking at the same thing.
+
+**Two deliberate absences.** `/invite` is not wired into `/help` at all — no directory line, no dropdown row, no `cmd:` autocomplete — because where it belongs is a genuine design fork (a new category that would also fix `/help` being unlisted in its own directory, versus folding it into Utilities, versus landing-page-only) and picking one in passing is how a directory ends up top-heavy. It is filed with all three options rather than guessed at. And the "Add to Server" link is inert on production until the Developer Portal's Guild Install toggle is flipped at v3 launch, which is a per-application setting no code can reach. Both are the kind of thing that reads as a bug six weeks later, so both are written down next to the code rather than left to be rediscovered.
 
 # Part B — Lessons Ledger (thematic)
 

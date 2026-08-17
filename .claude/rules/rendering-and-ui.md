@@ -72,4 +72,15 @@ Every ephemeral response across the bot gets one extra button appended below its
 | 5 | Season End | Neon Amber | `#F2994A` | `15898954` |
 | — | Timestamp | Cyber Teal | `#17A2A2` | `1548962` (only when a user saved a non-default `/timestamp` style; the All-Formats overview keeps this fixed teal regardless of accent-style prefs) |
 
-*`/manage` per-page accents (MP red `#FF3430`, DMZ blue `#337BA6`) are in `.claude/rules/manage-panel.md`; loadout per-category accents (`MP_CATEGORY_ACCENT`) are in `.claude/rules/loadouts.md`.*
+**The non-nav commands** (added 2026-08-16 20:58 EDT — this table listed only the five nav commands plus `/timestamp`, so four shipped accents were documented nowhere and the next person picking a colour had an incomplete picture of what was taken):
+
+| Command | Color | Hex | Decimal |
+|---|---|---|---|
+| `/help` | Signal Green | `#58D05A` | `5820506` |
+| `/invite` | Coral | `#FF7D5C` | `16743772` |
+| `/admin` | Discord Blurple | `#5865F2` | `5793266` |
+| `/bot access` | Muted Brick | `#B33F40` | `11747136` |
+
+⚠️ **`/help` and `/invite` swapped identities on 2026-08-16 20:38 EDT, and the direction matters.** `/help` held Coral (picked to match the mascot artwork); Harkirat moved `/help` onto **Signal Green, hue 121°** — the accent locked for the dioreo.app `/commands` page, so the bot's command guide and the site's command page read as one surface — and handed the freed Coral to `/invite`, where it sits with the coral mascot on the panel most about the bot's own identity. **Do not "restore" Coral to `/help`**: the two would collide. Provenance for the green, including which of the two mockup files it came from and why the other one's slightly different value is not a correction, is in `commands/help.js`'s own `PRESET_ACCENT` comment.
+
+*`/bot analytics`' five pages carry their own per-page accents (`commands/bot.js`'s `PAGES` table); `/manage` per-page accents (MP red `#FF3430`, DMZ blue `#337BA6`) are in `.claude/rules/manage-panel.md`; loadout per-category accents (`MP_CATEGORY_ACCENT`) are in `.claude/rules/loadouts.md`. `/settings`, `/colors`, `/dmz`, `/gunsmiths` and `/autobuild` have no fixed accent of their own by design — they derive one per render.*
