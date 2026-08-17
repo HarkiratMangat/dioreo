@@ -86,23 +86,17 @@ const CATEGORY_ALIASES = {
     preferences: ['pref']
 };
 
-// Signal Green #58D05A, hue 121° -- adopted 2026-08-16 20:38 EDT (Harkirat) to tie `/help` to the
-// dioreo.app `/commands` page, whose locked accent is the same 121° hue (see the
-// [[project_website_commands_page]] memory: the midpoint of the widest gap on the site's tab hue
-// wheel, 59° of clearance each way).
-// PROVENANCE, because two mockups exist and they differ: this is `local/commands-page-directions.
-// html`'s DARK-theme token, hsl(121 56% 58%) -- the exact rendering Harkirat pointed at, and the one
-// he eyedropped as #57CE59 (agrees within 2/255 per channel; the drift is screenshot colour
-// management, not a different colour). ⚠️ `local/commands-page-hybrid.html` carries a slightly
-// different pair (dark hsl(121 52% 60%) = #64CE66). Same hue, same identity -- do NOT "correct" this
-// value to that one, the directions file is the one that was chosen.
-// The site defines its accent as two theme-dependent tokens and a Discord container accent bar is
-// ONE fixed colour on both themes; the dark value is used because it is the one that was reviewed
-// and approved, and it stays perfectly legible on Discord's light theme too.
-// ⚠️ The previous value was Coral #FF7D5C, picked to match the mascot artwork's own branding. That
-// coral did not disappear -- it moved to `commands/invite.js`, which now carries it. Do not "restore"
-// it here; the two commands would collide.
-const PRESET_ACCENT = 5820506; // #58D05A
+// Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
+// "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
+// ⚠️ THIS BRIEFLY BECAME Signal Green #58D05A on 2026-08-16 20:38 EDT, to tie `/help` to the
+// dioreo.app `/commands` page's 121° accent, and Harkirat REVERSED IT at 21:54 EDT after seeing both
+// live: "scratch the green colour on /help, let's keep the coral colour for both /help and /invite."
+// So `/help` and `/invite` deliberately SHARE this coral -- they are the bot's two meta commands (the
+// ones about Dioreo itself rather than about CODM data), and the mascot they both display is coral.
+// Recorded because the green is written up in the [[project_website_commands_page]] memory and in
+// `local/commands-page-directions.html`, and a session finding that trail could reasonably conclude
+// the swap never happened or was left half-done. It happened, and it was undone on purpose.
+const PRESET_ACCENT = 16743772; // #FF7D5C
 
 const HARKIRAT_ID = '1139845545754632283';
 const WEBSITE_URL = 'https://dioreo.app';
