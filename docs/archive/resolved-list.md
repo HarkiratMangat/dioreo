@@ -22,6 +22,12 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 
 ## Shipped / fixed
 
+### ✅ `ANALYTICS_HMAC_KEY` backed up to a password manager — closed 2026-08-16 19:02 EDT
+
+**Original item, kept verbatim:** `[P1 · XS · Sonnet5-Medium · 👤Harkirat does this]` *(filed 2026-08-16 16:33 EDT, carried forward across all four observability-layer stages — stage 2 minted the key, stage 3 and stage 4 both flagged it and neither is the right moment to close it.)* The key hashes every `userHash` pseudonym across the diagnostic and event planes; losing it orphans every historical row permanently, with no recovery path. **Do before the event-plane code (stage 2 onward) deploys to prod** — not before any of these stages merge, since a merged-but-undeployed stage has no live key at risk yet. **Verify:** the key is stored somewhere outside this repo/VM that survives a lost or rebuilt VM.
+
+**Outcome:** Harkirat confirmed live (2026-08-16 19:00 EDT) — the key is saved to a password manager, the VM's `.env` matches local `.env` (an earlier VM/`.env` mismatch found this same session was fixed via `sed`), and `.env.dev` correctly carries its own separate key rather than reusing prod's. All three legs of the original concern (no recovery path, drift between VM and local, dev/prod key isolation) are resolved.
+
 ### ✅ Memoize `cloudinaryCache.js`'s Cloudinary lookups — closed 2026-08-16 18:29 EDT (PR #146)
 
 **Original item, kept verbatim:** `[P3 · XS · Sonnet5-M]` **Memoize `cloudinaryCache.js`'s `getCachedUrl()`/`getCachedUrlFuzzy()` Cloudinary lookups.** Filed 2026-08-10 14:05 EDT, alongside the nameplate/decoration WebP work that found and fixed the identical bug in `utils/nameplateWebpCache.js`/`utils/decorationWebpCache.js`: a bare `cloudinary.api.resource()` call with no in-memory memo, measured live at 138-470ms **per call**, paid on every single lookup even when the result never changes. The fix there (a bounded `Map` keyed by `public_id`, same pattern as `utils/nameplateBedImage.js`'s `bedCache`/`utils/resizedImage.js`, populated on both a cache-read hit and right after a fresh upload) is a direct, copy-adjacent template — `cloudinaryCache.js` backs `/draw prices` thumbnails (`temp_draws/`), a completely different feature from View Colors, so this is its own small session, not a follow-on to the WebP work. Genuinely small (`XS`) — the pattern is already proven working code to adapt, not new design.

@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.38.0 — 2026-08-16 18:29 EDT (#146) — draw thumbnails skip a repeat Cloudinary round trip
+## Pre-Release v3.39.0 — 2026-08-16 20:04 EDT (#147) — deferred-list upkeep: one reminder closed, one drift filed
+
+No code changes. Two movements on `docs/db-deferred-list.md`, both settled during the website commands-page design session.
+
+**Closed — the `ANALYTICS_HMAC_KEY` backup reminder**, carried forward across all four observability-layer stages. Harkirat confirmed live: the key is saved to a password manager, the VM's `.env` matches the local `.env` (an earlier mismatch found in that same session was fixed via `sed`), and `.env.dev` correctly carries its own separate key rather than reusing prod's. All three legs of the original concern — no recovery path, VM/local drift, dev/prod key isolation — are discharged, and the item is now in `docs/archive/resolved-list.md`.
+
+**Filed — the landing page's command animation has drifted from the live command set.** `SPECS` in `CMD_JS` (`scripts/buildLegalPages.js`) is missing `/help` and `/draw calculator` entirely, shows `/colors` and `/patch notes` bare despite both having gained options since, offers two of `/draw prices`' three regions, and carries two comments claiming "sixteen commands" against an 11-entry array. Every item came from diffing `SPECS` against the real command tree dumped from `commands/*.js` `.toJSON()`, not from reading the source.
+
+⚠️ **The filed entry leads with a correction rather than with the work, deliberately.** The old `/all` and per-category `/ar` `/smg` commands are **already gone** from the animation — the 2026-08-15 `/gunsmiths` consolidation removed them in the same change, verified against both the generator and the built `public/index.html`. A session acting on the older warning comment could plausibly remove them a second time, so the item says so before it says anything else. The entry also records the two traps a fix will meet: the measured character caps (`MAXLEN`/`MAXLEN2`) silently *filter* an over-long value rather than erroring, and no backtick may appear anywhere inside the `CMD_JS` template literal, comments included.
+
+**Housekeeping:** backfilled the `1752706` hash into v3.38.0's heading above.
+
+## Pre-Release v3.38.0 — 2026-08-16 18:29 EDT (#146 · `1752706`) — draw thumbnails skip a repeat Cloudinary round trip
 
 `utils/cloudinaryCache.js`'s `getCachedUrl()` (also used by `getCachedUrlFuzzy()`'s exact-slug check) had a bare `cloudinary.api.resource()` call with no in-memory memo — 138-470ms paid on every single lookup even though the result never changes once cached, the same bug already fixed in `nameplateWebpCache.js`/`decorationWebpCache.js`. Closes the deferred item at `docs/db-deferred-list.md` (filed 2026-08-10, now in `docs/archive/resolved-list.md`).
 

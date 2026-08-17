@@ -171,6 +171,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage (v3.36.0-pre)
 - 2026-08-16 16:48 EDT — Observability layer closes: Health, roll-ups, a reporting CLI (v3.37.0-pre)
 - 2026-08-16 18:29 EDT — A small memo fix, an honest audit, and a branch checked out from under itself (v3.38.0-pre)
+- 2026-08-16 20:16 EDT — a correction filed louder than the work it came with (v3.39.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3011,6 +3012,18 @@ The deferred item at `docs/db-deferred-list.md:545` (filed 2026-08-10) was small
 
 ### Lesson
 A small, well-scoped fix is exactly the kind of change an audit pass is cheap to run on and easy to skip, because "it's small" reads as "it's obviously fine." The two things sequential-thinking found here weren't code bugs at all — they were a comment overclaiming its own evidence and a doc that hadn't caught up to a change made three sibling files ago. Neither would fail a test. Both would mislead a future session. And when a git branch mixup makes a commit *look* gone, `git reflog` is the first move, not a re-diagnosis of what "must have" happened — the commit object doesn't disappear just because HEAD moved.
+
+## 2026-08-16 20:16 EDT — a correction filed louder than the work it came with (v3.39.0-pre)
+
+This release moves two items on a tracking list and changes no code, but the reason it needed writing down is the shape of one of them.
+
+The session it came out of started from a request to remove the old `/all` and per-category `/ar` `/smg` commands from the landing page's typewriter animation. They were already gone — the 2026-08-15 `/gunsmiths` consolidation had removed them in the same change, and the source even carries a comment warning future sessions not to resurrect them on the strength of an older warning. Checking that took one `rg` across the generator and the built page. Acting on the request without checking would have produced a confident diff against something that did not exist.
+
+What the animation *is* missing turned out to be a different, smaller list, and it was only visible by diffing `SPECS` against the real command tree dumped from `commands/*.js` `.toJSON()` rather than by reading the source: no `/help`, no `/draw calculator`, `/colors` and `/patch notes` drawn bare despite both having gained options, two of `/draw prices`' three regions, and two comments still claiming "sixteen commands" over an eleven-entry array. Reading the file would have found none of them, because the file looks correct — it is correct about a command set that has moved.
+
+So the filed entry leads with the correction rather than with the work. An item that opens with "add `/help`" invites the next reader to also tidy up the `/ar` commands they can see mentioned in the surrounding comment. An item that opens with "these are already gone, verified against both the generator and the built output, do not remove them again" spends its first paragraph stopping a plausible wrong action. That ordering is the entry's real content; the six gaps underneath it are the easy part.
+
+The same entry carries the two traps a fix will actually meet, both of which fail silently rather than loudly: the measured character caps filter an over-long value out of the rotation instead of erroring, so a badly-sized addition simply never appears; and no backtick may occur anywhere inside the `CMD_JS` template literal, comments included, because a backtick terminates the string and fails the build with a syntax error pointing at prose.
 
 # Part B — Lessons Ledger (thematic)
 
