@@ -181,6 +181,40 @@ check('sendV2Payload: still returns the underlying REST response value unchanged
     assert.deepStrictEqual(result, { id: 'return-value-check', ok: true });
 });
 
+// --- link buttons are never disabled, and never arm a timer (added 2026-08-16 21:15 EDT) ---------
+// Found while shipping `/invite`, whose public panel is link buttons ONLY: it armed a timer that ten
+// minutes later disabled the install buttons on a message whose whole purpose is to be clicked later
+// by whoever scrolls past. `/help` had the same defect quietly. A link button carries no custom_id,
+// fires no interaction and depends on no token, so it cannot go stale and must never be disabled.
+const LINK_BTN = { type: 2, style: 5, label: 'Add to Server', url: 'https://discord.com/oauth2/authorize?client_id=1' };
+
+check('hasInteractiveComponents: FALSE for a panel whose only buttons are links (the /invite shape)', () => {
+    const tree = [{ type: 17, components: [{ type: 10, content: 'x' }, { type: 1, components: [LINK_BTN, { ...LINK_BTN, label: 'Website' }] }] }];
+    assert.strictEqual(hasInteractiveComponents(tree), false);
+});
+
+check('hasInteractiveComponents: still TRUE when a link button sits beside a real one (the /help shape)', () => {
+    const tree = [{ type: 17, components: [{ type: 1, components: [LINK_BTN] }, { type: 1, components: [{ type: 3, custom_id: 'help_category' }] }] }];
+    assert.strictEqual(hasInteractiveComponents(tree), true);
+});
+
+check('disableAllComponents: leaves a link button enabled while disabling its real siblings', () => {
+    const { disableAllComponents } = passiveExpiry;
+    const tree = [{ type: 17, components: [{ type: 1, components: [LINK_BTN, { type: 2, style: 1, custom_id: 'real' }] }, { type: 1, components: [{ type: 3, custom_id: 'sel' }] }] }];
+    const out = disableAllComponents(tree);
+    const [link, real] = out[0].components[0].components;
+    assert.strictEqual(link.disabled, undefined, 'link button must not be disabled');
+    assert.strictEqual(real.disabled, true, 'a real button must still be disabled');
+    assert.strictEqual(out[0].components[1].components[0].disabled, true, 'a select must still be disabled');
+});
+
+check('a link button is recognised by its url even if style is missing (defensive, not style-only)', () => {
+    const { disableAllComponents } = passiveExpiry;
+    const styleless = { type: 2, label: 'Website', url: 'https://dioreo.app' };
+    assert.strictEqual(hasInteractiveComponents([{ type: 1, components: [styleless] }]), false);
+    assert.strictEqual(disableAllComponents([styleless])[0].disabled, undefined);
+});
+
 // --- cleanup -----------------------------------------------------------------------------------
 run().then(() => {
     global.setTimeout = realSetTimeout;

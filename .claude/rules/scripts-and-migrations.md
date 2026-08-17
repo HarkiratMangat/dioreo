@@ -58,6 +58,15 @@ Migrates the `rendertimings` collection into the event plane **with its raw `dis
 
 23 pure-logic cases over `utils/eventStore.js`, wired into `npm test`. The one that matters serialises a finished event document and **string-searches** it for a raw Discord ID, because the realistic regression is a `detail` value that happens to carry one or a `customIdPrefix` capture grabbing a segment that embeds one — neither of which a field-by-field schema review would catch. It stubs `models/AnalyticsEvent` and `models/SearchTerm` through `require.cache`, so it needs no Mongo. ⚠️ **It was verified able to FAIL** (the scrub was disabled and the test went red) — a falsifier that cannot fail manufactures confidence.
 
+## The observability layer's stage-4 test scripts (added 2026-08-16 17:07 EDT, v3.37.0-pre)
+
+Three tracked scripts from the health/roll-up stage, all wired into `npm test` and all needing no Mongo:
+- **`rollupStore.test.js`** — pure-logic cases over `utils/rollupStore.js`, the aggregation half (`RollupState` plus the daily roll-ups `/bot analytics`' Health page reads).
+- **`cloudObservability.test.js`** — cases over `utils/cloudObservability.js`, the GCP Cloud Monitoring/Error Reporting reader behind the Health page's three-tier error model.
+- **`analytics.test.mjs`** — the reporting-side cases.
+
+⚠️ **All three shipped with no entry in this pointer map**, which `docs-audit`'s `scripts-documented` check reports — and it reports at **WARN**, never ERROR, which is exactly why three of them accumulated unnoticed rather than one being caught on the day. If you add a script here, add its line in the same change; a warning that nothing blocks on is only as good as the habit. The subsystem itself is documented in `docs/superpowers/specs/2026-08-16-observability-layer-design.md`.
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 

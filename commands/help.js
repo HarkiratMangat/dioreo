@@ -36,11 +36,14 @@
 // Every emoji is one of the bot's own existing custom icons (emojiMap.js). Per the emoji-capture
 // rule (.claude/rules/rendering-and-ui.md), data below stores `emojiKey` STRINGS, never the emoji
 // mention string itself -- every lookup happens inside a render function, never at require()-time.
-// ⚠️ `dioreoCombo`/`loadouts` were JUST uploaded to the PROD Discord application and don't exist yet
-// on the separate DEV application ("Dioreo (Dev)") -- refreshEmojiIds() reports them "unmatched" on
-// boot there (fail-soft: cosmetics never block the bot), so they render broken on the dev bot
-// specifically until Harkirat also uploads copies there. Not a code bug -- the payload itself is
-// correct (verified directly against the generated JSON).
+// ✅ RESOLVED 2026-08-16 21:06 EDT -- this used to warn that `dioreoCombo`/`loadouts` had JUST been
+// uploaded to the PROD application and did not exist yet on the separate DEV application ("Dioreo
+// (Dev)"), so they rendered as literal text there. Harkirat has since uploaded copies: a dev-bot
+// boot now reports "54 re-pointed to this app, 0 dev-overridden, 0 unmatched", so every emoji this
+// panel uses resolves on both applications. Kept as history rather than deleted because the
+// underlying mechanism is still the thing to understand -- refreshEmojiIds() matches on NAME at
+// boot and is fail-soft, so a newly-added emoji that exists on only one of the two applications
+// will show this same symptom again, and "unmatched" in the boot log is where you would see it.
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
@@ -85,12 +88,18 @@ const CATEGORY_ALIASES = {
 
 // Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
 // "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
+// ⚠️ THIS BRIEFLY BECAME Signal Green #58D05A on 2026-08-16 20:38 EDT, to tie `/help` to the
+// dioreo.app `/commands` page's 121° accent, and Harkirat REVERSED IT at 21:54 EDT after seeing both
+// live: "scratch the green colour on /help, let's keep the coral colour for both /help and /invite."
+// So `/help` and `/invite` deliberately SHARE this coral -- they are the bot's two meta commands (the
+// ones about Dioreo itself rather than about CODM data), and the mascot they both display is coral.
+// Recorded because the green is written up in the [[project_website_commands_page]] memory and in
+// `local/commands-page-directions.html`, and a session finding that trail could reasonably conclude
+// the swap never happened or was left half-done. It happened, and it was undone on purpose.
 const PRESET_ACCENT = 16743772; // #FF7D5C
 
 const HARKIRAT_ID = '1139845545754632283';
 const WEBSITE_URL = 'https://dioreo.app';
-// Matches .env's own CLIENT_ID -- verified 2026-08-08 20:57 EDT, not guessed.
-const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1786237039/site_assets/dioreo-mascot-coral.png';
 
 // Single source of truth for the visibility option's copy -- reused verbatim as the real
@@ -407,11 +416,16 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             }],
             accessory: { type: 11, media: { url: MASCOT_URL } }
         });
+        // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant
+        // the DEV bot's own help panel offered an install link for the production application --
+        // silent, and wrong. utils/inviteLinks.js resolves the id off the live client instead; its
+        // `chooser` shape is byte-identical to the old literal, so this button is unchanged on prod.
+        const { buildInviteUrls } = require('../utils/inviteLinks');
         components.push({
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                { type: 2, style: 5, label: 'Install Dioreo', url: INSTALL_URL }
+                { type: 2, style: 5, label: 'Install Dioreo', url: buildInviteUrls(client).chooser }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });

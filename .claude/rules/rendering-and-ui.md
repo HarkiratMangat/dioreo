@@ -72,4 +72,17 @@ Every ephemeral response across the bot gets one extra button appended below its
 | 5 | Season End | Neon Amber | `#F2994A` | `15898954` |
 | — | Timestamp | Cyber Teal | `#17A2A2` | `1548962` (only when a user saved a non-default `/timestamp` style; the All-Formats overview keeps this fixed teal regardless of accent-style prefs) |
 
-*`/manage` per-page accents (MP red `#FF3430`, DMZ blue `#337BA6`) are in `.claude/rules/manage-panel.md`; loadout per-category accents (`MP_CATEGORY_ACCENT`) are in `.claude/rules/loadouts.md`.*
+**The non-nav commands** (added 2026-08-16 20:58 EDT — this table listed only the five nav commands plus `/timestamp`, so four shipped accents were documented nowhere and the next person picking a colour had an incomplete picture of what was taken):
+
+| Command | Color | Hex | Decimal |
+|---|---|---|---|
+| `/help` | Coral | `#FF7D5C` | `16743772` |
+| `/invite` | Coral | `#FF7D5C` | `16743772` |
+| `/admin` | Discord Blurple | `#5865F2` | `5793266` |
+| `/bot access` | Muted Brick | `#B33F40` | `11747136` |
+
+⚠️ **`/help` and `/invite` SHARE coral on purpose — this is the one duplicate in the table, and it is not an oversight.** They are the bot's two **meta** commands (about Dioreo itself, rather than about CODM data), and both display the coral mascot artwork. Every *content* command has a colour of its own; these two sit outside that scheme rather than competing inside it.
+
+⚠️ **A short-lived decision on 2026-08-16 20:38 EDT moved `/help` to Signal Green `#58D05A`** (hue 121°, the accent locked for the dioreo.app `/commands` page) specifically so `/invite` could take coral alone. **Harkirat reversed it at 21:54 EDT after seeing both live** — *"scratch the green colour on /help, let's keep the coral colour for both /help and /invite."* This is recorded rather than erased because the green has a real paper trail — the [[project_website_commands_page]] memory and `local/commands-page-directions.html` — and a session following it could reasonably conclude the swap was never finished. **It was finished, then deliberately undone. Do not re-apply it, and do not mint `/invite` a unique accent to "resolve" the duplicate.**
+
+*`/bot analytics`' five pages carry their own per-page accents (`commands/bot.js`'s `PAGES` table); `/manage` per-page accents (MP red `#FF3430`, DMZ blue `#337BA6`) are in `.claude/rules/manage-panel.md`; loadout per-category accents (`MP_CATEGORY_ACCENT`) are in `.claude/rules/loadouts.md`. `/settings`, `/colors`, `/dmz`, `/gunsmiths` and `/autobuild` have no fixed accent of their own by design — they derive one per render.*
