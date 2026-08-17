@@ -18,6 +18,7 @@ const { isCloudinaryWriteBlocked, IS_DEV } = require('./cloudinaryDevGuard');
 const { catalogCacheKey, legacyCacheKey, filenameForPublicId, lookupCatalogEntry } = require('./collectibleCacheKey');
 const { extractAlphaFrames, encodeWebpFromFrames, poolFramesIntoMontage, readImageSize } = require('./animatedMediaPipeline');
 const { uploadToStorageChannel } = require('./discordCdnStorage');
+const { recordDiscordCdnAsset, recoverCloudinaryFromDiscordCdnAsset } = require('./discordCdnAssetIndex');
 const { recordRenderTiming } = require('./eventStore'); // cold-render perf, folded into the event plane 2026-08-16 (was models/RenderTiming.js)
 const { getColorPalette, paletteContextFields, readPaletteContext, PALETTE_COUNTS } = require('./colorExtract');
 
@@ -63,7 +64,7 @@ function memoizeResolved(publicId, resolved) {
     resolvedCache.set(publicId, resolved);
 }
 
-// Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already cached without paying for a full resolve. `renderSource` surfaces the context's `render_source` marker ('catalog'|'fallback'|undefined for a pre-existing resource that predates this field).
+// Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already cached without paying for a full resolve. `renderSource` surfaces the context's `render_source` marker ('catalog'|'fallback'|'recovered'|undefined for a pre-existing resource that predates this field).
 async function getCachedDecorationWebp(decorationAsset, catalog) {
     const publicId = publicIdFor(decorationAsset, catalog);
     if (resolvedCache.has(publicId)) return resolvedCache.get(publicId);
@@ -76,15 +77,29 @@ async function getCachedDecorationWebp(decorationAsset, catalog) {
             discordCdnUrl: result.context?.custom?.discord_cdn_url || null,
             // Null on a resource rendered BEFORE palette caching shipped -- resolveDecorationWebp backfills those, since the WebP is already cached and would never re-render to get one. Null both when no palette was ever stored AND when the stored one predates the current extractor -- readPaletteContext checks the version marker, and both cases route through healPalette below. See colorExtract.js's PALETTE_ALGO_VERSION for the invalidation rule.
             palette: readPaletteContext(result.context?.custom, FRAME_OPTS),
-            renderSource: result.context?.custom?.render_source || null
+            renderSource: result.context?.custom?.render_source || null,
+            // Full raw context, kept so healPalette below can MERGE its fresh palette fields into it rather than replacing the whole map -- see healPalette's own comment and utils/nameplateWebpCache.js's matching fix.
+            rawContext: result.context?.custom || null
         };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
         if (errorHttpCode(err) !== 404) {
             console.error(`Decoration WebP cache lookup failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
+            return null;
         }
-        return null;
+        // 404: either genuinely never rendered, OR the Cloudinary resource was deleted out-of-band after an earlier render already posted to the Discord storage channel -- see utils/discordCdnAssetIndex.js's recoverCloudinaryFromDiscordCdnAsset for the full reasoning. Checked before treating this as a cold miss.
+        const recovered = await recoverCloudinaryFromDiscordCdnAsset(publicId, FOLDER);
+        if (!recovered) return null;
+        const resolved = {
+            cloudinaryUrl: recovered.cloudinaryUrl,
+            discordCdnUrl: recovered.discordCdnUrl,
+            palette: null, // re-derived by healPalette, triggered by resolveDecorationWebp's existing `cached.palette ? cached : healPalette(...)` branch
+            renderSource: 'recovered',
+            rawContext: { discord_cdn_url: recovered.discordCdnUrl, render_source: 'recovered' }
+        };
+        memoizeResolved(publicId, resolved);
+        return resolved;
     }
 }
 
@@ -210,7 +225,7 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
                 ]
             }
         ];
-        const [discordCdnUrl, uploadResult] = await Promise.all([
+        const [storageUpload, uploadResult] = await Promise.all([
             uploadToStorageChannel(
                 process.env.DECORATION_CACHE_CHANNEL_ID,
                 filename,
@@ -224,7 +239,16 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
                 { public_id: publicId, asset_folder: `${FOLDER}/_uncataloged`, overwrite: true, invalidate: true, resource_type: 'image' }
             )
         ]);
-        await attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, { render_source: 'fallback' });
+        const discordCdnUrl = storageUpload?.url || null;
+        const messageId = storageUpload?.messageId || null;
+        await attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, { render_source: 'fallback', discord_message_id: messageId });
+        // Durable secondary index (2026-08-17 19:09 EDT) -- see utils/discordCdnAssetIndex.js's header. Written alongside the Cloudinary context patch above, not instead of it, so a later Cloudinary-side deletion of THIS resource can still recover its message.
+        if (discordCdnUrl && messageId) {
+            await recordDiscordCdnAsset({
+                publicId, kind: 'decoration', channelId: process.env.DECORATION_CACHE_CHANNEL_ID,
+                messageId, discordCdnUrl, filename
+            });
+        }
         const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -264,9 +288,10 @@ async function healPalette(cached, decorationAsset, catalog, decorationUrl) {
         } finally {
             await extracted.cleanup();
         }
-        const context = { ...paletteContextFields(palette, FRAME_OPTS) };
-        if (!context.palette) return cached;
-        // Re-send discord_cdn_url -- `context` replaces the whole map, so patching the palette alone would wipe the url this module works hard to persist.
+        const paletteFields = paletteContextFields(palette, FRAME_OPTS);
+        if (!paletteFields.palette) return cached;
+        // MERGE onto the full previously-read context, never replace it -- see utils/nameplateWebpCache.js's matching fix (2026-08-17 19:09 EDT) for the full reasoning: `context` in a Cloudinary `api.update` REPLACES the whole map, so writing only `{palette, palette_version, discord_cdn_url}` here silently wiped render_source/discord_message_id/catalog metadata on every palette heal.
+        const context = { ...(cached.rawContext || {}), ...paletteFields };
         if (cached.discordCdnUrl) context.discord_cdn_url = cached.discordCdnUrl;
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
         const resolved = { ...cached, palette };

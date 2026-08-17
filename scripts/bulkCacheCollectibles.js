@@ -27,6 +27,7 @@ const {
     publicIdFor: decorationPublicIdFor, FOLDER: DECORATION_FOLDER
 } = require('../utils/decorationWebpCache');
 const { uploadMultipleToStorageChannel } = require('../utils/discordCdnStorage');
+const { recordDiscordCdnAsset } = require('../utils/discordCdnAssetIndex');
 
 function parseArgs(argv) {
     const args = { batchSize: 5, delayMs: 3000, kind: 'all' };
@@ -231,7 +232,8 @@ async function processGroup(group, args, stats) {
     for (const doc of group.variants) {
         const cached = await getCachedFor(doc);
         if (cached && cached.discordCdnUrl) {
-            if (cached.renderSource === 'fallback') toHeal.push({ doc, cached });
+            // 'recovered' (2026-08-17 19:09 EDT, see utils/discordCdnAssetIndex.js) is treated the same as 'fallback' here: a resource restored from the durable Discord-message index after its Cloudinary resource was deleted out-of-band never had its catalog metadata (sku_id/collection/etc) re-attached, since the recovery path deliberately doesn't try to remember that -- this branch is what closes the loop.
+            if (cached.renderSource === 'fallback' || cached.renderSource === 'recovered') toHeal.push({ doc, cached });
             else toSkip.push(doc);
             continue;
         }
@@ -274,10 +276,20 @@ async function processGroup(group, args, stats) {
         const files = chunk.map(({ render }) => ({ name: render.filename, contentType: 'image/webp', data: render.webpBuffer }));
         const components = buildGroupComponents(group, chunk);
         const channelId = group.kind === 'nameplate' ? process.env.NAMEPLATE_CACHE_CHANNEL_ID : process.env.DECORATION_CACHE_CHANNEL_ID;
-        const urls = await uploadMultipleToStorageChannel(channelId, files, components);
+        const grouped = await uploadMultipleToStorageChannel(channelId, files, components);
+        const urls = grouped?.urls || null;
+        const messageId = grouped?.messageId || null;
         for (let i = 0; i < chunk.length; i++) {
             const { doc, render } = chunk[i];
-            await attachFor(doc, render.publicId, render.palette, urls ? urls[i] : null, catalogExtra(doc));
+            const url = urls ? urls[i] : null;
+            await attachFor(doc, render.publicId, render.palette, url, { ...catalogExtra(doc), discord_message_id: messageId });
+            // Durable secondary index (2026-08-17 19:09 EDT) -- see utils/discordCdnAssetIndex.js's header. One row per variant, all sharing this grouped message's id, so a LATER deletion of just one variant's Cloudinary resource can recover that variant alone without touching the others still sharing this message.
+            if (url && messageId) {
+                await recordDiscordCdnAsset({
+                    publicId: render.publicId, kind: doc.kind, channelId, messageId,
+                    discordCdnUrl: url, filename: render.filename
+                });
+            }
             await markCached(doc);
             stats.cached++;
         }
