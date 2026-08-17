@@ -78,6 +78,7 @@ node --watch --env-file=.env.dev index.js
 ```
 - `--watch` is Node's built-in file watcher: on any change in the module graph it does a **full process restart** (new PID, new gateway + Mongo connection, `index.js` re-run top to bottom). It is **not** hot-reload — Node's module cache is immutable once loaded, so a restart is the only correct answer. Switching branches restarts it too, which is what makes "test any PR" a one-command operation. Node explicitly documents `--watch` as **not for production**; this is a local-dev tool only. It does NOT satisfy the roadmap's partial-hot-reload item (`docs/ROADMAP.md`), which is about avoiding a VM redeploy — a different problem.
 - **Caveat:** every restart re-registers all 20 global slash commands, which Discord rate-limits. Rapid saves can surface registration errors in the log; harmless (they're already registered).
+- **The instance lock (`utils/instanceLock.js`) tolerates this restart pattern as of 2026-08-17 13:07 EDT.** A `--watch` restart kills the old process and starts the new one before the old one's async lock release lands, so the new process used to read a lock that looked fresh and refuse to start — silently, with the terminal still looking healthy. It now also checks whether the lock's pid is still alive on this host before refusing, which closes that race. See `scripts/instanceLock.test.js` for the proof.
 
 **What's separate from prod, and what's shared:**
 | Thing | Dev | Note |

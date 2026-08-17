@@ -251,7 +251,53 @@ redistribute them as standalone assets. See emoji.gg's terms
 Creators whose work appears here and who want different attribution, or removal,
 should email harkirat117@gmail.com. Requests are actioned promptly.
 
-4A.2  OTHER VISUAL MATERIAL
+4A.2  ICONS
+
+Some icons used in the Bot's interface and on the website were designed by
+third-party artists and obtained through Flaticon (https://www.flaticon.com),
+in Flaticon's own required attribution format. With thanks:
+
+Icons designed by [Andy Horvath](https://www.flaticon.com/authors/andy-horvath) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Anggara](https://www.flaticon.com/authors/anggara) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Arkinasi](https://www.flaticon.com/authors/arkinasi) from [Flaticon](https://www.flaticon.com)
+Icons designed by [bukeicon](https://www.flaticon.com/authors/bukeicon) from [Flaticon](https://www.flaticon.com)
+Icons designed by [customicondesign_1](https://www.flaticon.com/authors/customicondesign-1) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Dreamcreateicons](https://www.flaticon.com/authors/dreamcreateicons) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Flat Icons](https://www.flaticon.com/authors/flat-icons) from [Flaticon](https://www.flaticon.com)
+Icons designed by [Kemalmoe](https://www.flaticon.com/authors/kemalmoe) from [Flaticon](https://www.flaticon.com)
+Icons designed by [mj](https://www.flaticon.com/authors/mj) from [Flaticon](https://www.flaticon.com)
+Icons designed by [PixelVerse](https://www.flaticon.com/authors/pixelverse) from [Flaticon](https://www.flaticon.com)
+
+>> ONE CREDIT STILL PENDING. An eleventh attribution, for an author given as
+>> "Magnific", could not be verified and is deliberately NOT listed above.
+>> https://www.flaticon.com/authors/magnific 404s, no search engine (Google,
+>> Bing, DuckDuckGo) surfaces a Flaticon author page under that name,
+>> Flaticon's own site search treats "magnific" as an icon-tag query rather
+>> than an author, and Flaticon's Authors directory has no such profile.
+>> "Magnific" is also, confusingly, the parent company's OWN rebranded
+>> identity (Freepik -> Magnific; id.magnific.com is their login SSO), which
+>> is the likely source of the collision. A wrong URL here would credit
+>> nobody, or the wrong person, while looking like compliance -- worse than
+>> the gap this note documents. Tracked in docs/db-deferred-list.md pending
+>> the correct name or link from Harkirat.
+
+LICENSE TIER — CONFIRMED. Flaticon's free download tier requires attribution;
+its Premium subscription is the one that removes that requirement ("No
+attribution required" is listed as a premium benefit on Flaticon's own
+download panel). The Bot satisfies the free tier: it is distributed free of
+charge, has no paid tier, no subscription, and no in-app purchase, so no user
+is ever charged for access to these icons, and attribution is given here as
+required. See Flaticon's terms of use (https://www.flaticon.com/legal).
+
+  >> STANDING CONSTRAINT — READ BEFORE MONETISING. Same shape as 4A.1's:
+  >> if the Bot ever introduces a paid tier, subscription, or any paywall,
+  >> re-confirm these icons' free-tier terms still apply, or replace/license
+  >> them separately first. Cross-referenced in TERMS.md §4.2.
+
+Creators whose work appears here and who want different attribution, or
+removal, should email harkirat117@gmail.com. Requests are actioned promptly.
+
+4A.3  OTHER VISUAL MATERIAL
 
 Game imagery, weapon renders, and screenshots displayed by the Bot are covered by
 Section 5 below and remain the property of their respective owners.
