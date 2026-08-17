@@ -25,10 +25,29 @@ function lockIdForToken(token) {
 // .claude/rules/accent-and-colors.md). Call this once at boot, before client.login(); it resolves
 // true if this process may proceed, false if another instance of the SAME bot token already holds
 // a fresh heartbeat.
+// A `node --watch` restart kills the old process and starts the new one before the old one's async
+// releaseLock() (a Mongo delete) has landed, so the new process can read a lock doc that's only ~1s
+// stale and wrongly refuse to start (the watcher never retries, so this can hang the dev session
+// until the next file save). A dead pid on THIS host is provably not running, whatever its heartbeat
+// says -- process.kill(pid, 0) sends no signal, it only probes existence, throwing ESRCH if the
+// process is gone. Cross-host locks (this Mac vs. the prod VM) can't be probed this way and must stay
+// untouched: a different hostname is reported alive unconditionally. Exported so the pid-probe branch
+// is unit-testable without a live process to kill (see scripts/instanceLock.test.js).
+function isHolderAlive(existing) {
+    if (existing.hostname !== os.hostname()) return true;
+    try {
+        process.kill(existing.pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 async function acquireInstanceLock() {
     const lockId = lockIdForToken(process.env.BOT_TOKEN);
     const existing = await BotInstance.findById(lockId);
-    if (existing && Date.now() - existing.lastHeartbeat.getTime() < STALE_MS) {
+    const heartbeatFresh = existing && Date.now() - existing.lastHeartbeat.getTime() < STALE_MS;
+    if (heartbeatFresh && isHolderAlive(existing)) {
         const ageSec = Math.round((Date.now() - existing.lastHeartbeat.getTime()) / 1000);
         console.error(`❌ Refusing to start: another instance of this bot token is already running on host "${existing.hostname}" (pid ${existing.pid}), last heartbeat ${ageSec}s ago.`);
         sendAlert('Startup refused: instance already running', `Existing lock held by ${existing.hostname} (pid ${existing.pid}), last heartbeat ${ageSec}s ago.`, 'error');
@@ -60,4 +79,4 @@ async function acquireInstanceLock() {
     return true;
 }
 
-module.exports = { acquireInstanceLock };
+module.exports = { acquireInstanceLock, isHolderAlive };
