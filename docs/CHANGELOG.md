@@ -75,7 +75,12 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.41.0 — 2026-08-17 09:50 EDT (#149) — `/invite` design pass, and a 95% smaller mascot
+## Pre-Release v3.42.0 — 2026-08-17 13:36 EDT (#150) — a `--watch` restart race closes, and every Flaticon icon author gets credited
+
+- **`node --watch` restarts no longer lose the race with the instance lock.** The dev-bot workflow (`node --watch --env-file=.env.dev index.js`) could kill the bot for the rest of a session: a restart kills the old process before its async Mongo lock release lands, so the new process reads a heartbeat that still looks fresh and wrongly refuses to start — silently, with the terminal still looking healthy. `utils/instanceLock.js`'s `acquireInstanceLock` now also checks whether the lock's pid is still alive on this host (`process.kill(pid, 0)`) before honoring a fresh heartbeat; cross-host locking (a local Mac vs. the prod VM) is untouched, since a remote pid can't be probed this way. Verified live: a genuine boot, a real concurrent-instance refusal (the guard still works), four rapid `--watch` restarts (zero false refusals, previously the exact failure), and the dead-pid-stale-lock edge case (an unclean exit now restarts instantly instead of waiting out the 30s staleness window).
+- **`NOTICE` now credits all 11 Flaticon icon authors**, in Flaticon's required attribution format (its free tier requires attribution). 10 of 11 were verified live one-by-one via a real browser (Flaticon blocks bot fetches outright); `customicondesign_1`'s actual URL slug turned out to be `customicondesign-1` — hyphenated, despite the underscore in its own display name — which a naive derivation would have gotten wrong. The 11th, Magnific, is credited by name with no author link: Flaticon's own parent company recently renamed itself Freepik → Magnific too, which broke that individual author's profile URL on Flaticon's end.
+
+## Pre-Release v3.41.0 — 2026-08-17 09:50 EDT (#149 · `ce87e72`) — `/invite` design pass, and a 95% smaller mascot
 
 **`/invite` rebuilt from Harkirat's own mockup** (`local/invite_ui.json`). Two structural simplifications came out of it. The two explicit guild/user buttons collapse to **one `Invite` button on the bare chooser URL**, letting Discord's own Add App picker offer whichever install types the application has enabled — the platform does the branching, so the panel cannot drift from the Developer Portal's settings. And the fenced share block becomes a real **`Share Link` button**, whose handler replies with the raw `discord.com/oauth2` URL **and nothing else**: Discord unfurls its own authorization links into an app card, and a bare body makes "copy text" yield exactly the link.
 
