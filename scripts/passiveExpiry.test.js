@@ -1,13 +1,6 @@
-// Coverage for the 2026-08-14 bot-wide extension of passive idle-timeout auto-disable --
-// utils/passiveExpiry.js's hasInteractiveComponents()/cancelPanelExpiry() additions, and
-// utils/sendV2Payload.js's new scheduling hook. Was /settings-only before this; see
-// .claude/rules/settings-and-expiry.md and sendV2Payload.js's own header comment for the design.
+// Coverage for the 2026-08-14 bot-wide extension of passive idle-timeout auto-disable -- utils/passiveExpiry.js's hasInteractiveComponents()/cancelPanelExpiry() additions, and utils/sendV2Payload.js's new scheduling hook. Was /settings-only before this; see .claude/rules/settings-and-expiry.md and sendV2Payload.js's own header comment for the design.
 //
-// No real timers are ever let run for 10 minutes -- setTimeout/clearTimeout are stubbed so
-// scheduling decisions are observable (was a timer armed? for which messageId? was it cancelled?)
-// without the suite taking IDLE_TIMEOUT_MS to finish. This tests the DECISION logic (schedule vs.
-// not, cancel vs. not), not the eventual disable-PATCH itself -- that recursive walk is already
-// exercised by the existing /settings-era tests this mechanism was generalized from.
+// No real timers are ever let run for 10 minutes -- setTimeout/clearTimeout are stubbed so scheduling decisions are observable (was a timer armed? for which messageId? was it cancelled?) without the suite taking IDLE_TIMEOUT_MS to finish. This tests the DECISION logic (schedule vs. not, cancel vs. not), not the eventual disable-PATCH itself -- that recursive walk is already exercised by the existing /settings-era tests this mechanism was generalized from.
 
 const assert = require('assert');
 
@@ -21,10 +14,7 @@ async function run() {
     }
 }
 
-// --- Fake timer plumbing -------------------------------------------------------------------
-// Swaps global setTimeout/clearTimeout for counters BEFORE passiveExpiry.js is required, so its
-// module-level `pendingTimers` Map is driven by fakes for the whole suite. Real timers are
-// restored at the end regardless of pass/fail.
+// --- Fake timer plumbing ------------------------------------------------------------------- Swaps global setTimeout/clearTimeout for counters BEFORE passiveExpiry.js is required, so its module-level `pendingTimers` Map is driven by fakes for the whole suite. Real timers are restored at the end regardless of pass/fail.
 const realSetTimeout = global.setTimeout;
 const realClearTimeout = global.clearTimeout;
 let nextHandle = 1;
@@ -124,10 +114,7 @@ check('cancelPanelExpiry: a messageId that was never scheduled is a safe no-op',
     cancelPanelExpiry('msg-never-scheduled');
 });
 
-// --- sendV2Payload's scheduling hook ----------------------------------------------------------
-// sendV2Payload requires passiveExpiry itself, so its own copy of schedulePanelExpiry/
-// hasInteractiveComponents must observe the SAME fake timers -- confirmed by these tests actually
-// asserting on `armed`, not just "did not throw".
+// --- sendV2Payload's scheduling hook ---------------------------------------------------------- sendV2Payload requires passiveExpiry itself, so its own copy of schedulePanelExpiry/ hasInteractiveComponents must observe the SAME fake timers -- confirmed by these tests actually asserting on `armed`, not just "did not throw".
 
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
@@ -181,11 +168,7 @@ check('sendV2Payload: still returns the underlying REST response value unchanged
     assert.deepStrictEqual(result, { id: 'return-value-check', ok: true });
 });
 
-// --- link buttons are never disabled, and never arm a timer (added 2026-08-16 21:15 EDT) ---------
-// Found while shipping `/invite`, whose public panel is link buttons ONLY: it armed a timer that ten
-// minutes later disabled the install buttons on a message whose whole purpose is to be clicked later
-// by whoever scrolls past. `/help` had the same defect quietly. A link button carries no custom_id,
-// fires no interaction and depends on no token, so it cannot go stale and must never be disabled.
+// --- link buttons are never disabled, and never arm a timer (added 2026-08-16 21:15 EDT) --------- Found while shipping `/invite`, whose public panel is link buttons ONLY: it armed a timer that ten minutes later disabled the install buttons on a message whose whole purpose is to be clicked later by whoever scrolls past. `/help` had the same defect quietly. A link button carries no custom_id, fires no interaction and depends on no token, so it cannot go stale and must never be disabled.
 const LINK_BTN = { type: 2, style: 5, label: 'Add to Server', url: 'https://discord.com/oauth2/authorize?client_id=1' };
 
 check('hasInteractiveComponents: FALSE for a panel whose only buttons are links (the /invite shape)', () => {

@@ -1,23 +1,11 @@
 // ==========================================
 // /manage — ADMIN PANEL DISPATCHER
 // ==========================================
-// The thin entry point for the /manage subsystem. `require('./manage')` resolves `./manage.js` first
-// and `./manage/index.js` second, so this directory replacing the old handlers/manage.js keeps
-// handlers/router.js's require('./manage') unchanged. Split out of the former 2,416-line
-// handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/
-// 2026-08-14-manage-slash-decomposition-design.md): OWNED_PREFIXES + ownsCustomId +
-// handleManageInteraction stay here; every truly cross-page helper lives in ./shared, and each
-// page's own DB-mutating logic lives in ./draws, ./calendar, ./loadouts, ./patchnotes, ./season,
-// ./admins, ./announcements. This file's job is customId parsing and delegation, nothing else.
+// The thin entry point for the /manage subsystem. `require('./manage')` resolves `./manage.js` first and `./manage/index.js` second, so this directory replacing the old handlers/manage.js keeps handlers/router.js's require('./manage') unchanged. Split out of the former 2,416-line handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md): OWNED_PREFIXES + ownsCustomId + handleManageInteraction stay here; every truly cross-page helper lives in ./shared, and each page's own DB-mutating logic lives in ./draws, ./calendar, ./loadouts, ./patchnotes, ./season, ./admins, ./announcements. This file's job is customId parsing and delegation, nothing else.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S. handleManageInteraction is awaited from inside
-// handlers/router.js's single top-level try/catch -- do NOT add one here, do NOT register listeners,
-// and keep every error-branch reply an AWAITED call inside its own small try/catch. See
-// .claude/rules/interaction-router.md.
+// ⚠️ THE CRASH NET IS THE ROUTER'S. handleManageInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do NOT add one here, do NOT register listeners, and keep every error-branch reply an AWAITED call inside its own small try/catch. See .claude/rules/interaction-router.md.
 //
-// ⚠️ THE ADMIN GUARD IS NOT HERE AND MUST NOT BE COPIED HERE. Who may click these lives at ONE choke
-// point in the router, above this dispatch (utils/adminAccess.js). This handler assumes that check
-// already passed.
+// ⚠️ THE ADMIN GUARD IS NOT HERE AND MUST NOT BE COPIED HERE. Who may click these lives at ONE choke point in the router, above this dispatch (utils/adminAccess.js). This handler assumes that check already passed.
 
 const {
     parseMngId, prompt, undoButtonRow, handleUndo,
@@ -31,16 +19,14 @@ const patchnotes = require('./patchnotes');
 const season = require('./season');
 const announcements = require('./announcements');
 
-// The same prefix set the router's admin guard keys its per-command permission map on. Kept as one
-// list so the two can be compared by eye; if a new manage prefix is ever added, it belongs in BOTH.
+// The same prefix set the router's admin guard keys its per-command permission map on. Kept as one list so the two can be compared by eye; if a new manage prefix is ever added, it belongs in BOTH.
 const OWNED_PREFIXES = ['mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_'];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// Which page module's purge()/deleteItem() a group's mng_purgeconfirm_/mng_delconfirm_ dispatches
-// to. Loadouts has no purge (no Purge button on either page -- see .claude/rules/manage-panel.md).
+// Which page module's purge()/deleteItem() a group's mng_purgeconfirm_/mng_delconfirm_ dispatches to. Loadouts has no purge (no Purge button on either page -- see .claude/rules/manage-panel.md).
 const PURGE_HANDLERS = {
     draws: (scope) => draws.purgeDraws(scope),
     calendar: () => calendar.purge(),
@@ -55,30 +41,23 @@ const DELETE_HANDLERS = {
 
 async function routeManage(interaction) {
     if (interaction.isStringSelectMenu()) {
-        // MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel has
-        // more sections than a button row's 5-cap allows.
+        // MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel has more sections than a button row's 5-cap allows.
         if (interaction.customId === 'mng_pagesel') return await renderManagePage(interaction);
 
         // Bulk Format Guide's own topic-switcher dropdown.
         if (interaction.customId === 'mng_guide_pick') return await renderGuidePick(interaction);
 
-        // MANAGE PANEL DISAMBIGUATION SELECT -- shown by handleSearchSubmit when a search query
-        // matched more than one item.
+        // MANAGE PANEL DISAMBIGUATION SELECT -- shown by handleSearchSubmit when a search query matched more than one item.
         if (interaction.customId.startsWith('mng_pick_')) return await handlePick(interaction);
 
-        // Patch Notes' own "Past Seasons" select -- its options ARE the full list already, so
-        // picking one goes straight to its edit modal, no search step.
+        // Patch Notes' own "Past Seasons" select -- its options ARE the full list already, so picking one goes straight to its edit modal, no search step.
         if (interaction.customId === 'mng_patchseason_pick') return await patchnotes.handlePatchSeasonPick(interaction);
     }
 
     if (interaction.isButton()) {
         const customId = interaction.customId;
 
-        // MANAGE PANEL -- action buttons, resolved through the registry (utils/manageActions.js).
-        // resolveAction() is also where per-page permissions are enforced PER CLICK -- see that
-        // module's header comment. router.js's prefix guard still runs first and independently --
-        // that one answers "may this user touch /manage at all", this one answers "may they touch
-        // THIS page". Keep both.
+        // MANAGE PANEL -- action buttons, resolved through the registry (utils/manageActions.js). resolveAction() is also where per-page permissions are enforced PER CLICK -- see that module's header comment. router.js's prefix guard still runs first and independently -- that one answers "may this user touch /manage at all", this one answers "may they touch THIS page". Keep both.
         if (customId.startsWith('mng_act_')) {
             const [group, action] = parseMngId(customId.replace('mng_act_', ''));
             const { resolveAction, DENIAL_MESSAGE } = require('../../utils/manageActions');
@@ -87,9 +66,7 @@ async function routeManage(interaction) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
                 return await interaction.reply({ content: DENIAL_MESSAGE[resolved.reason], ephemeral: true });
             }
-            // Every action decides its own response mode (see the registry's `kind` note) -- nothing
-            // is deferred here, because a modal-opening action needs showModal() to be the FIRST
-            // response and cannot follow a deferReply().
+            // Every action decides its own response mode (see the registry's `kind` note) -- nothing is deferred here, because a modal-opening action needs showModal() to be the FIRST response and cannot follow a deferReply().
             return await resolved.entry.run({
                 interaction,
                 page: group,
@@ -97,8 +74,7 @@ async function routeManage(interaction) {
             });
         }
 
-        // PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation the registry's
-        // 'confirm' kind opens. Each group purges only its OWN data.
+        // PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation the registry's 'confirm' kind opens. Each group purges only its OWN data.
         if (customId.startsWith('mng_purgeconfirm_')) {
             const [group, scope] = parseMngId(customId.replace('mng_purgeconfirm_', ''));
             const handler = PURGE_HANDLERS[group];
@@ -133,14 +109,10 @@ async function routeManage(interaction) {
             return await season.handleWipeButton(interaction);
         }
 
-        // UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start New Season, and
-        // every delete/replace confirmation above). Fully generic: the restore() closure already
-        // carries whatever page-specific logic it needs.
+        // UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start New Season, and every delete/replace confirmation above). Fully generic: the restore() closure already carries whatever page-specific logic it needs.
         if (customId.startsWith('mng_undo_')) return await handleUndo(interaction);
 
-        // SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of resolveManagePanelAction's delete
-        // branch (shared.js). Performs the actual deletion only from here, snapshotting the removed
-        // doc first so it can be undone.
+        // SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of resolveManagePanelAction's delete branch (shared.js). Performs the actual deletion only from here, snapshotting the removed doc first so it can be undone.
         if (customId.startsWith('mng_delconfirm_')) {
             const token = customId.replace('mng_delconfirm_', '');
             const pending = pendingManageDeletes.get(token);
@@ -174,9 +146,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // BULK DELETE CONFIRM / CANCEL -- fully generic: the modal-submit handler in each page
-        // module only computed WHAT would be removed (dry run); the actual save/delete calls happen
-        // here via the pending entry's own apply(), which also registers its own Undo snapshot.
+        // BULK DELETE CONFIRM / CANCEL -- fully generic: the modal-submit handler in each page module only computed WHAT would be removed (dry run); the actual save/delete calls happen here via the pending entry's own apply(), which also registers its own Undo snapshot.
         if (customId.startsWith('mng_bulkdelconfirm_')) {
             const token = customId.replace('mng_bulkdelconfirm_', '');
             const pending = pendingBulkDeletes.get(token);
@@ -216,8 +186,7 @@ async function routeManage(interaction) {
             return;
         }
 
-        // EDIT CONFIRM BUTTON (the intermediate "Edit: {label}" click) -- see shared.js's
-        // handleEditButton for why this extra click exists.
+        // EDIT CONFIRM BUTTON (the intermediate "Edit: {label}" click) -- see shared.js's handleEditButton for why this extra click exists.
         if (customId.startsWith('mng_editbtn_')) return await handleEditButton(interaction);
     }
 
@@ -267,8 +236,7 @@ async function routeManage(interaction) {
     }
 }
 
-// Returns TRUE when this panel owns the interaction (and has now handled it), FALSE when it does not
-// -- the same contract every handlers/*.js module follows, so the router dispatches them uniformly.
+// Returns TRUE when this panel owns the interaction (and has now handled it), FALSE when it does not -- the same contract every handlers/*.js module follows, so the router dispatches them uniformly.
 async function handleManageInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
     await routeManage(interaction);

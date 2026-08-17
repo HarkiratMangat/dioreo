@@ -1,8 +1,4 @@
-// scripts/catalogGrouping.test.js -- coverage for scripts/catalogGrouping.js's grouping/chunking logic,
-// the mechanism behind the "one design, several variants -> ONE cache-channel message" feature in
-// scripts/bulkCacheCollectibles.js. Pure functions, no Mongo/Cloudinary/Discord -- deliberately fast so
-// the component-budget math and the grouping key can be pinned without a live run.
-// Run: `node scripts/catalogGrouping.test.js` (also via `npm test`).
+// scripts/catalogGrouping.test.js -- coverage for scripts/catalogGrouping.js's grouping/chunking logic, the mechanism behind the "one design, several variants -> ONE cache-channel message" feature in scripts/bulkCacheCollectibles.js. Pure functions, no Mongo/Cloudinary/Discord -- deliberately fast so the component-budget math and the grouping key can be pinned without a live run. Run: `node scripts/catalogGrouping.test.js` (also via `npm test`).
 const assert = require('assert');
 const { groupKey, groupCatalogDocs, chunkVariants, MAX_VARIANTS_PER_MESSAGE } = require('./catalogGrouping');
 
@@ -96,9 +92,7 @@ check('chunkVariants: an empty array chunks to a single empty chunk, never zero 
 });
 
 check('MAX_VARIANTS_PER_MESSAGE: computed budget leaves real headroom under Discord\'s real 40-component ceiling', () => {
-    // divider(1) + Section(1) + TextDisplay(1) + Thumbnail accessory(1) per variant, + a fixed
-    // Container + header TextDisplay (2) -- assert real headroom, not merely "under the line" (this
-    // project's own discipline, see .claude/rules/rendering-and-ui.md).
+    // divider(1) + Section(1) + TextDisplay(1) + Thumbnail accessory(1) per variant, + a fixed Container + header TextDisplay (2) -- assert real headroom, not merely "under the line" (this project's own discipline, see .claude/rules/rendering-and-ui.md).
     const worstCase = 2 + MAX_VARIANTS_PER_MESSAGE * 4;
     assert.ok(worstCase <= 40, `worst-case component count ${worstCase} must not exceed Discord's 40-component ceiling`);
     assert.ok(40 - worstCase >= 2, `headroom of ${40 - worstCase} is too thin -- must survive one more component being added later without recomputation`);

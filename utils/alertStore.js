@@ -1,16 +1,10 @@
-// utils/alertStore.js
-// The persistence + query layer behind the Discord alert system (see utils/alertWebhook.js). Kept in its
-// own module so alertWebhook.js stays lean and the "monitors the bot, must never hurt it" contract is
-// obvious in one place: recordAlert()/pruneAlerts() are fully swallowed and are called fire-and-forget
-// (never awaited) from sendAlert(), completely INDEPENDENT of the webhook POST. Added 2026-07-20.
+// utils/alertStore.js The persistence + query layer behind the Discord alert system (see utils/alertWebhook.js). Kept in its own module so alertWebhook.js stays lean and the "monitors the bot, must never hurt it" contract is obvious in one place: recordAlert()/pruneAlerts() are fully swallowed and are called fire-and-forget (never awaited) from sendAlert(), completely INDEPENDENT of the webhook POST. Added 2026-07-20.
 //
 // Read helpers (getRecentAlerts/getAlertSummary/buildAlertExport) back the admin-only /alerts command.
 const AlertLog = require('../models/AlertLog');
 const AlertCounter = require('../models/AlertCounter');
 
-// Explicitly encodes chronological order: index 0 = Jan (first) ... index 11 = Dec (last). Used both to
-// build the "MMMDD" id/counter key AND by parseAlertId() to sort ids on their own (Harkirat's ask that
-// month order be coded, not left implicit).
+// Explicitly encodes chronological order: index 0 = Jan (first) ... index 11 = Dec (last). Used both to build the "MMMDD" id/counter key AND by parseAlertId() to sort ids on their own (Harkirat's ask that month order be coded, not left implicit).
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const RETENTION_DAYS = 30;   // delete alerts older than this...
@@ -20,14 +14,12 @@ let lastPruneAt = 0;
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-// UTC date key, e.g. "Jul20". UTC deliberately (repo-wide "stored dates are always UTC" rule; DST-proof;
-// host-TZ-independent). The counter rolls at UTC midnight.
+// UTC date key, e.g. "Jul20". UTC deliberately (repo-wide "stored dates are always UTC" rule; DST-proof; host-TZ-independent). The counter rolls at UTC midnight.
 function dateKey(date) {
     return `${MONTHS[date.getUTCMonth()]}${pad2(date.getUTCDate())}`;
 }
 
-// parseAlertId("Jul20-03") -> { monthIndex, day, seq }, for chronological ordering independent of a
-// stored timestamp. Returns null on anything malformed.
+// parseAlertId("Jul20-03") -> { monthIndex, day, seq }, for chronological ordering independent of a stored timestamp. Returns null on anything malformed.
 function parseAlertId(id) {
     const m = /^([A-Za-z]{3})(\d{2})-(\d+)$/.exec(String(id || '').trim());
     if (!m) return null;
@@ -36,9 +28,7 @@ function parseAlertId(id) {
     return { monthIndex, day: parseInt(m[2], 10), seq: parseInt(m[3], 10) };
 }
 
-// Escalating uptime — ALWAYS the top two adjacent units, except <60min which is minutes only
-// (Harkirat's exact spec, 2026-07-20). Units: Min/H/D/W/M/Y; minutes use "Min" so a bare "M" is
-// unambiguously months. Fuzzy units are fixed: week=7d, month=30d, year=365d.
+// Escalating uptime — ALWAYS the top two adjacent units, except <60min which is minutes only (Harkirat's exact spec, 2026-07-20). Units: Min/H/D/W/M/Y; minutes use "Min" so a bare "M" is unambiguously months. Fuzzy units are fixed: week=7d, month=30d, year=365d.
 function formatUptime(sec) {
     sec = Math.max(0, Math.floor(sec || 0));
     const MIN = 60, HOUR = 3600, DAY = 86400, WEEK = 604800, MONTH = 2592000, YEAR = 31536000;
@@ -50,23 +40,19 @@ function formatUptime(sec) {
     return `${Math.floor(sec / YEAR)}Y ${Math.floor((sec % YEAR) / MONTH)}M`;
 }
 
-// Atomic next id for the given date's UTC day, e.g. "Jul20-03". findOneAndUpdate($inc) is race-free (two
-// same-second alerts get distinct seq) where a count()+1 would collide on AlertLog's unique alertId.
+// Atomic next id for the given date's UTC day, e.g. "Jul20-03". findOneAndUpdate($inc) is race-free (two same-second alerts get distinct seq) where a count()+1 would collide on AlertLog's unique alertId.
 async function nextDailyAlertId(date = new Date()) {
     const key = dateKey(date);
     const doc = await AlertCounter.findOneAndUpdate(
         { _id: key },
         { $inc: { seq: 1 } },
-        // returnDocument:'after' (not the deprecated `new:true`) — mongoose 9 warns on `new:true`, which
-        // would spam journald on every alert. Returns the POST-increment doc so `seq` is the new value.
+        // returnDocument:'after' (not the deprecated `new:true`) — mongoose 9 warns on `new:true`, which would spam journald on every alert. Returns the POST-increment doc so `seq` is the new value.
         { upsert: true, returnDocument: 'after' }
     );
     return `${key}-${pad2(doc.seq)}`;
 }
 
-// Fire-and-forget persist. NEVER throws (returns an already-swallowed promise so even a stray `await` at a
-// call site can't surface a rejection). sendAlert() calls this WITHOUT awaiting, in parallel with the
-// webhook POST — a Mongo outage here must never stop an alert reaching Discord, and vice versa.
+// Fire-and-forget persist. NEVER throws (returns an already-swallowed promise so even a stray `await` at a call site can't surface a rejection). sendAlert() calls this WITHOUT awaiting, in parallel with the webhook POST — a Mongo outage here must never stop an alert reaching Discord, and vice versa.
 function recordAlert(fields) {
     return (async () => {
         const now = new Date();

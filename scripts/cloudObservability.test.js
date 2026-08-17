@@ -1,9 +1,4 @@
-// scripts/cloudObservability.test.js -- coverage for the PURE half of utils/cloudObservability.js
-// (observability layer stage 4). Everything else in that module makes a real network call (ADC token
-// fetch, Cloud Monitoring/Logging REST) and is deliberately NOT unit-testable without a live GCP
-// service account -- that half is proven by the live dev-bot click-test instead, same split
-// utils/vmpeaks.sh's own header documents for the transport it mirrors.
-// Run: `node scripts/cloudObservability.test.js` (also via `npm test`).
+// scripts/cloudObservability.test.js -- coverage for the PURE half of utils/cloudObservability.js (observability layer stage 4). Everything else in that module makes a real network call (ADC token fetch, Cloud Monitoring/Logging REST) and is deliberately NOT unit-testable without a live GCP service account -- that half is proven by the live dev-bot click-test instead, same split utils/vmpeaks.sh's own header documents for the transport it mirrors. Run: `node scripts/cloudObservability.test.js` (also via `npm test`).
 
 const assert = require('assert');
 const S = require('../utils/cloudObservability');

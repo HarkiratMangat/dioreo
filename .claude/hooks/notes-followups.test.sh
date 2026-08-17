@@ -1,15 +1,9 @@
 #!/bin/bash
 # Proofs for notes-followups.sh — the gate that exists because a follow-up sat unseen for ~5 sessions.
 #
-# ⚠️ THE CENTRAL CASE IS "ANSWERED BUT STILL OPEN", not "unanswered". The follow-up that caused this
-# hook HAD a reply; the reply ended "Say the word and I'll rework the hook..." — a question back to
-# Harkirat nobody surfaced. A detector that only reported UNANSWERED marks would have stayed silent
-# on the exact case it was built for. That asymmetry is pinned first, because it is the one a future
-# simplification would delete.
+# ⚠️ THE CENTRAL CASE IS "ANSWERED BUT STILL OPEN", not "unanswered". The follow-up that caused this hook HAD a reply; the reply ended "Say the word and I'll rework the hook..." — a question back to Harkirat nobody surfaced. A detector that only reported UNANSWERED marks would have stayed silent on the exact case it was built for. That asymmetry is pinned first, because it is the one a future simplification would delete.
 #
-# The other half matters just as much: a reply that genuinely closes the matter must NOT be surfaced,
-# or every session reports the same resolved exchanges and the whole thing gets skimmed past — the
-# noise argument written into four other hooks here.
+# The other half matters just as much: a reply that genuinely closes the matter must NOT be surfaced, or every session reports the same resolved exchanges and the whole thing gets skimmed past — the noise argument written into four other hooks here.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/notes-followups.sh"
 pass=0; fail=0
@@ -38,24 +32,17 @@ a "checked box -> silent" silent \
   "$(mk '- [x] note ※ [2026-08-01 10:00 EDT] old question ※ ∴ reply. Want me to do more? ∵')"
 a "no follow-up marks at all -> silent" silent "$(mk '- [ ] an ordinary open item with no marks')"
 
-# ---- a LATER reply resolves an earlier open offer ----
-# An exchange accumulates replies over time. Reading the FIRST one meant an exchange whose opening
-# reply said "say the word" stayed flagged forever, even after a later reply closed it — found by
-# resolving this hook OWN motivating follow-up and watching it refuse to go quiet.
+# ---- a LATER reply resolves an earlier open offer ---- An exchange accumulates replies over time. Reading the FIRST one meant an exchange whose opening reply said "say the word" stayed flagged forever, even after a later reply closed it — found by resolving this hook OWN motivating follow-up and watching it refuse to go quiet.
 a "later reply resolves an earlier offer -> silent" silent \
   "$(mk 'x ※ [2026-08-03] q ※ ∴ [2026-08-03] Say the word and I will do it. ∵ ∴ [2026-08-06] Done, shipped and verified. ∵')"
 a "later reply that STILL asks -> surfaced" surfaced \
   "$(mk 'x ※ [2026-08-03] q ※ ∴ [2026-08-03] Done. ∵ ∴ [2026-08-06] Reopened — want me to also move the table? ∵')"
 
-# ---- it must scan the WHOLE file, not a bounded section ----
-# Bounded scanning is precisely what hid the original: the follow-up sat BELOW the `## 📍` heading
-# where the open-items scan deliberately stops. A section-bounded implementation passes every test
-# above and still misses the real one.
+# ---- it must scan the WHOLE file, not a bounded section ---- Bounded scanning is precisely what hid the original: the follow-up sat BELOW the `## 📍` heading where the open-items scan deliberately stops. A section-bounded implementation passes every test above and still misses the real one.
 BELOW=$(printf '## Questions\n- [ ] something\n## 📍 Where everything else lives\nnote ※ [2026-08-03 19:14 EDT] q ※ ∴ reply. Say the word. ∵\n' > "$TMP/b.md"; printf '%s' "$TMP/b.md")
 a "follow-up BELOW the 📍 stop marker is found" surfaced "$BELOW"
 
-# ---- reporting quality: the date must be readable, not sliced mid-multibyte ----
-# `※` is multi-byte; an offset-based slice printed "[[2026-08-0" on the first live run.
+# ---- reporting quality: the date must be readable, not sliced mid-multibyte ---- `※` is multi-byte; an offset-based slice printed "[[2026-08-0" on the first live run.
 out=$(bash "$HOOK" "$(mk 'x ※ [2026-08-03 19:14 EDT] q ※')" 2>/dev/null)
 case "$out" in *"[2026-08-03]"*) echo "  PASS  date is extracted cleanly"; pass=$((pass+1));;
   *) echo "  FAIL  date is extracted cleanly (out: ${out:0:80})"; fail=$((fail+1));; esac

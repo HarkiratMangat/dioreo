@@ -1,15 +1,9 @@
 // ==========================================
 // /draw calculator -- INTERACTION HANDLER
 // ==========================================
-// Owns every calc~ interaction. Serves THREE interaction types -- buttons, string selects and modal
-// submits -- so EVERY branch type-tests as well as prefix-tests. Skipping that is the exact defect
-// that broke /settings pagination during the index.js split (see .claude/rules/interaction-router.md):
-// two branches with byte-identical customId prefixes but different types, where the first swallowed
-// the second.
+// Owns every calc~ interaction. Serves THREE interaction types -- buttons, string selects and modal submits -- so EVERY branch type-tests as well as prefix-tests. Skipping that is the exact defect that broke /settings pagination during the index.js split (see .claude/rules/interaction-router.md): two branches with byte-identical customId prefixes but different types, where the first swallowed the second.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleDrawCalcInteraction is awaited from
-// inside handlers/router.js's single top-level try/catch -- do not add one here, do not register
-// listeners, and keep every error-branch reply an AWAITED call in its own small try/catch.
+// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleDrawCalcInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch.
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { withShareButton } = require('../utils/shareButton');
@@ -29,9 +23,7 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && customId.startsWith('calc~');
 }
 
-// Players type "3,000", "3000" and "3k" interchangeably. Rejecting two of those would read as the
-// calculator being broken rather than strict. Returns null for genuinely invalid input so the
-// caller can show a validation message instead of silently treating it as zero.
+// Players type "3,000", "3000" and "3k" interchangeably. Rejecting two of those would read as the calculator being broken rather than strict. Returns null for genuinely invalid input so the caller can show a validation message instead of silently treating it as zero.
 function parseAmount(raw) {
     if (!raw) return 0;
     const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '');
@@ -51,10 +43,7 @@ function buildNumbersModal(state) {
                 .setStyle(TextInputStyle.Short).setValue(String(state.pullsDone)).setRequired(true)
         )
     ];
-    // Budget mode ('B') asks "how far does spending X more CP get me" -- it has no use for an
-    // existing balance (design decision 10's own framing is the new spend amount alone), so the
-    // field is skipped rather than collected and silently discarded. F/P modes DO use it (see
-    // buildResultsPanel's shortfall = totalNeeded - state.balance).
+    // Budget mode ('B') asks "how far does spending X more CP get me" -- it has no use for an existing balance (design decision 10's own framing is the new spend amount alone), so the field is skipped rather than collected and silently discarded. F/P modes DO use it (see buildResultsPanel's shortfall = totalNeeded - state.balance).
     if (state.target !== 'B') {
         fields.push(new ActionRowBuilder().addComponents(
             new TextInputBuilder().setCustomId('balance').setLabel('Current CP balance')
@@ -95,8 +84,7 @@ async function route(interaction) {
     const customId = interaction.customId;
     const state = decodeState(customId);
 
-    // showModal() must be the DIRECT response to the button -- it cannot follow a deferReply or
-    // deferUpdate. Same constraint documented in handlers/autobuild.js.
+    // showModal() must be the DIRECT response to the button -- it cannot follow a deferReply or deferUpdate. Same constraint documented in handlers/autobuild.js.
     if (interaction.isButton() && state.verb === 'modal') {
         return await interaction.showModal(buildNumbersModal(state));
     }
@@ -110,9 +98,7 @@ async function route(interaction) {
             } catch (notifyError) { console.error('Failed to notify user of invalid pullsDone (interaction likely expired):', notifyError); }
             return true;
         }
-        // 'balance' isn't on the modal at all in budget mode (buildNumbersModal skips it -- see that
-        // function's own comment) -- getTextInputValue() throws on a field that doesn't exist, so
-        // this must match the modal's own conditional exactly, not just default missing to 0.
+        // 'balance' isn't on the modal at all in budget mode (buildNumbersModal skips it -- see that function's own comment) -- getTextInputValue() throws on a field that doesn't exist, so this must match the modal's own conditional exactly, not just default missing to 0.
         const balanceRaw = state.target === 'B' ? 0 : parseAmount(interaction.fields.getTextInputValue('balance'));
         let targetValueRaw = state.targetValue;
         if (state.target !== 'F') {
@@ -123,10 +109,7 @@ async function route(interaction) {
                 } catch (notifyError) { console.error('Failed to notify user of invalid target value (interaction likely expired):', notifyError); }
                 return true;
             }
-            // 'P' (stop at a specific pull) must reject an out-of-range pull the same way pullsDone
-            // does above -- buildResultsPanel silently clamps this, and clamping a REJECTABLE input
-            // is the exact anti-pattern pullsDone validation exists to avoid (a typo'd "500" silently
-            // becoming "finish the draw" with no indication anything was out of range).
+            // 'P' (stop at a specific pull) must reject an out-of-range pull the same way pullsDone does above -- buildResultsPanel silently clamps this, and clamping a REJECTABLE input is the exact anti-pattern pullsDone validation exists to avoid (a typo'd "500" silently becoming "finish the draw" with no indication anything was out of range).
             if (state.target === 'P' && (targetValueRaw < 1 || targetValueRaw > total)) {
                 try {
                     await interaction.reply({ content: `❌ Target pull must be a number from 1 to ${total} for **${DRAW_META[state.drawKey].name}** -- it doesn't have a pull ${targetValueRaw} if that's not what you meant.`, ephemeral: true });
@@ -189,8 +172,7 @@ async function route(interaction) {
     return false;
 }
 
-// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise --
-// the uniform contract every handlers/*.js module follows.
+// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise -- the uniform contract every handlers/*.js module follows.
 async function handleDrawCalcInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
     const handled = await route(interaction);

@@ -9,18 +9,11 @@
 #   scripts/vmstatus.sh logs 20h-5d      → from 5 days ago UP TO 20 hours ago (excludes the last 20h)
 #   scripts/vmstatus.sh logs 30m-260h 200
 #
-# Time units: m/h/d only. History is 30 days, so weeks/months would be meaningless.
-# A range is <newer>-<older>: the FIRST bound is the recent edge, the SECOND is how far back to go.
+# Time units: m/h/d only. History is 30 days, so weeks/months would be meaningless. A range is <newer>-<older>: the FIRST bound is the recent edge, the SECOND is how far back to go.
 #
-# Added 2026-07-17 with the Render→GCP migration so we're never debugging blind again.
-# Overhauled 2026-07-28 15:34 EDT: Cloud Logging as the primary source, real per-line severity,
-# per-line version+commit, time-window args, deploy-drift detection, and an error counter that is
-# actually correct (see the ERROR ACCOUNTING note below).
+# Added 2026-07-17 with the Render→GCP migration so we're never debugging blind again. Overhauled 2026-07-28 15:34 EDT: Cloud Logging as the primary source, real per-line severity, per-line version+commit, time-window args, deploy-drift detection, and an error counter that is actually correct (see the ERROR ACCOUNTING note below).
 #
-# ⚠️ TARGETS BASH 3.2 — the stock /bin/bash on macOS, and the only bash on Harkirat's Mac (checked
-# 2026-07-28 15:40 EDT: no homebrew bash installed). So NO associative arrays (`declare -A`), NO
-# `${var^^}` case expansion, NO `mapfile`. `bash -n` does NOT catch these; they fail at runtime only.
-# If you add bash 4+ syntax here, the script breaks on the one machine that runs it.
+# ⚠️ TARGETS BASH 3.2 — the stock /bin/bash on macOS, and the only bash on Harkirat's Mac (checked 2026-07-28 15:40 EDT: no homebrew bash installed). So NO associative arrays (`declare -A`), NO `${var^^}` case expansion, NO `mapfile`. `bash -n` does NOT catch these; they fail at runtime only. If you add bash 4+ syntax here, the script breaks on the one machine that runs it.
 #
 # The bot runs under systemd (unit: diors-bot) on VM 'diors-builds-bot' in us-east1-b.
 set -uo pipefail
@@ -32,24 +25,13 @@ FETCH_CAP=2000                 # upper bound on lines pulled per query; the bot 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 command -v gcloud >/dev/null 2>&1 || export PATH="/opt/homebrew/bin:$PATH"
 
-# ── Mac vs VM ────────────────────────────────────────────────────────────────
-# This script is normally run FROM THE MAC and reaches the VM over SSH. But `scripts/deploy.sh` runs it
-# ON the VM as its final post-restart check — which had been quietly half-broken since 2026-07-18 (the
-# outward-facing `gcloud compute instances describe` needs the Mac's auth context and just reported
-# "could not reach VM"), and the SSH-based rewrite would have made it far worse by trying to SSH into
-# the VM from inside itself. Detect where we are and read everything locally when we're already there.
+# ── Mac vs VM ──────────────────────────────────────────────────────────────── This script is normally run FROM THE MAC and reaches the VM over SSH. But `scripts/deploy.sh` runs it ON the VM as its final post-restart check — which had been quietly half-broken since 2026-07-18 (the outward-facing `gcloud compute instances describe` needs the Mac's auth context and just reported "could not reach VM"), and the SSH-based rewrite would have made it far worse by trying to SSH into the VM from inside itself. Detect where we are and read everything locally when we're already there.
 ON_VM=0
 [ "$(hostname -s 2>/dev/null)" = "$VM" ] && ON_VM=1
 HAVE_GCLOUD=0
 command -v gcloud >/dev/null 2>&1 && HAVE_GCLOUD=1
 
-# ── ERROR ACCOUNTING (read this before "fixing" the counter) ─────────────────────────────────────
-# The old script grepped every log line's TEXT for /error|10062|unhandled|disconnect|reconnecting/.
-# That counted routine `🔌 Shard 0 reconnecting...` gateway churn as errors — the long-standing
-# "script says errors(1h)=1 but journalctl -p err says 0" discrepancy, root-caused 2026-07-28 15:10 EDT.
-# `-p err` was equally useless: the bot logged everything to stdout, so journald tagged EVERY line
-# priority 6 and `-p err` would have read 0 during a crash too. utils/logger.js fixed the source.
-# Three tiers are now reported, deliberately kept separate because they answer different questions:
+# ── ERROR ACCOUNTING (read this before "fixing" the counter) ───────────────────────────────────── The old script grepped every log line's TEXT for /error|10062|unhandled|disconnect|reconnecting/. That counted routine `🔌 Shard 0 reconnecting...` gateway churn as errors — the long-standing "script says errors(1h)=1 but journalctl -p err says 0" discrepancy, root-caused 2026-07-28 15:10 EDT. `-p err` was equally useless: the bot logged everything to stdout, so journald tagged EVERY line priority 6 and `-p err` would have read 0 during a crash too. utils/logger.js fixed the source. Three tiers are now reported, deliberately kept separate because they answer different questions:
 #   errors  — LogEntry.severity >= ERROR. Trustworthy only for logs written after logger.js shipped.
 #   alerts  — AlertLog in Mongo (what actually pinged Harkirat). The authoritative incident record.
 #   noise   — gateway reconnect/resume. Counted, shown, and NEVER added to the error total.
@@ -78,21 +60,16 @@ gauge() {  # gauge <used> <total> [width]
 
 pct_color() { if [ "$1" -lt 70 ]; then printf '%s' "$GRN"; elif [ "$1" -lt 90 ]; then printf '%s' "$YEL"; else printf '%s' "$RED"; fi; }
 
-# MB → GB with one decimal. The awk program MUST stay single-quoted with the value passed via -v:
-# an earlier version inlined the value inside a nested double-quoted "$(awk "BEGIN{printf \"%.1f\"...")"
-# and bash ate the escaped quotes, leaving awk with a bare `BEGIN{ 4049/1024 }` syntax error.
+# MB → GB with one decimal. The awk program MUST stay single-quoted with the value passed via -v: an earlier version inlined the value inside a nested double-quoted "$(awk "BEGIN{printf \"%.1f\"...")" and bash ate the escaped quotes, leaving awk with a bare `BEGIN{ 4049/1024 }` syntax error.
 gb() { awk -v m="${1:-0}" 'BEGIN{printf "%.1f", m/1024}'; }
 section()   { printf '\n  %s%s%s\n' "$B" "$1" "$R"; }
 row()       { printf '            %s\n' "$1"; }
 head_row()  { printf '  %-9s %s\n' "" "$1"; }
 
-# epoch → ISO-8601 UTC. macOS (BSD) and GNU date disagree on the flag, so try both rather than
-# assuming coreutils is installed.
+# epoch → ISO-8601 UTC. macOS (BSD) and GNU date disagree on the flag, so try both rather than assuming coreutils is installed.
 iso_at() { date -u -r "$1" "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "@$1" "+%Y-%m-%dT%H:%M:%SZ"; }
 
-# epoch → the format journalctl's date parser actually accepts. It does NOT understand ISO-8601's `T`
-# separator or a `Z` suffix, and rather than erroring it silently matches nothing — which made the
-# fallback path report "0 lines" for windows that were full of logs.
+# epoch → the format journalctl's date parser actually accepts. It does NOT understand ISO-8601's `T` separator or a `Z` suffix, and rather than erroring it silently matches nothing — which made the fallback path report "0 lines" for windows that were full of logs.
 journal_at() { date -u -r "$1" "+%Y-%m-%d %H:%M:%S UTC" 2>/dev/null || date -u -d "@$1" "+%Y-%m-%d %H:%M:%S UTC"; }
 
 to_seconds() {  # "2h" / "45m" / "3d" → seconds; returns 1 on a malformed token
@@ -109,13 +86,9 @@ human_secs() {
   else printf '%dm' $(( s/60 )); fi
 }
 
-# ── remote probe: ONE SSH round-trip for everything the VM knows ─────────────
-# Deliberately one call. Each `gcloud compute ssh` costs several seconds of connection setup and the
-# old script paid it twice. Results are KEY=VALUE lines held in $PROBE; get() reads them.
-# (bash 3.2 has no associative arrays — see the header warning.)
+# ── remote probe: ONE SSH round-trip for everything the VM knows ───────────── Deliberately one call. Each `gcloud compute ssh` costs several seconds of connection setup and the old script paid it twice. Results are KEY=VALUE lines held in $PROBE; get() reads them. (bash 3.2 has no associative arrays — see the header warning.)
 probe_vm() {
-  # On the VM, feed the same script to a local shell instead of an SSH one. Identical body either way —
-  # duplicating it into a "local version" is how the two drift apart and one silently stops being tested.
+  # On the VM, feed the same script to a local shell instead of an SSH one. Identical body either way — duplicating it into a "local version" is how the two drift apart and one silently stops being tested.
   if [ "$ON_VM" -eq 1 ]; then probe_runner() { bash -s; }; else
     probe_runner() { gcloud compute ssh "$VM" --zone="$ZONE" --quiet --command='bash -s' 2>/dev/null; }
   fi
@@ -174,12 +147,7 @@ REMOTE
 
 now=$(date +%s)
 
-# ── argument parsing ─────────────────────────────────────────────────────────
-# Deliberately BEFORE the panel renders. The panel costs an SSH round-trip plus several Cloud Logging
-# queries (measured ~10s on 2026-07-28 18:05 EDT), and validating afterwards meant a typo'd window made
-# you wait out the whole probe just to be told you'd mistyped it. Parse first, fail fast, then do the
-# slow work. (The `#` on the third line here went missing at some point, so a fragment of this very
-# comment was being executed as a command — it printed "you: command not found" on every single run.)
+# ── argument parsing ───────────────────────────────────────────────────────── Deliberately BEFORE the panel renders. The panel costs an SSH round-trip plus several Cloud Logging queries (measured ~10s on 2026-07-28 18:05 EDT), and validating afterwards meant a typo'd window made you wait out the whole probe just to be told you'd mistyped it. Parse first, fail fast, then do the slow work. (The `#` on the third line here went missing at some point, so a fragment of this very comment was being executed as a command — it printed "you: command not found" on every single run.)
 WANT_LOGS=0; LINES=$DEFAULT_LINES; SINCE=""; UNTIL=""; WINDOW_LABEL="last 30d"; WINDOW_ARG=""
 if [ "${1:-}" = "logs" ]; then
   WANT_LOGS=1; shift
@@ -213,16 +181,9 @@ fi
 PROBE="$(probe_vm)"
 get() { printf '%s\n' "$PROBE" | sed -n "s/^$1=//p" | head -1; }
 
-# ── Cloud Logging ────────────────────────────────────────────────────────────
-# Primary source: real severity, arbitrary time ranges, 30-day retention, no SSH round-trip.
-# Fetched in bulk ONCE per concern and bucketed locally — an earlier draft issued 19 sequential
-# `gcloud logging read` calls for the counters alone, which took ~30s for a "status at a glance".
-# ISO-8601 UTC sorts lexicographically, so a string compare is a valid time compare and we never have
-# to parse a timestamp back into epoch (BSD awk has no mktime()).
+# ── Cloud Logging ──────────────────────────────────────────────────────────── Primary source: real severity, arbitrary time ranges, 30-day retention, no SSH round-trip. Fetched in bulk ONCE per concern and bucketed locally — an earlier draft issued 19 sequential `gcloud logging read` calls for the counters alone, which took ~30s for a "status at a glance". ISO-8601 UTC sorts lexicographically, so a string compare is a valid time compare and we never have to parse a timestamp back into epoch (BSD awk has no mktime()).
 cl_read() {  # cl_read <extra-filter> <since-epoch> [until-epoch] [format]
-  # Skipped entirely on the VM: the instance's service account is provisioned to WRITE logs, not read
-  # them back, and deploy.sh calls this script as its post-restart check — paying those API round-trips
-  # there (for counters that would come back empty) would turn every deploy into a coffee break.
+  # Skipped entirely on the VM: the instance's service account is provisioned to WRITE logs, not read them back, and deploy.sh calls this script as its post-restart check — paying those API round-trips there (for counters that would come back empty) would turn every deploy into a coffee break.
   [ "$HAVE_GCLOUD" -eq 1 ] && [ "$ON_VM" -eq 0 ] || return 0
   local extra=$1 since=$2 until=${3:-} fmt=${4:-value(timestamp)}
   local f="logName:\"logs/$CLOUD_LOG\" AND timestamp>=\"$(iso_at "$since")\""
@@ -248,8 +209,7 @@ printf '%s╰%s╯%s\n' "$CYN" "$(bar $(( BOXW - 2 )))" "$R"
 section "VM"
 boot="$(get BOOT)"
 if [ "$ON_VM" -eq 1 ]; then
-  # `instances describe` queries the VM from OUTSIDE and needs the Mac's gcloud context; from inside it
-  # only ever returned "could not reach VM", which read like a fault rather than a wrong vantage point.
+  # `instances describe` queries the VM from OUTSIDE and needs the Mac's gcloud context; from inside it only ever returned "could not reach VM", which read like a fault rather than a wrong vantage point.
   head_row "${D}(running ON the VM — hypervisor-level state needs the Mac's gcloud context)${R}"
   row "$(hostname -s)      booted $([ -n "$boot" ] && human_secs "$boot" || echo '?') ago"
 else
@@ -309,9 +269,7 @@ w7d=$(printf '%s\n' "$warn_ts" | grep -c . )
 if [ "$e30" -eq 0 ]; then ec="$GRN"; else ec="$RED"; fi
 head_row "${ec}1h ${e1h}    12h ${e12}    48h ${e48}    7d ${e7d}    30d ${e30}${R}"
 row "warnings (7d)  ${w7d}"
-# A zero that means "no data" must never be displayed as if it meant "no errors" — that conflation is
-# the exact failure this whole overhaul exists to fix. If the structured sink isn't reporting, say so
-# loudly instead of showing a reassuring row of zeros.
+# A zero that means "no data" must never be displayed as if it meant "no errors" — that conflation is the exact failure this whole overhaul exists to fix. If the structured sink isn't reporting, say so loudly instead of showing a reassuring row of zeros.
 if [ "$ON_VM" -eq 1 ] || [ "$HAVE_GCLOUD" -eq 0 ]; then
   row "${YEL}⚠ NOT LIVE — Cloud Logging is only queried from the Mac. Re-run there for real${R}"
   row "${YEL}  counts; the ALERTS block below is accurate from anywhere.${R}"
@@ -335,9 +293,7 @@ row "7d   err/warn/caution/info = $(get ALERT_7D)      store $(get ALERT_TOTAL)/
 row "last error: $(get ALERT_LAST)"
 
 section "ACTIVITY"
-# Log-line volume per hour over the last 12h. Labelled honestly as LOG VOLUME rather than dressed up
-# as an interaction count — the bot does not log per-interaction, so an "interactions/hr" figure would
-# be invented. Volume still reads as a useful liveness/incident signal.
+# Log-line volume per hour over the last 12h. Labelled honestly as LOG VOLUME rather than dressed up as an interaction count — the bot does not log per-interaction, so an "interactions/hr" figure would be invented. Volume still reads as a useful liveness/incident signal.
 counts=""; peak=0; i=11
 while [ "$i" -ge 0 ]; do
   lo="$(iso_at $(( now - (i+1)*3600 )))"; hi="$(iso_at $(( now - i*3600 )))"
@@ -360,8 +316,7 @@ echo
 # ── logs subcommand ──────────────────────────────────────────────────────────
 [ "$WANT_LOGS" -eq 1 ] || exit 0
 
-# Cloud Logging first; journald over SSH as the fallback, so the script never hard-depends on the
-# GCP logging API staying healthy — losing the nicer source must not mean losing the logs.
+# Cloud Logging first; journald over SSH as the fallback, so the script never hard-depends on the GCP logging API staying healthy — losing the nicer source must not mean losing the logs.
 raw="$(cl_read '' "$SINCE" "$UNTIL" 'value(timestamp,jsonPayload.version,jsonPayload.commit,severity,jsonPayload.message)')"
 source_name="Cloud Logging"
 if [ -z "$raw" ]; then
@@ -379,8 +334,7 @@ if [ "$total" -eq 0 ]; then
   exit 0
 fi
 
-# Cloud Logging returns newest-first; take the newest N, then flip so it reads oldest-first like a tail.
-# The journald fallback is already oldest-first, so only reverse when the source was Cloud Logging.
+# Cloud Logging returns newest-first; take the newest N, then flip so it reads oldest-first like a tail. The journald fallback is already oldest-first, so only reverse when the source was Cloud Logging.
 if [ "$source_name" = "Cloud Logging" ]; then
   printf '%s\n' "$raw" | grep . | head -n "$LINES" | awk '{a[NR]=$0} END{for(i=NR;i>0;i--) print a[i]}'
 else

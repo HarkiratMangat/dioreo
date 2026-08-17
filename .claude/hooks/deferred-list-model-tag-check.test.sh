@@ -1,6 +1,5 @@
 #!/bin/bash
-# Proofs for deferred-list-model-tag-check.sh -- the gate that exists because the standing
-# model-tag rule was missed live, three times in one session, before Harkirat caught it by hand.
+# Proofs for deferred-list-model-tag-check.sh -- the gate that exists because the standing model-tag rule was missed live, three times in one session, before Harkirat caught it by hand.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/deferred-list-model-tag-check.sh"
 pass=0; fail=0

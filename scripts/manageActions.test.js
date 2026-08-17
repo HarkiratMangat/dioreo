@@ -1,15 +1,8 @@
-// Conservation tests for the /manage action registry (utils/manageActions.js, 2026-08-14).
-// Design: docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md.
+// Conservation tests for the /manage action registry (utils/manageActions.js, 2026-08-14). Design: docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md.
 //
-// WHAT THIS IS FOR. The registry exists because the action list used to live in two places that
-// nothing compared: the button rows in commands/manage.js's buildPagesTable(), and a 220-line
-// if/else in handlers/manage.js. The failure that produced was silent in both directions — a button
-// with no handler renders as a button that simply does nothing when clicked, and a handler with no
-// button is dead code nobody notices. Consolidating them only helps if something CHECKS they stayed
-// consolidated, so these tests assert conservation both ways.
+// WHAT THIS IS FOR. The registry exists because the action list used to live in two places that nothing compared: the button rows in commands/manage.js's buildPagesTable(), and a 220-line if/else in handlers/manage.js. The failure that produced was silent in both directions — a button with no handler renders as a button that simply does nothing when clicked, and a handler with no button is dead code nobody notices. Consolidating them only helps if something CHECKS they stayed consolidated, so these tests assert conservation both ways.
 //
-// Runs with no network and no DB: buildManagePage() is pure given a page key, and resolveAction()
-// is never called here (it would need adminAccess's Mongo-backed permission lookup).
+// Runs with no network and no DB: buildManagePage() is pure given a page key, and resolveAction() is never called here (it would need adminAccess's Mongo-backed permission lookup).
 
 const assert = require('assert');
 const fs = require('fs');
@@ -30,9 +23,7 @@ function check(name, fn) {
 const PAGES = manageCommand.PAGES;
 const registryPages = Object.keys(registry.ACTIONS_BY_PAGE).sort();
 
-// Walks a rendered page's components and collects every `mng_act_<page>_<id>` it actually emits.
-// Deliberately reads the RENDERED OUTPUT rather than the page table, so it also covers the two
-// group styles ('inline' accessories vs. plain button rows) that build their buttons differently.
+// Walks a rendered page's components and collects every `mng_act_<page>_<id>` it actually emits. Deliberately reads the RENDERED OUTPUT rather than the page table, so it also covers the two group styles ('inline' accessories vs. plain button rows) that build their buttons differently.
 function renderedActionIds(pageKey) {
     const [container] = manageCommand.buildManagePage(pageKey, {}, undefined, null);
     const ids = [];
@@ -56,16 +47,14 @@ check('every registry page is a real /manage page', () => {
 });
 
 check('every /manage page has registry actions', () => {
-    // A page with no registered action would render with no buttons at all. Only pages whose whole
-    // surface is dynamic could legitimately do that, and none currently are.
+    // A page with no registered action would render with no buttons at all. Only pages whose whole surface is dynamic could legitimately do that, and none currently are.
     const bare = Object.keys(PAGES).filter(p => !registry.listActions(p).length);
     assert.deepStrictEqual(bare, [], `page(s) with no registered actions: ${bare.join(', ')}`);
 });
 
 check('every page scope is a real permission scope', () => {
     const { MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
-    // 'manageadmins' retired 2026-08-16 -- moved to /bot access, which is owner-only by its own
-    // isOwner() check and is no longer a /manage page or a registry entry at all.
+    // 'manageadmins' retired 2026-08-16 -- moved to /bot access, which is owner-only by its own isOwner() check and is no longer a /manage page or a registry entry at all.
     const valid = new Set(MANAGE_PAGE_SCOPES);
     const offenders = [];
     for (const page of registryPages) {
@@ -77,11 +66,7 @@ check('every page scope is a real permission scope', () => {
 });
 
 check('every action is filed under the page it claims', () => {
-    // Not redundant with the scope check above, which only asks whether `entry.page` is a REAL scope.
-    // This asks whether it is the RIGHT one. The two loadout pages are built by a factory precisely so
-    // they get separate objects — if that ever became a shared const, the `entry.page = page` loop in
-    // the registry would tag MP's entries as DMZ, permissions would resolve against the wrong page,
-    // and every other check here would still pass.
+    // Not redundant with the scope check above, which only asks whether `entry.page` is a REAL scope. This asks whether it is the RIGHT one. The two loadout pages are built by a factory precisely so they get separate objects — if that ever became a shared const, the `entry.page = page` loop in the registry would tag MP's entries as DMZ, permissions would resolve against the wrong page, and every other check here would still pass.
     const offenders = [];
     for (const [page, list] of Object.entries(registry.ACTIONS_BY_PAGE)) {
         for (const entry of list) {
@@ -127,9 +112,7 @@ check('every action declares a callable run()', () => {
 });
 
 check('no destructive action is exposed to the slash path', () => {
-    // The standing rule from the design: reaching a destructive action always costs a deliberate
-    // navigation to its page. `slash` is stored per entry rather than derived from `kind` precisely
-    // so this assertion has something real to compare — deriving it would make this vacuous.
+    // The standing rule from the design: reaching a destructive action always costs a deliberate navigation to its page. `slash` is stored per entry rather than derived from `kind` precisely so this assertion has something real to compare — deriving it would make this vacuous.
     const offenders = [];
     for (const page of registryPages) {
         for (const entry of registry.listActions(page)) {
@@ -140,9 +123,7 @@ check('no destructive action is exposed to the slash path', () => {
 });
 
 check('slash actions per page fit one autocomplete response', () => {
-    // Discord returns at most 25 autocomplete choices. No page is near this today; the check exists
-    // so a page that grows past it fails here rather than silently truncating in the client. Same
-    // defensive posture as commands/admin.js's SELECT_OPTION_CAP.
+    // Discord returns at most 25 autocomplete choices. No page is near this today; the check exists so a page that grows past it fails here rather than silently truncating in the client. Same defensive posture as commands/admin.js's SELECT_OPTION_CAP.
     const offenders = registryPages
         .map(p => [p, registry.listSlashActions(p).length])
         .filter(([, n]) => n > 25)
@@ -151,8 +132,7 @@ check('slash actions per page fit one autocomplete response', () => {
 });
 
 check('every purge action has a label for its scope', () => {
-    // confirmPurge() reads PURGE_LABELS[page][scope] at CLICK time — a missing entry is a crash in
-    // production, not a render failure, so nothing else would catch it.
+    // confirmPurge() reads PURGE_LABELS[page][scope] at CLICK time — a missing entry is a crash in production, not a render failure, so nothing else would catch it.
     const SCOPE = { purge: 'all', purgeall: 'all', purgenew: 'new', purgereturning: 'returning' };
     const offenders = [];
     for (const page of registryPages) {
@@ -199,12 +179,7 @@ check('listSlashActions returns nothing for an unknown page', () => {
 });
 
 check("resolveAction() alone does NOT block a slash:false entry -- the SLASH CALLER must", () => {
-    // Real bug, found by a completeness sweep 2026-08-14 18:38 EDT: resolveAction() only checks
-    // ownership/page-scope, never `slash`. commands/manage.js's action-dispatch branch is the one
-    // caller that must enforce it -- Discord's autocomplete not SUGGESTING a confirm-kind id is not
-    // the same as REJECTING one a user types directly (autocomplete choices aren't server-enforced).
-    // This pins the fact that stays true (resolveAction alone is insufficient) and the source-scan
-    // below pins that manage.js actually compensates for it.
+    // Real bug, found by a completeness sweep 2026-08-14 18:38 EDT: resolveAction() only checks ownership/page-scope, never `slash`. commands/manage.js's action-dispatch branch is the one caller that must enforce it -- Discord's autocomplete not SUGGESTING a confirm-kind id is not the same as REJECTING one a user types directly (autocomplete choices aren't server-enforced). This pins the fact that stays true (resolveAction alone is insufficient) and the source-scan below pins that manage.js actually compensates for it.
     const confirmEntry = registryPages
         .flatMap(p => registry.listActions(p))
         .find(a => a.kind === 'confirm');
@@ -214,11 +189,7 @@ check("resolveAction() alone does NOT block a slash:false entry -- the SLASH CAL
 
 check('commands/manage.js\'s action dispatch checks entry.slash before running', () => {
     const src = fs.readFileSync(require.resolve('../commands/manage.js'), 'utf8');
-    // Anchors on the exact guard clause immediately before the run() call -- a plain substring
-    // search for 'resolved.entry.slash' anywhere nearby is NOT enough: this file also sets
-    // resolved.reason = 'unknown' on the non-slash branch, which contains that same substring and
-    // would keep a weaker check green even with the run()-guarding condition removed. Verified by
-    // deliberately reverting the guard and confirming this exact check fails (2026-08-14 18:40 EDT).
+    // Anchors on the exact guard clause immediately before the run() call -- a plain substring search for 'resolved.entry.slash' anywhere nearby is NOT enough: this file also sets resolved.reason = 'unknown' on the non-slash branch, which contains that same substring and would keep a weaker check green even with the run()-guarding condition removed. Verified by deliberately reverting the guard and confirming this exact check fails (2026-08-14 18:40 EDT).
     const runCallIdx = src.indexOf('return await resolved.entry.run(');
     assert.ok(runCallIdx > -1, 'could not find the action dispatch\'s run() call at all');
     const precedingIf = src.lastIndexOf('if (', runCallIdx);

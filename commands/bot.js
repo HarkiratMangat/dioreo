@@ -1,23 +1,11 @@
 // ==========================================
 // COMMAND: /bot  (admin-only) — analytics + access
 // ==========================================
-// Observability layer stage 3: docs/superpowers/specs/2026-08-16-observability-layer-design.md §6.
-// `/bot analytics` is the paged read surface for the event plane stage 2 built (Health/Alerts/
-// Changes/Usage/Timing). `/bot access` is the admin allowlist, extracted out of /manage's former
-// owner-only `manageadmins` page — see utils/adminAccess.js and handlers/bot.js for the permission
-// gate itself. `/alerts` and `/audit` retire as command names; their panels became pages here
-// (Alerts/Changes), ported with their customId prefixes renamed but their query logic untouched.
+// Observability layer stage 3: docs/superpowers/specs/2026-08-16-observability-layer-design.md §6. `/bot analytics` is the paged read surface for the event plane stage 2 built (Health/Alerts/ Changes/Usage/Timing). `/bot access` is the admin allowlist, extracted out of /manage's former owner-only `manageadmins` page — see utils/adminAccess.js and handlers/bot.js for the permission gate itself. `/alerts` and `/audit` retire as command names; their panels became pages here (Alerts/Changes), ported with their customId prefixes renamed but their query logic untouched.
 //
-// This file builds every panel; handlers/bot.js owns all `bot_`-prefixed button/select/modal
-// routing, mirroring the commands/*.js-builds + handlers/*.js-routes split every other admin
-// surface in this bot uses.
+// This file builds every panel; handlers/bot.js owns all `bot_`-prefixed button/select/modal routing, mirroring the commands/*.js-builds + handlers/*.js-routes split every other admin surface in this bot uses.
 //
-// 🔴 `/bot access` is NOT gated by a permission token, on purpose — same invariant `manageadmins`
-// always had ("no permission token at all, ever," see utils/adminAccess.js's header): the allowlist
-// page itself is owner-only visibility, checked directly via isOwner() in execute() below and
-// re-checked at every mutation in handlers/bot.js. `/bot analytics` IS token-gated (`hasCommandAccess`,
-// the 'bot' token replacing the retired 'alerts'/'audit' tokens) — any admin analytics ships to
-// should be viewable without being the owner.
+// 🔴 `/bot access` is NOT gated by a permission token, on purpose — same invariant `manageadmins` always had ("no permission token at all, ever," see utils/adminAccess.js's header): the allowlist page itself is owner-only visibility, checked directly via isOwner() in execute() below and re-checked at every mutation in handlers/bot.js. `/bot analytics` IS token-gated (`hasCommandAccess`, the 'bot' token replacing the retired 'alerts'/'audit' tokens) — any admin analytics ships to should be viewable without being the owner.
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -31,15 +19,13 @@ const ALERTS_PER_PAGE = 8;
 const CHANGES_PER_PAGE = 8;
 // Matches utils/alertWebhook.js's LEVEL_ICON — kept in sync by hand (both are tiny, stable maps).
 const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' };
-// discord.js's Status enum values, hardcoded rather than imported so a library rename can't
-// silently blank this map — Health is meant to survive as "unknown code N" worst case, not throw.
+// discord.js's Status enum values, hardcoded rather than imported so a library rename can't silently blank this map — Health is meant to survive as "unknown code N" worst case, not throw.
 const GATEWAY_STATUS_LABEL = {
     0: '🟢 Ready', 1: '🟡 Connecting', 2: '🟡 Reconnecting', 3: '🟡 Idle', 4: '🟡 Nearly ready',
     5: '🔴 Disconnected', 6: '🟡 Waiting for guilds', 7: '🟡 Identifying', 8: '🟡 Resuming',
 };
 
-// Each page's own identity color — Alerts/Changes reuse their retired commands' exact accents
-// (continuity for anyone used to the old panels); Health/Usage/Timing/Access are new.
+// Each page's own identity color — Alerts/Changes reuse their retired commands' exact accents (continuity for anyone used to the old panels); Health/Usage/Timing/Access are new.
 const PAGE_META = {
     health: { label: '🩺 Health', accent: 0x2FA88E },
     alerts: { label: '🔔 Alerts', accent: 0x546E7A },
@@ -63,10 +49,7 @@ function pageSelectRow(current) {
     };
 }
 
-// ── Health (see docs/superpowers/specs/2026-08-16-observability-layer-design.md §6) ──
-// Cloud Logging/Monitoring reads via ADC arrived in stage 4 (utils/cloudObservability.js), which
-// caches its own result for 60s and never throws — computeHealthStats() awaits it alongside the
-// existing free-to-compute facts (getAlertSummary(), live client.ws/process state, BootRecord counts).
+// ── Health (see docs/superpowers/specs/2026-08-16-observability-layer-design.md §6) ── Cloud Logging/Monitoring reads via ADC arrived in stage 4 (utils/cloudObservability.js), which caches its own result for 60s and never throws — computeHealthStats() awaits it alongside the existing free-to-compute facts (getAlertSummary(), live client.ws/process state, BootRecord counts).
 async function computeHealthStats(client) {
     const BootRecord = require('../models/BootRecord');
     const { getHealthCloudStats } = require('../utils/cloudObservability');
@@ -88,12 +71,7 @@ async function computeHealthStats(client) {
     };
 }
 
-// The three-tier error model the design's §6 calls for: what the Discord alert channel was TOLD
-// (summary.last24h.error, from getAlertSummary() — already existed), what Cloud Logging says actually
-// HAPPENED (cloud.errors24h — new this stage), and the gap between them, which is neither wrong nor
-// redundant: sendAlert()'s 1/min throttle and some errors never reaching an alert threshold both
-// produce real ERROR-severity log lines that were never announced. That gap is the "noise" tier — not
-// noise in the sense of unimportant, but in the sense of "happened quietly, nobody was told."
+// The three-tier error model the design's §6 calls for: what the Discord alert channel was TOLD (summary.last24h.error, from getAlertSummary() — already existed), what Cloud Logging says actually HAPPENED (cloud.errors24h — new this stage), and the gap between them, which is neither wrong nor redundant: sendAlert()'s 1/min throttle and some errors never reaching an alert threshold both produce real ERROR-severity log lines that were never announced. That gap is the "noise" tier — not noise in the sense of unimportant, but in the sense of "happened quietly, nobody was told."
 function errorTiers(summary, cloud) {
     const announced = summary.last24h.error;
     if (!cloud || !cloud.available) return { announced, logged: null, noise: null };
@@ -102,10 +80,7 @@ function errorTiers(summary, cloud) {
     return { announced, logged, noise };
 }
 
-// A plain-language verdict line before any facts, matching the panel design rule ("Health opens
-// with a single plain-language verdict line ... before any facts"). Not literally alertExplain.js's
-// explain() — that explains one alert TITLE, there is no aggregate-verdict function there to reuse —
-// but the same spirit: state the answer, not just the numbers.
+// A plain-language verdict line before any facts, matching the panel design rule ("Health opens with a single plain-language verdict line ... before any facts"). Not literally alertExplain.js's explain() — that explains one alert TITLE, there is no aggregate-verdict function there to reuse — but the same spirit: state the answer, not just the numbers.
 function healthVerdict({ summary }) {
     if (summary.last24h.error > 0) return `🔴 **Something broke in the last 24 hours** — ${summary.last24h.error} error alert(s). See Alerts below.`;
     if (summary.last24h.warn > 0) return `🟡 **Minor hiccups in the last 24 hours** — ${summary.last24h.warn} warning(s), nothing that needed action.`;
@@ -114,9 +89,7 @@ function healthVerdict({ summary }) {
 
 function fmtPct(v) { return v == null ? '—' : `${v}%`; }
 
-// CPU/RAM peaks across the trimmed 24h/7d/30d window set (see cloudObservability.js's WINDOWS for why
-// it's three, not vmpeaks.sh's five). One compact code-fenced line per metric keeps this inside the
-// panel design's ~40-column phone-wrap budget instead of a wide table.
+// CPU/RAM peaks across the trimmed 24h/7d/30d window set (see cloudObservability.js's WINDOWS for why it's three, not vmpeaks.sh's five). One compact code-fenced line per metric keeps this inside the panel design's ~40-column phone-wrap budget instead of a wide table.
 function peaksLine(cloud) {
     if (!cloud.available) return `-# Cloud Monitoring unavailable right now (${truncate(cloud.error || 'unknown error', 80)}) — retrying next open.`;
     const { cpu, ram } = cloud.peaks;
@@ -204,8 +177,7 @@ function buildAlertsExplainBody() {
     ];
 }
 
-// ── Changes page (ported from the retired commands/audit.js — query logic unchanged; page tag
-// for admin-access mutations renamed 'manageadmins' -> 'access' going forward, see handlers/bot.js) ──
+// ── Changes page (ported from the retired commands/audit.js — query logic unchanged; page tag for admin-access mutations renamed 'manageadmins' -> 'access' going forward, see handlers/bot.js) ──
 const FILTERABLE_PAGES = [...MANAGE_PAGE_SCOPES, 'access', 'announcement'];
 const PAGE_LABEL = {
     draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
@@ -264,9 +236,7 @@ async function buildChangesBody({ page = 0, filterPage = null, filterActor = nul
     return body;
 }
 
-// ── Usage page — live aggregation against AnalyticsEvent (stage 2's collection); no roll-ups
-// exist yet (stage 4), so this queries raw rows directly, matching the design's own note that
-// recent-window questions don't need roll-ups. Product stats only (isAdmin: false). ──
+// ── Usage page — live aggregation against AnalyticsEvent (stage 2's collection); no roll-ups exist yet (stage 4), so this queries raw rows directly, matching the design's own note that recent-window questions don't need roll-ups. Product stats only (isAdmin: false). ──
 async function computeUsageStats() {
     const AnalyticsEvent = require('../models/AnalyticsEvent');
     const now = Date.now();
@@ -314,8 +284,7 @@ async function buildUsageBody() {
 
 function fmtUtc(d) { return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?'; }
 
-// Matches buildAlertExport()/buildChangeExport()'s downloadable-.txt shape — the fuller record beyond
-// what fits in the panel, same convention every export button in this command uses.
+// Matches buildAlertExport()/buildChangeExport()'s downloadable-.txt shape — the fuller record beyond what fits in the panel, same convention every export button in this command uses.
 async function buildUsageExport() {
     const { current, previous, byCommand, byEntry, byOutcome } = await computeUsageStats();
     const lines = [
@@ -407,9 +376,7 @@ async function buildTimingExport() {
     return lines.join('\n');
 }
 
-// Shared render entry point — used by execute() (slash) AND handlers/bot.js's re-render branches,
-// so there's one render path, not a drifting copy per page (same convention /alerts and /audit
-// each already followed on their own).
+// Shared render entry point — used by execute() (slash) AND handlers/bot.js's re-render branches, so there's one render path, not a drifting copy per page (same convention /alerts and /audit each already followed on their own).
 async function buildAnalyticsPanel({ page = 'health', client, alertsState = {}, changesState = {} } = {}) {
     const meta = PAGE_META[page] || PAGE_META.health;
     let body;
@@ -432,10 +399,7 @@ async function buildAnalyticsPanel({ page = 'health', client, alertsState = {}, 
     }];
 }
 
-// ── Access page — the admin allowlist, extracted from /manage's former owner-only
-// `manageadmins` page. Card rendering (buildAdminListBlocks) and both modal builders moved here
-// verbatim from commands/manage.js; only their custom_ids changed prefix (mng_admin_/modal_admin_
-// -> bot_admin_/bot_adminmodal_), matching /bot's single owned prefix. ──
+// ── Access page — the admin allowlist, extracted from /manage's former owner-only `manageadmins` page. Card rendering (buildAdminListBlocks) and both modal builders moved here verbatim from commands/manage.js; only their custom_ids changed prefix (mng_admin_/modal_admin_ -> bot_admin_/bot_adminmodal_), matching /bot's single owned prefix. ──
 async function buildAdminListBlocks(adminDocs, client) {
     if (!adminDocs || adminDocs.length === 0) {
         return [{ type: 10, content: `**No additional admins granted.** Only the bot owner has admin access right now. Use Grant Admin below to add someone.` }];
@@ -523,8 +487,7 @@ module.exports = {
         .setName('bot')
         .setDescription("Dioreo's own analytics and admin access management")
         .setDefaultMemberPermissions(0)
-        // ADMIN-ONLY, same reasoning as /manage/autobuild: stays user-install [1] deliberately — an
-        // admin command advertised in every server's command list is noise plus needless surface.
+        // ADMIN-ONLY, same reasoning as /manage/autobuild: stays user-install [1] deliberately — an admin command advertised in every server's command list is noise plus needless surface.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
         .addSubcommand(sub => sub.setName('analytics').setDescription("View the bot's usage, timing and health data")
             .addStringOption(o => o.setName('page').setDescription('Jump directly to a page (defaults to Health)').addChoices(

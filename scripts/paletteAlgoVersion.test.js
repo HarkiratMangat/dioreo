@@ -1,10 +1,6 @@
-// scripts/paletteAlgoVersion.test.js
-// Regression test for the palette cache key -- utils/algoFingerprint.js and the PALETTE_ALGO_VERSION /
-// paletteContextFields / readPaletteContext trio in utils/colorExtract.js. Added 2026-08-11 15:47 EDT.
-// Run: `node scripts/paletteAlgoVersion.test.js` (also via `npm test`).
+// scripts/paletteAlgoVersion.test.js Regression test for the palette cache key -- utils/algoFingerprint.js and the PALETTE_ALGO_VERSION / paletteContextFields / readPaletteContext trio in utils/colorExtract.js. Added 2026-08-11 15:47 EDT. Run: `node scripts/paletteAlgoVersion.test.js` (also via `npm test`).
 //
-// ⚠️ WHY THIS EXISTS. Every failure mode of this key is SILENT, in both directions, and neither shows
-// up as an error anywhere:
+// ⚠️ WHY THIS EXISTS. Every failure mode of this key is SILENT, in both directions, and neither shows up as an error anywhere:
 //   · Too STICKY (the key fails to move when the algorithm does) and every cached palette stays on a
 //     superseded value forever, behind a marker asserting it is current. Nothing logs; the colours are
 //     simply wrong, and they look exactly as plausible as correct ones. This is the failure the
@@ -14,8 +10,7 @@
 //     and never announces itself. The specific hazard here is this codebase's comment density --
 //     comments in these files are edited constantly, so hashing them would invalidate the world every
 //     time someone clarified a sentence.
-// Both directions are asserted below, on purpose. A test that only checked "the hash is a string"
-// would pass under either failure.
+// Both directions are asserted below, on purpose. A test that only checked "the hash is a string" would pass under either failure.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -26,8 +21,7 @@ const {
 } = require('../utils/colorExtract');
 const { MONTAGE_FINGERPRINT } = require('../utils/animatedMediaPipeline');
 
-// Counted, never hardcoded -- a literal total in the summary is a copy of state that rots the moment
-// a case is added, and it rotted within minutes of this file being written.
+// Counted, never hardcoded -- a literal total in the summary is a copy of state that rots the moment a case is added, and it rotted within minutes of this file being written.
 let failed = 0;
 let passed = 0;
 function t(name, fn) {
@@ -52,8 +46,7 @@ t('the same function fingerprints identically twice', () => {
 t('a comment-only edit does NOT change the fingerprint', () => {
     const before = function scale(x) { /* doubles it */ return x * 2; };
     const after = function scale(x) {
-        // Doubles it. Rewritten comment, at length, mentioning a URL like
-        // https://example.test/whatever -- exactly the kind of edit these files get constantly.
+        // Doubles it. Rewritten comment, at length, mentioning a URL like https://example.test/whatever -- exactly the kind of edit these files get constantly.
         return x * 2;
     };
     assert.strictEqual(fingerprint(before), fingerprint(after));
@@ -82,8 +75,7 @@ t('order of the inputs is part of the identity', () => {
     assert.notStrictEqual(fingerprint(a, b), fingerprint(b, a));
 });
 
-// --- The montage is part of the algorithm, not a neighbour of it. This is the case the first design
-// missed: the tile-copy fix altered a swatch while touching nothing in colorExtract.js.
+// --- The montage is part of the algorithm, not a neighbour of it. This is the case the first design missed: the tile-copy fix altered a swatch while touching nothing in colorExtract.js.
 t('the montage fingerprint is a real input to the palette key', () => {
     assert.match(MONTAGE_FINGERPRINT, /^[0-9a-f]{12}$/);
     const withMontage = fingerprint('extractor-stub', MONTAGE_FINGERPRINT);
@@ -93,8 +85,7 @@ t('the montage fingerprint is a real input to the palette key', () => {
 
 t('PALETTE_ALGO_VERSION is a 12-char hex digest, not a release string', () => {
     assert.match(PALETTE_ALGO_VERSION, /^[0-9a-f]{12}$/);
-    // Guards the specific regression Harkirat rejected: a key that tracks the release number would
-    // re-derive every cached palette on an ordinary version bump.
+    // Guards the specific regression Harkirat rejected: a key that tracks the release number would re-derive every cached palette on an ordinary version bump.
     assert.ok(!PALETTE_ALGO_VERSION.includes('.'), 'must not look like a semver string');
 });
 
@@ -116,8 +107,7 @@ t('a palette tagged by a DIFFERENT algorithm reads back as absent', () => {
 });
 
 t('a palette with NO version marker reads back as absent', () => {
-    // Every entry written before this mechanism existed is in exactly this shape, and every one of
-    // them predates the rounding fix -- so "absent" is the correct reading, not a lenient fallback.
+    // Every entry written before this mechanism existed is in exactly this shape, and every one of them predates the rounding fix -- so "absent" is the correct reading, not a lenient fallback.
     const { palette } = paletteContextFields(SAMPLE);
     assert.strictEqual(readPaletteContext({ palette }), null);
 });
@@ -129,9 +119,7 @@ t('a malformed palette reads as absent even under a correct version', () => {
     );
 });
 
-// --- The `extra` channel: a caller folding its own output-affecting inputs into the key. Both halves
-// must be given the same ones, and the asymmetric case is the one that would rot silently -- a palette
-// written with extras and read without them would look permanently stale and re-derive on every view.
+// --- The `extra` channel: a caller folding its own output-affecting inputs into the key. Both halves must be given the same ones, and the asymmetric case is the one that would rot silently -- a palette written with extras and read without them would look permanently stale and re-derive on every view.
 const NAMEPLATE_OPTS = { inputExt: '.webm', preInputArgs: ['-c:v', 'libvpx-vp9'], fps: 12 };
 const DECORATION_OPTS = { inputExt: '.png', preInputArgs: ['-f', 'apng'], fps: 12 };
 
@@ -147,8 +135,7 @@ t('reading WITHOUT the extras it was written with returns absent', () => {
 });
 
 t('different extraction options produce different keys', () => {
-    // Guards against a nameplate and a decoration agreeing on a key despite decoding differently --
-    // `-f apng` vs `-c:v libvpx-vp9` is the difference between real alpha and none.
+    // Guards against a nameplate and a decoration agreeing on a key despite decoding differently -- `-f apng` vs `-c:v libvpx-vp9` is the difference between real alpha and none.
     assert.notStrictEqual(
         paletteContextFields(SAMPLE, NAMEPLATE_OPTS).palette_version,
         paletteContextFields(SAMPLE, DECORATION_OPTS).palette_version
@@ -163,8 +150,7 @@ t('a changed fps DOES change the key', () => {
 });
 
 t('an empty palette produces no context fields at all', () => {
-    // Must not write a version marker with nothing under it -- that would read as a valid current
-    // palette of length zero on the next hit.
+    // Must not write a version marker with nothing under it -- that would read as a valid current palette of length zero on the next hit.
     assert.deepStrictEqual(paletteContextFields([]), {});
     assert.deepStrictEqual(paletteContextFields(null), {});
 });
@@ -172,13 +158,7 @@ t('an empty palette produces no context fields at all', () => {
 // ============================================================================================
 // THE PER-USER CACHE IDENTITY — the same key, on the other side of the subsystem.
 //
-// ⚠️ WHY THIS EXISTS. Everything above protects the SHARED nameplate/decoration palettes stored in
-// Cloudinary context. The per-user avatar/banner palettes on `UserPreference` had no such protection
-// at all: their identity was the image hash alone, so every extractor change was invisible to every
-// existing user, forever, until they happened to change their picture. Found live 2026-08-12 20:32 EDT
-// when v3.13.0-pre's extraction fix shipped and Harkirat had to press Refresh Colors once per source
-// to see it. Same failure mode as "too STICKY" above and just as silent — the colours are simply the
-// old ones, and they look exactly as plausible as correct ones.
+// ⚠️ WHY THIS EXISTS. Everything above protects the SHARED nameplate/decoration palettes stored in Cloudinary context. The per-user avatar/banner palettes on `UserPreference` had no such protection at all: their identity was the image hash alone, so every extractor change was invisible to every existing user, forever, until they happened to change their picture. Found live 2026-08-12 20:32 EDT when v3.13.0-pre's extraction fix shipped and Harkirat had to press Refresh Colors once per source to see it. Same failure mode as "too STICKY" above and just as silent — the colours are simply the old ones, and they look exactly as plausible as correct ones.
 t('the per-user palette identity carries the ALGORITHM, not just the image', () => {
     const id = paletteIdentity({ source: 'abc123' });
     assert.ok(id.includes(PALETTE_ALGO_VERSION), `identity "${id}" does not name the algorithm that produced the palette`);
@@ -186,23 +166,16 @@ t('the per-user palette identity carries the ALGORITHM, not just the image', () 
 });
 
 t('a nameplate keys on (asset, palette) and still carries the algorithm', () => {
-    // paletteCacheKey outranks source for nameplate, because its palette depends on the bed. Both
-    // halves have to survive: the key that was chosen AND the version stamp.
+    // paletteCacheKey outranks source for nameplate, because its palette depends on the bed. Both halves have to survive: the key that was chosen AND the version stamp.
     const id = paletteIdentity({ source: 'bare-asset', paletteCacheKey: 'asset:violet' });
     assert.ok(id.startsWith('asset:violet'), `identity "${id}" ignored paletteCacheKey and fell back to the bare asset hash`);
     assert.ok(id.includes(PALETTE_ALGO_VERSION), `identity "${id}" does not name the algorithm`);
 });
 
 t('there is exactly ONE identity rule in utils/colorPalette.js', () => {
-    // ⚠️ THE DRIFT THIS PREVENTS IS NOT HYPOTHETICAL — it was the state of the file. getCachedPalette
-    // and the `refreshStale` loop each computed `paletteCacheKey || source` independently, so versioning
-    // one and not the other would leave the staleness test permanently mismatched, which re-extracts
-    // EVERY source on EVERY press: the unbounded behaviour that design deliberately avoids, arrived at
-    // by fixing a bug. Read from the source because there is no output that can show it.
+    // ⚠️ THE DRIFT THIS PREVENTS IS NOT HYPOTHETICAL — it was the state of the file. getCachedPalette and the `refreshStale` loop each computed `paletteCacheKey || source` independently, so versioning one and not the other would leave the staleness test permanently mismatched, which re-extracts EVERY source on EVERY press: the unbounded behaviour that design deliberately avoids, arrived at by fixing a bug. Read from the source because there is no output that can show it.
     const src = fs.readFileSync(path.join(__dirname, '..', 'utils', 'colorPalette.js'), 'utf8');
-    // ⚠️ Comment lines are excluded, and finding that out was the point: the first run of this case
-    // failed on paletteIdentity's OWN comment describing the drift it prevents. A source scan that
-    // cannot tell code from prose reports the documentation as the defect.
+    // ⚠️ Comment lines are excluded, and finding that out was the point: the first run of this case failed on paletteIdentity's OWN comment describing the drift it prevents. A source scan that cannot tell code from prose reports the documentation as the defect.
     const inlineRules = src.split('\n')
         .filter(l => !/^\s*(\/\/|\*)/.test(l))
         .filter(l => /paletteCacheKey\s*\|\|/.test(l) && !l.trim().startsWith('return `'));

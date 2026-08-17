@@ -1,17 +1,9 @@
 // ==========================================
 // /manage — DRAWS PAGE
 // ==========================================
-// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and
-// purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/
-// 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which
-// owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for
-// registerUndo/undoButtonRow/thumbnailNote/resolveThumbnailsForDraws/upsertDrawsByTitle/
-// loadOrCreateSeasonalDoc, all shared with calendar.js/season.js.
+// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for registerUndo/undoButtonRow/thumbnailNote/resolveThumbnailsForDraws/upsertDrawsByTitle/ loadOrCreateSeasonalDoc, all shared with calendar.js/season.js.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S. Every function here is awaited from inside
-// handlers/router.js's single top-level try/catch (via handlers/manage/index.js) -- do NOT add a
-// try/catch here that swallows, and keep every error-branch reply an AWAITED call. See
-// .claude/rules/interaction-router.md.
+// ⚠️ THE CRASH NET IS THE ROUTER'S. Every function here is awaited from inside handlers/router.js's single top-level try/catch (via handlers/manage/index.js) -- do NOT add a try/catch here that swallows, and keep every error-branch reply an AWAITED call. See .claude/rules/interaction-router.md.
 
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
 const { recordChange } = require('../../utils/changeStore');
@@ -27,10 +19,7 @@ async function addDraw(interaction) {
     const customId = interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
-    // 5th field: an alternative to filling in the 4 separate fields below -- paste the whole draw as
-    // one bulk-style line and it's run through the SAME parser bulk import uses. All 5 fields are
-    // setRequired(false) (see commands/manage.js's buildAddDrawModal), so Discord itself won't block
-    // a submit with only this one filled.
+    // 5th field: an alternative to filling in the 4 separate fields below -- paste the whole draw as one bulk-style line and it's run through the SAME parser bulk import uses. All 5 fields are setRequired(false) (see commands/manage.js's buildAddDrawModal), so Discord itself won't block a submit with only this one filled.
     const combinedLine = interaction.fields.getTextInputValue('combined')?.trim();
 
     let newDrawObj;
@@ -61,8 +50,7 @@ async function addDraw(interaction) {
             return interaction.followUp({ content: `❌ Date "${dateStr}" wasn't understood -- nothing was saved.` });
         }
 
-        // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists;
-        // no URL AND no cache hit is a real validation error since the draw needs some thumbnail.
+        // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists; no URL AND no cache hit is a real validation error since the draw needs some thumbnail.
         const thumbResult = await resolveThumbnail(title, rawUrl);
         if (!thumbResult.url) {
             return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
@@ -103,10 +91,7 @@ async function editDraw(interaction) {
         arrayTarget[drawIndex].title = newTitle;
         arrayTarget[drawIndex].date = parsedDrawDate;
 
-        // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's
-        // (possibly just-renamed) title. A blank field with no cache hit at all is a real validation
-        // error -- the draw needs SOME thumbnail, so this rejects the edit rather than saving with a
-        // broken image field.
+        // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. A blank field with no cache hit at all is a real validation error -- the draw needs SOME thumbnail, so this rejects the edit rather than saving with a broken image field.
         const rawUrl = interaction.fields.getTextInputValue('url');
         const thumbResult = await resolveThumbnail(newTitle, rawUrl);
         if (!thumbResult.url) {
@@ -127,10 +112,7 @@ async function editDraw(interaction) {
     }
 }
 
-// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both
-// One modal, two independently-optional fields -- only whichever field was actually filled in gets
-// touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale-
-// overwriting the array; Add just appends everything parsed.
+// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed.
 async function bulkAddOrReplaceDraws(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { parseBulkDrawList } = require('../../utils/adminParser');
@@ -198,9 +180,7 @@ async function bulkAddOrReplaceDraws(interaction) {
     return interaction.followUp({ content: confirmation, components: [undoButtonRow(undoToken)] });
 }
 
-// --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either}
-// Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save
-// happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.
+// --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either} Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.
 async function bulkDeleteDraws(interaction) {
     const { fuzzyMatch } = require('../../utils/search');
     const { randomUUID } = require('crypto');

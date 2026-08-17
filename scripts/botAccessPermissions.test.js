@@ -1,16 +1,8 @@
 // Permission tests for /bot access & /bot analytics's admin gate (utils/adminAccess.js).
 //
-// Stage 3 of the observability layer moved the owner-only `manageadmins` page out of /manage into
-// /bot access, and consolidated the retired 'alerts'/'audit' permission tokens into one 'bot'
-// token. This is the highest-severity change in that stage — a regression here does not produce a
-// wrong number, it grants someone admin access — so these are real behavioural tests over the
-// token-grant path, not just shape checks, plus source-scan checks pinning that the two call sites
-// that matter (commands/bot.js's `access` subcommand, handlers/bot.js's mutating branches) gate on
-// isOwner() rather than a grantable token. See docs/superpowers/specs/2026-08-16-observability-
-// layer-design.md's Risks section.
+// Stage 3 of the observability layer moved the owner-only `manageadmins` page out of /manage into /bot access, and consolidated the retired 'alerts'/'audit' permission tokens into one 'bot' token. This is the highest-severity change in that stage — a regression here does not produce a wrong number, it grants someone admin access — so these are real behavioural tests over the token-grant path, not just shape checks, plus source-scan checks pinning that the two call sites that matter (commands/bot.js's `access` subcommand, handlers/bot.js's mutating branches) gate on isOwner() rather than a grantable token. See docs/superpowers/specs/2026-08-16-observability- layer-design.md's Risks section.
 //
-// Runs with no network: models/AdminUser is stubbed via require.cache, matching the pattern
-// scripts/eventStore.test.js already uses for stage 2's own Mongo-backed modules.
+// Runs with no network: models/AdminUser is stubbed via require.cache, matching the pattern scripts/eventStore.test.js already uses for stage 2's own Mongo-backed modules.
 
 const assert = require('assert');
 const fs = require('fs');

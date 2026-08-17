@@ -1,9 +1,7 @@
 #!/bin/bash
 # Proves every failure mode of memory-index-check.sh can actually fire.
 #
-# WHY: `npm run docs:audit:test` exists for exactly this reason - a guard that has only ever been seen
-# to pass is not known to work. Twice on this project something was called "not checkable" when it was
-# simply never checked. Run this after touching memory-index-check.sh.
+# WHY: `npm run docs:audit:test` exists for exactly this reason - a guard that has only ever been seen to pass is not known to work. Twice on this project something was called "not checkable" when it was simply never checked. Run this after touching memory-index-check.sh.
 #
 #   bash .claude/hooks/memory-index-check.test.sh
 
@@ -76,10 +74,7 @@ assert "over-budget detected"                   "over budget"                   
 fixture; BUDGET_OVERRIDE=16000
 assert "under-budget not flagged"               "over budget"                        no
 
-# 7b. Approaching-budget advisory - added 2026-08-07 10:54 EDT. The fixture's MEMORY.md is exactly
-# 64 bytes (verified: `printf -- '...' | wc -c`, not guessed). A budget of 70 puts the 90% threshold
-# at 63 (70*90/100, integer division) - 64 > 63 fires the advisory while 64 <= 70 stays under budget,
-# proving the advisory fires BEFORE the hard over-budget state, not only at/after it.
+# 7b. Approaching-budget advisory - added 2026-08-07 10:54 EDT. The fixture's MEMORY.md is exactly 64 bytes (verified: `printf -- '...' | wc -c`, not guessed). A budget of 70 puts the 90% threshold at 63 (70*90/100, integer division) - 64 > 63 fires the advisory while 64 <= 70 stays under budget, proving the advisory fires BEFORE the hard over-budget state, not only at/after it.
 fixture; BUDGET_OVERRIDE=70
 assert "approaching-budget advisory fires under budget" "APPROACHING BUDGET"          yes
 assert "approaching-budget is not the over-budget error" "  BUDGET: MEMORY.md is"     no

@@ -1,10 +1,7 @@
 #!/bin/bash
 # Proves mcp-layer-check.sh's branches actually fire, against a real fixture DB.
 #
-# WHY: the first attempt at this test was VACUOUS — it grepped for "misfiled", which matches the
-# healthy status line ("0 misfiled elsewhere") just as well as the warning. It would have passed
-# forever without the warning branch ever executing. A test must give OPPOSITE answers on the
-# healthy and broken states (feedback_verify_before_claiming).
+# WHY: the first attempt at this test was VACUOUS — it grepped for "misfiled", which matches the healthy status line ("0 misfiled elsewhere") just as well as the warning. It would have passed forever without the warning branch ever executing. A test must give OPPOSITE answers on the healthy and broken states (feedback_verify_before_claiming).
 #
 #   bash .claude/hooks/mcp-layer-check.test.sh
 
@@ -70,19 +67,14 @@ MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
-# 6. The retired observation window must STAY retired.
-#    The block that lived here auto-expired on 2026-08-09 and then spent five days injecting
-#    "explicit-request-only is in force again" into every session -- asserting a decision that had
-#    been made the OTHER way, with data, the same day. These two assertions exist so restoring it is
-#    a test failure rather than a quiet regression.
+# 6. The retired observation window must STAY retired. The block that lived here auto-expired on 2026-08-09 and then spent five days injecting "explicit-request-only is in force again" into every session -- asserting a decision that had been made the OTHER way, with data, the same day. These two assertions exist so restoring it is a test failure rather than a quiet regression.
 mkfixture 0
 out="$(run 0)"
 assert "sequential-thinking stated UNRESTRICTED" "UNRESTRICTED"                yes "$out"
 assert "the retired ask-first rule is NOT back"  "explicit-request-only"       no  "$out"
 assert "no auto-expiring window remains"         "OBSERVATION WINDOW"          no  "$out"
 
-# 7. MCP SERVER PRESENCE -- the 2026-08-14 failure: a server fixed in the Claude DESKTOP config only,
-#    invisible to Claude Code, indistinguishable from a tool nobody bothered to call.
+# 7. MCP SERVER PRESENCE -- the 2026-08-14 failure: a server fixed in the Claude DESKTOP config only, invisible to Claude Code, indistinguishable from a tool nobody bothered to call.
 CCOK="$TMP/cc-ok.json"; CCBAD="$TMP/cc-bad.json"; DESK="$TMP/desktop.json"
 cat > "$CCOK"  <<'JSON'
 {"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{}}}
@@ -96,8 +88,7 @@ JSON
 prun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
          bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
-# Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the
-# discriminating half; without it the needles below could match a banner that always prints.
+# Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the discriminating half; without it the needles below could match a banner that always prints.
 out="$(prun "$CCOK" "$CCOK")"
 assert "healthy config: no missing-server warning" "NOT REGISTERED WITH CLAUDE CODE" no "$out"
 assert "healthy config: no divergence warning"     "Configured for Claude DESKTOP"   no "$out"

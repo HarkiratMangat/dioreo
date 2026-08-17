@@ -1,10 +1,4 @@
-// scripts/calendarDedup.test.js
-// Regression test for utils/search.js's isSameDrawTitle() -- the calendar Draws-section dedup logic
-// (see commands/calendar.js's getDrawSectionEntries()). Every case here is a REAL title pair pulled
-// from Harkirat's live seasonal data at the time this was built (2026-07-31 13:30 EDT), preserved
-// here on purpose per his explicit request even after that specific stale dev-DB snapshot was
-// refreshed -- these are genuine edge cases the matcher must keep handling correctly, not
-// hypothetical ones. Run: `node scripts/calendarDedup.test.js`.
+// scripts/calendarDedup.test.js Regression test for utils/search.js's isSameDrawTitle() -- the calendar Draws-section dedup logic (see commands/calendar.js's getDrawSectionEntries()). Every case here is a REAL title pair pulled from Harkirat's live seasonal data at the time this was built (2026-07-31 13:30 EDT), preserved here on purpose per his explicit request even after that specific stale dev-DB snapshot was refreshed -- these are genuine edge cases the matcher must keep handling correctly, not hypothetical ones. Run: `node scripts/calendarDedup.test.js`.
 const { isSameDrawTitle } = require('../utils/search');
 
 const CASES = [

@@ -1,24 +1,13 @@
 // scripts/devCommands.js — list or clear the DEV app's registered slash commands.
 //
-// Why this exists: slash-command registration lives on Discord's servers, attached to the
-// APPLICATION, not to the running process. `bot/registry.js` writes it once per boot with
-// `rest.put(Routes.applicationCommands(client.user.id), { body: payload })` and Discord keeps it
-// forever after — so killing the dev bot does NOT remove `Dioreo (Dev)`'s commands from the `/` picker.
-// Since it's a user-installed app (`setIntegrationTypes([1])`), those duplicates follow Harkirat into
-// every server and DM, sitting right next to prod's identical command list. This script empties the
-// dev app's registry so the picker is clean while he isn't testing.
+// Why this exists: slash-command registration lives on Discord's servers, attached to the APPLICATION, not to the running process. `bot/registry.js` writes it once per boot with `rest.put(Routes.applicationCommands(client.user.id), { body: payload })` and Discord keeps it forever after — so killing the dev bot does NOT remove `Dioreo (Dev)`'s commands from the `/` picker. Since it's a user-installed app (`setIntegrationTypes([1])`), those duplicates follow Harkirat into every server and DM, sitting right next to prod's identical command list. This script empties the dev app's registry so the picker is clean while he isn't testing.
 //
-// Restoring them is not this script's job and doesn't need to be: the next dev-bot boot re-registers
-// everything automatically, because that PUT runs on every startup.
+// Restoring them is not this script's job and doesn't need to be: the next dev-bot boot re-registers everything automatically, because that PUT runs on every startup.
 //
 //   node scripts/devCommands.js list    # show what the dev app currently has registered
 //   node scripts/devCommands.js clear   # register an empty list -> commands vanish from the picker
 //
-// ⚠️ This script reads `.env.dev` DIRECTLY off disk and never consults process.env. That's
-// deliberate: `dotenv.config()` does not override variables that are already set (the documented
-// backfill gotcha in CLAUDE.md), so a script that trusted process.env could silently end up holding
-// the PROD token and wipe the real bot's commands. Parsing the file itself makes that impossible,
-// and the prod-token comparison below is a second, independent backstop.
+// ⚠️ This script reads `.env.dev` DIRECTLY off disk and never consults process.env. That's deliberate: `dotenv.config()` does not override variables that are already set (the documented backfill gotcha in CLAUDE.md), so a script that trusted process.env could silently end up holding the PROD token and wipe the real bot's commands. Parsing the file itself makes that impossible, and the prod-token comparison below is a second, independent backstop.
 
 const fs = require('fs');
 const path = require('path');
@@ -27,11 +16,7 @@ const { REST, Routes } = require('discord.js');
 const REPO_ROOT = path.join(__dirname, '..');
 
 /**
- * Minimal .env reader. Returns {} for a missing file rather than throwing -- a machine without
- * `.env.dev` should get this script's own clear error message, not a stack trace from fs.
- * Handles `KEY=value`, optional `export ` prefix, surrounding quotes, blank lines and `#` comments.
- * Deliberately NOT dotenv: dotenv's job is to mutate process.env, which is the exact thing this
- * script must avoid (see the header note).
+ * Minimal .env reader. Returns {} for a missing file rather than throwing -- a machine without `.env.dev` should get this script's own clear error message, not a stack trace from fs. Handles `KEY=value`, optional `export ` prefix, surrounding quotes, blank lines and `#` comments. Deliberately NOT dotenv: dotenv's job is to mutate process.env, which is the exact thing this script must avoid (see the header note).
  */
 function readEnvFile(file) {
     let raw;
@@ -73,9 +58,7 @@ async function main() {
         process.exit(1);
     }
 
-    // Backstop: refuse outright if .env.dev somehow carries the PRODUCTION token. Clearing prod's
-    // commands would take every command away from every user of the real bot until someone noticed
-    // and restarted the VM -- a genuinely bad, user-visible outage from a one-word mistake.
+    // Backstop: refuse outright if .env.dev somehow carries the PRODUCTION token. Clearing prod's commands would take every command away from every user of the real bot until someone noticed and restarted the VM -- a genuinely bad, user-visible outage from a one-word mistake.
     const prodToken = readEnvFile(path.join(REPO_ROOT, '.env')).BOT_TOKEN;
     if (prodToken && prodToken === devToken) {
         console.error('❌ Refusing to run: .env.dev\'s BOT_TOKEN is identical to .env\'s (the PROD token).');
@@ -85,8 +68,7 @@ async function main() {
 
     const rest = new REST({ version: '10' }).setToken(devToken);
 
-    // Identify the app from the token rather than hardcoding an id, and print it before doing
-    // anything destructive -- if this ever says "Dioreo" instead of "Dioreo (Dev)", stop.
+    // Identify the app from the token rather than hardcoding an id, and print it before doing anything destructive -- if this ever says "Dioreo" instead of "Dioreo (Dev)", stop.
     const app = await rest.get(Routes.currentApplication());
     console.log(`🤖 Application: ${app.name} (${app.id})`);
 
@@ -113,8 +95,7 @@ async function main() {
 }
 
 main().catch(err => {
-    // Discord REST errors carry a `rawError` with the useful detail; the bare message is often just
-    // the HTTP status. Never print the token or the whole error object.
+    // Discord REST errors carry a `rawError` with the useful detail; the bare message is often just the HTTP status. Never print the token or the whole error object.
     console.error('❌ Failed:', err?.rawError?.message || err?.message || err);
     process.exit(1);
 });

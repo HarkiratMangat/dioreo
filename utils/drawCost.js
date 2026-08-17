@@ -1,20 +1,11 @@
 // ==========================================
 // DRAW REMAINDER MATH
 // ==========================================
-// "I have done N pulls -- what is left?" Every figure here is a slice or a sum of DRAW_DATA's
-// existing per-pull arrays; nothing is stored and nothing is hand-typed, which is the same rule
-// DRAW_DATA's own header comment sets out. Deliberately knows NOTHING about money -- utils/
-// cpPackages.js handles that half. Design:
-// docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
+// "I have done N pulls -- what is left?" Every figure here is a slice or a sum of DRAW_DATA's existing per-pull arrays; nothing is stored and nothing is hand-typed, which is the same rule DRAW_DATA's own header comment sets out. Deliberately knows NOTHING about money -- utils/ cpPackages.js handles that half. Design: docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
 //
-// ⚠️ PULL COUNTS ARE NOT UNIFORMLY TEN. sevenSpinLegendaryWeapon and pickYourRewardCard have SEVEN
-// pulls. Every bound below derives from draws.length for that reason; a hardcoded 10 would pass
-// testing on the seven common draws and silently overcount on the other two.
+// ⚠️ PULL COUNTS ARE NOT UNIFORMLY TEN. sevenSpinLegendaryWeapon and pickYourRewardCard have SEVEN pulls. Every bound below derives from draws.length for that reason; a hardcoded 10 would pass testing on the seven common draws and silently overcount on the other two.
 //
-// ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. doubleEpicCharacters has no data at region_20 or
-// region_30, and the two mythic draws have no upgrade figure at region_20. Both gaps are deliberate
-// -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the
-// existing "haven't done the research yet" placeholder rather than computing around them.
+// ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. doubleEpicCharacters has no data at region_20 or region_30, and the two mythic draws have no upgrade figure at region_20. Both gaps are deliberate -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the existing "haven't done the research yet" placeholder rather than computing around them.
 const { DRAW_DATA } = require('../commands/drawprices');
 
 function entryFor(region, key) {
@@ -60,9 +51,7 @@ function upgradeCost(region, key) {
     return entry.upgrade.perDraw * entry.upgrade.count;
 }
 
-// Budget mode, the inverse question: "I can spend this much -- how far does it get me?"
-// cpShortOfNext is what they would still need for the pull AFTER the one they can reach, and is null
-// when the budget finishes the draw outright.
+// Budget mode, the inverse question: "I can spend this much -- how far does it get me?" cpShortOfNext is what they would still need for the pull AFTER the one they can reach, and is null when the budget finishes the draw outright.
 function reachableWithBudget(region, key, pullsDone, budgetCp) {
     const entry = entryFor(region, key);
     if (!entry) return null;

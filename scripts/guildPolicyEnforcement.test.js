@@ -2,30 +2,15 @@
 //
 // ENFORCEMENT tests for the v3 server-admin visibility policy. Run by `npm test`.
 //
-// WHY A SECOND FILE. scripts/guildPolicy.test.js covers resolveVisibility() -- a pure function, and
-// the easy half. It proves the policy DECIDES correctly and says nothing about whether the decision
-// is ever APPLIED. Everything that actually enforces a verdict lives outside that function, in two
-// choke points and a Mongoose schema, and all three fail in ways a precedence test cannot see:
+// WHY A SECOND FILE. scripts/guildPolicy.test.js covers resolveVisibility() -- a pure function, and the easy half. It proves the policy DECIDES correctly and says nothing about whether the decision is ever APPLIED. Everything that actually enforces a verdict lives outside that function, in two choke points and a Mongoose schema, and all three fail in ways a precedence test cannot see:
 //
-//   1. A field missing from the schema is silently dropped on save (the repo's oldest recurring
-//      bug class -- root CLAUDE.md's "Database schema gotcha"). /admin would appear to save a
-//      channel rule and the rule would simply not exist on the next fetch.
-//   2. The method wrap could clamp `ephemeral` while DESTROYING the Components V2 flag, which
-//      renders as a blank message rather than as an error.
-//   3. The clamp could be assigned non-enumerably, in which case buildSyntheticInteraction()'s
-//      Object.assign drops it and a panel renders clamped on first invocation and unclamped on
-//      every navigation click after -- a bypass that only appears on the second click.
+//   1. A field missing from the schema is silently dropped on save (the repo's oldest recurring bug class -- root CLAUDE.md's "Database schema gotcha"). /admin would appear to save a channel rule and the rule would simply not exist on the next fetch.
+//   2. The method wrap could clamp `ephemeral` while DESTROYING the Components V2 flag, which renders as a blank message rather than as an error.
+//   3. The clamp could be assigned non-enumerably, in which case buildSyntheticInteraction()'s Object.assign drops it and a panel renders clamped on first invocation and unclamped on every navigation click after -- a bypass that only appears on the second click.
 //
-// NOTHING HERE NEEDS A DATABASE OR A NETWORK, deliberately. GuildSettings is exercised as an
-// unsaved document (Mongoose casts and validates in memory, so an undeclared field is still
-// visibly dropped), getGuildSettings' single query is stubbed at the model seam, and sendV2Payload
-// gets a fake `rest`. A test that skips itself when Mongo is absent would report green in CI while
-// examining nothing, which is the exact failure mode .claude/rules/admin-controls.md warns about
-// after `privacy-model-coverage` did it to this very feature.
+// NOTHING HERE NEEDS A DATABASE OR A NETWORK, deliberately. GuildSettings is exercised as an unsaved document (Mongoose casts and validates in memory, so an undeclared field is still visibly dropped), getGuildSettings' single query is stubbed at the model seam, and sendV2Payload gets a fake `rest`. A test that skips itself when Mongo is absent would report green in CI while examining nothing, which is the exact failure mode .claude/rules/admin-controls.md warns about after `privacy-model-coverage` did it to this very feature.
 //
-// ⚠️ WHAT THIS STILL DOES NOT PROVE: that a human clicking /admin in Discord gets the right
-// result. Registration and in-process tests are not a click -- see the v3.1.1 lesson in
-// docs/DEVLOG.md. Behavioural verification in a real guild is tracked separately.
+// ⚠️ WHAT THIS STILL DOES NOT PROVE: that a human clicking /admin in Discord gets the right result. Registration and in-process tests are not a click -- see the v3.1.1 lesson in docs/DEVLOG.md. Behavioural verification in a real guild is tracked separately.
 const assert = require('node:assert');
 const GuildSettings = require('../models/GuildSettings');
 const guildPolicy = require('../utils/guildPolicy');
@@ -36,12 +21,7 @@ let pass = 0;
 const failures = [];
 const pending = [];
 
-// ⚠️ t() MUST track the promise an async case returns. The first version of this harness called
-// fn() and moved on, which meant an async case's assertions ran AFTER its own try/finally had
-// already restored the stubs it depended on -- and after the reporter had counted it as passed.
-// It surfaced as a case "passing" and then the process dying on a 10s Mongo timeout, because the
-// real model method was back in place by the time the code under test reached it. A test harness
-// that reports before its tests finish is worse than no harness: it produces green with no run.
+// ⚠️ t() MUST track the promise an async case returns. The first version of this harness called fn() and moved on, which meant an async case's assertions ran AFTER its own try/finally had already restored the stubs it depended on -- and after the reporter had counted it as passed. It surfaced as a case "passing" and then the process dying on a 10s Mongo timeout, because the real model method was back in place by the time the code under test reached it. A test harness that reports before its tests finish is worse than no harness: it produces green with no run.
 function t(name, fn) {
     try {
         const result = fn();
@@ -58,10 +38,7 @@ function t(name, fn) {
     }
 }
 
-// A minimal interaction carrying the shapes guildPolicy actually reads. `member.roles` is a plain
-// ARRAY on purpose: that is the raw APIInteractionGuildMember shape Discord sends for a
-// user-installed invocation in a server the bot has not joined, which is precisely the case this
-// feature exists to cover, and the shape a discord.js-flavoured mock would quietly not test.
+// A minimal interaction carrying the shapes guildPolicy actually reads. `member.roles` is a plain ARRAY on purpose: that is the raw APIInteractionGuildMember shape Discord sends for a user-installed invocation in a server the bot has not joined, which is precisely the case this feature exists to cover, and the shape a discord.js-flavoured mock would quietly not test.
 function makeInteraction({ roleIds = [], commandName = null, parentId = null, isAdmin = false } = {}) {
     const calls = [];
     const interaction = {
@@ -84,9 +61,7 @@ function makeInteraction({ roleIds = [], commandName = null, parentId = null, is
     return { interaction, calls };
 }
 
-// Stubs the ONE query getGuildSettings makes. Returns a restore function. The cache is invalidated
-// on both sides because it is module-level state shared across every case in this file -- without
-// that, case N would silently resolve against case N-1's settings and still pass.
+// Stubs the ONE query getGuildSettings makes. Returns a restore function. The cache is invalidated on both sides because it is module-level state shared across every case in this file -- without that, case N would silently resolve against case N-1's settings and still pass.
 async function withSettings(settings, run) {
     const original = GuildSettings.findOne;
     GuildSettings.findOne = () => ({ lean: async () => settings });
@@ -99,10 +74,7 @@ async function withSettings(settings, run) {
     }
 }
 
-// --- 1. the schema actually declares everything /admin writes ------------------------------
-// Mongoose only persists DECLARED fields. An undeclared one is accepted in memory and vanishes on
-// the next fetch, so this asserts against toObject() -- the shape that would reach the database --
-// rather than against the assignment, which always "works".
+// --- 1. the schema actually declares everything /admin writes ------------------------------ Mongoose only persists DECLARED fields. An undeclared one is accepted in memory and vanishes on the next fetch, so this asserts against toObject() -- the shape that would reach the database -- rather than against the assignment, which always "works".
 t('every field /admin writes survives a schema round-trip', () => {
     const doc = new GuildSettings({ guildId: 'G_1' });
     doc.defaultVisibility = 'ephemeral';
@@ -140,9 +112,7 @@ t('an ephemeral verdict wraps reply, deferReply and followUp', async () => {
     for (const call of calls) assert.strictEqual(call.options.ephemeral, true, `${call.method} was not clamped`);
 });
 
-// The single most damaging way this could be wrong: replacing `flags` instead of OR-ing into it
-// drops 32768 and every Components V2 payload renders as a blank message -- which looks like a
-// rendering bug, not a policy bug, and would be debugged in entirely the wrong file.
+// The single most damaging way this could be wrong: replacing `flags` instead of OR-ing into it drops 32768 and every Components V2 payload renders as a blank message -- which looks like a rendering bug, not a policy bug, and would be debugged in entirely the wrong file.
 t('the ephemeral bit is OR-ed into the Components V2 flag, not substituted for it', async () => {
     const { interaction, calls } = makeInteraction();
     await withSettings({ defaultVisibility: 'ephemeral' }, async () => {
@@ -172,10 +142,7 @@ t('a public verdict leaves the response methods untouched', async () => {
     assert.strictEqual(interaction.dioreoPolicy.allowShare, true);
 });
 
-// Threads are the hole that shipped-and-was-caught: interaction.channelId is the THREAD's id, so
-// without inheritance a rule on the parent stops applying the moment talk moves into a thread --
-// failing OPEN. Asserted here at the attach layer too, because resolveVisibility getting it right
-// is worth nothing if attachGuildPolicy never passes parentChannelId down.
+// Threads are the hole that shipped-and-was-caught: interaction.channelId is the THREAD's id, so without inheritance a rule on the parent stops applying the moment talk moves into a thread -- failing OPEN. Asserted here at the attach layer too, because resolveVisibility getting it right is worth nothing if attachGuildPolicy never passes parentChannelId down.
 t('attachGuildPolicy passes the thread parent through to the resolver', async () => {
     const { interaction } = makeInteraction({ parentId: 'C_1' });
     interaction.channelId = 'T_1';
@@ -195,9 +162,7 @@ t('a command rule clamps an ordinary member and exempts an admin', async () => {
     assert.strictEqual(admin.interaction.dioreoPolicy.visibility, 'public');
 });
 
-// A component click carries no commandName. The tier is skipped rather than misapplied, which is
-// correct -- Discord fixed that message's ephemerality when it was first sent -- but it is exactly
-// the kind of asymmetry a later refactor "tidies up" into a bug.
+// A component click carries no commandName. The tier is skipped rather than misapplied, which is correct -- Discord fixed that message's ephemerality when it was first sent -- but it is exactly the kind of asymmetry a later refactor "tidies up" into a bug.
 t('a component click (no commandName) skips the command tier', async () => {
     const { interaction } = makeInteraction({ commandName: null });
     await withSettings({ defaultVisibility: 'public', ephemeralCommands: ['colors'] }, async () => {
@@ -214,12 +179,7 @@ t('no policy is attached outside a guild', async () => {
     assert.strictEqual(interaction.dioreoPolicy, undefined, 'a DM must carry no policy at all, not a permissive one');
 });
 
-// --- 3. the clamp survives buildSyntheticInteraction ----------------------------------------
-// the router builds synthetic interactions with Object.assign, which copies OWN ENUMERABLE properties
-// only. That is why discord.js's non-enumerable `client`/`token` had to be re-defined by hand there
-// after two real crashes. The same mechanism decides whether the clamp survives a navigation click,
-// so this asserts the property Object.assign depends on rather than re-implementing the helper --
-// a copy of the helper would only ever test the copy.
+// --- 3. the clamp survives buildSyntheticInteraction ---------------------------------------- the router builds synthetic interactions with Object.assign, which copies OWN ENUMERABLE properties only. That is why discord.js's non-enumerable `client`/`token` had to be re-defined by hand there after two real crashes. The same mechanism decides whether the clamp survives a navigation click, so this asserts the property Object.assign depends on rather than re-implementing the helper -- a copy of the helper would only ever test the copy.
 t('the clamp and the policy are own enumerable properties', async () => {
     const { interaction } = makeInteraction();
     await withSettings({ defaultVisibility: 'ephemeral' }, async () => {
@@ -270,13 +230,7 @@ t('sendV2Payload is unaffected when no policy is attached at all', async () => {
     assert.strictEqual(calls[0].options.body.components.length, 2, 'a DM or an unpolicied guild must not lose its share button');
 });
 
-// --- 5. the command menu never truncates silently --------------------------------------------
-// A string select takes 25 options and has no search, so the list must fit. The gateable set is
-// generated at boot from Loadout.distinct('category'), so it GROWS as weapon categories are added
-// -- at 18 today nothing is dropped, and by the time it matters nobody will be looking. The bug
-// this pins is not the cap (Discord's, unraisable) but a SILENT cap: an admin seeing 25 of 30
-// commands has no way to tell the list is incomplete, because a short list looks exactly like a
-// complete one.
+// --- 5. the command menu never truncates silently -------------------------------------------- A string select takes 25 options and has no search, so the list must fit. The gateable set is generated at boot from Loadout.distinct('category'), so it GROWS as weapon categories are added -- at 18 today nothing is dropped, and by the time it matters nobody will be looking. The bug this pins is not the cap (Discord's, unraisable) but a SILENT cap: an admin seeing 25 of 30 commands has no way to tell the list is incomplete, because a short list looks exactly like a complete one.
 t('the command menu names anything it had to leave out', () => {
     const { buildCommands } = require('../commands/admin').__testRenderers;
     const many = Array.from({ length: 30 }, (_, i) => `cmd${String(i).padStart(2, '0')}`);
@@ -294,12 +248,7 @@ t('the command menu stays quiet when everything fits', () => {
     assert.ok(!rendered.includes('not listed') && !rendered.includes('missing from the list'), 'no truncation warning should appear when nothing was truncated');
 });
 
-// --- 6. no panel page can exceed the Components V2 ceiling -----------------------------------
-// 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding
-// it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_
-// EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real
-// production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added
-// to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
+// --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
 function countComponents(nodes) {
     return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
 }
@@ -330,12 +279,7 @@ t('every /admin page stays under the 40-component ceiling', () => {
     }
 });
 
-// --- 7. /help hides the Server Admin category from non-admins --------------------------------
-// Filtered in THREE places -- the dropdown, the landing directory, and the `cmd:` autocomplete --
-// because the landing directory is a hardcoded string rather than a map over CATEGORY_DEFS, so the
-// two can disagree, and because suggesting `/admin` in autocomplete and then bouncing the user to
-// the directory is worse than never offering it. One test per surface, since filtering two and
-// forgetting the third is the realistic mistake.
+// --- 7. /help hides the Server Admin category from non-admins -------------------------------- Filtered in THREE places -- the dropdown, the landing directory, and the `cmd:` autocomplete -- because the landing directory is a hardcoded string rather than a map over CATEGORY_DEFS, so the two can disagree, and because suggesting `/admin` in autocomplete and then bouncing the user to the directory is worse than never offering it. One test per surface, since filtering two and forgetting the third is the realistic mistake.
 async function withNoLoadouts(run) {
     const Loadout = require('../models/Loadout');
     const original = Loadout.distinct;
@@ -349,12 +293,7 @@ async function withNoLoadouts(run) {
 
 const NOBODY = { serverAdmin: false, botAdmin: false };
 const SERVER_ADMIN = { serverAdmin: true, botAdmin: false };
-// Per-command keys (manage/bot/botAccess/autobuild) added 2026-08-13, 'bot'/'botAccess' replacing
-// the retired 'alerts'/'audit' 2026-08-16 -- this fixture represents a FULL bot admin (owner or a
-// Mongo-granted admin with `all`), so every one of the four command lines within the Bot Admin
-// category must be individually true too, or commands/help.js's per-command `requires` filtering
-// hides them even though the category shows. `botAccess` is isOwner() in real code, not a token --
-// true here because this fixture represents the OWNER, the only identity that can ever be true.
+// Per-command keys (manage/bot/botAccess/autobuild) added 2026-08-13, 'bot'/'botAccess' replacing the retired 'alerts'/'audit' 2026-08-16 -- this fixture represents a FULL bot admin (owner or a Mongo-granted admin with `all`), so every one of the four command lines within the Bot Admin category must be individually true too, or commands/help.js's per-command `requires` filtering hides them even though the category shows. `botAccess` is isOwner() in real code, not a token -- true here because this fixture represents the OWNER, the only identity that can ever be true.
 const BOT_ADMIN = { serverAdmin: false, botAdmin: true, manage: true, bot: true, botAccess: true, autobuild: true };
 
 t('an ordinary member sees neither /admin nor the Bot Admin category', async () => {
@@ -368,8 +307,7 @@ t('an ordinary member sees neither /admin nor the Bot Admin category', async () 
     });
 });
 
-// /admin sits INSIDE Preferences rather than in a heading of its own, so the assertions are about
-// the category's contents changing -- not about a category appearing.
+// /admin sits INSIDE Preferences rather than in a heading of its own, so the assertions are about the category's contents changing -- not about a category appearing.
 t('a server admin sees /admin inside Preferences, with the swapped emoji and description', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
@@ -400,8 +338,7 @@ t('a plain member sees the ordinary Preferences emoji and description', async ()
     });
 });
 
-// The two levels are independent, not a hierarchy: this is the case that would break if `requires`
-// were ever collapsed back into one boolean.
+// The two levels are independent, not a hierarchy: this is the case that would break if `requires` were ever collapsed back into one boolean.
 t('a bot admin sees the Bot Admin category without holding Manage Server', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
@@ -414,12 +351,7 @@ t('a bot admin sees the Bot Admin category without holding Manage Server', async
     });
 });
 
-// CATEGORY_DEFS is now the single source for the dropdown, the landing directory and autocomplete,
-// so a category can no longer be half-added to the LIST. What it can still be half-added to is the
-// detail page: BODY_BUILDERS and DETAIL_HEADERS are separate objects keyed by the same strings, and
-// a category present in the array but missing from either renders `undefined` as its heading or
-// throws outright when someone picks it. Rendering every declared category is the cheapest check
-// that covers both, and it needs no knowledge of either object's internals.
+// CATEGORY_DEFS is now the single source for the dropdown, the landing directory and autocomplete, so a category can no longer be half-added to the LIST. What it can still be half-added to is the detail page: BODY_BUILDERS and DETAIL_HEADERS are separate objects keyed by the same strings, and a category present in the array but missing from either renders `undefined` as its heading or throws outright when someone picks it. Rendering every declared category is the cheapest check that covers both, and it needs no knowledge of either object's internals.
 t('every declared category renders a detail page', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
@@ -441,9 +373,7 @@ t('a non-admin reaching a restricted page is returned to the directory, not refu
     });
 });
 
-// The per-COMMAND gate is a different code path from the per-CATEGORY one, and its failure is
-// quieter: Preferences renders either way, just with an extra line. Asserting on the body rather
-// than the category is the only way to see it.
+// The per-COMMAND gate is a different code path from the per-CATEGORY one, and its failure is quieter: Preferences renders either way, just with an extra line. Asserting on the body rather than the category is the only way to see it.
 t('a non-admin opening Preferences gets no /admin section in the body', async () => {
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
@@ -454,8 +384,7 @@ t('a non-admin opening Preferences gets no /admin section in the body', async ()
     });
 });
 
-// Wait for every async case to actually finish before reporting. This used to be a 50ms setTimeout,
-// which is a race dressed up as a drain -- it reported whatever had happened to complete by then.
+// Wait for every async case to actually finish before reporting. This used to be a 50ms setTimeout, which is a race dressed up as a drain -- it reported whatever had happened to complete by then.
 (async () => {
     await Promise.all(pending);
     if (failures.length) {
@@ -463,7 +392,6 @@ t('a non-admin opening Preferences gets no /admin section in the body', async ()
         process.exit(1);
     }
     console.log(`✅ guildPolicy enforcement: ${pass} cases passed`);
-    // Mongoose keeps a connection-buffer timer alive even though nothing here connects; without
-    // this the process would hang after a clean pass.
+    // Mongoose keeps a connection-buffer timer alive even though nothing here connects; without this the process would hang after a clean pass.
     process.exit(0);
 })();

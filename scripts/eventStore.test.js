@@ -1,9 +1,4 @@
-// scripts/eventStore.test.js -- coverage for the event plane's writer (utils/eventStore.js),
-// observability layer stage 2. Pure logic plus a stubbed Mongoose model: no Atlas, no Discord, no
-// Cloudinary. What is deliberately NOT covered here: whether Mongo actually accepts the documents
-// (that is the live dev-bot boot test) and the Cloudinary/Vertex/REST wrappers (they are transparent
-// proxies with no logic of their own).
-// Run: `node scripts/eventStore.test.js` (also via `npm test`).
+// scripts/eventStore.test.js -- coverage for the event plane's writer (utils/eventStore.js), observability layer stage 2. Pure logic plus a stubbed Mongoose model: no Atlas, no Discord, no Cloudinary. What is deliberately NOT covered here: whether Mongo actually accepts the documents (that is the live dev-bot boot test) and the Cloudinary/Vertex/REST wrappers (they are transparent proxies with no logic of their own). Run: `node scripts/eventStore.test.js` (also via `npm test`).
 
 const assert = require('assert');
 const path = require('path');
@@ -104,11 +99,7 @@ check('isAdminSurface flags the admin commands so /bot usage never distorts prod
     assert.strictEqual(S.isAdminSurface('gunsmiths', 'colors'), false);
 });
 
-// --- 🔴 THE HIGHEST-VALUE TEST -------------------------------------------------------------
-// The one property the entire privacy design rests on. A string search, not a field-by-field review:
-// the realistic regression is not somebody adding a `discordId` field (a schema review catches that
-// instantly) -- it is a detail value that happens to carry one, or a customIdPrefix capture that
-// grabs a segment embedding a user snowflake. Neither survives this.
+// --- 🔴 THE HIGHEST-VALUE TEST ------------------------------------------------------------- The one property the entire privacy design rests on. A string search, not a field-by-field review: the realistic regression is not somebody adding a `discordId` field (a schema review catches that instantly) -- it is a detail value that happens to carry one, or a customIdPrefix capture that grabs a segment embedding a user snowflake. Neither survives this.
 check('THE RAW DISCORD ID NEVER APPEARS ANYWHERE IN A FINISHED EVENT DOCUMENT', () => {
     const ctx = { interactionId: '1', command: 'colors', handler: 'colors', userHash: hashUserId(RAW_ID), startedAt: Date.now() };
     const doc = S.buildEventDocument(
@@ -164,9 +155,7 @@ check('markOutcome and noteDep are no-ops outside an interaction context, never 
 });
 
 check('the stored deps array is a COPY, so later instrumentation cannot mutate a queued document', () => {
-    // notePicked() fires from inside the router's own finally and triggers a SearchTerm upsert, which
-    // goes through the timed Mongoose exec and calls noteDep() -- after the document was buffered.
-    // Aliasing the context's live array would have let that write itself into an already-queued row.
+    // notePicked() fires from inside the router's own finally and triggers a SearchTerm upsert, which goes through the timed Mongoose exec and calls noteDep() -- after the document was buffered. Aliasing the context's live array would have let that write itself into an already-queued row.
     const live = [{ name: 'atlas', ms: 5, calls: 1, ok: true }];
     const doc = S.buildEventDocument(fakeInteraction({ isChatInputCommand: () => true }),
         { command: 'x', userHash: hashUserId(RAW_ID), startedAt: Date.now() }, { deps: live }, RAW_ID);

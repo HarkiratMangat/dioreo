@@ -1,15 +1,6 @@
-// scripts/syncMissingDevEmojis.js
-// Uploads any emoji from utils/emojiMap.js that the DEV bot's Discord application doesn't have yet
-// (matched by name, same convention emojiMap.js's own refreshEmojiIds() uses at boot) -- built
-// 2026-07-31 14:00 EDT because new emojis (buff/nerf, then events/modes) kept shipping prod-side
-// with no equivalent step to clone them to the dev app, so the dev bot boot log's "N unmatched"
-// count kept growing. Re-runnable: only uploads names genuinely missing from the dev app, never
-// touches ones that already exist there.
+// scripts/syncMissingDevEmojis.js Uploads any emoji from utils/emojiMap.js that the DEV bot's Discord application doesn't have yet (matched by name, same convention emojiMap.js's own refreshEmojiIds() uses at boot) -- built 2026-07-31 14:00 EDT because new emojis (buff/nerf, then events/modes) kept shipping prod-side with no equivalent step to clone them to the dev app, so the dev bot boot log's "N unmatched" count kept growing. Re-runnable: only uploads names genuinely missing from the dev app, never touches ones that already exist there.
 //
-// Source of the actual image bytes: Discord's emoji CDN (cdn.discordapp.com/emojis/{id}.png|gif) is
-// public and needs no auth regardless of which application owns the emoji -- so this fetches the
-// PROD id's image (from emojiMap.js's hardcoded mention strings, which are always prod's own ids)
-// and re-uploads it to the DEV application under the same name.
+// Source of the actual image bytes: Discord's emoji CDN (cdn.discordapp.com/emojis/{id}.png|gif) is public and needs no auth regardless of which application owns the emoji -- so this fetches the PROD id's image (from emojiMap.js's hardcoded mention strings, which are always prod's own ids) and re-uploads it to the DEV application under the same name.
 require('dotenv').config({ quiet: true });
 const emojis = require('../utils/emojiMap');
 

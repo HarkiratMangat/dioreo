@@ -1,11 +1,6 @@
-// Conservation tests for the draw remainder math (utils/drawCost.js, 2026-08-15 17:48 EDT).
-// Design: docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
+// Conservation tests for the draw remainder math (utils/drawCost.js, 2026-08-15 17:48 EDT). Design: docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
 //
-// WHAT THIS IS FOR. Every figure the calculator shows is a slice of DRAW_DATA's per-pull arrays, so
-// the whole class of bugs available here is "the slice was taken wrong". The conservation check
-// below (spent + remaining == total, for EVERY pullsDone) catches an off-by-one at any boundary in
-// one assertion. It also pins the two draws that are NOT ten pulls, which is the specific mistake a
-// hardcoded 10 would produce and which casual testing on the common draws would never surface.
+// WHAT THIS IS FOR. Every figure the calculator shows is a slice of DRAW_DATA's per-pull arrays, so the whole class of bugs available here is "the slice was taken wrong". The conservation check below (spent + remaining == total, for EVERY pullsDone) catches an off-by-one at any boundary in one assertion. It also pins the two draws that are NOT ten pulls, which is the specific mistake a hardcoded 10 would produce and which casual testing on the common draws would never surface.
 
 const assert = require('assert');
 const { DRAW_DATA, REGION_ORDER } = require('../commands/drawprices');

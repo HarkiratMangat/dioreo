@@ -1,8 +1,7 @@
 // ==========================================
 // DYNAMIC USER SETTINGS DASHBOARD COMMAND
 // ==========================================
-// ARCHITECTURE: Implements native Type 9 Item Rows with Button Accessories to 
-// bypass Action Row limits while maintaining a clean, compact UI design.
+// ARCHITECTURE: Implements native Type 9 Item Rows with Button Accessories to bypass Action Row limits while maintaining a clean, compact UI design.
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
@@ -15,39 +14,23 @@ const { buildPaginationRow } = require('../utils/paginationRow');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { schedulePanelExpiry } = require('../utils/passiveExpiry');
 
-// Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the
-// bottom of buildContainer() below.
+// Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the bottom of buildContainer() below.
 const DIOR_ID = '1139845545754632283';
 
-// AUTHOR-LOCK (2026-07-14) -- /settings previously had no author-lock at all on some of its own
-// components (set_page_ carried no userId whatsoever); every custom_id this file builds now carries
-// `|{userId}` so the settings handlers can check identity before acting.
+// AUTHOR-LOCK (2026-07-14) -- /settings previously had no author-lock at all on some of its own components (set_page_ carried no userId whatsoever); every custom_id this file builds now carries `|{userId}` so the settings handlers can check identity before acting.
 //
-// Idle-timeout expiry used to ALSO be encoded here (a `|{expiresAt}` 3rd segment, checked reactively
-// on click) but that's gone (2026-07-18) -- replaced by `utils/passiveExpiry.js`'s PASSIVE
-// setTimeout-based auto-disable, scheduled at the bottom of execute() after every send. See that
-// module's own comment for the full mechanism and why it replaces rather than supplements the old
-// design.
+// Idle-timeout expiry used to ALSO be encoded here (a `|{expiresAt}` 3rd segment, checked reactively on click) but that's gone (2026-07-18) -- replaced by `utils/passiveExpiry.js`'s PASSIVE setTimeout-based auto-disable, scheduled at the bottom of execute() after every send. See that module's own comment for the full mechanism and why it replaces rather than supplements the old design.
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
-        // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version
-        // truncated to "..." on Discord mobile's command picker row; every top-level/subcommand
-        // description in this pass was checked against that same narrow row, not desktop.
+        // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version truncated to "..." on Discord mobile's command picker row; every top-level/subcommand description in this pass was checked against that same narrow row, not desktop.
         .setDescription('Customize your bot settings and preferences')
-        // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option;
-        // /settings was simply missed. Same name/description/priority pattern as everywhere else
-        // (explicit option > saved settingsVisibility preference > public default, see
-        // resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as
-        // before for changing the SAVED preference; this just lets one specific invocation override it.
+        // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option; /settings was simply missed. Same name/description/priority pattern as everywhere else (explicit option > saved settingsVisibility preference > public default, see resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as before for changing the SAVED preference; this just lets one specific invocation override it.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
-    // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
-    // dropdown + hex-code lines + footer pushed the single-page layout close to Discord's
-    // 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes
-    // this with a target page.
+    // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
     async execute(interaction, pageOverride = 0) {
         const userId = interaction.user.id;
         const page = Math.min(Math.max(pageOverride, 0), 1);
@@ -60,17 +43,7 @@ module.exports = {
         }
 
         // 2. SAFE DEFERRAL (Fixes InteractionAlreadyReplied Crash)
-        // Check if the settings handler already deferred this interaction. If not, defer it.
-        // We now respect the user's custom settings visibility preference natively! Default
-        // flipped from 'ephemeral' to 'public' per Harkirat's request — matches the schema
-        // default in UserPreference.js, kept in sync here for existing docs missing the field.
-        // `hidden` option added 2026-07-18 -- same explicit-option > saved-preference > public
-        // priority every other command already uses (utils/ephemeral.js's resolveEphemeral).
-        // `interaction.isChatInputCommand()` guards reading `.options` at all -- every re-render
-        // path here (the toggle/set/set_page handlers in handlers/settings.js, and handlers/colors.js) calls this
-        // execute() with a button/select interaction that has no real options resolver, so
-        // argPrivate naturally falls through to null on those, leaving the saved preference (not
-        // this option) in control exactly as before this change.
+        // Check if the settings handler already deferred this interaction. If not, defer it. We now respect the user's custom settings visibility preference natively! Default flipped from 'ephemeral' to 'public' per Harkirat's request — matches the schema default in UserPreference.js, kept in sync here for existing docs missing the field. `hidden` option added 2026-07-18 -- same explicit-option > saved-preference > public priority every other command already uses (utils/ephemeral.js's resolveEphemeral). `interaction.isChatInputCommand()` guards reading `.options` at all -- every re-render path here (the toggle/set/set_page handlers in handlers/settings.js, and handlers/colors.js) calls this execute() with a button/select interaction that has no real options resolver, so argPrivate naturally falls through to null on those, leaving the saved preference (not this option) in control exactly as before this change.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'settingsVisibility' });
@@ -78,62 +51,30 @@ module.exports = {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }
 
-        // REMOVED (2026-07-14, CPU pass): a fire-and-forget "soft refresh" used to run here on EVERY
-        // /settings open, warming the View Colors palette cache for all 4 sources in the background so
-        // the panel would be pre-extracted by the time someone clicked View Colors. It was pulled
-        // because it was a major, unconditional CPU drain -- every /settings open (whether or not the
-        // user ever opened View Colors) kicked off up to 4 background Jimp+k-means extractions, one
-        // spawning an ffmpeg subprocess, all competing for Render's free-tier shared core and blocking
-        // the event loop enough to make unrelated interactions miss Discord's 3s ACK window (10062).
-        // The View Colors panel now extracts lazily and only the one source being viewed (see
-        // utils/colorPalette.js's getPalettePanelData), so the pre-warm bought little and cost a lot --
-        // correctness is unchanged, first-open of each page just shows a brief spinner instead.
+        // REMOVED (2026-07-14, CPU pass): a fire-and-forget "soft refresh" used to run here on EVERY /settings open, warming the View Colors palette cache for all 4 sources in the background so the panel would be pre-extracted by the time someone clicked View Colors. It was pulled because it was a major, unconditional CPU drain -- every /settings open (whether or not the user ever opened View Colors) kicked off up to 4 background Jimp+k-means extractions, one spawning an ffmpeg subprocess, all competing for Render's free-tier shared core and blocking the event loop enough to make unrelated interactions miss Discord's 3s ACK window (10062). The View Colors panel now extracts lazily and only the one source being viewed (see utils/colorPalette.js's getPalettePanelData), so the pre-warm bought little and cost a lot -- correctness is unchanged, first-open of each page just shows a brief spinner instead.
 
         // 3. LIVE PROFILE LOOKUP
         const userFetch = await interaction.client.users.fetch(userId, { force: true });
 
-        // Per-server profile overrides (2026-08-09 16:55 EDT). Declared here rather than down in the
-        // accent block because the DASHBOARD IMAGES need it too -- showing someone their global face
-        // while the panel beside it is tinted from their server avatar is the inconsistency this
-        // whole feature exists to remove. Null in DMs, and null on the admin-override path
-        // (readGuildProfile refuses when the clicking member isn't the panel's owner), so an
-        // overridden panel correctly falls back to that user's ordinary profile.
+        // Per-server profile overrides (2026-08-09 16:55 EDT). Declared here rather than down in the accent block because the DASHBOARD IMAGES need it too -- showing someone their global face while the panel beside it is tinted from their server avatar is the inconsistency this whole feature exists to remove. Null in DMs, and null on the admin-override path (readGuildProfile refuses when the clicking member isn't the panel's owner), so an overridden panel correctly falls back to that user's ordinary profile.
         const guildProfile = readGuildProfile(interaction);
 
-        // Resolved per source, not all-or-nothing: a server avatar with no server banner shows the
-        // server avatar and the ordinary banner, which is exactly what Discord itself shows there.
+        // Resolved per source, not all-or-nothing: a server avatar with no server banner shows the server avatar and the ordinary banner, which is exactly what Discord itself shows there.
         const userAvatarUrl = guildProfile?.avatarUrl
             || interaction.user.displayAvatarURL({ extension: 'png', size: 256 });
         const userBannerUrl = guildProfile?.bannerUrl
             || userFetch.bannerURL({ extension: 'png', size: 512 }) || "";
-        // Full-quality versions for the download link buttons below — separate from the small
-        // thumbnail/gallery sizes above used for the actual dashboard display. These must follow the
-        // SAME source as the previews above: a Download button handing back the global image while
-        // the thumbnail shows the server one would be a quiet mismatch nothing would report.
+        // Full-quality versions for the download link buttons below — separate from the small thumbnail/gallery sizes above used for the actual dashboard display. These must follow the SAME source as the previews above: a Download button handing back the global image while the thumbnail shows the server one would be a quiet mismatch nothing would report.
         const userAvatarFullUrl = guildProfile?.avatarFullUrl
             || interaction.user.displayAvatarURL({ size: 4096 });
         const userBannerFullUrl = guildProfile?.bannerFullUrl
             || userFetch.bannerURL({ size: 4096 }) || "";
 
-        // ACCENT COLOR: /settings has no fixed brand color of its own (unlike calendar/draws/etc),
-        // so its "default" behavior is to use the avatar color — see utils/accentColor.js for the
-        // full style resolution (default/avatar/banner/displayName/dynamicProfile), which is shared
-        // across every command. /settings already force-fetches userFetch unconditionally on every
-        // render (line above, for the avatar/banner download buttons regardless of accent style), so
-        // unlike getAccentColorForCommand's throttled path, there's no extra hesitation being
-        // introduced here by also always fetching Display Name Colors fresh when that style is
-        // selected — it's the same "always fresh on this page" behavior /settings already has for
-        // avatar/banner. 'dynamicProfile' is routed around resolveAccentColor entirely (needs
-        // `interaction` itself for its message-based pick caching, not just a resolved userFetch —
-        // see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on
-        // this style shows whatever was picked for the message /settings itself is rendered on, same
-        // "one pick per message, held steady across re-renders" rule every other command follows.
-        // `guildProfile` is resolved further up, alongside the dashboard images that also need it.
+        // ACCENT COLOR: /settings has no fixed brand color of its own (unlike calendar/draws/etc), so its "default" behavior is to use the avatar color — see utils/accentColor.js for the full style resolution (default/avatar/banner/displayName/dynamicProfile), which is shared across every command. /settings already force-fetches userFetch unconditionally on every render (line above, for the avatar/banner download buttons regardless of accent style), so unlike getAccentColorForCommand's throttled path, there's no extra hesitation being introduced here by also always fetching Display Name Colors fresh when that style is selected — it's the same "always fresh on this page" behavior /settings already has for avatar/banner. 'dynamicProfile' is routed around resolveAccentColor entirely (needs `interaction` itself for its message-based pick caching, not just a resolved userFetch — see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on this style shows whatever was picked for the message /settings itself is rendered on, same "one pick per message, held steady across re-renders" rule every other command follows. `guildProfile` is resolved further up, alongside the dashboard images that also need it.
         let displayNameColors = null;
         let isGuildNameStyle = false;
         if (prefs.accentColorStyle === 'displayName') {
-            // `true` for isChatInputCommand deliberately bypasses the recheck window -- /settings is
-            // the "always fresh on this page" surface, matching how it already treats avatar/banner.
+            // `true` for isChatInputCommand deliberately bypasses the recheck window -- /settings is the "always fresh on this page" surface, matching how it already treats avatar/banner.
             displayNameColors = await resolveGuildNameColors(interaction, guildProfile, true);
             isGuildNameStyle = Boolean(displayNameColors);
             if (!displayNameColors) {
@@ -157,20 +98,11 @@ module.exports = {
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
-        // Expanded 2026-08-15 13:13 EDT -- see utils/timezoneData.js. QUICK_TIMEZONES is the
-        // dropdown's direct one-click picks; the full ALL_TIMEZONES list is only reachable through
-        // the dropdown's "Search for your city..." sentinel (see below), fuzzy-matched against city
-        // names/aliases via a modal since Discord's own select menu caps at 25 options.
+        // Expanded 2026-08-15 13:13 EDT -- see utils/timezoneData.js. QUICK_TIMEZONES is the dropdown's direct one-click picks; the full ALL_TIMEZONES list is only reachable through the dropdown's "Search for your city..." sentinel (see below), fuzzy-matched against city names/aliases via a modal since Discord's own select menu caps at 25 options.
         const { QUICK_TIMEZONES, findTimezoneLabel } = require('../utils/timezoneData');
         const currentTzLabel = findTimezoneLabel(tz);
 
-        // NOTE (redesigned during review): aligned these value keys to match the exact style
-        // options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/
-        // mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs
-        // (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's'
-        // and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") —
-        // the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already
-        // renders them correctly, so they belong here too.
+        // NOTE (redesigned during review): aligned these value keys to match the exact style options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/ mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's' and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") — the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already renders them correctly, so they belong here too.
         const styleDisplayMap = {
             all_formats: 'All Formats',
             fullDateTime: 'Full Date, Short Time (F)',
@@ -205,13 +137,7 @@ module.exports = {
             containerComponents.push({ type: 12, items: [{ media: { url: userBannerUrl } }] });
         }
 
-        // Profile Header
-        // NOTE (redesigned during review, matches settings_update_ui.json): now uses a real Discord
-        // mention (<@userId>) so it's actually pingable, per the new design — the old version just
-        // wrote the literal text "@username" which looked like a mention but wasn't clickable. The
-        // mention would normally ping the user on every /settings run though, which makes no sense
-        // for a command they just invoked themselves — suppressed via `allowed_mentions` on the
-        // final payload below rather than dropping the mention format entirely.
+        // Profile Header NOTE (redesigned during review, matches settings_update_ui.json): now uses a real Discord mention (<@userId>) so it's actually pingable, per the new design — the old version just wrote the literal text "@username" which looked like a mention but wasn't clickable. The mention would normally ping the user on every /settings run though, which makes no sense for a command they just invoked themselves — suppressed via `allowed_mentions` on the final payload below rather than dropping the mention format entirely.
         containerComponents.push({
             type: 9,
             components: [{
@@ -221,18 +147,10 @@ module.exports = {
             accessory: { type: 11, media: { url: userAvatarUrl } }
         });
 
-        // AVATAR/BANNER DOWNLOAD LINKS: Link-style buttons (style 5) point straight at the
-        // full-quality (4096px) CDN asset, so a user can save their own avatar/banner without
-        // needing to open Discord's own profile settings. A Section's accessory slot (used above
-        // for the avatar thumbnail) only supports ONE thumbnail-or-button, not both, so these live
-        // in their own Action Row instead of being crammed into the header Section.
+        // AVATAR/BANNER DOWNLOAD LINKS: Link-style buttons (style 5) point straight at the full-quality (4096px) CDN asset, so a user can save their own avatar/banner without needing to open Discord's own profile settings. A Section's accessory slot (used above for the avatar thumbnail) only supports ONE thumbnail-or-button, not both, so these live in their own Action Row instead of being crammed into the header Section.
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];
         if (userBannerFullUrl) profileLinkButtons.push({ type: 2, style: 5, label: "Banner", url: userBannerFullUrl });
-        // "View Colors" (2026-07-13) -- opens utils/colorPaletteView.js's panel as its OWN new
-        // message (handlers/colors.js's colors_view handler, ephemeral state matches the user's own
-        // settingsVisibility preference) rather than editing this settings panel in place, so the
-        // settings dashboard stays open underneath. Style 1 (blurple/Primary) -- the eyedropper icon
-        // was recolored to match this exact button color, so Secondary/gray would've clashed.
+        // "View Colors" (2026-07-13) -- opens utils/colorPaletteView.js's panel as its OWN new message (handlers/colors.js's colors_view handler, ephemeral state matches the user's own settingsVisibility preference) rather than editing this settings panel in place, so the settings dashboard stays open underneath. Style 1 (blurple/Primary) -- the eyedropper icon was recolored to match this exact button color, so Secondary/gray would've clashed.
         profileLinkButtons.push({
             type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}`,
             emoji: emojis.parseEmoji(emojis.eyedropper)
@@ -244,24 +162,7 @@ module.exports = {
         if (page === 0) {
             containerComponents.push({ type: 10, content: `### Default Visibility:\n-# Change if the bot responds to you publicly or as a hidden, only visible to you, message.` });
 
-            // HELPER: Generates the clean Type 9 Accessory layout you designed
-            // Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field
-            // values everywhere else). Button labels reworded 2026-07-12 (same day, follow-up
-            // correction) from all-caps "PUBLIC"/"HIDDEN" to plain "Show"/"Hide".
-            // Reformatted 2026-08-07 17:55 EDT, Harkirat's direct request -- was `` `• Label` =
-            // **Visible to *everyone in chat*** `` (the LABEL in inline code with a leading bullet,
-            // the VALUE in bold+italic markdown). Backwards: inline code reads as a literal value,
-            // and a label isn't one. First pass put only the state word in code (`everyone in
-            // chat`); a follow-up (19:21 EDT) put the WHOLE phrase in the code span instead:
-            // **Label** = `Visible to everyone in chat`. Label is bold plain text (no backticks, no
-            // bullet); the entire "Visible to ..."/"Visible only to me" phrase is one inline-code
-            // span. "in chat" DROPPED entirely (19:36 EDT, Harkirat's follow-up) -- "Visible to
-            // everyone" already says what it means without it. This obsoletes the non-breaking-space
-            // wrap fix from earlier (removed per Harkirat's prior follow-up) -- inline code renders
-            // monospace, wrapping differently than the italic markdown span that had the
-            // orphan-word problem. Discord does NOT parse markdown inside a single-backtick span, so
-            // italic on the value is gone entirely, not just moved -- keeping it would have shown
-            // literal asterisks.
+            // HELPER: Generates the clean Type 9 Accessory layout you designed Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field values everywhere else). Button labels reworded 2026-07-12 (same day, follow-up correction) from all-caps "PUBLIC"/"HIDDEN" to plain "Show"/"Hide". Reformatted 2026-08-07 17:55 EDT, Harkirat's direct request -- was `` `• Label` = **Visible to *everyone in chat*** `` (the LABEL in inline code with a leading bullet, the VALUE in bold+italic markdown). Backwards: inline code reads as a literal value, and a label isn't one. First pass put only the state word in code (`everyone in chat`); a follow-up (19:21 EDT) put the WHOLE phrase in the code span instead: **Label** = `Visible to everyone in chat`. Label is bold plain text (no backticks, no bullet); the entire "Visible to ..."/"Visible only to me" phrase is one inline-code span. "in chat" DROPPED entirely (19:36 EDT, Harkirat's follow-up) -- "Visible to everyone" already says what it means without it. This obsoletes the non-breaking-space wrap fix from earlier (removed per Harkirat's prior follow-up) -- inline code renders monospace, wrapping differently than the italic markdown span that had the orphan-word problem. Discord does NOT parse markdown inside a single-backtick span, so italic on the value is gone entirely, not just moved -- keeping it would have shown literal asterisks.
             const buildToggleRow = (label, currentState, publicId, ephemeralId) => {
                 const isPub = currentState === 'PUBLIC';
                 const displayText = isPub ? '`Visible to everyone`' : '`Visible only to me`';
@@ -285,13 +186,7 @@ module.exports = {
         } else {
             containerComponents.push({ type: 10, content: `### Default Preferences:\n-# Change the default preferences the bot uses when responding to you.` });
 
-            // Draw Prices region: converted from a binary toggle button to a 3-option dropdown
-            // (2026-07-12) -- "Show Last Viewed Region" (new default, `defaultRegionMode:
-            // 'last_viewed'`) behaves exactly like the old toggle always did (whatever was last
-            // clicked in /draw prices itself); "10 CP"/"20 CP"/"30 CP" now PIN the opening view to
-            // that region regardless of what gets toggled elsewhere. Gained the 20 CP option
-            // 2026-08-07 alongside drawprices.js's new region. See models/UserPreference.js and
-            // drawprices.js's execute() for the resolution priority.
+            // Draw Prices region: converted from a binary toggle button to a 3-option dropdown (2026-07-12) -- "Show Last Viewed Region" (new default, `defaultRegionMode: 'last_viewed'`) behaves exactly like the old toggle always did (whatever was last clicked in /draw prices itself); "10 CP"/"20 CP"/"30 CP" now PIN the opening view to that region regardless of what gets toggled elsewhere. Gained the 20 CP option 2026-08-07 alongside drawprices.js's new region. See models/UserPreference.js and drawprices.js's execute() for the resolution priority.
             const regionMode = prefs.defaultRegionMode || 'last_viewed';
             const regionModeLabelMap = {
                 last_viewed: 'Show Last Viewed Region',
@@ -313,9 +208,7 @@ module.exports = {
                 }]
             });
 
-            // CP currency: which storefront /draw calculator quotes prices from. Same
-            // shortlist+search-sentinel shape as Timezone right below (Discord's select menu caps at
-            // 25 options, and there are 41 real currencies) -- see utils/cpCurrencyData.js.
+            // CP currency: which storefront /draw calculator quotes prices from. Same shortlist+search-sentinel shape as Timezone right below (Discord's select menu caps at 25 options, and there are 41 real currencies) -- see utils/cpCurrencyData.js.
             const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
             const cpCurrency = prefs.cpCurrency || 'USD';
             containerComponents.push({ type: 10, content: `**CP Currency** = \`${currencyLabel(cpCurrency)}\`` });
@@ -331,17 +224,14 @@ module.exports = {
             });
 
             containerComponents.push({ type: 10, content: `**Timezone** = \`${currentTzLabel}\`` });
-            // NOTE (redesigned during review): moved inside the container, directly under its summary
-            // line, instead of living as a separate action row below/outside the embed.
+            // NOTE (redesigned during review): moved inside the container, directly under its summary line, instead of living as a separate action row below/outside the embed.
             containerComponents.push({
                 type: 1,
                 components: [{
                     type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
                     options: [
                         ...QUICK_TIMEZONES.map(z => ({ label: z.label, value: z.tz, default: tz === z.tz })),
-                        // Sentinel value (not a real IANA zone) -- handlers/settings.js's `set_` branch
-                        // intercepts this BEFORE deferUpdate() and opens a search modal instead of
-                        // saving it. 25th option, right at the select-menu cap.
+                        // Sentinel value (not a real IANA zone) -- handlers/settings.js's `set_` branch intercepts this BEFORE deferUpdate() and opens a search modal instead of saving it. 25th option, right at the select-menu cap.
                         { label: '🔍 Search for your city...', value: '__search__', description: 'Not in the list above? Type a city, country, or abbreviation.' }
                     ]
                 }]
@@ -361,21 +251,7 @@ module.exports = {
                 }]
             });
 
-            // ACCENT COLOR STYLE: controls what color every embed's container accent uses — see
-            // utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette", which is
-            // now the ACTUAL default again (flipped back 2026-08-08 00:24 EDT, per Harkirat's direct
-            // request -- see UserPreference.js's schema default and accentColor.js's
-            // resolveAccentColor, which still treats the legacy 'default' value the same way for any
-            // pre-existing saved docs). "Pre-Designed Palette" keeps each command's own themed color
-            // (Settings still falls back to avatar since it has no theme color of its own);
-            // "Avatar"/"Banner" override every command's accent to match that image instead.
-            // ⚠️ SIMPLIFIED TO THREE OPTIONS 2026-08-12 23:56 EDT (Harkirat). "Banner Color" and
-            // "Display Name Colors" are RETIRED: both already fell back to Avatar whenever their own
-            // source was missing, and neither earned a dropdown slot. Verified against PROD before
-            // removing them -- accentColorStyle held avatar x17 and preset x1, and not one document
-            // carried either value, so this strands nobody. A stored value is still normalized here
-            // rather than displayed, so the panel shows what resolveAccentColor will actually DO
-            // instead of naming an option the dropdown can no longer select.
+            // ACCENT COLOR STYLE: controls what color every embed's container accent uses — see utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette", which is now the ACTUAL default again (flipped back 2026-08-08 00:24 EDT, per Harkirat's direct request -- see UserPreference.js's schema default and accentColor.js's resolveAccentColor, which still treats the legacy 'default' value the same way for any pre-existing saved docs). "Pre-Designed Palette" keeps each command's own themed color (Settings still falls back to avatar since it has no theme color of its own); "Avatar"/"Banner" override every command's accent to match that image instead. ⚠️ SIMPLIFIED TO THREE OPTIONS 2026-08-12 23:56 EDT (Harkirat). "Banner Color" and "Display Name Colors" are RETIRED: both already fell back to Avatar whenever their own source was missing, and neither earned a dropdown slot. Verified against PROD before removing them -- accentColorStyle held avatar x17 and preset x1, and not one document carried either value, so this strands nobody. A stored value is still normalized here rather than displayed, so the panel shows what resolveAccentColor will actually DO instead of naming an option the dropdown can no longer select.
             const rawAccentStyle = prefs.accentColorStyle || 'preset';
             const accentStyle = (rawAccentStyle === 'banner' || rawAccentStyle === 'displayName') ? 'avatar' : rawAccentStyle;
             const accentStyleDisplayMap = {
@@ -384,32 +260,15 @@ module.exports = {
                 avatar: 'Avatar Color',
                 dynamicProfile: 'Dynamic Profile Colors'
             };
-            // Hex code shown next to Avatar/Banner style (2026-07-12) -- pulled straight from the
-            // already-cached avatarColorHex/bannerColorHex fields, no new lookup needed. Formatted
-            // as a 6-digit uppercase hex string; `#` + the value's hex representation, zero-padded.
+            // Hex code shown next to Avatar/Banner style (2026-07-12) -- pulled straight from the already-cached avatarColorHex/bannerColorHex fields, no new lookup needed. Formatted as a 6-digit uppercase hex string; `#` + the value's hex representation, zero-padded.
             const hexSuffix = (hexNum) => hexNum != null ? ` \`(#${hexNum.toString(16).padStart(6, '0').toUpperCase()})\`` : '';
-            // Reformatted 2026-08-07 19:37 EDT to match page 1's **Label** = `Value` style -- only
-            // the CORE label text (the accentStyleDisplayMap lookup) goes in backticks here, not the
-            // whole accentDisplay string, since the hex-code suffixes below (hexSuffix, the
-            // displayName gradient stops, the dynamicProfile hex) already wrap THEMSELVES in their
-            // own separate backtick spans -- nesting one code span inside another isn't valid
-            // markdown (the first inner backtick would prematurely close the outer span), so this
-            // stays as adjacent same-styled spans instead of one merged span.
+            // Reformatted 2026-08-07 19:37 EDT to match page 1's **Label** = `Value` style -- only the CORE label text (the accentStyleDisplayMap lookup) goes in backticks here, not the whole accentDisplay string, since the hex-code suffixes below (hexSuffix, the displayName gradient stops, the dynamicProfile hex) already wrap THEMSELVES in their own separate backtick spans -- nesting one code span inside another isn't valid markdown (the first inner backtick would prematurely close the outer span), so this stays as adjacent same-styled spans instead of one merged span.
             let accentDisplay = `\`${accentStyleDisplayMap[accentStyle] || 'Avatar Color'}\``;
-            // ⚠️ The 'banner' and 'displayName' display branches were REMOVED with their dropdown
-            // options (2026-08-12 23:59 EDT). `accentStyle` is normalized above, so a legacy stored
-            // value lands here as 'avatar' and shows the avatar hex -- which is what it now resolves
-            // to. Do not re-add a branch keyed on a value the dropdown cannot produce.
+            // ⚠️ The 'banner' and 'displayName' display branches were REMOVED with their dropdown options (2026-08-12 23:59 EDT). `accentStyle` is normalized above, so a legacy stored value lands here as 'avatar' and shows the avatar hex -- which is what it now resolves to. Do not re-add a branch keyed on a value the dropdown cannot produce.
             if (accentStyle === 'avatar') accentDisplay += hexSuffix(prefs.avatarColorHex);
-            // 'dynamicProfile' shows the hex ACTUALLY picked for this render (panelColorHex,
-            // resolved above via resolveDynamicProfileColor) plus a short explainer, since there's no
-            // single fixed hex to show like every other style -- the whole point is it changes on
-            // every new command launch. Always has at least Avatar to draw from, so unlike
-            // displayName there's no "not set up" fallback state to handle here.
+            // 'dynamicProfile' shows the hex ACTUALLY picked for this render (panelColorHex, resolved above via resolveDynamicProfileColor) plus a short explainer, since there's no single fixed hex to show like every other style -- the whole point is it changes on every new command launch. Always has at least Avatar to draw from, so unlike displayName there's no "not set up" fallback state to handle here.
             if (accentStyle === 'dynamicProfile') {
-                // ⚠️ The explainer names what the pool ACTUALLY holds as of 2026-08-12 23:56 EDT: every
-                // swatch saved for this user across their global and server profiles, not one colour
-                // per source. Display Name Colors are excluded, so do not re-add them to this sentence.
+                // ⚠️ The explainer names what the pool ACTUALLY holds as of 2026-08-12 23:56 EDT: every swatch saved for this user across their global and server profiles, not one colour per source. Display Name Colors are excluded, so do not re-add them to this sentence.
                 accentDisplay += ` \`(#${panelColorHex.toString(16).padStart(6, '0').toUpperCase()})\`\n-# Randomly picks from every color saved for your Avatar, Banner, Deco & Nameplate — across both your main and server profiles, new pick on every command, held steady while paging/toggling`;
             }
             containerComponents.push({ type: 10, content: `**Accent Color Style** = ${accentDisplay}` });
@@ -425,25 +284,9 @@ module.exports = {
                 }]
             });
 
-            // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12
-            // EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is
-            // purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server
-            // profile when they have one. A stored preference would only ever restate where the
-            // command was already run, so it was built and then removed rather than shipped as a
-            // setting that explains itself. The one real override lives on /colors (`from:`), and
-            // the in-panel toggle switches the view once server colours actually exist.
+            // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12 EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server profile when they have one. A stored preference would only ever restate where the command was already run, so it was built and then removed rather than shipped as a setting that explains itself. The one real override lives on /colors (`from:`), and the in-panel toggle switches the view once server colours actually exist.
 
-            // Calendar's Active/All Events filter -- SILENCED 2026-08-15 13:01 EDT (Harkirat's direct
-            // request): a saved default preference wasn't earning its keep as its own /settings row,
-            // so this toggle no longer renders and the preference is no longer written or read (see
-            // commands/calendar.js's `filterMode`, which now ignores `calendarEventFilter` entirely --
-            // `/calendar`'s own `view` slash option is the one-off per-invocation replacement).
-            // Deliberately NOT deleted -- kept intact behind this comment in case the preference comes
-            // back. `handlers/settings.js`'s `toggle_calfilter_active`/`_all` branches are correspondingly
-            // unreachable now (nothing renders the button that would fire them) but are also left in place.
-            // const eventFilter = prefs.calendarEventFilter || 'all';
-            // const isActiveOnly = eventFilter === 'active';
-            // containerComponents.push({
+            // Calendar's Active/All Events filter -- SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request): a saved default preference wasn't earning its keep as its own /settings row, so this toggle no longer renders and the preference is no longer written or read (see commands/calendar.js's `filterMode`, which now ignores `calendarEventFilter` entirely -- `/calendar`'s own `view` slash option is the one-off per-invocation replacement). Deliberately NOT deleted -- kept intact behind this comment in case the preference comes back. `handlers/settings.js`'s `toggle_calfilter_active`/`_all` branches are correspondingly unreachable now (nothing renders the button that would fire them) but are also left in place. const eventFilter = prefs.calendarEventFilter || 'all'; const isActiveOnly = eventFilter === 'active'; containerComponents.push({
             //     type: 9,
             //     components: [{ type: 10, content: `**Calendar Events** = \`${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}\`` }],
             //     accessory: {
@@ -456,10 +299,7 @@ module.exports = {
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }
 
-        // Prev/Next between the 2 pages -- same shared helper /calendar and /draws use. Ordered
-        // hint text > nav row > divider > footer (2026-07-12 correction) -- the divider used to sit
-        // directly above the nav row, which read as separating the hint text from the buttons it
-        // was describing; moved below the nav row instead, right before the footer.
+        // Prev/Next between the 2 pages -- same shared helper /calendar and /draws use. Ordered hint text > nav row > divider > footer (2026-07-12 correction) -- the divider used to sit directly above the nav row, which read as separating the hint text from the buttons it was describing; moved below the nav row instead, right before the footer.
         const paginationRow = buildPaginationRow({
             totalChunks: 2, currentPage: page,
             makeCustomId: (p) => `set_page_${p}|${userId}`,
@@ -468,11 +308,7 @@ module.exports = {
         if (paginationRow) containerComponents.push(paginationRow);
         containerComponents.push({ type: 14, spacing: 2, divider: true });
 
-        // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens
-        // /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to
-        // the header's own self-mention below; renders as a normal clickable mention either way. A
-        // Text Display can paste a raw emoji mention string directly (unlike a button's `label`,
-        // which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).
+        // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to the header's own self-mention below; renders as a normal clickable mention either way. A Text Display can paste a raw emoji mention string directly (unlike a button's `label`, which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).
         containerComponents.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${DIOR_ID}>` });
 
         // 6. MASTER PAYLOAD MATRIX
@@ -484,16 +320,7 @@ module.exports = {
             }
         ], isEphemeral);
 
-        // `allowed_mentions: { users: [] }` suppresses the notification/highlight for the <@userId>
-        // mention in the header above while still rendering it as a normal clickable blue mention —
-        // a "silent" mention. Without this, every /settings run would ping the user for mentioning
-        // themselves, which is pure noise since they're the one who ran the command.
-        // PASSIVE IDLE-TIMEOUT -- used to be scheduled explicitly right here (`schedulePanelExpiry`,
-        // 2026-07-18). As of 2026-08-14, sendV2Payload itself schedules/reschedules the auto-disable
-        // timer for whatever message it just sent, for ANY command -- this was the reference
-        // implementation the bot-wide version generalized from, so no behavior changed by removing
-        // the now-redundant explicit call here. See utils/sendV2Payload.js's header comment for the
-        // mechanism, and .claude/rules/settings-and-expiry.md for the full history.
+        // `allowed_mentions: { users: [] }` suppresses the notification/highlight for the <@userId> mention in the header above while still rendering it as a normal clickable blue mention — a "silent" mention. Without this, every /settings run would ping the user for mentioning themselves, which is pure noise since they're the one who ran the command. PASSIVE IDLE-TIMEOUT -- used to be scheduled explicitly right here (`schedulePanelExpiry`, 2026-07-18). As of 2026-08-14, sendV2Payload itself schedules/reschedules the auto-disable timer for whatever message it just sent, for ANY command -- this was the reference implementation the bot-wide version generalized from, so no behavior changed by removing the now-redundant explicit call here. See utils/sendV2Payload.js's header comment for the mechanism, and .claude/rules/settings-and-expiry.md for the full history.
         return sendV2Payload(interaction, payload, { allowedMentions: { users: [] } });
     }
 };

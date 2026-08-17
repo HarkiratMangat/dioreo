@@ -1,13 +1,7 @@
 // ==========================================
 // COMMAND: /draw calculator -- panel rendering + execute()
 // ==========================================
-// Deliberately exports NO `data`. bot/registry.js's loadCommandModules() only registers a module
-// having BOTH `data` and `execute`, and keys the registration by data.name -- a second file exporting
-// setName('draw') would register a DUPLICATE `draw` command and silently overwrite drawprices.js's
-// registration in client.commands. This module stays safely un-registered while remaining
-// requireable from commands/drawprices.js, which owns the `draw` group's builder and dispatches the
-// `calculator` subcommand here. See docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md's
-// "registration constraint" section.
+// Deliberately exports NO `data`. bot/registry.js's loadCommandModules() only registers a module having BOTH `data` and `execute`, and keys the registration by data.name -- a second file exporting setName('draw') would register a DUPLICATE `draw` command and silently overwrite drawprices.js's registration in client.commands. This module stays safely un-registered while remaining requireable from commands/drawprices.js, which owns the `draw` group's builder and dispatches the `calculator` subcommand here. See docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md's "registration constraint" section.
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
 const { withShareButton } = require('../utils/shareButton');
@@ -26,18 +20,11 @@ const DRAW_KEYS = Object.keys(DRAW_META);
 // ==========================================
 // STATE CODEC
 // ==========================================
-// All wizard state rides in the customId -- no model, no cache, no per-user persistence beyond the
-// one deliberate exception (cpCurrency, Task 4). That is a PRIVACY decision as much as an
-// architectural one: storing someone's CP balance and spend progress would need a PRIVACY.md
-// Appendix A entry and would trip the privacy-inventory docs-audit gate. It also makes the region
-// toggle (Task 7) free -- every click just recomputes, which is a few million integer ops, far below
-// the Discord round trip. There is nothing to invalidate.
+// All wizard state rides in the customId -- no model, no cache, no per-user persistence beyond the one deliberate exception (cpCurrency, Task 4). That is a PRIVACY decision as much as an architectural one: storing someone's CP balance and spend progress would need a PRIVACY.md Appendix A entry and would trip the privacy-inventory docs-audit gate. It also makes the region toggle (Task 7) free -- every click just recomputes, which is a few million integer ops, far below the Discord round trip. There is nothing to invalidate.
 //
 // Format: calc~<verb>~r<region digits>~d<draw index>~p<pulls done>~t<target>~v<target value>
 //         ~b<balance>~u<0|1 upgrades>~e<2X entitlement bitmask>
-// Fields are looked up BY PREFIX rather than by position, so a missing field decodes to its default
-// instead of shifting every field after it. Discord's customId cap is 100 chars; a maximal state
-// here is about 48.
+// Fields are looked up BY PREFIX rather than by position, so a missing field decodes to its default instead of shifting every field after it. Discord's customId cap is 100 chars; a maximal state here is about 48.
 function defaultState() {
     return {
         verb: 'setup',
@@ -88,11 +75,7 @@ function decodeState(customId) {
 // ==========================================
 // CALENDAR DETECTION -- is a 2X CP event live right now?
 // ==========================================
-// Reuses the LOGIC commands/calendar.js's isEventEnded() already established for its active-filter
-// mode (ongoing checks bpEnd/bpEndTBD, a dated entry checks its own endDate) rather than a third
-// independent date comparison -- that function is private to calendar.js, so this mirrors its
-// convention instead of importing it, per the design's "reuse the liveness logic" instruction. An
-// entry is live when it is ongoing (and the season hasn't ended), or now falls within date..endDate.
+// Reuses the LOGIC commands/calendar.js's isEventEnded() already established for its active-filter mode (ongoing checks bpEnd/bpEndTBD, a dated entry checks its own endDate) rather than a third independent date comparison -- that function is private to calendar.js, so this mirrors its convention instead of importing it, per the design's "reuse the liveness logic" instruction. An entry is live when it is ongoing (and the season hasn't ended), or now falls within date..endDate.
 function isDoubleCPEventLive(entry, seasonalDoc, nowMs) {
     if (!entry || !entry.isDoubleCP) return false;
     if (entry.isOngoing) {
@@ -113,9 +96,7 @@ async function findLiveDoubleCPEntry() {
 // ==========================================
 // STAGE A -- SETUP PANEL
 // ==========================================
-// The draw-type dropdown doubles as the guide (design decision 13): selecting a draw changes what
-// the panel EXPLAINS, not merely what it computes. Numbers are always derived from drawCost.js /
-// DRAW_DATA, never hand-typed here -- see that module's own header comment.
+// The draw-type dropdown doubles as the guide (design decision 13): selecting a draw changes what the panel EXPLAINS, not merely what it computes. Numbers are always derived from drawCost.js / DRAW_DATA, never hand-typed here -- see that module's own header comment.
 function drawGuideText(region, drawKey) {
     const meta = DRAW_META[drawKey];
     const total = pullCount(region, drawKey);
@@ -127,9 +108,7 @@ function drawGuideText(region, drawKey) {
     return sentences.join(' ');
 }
 
-// Inputs that don't apply to a draw type are not rendered (design decision 14) -- the upgrade toggle
-// only appears where upgradeCost() finds real data, and the 2X entitlement select only appears when
-// a live event exists or the user has asserted one via `assertDoubleCP`.
+// Inputs that don't apply to a draw type are not rendered (design decision 14) -- the upgrade toggle only appears where upgradeCost() finds real data, and the 2X entitlement select only appears when a live event exists or the user has asserted one via `assertDoubleCP`.
 function buildSetupPanel(state, accentColor, { liveDoubleCPEntry = null, assertDoubleCP = false } = {}) {
     const total = pullCount(state.region, state.drawKey);
     const upgrade = upgradeCost(state.region, state.drawKey);
@@ -213,16 +192,13 @@ function buildSetupPanel(state, accentColor, { liveDoubleCPEntry = null, assertD
 // ==========================================
 function formatCP(n) { return n.toLocaleString('en-US'); }
 
-// Same visual convention as drawprices.js's boldDrawSequence/cumulativeSequence (not imported --
-// those read a full `entry.draws` array; this reads a SLICE starting at pullsDone, which is a
-// different enough shape that reusing them would need the same shim either way).
+// Same visual convention as drawprices.js's boldDrawSequence/cumulativeSequence (not imported -- those read a full `entry.draws` array; this reads a SLICE starting at pullsDone, which is a different enough shape that reusing them would need the same shim either way).
 function cumulativeFrom(draws, fromIndex, startingTotal) {
     let running = startingTotal;
     return draws.slice(fromIndex).map(n => { running += n; return formatCP(running); }).join(' › ');
 }
 
-// The savings callout's baseline (design item 8): the smallest single package that covers the
-// shortfall alone -- optimizePurchase's own `naive` result already computes exactly this.
+// The savings callout's baseline (design item 8): the smallest single package that covers the shortfall alone -- optimizePurchase's own `naive` result already computes exactly this.
 function buildEntitlementList(mask) {
     return CP_PACKAGES.filter((p, i) => (mask & (1 << i)) !== 0).map(p => p.id);
 }
@@ -235,8 +211,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
         { type: 14, spacing: 2, divider: true }
     ];
 
-    // Absent data (design "Degradation" section) -- doubleEpicCharacters at region_20/region_30.
-    // Never interpolate: say so plainly and render no purchase recommendation at all.
+    // Absent data (design "Degradation" section) -- doubleEpicCharacters at region_20/region_30. Never interpolate: say so plainly and render no purchase recommendation at all.
     if (!entry) {
         components.push({ type: 10, content: `-# We haven't sourced real pricing data for **${meta.name}** at this region yet. Switch regions below, or check back later.` });
         components.push({
@@ -260,8 +235,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
     let budgetResult = null;
 
     if (state.target === 'B') {
-        // Budget mode -- targetValue is a CP amount (see this module's header note: the "budget in
-        // real money" half of design decision 10 is not built in this pass; see the PR description).
+        // Budget mode -- targetValue is a CP amount (see this module's header note: the "budget in real money" half of design decision 10 is not built in this pass; see the PR description).
         budgetResult = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
         headline = `Spending **${formatCP(state.targetValue)} CP** from pull ${state.pullsDone} gets you to **pull ${budgetResult.pullsReachable}** of ${total}.`;
         remainingCp = 0; // budget mode has no "shortfall to buy" -- it answers a different question
@@ -272,9 +246,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
         const totalNeeded = remainingCp + (upgrade || 0);
         shortfall = totalNeeded - state.balance;
         pullsRemainingText = `**${targetPull - state.pullsDone}** pull(s) remaining (to pull ${targetPull} of ${total})`;
-        // "CP still needed" is the SHORTFALL (netted against balance already held), not the raw
-        // totalNeeded -- otherwise this headline contradicts the already-covered branch below it,
-        // which reads the same shortfall value.
+        // "CP still needed" is the SHORTFALL (netted against balance already held), not the raw totalNeeded -- otherwise this headline contradicts the already-covered branch below it, which reads the same shortfall value.
         headline = `You need **${formatCP(Math.max(shortfall, 0))} CP** more to reach pull ${targetPull}. ${pullsRemainingText}.`;
     }
 
@@ -301,8 +273,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
 
     components.push({ type: 10, content: `-# Balance to shortfall: ${formatCP(remainingCp)}${upgrade ? ` + ${formatCP(upgrade)} upgrade` : ''} − ${formatCP(state.balance)} balance = **${formatCP(Math.max(shortfall, 0))} CP short**` });
 
-    // The already-covered branch (design item 6) -- the best answer a spend-minimizer can give, and
-    // the easiest to forget to build. No optimizer output at all when the balance already covers it.
+    // The already-covered branch (design item 6) -- the best answer a spend-minimizer can give, and the easiest to forget to build. No optimizer output at all when the balance already covers it.
     if (shortfall <= 0) {
         components.push({ type: 10, content: `✅ **You already have enough. Buy nothing.**` });
     } else {
@@ -321,8 +292,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
         }
     }
 
-    // Region reality check (design item 9) -- computed live since the region toggle recomputes
-    // everything from scratch anyway (see this file's Statelessness note).
+    // Region reality check (design item 9) -- computed live since the region toggle recomputes everything from scratch anyway (see this file's Statelessness note).
     const otherRegions = REGION_ORDER.filter(r => r !== state.region);
     const otherShortfalls = otherRegions.map(r => {
         const e = DRAW_DATA[r][state.drawKey];
@@ -368,8 +338,7 @@ async function execute(interaction) {
         const visibilityChoice = interaction.options.getString('visibility');
         argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
     }
-    // Reuses the shared "Seasonal Content" toggle (Option A, design-decisions.md) -- the calculator
-    // is part of the same /draw family as /draw prices, not a new visibility axis of its own.
+    // Reuses the shared "Seasonal Content" toggle (Option A, design-decisions.md) -- the calculator is part of the same /draw family as /draw prices, not a new visibility axis of its own.
     const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
     if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 

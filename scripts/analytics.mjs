@@ -2,23 +2,14 @@
 // ==========================================
 // ANALYTICS CLI -- reads the observability layer's event/roll-up/search-term data outside Discord
 // ==========================================
-// Stage 4: docs/superpowers/specs/2026-08-16-observability-layer-design.md §6, "Outside Discord: direct
-// Mongo queries (zero build), plus scripts/analytics.mjs for recurring questions." Two reports:
+// Stage 4: docs/superpowers/specs/2026-08-16-observability-layer-design.md §6, "Outside Discord: direct Mongo queries (zero build), plus scripts/analytics.mjs for recurring questions." Two reports:
 //
 //   node scripts/analytics.mjs summary [--days N]           (default 7)
 //   node scripts/analytics.mjs failed-searches [--limit N]  (default 20)
 //
-// Prefers AnalyticsRollup (utils/rollupStore.js's daily roll-ups) for any day already rolled up, and
-// falls back to a live AnalyticsEvent aggregation for today (never rolled up by design -- see
-// utils/rollupStore.js's catchUpRollups()) and any day the roll-up job hasn't reached yet. This is the
-// same "recent-window questions don't need roll-ups" reasoning commands/bot.js's Usage/Timing pages
-// already use -- this script just extends it across a longer, possibly-mixed window.
+// Prefers AnalyticsRollup (utils/rollupStore.js's daily roll-ups) for any day already rolled up, and falls back to a live AnalyticsEvent aggregation for today (never rolled up by design -- see utils/rollupStore.js's catchUpRollups()) and any day the roll-up job hasn't reached yet. This is the same "recent-window questions don't need roll-ups" reasoning commands/bot.js's Usage/Timing pages already use -- this script just extends it across a longer, possibly-mixed window.
 //
-// ⚠️ NOT run with a read-only Atlas user yet -- the design flags one as "worth creating regardless" for
-// exactly this script, to avoid handing the analysis path a read-write production credential. Creating
-// that user is an Atlas console/API action outside this repo's reach from here; it's filed in
-// docs/db-deferred-list.md rather than done silently. Until then this reads MONGODB_URI from .env like
-// every other script in this repo.
+// ⚠️ NOT run with a read-only Atlas user yet -- the design flags one as "worth creating regardless" for exactly this script, to avoid handing the analysis path a read-write production credential. Creating that user is an Atlas console/API action outside this repo's reach from here; it's filed in docs/db-deferred-list.md rather than done silently. Until then this reads MONGODB_URI from .env like every other script in this repo.
 
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -38,8 +29,7 @@ export function parseArgs(argv) {
     return { report: report || 'summary', ...opts };
 }
 
-// Pure. Merges a raw AnalyticsRollup document set with live counts for days not yet rolled up, into
-// one flat totals object. Exported for scripts/analytics.test.mjs.
+// Pure. Merges a raw AnalyticsRollup document set with live counts for days not yet rolled up, into one flat totals object. Exported for scripts/analytics.test.mjs.
 export function mergeRollups(rollupDocs) {
     const totals = { invocations: 0, byCommand: new Map(), outcomes: {}, entry: {} };
     for (const r of rollupDocs) {
@@ -135,9 +125,7 @@ async function main() {
     process.exitCode = 1;
 }
 
-// Only run when invoked directly -- scripts/analytics.test.mjs imports parseArgs/mergeRollups without
-// wanting a live Mongo connection, same guard reflow-prose.mjs's header names as a trap it already paid
-// for (a test importing a CLI's exports ran the whole program before any assertion could execute).
+// Only run when invoked directly -- scripts/analytics.test.mjs imports parseArgs/mergeRollups without wanting a live Mongo connection, same guard reflow-prose.mjs's header names as a trap it already paid for (a test importing a CLI's exports ran the whole program before any assertion could execute).
 if (import.meta.url === `file://${process.argv[1]}`) {
     main().catch((err) => { console.error(err); process.exitCode = 1; });
 }

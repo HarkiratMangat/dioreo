@@ -1,13 +1,6 @@
-// scripts/backfillCalendarCategories.js
-// One-time backfill for the 3-section calendar redesign (2026-07-31 13:10 EDT): every existing
-// calendar[]/draft.calendar[] entry pre-dates the `category` field, so it reads back as the schema
-// default 'event' until touched. Runs adminParser.js's guessCalendarCategory() (the same keyword
-// classifier the live bulk parser and single add/edit modal use) against each entry's own title and
-// writes the result.
+// scripts/backfillCalendarCategories.js One-time backfill for the 3-section calendar redesign (2026-07-31 13:10 EDT): every existing calendar[]/draft.calendar[] entry pre-dates the `category` field, so it reads back as the schema default 'event' until touched. Runs adminParser.js's guessCalendarCategory() (the same keyword classifier the live bulk parser and single add/edit modal use) against each entry's own title and writes the result.
 //
-// Safe to re-run ONLY before any admin has hand-edited a calendar entry's Category field via
-// /manage -- it unconditionally overwrites `category` from the title guess every time, so a manual
-// correction made after this ran once would get reverted by running it again.
+// Safe to re-run ONLY before any admin has hand-edited a calendar entry's Category field via /manage -- it unconditionally overwrites `category` from the title guess every time, so a manual correction made after this ran once would get reverted by running it again.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const SeasonalData = require('../models/SeasonalData');

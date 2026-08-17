@@ -3,40 +3,23 @@
 #
 # WHY THIS EXISTS (2026-08-02 16:35 EDT)
 # --------------------------------------
-# Six hook self-tests existed and NOTHING RAN THEM. Measured: each of
-# mcp-layer-check / memory-index-check / outstanding-not-filed / release-ready-check /
-# rg-flag-guard / timestamp-check `.test.sh` was referenced by package.json, .github/workflows/
-# and .claude/settings.json a combined ZERO times. They ran only when someone hand-typed
-# `bash <file>`, which in practice meant the session that wrote them and never again.
+# Six hook self-tests existed and NOTHING RAN THEM. Measured: each of mcp-layer-check / memory-index-check / outstanding-not-filed / release-ready-check / rg-flag-guard / timestamp-check `.test.sh` was referenced by package.json, .github/workflows/ and .claude/settings.json a combined ZERO times. They ran only when someone hand-typed `bash <file>`, which in practice meant the session that wrote them and never again.
 #
-# That is the same failure already recorded twice in this repo: shellcheck sat installed and
-# unrun for weeks while the bug it catches shipped, and usage-guard.mjs shipped with every Bash
-# rule dead from line 2 and looked fine. A test that nothing invokes is not weaker than no test —
-# it is worse, because it produces a documented belief that the behaviour is covered.
+# That is the same failure already recorded twice in this repo: shellcheck sat installed and unrun for weeks while the bug it catches shipped, and usage-guard.mjs shipped with every Bash rule dead from line 2 and looked fine. A test that nothing invokes is not weaker than no test — it is worse, because it produces a documented belief that the behaviour is covered.
 #
-# Harkirat, 2026-08-02 16:32 EDT: *"i literally spent hours last session working on some of these gates and
-# literally within the first few minutes of this session, they dont even seem to hold despite
-# their 'tests'."* The tests were fine. Nothing was running them.
+# Harkirat, 2026-08-02 16:32 EDT: *"i literally spent hours last session working on some of these gates and literally within the first few minutes of this session, they dont even seem to hold despite their 'tests'."* The tests were fine. Nothing was running them.
 #
 # TWO THINGS THIS ASSERTS, and the second is the one that will not go stale:
 #   1. Every *.test.sh passes.
-#   2. COVERAGE: every non-test hook script HAS a test. A suite that only runs the tests that
-#      happen to exist silently rewards deleting a test — the conservation flaw from
-#      feedback_not_checkable_is_usually_unexamined. Coverage is therefore computed from the
-#      hook scripts on disk, never from a hand-maintained list.
+#   2. COVERAGE: every non-test hook script HAS a test. A suite that only runs the tests that happen to exist silently rewards deleting a test — the conservation flaw from feedback_not_checkable_is_usually_unexamined. Coverage is therefore computed from the hook scripts on disk, never from a hand-maintained list.
 #
-# UNTESTED_OK is the shrinking allowlist. It is deliberately NOT a config knob: adding a name to
-# it is a visible admission in a diff, and the suite fails if a name in it no longer needs to be
-# (i.e. a test appeared) so it cannot rot in the permissive direction.
+# UNTESTED_OK is the shrinking allowlist. It is deliberately NOT a config knob: adding a name to it is a visible admission in a diff, and the suite fails if a name in it no longer needs to be (i.e. a test appeared) so it cannot rot in the permissive direction.
 
 cd "$(dirname "$0")" || exit 1
 
-# Hooks with no test yet. REMOVE a name when you write its test — the suite fails if a listed hook
-# turns out to have one, so this list can only shrink.
+# Hooks with no test yet. REMOVE a name when you write its test — the suite fails if a listed hook turns out to have one, so this list can only shrink.
 #
-# ✅ EMPTY as of 2026-08-02 17:08 EDT: every hook in this directory has a self-test. It started that
-# day with six named here and six hooks tested; writing the missing six found two live defects that
-# had been invisible since the day they shipped —
+# ✅ EMPTY as of 2026-08-02 17:08 EDT: every hook in this directory has a self-test. It started that day with six named here and six hooks tested; writing the missing six found two live defects that had been invisible since the day they shipped —
 #   · main-push-guard.sh passed `rtk git push` straight through (the documented normal spelling),
 #     and it is the ONLY hook that can actually block anything;
 #   · records-close-check.sh's memory branch used `find -newermt "@epoch"`, which BSD find cannot

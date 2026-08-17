@@ -1,24 +1,17 @@
 // ==========================================
 // EVENT STORE -- the buffered writer for the event plane (observability layer, stage 2)
 // ==========================================
-// Stage 1 (utils/requestContext.js + utils/logger.js) made every log line say WHAT THE USER WAS DOING.
-// This module turns that same context into one durable document per interaction. Design:
-// docs/superpowers/specs/2026-08-16-observability-layer-design.md §2 and §5, frozen.
+// Stage 1 (utils/requestContext.js + utils/logger.js) made every log line say WHAT THE USER WAS DOING. This module turns that same context into one durable document per interaction. Design: docs/superpowers/specs/2026-08-16-observability-layer-design.md §2 and §5, frozen.
 //
-// 🔴 THE ABSOLUTE RULE: THE INTERACTION RESPONSE PATH NEVER AWAITS A WRITE.
-// A Mongo insert is 30-80ms against Discord's 3-second budget, for zero user benefit. So:
+// 🔴 THE ABSOLUTE RULE: THE INTERACTION RESPONSE PATH NEVER AWAITS A WRITE. A Mongo insert is 30-80ms against Discord's 3-second budget, for zero user benefit. So:
 //   · every write is fire-and-forget and swallowed, the idiom utils/alertStore.js already follows;
 //   · events accumulate in an in-memory buffer and go out via one insertMany, turning hundreds of
 //     round trips into one (200 events at ~400 bytes is ~80KB on a 969MB box);
 //   · EXCEPT on outcome === 'error', which flushes immediately -- the moment an event is most worth
 //     having is right before a crash that would discard the buffer. Errors are rare; this is free.
-// Instrumentation must never be the thing that breaks a real interaction. Every public function here
-// is written so that throwing is impossible from the caller's point of view.
+// Instrumentation must never be the thing that breaks a real interaction. Every public function here is written so that throwing is impossible from the caller's point of view.
 //
-// 🔴 NO RAW DISCORD USER ID EVER REACHES A DOCUMENT. hashUserId() from utils/requestContext.js is the
-// only way a user identifier enters one, and buildEventDocument() additionally SCRUBS the finished
-// document against the raw id before it is buffered -- see the comment on that function for why a
-// schema review is not enough to catch the realistic regression.
+// 🔴 NO RAW DISCORD USER ID EVER REACHES A DOCUMENT. hashUserId() from utils/requestContext.js is the only way a user identifier enters one, and buildEventDocument() additionally SCRUBS the finished document against the raw id before it is buffered -- see the comment on that function for why a schema review is not enough to catch the realistic regression.
 
 const { getContext } = require('./requestContext');
 const { VERSION, COMMIT } = require('./logger');
@@ -27,8 +20,7 @@ const { VERSION, COMMIT } = require('./logger');
 const FLUSH_INTERVAL_MS = 15000;   // idle flush; the buffer also flushes at FLUSH_AT and on error
 const FLUSH_AT = 25;
 const MAX_BUFFER = 1000;           // hard ceiling if Mongo is unreachable for a long stretch -- drop
-                                   // the OLDEST rather than grow without bound (instrumentation must
-                                   // never be able to OOM the bot it is observing)
+                                   // the OLDEST rather than grow without bound (instrumentation must never be able to OOM the bot it is observing)
 const DETAIL_MAX_KEYS = 8;
 const DETAIL_MAX_BYTES = 512;
 const TERM_MAX_CHARS = 100;
@@ -38,31 +30,23 @@ const SIZE_GUARD_EVERY = 50;       // flushes between size checks
 const SIZE_GUARD_DOCS = 400000;    // ~240MB at the measured 307-byte avgObjSize + 1.7x indexes,
                                    // i.e. comfortably before the M0 512MB wall
 
-// `host` had three unreconciled notions in this repo (JOURNAL_STREAM in logger.js, NODE_ENV in
-// AlertLog, os.hostname() in the retired RenderTiming). Picking AlertLog's, deliberately: it is the
-// one an operator already reads, and 'GCP VM' vs 'local' is the distinction that actually matters
-// when reading analytics -- an os.hostname() of "Harkirats-MacBook" answers the same question worse.
+// `host` had three unreconciled notions in this repo (JOURNAL_STREAM in logger.js, NODE_ENV in AlertLog, os.hostname() in the retired RenderTiming). Picking AlertLog's, deliberately: it is the one an operator already reads, and 'GCP VM' vs 'local' is the distinction that actually matters when reading analytics -- an os.hostname() of "Harkirats-MacBook" answers the same question worse.
 const HOST = process.env.NODE_ENV === 'development' ? 'local' : 'GCP VM';
 
 const ADMIN_COMMANDS = new Set(['manage', 'bot', 'autobuild']);
 const ADMIN_PREFIXES = new Set(['mng', 'bot', 'autobuild']);
 
 // ==========================================
-// PURE HELPERS -- no Mongo, no Discord, no clock beyond what is passed in. These are what
-// scripts/eventStore.test.js exercises, and they are exported for exactly that reason.
+// PURE HELPERS -- no Mongo, no Discord, no clock beyond what is passed in. These are what scripts/eventStore.test.js exercises, and they are exported for exactly that reason.
 // ==========================================
 
-// Lowercased, trimmed, whitespace-collapsed, hard-capped. The cap is the part that matters: it is
-// what stops a mis-paste into the wrong field from dumping a wall of text into a permanent record.
+// Lowercased, trimmed, whitespace-collapsed, hard-capped. The cap is the part that matters: it is what stops a mis-paste into the wrong field from dumping a wall of text into a permanent record.
 function normalizeTerm(text) {
     if (typeof text !== 'string') return '';
     return text.toLowerCase().trim().replace(/\s+/g, ' ').slice(0, TERM_MAX_CHARS);
 }
 
-// The segment BEFORE the first '_', and nothing after it. This is not fussiness: custom_ids in this
-// bot embed Mongo _ids and user snowflakes (mng_admin_<discordId>, mng_announce_<objectId>), so a
-// looser capture is a user-id leak wearing a harmless-looking field name. A customId with no '_' at
-// all is returned whole ONLY if it cannot itself be an id.
+// The segment BEFORE the first '_', and nothing after it. This is not fussiness: custom_ids in this bot embed Mongo _ids and user snowflakes (mng_admin_<discordId>, mng_announce_<objectId>), so a looser capture is a user-id leak wearing a harmless-looking field name. A customId with no '_' at all is returned whole ONLY if it cannot itself be an id.
 function customIdPrefix(customId) {
     if (typeof customId !== 'string' || !customId) return null;
     const i = customId.indexOf('_');
@@ -72,8 +56,7 @@ function customIdPrefix(customId) {
     return seg;
 }
 
-// Bounded on THREE axes (key count, scalar-only values, serialised size) because a `detail` bag is
-// exactly where schema discipline leaks away one convenient field at a time.
+// Bounded on THREE axes (key count, scalar-only values, serialised size) because a `detail` bag is exactly where schema discipline leaks away one convenient field at a time.
 function clampDetail(detail) {
     if (!detail || typeof detail !== 'object') return undefined;
     const out = {};
@@ -109,12 +92,7 @@ function deriveEntry(interaction) {
     return null;
 }
 
-// ✅ VERIFIED 2026-08-16 against the INSTALLED discord.js 14.27.0 typings, not assumed: BaseInteraction
-// carries `authorizingIntegrationOwners: AuthorizingIntegrationOwners`, whose class exposes
-// `guildId: Snowflake | null` and `userId: Snowflake | null` (typings/index.d.ts:2546-2559), plus
-// `context: InteractionContextType | null`. The design spec listed this as "believed available, check
-// before the schema commits to it" -- it is available. Still written defensively (null rather than a
-// throw) because Discord may simply omit the field on some interaction types.
+// ✅ VERIFIED 2026-08-16 against the INSTALLED discord.js 14.27.0 typings, not assumed: BaseInteraction carries `authorizingIntegrationOwners: AuthorizingIntegrationOwners`, whose class exposes `guildId: Snowflake | null` and `userId: Snowflake | null` (typings/index.d.ts:2546-2559), plus `context: InteractionContextType | null`. The design spec listed this as "believed available, check before the schema commits to it" -- it is available. Still written defensively (null rather than a throw) because Discord may simply omit the field on some interaction types.
 function deriveInstallType(interaction) {
     const owners = interaction?.authorizingIntegrationOwners;
     if (!owners) return null;
@@ -132,9 +110,7 @@ function isAdminSurface(command, prefix) {
     return false;
 }
 
-// Deep string search for a raw id anywhere in a finished document -- the exported half of the
-// project's highest-value test. Kept here rather than in the test file so the RUNTIME uses the very
-// same predicate the test asserts on; a guard that differs from its test is two behaviours.
+// Deep string search for a raw id anywhere in a finished document -- the exported half of the project's highest-value test. Kept here rather than in the test file so the RUNTIME uses the very same predicate the test asserts on; a guard that differs from its test is two behaviours.
 function containsRawId(doc, rawId) {
     if (!rawId) return false;
     try {
@@ -144,13 +120,9 @@ function containsRawId(doc, rawId) {
     }
 }
 
-// Assembles the finished document. `rawUserId` is passed IN and never stored -- it exists only so the
-// document can be scrubbed against it.
+// Assembles the finished document. `rawUserId` is passed IN and never stored -- it exists only so the document can be scrubbed against it.
 //
-// 🔴 THE SCRUB IS NOT PARANOIA, IT IS THE REALISTIC REGRESSION. Nobody is going to add a `discordId`
-// field; a schema review would catch that instantly. What actually happens is a `detail` value that
-// happens to carry one, or a customIdPrefix capture that grabs a segment embedding a user snowflake.
-// Neither survives this check, and neither would be caught by reading the schema.
+// 🔴 THE SCRUB IS NOT PARANOIA, IT IS THE REALISTIC REGRESSION. Nobody is going to add a `discordId` field; a schema review would catch that instantly. What actually happens is a `detail` value that happens to carry one, or a customIdPrefix capture that grabs a segment embedding a user snowflake. Neither survives this check, and neither would be caught by reading the schema.
 function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
     const prefix = customIdPrefix(interaction?.customId);
     const command = ctx?.command && !String(ctx.command).includes('_')
@@ -175,10 +147,7 @@ function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
         outcome: extra.outcome || 'ok',
         ackMs: typeof extra.ackMs === 'number' ? extra.ackMs : null,
         durationMs: typeof extra.durationMs === 'number' ? extra.durationMs : null,
-        // COPIED, not referenced. `extra.deps` is the context's LIVE array: a noteDep() firing after
-        // this document is buffered -- the SearchTerm upsert that notePicked() triggers from the
-        // router's own finally does exactly that -- would otherwise mutate a document already queued
-        // for insert, so the stored row would include the cost of the instrumentation observing it.
+        // COPIED, not referenced. `extra.deps` is the context's LIVE array: a noteDep() firing after this document is buffered -- the SearchTerm upsert that notePicked() triggers from the router's own finally does exactly that -- would otherwise mutate a document already queued for insert, so the stored row would include the cost of the instrumentation observing it.
         deps: extra.deps && extra.deps.length ? extra.deps.map(d => ({ ...d })) : undefined,
         detail: clampDetail(extra.detail),
         search: extra.search || undefined,
@@ -189,8 +158,7 @@ function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
     };
 
     if (containsRawId(doc, rawUserId)) {
-        // Drop the two fields that can realistically carry one and keep the rest of the event, rather
-        // than discarding a whole event over one bad field.
+        // Drop the two fields that can realistically carry one and keep the rest of the event, rather than discarding a whole event over one bad field.
         delete doc.detail;
         delete doc.search;
         doc.customIdPrefix = null;
@@ -210,15 +178,12 @@ let sizeAlerted = false;
 
 function scheduleFlush() {
     if (flushTimer) return;
-    // .unref() so a pending flush timer can never hold the process open at shutdown -- the SIGTERM
-    // handler below is what guarantees the last buffer actually lands.
+    // .unref() so a pending flush timer can never hold the process open at shutdown -- the SIGTERM handler below is what guarantees the last buffer actually lands.
     flushTimer = setTimeout(() => { flushTimer = null; flushEvents(); }, FLUSH_INTERVAL_MS);
     if (typeof flushTimer.unref === 'function') flushTimer.unref();
 }
 
-// The size guard MUST NOT use countDocuments(): that is a full collection scan, so a guard protecting
-// against a large collection would become a performance problem at exactly the moment it fired.
-// estimatedDocumentCount() reads collection metadata instead.
+// The size guard MUST NOT use countDocuments(): that is a full collection scan, so a guard protecting against a large collection would become a performance problem at exactly the moment it fired. estimatedDocumentCount() reads collection metadata instead.
 async function checkSize(AnalyticsEvent) {
     if (sizeAlerted) return;
     if (++flushesSinceSizeCheck < SIZE_GUARD_EVERY) return;
@@ -234,8 +199,7 @@ async function checkSize(AnalyticsEvent) {
     );
 }
 
-// Fire-and-forget and swallowed, the utils/alertStore.js idiom: an IIFE returning an
-// already-caught promise, so even a stray `await` at a call site cannot reject.
+// Fire-and-forget and swallowed, the utils/alertStore.js idiom: an IIFE returning an already-caught promise, so even a stray `await` at a call site cannot reject.
 function flushEvents() {
     if (!buffer.length) return Promise.resolve();
     const batch = buffer.splice(0, buffer.length);
@@ -243,10 +207,7 @@ function flushEvents() {
         const AnalyticsEvent = require('../models/AnalyticsEvent');
         // ordered:false so one bad document cannot discard the rest of the batch.
         await AnalyticsEvent.insertMany(batch, { ordered: false });
-        // ⚠️ THE BATCH IS SPLICED OUT BEFORE THE AWAIT, SO A FAILED INSERT DROPS THOSE EVENTS. That is
-        // deliberate, not an oversight: re-queueing on failure turns a database that is down into an
-        // ever-growing buffer and an unbounded retry loop, inside the process whose interactions we are
-        // supposed to be leaving alone. Losing some analytics is the cheap failure; the bot is not.
+        // ⚠️ THE BATCH IS SPLICED OUT BEFORE THE AWAIT, SO A FAILED INSERT DROPS THOSE EVENTS. That is deliberate, not an oversight: re-queueing on failure turns a database that is down into an ever-growing buffer and an unbounded retry loop, inside the process whose interactions we are supposed to be leaving alone. Losing some analytics is the cheap failure; the bot is not.
         await checkSize(AnalyticsEvent);
     })().catch(() => { /* instrumentation must never affect the bot */ });
 }
@@ -263,10 +224,7 @@ function pushEvent(doc) {
 // CONTEXT-SIDE API -- what the router, the guards and the dependency wrappers call
 // ==========================================
 
-// The outcome is recorded on the SAME context object runWithContext() is already running with (it is
-// returned by reference), so a guard deep inside a handler can report without threading a value back
-// up to the router's finally. Guards that already exist need to REPORT, not to be re-written -- see
-// the design's §5.
+// The outcome is recorded on the SAME context object runWithContext() is already running with (it is returned by reference), so a guard deep inside a handler can report without threading a value back up to the router's finally. Guards that already exist need to REPORT, not to be re-written -- see the design's §5.
 function markOutcome(outcome) {
     const ctx = getContext();
     if (ctx && !ctx.outcome) ctx.outcome = outcome;
@@ -278,8 +236,7 @@ function mergeDetail(fields) {
     ctx.detail = { ...(ctx.detail || {}), ...fields };
 }
 
-// Aggregated PER NAME rather than per call -- this is what keeps `deps` bounded without a cap that
-// would silently drop the interesting tail. Twelve distinct dependency names is already generous.
+// Aggregated PER NAME rather than per call -- this is what keeps `deps` bounded without a cap that would silently drop the interesting tail. Twelve distinct dependency names is already generous.
 function noteDep(name, ms, ok = true, extra = null) {
     const ctx = getContext();
     if (!ctx || !name) return;
@@ -296,8 +253,7 @@ function noteDep(name, ms, ok = true, extra = null) {
     if (extra && typeof extra.tokens === 'number') row.tokens = (row.tokens || 0) + extra.tokens;
 }
 
-// Times one external call and reports it. Rethrows -- this wraps a dependency, it does not swallow
-// the caller's own error handling.
+// Times one external call and reports it. Rethrows -- this wraps a dependency, it does not swallow the caller's own error handling.
 async function timeDependency(name, fn, extraFrom = null) {
     const started = Date.now();
     try {
@@ -310,33 +266,21 @@ async function timeDependency(name, fn, extraFrom = null) {
     }
 }
 
-// The first defer/reply is the 3-second-deadline measurement, so it is stamped once and never
-// overwritten by a later edit of the same message.
+// The first defer/reply is the 3-second-deadline measurement, so it is stamped once and never overwritten by a later edit of the same message.
 function noteAck() {
     const ctx = getContext();
     if (ctx && ctx.startedAt && ctx.ackMs == null) ctx.ackMs = Date.now() - ctx.startedAt;
 }
 
-// Discord's own codes for "this interaction is no longer answerable": 10062 Unknown interaction (the
-// token expired) and 40060 already acknowledged. This is what turns a dead click into an `expired`
-// outcome instead of a silent nothing.
+// Discord's own codes for "this interaction is no longer answerable": 10062 Unknown interaction (the token expired) and 40060 already acknowledged. This is what turns a dead click into an `expired` outcome instead of a silent nothing.
 function noteResponseFailure(err) {
     const code = err && (err.code ?? err.status);
     if (code === 10062 || code === 40060) markOutcome('expired');
 }
 
-// Wraps the interaction's own response methods so ackMs and the `expired` outcome need no cooperation
-// from any handler.
-// ⚠️ Applied AFTER utils/guildPolicy.js's forceEphemeralResponses() so this wrapper sits OUTSIDE that
-// one: the clamp still runs, and the stamp happens whichever path the response takes.
+// Wraps the interaction's own response methods so ackMs and the `expired` outcome need no cooperation from any handler. ⚠️ Applied AFTER utils/guildPolicy.js's forceEphemeralResponses() so this wrapper sits OUTSIDE that one: the clamp still runs, and the stamp happens whichever path the response takes.
 //
-// 🔴 THIS IS WHY THERE IS NO EDIT IN ANY OF THE 45 "interaction likely expired" CATCHES. The design's
-// §5 named seven of them in three files; the real count is 45 across 18 files, and instrumenting each
-// by hand would be 45 edits whose coverage decays the moment somebody writes the 46th. Observing the
-// REJECTION here catches every one of them, including the paths that have no such catch at all, and
-// it cannot decay. The observation uses a derived promise with BOTH handlers supplied, so it can never
-// create an unhandled rejection, and the ORIGINAL promise is what the caller receives -- their own
-// catch is untouched.
+// 🔴 THIS IS WHY THERE IS NO EDIT IN ANY OF THE 45 "interaction likely expired" CATCHES. The design's §5 named seven of them in three files; the real count is 45 across 18 files, and instrumenting each by hand would be 45 edits whose coverage decays the moment somebody writes the 46th. Observing the REJECTION here catches every one of them, including the paths that have no such catch at all, and it cannot decay. The observation uses a derived promise with BOTH handlers supplied, so it can never create an unhandled rejection, and the ORIGINAL promise is what the caller receives -- their own catch is untouched.
 const ACK_METHODS = ['reply', 'deferReply', 'deferUpdate', 'update', 'showModal'];
 const RESPONSE_METHODS = [...ACK_METHODS, 'editReply', 'followUp'];
 function instrumentAck(interaction) {
@@ -353,12 +297,7 @@ function instrumentAck(interaction) {
             },
             configurable: true,
             writable: true,
-            // ⚠️ enumerable MATTERS and defaults to false on a NEW own property. utils/interactionContext.js's
-            // buildSyntheticInteraction() copies the interaction with Object.assign, which only sees
-            // ENUMERABLE own properties -- so without this, the three methods guildPolicy had already
-            // made own properties (reply/deferReply/followUp) would carry their wrapper onto a synthetic
-            // interaction while the other four silently reverted to the unwrapped prototype versions.
-            // Half-instrumented is the worst of the three options.
+            // ⚠️ enumerable MATTERS and defaults to false on a NEW own property. utils/interactionContext.js's buildSyntheticInteraction() copies the interaction with Object.assign, which only sees ENUMERABLE own properties -- so without this, the three methods guildPolicy had already made own properties (reply/deferReply/followUp) would carry their wrapper onto a synthetic interaction while the other four silently reverted to the unwrapped prototype versions. Half-instrumented is the worst of the three options.
             enumerable: true,
         });
     }
@@ -367,12 +306,7 @@ function instrumentAck(interaction) {
 // ==========================================
 // AUTOCOMPLETE -- one event per SEARCH SESSION, not per keystroke
 // ==========================================
-// Discord fires an autocomplete interaction on EVERY keystroke, and both loadout search and /help's
-// cmd: option use it. At equal fidelity autocomplete would be the large majority of a collection
-// designed to grow forever, while answering nothing -- "the user typed k, ki, kil, kilo" is four rows
-// that say one thing. So the buffer holds one open session per (user, command, field), updated as
-// keystrokes arrive, and flushes ONE completed event carrying the keystroke count, the final query and
-// whether the search was followed through.
+// Discord fires an autocomplete interaction on EVERY keystroke, and both loadout search and /help's cmd: option use it. At equal fidelity autocomplete would be the large majority of a collection designed to grow forever, while answering nothing -- "the user typed k, ki, kil, kilo" is four rows that say one thing. So the buffer holds one open session per (user, command, field), updated as keystrokes arrive, and flushes ONE completed event carrying the keystroke count, the final query and whether the search was followed through.
 const searchSessions = new Map();   // key -> { userHash, command, field, term, keystrokes, results, picked, timer, guildId, ... }
 
 function sessionKey(userHash, command, field) {
@@ -423,9 +357,7 @@ function closeSession(key) {
     })().catch(() => { /* swallowed, as every write here is */ });
 }
 
-// Patches interaction.respond() so the session records the RESULT COUNT for free -- a zero-result
-// search is the whole point of keeping the term, and it is only knowable at respond() time. One edit
-// in the router's autocomplete route covers every autocomplete site in the bot.
+// Patches interaction.respond() so the session records the RESULT COUNT for free -- a zero-result search is the whole point of keeping the term, and it is only knowable at respond() time. One edit in the router's autocomplete route covers every autocomplete site in the bot.
 function instrumentAutocomplete(interaction) {
     try {
         const ctx = getContext();
@@ -468,16 +400,12 @@ function instrumentAutocomplete(interaction) {
     } catch { /* instrumentation must never break an autocomplete */ }
 }
 
-// Closes every open search session immediately. Used by the shutdown path (a session mid-flight when
-// systemd stops the unit would otherwise be lost) and by scripts/eventStore.test.js, which asserts the
-// debounce invariant without waiting out a real 3-second idle timer.
+// Closes every open search session immediately. Used by the shutdown path (a session mid-flight when systemd stops the unit would otherwise be lost) and by scripts/eventStore.test.js, which asserts the debounce invariant without waiting out a real 3-second idle timer.
 function flushSearchSessions() {
     for (const key of [...searchSessions.keys()]) closeSession(key);
 }
 
-// A slash command arriving from the same user for the same command right after a search session is
-// the only honest signal we have that the search was followed through. Cheap, and it closes the
-// session early rather than waiting out the idle timer.
+// A slash command arriving from the same user for the same command right after a search session is the only honest signal we have that the search was followed through. Cheap, and it closes the session early rather than waiting out the idle timer.
 function notePicked(userHash, command) {
     for (const [key, s] of searchSessions) {
         if (s.userHash === userHash && s.command === command) {
@@ -491,8 +419,7 @@ function notePicked(userHash, command) {
 // EMISSION
 // ==========================================
 
-// Called from the router's finally -- ONE event per interaction, including the ones that threw,
-// because those are the events most worth having.
+// Called from the router's finally -- ONE event per interaction, including the ones that threw, because those are the events most worth having.
 function recordInteractionEvent(interaction, ctx, rawUserId) {
     try {
         if (!ctx) return;
@@ -509,10 +436,7 @@ function recordInteractionEvent(interaction, ctx, rawUserId) {
     } catch { /* never */ }
 }
 
-// The RenderTiming replacement for renders that are NOT themselves an interaction (the WebP cache
-// runners). Inside an interaction they fold into that interaction's deps; outside one -- the bulk
-// cache runner -- they become their own small background event, which is more than RenderTiming gave
-// us there, since it had no notion of what triggered it.
+// The RenderTiming replacement for renders that are NOT themselves an interaction (the WebP cache runners). Inside an interaction they fold into that interaction's deps; outside one -- the bulk cache runner -- they become their own small background event, which is more than RenderTiming gave us there, since it had no notion of what triggered it.
 function recordRenderTiming(name, durationMs, detail = null) {
     try {
         if (getContext()) { noteDep(name, durationMs, true); mergeDetail(detail || {}); return; }
@@ -533,9 +457,7 @@ function recordBoot(fields) {
     })().catch(() => { /* swallowed */ });
 }
 
-// systemd sends SIGTERM on every deploy and restart, so without this the last buffer -- up to
-// FLUSH_INTERVAL_MS of events, and the ones immediately before a restart are among the most
-// interesting -- would be lost every single time.
+// systemd sends SIGTERM on every deploy and restart, so without this the last buffer -- up to FLUSH_INTERVAL_MS of events, and the ones immediately before a restart are among the most interesting -- would be lost every single time.
 let shutdownInstalled = false;
 function installShutdownFlush() {
     if (shutdownInstalled) return;
@@ -544,8 +466,7 @@ function installShutdownFlush() {
         process.once(signal, () => {
             flushSearchSessions();
             const done = () => process.exit(0);
-            // Bounded: a flush that hangs must not stop the process from exiting, or systemd's stop
-            // timeout turns a clean restart into a SIGKILL.
+            // Bounded: a flush that hangs must not stop the process from exiting, or systemd's stop timeout turns a clean restart into a SIGKILL.
             const bail = setTimeout(done, 2000);
             if (typeof bail.unref === 'function') bail.unref();
             flushEvents().then(done, done);

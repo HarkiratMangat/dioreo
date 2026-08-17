@@ -1,9 +1,4 @@
-// utils/changeStore.js
-// The persistence + query layer behind the /manage DB-change audit log (models/ChangeLog.js). Modelled
-// directly on utils/alertStore.js -- recordChange() is fire-and-forget and NEVER throws, same
-// contract as recordAlert(), so a logging failure can never break the admin action that triggered it.
-// Read helpers back the admin-only /audit command. Stage 4 of docs/superpowers/specs/
-// 2026-08-14-manage-slash-decomposition-design.md.
+// utils/changeStore.js The persistence + query layer behind the /manage DB-change audit log (models/ChangeLog.js). Modelled directly on utils/alertStore.js -- recordChange() is fire-and-forget and NEVER throws, same contract as recordAlert(), so a logging failure can never break the admin action that triggered it. Read helpers back the admin-only /audit command. Stage 4 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md.
 const ChangeLog = require('../models/ChangeLog');
 const AlertCounter = require('../models/AlertCounter');
 const { MONTHS } = require('./alertStore');
@@ -19,9 +14,7 @@ function dateKey(date) {
     return `${MONTHS[date.getUTCMonth()]}${pad2(date.getUTCDate())}`;
 }
 
-// Namespaced under the SAME AlertCounter collection AlertLog already uses ("chg-" prefix on the _id),
-// rather than a second counter model -- the two logs' daily sequences never collide because their
-// keys never collide, and there's no second collection to create/maintain for one more counter.
+// Namespaced under the SAME AlertCounter collection AlertLog already uses ("chg-" prefix on the _id), rather than a second counter model -- the two logs' daily sequences never collide because their keys never collide, and there's no second collection to create/maintain for one more counter.
 async function nextDailyChangeId(date = new Date()) {
     const key = `chg-${dateKey(date)}`;
     const doc = await AlertCounter.findOneAndUpdate(
@@ -32,10 +25,7 @@ async function nextDailyChangeId(date = new Date()) {
     return `${dateKey(date)}-${pad2(doc.seq)}`;
 }
 
-// Fire-and-forget persist -- NEVER throws (an already-swallowed promise, so even a stray `await` at a
-// call site can't surface a rejection). Called un-awaited from every /manage operation function right
-// after its own .save()/DB call succeeds, so a Mongo hiccup here can never turn a successful admin
-// action into a failed one.
+// Fire-and-forget persist -- NEVER throws (an already-swallowed promise, so even a stray `await` at a call site can't surface a rejection). Called un-awaited from every /manage operation function right after its own .save()/DB call succeeds, so a Mongo hiccup here can never turn a successful admin action into a failed one.
 function recordChange(fields) {
     return (async () => {
         const now = new Date();
@@ -73,8 +63,7 @@ async function pruneChanges() {
     } catch { /* swallow -- pruning is best-effort housekeeping */ }
 }
 
-// Flips the `undone` flag on a change row when a registered Undo consumes it. Best-effort: an undo
-// action must never fail just because its audit row couldn't be found or updated.
+// Flips the `undone` flag on a change row when a registered Undo consumes it. Best-effort: an undo action must never fail just because its audit row couldn't be found or updated.
 async function markUndone(changeId) {
     if (!changeId) return;
     try {

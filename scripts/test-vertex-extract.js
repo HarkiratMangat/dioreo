@@ -1,7 +1,4 @@
-// scripts/test-vertex-extract.js
-// Antigravity (2026-07-20): Scratch verification script to test the Vertex AI keyless migration.
-// Connects to your real MongoDB database, pulls an imageKey, constructs a Cloudinary URL,
-// and executes the extractLoadoutFromImage pipeline against Vertex AI.
+// scripts/test-vertex-extract.js Antigravity (2026-07-20): Scratch verification script to test the Vertex AI keyless migration. Connects to your real MongoDB database, pulls an imageKey, constructs a Cloudinary URL, and executes the extractLoadoutFromImage pipeline against Vertex AI.
 
 require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');

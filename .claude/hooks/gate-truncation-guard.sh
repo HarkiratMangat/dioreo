@@ -1,19 +1,9 @@
 #!/bin/bash
-# gate-truncation-guard.sh — PreToolUse on Bash. Fires when a GATE's output is piped to tail/head
-# without the exit status being captured.
+# gate-truncation-guard.sh — PreToolUse on Bash. Fires when a GATE's output is piped to tail/head without the exit status being captured.
 #
-# WHY THIS EXISTS (2026-08-15 16:20 EDT, measured, not hypothetical)
-# `npm run docs:audit | tail -3` prints the trailing summary line — which reads reassuringly, because
-# the summary reports how many checks RAN, not whether any FAILED. The "❌ ERRORS" block sits ABOVE it
-# and is scrolled away by the pipe. In this session that hid a real doc-frontmatter failure across TWO
-# commits, and it happened despite `feedback_wrong_reference_beats_stale_one` already recording the
-# exact rule ("read a gate's exit code, never its trailing summary line"). Prose had already failed to
-# prevent it once; that is this repo's own trigger for turning a rule into a hook.
+# WHY THIS EXISTS (2026-08-15 16:20 EDT, measured, not hypothetical) `npm run docs:audit | tail -3` prints the trailing summary line — which reads reassuringly, because the summary reports how many checks RAN, not whether any FAILED. The "❌ ERRORS" block sits ABOVE it and is scrolled away by the pipe. In this session that hid a real doc-frontmatter failure across TWO commits, and it happened despite `feedback_wrong_reference_beats_stale_one` already recording the exact rule ("read a gate's exit code, never its trailing summary line"). Prose had already failed to prevent it once; that is this repo's own trigger for turning a rule into a hook.
 #
-# WHY IT WARNS RATHER THAN DENIES
-# Piping a gate to tail is legitimate when the exit status is captured separately — the usual honest
-# shape is `npm test >/tmp/log 2>&1; echo "exit=$?"; tail -5 /tmp/log`. Denying that would push work
-# toward MORE noise, not less. So this fires only on the genuinely blind form, and stays advisory.
+# WHY IT WARNS RATHER THAN DENIES Piping a gate to tail is legitimate when the exit status is captured separately — the usual honest shape is `npm test >/tmp/log 2>&1; echo "exit=$?"; tail -5 /tmp/log`. Denying that would push work toward MORE noise, not less. So this fires only on the genuinely blind form, and stays advisory.
 
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0

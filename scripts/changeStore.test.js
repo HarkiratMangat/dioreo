@@ -1,8 +1,4 @@
-// Tests for utils/changeStore.js -- the /manage DB-change audit log's persistence layer. Mirrors the
-// spirit of AlertLog's own coverage: recordChange() must never throw even when the underlying write
-// fails, and retention must prune by both age and cap. No live Mongo connection is used -- Model
-// methods are monkey-patched per test and restored afterward, so this runs with no network and no DB.
-// Mutation-validated: each check was proven to fail when the behaviour it guards is broken.
+// Tests for utils/changeStore.js -- the /manage DB-change audit log's persistence layer. Mirrors the spirit of AlertLog's own coverage: recordChange() must never throw even when the underlying write fails, and retention must prune by both age and cap. No live Mongo connection is used -- Model methods are monkey-patched per test and restored afterward, so this runs with no network and no DB. Mutation-validated: each check was proven to fail when the behaviour it guards is broken.
 
 const assert = require('assert');
 const ChangeLog = require('../models/ChangeLog');
@@ -43,9 +39,7 @@ async function run() {
     await asyncCheck('recordChange() resolves rather than throwing when the counter write fails', async () => {
         const restoreCounter = stub(AlertCounter, 'findOneAndUpdate', () => { throw new Error('simulated Mongo outage'); });
         try {
-            // recordChange() returns a promise it has already caught internally -- a caller awaiting
-            // it (as this test does, unlike real call sites which fire-and-forget) must never see a
-            // rejection propagate.
+            // recordChange() returns a promise it has already caught internally -- a caller awaiting it (as this test does, unlike real call sites which fire-and-forget) must never see a rejection propagate.
             await changeStore.recordChange({ actorId: '123', page: 'draws', action: 'add', model: 'SeasonalData', target: 'x', summary: 'x' });
         } finally {
             restoreCounter();
@@ -62,8 +56,7 @@ async function run() {
         }
     });
 
-    // -- Mutation check: prove the never-throwing contract is actually load-bearing, not vacuous.
-    // A version of recordChange() that DOES throw (or doesn't swallow) must fail this same test.
+    // -- Mutation check: prove the never-throwing contract is actually load-bearing, not vacuous. A version of recordChange() that DOES throw (or doesn't swallow) must fail this same test.
     await asyncCheck('MUTATION: an unswallowed rejection is actually caught by the test above', async () => {
         const throwing = (fields) => (async () => {
             const changeId = await changeStore.nextDailyChangeId();
@@ -111,16 +104,12 @@ async function run() {
         const restoreDelete = stub(ChangeLog, 'deleteMany', (filter) => { deleteManyFilter = deleteManyFilter || filter; return { deletedCount: 0 }; });
         const restoreCount = stub(ChangeLog, 'countDocuments', async () => 0);
         try {
-            // Force past the throttle by calling pruneChanges via a fresh require cache reset isn't
-            // practical here -- instead, verify the FILTER SHAPE pruneChanges builds when it does run,
-            // which is the actual behaviour under test (the throttle itself is exercised by the next
-            // check).
+            // Force past the throttle by calling pruneChanges via a fresh require cache reset isn't practical here -- instead, verify the FILTER SHAPE pruneChanges builds when it does run, which is the actual behaviour under test (the throttle itself is exercised by the next check).
             await changeStore.pruneChanges();
         } finally {
             restoreDelete(); restoreCount();
         }
-        // The very first call in this test file's process lifetime is unthrottled (lastPruneAt starts
-        // at 0), so this should have actually run and captured a filter.
+        // The very first call in this test file's process lifetime is unthrottled (lastPruneAt starts at 0), so this should have actually run and captured a filter.
         if (deleteManyFilter) {
             assert.ok(deleteManyFilter.createdAt && deleteManyFilter.createdAt.$lt instanceof Date,
                 'pruneChanges() should filter deleteMany by createdAt < a cutoff Date');

@@ -1,9 +1,4 @@
-// scripts/bulkCacheCollectibles.test.js -- coverage for the previously-untested pure/near-pure
-// pieces of the bulk-cache pipeline: sample selection, the Cloudinary context field mapping, the
-// per-variant metadata text, and the grouped-message component tree. All were live-verified against
-// the real dev bot this session (including a real 7-variant group), but had no automated regression
-// coverage -- this pins that behavior so a future edit can't silently break it.
-// Run: `node scripts/bulkCacheCollectibles.test.js` (also via `npm test`).
+// scripts/bulkCacheCollectibles.test.js -- coverage for the previously-untested pure/near-pure pieces of the bulk-cache pipeline: sample selection, the Cloudinary context field mapping, the per-variant metadata text, and the grouped-message component tree. All were live-verified against the real dev bot this session (including a real 7-variant group), but had no automated regression coverage -- this pins that behavior so a future edit can't silently break it. Run: `node scripts/bulkCacheCollectibles.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
     pickDiverseSample, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines,
@@ -114,10 +109,7 @@ check('catalogExtra: a single-variant doc with no variantLabel/variantValue leav
     assert.strictEqual(extra.variant_value, undefined);
 });
 
-// --- variantMetadataLines --------------------------------------------------------------------
-// These pin the 2026-08-15 22:32 EDT layout Harkirat specified. The fields that LEFT this function
-// (Description/Parent Category/Group/Variant/Base SKU) are asserted absent on purpose -- they moved
-// up into the headings, and a future edit that "restores" them here would silently duplicate them.
+// --- variantMetadataLines -------------------------------------------------------------------- These pin the 2026-08-15 22:32 EDT layout Harkirat specified. The fields that LEFT this function (Description/Parent Category/Group/Variant/Base SKU) are asserted absent on purpose -- they moved up into the headings, and a future edit that "restores" them here would silently duplicate them.
 
 check('variantMetadataLines: nameplate shows Palette line with the palette name + swatches', () => {
     const lines = variantMetadataLines(doc({}), render({}));

@@ -1,17 +1,11 @@
 #!/bin/bash
 # Proofs for claim-detect.sh — the single definition of "this message claims the work is done".
 #
-# Two hooks now depend on this predicate (the completion-claim gate in settings.json and
-# completeness-sweep.sh), so a regression here silently disables BOTH. That is the whole reason the
-# duplication was removed, and it is why the shared piece needs the strictest test in the directory.
+# Two hooks now depend on this predicate (the completion-claim gate in settings.json and completeness-sweep.sh), so a regression here silently disables BOTH. That is the whole reason the duplication was removed, and it is why the shared piece needs the strictest test in the directory.
 #
-# ⚠️ Both directions matter, and the SECOND is the one that gets skipped. A pattern that matches
-# everything makes both gates fire on every message and get disabled within a day — the noise
-# argument written into four other hooks here. So ordinary progress narration is pinned as SILENT.
+# ⚠️ Both directions matter, and the SECOND is the one that gets skipped. A pattern that matches everything makes both gates fire on every message and get disabled within a day — the noise argument written into four other hooks here. So ordinary progress narration is pinned as SILENT.
 #
-# ⚠️ Synthetic-transcript gotcha, already paid for once in this directory: the hook greps a literal
-# `"type":"assistant"` with NO space. Python's json.dumps default inserts one, producing an empty
-# read that looks exactly like "no claim found". These fixtures are hand-written with no spaces.
+# ⚠️ Synthetic-transcript gotcha, already paid for once in this directory: the hook greps a literal `"type":"assistant"` with NO space. Python's json.dumps default inserts one, producing an empty read that looks exactly like "no claim found". These fixtures are hand-written with no spaces.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/claim-detect.sh"
 pass=0; fail=0
@@ -40,8 +34,7 @@ a "a question back to Harkirat"    none  "$(say 'Do you want the split before or
 a "reporting a FAILURE"            none  "$(say 'Two tests failed; the fixture was below the sampling floor.')"
 a "describing a plan"              none  "$(say 'Next I will move the notes file and update its references.')"
 
-# ---- interface: --regex must emit a usable pattern, since settings.json now sources it ----
-# If this ever returned empty, the completion-claim gate's grep would match EVERYTHING.
+# ---- interface: --regex must emit a usable pattern, since settings.json now sources it ---- If this ever returned empty, the completion-claim gate's grep would match EVERYTHING.
 re=$(bash "$HOOK" --regex)
 if [ -n "$re" ] && printf 'All done here.\n' | grep -qiE "$re"; then
   echo "  PASS  --regex emits a working pattern"; pass=$((pass+1))

@@ -1,9 +1,7 @@
 #!/bin/bash
 # Proofs for untracked-doc-guard.sh.
 #
-# This hook reads real git state, so the cases run against a throwaway repo via CLAUDE_PROJECT_DIR
-# rather than against Diors-Builds itself -- a test that depends on the working tree being dirty (or
-# clean) at the moment it runs is a test that fails for reasons unrelated to the code.
+# This hook reads real git state, so the cases run against a throwaway repo via CLAUDE_PROJECT_DIR rather than against Diors-Builds itself -- a test that depends on the working tree being dirty (or clean) at the moment it runs is a test that fails for reasons unrelated to the code.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/untracked-doc-guard.sh"
 pass=0; fail=0

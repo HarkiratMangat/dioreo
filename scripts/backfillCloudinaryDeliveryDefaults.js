@@ -1,16 +1,6 @@
-// scripts/backfillCloudinaryDeliveryDefaults.js
-// One-time backfill for the `f_auto,q_auto` delivery-URL convention (Harkirat, 2026-08-07 21:51 EDT):
-// draw thumbnails, patch-note images, and calendar banners were all uploaded to Cloudinary via
-// `cloudinary.uploader.upload()` and had their returned `secure_url` stored VERBATIM, with no
-// transform baked in -- unlike loadout images (utils/loadoutRender.js), which construct their
-// delivery URL fresh at render time and always included `f_auto,q_auto`. The three cache modules
-// (utils/cloudinaryCache.js, utils/patchNotesCache.js, utils/calendarBannerCache.js) now apply
-// `withDeliveryDefaults()` on every NEW upload -- this script fixes what's already stored.
+// scripts/backfillCloudinaryDeliveryDefaults.js One-time backfill for the `f_auto,q_auto` delivery-URL convention (Harkirat, 2026-08-07 21:51 EDT): draw thumbnails, patch-note images, and calendar banners were all uploaded to Cloudinary via `cloudinary.uploader.upload()` and had their returned `secure_url` stored VERBATIM, with no transform baked in -- unlike loadout images (utils/loadoutRender.js), which construct their delivery URL fresh at render time and always included `f_auto,q_auto`. The three cache modules (utils/cloudinaryCache.js, utils/patchNotesCache.js, utils/calendarBannerCache.js) now apply `withDeliveryDefaults()` on every NEW upload -- this script fixes what's already stored.
 //
-// Safe to re-run: `withDeliveryDefaults()` is idempotent (checks for the transform segment before
-// inserting), and every field here is unconditionally OVERWRITTEN with the transformed form of
-// whatever string is already there -- never appended/duplicated. A non-Cloudinary URL (external
-// fallback after a failed upload) passes through byte-identical.
+// Safe to re-run: `withDeliveryDefaults()` is idempotent (checks for the transform segment before inserting), and every field here is unconditionally OVERWRITTEN with the transformed form of whatever string is already there -- never appended/duplicated. A non-Cloudinary URL (external fallback after a failed upload) passes through byte-identical.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const SeasonalData = require('../models/SeasonalData');

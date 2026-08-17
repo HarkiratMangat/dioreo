@@ -1,12 +1,9 @@
 #!/bin/bash
-# Proofs for squash-trailer-gate.sh. Written when the gate was promoted from `ask` to `deny`
-# (2026-08-02 16:44 EDT) — a gate that can now BLOCK a merge has to be proven not to block the
-# legitimate spellings, or the first false deny gets it disabled and then nothing guards anything.
+# Proofs for squash-trailer-gate.sh. Written when the gate was promoted from `ask` to `deny` (2026-08-02 16:44 EDT) — a gate that can now BLOCK a merge has to be proven not to block the legitimate spellings, or the first false deny gets it disabled and then nothing guards anything.
 HOOK="$(cd "$(dirname "$0")" && pwd)/squash-trailer-gate.sh"
 pass=0; fail=0
 
-# A hook that decides nothing prints NOTHING, and `jq` on empty stdin also prints nothing — so the
-# empty case has to be caught before jq or every silent pass reads as an empty string and fails.
+# A hook that decides nothing prints NOTHING, and `jq` on empty stdin also prints nothing — so the empty case has to be caught before jq or every silent pass reads as an empty string and fails.
 d() { local o; o=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK")
       [ -z "$o" ] && { echo silent; return; }
       printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecision // "silent"'; }
