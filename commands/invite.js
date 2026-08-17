@@ -30,8 +30,10 @@
 // Preferences category already swaps those two icons for. Per the emoji-capture rule
 // (.claude/rules/rendering-and-ui.md) every lookup happens INSIDE a render function -- never at
 // require() time, or the ids freeze to the prod app's and render broken on the dev bot.
-// ⚠️ `dioreoCombo` does not exist on the "Dioreo (Dev)" application yet, so the header emoji renders
-// as literal text on the dev bot specifically. Not a code bug -- same known gap `/help` documents.
+// ✅ Every emoji this panel uses resolves on BOTH applications -- verified by boot-testing the dev
+// bot 2026-08-16 21:06 EDT, which reported "54 re-pointed to this app, 0 dev-overridden, 0
+// unmatched". (`/help`'s header carried a stale warning that `dioreoCombo` was missing on dev; that
+// was true when it was written and is not any more, and it was corrected in this same change.)
 //
 // NOT WIRED INTO `/help` YET, deliberately. Harkirat, 2026-08-16 20:38 EDT: "exclude it from /help
 // for now. Add it as a deferred item that needs discussion and design on how to implement it

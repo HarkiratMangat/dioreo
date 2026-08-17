@@ -36,11 +36,14 @@
 // Every emoji is one of the bot's own existing custom icons (emojiMap.js). Per the emoji-capture
 // rule (.claude/rules/rendering-and-ui.md), data below stores `emojiKey` STRINGS, never the emoji
 // mention string itself -- every lookup happens inside a render function, never at require()-time.
-// ⚠️ `dioreoCombo`/`loadouts` were JUST uploaded to the PROD Discord application and don't exist yet
-// on the separate DEV application ("Dioreo (Dev)") -- refreshEmojiIds() reports them "unmatched" on
-// boot there (fail-soft: cosmetics never block the bot), so they render broken on the dev bot
-// specifically until Harkirat also uploads copies there. Not a code bug -- the payload itself is
-// correct (verified directly against the generated JSON).
+// ✅ RESOLVED 2026-08-16 21:06 EDT -- this used to warn that `dioreoCombo`/`loadouts` had JUST been
+// uploaded to the PROD application and did not exist yet on the separate DEV application ("Dioreo
+// (Dev)"), so they rendered as literal text there. Harkirat has since uploaded copies: a dev-bot
+// boot now reports "54 re-pointed to this app, 0 dev-overridden, 0 unmatched", so every emoji this
+// panel uses resolves on both applications. Kept as history rather than deleted because the
+// underlying mechanism is still the thing to understand -- refreshEmojiIds() matches on NAME at
+// boot and is fail-soft, so a newly-added emoji that exists on only one of the two applications
+// will show this same symptom again, and "unmatched" in the boot log is where you would see it.
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
