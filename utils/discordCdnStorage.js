@@ -12,7 +12,7 @@ function getRest() {
     return restClient;
 }
 
-// Returns the resulting cdn.discordapp.com attachment url, or null on ANY failure (channel not configured, missing access, network error) -- never throws. Callers treat null exactly like "no Discord CDN url available yet", falling back to the Cloudinary-url-based fetch+reattach path, same non-blocking philosophy as every other step in this pipeline.
+// Returns `{ url, messageId }` (the resolved cdn.discordapp.com attachment url + the posted message's id), or null on ANY failure (channel not configured, missing access, network error) -- never throws. Callers treat null exactly like "no Discord CDN url available yet", falling back to the Cloudinary-url-based fetch+reattach path, same non-blocking philosophy as every other step in this pipeline. `messageId` was silently discarded here until 2026-08-17 19:07 EDT -- utils/discordCdnAssetIndex.js's durable secondary index needs it to recover this exact message if the caller's Cloudinary resource is ever deleted out-of-band (see that module's header for the full reasoning); the RETURN SHAPE CHANGED from a bare string, so every caller was updated in the same change.
 //
 // `components`: a full Components V2 component array (Container/TextDisplay/MediaGallery/etc, same shape every other UI surface in this bot uses -- see utils/colorPaletteView.js for the convention), built by the caller with its own metadata (asset id, sku_id, palette/design name if available, Cloudinary public_id, dimensions, frame count, file size, render time, timestamp). Harkirat's explicit request (2026-08-10 12:09 EDT, refined 13:01 EDT into a proper Components V2 design rather than plain text): this channel doubles as a searchable log AND a real per-entry visual record, so every upload carries structured, labeled TextDisplay content -- Discord's message search indexes component text content the same as plain message content, so nothing is lost by using components here instead of a bare content string. Recursively walks a returned Components V2 tree looking for the first Unfurled Media Item that resolved to a real cdn.discordapp.com url. REQUIRED because Discord does NOT populate the classic top-level `message.attachments` array for a file referenced only via `attachment://filename` inside a component (Media Gallery item, Thumbnail accessory, etc) -- confirmed live 2026-08-10 13:12 EDT: a real upload's response came back with `attachments: []` at the top level even though the file genuinely uploaded and its resolved url was sitting inside `components[...].items[0].media.url` the whole time. This bug meant discordCdnUrl was ALWAYS null from the very first render onward -- every fallback to the slower fetch+reattach path was this bug working exactly as (mis)coded, not a race condition or a timing issue (an earlier fix that awaited the context-metadata patch, thinking THAT was the problem, was correct in principle but addressed a symptom that could never have mattered here). Walks generically (any `media.url` field anywhere in the tree) rather than hardcoding the specific component shape this module happens to send today, so it stays correct if a caller's layout changes.
 function findFirstMediaUrl(node) {
@@ -39,7 +39,8 @@ async function uploadToStorageChannel(channelId, filename, buffer, contentType, 
             body: { flags: 32768, components },
             files: [{ name: filename, contentType, data: buffer }]
         });
-        return findFirstMediaUrl(msg.components) || msg.attachments?.[0]?.url || null;
+        const url = findFirstMediaUrl(msg.components) || msg.attachments?.[0]?.url || null;
+        return url ? { url, messageId: msg.id } : null;
     } catch (err) {
         console.error(`Discord CDN storage-channel upload failed for "${filename}": ${err.message}`);
         return null;
@@ -60,7 +61,7 @@ function findAllMediaUrls(node, out = []) {
     return out;
 }
 
-// Multi-file sibling of uploadToStorageChannel (2026-08-15 10:35 EDT) -- posts several rendered files as ONE message (one design's several color variants, grouped) instead of one message per file. `files`: `[{name, contentType, data}, ...]`, in the SAME order the caller's `components` tree references them via `attachment://<name>`. Returns an array of resolved cdn.discordapp.com urls in that same order (a `null` entry where a particular file's url could not be resolved), or `null` on total failure (channel not configured, or the whole request failed) -- never throws, same non-blocking contract as the single-file function above.
+// Multi-file sibling of uploadToStorageChannel (2026-08-15 10:35 EDT) -- posts several rendered files as ONE message (one design's several color variants, grouped) instead of one message per file. `files`: `[{name, contentType, data}, ...]`, in the SAME order the caller's `components` tree references them via `attachment://<name>`. Returns `{ urls, messageId }` -- `urls` is an array of resolved cdn.discordapp.com urls in that same order (a `null` entry where a particular file's url could not be resolved), `messageId` is the one shared grouped message's id (2026-08-17 19:07 EDT, was silently discarded before -- see uploadToStorageChannel's matching comment and utils/discordCdnAssetIndex.js) -- or `null` on total failure (channel not configured, or the whole request failed), never throws, same non-blocking contract as the single-file function above.
 async function uploadMultipleToStorageChannel(channelId, files, components) {
     if (!channelId || !files?.length) return null;
     try {
@@ -70,7 +71,7 @@ async function uploadMultipleToStorageChannel(channelId, files, components) {
         });
         const urls = findAllMediaUrls(msg.components);
         // Pad/truncate to files.length rather than trusting the walk found exactly one url per file -- a partially-malformed component tree should degrade to "some urls missing", never throw or silently misalign the rest of the array against the caller's file order.
-        return files.map((_, i) => urls[i] || null);
+        return { urls: files.map((_, i) => urls[i] || null), messageId: msg.id };
     } catch (err) {
         console.error(`Discord CDN storage-channel grouped upload failed (${files.length} file(s)): ${err.message}`);
         return null;

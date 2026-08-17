@@ -75,7 +75,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.43.0 — 2026-08-17 18:23 EDT (#151) — code comments soft-wrap too now
+## Pre-Release v3.44.0 — 2026-08-17 19:35 EDT (#152) — recover storage-channel messages instead of orphaning them
+
+A deleted Cloudinary resource used to permanently orphan its Discord storage-channel message and force a full re-render + duplicate upload on the next view, even though the exact bytes were still sitting in the channel — the same code that posted the message discarded its id instead of remembering it. Traced during a re-verification of an existing `docs/db-deferred-list.md` item ("does the grouped-upload path share the single-file path's orphan behavior?"); confirming the claim held wasn't a good enough answer, since the underlying data to do better was already sitting in the same upload response.
+
+Adds a durable, Cloudinary-INDEPENDENT secondary index (`models/DiscordCdnAsset.js` + `utils/discordCdnAssetIndex.js`) — one row per rendered design, written alongside every storage-channel upload in BOTH the live per-view path (`utils/nameplateWebpCache.js`/`utils/decorationWebpCache.js`) and the bulk script's grouped path (`scripts/bulkCacheCollectibles.js`), so it survives a later Cloudinary-side deletion untouched. On a Cloudinary cache-miss, the index is checked before treating it as a cold render: if a record exists, the still-live `cdn.discordapp.com` bytes are re-fetched directly and re-uploaded to Cloudinary at the same `public_id`, restoring the cache and skipping the render pipeline's single most expensive phase (frame compositing + ffmpeg encode) entirely, then letting the existing palette self-heal re-derive what only Cloudinary ever held. `utils/discordCdnStorage.js`'s two upload functions now return the message id they were silently discarding.
+
+Also fixes an adjacent bug found while wiring this in: `healPalette()` in both cache modules replaced Cloudinary's `context` wholesale on every palette heal (a Cloudinary `api.update` `context` write replaces the whole map), silently wiping `render_source`/catalog metadata each time — now merges onto the previously-read context instead of rebuilding it from scratch.
+
+`utils/discordCdnAssetIndex.test.js` (11 cases covering the index and every recovery branch, including a partial-success-after-failure case) added to `npm test`. `docs/db-deferred-list.md`'s two related entries updated to describe the shipped fix rather than the accepted workaround.
+
+## Pre-Release v3.43.0 — 2026-08-17 18:23 EDT (#151 · `d30adb9`) — code comments soft-wrap too now
 
 Extends the 2026-08-08 Markdown soft-wrap convention to code: multi-line `//` runs and `/** */` JSDoc headers in `.js`/`.mjs`, and multi-line `#` runs in `.sh`, now join into one logical line per paragraph, same as prose already does. `scripts/reflow-comments.mjs` (new devDependency: `acorn`, used to find real comments without a hand-rolled lexer misreading `//` inside a regex or template literal) applied across all 254 tracked `.js`/`.mjs`/`.sh` files — `--check` reports a stable 0-would-change fixed point. Wired into `npm test` alongside a 21-case regression suite pinning five real bugs found during a pre-rollout audit (a shebang line misclassified as comment content, a JSDoc-reflow path that was silently dead code, decorative-border and literal-example lines merging into prose, a non-idempotency edge case, and a verifier that never read its own output argument).
 
