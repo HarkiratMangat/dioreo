@@ -49,78 +49,66 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { withShareButton } = require('../utils/shareButton');
+const { mentionCommand } = require('../utils/commandMentions');
 const { buildInviteUrls } = require('../utils/inviteLinks');
 
 // Coral #FF7D5C -- see the ACCENT note in this file's header.
 const PRESET_ACCENT = 16743772;
-
-const WEBSITE_URL = 'https://dioreo.app';
-// The site's own short redirect to the Discord authorization link (a 302 emitted by
-// scripts/buildLegalPages.js, built FROM the same client id, so the two cannot disagree). Shared
-// instead of a raw OAuth URL -- see the share block in buildContainer for the full reasoning.
-const SHARE_URL = 'https://dioreo.app/install';
-// Shared with `/help`'s landing hero rather than re-uploaded -- one asset, one Cloudinary URL.
-const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1786237039/site_assets/dioreo-mascot-coral.png';
+// Shared with `/help`'s landing hero -- one asset, ONE definition, in utils/brandAssets.js. It used
+// to be a duplicate literal in both files; see that module's header for why that mattered and for the
+// measured width transform it now carries.
+const { MASCOT_URL } = require('../utils/brandAssets');
 
 const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
 
 function buildContainer(accentColor, client) {
     const urls = buildInviteUrls(client);
     const components = [];
+    // REBUILT 2026-08-17 09:24 EDT from Harkirat's own mockup, `local/invite_ui.json`. Two structural
+    // changes came from it, both simplifications worth keeping:
+    //   · ONE "Invite" button on the BARE chooser URL, instead of the two explicit
+    //     guild/user buttons this file shipped with. Discord's own Add App picker offers whichever
+    //     install types the application has enabled, so the platform does the branching and the panel
+    //     does not have to. Fewer buttons, and it cannot go out of step with the portal's settings.
+    //   · A "Share Link" button, replacing the fenced-code-block share line -- see the note on it below.
+    // ⚠️ FIVE VALUES IN THAT MOCKUP ARE DEV-SPECIFIC OR EPHEMERAL AND ARE DELIBERATELY NOT COPIED.
+    // The mockup was built live on the dev bot, so it hardcodes: the DEV application's client_id
+    // (resolved here off the live client instead), the DEV app's `</help:…>` command id (resolved via
+    // mentionCommand), a mockup-generated `custom_id` (a real routed id here), `flags: 36864` --
+    // Components V2 plus SUPPRESS_NOTIFICATIONS, where sendV2Payload owns flags and ORs in the
+    // ephemeral bit -- and, the one that would have silently broken in production, a **signed
+    // cdn.discordapp.com attachment URL** for the mascot carrying `ex=`/`is=`/`hm=` params that
+    // EXPIRE. That is the exact failure this repo already paid for and fixed by re-hosting the
+    // mascot to Cloudinary (see commands/help.js's header). MASCOT_URL below is that permanent copy.
 
-    // CONDENSED 2026-08-16 21:54 EDT, Harkirat on seeing the first build live: "WAY too much info and
-    // noise! This needs to be significantly condensed." The first draft explained each install path
-    // with a ### heading plus two or three -# bullets -- accurate, and far too much to read for what
-    // is really a two-button decision. Everything a user must know to CHOOSE fits on one line each;
-    // the caveats that got cut (Manage Server is required, the bot requests no permissions) are
-    // enforced by Discord's own install dialog anyway, which states the permissions itself on the
-    // very next screen. Do not re-add them here -- this panel was already rejected once at that
-    // length, and the detail is one click away by construction.
     components.push({
         type: 9,
         components: [{
             type: 10,
             content: `## ${emojis.dioreoCombo} Invite Dioreo\n`
-                + `${emojis.serverSettings} **Add to a Server** — everyone there can use it\n`
-                + `${emojis.settings} **Add to Your Account** — use it in any server, DM, or group chat`
+                + `> Add **Dioreo** to a server, or install it on your own account and use it anywhere, even in DMs!`
         }],
         accessory: { type: 11, media: { url: MASCOT_URL } }
     });
 
-    // Link buttons (style 5) carry no custom_id and fire no interaction -- nothing to route, and
-    // (since 2026-08-16 21:15 EDT) nothing for utils/passiveExpiry.js to disable either, so this
-    // panel stays clickable forever. That matters more here than anywhere else in the bot: an invite
-    // post exists to be clicked by whoever scrolls past it later, not by the person who ran it.
-    // Emoji goes through the dedicated `emoji` field, never baked into `label` (Components V2 rule 4).
+    components.push({ type: 14, spacing: 1, divider: true });
+
+    // "Invite" is a LINK button (style 5) and so carries no custom_id and fires no interaction.
+    // "Share Link" is a real Primary button, which is why this panel passes `skipExpiry` at its send
+    // site -- one custom_id component would otherwise re-arm the 10-minute idle-disable for the WHOLE
+    // panel, greying out Share Link beside a still-live Invite button on exactly the public post that
+    // exists to be found days later. Harkirat's call, 2026-08-17 09:18 EDT.
     components.push({
         type: 1,
         components: [
-            { type: 2, style: 5, label: 'Add to Server', url: urls.guild, emoji: emojis.parseEmoji(emojis.serverSettings) },
-            { type: 2, style: 5, label: 'Add to Your Account', url: urls.user, emoji: emojis.parseEmoji(emojis.settings) },
-            { type: 2, style: 5, label: 'Website', url: WEBSITE_URL }
+            { type: 2, style: 5, label: 'Invite', url: urls.chooser },
+            { type: 2, style: 1, label: 'Share Link', custom_id: 'invite_share' }
         ]
     });
 
-    components.push({ type: 14, spacing: 1, divider: true });
-
-    // THE SHARE PATH (Harkirat, 2026-08-16 21:54 EDT: "I also need an option to 'copy link' or
-    // 'share' ... incase someone wants to share the link with someone instead of just installing it
-    // themselves"). A fenced code block rather than a button on purpose, for three reasons that all
-    // point the same way: Discord renders a real COPY affordance on a fenced block (and long-press
-    // works on mobile), whereas a link button can only ever navigate -- clicking one cannot copy
-    // anything; a custom_id button would re-arm the passive-expiry timer this panel was just freed
-    // from, so the share control would die after 10 idle minutes on exactly the public post it
-    // exists for; and no handler means no router branch, no OWNED_PREFIXES entry, and nothing to
-    // keep in step.
-    // ⚠️ It deliberately shares `dioreo.app/install`, NOT a raw discord.com/oauth2 URL. That route
-    // already exists (a 302 built FROM the same client id in scripts/buildLegalPages.js, so it
-    // cannot drift), it is short enough to say out loud, it survives the OAuth URL gaining or losing
-    // parameters, and -- the actual point -- it works OUTSIDE Discord, which a slash command never
-    // can. That is the half of docs/ROADMAP.md's "Easy bot sharing" item a command alone can't reach.
     components.push({
         type: 10,
-        content: `-# 💠 Sharing it with someone? Send them this link:\n\`\`\`\n${SHARE_URL}\n\`\`\``
+        content: `-# 💠 New to **Dioreo**? Check out ${mentionCommand(client, '/help')}!`
     });
 
     return { type: 17, accent_color: accentColor, components };
@@ -154,7 +142,26 @@ module.exports = {
 
         // "Show Everyone" IS offered here (unlike `/help`, which dropped it): running this hidden
         // and then deciding to post it for the channel is the command's own core flow.
-        const components = withShareButton([buildContainer(accentColor, interaction.client)], isEphemeral);
-        return await sendV2Payload(interaction, components);
+        // ⚠️ NO "Show Everyone" BUTTON HERE, and removing it FIXED A REAL BUG rather than being a
+        // tidy-up (found 2026-08-17 09:47 EDT auditing this branch). `withShareButton` used to wrap
+        // this payload. The Show Everyone path does not re-enter this function: handlers/share.js
+        // builds the public copy and sends it through `sendV2Payload` itself, WITHOUT `skipExpiry` --
+        // so a panel shared that way armed the idle timer after all, and its Share Link button greyed
+        // out ten minutes later on precisely the public post this command exists to leave behind.
+        // Threading the flag through share.js was rejected: it only has the message JSON, so it would
+        // need its own table of exempt commands -- a second copy of the decision, which is the
+        // duplication sendV2Payload's own header warns about. Always-skip there was rejected too; a
+        // shared `/settings` panel genuinely should expire.
+        // Dropping the button closes the path structurally, and is independently right: `/help` did
+        // the same on Harkirat's request because its visibility option already covered the case, and
+        // this panel has BOTH that option AND a dedicated Share Link button. Anyone wanting the panel
+        // public can just run `/invite` -- public is the default.
+        // If Show Everyone is ever genuinely wanted back, the fix is the rejected option (a) done
+        // properly: give share.js a way to learn the exemption from the source panel, not a lookup table.
+        // `skipExpiry`: nothing on this panel is token-dependent -- the Share Link handler answers
+        // with its own fresh interaction -- and the message is meant to be found and clicked days
+        // later. See utils/sendV2Payload.js's note for the bar a second user must meet.
+        const components = [buildContainer(accentColor, interaction.client)];
+        return await sendV2Payload(interaction, components, { skipExpiry: true });
     }
 };
