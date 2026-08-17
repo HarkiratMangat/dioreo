@@ -28,6 +28,18 @@ const pendingTimers = new Map();
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 
+// A LINK button (style 5) is not interactive in the sense this module cares about: it carries no
+// custom_id, fires no interaction, and depends on no token, so it can never go stale and disabling
+// it is always wrong. Added 2026-08-16 21:15 EDT with `/invite`, which surfaced the bug in its
+// sharpest form -- its public panel is link buttons ONLY, so it armed a timer that, ten minutes
+// later, killed the install buttons on a message whose entire purpose is to be clicked later by
+// whoever scrolls past it. `/help` had the same defect quietly (its Website / Install Dioreo buttons
+// were disabled alongside its dropdown), which is why the fix belongs HERE and not in one command.
+// ⚠️ Detect a link button by its `url`, not by `style === 5` alone: the style field is what Discord
+// requires, but a payload built by a future helper could set one without the other, and a button
+// with a url is unambiguously a link regardless of how its style got there.
+const isLinkButton = component => component?.type === 2 && (component.style === 5 || typeof component.url === 'string');
+
 // Recursively walks a Components V2 tree (containers/sections/action rows all nest via their own
 // `components` array) and marks every button (type 2) or select menu (type 3) as disabled. Returns
 // a new array -- never mutates the caller's own `components`, since that same array may still be
@@ -35,7 +47,7 @@ const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 function disableAllComponents(components) {
     return components.map(component => {
         const clone = { ...component };
-        if (clone.type === 2 || clone.type === 3) clone.disabled = true;
+        if ((clone.type === 2 && !isLinkButton(clone)) || clone.type === 3) clone.disabled = true;
         if (Array.isArray(clone.components)) clone.components = disableAllComponents(clone.components);
         if (clone.accessory) clone.accessory = disableAllComponents([clone.accessory])[0];
         return clone;
@@ -95,7 +107,10 @@ function hasInteractiveComponents(components) {
     return (components || []).some(component => {
         if (!component) return false;
         const INTERACTIVE_TYPES = new Set([2, 3, 5, 6, 7, 8]);
-        if (INTERACTIVE_TYPES.has(component.type) && !component.disabled) return true;
+        // Link buttons are skipped for the same reason disableAllComponents leaves them alone (see
+        // isLinkButton above): a panel whose ONLY buttons are links has nothing that can go stale,
+        // so arming a timer for it schedules a pointless PATCH that does visible harm.
+        if (INTERACTIVE_TYPES.has(component.type) && !component.disabled && !isLinkButton(component)) return true;
         if (Array.isArray(component.components) && hasInteractiveComponents(component.components)) return true;
         if (component.accessory && hasInteractiveComponents([component.accessory])) return true;
         return false;
