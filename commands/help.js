@@ -100,7 +100,11 @@ const PRESET_ACCENT = 16743772; // #FF7D5C
 
 const HARKIRAT_ID = '1139845545754632283';
 const WEBSITE_URL = 'https://dioreo.app';
-const MASCOT_URL = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1786237039/site_assets/dioreo-mascot-coral.png';
+// MOVED to utils/brandAssets.js on 2026-08-17 09:44 EDT -- it was a duplicate literal here and in
+// commands/invite.js, and the width transform added there (measured: 266,911 → 13,601 bytes, 95%
+// smaller) would otherwise have landed on one copy and not the other. The header note above still
+// describes the asset itself correctly; only its address changed.
+const { MASCOT_URL } = require('../utils/brandAssets');
 
 // Single source of truth for the visibility option's copy -- reused verbatim as the real
 // SlashCommandBuilder description AND every /help category's own [visibility] bullet, so the two

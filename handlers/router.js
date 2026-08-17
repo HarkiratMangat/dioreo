@@ -38,6 +38,7 @@ const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = requi
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
 const { handleTimestampInteraction } = require("./timestamp");
 const { handleHelpInteraction } = require("./help");
+const { handleInviteInteraction } = require("./invite");
 const { handlePatchnotesInteraction } = require("./patchnotes");
 const { handleSettingsInteraction } = require("./settings");
 const { handleLoadoutsInteraction } = require("./loadouts");
@@ -280,6 +281,8 @@ async function handleInteractionInner(interaction) {
         if (await handleTimestampInteraction(interaction)) return;
         markHandler('help');
         if (await handleHelpInteraction(interaction)) return;
+        markHandler('invite');
+        if (await handleInviteInteraction(interaction)) return;
         markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
         markHandler('settings');

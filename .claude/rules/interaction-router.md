@@ -32,7 +32,8 @@ paths:
 `handlers/manage/index.js`'s `mng_act_` branch (moved there from the old single-file handlers/manage.js by the 2026-08-14 17:31 EDT stage-2 directory split — see `.claude/rules/manage-panel.md`) no longer hardcodes each page's actions. It parses the custom_id, calls `resolveAction()` from `utils/manageActions.js`, and runs whatever comes back — 30 lines where there used to be 222. **That resolver is also the per-page permission check**, which is what made those permissions hold per click rather than only at page-view time. The router's own prefix guard is a different check at a different granularity and both are required; see `.claude/rules/manage-panel.md` for the registry's full contract.
 
 ## The per-subsystem split — `handlers/*.js` (started 2026-08-13 16:45 EDT, v3.16.0-pre)
-✅ **DONE.** Fourteen subsystems live in `handlers/*.js`: `manage` · `colors` · `settings` · `loadouts` · `autobuild` · `alerts` · `audit` · `drawprices` · `navigation` · `pagination` · `share` · `timestamp` · `help` · `patchnotes`. (`audit` added 2026-08-15 12:31 EDT, stage 4 of the `/manage` decomposition — see `manage-panel.md`'s audit-log section.) The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
+✅ **DONE.** Every subsystem lives in `handlers/*.js` — the roster is **whatever `handlers/*.js` contains apart from `router.js`**, which is the only statement that cannot go stale; as of 2026-08-17 09:44 EDT that is `autobuild` · `bot` · `colors` · `drawCalc` · `drawprices` · `help` · `invite` · `loadouts` · `manage` · `navigation` · `pagination` · `patchnotes` · `settings` · `share` · `timestamp`.
+> ⚠️ **This line carried a numeral and three wrong members until 2026-08-17, and the numeral is why.** It read *"Fourteen subsystems"* and listed `alerts` and `audit` — both **retired on 2026-08-16** when `/bot` absorbed them — while omitting `bot`, `drawCalc` (never listed at all) and `invite`. Two removals and two additions happened to cancel out, so **the count stayed accidentally correct while a fifth of the list was false**, and a reader checking the number would have been reassured. That is the failure mode in [[feedback_no_duplicated_state_in_prose]] in its purest form. **Derive this list with `ls handlers/`, never trust it as written**, and if you add a handler do not "helpfully" restore a count. The two helpers every handler may need (`buildSyntheticInteraction`, `resolvePanelActor`) live in **`utils/interactionContext.js`** and are never copied into a handler. `handlers/router.js` kept only what belongs to no subsystem.
 
 ### ✍️ SECTION HEADERS ARE DESCRIPTIVE — never numbered or lettered (Harkirat, 2026-08-13 21:36 EDT)
 > *"ditch the numbering/lettering system and just do section headers. as code changes, the numbering/lettering go stale."*
@@ -75,6 +76,7 @@ paths:
 | `share_public` | `share.js` |
 | `tsmenu\|` | `timestamp.js` |
 | `help_category` | `help.js` |
+| `invite_share` | `invite.js` |
 | `select_patch_history` | `patchnotes.js` |
 | `admin_` | dispatched straight to `commands/admin.js`, above the chain |
 

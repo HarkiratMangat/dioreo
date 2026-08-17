@@ -60,7 +60,16 @@ const { schedulePanelExpiry, hasInteractiveComponents } = require('./passiveExpi
 // see that file's own comment on the block and docs/db-deferred-list.md's LIVE CLICK-TEST OWED
 // entry. It is provably redundant now (a cancelled timer immediately gets rescheduled by the new V2
 // render), not load-bearing, so it costs nothing to leave in place until that verification lands.
-async function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
+// ⚠️ `skipExpiry` (added 2026-08-17 09:24 EDT for `/invite`) OPTS A PANEL OUT of the passive expiry
+// above. It defaults to FALSE so every existing caller is untouched, and it should stay rare -- the
+// bar is not "this panel is inconvenient to lose" but **"nothing on this panel can go stale"**.
+// `/invite` qualifies on a structural argument, not a preference: its only interactive component is a
+// Share Link button whose handler reads nothing from the original interaction and answers with its
+// OWN fresh token, so there is no state to expire. It is also the one panel in the bot deliberately
+// meant to be found and clicked days later by whoever scrolls past, which is exactly what the idle
+// timer destroys. Before adding a second user, check the panel really has no token-dependent
+// component -- a normal dashboard (`/settings`, `/manage`, `/colors`) does, and must keep expiring.
+async function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files, skipExpiry = false } = {}) {
     // SERVER VISIBILITY POLICY (2026-08-10 15:50 EDT, v3 -- utils/guildPolicy.js). When a server has
     // forced this response ephemeral, the "Show Everyone" row must not survive to the client: that
     // button does not edit the ephemeral message, it posts a brand new genuinely public one, so
@@ -114,7 +123,7 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
     // no `.message` yet, so THAT case falls through to reading the PATCH response's own id below.
     const knownMessageId = interaction.message?.id;
     const maybeSchedule = (messageId) => {
-        if (messageId && hasInteractiveComponents(outgoing)) schedulePanelExpiry(interaction, messageId, outgoing);
+        if (!skipExpiry && messageId && hasInteractiveComponents(outgoing)) schedulePanelExpiry(interaction, messageId, outgoing);
     };
 
     // Not yet acknowledged (router skipped deferUpdate/deferReply for a light path) -> this IS the
