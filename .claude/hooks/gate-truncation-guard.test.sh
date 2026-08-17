@@ -1,9 +1,7 @@
 #!/bin/bash
 # Proofs for gate-truncation-guard.sh.
 #
-# The cases that matter are the SILENT ones. A guard that fires on every pipeline gets switched off,
-# and this one deliberately allows the honest shape (redirect + read $? + slice the log), so the
-# "does not fire" half is what keeps it usable rather than noise.
+# The cases that matter are the SILENT ones. A guard that fires on every pipeline gets switched off, and this one deliberately allows the honest shape (redirect + read $? + slice the log), so the "does not fire" half is what keeps it usable rather than noise.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/gate-truncation-guard.sh"
 pass=0; fail=0

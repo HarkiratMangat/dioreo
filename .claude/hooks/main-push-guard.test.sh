@@ -1,13 +1,7 @@
 #!/bin/bash
-# Proofs for main-push-guard.sh — the ONLY hook in this repo that can actually block a tool call
-# (it is the one script that exits 2; every other hook can only print). It shipped with no test at
-# all on 2026-08-02 01:30 EDT, which is the wrong way round: the more a gate can do, the more it
-# needs proving.
+# Proofs for main-push-guard.sh — the ONLY hook in this repo that can actually block a tool call (it is the one script that exits 2; every other hook can only print). It shipped with no test at all on 2026-08-02 01:30 EDT, which is the wrong way round: the more a gate can do, the more it needs proving.
 #
-# Branch state is the hook's main input, so each case runs against a THROWAWAY git repo created
-# here with a known branch name, pointed at by CLAUDE_PROJECT_DIR. Reading the real repo's branch
-# would make the results depend on whatever branch the suite happens to run on — a test whose
-# outcome moves with the environment is not a proof.
+# Branch state is the hook's main input, so each case runs against a THROWAWAY git repo created here with a known branch name, pointed at by CLAUDE_PROJECT_DIR. Reading the real repo's branch would make the results depend on whatever branch the suite happens to run on — a test whose outcome moves with the environment is not a proof.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/main-push-guard.sh"
 pass=0; fail=0
@@ -57,12 +51,7 @@ a "--tags from main is fine"              "$ON_MAIN" "git push --tags"          
 a "non-push command is ignored"           "$ON_MAIN" "git status"                        ALLOW
 a "'git pushd' is not a push"             "$ON_MAIN" "echo git pushing things"           ALLOW
 
-# --- the FALSE POSITIVE that blocked real work, 2026-08-06 10:46 EDT ---
-# Once a squash-merge deletes the working branch, HEAD lands back on main — and from that moment the
-# guard denied EVERY push, including pushing a brand-new feature branch and including pushes aimed at
-# a DIFFERENT REPOSITORY, where the project dir's branch says nothing about the operation. It blocked
-# the dior-CLI PR minutes after this guard's own release merged. An explicit non-main destination ref
-# disclaims main; a bare push does not, which is why the first case below must still BLOCK.
+# --- the FALSE POSITIVE that blocked real work, 2026-08-06 10:46 EDT --- Once a squash-merge deletes the working branch, HEAD lands back on main — and from that moment the guard denied EVERY push, including pushing a brand-new feature branch and including pushes aimed at a DIFFERENT REPOSITORY, where the project dir's branch says nothing about the operation. It blocked the dior-CLI PR minutes after this guard's own release merged. An explicit non-main destination ref disclaims main; a bare push does not, which is why the first case below must still BLOCK.
 a "feature branch pushed FROM main is fine" "$ON_MAIN" "git push -u origin fix/some-branch"  ALLOW
 a "another repo's push from main is fine"   "$ON_MAIN" "cd ~/.config/dior && git push -u origin fix/x" ALLOW
 a "branch DELETE from main is fine"         "$ON_MAIN" "git push origin --delete old-branch"  ALLOW

@@ -1,14 +1,6 @@
-// scripts/logger.test.js
-// Regression test for utils/logger.js's structured sink, specifically the Cloud Error Reporting
-// contract added 2026-08-06 15:52 EDT. Run: `node scripts/logger.test.js` (also via `npm test`).
+// scripts/logger.test.js Regression test for utils/logger.js's structured sink, specifically the Cloud Error Reporting contract added 2026-08-06 15:52 EDT. Run: `node scripts/logger.test.js` (also via `npm test`).
 //
-// ⚠️ WHY THIS EXISTS. Error Reporting is a SILENT integration: there is no SDK, no client, no call
-// that can fail. It reads Cloud Logging and treats an entry as a groupable error event only when the
-// entry is severity ERROR **and** carries `serviceContext`. Delete that one object and nothing breaks,
-// nothing logs, no test fails, the dashboard simply goes quiet forever — and a quiet error dashboard
-// is indistinguishable from a healthy one. That is the exact failure shape this project has already
-// paid for twice (six hook self-tests nothing invoked; a `-p err` counter structurally stuck at 0).
-// So the contract gets asserted here rather than trusted.
+// ⚠️ WHY THIS EXISTS. Error Reporting is a SILENT integration: there is no SDK, no client, no call that can fail. It reads Cloud Logging and treats an entry as a groupable error event only when the entry is severity ERROR **and** carries `serviceContext`. Delete that one object and nothing breaks, nothing logs, no test fails, the dashboard simply goes quiet forever — and a quiet error dashboard is indistinguishable from a healthy one. That is the exact failure shape this project has already paid for twice (six hook self-tests nothing invoked; a `-p err` counter structurally stuck at 0). So the contract gets asserted here rather than trusted.
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
@@ -20,9 +12,7 @@ function t(name, fn) {
     catch (e) { failures.push([name, e.message]); console.log(`  FAIL  ${name}\n        ${e.message}`); }
 }
 
-// The sink only writes under journald (see FILE_SINK_ENABLED), so the harness sets JOURNAL_STREAM and
-// points DIORS_LOG_FILE at a temp file, then reads back what was actually written. Asserting on the
-// emitted BYTES rather than on the module's internals is the point — Error Reporting sees the bytes.
+// The sink only writes under journald (see FILE_SINK_ENABLED), so the harness sets JOURNAL_STREAM and points DIORS_LOG_FILE at a temp file, then reads back what was actually written. Asserting on the emitted BYTES rather than on the module's internals is the point — Error Reporting sees the bytes.
 function emit(lines) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
@@ -55,8 +45,7 @@ t('serviceContext.version matches package.json', () => {
 });
 
 t('an ERROR from an Error object keeps its STACK in message', () => {
-    // Error Reporting groups by parsing the stack out of `message`. A message with no stack still
-    // reports, but as an ungrouped one-off — so losing the stack silently degrades the whole feature.
+    // Error Reporting groups by parsing the stack out of `message`. A message with no stack still reports, but as an ungrouped one-off — so losing the stack silently degrades the whole feature.
     const [e] = emit(`console.error(new Error("boom"));`);
     assert.match(e.message, /Error: boom/);
     assert.ok(e.message.split('\n').length > 1, 'expected multiple stack frames in message');
@@ -64,8 +53,7 @@ t('an ERROR from an Error object keeps its STACK in message', () => {
 });
 
 t('WARNING and INFO do NOT carry serviceContext', () => {
-    // Error Reporting acts on severity >= ERROR only, so attaching it lower down would add bytes to
-    // every line of the sink and change nothing.
+    // Error Reporting acts on severity >= ERROR only, so attaching it lower down would add bytes to every line of the sink and change nothing.
     const out = emit(`console.warn("w"); console.log("i");`);
     const warn = out.find(e => e.severity === 'WARNING');
     const info = out.find(e => e.severity === 'INFO');
@@ -84,8 +72,7 @@ t('every entry still carries version + commit', () => {
 });
 
 t('the sink stays OFF when not under journald', () => {
-    // Creating a growing file on a dev machine that nothing tails is litter — and it would also mean
-    // local runs quietly shipping entries into the same shape prod uses.
+    // Creating a growing file on a dev machine that nothing tails is litter — and it would also mean local runs quietly shipping entries into the same shape prod uses.
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
     const env = { ...process.env, DIORS_LOG_FILE: file };
@@ -98,10 +85,7 @@ t('the sink stays OFF when not under journald', () => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-// --- Attribution (stage 1 of the observability layer, 2026-08-16 12:22 EDT) ---
-// See utils/requestContext.js and handlers/router.js's buildInteractionContext/markHandler. These spawn
-// a fresh child process the same way the tests above do, so they exercise the REAL patchConsole() +
-// writeStructured() path end to end, not a mock of it.
+// --- Attribution (stage 1 of the observability layer, 2026-08-16 12:22 EDT) --- See utils/requestContext.js and handlers/router.js's buildInteractionContext/markHandler. These spawn a fresh child process the same way the tests above do, so they exercise the REAL patchConsole() + writeStructured() path end to end, not a mock of it.
 function emitWithSetup(setup, lines) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
@@ -149,8 +133,7 @@ t('the context survives an await inside runWithContext(), matching the real rout
 });
 
 t('component resolves to the real repo caller, not utils/logger.js itself', () => {
-    // handlers/router.js is a real, in-repo call site. Requiring it as a module and invoking a function
-    // that logs proves captureComponent() walks past logger.js's own frames to the actual caller.
+    // handlers/router.js is a real, in-repo call site. Requiring it as a module and invoking a function that logs proves captureComponent() walks past logger.js's own frames to the actual caller.
     const [e] = emitWithSetup('', `
         const { markHandlerProbe } = require(${JSON.stringify(path.join(__dirname, '..', 'scripts', 'fixtures', 'loggerComponentProbe.js'))});
         markHandlerProbe();
@@ -159,11 +142,7 @@ t('component resolves to the real repo caller, not utils/logger.js itself', () =
 });
 
 t('end-to-end: a real thrown error through handlers/router.js\'s ACTUAL handleInteraction lands with full attribution', () => {
-    // Not a mock of the attribution logic -- the real production handleInteraction, the real
-    // dispatch chain, a real thrown error caught by the real catch block. This is what "Probe it on
-    // the dev bot" / "a deliberate error to confirm attribution actually lands" (the stage's own
-    // testing requirement) reduces to when a live Discord gateway isn't available: exercise the exact
-    // code path with a crafted interaction, not a reimplementation of it.
+    // Not a mock of the attribution logic -- the real production handleInteraction, the real dispatch chain, a real thrown error caught by the real catch block. This is what "Probe it on the dev bot" / "a deliberate error to confirm attribution actually lands" (the stage's own testing requirement) reduces to when a live Discord gateway isn't available: exercise the exact code path with a crafted interaction, not a reimplementation of it.
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dioreo-log-'));
     const file = path.join(dir, 'app.log');
     const script = `

@@ -1,20 +1,14 @@
 // ==========================================
 // /manage — CALENDAR PAGE
 // ==========================================
-// Every DB-mutating operation the Calendar page reaches: single add/edit, bulk add/replace/delete,
-// banners, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of
-// docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from
-// handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue.
+// Every DB-mutating operation the Calendar page reaches: single add/edit, bulk add/replace/delete, banners, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and
-// .claude/rules/interaction-router.md.
+// ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 
 const { recordChange } = require('../../utils/changeStore');
 const { registerUndo, undoButtonRow, upsertEventsByTitle, loadOrCreateSeasonalDoc } = require('./shared');
 
-// --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add
-// A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as
-// the bulk parser's "All Season" handling.
+// --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
@@ -27,8 +21,7 @@ async function addCalendarEvent(interaction) {
     const endDate = isOngoing ? null : parseAdminDate(endDateStr);
     if (!isOngoing && !endDate) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
     const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
-    // Lenient Y/N parse (added for /draw calculator's 2X detection) -- blank or anything not
-    // starting with "y" is No, matching the modal's own "blank = No" placeholder.
+    // Lenient Y/N parse (added for /draw calculator's 2X detection) -- blank or anything not starting with "y" is No, matching the modal's own "blank = No" placeholder.
     const isDoubleCP = /^y/i.test(interaction.fields.getTextInputValue('double_cp')?.trim() || '');
 
     const seasonalDoc = await loadOrCreateSeasonalDoc();
@@ -37,8 +30,7 @@ async function addCalendarEvent(interaction) {
     await seasonalDoc.save();
     recordChange({ actorId: interaction.user.id, page: 'calendar', action: 'add', model: 'SeasonalData', target: title, summary: `Added calendar event "${title}"` });
 
-    // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own
-    // local time/format instead of a fixed string.
+    // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own local time/format instead of a fixed string.
     return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
 }
 
@@ -73,15 +65,9 @@ async function editCalendarEvent(interaction) {
     }
 }
 
-// --- BULK ADD/REPLACE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_{add|replace}
-// Replace upserts by fuzzy-matched title via upsertEventsByTitle (update in place if found, insert
-// if not) -- Purge already covers a full wipe, so Replace doesn't need to double as one.
+// --- BULK ADD/REPLACE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_{add|replace} Replace upserts by fuzzy-matched title via upsertEventsByTitle (update in place if found, insert if not) -- Purge already covers a full wipe, so Replace doesn't need to double as one.
 async function bulkAddOrReplaceCalendar(interaction) {
-    // Deferred first (fixed 2026-08-07 12:24 EDT) -- this branch does the fetch + parse + fuzzy-match
-    // (replace mode) + save() entirely, which can blow Discord's 3-second interaction-ack window with
-    // no deferReply. Once the window was blown, interaction.reply() below would fail on a dead token
-    // even though seasonalDoc.save() had already succeeded -- so the data WAS saved, just with no
-    // visible confirmation, which is the trap that made this look broken.
+    // Deferred first (fixed 2026-08-07 12:24 EDT) -- this branch does the fetch + parse + fuzzy-match (replace mode) + save() entirely, which can blow Discord's 3-second interaction-ack window with no deferReply. Once the window was blown, interaction.reply() below would fail on a dead token even though seasonalDoc.save() had already succeeded -- so the data WAS saved, just with no visible confirmation, which is the trap that made this look broken.
     await interaction.deferReply({ ephemeral: true });
     const { parseBulkEvents } = require('../../utils/adminParser');
     const customId = interaction.customId;
@@ -122,11 +108,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
     const summary = mode === 'add'
         ? `Added ${insertedCount} event(s) (now **${finalArray.length}** total).`
         : `Updated ${updatedCount}, added ${insertedCount} (now **${finalArray.length}** total).`;
-    // Per-category breakdown of THIS submission's own titles -- the classifier could be correct but
-    // a mis-typed source paste could still land titles in the wrong category with no way to catch it
-    // without opening /calendar and cross-checking by eye. Grouped from `newEventDocs` (not the full
-    // `finalArray`) so a Replace submission only reports what THIS paste actually classified. Capped
-    // so one giant bulk paste can't blow Discord's 2000-char content limit on the reply itself.
+    // Per-category breakdown of THIS submission's own titles -- the classifier could be correct but a mis-typed source paste could still land titles in the wrong category with no way to catch it without opening /calendar and cross-checking by eye. Grouped from `newEventDocs` (not the full `finalArray`) so a Replace submission only reports what THIS paste actually classified. Capped so one giant bulk paste can't blow Discord's 2000-char content limit on the reply itself.
     const CATEGORY_LABELS = { draw: 'Draws', event: 'Events', playlist: 'Playlists' };
     const byCategory = { draw: [], event: [], playlist: [] };
     for (const e of newEventDocs) (byCategory[e.category] || byCategory.event).push(e.title);
@@ -144,8 +126,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
     });
 }
 
-// --- BULK REMOVE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_remove
-// Dry-run only, same 2-step confirm every other bulk-delete route uses.
+// --- BULK REMOVE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_remove Dry-run only, same 2-step confirm every other bulk-delete route uses.
 async function bulkDeleteCalendar(interaction) {
     const { fuzzyMatch } = require('../../utils/search');
     const { randomUUID } = require('crypto');
@@ -205,11 +186,7 @@ async function bulkDeleteCalendar(interaction) {
     });
 }
 
-// --- PAGE BANNERS --- custom_id: modal_calendar_banners
-// 3 independently-clearable fields in one modal -- each is handled on its own: a filled field
-// re-hosts through calendarBannerCache (falls back to the raw URL on a Cloudinary hiccup, never
-// blocks the save); a blank field that previously had a value clears it (best-effort Cloudinary
-// delete + resets the DB field to ''); a blank field that was already empty is a no-op.
+// --- PAGE BANNERS --- custom_id: modal_calendar_banners 3 independently-clearable fields in one modal -- each is handled on its own: a filled field re-hosts through calendarBannerCache (falls back to the raw URL on a Cloudinary hiccup, never blocks the save); a blank field that previously had a value clears it (best-effort Cloudinary delete + resets the DB field to ''); a blank field that was already empty is a no-op.
 async function setBanners(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { cacheBannerImage, clearBannerImage } = require('../../utils/calendarBannerCache');
@@ -245,8 +222,7 @@ async function setBanners(interaction) {
     });
 }
 
-// --- PURGE (calendar) --- called from index.js's mng_purgeconfirm_ dispatch. Calendar has only one
-// scope ('all') -- there's no per-sub-category purge the way Draws has new/returning.
+// --- PURGE (calendar) --- called from index.js's mng_purgeconfirm_ dispatch. Calendar has only one scope ('all') -- there's no per-sub-category purge the way Draws has new/returning.
 async function purge(actorId) {
     const SeasonalData = require('../../models/SeasonalData');
     const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });

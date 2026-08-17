@@ -1,49 +1,15 @@
 // ==========================================
 // COMMAND: PLAYER GUIDE / HELP
 // ==========================================
-// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups
-// (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from
-// his direct review feedback. Landing page
-// is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat
-// command DIRECTORY grouped by category, then a category select menu. Picking a category (or using
-// the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/
-// Examples breakdown per command, options split under whichever command actually has them (never
-// merged across commands with different option sets -- `/gunsmiths search` and `/dmz` share one
-// options block since their shapes are identical (weapon/build/visibility); `/gunsmiths list` gets
-// its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight
-// per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-
-// consolidation-design.md.
+// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmiths search` and `/dmz` share one options block since their shapes are identical (weapon/build/visibility); `/gunsmiths list` gets its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command- consolidation-design.md.
 //
-// Categories: Gunsmiths (/gunsmiths search, /gunsmiths list, /dmz) / Draws / Seasonal
-// Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin
-// (whitelist-gated, hidden entirely from everyone else).
+// Categories: Gunsmiths (/gunsmiths search, /gunsmiths list, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
-// The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this
-// one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility:
-// True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option
-// itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded
-// ephemeral-only with no way to make it public, an inconsistency with every other command in the bot.
-// No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the
-// visibility option already covers that case up front.
+// The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility: True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded ephemeral-only with no way to make it public, an inconsistency with every other command in the bot. No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the visibility option already covers that case up front.
 //
-// MASCOT_URL is a permanent Cloudinary URL (`site_assets/dioreo-mascot-coral`, f_auto/q_auto
-// delivery defaults applied) -- re-hosted from Harkirat's original upload (which was a Discord CDN
-// attachment link with signed ex=/is=/hm= params that would have expired in roughly a day, same
-// issue this repo already hit and fixed for calendar banners -- see .claude/rules/design-
-// decisions.md's Cloudinary-rehost entry). Square 1:1 (already 2048x2048, full bleed, no transparent
-// padding to trim) and horizontally flipped per Harkirat's request before upload.
+// MASCOT_URL is a permanent Cloudinary URL (`site_assets/dioreo-mascot-coral`, f_auto/q_auto delivery defaults applied) -- re-hosted from Harkirat's original upload (which was a Discord CDN attachment link with signed ex=/is=/hm= params that would have expired in roughly a day, same issue this repo already hit and fixed for calendar banners -- see .claude/rules/design- decisions.md's Cloudinary-rehost entry). Square 1:1 (already 2048x2048, full bleed, no transparent padding to trim) and horizontally flipped per Harkirat's request before upload.
 //
-// Every emoji is one of the bot's own existing custom icons (emojiMap.js). Per the emoji-capture
-// rule (.claude/rules/rendering-and-ui.md), data below stores `emojiKey` STRINGS, never the emoji
-// mention string itself -- every lookup happens inside a render function, never at require()-time.
-// ✅ RESOLVED 2026-08-16 21:06 EDT -- this used to warn that `dioreoCombo`/`loadouts` had JUST been
-// uploaded to the PROD application and did not exist yet on the separate DEV application ("Dioreo
-// (Dev)"), so they rendered as literal text there. Harkirat has since uploaded copies: a dev-bot
-// boot now reports "54 re-pointed to this app, 0 dev-overridden, 0 unmatched", so every emoji this
-// panel uses resolves on both applications. Kept as history rather than deleted because the
-// underlying mechanism is still the thing to understand -- refreshEmojiIds() matches on NAME at
-// boot and is fail-soft, so a newly-added emoji that exists on only one of the two applications
-// will show this same symptom again, and "unmatched" in the boot log is where you would see it.
+// Every emoji is one of the bot's own existing custom icons (emojiMap.js). Per the emoji-capture rule (.claude/rules/rendering-and-ui.md), data below stores `emojiKey` STRINGS, never the emoji mention string itself -- every lookup happens inside a render function, never at require()-time. ✅ RESOLVED 2026-08-16 21:06 EDT -- this used to warn that `dioreoCombo`/`loadouts` had JUST been uploaded to the PROD application and did not exist yet on the separate DEV application ("Dioreo (Dev)"), so they rendered as literal text there. Harkirat has since uploaded copies: a dev-bot boot now reports "54 re-pointed to this app, 0 dev-overridden, 0 unmatched", so every emoji this panel uses resolves on both applications. Kept as history rather than deleted because the underlying mechanism is still the thing to understand -- refreshEmojiIds() matches on NAME at boot and is fail-soft, so a newly-added emoji that exists on only one of the two applications will show this same symptom again, and "unmatched" in the boot log is where you would see it.
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
@@ -54,13 +20,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
 const { fuzzyMatch } = require('../utils/search');
 
-// Extra keywords that should also resolve a `/help cmd:` query -- typed words that don't literally
-// match a command/category name but obviously mean it (added 2026-08-15 13:09 EDT, Harkirat's
-// request to expand every cmd: alias, /admin's "server"/"owner" specifically named). Checked only
-// AFTER every real command/category name fails to match, so a real name always wins over a loose
-// keyword -- see resolveCommandToCategory and suggestHelpCommandNames below, the two places this
-// is consulted. Not meant to be exhaustive linguistic coverage, just the words someone would
-// plausibly type looking for that command.
+// Extra keywords that should also resolve a `/help cmd:` query -- typed words that don't literally match a command/category name but obviously mean it (added 2026-08-15 13:09 EDT, Harkirat's request to expand every cmd: alias, /admin's "server"/"owner" specifically named). Checked only AFTER every real command/category name fails to match, so a real name always wins over a loose keyword -- see resolveCommandToCategory and suggestHelpCommandNames below, the two places this is consulted. Not meant to be exhaustive linguistic coverage, just the words someone would plausibly type looking for that command.
 const COMMAND_ALIASES = {
     '/admin': ['server', 'owner', 'serveradmin', 'permissions', 'visibility', 'moderation'],
     '/manage': ['database', 'data', 'db', 'admins', 'announcement', 'announcements'],
@@ -79,74 +39,38 @@ const COMMAND_ALIASES = {
     '/patch notes': ['patch', 'patchnotes', 'balance', 'changes', 'notes'],
     '/season end': ['seasonend', 'battlepass', 'bp', 'deadlines']
 };
-// Category-level aliases -- a word that should land on a whole category's page rather than a
-// single command's (e.g. "bot admin" -> the Bot Admin category itself, not any one of its commands).
+// Category-level aliases -- a word that should land on a whole category's page rather than a single command's (e.g. "bot admin" -> the Bot Admin category itself, not any one of its commands).
 const CATEGORY_ALIASES = {
     botadmin: ['botadmin', 'admin', 'adminpanel', 'bot admin'],
     preferences: ['pref']
 };
 
-// Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename:
-// "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick.
-// ⚠️ THIS BRIEFLY BECAME Signal Green #58D05A on 2026-08-16 20:38 EDT, to tie `/help` to the
-// dioreo.app `/commands` page's 121° accent, and Harkirat REVERSED IT at 21:54 EDT after seeing both
-// live: "scratch the green colour on /help, let's keep the coral colour for both /help and /invite."
-// So `/help` and `/invite` deliberately SHARE this coral -- they are the bot's two meta commands (the
-// ones about Dioreo itself rather than about CODM data), and the mascot they both display is coral.
-// Recorded because the green is written up in the [[project_website_commands_page]] memory and in
-// `local/commands-page-directions.html`, and a session finding that trail could reasonably conclude
-// the swap never happened or was left half-done. It happened, and it was undone on purpose.
+// Coral -- matches the DIOREO mascot artwork's own coral branding (mascot filename: "DIOREO-mascot2-coral.png"), replacing the earlier standalone Sunbeam Yellow pick. ⚠️ THIS BRIEFLY BECAME Signal Green #58D05A on 2026-08-16 20:38 EDT, to tie `/help` to the dioreo.app `/commands` page's 121° accent, and Harkirat REVERSED IT at 21:54 EDT after seeing both live: "scratch the green colour on /help, let's keep the coral colour for both /help and /invite." So `/help` and `/invite` deliberately SHARE this coral -- they are the bot's two meta commands (the ones about Dioreo itself rather than about CODM data), and the mascot they both display is coral. Recorded because the green is written up in the [[project_website_commands_page]] memory and in `local/commands-page-directions.html`, and a session finding that trail could reasonably conclude the swap never happened or was left half-done. It happened, and it was undone on purpose.
 const PRESET_ACCENT = 16743772; // #FF7D5C
 
 const HARKIRAT_ID = '1139845545754632283';
 const WEBSITE_URL = 'https://dioreo.app';
-// MOVED to utils/brandAssets.js on 2026-08-17 09:44 EDT -- it was a duplicate literal here and in
-// commands/invite.js, and the width transform added there (measured: 266,911 → 13,601 bytes, 95%
-// smaller) would otherwise have landed on one copy and not the other. The header note above still
-// describes the asset itself correctly; only its address changed.
+// MOVED to utils/brandAssets.js on 2026-08-17 09:44 EDT -- it was a duplicate literal here and in commands/invite.js, and the width transform added there (measured: 266,911 → 13,601 bytes, 95% smaller) would otherwise have landed on one copy and not the other. The header note above still describes the asset itself correctly; only its address changed.
 const { MASCOT_URL } = require('../utils/brandAssets');
 
-// Single source of truth for the visibility option's copy -- reused verbatim as the real
-// SlashCommandBuilder description AND every /help category's own [visibility] bullet, so the two
-// can never drift apart the way "hidden ephemeral message" vs "True/False" once did.
+// Single source of truth for the visibility option's copy -- reused verbatim as the real SlashCommandBuilder description AND every /help category's own [visibility] bullet, so the two can never drift apart the way "hidden ephemeral message" vs "True/False" once did.
 const VISIBILITY_DESCRIPTION = 'Show this response only to you, or publicly to everyone in the chat.';
 const VISIBILITY_BULLET = `-# 🔹 \`[visibility]\` ${VISIBILITY_DESCRIPTION}`;
 
-// A body may ask for a REAL divider by embedding this marker; buildContainer splits on it and
-// inserts a type-14 separator. Added 2026-08-10 19:28 EDT because Preferences documents two
-// unrelated commands (`/settings` and `/admin`) on one page and they ran together -- a markdown
-// rule inside a Text Display is not a divider, it is a row of dashes.
-// ⚠️ USE IT BETWEEN SUBJECTS, NOT BETWEEN COMMANDS. Harkirat, 19:31 EDT: "i dont want a divider on
-// EVERY command... i just want it between /settings and /server" -- then, on seeing it removed from
-// the shared-Options boundary too, 19:38 EDT: "revert back to how you implemented it, i kind of
-// liked your idea." So the live rule is the middle one: a divider separates two genuinely different
-// SUBJECTS (one command from another, the commands from the options that apply to all of them), and
-// never sits between a command and its own bullets. Once every section has one they stop marking
-// anything at all.
+// A body may ask for a REAL divider by embedding this marker; buildContainer splits on it and inserts a type-14 separator. Added 2026-08-10 19:28 EDT because Preferences documents two unrelated commands (`/settings` and `/admin`) on one page and they ran together -- a markdown rule inside a Text Display is not a divider, it is a row of dashes. ⚠️ USE IT BETWEEN SUBJECTS, NOT BETWEEN COMMANDS. Harkirat, 19:31 EDT: "i dont want a divider on EVERY command... i just want it between /settings and /server" -- then, on seeing it removed from the shared-Options boundary too, 19:38 EDT: "revert back to how you implemented it, i kind of liked your idea." So the live rule is the middle one: a divider separates two genuinely different SUBJECTS (one command from another, the commands from the options that apply to all of them), and never sits between a command and its own bullets. Once every section has one they stop marking anything at all.
 const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 
-// `staticCommands` is used for `/help cmd:` matching and autocomplete. `dropdownDescription`s are
-// written to be genuinely useful at a glance, not filler -- what you'll actually find in there.
-// ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately
-// excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated
-// on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather
-// than a security measure. Restricted entries are HIDDEN from everyone else, not absent.
-// Two INDEPENDENT permission levels, and they are not a hierarchy -- a server owner is not a bot
-// admin, and Harkirat is a bot admin in servers where he holds no Manage Server. So visibility is a
-// `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }`
-// object, rather than a single boolean that would silently conflate them.
+// `staticCommands` is used for `/help cmd:` matching and autocomplete. `dropdownDescription`s are written to be genuinely useful at a glance, not filler -- what you'll actually find in there. ⚠️ This USED to be the user-facing command list only, with manage/alerts/autobuild deliberately excluded. That changed 2026-08-10 18:57 EDT: they are listed now, in a Bot Admin category gated on the whitelist, because a command Harkirat cannot look up in his own help panel is a gap rather than a security measure. Restricted entries are HIDDEN from everyone else, not absent. Two INDEPENDENT permission levels, and they are not a hierarchy -- a server owner is not a bot admin, and Harkirat is a bot admin in servers where he holds no Manage Server. So visibility is a `requires` string naming which one a thing needs, checked against a `{ serverAdmin, botAdmin }` object, rather than a single boolean that would silently conflate them.
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
 //   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
-// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads
-// these same fields, so a new restricted command is one entry and cannot be half-added.
+// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added.
 const cmd = (name, { requires = null, suffix = null } = {}) => ({ name, requires, suffix });
 
 const permitted = (item, perms) => !item.requires || perms[item.requires] === true;
 const visibleCategories = perms => CATEGORY_DEFS.filter(c => permitted(c, perms));
 const visibleCommands = (category, perms) => category.staticCommands.filter(c => permitted(c, perms));
-// A category whose fields change with permissions. Falls back to the plain field, so a category
-// that has no admin variant needs no extra keys.
+// A category whose fields change with permissions. Falls back to the plain field, so a category that has no admin variant needs no extra keys.
 const categoryEmojiKey = (c, perms) => (perms.serverAdmin && c.emojiKeyServerAdmin) || c.emojiKey;
 const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescriptionServerAdmin) || c.dropdownDescription;
 
@@ -155,11 +79,7 @@ const CATEGORY_DEFS = [
     { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices'), cmd('/draw calculator')] },
     { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: [cmd('/calendar'), cmd('/patch notes'), cmd('/season end')] },
     { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: [cmd('/colors'), cmd('/timestamp')] },
-    // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It
-    // is still hidden from non-admins -- the gating is per-COMMAND now, not per-category -- but a
-    // whole section for one command made the directory look top-heavy for the two people in a
-    // server who can see it. The suffix is what tells an admin why it is sitting next to
-    // `/settings`, and the emoji and description swap so the category reads as covering both.
+    // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It is still hidden from non-admins -- the gating is per-COMMAND now, not per-category -- but a whole section for one command made the directory look top-heavy for the two people in a server who can see it. The suffix is what tells an admin why it is sitting next to `/settings`, and the emoji and description swap so the category reads as covering both.
     {
         key: 'preferences', label: 'Preferences',
         emojiKey: 'settings', emojiKeyServerAdmin: 'serverSettings',
@@ -167,23 +87,11 @@ const CATEGORY_DEFS = [
         dropdownDescriptionServerAdmin: 'Manage your personal & server admin settings',
         staticCommands: [cmd('/settings'), cmd('/admin', { requires: 'serverAdmin', suffix: '(server)' })],
     },
-    // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the
-    // bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that
-    // permission. `database` is the emoji because this is the data-entry surface -- the same family
-    // as the `mng*` icons `/manage`'s own panel uses.
+    // Whole-category gating, unlike `/admin` above: these are useless to anyone who is not on the bot's own admin whitelist, and unlike Manage Server there is no per-guild version of that permission. `database` is the emoji because this is the data-entry surface -- the same family as the `mng*` icons `/manage`'s own panel uses.
     {
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'database',
         dropdownDescription: "Dioreo's data management & ops commands",
-        // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed
-        // these one way in the directory and another in the body, which reads as the page having
-        // lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT.
-        // ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin
-        // granted only /bot analytics must not see /manage or /autobuild listed here even though the
-        // whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the
-        // SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's
-        // isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already
-        // uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a
-        // permission token -- see utils/adminAccess.js's header on why it can never have one).
+        // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
         staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
@@ -201,14 +109,11 @@ const DETAIL_HEADERS = {
 const USAGE_LEGEND = '-# **Usage: `/cmd <required> [optional]`**';
 
 async function resolveCommandToCategory(cmdName, perms = {}) {
-    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to
-    // nothing and lands on the directory rather than opening a page they were never offered.
+    // Scoped to what this caller may see, so `/help cmd:/manage` from a non-admin resolves to nothing and lands on the directory rather than opening a page they were never offered.
     for (const cat of visibleCategories(perms)) {
         if (visibleCommands(cat, perms).some(c => c.name === cmdName)) return cat.key;
     }
-    // Alias fallback -- only reached once no real command/category name matched, so "server" only
-    // ever means /admin when nothing is literally named "server". Scoped by the same `perms` as
-    // above, so an alias can never surface a page its own command wouldn't have.
+    // Alias fallback -- only reached once no real command/category name matched, so "server" only ever means /admin when nothing is literally named "server". Scoped by the same `perms` as above, so an alias can never surface a page its own command wouldn't have.
     const normalized = cmdName.toLowerCase().replace(/^\//, '').trim();
     for (const cat of visibleCategories(perms)) {
         for (const c of visibleCommands(cat, perms)) {
@@ -219,10 +124,7 @@ async function resolveCommandToCategory(cmdName, perms = {}) {
     return null;
 }
 
-// Every real command name a query could resolve to, INCLUDING a match via alias -- used by
-// /help's `cmd:` autocomplete so typing "server" suggests real entry "/admin" rather than nothing.
-// The suggested VALUE is always a real command name (never a bare alias word), so selecting it and
-// pressing enter always hits the direct-match branch above with no alias lookup needed at that point.
+// Every real command name a query could resolve to, INCLUDING a match via alias -- used by /help's `cmd:` autocomplete so typing "server" suggests real entry "/admin" rather than nothing. The suggested VALUE is always a real command name (never a bare alias word), so selecting it and pressing enter always hits the direct-match branch above with no alias lookup needed at that point.
 async function suggestHelpCommandNames(query, perms = {}) {
     const allNames = await getAllHelpCommandNames(perms);
     const direct = allNames.filter(name => fuzzyMatch(query, name));
@@ -238,18 +140,12 @@ async function suggestHelpCommandNames(query, perms = {}) {
     return [...new Set([...direct, ...aliasMatched])].slice(0, 25);
 }
 
-// Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the
-// live per-category Gunsmiths commands.
-// `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third
-// of the three places the Server Admin category has to be filtered -- suggesting `/admin` to
-// someone and then handing them the directory when they pick it is worse than never offering it.
+// Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the live per-category Gunsmiths commands. `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
     return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
 
-// `/gunsmiths search` and `/dmz` share one Options block -- their shapes are genuinely identical
-// (weapon/build/visibility). `/gunsmiths list` gets its own -- a `scope` choice replaces weapon+build,
-// so folding it into the shared block would describe an option neither /search nor /dmz has.
+// `/gunsmiths search` and `/dmz` share one Options block -- their shapes are genuinely identical (weapon/build/visibility). `/gunsmiths list` gets its own -- a `scope` choice replaces weapon+build, so folding it into the shared block would describe an option neither /search nor /dmz has.
 function buildGunsmithsBody(perms, client) {
     return `### ${mentionCommand(client, '/gunsmiths search')}\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n`
         + `### ${mentionCommand(client, '/gunsmiths list')}\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 \`<scope>\` Pick what to browse\n${VISIBILITY_BULLET}\n`
@@ -277,17 +173,7 @@ function buildUtilitiesBody(perms, client) {
         + `-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
-// Server admins get a second command appended rather than a page of their own. The `/admin` detail
-// is the one place carrying the full precedence order and the two Discord limits, because the panel
-// itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that
-// got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint
-// in practice ("why is a server adding 25 role overrides"), so they read as guidance about the
-// intended workflow -- set a default, hand-pick the exceptions -- not as a warning.
-// TWO commands on one page, so they get a real divider between them and the shared `[visibility]`
-// option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's
-// call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually
-// under each of them makes no sense"), and the same pass cut the /admin section roughly in half for
-// being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
+// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
 function buildPreferencesBody(perms = {}, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
 
@@ -317,18 +203,7 @@ function buildPreferencesBody(perms = {}, client) {
         + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
 }
 
-// Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared
-// global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to
-// the server they are run in, which is exactly why no per-guild permission could ever grant them.
-// That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the
-// section, it is not something you do.
-// ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render
-// all three commands' full detail unconditionally, so an admin granted only /bot analytics still
-// read the complete /manage and /autobuild writeups even though the directory/dropdown correctly
-// hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether
-// this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/
-// perms.manage) has to be checked again HERE, same as visibleCommands() already does for the
-// directory and dropdown.
+// Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown.
 function buildBotAdminBody(perms, client) {
     const sections = [];
     if (perms.bot) {
@@ -380,12 +255,7 @@ const BODY_BUILDERS = {
     botadmin: buildBotAdminBody
 };
 
-// `isAdmin` hides the Server Admin category from everyone who could not use `/admin` anyway.
-// Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown
-// here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the
-// visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than
-// as a deliberate exception. Nothing here is secret; the point is that a member who cannot open the
-// panel should not be shown a page about it.
+// `isAdmin` hides the Server Admin category from everyone who could not use `/admin` anyway. Harkirat's call, 2026-08-10 18:36 EDT. It is filtered in THREE places, not one -- the dropdown here, the landing directory, and the `cmd:` lookup in execute() -- because filtering only the visible menu leaves `/help cmd:server` working, which reads as the gate being broken rather than as a deliberate exception. Nothing here is secret; the point is that a member who cannot open the panel should not be shown a page about it.
 function buildCategorySelectRow(selectedKey, perms = {}) {
     const isLanding = !selectedKey;
     const options = [
@@ -404,10 +274,7 @@ function buildCategorySelectRow(selectedKey, perms = {}) {
 async function buildContainer(selectedKey, accentColor, perms = {}, client) {
     const components = [];
 
-    // Someone who reaches a restricted category (a stale dropdown on an older panel, or
-    // `/help cmd:manage`) is silently returned to the directory rather than refused -- there is
-    // nothing to protect here, and an error message about a page they cannot see is worse than
-    // simply not having the page.
+    // Someone who reaches a restricted category (a stale dropdown on an older panel, or `/help cmd:manage`) is silently returned to the directory rather than refused -- there is nothing to protect here, and an error message about a page they cannot see is worse than simply not having the page.
     const requested = selectedKey && CATEGORY_DEFS.find(c => c.key === selectedKey);
     if (requested && !permitted(requested, perms)) selectedKey = null;
 
@@ -420,10 +287,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             }],
             accessory: { type: 11, media: { url: MASCOT_URL } }
         });
-        // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant
-        // the DEV bot's own help panel offered an install link for the production application --
-        // silent, and wrong. utils/inviteLinks.js resolves the id off the live client instead; its
-        // `chooser` shape is byte-identical to the old literal, so this button is unchanged on prod.
+        // `INSTALL_URL` used to be a hardcoded const with the PROD client_id baked in, which meant the DEV bot's own help panel offered an install link for the production application -- silent, and wrong. utils/inviteLinks.js resolves the id off the live client instead; its `chooser` shape is byte-identical to the old literal, so this button is unchanged on prod.
         const { buildInviteUrls } = require('../utils/inviteLinks');
         components.push({
             type: 1,
@@ -435,19 +299,10 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
         components.push({ type: 14, spacing: 2, divider: true });
         components.push({
             type: 10,
-            // GENERATED FROM CATEGORY_DEFS, not hand-written -- this used to be five hardcoded
-            // lines, and adding the Server Admin category on 2026-08-10 walked straight into the
-            // trap: the entry appeared in the dropdown (which does map over CATEGORY_DEFS) and was
-            // missing from this list, because nothing ties the two together. Harkirat's call the
-            // same day, on being told about it: "that's a real gap that will create staleness and
-            // needs a proper solution." One source of truth is that solution -- a new category is
-            // now a single array entry and cannot be half-added. Byte-for-byte identical output to
-            // the hardcoded version, checked by diffing the rendered container before and after.
-            // scripts/guildPolicyEnforcement.test.js asserts every category reaches this list.
+            // GENERATED FROM CATEGORY_DEFS, not hand-written -- this used to be five hardcoded lines, and adding the Server Admin category on 2026-08-10 walked straight into the trap: the entry appeared in the dropdown (which does map over CATEGORY_DEFS) and was missing from this list, because nothing ties the two together. Harkirat's call the same day, on being told about it: "that's a real gap that will create staleness and needs a proper solution." One source of truth is that solution -- a new category is now a single array entry and cannot be half-added. Byte-for-byte identical output to the hardcoded version, checked by diffing the rendered container before and after. scripts/guildPolicyEnforcement.test.js asserts every category reaches this list.
             content: visibleCategories(perms)
                 .map(c => {
-                    // A command's `suffix` rides here too -- that is how `/admin` announces itself
-                    // as an admin command while sitting inside Preferences.
+                    // A command's `suffix` rides here too -- that is how `/admin` announces itself as an admin command while sitting inside Preferences.
                     const commands = visibleCommands(c, perms).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
                     return `### ${emojis[categoryEmojiKey(c, perms)]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
                 })
@@ -457,9 +312,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
                 + `-# Report bugs & suggestions to <@${HARKIRAT_ID}>.`
         });
         components.push({ type: 14, spacing: 2, divider: true });
-        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it
-        // ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it
-        // right below would just be the same instruction twice in one panel.
+        // Deliberately NOT re-mentioning `/help cmd:` here -- the directory above already covers it ("Learn more about a command: /help <command>... Or use the Dropdown below!"); repeating it right below would just be the same instruction twice in one panel.
         components.push({ type: 10, content: `-# Select a category from the dropdown below` });
         components.push(buildCategorySelectRow(null, perms));
         components.push({ type: 14, spacing: 1, divider: true });
@@ -474,18 +327,11 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             components.push({ type: 10, content: chunk });
         });
         components.push({ type: 14, spacing: 2, divider: true });
-        // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing
-        // page above), so it's worth surfacing here -- reworded from the landing hint rather than
-        // reused verbatim, since the two pages need different things said.
+        // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing page above), so it's worth surfacing here -- reworded from the landing hint rather than reused verbatim, since the two pages need different things said.
         components.push({ type: 10, content: `-# To see other commands, use the dropdown below or **\`/help <cmd>\`**` });
         components.push(buildCategorySelectRow(selectedKey, perms));
 
-        // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump
-        // straight to one of /manage's rich guide topics from THIS page, without having to open
-        // /manage first. Only offered when perms.manage is true (Announcement's own guide is
-        // manage-gated, same as every other /manage guide topic) -- gating this on perms.botAdmin
-        // instead would offer it to an admin granted only /bot analytics, who cannot open /manage at
-        // all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
+        // Bulk Format Guide dropdown (item 10, added 2026-08-15 13:11 EDT) -- lets an admin jump straight to one of /manage's rich guide topics from THIS page, without having to open /manage first. Only offered when perms.manage is true (Announcement's own guide is manage-gated, same as every other /manage guide topic) -- gating this on perms.botAdmin instead would offer it to an admin granted only /bot analytics, who cannot open /manage at all. handlers/help.js's `help_guide_pick` branch opens the real guide container.
         if (selectedKey === 'botadmin' && perms.manage) {
             const { topicDefs } = require('../utils/manageGuides');
             components.push({ type: 14, spacing: 1, divider: true });
@@ -520,21 +366,12 @@ module.exports = {
     resolveCommandToCategory,
     suggestHelpCommandNames,
 
-    // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic
-    // interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`.
-    // 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically
-    // to null/no-selection, so it's normalized here rather than threading a 6th special case through
-    // buildContainer.
+    // `categoryOverride` (passed by handlers/help.js's `help_category` select-menu handler via a synthetic interaction) skips re-resolving the `cmd` option -- same shape as calendar.js's `pageOverride`. 'landing' is a real dropdown VALUE (the "Commands List" reset option) but behaves identically to null/no-selection, so it's normalized here rather than threading a 6th special case through buildContainer.
     async execute(interaction, categoryOverride = null) {
-        // The two permission levels, resolved once and threaded everywhere. Both are free: server
-        // admin comes off the interaction's own computed permissions (no REST call, no privileged
-        // intent, false outside a guild), and bot admin is an id comparison.
+        // The two permission levels, resolved once and threaded everywhere. Both are free: server admin comes off the interaction's own computed permissions (no REST call, no privileged intent, false outside a guild), and bot admin is an id comparison.
         const { isServerAdmin } = require('../utils/guildPolicy');
         const { isAdmin, hasCommandAccess, isOwner } = require('../utils/adminAccess');
-        // Per-command keys (2026-08-13) alongside the coarse `botAdmin` (any access, gates the
-        // whole category) -- an admin granted only /bot analytics must not see /manage or
-        // /autobuild listed under it, even though the section itself is visible to them.
-        // `botAccess` is isOwner(), never a permission token -- /bot access can't be granted.
+        // Per-command keys (2026-08-13) alongside the coarse `botAdmin` (any access, gates the whole category) -- an admin granted only /bot analytics must not see /manage or /autobuild listed under it, even though the section itself is visible to them. `botAccess` is isOwner(), never a permission token -- /bot access can't be granted.
         const perms = {
             serverAdmin: isServerAdmin(interaction),
             botAdmin: await isAdmin(interaction.user.id),
@@ -551,8 +388,7 @@ module.exports = {
         }
         if (selectedKey === 'landing') selectedKey = null;
 
-        // Unlike every other command, /help has no saved preference to fall back to -- defaults to
-        // hidden (matches /manage's/`/alerts`' own-panel convention) unless explicitly made public.
+        // Unlike every other command, /help has no saved preference to fall back to -- defaults to hidden (matches /manage's/`/alerts`' own-panel convention) unless explicitly made public.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
@@ -560,8 +396,7 @@ module.exports = {
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        // No "Show Everyone" button -- the visibility option above already covers that case up
-        // front, and repeating it here would be redundant (Harkirat's direct request).
+        // No "Show Everyone" button -- the visibility option above already covers that case up front, and repeating it here would be redundant (Harkirat's direct request).
         const components = [await buildContainer(selectedKey, accentColor, perms, interaction.client)];
         return await sendV2Payload(interaction, components);
     }

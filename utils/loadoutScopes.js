@@ -1,5 +1,4 @@
-// Scope descriptor: {mode:'MP'|'DMZ', category:string|null, metaOnly:boolean}.
-// Token form `<mode>.<category|*>.<meta|std>` is what travels in a gsb~ custom_id.
+// Scope descriptor: {mode:'MP'|'DMZ', category:string|null, metaOnly:boolean}. Token form `<mode>.<category|*>.<meta|std>` is what travels in a gsb~ custom_id.
 const Loadout = require('../models/Loadout');
 
 function formatScopeToken({ mode, category, metaOnly }) {
@@ -10,8 +9,7 @@ function parseScopeToken(token) {
     return { mode, category: category === '*' ? null : category, metaOnly: kind === 'meta' };
 }
 
-// Deterministic ordering is REQUIRED: nothing is stored server-side, so every click re-derives
-// this list and must get the same order or the flat index points somewhere else.
+// Deterministic ordering is REQUIRED: nothing is stored server-side, so every click re-derives this list and must get the same order or the flat index points somewhere else.
 async function resolveScopeBuilds({ mode, category, metaOnly }) {
     const filter = { mode };
     if (category) filter.category = category;
@@ -21,11 +19,7 @@ async function resolveScopeBuilds({ mode, category, metaOnly }) {
         a.category.localeCompare(b.category) ||
         a.weaponName.localeCompare(b.weaponName) ||
         String(a.buildName).localeCompare(String(b.buildName)) ||
-        // FINAL TIE-BREAK, and it is load-bearing: `buildName` defaults to 'Standard Build' for
-        // every row that does not set one, so all three keys can tie. Without this the order falls
-        // back to whatever Mongo returned, which is not stable across two queries -- and since every
-        // click re-derives this list, an unstable tie silently moves the flat index onto a different
-        // build. That is the exact drift this design claims to bound.
+        // FINAL TIE-BREAK, and it is load-bearing: `buildName` defaults to 'Standard Build' for every row that does not set one, so all three keys can tie. Without this the order falls back to whatever Mongo returned, which is not stable across two queries -- and since every click re-derives this list, an unstable tie silently moves the flat index onto a different build. That is the exact drift this design claims to bound.
         String(a._id).localeCompare(String(b._id)));
 }
 
@@ -34,10 +28,7 @@ function flatIndexToPosition(builds, flatIndex) {
     const i = Math.min(Math.max(Number(flatIndex) || 0, 0), builds.length - 1);
     const weaponKey = builds[i].weaponKey;
     const weaponBuilds = builds.filter(b => b.weaponKey === weaponKey);
-    // IDENTITY comparison, not _id: weaponBuilds is filtered FROM this same array, so the object
-    // reference is exact. An _id comparison looks more careful and is actually WRONG -- two builds
-    // whose _id is undefined (any fixture, any projection that omits it) both stringify to
-    // "undefined" and collapse onto index 0. Found while re-reading this plan, 2026-08-15 20:55 EDT.
+    // IDENTITY comparison, not _id: weaponBuilds is filtered FROM this same array, so the object reference is exact. An _id comparison looks more careful and is actually WRONG -- two builds whose _id is undefined (any fixture, any projection that omits it) both stringify to "undefined" and collapse onto index 0. Found while re-reading this plan, 2026-08-15 20:55 EDT.
     const indexWithinWeapon = Math.max(0, weaponBuilds.indexOf(builds[i]));
     return { weaponKey, weaponBuilds, indexWithinWeapon };
 }

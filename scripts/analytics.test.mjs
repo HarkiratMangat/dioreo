@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 /**
- * analytics.test.mjs — coverage for the PURE half of scripts/analytics.mjs (observability layer
- * stage 4). The Mongo-connecting reports (runSummary/runFailedSearches) are exercised by the live
- * dev-bot boot test instead, per the same split every other script's test file in this repo uses.
+ * analytics.test.mjs — coverage for the PURE half of scripts/analytics.mjs (observability layer stage 4). The Mongo-connecting reports (runSummary/runFailedSearches) are exercised by the live dev-bot boot test instead, per the same split every other script's test file in this repo uses.
  *
  * Run: node scripts/analytics.test.mjs (also via npm test)
  */

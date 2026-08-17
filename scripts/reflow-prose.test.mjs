@@ -2,12 +2,7 @@
 /**
  * reflow-prose.test.mjs — self-test for scripts/reflow-prose.mjs.
  *
- * The point of most of these cases is NOT that reflow works — it is that the
- * VERIFIER can fail. A conservation check that cannot reject anything is worse
- * than no check, because it manufactures confidence (the repo has been bitten by
- * exactly that: six hook self-tests that nothing invoked, and a `find -newermt`
- * gate that had never once worked). So the suite feeds `verify()` known-corrupt
- * output and asserts it says so.
+ * The point of most of these cases is NOT that reflow works — it is that the VERIFIER can fail. A conservation check that cannot reject anything is worse than no check, because it manufactures confidence (the repo has been bitten by exactly that: six hook self-tests that nothing invoked, and a `find -newermt` gate that had never once worked). So the suite feeds `verify()` known-corrupt output and asserts it says so.
  *
  * Run: npm run test:reflow  (wired into npm test)
  */
@@ -48,8 +43,7 @@ t("verifier rejects a heading dissolved into prose", () => {
 });
 
 t("verifier rejects a lost quote paragraph break", () => {
-  // This is the exact corruption `dior text unwrap` caused in docs/legal/TERMS.md:
-  // the bare `>` separating two quoted paragraphs was swallowed, merging them.
+  // This is the exact corruption `dior text unwrap` caused in docs/legal/TERMS.md: the bare `>` separating two quoted paragraphs was swallowed, merging them.
   const before = "> first para\n>\n> second para";
   const after = "> first para second para";
   const p = verify(before, after);
@@ -66,10 +60,7 @@ t("verifier rejects mutated fenced-code contents", () => {
 });
 
 t("the RENDER oracle catches what the structural checks cannot", () => {
-  // An indented code block absorbed into a paragraph: same tokens, same heading /
-  // table / list / quote-break counts, and no fenced block involved — so every
-  // hand-written invariant passes. Only the CommonMark render differs. This is
-  // the case that justifies carrying the markdown-it dependency at all.
+  // An indented code block absorbed into a paragraph: same tokens, same heading / table / list / quote-break counts, and no fenced block involved — so every hand-written invariant passes. Only the CommonMark render differs. This is the case that justifies carrying the markdown-it dependency at all.
   const before = "intro\n\n    code()\n";
   const after = "intro code()\n";
   const p = verify(before, after);
@@ -101,9 +92,7 @@ t("joins a list item's continuation but not the next item", () => {
 });
 
 t("does NOT absorb an unindented line into a list item", () => {
-  // CommonMark lazy continuation: renders inside the item either way, so joining
-  // changes nothing today but destroys the author's block boundary forever.
-  // Real case: CLAUDE.md's "Full setup, the emoji/DB cloning, and the caveats:".
+  // CommonMark lazy continuation: renders inside the item either way, so joining changes nothing today but destroys the author's block boundary forever. Real case: CLAUDE.md's "Full setup, the emoji/DB cloning, and the caveats:".
   const src = "- item text\n  indented continuation\nStandalone sentence here.";
   assert.strictEqual(clean(src), "- item text indented continuation\nStandalone sentence here.");
 });
@@ -114,9 +103,7 @@ t("still joins an unindented continuation of a PLAIN paragraph", () => {
 });
 
 t("keeps a legal-doc metadata block one field per line", () => {
-  // The real regression: buildLegalPages.js reads this block ONE LINE PER FIELD,
-  // so joining it folded Version and "Applies to" into the rendered Effective
-  // value on the live site. CommonMark considers both forms identical.
+  // The real regression: buildLegalPages.js reads this block ONE LINE PER FIELD, so joining it folded Version and "Applies to" into the rendered Effective value on the live site. CommonMark considers both forms identical.
   const src = "**Effective date:** 4 August 2026\n**Version:** 1.5\n**Applies to:** the Bot";
   assert.strictEqual(clean(src), src);
 });
@@ -161,16 +148,13 @@ t("leaves headings standing alone", () => {
 });
 
 t("keeps an HTML comment on its own physical line", () => {
-  // Required by the notes file's own convention — a record comment must stay one
-  // physical line and must never be folded into the bullet above it.
+  // Required by the notes file's own convention — a record comment must stay one physical line and must never be folded into the bullet above it.
   const src = "- an item\n<!-- ANSWERED 2026-08-08 11:00 EDT (Claude): a note. -->\n- next";
   assert.strictEqual(clean(src), src);
 });
 
 t("does NOT tear a paragraph on a wrapped <placeholder>", () => {
-  // Real lines from docs/db-deferred-list.md (cited by content — they carried line
-  // numbers until 2026-08-14 10:12 EDT, by which point both had rotted) — prose that merely
-  // wraps onto an angle bracket. A blanket /^\s*</ rule emitted these standalone.
+  // Real lines from docs/db-deferred-list.md (cited by content — they carried line numbers until 2026-08-14 10:12 EDT, by which point both had rotted) — prose that merely wraps onto an angle bracket. A blanket /^\s*</ rule emitted these standalone.
   const a = clean("run the command (`git show\n<sha>:package.json` matched the tag name)");
   assert.strictEqual(a, "run the command (`git show <sha>:package.json` matched the tag name)");
   const b = clean("use `dior text unwrap\n<file> [--out <dir>]` to rejoin");
@@ -178,8 +162,7 @@ t("does NOT tear a paragraph on a wrapped <placeholder>", () => {
 });
 
 t("DOES protect a genuine HTML block mid-paragraph", () => {
-  // docs/archive/resolved-list.md:95 — a real <details> block with no blank line
-  // before it, so "not mid-paragraph" would have missed it.
+  // docs/archive/resolved-list.md:95 — a real <details> block with no blank line before it, so "not mid-paragraph" would have missed it.
   const src = "never clarified, so ask.\n<details><summary>original item</summary>";
   assert.strictEqual(clean(src), src);
 });

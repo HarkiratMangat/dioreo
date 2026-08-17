@@ -1,46 +1,22 @@
 #!/usr/bin/env node
 /**
- * reflow-prose.mjs — convert hard-wrapped Markdown prose to soft-wrapped
- * (one logical line per paragraph / list item / quoted paragraph).
+ * reflow-prose.mjs — convert hard-wrapped Markdown prose to soft-wrapped (one logical line per paragraph / list item / quoted paragraph).
  *
  * WHY THIS EXISTS, AND WHY IT IS NOT `dior text unwrap`
  * -----------------------------------------------------
- * The policy decision (2026-08-08 11:00 EDT, Harkirat) is that prose in this repo is
- * soft-wrapped: a paragraph is ONE physical line, and the editor wraps it for
- * display. The reason is searchability — measured at the time of the decision,
- * 13,582 of 21,020 prose lines (64.6%) continued a sentence onto the next line,
- * so a majority of multi-word phrases physically did not exist on any single
- * line and `rg` could not match them.
+ * The policy decision (2026-08-08 11:00 EDT, Harkirat) is that prose in this repo is soft-wrapped: a paragraph is ONE physical line, and the editor wraps it for display. The reason is searchability — measured at the time of the decision, 13,582 of 21,020 prose lines (64.6%) continued a sentence onto the next line, so a majority of multi-word phrases physically did not exist on any single line and `rg` could not match them.
  *
- * `~/.config/dior/scripts/unwrap-hard-breaks.js` (`dior text unwrap`) does the
- * same job for one-off pasted text, and its paragraph/list/fence handling is
- * sound. It is NOT used for this repo's migration because its blockquote
- * handling loses structure: `flushQuote()` emits `"> " + parts.join(" ")`, so an
- * N-line quote collapses to a single `>` marker. That destroys a bare `>` line,
- * which is a paragraph BREAK inside a quote. Measured on this repo before
- * writing this file: it merged two separate quoted paragraphs in
- * docs/legal/TERMS.md into one, and dropped 15 `>` markers there, 24 in
- * docs/README.md, 3 in CLAUDE.md. Nested quotes and headings inside a quote have
- * the same problem.
+ * `~/.config/dior/scripts/unwrap-hard-breaks.js` (`dior text unwrap`) does the same job for one-off pasted text, and its paragraph/list/fence handling is sound. It is NOT used for this repo's migration because its blockquote handling loses structure: `flushQuote()` emits `"> " + parts.join(" ")`, so an N-line quote collapses to a single `>` marker. That destroys a bare `>` line, which is a paragraph BREAK inside a quote. Measured on this repo before writing this file: it merged two separate quoted paragraphs in docs/legal/TERMS.md into one, and dropped 15 `>` markers there, 24 in docs/README.md, 3 in CLAUDE.md. Nested quotes and headings inside a quote have the same problem.
  *
- * This version handles a blockquote by stripping the marker, reflowing the inner
- * content THROUGH THE SAME FUNCTION, then restoring the marker per output line.
- * Nesting, headings, lists and blank separators inside quotes all then work by
- * construction rather than by a special case.
+ * This version handles a blockquote by stripping the marker, reflowing the inner content THROUGH THE SAME FUNCTION, then restoring the marker per output line. Nesting, headings, lists and blank separators inside quotes all then work by construction rather than by a special case.
  *
  * THE INVARIANT — this is the part that makes the migration trustworthy
  * ---------------------------------------------------------------------
- * Reflowing may only ever DELETE newlines and leading indentation. It must never
- * add, drop, or reorder a single non-whitespace character. So:
+ * Reflowing may only ever DELETE newlines and leading indentation. It must never add, drop, or reorder a single non-whitespace character. So:
  *
  *     tokens(before) === tokens(after)      where tokens = text.split(/\s+/)
  *
- * must hold exactly, for every file. `--check` asserts it and exits non-zero on
- * violation. This is a real check, not a vacuous one: running it against the
- * older tool FAILS on the files listed above, which is how those bugs were found.
- * Structural counts (headings, table rows, fenced blocks, HTML-comment lines) are
- * asserted separately, because a token stream alone cannot prove a heading did
- * not dissolve into a paragraph.
+ * must hold exactly, for every file. `--check` asserts it and exits non-zero on violation. This is a real check, not a vacuous one: running it against the older tool FAILS on the files listed above, which is how those bugs were found. Structural counts (headings, table rows, fenced blocks, HTML-comment lines) are asserted separately, because a token stream alone cannot prove a heading did not dissolve into a paragraph.
  *
  * Usage:
  *   node scripts/reflow-prose.mjs --check <file>...   verify only, write nothing
@@ -52,21 +28,11 @@ import { pathToFileURL } from "node:url";
 // Constant command, no interpolation — nothing user-supplied reaches the shell.
 import { execSync } from "node:child_process";
 
-// An INDEPENDENT oracle. The hand-written invariants below are written against
-// the same assumptions as the reflow code itself, so on their own they amount to
-// grading my own homework. A real CommonMark implementation does not share those
-// assumptions: if the rendered HTML is unchanged, the reflow is semantically null
-// by definition, including for edge cases nobody thought to enumerate.
+// An INDEPENDENT oracle. The hand-written invariants below are written against the same assumptions as the reflow code itself, so on their own they amount to grading my own homework. A real CommonMark implementation does not share those assumptions: if the rendered HTML is unchanged, the reflow is semantically null by definition, including for edge cases nobody thought to enumerate.
 //
-// It is not sufficient on its own either — see isFieldLine: CommonMark called the
-// legal metadata block identical while the site generator, which reads it one line
-// per field, did not. Independent oracle AND structural invariants AND a real
-// build; each covers what the others miss.
+// It is not sufficient on its own either — see isFieldLine: CommonMark called the legal metadata block identical while the site generator, which reads it one line per field, did not. Independent oracle AND structural invariants AND a real build; each covers what the others miss.
 //
-// devDependency, so a production `npm install --omit=dev` drops it. If it is
-// missing the check SKIPS LOUDLY rather than passing quietly — a verification
-// that silently downgrades to nothing is the failure mode this whole file exists
-// to avoid.
+// devDependency, so a production `npm install --omit=dev` drops it. If it is missing the check SKIPS LOUDLY rather than passing quietly — a verification that silently downgrades to nothing is the failure mode this whole file exists to avoid.
 let md = null;
 let mdError = null;
 try {
@@ -83,27 +49,14 @@ const isHeading = (l) => /^\s{0,3}#{1,6}(\s|$)/.test(l);
 const isHR = (l) => /^\s{0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/.test(l);
 const isTableRow = (l) =>
   /^\s*\|.*\|\s*$/.test(l) || /^\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+$/.test(l);
-// Raw-HTML lines must not be folded into prose. Deciding what counts is subtler
-// than "starts with `<`", which is what the older tool used and what the first
-// version of this file used — measured against the real docs, that rule tore
-// ordinary sentences apart:
+// Raw-HTML lines must not be folded into prose. Deciding what counts is subtler than "starts with `<`", which is what the older tool used and what the first version of this file used — measured against the real docs, that rule tore ordinary sentences apart:
 //   docs/db-deferred-list.md  "…(`git show\n  <sha>:package.json` matched…"
 //   docs/db-deferred-list.md  "…`dior text unwrap\n  <file> [--out <dir>]…"
-// (Cited by CONTENT, not by line. These carried `:203` and `:731` until 2026-08-14
-// 10:12 EDT, by which point both pointed at unrelated items — one at a live-test
-// entry, the other at a blank line — because the list is edited constantly. A line
-// number in a comment is a copy of state that nothing updates; the quoted text is
-// the durable reference and is what a reader would search for anyway.)
-// Both are paragraph continuations that merely happen to wrap onto a `<`, and
-// both would have been ripped out of their paragraph and emitted standalone.
+// (Cited by CONTENT, not by line. These carried `:203` and `:731` until 2026-08-14 10:12 EDT, by which point both pointed at unrelated items — one at a live-test entry, the other at a blank line — because the list is edited constantly. A line number in a comment is a copy of state that nothing updates; the quoted text is the durable reference and is what a reader would search for anyway.) Both are paragraph continuations that merely happen to wrap onto a `<`, and both would have been ripped out of their paragraph and emitted standalone.
 //
-// "Not mid-paragraph" does not work either, in both directions: a genuine
-// `<details>` block sits mid-paragraph at docs/archive/resolved-list.md:95,
-// while the notes file's `<!-- ANSWERED … -->` records sit INSIDE list items by
-// convention and must stay on their own physical line.
+// "Not mid-paragraph" does not work either, in both directions: a genuine `<details>` block sits mid-paragraph at docs/archive/resolved-list.md:95, while the notes file's `<!-- ANSWERED … -->` records sit INSIDE list items by convention and must stay on their own physical line.
 //
-// So: comments are always block-level, and any other angle-bracket line counts
-// only when the tag is an actual HTML element. `sha`, `file` and `dir` are not.
+// So: comments are always block-level, and any other angle-bracket line counts only when the tag is an actual HTML element. `sha`, `file` and `dir` are not.
 const HTML_TAGS = new Set([
   "a", "abbr", "b", "blockquote", "br", "code", "dd", "details", "div", "dl",
   "dt", "em", "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "hr",
@@ -118,30 +71,18 @@ function isHtml(l) {
 }
 const listMarker = (l) => l.match(/^(\s*)([-*+]|\d{1,9}[.)])(\s+)/);
 
-// A line OPENING with `**Label:**` is a field, and always starts a new logical
-// line — it is never absorbed as a continuation of the line above.
+// A line OPENING with `**Label:**` is a field, and always starts a new logical line — it is never absorbed as a continuation of the line above.
 //
-// This is not cosmetic. docs/legal/TERMS.md and PRIVACY.md open with a metadata
-// block of consecutive field lines:
+// This is not cosmetic. docs/legal/TERMS.md and PRIVACY.md open with a metadata block of consecutive field lines:
 //     **Effective date:** 4 August 2026
 //     **Version:** 1.5
 //     **Applies to:** …
-// and scripts/buildLegalPages.js reads that block ONE LINE PER FIELD. Joining
-// them folded Version and "Applies to" inside the rendered "Effective" value on
-// the live site. CommonMark calls the two forms identical — it is one paragraph
-// either way — so the render-equivalence oracle passed it, and the token and
-// structural invariants did too. It was caught only by rebuilding the site and
-// diffing public/. That is the standing lesson here: semantic equivalence under
-// a general parser does not cover a consumer that reads LINE STRUCTURE.
+// and scripts/buildLegalPages.js reads that block ONE LINE PER FIELD. Joining them folded Version and "Applies to" inside the rendered "Effective" value on the live site. CommonMark calls the two forms identical — it is one paragraph either way — so the render-equivalence oracle passed it, and the token and structural invariants did too. It was caught only by rebuilding the site and diffing public/. That is the standing lesson here: semantic equivalence under a general parser does not cover a consumer that reads LINE STRUCTURE.
 //
-// Paragraphs that merely begin with bold text are unaffected: their
-// continuations do not themselves start with `**Label:**`, so they still join.
+// Paragraphs that merely begin with bold text are unaffected: their continuations do not themselves start with `**Label:**`, so they still join.
 const isFieldLine = (l) => /^\s*\*\*[^*\n]+:\*\*/.test(l);
 
-// A genuine Markdown hard break: two+ trailing spaces, or an odd run of
-// trailing backslashes. Joining across one would change rendering, so it ends
-// the logical line. The older tool detected these and then trimmed the trailing
-// spaces off anyway, silently degrading the break — here the marker is re-emitted.
+// A genuine Markdown hard break: two+ trailing spaces, or an odd run of trailing backslashes. Joining across one would change rendering, so it ends the logical line. The older tool detected these and then trimmed the trailing spaces off anyway, silently degrading the break — here the marker is re-emitted.
 function hardBreak(raw) {
   if (/ {2,}$/.test(raw)) return "  ";
   const t = raw.replace(/[ \t]+$/, "");
@@ -194,8 +135,7 @@ export function reflow(text) {
       continue;
     }
 
-    // ── blockquote: strip marker, reflow the inside recursively, restore marker.
-    // This is the case the older tool got wrong.
+    // ── blockquote: strip marker, reflow the inside recursively, restore marker. This is the case the older tool got wrong.
     const bq = raw.match(/^(\s*>[ \t]?)/);
     if (bq) {
       flush();
@@ -208,8 +148,7 @@ export function reflow(text) {
       }
       i--;
       for (const l of reflow(body.join("\n")).split("\n")) {
-        // A blank line inside a quote is a bare `>` — the paragraph separator
-        // whose loss merged two distinct quoted paragraphs in TERMS.md.
+        // A blank line inside a quote is a bare `>` — the paragraph separator whose loss merged two distinct quoted paragraphs in TERMS.md.
         out.push(l.trim() === "" ? marker.trimEnd() : marker + l);
       }
       continue;
@@ -253,9 +192,7 @@ export function reflow(text) {
       continue;
     }
 
-    // ── a field line always opens a new logical line, never a continuation.
-    // It still absorbs its OWN wrapped tail: TERMS.md's `**Applies to:**` value
-    // runs onto a second line, and that second line is not itself a field.
+    // ── a field line always opens a new logical line, never a continuation. It still absorbs its OWN wrapped tail: TERMS.md's `**Applies to:**` value runs onto a second line, and that second line is not itself a field.
     if (isFieldLine(raw)) {
       flush();
       para = { prefix: raw.match(/^[ \t]*/)[0], parts: [raw.trim()] };
@@ -269,20 +206,9 @@ export function reflow(text) {
 
     // ── continuation of the current paragraph or list item
     //
-    // A list item only absorbs a continuation that is INDENTED (>= 2). An
-    // unindented line after a list item is a CommonMark "lazy continuation" —
-    // it renders inside the item either way, so joining it changes nothing
-    // today, but it destroys the author's block boundary permanently and
-    // cannot be recovered by inspection afterwards. CLAUDE.md has real cases
-    // ("Full setup, the emoji/DB cloning, and the caveats: …" under the dev-bot
-    // bullet) where the line is plainly meant to stand on its own and is merely
-    // missing a blank line. Across a 44-file mechanical migration the
-    // conservative branch is the correct one: under-joining is visible and
-    // fixable, over-joining is silent and permanent.
+    // A list item only absorbs a continuation that is INDENTED (>= 2). An unindented line after a list item is a CommonMark "lazy continuation" — it renders inside the item either way, so joining it changes nothing today, but it destroys the author's block boundary permanently and cannot be recovered by inspection afterwards. CLAUDE.md has real cases ("Full setup, the emoji/DB cloning, and the caveats: …" under the dev-bot bullet) where the line is plainly meant to stand on its own and is merely missing a blank line. Across a 44-file mechanical migration the conservative branch is the correct one: under-joining is visible and fixable, over-joining is silent and permanent.
     //
-    // Plain paragraphs are NOT subject to this — an unindented continuation is
-    // exactly what ordinary hard-wrapped prose looks like, and joining it is
-    // the whole point of the migration.
+    // Plain paragraphs are NOT subject to this — an unindented continuation is exactly what ordinary hard-wrapped prose looks like, and joining it is the whole point of the migration.
     if (para) {
       if (para.isList && indent < 2) {
         flush();
@@ -311,11 +237,7 @@ export function reflow(text) {
 
 /* ───────────────────────────── the verifier ─────────────────────────────── */
 
-// Blockquote markers are STRUCTURE, not content: joining four quoted lines into
-// one legitimately turns four `>` into one, so counting them as content tokens
-// makes the invariant reject correct output. They are stripped here and asserted
-// separately below. (Found by this check failing on its own tool's correct
-// output — the first version tokenized them and flagged every quote.)
+// Blockquote markers are STRUCTURE, not content: joining four quoted lines into one legitimately turns four `>` into one, so counting them as content tokens makes the invariant reject correct output. They are stripped here and asserted separately below. (Found by this check failing on its own tool's correct output — the first version tokenized them and flagged every quote.)
 const tokens = (s) =>
   s
     .split("\n")
@@ -326,13 +248,10 @@ const tokens = (s) =>
 
 const countOf = (s, pred) => s.split("\n").filter(pred).length;
 
-// A bare `>` is a paragraph BREAK inside a quote. Losing one merges two distinct
-// quoted paragraphs — the exact corruption the older tool caused in
-// docs/legal/TERMS.md — so its count is an invariant in its own right.
+// A bare `>` is a paragraph BREAK inside a quote. Losing one merges two distinct quoted paragraphs — the exact corruption the older tool caused in docs/legal/TERMS.md — so its count is an invariant in its own right.
 const isQuoteBreak = (l) => /^\s*>[ \t]*$/.test(l);
 
-// Fenced-block contents must survive byte-identically, so they are compared as
-// whole strings rather than counted.
+// Fenced-block contents must survive byte-identically, so they are compared as whole strings rather than counted.
 function fences(s) {
   const res = [];
   const lines = s.split("\n");
@@ -374,17 +293,13 @@ export function verify(before, after) {
     }
   }
 
-  // Structure: a token stream alone cannot prove a heading did not dissolve
-  // into a paragraph, or a table row into prose.
+  // Structure: a token stream alone cannot prove a heading did not dissolve into a paragraph, or a table row into prose.
   for (const [name, pred] of [
     ["headings", isHeading],
     ["table rows", isTableRow],
     ["html/comment lines", isHtml],
     ["quote paragraph breaks", isQuoteBreak],
-    // Reflow joins continuations into their item; it must never create or
-    // destroy an item. A continuation that itself begins with `- ` was already a
-    // separate item before reflow, so the count is invariant either way — which
-    // makes a change here a genuine structural break, not a false positive.
+    // Reflow joins continuations into their item; it must never create or destroy an item. A continuation that itself begins with `- ` was already a separate item before reflow, so the count is invariant either way — which makes a change here a genuine structural break, not a false positive.
     ["list markers", (l) => !!listMarker(l)],
   ]) {
     const b = countOf(before, pred);
@@ -405,10 +320,7 @@ export function verify(before, after) {
     }
   }
 
-  // Independent semantic oracle, run last so a structural finding reports first.
-  // Joining lines turns "\n" into " " inside a <p>, which is identical in HTML —
-  // so collapsing whitespace runs is correct normalization here, not a cheat:
-  // inter-tag structure carries the meaning and stays fully under comparison.
+  // Independent semantic oracle, run last so a structural finding reports first. Joining lines turns "\n" into " " inside a <p>, which is identical in HTML — so collapsing whitespace runs is correct normalization here, not a cheat: inter-tag structure carries the meaning and stays fully under comparison.
   if (md) {
     const norm = (h) => h.replace(/\s+/g, " ").replace(/> </g, "><").trim();
     if (norm(md.render(before)) !== norm(md.render(after))) {
@@ -431,11 +343,7 @@ function main() {
   const write = args.includes("--write");
   let files = args.filter((a) => !a.startsWith("--"));
 
-  // With no paths, default to every tracked Markdown file. Resolved here rather
-  // than as a shell pipeline in package.json so the npm script stays portable
-  // (BSD vs GNU `grep -z` differ) and the file set is defined in one place.
-  // hookify.env-protection.local.md is excluded: a plugin-owned file on someone
-  // else's schema, not ours to reformat.
+  // With no paths, default to every tracked Markdown file. Resolved here rather than as a shell pipeline in package.json so the npm script stays portable (BSD vs GNU `grep -z` differ) and the file set is defined in one place. hookify.env-protection.local.md is excluded: a plugin-owned file on someone else's schema, not ours to reformat.
   if (!files.length) {
     files = execSync("git ls-files -z '*.md'", { encoding: "buffer" })
       .toString("utf8")
@@ -475,23 +383,11 @@ function main() {
     `\n${files.length} file(s): ${changed} ${write ? "changed" : "would change"}, ` +
       `${failed} failed verification\n`
   );
-  // ⚠️ --check FAILS on "would change", not only on "failed verification" (fixed 2026-08-14
-  // 10:01 EDT). CLAUDE.md has claimed since the soft-wrap convention shipped that `npm test`
-  // makes a hard-wrapped paragraph fail the suite; it did not. `docs:reflow` is wired into
-  // `npm test` in --check mode, and this line exited 0 whenever the only finding was that a file
-  // WOULD change — which is exactly the finding it exists to report. The gate printed its warning
-  // into a passing run and blocked nothing, and one file (docs/ROADMAP.md) was sitting hard-wrapped
-  // under it. `failed` still means the reflow could not round-trip safely, which is a different and
-  // worse condition; both now fail, and --write still exits 0 because it has just fixed them.
+  // ⚠️ --check FAILS on "would change", not only on "failed verification" (fixed 2026-08-14 10:01 EDT). CLAUDE.md has claimed since the soft-wrap convention shipped that `npm test` makes a hard-wrapped paragraph fail the suite; it did not. `docs:reflow` is wired into `npm test` in --check mode, and this line exited 0 whenever the only finding was that a file WOULD change — which is exactly the finding it exists to report. The gate printed its warning into a passing run and blocked nothing, and one file (docs/ROADMAP.md) was sitting hard-wrapped under it. `failed` still means the reflow could not round-trip safely, which is a different and worse condition; both now fail, and --write still exits 0 because it has just fixed them.
   process.exit(failed || (!write && changed) ? 1 : 0);
 }
 
-// The CLI runs ONLY when this file is the entry point. Without the guard, a test
-// doing `import { verify }` executed the whole CLI against the TEST's argv and
-// then called process.exit() — which killed the test process before a single
-// assertion ran, while still printing a confident "0 failed verification".
-// A first attempt guarded only the usage-error branch and left the loop below it
-// exposed, which looks fixed and is not; hence one function, one call site.
+// The CLI runs ONLY when this file is the entry point. Without the guard, a test doing `import { verify }` executed the whole CLI against the TEST's argv and then called process.exit() — which killed the test process before a single assertion ran, while still printing a confident "0 failed verification". A first attempt guarded only the usage-error branch and left the loop below it exposed, which looks fixed and is not; hence one function, one call site.
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   main();
 }

@@ -1,16 +1,9 @@
 // ==========================================
 // TIMEZONE DATA — expanded list + fuzzy city search
 // ==========================================
-// /settings' timezone dropdown used to be 15 hardcoded IANA zones with no way to reach anything
-// else. Added 2026-08-15 13:13 EDT (Harkirat's request): a much bigger list, searchable by city
-// name/alias via a modal (see handlers/settings.js's `settingstz_` branches) -- Discord's own select
-// menu caps at 25 options, so a bigger list can only ever be *searched*, never all shown at once.
+// /settings' timezone dropdown used to be 15 hardcoded IANA zones with no way to reach anything else. Added 2026-08-15 13:13 EDT (Harkirat's request): a much bigger list, searchable by city name/alias via a modal (see handlers/settings.js's `settingstz_` branches) -- Discord's own select menu caps at 25 options, so a bigger list can only ever be *searched*, never all shown at once.
 //
-// Each entry is one IANA zone with a friendly label and a list of aliases (other city names /
-// country names / abbreviations someone might actually type) that should also resolve to it.
-// QUICK_TIMEZONES is the original 15-zone shortlist (kept as the dropdown's direct picks, so the
-// common case stays a single click) plus a couple more common ones, capped at 24 to leave room for
-// the dropdown's 25th "Search for your city..." option.
+// Each entry is one IANA zone with a friendly label and a list of aliases (other city names / country names / abbreviations someone might actually type) that should also resolve to it. QUICK_TIMEZONES is the original 15-zone shortlist (kept as the dropdown's direct picks, so the common case stays a single click) plus a couple more common ones, capped at 24 to leave room for the dropdown's 25th "Search for your city..." option.
 const { fuzzyMatch } = require('./search');
 
 const ALL_TIMEZONES = [
@@ -57,9 +50,7 @@ const ALL_TIMEZONES = [
     { tz: 'Etc/UTC', label: 'Coordinated Universal Time (UTC)', aliases: ['utc', 'gmt+0', 'z', 'zulu'] }
 ];
 
-// The dropdown's direct one-click picks -- the original 15 plus a handful more common ones, capped
-// at 24 so the "Search for your city..." sentinel fits as the 25th option (Discord's select-menu
-// cap). Order matches ALL_TIMEZONES's rough geographic grouping.
+// The dropdown's direct one-click picks -- the original 15 plus a handful more common ones, capped at 24 so the "Search for your city..." sentinel fits as the 25th option (Discord's select-menu cap). Order matches ALL_TIMEZONES's rough geographic grouping.
 const QUICK_ZONES = [
     'America/Toronto', 'America/Winnipeg', 'America/Edmonton', 'America/Vancouver',
     'America/Sao_Paulo', 'Europe/London', 'Europe/Paris', 'Europe/Athens', 'Europe/Moscow',
@@ -73,10 +64,7 @@ function findTimezoneLabel(tz) {
     return ALL_TIMEZONES.find(z => z.tz === tz)?.label || tz;
 }
 
-// Fuzzy-matches a typed query against every zone's IANA id, label, AND every alias -- so "sydney",
-// "australia", "aest" and even a raw "Australia/Sydney" all find the same entry. Returns up to
-// `limit` zones; fuzzyMatch has no scoring, so this preserves ALL_TIMEZONES' order among whatever
-// matches rather than ranking by closeness.
+// Fuzzy-matches a typed query against every zone's IANA id, label, AND every alias -- so "sydney", "australia", "aest" and even a raw "Australia/Sydney" all find the same entry. Returns up to `limit` zones; fuzzyMatch has no scoring, so this preserves ALL_TIMEZONES' order among whatever matches rather than ranking by closeness.
 function searchTimezones(query, limit = 25) {
     const q = (query || '').trim();
     if (!q) return [];

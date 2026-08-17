@@ -1,19 +1,11 @@
 // ==========================================
 // NAVIGATION — INTERACTION HANDLER
 // ==========================================
-// the global nav bar. Lifted out of handlers/router.js on 2026-08-13 17:45 EDT (docs/ROADMAP.md's index.js
-// split). The branch bodies are VERBATIM -- only their address changed.
+// the global nav bar. Lifted out of handlers/router.js on 2026-08-13 17:45 EDT (docs/ROADMAP.md's index.js split). The branch bodies are VERBATIM -- only their address changed.
 //
-// Ownership is decided by custom_id prefix, once, before any branch runs: `nav_`.
-// Those prefixes are matched by no other subsystem (checked mechanically at extraction time), so
-// deciding ownership up front cannot change which handler wins, and every branch below keeps the
-// exact `return` it was written with.
+// Ownership is decided by custom_id prefix, once, before any branch runs: `nav_`. Those prefixes are matched by no other subsystem (checked mechanically at extraction time), so deciding ownership up front cannot change which handler wins, and every branch below keeps the exact `return` it was written with.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleNavigationInteraction is awaited from
-// inside handlers/router.js's single top-level try/catch -- do not add one here, do not register
-// listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare
-// `return interaction.reply(...)` can reject after the try has exited and escape the net.
-// See .claude/rules/interaction-router.md.
+// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleNavigationInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
 
@@ -50,16 +42,12 @@ async function route(interaction) {
             }
 
             try {
-                // We temporarily override the interaction's deferral methods so the target command 
-                // processes it as an in-place update rather than trying to spawn a new reply.
+                // We temporarily override the interaction's deferral methods so the target command processes it as an in-place update rather than trying to spawn a new reply.
                 const syntheticInteraction = buildSyntheticInteraction(interaction, {
                     deferReply: async () => { }, // Nullify to prevent double-deferral crashes
                     reply: async (payload) => interaction.editReply(payload),
                     followUp: async (payload) => interaction.followUp(payload),
-                    // Button interactions have no `.options` resolver at all (that only exists on
-                    // slash command interactions). Commands re-used via nav buttons call things like
-                    // interaction.options.getString('visibility'), which would otherwise throw
-                    // "Cannot read properties of undefined". Stub it out safely.
+                    // Button interactions have no `.options` resolver at all (that only exists on slash command interactions). Commands re-used via nav buttons call things like interaction.options.getString('visibility'), which would otherwise throw "Cannot read properties of undefined". Stub it out safely.
                     options: {
                         getBoolean: () => null, getString: () => null, getInteger: () => null,
                         getNumber: () => null, getUser: () => null, getChannel: () => null,
@@ -70,10 +58,7 @@ async function route(interaction) {
                 return await targetCommand.execute(syntheticInteraction);
             } catch (error) {
                 console.error(`UI Navigation Routing Error for ${interaction.customId}:`, error);
-                // See the matching comment in the slash-command error handler above -- an unawaited
-                // `return interaction.followUp(...)` here can reject after this try/catch has already
-                // exited, escaping as an unhandled rejection that crashes the whole process instead of
-                // just failing this one nav click.
+                // See the matching comment in the slash-command error handler above -- an unawaited `return interaction.followUp(...)` here can reject after this try/catch has already exited, escaping as an unhandled rejection that crashes the whole process instead of just failing this one nav click.
                 try {
                     await interaction.followUp({ content: '❌ An error occurred while swapping the interface view.', ephemeral: true });
                 } catch (notifyError) {
@@ -84,8 +69,7 @@ async function route(interaction) {
         }
 }
 
-// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise --
-// the uniform contract every handlers/*.js module follows.
+// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise -- the uniform contract every handlers/*.js module follows.
 async function handleNavigationInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
     await route(interaction);

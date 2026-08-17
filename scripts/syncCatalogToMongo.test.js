@@ -1,9 +1,4 @@
-// scripts/syncCatalogToMongo.test.js -- coverage for scripts/syncCatalogToMongo.js's pure logic: the
-// display-name rule and the collection->group->variants flattening. No Mongo connection -- both
-// functions are pure, so this pins the exact rule from docs/reference/nameplate-decoration-catalog.md
-// ("<group_name> (<variant_label>)" for a multi-variant design, else the variant's own `name`) without
-// a live database.
-// Run: `node scripts/syncCatalogToMongo.test.js` (also via `npm test`).
+// scripts/syncCatalogToMongo.test.js -- coverage for scripts/syncCatalogToMongo.js's pure logic: the display-name rule and the collection->group->variants flattening. No Mongo connection -- both functions are pure, so this pins the exact rule from docs/reference/nameplate-decoration-catalog.md ("<group_name> (<variant_label>)" for a multi-variant design, else the variant's own `name`) without a live database. Run: `node scripts/syncCatalogToMongo.test.js` (also via `npm test`).
 const assert = require('assert');
 const { computeDisplayName, flattenCatalog } = require('./syncCatalogToMongo');
 

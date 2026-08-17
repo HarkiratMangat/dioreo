@@ -1,6 +1,5 @@
 #!/bin/bash
-# Proofs for notes-open-items.sh — the shared "what counts as open" logic that used to be
-# duplicated (and drifted) between the SessionStart hook and records-close-check.sh.
+# Proofs for notes-open-items.sh — the shared "what counts as open" logic that used to be duplicated (and drifted) between the SessionStart hook and records-close-check.sh.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/notes-open-items.sh"
 pass=0; fail=0

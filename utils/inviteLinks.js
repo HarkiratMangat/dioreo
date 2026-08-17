@@ -1,26 +1,14 @@
-// utils/inviteLinks.js
-// The bot's own install URLs, built ONCE here and consumed by `/invite` and `/help`'s landing page.
+// utils/inviteLinks.js The bot's own install URLs, built ONCE here and consumed by `/invite` and `/help`'s landing page.
 //
-// WHY THIS IS A MODULE AND NOT A CONST IN EACH FILE: `commands/help.js` carried a hardcoded
-// `INSTALL_URL` with the PROD application's client_id baked into the string. That is correct on
-// prod and silently WRONG on the local dev bot -- "Dioreo (Dev)" is a separate Discord application
-// with its own id (see root CLAUDE.md), so the dev bot's own help panel offered an install link for
-// the production app. Nothing errors; you just install the wrong bot. Adding a SECOND copy of the
-// same URL for `/invite` would have doubled that surface, so both now derive the id at render time.
+// WHY THIS IS A MODULE AND NOT A CONST IN EACH FILE: `commands/help.js` carried a hardcoded `INSTALL_URL` with the PROD application's client_id baked into the string. That is correct on prod and silently WRONG on the local dev bot -- "Dioreo (Dev)" is a separate Discord application with its own id (see root CLAUDE.md), so the dev bot's own help panel offered an install link for the production app. Nothing errors; you just install the wrong bot. Adding a SECOND copy of the same URL for `/invite` would have doubled that surface, so both now derive the id at render time.
 //
-// ⚠️ RESOLVE THE ID AT RENDER TIME, NEVER AT REQUIRE TIME. `client.application` is only populated
-// once the Client has connected, and every command module is `require()`d long before that -- the
-// exact same trap `utils/emojiMap.js` documents for emoji ids and `utils/commandMentions.js` for
-// command ids. Call buildInviteUrls(client) inside the render function, with the live client.
+// ⚠️ RESOLVE THE ID AT RENDER TIME, NEVER AT REQUIRE TIME. `client.application` is only populated once the Client has connected, and every command module is `require()`d long before that -- the exact same trap `utils/emojiMap.js` documents for emoji ids and `utils/commandMentions.js` for command ids. Call buildInviteUrls(client) inside the render function, with the live client.
 
-// Last-resort fallback only, for the window before the client has connected (and for any test that
-// builds a payload with no client at all). Matches .env's CLIENT_ID -- the same literal that used to
-// be `commands/help.js`'s INSTALL_URL, kept so this module can never render a broken href.
+// Last-resort fallback only, for the window before the client has connected (and for any test that builds a payload with no client at all). Matches .env's CLIENT_ID -- the same literal that used to be `commands/help.js`'s INSTALL_URL, kept so this module can never render a broken href.
 const FALLBACK_CLIENT_ID = '1491474871778021550';
 
 function resolveClientId(client) {
-    // `client.application.id` and `client.user.id` are the same value for a bot account; both are
-    // checked because a synthetic/mocked interaction may carry only one of them.
+    // `client.application.id` and `client.user.id` are the same value for a bot account; both are checked because a synthetic/mocked interaction may carry only one of them.
     return client?.application?.id || client?.user?.id || FALLBACK_CLIENT_ID;
 }
 

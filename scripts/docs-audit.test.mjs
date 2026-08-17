@@ -4,13 +4,9 @@
  *
  * WHY THIS FILE EXISTS (2026-07-28 19:55 EDT)
  * -------------------------------------------
- * A guard that has never been watched to fail is not a guard. This repo has already shipped one that
- * was silently dead: every Bash rule in `usage-guard.mjs` stopped matching after the first line,
- * because "\n" was not treated as a shell command separator — and it looked fine, because it had only
- * ever been tried on hand-written one-liners that could not expose the bug.
+ * A guard that has never been watched to fail is not a guard. This repo has already shipped one that was silently dead: every Bash rule in `usage-guard.mjs` stopped matching after the first line, because "\n" was not treated as a shell command separator — and it looked fine, because it had only ever been tried on hand-written one-liners that could not expose the bug.
  *
- * So each test below builds a fixture tree that VIOLATES exactly one invariant, runs the real audit
- * against it via DOCS_AUDIT_ROOT, and asserts that check reports. Two assertions per check, not one:
+ * So each test below builds a fixture tree that VIOLATES exactly one invariant, runs the real audit against it via DOCS_AUDIT_ROOT, and asserts that check reports. Two assertions per check, not one:
  *   - the broken fixture FAILS  (the check is alive)
  *   - the fixed fixture PASSES  (the check is specific, not just always-on)
  * The second half is the one people skip, and it is what catches a matcher that fires on everything.
@@ -52,9 +48,7 @@ const idsReported = (root, extraArgs) => {
   }
 };
 
-// Mirrors FM_RULE / fmExpected in docs-audit.mjs. Duplicated ON PURPOSE and kept tiny: the fixture
-// must be built by something INDEPENDENT of the code under test, or `doc-frontmatter` would be
-// checking its own assumptions against itself and would pass no matter what either side said.
+// Mirrors FM_RULE / fmExpected in docs-audit.mjs. Duplicated ON PURPOSE and kept tiny: the fixture must be built by something INDEPENDENT of the code under test, or `doc-frontmatter` would be checking its own assumptions against itself and would pass no matter what either side said.
 const fixtureKind = (rel) => {
   if (rel.startsWith(".claude/rules/")) return ["rule", "live"];
   if (rel.startsWith("docs/archive/")) return ["archive", "dead"];
@@ -69,9 +63,7 @@ const fixtureKind = (rel) => {
   return null;
 };
 
-// Writes EXACTLY the given bytes, with no front-matter assistance. The doc-frontmatter proofs need
-// this: they are deliberately writing invalid front matter, and write()'s helpfulness would repair
-// the very defect under test.
+// Writes EXACTLY the given bytes, with no front-matter assistance. The doc-frontmatter proofs need this: they are deliberately writing invalid front matter, and write()'s helpfulness would repair the very defect under test.
 const writeRaw = (root, rel, body) => {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
@@ -81,15 +73,11 @@ const writeRaw = (root, rel, body) => {
 const write = (root, rel, body) => {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
-  // Markdown docs in the fixture get valid front matter automatically, so the BASELINE stays clean
-  // for doc-frontmatter without every existing call site having to be rewritten. A test that opts
-  // out passes its own `---` block and this leaves it alone.
+  // Markdown docs in the fixture get valid front matter automatically, so the BASELINE stays clean for doc-frontmatter without every existing call site having to be rewritten. A test that opts out passes its own `---` block and this leaves it alone.
   let out = body;
   const km = rel.endsWith(".md") ? fixtureKind(rel) : null;
   if (km && !/^kind:/m.test(body)) {
-    // A rule fixture already opens with its own `paths:` block, so the fields are MERGED into it
-    // rather than a second block being prepended. Missing this left .claude/rules/example.md
-    // without a kind and the whole baseline dirty.
+    // A rule fixture already opens with its own `paths:` block, so the fields are MERGED into it rather than a second block being prepended. Missing this left .claude/rules/example.md without a kind and the whole baseline dirty.
     out = body.startsWith("---\n")
       ? body.replace(/^---\n/, `---\nkind: ${km[0]}\nstatus: ${km[1]}\n`)
       : `---\nkind: ${km[0]}\nstatus: ${km[1]}\n---\n\n${body}`;
@@ -98,39 +86,16 @@ const write = (root, rel, body) => {
 };
 
 /**
- * A fixture is a minimal but VALID doc tree — every check passes on it. Each test then breaks one
- * thing. Building it valid-first is deliberate: if the baseline didn't pass, a "broken fixture fails"
- * assertion would prove nothing.
+ * A fixture is a minimal but VALID doc tree — every check passes on it. Each test then breaks one thing. Building it valid-first is deliberate: if the baseline didn't pass, a "broken fixture fails" assertion would prove nothing.
  */
 const makeFixture = () => {
-  // ⚠️ The SPACE in this prefix is deliberate and load-bearing. The real repo lives at
-  // "/Applications/Claude Code/Diors-Builds", and TWO checks shipped broken by paths with spaces:
-  // `nested-worktree` was completely dead (`split(" ")[0]` gave "/Applications/Claude"), and
-  // `hook-integrity`'s regex stopped at the space and only worked by accident. Neither could ever
-  // surface in a space-free tmpdir. A fixture that doesn't reproduce production's hazards is a
-  // fixture that certifies the wrong thing. Do not "tidy" this into a hyphen.
+  // ⚠️ The SPACE in this prefix is deliberate and load-bearing. The real repo lives at "/Applications/Claude Code/Diors-Builds", and TWO checks shipped broken by paths with spaces: `nested-worktree` was completely dead (`split(" ")[0]` gave "/Applications/Claude"), and `hook-integrity`'s regex stopped at the space and only worked by accident. Neither could ever surface in a space-free tmpdir. A fixture that doesn't reproduce production's hazards is a fixture that certifies the wrong thing. Do not "tidy" this into a hyphen.
   const root = mkdtempSync(join(tmpdir(), "docs audit fixture "));
-  // ⚠️ -b main IS LOAD-BEARING. `git init` takes its branch name from init.defaultBranch,
-  // which is set to `main` in THIS repo's local config and unset globally — so the fixture
-  // was `main` on the developer's Mac and `master` on CI's ubuntu runner. Checks that name
-  // `main` then could not resolve it, skipped, and a prove case correctly reported the check
-  // as dead — a failure that could only ever appear in CI. Same class as the deliberate SPACE
-  // in the tmpdir prefix above: a fixture must not inherit anything from the machine.
+  // ⚠️ -b main IS LOAD-BEARING. `git init` takes its branch name from init.defaultBranch, which is set to `main` in THIS repo's local config and unset globally — so the fixture was `main` on the developer's Mac and `master` on CI's ubuntu runner. Checks that name `main` then could not resolve it, skipped, and a prove case correctly reported the check as dead — a failure that could only ever appear in CI. Same class as the deliberate SPACE in the tmpdir prefix above: a fixture must not inherit anything from the machine.
   execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
-  // ⚠️ ASSERT IT, don't assume it. -b is the fix, but the failure this replaced was a
-  // fixture quietly sitting on the wrong branch, and the symptom was "the check is dead"
-  // — which sent me looking at the CHECK, not the fixture. Any future cause of a wrong
-  // branch name (a git default change, a template, an env var) now says so directly.
-  // A compatibility fallback for git < 2.28 was suggested and deliberately not taken:
-  // the runner is 2.54 and this Mac is 2.50, and `git init -b` on an older git FAILS
-  // LOUDLY rather than silently picking another name, so the fallback would guard a
-  // path that cannot go wrong quietly. An assertion covers strictly more.
+  // ⚠️ ASSERT IT, don't assume it. -b is the fix, but the failure this replaced was a fixture quietly sitting on the wrong branch, and the symptom was "the check is dead" — which sent me looking at the CHECK, not the fixture. Any future cause of a wrong branch name (a git default change, a template, an env var) now says so directly. A compatibility fallback for git < 2.28 was suggested and deliberately not taken: the runner is 2.54 and this Mac is 2.50, and `git init -b` on an older git FAILS LOUDLY rather than silently picking another name, so the fallback would guard a path that cannot go wrong quietly. An assertion covers strictly more.
   {
-    // symbolic-ref, not rev-parse: the fixture has no commit yet, so HEAD is an UNBORN
-    // branch and `rev-parse --abbrev-ref HEAD` errors out. symbolic-ref reads the ref HEAD
-    // points at without needing a commit behind it. (The first version of this assertion
-    // used rev-parse and threw on every run — an assertion that is itself wrong is worse
-    // than none, so it is verified below in both directions.)
+    // symbolic-ref, not rev-parse: the fixture has no commit yet, so HEAD is an UNBORN branch and `rev-parse --abbrev-ref HEAD` errors out. symbolic-ref reads the ref HEAD points at without needing a commit behind it. (The first version of this assertion used rev-parse and threw on every run — an assertion that is itself wrong is worse than none, so it is verified below in both directions.)
     const b = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
     if (b !== "main") {
       throw new Error(`fixture is on branch "${b}", not "main" — checks that name main would skip and report as dead`);
@@ -139,9 +104,7 @@ const makeFixture = () => {
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
-  // A runtime dependency, its lock entry, its installed copy and its NOTICE attribution — all four,
-  // consistent. dep-licences and notice-attribution both examine this; without it they examine 0
-  // items and the ledger correctly calls that a vacuous pass.
+  // A runtime dependency, its lock entry, its installed copy and its NOTICE attribution — all four, consistent. dep-licences and notice-attribution both examine this; without it they examine 0 items and the ledger correctly calls that a vacuous pass.
   write(
     root,
     "package.json",
@@ -161,8 +124,7 @@ const makeFixture = () => {
       "  widget 1.2.3                   MIT\n                                 Copyright (c) someone\n\n" +
       "2. TRADEMARKS\n================================\n\nnone\n"
   );
-  // Names every unit the new structural checks look for: the root docs, every top-level directory,
-  // each path-scoped rule, and each script. A fixture that doesn't satisfy them reports VACUOUS PASS.
+  // Names every unit the new structural checks look for: the root docs, every top-level directory, each path-scoped rule, and each script. A fixture that doesn't satisfy them reports VACUOUS PASS.
   write(
     root,
     "CLAUDE.md",
@@ -171,27 +133,17 @@ const makeFixture = () => {
       "Scripts: `scripts/dofix.js`.\n"
   );
   write(root, "LICENSE", "Fixture licence.\n");
-  // chronicle-drift compares the newest source version against the BUILT page, so the fixture
-  // needs both or the check skips, examines nothing, and the ledger calls it a vacuous pass.
-  // These carry v2.33.0 — the newest in the fixture's CHANGELOG — so the baseline is clean.
+  // chronicle-drift compares the newest source version against the BUILT page, so the fixture needs both or the check skips, examines nothing, and the ledger calls it a vacuous pass. These carry v2.33.0 — the newest in the fixture's CHANGELOG — so the baseline is clean.
   write(root, "public/changelog/detailed.html", "<h1>Changelog</h1><p>v2.33.0</p>\n");
   write(root, "public/changelog/index.html", "<h1>What's New</h1><p>v2.33.0</p>\n");
   write(root, "scripts/dofix.js", "// fixture script\n");
-  // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one —
-  // otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass.
-  // ⚠️ It exports a PLAIN object, not a mongoose schema. A `require('mongoose')` here resolves from
-  // the fixture's own directory in /tmp, which has no node_modules, so it threw and the check skipped
-  // — silently turning the "broken fixture must fail" assertion into a false pass. The check only
-  // ever reads `schema.paths`, so this is the same shape without the resolution hazard.
+  // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one — otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass. ⚠️ It exports a PLAIN object, not a mongoose schema. A `require('mongoose')` here resolves from the fixture's own directory in /tmp, which has no node_modules, so it threw and the check skipped — silently turning the "broken fixture must fail" assertion into a false pass. The check only ever reads `schema.paths`, so this is the same shape without the resolution hazard.
   write(
     root,
     "models/UserPreference.js",
     "module.exports = { schema: { paths: { discordId: {}, timezone: {} } } };\n"
   );
-  // A SECOND per-user model, disclosed, so privacy-model-coverage examines something on the plain
-  // baseline instead of only ever seeing the one file it deliberately excludes (UserPreference.js —
-  // that's privacy-inventory's job). Without this its baseline pass is vacuous: 0 items examined
-  // proves nothing, which is exactly the failure mode "scripts-documented" exists to catch elsewhere.
+  // A SECOND per-user model, disclosed, so privacy-model-coverage examines something on the plain baseline instead of only ever seeing the one file it deliberately excludes (UserPreference.js — that's privacy-inventory's job). Without this its baseline pass is vacuous: 0 items examined proves nothing, which is exactly the failure mode "scripts-documented" exists to catch elsewhere.
   write(
     root,
     "models/GuildSettings.js",
@@ -208,23 +160,16 @@ const makeFixture = () => {
     root,
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
-      // `ideas/` is named as a DIRECTORY, not by the file inside it: readme-map's coverage unit is the
-      // top-level entry under docs/, so a loose file is covered by its name but anything inside a
-      // subdirectory is covered only by naming that directory. The notes file moved from a loose
-      // `docs/…notes.md` into `docs/ideas/` on 2026-08-06 08:00 EDT, which flipped which of the two
-      // applies — and the baseline meta-test caught the fixture still spelling it the old way.
+      // `ideas/` is named as a DIRECTORY, not by the file inside it: readme-map's coverage unit is the top-level entry under docs/, so a loose file is covered by its name but anything inside a subdirectory is covered only by naming that directory. The notes file moved from a loose `docs/…notes.md` into `docs/ideas/` on 2026-08-06 08:00 EDT, which flipped which of the two applies — and the baseline meta-test caught the fixture still spelling it the old way.
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `ideas/` | intake + proposals |\n" +
       "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
       "| `legal/PRIVACY.md` | policy |\n" +
       "\nPath-scoped rules: example (1 file).\n"
   );
-  // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s
-  // resolution half — which is the check working correctly, and was caught by this very self-test.
+  // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s resolution half — which is the check working correctly, and was caught by this very self-test.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2 · `SHA`) — two\n\n## v2.32.0 — 2026-06-01 (#1 · `SHA`) — one\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.0 — June 1, 2026\n");
-  // The "(v2.33.0)" stamps are LOAD-BEARING: devlog-orphan reads DEVLOG headings as its reference
-  // list of which versions exist, so without a stamped entry that check examines 0 items and
-  // scores a VACUOUS PASS. Keep them, and keep the TOC line matching the body heading.
+  // The "(v2.33.0)" stamps are LOAD-BEARING: devlog-orphan reads DEVLOG headings as its reference list of which versions exist, so without a stamped entry that check examines 0 items and scores a VACUOUS PASS. Keep them, and keep the TOC line matching the body heading.
   write(
     root,
     "docs/DEVLOG.md",
@@ -232,8 +177,7 @@ const makeFixture = () => {
       "# Part B\n\nthematic takeaways, no dated entries\n"
   );
   write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- `[P2 · S]` **A queued item** that is still open.\n");
-  // Long enough to clear archive-conservation's 40-char churn threshold, which exists so a rewrap or
-  // a whitespace fix isn't reported as a deleted item. A 14-char stub silently passed the first run.
+  // Long enough to clear archive-conservation's 40-char churn threshold, which exists so a rewrap or a whitespace fix isn't reported as a deleted item. A 14-char stub silently passed the first run.
   write(
     root,
     "docs/ideas/diors-notes.md",
@@ -244,11 +188,7 @@ const makeFixture = () => {
   // records-present requires the full set of core records.
   write(root, "docs/ROADMAP.md", "# Roadmap\n");
   write(root, "docs/SESSION-START.md", "# Session start\n");
-  // secrets-hygiene: .env must be ignored and untracked; both settings files must be tracked.
-  // The "!" negation is REQUIRED, and reproduces a real trap: the GLOBAL ~/.config/git/ignore carries
-  // **/.claude/settings.local.json, so it is ignored in EVERY repo on this machine including this
-  // fixture. Without the negation the file is silently untracked -- which is precisely the bug the real
-  // .gitignore documents, and the baseline meta-test caught it here first.
+  // secrets-hygiene: .env must be ignored and untracked; both settings files must be tracked. The "!" negation is REQUIRED, and reproduces a real trap: the GLOBAL ~/.config/git/ignore carries **/.claude/settings.local.json, so it is ignored in EVERY repo on this machine including this fixture. Without the negation the file is silently untracked -- which is precisely the bug the real .gitignore documents, and the baseline meta-test caught it here first.
   write(root, ".gitignore", ".env\n.env.*\nnode_modules/\n!.claude/settings.local.json\n");
   write(root, ".env", "BOT_TOKEN=fake-value-for-fixture\n");
   write(root, ".claude/settings.local.json", JSON.stringify({ permissions: { allow: [] } }, null, 2));
@@ -272,16 +212,13 @@ const makeFixture = () => {
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "fixture"], { cwd: root });
 
-  // Second commit, so the changelog can cite a hash that genuinely resolves — and so `--diff HEAD~1`
-  // has a baseline that does not touch the notes file.
+  // Second commit, so the changelog can cite a hash that genuinely resolves — and so `--diff HEAD~1` has a baseline that does not touch the notes file.
   const sha = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
   write(root, "docs/CHANGELOG.md", `# Changelog\n\n## v2.33.0 — 2026-07-01 (#2 · \`${sha}\`) — two\n\n## v2.32.0 — 2026-06-01 (#1 · \`${sha}\`) — one\n`);
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "real hashes"], { cwd: root });
 
-  // Tags for BOTH changelog versions. tag-integrity needs one that matches; tag-coverage needs every
-  // version except the newest to be tagged — tagging only v2.33.0 made the baseline fail, which the
-  // "baseline must be clean" assertion caught immediately.
+  // Tags for BOTH changelog versions. tag-integrity needs one that matches; tag-coverage needs every version except the newest to be tagged — tagging only v2.33.0 made the baseline fail, which the "baseline must be clean" assertion caught immediately.
   execFileSync("git", ["tag", "-a", "v2.32.0", "-m", "v2.32.0"], { cwd: root });
   execFileSync("git", ["tag", "-a", "v2.33.0", "-m", "v2.33.0"], { cwd: root });
   return root;
@@ -293,8 +230,7 @@ const makeFixture = () => {
  * @param breakIt (root) => void — introduce exactly one violation
  * @param args    extra audit args (e.g. --diff)
  */
-// Every check id any prove case claims to exercise. The coverage assertion at the bottom compares
-// this against the audit's own --list, so a check registered with no test cannot ship unnoticed.
+// Every check id any prove case claims to exercise. The coverage assertion at the bottom compares this against the audit's own --list, so a check registered with no test cannot ship unnoticed.
 const proven = new Set();
 
 const proves = (name, checkId, breakIt, args = []) => {
@@ -322,9 +258,7 @@ const proves = (name, checkId, breakIt, args = []) => {
 };
 
 /**
- * The inverse assertion: a legitimate pattern must NOT be reported. Only proving a check can fire
- * leaves the other half — a matcher that fires on everything — completely untested, and that half is
- * what nearly caused two correct CHANGELOG-SUMMARY range headings to be "fixed" into a fake gap.
+ * The inverse assertion: a legitimate pattern must NOT be reported. Only proving a check can fire leaves the other half — a matcher that fires on everything — completely untested, and that half is what nearly caused two correct CHANGELOG-SUMMARY range headings to be "fixed" into a fake gap.
  */
 const provesSilent = (name, checkId, setup) => {
   proven.add(checkId);
@@ -344,10 +278,7 @@ const provesSilent = (name, checkId, setup) => {
 };
 
 /**
- * The meta-test, and the one that would have caught the most. Every `proves` case only asserts that
- * ITS OWN check is quiet on the baseline, so a check that fires on valid input for an unrelated
- * reason hides in plain sight — and an entire check silently reporting nothing hides even better.
- * This asserts the untouched fixture is completely clean AND that every registered check actually ran.
+ * The meta-test, and the one that would have caught the most. Every `proves` case only asserts that ITS OWN check is quiet on the baseline, so a check that fires on valid input for an unrelated reason hides in plain sight — and an entire check silently reporting nothing hides even better. This asserts the untouched fixture is completely clean AND that every registered check actually ran.
  */
 const provesBaselineClean = () => {
   const root = makeFixture();
@@ -428,8 +359,7 @@ proves("a doc claiming published: true that the generator does not render", "doc
 });
 
 proves("a hard-wrapped memory file", "memory-softwrap", (root) => {
-  // Under DOCS_AUDIT_ROOT the check resolves to <root>/memory precisely so this is provable —
-  // its sibling memory checks skip on a fixture tree and sit on the exempt list instead.
+  // Under DOCS_AUDIT_ROOT the check resolves to <root>/memory precisely so this is provable — its sibling memory checks skip on a fixture tree and sit on the exempt list instead.
   writeRaw(
     root,
     "memory/feedback_example.md",
@@ -448,10 +378,7 @@ proves("a doc pointing at a path that does not exist", "xref", (root) => {
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
-// The two halves of XREF_IGNORED_OPTIONAL, tested in BOTH directions. The allowlist retires ONE
-// answered ambiguity; the guard that matters is that it did not restore the blanket skip whose
-// removal is the whole reason the WARN exists (`local/Harkirats-Space.md` moved and the ignore rule
-// hid it). Added 2026-08-10 21:26 EDT alongside the allowlist itself.
+// The two halves of XREF_IGNORED_OPTIONAL, tested in BOTH directions. The allowlist retires ONE answered ambiguity; the guard that matters is that it did not restore the blanket skip whose removal is the whole reason the WARN exists (`local/Harkirats-Space.md` moved and the ignore rule hid it). Added 2026-08-10 21:26 EDT alongside the allowlist itself.
 provesSilent("a TRIAGED optional gitignored path (utils/emojiMap.dev.json)", "xref", (root) => {
   write(root, ".gitignore", "utils/emojiMap.dev.json\n");
   write(root, "CLAUDE.md", "# Fixture\n\nAn optional overlay at `utils/emojiMap.dev.json` may be present.\n");
@@ -469,39 +396,27 @@ proves("a version in the CHANGELOG but not the SUMMARY", "summary-coverage", (ro
 });
 
 provesSilent("a LEGACY range heading (pre-v2.19.0), still allowed", "summary-coverage", (root) => {
-  // Ranges are retired but not retroactive: 7 survive in the real SUMMARY, all v2.18.3-and-older, and
-  // rewriting history to satisfy a new rule would be worse than the rule. Only modern versions must
-  // have their own heading -- the sibling `proves` case above covers that direction.
+  // Ranges are retired but not retroactive: 7 survive in the real SUMMARY, all v2.18.3-and-older, and rewriting history to satisfy a new rule would be worse than the rule. Only modern versions must have their own heading -- the sibling `proves` case above covers that direction.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
 });
 
 proves("a PRE-RELEASE version in the DEVLOG with no CHANGELOG heading", "devlog-orphan", (root) => {
-  // The real v3.24.0 damage, 2026-08-15: the heading went, the body stayed and welded itself onto
-  // the entry above, and every check stayed green because CHANGELOG-SUMMARY -- summary-orphan's
-  // only reference list -- is not written during pre-release. DEVLOG is, which is why it is the
-  // reference here. The body below deliberately does not name its own version, exactly like the
-  // real one did not, so a substring test would not rescue it.
+  // The real v3.24.0 damage, 2026-08-15: the heading went, the body stayed and welded itself onto the entry above, and every check stayed green because CHANGELOG-SUMMARY -- summary-orphan's only reference list -- is not written during pre-release. DEVLOG is, which is why it is the reference here. The body below deliberately does not name its own version, exactly like the real one did not, so a substring test would not rescue it.
   write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — closing a decomposition (v3.24.0-pre)\n\nthe body that survived\n");
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133) — later work\n\nbody of the entry that absorbed it\n");
 });
 
 proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {
-  // The real shape of the v2.44.0 damage: the heading goes, the BODY stays and welds itself onto
-  // the entry above. A substring test on the version number would still fail here, which is why
-  // the body below deliberately does not name its own version -- exactly like the real one did not.
+  // The real shape of the v2.44.0 damage: the heading goes, the BODY stays and welds itself onto the entry above. A substring test on the version number would still fail here, which is why the body below deliberately does not name its own version -- exactly like the real one did not.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\nbody of two\n\nthe absorbed body of the lost entry\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.0 — June 1, 2026\n");
 });
 
 provesSilent("a LEGACY range heading in the SUMMARY, which names versions it need not head", "summary-orphan", (root) => {
-  // Ranges cover versions they never give an individual heading to. Expanding one into per-version
-  // expectations would manufacture findings out of a convention that is retired but still valid.
+  // Ranges cover versions they never give an individual heading to. Expanding one into per-version expectations would manufacture findings out of a convention that is retired but still valid.
   //
-  // ⚠️ The modern v2.33.0 pair is here so the corpus is NOT empty. A legacy-only fixture made this
-  // check examine 0 items and the audit's own vacuous-pass detector reported it as firing — which is
-  // that detector working, not a false positive. Keeping a real heading in the fixture proves the
-  // stronger thing anyway: ranges are skipped WHILE individual headings are still being checked.
+  // ⚠️ The modern v2.33.0 pair is here so the corpus is NOT empty. A legacy-only fixture made this check examine 0 items and the audit's own vacuous-pass detector reported it as firing — which is that detector working, not a false positive. Keeping a real heading in the fixture proves the stronger thing anyway: ranges are skipped WHILE individual headings are still being checked.
   write(
     root,
     "docs/CHANGELOG.md",
@@ -558,9 +473,7 @@ proves("a tag whose commit's package.json disagrees", "tag-integrity", (root) =>
   write(root, "package.json", JSON.stringify({ name: "fixture", version: "2.34.0" }, null, 2));
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "bump"], { cwd: root });
-  // NOT v2.35.0 — that one is in KNOWN_BAD_TAGS, so the check correctly ignores it and the test would
-  // "pass" against a silent check. The first draft picked exactly that tag; this is why the self-test
-  // asserts the broken tree FAILS rather than just eyeballing the output.
+  // NOT v2.35.0 — that one is in KNOWN_BAD_TAGS, so the check correctly ignores it and the test would "pass" against a silent check. The first draft picked exactly that tag; this is why the self-test asserts the broken tree FAILS rather than just eyeballing the output.
   execFileSync("git", ["tag", "-a", "v2.36.0", "-m", "v2.36.0"], { cwd: root });
 });
 
@@ -577,8 +490,7 @@ proves("a modern version hiding inside a retired RANGE heading", "summary-covera
 });
 
 proves("a confirmed notes item using ✴︎ rather than ℋ", "notes-sweep", (root) => {
-  // The confirmation mark is switchable in MarkEdit (✴︎ ✦ ◆ ℋ). Matching only ℋ -- the first pass --
-  // meant an item confirmed with any other symbol was invisible and sat unswept forever.
+  // The confirmation mark is switchable in MarkEdit (✴︎ ✦ ◆ ℋ). Matching only ℋ -- the first pass -- meant an item confirmed with any other symbol was invisible and sat unswept forever.
   write(
     root,
     "docs/ideas/diors-notes.md",
@@ -587,8 +499,7 @@ proves("a confirmed notes item using ✴︎ rather than ℋ", "notes-sweep", (ro
 });
 
 proves("a DONE item still in the deferred list", "deferred-sweep", (root) => {
-  // DONE is the single most common marker in the real archive and the first pass matched neither it
-  // nor DROPPED.
+  // DONE is the single most common marker in the real archive and the first pass matched neither it nor DROPPED.
   write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- ~~A thing~~ → **DONE 2026-07-01 20:20 EDT.** Details.\n");
 });
 
@@ -628,10 +539,7 @@ proves("a hook delegating to docs-audit with an unknown check id", "hook-integri
   write(root, ".claude/settings.json", JSON.stringify(s, null, 2));
 });
 
-// ---- anchor integrity: a renamed heading must NEVER silently disable a check ---------------------
-// Demonstrated on the real tree 2026-07-28 22:40 EDT: renaming these two anchors made both checks
-// print "passed" while doing nothing. Two guards written to stop silently-dead guards were themselves
-// silently dead. These are the most important assertions in this file.
+// ---- anchor integrity: a renamed heading must NEVER silently disable a check --------------------- Demonstrated on the real tree 2026-07-28 22:40 EDT: renaming these two anchors made both checks print "passed" while doing nothing. Two guards written to stop silently-dead guards were themselves silently dead. These are the most important assertions in this file.
 
 proves("the DEVLOG Part A/B markers being renamed", "devlog-toc", (root) => {
   write(root, "docs/DEVLOG.md", "# DEVLOG\n\n**Part A - The Journey**\n- 2026-07-01 — a thing\n\n**Part B - Lessons**\n\n## 2026-07-01 — a thing\n\nbody\n");
@@ -688,28 +596,20 @@ proves("a git worktree nested inside the repo", "nested-worktree", (root) => {
   execFileSync("git", ["worktree", "add", "-q", "-b", "scratch", join(root, ".claude/worktrees/nested")], { cwd: root });
 });
 
-// ---- structural growth: new files, folders, scripts and rules ---------------------------------
-// All five were invisible before 2026-07-29 00:40 EDT. A LIVE parallel session added LICENSE, NOTICE,
-// CONTRIBUTING.md, CONTRIBUTORS.md and an entire public/ tree while this audit was being written, and
-// the audit — which only looked under docs/ — saw none of it.
+// ---- structural growth: new files, folders, scripts and rules --------------------------------- All five were invisible before 2026-07-29 00:40 EDT. A LIVE parallel session added LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md and an entire public/ tree while this audit was being written, and the audit — which only looked under docs/ — saw none of it.
 
 proves("a NUL byte making a text file invisible to ripgrep", "binary-in-text", (root) => {
   write(root, "docs/ROADMAP.md", "# Roadmap\u0000\n");
 });
 
 proves("a root-level document nothing maps", "root-docs", (root) => {
-  // ⚠️ NOT `NOTICE` any more. This used NOTICE, and then the fixture gained a real NOTICE (for
-  // notice-attribution) that CLAUDE.md maps — so the "break" stopped breaking anything and this test
-  // silently went dead while still reporting a pass. Caught by the suite's own baseline assertion.
-  // Any unmapped root document does the job; this one is not referenced anywhere in the fixture.
+  // ⚠️ NOT `NOTICE` any more. This used NOTICE, and then the fixture gained a real NOTICE (for notice-attribution) that CLAUDE.md maps — so the "break" stopped breaking anything and this test silently went dead while still reporting a pass. Caught by the suite's own baseline assertion. Any unmapped root document does the job; this one is not referenced anywhere in the fixture.
   write(root, "GOVERNANCE.md", "How decisions get made.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
 proves("a brand-new top-level directory", "top-level-dirs", (root) => {
-  // ⚠️ NOT `public/` any more. The fixture gained a real public/ (for chronicle-drift) and
-  // CLAUDE.md now names it, so this break stopped breaking and the test silently went dead —
-  // the same trap that hit the NOTICE case earlier. Use a directory the fixture never mentions.
+  // ⚠️ NOT `public/` any more. The fixture gained a real public/ (for chronicle-drift) and CLAUDE.md now names it, so this break stopped breaking and the test silently went dead — the same trap that hit the NOTICE case earlier. Use a directory the fixture never mentions.
   write(root, "vendor/thing.txt", "hi\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
@@ -730,10 +630,7 @@ proves("a hardcoded rule-file count going stale", "nav-map-sync", (root) => {
 });
 
 proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (root) => {
-  // The real failure this was built from: the `public/` section reached 286 lines — 43% of the file
-  // that is loaded in full every session — because nothing measured it. nav-map-sync could not see
-  // it: that check only fires once a rule file EXISTS and is unlisted, never when the detail was
-  // simply never moved into one.
+  // The real failure this was built from: the `public/` section reached 286 lines — 43% of the file that is loaded in full every session — because nothing measured it. nav-map-sync could not see it: that check only fires once a rule file EXISTS and is unlisted, never when the detail was simply never moved into one.
   const c = readFileSync(join(root, "CLAUDE.md"), "utf8")
     + "\n### A subsystem that outgrew the map\n"
     + "detail line\n".repeat(140);
@@ -741,8 +638,7 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
 });
 
 proves("a record file with its top-level heading spliced in twice", "record-structure", (root) => {
-  // The real incident this guards: a commit spliced CHANGELOG's own 183-line header into the middle
-  // of an entry, and every other check passed because none of them look at a file's SHAPE.
+  // The real incident this guards: a commit spliced CHANGELOG's own 183-line header into the middle of an entry, and every other check passed because none of them look at a file's SHAPE.
   const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
   write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
 });
@@ -754,17 +650,14 @@ proves("a changelog entry whose built page was never regenerated", "chronicle-dr
 });
 
 proves("a commit reaching main outside the PR flow", "unreleased-on-main", (root) => {
-  // A direct push leaves a commit after the newest tag. Version is minted at merge here, so
-  // that range is empty on a correctly released tree — which is what makes the range a usable
-  // signal at all. WARN, not ERROR: the merge->tag window makes this briefly true on purpose.
+  // A direct push leaves a commit after the newest tag. Version is minted at merge here, so that range is empty on a correctly released tree — which is what makes the range a usable signal at all. WARN, not ERROR: the merge->tag window makes this briefly true on purpose.
   write(root, "docs/ROADMAP.md", "# Roadmap\n\npushed straight to main\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "docs: straight to main"], { cwd: root });
 });
 
 proves("the lockfile's version drifting from package.json", "lock-version", (root) => {
-  // The real drift: package.json reached 2.47.0 while the lock still said 2.35.3, twelve releases
-  // back, because npm only rewrites that field when a dependency-touching command runs.
+  // The real drift: package.json reached 2.47.0 while the lock still said 2.35.3, twelve releases back, because npm only rewrites that field when a dependency-touching command runs.
   const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
   lock.version = "0.0.1";
   write(root, "package-lock.json", JSON.stringify(lock, null, 2));
@@ -777,8 +670,7 @@ proves("a copyleft package entering the dependency tree", "dep-licences", (root)
 });
 
 proves("a package whose licence cannot be determined at all", "dep-licences", (root) => {
-  // Not the same failure as copyleft, and it must not be treated as clean: a scanner that reads
-  // "unknown" as permissive fails open, which is the whole thing it exists to prevent.
+  // Not the same failure as copyleft, and it must not be treated as clean: a scanner that reads "unknown" as permissive fails open, which is the whole thing it exists to prevent.
   const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
   lock.packages["node_modules/mystery"] = { version: "1.0.0" };
   write(root, "package-lock.json", JSON.stringify(lock, null, 2));
@@ -798,18 +690,14 @@ proves("a runtime dependency with no NOTICE attribution", "notice-attribution", 
 });
 
 proves("a stored field missing from the privacy policy's inventory", "privacy-inventory", (root) => {
-  // Appendix A says it is "a transcription" of the UserPreference schema and ends "That's the whole
-  // list." It had really drifted: two ColorHex fields were stored and unlisted. Dropping a field from
-  // the fixture's appendix reproduces exactly that.
+  // Appendix A says it is "a transcription" of the UserPreference schema and ends "That's the whole list." It had really drifted: two ColorHex fields were stored and unlisted. Dropping a field from the fixture's appendix reproduces exactly that.
   const p = join(root, "docs/legal/PRIVACY.md");
   write(root, "docs/legal/PRIVACY.md",
     readFileSync(p, "utf8").replace(/^- `discordId`.*$/m, "- (removed)"));
 });
 
 proves("a new per-user model with no privacy-policy mention", "privacy-model-coverage", (root) => {
-  // A brand-new collection, keyed on discordId the same way UserPreference is, added without ever
-  // updating the policy — the exact drift this check exists to catch on a model the other one
-  // (privacy-inventory) never looks at, because it only ever reads UserPreference.js by name.
+  // A brand-new collection, keyed on discordId the same way UserPreference is, added without ever updating the policy — the exact drift this check exists to catch on a model the other one (privacy-inventory) never looks at, because it only ever reads UserPreference.js by name.
   write(
     root,
     "models/GuildMember.js",
@@ -820,15 +708,12 @@ proves("a new per-user model with no privacy-policy mention", "privacy-model-cov
 // ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------
 
 proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-documented", (root) => {
-  // Remove every script. scripts-documented then examines 0 items and would historically have
-  // "passed" — verifying nothing. The ledger now turns that into a warning instead.
+  // Remove every script. scripts-documented then examines 0 items and would historically have "passed" — verifying nothing. The ledger now turns that into a warning instead.
   rmSync(join(root, "scripts/dofix.js"));
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
-// The CONTENT-TRACING branch: the archive grew, but not with the item that was removed. This branch
-// hid a real bug for its whole life because the zero-growth branch always fired first, so it is
-// exercised explicitly here.
+// The CONTENT-TRACING branch: the archive grew, but not with the item that was removed. This branch hid a real bug for its whole life because the zero-growth branch always fired first, so it is exercised explicitly here.
 {
   const root = makeFixture();
   try {
@@ -849,9 +734,7 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
   }
 }
 
-// An in-place EDIT must not read as a deletion. A unified diff renders a changed line as "-" plus
-// "+", so counting bare "-" lines demanded a graveyard entry for a one-line path correction. That
-// would have trained everyone to bypass the gate — worse than not having it.
+// An in-place EDIT must not read as a deletion. A unified diff renders a changed line as "-" plus "+", so counting bare "-" lines demanded a graveyard entry for a one-line path correction. That would have trained everyone to bypass the gate — worse than not having it.
 {
   const root = makeFixture();
   try {
@@ -873,27 +756,18 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
   }
 }
 
-// A HEADING edit must not read as a deletion either, and this is the case the in-place test above
-// does NOT cover: editedInPlace() pairs a removal with an addition by a six-word fingerprint, so it
-// only rescues an edit that kept six consecutive words. Renaming the product changes the file's own
-// H1 and breaks exactly that — which is how a project rename got reported as an item deleted rather
-// than resolved (v2.52.0, 2026-08-04 16:29 EDT). The fixture renames the title and nothing else.
+// A HEADING edit must not read as a deletion either, and this is the case the in-place test above does NOT cover: editedInPlace() pairs a removal with an addition by a six-word fingerprint, so it only rescues an edit that kept six consecutive words. Renaming the product changes the file's own H1 and breaks exactly that — which is how a project rename got reported as an item deleted rather than resolved (v2.52.0, 2026-08-04 16:29 EDT). The fixture renames the title and nothing else.
 {
   const root = makeFixture();
   try {
     const p = join(root, "docs/ideas/diors-notes.md");
-    // ⚠️ The stock fixture's H1 is "# Notes" — seven characters, which the 40-char churn filter drops
-    // before the heading rule is ever consulted. Renaming THAT would pass whether or not the fix
-    // exists, which is the vacuous-test failure this suite is built to prevent. So the baseline gets
-    // a long title first, in its own commit, and the rename is measured against that.
+    // ⚠️ The stock fixture's H1 is "# Notes" — seven characters, which the 40-char churn filter drops before the heading rule is ever consulted. Renaming THAT would pass whether or not the fix exists, which is the vacuous-test failure this suite is built to prevent. So the baseline gets a long title first, in its own commit, and the rename is measured against that.
     const OLD_H1 = "# Deferred intake notes for Dior's Builds, the project scratchpad";
     const NEW_H1 = "# Deferred intake notes for Dioreo, the project scratchpad";
     write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(/^# Notes$/m, OLD_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "baseline with a long title"], { cwd: root });
-    // ⚠️ The rename must change a word INSIDE the fingerprint, not append to it. editedInPlace()
-    // pairs a removal with an addition on any surviving six-word window, so a heading that merely
-    // grew would be rescued by that branch and prove nothing about the heading rule.
+    // ⚠️ The rename must change a word INSIDE the fingerprint, not append to it. editedInPlace() pairs a removal with an addition on any surviving six-word window, so a heading that merely grew would be rescued by that branch and prove nothing about the heading rule.
     write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "rename in the title"], { cwd: root });
@@ -922,27 +796,17 @@ proves(
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "tidy"], { cwd: root });
   },
-  // HEAD~1 is the fixture's second commit (which touches only the changelog); the breakIt step adds
-  // the "tidy" commit on top. In the baseline run HEAD~1 is the first commit, and the diff between
-  // them never touches the notes file — so the check is correctly silent there.
+  // HEAD~1 is the fixture's second commit (which touches only the changelog); the breakIt step adds the "tidy" commit on top. In the baseline run HEAD~1 is the first commit, and the diff between them never touches the notes file — so the check is correctly silent there.
   ["--diff", "HEAD~1"]
 );
 
-// ---- coverage: a check with no test is an unproven check --------------------------------------
-// ⚠️ ADDED 2026-08-02 01:30 EDT because this suite did not notice. `unreleased-on-main` was
-// registered in docs-audit.mjs and shipped with no prove case, and the summary still reported
-// "all 53 checks proven" — counting PROVE CASES, never checks. A suite whose whole purpose is
-// "no guard ships unproven" was itself blind to an unproven guard.
+// ---- coverage: a check with no test is an unproven check -------------------------------------- ⚠️ ADDED 2026-08-02 01:30 EDT because this suite did not notice. `unreleased-on-main` was registered in docs-audit.mjs and shipped with no prove case, and the summary still reported "all 53 checks proven" — counting PROVE CASES, never checks. A suite whose whole purpose is "no guard ships unproven" was itself blind to an unproven guard.
 {
   const listed = execFileSync("node", [AUDIT, "--list"], { encoding: "utf8" })
     .split("\n")
     .map((l) => (l.match(/^(?:ERROR|WARN)\s+(\S+)/) || [])[1])
     .filter(Boolean);
-  // ⚠️ EXEMPTIONS CARRY A REASON, per this repo's own convention — an unexplained allowlist
-  // silences a real defect forever. These four read the developer's REAL ~/.claude (the memory
-  // store, the external anchors, the slug derived from the repo's location). A fixture in /tmp
-  // cannot make them fire without writing into the actual home directory, which a test must not
-  // do. They are exercised every time the audit runs for real; in CI they SKIP and say so.
+  // ⚠️ EXEMPTIONS CARRY A REASON, per this repo's own convention — an unexplained allowlist silences a real defect forever. These four read the developer's REAL ~/.claude (the memory store, the external anchors, the slug derived from the repo's location). A fixture in /tmp cannot make them fire without writing into the actual home directory, which a test must not do. They are exercised every time the audit runs for real; in CI they SKIP and say so.
   const CANNOT_FIXTURE = {
     "memory-xref": "reads the real ~/.claude memory store",
     "memory-index": "reads the real ~/.claude memory store",

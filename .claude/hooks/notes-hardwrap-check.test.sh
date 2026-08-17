@@ -1,7 +1,5 @@
 #!/bin/bash
-# Proofs for notes-hardwrap-check.sh — the gate that exists because a prose rule was violated three
-# separate times. Its awk state machine has one genuinely subtle case (the bare `-->` closing line,
-# which an earlier version counted as prose and mis-fired on), so it is pinned here.
+# Proofs for notes-hardwrap-check.sh — the gate that exists because a prose rule was violated three separate times. Its awk state machine has one genuinely subtle case (the bare `-->` closing line, which an earlier version counted as prose and mis-fired on), so it is pinned here.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/notes-hardwrap-check.sh"
 pass=0; fail=0
@@ -32,8 +30,7 @@ a "no comment at all is fine"      silent "$NOTES" "$(printf 'just some\nordinar
 # Harkirat's explicit carve-out: a real bulleted list inside a comment, one bullet per line.
 a "bulleted list carve-out"        silent "$NOTES" "$(printf '<!-- intro\n- first\n- second\n-->\n')"
 a "numbered list carve-out"        silent "$NOTES" "$(printf '<!-- intro\n1. first\n2. second\n-->\n')"
-# The subtle one: a bare `-->` on its own closing line is a DELIMITER, not prose. An earlier version
-# counted it and fired on the bulleted carve-out because of it.
+# The subtle one: a bare `-->` on its own closing line is a DELIMITER, not prose. An earlier version counted it and fired on the bulleted carve-out because of it.
 a "bare --> closing line is not prose" silent "$NOTES" "$(printf '<!-- intro\n* only a bullet\n-->\n')"
 # …but a comment that ends mid-sentence on the closing line IS prose and must still fire.
 a "text before --> still counts"   fires  "$NOTES" "$(printf '<!-- intro\nreal prose here -->\n')"

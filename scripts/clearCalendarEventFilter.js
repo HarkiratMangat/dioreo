@@ -1,9 +1,4 @@
-// One-time cleanup: calendarEventFilter's default-preference toggle was silenced in /settings
-// 2026-08-15 13:01 EDT (Harkirat's direct request) -- /calendar no longer reads this field, so any
-// value already saved on a UserPreference doc is now dead data. Unscoped $unset is correct here
-// (unlike a cache field keyed on an algorithm version) because this isn't invalidating a cache, it's
-// removing a preference nothing reads anymore -- every user gets the identical, harmless outcome.
-// Run once: node scripts/clearCalendarEventFilter.js
+// One-time cleanup: calendarEventFilter's default-preference toggle was silenced in /settings 2026-08-15 13:01 EDT (Harkirat's direct request) -- /calendar no longer reads this field, so any value already saved on a UserPreference doc is now dead data. Unscoped $unset is correct here (unlike a cache field keyed on an algorithm version) because this isn't invalidating a cache, it's removing a preference nothing reads anymore -- every user gets the identical, harmless outcome. Run once: node scripts/clearCalendarEventFilter.js
 require('dotenv').config();
 const mongoose = require('mongoose');
 const UserPreference = require('../models/UserPreference');

@@ -1,16 +1,9 @@
-// Routing-contract tests for handlers/*.js — the per-subsystem split of index.js
-// (2026-08-13 17:50 EDT, v3.16.0-pre). See .claude/rules/interaction-router.md.
+// Routing-contract tests for handlers/*.js — the per-subsystem split of index.js (2026-08-13 17:50 EDT, v3.16.0-pre). See .claude/rules/interaction-router.md.
 //
-// WHAT THIS COVERS, and what it deliberately does not. The branch BODIES need a live Discord
-// interaction plus Mongo, so their behaviour is verified by the live click-test, not here. What is
-// checkable cheaply — and is exactly what this refactor could break silently — is OWNERSHIP:
+// WHAT THIS COVERS, and what it deliberately does not. The branch BODIES need a live Discord interaction plus Mongo, so their behaviour is verified by the live click-test, not here. What is checkable cheaply — and is exactly what this refactor could break silently — is OWNERSHIP:
 //
-//   1. PREFIX EXCLUSIVITY. The whole design rests on no two handlers claiming the same custom_id.
-//      That was verified mechanically when the branches were extracted, but nothing would stop a
-//      later edit from adding, say, `set_` to a second module. Two owners means the first in the
-//      chain silently swallows the other's interactions — no error, the button just stops working.
-//   2. FALL-THROUGH. A handler must answer FALSE for an id it does not own, or the dispatch chain
-//      stops early and every subsystem below it goes dead.
+//   1. PREFIX EXCLUSIVITY. The whole design rests on no two handlers claiming the same custom_id. That was verified mechanically when the branches were extracted, but nothing would stop a later edit from adding, say, `set_` to a second module. Two owners means the first in the chain silently swallows the other's interactions — no error, the button just stops working.
+//   2. FALL-THROUGH. A handler must answer FALSE for an id it does not own, or the dispatch chain stops early and every subsystem below it goes dead.
 //
 // Runs with no network and no DB: an unowned id returns before any branch body executes.
 
@@ -31,23 +24,13 @@ function check(name, fn) {
     }
 }
 
-// Every module in handlers/ except the router itself is a subsystem handler. A module is either a
-// single file (handlers/foo.js) or a directory whose require() resolves via its own index.js --
-// handlers/manage/ took the directory shape 2026-08-14 17:01 EDT (stage 2 of docs/superpowers/specs/
-// 2026-08-14-manage-slash-decomposition-design.md) once its single file outgrew ~2,400 lines. Node's
-// own resolution already treats `require(path.join(HANDLERS_DIR, 'manage'))` identically to a file,
-// so every check below that calls require() needs no change -- only the checks that read SOURCE off
-// disk by assuming `${name}.js` is one file need to learn about the directory shape.
+// Every module in handlers/ except the router itself is a subsystem handler. A module is either a single file (handlers/foo.js) or a directory whose require() resolves via its own index.js -- handlers/manage/ took the directory shape 2026-08-14 17:01 EDT (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) once its single file outgrew ~2,400 lines. Node's own resolution already treats `require(path.join(HANDLERS_DIR, 'manage'))` identically to a file, so every check below that calls require() needs no change -- only the checks that read SOURCE off disk by assuming `${name}.js` is one file need to learn about the directory shape.
 const moduleNames = fs.readdirSync(HANDLERS_DIR, { withFileTypes: true })
     .filter(e => (e.isFile() && e.name.endsWith('.js') && e.name !== 'router.js') || e.isDirectory())
     .map(e => e.name.replace(/\.js$/, ''))
     .sort();
 
-// Every .js file a module's source is spread across -- one file for a single-file module, every
-// top-level .js inside the directory for a directory module (encounter order matches
-// fs.readdirSync, used consistently below so a stateful per-line scan resets predictably at each
-// file boundary rather than leaking state -- e.g. an isButton()/isStringSelectMenu() block-type
-// marker -- across an unrelated file).
+// Every .js file a module's source is spread across -- one file for a single-file module, every top-level .js inside the directory for a directory module (encounter order matches fs.readdirSync, used consistently below so a stateful per-line scan resets predictably at each file boundary rather than leaking state -- e.g. an isButton()/isStringSelectMenu() block-type marker -- across an unrelated file).
 function moduleFiles(name) {
     const asFile = path.join(HANDLERS_DIR, `${name}.js`);
     if (fs.existsSync(asFile)) return [asFile];
@@ -69,12 +52,7 @@ for (const name of moduleNames) {
     });
 }
 
-// --- 2. Prefix exclusivity ---
-// Every prefix is read off the module itself. It used to carry a hardcoded `['colors_']` for the one
-// handler that had no OWNED_PREFIXES export, which meant a NEW colours prefix would have been
-// invisible to this check — a blind spot in the very test that protects the dispatch design. Now
-// nothing is hardcoded: a handler that fails to declare its prefixes fails the test rather than
-// quietly contributing nothing to the collision scan.
+// --- 2. Prefix exclusivity --- Every prefix is read off the module itself. It used to carry a hardcoded `['colors_']` for the one handler that had no OWNED_PREFIXES export, which meant a NEW colours prefix would have been invisible to this check — a blind spot in the very test that protects the dispatch design. Now nothing is hardcoded: a handler that fails to declare its prefixes fails the test rather than quietly contributing nothing to the collision scan.
 const prefixOwners = [];
 for (const name of moduleNames) {
     const mod = require(path.join(HANDLERS_DIR, name));
@@ -101,9 +79,7 @@ check('no two handlers claim overlapping custom_id prefixes', () => {
     assert.deepStrictEqual(collisions, [], `\n      ${collisions.join('\n      ')}`);
 });
 
-// --- 3. Fall-through ---
-// One id per handler, plus ids that belong to no handler at all. Each must be declined by every
-// handler that does not own it.
+// --- 3. Fall-through --- One id per handler, plus ids that belong to no handler at all. Each must be declined by every handler that does not own it.
 const FOREIGN_IDS = [
     'admin_visibility_menu',   // owned by commands/admin.js, dispatched before the chain
     'totally_unknown_button',
@@ -127,29 +103,15 @@ for (const name of moduleNames) {
     });
 }
 
-// --- 4. The indicator-button trap ---
-// Disabled "1 / 2" page indicators are prefixed like their own subsystem's real buttons. They must
-// never be consumed as if they were a real click. colors_subpage_indicator is the documented case;
-// set_page_indicator is its /settings twin.
+// --- 4. The indicator-button trap --- Disabled "1 / 2" page indicators are prefixed like their own subsystem's real buttons. They must never be consumed as if they were a real click. colors_subpage_indicator is the documented case; set_page_indicator is its /settings twin.
 check('colors_subpage_indicator is not consumed by handlers/colors.js', async () => {
     const { handleColorsButton } = require(path.join(HANDLERS_DIR, 'colors'));
     assert.strictEqual(await handleColorsButton({ customId: 'colors_subpage_indicator' }), false);
 });
 
-// --- 5. TYPE DISCIPLINE ---
-// A REAL BUG this caught on 2026-08-13 18:45 EDT, after the split was already pushed. Pre-split, the
-// router separated interaction types structurally: `set_` (a SELECT) lived in the isStringSelectMenu()
-// block and `set_page_` (a BUTTON) in the isButton() block. Flattening each subsystem into one
-// function removed that separation — and `set_page_2` matches `startsWith('set_')` first, so a page
-// click entered the select handler, deferred, then threw on `interaction.values[0]` (buttons have no
-// `.values`). The router's crash net swallowed it, so the button simply looked dead.
+// --- 5. TYPE DISCIPLINE --- A REAL BUG this caught on 2026-08-13 18:45 EDT, after the split was already pushed. Pre-split, the router separated interaction types structurally: `set_` (a SELECT) lived in the isStringSelectMenu() block and `set_page_` (a BUTTON) in the isButton() block. Flattening each subsystem into one function removed that separation — and `set_page_2` matches `startsWith('set_')` first, so a page click entered the select handler, deferred, then threw on `interaction.values[0]` (buttons have no `.values`). The router's crash net swallowed it, so the button simply looked dead.
 //
-// The fix was to make the type test explicit in each branch. This test is what stops it regressing:
-// a handler must DECLINE an id whose prefix it owns when the interaction TYPE is wrong for it.
-// 5a. RUNTIME PROBE. `interaction.values` exists only on a select. A button that wrongly enters a
-// select branch reads it and throws — which is exactly what happened. The probe makes that read
-// distinguishable from every other failure (a missing DB, an unstubbed method), so the assertion is
-// about type routing specifically and not about the branch running to completion.
+// The fix was to make the type test explicit in each branch. This test is what stops it regressing: a handler must DECLINE an id whose prefix it owns when the interaction TYPE is wrong for it. 5a. RUNTIME PROBE. `interaction.values` exists only on a select. A button that wrongly enters a select branch reads it and throws — which is exactly what happened. The probe makes that read distinguishable from every other failure (a missing DB, an unstubbed method), so the assertion is about type routing specifically and not about the branch running to completion.
 const VALUES_READ = 'SELECT_ONLY_VALUES_READ';
 const asButton = (customId) => ({
     customId,
@@ -178,23 +140,18 @@ for (const [mod, id, why] of buttonCases) {
     });
 }
 
-// 5b. STRUCTURAL. A module handling more than one interaction type must type-test every branch —
-// prefix alone cannot separate them, and relying on branch ORDER to do it is how 5a's bug happened.
+// 5b. STRUCTURAL. A module handling more than one interaction type must type-test every branch — prefix alone cannot separate them, and relying on branch ORDER to do it is how 5a's bug happened.
 check('every branch in a mixed-type handler carries an interaction-type test', () => {
     const offenders = [];
     for (const name of moduleNames) {
-        // Per FILE, not per module -- a directory module's page files (handlers/manage/draws.js
-        // etc.) never call isButton()/isStringSelectMenu()/isModalSubmit() at all (they receive an
-        // already-typed interaction from the module's index.js), so they trivially fall under
-        // `types.length < 2` and need no exception; only index.js itself carries the 3 type blocks.
+        // Per FILE, not per module -- a directory module's page files (handlers/manage/draws.js etc.) never call isButton()/isStringSelectMenu()/isModalSubmit() at all (they receive an already-typed interaction from the module's index.js), so they trivially fall under `types.length < 2` and need no exception; only index.js itself carries the 3 type blocks.
         for (const filePath of moduleFiles(name)) {
             const fileLabel = path.relative(HANDLERS_DIR, filePath);
             const src = fs.readFileSync(filePath, 'utf8')
                 .split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
             const types = ['isButton', 'isStringSelectMenu', 'isModalSubmit'].filter(t => src.includes(t + '()'));
             if (types.length < 2) continue; // single-type file: prefix ownership is sufficient
-            // manage/index.js (like the old manage.js) groups its branches under three type blocks
-            // instead of testing per branch.
+            // manage/index.js (like the old manage.js) groups its branches under three type blocks instead of testing per branch.
             if (/if \(interaction\.isStringSelectMenu\(\)\) \{/.test(src) && /if \(interaction\.isButton\(\)\) \{/.test(src)) continue;
             for (const line of src.split('\n')) {
                 const m = line.match(/^\s{4,8}if \((.*customId.*)\) \{/);
@@ -207,24 +164,13 @@ check('every branch in a mixed-type handler carries an interaction-type test', (
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
-// --- 6. INTRA-MODULE SHADOWING ---
-// Check 2 asks whether two MODULES claim the same id. This asks the same question one level down:
-// inside a single module, does an earlier branch swallow a later one? That is precisely the shape of
-// the `set_`/`set_page_` bug — the branches were in one module, the earlier prefix matched the later
-// id, and only interaction type separated them. A shadowed branch is DEAD CODE that looks live: no
-// error, no log, the button simply does nothing.
+// --- 6. INTRA-MODULE SHADOWING --- Check 2 asks whether two MODULES claim the same id. This asks the same question one level down: inside a single module, does an earlier branch swallow a later one? That is precisely the shape of the `set_`/`set_page_` bug — the branches were in one module, the earlier prefix matched the later id, and only interaction type separated them. A shadowed branch is DEAD CODE that looks live: no error, no log, the button simply does nothing.
 //
-// A pair is fine when any of these hold: they are gated to different interaction types; the earlier
-// branch matches by `===` rather than `startsWith`; or it explicitly excludes the later id
-// (`&& customId !== 'x'`), which is how the paginator indicators are handled.
+// A pair is fine when any of these hold: they are gated to different interaction types; the earlier branch matches by `===` rather than `startsWith`; or it explicitly excludes the later id (`&& customId !== 'x'`), which is how the paginator indicators are handled.
 check('no branch is shadowed by an earlier branch in the same module', () => {
     const shadowed = [];
     for (const name of moduleNames) {
-      // Per FILE, not per module -- the `blockType` state below tracks which isXxx() block a
-      // branch sits under, and that state must reset at each FILE boundary. A directory module's
-      // page files are called with an already-resolved customId (no re-dispatch inside them beyond
-      // their own small per-page button groupers like manage/admins.js's handleButton), so a
-      // "shadow" can only be real within one physical file, never across two.
+      // Per FILE, not per module -- the `blockType` state below tracks which isXxx() block a branch sits under, and that state must reset at each FILE boundary. A directory module's page files are called with an already-resolved customId (no re-dispatch inside them beyond their own small per-page button groupers like manage/admins.js's handleButton), so a "shadow" can only be real within one physical file, never across two.
       for (const filePath of moduleFiles(name)) {
         const fileLabel = path.relative(HANDLERS_DIR, filePath);
         const src = fs.readFileSync(filePath, 'utf8')
@@ -266,16 +212,9 @@ check('no branch is shadowed by an earlier branch in the same module', () => {
     assert.deepStrictEqual(shadowed, [], `\n      ${shadowed.join('\n      ')}`);
 });
 
-// --- 7. COMMENTS THAT POINT ACROSS A FILE BOUNDARY ---
-// The split moved code, and the comments came with it — including their POSITIONAL language. A
-// comment saying a handler is "further down" was true in the 4,553-line index.js and is a lie once
-// that handler lives in another file. This is invisible to every other check here: the code is
-// correct, only the prose is wrong, and prose is what the next person navigates by.
+// --- 7. COMMENTS THAT POINT ACROSS A FILE BOUNDARY --- The split moved code, and the comments came with it — including their POSITIONAL language. A comment saying a handler is "further down" was true in the 4,553-line index.js and is a lie once that handler lives in another file. This is invisible to every other check here: the code is correct, only the prose is wrong, and prose is what the next person navigates by.
 //
-// Flags a line ONLY when it combines positional language with a custom_id owned by a DIFFERENT
-// module AND does not name that module's file. Naming the file is the fix and the escape hatch:
-// "`toggle_` is handled in handlers/settings.js" is fine; "`toggle_` further down" is not.
-// Found 4 real cases on 2026-08-13 21:35 EDT, which is why it is here rather than a one-off sweep.
+// Flags a line ONLY when it combines positional language with a custom_id owned by a DIFFERENT module AND does not name that module's file. Naming the file is the fix and the escape hatch: "`toggle_` is handled in handlers/settings.js" is fine; "`toggle_` further down" is not. Found 4 real cases on 2026-08-13 21:35 EDT, which is why it is here rather than a one-off sweep.
 check('no comment uses positional language about a custom_id owned by another module', () => {
     const POSITIONAL = /\b(above|below|further down|further up|up there|earlier in this file|later in this file)\b/i;
     const owners = {};
@@ -289,12 +228,7 @@ check('no comment uses positional language about a custom_id owned by another mo
         return best ? owners[best] : null;
     };
 
-    // Expands a directory module into its own files (self stays the MODULE name, e.g. 'manage', so
-    // a comment inside handlers/manage/draws.js referencing an `mng_`-prefixed id it also owns is
-    // not flagged as pointing at "another module" just because the id's declaration lives in a
-    // sibling file within the same directory). router.js is scanned too, same as before -- it isn't
-    // in moduleNames (it's the dispatcher, not a subsystem), but its own comments can still use
-    // positional language about a subsystem's id.
+    // Expands a directory module into its own files (self stays the MODULE name, e.g. 'manage', so a comment inside handlers/manage/draws.js referencing an `mng_`-prefixed id it also owns is not flagged as pointing at "another module" just because the id's declaration lives in a sibling file within the same directory). router.js is scanned too, same as before -- it isn't in moduleNames (it's the dispatcher, not a subsystem), but its own comments can still use positional language about a subsystem's id.
     const offenders = [];
     for (const entry of fs.readdirSync(HANDLERS_DIR, { withFileTypes: true })) {
         const self = entry.name.replace(/\.js$/, '');
@@ -317,20 +251,11 @@ check('no comment uses positional language about a custom_id owned by another mo
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
-// --- 8. NO NUMBERED OR LETTERED SECTION HEADERS ---
-// Standing convention, Harkirat 2026-08-13 21:36 EDT: *"ditch the numbering/lettering system and
-// just do section headers. as code changes, the numbering/lettering go stale."*
+// --- 8. NO NUMBERED OR LETTERED SECTION HEADERS --- Standing convention, Harkirat 2026-08-13 21:36 EDT: *"ditch the numbering/lettering system and just do section headers. as code changes, the numbering/lettering go stale."*
 //
-// A label like `PHASE 4` or `// B.6` encodes POSITION, which is precisely the thing that rots. The
-// split proved it three ways at once: `index.js` and `bot/registry.js` both ended up with a `PHASE
-// 4` meaning different things; `A.`/`C.`/`F.` each labelled two unrelated sections in two files;
-// `colors.js` carried `B.6`–`B.8` while its supposed siblings `B.1`–`B.5` lived in other files; and
-// `router.js` kept `STEP 6.1`/`6.2` with 6.3–6.5 deleted, leaving holes a reader has to explain to
-// themselves. A descriptive header cannot go stale this way — it says what the code IS, not where
-// it sits. 44 labels were removed to establish this; the check exists so they do not come back.
+// A label like `PHASE 4` or `// B.6` encodes POSITION, which is precisely the thing that rots. The split proved it three ways at once: `index.js` and `bot/registry.js` both ended up with a `PHASE 4` meaning different things; `A.`/`C.`/`F.` each labelled two unrelated sections in two files; `colors.js` carried `B.6`–`B.8` while its supposed siblings `B.1`–`B.5` lived in other files; and `router.js` kept `STEP 6.1`/`6.2` with 6.3–6.5 deleted, leaving holes a reader has to explain to themselves. A descriptive header cannot go stale this way — it says what the code IS, not where it sits. 44 labels were removed to establish this; the check exists so they do not come back.
 //
-// An ordered list INSIDE a paragraph ("1. load the modules, 2. register listeners") is fine and is
-// not matched — it describes a real sequence rather than labelling a section.
+// An ordered list INSIDE a paragraph ("1. load the modules, 2. register listeners") is fine and is not matched — it describes a real sequence rather than labelling a section.
 check('no numbered or lettered section headers (they encode position, which rots)', () => {
     const SCHEMES = [
         [/^\s*\/\/ (?:---\s*)?(?:PHASE|STEP|STAGE) [\d.]+:/, 'PHASE/STEP/STAGE numbering'],
@@ -341,9 +266,7 @@ check('no numbered or lettered section headers (they encode position, which rots
         { dir: path.join(__dirname, '..'), files: ['index.js'] },
         { dir: path.join(__dirname, '..', 'bot'), files: null },
         { dir: HANDLERS_DIR, files: null },
-        // handlers/manage/ is a directory module (2026-08-14 17:03 EDT) -- fs.readdirSync(HANDLERS_DIR)
-        // above only lists it as a bare directory name with no `.js` suffix, so its own files need
-        // their own root or this check silently stops scanning ~1,900 lines of manage/*.js.
+        // handlers/manage/ is a directory module (2026-08-14 17:03 EDT) -- fs.readdirSync(HANDLERS_DIR) above only lists it as a bare directory name with no `.js` suffix, so its own files need their own root or this check silently stops scanning ~1,900 lines of manage/*.js.
         { dir: path.join(HANDLERS_DIR, 'manage'), files: null },
     ];
     const offenders = [];
@@ -359,27 +282,16 @@ check('no numbered or lettered section headers (they encode position, which rots
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
-// --- 9. DECLARED PREFIXES vs THE BRANCHES THAT ACTUALLY EXIST ---
-// Check 2 trusts OWNED_PREFIXES. This is what makes that trust earned. A declaration and the
-// branches beneath it are two separate pieces of state, and nothing kept them in step: every check
-// here reads the declaration, while Discord routes on the branches.
+// --- 9. DECLARED PREFIXES vs THE BRANCHES THAT ACTUALLY EXIST --- Check 2 trusts OWNED_PREFIXES. This is what makes that trust earned. A declaration and the branches beneath it are two separate pieces of state, and nothing kept them in step: every check here reads the declaration, while Discord routes on the branches.
 //
-// It matters most for handlers/colors.js, which is deliberately DECLARATIVE-ONLY — it does not gate
-// on OWNED_PREFIXES at all (an unrecognised `colors_*` id must fall through, see the comment on the
-// declaration there), so its list exists solely to feed check 2. That comment ends "Keep this list
-// in step with the branches", which was an obligation on whoever edits the file and is now an
-// assertion. Add a `colorsx_` branch without declaring it and the collision scan silently stops
-// covering it — no error, and the one check protecting the dispatch design quietly narrows.
+// It matters most for handlers/colors.js, which is deliberately DECLARATIVE-ONLY — it does not gate on OWNED_PREFIXES at all (an unrecognised `colors_*` id must fall through, see the comment on the declaration there), so its list exists solely to feed check 2. That comment ends "Keep this list in step with the branches", which was an obligation on whoever edits the file and is now an assertion. Add a `colorsx_` branch without declaring it and the collision scan silently stops covering it — no error, and the one check protecting the dispatch design quietly narrows.
 //
 // Two directions, because each fails differently:
 //   declared ⊇ actual — an undeclared branch is invisible to check 2 (a real collision can hide).
 //   every declared prefix has ≥1 branch — a stale entry claims a namespace nothing serves, which
 //   can block a LATER module from legitimately taking it.
 //
-// Comments are stripped before matching. handlers/drawprices.js documents, in prose, the `toggle_`
-// prefix it deliberately avoided; read as code that reads as a collision, and an audit chased it as
-// a real bug on 2026-08-13. A checker that treats comments as code manufactures findings out of the
-// very comments written to prevent them.
+// Comments are stripped before matching. handlers/drawprices.js documents, in prose, the `toggle_` prefix it deliberately avoided; read as code that reads as a collision, and an audit chased it as a real bug on 2026-08-13. A checker that treats comments as code manufactures findings out of the very comments written to prevent them.
 const stripComments = (src) => src.split('\n').map(line => {
     let out = '', quote = null, i = 0;
     while (i < line.length) {
@@ -396,9 +308,7 @@ const stripComments = (src) => src.split('\n').map(line => {
     return out;
 }).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
 
-// Every literal this module branches on. `typeof customId === 'string'` is excluded explicitly —
-// it matches the shape of a branch test and is not one, and it produced 66 phantom collisions in
-// the audit that led to this check.
+// Every literal this module branches on. `typeof customId === 'string'` is excluded explicitly — it matches the shape of a branch test and is not one, and it produced 66 phantom collisions in the audit that led to this check.
 const branchLiterals = (src) => {
     const found = new Set();
     for (const m of src.matchAll(/(?:interaction\.)?customId\.startsWith\(\s*(['"`])([^'"`]+)\1/g)) found.add(m[2]);
@@ -409,9 +319,7 @@ const branchLiterals = (src) => {
     return [...found];
 };
 
-// Concatenated, comment-stripped source for a module -- safe here (unlike checks 5b/6 above)
-// because branchLiterals() is a stateless per-line regex scan with no cross-line/cross-file state
-// to leak; file order doesn't matter for building a Set of literals.
+// Concatenated, comment-stripped source for a module -- safe here (unlike checks 5b/6 above) because branchLiterals() is a stateless per-line regex scan with no cross-line/cross-file state to leak; file order doesn't matter for building a Set of literals.
 const moduleSource = (name) => moduleFiles(name).map(f => stripComments(fs.readFileSync(f, 'utf8'))).join('\n');
 
 check('every branch literal is covered by its own module\'s OWNED_PREFIXES', () => {
@@ -443,18 +351,9 @@ check('every declared prefix has at least one branch behind it', () => {
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
-// --- 10. THE ADMIN GATE'S PREFIX LIST MUST EQUAL THE MODULES' OWN ---
-// handlers/router.js's MANAGE_PREFIX_COMMAND is the choke point that decides who may click a
-// /manage, /autobuild or /alerts component. It carries its own copy of those three modules'
-// prefixes — it has to, because it maps each prefix to a COMMAND NAME for the per-command
-// permission lookup, which OWNED_PREFIXES does not encode.
+// --- 10. THE ADMIN GATE'S PREFIX LIST MUST EQUAL THE MODULES' OWN --- handlers/router.js's MANAGE_PREFIX_COMMAND is the choke point that decides who may click a /manage, /autobuild or /alerts component. It carries its own copy of those three modules' prefixes — it has to, because it maps each prefix to a COMMAND NAME for the per-command permission lookup, which OWNED_PREFIXES does not encode.
 //
-// The split created the duplication: OWNED_PREFIXES became the obvious place a module states what
-// it owns, while the guard's list stayed behind in the router. They are byte-identical today and
-// nothing checked that they stay so. Add `mng_newthing` to handlers/manage.js and forget the map,
-// and the new branch ships with NO admin check — anyone who can see the panel can click it, while
-// check 2, check 9 and every other test here stay green. That is a permission hole opened by an
-// omission, which is the failure mode this whole file exists to make impossible.
+// The split created the duplication: OWNED_PREFIXES became the obvious place a module states what it owns, while the guard's list stayed behind in the router. They are byte-identical today and nothing checked that they stay so. Add `mng_newthing` to handlers/manage.js and forget the map, and the new branch ships with NO admin check — anyone who can see the panel can click it, while check 2, check 9 and every other test here stay green. That is a permission hole opened by an omission, which is the failure mode this whole file exists to make impossible.
 check('the admin guard covers exactly the prefixes its modules declare', () => {
     const routerSrc = stripComments(fs.readFileSync(path.join(HANDLERS_DIR, 'router.js'), 'utf8'));
     const block = /MANAGE_PREFIX_COMMAND\s*=\s*\{([\s\S]*?)\}/.exec(routerSrc);

@@ -1,16 +1,9 @@
 #!/usr/bin/env bash
 # .claude/hooks/self-check.test.sh -- self-test for self-check.sh (added 2026-08-11 21:08 EDT).
 #
-# ⚠️ WHAT THIS IS ACTUALLY GUARDING, because it is not "does the hook print something". The hook now
-# carries a SECOND COPY of the model-selection grid, duplicated from the
-# `reference_priority_tier_system` memory. That copy was accepted knowingly -- a pointer is what
-# measurably failed -- but duplicated state rots silently, and the values that rot are precisely the
-# ones that discriminate between cells. So this pins the DISCRIMINATING content, not the prose:
-# the axis definitions, the corner cells, and the retired-cell rule. Reword the surrounding text
-# freely; change a cell or drop an axis definition and the suite fails.
+# ⚠️ WHAT THIS IS ACTUALLY GUARDING, because it is not "does the hook print something". The hook now carries a SECOND COPY of the model-selection grid, duplicated from the `reference_priority_tier_system` memory. That copy was accepted knowingly -- a pointer is what measurably failed -- but duplicated state rots silently, and the values that rot are precisely the ones that discriminate between cells. So this pins the DISCRIMINATING content, not the prose: the axis definitions, the corner cells, and the retired-cell rule. Reword the surrounding text freely; change a cell or drop an axis definition and the suite fails.
 #
-# ⚠️ It also pins `hookEventName`, whose absence makes the whole payload SILENTLY DISCARDED -- the
-# failure that left two hooks dead for weeks while exiting 0 and printing valid JSON.
+# ⚠️ It also pins `hookEventName`, whose absence makes the whole payload SILENTLY DISCARDED -- the failure that left two hooks dead for weeks while exiting 0 and printing valid JSON.
 set -uo pipefail
 
 HOOK="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/self-check.sh"
@@ -43,8 +36,7 @@ check 'still carries the FIRST ACTION gate' 'FIRST ACTION'
 check 'still carries the CHAPTERS nudge' 'CHAPTERS'
 check 'still carries the JUDGMENT RULES' 'JUDGMENT RULES'
 
-# --- Axis definitions. These are the two facts whose ABSENCE caused two wrong picks on 2026-08-11:
-# the grid was named everywhere and defined nowhere that loads.
+# --- Axis definitions. These are the two facts whose ABSENCE caused two wrong picks on 2026-08-11: the grid was named everywhere and defined nowhere that loads.
 check 'defines premise risk (High = the framing itself is in question)' 'the task IS working out whether the framing is right'
 check 'defines deliberation load as PLACES' 'Low = ONE place'
 check 'warns that Axis B is not thinking difficulty' 'never how hard the thinking is'

@@ -1,8 +1,4 @@
-// Stateful + concurrent behaviour of the split's module-private stores.
-// Added 2026-08-14 10:05 EDT (v3.16.0-pre) after an audit recorded these as "verified only in the
-// weak sense that each store lives in exactly one module" — which proves ONE INSTANCE EXISTS and
-// says nothing about whether the timing works. `scripts/handlerRouting.test.js` covers OWNERSHIP
-// (which module answers for a custom_id); this covers what happens on the SECOND click.
+// Stateful + concurrent behaviour of the split's module-private stores. Added 2026-08-14 10:05 EDT (v3.16.0-pre) after an audit recorded these as "verified only in the weak sense that each store lives in exactly one module" — which proves ONE INSTANCE EXISTS and says nothing about whether the timing works. `scripts/handlerRouting.test.js` covers OWNERSHIP (which module answers for a custom_id); this covers what happens on the SECOND click.
 //
 // It needs no Discord and no Mongo, and that is a property of the code rather than a mock pile:
 //   · `attachGuildPolicy` returns immediately when `interaction.guildId` is null, so a DM-shaped
@@ -14,8 +10,7 @@
 //     any database work. The sentinel is what makes "the cooldown accepted this click" observable
 //     without letting the branch run to completion.
 //
-// ⚠️ NOT covered here, and deliberately: `/manage`'s undo and pending-confirmation Maps. Reaching
-// them requires driving a real mutation through Mongo, so they stay on the live click-test.
+// ⚠️ NOT covered here, and deliberately: `/manage`'s undo and pending-confirmation Maps. Reaching them requires driving a real mutation through Mongo, so they stay on the live click-test.
 
 const assert = require('assert');
 
@@ -58,9 +53,7 @@ function mockClick(customId, userId, { type = 'button' } = {}) {
     };
 }
 
-// Drives a handler and reports which of the two outcomes happened. Anything else rethrows —
-// a test that swallowed an unexpected error would report a cooldown as working when the branch
-// had actually crashed on something unrelated.
+// Drives a handler and reports which of the two outcomes happened. Anything else rethrows — a test that swallowed an unexpected error would report a cooldown as working when the branch had actually crashed on something unrelated.
 async function drive(handler, interaction) {
     try {
         await handler(interaction);
@@ -74,9 +67,7 @@ async function drive(handler, interaction) {
 const { handleColorsButton } = require('../handlers/colors');
 const { handleInteraction } = require('../handlers/router');
 
-// --- THE 10s "REFRESH COLORS" COOLDOWN (handlers/colors.js, module-private Map) ---
-// It exists because that button does real work — it re-downloads and re-extracts a palette —
-// unlike the generic 600ms guard, whose window would not meaningfully throttle it.
+// --- THE 10s "REFRESH COLORS" COOLDOWN (handlers/colors.js, module-private Map) --- It exists because that button does real work — it re-downloads and re-extracts a palette — unlike the generic 600ms guard, whose window would not meaningfully throttle it.
 check('colors: a second Refresh inside 10s is rejected, not re-run', async () => {
     const first = mockClick('colors_refresh_avatar_0|u-cool-1', 'u-cool-1');
     assert.strictEqual(await drive(handleColorsButton, first), 'ACCEPTED',
@@ -95,11 +86,7 @@ check('colors: the cooldown is keyed PER USER, not global', async () => {
         'a different user was blocked by someone else\'s cooldown — the Map key is wrong');
 });
 
-// --- CONCURRENCY: the check-then-write must not be interleavable ---
-// Node is single-threaded, so this passes only because the read, the comparison and the write sit
-// in ONE synchronous run — no `await` between them. Insert one (an admin lookup, a DB read, an
-// await'ed log) and two clicks landing in the same tick would BOTH see an empty slot and both
-// proceed. That is the regression this pins.
+// --- CONCURRENCY: the check-then-write must not be interleavable --- Node is single-threaded, so this passes only because the read, the comparison and the write sit in ONE synchronous run — no `await` between them. Insert one (an admin lookup, a DB read, an await'ed log) and two clicks landing in the same tick would BOTH see an empty slot and both proceed. That is the regression this pins.
 check('colors: two simultaneous Refresh clicks — exactly one passes', async () => {
     const a = mockClick('colors_refresh_avatar_0|u-race-1', 'u-race-1');
     const b = mockClick('colors_refresh_avatar_0|u-race-1', 'u-race-1');
@@ -110,9 +97,7 @@ check('colors: two simultaneous Refresh clicks — exactly one passes', async ()
         'an await between the cooldown read and its write would produce 2');
 });
 
-// --- THE GENERIC 600ms ANTI-SPAM GUARD (handlers/router.js, module-private Map) ---
-// A click inside the window is swallowed with a bare deferUpdate() so Discord shows no "This
-// interaction failed" toast, and is routed nowhere.
+// --- THE GENERIC 600ms ANTI-SPAM GUARD (handlers/router.js, module-private Map) --- A click inside the window is swallowed with a bare deferUpdate() so Discord shows no "This interaction failed" toast, and is routed nowhere.
 check('router: a second click inside 600ms is swallowed by deferUpdate, not routed', async () => {
     const first = mockClick('totally_unknown_button', 'u-spam-1');
     await handleInteraction(first);   // unowned id: passes the guard, falls through every handler

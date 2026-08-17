@@ -1,18 +1,11 @@
 #!/usr/bin/env node
 // mcp-observation-metrics.mjs — the INSTRUMENT for the 7-day MCP observation window.
 //
-// v2, 2026-08-02 17:30 EDT. v1 measured TURNS and TOOL COUNTS only — half the cost model.
-// Harkirat caught it: "cost ≈ turns × context" and v1 never measured context. It also ignored the
-// model/effort mix, which is a genuine CONFOUNDER (the corpus spans sonnet-5, opus-5, opus-4-8 and
-// haiku-4-5 at three effort levels — a treatment week skewed toward Opus would move every number
-// regardless of sequential-thinking). Re-baselined the same day, before any treatment data existed.
+// v2, 2026-08-02 17:30 EDT. v1 measured TURNS and TOOL COUNTS only — half the cost model. Harkirat caught it: "cost ≈ turns × context" and v1 never measured context. It also ignored the model/effort mix, which is a genuine CONFOUNDER (the corpus spans sonnet-5, opus-5, opus-4-8 and haiku-4-5 at three effort levels — a treatment week skewed toward Opus would move every number regardless of sequential-thinking). Re-baselined the same day, before any treatment data existed.
 //
-// WHY IT IS A SCRIPT: the baseline and the treatment period must be measured the SAME way, or the
-// comparison is meaningless. If you edit this file mid-window the comparison is void — note the
-// change and re-baseline (which is exactly what happened between v1 and v2).
+// WHY IT IS A SCRIPT: the baseline and the treatment period must be measured the SAME way, or the comparison is meaningless. If you edit this file mid-window the comparison is void — note the change and re-baseline (which is exactly what happened between v1 and v2).
 //
-// Counts REAL tool_use invocations, never mentions: "sequentialthinking" appears in every
-// system-prompt tool listing, so mention-counting returns 38 vs 2 actual calls — 19x, flattering.
+// Counts REAL tool_use invocations, never mentions: "sequentialthinking" appears in every system-prompt tool listing, so mention-counting returns 38 vs 2 actual calls — 19x, flattering.
 //
 //   node scripts/mcp-observation-metrics.mjs --from 2026-07-24 --to 2026-08-02 --label baseline
 //   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment
@@ -30,23 +23,13 @@ const LABEL = args.label ?? 'run';
 const PROJECT = args.project ?? null;
 const ROOT = path.join(process.env.HOME, '.claude', 'projects');
 
-// Indicative USD per 1M tokens — API LIST RATES. The token counts are facts; this is the only
-// modelled part of the output.
+// Indicative USD per 1M tokens — API LIST RATES. The token counts are facts; this is the only modelled part of the output.
 //
-// ⚠️ `estCostUSD` IS NOT A DOLLAR AMOUNT. Calibrated 2026-08-02 17:40 EDT against the one real figure
-// on record, computed FROM ITS TRANSCRIPT rather than from a remembered summary — session 38972d5e:
-// 404 claude-sonnet-5 turns, 87.4M cache reads, 430k output -> $44.02 at list, billed $17.10.
-// **List is 2.57x actual.**
+// ⚠️ `estCostUSD` IS NOT A DOLLAR AMOUNT. Calibrated 2026-08-02 17:40 EDT against the one real figure on record, computed FROM ITS TRANSCRIPT rather than from a remembered summary — session 38972d5e: 404 claude-sonnet-5 turns, 87.4M cache reads, 430k output -> $44.02 at list, billed $17.10. **List is 2.57x actual.**
 //
-// A first attempt at this calibration said 7.7x and was wrong twice over: it applied OPUS cache-read
-// rates ($1.50/M) to a SONNET session ($0.30/M), and counted only cache reads while ignoring 430k
-// output tokens. Harkirat caught the model error. Two wrong inputs, one confident number — the exact
-// shape of feedback_verify_before_claiming, committed inside the instrument built to measure rigour.
+// A first attempt at this calibration said 7.7x and was wrong twice over: it applied OPUS cache-read rates ($1.50/M) to a SONNET session ($0.30/M), and counted only cache reads while ignoring 430k output tokens. Harkirat caught the model error. Two wrong inputs, one confident number — the exact shape of feedback_verify_before_claiming, committed inside the instrument built to measure rigour.
 //
-// ⚠️ AND the 2.57x factor is itself MODEL-SPECIFIC. Per-model rates differ ~5x between Opus and
-// Sonnet, so a single scalar only holds while the model mix holds. That is a second reason the
-// `models` breakdown is the first thing to check at close-out: if the mix shifts, even the RELATIVE
-// comparison distorts. Use estCostUSD to compare windows of similar mix; never quote it as spend.
+// ⚠️ AND the 2.57x factor is itself MODEL-SPECIFIC. Per-model rates differ ~5x between Opus and Sonnet, so a single scalar only holds while the model mix holds. That is a second reason the `models` breakdown is the first thing to check at close-out: if the mix shifts, even the RELATIVE comparison distorts. Use estCostUSD to compare windows of similar mix; never quote it as spend.
 const RATES = {
   'claude-opus-5':   { in: 15, out: 75, cacheWrite: 18.75, cacheRead: 1.5 },
   'claude-opus-4-8': { in: 15, out: 75, cacheWrite: 18.75, cacheRead: 1.5 },
@@ -54,16 +37,9 @@ const RATES = {
   'claude-haiku-4-5-20251001': { in: 0.8, out: 4, cacheWrite: 1, cacheRead: 0.08 },
 };
 
-// Sessions that ran on 2026-08-02 BEFORE the relaxation went live at 17:00 EDT. They must never
-// enter the treatment set: together ~919 turns of pre-relaxation work with ZERO sequential-thinking
-// uses, and 0bffaf56 is the session that built this instrument. Excluding them is what lets the
-// measured window start on 2026-08-02 (Harkirat's call — starting 08-03 would have discarded a whole
-// day of the relaxation period).
+// Sessions that ran on 2026-08-02 BEFORE the relaxation went live at 17:00 EDT. They must never enter the treatment set: together ~919 turns of pre-relaxation work with ZERO sequential-thinking uses, and 0bffaf56 is the session that built this instrument. Excluding them is what lets the measured window start on 2026-08-02 (Harkirat's call — starting 08-03 would have discarded a whole day of the relaxation period).
 //
-// HARDCODED, not a flag you must remember: a close-out that forgets `--exclude` would silently pull
-// 919 zero-use turns into the treatment data and understate the trigger rate. Override with
-// `--exclude a,b` or `--exclude none` if a future window needs different filtering.
-// Matched against the whole PATH, so a session's subagent sidechain files are excluded with it.
+// HARDCODED, not a flag you must remember: a close-out that forgets `--exclude` would silently pull 919 zero-use turns into the treatment data and understate the trigger rate. Override with `--exclude a,b` or `--exclude none` if a future window needs different filtering. Matched against the whole PATH, so a session's subagent sidechain files are excluded with it.
 const DEFAULT_EXCLUDE = ['0bffaf56', 'e754deb0'];
 const EXCLUDE = args.exclude === 'none' ? []
   : (args.exclude ? args.exclude.split(',').map((x) => x.trim()).filter(Boolean) : DEFAULT_EXCLUDE);
@@ -96,11 +72,7 @@ function walk(dir) {
   return out;
 }
 
-// Bucket by the session's FIRST timestamp (when it STARTED), not mtime. mtime is when it last
-// changed, so a session that began before a window and ran into it is attributed to the wrong side.
-// That is not hypothetical: the session that BUILT this instrument started 2026-08-02 12:53 EDT --
-// hours before the window opened at 17:00 -- and by mtime would have landed in the treatment set,
-// contributing hundreds of turns of pre-relaxation work with zero sequential-thinking use.
+// Bucket by the session's FIRST timestamp (when it STARTED), not mtime. mtime is when it last changed, so a session that began before a window and ran into it is attributed to the wrong side. That is not hypothetical: the session that BUILT this instrument started 2026-08-02 12:53 EDT -- hours before the window opened at 17:00 -- and by mtime would have landed in the treatment set, contributing hundreds of turns of pre-relaxation work with zero sequential-thinking use.
 function sessionStart(file) {
   try {
     for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
@@ -119,8 +91,7 @@ let files = walk(PROJECT ? path.join(ROOT, PROJECT) : ROOT).filter((f) => {
 });
 
 const tok = { input: 0, output: 0, cacheCreate: 0, cacheRead: 0, cache1h: 0, cache5m: 0 };
-// speed/service_tier are tracked because `/fast` is user-toggleable and would move cost independently
-// of anything under test — another confounder that must be visible, not discovered afterwards.
+// speed/service_tier are tracked because `/fast` is user-toggleable and would move cost independently of anything under test — another confounder that must be visible, not discovered afterwards.
 const models = {}, efforts = {}, byProject = {}, speeds = {}, tiers = {};
 const totals = Object.fromEntries(Object.keys(WATCH).map((k) => [k, 0]));
 let assistantTurns = 0, sessions = 0, compactions = 0, apiErrors = 0, toolErrors = 0, cost = 0;

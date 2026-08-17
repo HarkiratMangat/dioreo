@@ -1,37 +1,16 @@
 #!/bin/bash
 # memory-index-check.sh — SessionStart guard for the MEMORY.md index.
 #
-# WHY THIS EXISTS
-# Only MEMORY.md is auto-loaded into every session; the other memories are read on demand. That makes
-# the index a permanent per-session tax charged per FILE, and it grew unmanaged until it had to be
-# emergency-compacted (23.1KB -> 12.9KB) on 2026-08-02. Prose rules on this project have a measured
-# record of failing, so the budget is enforced here instead. Design:
-# docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md
+# WHY THIS EXISTS Only MEMORY.md is auto-loaded into every session; the other memories are read on demand. That makes the index a permanent per-session tax charged per FILE, and it grew unmanaged until it had to be emergency-compacted (23.1KB -> 12.9KB) on 2026-08-02. Prose rules on this project have a measured record of failing, so the budget is enforced here instead. Design: docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md
 #
 # It also re-runs the conservation check, which previously ran only when someone remembered to.
 #
-# DELIBERATELY ALWAYS PRINTS ONE LINE, even when clean. A check whose healthy state is silence is
-# indistinguishable from a check that has died — see the memory `feedback_verify_before_claiming`.
+# DELIBERATELY ALWAYS PRINTS ONE LINE, even when clean. A check whose healthy state is silence is indistinguishable from a check that has died — see the memory `feedback_verify_before_claiming`.
 
-# Overridable ONLY so the failure modes can be proven against fixtures (see memory-index-check.test.sh).
-# A check that has never been seen to fail is not known to work - `feedback_verify_before_claiming`.
-# Nothing in normal operation sets these; the defaults are the real store.
+# Overridable ONLY so the failure modes can be proven against fixtures (see memory-index-check.test.sh). A check that has never been seen to fail is not known to work - `feedback_verify_before_claiming`. Nothing in normal operation sets these; the defaults are the real store.
 MEM="${MEMCHECK_DIR:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory}"
 STATE="${MEMCHECK_STATE:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory-index-state}"
-# 25000 since 2026-08-09 23:28 EDT, and this is now a REAL number rather than an inherited one.
-# History, because the provenance is the whole point: 16000 was never measured -- the design spec
-# chose it as "~20% above the post-consolidation target of ~9KB", i.e. a number derived from another
-# number. It was then bumped to 20000 on 2026-08-08 as a reactive patch when a session started
-# treating the self-imposed 16000 as a hard wall and stalled on it. Harkirat, 2026-08-09 23:27 EDT:
-# "i don't mind the 25kb ceiling. i just raised it to 20kb because a session earlier was freaking out
-# about the self restricted 16kb ceiling it had put on itself."
-# 25000 is the figure in Anthropic's own `consolidate-memory` skill (~/Library/Application Support/
-# Claude/local-agent-mode-sessions/skills-plugin/<org>/<account>/skills/), so the tool and the hook
-# now agree instead of contradicting each other.
-# ⚠️ There is NO measured cliff anywhere near here. The old "24.4KB hard read limit" DOES NOT
-# reproduce -- a 33,530-byte memory file reads in full -- so 25000 sits comfortably under
-# demonstrated-working, and this is a housekeeping ceiling, not a platform limit. Do NOT "restore"
-# 16000 or 20000; both are superseded, and neither ever measured anything.
+# 25000 since 2026-08-09 23:28 EDT, and this is now a REAL number rather than an inherited one. History, because the provenance is the whole point: 16000 was never measured -- the design spec chose it as "~20% above the post-consolidation target of ~9KB", i.e. a number derived from another number. It was then bumped to 20000 on 2026-08-08 as a reactive patch when a session started treating the self-imposed 16000 as a hard wall and stalled on it. Harkirat, 2026-08-09 23:27 EDT: "i don't mind the 25kb ceiling. i just raised it to 20kb because a session earlier was freaking out about the self restricted 16kb ceiling it had put on itself." 25000 is the figure in Anthropic's own `consolidate-memory` skill (~/Library/Application Support/ Claude/local-agent-mode-sessions/skills-plugin/<org>/<account>/skills/), so the tool and the hook now agree instead of contradicting each other. ⚠️ There is NO measured cliff anywhere near here. The old "24.4KB hard read limit" DOES NOT reproduce -- a 33,530-byte memory file reads in full -- so 25000 sits comfortably under demonstrated-working, and this is a housekeeping ceiling, not a platform limit. Do NOT "restore" 16000 or 20000; both are superseded, and neither ever measured anything.
 BUDGET="${MEMCHECK_BUDGET:-25000}"
 
 [ -d "$MEM" ] || exit 0
@@ -40,8 +19,7 @@ BUDGET="${MEMCHECK_BUDGET:-25000}"
   exit 0
 }
 
-# --- the three partitions -----------------------------------------------------------------------
-# Partition 1: active, flat, excluding the index itself -> must have exactly one index line.
+# --- the three partitions ----------------------------------------------------------------------- Partition 1: active, flat, excluding the index itself -> must have exactly one index line.
 active=$(find "$MEM" -maxdepth 1 -name '*.md' -exec basename {} \; 2>/dev/null | grep -v '^MEMORY.md$' | sort)
 # Partition 2: archived -> must have NO index line, and must carry a retirement header.
 archived=$(find "$MEM/archive" -maxdepth 1 -name '*.md' -exec basename {} \; 2>/dev/null | sort)
@@ -88,10 +66,7 @@ if [ -n "$archived" ]; then
 $(printf '%s' "$noheader" | sed 's/^/    /')"
 fi
 
-# --- conservation: the store may only lose a file THROUGH the archive --------------------------
-# The store is NOT under version control, so a deleted memory is gone for good and nothing else
-# would notice. Compare the total against the last run; a drop means a file left without being
-# archived. This is the one check here that catches silent data loss.
+# --- conservation: the store may only lose a file THROUGH the archive -------------------------- The store is NOT under version control, so a deleted memory is gone for good and nothing else would notice. Compare the total against the last run; a drop means a file left without being archived. This is the one check here that catches silent data loss.
 total=$((n_active + n_arch))
 if [ -f "$STATE" ]; then
   prev=$(cat "$STATE" 2>/dev/null | tr -d ' ')
@@ -106,14 +81,7 @@ if [ -f "$STATE" ]; then
 fi
 printf '%s' "$total" > "$STATE"
 
-# --- budget -------------------------------------------------------------------------------------
-# TWO tiers, not one - added 2026-08-07 10:53 EDT. The over-budget check alone reported a clean "ok"
-# at 15,691/16,000 (98% full) right up until the byte that tipped it over, because ">BUDGET" is false
-# at 98%. A session reasonably reads "ok" as "nothing to do" and only gets a real signal once the
-# NEXT index-line addition already doesn't fit - too late to act on with any room to think about it.
-# THRESHOLD_PCT (default 90%) fires an advisory early, while there's still slack to consolidate/
-# archive something deliberately instead of being forced into it mid-edit. Distinct wording from
-# "over budget" so the two states are never conflated in a status line or a test assertion.
+# --- budget ------------------------------------------------------------------------------------- TWO tiers, not one - added 2026-08-07 10:53 EDT. The over-budget check alone reported a clean "ok" at 15,691/16,000 (98% full) right up until the byte that tipped it over, because ">BUDGET" is false at 98%. A session reasonably reads "ok" as "nothing to do" and only gets a real signal once the NEXT index-line addition already doesn't fit - too late to act on with any room to think about it. THRESHOLD_PCT (default 90%) fires an advisory early, while there's still slack to consolidate/ archive something deliberately instead of being forced into it mid-edit. Distinct wording from "over budget" so the two states are never conflated in a status line or a test assertion.
 THRESHOLD_PCT="${MEMCHECK_THRESHOLD_PCT:-90}"
 threshold=$(( BUDGET * THRESHOLD_PCT / 100 ))
 

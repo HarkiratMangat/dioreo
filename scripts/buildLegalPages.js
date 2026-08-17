@@ -1,25 +1,12 @@
 #!/usr/bin/env node
 /**
- * buildLegalPages.js — renders docs/legal/*.md into styled, self-contained HTML
- * at the site root (public/, flat — see the note on OUT), for hosting on
- * Cloudflare Pages.
+ * buildLegalPages.js — renders docs/legal/*.md into styled, self-contained HTML at the site root (public/, flat — see the note on OUT), for hosting on Cloudflare Pages.
  *
- * WHY A BUILD SCRIPT AND NOT HAND-WRITTEN HTML:
- * The Markdown files are the legally operative source of truth (PRIVACY.md's own
- * Appendix C points readers at them, and the ToS cites section numbers). Keeping a
- * hand-maintained HTML copy guarantees the two drift apart, and a privacy policy
- * that contradicts itself across two published URLs is worse than having none. So
- * the .md stays canonical and the HTML is generated. Re-run after ANY edit:
+ * WHY A BUILD SCRIPT AND NOT HAND-WRITTEN HTML: The Markdown files are the legally operative source of truth (PRIVACY.md's own Appendix C points readers at them, and the ToS cites section numbers). Keeping a hand-maintained HTML copy guarantees the two drift apart, and a privacy policy that contradicts itself across two published URLs is worse than having none. So the .md stays canonical and the HTML is generated. Re-run after ANY edit:
  *
  *     node scripts/buildLegalPages.js
  *
- * WHY A HAND-ROLLED PARSER AND NOT marked:
- * This repo carries no Markdown dependency, and NOTICE §3 commits us to re-auditing
- * the dependency tree (for copyleft) on every addition. The input is a closed set —
- * files we author ourselves — so a parser covering exactly the constructs they use
- * is cheaper and lower-risk than a new supply-chain entry. It is NOT a
- * general-purpose Markdown implementation and should not be reused as one.
- * verify() below guards the real risk (silently dropped content).
+ * WHY A HAND-ROLLED PARSER AND NOT marked: This repo carries no Markdown dependency, and NOTICE §3 commits us to re-auditing the dependency tree (for copyleft) on every addition. The input is a closed set — files we author ourselves — so a parser covering exactly the constructs they use is cheaper and lower-risk than a new supply-chain entry. It is NOT a general-purpose Markdown implementation and should not be reused as one. verify() below guards the real risk (silently dropped content).
  *
  * TWO PARSERS, TWO TEMPLATES:
  *   parseBlocks()     Markdown  → docs/legal/TERMS.md, PRIVACY.md, and the two
@@ -29,17 +16,9 @@
  *   shell()           the numbered legal set (squared, cold, margin index)
  *   warmShell()       contributing/contributors (rounded, warm, unnumbered)
  *
- * ⚠️ The CSS lives inside JS template literals, so a BACKTICK anywhere in a
- * stylesheet comment terminates the string and breaks the build with an error
- * pointing at CSS. It happened twice while this was written. Run
- * `node --check scripts/buildLegalPages.js` before a full run.
+ * ⚠️ The CSS lives inside JS template literals, so a BACKTICK anywhere in a stylesheet comment terminates the string and breaks the build with an error pointing at CSS. It happened twice while this was written. Run `node --check scripts/buildLegalPages.js` before a full run.
  *
- * DESIGN DIRECTION — "spec sheet", not "docs site":
- * The first version of this page was a gradient header over rounded cards in a
- * system sans: the shape you get for any product, which is why it read as a parked
- * domain. This one is built from the product's own world. Dioreo is a
- * Gunsmith bot — weapon spec sheets, attachment slots, numbered builds — so the
- * page borrows that typographic system rather than a generic dark-SaaS one:
+ * DESIGN DIRECTION — "spec sheet", not "docs site": The first version of this page was a gradient header over rounded cards in a system sans: the shape you get for any product, which is why it read as a parked domain. This one is built from the product's own world. Dioreo is a Gunsmith bot — weapon spec sheets, attachment slots, numbered builds — so the page borrows that typographic system rather than a generic dark-SaaS one:
  *
  *   · Three type roles doing distinct jobs — heavy sans for display, a SERIF for
  *     body prose (unusual here, and the reason 4,000 words stay readable), and
@@ -52,31 +31,20 @@
  *     the left rail tracks which section you are in. A legal document whose
  *     cross-references actually resolve.
  *
- * Cloudflare Pages setup: no build command, output directory public.
- * No API token, and nothing in .env — Pages deploys via dashboard Git integration
- * or wrangler login. A Cloudflare credential must never enter the bot's runtime env.
+ * Cloudflare Pages setup: no build command, output directory public. No API token, and nothing in .env — Pages deploys via dashboard Git integration or wrangler login. A Cloudflare credential must never enter the bot's runtime env.
  */
 
 const fs = require('fs');
 const path = require('path');
-// The third page family. See the header of that file for why it is a separate
-// family and why the dependency runs one way (this file hands it CHROME).
+// The third page family. See the header of that file for why it is a separate family and why the dependency runs one way (this file hands it CHROME).
 const { parseChronicle, chronicleShell } = require('./lib/chronicle');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'docs', 'legal');
-// ⚠️ ROOT, NOT public/legal/ — flattened 2026-08-05 14:36 EDT when dioreo.app went
-// live. The site used to open at /legal/ with the site root redirecting there
-// (see the retired _redirects note this replaced); now the homepage IS the site
-// root and the six document pages are flat siblings of it (dioreo.app/terms, not
-// dioreo.app/legal/terms). See dirOf()/hrefTo() for the routing this drives.
+// ⚠️ ROOT, NOT public/legal/ — flattened 2026-08-05 14:36 EDT when dioreo.app went live. The site used to open at /legal/ with the site root redirecting there (see the retired _redirects note this replaced); now the homepage IS the site root and the six document pages are flat siblings of it (dioreo.app/terms, not dioreo.app/legal/terms). See dirOf()/hrefTo() for the routing this drives.
 const OUT = path.join(ROOT, 'public');
 
-// Brand palette, mirrored from the commands' PRESET_ACCENT values so the legal
-// pages read as part of the product. Values copied deliberately rather than
-// required from commands/ — those modules pull in discord.js and a live config,
-// which a static docs build must not depend on. If a PRESET_ACCENT is ever
-// re-picked, update it here too.
+// Brand palette, mirrored from the commands' PRESET_ACCENT values so the legal pages read as part of the product. Values copied deliberately rather than required from commands/ — those modules pull in discord.js and a live config, which a static docs build must not depend on. If a PRESET_ACCENT is ever re-picked, update it here too.
 const BRAND = {
     plum: '#6B4E7D',      // Plum Fortune   — commands/draws.js
     harbor: '#3A5068',    // Slate Harbor   — commands/calendar.js
@@ -85,18 +53,11 @@ const BRAND = {
     amber: '#F2994A',     // Neon Amber     — commands/seasonend.js
     teal: '#17A2A2',      // Cyber Teal     — commands/timestamp.js
 
-    // SITE-ONLY, not PRESET_ACCENT values. The four legal pages need four
-    // distinguishable hues, and the first attempt used gold for the licence and
-    // harbor for the notice — different SHADES of the amber and teal already
-    // taken by terms and privacy, which read as the same two colours twice.
-    // Separated by hue, not lightness.
+    // SITE-ONLY, not PRESET_ACCENT values. The four legal pages need four distinguishable hues, and the first attempt used gold for the licence and harbor for the notice — different SHADES of the amber and teal already taken by terms and privacy, which read as the same two colours twice. Separated by hue, not lightness.
     violet: '#9B6BE3',
     crimson: '#FF5264',
 
-    // The same argument again, one level out. The two warm pages first used
-    // emerald and gold, which are neighbours of the teal and amber already
-    // taken by privacy and terms — so the invitation pages read as more of the
-    // legal set rather than as something else.
+    // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else.
     periwinkle: '#8B9BFF',
     citron: '#F8FF4A',
 
@@ -130,23 +91,14 @@ const BRAND = {
        ⚠️ Do NOT change one of these in isolation — moving any single hue can
        collapse a gap somewhere else on the wheel. Re-score the whole set. */
 
-    // ── the chronicle family: NOT part of this palette ──────────────────────
-    // These three are the Armory Terminal's signal colours, and they deliberately
-    // sit OUTSIDE the brand system above. That was Harkirat's own call in the
-    // original changelog design (memory `project_changelog_redesign`): the record
-    // is a different world — a gunmetal ordnance terminal — and picking its colours
-    // from the bot's palette is exactly what would have made it read as another
-    // legal page in a new accent. They live here only so the nav tabs, the landing
-    // page cards and the page itself cannot disagree about a page's signal.
+    // ── the chronicle family: NOT part of this palette ────────────────────── These three are the Armory Terminal's signal colours, and they deliberately sit OUTSIDE the brand system above. That was Harkirat's own call in the original changelog design (memory `project_changelog_redesign`): the record is a different world — a gunmetal ordnance terminal — and picking its colours from the bot's palette is exactly what would have made it read as another legal page in a new accent. They live here only so the nav tabs, the landing page cards and the page itself cannot disagree about a page's signal.
     tracer: '#FF9E3D',    // What's New  — PATCH NOTES operator (the original signal)
     phosphor: '#7CE38B',  // Changelog   — FIELD ENGINEER operator
     ice: '#8FB8FF'        // Devlog      — LOG KEEPER operator
 };
 
 
-// `kind` selects the parser: 'md' for the Markdown sources in docs/legal, 'text'
-// for the plain-text legal instruments at the repo root. `root: true` means the
-// source sits at the repo root rather than in docs/legal.
+// `kind` selects the parser: 'md' for the Markdown sources in docs/legal, 'text' for the plain-text legal instruments at the repo root. `root: true` means the source sits at the repo root rather than in docs/legal.
 const PAGES = [
     {
         file: 'TERMS.md', kind: 'md', out: 'terms.html', title: 'Terms of Service',
@@ -163,9 +115,7 @@ const PAGES = [
         desc: 'Exactly what Dioreo stores about you, where it lives, how long it stays, and how to have it deleted.'
     },
     {
-        // The licence is rendered as a THIRD page for readability, but the verbatim
-        // plain-text copy at /LICENSE stays the authoritative instrument and this
-        // page says so in its masthead. See the note above buildCompanions().
+        // The licence is rendered as a THIRD page for readability, but the verbatim plain-text copy at /LICENSE stays the authoritative instrument and this page says so in its masthead. See the note above buildCompanions().
         file: 'LICENSE', kind: 'text', root: true, out: 'license.html',
         title: 'Source-Available License',
         short: 'License', kicker: 'Licence',
@@ -174,8 +124,7 @@ const PAGES = [
         desc: 'Dioreo is source-available, not open source. Read it, study it, run it on your own machine — and the terms for everything else.'
     },
     {
-        // Incorporated into LICENSE by reference (§7.1), so it is an operative
-        // document and belongs with the other three rather than off to one side.
+        // Incorporated into LICENSE by reference (§7.1), so it is an operative document and belongs with the other three rather than off to one side.
         file: 'NOTICE', kind: 'text', root: true, out: 'notice.html',
         title: 'Notices & Attributions',
         short: 'Notice', kicker: 'Attribution', 
@@ -188,16 +137,9 @@ const PAGES = [
 /**
  * The two pages that are NOT legal instruments, kept out of PAGES on purpose.
  *
- * PAGES drives the numbered switcher and the numbered list on the landing page —
- * the "01 / 02 / 03" system. These two must not appear there, because the number
- * series is what tells a reader "these are the documents that bind you", and an
- * invitation to help is not one of those.
+ * PAGES drives the numbered switcher and the numbered list on the landing page — the "01 / 02 / 03" system. These two must not appear there, because the number series is what tells a reader "these are the documents that bind you", and an invitation to help is not one of those.
  *
- * They get their own template (warmShell) with a deliberately inverted visual
- * vocabulary: the legal pages are squared corners, hairline rules, cold graphite
- * and a numbered margin index — the grammar of obligation. These are rounded, warm,
- * glowing, unnumbered. Same three type roles, same palette family, so the site
- * stays one site; opposite posture, so the two kinds never feel interchangeable.
+ * They get their own template (warmShell) with a deliberately inverted visual vocabulary: the legal pages are squared corners, hairline rules, cold graphite and a numbered margin index — the grammar of obligation. These are rounded, warm, glowing, unnumbered. Same three type roles, same palette family, so the site stays one site; opposite posture, so the two kinds never feel interchangeable.
  */
 const EXTRA_PAGES = [
     {
@@ -214,9 +156,7 @@ const EXTRA_PAGES = [
         title: 'Contributors', short: 'Contributors',
         kicker: 'Roll call', accent: BRAND.citron, glow: '#FBFFB0',
         lede: 'Everyone who has made this better, credited under the name they chose.',
-        // "Your name goes here" read as a sales pitch on a page whose actual
-        // subject is that crediting is a binding obligation under LICENSE §5.6.
-        // This says the same thing the page does.
+        // "Your name goes here" read as a sales pitch on a page whose actual subject is that crediting is a binding obligation under LICENSE §5.6. This says the same thing the page does.
         badge: 'Credit, in writing',
         blurb: 'Who helped build this, and how credit works. Bug reports count.',
         desc: 'Everyone who has helped build Dioreo, credited under the name they chose — because crediting them is a binding obligation, not a courtesy.'
@@ -226,18 +166,11 @@ const EXTRA_PAGES = [
 /**
  * The THIRD page family: the release history and the devlog.
  *
- * Rendered by scripts/lib/chronicle.js, which explains at length why this is a new
- * family rather than a reuse of either existing one, and why the three pages share
- * one skeleton with three voices. The short version: a record of what happened is
- * neither an instrument (PAGES) nor an invitation (EXTRA_PAGES), and the three
- * sources differ in register rather than in structure.
+ * Rendered by scripts/lib/chronicle.js, which explains at length why this is a new family rather than a reuse of either existing one, and why the three pages share one skeleton with three voices. The short version: a record of what happened is neither an instrument (PAGES) nor an invitation (EXTRA_PAGES), and the three sources differ in register rather than in structure.
  *
- * These render into public/changelog/ rather than the site root, which is what the
- * `dir` field carries. Everything else on the site is the one flat root directory,
- * so `dir` defaults to '' and only these three set it — see hrefTo().
+ * These render into public/changelog/ rather than the site root, which is what the `dir` field carries. Everything else on the site is the one flat root directory, so `dir` defaults to '' and only these three set it — see hrefTo().
  *
- * `docs: true` means the source sits in docs/ rather than docs/legal/ or the repo
- * root, which is the third and last source location sourcePath() has to know about.
+ * `docs: true` means the source sits in docs/ rather than docs/legal/ or the repo root, which is the third and last source location sourcePath() has to know about.
  */
 const CHRONICLE_PAGES = [
     {
@@ -274,57 +207,34 @@ const CHRONICLE_PAGES = [
    ends up wired into four of five places. */
 const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...CHRONICLE_PAGES];
 
-// '' means the site ROOT (the flat document pages + the homepage); 'changelog'
-// is the one remaining subdirectory. Was 'legal' by default until the 2026-08-05
-// flattening — see the note on OUT.
+// '' means the site ROOT (the flat document pages + the homepage); 'changelog' is the one remaining subdirectory. Was 'legal' by default until the 2026-08-05 flattening — see the note on OUT.
 const dirOf = p => p.dir || '';
 
 /**
  * A relative href from one page to another.
  *
- * Every link on the site used to be `./name.html`, which was correct while there
- * was exactly one output directory. There are two now: the site root (depth 0)
- * and changelog/ (depth 1) — asymmetric since the flattening, where before both
- * legal/ and changelog/ sat at depth 1 and crossing between them was always
- * "up one, then down into the other." Crossing FROM root only ever needs to go
- * DOWN into changelog/; crossing FROM changelog/ only ever needs to go UP to
- * root — neither direction needs both steps any more. Relative rather than
- * root-absolute on purpose: the local preview (`python3 -m http.server --directory
- * public`) and any `file://` spot-check both keep working, and Cloudflare Pages
- * serves the tree as-is either way. linkAudit() resolves every one of these against
- * the real deploy tree, so a mistake here fails the build rather than the site.
+ * Every link on the site used to be `./name.html`, which was correct while there was exactly one output directory. There are two now: the site root (depth 0) and changelog/ (depth 1) — asymmetric since the flattening, where before both legal/ and changelog/ sat at depth 1 and crossing between them was always "up one, then down into the other." Crossing FROM root only ever needs to go DOWN into changelog/; crossing FROM changelog/ only ever needs to go UP to root — neither direction needs both steps any more. Relative rather than root-absolute on purpose: the local preview (`python3 -m http.server --directory public`) and any `file://` spot-check both keep working, and Cloudflare Pages serves the tree as-is either way. linkAudit() resolves every one of these against the real deploy tree, so a mistake here fails the build rather than the site.
  */
 const hrefTo = (target, from) => {
     const a = dirOf(from), b = dirOf(target);
-    // The landing page of a directory is addressed as the directory itself, so the
-    // published URL is /changelog/ rather than /changelog/index.html.
+    // The landing page of a directory is addressed as the directory itself, so the published URL is /changelog/ rather than /changelog/index.html.
     const leaf = target.out === 'index.html' && b !== a ? '' : target.out;
     if (a === b) return './' + (target.out === 'index.html' ? '' : target.out);
-    // Only two directories exist (root and changelog/), so a !== b means exactly
-    // one of them is root: crossing FROM root goes down into b; crossing from
-    // changelog/ (the only other case) goes up, and b is root so leaf alone is
-    // the whole path — 'b + / + leaf' would double a slash here since b is ''.
+    // Only two directories exist (root and changelog/), so a !== b means exactly one of them is root: crossing FROM root goes down into b; crossing from changelog/ (the only other case) goes up, and b is root so leaf alone is the whole path — 'b + / + leaf' would double a slash here since b is ''.
     return a === '' ? b + '/' + leaf : '../' + leaf;
 };
 
 /* ─────────────────────────── inline formatting ─────────────────────────── */
 
-// Escapes quotes too, not just tag delimiters — esc() is used inside
-// double-quoted attributes (meta content, data-lang, download) as well as text
-// nodes, and an unescaped `"` in the source there would close the attribute
-// early. Escaping it in text nodes is a no-op visually (&quot; renders as ").
+// Escapes quotes too, not just tag delimiters — esc() is used inside double-quoted attributes (meta content, data-lang, download) as well as text nodes, and an unescaped `"` in the source there would close the attribute early. Escaping it in text nodes is a no-op visually (&quot; renders as ").
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-// Exactly what the deployed site contains, relative to a page at the site root.
-// Keep this in step with build()/buildCompanions() — if a new file starts being
-// published, add it here or its cross-references stay inert text.
+// Exactly what the deployed site contains, relative to a page at the site root. Keep this in step with build()/buildCompanions() — if a new file starts being published, add it here or its cross-references stay inert text.
 const PUBLISHED_TARGETS = new Set([
     'terms.html', 'privacy.html', 'license.html', 'notice.html', 'index.html', '',
     'contributing.html', 'contributors.html',
-    // LICENSE/NOTICE are bare now, not '../LICENSE' — they publish verbatim
-    // beside the document pages at the site root since the 2026-08-05 flattening,
-    // no longer a level below them.
+    // LICENSE/NOTICE are bare now, not '../LICENSE' — they publish verbatim beside the document pages at the site root since the 2026-08-05 flattening, no longer a level below them.
     'LICENSE', 'NOTICE',
     // The chronicle family, as addressed from a page inside changelog/ …
     'detailed.html', 'devlog.html',
@@ -333,17 +243,9 @@ const PUBLISHED_TARGETS = new Set([
 ]);
 
 /**
- * Source filename → published filename, for the pages whose output is not simply
- * the source name with a new extension.
+ * Source filename → published filename, for the pages whose output is not simply the source name with a new extension.
  *
- * The three chronicle sources cross-reference each other by their real filenames
- * ("see [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)"), and the .md→.html rewrite
- * turns those into CHANGELOG-SUMMARY.html — which is not what gets written, because
- * the summary is that directory's landing page. Without this map every one of those
- * references degrades to inert text, and NOTHING reports it: linkAudit() has no href
- * to resolve, and crossRefAudit() resolves by basename against the deploy tree, where
- * CHANGELOG-SUMMARY.html legitimately does not exist. That is the same silent failure
- * mode that left Terms' and Privacy's references to each other dead on the live site.
+ * The three chronicle sources cross-reference each other by their real filenames ("see [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)"), and the .md→.html rewrite turns those into CHANGELOG-SUMMARY.html — which is not what gets written, because the summary is that directory's landing page. Without this map every one of those references degrades to inert text, and NOTHING reports it: linkAudit() has no href to resolve, and crossRefAudit() resolves by basename against the deploy tree, where CHANGELOG-SUMMARY.html legitimately does not exist. That is the same silent failure mode that left Terms' and Privacy's references to each other dead on the live site.
  */
 const PAGE_ALIASES = new Map([
     ['changelog-summary.html', 'index.html'],
@@ -352,19 +254,11 @@ const PAGE_ALIASES = new Map([
 ]);
 // Case-insensitive lookup that returns the CORRECTLY-CASED published name.
 //
-// The sources write their cross-links as [Privacy Policy](PRIVACY.md) — uppercase,
-// matching the filename on disk — and the .md→.html rewrite preserved that case,
-// producing PRIVACY.html. PUBLISHED_TARGETS holds lowercase privacy.html, so the
-// set lookup missed and Terms' references to Privacy (and Privacy's to Terms)
-// silently degraded to inert grey text while ../LICENSE, which happens to match
-// exactly, stayed a live link. linkAudit() cannot see this class of fault at all:
-// an inert span has no href, so there is nothing for it to resolve and fail on.
+// The sources write their cross-links as [Privacy Policy](PRIVACY.md) — uppercase, matching the filename on disk — and the .md→.html rewrite preserved that case, producing PRIVACY.html. PUBLISHED_TARGETS holds lowercase privacy.html, so the set lookup missed and Terms' references to Privacy (and Privacy's to Terms) silently degraded to inert grey text while ../LICENSE, which happens to match exactly, stayed a live link. linkAudit() cannot see this class of fault at all: an inert span has no href, so there is nothing for it to resolve and fail on.
 const PUBLISHED_MAP = new Map([...PUBLISHED_TARGETS].map(t => [t.toLowerCase(), t]));
 const resolvePublished = href => {
     const [p, hash] = href.split('#');
-    // Aliases first: a source name that renders to a DIFFERENT output name must be
-    // translated before the allowlist is consulted, or it misses and goes inert.
-    // Applied on the basename so it works from either directory.
+    // Aliases first: a source name that renders to a DIFFERENT output name must be translated before the allowlist is consulted, or it misses and goes inert. Applied on the basename so it works from either directory.
     const lower = p.toLowerCase();
     const aliased = PAGE_ALIASES.has(lower.replace(/^.*\//, ''))
         ? lower.replace(/[^/]+$/, PAGE_ALIASES.get(lower.replace(/^.*\//, '')))
@@ -376,34 +270,14 @@ const resolvePublished = href => {
 /**
  * Prefix applied to relative links for the page currently being rendered.
  *
- * ⚠️ HISTORICAL CONTEXT, KEPT FOR THE LESSON — the mechanism below changed on
- * 2026-08-05 14:51 EDT when the site flattened to the domain root, but the shape
- * of the bug this exists to prevent is worth keeping. The Markdown sources sit at
- * two different depths (docs/legal/*.md two levels from the repo root;
- * CONTRIBUTING.md/CONTRIBUTORS.md one level) but used to all render into ONE
- * output directory (public/legal/) at a THIRD depth — so neither source's own
- * relative links were correct for where they'd actually land, and both needed a
- * per-source correction (LINK_BASE, and the ../../ fold two lines below) to reach
- * it. Every such link was silently degrading to inert text before this existed,
- * which is why the Contributing page discussed the licence in four places and
- * linked it in none. Now that every page (root-authored or not) renders at the
- * SAME depth as the sources that link out of it, both corrections are inert
- * (LINK_BASE is always '', the fold always empties out) — kept rather than
- * deleted because a future page family at a real depth would need the same fix.
+ * ⚠️ HISTORICAL CONTEXT, KEPT FOR THE LESSON — the mechanism below changed on 2026-08-05 14:51 EDT when the site flattened to the domain root, but the shape of the bug this exists to prevent is worth keeping. The Markdown sources sit at two different depths (docs/legal/*.md two levels from the repo root; CONTRIBUTING.md/CONTRIBUTORS.md one level) but used to all render into ONE output directory (public/legal/) at a THIRD depth — so neither source's own relative links were correct for where they'd actually land, and both needed a per-source correction (LINK_BASE, and the ../../ fold two lines below) to reach it. Every such link was silently degrading to inert text before this existed, which is why the Contributing page discussed the licence in four places and linked it in none. Now that every page (root-authored or not) renders at the SAME depth as the sources that link out of it, both corrections are inert (LINK_BASE is always '', the fold always empties out) — kept rather than deleted because a future page family at a real depth would need the same fix.
  *
- * Module-level rather than threaded through parseBlocks → inline, which would mean
- * a parameter on every block type for one value. build() sets it per page.
+ * Module-level rather than threaded through parseBlocks → inline, which would mean a parameter on every block type for one value. build() sets it per page.
  */
 let LINK_BASE = '';
 
 function inline(s) {
-    // Code spans are extracted FIRST and reinserted last, so their contents are
-    // never treated as markup (a literal `**` inside code must stay literal).
-    // The sentinel must be a character the source can never contain and that
-    // esc() leaves alone — NUL qualifies on both counts. A space-delimited
-    // ` N ` sentinel was tried first and was wrong: it also matches any bare
-    // number in ordinary prose ("30 days", "§ 4"), which then resolves to an
-    // out-of-range index and throws.
+    // Code spans are extracted FIRST and reinserted last, so their contents are never treated as markup (a literal `**` inside code must stay literal). The sentinel must be a character the source can never contain and that esc() leaves alone — NUL qualifies on both counts. A space-delimited ` N ` sentinel was tried first and was wrong: it also matches any bare number in ordinary prose ("30 days", "§ 4"), which then resolves to an out-of-range index and throws.
     const codes = [];
     s = s.replace(/`([^`]+)`/g, (_, c) => `\x00${codes.push(c) - 1}\x00`);
 
@@ -411,38 +285,11 @@ function inline(s) {
     s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, h) => {
         const ext = /^https?:|^mailto:/.test(h);
         if (ext) return `<a href="${h}" target="_blank" rel="noopener noreferrer">${t}</a>`;
-        // .md cross-links become .html so they resolve in the built site. The
-        // leading ../../ a docs/legal/*.md source writes to reach a repo-root file
-        // (LICENSE, NOTICE) used to fold to one ../, matching public/legal/'s own
-        // depth of 1; now every page renders at the site root (depth 0, since the
-        // 2026-08-05 14:41 EDT flattening), so it folds away entirely instead.
+        // .md cross-links become .html so they resolve in the built site. The leading ../../ a docs/legal/*.md source writes to reach a repo-root file (LICENSE, NOTICE) used to fold to one ../, matching public/legal/'s own depth of 1; now every page renders at the site root (depth 0, since the 2026-08-05 14:41 EDT flattening), so it folds away entirely instead.
         const href = h.replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '');
-        // Only a handful of targets are actually deployed. Everything else the
-        // source markdown points at — CLAUDE.md, ROADMAP.md, the model files, the
-        // rules files — exists only in the repo, which a reader may not be able to
-        // see (and the repo may be private at any time). Emitting those as links
-        // publishes guaranteed 404s inside a legal document, so they degrade to
-        // plain text instead. Verified by the build's own link audit, which found
-        // seven dead links the first time this ran.
-        // RESOLVE, then lift — not lift, then resolve.
+        // Only a handful of targets are actually deployed. Everything else the source markdown points at — CLAUDE.md, ROADMAP.md, the model files, the rules files — exists only in the repo, which a reader may not be able to see (and the repo may be private at any time). Emitting those as links publishes guaranteed 404s inside a legal document, so they degrade to plain text instead. Verified by the build's own link audit, which found seven dead links the first time this ran. RESOLVE, then lift — not lift, then resolve.
         //
-        // A blanket LINK_BASE prefix on every root-relative link was wrong: the two
-        // root-authored pages both render into legal/, so CONTRIBUTORS.md is a
-        // SAME-directory neighbour and ../CONTRIBUTORS.html pointed out of the tree.
-        // Only root files published verbatim beside legal/ (LICENSE, NOTICE) need the
-        // extra level. Asking the allowlist which of the two a target actually is
-        // settles it without special-casing filenames.
-        // ⚠️ IN-PROSE "LICENSE" MEANS THE RENDERED PAGE, NOT THE RAW FILE, AND
-        // LINKING THE RAW FILE MADE THE BROWSER DOWNLOAD IT. LICENSE and NOTICE are
-        // deployed verbatim beside legal/ as EXTENSION-LESS files, and both are on
-        // the allowlist, so `../LICENSE` resolved to a live URL and every "see §4.11
-        // of the LICENSE" in the documents became a download prompt in the middle of
-        // a legal page. A file with no extension carries no HTML content type, so
-        // there is nothing for a browser to do with it but save it.
-        // Both source depths collapse to the bare page name because license.html
-        // sits IN legal/ — `../` is right for the raw file one level up and wrong
-        // for the page, which is why this cannot be a tweak to the depth fold above.
-        // The raw files stay deployed; they are simply no longer what prose points at.
+        // A blanket LINK_BASE prefix on every root-relative link was wrong: the two root-authored pages both render into legal/, so CONTRIBUTORS.md is a SAME-directory neighbour and ../CONTRIBUTORS.html pointed out of the tree. Only root files published verbatim beside legal/ (LICENSE, NOTICE) need the extra level. Asking the allowlist which of the two a target actually is settles it without special-casing filenames. ⚠️ IN-PROSE "LICENSE" MEANS THE RENDERED PAGE, NOT THE RAW FILE, AND LINKING THE RAW FILE MADE THE BROWSER DOWNLOAD IT. LICENSE and NOTICE are deployed verbatim beside legal/ as EXTENSION-LESS files, and both are on the allowlist, so `../LICENSE` resolved to a live URL and every "see §4.11 of the LICENSE" in the documents became a download prompt in the middle of a legal page. A file with no extension carries no HTML content type, so there is nothing for a browser to do with it but save it. Both source depths collapse to the bare page name because license.html sits IN legal/ — `../` is right for the raw file one level up and wrong for the page, which is why this cannot be a tweak to the depth fold above. The raw files stay deployed; they are simply no longer what prose points at.
         const asPage = href.replace(/^(?:\.\.\/)*(LICENSE|NOTICE)(#.*)?$/,
             (_, name, hash) => name.toLowerCase() + '.html' + (hash || ''));
         const pub = resolvePublished(asPage)
@@ -462,10 +309,7 @@ function inline(s) {
 
 const slug = s => s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
 
-// Headings in these documents are numbered, and the documents cite each other by
-// that number constantly ("see §15", "§4.11 applies"). So the number is the real
-// identifier, not the prose — deriving the id from it makes every cross-reference
-// linkable and stable even if a heading is later reworded.
+// Headings in these documents are numbered, and the documents cite each other by that number constantly ("see §15", "§4.11 applies"). So the number is the real identifier, not the prose — deriving the id from it makes every cross-reference linkable and stable even if a heading is later reworded.
 function splitHeading(raw) {
     const m = raw.match(/^(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)\.?\s+(.*)$/);
     if (m) return { num: m[1], text: m[2], id: 's-' + m[1].toLowerCase() };
@@ -473,9 +317,7 @@ function splitHeading(raw) {
 }
 
 /**
- * Turns every "§N" in the rendered body into a link to that section — the payoff
- * of the id scheme above. Operates only on text nodes (never inside a tag or an
- * existing anchor), so it can't corrupt markup or nest links.
+ * Turns every "§N" in the rendered body into a link to that section — the payoff of the id scheme above. Operates only on text nodes (never inside a tag or an existing anchor), so it can't corrupt markup or nest links.
  */
 function linkifyRefs(html, ids) {
     const parts = html.split(/(<[^>]+>)/);
@@ -508,10 +350,7 @@ function linkifyRefs(html, ids) {
             const id = 's-' + n.toLowerCase();
             return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">${n}</a>` : n;
         }));
-        // The plain-text licence spells its cross-references out in full
-        // ("under Section 4.11", "notices under Section 14.7") rather than with §.
-        // Same payoff, different spelling, so it is handled here rather than by
-        // rewriting the source — the source is the authoritative wording.
+        // The plain-text licence spells its cross-references out in full ("under Section 4.11", "notices under Section 14.7") rather than with §. Same payoff, different spelling, so it is handled here rather than by rewriting the source — the source is the authoritative wording.
         return seg.replace(/\bSection\s(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)/g, (whole, n) => {
             const id = 's-' + n.toLowerCase();
             return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">Section&nbsp;${n}</a>` : whole;
@@ -522,15 +361,9 @@ function linkifyRefs(html, ids) {
 /* ───────────────────────────── block parsing ───────────────────────────── */
 
 function parseBlocks(md) {
-    // HTML comments are stripped HERE, at the single funnel every Markdown source
-    // passes through, rather than per caller.
+    // HTML comments are stripped HERE, at the single funnel every Markdown source passes through, rather than per caller.
     //
-    // This is not cosmetic. CONTRIBUTORS.md keeps its "format for new entries"
-    // template inside a comment, complete with a worked example row. Without this
-    // the comment rendered as visible content and the live credits page listed a
-    // fabricated contributor (`@example`, "Fixed pagination crash on 2-page
-    // loops", v2.42.0) as though it were real. verify() only caught it as a side
-    // effect of the surrounding prose no longer being contiguous.
+    // This is not cosmetic. CONTRIBUTORS.md keeps its "format for new entries" template inside a comment, complete with a worked example row. Without this the comment rendered as visible content and the live credits page listed a fabricated contributor (`@example`, "Fixed pagination crash on 2-page loops", v2.42.0) as though it were real. verify() only caught it as a side effect of the surrounding prose no longer being contiguous.
     md = md.replace(/<!--[\s\S]*?-->/g, '');
     const lines = md.split('\n');
     const out = [];
@@ -543,15 +376,7 @@ function parseBlocks(md) {
         const line = lines[i];
         if (!line.trim()) { i++; continue; }
 
-        // ── fenced code block ──
-        // Added 2026-07-29 23:05 EDT. TERMS.md and PRIVACY.md contain no fences, so
-        // this parser never needed them; publishing CONTRIBUTING.md widened the
-        // input set and the omission surfaced as literal ``` markers on the page,
-        // the language tag absorbed into the code, and multi-line blocks flattened
-        // onto one line. Note verify() still reported 100% throughout — every WORD
-        // was present, just structured wrongly. Handle the fence BEFORE the <hr>
-        // rule below, which would otherwise not match but ordering here is load-
-        // bearing for any future fence style.
+        // ── fenced code block ── Added 2026-07-29 23:05 EDT. TERMS.md and PRIVACY.md contain no fences, so this parser never needed them; publishing CONTRIBUTING.md widened the input set and the omission surfaced as literal ``` markers on the page, the language tag absorbed into the code, and multi-line blocks flattened onto one line. Note verify() still reported 100% throughout — every WORD was present, just structured wrongly. Handle the fence BEFORE the <hr> rule below, which would otherwise not match but ordering here is load- bearing for any future fence style.
         const fence = line.match(/^\s*```+\s*([\w-]*)\s*$/);
         if (fence) {
             const lang = fence[1];
@@ -578,9 +403,7 @@ function parseBlocks(md) {
             if (lvl === 2) toc.push({ id, num, text, sub: false });
             if (lvl === 3) toc.push({ id, num, text, sub: true });
 
-            // The index sits in the margin as its own element rather than inline
-            // in the title, so the numbering column stays optically aligned down
-            // the whole document.
+            // The index sits in the margin as its own element rather than inline in the title, so the numbering column stays optically aligned down the whole document.
             const chip = num ? `<span class="idx" aria-hidden="true">${num}</span>` : '';
             out.push(
                 `<h${lvl} id="${id}" class="${num ? 'numbered' : 'plain'}">${chip}` +
@@ -597,22 +420,10 @@ function parseBlocks(md) {
             i += 2;
             const rows = [];
             while (i < lines.length && /^\s*\|/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
-            // ⚠️ data-label is what makes the narrow-screen stacked layout possible: below
-            // 620px the <thead> is taken out of the visual flow and every cell reprints its
-            // own column name from this attribute. Derived from the RAW source cell with
-            // markdown emphasis stripped, never from inline()'s HTML — an attribute cannot
-            // carry markup, so a <code> span in a header would reach the page as visible
-            // escaped angle brackets. Quotes are escaped here because esc() deliberately
-            // does not: everywhere else it feeds text content, where a quote is harmless.
+            // ⚠️ data-label is what makes the narrow-screen stacked layout possible: below 620px the <thead> is taken out of the visual flow and every cell reprints its own column name from this attribute. Derived from the RAW source cell with markdown emphasis stripped, never from inline()'s HTML — an attribute cannot carry markup, so a <code> span in a header would reach the page as visible escaped angle brackets. Quotes are escaped here because esc() deliberately does not: everywhere else it feeds text content, where a quote is harmless.
             const labelOf = c => esc(c.replace(/`|\*\*|__|(?<![A-Za-z0-9])[*_](?![A-Za-z0-9])/g, '').trim())
                 .replace(/"/g, '&quot;');
-            // ⚠️ THE ROLES ARE REDUNDANT ON DESKTOP AND LOAD-BEARING ON A PHONE. The
-            // narrow-screen rules set display:block on the table, its groups, its rows and
-            // its cells, and a browser drops the implicit table semantics the moment it
-            // stops laying the element out as a table — so a screen reader would read four
-            // orphaned strings with no column names attached. Re-declaring the same roles
-            // the elements already have natively costs nothing where the layout is intact
-            // and is what keeps the header association alive where it is not.
+            // ⚠️ THE ROLES ARE REDUNDANT ON DESKTOP AND LOAD-BEARING ON A PHONE. The narrow-screen rules set display:block on the table, its groups, its rows and its cells, and a browser drops the implicit table semantics the moment it stops laying the element out as a table — so a screen reader would read four orphaned strings with no column names attached. Re-declaring the same roles the elements already have natively costs nothing where the layout is intact and is what keeps the header association alive where it is not.
             out.push(
                 '<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row">' +
                 head.map(c => `<th role="columnheader" scope="col">${inline(c)}</th>`).join('') +
@@ -629,8 +440,7 @@ function parseBlocks(md) {
             const buf = [];
             while (i < lines.length && /^\s*>/.test(lines[i])) { buf.push(lines[i].replace(/^\s*>\s?/, '')); i++; }
             const inner = parseBlocks(buf.join('\n')).html;
-            // Documents use ⚠️ / 🔴 / >>> to mark genuinely load-bearing warnings;
-            // those get the caution treatment, ordinary asides stay quiet.
+            // Documents use ⚠️ / 🔴 / >>> to mark genuinely load-bearing warnings; those get the caution treatment, ordinary asides stay quiet.
             const warn = /⚠️|🔴|>>>/.test(buf.join(' ')) ? ' warn' : '';
             out.push(`<blockquote class="callout${warn}">${inner}</blockquote>`);
             continue;
@@ -660,23 +470,11 @@ function parseBlocks(md) {
 
         // paragraph — join soft-wrapped lines
         //
-        // ⚠️ HARD BREAKS ARE DETECTED BEFORE THE TRIM, because the trim is what
-        // destroys the evidence. Every source here wraps its prose at about 80
-        // columns, so a single newline MUST keep meaning "same paragraph" — the
-        // contact blocks were the case that proved the gap: four lines of name,
-        // place, email and Discord collapsed into one flowing paragraph and then
-        // re-wrapped wherever the viewport happened to fall, which on a phone put
-        // the email envelope at the end of one line and the address at the start of
-        // the next.
+        // ⚠️ HARD BREAKS ARE DETECTED BEFORE THE TRIM, because the trim is what destroys the evidence. Every source here wraps its prose at about 80 columns, so a single newline MUST keep meaning "same paragraph" — the contact blocks were the case that proved the gap: four lines of name, place, email and Discord collapsed into one flowing paragraph and then re-wrapped wherever the viewport happened to fall, which on a phone put the email envelope at the end of one line and the address at the start of the next.
         //
-        // Both CommonMark hard-break spellings are accepted, and the SOURCES use
-        // the backslash on purpose: two trailing spaces are invisible, and any
-        // editor, formatter or pre-commit hook that trims trailing whitespace would
-        // silently turn a deliberately broken address block back into a paragraph
-        // with nothing reporting it. A backslash survives that.
+        // Both CommonMark hard-break spellings are accepted, and the SOURCES use the backslash on purpose: two trailing spaces are invisible, and any editor, formatter or pre-commit hook that trims trailing whitespace would silently turn a deliberately broken address block back into a paragraph with nothing reporting it. A backslash survives that.
         //
-        // \x01 as the marker follows the code-span sentinel above: a control
-        // character the sources cannot contain and esc() leaves alone.
+        // \x01 as the marker follows the code-span sentinel above: a control character the sources cannot contain and esc() leaves alone.
         const buf = [];
         while (i < lines.length && lines[i].trim() && !/^#{1,6}\s/.test(lines[i]) && !/^\s*>/.test(lines[i]) &&
                !isListStart(lines[i]) && !/^\s*\|/.test(lines[i]) && !/^\s*(-{3,}|={3,})\s*$/.test(lines[i])) {
@@ -689,10 +487,7 @@ function parseBlocks(md) {
         }
     }
 
-    // `blocks` is the same content as `html`, un-joined. warmCompose() needs the
-    // top-level block boundaries to group sections, and it must NOT recover them by
-    // splitting `html` on newlines: fenced code blocks and blockquotes both contain
-    // embedded newlines, so that split would tear them apart mid-block.
+    // `blocks` is the same content as `html`, un-joined. warmCompose() needs the top-level block boundaries to group sections, and it must NOT recover them by splitting `html` on newlines: fenced code blocks and blockquotes both contain embedded newlines, so that split would tear them apart mid-block.
     return { html: out.join('\n'), toc, blocks: out };
 }
 
@@ -701,32 +496,15 @@ function parseBlocks(md) {
 /**
  * Inline handling for PLAIN TEXT sources. Deliberately NOT inline().
  *
- * LICENSE is not Markdown: a *, _, [ or backtick in it is a literal
- * character of the operative wording, so interpreting any of them as markup would
- * silently rewrite a legal instrument. This escapes, auto-links bare URLs and
- * email addresses, and does nothing else.
+ * LICENSE is not Markdown: a *, _, [ or backtick in it is a literal character of the operative wording, so interpreting any of them as markup would silently rewrite a legal instrument. This escapes, auto-links bare URLs and email addresses, and does nothing else.
  *
- * In particular it does NOT prettify: -- stays --, (c) stays (c). That is
- * a considered choice, not an oversight — verify() normalises punctuation away,
- * so a character substitution here would pass every check while leaving the
- * styled page and the authoritative /LICENSE textually different. The cheapest way
- * to guarantee they agree is to not transform anything.
+ * In particular it does NOT prettify: -- stays --, (c) stays (c). That is a considered choice, not an oversight — verify() normalises punctuation away, so a character substitution here would pass every check while leaving the styled page and the authoritative /LICENSE textually different. The cheapest way to guarantee they agree is to not transform anything.
  */
 function inlineText(s) {
     s = esc(s);
-    // NOTICE's own emphasis marker for an inline aside ("*** See Section 2 —
-    // Apache-2.0 obligations ***", "*** No copyleft ... is present ... ***")
-    // — the plain-text source has no markdown bold to reach for, so it wraps
-    // in asterisks instead. Inside a raw <pre> that read fine as literal
-    // punctuation; once the same text landed inside a real card (depCard())
-    // or a normal paragraph, the literal "***" on both sides looked like
-    // broken markdown rather than emphasis. Reported 2026-08-05 12:38 EDT
-    // against the discord.js dependency card specifically. Non-greedy and
-    // single-line by construction — every caller already joins its text to
-    // one line before this runs.
+    // NOTICE's own emphasis marker for an inline aside ("*** See Section 2 — Apache-2.0 obligations ***", "*** No copyleft ... is present ... ***") — the plain-text source has no markdown bold to reach for, so it wraps in asterisks instead. Inside a raw <pre> that read fine as literal punctuation; once the same text landed inside a real card (depCard()) or a normal paragraph, the literal "***" on both sides looked like broken markdown rather than emphasis. Reported 2026-08-05 12:38 EDT against the discord.js dependency card specifically. Non-greedy and single-line by construction — every caller already joins its text to one line before this runs.
     s = s.replace(/\*\*\*([^*]+)\*\*\*/g, (_, t) => `<strong class="hi">${t}</strong>`);
-    // URLs first, so an address inside a URL isn't also matched as an email.
-    // Trailing sentence punctuation is excluded from the href.
+    // URLs first, so an address inside a URL isn't also matched as an email. Trailing sentence punctuation is excluded from the href.
     s = s.replace(/(https?:\/\/[^\s<)]+?)([.,;:)]*)(?=\s|$)/g,
         (_, url, tail) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${tail}`);
     s = s.replace(/(^|[\s(])([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g,
@@ -735,18 +513,11 @@ function inlineText(s) {
 }
 
 /**
- * Parses the plain-text licence into the same {html, toc} shape parseBlocks()
- * returns, so both feed one template.
+ * Parses the plain-text licence into the same {html, toc} shape parseBlocks() returns, so both feed one template.
  *
- * A HEADING IS A LINE BETWEEN TWO === BANNERS — nothing else. The obvious
- * alternative (treat ALL-CAPS lines as titles) is wrong here and would have
- * corrupted the document: §10 NO WARRANTY and §11 LIMITATION OF LIABILITY are
- * multi-line all-caps *prose*, as warranty disclaimers conventionally are, and 17
- * of those lines match a caps-title test. The banner rule was checked against the
- * whole file: 38 banner lines, exactly 19 headings, no false positives.
+ * A HEADING IS A LINE BETWEEN TWO === BANNERS — nothing else. The obvious alternative (treat ALL-CAPS lines as titles) is wrong here and would have corrupted the document: §10 NO WARRANTY and §11 LIMITATION OF LIABILITY are multi-line all-caps *prose*, as warranty disclaimers conventionally are, and 17 of those lines match a caps-title test. The banner rule was checked against the whole file: 38 banner lines, exactly 19 headings, no false positives.
  *
- * Everything else is distinguished by indentation, which this document uses
- * consistently:
+ * Everything else is distinguished by indentation, which this document uses consistently:
  *   col 0 N.M  Lead-in. body  a numbered clause      → <h3> + margin index
  *   indent 5                    clause body/continuation
  *   indent 7 (a) … / 11       lettered sub-items
@@ -762,11 +533,7 @@ function parsePlainLegal(txt) {
     const indentOf = s => s.match(/^ */)[0].length;
     let i = 0;
 
-    // The all-caps disclaimer paragraphs are real prose, but a wall of capitals in
-    // a serif at reading size is punishing. They get their own class so CSS can
-    // set them smaller and looser instead of dropping them to sentence case —
-    // which would alter the document. Legal convention is that the capitals ARE
-    // the emphasis, so they are preserved and made survivable.
+    // The all-caps disclaimer paragraphs are real prose, but a wall of capitals in a serif at reading size is punishing. They get their own class so CSS can set them smaller and looser instead of dropping them to sentence case — which would alter the document. Legal convention is that the capitals ARE the emphasis, so they are preserved and made survivable.
     const isShout = t => {
         const letters = t.replace(/[^A-Za-z]/g, '');
         return letters.length > 40 &&
@@ -781,10 +548,7 @@ function parsePlainLegal(txt) {
     while (i < lines.length) {
         const line = lines[i];
 
-        // ── heading: banner / one-to-three title lines / banner ──
-        // NOTICE wraps some titles across two lines, so the closing banner is
-        // located rather than assumed to be at i+2. Without this the `===` rules
-        // fall through to the paragraph branch and print as literal equals signs.
+        // ── heading: banner / one-to-three title lines / banner ── NOTICE wraps some titles across two lines, so the closing banner is located rather than assumed to be at i+2. Without this the `===` rules fall through to the paragraph branch and print as literal equals signs.
         if (isBanner(line)) {
             let j = i + 1;
             while (j < lines.length && j <= i + 3 && (lines[j] || '').trim() && !isBanner(lines[j])) j++;
@@ -801,10 +565,7 @@ function parsePlainLegal(txt) {
                 i = j + 1;
                 continue;
             }
-            // A banner with no closing partner is decoration, not a heading. It
-            // MUST still be consumed HERE: the col-0 paragraph loop below excludes
-            // banner lines by design, so falling through without advancing `i`
-            // spins forever. It did — the build hung outright on NOTICE.
+            // A banner with no closing partner is decoration, not a heading. It MUST still be consumed HERE: the col-0 paragraph loop below excludes banner lines by design, so falling through without advancing `i` spins forever. It did — the build hung outright on NOTICE.
             i++;
             continue;
         }
@@ -816,17 +577,11 @@ function parsePlainLegal(txt) {
             const id = 's-' + cl[1].toLowerCase();
             toc.push({ id, num: cl[1], text: cl[2].slice(0, 60), sub: true });
 
-            // A short leading phrase ending in a period, followed by a capital, is
-            // this document's clause title ("Deployment.", "Commercial use.").
-            // Bounded at 60 chars so an ordinary short first sentence isn't
-            // mistaken for one.
+            // A short leading phrase ending in a period, followed by a capital, is this document's clause title ("Deployment.", "Commercial use."). Bounded at 60 chars so an ordinary short first sentence isn't mistaken for one.
             const lead = cl[2].match(/^([A-Z][^.]{2,58}\.)(\s+[A-Z(].*)?$/);
             let titleTxt = lead ? lead[1] : '';
             let firstBody = lead ? (lead[2] || '').trim() : cl[2];
-            // NOTICE writes some sub-headings as a bare all-caps label with no
-            // trailing period ("4A.1  EMOJI"), which the lead-in test above can't
-            // see. Without this the label became a body paragraph under an empty
-            // heading.
+            // NOTICE writes some sub-headings as a bare all-caps label with no trailing period ("4A.1  EMOJI"), which the lead-in test above can't see. Without this the label became a body paragraph under an empty heading.
             if (!lead && /^[A-Z][A-Z0-9 ,&()/-]{1,48}$/.test(cl[2].trim())) {
                 titleTxt = cl[2].trim();
                 firstBody = '';
@@ -834,19 +589,13 @@ function parsePlainLegal(txt) {
 
             out.push(
                 `<h3 id="${id}" class="clause"><span class="idx" aria-hidden="true">${cl[1]}</span>` +
-                // Empty when the clause has no title phrase (most of §1, where the
-                // clause opens on a quoted defined term). It must be genuinely
-                // EMPTY, not a placeholder: a `&#8203;` here was rendered into the
-                // document text as the literal token "8203", because tag-stripping
-                // leaves numeric entities behind. `h3.clause .ht:empty` hides it.
+                // Empty when the clause has no title phrase (most of §1, where the clause opens on a quoted defined term). It must be genuinely EMPTY, not a placeholder: a `&#8203;` here was rendered into the document text as the literal token "8203", because tag-stripping leaves numeric entities behind. `h3.clause .ht:empty` hides it.
                 `<span class="ht">${titleTxt ? inlineText(titleTxt) : ''}</span>` +
                 `<a class="anchor" href="#${id}" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>`
             );
             i++;
 
-            // Gather the clause body: every following line indented at least 2,
-            // plus the blank lines between its paragraphs. Stops at the next col-0
-            // line or banner, which is what ends a clause in this document.
+            // Gather the clause body: every following line indented at least 2, plus the blank lines between its paragraphs. Stops at the next col-0 line or banner, which is what ends a clause in this document.
             const body = firstBody ? [firstBody] : [];
             const region = [];
             while (i < lines.length) {
@@ -889,28 +638,16 @@ function parsePlainLegal(txt) {
 }
 
 /**
- * Renders one indented region (a clause body, or a standalone indented block).
- * head is text already taken from a clause's own first line, which continues
- * into the region's first paragraph.
+ * Renders one indented region (a clause body, or a standalone indented block). head is text already taken from a clause's own first line, which continues into the region's first paragraph.
  *
- * Blank lines separate paragraphs. A deeper indent than the paragraph baseline
- * means a sub-item, which is how this document expresses "(a) … (b) … (c)" lists
- * and how it sets addresses and the SPDX identifier apart.
+ * Blank lines separate paragraphs. A deeper indent than the paragraph baseline means a sub-item, which is how this document expresses "(a) … (b) … (c)" lists and how it sets addresses and the SPDX identifier apart.
  */
 function renderIndented(head, region) {
     const indentOf = s => s.match(/^ */)[0].length;
 
-    // ── column-aligned tables ────────────────────────────────────────────
-    // NOTICE holds its dependency and trademark tables together with runs of
-    // spaces (39 of its 260 lines). Joining those into prose destroys them, and
-    // nothing downstream would notice: verify() normalises whitespace, so a
-    // mangled table still reports 100% content present.
+    // ── column-aligned tables ──────────────────────────────────────────── NOTICE holds its dependency and trademark tables together with runs of spaces (39 of its 260 lines). Joining those into prose destroys them, and nothing downstream would notice: verify() normalises whitespace, so a mangled table still reports 100% content present.
     //
-    // The unit of detection is the blank-line-delimited GROUP, not the line. A
-    // table's continuation rows are ordinary single-spaced text sitting under the
-    // second column, so they don't match the column pattern themselves — but they
-    // belong to the same block. If any line in a group is column-aligned, the
-    // whole group is preformatted.
+    // The unit of detection is the blank-line-delimited GROUP, not the line. A table's continuation rows are ordinary single-spaced text sitting under the second column, so they don't match the column pattern themselves — but they belong to the same block. If any line in a group is column-aligned, the whole group is preformatted.
     const groups = [];
     let g = [];
     for (const l of region) {
@@ -920,15 +657,9 @@ function renderIndented(head, region) {
     if (g.length) groups.push(g);
 
     const isCols = grp => grp.some(l => /\S {2,}\S/.test(l));
-    // Class is "aligned", NOT "cols". It was "cols", which collided with the
-    // page LAYOUT grid of the same name in shell() — so every one of NOTICE's
-    // dependency and trademark blocks computed display:grid with a 200px first
-    // track and spilled its lines out of it. The three content gates could not
-    // see it: every word was present, every link resolved, and every aligned
-    // line was still inside a <pre>. Only measuring the rendered box caught it.
+    // Class is "aligned", NOT "cols". It was "cols", which collided with the page LAYOUT grid of the same name in shell() — so every one of NOTICE's dependency and trademark blocks computed display:grid with a 200px first track and spilled its lines out of it. The three content gates could not see it: every word was present, every link resolved, and every aligned line was still inside a <pre>. Only measuring the rendered box caught it.
     const colsBlock = grp => {
-        // Dedent to the group's own left edge so the block doesn't carry the
-        // source file's absolute indentation into a narrower page column.
+        // Dedent to the group's own left edge so the block doesn't carry the source file's absolute indentation into a narrower page column.
         const cut = Math.min(...grp.map(indentOf));
         return `<pre class="aligned">${grp.map(l => inlineText(l.slice(cut))).join('\n')}</pre>`;
     };
@@ -969,10 +700,7 @@ function renderIndented(head, region) {
         let i = 0, copyright = '';
         if (/^Copyright/i.test(rest[0] || '')) {
             copyright = rest[i++];
-            // A wrapped continuation of the copyright line ("... Instrument Sans
-            // Project" / "Authors") — short, no terminal punctuation on the line
-            // before it, and not itself the URL. Same continuation heuristic the
-            // verbatim-block detector above uses.
+            // A wrapped continuation of the copyright line ("... Instrument Sans Project" / "Authors") — short, no terminal punctuation on the line before it, and not itself the URL. Same continuation heuristic the verbatim-block detector above uses.
             while (rest[i] && !/^https?:\/\//.test(rest[i]) && !/[.:]$/.test(rest[i - 1])) {
                 copyright += ' ' + rest[i++];
             }
@@ -996,14 +724,7 @@ function renderIndented(head, region) {
     let list = null;      // open lettered/bulleted list, as an array of item texts
     let pre = null;       // open verbatim block (address, identifier)
     const flushPara = () => {
-        // ⚠️ >>> — the same load-bearing-warning marker parseBlocks() recognises
-        // for the Markdown documents' callouts (see its own ⚠️|🔴|>>> test) —
-        // also marks NOTICE's plain-text trademark disclaimer, one per wrapped
-        // line ("  >>> DIOR'S BUILDS IS AN UNOFFICIAL...\n  >>> DEVELOPED,
-        // PUBLISHED..."). This parser never stripped it, so it rendered as
-        // literal ">>>" sprinkled through the paragraph at every line-wrap
-        // point instead of the highlighted box the marker is meant to produce.
-        // Reported 2026-08-05 08:27 EDT.
+        // ⚠️ >>> — the same load-bearing-warning marker parseBlocks() recognises for the Markdown documents' callouts (see its own ⚠️|🔴|>>> test) — also marks NOTICE's plain-text trademark disclaimer, one per wrapped line ("  >>> DIOR'S BUILDS IS AN UNOFFICIAL...\n  >>> DEVELOPED, PUBLISHED..."). This parser never stripped it, so it rendered as literal ">>>" sprinkled through the paragraph at every line-wrap point instead of the highlighted box the marker is meant to produce. Reported 2026-08-05 08:27 EDT.
         const isCallout = buf.length > 0 && buf.every(l => /^\s*>>>/.test(l));
         const raw = isCallout ? buf.map(l => l.replace(/^\s*>>>\s*/, '')) : buf;
         const t = raw.join(' ').trim();
@@ -1011,9 +732,7 @@ function renderIndented(head, region) {
             if (isCallout) {
                 out.push(`<blockquote class="callout warn"><p>${inlineText(t)}</p></blockquote>`);
             } else {
-                // "Exception:", "Carve-out:", "For clarity" — the document's own
-                // signal that what follows narrows or explains the clause above
-                // it. Marking them is styling of existing text, not added content.
+                // "Exception:", "Carve-out:", "For clarity" — the document's own signal that what follows narrows or explains the clause above it. Marking them is styling of existing text, not added content.
                 const aside = /^(Exception|Carve-out|Carve out|For clarity|Note|Example)\b/.test(t);
                 out.push(`<p class="sub${aside ? ' aside' : ''}">${inlineText(t)}</p>`);
             }
@@ -1027,8 +746,7 @@ function renderIndented(head, region) {
         }
         list = null;
     };
-    // inlineText per line rather than esc on the whole block, so the email address
-    // and repo URL in §17 stay clickable. `white-space:pre` keeps the line breaks.
+    // inlineText per line rather than esc on the whole block, so the email address and repo URL in §17 stay clickable. `white-space:pre` keeps the line breaks.
     const flushPre = () => {
         if (pre && pre.length) {
             out.push(`<pre class="block">${pre.map(inlineText).join('\n')}</pre>`);
@@ -1037,17 +755,11 @@ function renderIndented(head, region) {
     };
     const flushAll = () => { flushPara(); flushList(); flushPre(); };
 
-    // The paragraph baseline is the shallowest indent present; anything deeper is
-    // a sub-item. Derived rather than hard-coded to 5, because the summary block
-    // near the top of the licence sits at 2/4/6 instead.
+    // The paragraph baseline is the shallowest indent present; anything deeper is a sub-item. Derived rather than hard-coded to 5, because the summary block near the top of the licence sits at 2/4/6 instead.
     const depths = region.filter(l => l.trim()).map(indentOf);
     const base = depths.length ? Math.min(...depths) : 0;
 
-    // A region that is ENTIRELY short unpunctuated unmarked lines is a verbatim
-    // block, not prose: the SPDX identifier in §16 and the postal/email/repo block
-    // in §17. Detected up front because the per-line rule below requires a deeper
-    // indent than the baseline, and in these two cases every line IS the baseline —
-    // which silently rendered a copy-me identifier as a serif sentence.
+    // A region that is ENTIRELY short unpunctuated unmarked lines is a verbatim block, not prose: the SPDX identifier in §16 and the postal/email/repo block in §17. Detected up front because the per-line rule below requires a deeper indent than the baseline, and in these two cases every line IS the baseline — which silently rendered a copy-me identifier as a serif sentence.
     const body = region.filter(l => l.trim());
     if (!head.length && body.length && body.length <= 6 &&
         body.every(l => l.trim().length < 80 && !/[.;:,]$/.test(l.trim()) &&
@@ -1055,9 +767,7 @@ function renderIndented(head, region) {
         return `<pre class="block">${body.map(l => inlineText(l.trim())).join('\n')}</pre>`;
     }
 
-    // Groups are dispatched whole. A column-aligned group becomes preformatted
-    // regardless of what surrounds it, which is what lets NOTICE §5 carry prose
-    // paragraphs and aligned trademark tables in the same region.
+    // Groups are dispatched whole. A column-aligned group becomes preformatted regardless of what surrounds it, which is what lets NOTICE §5 carry prose paragraphs and aligned trademark tables in the same region.
     groups.forEach((grp, gi) => {
         if (isDepEntry(grp)) { flushAll(); out.push(depCard(grp)); return; }
         if (isCols(grp)) { flushAll(); out.push(colsBlock(grp)); return; }
@@ -1077,9 +787,7 @@ function renderIndented(head, region) {
             // Deeper than the list marker → continuation of the current item.
             if (list && ind > base) { list[list.length - 1] += ' ' + t; continue; }
 
-            // An indented line with no marker and no prose around it is a verbatim
-            // block: the postal/email address in §17 and the SPDX identifier in §16.
-            // Short, no terminal punctuation, and deeper than the baseline.
+            // An indented line with no marker and no prose around it is a verbatim block: the postal/email address in §17 and the SPDX identifier in §16. Short, no terminal punctuation, and deeper than the baseline.
             if (!list && ind > base && t.length < 80 && !/[.;:]$/.test(t) && buf.length === 0) {
                 flushList();
                 if (!pre) pre = [];
@@ -1100,23 +808,13 @@ function renderIndented(head, region) {
 /* ──────────────────────── shared design tokens (CSS) ───────────────────── */
 
 /**
- * ⚠️ THE LIGHT PALETTE IS DECLARED ONCE AND EMITTED TWICE, BECAUSE KEEPING TWO
- * COPIES IN SYNC BY HAND ALREADY FAILED.
+ * ⚠️ THE LIGHT PALETTE IS DECLARED ONCE AND EMITTED TWICE, BECAUSE KEEPING TWO COPIES IN SYNC BY HAND ALREADY FAILED.
  *
- * Light mode needs two selectors: `:root[data-theme=light]` for a reader who has
- * pressed the switch, and `:root:not([data-theme=dark])` inside a
- * prefers-color-scheme query for everyone who has not. CSS has no way to share a
- * declaration list between them, so the list was simply written out twice.
+ * Light mode needs two selectors: `:root[data-theme=light]` for a reader who has pressed the switch, and `:root:not([data-theme=dark])` inside a prefers-color-scheme query for everyone who has not. CSS has no way to share a declaration list between them, so the list was simply written out twice.
  *
- * On 2026-08-04 a palette change landed in the first block and not the second.
- * Every reader on system-default light — which is most of them, and was both the
- * preview and the phone it was being judged on — kept seeing the OLD palette,
- * while the source, the build and all thirteen gates reported success. Nothing
- * could have caught it: both blocks were valid CSS, both declared every token,
- * and contrastAudit merges the blocks it finds rather than comparing them.
+ * On 2026-08-04 a palette change landed in the first block and not the second. Every reader on system-default light — which is most of them, and was both the preview and the phone it was being judged on — kept seeing the OLD palette, while the source, the build and all thirteen gates reported success. Nothing could have caught it: both blocks were valid CSS, both declared every token, and contrastAudit merges the blocks it finds rather than comparing them.
  *
- * This is a generator. It can interpolate, so there is no reason for a second
- * copy to exist. Add a token here and both selectors get it.
+ * This is a generator. It can interpolate, so there is no reason for a second copy to exist. Add a token here and both selectors get it.
  */
 const LIGHT_TOKENS = `
   --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
@@ -1363,9 +1061,7 @@ const REPO_URL = 'https://github.com/HarkiratMangat/dioreo';
    documents name it that way. */
 const DISCORD_URL = 'https://discord.com/users/1139845545754632283';
 
-// Matches the bot's own sign-off. commands/settings.js closes its panel with
-// `-# {diorHeart} Made with love by @dior`, so the site says the same thing in
-// the same words rather than inventing a second voice for the same person.
+// Matches the bot's own sign-off. commands/settings.js closes its panel with `-# {diorHeart} Made with love by @dior`, so the site says the same thing in the same words rather than inventing a second voice for the same person.
 const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by '
     + `<a class="sig-a" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a>`;
 /* ⚠️ ONE CONSTANT, EVERY FOOTER — the same lesson TRADEMARK_NOTE's own comment
@@ -1378,19 +1074,11 @@ const SIG_COPYRIGHT = '<span class="sig-cr">&copy; Dioreo&trade;. All rights res
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 
 /**
- * The install call to action, and the ONLY filled-accent element on the site.
- * Everything else is outlined or plain, so this reads as the single primary
- * action without needing to be large or loud about it.
+ * The install call to action, and the ONLY filled-accent element on the site. Everything else is outlined or plain, so this reads as the single primary action without needing to be large or loud about it.
  *
- * big is the landing-page hero variant. The compact one lives in the header of
- * every page, so the action is always one click away no matter how deep into a
- * document someone has scrolled.
+ * big is the landing-page hero variant. The compact one lives in the header of every page, so the action is always one click away no matter how deep into a document someone has scrolled.
  */
-// The Discord mark, drawn on its OWN 127x96 viewBox rather than squeezed into a
-// 24x24 grid. The previous path was authored for 24x24 but its geometry ran past
-// the box, so the wordmark's ears were clipped off at the top — visible on the
-// hero button. Using the mark's native aspect ratio means nothing has to be
-// guessed or scaled by hand.
+// The Discord mark, drawn on its OWN 127x96 viewBox rather than squeezed into a 24x24 grid. The previous path was authored for 24x24 but its geometry ran past the box, so the wordmark's ears were clipped off at the top — visible on the hero button. Using the mark's native aspect ratio means nothing has to be guessed or scaled by hand.
 const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg>`;
 
 // data-spot opts the control into the cursor-tracked highlight in THEME_JS.
@@ -1405,38 +1093,14 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 </a>`;
 
 /**
- * The wordmark. It was previously a static accent bar plus text, and the first
- * thing Harkirat said about the live site was that he could not tell whether it
- * was clickable. So it now carries a permanent, slow idle animation — a highlight
- * that sweeps the three bars every few seconds — because a hover state cannot
- * advertise interactivity to someone who has not hovered yet. The three bars are
- * the same motif as the favicon and stand for attachment slots on a spec sheet.
+ * The wordmark. It was previously a static accent bar plus text, and the first thing Harkirat said about the live site was that he could not tell whether it was clickable. So it now carries a permanent, slow idle animation — a highlight that sweeps the three bars every few seconds — because a hover state cannot advertise interactivity to someone who has not hovered yet. The three bars are the same motif as the favicon and stand for attachment slots on a spec sheet.
  *
- * href is a parameter because on the index page this must NOT be a link (you are
- * already there) — and there it deliberately gets no animation either, so that
- * "moves" and "is clickable" keep meaning the same thing across the site.
+ * href is a parameter because on the index page this must NOT be a link (you are already there) — and there it deliberately gets no animation either, so that "moves" and "is clickable" keep meaning the same thing across the site.
  */
-// `cur` is the page being rendered ({out, dir}), or null on the landing page.
-// It was a bare filename until the site gained a second directory — two pages now
-// share the name index.html, so a filename alone no longer identifies a page.
+// `cur` is the page being rendered ({out, dir}), or null on the landing page. It was a bare filename until the site gained a second directory — two pages now share the name index.html, so a filename alone no longer identifies a page.
 const wordmark = (href, cur) => {
     const here = cur ? ALL_PAGES.find(p => p.out === cur.out && dirOf(p) === dirOf(cur)) : null;
-    // The landing page carries no nav bar beside it, so it can afford — and per
-    // Harkirat's own call, should carry — a much larger mark than the 54px bar
-    // on every other page has room for. href is null only on the landing page
-    // (see below), so that is also the flag that selects the hero size.
-    // ⚠️ TWO DIFFERENT ASSETS, NOT ONE SCALED TWO WAYS — swapped 2026-08-05
-    // 09:05 EDT. The nav bar is too short for the mascot to read as anything
-    // but noise at 44px tall, so it gets the typographic-only mark; the
-    // landing hero has the room and gets the mascot alone instead of the
-    // combo lockup, per Harkirat's own asset choice.
-    // ⚠️ THE ASSET PREFIX DEPENDS ON WHERE THIS RENDERS, NOT JUST ON href. Every
-    // root-level page is now a sibling of assets/ (bare 'assets/...') since the
-    // 2026-08-05 14:38 EDT flattening — but chronicle.js also calls this from inside
-    // changelog/, which is still one level down and needs '../assets/...'. cur
-    // carries the caller's own {out,dir}, so dirOf(cur) is the one source of
-    // truth for which prefix is correct; hero (href===null) is only ever the
-    // root homepage, so it always takes the bare form.
+    // The landing page carries no nav bar beside it, so it can afford — and per Harkirat's own call, should carry — a much larger mark than the 54px bar on every other page has room for. href is null only on the landing page (see below), so that is also the flag that selects the hero size. ⚠️ TWO DIFFERENT ASSETS, NOT ONE SCALED TWO WAYS — swapped 2026-08-05 09:05 EDT. The nav bar is too short for the mascot to read as anything but noise at 44px tall, so it gets the typographic-only mark; the landing hero has the room and gets the mascot alone instead of the combo lockup, per Harkirat's own asset choice. ⚠️ THE ASSET PREFIX DEPENDS ON WHERE THIS RENDERS, NOT JUST ON href. Every root-level page is now a sibling of assets/ (bare 'assets/...') since the 2026-08-05 14:38 EDT flattening — but chronicle.js also calls this from inside changelog/, which is still one level down and needs '../assets/...'. cur carries the caller's own {out,dir}, so dirOf(cur) is the one source of truth for which prefix is correct; hero (href===null) is only ever the root homepage, so it always takes the bare form.
     const assetPfx = cur && dirOf(cur) === 'changelog' ? '../assets/' : 'assets/';
     const [src, w, h] = href
         ? [assetPfx + 'dioreo-wordmark.webp', 600, 279]
@@ -1455,13 +1119,7 @@ const wordmark = (href, cur) => {
   </div>`;
 };
 
-// Collapsed to the mark alone, expanding to reveal the label on hover/focus.
-// NOTE: this is the ONLY repo link on the site, and it is a navigation
-// affordance, not a citation. That distinction is deliberate — a citation inside
-// a legal document must resolve (the repo's visibility can change at any time,
-// per TERMS §7.1), whereas a nav button that stops working is a dead button and
-// not a defective legal instrument. TERMS §20 still deliberately withholds the
-// repo as a *contact* route, which this does not change.
+// Collapsed to the mark alone, expanding to reveal the label on hover/focus. NOTE: this is the ONLY repo link on the site, and it is a navigation affordance, not a citation. That distinction is deliberate — a citation inside a legal document must resolve (the repo's visibility can change at any time, per TERMS §7.1), whereas a nav button that stops working is a dead button and not a defective legal instrument. TERMS §20 still deliberately withholds the repo as a *contact* route, which this does not change.
 const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
@@ -1471,15 +1129,9 @@ const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener
 /**
  * The light/dark switch. Replaces a ◐ glyph in a box.
  *
- * It is a real switch — a track the knob travels along — and the knob morphs
- * between a rayed sun and a crescent moon. The crescent is cut by an SVG mask
- * whose occluding circle is moved with transform, NOT with cx/cy: the
- * geometry attributes are animatable as CSS in current browsers but not
- * dependably in older Safari, and a half-applied mask renders as a plain disc
- * with no error anywhere.
+ * It is a real switch — a track the knob travels along — and the knob morphs between a rayed sun and a crescent moon. The crescent is cut by an SVG mask whose occluding circle is moved with transform, NOT with cx/cy: the geometry attributes are animatable as CSS in current browsers but not dependably in older Safari, and a half-applied mask renders as a plain disc with no error anywhere.
  *
- * role="switch" plus aria-checked is the honest markup here — it is a binary
- * control with a state, and a bare <button> would announce neither.
+ * role="switch" plus aria-checked is the honest markup here — it is a binary control with a state, and a bare <button> would announce neither.
  */
 const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
@@ -1527,16 +1179,11 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
 </button>`;
 
 /**
- * The page switcher, carried by EVERY page so the navigation never changes shape
- * as you move around the site.
+ * The page switcher, carried by EVERY page so the navigation never changes shape as you move around the site.
  *
- * TWO groups, not one list: the four legal instruments in one pill, the two
- * invitation pages in another. That split is the same distinction the whole site
- * is built on — documents that bind you versus an offer — and putting all six in
- * a single track would quietly say they are the same kind of thing.
+ * TWO groups, not one list: the four legal instruments in one pill, the two invitation pages in another. That split is the same distinction the whole site is built on — documents that bind you versus an offer — and putting all six in a single track would quietly say they are the same kind of thing.
  *
- * A group you are not currently inside has data-at="-1": its indicator is hidden
- * until you point at it, so exactly one indicator is ever "yours".
+ * A group you are not currently inside has data-at="-1": its indicator is hidden until you point at it, so exactly one indicator is ever "yours".
  */
 /* ⚠️ CHRONICLE_PAGES IS WITHDRAWN FROM THE NAV, not deleted — the same call that
    took the record row off the landing page, finished. Leaving the row off the
@@ -1571,18 +1218,9 @@ const NAV_GROUP_LABELS = ['Documents', 'Community'];
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
  *
- * Desktop and mobile are now two separate controls rather than one control
- * restyled at a breakpoint. Sharing them sounded economical and produced most of
- * the mobile bugs: an indicator that has to work as a horizontal pointer track
- * AND a vertical thumb-follower does neither well, and every hover effect it
- * carried stuck to the first tap on a touch screen. The cost is that the six
- * links appear twice in the DOM; exactly one copy is display:none at any width,
- * and the pair is generated from the same PAGES data, so they cannot drift.
+ * Desktop and mobile are now two separate controls rather than one control restyled at a breakpoint. Sharing them sounded economical and produced most of the mobile bugs: an indicator that has to work as a horizontal pointer track AND a vertical thumb-follower does neither well, and every hover effect it carried stuck to the first tap on a touch screen. The cost is that the six links appear twice in the DOM; exactly one copy is display:none at any width, and the pair is generated from the same PAGES data, so they cannot drift.
  *
- * ⚠️ The track is a FLEX row, not equal-width grid columns, because the
- * indicator now measures each tab's real box (offsetLeft/offsetWidth) instead of
- * assuming every tab is 1/n of the track. That is what lets the pill fit
- * "Contributing" and "Notice" correctly, and it is why nothing here sets --n.
+ * ⚠️ The track is a FLEX row, not equal-width grid columns, because the indicator now measures each tab's real box (offsetLeft/offsetWidth) instead of assuming every tab is 1/n of the track. That is what lets the pill fit "Contributing" and "Notice" correctly, and it is why nothing here sets --n.
  */
 /* ⚠️ data-fit IS THE BREAKPOINT REGIME, and it exists because the bar now comes in
    two sizes. Withdrawing the record group left six tabs on every page except the
@@ -1628,49 +1266,21 @@ const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
 /**
  * MOBILE navigation — one disclosure holding every destination on the site.
  *
- * This replaces two rejected attempts (a two-tab rail and a bottom sheet), both
- * of which carried the desktop indicator into a touch context and inherited its
- * pointer handling. There is no indicator here and no gesture: a button that
- * names where you are, opening one panel of plain rows. Everything a thumb can
- * touch is a link or a button, and the only animation is the panel's own height.
+ * This replaces two rejected attempts (a two-tab rail and a bottom sheet), both of which carried the desktop indicator into a touch context and inherited its pointer handling. There is no indicator here and no gesture: a button that names where you are, opening one panel of plain rows. Everything a thumb can touch is a link or a button, and the only animation is the panel's own height.
  *
- * Pages and sections live in the SAME panel because they answer the same
- * question — "where can I go from here" — and two collapsing menus a thumb-width
- * apart was the complaint that started this. `slots` is the section index, which
- * only the legal template has; the warm pages simply omit that group.
+ * Pages and sections live in the SAME panel because they answer the same question — "where can I go from here" — and two collapsing menus a thumb-width apart was the complaint that started this. `slots` is the section index, which only the legal template has; the warm pages simply omit that group.
  */
 /**
  * The download control for the two plain-text instruments (added 2026-08-04 14:54 EDT).
  *
- * LICENSE and NOTICE are the only pages that have a raw original to offer:
- * buildCompanions() copies both to public/ verbatim precisely because rendering
- * them through this parser would put a lossy transformation between the reader and
- * the operative wording. The rendered page is the convenient copy; this is the
- * authoritative one, and until now the only way to reach it was a link buried in
- * the prose. It goes in the SECTION INDEX — the mobile disclosure and the desktop
- * rail, which are the same panel in two templates — because that panel is the one
- * thing on screen no matter how far down the reader has scrolled.
+ * LICENSE and NOTICE are the only pages that have a raw original to offer: buildCompanions() copies both to public/ verbatim precisely because rendering them through this parser would put a lossy transformation between the reader and the operative wording. The rendered page is the convenient copy; this is the authoritative one, and until now the only way to reach it was a link buried in the prose. It goes in the SECTION INDEX — the mobile disclosure and the desktop rail, which are the same panel in two templates — because that panel is the one thing on screen no matter how far down the reader has scrolled.
  *
- * ⚠️ The size is measured from the REPO file, not the published copy, because
- * buildCompanions() may not have run yet when a page is rendered. copyFileSync
- * makes them byte-identical, so the number is honest — but if that copy ever grows
- * a transformation, this has to move or it starts lying about a download.
+ * ⚠️ The size is measured from the REPO file, not the published copy, because buildCompanions() may not have run yet when a page is rendered. copyFileSync makes them byte-identical, so the number is honest — but if that copy ever grows a transformation, this has to move or it starts lying about a download.
  *
- * ⚠️ `download` renames to .txt on purpose. The instrument's canonical filename has
- * no extension, which is right in a repository and a support problem in a Downloads
- * folder. The bytes are untouched; only the saved name differs.
+ * ⚠️ `download` renames to .txt on purpose. The instrument's canonical filename has no extension, which is right in a repository and a support problem in a Downloads folder. The bytes are untouched; only the saved name differs.
  */
 /**
- * The download glyph, shared by every button that offers one (.dl, .dlr, and the
- * mobile menu's copy of .dlr). Drawn as inline SVG rather than the CSS
- * border/pseudo-element tray this used to be — that version needed two
- * pseudo-elements per icon, hand-measured pixel offsets for the arrowhead's
- * rotated-square corner, and still only looked right at the one size it was
- * tuned for. An SVG path scales cleanly at any size, inherits currentColor the
- * same way the CSS version did (so it still themes for free in both palettes),
- * and does not carry a missing-glyph risk the way a typed character would —
- * see the note on .cpy-g for why a typed glyph was rejected there too.
- * Replaced 2026-08-05 11:31 EDT: "these look so unrefined."
+ * The download glyph, shared by every button that offers one (.dl, .dlr, and the mobile menu's copy of .dlr). Drawn as inline SVG rather than the CSS border/pseudo-element tray this used to be — that version needed two pseudo-elements per icon, hand-measured pixel offsets for the arrowhead's rotated-square corner, and still only looked right at the one size it was tuned for. An SVG path scales cleanly at any size, inherits currentColor the same way the CSS version did (so it still themes for free in both palettes), and does not carry a missing-glyph risk the way a typed character would — see the note on .cpy-g for why a typed glyph was rejected there too. Replaced 2026-08-05 11:31 EDT: "these look so unrefined."
  */
 const dlIcon = cls => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" `
     + `stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" `
@@ -1727,14 +1337,9 @@ const mobileNav = (cur, slots, dl = '') => {
 };
 
 /**
- * The site footer, shared by all three templates so the links, the separators and
- * the sign-off are identical everywhere.
+ * The site footer, shared by all three templates so the links, the separators and the sign-off are identical everywhere.
  *
- * The affiliation disclaimer rides along on every page. It is a trademark notice,
- * and a reader can arrive on any one of these pages directly from a search
- * result — a notice that only appears on the page you happened not to land on
- * does not do its job. NOTICE §2 remains the authoritative version; this is the
- * short form.
+ * The affiliation disclaimer rides along on every page. It is a trademark notice, and a reader can arrive on any one of these pages directly from a search result — a notice that only appears on the page you happened not to land on does not do its job. NOTICE §2 remains the authoritative version; this is the short form.
  */
 /* ⚠️ ONE STRING, TWO PLACES. This was typed out twice — once here and once at the
    foot of the landing page — and the two copies had drifted into saying different
@@ -1752,24 +1357,9 @@ const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
     + 'under licence.';
 
 /**
- * The SAME disclaimer sentence closes six different source documents
- * (LICENSE, NOTICE, TERMS.md, PRIVACY.md, CONTRIBUTING.md, CONTRIBUTORS.md),
- * typed into each one's own operative text rather than pulled from
- * TRADEMARK_NOTE above — and each source formats it differently (CONTRIBUTING.md
- * wraps it in markdown italics, the plain-text instruments don't, since plain
- * text has no italics to wrap it in). Reported 2026-08-05 08:19 EDT: on the
- * rendered pages that reads as inconsistent — italic on one page, plain on the
- * next, no visual separation from the paragraph before it.
+ * The SAME disclaimer sentence closes six different source documents (LICENSE, NOTICE, TERMS.md, PRIVACY.md, CONTRIBUTING.md, CONTRIBUTORS.md), typed into each one's own operative text rather than pulled from TRADEMARK_NOTE above — and each source formats it differently (CONTRIBUTING.md wraps it in markdown italics, the plain-text instruments don't, since plain text has no italics to wrap it in). Reported 2026-08-05 08:19 EDT: on the rendered pages that reads as inconsistent — italic on one page, plain on the next, no visual separation from the paragraph before it.
  *
- * This is a RENDER-ONLY normalisation, not a rewording, and it never touches
- * the six source files — LICENSE and NOTICE are served verbatim as the
- * authoritative instrument (see buildCompanions()), and italicising THAT
- * text would misrepresent what the instrument actually says. This runs on
- * the parsed HTML, after the source has already been rendered as an ordinary
- * paragraph — matching the same "formatted reading copy, not the instrument"
- * distinction the plain-text download note next to it already makes.
- * Matches with or without existing <em>, so it is safe to run whether or not
- * a given source already italicised it by hand.
+ * This is a RENDER-ONLY normalisation, not a rewording, and it never touches the six source files — LICENSE and NOTICE are served verbatim as the authoritative instrument (see buildCompanions()), and italicising THAT text would misrepresent what the instrument actually says. This runs on the parsed HTML, after the source has already been rendered as an ordinary paragraph — matching the same "formatted reading copy, not the instrument" distinction the plain-text download note next to it already makes. Matches with or without existing <em>, so it is safe to run whether or not a given source already italicised it by hand.
  */
 const DISCLAIMER_RE = new RegExp(
     '<p>(?:<em>)?Dioreo is an unofficial fan project and is not affiliated '
@@ -1797,16 +1387,9 @@ const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' 
 /**
  * Discord-first contact, with the email behind a reveal.
  *
- * Built on <details>/<summary> rather than a script ON PURPOSE. A privacy policy
- * has to give a data subject a working way to reach the controller (PRIVACY §13,
- * and GDPR Art. 13 requires the controller's contact details), so the address must
- * be present in the markup and openable with JavaScript disabled. A JS-gated
- * reveal would make the statutory contact route conditional on scripting.
+ * Built on <details>/<summary> rather than a script ON PURPOSE. A privacy policy has to give a data subject a working way to reach the controller (PRIVACY §13, and GDPR Art. 13 requires the controller's contact details), so the address must be present in the markup and openable with JavaScript disabled. A JS-gated reveal would make the statutory contact route conditional on scripting.
  *
- * The wording is also chosen so it cannot contradict the documents: Discord is the
- * FASTEST route, email remains the CANONICAL one, which is exactly what TERMS §20
- * and PRIVACY §13 say. Saying "Discord is the primary method" on this page while
- * the binding documents name email would have been a real inconsistency.
+ * The wording is also chosen so it cannot contradict the documents: Discord is the FASTEST route, email remains the CANONICAL one, which is exactly what TERMS §20 and PRIVACY §13 say. Saying "Discord is the primary method" on this page while the binding documents name email would have been a real inconsistency.
  */
 const emailReveal = `<details class="rev">
   <summary data-tip="Show the email address"><span class="rv-i" aria-hidden="true"></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
@@ -2849,9 +2432,7 @@ const TOTOP_TRACK_JS = `
   paint();
 })();`;
 
-// One implementation, used by both templates. `aria-checked` is kept in step with
-// the resolved theme rather than assumed — the initial state can come from the OS
-// preference, not just from a click.
+// One implementation, used by both templates. `aria-checked` is kept in step with the resolved theme rather than assumed — the initial state can come from the OS preference, not just from a click.
 const THEME_JS = `
 (function(){
   var d=document.documentElement, btn=document.getElementById('th');
@@ -2898,40 +2479,16 @@ const THEME_JS = `
 /**
  * The switcher behaviour, shared by every template.
  *
- * The tabs stay ordinary links, so keyboard, middle-click, "open in new tab" and
- * no-JS all behave exactly as they did; this only adds pointer behaviour on top.
- * Point at the track and the indicator eases toward the tab under your cursor,
- * stretching slightly along its direction of travel, while the mesh cross-fades
- * from the colour of the page you are on to the colour of the page you are
- * pointing at. Drag it and it tracks your finger 1:1, then snaps and navigates.
+ * The tabs stay ordinary links, so keyboard, middle-click, "open in new tab" and no-JS all behave exactly as they did; this only adds pointer behaviour on top. Point at the track and the indicator eases toward the tab under your cursor, stretching slightly along its direction of travel, while the mesh cross-fades from the colour of the page you are on to the colour of the page you are pointing at. Drag it and it tracks your finger 1:1, then snaps and navigates.
  *
- * There is deliberately NO load-time entrance animation any more. The old one
- * slid the indicator in from the previous page's index, which needed a class on
- * the control, a sessionStorage read before first paint, and animation-fill-mode
- * both — and that class was what collided with .go and made the entire switcher
- * invisible. The hover behaviour communicates far more than the entrance did,
- * and it costs none of that machinery.
+ * There is deliberately NO load-time entrance animation any more. The old one slid the indicator in from the previous page's index, which needed a class on the control, a sessionStorage read before first paint, and animation-fill-mode both — and that class was what collided with .go and made the entire switcher invisible. The hover behaviour communicates far more than the entrance did, and it costs none of that machinery.
  */
 /**
  * The morphing indicator, and the mobile menu.
  *
- * ⚠️ THE BUG THIS REPLACES — worth recording so it is not reinvented. The old
- * control began a drag on EVERY pointerdown anywhere on the track, and a
- * capture-phase click handler cancelled the link's navigation whenever the
- * pointer had travelled more than 3px between press and release. Its own
- * fallback then only navigated if the ROUNDED settled index differed from the
- * starting one — which a few pixels of drift never changes. So an ordinary click
- * with a little hand movement was swallowed whole: no navigation, no error,
- * nothing in the console. Reproduced in Chrome 2026-07-31 23:40 EDT by pressing
- * a tab and releasing 5px away. Nothing here intercepts clicks any more; tabs are
- * plain links and the navigation is the browser's.
+ * ⚠️ THE BUG THIS REPLACES — worth recording so it is not reinvented. The old control began a drag on EVERY pointerdown anywhere on the track, and a capture-phase click handler cancelled the link's navigation whenever the pointer had travelled more than 3px between press and release. Its own fallback then only navigated if the ROUNDED settled index differed from the starting one — which a few pixels of drift never changes. So an ordinary click with a little hand movement was swallowed whole: no navigation, no error, nothing in the console. Reproduced in Chrome 2026-07-31 23:40 EDT by pressing a tab and releasing 5px away. Nothing here intercepts clicks any more; tabs are plain links and the navigation is the browser's.
  *
- * HOW THE MORPH WORKS. The indicator is not a fixed pill that slides. Its two
- * edges are tracked separately, and an edge that is EXPANDING the pill moves
- * about twice as fast as one that is CONTRACTING it. So the pill always reaches
- * the tab you are pointing at before its tail lets go — it stretches across the
- * gap, then gathers itself. That asymmetry is the entire effect, it is four
- * lines, and there is no keyframe or duration to keep in sync with anything.
+ * HOW THE MORPH WORKS. The indicator is not a fixed pill that slides. Its two edges are tracked separately, and an edge that is EXPANDING the pill moves about twice as fast as one that is CONTRACTING it. So the pill always reaches the tab you are pointing at before its tail lets go — it stretches across the gap, then gathers itself. That asymmetry is the entire effect, it is four lines, and there is no keyframe or duration to keep in sync with anything.
  */
 const NAV_JS = `
 (function(){
@@ -4543,35 +4100,15 @@ const SWITCHER_CSS = `
 /**
  * The metaball filter behind the navigation indicator.
  *
- * ⚠️ THE REGION MUST CONTAIN THE DROPLETS, NOT JUST THE PILL. An SVG filter's
- * region is a percentage of the filtered element's box, and anything outside it
- * is not filtered at all — it paints as a raw, unblurred, unfused circle. The
- * indicator layer is only ~32px tall, so the old y="-60%" height="220%" reached
- * ±19px, and the desktop spray already travels ±19px: passing by luck. The
- * mobile strip's swarm goes further. Chrome quietly expands the region to cover
- * overflow, Safari honours what is declared, so this fails on a phone ONLY —
- * which is exactly how it was found, with a CSS-filter version rendering
- * correctly beside it on the same device. A CSS filter chain has no region;
- * an SVG one does, and it has to be declared for the widest thing inside it.
+ * ⚠️ THE REGION MUST CONTAIN THE DROPLETS, NOT JUST THE PILL. An SVG filter's region is a percentage of the filtered element's box, and anything outside it is not filtered at all — it paints as a raw, unblurred, unfused circle. The indicator layer is only ~32px tall, so the old y="-60%" height="220%" reached ±19px, and the desktop spray already travels ±19px: passing by luck. The mobile strip's swarm goes further. Chrome quietly expands the region to cover overflow, Safari honours what is declared, so this fails on a phone ONLY — which is exactly how it was found, with a CSS-filter version rendering correctly beside it on the same device. A CSS filter chain has no region; an SVG one does, and it has to be declared for the widest thing inside it.
  *
- * Blur, then crush the alpha channel back to hard edges with a colour matrix.
- * Two separate shapes that come within a blur radius of each other fuse into one
- * silhouette with a pinched neck — which is the entire reason the indicator can
- * BREAK APART and reform rather than slide as a rigid pill.
+ * Blur, then crush the alpha channel back to hard edges with a colour matrix. Two separate shapes that come within a blur radius of each other fuse into one silhouette with a pinched neck — which is the entire reason the indicator can BREAK APART and reform rather than slide as a rigid pill.
  *
- * color-interpolation-filters="sRGB" is not optional: the default is linearRGB
- * and the blobs come out visibly washed and pale against the same token colour
- * used everywhere else on the page.
+ * color-interpolation-filters="sRGB" is not optional: the default is linearRGB and the blobs come out visibly washed and pale against the same token colour used everywhere else on the page.
  *
- * The filter region is enlarged well past the default -10%/+10%, because the
- * blur on a 26px-tall element is clipped by the default box and that shears the
- * top and bottom off the merged shape.
+ * The filter region is enlarged well past the default -10%/+10%, because the blur on a 26px-tall element is clipped by the default box and that shears the top and bottom off the merged shape.
  */
-// ⚠️ The collapsing style is INLINE, not in a stylesheet. .goodef lived in
-// SWITCHER_CSS, which the landing page does not include — so on that page the svg
-// kept its intrinsic 300x150 and took part in layout, shoving the whole document
-// sideways. A fragment injected into three templates with three different CSS
-// compositions cannot depend on any one of them having styled it.
+// ⚠️ The collapsing style is INLINE, not in a stylesheet. .goodef lived in SWITCHER_CSS, which the landing page does not include — so on that page the svg kept its intrinsic 300x150 and took part in layout, shoving the whole document sideways. A fragment injected into three templates with three different CSS compositions cannot depend on any one of them having styled it.
 /* Four alpha-crush filters, one per surface. The MATRIX is identical in all of
    them — it multiplies ALPHA and leaves RGB alone, which is the whole reason the
    liquid cursor can be recoloured per frame (a CSS blur/contrast crush drives
@@ -4645,50 +4182,27 @@ const GOO_SVG = `<svg class="goodef" aria-hidden="true" focusable="false"
 /**
  * Applies the stored theme before the document paints.
  *
- * THEME_JS runs at the end of <body> — measured at character 105,831 of a
- * 116,587-character page — so a reader who had chosen light mode watched the
- * entire page render dark and then flip, on every single navigation. The switch
- * itself has to stay at the end (it binds a button), but READING the preference
- * has to happen in <head>, and it is deliberately tiny and dependency-free so it
- * cannot become a render-blocking cost of its own.
+ * THEME_JS runs at the end of <body> — measured at character 105,831 of a 116,587-character page — so a reader who had chosen light mode watched the entire page render dark and then flip, on every single navigation. The switch itself has to stay at the end (it binds a button), but READING the preference has to happen in <head>, and it is deliberately tiny and dependency-free so it cannot become a render-blocking cost of its own.
  */
 const THEME_BOOT = '<script>try{var t=localStorage.getItem(\'db-theme\');'
     + 'if(t)document.documentElement.setAttribute(\'data-theme\',t);}catch(e){}<\/script>';
 
 /* ──────────────────────────────── template ─────────────────────────────── */
 
-// `out` identifies the current page so the active nav tab is DERIVED rather than
-// inferred from the title. The previous `short === 'Terms' ? ... : 'privacy'`
-// test silently assumed there would only ever be two pages, and quietly marked
-// anything else as Privacy.
+// `out` identifies the current page so the active nav tab is DERIVED rather than inferred from the title. The previous `short === 'Terms' ? ... : 'privacy'` test silently assumed there would only ever be two pages, and quietly marked anything else as Privacy.
 /**
  * Wrap each top-level <h2> and everything beneath it in a <section>.
  *
- * ⚠️ THIS IS WHAT MAKES A STICKY HEADING POSSIBLE AT ALL, and it cannot be done in
- * CSS. What bounds a sticky element is its CONTAINING BLOCK — the same fact that
- * once let the section rail travel 126px into the footer. parseBlocks() emits the
- * headings as FLAT SIBLINGS of the prose, so every h2 shares one containing block:
- * they would all stick at the same offset and simply cover each other, swapping
- * instantly instead of the outgoing heading being pushed up by the incoming
- * section. Give each heading a section and the hand-off is free.
+ * ⚠️ THIS IS WHAT MAKES A STICKY HEADING POSSIBLE AT ALL, and it cannot be done in CSS. What bounds a sticky element is its CONTAINING BLOCK — the same fact that once let the section rail travel 126px into the footer. parseBlocks() emits the headings as FLAT SIBLINGS of the prose, so every h2 shares one containing block: they would all stick at the same offset and simply cover each other, swapping instantly instead of the outgoing heading being pushed up by the incoming section. Give each heading a section and the hand-off is free.
  *
- * ⚠️ THE SPLIT IS ON A LINE-INITIAL <h2, NOT ON EVERY <h2. Terms opens with a
- * callout blockquote that contains an h2 of its own, emitted inline on the same
- * line as the <blockquote> tag; splitting on every h2 would cut that element in
- * half and produce unbalanced markup. Measured on the built page: 22 of the 23 h2s
- * begin a line, and the one that does not is exactly that callout.
+ * ⚠️ THE SPLIT IS ON A LINE-INITIAL <h2, NOT ON EVERY <h2. Terms opens with a callout blockquote that contains an h2 of its own, emitted inline on the same line as the <blockquote> tag; splitting on every h2 would cut that element in half and produce unbalanced markup. Measured on the built page: 22 of the 23 h2s begin a line, and the one that does not is exactly that callout.
  *
- * Done here rather than in parseBlocks() because parseBlocks is shared — the warm
- * pages and all three chronicle voices consume it through CHROME, and each has its
- * own structural gate keyed to the shape it emits today. Only the legal shell wants
- * sections, so only the legal shell adds them.
+ * Done here rather than in parseBlocks() because parseBlocks is shared — the warm pages and all three chronicle voices consume it through CHROME, and each has its own structural gate keyed to the shape it emits today. Only the legal shell wants sections, so only the legal shell adds them.
  */
 function sectionise(html) {
     const parts = html.split(/\n(?=<h2 )/);
     if (parts.length < 2) return html;
-    // Anything before the first heading (the callout, the lead-in) stays a direct
-    // child of .doc: it belongs to no section, and wrapping it would give the page
-    // a sticky heading it does not have.
+    // Anything before the first heading (the callout, the lead-in) stays a direct child of .doc: it belongs to no section, and wrapping it would give the page a sticky heading it does not have.
     const head = parts.shift();
     return [head, ...parts.map(p => `<section class="dsec">\n${p}\n</section>`)].join('\n');
 }
@@ -4710,8 +4224,7 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', 
        so a page added without a `desc` still gets something sane rather than the
        string "undefined" in its meta tag, but a new page should carry its own. */
     const shareDesc = desc || `${title} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.`;
-    // The nav helpers identify a page by directory AND filename now — two pages on
-    // the site are called index.html, so a bare name no longer picks one out.
+    // The nav helpers identify a page by directory AND filename now — two pages on the site are called index.html, so a bare name no longer picks one out.
     const cur = { out, dir };
     const slots = toc.filter(t => !t.sub).map(t =>
         `<a href="#${t.id}" class="slot"><i>${t.num ? esc(t.num) : '—'}</i><span>${esc(t.text)}</span></a>`
@@ -5520,21 +5033,14 @@ ${MORPH_JS}
 /* ─────────────────── warm template: contributing / contributors ────────── */
 
 /**
- * The non-legal pages. Every choice here is the deliberate inverse of shell():
- * rounded instead of squared, a warm radial wash instead of a flat desk, a single
- * centred column instead of a rail-plus-document grid, and NO section numbers —
- * the numbered margin index is the legal set's signature and must not leak here.
+ * The non-legal pages. Every choice here is the deliberate inverse of shell(): rounded instead of squared, a warm radial wash instead of a flat desk, a single centred column instead of a rail-plus-document grid, and NO section numbers — the numbered margin index is the legal set's signature and must not leak here.
  *
- * The header keeps the same wordmark, repo, install and theme controls so the site
- * still reads as one site; the four-tab switcher is replaced by a single route
- * back to the legal index, because a reader here is not choosing between documents.
+ * The header keeps the same wordmark, repo, install and theme controls so the site still reads as one site; the four-tab switcher is replaced by a single route back to the legal index, because a reader here is not choosing between documents.
  */
 /* ─────────── warm-page composition: contributing / contributors ─────────── */
 
 /**
- * The legal pages are prose in a frame on purpose — a statute reads as a statute.
- * These two are not statutes, and rendering them the same way is what made them
- * read as a Markdown dump in a rounded box.
+ * The legal pages are prose in a frame on purpose — a statute reads as a statute. These two are not statutes, and rendering them the same way is what made them read as a Markdown dump in a rounded box.
  *
  * So each one gets structure derived from what its content actually IS:
  *
@@ -5556,11 +5062,7 @@ ${MORPH_JS}
  *   contributors  the plate — engraved for the maintainer, ghosted and waiting for
  *                 the next name
  *
- * WARM_STRUCT is declared rather than sniffed so warmStructAudit() can fail when a
- * source heading is renamed. Without that, the treatment would silently stop
- * matching and the page would quietly revert to the plain prose it started as —
- * the same class of failure as a check that draws its expectations from the code
- * it is testing.
+ * WARM_STRUCT is declared rather than sniffed so warmStructAudit() can fail when a source heading is renamed. Without that, the treatment would silently stop matching and the page would quietly revert to the plain prose it started as — the same class of failure as a check that draws its expectations from the code it is testing.
  */
 const WARM_STRUCT = {
     'contributing.html': {
@@ -5569,9 +5071,7 @@ const WARM_STRUCT = {
             'ways to contribute': 'options',
             'contributor licence agreement (cla)': 'ledger'
         },
-        // The slip is found by content, not by heading: it is the line itself that
-        // matters, and it sits under a heading ("How to confirm it") whose wording
-        // is far more likely to change than the sentence a contributor must paste.
+        // The slip is found by content, not by heading: it is the line itself that matters, and it sits under a heading ("How to confirm it") whose wording is far more likely to change than the sentence a contributor must paste.
         slip: 'I have read and agree'
     },
     'contributors.html': {
@@ -5584,17 +5084,9 @@ const WARM_STRUCT = {
     }
 };
 
-// What leaves your hands, and what stays in them. Only the direction NAME is
-// emitted; the glyph itself is drawn from CSS.
+// What leaves your hands, and what stays in them. Only the direction NAME is emitted; the glyph itself is drawn from CSS.
 //
-// That is not a style preference. Emitting the mark as HTML text put "↗" into the
-// document between a section's lead paragraph and its first heading, which broke
-// four of verify()'s source runs — the run was contiguous in the source and no
-// longer contiguous in the output. A decorative mark that a screen reader must be
-// told to ignore has no business in the DOM in the first place, so moving it to
-// CSS fixes the accessibility story and the verifier in one move. The alternative
-// on offer was teaching verify() to skip aria-hidden text, which would have opened
-// a hole big enough to hide real content loss in.
+// That is not a style preference. Emitting the mark as HTML text put "↗" into the document between a section's lead paragraph and its first heading, which broke four of verify()'s source runs — the run was contiguous in the source and no longer contiguous in the output. A decorative mark that a screen reader must be told to ignore has no business in the DOM in the first place, so moving it to CSS fixes the accessibility story and the verifier in one move. The alternative on offer was teaching verify() to skip aria-hidden text, which would have opened a hole big enough to hide real content loss in.
 const LEDGER_DIRS = [
     [/granting/, 'out'],
     [/you keep/, 'hold'],
@@ -5605,25 +5097,13 @@ const LEDGER_DIRS = [
 let WARM_HITS = {};
 const warmHit = k => { WARM_HITS[k] = (WARM_HITS[k] || 0) + 1; };
 
-// s here is already-rendered HTML (its text runs went through esc() when the
-// page was first built), so re-escaping `&` would double-encode entities. The
-// trailing </>-escape is defense in depth for a malformed/unbalanced tag the
-// strip regex missed, since the legend at the CONTRIBUTORS call site below
-// re-embeds this result unescaped.
-// False positive: CodeQL flags this tag-strip call as an incomplete
-// sanitizer on its own, but it never runs alone — the UNCONDITIONAL
-// /[<>]/g replace on the next line removes every remaining `<`/`>` on
-// every code path, with no branch around it, so no residual tag-shaped
-// fragment can survive to a sink. See docs/db-deferred-list.md's
-// Decided-no entry for the full reasoning.
-// codeql[js/incomplete-multi-character-sanitization]
+// s here is already-rendered HTML (its text runs went through esc() when the page was first built), so re-escaping `&` would double-encode entities. The trailing </>-escape is defense in depth for a malformed/unbalanced tag the strip regex missed, since the legend at the CONTRIBUTORS call site below re-embeds this result unescaped. False positive: CodeQL flags this tag-strip call as an incomplete sanitizer on its own, but it never runs alone — the UNCONDITIONAL /[<>]/g replace on the next line removes every remaining `<`/`>` on every code path, with no branch around it, so no residual tag-shaped fragment can survive to a sink. See docs/db-deferred-list.md's Decided-no entry for the full reasoning. codeql[js/incomplete-multi-character-sanitization]
 const stripTags = s => s.replace(/<[^>]*>/g, '')
     .replace(/[<>]/g, c => (c === '<' ? '&lt;' : '&gt;')).trim();
 const headingInner = h => (h.match(/<span class="ht">([\s\S]*?)<\/span>/) || [, ''])[1];
 const headingText = h => stripTags(headingInner(h)).toLowerCase();
 
-// Split a section body at its <h3> boundaries. Anything before the first one is
-// lead-in prose that belongs to the section, not to a sub-group.
+// Split a section body at its <h3> boundaries. Anything before the first one is lead-in prose that belongs to the section, not to a sub-group.
 function byH3(body) {
     const pre = [];
     const groups = [];
@@ -5638,10 +5118,7 @@ function byH3(body) {
 function asOptions(body) {
     const { pre, groups } = byH3(body);
     const tiles = groups.map(g => {
-        // Each lane is marked with an emoji in the source. It carries nothing a
-        // screen reader needs — "lady beetle, Bug reports" is worse than "Bug
-        // reports" — so it is lifted out of the accessible name into an
-        // aria-hidden mark and kept as pure visual.
+        // Each lane is marked with an emoji in the source. It carries nothing a screen reader needs — "lady beetle, Bug reports" is worse than "Bug reports" — so it is lifted out of the accessible name into an aria-hidden mark and kept as pure visual.
         const inner = headingInner(g.head);
         const em = inner.match(/^\s*(\p{Extended_Pictographic}️?)\s*/u);
         const head = em ? g.head.replace(inner, inner.slice(em[0].length)) : g.head;
@@ -5656,16 +5133,11 @@ function asSlip(block, mark) {
     if (!mark || !block.startsWith('<pre class="code"') || !block.includes(mark)) return block;
     const line = (block.match(/<code>([\s\S]*?)<\/code>/) || [, ''])[1];
     warmHit('slip');
-    // No label above the line: the source paragraph immediately before it already
-    // says "Include this line in your pull request description". A second caption
-    // would be the same job done twice.
+    // No label above the line: the source paragraph immediately before it already says "Include this line in your pull request description". A second caption would be the same job done twice.
     return '<div class="slip">'
         + `<p class="slip-t" id="cla-line">${line}</p>`
         + '<button class="cpy" type="button" data-copy="cla-line">'
-        // ⚠️ The same DRAWN glyph the floating code-copy button uses, not a
-        // character. This was U+2372 (⍲), which is an APL operator — it renders as
-        // whatever each platform has for it, looked like nothing in particular, and
-        // meant nothing at all. Two overlapping sheets is what "copy" looks like.
+        // ⚠️ The same DRAWN glyph the floating code-copy button uses, not a character. This was U+2372 (⍲), which is an APL operator — it renders as whatever each platform has for it, looked like nothing in particular, and meant nothing at all. Two overlapping sheets is what "copy" looks like.
         + '<span class="cpy-g" aria-hidden="true"></span>'
         /* ⚠️ EMPTY, AND ITS WORD IS DRAWN BY CSS — this used to read `>Copy<` and
            that was a live landmine for four days. The label is a text node sitting
@@ -5694,8 +5166,7 @@ function asLedger(body, slipMark) {
                 + '<span class="ldg-m" aria-hidden="true"></span>'
                 + `${g.head}<div>${g.body.join('\n')}</div></div>`);
         } else {
-            // "How to confirm it" is an instruction, not a side of the ledger, so it
-            // stays outside it — and it is where the slip lives.
+            // "How to confirm it" is an instruction, not a side of the ledger, so it stays outside it — and it is where the slip lives.
             rest.push(g.head + '<div>'
                 + g.body.map(b => asSlip(b, slipMark)).join('\n') + '</div>');
         }
@@ -5709,20 +5180,9 @@ function asLedger(body, slipMark) {
 function asPlates(body) {
     return body.map(b => {
         if (b.startsWith('<div class="tw"')) {
-            // Our own table markup, so the shape is fixed: one <tr> per row, one
-            // <td> per cell, and inline() never emits a nested </td>.
+            // Our own table markup, so the shape is fixed: one <tr> per row, one <td> per cell, and inline() never emits a nested </td>.
             //
-            // ⚠️ MATCH THE TAG NAME AND TOLERATE ATTRIBUTES — never the bare tag.
-            // These read `<tr>` and `<td>` literally until 2026-08-04, when the
-            // table emitter gained role="row" / role="cell" / data-label for the
-            // narrow-screen stacked layout. Every match then failed, `plates` came
-            // out empty, and the `if (!plates) return b` fallback silently handed
-            // back the raw table — so the Maintainer section rendered as a cramped
-            // two-column table instead of a plate, on a page whose whole point is
-            // that the maintainer and the contributors share one visual language.
-            // Nothing reported it: warmStructAudit asserts a declared treatment
-            // fired at least once per PAGE, and `plates` is also used by the
-            // Contributors section below, which still fired.
+            // ⚠️ MATCH THE TAG NAME AND TOLERATE ATTRIBUTES — never the bare tag. These read `<tr>` and `<td>` literally until 2026-08-04, when the table emitter gained role="row" / role="cell" / data-label for the narrow-screen stacked layout. Every match then failed, `plates` came out empty, and the `if (!plates) return b` fallback silently handed back the raw table — so the Maintainer section rendered as a cramped two-column table instead of a plate, on a page whose whole point is that the maintainer and the contributors share one visual language. Nothing reported it: warmStructAudit asserts a declared treatment fired at least once per PAGE, and `plates` is also used by the Contributors section below, which still fired.
             const tb = (b.match(/<tbody\b[^>]*>([\s\S]*?)<\/tbody>/) || [, ''])[1];
             const plates = [...tb.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)].map(m => {
                 const c = [...m[1].matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map(x => x[1]);
@@ -5731,38 +5191,19 @@ function asPlates(body) {
             }).join('');
             if (!plates) return b;
             warmHit('plates');
-            // The column headers survive as a legend above the wall rather than as
-            // a label on every plate. Dropping them was real content loss, caught
-            // by verify() ("name role harkirat mangat...") — a plate needs no NAME
-            // label above a name, but the header row is still authored text, and
-            // the documented format for future entries adds Contribution and First
-            // shipped in, which are NOT self-describing once three values sit on
-            // one plate. A legend covers both cases with one line.
+            // The column headers survive as a legend above the wall rather than as a label on every plate. Dropping them was real content loss, caught by verify() ("name role harkirat mangat...") — a plate needs no NAME label above a name, but the header row is still authored text, and the documented format for future entries adds Contribution and First shipped in, which are NOT self-describing once three values sit on one plate. A legend covers both cases with one line.
             const th = [...b.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/g)].map(x => stripTags(x[1]));
             const legend = th.length
                 ? `<p class="wall-l">${th.join(' &middot; ')}</p>` : '';
             return `${legend}<div class="wall">${plates}</div>`;
         }
-        // "*No external contributions yet — this is where your name goes.*" is the
-        // most important sentence on the page, and italic body text is the weakest
-        // possible way to say it. It becomes the empty plate itself: the invitation
-        // IS the object.
+        // "*No external contributions yet — this is where your name goes.*" is the most important sentence on the page, and italic body text is the weakest possible way to say it. It becomes the empty plate itself: the invitation IS the object.
         //
-        // Nothing is invented in it beyond the "Your name" affordance — a
-        // FABRICATED contributor row once reached the live site from an HTML
-        // comment, so the plate carries the source's own words and no plausible
-        // name, handle, or contribution.
+        // Nothing is invented in it beyond the "Your name" affordance — a FABRICATED contributor row once reached the live site from an HTML comment, so the plate carries the source's own words and no plausible name, handle, or contribution.
         const em = b.match(/^<p><em>([\s\S]*?)<\/em><\/p>$/);
         if (em) {
             warmHit('plates');
-            // The name slot's "Your name" is drawn by CSS, not emitted here. It is a
-            // label whose entire meaning is already stated by the sentence beside it
-            // ("...this is where your name goes"), so it is reinforcement rather than
-            // information — the same test the ledger's direction marks had to pass.
-            // Emitting it put invented text BETWEEN the "Contributors" heading and the
-            // source's own sentence, which broke that run in verify(). The alternative
-            // was teaching verify() to ignore aria-hidden text, and that would hide
-            // real content loss just as effectively as it hides this.
+            // The name slot's "Your name" is drawn by CSS, not emitted here. It is a label whose entire meaning is already stated by the sentence beside it ("...this is where your name goes"), so it is reinforcement rather than information — the same test the ledger's direction marks had to pass. Emitting it put invented text BETWEEN the "Contributors" heading and the source's own sentence, which broke that run in verify(). The alternative was teaching verify() to ignore aria-hidden text, and that would hide real content loss just as effectively as it hides this.
             /* The empty plate is a ROUTE, not a caption. It says "this is where
                your name goes" and then did nothing about it; pointing it at the
                contributing guide turns the page's one statement of intent into
@@ -5792,8 +5233,7 @@ function asPromises(body) {
 }
 
 /**
- * Groups a parsed warm page into sections and applies its declared treatments.
- * Returns the body, the lifted sign-off, and which treatments actually fired.
+ * Groups a parsed warm page into sections and applies its declared treatments. Returns the body, the lifted sign-off, and which treatments actually fired.
  */
 /* A real copy control on every code block. The CLA slip already had one because
    that line MUST be pasted somewhere; the setup commands are the same job and had
@@ -5849,12 +5289,7 @@ function warmCompose(blocks, out) {
     if (!spec) return { body: blocks.join('\n'), sig: '', spine: false, hits: {} };
     WARM_HITS = {};
 
-    // Lift the closing sign-off out of the body. Both sources end with the same
-    // line the bot's /settings panel closes with, which is correct when the file is
-    // read on GitHub — but the template also renders a sign-off, so leaving it in
-    // the body printed it twice. Lifting beats deleting: the page still shows the
-    // words the file actually carries, rather than a second hardcoded copy that
-    // could drift away from it.
+    // Lift the closing sign-off out of the body. Both sources end with the same line the bot's /settings panel closes with, which is correct when the file is read on GitHub — but the template also renders a sign-off, so leaving it in the body printed it twice. Lifting beats deleting: the page still shows the words the file actually carries, rather than a second hardcoded copy that could drift away from it.
     let sig = '';
     const last = blocks[blocks.length - 1] || '';
     if (/^<p>[^<]*Made with love by/.test(last)) {
@@ -5874,9 +5309,7 @@ function warmCompose(blocks, out) {
     const lead = [];
     const secs = [];
     for (const b of blocks) {
-        // The source rules separated sections when they were a flat run of prose.
-        // The section frames do that job now, so a horizontal rule between two
-        // framed blocks is a divider dividing nothing.
+        // The source rules separated sections when they were a flat run of prose. The section frames do that job now, so a horizontal rule between two framed blocks is a divider dividing nothing.
         if (b === '<hr>') continue;
         const h = b.match(/^<h2 id="([^"]+)"/);
         if (h) { secs.push({ head: b, text: headingText(b), body: [] }); continue; }
@@ -5903,35 +5336,18 @@ function warmCompose(blocks, out) {
 /**
  * GATE 5. Every treatment a page declares must have actually fired.
  *
- * The treatments key off source heading text, so renaming "Ways to contribute" in
- * CONTRIBUTING.md would stop matching and the tiles would become a plain run of
- * h3s and paragraphs — a silent revert to the exact design this pass replaced.
- * verify() cannot see it (every word still present), linkAudit() cannot see it (no
- * links change), structureAudit() cannot see it (no aligned columns involved).
- * Different property, so: different gate.
+ * The treatments key off source heading text, so renaming "Ways to contribute" in CONTRIBUTING.md would stop matching and the tiles would become a plain run of h3s and paragraphs — a silent revert to the exact design this pass replaced. verify() cannot see it (every word still present), linkAudit() cannot see it (no links change), structureAudit() cannot see it (no aligned columns involved). Different property, so: different gate.
  */
 /**
- * GATE 6. No class name may be shared between a layout container and a content
- * block in the same page.
+ * GATE 6. No class name may be shared between a layout container and a content block in the same page.
  *
- * Born from a real defect that shipped: the parser emitted <pre class="cols">
- * for NOTICE's aligned dependency tables, and shell()'s page layout used
- * .cols{display:grid;grid-template-columns:200px minmax(0,1fr)} for the
- * rail-plus-document grid. Same name, one stylesheet — so all twelve blocks
- * computed display:grid with a 200px first track and spilled their lines out of
- * it, on the live site.
+ * Born from a real defect that shipped: the parser emitted <pre class="cols"> for NOTICE's aligned dependency tables, and shell()'s page layout used .cols{display:grid;grid-template-columns:200px minmax(0,1fr)} for the rail-plus-document grid. Same name, one stylesheet — so all twelve blocks computed display:grid with a 200px first track and spilled their lines out of it, on the live site.
  *
- * None of the content gates could see it. Every word was present (verify), every
- * link resolved (linkAudit), every aligned line was still inside a <pre>
- * (structureAudit), and no reference was inert (crossRefAudit). The document was
- * intact; only its RENDERED BOX was wrong, and a static build cannot measure
- * that. What a static build CAN do is refuse to let the two namespaces overlap,
- * which is the condition that made the bug possible.
+ * None of the content gates could see it. Every word was present (verify), every link resolved (linkAudit), every aligned line was still inside a <pre> (structureAudit), and no reference was inert (crossRefAudit). The document was intact; only its RENDERED BOX was wrong, and a static build cannot measure that. What a static build CAN do is refuse to let the two namespaces overlap, which is the condition that made the bug possible.
  */
 function classCollisionAudit() {
     const bad = [];
-    // Both output directories. Reading only OUT would have left the entire third
-    // page family unchecked by this gate while it still reported a pass.
+    // Both output directories. Reading only OUT would have left the entire third page family unchecked by this gate while it still reported a pass.
     const files = [OUT, path.join(ROOT, 'public', 'changelog')]
         .filter(d => fs.existsSync(d))
         .flatMap(d => fs.readdirSync(d).filter(n => n.endsWith('.html')).map(n => path.join(d, n)));
@@ -5991,9 +5407,7 @@ function warmStructAudit(results) {
     return true;
 }
 
-// Copy button + spine reveal. Both degrade to a fully usable page with no JS at
-// all: the slip line is selectable text on its own, and a spine node is styled
-// visible by default — .on only brightens it.
+// Copy button + spine reveal. Both degrade to a fully usable page with no JS at all: the slip line is selectable text on its own, and a spine node is styled visible by default — .on only brightens it.
 const WARM_JS = `
 (function(){
   /* EVERY copy control, not just the first. This was a single querySelector, so
@@ -6037,29 +5451,13 @@ const WARM_JS = `
 /**
  * Four surfaces, one script, emitted on every page.
  *
- * Each module SELECTS ITSELF out of the DOM rather than being switched on by the
- * template, so nothing has to remember which page carries which surface: the
- * reveal's mark and the landing rows exist only on the landing page, the
- * back-to-top only on the document and chronicle pages, and the cursor everywhere.
- * A module whose element is absent returns immediately and costs one querySelector.
+ * Each module SELECTS ITSELF out of the DOM rather than being switched on by the template, so nothing has to remember which page carries which surface: the reveal's mark and the landing rows exist only on the landing page, the back-to-top only on the document and chronicle pages, and the cursor everywhere. A module whose element is absent returns immediately and costs one querySelector.
  *
- * ⚠️ THE BACK-TO-TOP MODULE OWNS `.on` NOW. Both host scripts used to toggle it
- * from their own scroll handler; that has been removed in both, because two
- * handlers writing the same class would fight over every frame of a birth. What
- * stays in the hosts is the ring's stroke offset and the --lift that parks the
- * button above the footer — position and progress, not state, and each has exactly
- * one writer.
+ * ⚠️ THE BACK-TO-TOP MODULE OWNS `.on` NOW. Both host scripts used to toggle it from their own scroll handler; that has been removed in both, because two handlers writing the same class would fight over every frame of a birth. What stays in the hosts is the ring's stroke offset and the --lift that parks the button above the footer — position and progress, not state, and each has exactly one writer.
  *
- * ⚠️ NO REGULAR EXPRESSIONS IN HERE, DELIBERATELY. This code lives inside a JS
- * template literal, so a backslash is consumed by the generator before a browser
- * ever sees it: `\\(` written here reaches the page as `(`, which turns an escaped
- * literal paren into a capture group. That changes a regex's MEANING without
- * changing its syntax, so scriptSyntaxAudit() — which only parses — could not
- * catch it. Colour parsing is hand-scanned instead; it is a dozen lines and cannot
- * fail that way.
+ * ⚠️ NO REGULAR EXPRESSIONS IN HERE, DELIBERATELY. This code lives inside a JS template literal, so a backslash is consumed by the generator before a browser ever sees it: `\\(` written here reaches the page as `(`, which turns an escaped literal paren into a capture group. That changes a regex's MEANING without changing its syntax, so scriptSyntaxAudit() — which only parses — could not catch it. Colour parsing is hand-scanned instead; it is a dozen lines and cannot fail that way.
  *
- * The design record for every constant here, and the dead ends behind them, is in
- * docs/db-deferred-list.md and the reference_goo_metaball_recipe memory.
+ * The design record for every constant here, and the dead ends behind them, is in docs/db-deferred-list.md and the reference_goo_metaball_recipe memory.
  */
 const MORPH_JS = `
 (function(){
@@ -7332,49 +6730,17 @@ const MORPH_JS = `
 /**
  * The landing page's animated command line — the typewriter under the lede.
  *
- * Emitted ONLY on indexPage(); no other template carries a #cmd-line, and the
- * module returns after one getElementById if the element is absent, the same
- * self-selecting shape MORPH_JS's five modules use.
+ * Emitted ONLY on indexPage(); no other template carries a #cmd-line, and the module returns after one getElementById if the element is absent, the same self-selecting shape MORPH_JS's five modules use.
  *
- * ⚠️ NO BACKTICKS INSIDE THE TEMPLATE LITERAL BELOW, NOT EVEN IN A COMMENT — a
- * backtick terminates the string and fails the build with a SyntaxError
- * pointing at prose. This constant hit it on its second build with four of
- * them, all in comments quoting option names. Quote such things with " instead.
- * (This JSDoc block is outside the literal, so it is free of the rule.) Same
- * family as the no-regex rule MORPH_JS carries: what reads as documentation
- * here is program text to the generator.
+ * ⚠️ NO BACKTICKS INSIDE THE TEMPLATE LITERAL BELOW, NOT EVEN IN A COMMENT — a backtick terminates the string and fails the build with a SyntaxError pointing at prose. This constant hit it on its second build with four of them, all in comments quoting option names. Quote such things with " instead. (This JSDoc block is outside the literal, so it is free of the rule.) Same family as the no-regex rule MORPH_JS carries: what reads as documentation here is program text to the generator.
  *
- * ⚠️ NOTHING HERE IS A FIXED STRING — it COMPOSES each line. `SPECS` holds the
- * sixteen commands, and a command with options renders differently every time
- * it comes up: bare, or carrying a randomly chosen option, sometimes a second
- * one. That is the point rather than a flourish — Harkirat asked for a page
- * that does not look the same on two visits, so the variety has to be
- * generated, not enumerated.
+ * ⚠️ NOTHING HERE IS A FIXED STRING — it COMPOSES each line. `SPECS` holds the sixteen commands, and a command with options renders differently every time it comes up: bare, or carrying a randomly chosen option, sometimes a second one. That is the point rather than a flourish — Harkirat asked for a page that does not look the same on two visits, so the variety has to be generated, not enumerated.
  *
- * ⚠️ EVERY COMMAND AND EVERY OPTION NAME IS REAL, VERIFIED AGAINST THE ACTUAL
- * REGISTERED COMMAND SHAPE, NOT ASSUMED. `/gunsmiths search` (weapon lookup,
- * MP-only) and `/gunsmiths list` (scope: 11 named choices — 7 categories, All
- * MP builds, Meta MP, Meta DMZ, DMZ) replaced `/all` + 8 per-category commands
- * in the 2026-08-15 consolidation (docs/superpowers/specs/2026-08-15-gunsmiths-
- * command-consolidation-design.md). ⚠️ **HISTORICAL TRAP, NOW RETIRED:** this
- * comment used to warn that `/ar`/`/smg`/etc. were real commands invisible to a
- * `commands/*.js` grep (built dynamically in bot/registry.js). That trap is
- * GONE — those commands no longer exist at all, dynamically or otherwise — do
- * not resurrect them here on the strength of the old warning.
+ * ⚠️ EVERY COMMAND AND EVERY OPTION NAME IS REAL, VERIFIED AGAINST THE ACTUAL REGISTERED COMMAND SHAPE, NOT ASSUMED. `/gunsmiths search` (weapon lookup, MP-only) and `/gunsmiths list` (scope: 11 named choices — 7 categories, All MP builds, Meta MP, Meta DMZ, DMZ) replaced `/all` + 8 per-category commands in the 2026-08-15 consolidation (docs/superpowers/specs/2026-08-15-gunsmiths- command-consolidation-design.md). ⚠️ **HISTORICAL TRAP, NOW RETIRED:** this comment used to warn that `/ar`/`/smg`/etc. were real commands invisible to a `commands/*.js` grep (built dynamically in bot/registry.js). That trap is GONE — those commands no longer exist at all, dynamically or otherwise — do not resurrect them here on the strength of the old warning.
  *
- * The option VALUES are real too, each from its own source and each checked
- * rather than plausible-looking: the weapon lists are the live Loadout
- * collection grouped by category, the choice labels are the `name:` halves of
- * the real `addChoices(...)` calls (Discord shows the name, never the value),
- * and every `datetime:` example parses under chrono-node, which is the parser
- * /timestamp actually feeds them to. A homepage inviting you to type something
- * owes you a string that works when you type it.
+ * The option VALUES are real too, each from its own source and each checked rather than plausible-looking: the weapon lists are the live Loadout collection grouped by category, the choice labels are the `name:` halves of the real `addChoices(...)` calls (Discord shows the name, never the value), and every `datetime:` example parses under chrono-node, which is the parser /timestamp actually feeds them to. A homepage inviting you to type something owes you a string that works when you type it.
  *
- * ⚠️ ADMIN AND PoC COMMANDS ARE ALSO DELIBERATELY ABSENT — `/manage`,
- * `/bot` and `/autobuild` are registered and would "work" here, but
- * `/manage` and `/bot` are admin-locked and `/autobuild` is an unfinished
- * proof of concept. Advertising any of them on the front door sends a reader
- * to a refusal or to something half-built.
+ * ⚠️ ADMIN AND PoC COMMANDS ARE ALSO DELIBERATELY ABSENT — `/manage`, `/bot` and `/autobuild` are registered and would "work" here, but `/manage` and `/bot` are admin-locked and `/autobuild` is an unfinished proof of concept. Advertising any of them on the front door sends a reader to a refusal or to something half-built.
  */
 const CMD_JS = `
 (function(){
@@ -8281,27 +7647,18 @@ function indexPage(built) {
         <em>${p.sections} sections</em>
       </a>`).join('');
 
-    // Derived from what was actually built, so it can't claim "two documents"
-    // after a third one is added — which is exactly what it said before the
-    // licence page landed.
+    // Derived from what was actually built, so it can't claim "two documents" after a third one is added — which is exactly what it said before the licence page landed.
     const marks = {
         'contributing.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
             + '<line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/>'
             + '<line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg>',
-        // Three ruled lines of unequal length — a credits list — which extend to
-        // meet each other on hover: entries being filled in. The three dots this
-        // replaces read as a loading spinner, which is the one thing this page is
-        // not doing. The bars are also the site's own wordmark motif.
+        // Three ruled lines of unequal length — a credits list — which extend to meet each other on hover: entries being filled in. The three dots this replaces read as a loading spinner, which is the one thing this page is not doing. The bars are also the site's own wordmark motif.
         'contributors.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
             + '<line class="ln" x1="2" y1="3.6" x2="12" y2="3.6"/>'
             + '<line class="ln" x1="2" y1="7" x2="8.4" y2="7"/>'
             + '<line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg>'
     };
-    // ⚠️ hrefTo, not a bare p.out. The chronicle pages live in a different
-    // directory AND one of them is called index.html — the same name as this page.
-    // A bare href would have pointed the site's biggest new section at the page the
-    // reader is already on, and linkAudit() could not have caught it: the target
-    // resolves perfectly, it is simply the wrong file.
+    // ⚠️ hrefTo, not a bare p.out. The chronicle pages live in a different directory AND one of them is called index.html — the same name as this page. A bare href would have pointed the site's biggest new section at the page the reader is already on, and linkAudit() could not have caught it: the target resolves perfectly, it is simply the wrong file.
     const here = { out: 'index.html', dir: '' };
     const invRow = list => list.map(p => `
       <a class="inv" href="${hrefTo(p, here)}" style="--ia:${p.accent}">
@@ -8320,22 +7677,11 @@ function indexPage(built) {
       </a>`).join('');
 
     const invites = invRow(EXTRA_PAGES);
-    // ⚠️ THE RECORD ROW IS OFF THE LANDING PAGE, deliberately, and invRow() still
-    // knows how to build it — this is a hidden feature, not a deleted one.
-    // The pages themselves are still built, still deployed and still reachable at
-    // /changelog/; what is withdrawn is the landing page's invitation to go there.
-    // A landing page that offers everything equally offers nothing in particular,
-    // and this one exists to put four legal documents in front of a reader.
-    // To restore: uncomment, and put the two lines back in the markup below.
-    // const chronicle = invRow(CHRONICLE_PAGES);
+    // ⚠️ THE RECORD ROW IS OFF THE LANDING PAGE, deliberately, and invRow() still knows how to build it — this is a hidden feature, not a deleted one. The pages themselves are still built, still deployed and still reachable at /changelog/; what is withdrawn is the landing page's invitation to go there. A landing page that offers everything equally offers nothing in particular, and this one exists to put four legal documents in front of a reader. To restore: uncomment, and put the two lines back in the markup below. const chronicle = invRow(CHRONICLE_PAGES);
 
     const n = built.length;
     const count = ['no', 'One', 'Two', 'Three', 'Four', 'Five'][n] || String(n);
-    // Four parallel clauses, one per document, each naming a thing the reader
-    // actually wants to know. The previous version buried an em-dash aside
-    // ("down to the individual database field") mid-sentence and then trailed off
-    // on "the terms the source code is published under", which is the weakest way
-    // to end a line and left the fourth document unmentioned entirely.
+    // Four parallel clauses, one per document, each naming a thing the reader actually wants to know. The previous version buried an em-dash aside ("down to the individual database field") mid-sentence and then trailed off on "the terms the source code is published under", which is the weakest way to end a line and left the fourth document unmentioned entirely.
     const lede = `${count} document${n === 1 ? '' : 's'}: what you agree to, what the bot `
         + 'stores about you, what you may do with the code, and who owns what it shows you.';
 
@@ -8356,19 +7702,7 @@ function indexPage(built) {
        so a headline that spends itself on a benefit leaves the reader with no idea what
        the thing is called, while one that spends itself on the name alone says nothing
        about what it does. Doing both is what the two rejected options each did half of. */
-    // ⚠️ REWORDED AGAIN 2026-08-05 09:41 EDT — the parallelism fix (2026-08-05
-    // 09:03 EDT, kept below in git history) was still "too AI-written" per
-    // feedback. The tell was structural: two em dashes doing the same job
-    // (joining a clause on either side of a list), a parenthetical aside
-    // tacked on rather than integrated, and near-uniform clause length. Zero
-    // em dashes now; the aside is a plain list item; sentence length varies
-    // (one longer list sentence, a fragment, a medium sentence) instead of
-    // two similar-length dash-halves.
-    // ⚠️ "Type / and go." MOVED OUT, 2026-08-05 15:40 EDT — it's now .cmd-line
-    // below, its own line under the lede. The animated slideshow it was
-    // reserved for shipped 2026-08-05 16:48 EDT; CMD_JS drives it and carries
-    // the command list. The lede must keep saying what the bot does in prose,
-    // because that line is aria-hidden and says nothing to a screen reader.
+    // ⚠️ REWORDED AGAIN 2026-08-05 09:41 EDT — the parallelism fix (2026-08-05 09:03 EDT, kept below in git history) was still "too AI-written" per feedback. The tell was structural: two em dashes doing the same job (joining a clause on either side of a list), a parenthetical aside tacked on rather than integrated, and near-uniform clause length. Zero em dashes now; the aside is a plain list item; sentence length varies (one longer list sentence, a fragment, a medium sentence) instead of two similar-length dash-halves. ⚠️ "Type / and go." MOVED OUT, 2026-08-05 15:40 EDT — it's now .cmd-line below, its own line under the lede. The animated slideshow it was reserved for shipped 2026-08-05 16:48 EDT; CMD_JS drives it and carries the command list. The lede must keep saying what the bot does in prose, because that line is aria-hidden and says nothing to a screen reader.
     const intro = 'New & returning draw releases, CP costs, MP & DMZ loadouts, '
         + 'what’s live this season, when it ends, and so much more — all without '
         + 'leaving the chat! Install it once and it answers anywhere, in any server '
@@ -9025,28 +8359,16 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
 /* ───────────────────────── source location + head strip ────────────────── */
 
-// The Markdown sources live in docs/legal; the plain-text instruments live at the
-// repo root. One helper so build() and verify() can never disagree about where a
-// page's source is — they read it independently, and a mismatch there would make
-// the verifier compare a page against the wrong file and still report 100%.
-// Three source locations now: docs/legal/ (the default), the repo root (`root`),
-// and docs/ (`docs`, the three chronicle records).
+// The Markdown sources live in docs/legal; the plain-text instruments live at the repo root. One helper so build() and verify() can never disagree about where a page's source is — they read it independently, and a mismatch there would make the verifier compare a page against the wrong file and still report 100%. Three source locations now: docs/legal/ (the default), the repo root (`root`), and docs/ (`docs`, the three chronicle records).
 const sourcePath = page => page.root
     ? path.join(ROOT, page.file)
     : page.docs
         ? path.join(ROOT, 'docs', page.file)
         : path.join(SRC, page.file);
 
-// YAML front matter is METADATA for tooling (docs-audit's doc-frontmatter check, and a reader
-// opening the file cold) — it is never page content. Every source read goes through here so it is
-// stripped exactly once, at the boundary.
+// YAML front matter is METADATA for tooling (docs-audit's doc-frontmatter check, and a reader opening the file cold) — it is never page content. Every source read goes through here so it is stripped exactly once, at the boundary.
 //
-// ⚠️ This must apply to ALL source reads, not just the parsers. verify() and structureAudit() read
-// the source back to compare it against the rendered HTML, so a read that skipped the strip would
-// report the front-matter lines as "source content missing from the page" and fail the build for a
-// correct page. Added 2026-08-08 11:37 EDT with the front-matter rollout; measured beforehand, an
-// unstripped block rendered `kind: legal` / `status: live` as visible body text on terms.html plus a
-// stray <hr>, and every existing gate still passed — content presence is not correctness.
+// ⚠️ This must apply to ALL source reads, not just the parsers. verify() and structureAudit() read the source back to compare it against the rendered HTML, so a read that skipped the strip would report the front-matter lines as "source content missing from the page" and fail the build for a correct page. Added 2026-08-08 11:37 EDT with the front-matter rollout; measured beforehand, an unstripped block rendered `kind: legal` / `status: live` as visible body text on terms.html plus a stray <hr>, and every existing gate still passed — content presence is not correctness.
 const stripFrontMatter = text => {
     if (!text.startsWith('---\n')) return text;
     const end = text.indexOf('\n---', 3);
@@ -9056,33 +8378,17 @@ const stripFrontMatter = text => {
 
 const readSource = page => stripFrontMatter(fs.readFileSync(sourcePath(page), 'utf8'));
 
-// Two output locations now: the site root (public/) and public/changelog/.
-// Everything that reads a built page goes through this rather than joining OUT
-// directly, so a page in the changelog directory cannot be silently skipped by
-// a gate that only knows the root.
+// Two output locations now: the site root (public/) and public/changelog/. Everything that reads a built page goes through this rather than joining OUT directly, so a page in the changelog directory cannot be silently skipped by a gate that only knows the root.
 const outDirFor = page => path.join(ROOT, 'public', dirOf(page));
 const outPath = page => path.join(outDirFor(page), page.out);
 
-// Both strips are shared with verify() for the same reason: whatever build()
-// removes from the body, the verifier must not expect to find in it.
-// ⚠️ The continuation clause is load-bearing. These fields are WRAPPED in the
-// source — "**Applies to:** ... and the website" / "these documents are published
-// on (the "Site")" is one logical line across two — and `.*$` stops at the first
-// newline, so the remainder survived the strip and rendered as an orphaned
-// sentence fragment directly under the masthead on both Terms and Privacy. It
-// read as though a paragraph had been cut in half, because it had been. The
-// trailing group consumes any following line that is not blank, another **field**,
-// a rule, a heading or a quote — i.e. exactly the wrapped remainder and nothing
-// past the head block. Verified against both files: 47 and 36 characters removed,
-// and §1.1's operative definition of the Site untouched.
+// Both strips are shared with verify() for the same reason: whatever build() removes from the body, the verifier must not expect to find in it. ⚠️ The continuation clause is load-bearing. These fields are WRAPPED in the source — "**Applies to:** ... and the website" / "these documents are published on (the "Site")" is one logical line across two — and `.*$` stops at the first newline, so the remainder survived the strip and rendered as an orphaned sentence fragment directly under the masthead on both Terms and Privacy. It read as though a paragraph had been cut in half, because it had been. The trailing group consumes any following line that is not blank, another **field**, a rule, a heading or a quote — i.e. exactly the wrapped remainder and nothing past the head block. Verified against both files: 47 and 36 characters removed, and §1.1's operative definition of the Site untouched.
 const stripMdHead = md => md
     .replace(/^#\s+.*$/m, '')
     .replace(/^\*\*(?:Effective date|Version|Applies to):\*\*[^\n]*(?:\n(?![ \t]*$|\*\*|---|#|>)[^\n]*)*/gm, '')
     .trim();
 
-// Drops a plain-text document's own title block, which the masthead renders
-// instead. Two shapes exist across these files and both must go, or the page
-// prints its own title twice:
+// Drops a plain-text document's own title block, which the masthead renders instead. Two shapes exist across these files and both must go, or the page prints its own title twice:
 //   LICENSE — a title line followed by "Version 1.0, 28 July 2026"
 //   NOTICE  — a banner-delimited block whose title spans TWO lines
 // Only the title block. The copyright line below it is operative text and stays.
@@ -9094,26 +8400,16 @@ const stripTextHead = txt => {
 
 /* ───────────────────────────────── build ───────────────────────────────── */
 
-// Which warm treatments actually fired, per page. Populated by build() and read by
-// warmStructAudit() — kept outside build() so the gate cannot be handed a fresh
-// empty object and report a clean pass on nothing.
+// Which warm treatments actually fired, per page. Populated by build() and read by warmStructAudit() — kept outside build() so the gate cannot be handed a fresh empty object and report a clean pass on nothing.
 const warmResults = {};
 
-// Same idea for the chronicle pages: what each one actually rendered, read back by
-// chronicleStructAudit(). Populated by build(), declared out here so the gate can
-// never be handed a fresh empty object and report a clean pass on nothing.
+// Same idea for the chronicle pages: what each one actually rendered, read back by chronicleStructAudit(). Populated by build(), declared out here so the gate can never be handed a fresh empty object and report a clean pass on nothing.
 const chronicleResults = {};
 
 /**
  * Everything scripts/lib/chronicle.js needs from this file, handed over explicitly.
  *
- * The dependency runs ONE WAY on purpose. Sharing these by moving them into a
- * common module would have meant lifting roughly two thousand lines out of the file
- * that had just absorbed 27 commits of change — a refactor with real regression
- * surface, bought for no benefit the parameter does not already provide. chronicle.js
- * asserts every key is present before it renders anything (requireChrome), so a
- * missing piece fails the build naming the piece, rather than producing a page with
- * a blank header that would still pass the content gate.
+ * The dependency runs ONE WAY on purpose. Sharing these by moving them into a common module would have meant lifting roughly two thousand lines out of the file that had just absorbed 27 commits of change — a refactor with real regression surface, bought for no benefit the parameter does not already provide. chronicle.js asserts every key is present before it renders anything (requireChrome), so a missing piece fails the build naming the piece, rather than producing a page with a blank header that would still pass the content gate.
  */
 const CHROME = {
     esc, parseBlocks, linkifyRefs, slug,
@@ -9128,19 +8424,14 @@ function build() {
 
     for (const page of PAGES) {
         const raw = readSource(page);
-        // Always '' now: every page renders at the site root since the 2026-08-05
-        // 14:42 EDT flattening, the same depth every root-authored source (LICENSE,
-        // NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md) already links from. LINK_BASE
-        // stays as a variable rather than being deleted because a future page
-        // family at a real depth would need it again — see hrefTo()'s own note.
+        // Always '' now: every page renders at the site root since the 2026-08-05 14:42 EDT flattening, the same depth every root-authored source (LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md) already links from. LINK_BASE stays as a variable rather than being deleted because a future page family at a real depth would need it again — see hrefTo()'s own note.
         LINK_BASE = '';
         const meta = [];
         let parsed;
         let note = '';
 
         if (page.kind === 'text') {
-            // The licence carries its version on its second line
-            // ("Version 1.0, 28 July 2026") rather than in a metadata block.
+            // The licence carries its version on its second line ("Version 1.0, 28 July 2026") rather than in a metadata block.
             const vm = raw.match(/^Version\s+([\d.]+),\s*(.+)$/m);
             if (vm) {
                 meta.push(`Effective <b>${esc(vm[2].trim())}</b>`);
@@ -9148,17 +8439,9 @@ function build() {
             }
             meta.push('Ontario, Canada');
             parsed = parsePlainLegal(stripTextHead(raw));
-            // Stated on the page itself, not just in a build comment: this render
-            // is for reading, and the plain-text file is the instrument. Without
-            // this a reader has two copies and no way to know which governs.
+            // Stated on the page itself, not just in a build comment: this render is for reading, and the plain-text file is the instrument. Without this a reader has two copies and no way to know which governs.
             //
-            // Named from page.file rather than hardcoded — this said "the
-            // plain-text LICENSE" on the NOTICE page, pointing a reader at the
-            // wrong document to resolve a discrepancy in the one they were reading.
-            // The download sits HERE rather than in the masthead because this is
-            // the one place that explains why the plain-text file matters: it is
-            // the instrument, and the page you are reading is not. A reader who
-            // needs to keep or quote the governing text wants it at that moment.
+            // Named from page.file rather than hardcoded — this said "the plain-text LICENSE" on the NOTICE page, pointing a reader at the wrong document to resolve a discrepancy in the one they were reading. The download sits HERE rather than in the masthead because this is the one place that explains why the plain-text file matters: it is the instrument, and the page you are reading is not. A reader who needs to keep or quote the governing text wants it at that moment.
             note = `<div class="authoritative">` +
                 `<p>This page is a formatted reading copy. ` +
                 `The <a href="${page.file}">plain-text ${esc(page.file)}</a> is the ` +
@@ -9167,8 +8450,7 @@ function build() {
                 dlIcon('dl-i') +
                 `Download ${esc(page.file)}</a></div>`;
         } else {
-            // Pull the metadata straight out of the document, so the page can never
-            // advertise a version or date the source doesn't actually carry.
+            // Pull the metadata straight out of the document, so the page can never advertise a version or date the source doesn't actually carry.
             const ver = (raw.match(/^\*\*Version:\*\*\s*(.+)$/m) || [])[1];
             const eff = (raw.match(/^\*\*Effective date:\*\*\s*(.+)$/m) || [])[1];
             if (eff) meta.push(`Effective <b>${esc(eff.trim())}</b>`);
@@ -9178,9 +8460,7 @@ function build() {
         }
 
         const ids = new Set(parsed.toc.map(t => t.id));
-        // Stripping the metadata block leaves the rule that separated it from the
-        // content as the first element, which renders as dead space under the
-        // masthead. Drop a leading (or trailing) rule.
+        // Stripping the metadata block leaves the rule that separated it from the content as the first element, which renders as dead space under the masthead. Drop a leading (or trailing) rule.
         const html = styleDisclaimer(note + linkifyRefs(
             parsed.html.replace(/^\s*<hr>\s*/, '').replace(/\s*<hr>\s*$/, ''),
             ids
@@ -9195,17 +8475,13 @@ function build() {
         console.log(`  ✓ ${page.out}  ${parsed.toc.filter(t => !t.sub).length} sections · ${xrefs} live §-refs · ${(html.length / 1024).toFixed(1)} KB`);
     }
 
-    // The invitation pages. Same Markdown parser, different template — and they
-    // are appended to `built` so the verifier covers them exactly like the rest.
-    // An unverified page is the one that quietly rots.
+    // The invitation pages. Same Markdown parser, different template — and they are appended to `built` so the verifier covers them exactly like the rest. An unverified page is the one that quietly rots.
     for (const page of EXTRA_PAGES) {
         const md = readSource(page);
         LINK_BASE = ''; // see the note on the same line in the PAGES loop above
         const parsed = parseBlocks(stripMdHead(md));
         const ids = new Set(parsed.toc.map(t => t.id));
-        // Compose BEFORE linkifying: warmCompose matches on our own block markup,
-        // and linkifyRefs only ever rewrites text nodes, so it is safe either way —
-        // but composing first keeps the patterns it matches against simple.
+        // Compose BEFORE linkifying: warmCompose matches on our own block markup, and linkifyRefs only ever rewrites text nodes, so it is safe either way — but composing first keeps the patterns it matches against simple.
         const comp = warmCompose(parsed.blocks, page.out);
         const html = styleDisclaimer(linkifyRefs(comp.body, ids));
         warmResults[page.out] = comp.hits;
@@ -9217,9 +8493,7 @@ function build() {
         console.log(`  ✓ ${page.out}  ${parsed.toc.filter(t => !t.sub).length} sections · ${(html.length / 1024).toFixed(1)} KB · ${applied}`);
     }
 
-    // The chronicle family. Same Markdown parser again, a third template, and the
-    // pages are appended to `built` so every gate covers them exactly like the
-    // rest — an unverified page is the one that quietly rots.
+    // The chronicle family. Same Markdown parser again, a third template, and the pages are appended to `built` so every gate covers them exactly like the rest — an unverified page is the one that quietly rots.
     fs.mkdirSync(path.join(ROOT, 'public', 'changelog'), { recursive: true });
     for (const page of CHRONICLE_PAGES) {
         const md = readSource(page);
@@ -9232,9 +8506,7 @@ function build() {
         chronicleResults[page.out] = {
             entries: res.entries, parts: res.parts, lessons: res.lessons,
             sourceEntries: (md.match(/^## /gm) || []).length,
-            // Expectations read from the SOURCE, evidence read from the written
-            // FILE. Neither side comes from the renderer, so a renderer that drops
-            // a heading cannot also erase the expectation that it should not have.
+            // Expectations read from the SOURCE, evidence read from the written FILE. Neither side comes from the renderer, so a renderer that drops a heading cannot also erase the expectation that it should not have.
             headings: (md.match(/^#{1,2} .*$/gm) || []).map(h => h.replace(/^#+\s*/, '')),
             rendered: ' ' + fs.readFileSync(outPath(page), 'utf8')
                 .replace(/<script[\s\S]*?<\/script>/g, ' ')
@@ -9255,18 +8527,9 @@ function build() {
 }
 
 /**
- * TERMS.md and PRIVACY.md link to LICENSE, NOTICE, and CONTRIBUTING.html — the
- * licence and CLA a reader is entitled to reach from the documents that cite
- * them. (Before the 2026-08-05 14:51 EDT flattening these were ../LICENSE etc,
- * resolving one level ABOVE the legal/ directory the pages then rendered into —
- * kept here as the reason the deploy tree has to carry LICENSE/NOTICE at all:
- * the first deploy plan uploaded public/legal alone, which would have shipped
- * three dead links out of documents whose whole value is being verifiable.)
+ * TERMS.md and PRIVACY.md link to LICENSE, NOTICE, and CONTRIBUTING.html — the licence and CLA a reader is entitled to reach from the documents that cite them. (Before the 2026-08-05 14:51 EDT flattening these were ../LICENSE etc, resolving one level ABOVE the legal/ directory the pages then rendered into — kept here as the reason the deploy tree has to carry LICENSE/NOTICE at all: the first deploy plan uploaded public/legal alone, which would have shipped three dead links out of documents whose whole value is being verifiable.)
  *
- * LICENSE and NOTICE are served as plain text on purpose — they are the
- * authoritative instruments, and rendering them through this parser would put a
- * lossy transformation between the reader and the operative wording. CONTRIBUTING
- * is prose about a process, so it renders like the other pages.
+ * LICENSE and NOTICE are served as plain text on purpose — they are the authoritative instruments, and rendering them through this parser would put a lossy transformation between the reader and the operative wording. CONTRIBUTING is prose about a process, so it renders like the other pages.
  */
 function buildCompanions() {
     const root = path.join(ROOT, 'public');
@@ -9276,31 +8539,9 @@ function buildCompanions() {
         console.log(`  ✓ ${f} (verbatim)`);
     }
 
-    // ⚠️ THE SITE ROOT IS THE HOMEPAGE NOW, NOT A REDIRECT TO ONE (flattened
-    // 2026-08-05 14:43 EDT when dioreo.app went live). It used to redirect to
-    // /legal/, where the landing page actually lived — confirmed live on the
-    // first deploy, when the bare root 404'd without it. Now build() writes
-    // index.html directly at the site root, so root just serves it; the six
-    // /legal/* redirects below exist ONLY so a bookmark or an external link
-    // still pointed at the old shape (the Discord Developer Portal's ToS/
-    // Privacy links, in particular) keeps working rather than 404ing outright.
-    // /security is a memorable route that has to keep working even if the source
-    // repository goes private (TERMS §7.1 reserves exactly that). SECURITY.md is
-    // deliberately repo-only — it serves GitHub's "Report a vulnerability" flow,
-    // which needs a public repo to exist at all — but the REPORTING ROUTE must
-    // not depend on that, and a researcher needs it precisely when something is
-    // wrong. The published Contributing page already carries the full section,
-    // so this points at it rather than duplicating the text into a second place
-    // that could then drift.
-    // /install is a shareable route for the Discord authorization link — short
-    // enough to say out loud, and stable even if the OAuth URL gains or loses
-    // parameters later. It is built FROM INSTALL_URL rather than written out
-    // again, so the redirect and every install button on the site can never
-    // disagree about the client id.
+    // ⚠️ THE SITE ROOT IS THE HOMEPAGE NOW, NOT A REDIRECT TO ONE (flattened 2026-08-05 14:43 EDT when dioreo.app went live). It used to redirect to /legal/, where the landing page actually lived — confirmed live on the first deploy, when the bare root 404'd without it. Now build() writes index.html directly at the site root, so root just serves it; the six /legal/* redirects below exist ONLY so a bookmark or an external link still pointed at the old shape (the Discord Developer Portal's ToS/ Privacy links, in particular) keeps working rather than 404ing outright. /security is a memorable route that has to keep working even if the source repository goes private (TERMS §7.1 reserves exactly that). SECURITY.md is deliberately repo-only — it serves GitHub's "Report a vulnerability" flow, which needs a public repo to exist at all — but the REPORTING ROUTE must not depend on that, and a researcher needs it precisely when something is wrong. The published Contributing page already carries the full section, so this points at it rather than duplicating the text into a second place that could then drift. /install is a shareable route for the Discord authorization link — short enough to say out loud, and stable even if the OAuth URL gains or loses parameters later. It is built FROM INSTALL_URL rather than written out again, so the redirect and every install button on the site can never disagree about the client id.
     //
-    // The /legal/* compatibility rules are 301 (permanent, cacheable) — that
-    // shape is OURS to retire whenever we like, unlike /install's third-party
-    // target. Everything else stays 302 for the same reason it always was.
+    // The /legal/* compatibility rules are 301 (permanent, cacheable) — that shape is OURS to retire whenever we like, unlike /install's third-party target. Everything else stays 302 for the same reason it always was.
     fs.writeFileSync(path.join(root, '_redirects'),
         '/legal / 301\n'
         + '/legal/ / 301\n'
@@ -9312,37 +8553,21 @@ function buildCompanions() {
         + '/legal/contributing.html /contributing 301\n'
         + '/legal/contributors.html /contributors 301\n'
         + '/security /contributing#security-vulnerabilities 302\n'
-        // The chronicle family's landing page. Pages already serves the directory
-        // index, so this exists for the bare, no-slash form a person types or a
-        // Discord message carries — /changelog, not /changelog/.
+        // The chronicle family's landing page. Pages already serves the directory index, so this exists for the bare, no-slash form a person types or a Discord message carries — /changelog, not /changelog/.
         + '/changelog /changelog/ 302\n'
         + `/install ${INSTALL_URL} 302\n`);
     console.log('  ✓ _redirects (/legal/* → flat paths, /security → contributing#security, '
         + '/changelog → /changelog/, /install → Discord)');
 
-    // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via
-    // EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason
-    // it was reversed is worth keeping: CONTRIBUTING was pulled the first time
-    // because a link audit found it shipped four dead links and because it
-    // documents working on a repo the reader might not be able to see. Both
-    // objections are now answered — CONTRIBUTORS.md is published so that link
-    // resolves, the rest degrade to inert text via PUBLISHED_TARGETS, and the
-    // header carries a repo link on every page. linkAudit() enforces the first
-    // part on every build rather than trusting this note.
+    // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason it was reversed is worth keeping: CONTRIBUTING was pulled the first time because a link audit found it shipped four dead links and because it documents working on a repo the reader might not be able to see. Both objections are now answered — CONTRIBUTORS.md is published so that link resolves, the rest degrade to inert text via PUBLISHED_TARGETS, and the header carries a repo link on every page. linkAudit() enforces the first part on every build rather than trusting this note.
 }
 
 /**
- * Guards the one failure mode that actually matters here: the parser silently
- * dropping content, which would publish an incomplete legal document. Compares
- * the visible text of each rendered page against its source and reports any
- * sentence-length run of source words that never made it through.
+ * Guards the one failure mode that actually matters here: the parser silently dropping content, which would publish an incomplete legal document. Compares the visible text of each rendered page against its source and reports any sentence-length run of source words that never made it through.
  */
 function verify(built) {
     let bad = 0;
-    // BOTH sides go through the identical reduction — lowercase, letters/digits
-    // only, single-spaced. An earlier version filtered short words out of the
-    // source but not the rendered text, so every run containing "of" or "the"
-    // reported as missing. Comparing like with like is the whole point.
+    // BOTH sides go through the identical reduction — lowercase, letters/digits only, single-spaced. An earlier version filtered short words out of the source but not the rendered text, so every run containing "of" or "the" reported as missing. Comparing like with like is the whole point.
     const words = s => s
         .replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
         .toLowerCase().replace(/[^a-z0-9]+/g, ' ')
@@ -9356,57 +8581,26 @@ function verify(built) {
             .replace(/<script[\s\S]*?<\/script>/g, ' ')
             .replace(/<style[\s\S]*?<\/style>/g, ' ')
             .replace(/<[^>]+>/g, ' ')
-            // EVERY entity, not a hand-picked four. An undecoded entity does not
-            // vanish under words()' [^a-z0-9] pass — it becomes a WORD. `&middot;`
-            // reduces to "middot" and `&#9825;` to "9825", and that fabricated word
-            // lands inside an otherwise-intact source run and breaks it. Measured on
-            // this build: 12 entities across 7 pages, and "middot" alone accounted
-            // for a reported miss of "name role harkirat mangat..." whose every word
-            // was in fact rendered.
+            // EVERY entity, not a hand-picked four. An undecoded entity does not vanish under words()' [^a-z0-9] pass — it becomes a WORD. `&middot;` reduces to "middot" and `&#9825;` to "9825", and that fabricated word lands inside an otherwise-intact source run and breaks it. Measured on this build: 12 entities across 7 pages, and "middot" alone accounted for a reported miss of "name role harkirat mangat..." whose every word was in fact rendered.
             //
-            // This cannot open a hole for real content loss, which is the only reason
-            // it is safe: an entity resolves to exactly ONE character, so decoding
-            // can only ever REMOVE a fabricated word, never supply a source word the
-            // page does not visibly render. Same principle as the ordered-list and
-            // stop-word fixes below — compare like with like.
+            // This cannot open a hole for real content loss, which is the only reason it is safe: an entity resolves to exactly ONE character, so decoding can only ever REMOVE a fabricated word, never supply a source word the page does not visibly render. Same principle as the ordered-list and stop-word fixes below — compare like with like.
             //
-            // Runs after tag-stripping on purpose, so a decoded `<` cannot be mistaken
-            // for markup. The trailing catch-all covers named entities nothing emits
-            // yet: every one is a single character that words() would reduce to a
-            // separator anyway (`&eacute;` → é → ' ', exactly as the source side
-            // reduces it), so a future `&hellip;` cannot silently revive this bug.
+            // Runs after tag-stripping on purpose, so a decoded `<` cannot be mistaken for markup. The trailing catch-all covers named entities nothing emits yet: every one is a single character that words() would reduce to a separator anyway (`&eacute;` → é → ' ', exactly as the source side reduces it), so a future `&hellip;` cannot silently revive this bug.
             //
-            // ⚠️ ORDER: `&amp;` is decoded LAST, and the named catch-all skips it.
-            // A source that DISCUSSES an entity writes it literally — DEVLOG explains
-            // this very bug with `&middot;` inside a code span — and that renders as
-            // `&amp;middot;`, which a reader sees as the visible text "&middot;".
-            // Decoding &amp; first turned it into a real `&middot;` that the catch-all
-            // below then deleted, so a word the page genuinely displays was scored as
-            // missing. Decoding it last leaves the literal text intact, and a real
-            // `&middot;` in the output still reduces to a separator exactly as before.
+            // ⚠️ ORDER: `&amp;` is decoded LAST, and the named catch-all skips it. A source that DISCUSSES an entity writes it literally — DEVLOG explains this very bug with `&middot;` inside a code span — and that renders as `&amp;middot;`, which a reader sees as the visible text "&middot;". Decoding &amp; first turned it into a real `&middot;` that the catch-all below then deleted, so a word the page genuinely displays was scored as missing. Decoding it last leaves the literal text intact, and a real `&middot;` in the output still reduces to a separator exactly as before.
             .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
             .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
             .replace(/&(?!amp;)\w+;/g, ' ')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-            // Symmetry: URLs are stripped from the source side below, so they must
-            // go from here too. The plain-text licence prints a bare URL in its
-            // contact block, which stays visible after tag-stripping and split an
-            // otherwise-intact run — a false miss caused purely by the two sides
-            // being reduced differently. Comparing like with like is the point.
+            // Symmetry: URLs are stripped from the source side below, so they must go from here too. The plain-text licence prints a bare URL in its contact block, which stays visible after tag-stripping and split an otherwise-intact run — a false miss caused purely by the two sides being reduced differently. Comparing like with like is the point.
             .replace(/https?:\/\/\S+/g, ' ')
         ).join(' ') + ' ';
 
-        // Mirror build()'s own removals: the H1 and the metadata block are moved
-        // into the masthead by design, so they are not expected in the body.
+        // Mirror build()'s own removals: the H1 and the metadata block are moved into the masthead by design, so they are not expected in the body.
         const rawSrc = readSource(page);
         let cleaned = page.kind === 'text' ? stripTextHead(rawSrc) : stripMdHead(rawSrc);
 
-        // ORDER MATTERS, and getting it wrong is silent. The Markdown link unwrap
-        // MUST run before URLs are stripped: `https?://\S+` is greedy to the next
-        // space, so it eats the link's own closing paren, and the unwrap pattern's
-        // `[^)]*` then runs on across newlines to the next `)` anywhere in the
-        // document — swallowing real prose and reporting it as missing. That is
-        // exactly what happened here (3 false misses in TERMS, 5 in PRIVACY).
+        // ORDER MATTERS, and getting it wrong is silent. The Markdown link unwrap MUST run before URLs are stripped: `https?://\S+` is greedy to the next space, so it eats the link's own closing paren, and the unwrap pattern's `[^)]*` then runs on across newlines to the next `)` anywhere in the document — swallowing real prose and reporting it as missing. That is exactly what happened here (3 false misses in TERMS, 5 in PRIVACY).
         if (page.kind === 'md') {
             cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
         }
@@ -9415,46 +8609,20 @@ function verify(built) {
             .replace(/<!--[\s\S]*?-->/g, ' ');
 
         if (page.kind === 'text') {
-            // The plain-text licence has no Markdown to unwrap. Its `===` banner
-            // rules are pure decoration and are not rendered, so they must not be
-            // expected in the output either.
+            // The plain-text licence has no Markdown to unwrap. Its `===` banner rules are pure decoration and are not rendered, so they must not be expected in the output either.
             cleaned = cleaned.replace(/^={3,}$/gm, ' ');
         } else {
-            // Ordered-list markers ("1.", "2.") are structure, not content: an
-            // <ol> renders its numbers with CSS counters, so the literal digit
-            // correctly never appears in the rendered text. Without this the
-            // check reports ~17 false misses per document.
+            // Ordered-list markers ("1.", "2.") are structure, not content: an <ol> renders its numbers with CSS counters, so the literal digit correctly never appears in the rendered text. Without this the check reports ~17 false misses per document.
             cleaned = cleaned.replace(/^\s*\d+\.\s+/gm, ' ');
-            // Code-fence lines are structure too, and the language tag on them is
-            // metadata: it is rendered as a CSS-generated corner label, so it is
-            // deliberately absent from the document text. Same reasoning as above —
-            // the alternative is four permanent false misses naming "bash".
+            // Code-fence lines are structure too, and the language tag on them is metadata: it is rendered as a CSS-generated corner label, so it is deliberately absent from the document text. Same reasoning as above — the alternative is four permanent false misses naming "bash".
             cleaned = cleaned.replace(/^\s*```+\s*[\w-]*\s*$/gm, ' ');
         }
 
-        // A chronicle page DECOMPOSES its entry headings. "## v2.47.0 — 2026-08-01
-        // 03:05 EDT (#61) — Title" is rendered as a title plus separate metadata
-        // chips, in a different order and with the punctuation gone; the devlog's
-        // h1 dividers move too. Every word still reaches the page — but a run that
-        // straddles a heading no longer matches, exactly as the legal masthead's
-        // fields do not, which is why stripMdHead() removes those from this side.
-        // Same principle, same place: whatever build() moves, verify() must not
-        // expect to find in its original position.
+        // A chronicle page DECOMPOSES its entry headings. "## v2.47.0 — 2026-08-01 03:05 EDT (#61) — Title" is rendered as a title plus separate metadata chips, in a different order and with the punctuation gone; the devlog's h1 dividers move too. Every word still reaches the page — but a run that straddles a heading no longer matches, exactly as the legal masthead's fields do not, which is why stripMdHead() removes those from this side. Same principle, same place: whatever build() moves, verify() must not expect to find in its original position.
         //
-        // This does NOT leave headings unchecked. chronicleStructAudit() asserts
-        // every source heading produced an entry AND that its text reached the page
-        // — a different property, in its own gate, rather than a hole in this one.
-        // SEGMENTS, not one flat stream. Everything except a chronicle page is a
-        // single segment, which is byte-for-byte the behaviour this check has always
-        // had — the legal pages must stay at 100% and this must not be what moves them.
+        // This does NOT leave headings unchecked. chronicleStructAudit() asserts every source heading produced an entry AND that its text reached the page — a different property, in its own gate, rather than a hole in this one. SEGMENTS, not one flat stream. Everything except a chronicle page is a single segment, which is byte-for-byte the behaviour this check has always had — the legal pages must stay at 100% and this must not be what moves them.
         //
-        // A chronicle page is segmented at its entry boundaries because its headings
-        // are removed just above. Without the split, the tail of one release ran
-        // straight into the head of the next in the SOURCE while the page still had
-        // the heading between them, manufacturing ~96 "missing" runs that no reader
-        // would ever miss. Segmenting also makes the check stricter than the flat
-        // version was: a run can no longer straddle two releases and match on text
-        // that happens to sit next to it.
+        // A chronicle page is segmented at its entry boundaries because its headings are removed just above. Without the split, the tail of one release ran straight into the head of the next in the SOURCE while the page still had the heading between them, manufacturing ~96 "missing" runs that no reader would ever miss. Segmenting also makes the check stricter than the flat version was: a run can no longer straddle two releases and match on text that happens to sit next to it.
         const segments = page.chronicle
             ? cleaned.split(/^#{1,2}\s+.*$/gm).map(s => s.trim()).filter(Boolean)
             : [cleaned];
@@ -9486,12 +8654,7 @@ function verify(built) {
 /**
  * Walks every built page and resolves each internal href against the deploy tree.
  *
- * This exists because it caught SEVEN dead links the first time it ran, on output
- * that looked completely fine and reported 100% content present — the content
- * verifier and this check fail on genuinely different things. A legal document's
- * value is that its citations can be followed, so a 404 behind "see the LICENSE"
- * is a real defect, not cosmetic. External URLs are not fetched (a build must not
- * depend on the network); only same-site paths are resolved.
+ * This exists because it caught SEVEN dead links the first time it ran, on output that looked completely fine and reported 100% content present — the content verifier and this check fail on genuinely different things. A legal document's value is that its citations can be followed, so a 404 behind "see the LICENSE" is a real defect, not cosmetic. External URLs are not fetched (a build must not depend on the network); only same-site paths are resolved.
  */
 function linkAudit() {
     const root = path.join(ROOT, 'public');
@@ -9532,22 +8695,9 @@ function linkAudit() {
 /**
  * Third gate, and it exists for the same reason the second one does.
  *
- * The plain-text sources hold their dependency and trademark tables together with
- * runs of spaces — the ALIGNMENT is the structure. Joining those rows into a
- * paragraph destroys the table while changing not one word, so verify() still
- * reports 100% content present and linkAudit() still finds every link. Two green
- * gates, a wrecked document. This checks the property they can't see.
+ * The plain-text sources hold their dependency and trademark tables together with runs of spaces — the ALIGNMENT is the structure. Joining those rows into a paragraph destroys the table while changing not one word, so verify() still reports 100% content present and linkAudit() still finds every link. Two green gates, a wrecked document. This checks the property they can't see.
  *
- * The invariant: every column-aligned source line must end up inside a <pre>, or
- * be a heading, or be inside a dependency card. Headings are the legitimate
- * exception — a clause number followed by two spaces ("4A.1  EMOJI") looks
- * column-aligned to any simple test, and an earlier version of this check
- * reported five of them as defects. Dependency cards are the same idea one
- * level up: depCard() (see renderIndented()) deliberately breaks a package's
- * "name  version  license" line into separate spaced elements rather than one
- * literal run, so the match has to be against the CARD's flattened text, not
- * a single element's — a source line can legitimately land as a substring of
- * that, the same way a heading's number and text land in two different spots.
+ * The invariant: every column-aligned source line must end up inside a <pre>, or be a heading, or be inside a dependency card. Headings are the legitimate exception — a clause number followed by two spaces ("4A.1  EMOJI") looks column-aligned to any simple test, and an earlier version of this check reported five of them as defects. Dependency cards are the same idea one level up: depCard() (see renderIndented()) deliberately breaks a package's "name  version  license" line into separate spaced elements rather than one literal run, so the match has to be against the CARD's flattened text, not a single element's — a source line can legitimately land as a substring of that, the same way a heading's number and text land in two different spots.
  */
 function structureAudit(built) {
     const norm = s => s.replace(/\s+/g, ' ').trim();
@@ -9572,8 +8722,7 @@ function structureAudit(built) {
         const lost = aligned.filter(l => {
             const n = norm(l);
             if (inPre.has(n)) return false;
-            // A heading line: its number and text both land in the heading, but
-            // joined differently, so compare on the collapsed form.
+            // A heading line: its number and text both land in the heading, but joined differently, so compare on the collapsed form.
             if ([...inHead].some(h => h.includes(n) || n.includes(h.replace(/\s*¶$/, '')))) return false;
             return !inDep.some(d => d.includes(n));
         });
@@ -9592,13 +8741,7 @@ function structureAudit(built) {
 /**
  * Fourth gate: a cross-reference that SHOULD be a link and isn't.
  *
- * The other three can only inspect what was emitted. This one compares the source
- * against the output: for every Markdown link whose target is a published file,
- * the rendered page must contain an anchor to it. A reference that quietly
- * degraded to inert text emits no href, so linkAudit() has nothing to resolve and
- * reports success — which is exactly how Terms' and Privacy's references to each
- * other sat dead on the live site while all three gates were green. The trigger
- * was case: PRIVACY.md became PRIVACY.html and the allowlist held privacy.html.
+ * The other three can only inspect what was emitted. This one compares the source against the output: for every Markdown link whose target is a published file, the rendered page must contain an anchor to it. A reference that quietly degraded to inert text emits no href, so linkAudit() has nothing to resolve and reports success — which is exactly how Terms' and Privacy's references to each other sat dead on the live site while all three gates were green. The trigger was case: PRIVACY.md became PRIVACY.html and the allowlist held privacy.html.
  */
 function crossRefAudit(built) {
     let bad = 0;
@@ -9617,36 +8760,16 @@ function crossRefAudit(built) {
             if (!rel) continue;
             // GROUND TRUTH IS THE DEPLOY TREE, not PUBLISHED_TARGETS.
             //
-            // The first version of this gate asked resolvePublished() whether the
-            // target was published — the same function whose bug it existed to
-            // catch. Breaking that function therefore emptied `want`, and the gate
-            // reported "all 0 cross-references" and PASSED. A check that draws its
-            // expectations from the code under test cannot fail. Resolving against
-            // the files actually written to public/ is independent of the
-            // allowlist, the case handling, and the rewrite rules alike.
+            // The first version of this gate asked resolvePublished() whether the target was published — the same function whose bug it existed to catch. Breaking that function therefore emptied `want`, and the gate reported "all 0 cross-references" and PASSED. A check that draws its expectations from the code under test cannot fail. Resolving against the files actually written to public/ is independent of the allowlist, the case handling, and the rewrite rules alike.
             //
-            // Case-insensitive on purpose: the filesystem here is case-insensitive,
-            // so existsSync would happily confirm PRIVACY.html and hide the very
-            // mismatch being hunted. The directory listing is compared instead.
-            // BOTH candidate depths are tried: the link as written, and the same
-            // link lifted one level. A root-authored page renders into legal/, so
-            // its bare `LICENSE` is correct only as `../LICENSE` — and checking
-            // just the as-written form made this gate SKIP those links entirely
-            // rather than flag them, which is how the licence stayed unlinked in
-            // four places on the Contributing page while every gate was green.
+            // Case-insensitive on purpose: the filesystem here is case-insensitive, so existsSync would happily confirm PRIVACY.html and hide the very mismatch being hunted. The directory listing is compared instead. BOTH candidate depths are tried: the link as written, and the same link lifted one level. A root-authored page renders into legal/, so its bare `LICENSE` is correct only as `../LICENSE` — and checking just the as-written form made this gate SKIP those links entirely rather than flag them, which is how the licence stayed unlinked in four places on the Contributing page while every gate was green.
             const base = path.basename(rel);
             const deployRoot = path.join(ROOT, 'public');
             let found = null;
             for (const cand of [rel, '../' + rel]) {
-                // Resolved against the page's OWN output directory, not a hardcoded
-                // OUT — the chronicle pages render into public/changelog/, and
-                // resolving their links from the site root would ask the wrong
-                // directory whether the target exists.
+                // Resolved against the page's OWN output directory, not a hardcoded OUT — the chronicle pages render into public/changelog/, and resolving their links from the site root would ask the wrong directory whether the target exists.
                 const dir = path.resolve(pageOut, path.dirname(cand));
-                // MUST stay inside the deploy tree. Without this guard the lifted
-                // candidate walked out of public/ and matched the repo's own
-                // models/UserPreference.js, reporting a correctly-inert reference
-                // as a defect. Only files that are actually shipped count.
+                // MUST stay inside the deploy tree. Without this guard the lifted candidate walked out of public/ and matched the repo's own models/UserPreference.js, reporting a correctly-inert reference as a defect. Only files that are actually shipped count.
                 if (dir !== deployRoot && !dir.startsWith(deployRoot + path.sep)) continue;
                 if (!fs.existsSync(dir)) continue;
                 const actual = fs.readdirSync(dir).find(e => e.toLowerCase() === base.toLowerCase());
@@ -9656,14 +8779,7 @@ function crossRefAudit(built) {
         }
 
         examined += want.size;
-        // ⚠️ A DEPLOYED RAW FILE MAY LEGITIMATELY BE LINKED THROUGH ITS RENDERED
-        // PAGE. LICENSE and NOTICE ship TWICE: verbatim beside legal/, which is what
-        // the deploy-tree scan above finds, and as license.html / notice.html. Prose
-        // points at the page, because a browser handed an extension-less file with
-        // no HTML content type downloads it rather than showing it — which is the
-        // defect this pairing was introduced to fix. Either anchor means the
-        // reference is live; what this gate must keep catching is a mention that
-        // resolves to NEITHER, which is the inert-text case it was built for.
+        // ⚠️ A DEPLOYED RAW FILE MAY LEGITIMATELY BE LINKED THROUGH ITS RENDERED PAGE. LICENSE and NOTICE ship TWICE: verbatim beside legal/, which is what the deploy-tree scan above finds, and as license.html / notice.html. Prose points at the page, because a browser handed an extension-less file with no HTML content type downloads it rather than showing it — which is the defect this pairing was introduced to fix. Either anchor means the reference is live; what this gate must keep catching is a mention that resolves to NEITHER, which is the inert-text case it was built for.
         const anchorsFor = t => {
             const b = path.basename(t);
             return /^(LICENSE|NOTICE)$/i.test(b) ? [t, b.toLowerCase() + '.html'] : [t];
@@ -9678,9 +8794,7 @@ function crossRefAudit(built) {
         }
     }
 
-    // A gate that examined nothing has verified nothing, and must not read as a
-    // pass. These documents cite each other constantly; zero means the matcher
-    // broke, not that the documents stopped cross-referencing.
+    // A gate that examined nothing has verified nothing, and must not read as a pass. These documents cite each other constantly; zero means the matcher broke, not that the documents stopped cross-referencing.
     if (examined === 0) {
         console.log('  ✗ examined 0 cross-references — the matcher is broken, not the documents');
         return false;
@@ -9691,26 +8805,14 @@ function crossRefAudit(built) {
 /**
  * Gate: every entry in a chronicle SOURCE became an entry on the page.
  *
- * The other gates cannot see this failure. verify() compares words, and a heading
- * that stops being parsed as a heading still contributes all of its words to the
- * body — that is precisely how v2.44.0's changelog entry lost its heading and was
- * absorbed into the entry above it with every content check still green. linkAudit
- * and crossRefAudit look at hrefs; structureAudit only looks at the plain-text
- * pages. So: count `## ` in the source, count entries rendered, and require them
- * to agree.
+ * The other gates cannot see this failure. verify() compares words, and a heading that stops being parsed as a heading still contributes all of its words to the body — that is precisely how v2.44.0's changelog entry lost its heading and was absorbed into the entry above it with every content check still green. linkAudit and crossRefAudit look at hrefs; structureAudit only looks at the plain-text pages. So: count `## ` in the source, count entries rendered, and require them to agree.
  *
- * The expectation comes from the SOURCE rather than from a re-run of the parser,
- * for the same reason WARM_STRUCT is declared rather than sniffed: a check that
- * derives its expectations from the code under test cannot fail.
+ * The expectation comes from the SOURCE rather than from a re-run of the parser, for the same reason WARM_STRUCT is declared rather than sniffed: a check that derives its expectations from the code under test cannot fail.
  */
 function chronicleStructAudit(results) {
     const bad = [];
     for (const [out, r] of Object.entries(results)) {
-        // The heading half. verify() no longer looks at heading lines on these
-        // pages (it cannot — they are decomposed and reordered), so the words in
-        // them are checked HERE instead of nowhere. Compared on the same
-        // letters-and-digits reduction verify() uses, so punctuation and the
-        // rearranged order are not mistaken for loss.
+        // The heading half. verify() no longer looks at heading lines on these pages (it cannot — they are decomposed and reordered), so the words in them are checked HERE instead of nowhere. Compared on the same letters-and-digits reduction verify() uses, so punctuation and the rearranged order are not mistaken for loss.
         const flat = r.rendered;
         for (const h of r.headings) {
             const want = h.replace(/[^a-z0-9]+/gi, ' ').trim().toLowerCase();
@@ -9742,8 +8844,7 @@ function chronicleStructAudit(results) {
 /**
  * Gate: the structural accessibility guarantees hold on every page.
  *
- * Three things, all Level A or close to it, all trivially checkable and none
- * visible to any other gate:
+ * Three things, all Level A or close to it, all trivially checkable and none visible to any other gate:
  *
  *  · a skip link exists, is the FIRST focusable element in the body, and its
  *    target id actually exists on the page. WCAG 2.4.1 Bypass Blocks — this site
@@ -9755,38 +8856,22 @@ function chronicleStructAudit(results) {
  *    focus there or only scrolls — which makes the link work visually and do
  *    nothing for a screen reader.
  *
- * Added because the first attempt at the skip link HALF applied: both warm pages
- * got the link and neither got the target, so two pages shipped a control that
- * jumped nowhere. A link to a missing anchor is worse than no link at all.
+ * Added because the first attempt at the skip link HALF applied: both warm pages got the link and neither got the target, so two pages shipped a control that jumped nowhere. A link to a missing anchor is worse than no link at all.
  */
 /**
  * Parse every inline <script> in the built output and fail on a syntax error.
  *
- * ⚠️ THIS GATE EXISTS BECAUSE A BROKEN NAV SHIPPED AND EVERY OTHER GATE PASSED
- * (2026-08-01 22:05 EDT). A comment block was inserted one line below the `*​/`
- * that closed the previous comment, so the client script carried bare prose in
- * statement position. The whole indicator IIFE died at parse time: no tab had a
- * --cov, no group went hot, the pill never moved. The build reported content
- * complete, links resolving, contrast AA and no credentials — because not one of
- * those gates looks at whether the JavaScript it just wrote can be parsed.
+ * ⚠️ THIS GATE EXISTS BECAUSE A BROKEN NAV SHIPPED AND EVERY OTHER GATE PASSED (2026-08-01 22:05 EDT). A comment block was inserted one line below the `*​/` that closed the previous comment, so the client script carried bare prose in statement position. The whole indicator IIFE died at parse time: no tab had a --cov, no group went hot, the pill never moved. The build reported content complete, links resolving, contrast AA and no credentials — because not one of those gates looks at whether the JavaScript it just wrote can be parsed.
  *
- * `node --check` on the generator cannot catch it either, and that is the trap:
- * this code lives inside a template literal, so to the generator it is a STRING.
- * It is syntactically perfect right up until a browser tries to run it.
+ * `node --check` on the generator cannot catch it either, and that is the trap: this code lives inside a template literal, so to the generator it is a STRING. It is syntactically perfect right up until a browser tries to run it.
  *
- * ⚠️ It shells out to `node --check` rather than using new Function(). Both would
- * find the error, but new Function() COMPILES the string inside this process,
- * and the honest description of this gate is "parse a file we just wrote to
- * disk" — a subprocess that can only ever parse cannot become an execution path
- * later, however the page content evolves. The temp file is written under
- * os.tmpdir() and removed straight after.
+ * ⚠️ It shells out to `node --check` rather than using new Function(). Both would find the error, but new Function() COMPILES the string inside this process, and the honest description of this gate is "parse a file we just wrote to disk" — a subprocess that can only ever parse cannot become an execution path later, however the page content evolves. The temp file is written under os.tmpdir() and removed straight after.
  */
 function scriptSyntaxAudit(built) {
     const { execFileSync } = require('child_process');
     const tmp = path.join(require('os').tmpdir(), `db-script-check-${process.pid}.js`);
     let bad = 0, checked = 0;
-    // Same page set a11yAudit() uses: every built page plus the landing page,
-    // which is not in `built` because it has no Markdown source.
+    // Same page set a11yAudit() uses: every built page plus the landing page, which is not in `built` because it has no Markdown source.
     for (const file of [...built.map(outPath), path.join(OUT, 'index.html')]) {
         const out = path.relative(path.join(ROOT, 'public'), file);
         const html = fs.readFileSync(file, 'utf8');
@@ -9850,20 +8935,11 @@ function a11yAudit(built) {
 /**
  * Gate: the text colours a page ships actually meet WCAG AA in BOTH themes.
  *
- * Added after measuring the chronicle pages and finding that every signal colour
- * failed catastrophically in light theme — 1.50, 1.16 and 1.47 against a 4.5
- * minimum, i.e. text a sighted reader cannot make out, covering the version
- * numerals, the dates and the operator line. `--ink3` failed in BOTH themes
- * (4.22 and 3.82) and carries most of the small monospace type on the site.
+ * Added after measuring the chronicle pages and finding that every signal colour failed catastrophically in light theme — 1.50, 1.16 and 1.47 against a 4.5 minimum, i.e. text a sighted reader cannot make out, covering the version numerals, the dates and the operator line. `--ink3` failed in BOTH themes (4.22 and 3.82) and carries most of the small monospace type on the site.
  *
- * None of this was visible to any other gate, and it was nearly missed by eye too:
- * the washed-out light-theme heading looked like the reveal animation mid-fade.
- * Contrast is arithmetic, so it should never have depended on noticing.
+ * None of this was visible to any other gate, and it was nearly missed by eye too: the washed-out light-theme heading looked like the reveal animation mid-fade. Contrast is arithmetic, so it should never have depended on noticing.
  *
- * Values are parsed from the BUILT stylesheet rather than from the constants that
- * produced it — the point is what shipped. Both the dark `:root` block and the
- * `:root[data-theme="light"]` override are checked, against that theme's own
- * background.
+ * Values are parsed from the BUILT stylesheet rather than from the constants that produced it — the point is what shipped. Both the dark `:root` block and the `:root[data-theme="light"]` override are checked, against that theme's own background.
  */
 const CONTRAST_MIN = 4.5;
 
@@ -9885,15 +8961,7 @@ function contrastAudit(built) {
     for (const page of built) {
         const css = (fs.readFileSync(outPath(page), 'utf8')
             .match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
-        // Only pages that declare their own world are covered; the legal templates
-        // inherit the site tokens and are out of scope for this change.
-        // ⚠️ EVERY matching block, merged in document order — not the first one.
-        // The first version took `css.match(/:root\{...\}/)`, which is the legal
-        // site's TOKENS block; `--sig` is declared in a LATER :root block, so it was
-        // never read and the gate reported "63 pairs pass" while the light-theme
-        // signals were still at 1.47:1. Proven blind by reverting a known-bad value
-        // and watching it stay green, which is the only reason this was caught.
-        // Later declarations win, exactly as the cascade resolves them.
+        // Only pages that declare their own world are covered; the legal templates inherit the site tokens and are out of scope for this change. ⚠️ EVERY matching block, merged in document order — not the first one. The first version took `css.match(/:root\{...\}/)`, which is the legal site's TOKENS block; `--sig` is declared in a LATER :root block, so it was never read and the gate reported "63 pairs pass" while the light-theme signals were still at 1.47:1. Proven blind by reverting a known-bad value and watching it stay green, which is the only reason this was caught. Later declarations win, exactly as the cascade resolves them.
         const merge = re => [...css.matchAll(re)].map(m => m[1]).join(';');
         const themes = [
             ['dark', merge(/:root\{([^}]*)\}/g)],
@@ -9936,36 +9004,15 @@ function contrastAudit(built) {
 /**
  * Gate: markup the SHARED parser emits is styled by whatever template renders it.
  *
- * `parseBlocks()`, `inline()` and `linkifyRefs()` emit the same handful of classes
- * on every page, but each template carries its own stylesheet. When the chronicle
- * family was added, `.anchor` and `.xref` had rules only inside `shell()` — so the
- * new pages shipped every heading pilcrow permanently visible in the browser's
- * default link purple, and every §-cross-reference as a raw UA link.
+ * `parseBlocks()`, `inline()` and `linkifyRefs()` emit the same handful of classes on every page, but each template carries its own stylesheet. When the chronicle family was added, `.anchor` and `.xref` had rules only inside `shell()` — so the new pages shipped every heading pilcrow permanently visible in the browser's default link purple, and every §-cross-reference as a raw UA link.
  *
- * No existing gate could see it. The content was all present, the links all
- * resolved, the cross-references were live, the classes did not collide, and the
- * hover guard was clean. It was found by opening the page — which is exactly the
- * kind of thing that should not require someone to remember to look.
+ * No existing gate could see it. The content was all present, the links all resolved, the cross-references were live, the classes did not collide, and the hover guard was clean. It was found by opening the page — which is exactly the kind of thing that should not require someone to remember to look.
  *
- * The class list is DECLARED, not sniffed from the stylesheets, for the same reason
- * WARM_STRUCT is: a check that reads its expectations out of the thing it is testing
- * cannot fail. A class only has to be styled on a page that actually USES it.
+ * The class list is DECLARED, not sniffed from the stylesheets, for the same reason WARM_STRUCT is: a check that reads its expectations out of the thing it is testing cannot fail. A class only has to be styled on a page that actually USES it.
  *
- * ⚠️ WHAT IT DOES NOT CATCH, stated so nobody trusts it further than it goes: it
- * asks only whether the template's stylesheet mentions the selector AT ALL. A class
- * that is styled but styled WRONGLY, or styled for one state and not another, passes
- * cleanly. It catches "this template forgot this class entirely" — which is the
- * failure that actually shipped — and nothing finer. Proven by removing every
- * `.anchor` rule from chronicle.js and watching all three pages fail; removing just
- * one of the four `.anchor` rules does NOT fail, and that is a real limit, not an
- * oversight.
+ * ⚠️ WHAT IT DOES NOT CATCH, stated so nobody trusts it further than it goes: it asks only whether the template's stylesheet mentions the selector AT ALL. A class that is styled but styled WRONGLY, or styled for one state and not another, passes cleanly. It catches "this template forgot this class entirely" — which is the failure that actually shipped — and nothing finer. Proven by removing every `.anchor` rule from chronicle.js and watching all three pages fail; removing just one of the four `.anchor` rules does NOT fail, and that is a real limit, not an oversight.
  */
-// Only classes that are MEANINGLESS unstyled belong here. `.ht` is deliberately
-// absent: it is a structural hook that warmCompose() and headingInner() match on,
-// it is an inline span that inherits its heading's type, and the warm pages have
-// rendered correctly without a rule for it since they shipped. Listing it made the
-// gate fire on three healthy pages on its first run — a check that flags working
-// output gets muted, and a muted check catches nothing.
+// Only classes that are MEANINGLESS unstyled belong here. `.ht` is deliberately absent: it is a structural hook that warmCompose() and headingInner() match on, it is an inline span that inherits its heading's type, and the warm pages have rendered correctly without a rule for it since they shipped. Listing it made the gate fire on three healthy pages on its first run — a check that flags working output gets muted, and a muted check catches nothing.
 const PARSER_CLASSES = ['anchor', 'xref', 'ref'];
 
 function parserStyleAudit(built) {
@@ -9995,16 +9042,9 @@ function parserStyleAudit(built) {
 /**
  * Gate: no live credential reached a published page.
  *
- * DEVLOG.md is published in full at Harkirat's decision, and it is the one source
- * on this site written candidly for us rather than for a reader — it discusses
- * tokens, env vars, hosts and a past security incident. It is clean today, and that
- * was measured rather than assumed (zero tokens, zero Discord IDs, zero emails).
- * The value of a gate here is that it stays true as the file GROWS: a future session
- * pasting a real connection string into a devlog entry would otherwise publish it.
+ * DEVLOG.md is published in full at Harkirat's decision, and it is the one source on this site written candidly for us rather than for a reader — it discusses tokens, env vars, hosts and a past security incident. It is clean today, and that was measured rather than assumed (zero tokens, zero Discord IDs, zero emails). The value of a gate here is that it stays true as the file GROWS: a future session pasting a real connection string into a devlog entry would otherwise publish it.
  *
- * Patterns, deliberately, not a word list. `BOT_TOKEN` as a NAME is discussed
- * throughout and is not a secret; a Discord token's actual shape is. Matching names
- * would fire constantly, get muted, and then catch nothing.
+ * Patterns, deliberately, not a word list. `BOT_TOKEN` as a NAME is discussed throughout and is not a secret; a Discord token's actual shape is. Matching names would fire constantly, get muted, and then catch nothing.
  */
 const SECRET_PATTERNS = [
     [/mongodb(?:\+srv)?:\/\/[^\s"'<]*:[^\s"'<@]+@/i, 'a MongoDB URI carrying credentials'],
@@ -10065,10 +9105,7 @@ console.log('\nScanning published output for credential-shaped strings:');
 const secretOk = secretScan(built);
 const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
     && chronOk && parserOk && scriptOk && a11yOk && contrastOk && secretOk;
-// Names each property that was actually checked, rather than one word that reads
-// as "the output is correct". Each gate tests a different thing, and a pass on
-// one has already been mistaken for a pass on another once. Read this roster
-// rather than a count written down somewhere — it grows.
+// Names each property that was actually checked, rather than one word that reads as "the output is correct". Each gate tests a different thing, and a pass on one has already been mistaken for a pass on another once. Read this roster rather than a count written down somewhere — it grows.
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '

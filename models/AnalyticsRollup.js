@@ -1,27 +1,11 @@
 // ==========================================
 // ANALYTICS ROLLUP -- one document per (day, command, subcommand)
 // ==========================================
-// Stage 4 of the observability layer: docs/superpowers/specs/2026-08-16-observability-layer-design.md
-// §2 "Roll-ups" and §"Must verify before building". Load-bearing, not a speed optimisation -- the spec's
-// storage-growth math (§"Storage growth") concludes the event collection alone can exhaust Atlas's free
-// M0 tier in ~1-2 years at plausible volume, so raw AnalyticsEvent rows get a retention horizon and
-// these roll-ups are what lets the PERMANENT answers survive at full resolution after that horizon.
+// Stage 4 of the observability layer: docs/superpowers/specs/2026-08-16-observability-layer-design.md §2 "Roll-ups" and §"Must verify before building". Load-bearing, not a speed optimisation -- the spec's storage-growth math (§"Storage growth") concludes the event collection alone can exhaust Atlas's free M0 tier in ~1-2 years at plausible volume, so raw AnalyticsEvent rows get a retention horizon and these roll-ups are what lets the PERMANENT answers survive at full resolution after that horizon.
 //
-// 🔴 DAY BOUNDARY IS UTC, AND INCLUDES THE YEAR -- decided here because the spec's "must verify before
-// building" list left it explicitly open. `day` is an ISO date string ("2026-08-16"), NOT the
-// alertId/changeId "MMMDD" shape (utils/alertStore.js's dateKey()) -- that format was fine for
-// AlertLog/ChangeLog because they retain for 30d/180d and can never see two Aug-16ths, but a roll-up is
-// kept INDEFINITELY (see the plane table in the design doc), so a year-less key would silently merge
-// this year's Aug 16 with next year's. The UTC-midnight boundary itself IS the same convention
-// alertId/changeId use, which is the part of "consistent with alertId/changeId" that actually matters.
-// Changing this key's shape later re-buckets every existing roll-up -- see utils/rollupStore.js's header.
+// 🔴 DAY BOUNDARY IS UTC, AND INCLUDES THE YEAR -- decided here because the spec's "must verify before building" list left it explicitly open. `day` is an ISO date string ("2026-08-16"), NOT the alertId/changeId "MMMDD" shape (utils/alertStore.js's dateKey()) -- that format was fine for AlertLog/ChangeLog because they retain for 30d/180d and can never see two Aug-16ths, but a roll-up is kept INDEFINITELY (see the plane table in the design doc), so a year-less key would silently merge this year's Aug 16 with next year's. The UTC-midnight boundary itself IS the same convention alertId/changeId use, which is the part of "consistent with alertId/changeId" that actually matters. Changing this key's shape later re-buckets every existing roll-up -- see utils/rollupStore.js's header.
 //
-// 🔴 `distinctUsers` DOES NOT SUM ACROSS DAYS -- the spec's own warning. `userHashes` stores the day's
-// distinct hash set (bounded, see utils/rollupStore.js's DISTINCT_HASHES_CAP) so a multi-day distinct
-// count can be a real set union instead of an over-count. Above the cap, `distinctUsersExact` flips to
-// false and the array is dropped rather than kept partial -- a PARTIAL set unioned with another day's
-// set silently undercounts, which is worse than admitting the day has no exact figure and falling back
-// to a raw-row query for it.
+// 🔴 `distinctUsers` DOES NOT SUM ACROSS DAYS -- the spec's own warning. `userHashes` stores the day's distinct hash set (bounded, see utils/rollupStore.js's DISTINCT_HASHES_CAP) so a multi-day distinct count can be a real set union instead of an over-count. Above the cap, `distinctUsersExact` flips to false and the array is dropped rather than kept partial -- a PARTIAL set unioned with another day's set silently undercounts, which is worse than admitting the day has no exact figure and falling back to a raw-row query for it.
 //
 // No raw Discord ID here, ever -- userHashes holds only the same HMAC pseudonym AnalyticsEvent does.
 
@@ -58,14 +42,10 @@ const AnalyticsRollupSchema = new mongoose.Schema({
     durationMs: { type: PercentileSchema, default: () => ({}) },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },  // re-stamped on every re-run; rollupDay() is a full
-                                                    // recompute-and-upsert, never an increment, so a
-                                                    // late-arriving event before the horizon is picked
-                                                    // up by the NEXT run rather than lost.
+                                                    // recompute-and-upsert, never an increment, so a late-arriving event before the horizon is picked up by the NEXT run rather than lost.
 });
 
-// The upsert key. One roll-up per day/command/subcommand, and the only index this collection needs --
-// every read is either "one day" (recent report) or a bounded date range scan (multi-day report), both
-// served by a natural sort on `day` for a small, bounded-per-day row count.
+// The upsert key. One roll-up per day/command/subcommand, and the only index this collection needs -- every read is either "one day" (recent report) or a bounded date range scan (multi-day report), both served by a natural sort on `day` for a small, bounded-per-day row count.
 AnalyticsRollupSchema.index({ day: 1, command: 1, subcommand: 1 }, { unique: true });
 
 module.exports = mongoose.model('AnalyticsRollup', AnalyticsRollupSchema);

@@ -1,19 +1,11 @@
 #!/usr/bin/env bash
 # Dioreo — manual MongoDB backup. Run from the Mac (needs mongodump from mongodb-database-tools).
 #
-# WHY THIS EXISTS: the Atlas cluster is on the FREE (M0) tier, which provides NO automated backups
-# at all — confirmed by Harkirat 2026-08-16 10:57 EDT. Paid tiers get continuous/snapshot backups;
-# M0 gets nothing, so the only copy of this data is the one you take yourself. That makes an
-# unattended `mongodump` the whole disaster-recovery story, not a nice-to-have.
+# WHY THIS EXISTS: the Atlas cluster is on the FREE (M0) tier, which provides NO automated backups at all — confirmed by Harkirat 2026-08-16 10:57 EDT. Paid tiers get continuous/snapshot backups; M0 gets nothing, so the only copy of this data is the one you take yourself. That makes an unattended `mongodump` the whole disaster-recovery story, not a nice-to-have.
 #
-# Writes ONE gzipped archive per run (not a directory tree) because a single file is what
-# `mongorestore --archive` consumes, and because pruning is then a plain file operation instead of
-# a recursive delete — the safer thing to automate.
+# Writes ONE gzipped archive per run (not a directory tree) because a single file is what `mongorestore --archive` consumes, and because pruning is then a plain file operation instead of a recursive delete — the safer thing to automate.
 #
-# ⚠️ NEVER prints MONGODB_URI. That string carries the Atlas credentials, and this script's output
-# is exactly the kind of thing that gets pasted into a chat or a log. Same rule index.js follows
-# when it logs `host/dbName` rather than the URI.
-# ✅ PROVEN RESTORABLE, not merely written: this script's very FIRST archive was restored end to end
+# ⚠️ NEVER prints MONGODB_URI. That string carries the Atlas credentials, and this script's output is exactly the kind of thing that gets pasted into a chat or a log. Same rule index.js follows when it logs `host/dbName` rather than the URI. ✅ PROVEN RESTORABLE, not merely written: this script's very FIRST archive was restored end to end
 #      on 2026-08-16 11:00 EDT — the `test` -> `diors-builds` database rename WAS a restore of it, and
 #      939 documents plus 15 indexes came back with matching byte counts. A backup that has never been
 #      restored is a hope; this path has been exercised on real data at least once.
@@ -36,9 +28,7 @@ if ! command -v mongodump >/dev/null 2>&1; then
   exit 1
 fi
 
-# Prefer an already-exported URI (lets a caller pass a different cluster) and fall back to .env.
-# Read with a plain grep rather than sourcing .env — sourcing would execute the file and export
-# every other secret in it into this shell for no reason.
+# Prefer an already-exported URI (lets a caller pass a different cluster) and fall back to .env. Read with a plain grep rather than sourcing .env — sourcing would execute the file and export every other secret in it into this shell for no reason.
 if [ -z "${MONGODB_URI:-}" ]; then
   ENV_FILE="${DIOREO_ENV_FILE:-$REPO_DIR/.env}"
   [ -r "$ENV_FILE" ] || { echo "❌ No MONGODB_URI in the environment and cannot read $ENV_FILE" >&2; exit 1; }
@@ -60,9 +50,7 @@ echo "🗄  Backing up to $(basename "$ARCHIVE") …"
 #   mongorestore --uri="…" --archive=<file> --gzip [--nsFrom 'old.*' --nsTo 'new.*']
 mongodump --uri="$MONGODB_URI" --archive="$ARCHIVE" --gzip --quiet
 
-# VERIFY, don't assume. mongodump exits 0 on an empty/failed-auth dump in some cases, so an archive
-# that exists proves nothing on its own — check it has real bytes. 1KB is far below any real dump
-# of this database (currently ~776KB uncompressed) and far above an empty-archive header.
+# VERIFY, don't assume. mongodump exits 0 on an empty/failed-auth dump in some cases, so an archive that exists proves nothing on its own — check it has real bytes. 1KB is far below any real dump of this database (currently ~776KB uncompressed) and far above an empty-archive header.
 if [ ! -s "$ARCHIVE" ]; then
   echo "❌ Archive is empty — backup FAILED. Removing the stub so it cannot be mistaken for a good backup." >&2
   rm -f "$ARCHIVE"
@@ -79,11 +67,7 @@ echo "✅ Backup OK — ${BYTES} bytes"
 
 # Retention: keep the newest $KEEP archives.
 #
-# Uses a GLOB, not `ls` — and not merely to satisfy shellcheck SC2012. The timestamp is embedded in
-# the filename in a lexically-sortable form (dioreo-2026-08-16T14-59-44Z), so a plain sorted glob IS
-# chronological order, with no dependence on mtime (which a copy, a restore or a sync can rewrite)
-# and no parsing of ls output. Counts files rather than using `find -mtime`, so a long gap between
-# runs can never delete the only backup you have.
+# Uses a GLOB, not `ls` — and not merely to satisfy shellcheck SC2012. The timestamp is embedded in the filename in a lexically-sortable form (dioreo-2026-08-16T14-59-44Z), so a plain sorted glob IS chronological order, with no dependence on mtime (which a copy, a restore or a sync can rewrite) and no parsing of ls output. Counts files rather than using `find -mtime`, so a long gap between runs can never delete the only backup you have.
 shopt -s nullglob
 archives=("$BACKUP_DIR"/dioreo-*.archive.gz)
 TOTAL=${#archives[@]}

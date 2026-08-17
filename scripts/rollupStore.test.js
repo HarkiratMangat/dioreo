@@ -1,9 +1,4 @@
-// scripts/rollupStore.test.js -- coverage for the roll-up job (utils/rollupStore.js), observability
-// layer stage 4. Pure logic plus stubbed Mongoose models: no Atlas. What is deliberately NOT covered
-// here: whether Mongo's real $percentile aggregation behaves as expected (confirmed live on this
-// cluster's MongoDB 8.0.29 by stage 3's Timing page, which uses the identical operator) and the live
-// dev-bot boot test.
-// Run: `node scripts/rollupStore.test.js` (also via `npm test`).
+// scripts/rollupStore.test.js -- coverage for the roll-up job (utils/rollupStore.js), observability layer stage 4. Pure logic plus stubbed Mongoose models: no Atlas. What is deliberately NOT covered here: whether Mongo's real $percentile aggregation behaves as expected (confirmed live on this cluster's MongoDB 8.0.29 by stage 3's Timing page, which uses the identical operator) and the live dev-bot boot test. Run: `node scripts/rollupStore.test.js` (also via `npm test`).
 
 const assert = require('assert');
 const Module = require('module');
@@ -142,8 +137,7 @@ check('catchUpRollups clamps a very old resume point to CATCH_UP_WINDOW_DAYS rat
     stateDoc = { _id: 'lastRolledUpDay', day: '2020-01-01' };
     rollupOps.length = 0;
     const rolled = await S.catchUpRollups();
-    // The window is CATCH_UP_WINDOW_DAYS days ending yesterday -- never more than that many distinct
-    // days get touched, no matter how stale the stored state is.
+    // The window is CATCH_UP_WINDOW_DAYS days ending yesterday -- never more than that many distinct days get touched, no matter how stale the stored state is.
     assert.ok(rolled <= S.CATCH_UP_WINDOW_DAYS + 1, `expected at most ~${S.CATCH_UP_WINDOW_DAYS} days, got ${rolled}`);
 });
 check('catchUpRollups swallows a Mongo failure rather than throwing past its own boundary', async () => {

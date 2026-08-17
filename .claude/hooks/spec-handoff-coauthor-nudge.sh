@@ -1,22 +1,11 @@
 #!/bin/bash
 # spec-handoff-coauthor-nudge.sh — PreToolUse (Write). NEVER blocks; warns only.
 #
-# WHY THIS EXISTS
-# `doc-coauthoring` has been installed and available for a long time and was used ZERO times. On
-# 2026-08-09 23:46 EDT Harkirat asked the question that made the gap concrete: "it's been available
-# for a while but not used, so is that 'nudge' new? did you change something to actively bring it to
-# the front of mind?" The honest answer at that moment was NO — the skill had been catalogued in a
-# memory file and nothing more. A reference entry is PASSIVE: it helps only a session that happens
-# to open that file. That is the same failure this whole investigation was about (2026-08-09) —
-# prose without a mechanism does not fire. (That investigation ran 2026-08-09 22:34-23:47 EDT.)
+# WHY THIS EXISTS `doc-coauthoring` has been installed and available for a long time and was used ZERO times. On 2026-08-09 23:46 EDT Harkirat asked the question that made the gap concrete: "it's been available for a while but not used, so is that 'nudge' new? did you change something to actively bring it to the front of mind?" The honest answer at that moment was NO — the skill had been catalogued in a memory file and nothing more. A reference entry is PASSIVE: it helps only a session that happens to open that file. That is the same failure this whole investigation was about (2026-08-09) — prose without a mechanism does not fire. (That investigation ran 2026-08-09 22:34-23:47 EDT.)
 #
-# So this is the mechanism. It fires at the ONE moment the skill is actually useful: creating a new
-# spec or handoff. Both the decoration-caching spec and the enforcement-gap handoff were written in
-# a single pass, which is exactly what the skill's staged workflow exists to improve on.
+# So this is the mechanism. It fires at the ONE moment the skill is actually useful: creating a new spec or handoff. Both the decoration-caching spec and the enforcement-gap handoff were written in a single pass, which is exactly what the skill's staged workflow exists to improve on.
 #
-# NEW FILES ONLY, on purpose: co-authoring is about how a document gets BUILT. Editing an existing
-# spec is not that moment, and firing there would make this noise — and a nudge that becomes noise
-# gets ignored, then deleted.
+# NEW FILES ONLY, on purpose: co-authoring is about how a document gets BUILT. Editing an existing spec is not that moment, and firing there would make this noise — and a nudge that becomes noise gets ignored, then deleted.
 set -u
 
 payload=$(cat 2>/dev/null) || exit 0

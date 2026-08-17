@@ -1,14 +1,6 @@
-// scripts/accentCache.test.js
-// Pins utils/accentColor.js's `invalidateAccentCache`, added 2026-08-11 19:07 EDT so the Refresh
-// Colors button also drops the ACCENT colour and not just the palette.
-// Run: `node scripts/accentCache.test.js` (also via `npm test`).
+// scripts/accentCache.test.js Pins utils/accentColor.js's `invalidateAccentCache`, added 2026-08-11 19:07 EDT so the Refresh Colors button also drops the ACCENT colour and not just the palette. Run: `node scripts/accentCache.test.js` (also via `npm test`).
 //
-// ⚠️ WHY THIS EXISTS. Every way this can be wrong is silent. Clear too little and the button keeps
-// lying about what it does — the original defect. Clear too much and you evict a cache that costs a
-// real image download and a k-means pass to rebuild, for a source the user never touched. And the
-// guild/global split is the kind of thing that looks like a naming detail and is not: the two pairs
-// exist precisely so moving between a server and a DM does not have each context evict the other's
-// colour, so clearing the wrong pair is a silent regression of that design.
+// ⚠️ WHY THIS EXISTS. Every way this can be wrong is silent. Clear too little and the button keeps lying about what it does — the original defect. Clear too much and you evict a cache that costs a real image download and a k-means pass to rebuild, for a source the user never touched. And the guild/global split is the kind of thing that looks like a naming detail and is not: the two pairs exist precisely so moving between a server and a DM does not have each context evict the other's colour, so clearing the wrong pair is a silent regression of that design.
 const assert = require('assert');
 const { invalidateAccentCache } = require('../utils/accentColor');
 
@@ -50,8 +42,7 @@ t('leaves every other source untouched', () => {
 });
 
 t("'name' maps to the displayName field pair, not a literal `nameColor*`", () => {
-    // The panel's source key and the schema's field stem disagree for exactly this one source, which
-    // is the sort of mismatch that silently clears nothing at all.
+    // The panel's source key and the schema's field stem disagree for exactly this one source, which is the sort of mismatch that silently clears nothing at all.
     const prefs = stub();
     assert.deepStrictEqual(invalidateAccentCache(prefs, ['name']), ['name']);
     assert.strictEqual(prefs.displayNameColorHex, undefined);
@@ -65,8 +56,7 @@ t('the server view clears the GUILD pair and leaves the global one alone', () =>
 });
 
 t('an already-empty source is not reported as cleared', () => {
-    // The caller only saves when something was cleared, so a false positive means a pointless write
-    // on every refresh of a source that has no cached accent.
+    // The caller only saves when something was cleared, so a false positive means a pointless write on every refresh of a source that has no cached accent.
     const prefs = stub();
     assert.deepStrictEqual(invalidateAccentCache(prefs, ['decoration']), []);
 });

@@ -1,15 +1,11 @@
 #!/usr/bin/env node
-// Proofs for devlog-add.mjs. The two cases that matter are the two real recurring failures it
-// exists to make impossible: the entry landing AFTER the Part B marker, and the TOC not being
-// updated. Everything else here guards the guard.
+// Proofs for devlog-add.mjs. The two cases that matter are the two real recurring failures it exists to make impossible: the entry landing AFTER the Part B marker, and the TOC not being updated. Everything else here guards the guard.
 
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-// ⚠️ fileURLToPath, NOT new URL(...).pathname — the repo lives at "/Applications/Claude Code/…"
-// and .pathname percent-encodes the space into "Claude%20Code", so node cannot find the script.
-// Same family as the unquoted-path bug of 2026-08-02 that silently updated zero files.
+// ⚠️ fileURLToPath, NOT new URL(...).pathname — the repo lives at "/Applications/Claude Code/…" and .pathname percent-encodes the space into "Claude%20Code", so node cannot find the script. Same family as the unquoted-path bug of 2026-08-02 that silently updated zero files.
 import { fileURLToPath } from "node:url";
 
 let pass = 0, fail = 0;
@@ -46,10 +42,7 @@ const fresh = (name) => {
 const bodyFile = join(dir, "body.md");
 writeFileSync(bodyFile, "New entry body.\n");
 
-// spawnSync, not execFileSync: execFileSync discards stderr on SUCCESS, and an advisory gate
-// (timestamp-check post) writes its warning to stderr while still exiting 0. Asserting that a
-// non-blocking warning is actually SURFACED needs both streams regardless of exit status —
-// otherwise "the advisory ran" and "the advisory was silently swallowed" look identical.
+// spawnSync, not execFileSync: execFileSync discards stderr on SUCCESS, and an advisory gate (timestamp-check post) writes its warning to stderr while still exiting 0. Asserting that a non-blocking warning is actually SURFACED needs both streams regardless of exit status — otherwise "the advisory ran" and "the advisory was silently swallowed" look identical.
 const run = (devlog, title, body = bodyFile) => {
   const r = spawnSync("node", [SCRIPT, "--title", title, "--body-file", body, "--devlog", devlog],
     { encoding: "utf8" });
@@ -83,16 +76,14 @@ ok("TOC line added exactly once", out.split(`- ${T}`).length - 1 === 1);
 r = run(p, T);
 ok("re-running the same title is refused", !r.okRun && /already in/.test(r.err));
 
-// ── TITLE SHAPE ────────────────────────────────────────────────────────────
-// A bare date is rejected: dated content carries HH:MM TZ (working-agreement rule 10).
+// ── TITLE SHAPE ──────────────────────────────────────────────────────────── A bare date is rejected: dated content carries HH:MM TZ (working-agreement rule 10).
 ok("bare date rejected", !run(fresh("d1"), "2026-08-10 — No time here (v2.63.1)").okRun);
 // No version means the entry is not greppable by release — the thing devlog-toc exists to protect.
 ok("missing version rejected", !run(fresh("d2"), "2026-08-10 00:00 EDT — No version").okRun);
 ok("wrong dash rejected", !run(fresh("d3"), "2026-08-10 00:00 EDT - hyphen not em-dash (v2.63.1)").okRun);
 ok("pre-release version accepted", run(fresh("d4"), "2026-08-10 00:00 EDT — Pre-release (v3.2.0-pre)").okRun);
 
-// ── REFUSES TO GUESS ───────────────────────────────────────────────────────
-// If the file's shape is not what this script expects it must stop, never invent a location.
+// ── REFUSES TO GUESS ─────────────────────────────────────────────────────── If the file's shape is not what this script expects it must stop, never invent a location.
 const noB = join(dir, "nob.md");
 writeFileSync(noB, FIXTURE.replace("# Part B — Lessons Ledger (thematic)", "# Something Else"));
 ok("missing Part B marker refused", !run(noB, T).okRun);
@@ -104,24 +95,12 @@ const empty = join(dir, "empty.md");
 writeFileSync(empty, "");
 ok("empty body refused", !run(fresh("d5"), T, empty).okRun);
 
-// ── GATE PARITY ────────────────────────────────────────────────────────────
-// This script writes with writeFileSync from a subprocess, so it does NOT trigger the Edit/Write
-// PreToolUse hooks. It runs them itself instead. These prove that is real and not decorative — a
-// gate that cannot be shown to FAIL is indistinguishable from one that never runs.
-// (Only meaningful from the repo root, where the relative hook paths resolve.)
+// ── GATE PARITY ──────────────────────────────────────────────────────────── This script writes with writeFileSync from a subprocess, so it does NOT trigger the Edit/Write PreToolUse hooks. It runs them itself instead. These prove that is real and not decorative — a gate that cannot be shown to FAIL is indistinguishable from one that never runs. (Only meaningful from the repo root, where the relative hook paths resolve.)
 const typoBody = join(dir, "typo.md");
-// ⚠️ Assembled at runtime so the misspelling never appears as a literal in this file — otherwise
-// typos-check flags THIS test, which is the "a check whose test contains the offending pattern
-// flags itself" trap the completeness sweep warns about. It fired here on the first attempt.
+// ⚠️ Assembled at runtime so the misspelling never appears as a literal in this file — otherwise typos-check flags THIS test, which is the "a check whose test contains the offending pattern flags itself" trap the completeness sweep warns about. It fired here on the first attempt.
 const MISSPELLING = "delib" + "rate";
 writeFileSync(typoBody, `This entry has a ${MISSPELLING} misspelling in it.\n`);
-// ⚠️ A gate can be PRESENT BUT INERT, and that is not the same as absent. `typos-check.sh` opens
-// with `command -v typos || exit 0`, so on a machine without the `typos` binary — CI is one — it
-// runs, exits 0, emits nothing, and enforces nothing. Asserting "it blocks" then fails in CI while
-// passing locally, which is exactly what happened on the first push (2026-08-10 04:15 UTC).
-// The fix is NOT to drop the assertion: a silently-skipped proof is the vacuous pass this repo
-// keeps paying for. Probe the gate directly, then either assert it or SKIP it OUT LOUD — a skip is
-// reported as its own state and is never counted as a pass.
+// ⚠️ A gate can be PRESENT BUT INERT, and that is not the same as absent. `typos-check.sh` opens with `command -v typos || exit 0`, so on a machine without the `typos` binary — CI is one — it runs, exits 0, emits nothing, and enforces nothing. Asserting "it blocks" then fails in CI while passing locally, which is exactly what happened on the first push (2026-08-10 04:15 UTC). The fix is NOT to drop the assertion: a silently-skipped proof is the vacuous pass this repo keeps paying for. Probe the gate directly, then either assert it or SKIP it OUT LOUD — a skip is reported as its own state and is never counted as a pass.
 const gateLive = (script, args, payload) => {
   const r = spawnSync("bash", [script, ...args], { input: payload, encoding: "utf8" });
   return Boolean(((r.stdout || "") + (r.stderr || "")).trim());
@@ -143,13 +122,9 @@ if (gateLive(".claude/hooks/typos-check.sh", [], probe(`a ${MISSPELLING} word`))
        "typos-check is INERT here (the `typos` binary is not installed), so it enforces nothing to assert");
 }
 
-// timestamp-check has TWO modes and they are NOT interchangeable: `pre` DENIES an impossible
-// (future) stamp; `post` is advisory for a bare date. An earlier version of this test asserted
-// `pre` caught bare dates — it does not, and never claimed to. Both are pinned separately, so
-// dropping either mode from the script fails here.
+// timestamp-check has TWO modes and they are NOT interchangeable: `pre` DENIES an impossible (future) stamp; `post` is advisory for a bare date. An earlier version of this test asserted `pre` caught bare dates — it does not, and never claimed to. Both are pinned separately, so dropping either mode from the script fails here.
 const futureBody = join(dir, "future.md");
-// The future stamp is assembled at runtime: writing it as a literal makes timestamp-check deny THIS
-// file. It did, on the first attempt. (TS-EXAMPLE would also work; building it avoids the token.)
+// The future stamp is assembled at runtime: writing it as a literal makes timestamp-check deny THIS file. It did, on the first attempt. (TS-EXAMPLE would also work; building it avoids the token.)
 const FUTURE_STAMP = "20" + "99-01-01 12:00 EDT";
 writeFileSync(futureBody, `We shipped this at ${FUTURE_STAMP}, which has not happened.\n`);
 if (gateLive(".claude/hooks/timestamp-check.sh", ["pre"], probe(`shipped at ${FUTURE_STAMP} somehow`))) {
@@ -164,8 +139,7 @@ if (gateLive(".claude/hooks/timestamp-check.sh", ["pre"], probe(`shipped at ${FU
 const bareDateBody = join(dir, "baredate.md");
 writeFileSync(bareDateBody, "Something happened on 2026-08-10 and we fixed it.\n");
 const rDate = run(fresh("g3"), "2026-08-10 00:00 EDT — Bare date in body (v2.63.1)", bareDateBody);
-// Advisory: the write MUST proceed, and the warning MUST still be surfaced rather than swallowed.
-// Asserting both halves — an advisory that is silently dropped is the same as no check at all.
+// Advisory: the write MUST proceed, and the warning MUST still be surfaced rather than swallowed. Asserting both halves — an advisory that is silently dropped is the same as no check at all.
 ok("timestamp-check (post) WARNS on a bare date WITHOUT blocking",
    rDate.okRun && /BARE DATE|timestamp/i.test(rDate.err || ""),
    `okRun=${rDate.okRun} err=${(rDate.err || "").slice(0, 100)}`);
@@ -174,7 +148,6 @@ ok("timestamp-check (post) WARNS on a bare date WITHOUT blocking",
 ok("a clean body still passes the gates", run(fresh("g3"), "2026-08-10 00:00 EDT — Clean body (v2.63.1)").okRun);
 
 rmSync(dir, { recursive: true, force: true });
-// Skips are printed in the verdict, never folded into the pass count — a proof that did not run is
-// not a proof that succeeded, and hiding that is how a gate stays dead for weeks.
+// Skips are printed in the verdict, never folded into the pass count — a proof that did not run is not a proof that succeeded, and hiding that is how a gate stays dead for weeks.
 console.log(`\n  ${pass} passed, ${fail} failed${skipped ? `, ${skipped} SKIPPED (gate inert here — see lines above)` : ""}`);
 process.exit(fail === 0 ? 0 : 1);

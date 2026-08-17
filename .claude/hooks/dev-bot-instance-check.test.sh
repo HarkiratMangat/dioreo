@@ -1,7 +1,5 @@
 #!/bin/bash
-# Proofs for dev-bot-instance-check.sh. Must stay SILENT on a normal `node --watch` supervisor+child
-# pair (the expected shape every dev-bot session runs), and must FIRE on two independently-launched
-# processes sharing the dev token — the actual collision this hook exists to catch.
+# Proofs for dev-bot-instance-check.sh. Must stay SILENT on a normal `node --watch` supervisor+child pair (the expected shape every dev-bot session runs), and must FIRE on two independently-launched processes sharing the dev token — the actual collision this hook exists to catch.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/dev-bot-instance-check.sh"
 pass=0; fail=0
@@ -10,8 +8,7 @@ chk() { local n="$1" cond="$2"
 
 echo "dev-bot-instance-check.sh — proofs"
 
-# Stub `ps` on PATH so the hook sees a fabricated process table instead of the real machine's --
-# the real machine's state is not a fixture and must never gate whether this test passes.
+# Stub `ps` on PATH so the hook sees a fabricated process table instead of the real machine's -- the real machine's state is not a fixture and must never gate whether this test passes.
 STUB_DIR=$(mktemp -d)
 trap 'rm -rf "$STUB_DIR"' EXIT
 

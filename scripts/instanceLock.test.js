@@ -1,9 +1,4 @@
-// scripts/instanceLock.test.js
-// Regression test for utils/instanceLock.js's `isHolderAlive` helper -- proves the fix for the
-// `node --watch` restart race (see docs/db-deferred-list.md's 🐞 Active Bugs entry): a lock held by
-// a DEAD pid on THIS host must be treated as stale regardless of how fresh its heartbeat looks,
-// while a lock on ANOTHER host must never be probed (this machine can't send a signal to a remote pid).
-// Run: `node scripts/instanceLock.test.js` (also runs via `npm test`).
+// scripts/instanceLock.test.js Regression test for utils/instanceLock.js's `isHolderAlive` helper -- proves the fix for the `node --watch` restart race (see docs/db-deferred-list.md's 🐞 Active Bugs entry): a lock held by a DEAD pid on THIS host must be treated as stale regardless of how fresh its heartbeat looks, while a lock on ANOTHER host must never be probed (this machine can't send a signal to a remote pid). Run: `node scripts/instanceLock.test.js` (also runs via `npm test`).
 const os = require('os');
 const assert = require('assert');
 const { isHolderAlive } = require('../utils/instanceLock');

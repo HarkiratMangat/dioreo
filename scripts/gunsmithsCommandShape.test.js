@@ -9,8 +9,7 @@ assert.strictEqual(json.options.length, 2, 'expected exactly 2 subcommands');
 assert.deepStrictEqual(json.options.map(o => o.name).sort(), ['list', 'search']);
 assert.deepStrictEqual(json.integration_types, [0, 1], 'must be guild + user installable (v3)');
 
-// Discord's own limits, asserted here so a violation is a TEST failure rather than a registration
-// rejection at boot: descriptions cap at 100 chars, choice names at 100.
+// Discord's own limits, asserted here so a violation is a TEST failure rather than a registration rejection at boot: descriptions cap at 100 chars, choice names at 100.
 const allDescs = [json.description, ...json.options.flatMap(o => [o.description, ...(o.options || []).map(x => x.description)])];
 allDescs.forEach(dsc => assert.ok(dsc.length <= 100, `description over 100 chars: "${dsc}"`));
 const scopeOpt = json.options.find(o => o.name === 'list').options.find(o => o.name === 'scope');

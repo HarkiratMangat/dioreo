@@ -1,16 +1,9 @@
-// utils/nameplateBedImage.js -- composites Discord's nameplate "bed" gradient behind the nameplate
-// art for the View Colors panel's Nameplate preview (utils/colorPaletteView.js). The bed itself lives
-// in NO asset Discord serves -- see utils/nameplatePalettes.js for the full measured story and the
-// palette-name -> hex table this reads from. Discord's client draws it as a CSS gradient over the
-// art; this reproduces that with a real Jimp composite so the panel's preview matches what the user
-// actually sees on their nameplate.
+// utils/nameplateBedImage.js -- composites Discord's nameplate "bed" gradient behind the nameplate art for the View Colors panel's Nameplate preview (utils/colorPaletteView.js). The bed itself lives in NO asset Discord serves -- see utils/nameplatePalettes.js for the full measured story and the palette-name -> hex table this reads from. Discord's client draws it as a CSS gradient over the art; this reproduces that with a real Jimp composite so the panel's preview matches what the user actually sees on their nameplate.
 const { Jimp } = require('jimp');
 const { NAMEPLATE_GRADIENT_STOPS } = require('./nameplatePalettes');
 const { extractAlphaFrames, poolFramesIntoMontage } = require('./animatedMediaPipeline');
 
-// Piecewise-linear interpolation across NAMEPLATE_GRADIENT_STOPS' {at, alpha} pairs -- reproduces the
-// same curve as Discord's `linear-gradient(90deg, transparent 0%, rgba(C,0.08) 20%, rgba(C,0.08) 50%,
-// rgba(C,0.5) 100%)` at any x, not just the four named stops.
+// Piecewise-linear interpolation across NAMEPLATE_GRADIENT_STOPS' {at, alpha} pairs -- reproduces the same curve as Discord's `linear-gradient(90deg, transparent 0%, rgba(C,0.08) 20%, rgba(C,0.08) 50%, rgba(C,0.5) 100%)` at any x, not just the four named stops.
 function gradientAlphaAt(t) {
     const stops = NAMEPLATE_GRADIENT_STOPS;
     for (let i = 0; i < stops.length - 1; i++) {
@@ -23,12 +16,7 @@ function gradientAlphaAt(t) {
     return stops[stops.length - 1].alpha;
 }
 
-// Shared by both call shapes below: paints the fade gradient bed at the art's own resolution (so the
-// gradient's horizontal stops land at the same fractional positions Discord's own CSS gradient uses,
-// regardless of how much the final image gets downscaled after), composites the art on top, and
-// downscales to targetWidth if needed. `art` is an already-decoded Jimp image so this has no opinion
-// on whether its source was a URL (one-shot static preview) or an extracted frame buffer (per-frame
-// animated render) -- that decision lives in the two thin wrappers below.
+// Shared by both call shapes below: paints the fade gradient bed at the art's own resolution (so the gradient's horizontal stops land at the same fractional positions Discord's own CSS gradient uses, regardless of how much the final image gets downscaled after), composites the art on top, and downscales to targetWidth if needed. `art` is an already-decoded Jimp image so this has no opinion on whether its source was a URL (one-shot static preview) or an extracted frame buffer (per-frame animated render) -- that decision lives in the two thin wrappers below.
 function paintGradientBedOnto(art, bedHex, targetWidth) {
     const { width, height } = art.bitmap;
     const bed = new Jimp({ width, height, color: 0x00000000 });
@@ -45,8 +33,7 @@ function paintGradientBedOnto(art, bedHex, targetWidth) {
             data[idx + 3] = a;
         }
     }
-    // Art on top of the bed -- the art's own transparent 73% (see nameplatePalettes.js's measured
-    // pixel bounds) is exactly what lets the bed show through underneath.
+    // Art on top of the bed -- the art's own transparent 73% (see nameplatePalettes.js's measured pixel bounds) is exactly what lets the bed show through underneath.
     bed.composite(art, 0, 0);
 
     if (width > targetWidth) {
@@ -56,14 +43,11 @@ function paintGradientBedOnto(art, bedHex, targetWidth) {
     return bed;
 }
 
-// Same memo pattern as utils/resizedImage.js/colorSwatchImage.js -- the composited result for a given
-// source url + bed color + target width is deterministic and rarely changes, so this is a
-// one-time-per-process cost rather than a per-render one.
+// Same memo pattern as utils/resizedImage.js/colorSwatchImage.js -- the composited result for a given source url + bed color + target width is deterministic and rarely changes, so this is a one-time-per-process cost rather than a per-render one.
 const bedCache = new Map();
 const BED_CACHE_MAX = 64;
 
-// bedHex: a packed 0xRRGGBB integer (already resolved via nameplatePaletteHex + parseInt upstream --
-// this function never looks up or guesses a color itself, it only paints the one it's given).
+// bedHex: a packed 0xRRGGBB integer (already resolved via nameplatePaletteHex + parseInt upstream -- this function never looks up or guesses a color itself, it only paints the one it's given).
 async function renderNameplateWithBed(url, bedHex, targetWidth = 512) {
     const key = `${url}|${bedHex}|${targetWidth}`;
     const cached = bedCache.get(key);
@@ -76,59 +60,26 @@ async function renderNameplateWithBed(url, bedHex, targetWidth = 512) {
     return buffer;
 }
 
-// Per-frame variant for the animated WebP cache (utils/nameplateWebpCache.js calls this once per
-// extracted webm frame) -- same fade-gradient math as renderNameplateWithBed above, just reading a
-// buffer instead of fetching a url, and uncached (each frame's art differs, so there's nothing to
-// memoize across calls the way the single-image static path can). WebP holds this fade's real
-// fade-to-transparent alpha ramp fine (unlike the GIF-era predecessor this replaced, which had to
-// paint a fully opaque solid bed instead because GIF's binary alpha can't hold a fade at all --
-// confirmed live at the time). Yields to the event loop between calls (same discipline the k-means
-// CPU-burst incident taught, see .claude/rules/accent-and-colors.md's production-incident section)
-// since a real per-render burst here is exactly what blocked other interactions' 3s ACK window before.
+// Per-frame variant for the animated WebP cache (utils/nameplateWebpCache.js calls this once per extracted webm frame) -- same fade-gradient math as renderNameplateWithBed above, just reading a buffer instead of fetching a url, and uncached (each frame's art differs, so there's nothing to memoize across calls the way the single-image static path can). WebP holds this fade's real fade-to-transparent alpha ramp fine (unlike the GIF-era predecessor this replaced, which had to paint a fully opaque solid bed instead because GIF's binary alpha can't hold a fade at all -- confirmed live at the time). Yields to the event loop between calls (same discipline the k-means CPU-burst incident taught, see .claude/rules/accent-and-colors.md's production-incident section) since a real per-render burst here is exactly what blocked other interactions' 3s ACK window before.
 async function renderGradientBedFrame(artBuffer, bedHex, targetWidth = 512) {
     const art = await Jimp.read(artBuffer);
     return paintGradientBedOnto(art, bedHex, targetWidth).getBuffer('image/png');
 }
 
-// EXTRACTION-ONLY companion (2026-08-11 07:25 EDT). Pools the whole animation, bed composited, into
-// ONE still so colour extraction sees the nameplate the user actually looks at.
+// EXTRACTION-ONLY companion (2026-08-11 07:25 EDT). Pools the whole animation, bed composited, into ONE still so colour extraction sees the nameplate the user actually looks at.
 //
-// ⚠️ WHY THIS EXISTS. Extraction used to read Discord's `static.png`, which carries ONLY the upper art
-// layer -- measured on the real `nameplates/nameplates/twilight/` asset: 0.0% opaque pixels, 32.9%
-// fully transparent, 67.1% partial alpha, i.e. there is no bed in it at all. The bed is a CSS gradient
-// Discord's client draws from the design's palette metadata, so extraction was reading translucent art
-// with nothing behind it. Compositing first grounds the palette in what the user actually sees: on the
-// real twilight/cobalt pairing, #336CED #5B96F1 #1E4DE9 #83C5F4 -> #0738C6 #1D56D6 #2E73DC #4D90E9.
+// ⚠️ WHY THIS EXISTS. Extraction used to read Discord's `static.png`, which carries ONLY the upper art layer -- measured on the real `nameplates/nameplates/twilight/` asset: 0.0% opaque pixels, 32.9% fully transparent, 67.1% partial alpha, i.e. there is no bed in it at all. The bed is a CSS gradient Discord's client draws from the design's palette metadata, so extraction was reading translucent art with nothing behind it. Compositing first grounds the palette in what the user actually sees: on the real twilight/cobalt pairing, #336CED #5B96F1 #1E4DE9 #83C5F4 -> #0738C6 #1D56D6 #2E73DC #4D90E9.
 //
-// 🚫 THE ART AND ITS BED ARE A LINKED DESIGN -- do not model them as independent (Harkirat 2026-08-11
-// 07:42 EDT). The palette names which bed belongs to THAT design; it is not a free choice over
-// arbitrary art, so you will not meet twilight art on a crimson bed. An earlier version of this
-// comment claimed the same art ships for every palette and that "a crimson nameplate reported blue" --
-// WRONG, and derived from a synthetic probe that forced twilight art onto beds it never ships with.
-// The probe proved this code path was bed-blind (true); it was never evidence of a user-facing colour
-// mismatch (false). Designs whose palette is `none` already have their background baked into the art,
-// and the caller correctly leaves those on the old static.png path.
+// 🚫 THE ART AND ITS BED ARE A LINKED DESIGN -- do not model them as independent (Harkirat 2026-08-11 07:42 EDT). The palette names which bed belongs to THAT design; it is not a free choice over arbitrary art, so you will not meet twilight art on a crimson bed. An earlier version of this comment claimed the same art ships for every palette and that "a crimson nameplate reported blue" -- WRONG, and derived from a synthetic probe that forced twilight art onto beds it never ships with. The probe proved this code path was bed-blind (true); it was never evidence of a user-facing colour mismatch (false). Designs whose palette is `none` already have their background baked into the art, and the caller correctly leaves those on the old static.png path.
 //
-// ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back — see the silent-single-frame
-// trap documented at the top of utils/animatedMediaPipeline.js. A one-frame result here would look
-// like a working extraction while quietly reproducing the bug this replaces.
+// ⚠️ ASSERTS THE FRAME COUNT rather than trusting that bytes came back — see the silent-single-frame trap documented at the top of utils/animatedMediaPipeline.js. A one-frame result here would look like a working extraction while quietly reproducing the bug this replaces.
 //
-// FPS matches nameplateWebpCache's measured native 12 rather than a fresh guess. The pooling itself
-// (frame selection, tile scaling, the transparent sheet) moved to utils/animatedMediaPipeline.js
-// 2026-08-11 10:05 EDT so the decoration cache can reuse it without depending on this nameplate-
-// specific module.
+// FPS matches nameplateWebpCache's measured native 12 rather than a fresh guess. The pooling itself (frame selection, tile scaling, the transparent sheet) moved to utils/animatedMediaPipeline.js 2026-08-11 10:05 EDT so the decoration cache can reuse it without depending on this nameplate- specific module.
 const EXTRACTION_FPS = 12;
 
-// ⚠️ Returns the ART ONLY -- the bed is deliberately NOT composited in here. Harkirat's spec
-// 2026-08-11 07:55 EDT: a nameplate's four swatches are ONE "Nameplate Background" (the bed) plus
-// THREE drawn from the upper art layer. The bed's hex is known exactly from the design's palette
-// metadata (nameplatePaletteHex), so extracting it from pixels would only approximate a value we
-// already have — earlier drafts composited first and then re-derived the bed to within 5-10 RGB,
-// which is strictly worse than just using it. Compositing also let bed-tinted pixels crowd out real
-// art colours in a 4-slot budget. So: pool the animation's art, and let the caller prepend the bed.
+// ⚠️ Returns the ART ONLY -- the bed is deliberately NOT composited in here. Harkirat's spec 2026-08-11 07:55 EDT: a nameplate's four swatches are ONE "Nameplate Background" (the bed) plus THREE drawn from the upper art layer. The bed's hex is known exactly from the design's palette metadata (nameplatePaletteHex), so extracting it from pixels would only approximate a value we already have — earlier drafts composited first and then re-derived the bed to within 5-10 RGB, which is strictly worse than just using it. Compositing also let bed-tinted pixels crowd out real art colours in a 4-slot budget. So: pool the animation's art, and let the caller prepend the bed.
 async function renderNameplateArtMontage(apngBuffer, opts = {}) {
-    // -f apng (pivoted 2026-08-15 09:30 EDT from webm/-c:v libvpx-vp9, see nameplateWebpCache.js's
-    // header for why) -- without it ffmpeg silently reads an animated PNG as a single still frame.
+    // -f apng (pivoted 2026-08-15 09:30 EDT from webm/-c:v libvpx-vp9, see nameplateWebpCache.js's header for why) -- without it ffmpeg silently reads an animated PNG as a single still frame.
     const raw = await extractAlphaFrames(apngBuffer, {
         inputExt: '.png',
         preInputArgs: ['-f', 'apng'],

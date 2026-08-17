@@ -3,21 +3,14 @@
  *
  * ─── the design this implements ──────────────────────────────────────────────
  *
- * "The Armory Terminal", Harkirat's own changelog design from 2026-07-11 (memory
- * `project_changelog_redesign`). It is a committed single dark world — a
- * gunsmith/ordnance terminal — and it deliberately does NOT use the bot's brand
- * palette, which is the whole reason it reads as a different place from the legal
- * site rather than a recoloured copy of it:
+ * "The Armory Terminal", Harkirat's own changelog design from 2026-07-11 (memory `project_changelog_redesign`). It is a committed single dark world — a gunsmith/ordnance terminal — and it deliberately does NOT use the bot's brand palette, which is the whole reason it reads as a different place from the legal site rather than a recoloured copy of it:
  *
  *   gunmetal near-black  #0C100E   green-biased, not neutral
  *   phosphor             #E9E7DE   off-white, never pure
  *   Martian Mono                   squarish mechanical face, version stamps
  *   Instrument Sans                humanist, reading copy
  *
- * And its central idea, which is the "identity shift" Harkirat asked to keep:
- * **the pages are not three websites, they are three OPERATORS reading the same
- * terminal.** The world is constant; who is at the console changes, and with them
- * the type, the density, the signal colour, and how much machine detail is exposed.
+ * And its central idea, which is the "identity shift" Harkirat asked to keep: **the pages are not three websites, they are three OPERATORS reading the same terminal.** The world is constant; who is at the console changes, and with them the type, the density, the signal colour, and how much machine detail is exposed.
  *
  *   CHANGELOG-SUMMARY.md   PATCH NOTES     humanist, roomy, no machine detail.
  *                                          A NOTICE BOARD: newest release is a
@@ -39,43 +32,19 @@
  *                                          margin as debriefs.
  *                                          Signal: ice #8FB8FF.
  *
- * ⚠️ The first attempt at this file was one layout in three accent colours, and it
- * was rejected on sight — correctly. Colour is the weakest carrier of identity; a
- * reader stops seeing it in two seconds. What separates these three is the GRID:
- * what an entry physically IS, where the date lives, and what the eye does going
- * down the page. If a future change makes all three use the same wrapper again,
- * the identities are gone no matter how many hues are in play.
+ * ⚠️ The first attempt at this file was one layout in three accent colours, and it was rejected on sight — correctly. Colour is the weakest carrier of identity; a reader stops seeing it in two seconds. What separates these three is the GRID: what an entry physically IS, where the date lives, and what the eye does going down the page. If a future change makes all three use the same wrapper again, the identities are gone no matter how many hues are in play.
  *
- * The bar, the nav and the footer ARE shared with the legal site — that was in the
- * brief, it is what makes nine pages one site, and it is why the token overrides
- * below re-skin the shared chrome into this world for free.
+ * The bar, the nav and the footer ARE shared with the legal site — that was in the brief, it is what makes nine pages one site, and it is why the token overrides below re-skin the shared chrome into this world for free.
  *
  * ─── assets ─────────────────────────────────────────────────────────────────
  *
- * Everything is SELF-HOSTED from public/assets/ and nothing is fetched from a CDN
- * at runtime. That is not a preference: the Privacy Policy is published on this
- * same origin and documents what is collected, and a CDN font or script would hand
- * every visitor's IP to a third party the policy does not disclose — which would
- * make a published legal document false. Fonts are Martian Mono and Instrument Sans
- * (both SIL OFL 1.1); the animation library is Motion One (MIT). All three are
- * attributed in NOTICE, and all three are permissive — NOTICE §3 commits to a tree
- * with no copyleft in it.
+ * Everything is SELF-HOSTED from public/assets/ and nothing is fetched from a CDN at runtime. That is not a preference: the Privacy Policy is published on this same origin and documents what is collected, and a CDN font or script would hand every visitor's IP to a third party the policy does not disclose — which would make a published legal document false. Fonts are Martian Mono and Instrument Sans (both SIL OFL 1.1); the animation library is Motion One (MIT). All three are attributed in NOTICE, and all three are permissive — NOTICE §3 commits to a tree with no copyleft in it.
  *
  * ─── contract with the build ────────────────────────────────────────────────
  *
- * Nothing is imported from buildLegalPages.js. Every shared piece of chrome is
- * PASSED IN as the `C` bundle, one way. buildLegalPages.js had just absorbed 27
- * commits when this was written, and lifting two thousand lines out of it to share
- * them would have been a refactor of the most recently churned file in the repo.
- * requireChrome() throws on a missing key rather than rendering a page with a hole
- * that a content gate would happily call complete.
+ * Nothing is imported from buildLegalPages.js. Every shared piece of chrome is PASSED IN as the `C` bundle, one way. buildLegalPages.js had just absorbed 27 commits when this was written, and lifting two thousand lines out of it to share them would have been a refactor of the most recently churned file in the repo. requireChrome() throws on a missing key rather than rendering a page with a hole that a content gate would happily call complete.
  *
- * ⚠️ Write PLAIN `:hover` rules. guardCss() wraps them in
- * `(hover:hover) and (pointer:fine)` at the single point where a stylesheet reaches
- * disk. Hand-writing the query here is how the guard's audit ends up unparseable.
- * ⚠️ No backticks inside the CSS strings — this file is template literals, and a
- * backtick in a stylesheet comment ends the string with a SyntaxError pointing at
- * CSS. It has happened three times on this site now. `node --check` catches it.
+ * ⚠️ Write PLAIN `:hover` rules. guardCss() wraps them in `(hover:hover) and (pointer:fine)` at the single point where a stylesheet reaches disk. Hand-writing the query here is how the guard's audit ends up unparseable. ⚠️ No backticks inside the CSS strings — this file is template literals, and a backtick in a stylesheet comment ends the string with a SyntaxError pointing at CSS. It has happened three times on this site now. `node --check` catches it.
  */
 
 'use strict';
@@ -104,11 +73,7 @@ function requireChrome(C) {
 /**
  * Splits one of the three records into entries.
  *
- * All three are `## `-delimited, but their headings carry different fields, and the
- * parser is tolerant rather than three separate regexes: a heading it cannot
- * decompose still becomes an entry with a title, which degrades to a plain dated
- * block instead of vanishing. A page that silently drops an entry it could not
- * parse is worse than one that renders it plainly.
+ * All three are `## `-delimited, but their headings carry different fields, and the parser is tolerant rather than three separate regexes: a heading it cannot decompose still becomes an entry with a title, which degrades to a plain dated block instead of vanishing. A page that silently drops an entry it could not parse is worse than one that renders it plainly.
  *
  *   CHANGELOG         ## v2.47.0 - 2026-08-01 03:05 EDT (#61 · hash) - Title
  *   CHANGELOG-SUMMARY ## v2.47.0 - August 1, 2026
@@ -116,8 +81,7 @@ function requireChrome(C) {
  *                     ## Coming soon                             (no version)
  *   DEVLOG            ## 2026-07-13 - The color-panel saga
  *
- * `# ` headings become PART markers, not entries. Only DEVLOG has them (Part A /
- * Part B): they divide the timeline rather than sit in it.
+ * `# ` headings become PART markers, not entries. Only DEVLOG has them (Part A / Part B): they divide the timeline rather than sit in it.
  */
 function parseChronicle(md, C) {
     const lines = md.split('\n');
@@ -149,10 +113,7 @@ function parseChronicle(md, C) {
             if (parts.length === 0 && entries.length === 0 && preamble.length === 0) {
                 continue; // the document's own title; the masthead renders it
             }
-            // DEVLOG's in-document index is an h1 like the Part markers, but it is
-            // navigation, not a division of the timeline. Demoting it into the
-            // preamble as an h2 lets foldIndex() collapse it while keeping its words
-            // in the page, so the content gate stays satisfied.
+            // DEVLOG's in-document index is an h1 like the Part markers, but it is navigation, not a division of the timeline. Demoting it into the preamble as an h2 lets foldIndex() collapse it while keeping its words in the page, so the content gate stays satisfied.
             if (/table of contents/i.test(text) && entries.length === 0) {
                 preamble.push('## ' + text);
                 continue;
@@ -173,9 +134,7 @@ function parseChronicle(md, C) {
 /**
  * Pulls version / date / PR / hash / title out of one entry heading.
  *
- * Order matters: the PR block is removed BEFORE the title is split off, because the
- * hash inside it is backtick-delimited and the title separator is an em dash — leave
- * the block in and it joins whichever field the split lands it in.
+ * Order matters: the PR block is removed BEFORE the title is split off, because the hash inside it is backtick-delimited and the title separator is an em dash — leave the block in and it joins whichever field the split lands it in.
  */
 function splitEntryHeading(raw, C) {
     let rest = raw;
@@ -207,17 +166,11 @@ function splitEntryHeading(raw, C) {
     }
     if (!out.title && out.date && out.version === null) { out.title = out.date; out.date = null; }
 
-    // Entry titles are set as headings and listed in the rail, and both go through
-    // esc() rather than the inline Markdown formatter — so a title containing a code
-    // span or emphasis printed its own markers, and the rail read
-    // "Earlier milestones `[backfill". Stripping the markers is safe for every gate:
-    // they are punctuation, and both verify() and chronicleStructAudit() compare on a
-    // letters-and-digits reduction that discards them from BOTH sides anyway.
+    // Entry titles are set as headings and listed in the rail, and both go through esc() rather than the inline Markdown formatter — so a title containing a code span or emphasis printed its own markers, and the rail read "Earlier milestones `[backfill". Stripping the markers is safe for every gate: they are punctuation, and both verify() and chronicleStructAudit() compare on a letters-and-digits reduction that discards them from BOTH sides anyway.
     out.title = out.title.replace(/[`*_]/g, '').trim();
 
     out.id = C.slug((out.version || out.date || out.title || 'entry').replace(/\./g, '-')) || 'entry';
-    // A release whose MODERATE and MINOR are both zero is a milestone; the ordnance
-    // belt draws those as filled rounds and everything else as hollow ticks.
+    // A release whose MODERATE and MINOR are both zero is a milestone; the ordnance belt draws those as filled rounds and everything else as hollow ticks.
     out.major = !!(out.version && /^v\d+\.0\.0$/.test(out.version));
     return out;
 }
@@ -227,13 +180,9 @@ function splitEntryHeading(raw, C) {
 /**
  * The terminal world, applied to all three pages.
  *
- * These OVERRIDE the site tokens rather than extending them, which is what re-skins
- * the shared bar, nav and footer into this world without touching their code.
+ * These OVERRIDE the site tokens rather than extending them, which is what re-skins the shared bar, nav and footer into this world without touching their code.
  *
- * The light variant is a daylight terminal, not a white page. The site has a theme
- * toggle and breaking it on three of nine pages would be worse than the reference's
- * single-theme-dark choice is good — but turning the console into white paper would
- * lose the world entirely, so light means "sunlit gunmetal".
+ * The light variant is a daylight terminal, not a white page. The site has a theme toggle and breaking it on three of nine pages would be worse than the reference's single-theme-dark choice is good — but turning the console into white paper would lose the world entirely, so light means "sunlit gunmetal".
  */
 const WORLD = `
 @font-face{font-family:'Martian Mono';font-style:normal;font-weight:400;font-display:swap;
@@ -294,8 +243,7 @@ code,pre{font-family:var(--mono)}
 const esc0 = s => String(s == null ? '' : s);
 
 /**
- * A voice owns its masthead, its composition and its CSS. The skeleton owns the
- * <head>, the chrome and the scroll tracker, and nothing about layout.
+ * A voice owns its masthead, its composition and its CSS. The skeleton owns the <head>, the chrome and the scroll tracker, and nothing about layout.
  */
 const VOICES = {
 
@@ -438,9 +386,7 @@ const VOICES = {
                 if (part) {
                     out += `<div class="lg-part" id="${part.id}"><span>${C.esc(part.text)}</span></div>`;
                 }
-                // The structural break from the reference: everything below v2.0.0 is
-                // the solo era. Placed before the FIRST v1 entry, since the file runs
-                // newest-first.
+                // The structural break from the reference: everything below v2.0.0 is the solo era. Placed before the FIRST v1 entry, since the file runs newest-first.
                 if (!eraDone && e.version && /^v1\./.test(e.version)) {
                     eraDone = true;
                     out += `<div class="lg-era"><i aria-hidden="true"></i>
@@ -549,9 +495,7 @@ const VOICES = {
 
         compose: (entries, parts, render, C) => {
             let out = '<div class="tl">';
-            // The spine is drawn by an SVG line whose dash offset is animated on
-            // scroll. It sits behind the items rather than being a border on them, so
-            // it can run continuously past the gaps between entries.
+            // The spine is drawn by an SVG line whose dash offset is animated on scroll. It sits behind the items rather than being a border on them, so it can run continuously past the gaps between entries.
             out += '<span class="tl-line" aria-hidden="true"><i id="tlfill"></i></span>';
             entries.forEach((e, i) => {
                 const part = parts.find(p => p.firstEntry === i);
@@ -644,27 +588,14 @@ const VOICES = {
 /**
  * Wraps `### Lesson` / `### Lessons` sections as debriefs, for the LOG KEEPER.
  *
- * Matched after rendering rather than in the source, so the match is against the
- * same string a reader sees. It cannot silently half-apply: chronicleStructAudit()
- * counts what actually reached the page against a declared expectation.
+ * Matched after rendering rather than in the source, so the match is against the same string a reader sees. It cannot silently half-apply: chronicleStructAudit() counts what actually reached the page against a declared expectation.
  */
 /**
  * Heading markup → plain label text.
  *
- * ⚠️ The permalink anchor must be removed as an ELEMENT, before tags are stripped.
- * Stripping tags alone deletes the <a> and keeps its text, so the pilcrow survived
- * into every label the two functions below build — the devlog's index summary read
- * "TABLE OF CONTENTS¶" and each debrief "Lessons¶". A stray glyph, and also a
- * fabricated character in a place the source never put one.
+ * ⚠️ The permalink anchor must be removed as an ELEMENT, before tags are stripped. Stripping tags alone deletes the <a> and keeps its text, so the pilcrow survived into every label the two functions below build — the devlog's index summary read "TABLE OF CONTENTS¶" and each debrief "Lessons¶". A stray glyph, and also a fabricated character in a place the source never put one.
  */
-// headInner is already-rendered HTML (its text runs went through C.esc() when
-// the page was first built), so re-escaping here would double-encode entities
-// like &amp;. The tag-strip below removes real markup; the trailing </>-escape
-// is defense in depth for a malformed/unbalanced tag the strip regex missed —
-// it never touches `&`, so it can't corrupt an already-escaped entity, and it
-// closes the injection class CodeQL's incomplete-multi-character-sanitization
-// check flags (a residual `<script`-shaped fragment reaching the HTML sink
-// below unescaped).
+// headInner is already-rendered HTML (its text runs went through C.esc() when the page was first built), so re-escaping here would double-encode entities like &amp;. The tag-strip below removes real markup; the trailing </>-escape is defense in depth for a malformed/unbalanced tag the strip regex missed — it never touches `&`, so it can't corrupt an already-escaped entity, and it closes the injection class CodeQL's incomplete-multi-character-sanitization check flags (a residual `<script`-shaped fragment reaching the HTML sink below unescaped).
 const labelOf = headInner => headInner
     .replace(/<a\b[^>]*class="[^"]*\banchor\b[^"]*"[\s\S]*?<\/a>/g, '')
     .replace(/<[^>]*>/g, '')
@@ -679,12 +610,7 @@ function liftLessons(html) {
             const text = headInner.replace(/<[^>]*>/g, '').trim().toLowerCase();
             if (!/^lessons?\b/.test(text)) return whole;
             n++;
-            // ⚠️ The "DEBRIEF //" label is drawn by CSS content on an aria-hidden
-            // span, NOT emitted as text. Emitting it put an invented word between a
-            // heading and the source's own following sentence, which broke seven
-            // content runs — the same failure the ledger's direction marks and the
-            // ghost plate's label already hit on the warm pages. If a mark's meaning
-            // is decorative, it belongs in the stylesheet.
+            // ⚠️ The "DEBRIEF //" label is drawn by CSS content on an aria-hidden span, NOT emitted as text. Emitting it put an invented word between a heading and the source's own following sentence, which broke seven content runs — the same failure the ledger's direction marks and the ghost plate's label already hit on the warm pages. If a mark's meaning is decorative, it belongs in the stylesheet.
             return `<div class="tl-lesson"><span class="tl-lesson-l">` +
                 labelOf(headInner) + `</span>${body}</div>`;
         }
@@ -695,10 +621,7 @@ function liftLessons(html) {
 /**
  * Folds a long in-document index into a disclosure.
  *
- * DEVLOG carries a ~60-line greppable index written for ripgrep, not for a reader.
- * Dropping it is content loss the verifier would correctly report; leaving it inline
- * puts sixty lines of navigation ahead of the document's first word. A disclosure
- * keeps every word in the page and out of the way.
+ * DEVLOG carries a ~60-line greppable index written for ripgrep, not for a reader. Dropping it is content loss the verifier would correctly report; leaving it inline puts sixty lines of navigation ahead of the document's first word. A disclosure keeps every word in the page and out of the way.
  */
 function foldIndex(html) {
     return html.replace(
@@ -721,8 +644,7 @@ function chronicleShell({ page, parsed, C, stats }) {
     const { esc } = C;
     let lessons = 0;
 
-    // One renderer, handed to the voice, so a voice cannot forget to linkify or to
-    // lift lessons — the composition decides WHERE a body goes, never what it is.
+    // One renderer, handed to the voice, so a voice cannot forget to linkify or to lift lessons — the composition decides WHERE a body goes, never what it is.
     const render = e => {
         let inner = C.parseBlocks(e.raw).html;
         if (voice.name === 'notebook') {
@@ -739,8 +661,7 @@ function chronicleShell({ page, parsed, C, stats }) {
 
     const body = voice.compose(parsed.entries, parsed.parts, render, C);
 
-    // The rail doubles as the mobile "On this page" index, so it is built even when
-    // the desktop rail is off — mobileNav takes it either way.
+    // The rail doubles as the mobile "On this page" index, so it is built even when the desktop rail is off — mobileNav takes it either way.
     const slots = [];
     parsed.entries.forEach((e, i) => {
         const part = parsed.parts.find(p => p.firstEntry === i);
@@ -1169,14 +1090,9 @@ ${C.MORPH_JS}
 
     return {
         html,
-        // Counted from the MARKUP that was actually produced, not from the array it
-        // was produced out of — a composition that drops an entry must be visible to
-        // the gate, and an array length cannot see that.
+        // Counted from the MARKUP that was actually produced, not from the array it was produced out of — a composition that drops an entry must be visible to the gate, and an array length cannot see that.
         //
-        // ⚠️ Matched as an ATTRIBUTE ON A TAG, never as the bare string. A loose
-        // /data-entry/ match reported 115 entries for 113 headings, because the
-        // changelog's own prose contains the phrase "loadout data-entry UX" twice.
-        // A gate that content can trip is not measuring the code.
+        // ⚠️ Matched as an ATTRIBUTE ON A TAG, never as the bare string. A loose /data-entry/ match reported 115 entries for 113 headings, because the changelog's own prose contains the phrase "loadout data-entry UX" twice. A gate that content can trip is not measuring the code.
         entries: (html.match(/<(?:article|section)[^>]*\sdata-entry(?=[\s>])/g) || []).length,
         parts: parsed.parts.length,
         lessons,

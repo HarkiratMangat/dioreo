@@ -2,25 +2,12 @@
 // ==========================================
 // /manage BULK FORMAT GUIDES -- rich Components V2 reference views
 // ==========================================
-// Replaces the old plain-text ephemeral reply (2026-07-31 17:20 EDT build) with a real structured
-// Container -- a paste skeleton, a field-by-field breakdown of what actually gets auto-formatted
-// (title-casing, tier shorthand, emoji substitution, etc.), a concrete before/after example, and
-// tips -- plus a select-menu dropdown so switching topics never means closing the guide and
-// re-clicking a different page's button. Rewritten from scratch 2026-07-31 17:20 EDT (same-day follow-up)
-// after Harkirat's live-testing feedback: the plain-text version didn't explain what was auto vs.
-// literal, the draws example was nonsense filler text, and there was no guide at all for Patch
-// Notes or Next Season Draft -- both real gaps, not stylistic nitpicks (Patch Notes' gap directly
-// caused a real submission mistake -- see that topic's content below).
+// Replaces the old plain-text ephemeral reply (2026-07-31 17:20 EDT build) with a real structured Container -- a paste skeleton, a field-by-field breakdown of what actually gets auto-formatted (title-casing, tier shorthand, emoji substitution, etc.), a concrete before/after example, and tips -- plus a select-menu dropdown so switching topics never means closing the guide and re-clicking a different page's button. Rewritten from scratch 2026-07-31 17:20 EDT (same-day follow-up) after Harkirat's live-testing feedback: the plain-text version didn't explain what was auto vs. literal, the draws example was nonsense filler text, and there was no guide at all for Patch Notes or Next Season Draft -- both real gaps, not stylistic nitpicks (Patch Notes' gap directly caused a real submission mistake -- see that topic's content below).
 //
-// Content is data (GUIDE_TOPICS), not hardcoded per-render strings -- emoji lookups happen INSIDE
-// buildGuideContainer() at call time, never captured at module load, per the emoji-freshness rule
-// (.claude/rules/rendering-and-ui.md) -- this file is required once at boot like everything else,
-// and refreshEmojiIds() only rewrites emojiMap's values well after that.
+// Content is data (GUIDE_TOPICS), not hardcoded per-render strings -- emoji lookups happen INSIDE buildGuideContainer() at call time, never captured at module load, per the emoji-freshness rule (.claude/rules/rendering-and-ui.md) -- this file is required once at boot like everything else, and refreshEmojiIds() only rewrites emojiMap's values well after that.
 const emojis = require('./emojiMap');
 
-// Maps a /manage page's `group` id to the guide topic it opens on -- loadouts_mp/loadouts_dmz share
-// one topic since the bulk format itself doesn't differ by mode (the mode comes from which button
-// you clicked, not a paste field worth a separate guide).
+// Maps a /manage page's `group` id to the guide topic it opens on -- loadouts_mp/loadouts_dmz share one topic since the bulk format itself doesn't differ by mode (the mode comes from which button you clicked, not a paste field worth a separate guide).
 const GROUP_TO_TOPIC = {
     draws: 'draws',
     calendar: 'calendar',
@@ -37,9 +24,7 @@ function resolveGuideTopic(group) {
 
 // Ordered for the select menu -- also the canonical topic list.
 function topicDefs() {
-    // `emoji` is the PARSED {id,name,animated} shape a select option's own `emoji` field needs
-    // (emojiMap.js's parseEmoji()); `rawEmoji` is the raw mention STRING for use inside message
-    // text content, where a parsed object isn't insertable. Different shapes, different call sites.
+    // `emoji` is the PARSED {id,name,animated} shape a select option's own `emoji` field needs (emojiMap.js's parseEmoji()); `rawEmoji` is the raw mention STRING for use inside message text content, where a parsed object isn't insertable. Different shapes, different call sites.
     return [
         { key: 'draws', label: 'Draws', description: 'New/Returning bulk paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'calendar', label: 'Calendar', description: 'Bullet-separated event paste format', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
@@ -197,9 +182,7 @@ const TOPIC_SECTIONS = {
     announcements: announcementsSections
 };
 
-// Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide
-// color, so the guide visually matches whichever page opened it (same philosophy as manage.js's
-// own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
+// Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide color, so the guide visually matches whichever page opened it (same philosophy as manage.js's own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
 const TOPIC_ACCENT = {
     draws: 7032445,       // Plum Fortune -- draws.js's PRESET_ACCENT
     calendar: 3821672,    // Slate Harbor -- calendar.js's PRESET_ACCENT

@@ -2,18 +2,11 @@
 // ==========================================
 // MIGRATE RenderTiming -> the event plane, then drop it
 // ==========================================
-// One-shot migration for the observability layer's stage 2 (2026-08-16). RenderTiming was added
-// 2026-08-11 for a single /colors performance investigation and stored a **raw** `discordId`. Its rows
-// are migrated with that id HASHED through the same hashUserId() every other pseudonym in this project
-// uses, so the migration strictly REDUCES the raw-id surface rather than relocating it -- and then the
-// source collection is dropped, which is the only thing that makes that reduction real.
+// One-shot migration for the observability layer's stage 2 (2026-08-16). RenderTiming was added 2026-08-11 for a single /colors performance investigation and stored a **raw** `discordId`. Its rows are migrated with that id HASHED through the same hashUserId() every other pseudonym in this project uses, so the migration strictly REDUCES the raw-id surface rather than relocating it -- and then the source collection is dropped, which is the only thing that makes that reduction real.
 //
-// Its /colors-specific fields (area, source, subpage, variant, cold) land in the event document's
-// generic `detail` sub-object, which the schema needed anyway.
+// Its /colors-specific fields (area, source, subpage, variant, cold) land in the event document's generic `detail` sub-object, which the schema needed anyway.
 //
-// 🔴 THE HASH KEY MUST BE THE RIGHT ONE. Run this against PROD with PROD's ANALYTICS_HMAC_KEY, or the
-// migrated hashes will not correlate with anything the live bot writes. There is no way to detect that
-// afterwards -- both key's outputs are 64 hex characters and both look perfectly fine.
+// 🔴 THE HASH KEY MUST BE THE RIGHT ONE. Run this against PROD with PROD's ANALYTICS_HMAC_KEY, or the migrated hashes will not correlate with anything the live bot writes. There is no way to detect that afterwards -- both key's outputs are 64 hex characters and both look perfectly fine.
 //
 // Usage:
 //   node --env-file=.env.dev scripts/migrateRenderTimings.js          # dry run, prints a plan
@@ -73,8 +66,7 @@ const SOURCE = 'rendertimings';   // Mongoose's pluralised/lowercased name for m
         createdAt: r.createdAt || new Date(),
     }));
 
-    // The migration's own version of the project's highest-value test, run on the real data rather
-    // than a fixture: if ANY raw discordId survived into ANY finished document, stop before writing.
+    // The migration's own version of the project's highest-value test, run on the real data rather than a fixture: if ANY raw discordId survived into ANY finished document, stop before writing.
     const rawIds = new Set(rows.map(r => r.discordId).filter(Boolean));
     const serialised = JSON.stringify(docs);
     const leaked = [...rawIds].filter(id => serialised.includes(String(id)));

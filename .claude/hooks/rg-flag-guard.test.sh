@@ -1,10 +1,7 @@
 #!/bin/bash
-# Pins every false-positive class this guard has produced. It was patched THREE times by observation
-# before getting a test file — which is why it kept regressing. Each case below is a real misfire.
+# Pins every false-positive class this guard has produced. It was patched THREE times by observation before getting a test file — which is why it kept regressing. Each case below is a real misfire.
 HOOK="$(dirname "$0")/rg-flag-guard.sh"; pass=0; fail=0
-# A silent hook prints NOTHING, and `jq` on empty input also prints nothing — so a naive read of the
-# output treats "silent" as "fired". That exact bug has now appeared in THREE test harnesses this
-# session. Capture raw output and decide from emptiness, never from a jq default.
+# A silent hook prints NOTHING, and `jq` on empty input also prints nothing — so a naive read of the output treats "silent" as "fired". That exact bug has now appeared in THREE test harnesses this session. Capture raw output and decide from emptiness, never from a jq default.
 r(){ local raw; raw="$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK")"
      [ -z "$raw" ] && { echo SILENT; return; }
      printf '%s' "$raw" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
@@ -25,8 +22,7 @@ a "multi-line, -r on another line" silent "$(printf "jq -r '.hooks' ~/.claude/se
 # FALSE positive #4: -c/-n/-l are fine.
 a "ordinary rg flags"             silent "rg -n --hidden --no-ignore 'pat' docs"
 a "rg -c"                         silent "rg -c 'pat' file.md"
-# FALSE positive #5: flag-shaped text inside the SEARCH PATTERN. Found 2026-08-02 16:41 EDT when
-# this guard fired on a command being run to audit it — the pattern, not the command, held the -r.
+# FALSE positive #5: flag-shaped text inside the SEARCH PATTERN. Found 2026-08-02 16:41 EDT when this guard fired on a command being run to audit it — the pattern, not the command, held the -r.
 a "-r inside the pattern"         silent "rg -n 'jq -r .hookSpecificOutput' file.sh"
 a "-h inside a double-quoted pat" silent "rg -n \"use -h for help\" docs"
 a "-E inside the pattern"         silent "rg -n 'pass -E to iconv' notes.md"

@@ -1,12 +1,6 @@
-// Regression test for utils/requestContext.js — the AsyncLocalStorage interaction-context
-// propagation + userHash hashing added for observability layer stage 1 (2026-08-16 12:22 EDT). Run:
-// `node scripts/requestContext.test.js` (also via `npm test`).
+// Regression test for utils/requestContext.js — the AsyncLocalStorage interaction-context propagation + userHash hashing added for observability layer stage 1 (2026-08-16 12:22 EDT). Run: `node scripts/requestContext.test.js` (also via `npm test`).
 //
-// WHAT THIS CHECKS: (1) the property the whole design depends on — a context established for one
-// interaction survives every await inside it and is never visible to a CONCURRENT interaction's own
-// context; (2) userHash is a real keyed HMAC (deterministic, changes with the key, never the raw ID);
-// (3) getContext() outside any runWithContext() call returns undefined, which is what makes logger.js's
-// `lifecycle` fallback for non-interaction paths automatic rather than something each caller opts into.
+// WHAT THIS CHECKS: (1) the property the whole design depends on — a context established for one interaction survives every await inside it and is never visible to a CONCURRENT interaction's own context; (2) userHash is a real keyed HMAC (deterministic, changes with the key, never the raw ID); (3) getContext() outside any runWithContext() call returns undefined, which is what makes logger.js's `lifecycle` fallback for non-interaction paths automatic rather than something each caller opts into.
 const assert = require('assert');
 const crypto = require('crypto');
 
@@ -46,9 +40,7 @@ async function main() {
     await t('two "concurrent" interactions never see each other\'s context', async () => {
         const { runWithContext, getContext } = freshModule();
 
-        // Simulates the real router shape: each interaction gets its OWN runWithContext() call, and
-        // both are in flight at once (interleaved via setImmediate), same as two real Discord
-        // interactions arriving close together would be.
+        // Simulates the real router shape: each interaction gets its OWN runWithContext() call, and both are in flight at once (interleaved via setImmediate), same as two real Discord interactions arriving close together would be.
         async function simulateInteraction(id) {
             return runWithContext({ command: id }, async () => {
                 await new Promise((r) => setImmediate(r));
@@ -65,9 +57,7 @@ async function main() {
     });
 
     await t('EventEmitter listeners registered inside runWithContext() keep the context', async () => {
-        // The propagation risk the design spec explicitly calls out: "across the discord.js event
-        // boundary". discord.js dispatches interactionCreate through a plain Node EventEmitter, so
-        // this reproduces that shape directly rather than trusting it by analogy.
+        // The propagation risk the design spec explicitly calls out: "across the discord.js event boundary". discord.js dispatches interactionCreate through a plain Node EventEmitter, so this reproduces that shape directly rather than trusting it by analogy.
         const { EventEmitter } = require('events');
         const { runWithContext, getContext } = freshModule();
 

@@ -1,29 +1,13 @@
 // ==========================================
 // BOT — INTERACTION HANDLER
 // ==========================================
-// /bot analytics + /bot access. Ownership is decided by custom_id prefix, once: `bot_` — the single
-// prefix everything this command mints uses (buttons, selects, AND modals; unlike /manage there is
-// no second `modal_`-style prefix to reserve, since /bot owns nothing else).
+// /bot analytics + /bot access. Ownership is decided by custom_id prefix, once: `bot_` — the single prefix everything this command mints uses (buttons, selects, AND modals; unlike /manage there is no second `modal_`-style prefix to reserve, since /bot owns nothing else).
 //
-// Alerts and Changes branches port the retired handlers/alerts.js's and handlers/audit.js's routing
-// logic verbatim (query/parsing logic unchanged, only the custom_id prefix and the render target
-// changed — they now re-render through commands/bot.js's shared buildAnalyticsPanel() so the page
-// select dropdown and header stay in place across a click, instead of each page owning its own
-// standalone panel). Access ports the retired handlers/manage/admins.js's routing logic verbatim.
+// Alerts and Changes branches port the retired handlers/alerts.js's and handlers/audit.js's routing logic verbatim (query/parsing logic unchanged, only the custom_id prefix and the render target changed — they now re-render through commands/bot.js's shared buildAnalyticsPanel() so the page select dropdown and header stay in place across a click, instead of each page owning its own standalone panel). Access ports the retired handlers/manage/admins.js's routing logic verbatim.
 //
-// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleBotInteraction is awaited from inside
-// handlers/router.js's single top-level try/catch — do NOT add one here, do NOT register listeners,
-// and keep every error-branch reply an AWAITED call inside its own small try/catch. See
-// .claude/rules/interaction-router.md.
+// ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleBotInteraction is awaited from inside handlers/router.js's single top-level try/catch — do NOT add one here, do NOT register listeners, and keep every error-branch reply an AWAITED call inside its own small try/catch. See .claude/rules/interaction-router.md.
 //
-// 🔴 /bot access mutations (grant/edit/revoke, and the modals behind them) re-check isOwner() HERE,
-// independently of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard — same
-// defense-in-depth every other owner-gated action in this bot uses (manageadmins did the same
-// before this move). The router's guard only proves "this user has SOME /bot access" (the 'bot'
-// token, grantable to any admin for analytics); it does NOT prove ownership, which every access
-// mutation requires. `/bot access`'s VIEW is also owner-only (checked in commands/bot.js's
-// execute()), so a non-owner never even opens the panel these buttons live on — this is the second,
-// independent layer, not the only one.
+// 🔴 /bot access mutations (grant/edit/revoke, and the modals behind them) re-check isOwner() HERE, independently of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard — same defense-in-depth every other owner-gated action in this bot uses (manageadmins did the same before this move). The router's guard only proves "this user has SOME /bot access" (the 'bot' token, grantable to any admin for analytics); it does NOT prove ownership, which every access mutation requires. `/bot access`'s VIEW is also owner-only (checked in commands/bot.js's execute()), so a non-owner never even opens the panel these buttons live on — this is the second, independent layer, not the only one.
 
 const OWNED_PREFIXES = ['bot_'];
 
@@ -31,9 +15,7 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// Mirrors handlers/manage/shared.js's prompt() shape (a plain Text Display + optional components,
-// through sendV2Payload's own dual-mode ack) without importing a /manage-specific module for one
-// trivial wrapper /bot has no other reason to depend on.
+// Mirrors handlers/manage/shared.js's prompt() shape (a plain Text Display + optional components, through sendV2Payload's own dual-mode ack) without importing a /manage-specific module for one trivial wrapper /bot has no other reason to depend on.
 function respondText(interaction, text, components = []) {
     const { sendV2Payload } = require('../utils/sendV2Payload');
     const body = [];
@@ -180,9 +162,7 @@ async function route(interaction) {
         });
     }
 
-    // Second step -- owner re-checked again here (third check total, alongside the button above and
-    // the router's coarse `bot_` guard) since this is the actual delete, matching the exact
-    // defense-in-depth the retired manageadmins revoke flow used.
+    // Second step -- owner re-checked again here (third check total, alongside the button above and the router's coarse `bot_` guard) since this is the actual delete, matching the exact defense-in-depth the retired manageadmins revoke flow used.
     if (interaction.isButton() && customId.startsWith('bot_admin_revokeconfirm_')) {
         const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
         const discordId = customId.replace('bot_admin_revokeconfirm_', '');
@@ -273,8 +253,7 @@ async function route(interaction) {
     }
 }
 
-// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise --
-// the uniform contract every handlers/*.js module follows.
+// Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise -- the uniform contract every handlers/*.js module follows.
 async function handleBotInteraction(interaction) {
     if (!ownsCustomId(interaction.customId)) return false;
     await route(interaction);

@@ -1,8 +1,4 @@
-// scripts/collectibleCacheKey.test.js -- coverage for the nameplate/decoration Cloudinary cache-key
-// construction. This is THE highest-consequence pure function in the collectible pipeline: the public
-// id IS the cache key, so a change here orphans every stored render and can silently desync the bulk
-// path from the live path. Pinned here rather than trusted to review.
-// Run: `node scripts/collectibleCacheKey.test.js` (also via `npm test`).
+// scripts/collectibleCacheKey.test.js -- coverage for the nameplate/decoration Cloudinary cache-key construction. This is THE highest-consequence pure function in the collectible pipeline: the public id IS the cache key, so a change here orphans every stored render and can silently desync the bulk path from the live path. Pinned here rather than trusted to review. Run: `node scripts/collectibleCacheKey.test.js` (also via `npm test`).
 const assert = require('assert');
 const { catalogCacheKey, legacyCacheKey, filenameForPublicId } = require('../utils/collectibleCacheKey');
 

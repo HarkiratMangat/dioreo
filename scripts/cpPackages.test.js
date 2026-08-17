@@ -1,10 +1,6 @@
-// Derivation guard for the CP package table (utils/cpPackages.js, 2026-08-15 17:43 EDT).
-// Design: docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
+// Derivation guard for the CP package table (utils/cpPackages.js, 2026-08-15 17:43 EDT). Design: docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md.
 //
-// WHAT THIS IS FOR. The store advertises a number that ALREADY includes the bonus (10,800 CP is
-// 8,000 base + 35%). During a 2X event the same package gives 8,000 base + 100% = 16,000 -- NOT
-// double the advertised 10,800. The first draft of this design got that wrong by 5,600 CP at the
-// top tier. These tests pin both derivations against the real store figures.
+// WHAT THIS IS FOR. The store advertises a number that ALREADY includes the bonus (10,800 CP is 8,000 base + 35%). During a 2X event the same package gives 8,000 base + 100% = 16,000 -- NOT double the advertised 10,800. The first draft of this design got that wrong by 5,600 CP at the top tier. These tests pin both derivations against the real store figures.
 
 const assert = require('assert');
 const { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney } = require('../utils/cpPackages');
@@ -45,9 +41,7 @@ check('prices are integer minor-units in every supported currency', () => {
     }
 });
 
-// JPY/CLP have no decimal places and KWD/BHD have three, per cp-package-prices.md's Schema section --
-// everything else defaults to the ISO-4217 standard of 2. Pinned so a future currency addition can't
-// silently misclassify (a JSON number drops trailing zeros, so this can't be inferred from the data).
+// JPY/CLP have no decimal places and KWD/BHD have three, per cp-package-prices.md's Schema section -- everything else defaults to the ISO-4217 standard of 2. Pinned so a future currency addition can't silently misclassify (a JSON number drops trailing zeros, so this can't be inferred from the data).
 check('minor-unit exponents match the documented exceptions', () => {
     assert.strictEqual(priceCents(CP_PACKAGES[0], 'JPY'), 160, 'JPY should have 0 decimal places');
     assert.strictEqual(priceCents(CP_PACKAGES[0], 'CLP'), 990, 'CLP should have 0 decimal places');
@@ -55,8 +49,7 @@ check('minor-unit exponents match the documented exceptions', () => {
     assert.strictEqual(priceCents(CP_PACKAGES[0], 'BHD'), 390, 'BHD should have 3 decimal places');
 });
 
-// Every package must resolve a price in every currency -- a missing currency would make the
-// optimizer silently skip that package for that storefront rather than erroring loudly.
+// Every package must resolve a price in every currency -- a missing currency would make the optimizer silently skip that package for that storefront rather than erroring loudly.
 check('every package has a price in every supported currency', () => {
     CP_PACKAGES.forEach(p => CURRENCIES.forEach(cur => {
         assert.ok(typeof priceOf(p, cur) === 'number', `${p.id} has no ${cur} price -- a missing currency would make the optimizer silently skip that package`);
@@ -68,9 +61,7 @@ check('countryOf resolves every currency', () => {
     CURRENCIES.forEach(cur => assert.ok(typeof countryOf(cur) === 'string' && countryOf(cur).length > 0, `${cur} has no country`));
 });
 
-// Pins the finding that justifies the whole optimizer: value is monotonic in USD but NOT in EUR or
-// CAD. If a future price edit makes all three monotonic, "just buy the biggest" becomes correct and
-// this test SHOULD fail so someone re-reads the design rather than leaving a solver with no job.
+// Pins the finding that justifies the whole optimizer: value is monotonic in USD but NOT in EUR or CAD. If a future price edit makes all three monotonic, "just buy the biggest" becomes correct and this test SHOULD fail so someone re-reads the design rather than leaving a solver with no job.
 check('value ordering is non-monotonic outside USD', () => {
     const rate = (p, cur) => normalCp(p) / priceCents(p, cur);
     const isMonotonic = cur => CP_PACKAGES.every((p, i) => i === 0 || rate(p, cur) >= rate(CP_PACKAGES[i - 1], cur));
@@ -98,10 +89,7 @@ check('formatMoney renders cents with the right symbol', () => {
 // ==========================================
 const { optimizePurchase } = require('../utils/cpPackages');
 
-// Exhaustive reference implementation. Deliberately dumb and obviously correct, so it can falsify
-// the DP rather than merely agree with it. Respects the same maxTransactions cap the DP enforces
-// (default 6) -- without that constraint this would validate a DIFFERENT, unconstrained problem and
-// could legitimately disagree with a correctly-capped optimizer.
+// Exhaustive reference implementation. Deliberately dumb and obviously correct, so it can falsify the DP rather than merely agree with it. Respects the same maxTransactions cap the DP enforces (default 6) -- without that constraint this would validate a DIFFERENT, unconstrained problem and could legitimately disagree with a correctly-capped optimizer.
 function bruteForce(shortfall, currency = 'USD', maxTransactions = 6) {
     let best = null;
     const n = CP_PACKAGES.length;
@@ -193,20 +181,14 @@ check('naive baseline is the smallest single package that covers it alone', () =
 });
 
 check('currency actually changes the recommendation -- the optimizer is not silently pinned to USD', () => {
-    // Real numbers from docs/reference/cp-package-prices.json: in CAD the value ordering is
-    // non-monotonic (companion doc), so the cheapest combo for the same shortfall must differ from
-    // USD's, not just be a currency-symbol relabelling of the same combo.
+    // Real numbers from docs/reference/cp-package-prices.json: in CAD the value ordering is non-monotonic (companion doc), so the cheapest combo for the same shortfall must differ from USD's, not just be a currency-symbol relabelling of the same combo.
     const usd = optimizePurchase(5000, { currency: 'USD' });
     const cad = optimizePurchase(5000, { currency: 'CAD' });
     assert.notDeepStrictEqual(usd.cheapest.combo, cad.cheapest.combo,
         'CAD produced the same combo as USD -- the optimizer may be ignoring the currency parameter');
 });
 
-// Pins the spec's own motivating example (design doc, "The mathematically optimal combination can be
-// absurd in practice"): UNCAPPED, a 5,000 CP shortfall in CAD is cheapest as 63 separate $0.99
-// purchases (5,040 CP for $62.37) rather than the single $69.99 pack. This is a KNOWN CASE that can
-// fail both ways -- if the cap silently does nothing, the capped result matches this; if currency or
-// the cap is broken some other way, neither total matches.
+// Pins the spec's own motivating example (design doc, "The mathematically optimal combination can be absurd in practice"): UNCAPPED, a 5,000 CP shortfall in CAD is cheapest as 63 separate $0.99 purchases (5,040 CP for $62.37) rather than the single $69.99 pack. This is a KNOWN CASE that can fail both ways -- if the cap silently does nothing, the capped result matches this; if currency or the cap is broken some other way, neither total matches.
 check('uncapped, the CAD absurd-optimum matches the spec\'s worked example', () => {
     const uncapped = optimizePurchase(5000, { currency: 'CAD', maxTransactions: 63 });
     assert.strictEqual(uncapped.cheapest.totalCents, 6237, `expected $62.37 (63 x $0.99), got ${uncapped.cheapest.totalCents}c`);
