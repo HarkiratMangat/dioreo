@@ -2,20 +2,7 @@
 /**
  * reflow-comments.test.mjs — self-test for scripts/reflow-comments.mjs.
  *
- * Every case here is a REGRESSION for a defect that was actually observed
- * during development (an audit run before this ever touched the tree, per
- * feedback_verify_before_claiming's standing practice: prove on a known
- * case before trusting a tool on unknown ones). Four were live bugs, not
- * hypotheticals: a shebang line silently merged into the file's first
- * comment (acorn's `allowHashBang` reports the `#!` line itself as a fake
- * Line comment); every multi-line `/** *\/` JSDoc block in the repo being
- * silently skipped (the closer-detection regex could never match, because
- * acorn's block-comment `value` never includes the closing delimiter); a
- * double-indented first output line; and a shell scanner line-counter
- * desync on backslash-newline continuations (29 of 60 tracked .sh files use
- * them). Two more were found by manual inspection of real output: `===`
- * decorative section borders and `Usage:`-style literal example lines both
- * getting merged into surrounding prose.
+ * Every case here is a REGRESSION for a defect that was actually observed during development (an audit run before this ever touched the tree, per feedback_verify_before_claiming's standing practice: prove on a known case before trusting a tool on unknown ones). Four were live bugs, not hypotheticals: a shebang line silently merged into the file's first comment (acorn's `allowHashBang` reports the `#!` line itself as a fake Line comment); every multi-line `/** *\/` JSDoc block in the repo being silently skipped (the closer-detection regex could never match, because acorn's block-comment `value` never includes the closing delimiter); a double-indented first output line; and a shell scanner line-counter desync on backslash-newline continuations (29 of 60 tracked .sh files use them). Two more were found by manual inspection of real output: `===` decorative section borders and `Usage:`-style literal example lines both getting merged into surrounding prose.
  *
  * Run: node scripts/reflow-comments.test.mjs  (wired into npm test)
  */
@@ -167,14 +154,7 @@ t("a regex literal containing // is not mistaken for a comment", () => {
 /* ── JS: verify() must actually be able to fail ───────────────────────── */
 
 t("reflow is idempotent on content with an odd leading-space count", () => {
-  // Regression for a real non-idempotency bug: a comment line with exactly
-  // one stray leading space (e.g. "//  (1) Strip a cosmetic...", doubled
-  // space after `//`) fell into a gap between the join-at-indent-0 rule and
-  // the old verbatim-at-indent->=2 rule, silently opening a NEW paragraph
-  // instead of being preserved — and that paragraph's flush() trimmed the
-  // stray space away, so a second pass classified the same content
-  // differently than the first. Found by re-running --check against
-  // already-written output in the real repo and getting a nonzero diff.
+  // Regression for a real non-idempotency bug: a comment line with exactly one stray leading space (e.g. "//  (1) Strip a cosmetic...", doubled space after `//`) fell into a gap between the join-at-indent-0 rule and the old verbatim-at-indent->=2 rule, silently opening a NEW paragraph instead of being preserved — and that paragraph's flush() trimmed the stray space away, so a second pass classified the same content differently than the first. Found by re-running --check against already-written output in the real repo and getting a nonzero diff.
   const src =
     "// Two jobs:\n//  (1) first job description that is fairly long here\n//      continues wrapped onto this line\n// (2) second job\nconst x = 1;\n";
   const pass1 = reflowJs(src).text;
