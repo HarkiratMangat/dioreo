@@ -142,22 +142,24 @@ module.exports = {
 
         // "Show Everyone" IS offered here (unlike `/help`, which dropped it): running this hidden
         // and then deciding to post it for the channel is the command's own core flow.
-        // ⚠️ NO "Show Everyone" BUTTON HERE, and removing it FIXED A REAL BUG rather than being a
-        // tidy-up (found 2026-08-17 09:47 EDT auditing this branch). `withShareButton` used to wrap
-        // this payload. The Show Everyone path does not re-enter this function: handlers/share.js
-        // builds the public copy and sends it through `sendV2Payload` itself, WITHOUT `skipExpiry` --
-        // so a panel shared that way armed the idle timer after all, and its Share Link button greyed
-        // out ten minutes later on precisely the public post this command exists to leave behind.
-        // Threading the flag through share.js was rejected: it only has the message JSON, so it would
-        // need its own table of exempt commands -- a second copy of the decision, which is the
-        // duplication sendV2Payload's own header warns about. Always-skip there was rejected too; a
-        // shared `/settings` panel genuinely should expire.
-        // Dropping the button closes the path structurally, and is independently right: `/help` did
-        // the same on Harkirat's request because its visibility option already covered the case, and
-        // this panel has BOTH that option AND a dedicated Share Link button. Anyone wanting the panel
-        // public can just run `/invite` -- public is the default.
-        // If Show Everyone is ever genuinely wanted back, the fix is the rejected option (a) done
-        // properly: give share.js a way to learn the exemption from the source panel, not a lookup table.
+        // ⚠️ NO "Show Everyone" BUTTON HERE, BY EXPLICIT DECISION -- Harkirat, 2026-08-17 11:27 EDT:
+        // "i don't actually want the show everyone button for it. they can just send the command
+        // again publicly." That is the durable reason and it is a product call, not a workaround:
+        // `/invite` defaults to PUBLIC and already carries its own Share Link button, so a third way
+        // to make it public is redundant. `/help` is the precedent -- it dropped the same button, on
+        // the same reasoning, because its visibility option already covered the case.
+        // 🐞 It ALSO closes a real bug, which is why the button had already gone before that message
+        // (found 2026-08-17 09:47 EDT auditing this branch; it shipped live in v3.40.0). Show Everyone
+        // does not re-enter this function -- handlers/share.js builds the public copy and sends it
+        // through `sendV2Payload` ITSELF, without `skipExpiry` -- so a shared panel armed the idle
+        // timer after all and its Share Link greyed out ten minutes later, on precisely the public
+        // post this command exists to leave behind. **So the bug being solved some other way is NOT a
+        // reason to bring the button back; the decision above stands on its own.**
+        // If it is ever genuinely wanted, the honest fix is the one rejected here: let share.js learn
+        // the exemption from the source panel. Threading the flag was rejected because share.js has
+        // only the message JSON and would need its own table of exempt commands -- a second copy of
+        // the decision, the duplication sendV2Payload's own header warns about -- and always-skipping
+        // there was rejected because a shared `/settings` panel genuinely should expire.
         // `skipExpiry`: nothing on this panel is token-dependent -- the Share Link handler answers
         // with its own fresh interaction -- and the message is meant to be found and clicked days
         // later. See utils/sendV2Payload.js's note for the bar a second user must meet.
