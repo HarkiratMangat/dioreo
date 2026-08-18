@@ -576,7 +576,7 @@ function renderGuide(guide, C) {
 /**
  * Renders the whole page. `catalog` is scripts/lib/commandCatalog.js's output; `page` is the entry from buildLegalPages.js's page table.
  */
-function commandsShell({ page, catalog, C }) {
+function commandsShell({ page, catalog, C, variant = null }) {
     requireChrome(C);
     assertProseCoverage(catalog);
     // The page table's accent and this module's own idea of the hue are two reads of one colour. They disagreed for a day and it showed on the bar; a build is the right place to find that out, not a colour picker.
@@ -596,6 +596,8 @@ function commandsShell({ page, catalog, C }) {
 
     const bands = [];
     const picker = [];
+    // Variant comparison only — see scripts/lib/commandsVariants.js. Collected unconditionally because it is a handful of references, and a second traversal guarded by a flag is a second place for the two to disagree.
+    const groupData = [];
     // mobileNav(cur, slots) — the second argument is the phone's section menu, and passing nothing left it empty on every phone. The groups ARE this page's sections.
     const slots = [];
 
@@ -610,6 +612,8 @@ function commandsShell({ page, catalog, C }) {
         slots.push(`<a href="#g-${esc(group.key)}" class="slot"><i>—</i><span>${esc(group.label)}</span></a>`);
         picker.push(`<p class="cx-grp" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
 
+        groupData.push({ key: group.key, label: group.label, commands: group.commands,
+            guides: guides.map(g => ({ ...g, html: renderGuide(g, C) })) });
         for (const guide of guides) {
             bands.push(renderGuide(guide, C));
             picker.push(`<a class="cx-row" href="#${esc(guide.id)}" data-group="${esc(group.key)}">` +
@@ -669,12 +673,31 @@ function commandsShell({ page, catalog, C }) {
         `:root[data-theme=light]{${lightVars}}` +
         `@media (prefers-color-scheme:light){:root:not([data-theme=dark]){${lightVars}}}`;
 
+    /* ── THE THREE COMPARISON GRIDS ──────────────────────────────────────────
+       Same chrome, same data, same colours — only the doc column changes, so what is
+       being judged is the layout and nothing else. Null on the real page. */
+    let docHtml = bands.join('');
+    let pickInner = null;
+    let variantCss = '';
+    let variantJs = '';
+    if (variant) {
+        const V = require('./commandsVariants');
+        const args = { groups: groupData, C, renderOptions, COMMANDS, esc };
+        if (variant === 'ledger') { docHtml = V.renderLedger(args); variantCss = V.LEDGER_CSS; }
+        if (variant === 'xref') { docHtml = V.renderXref(args); variantCss = V.XREF_CSS; variantJs = V.XREF_JS; }
+        if (variant === 'sticky') {
+            const out = V.renderSticky(args);
+            docHtml = out.bays; pickInner = `<div class="st">${out.panels}</div>`;
+            variantCss = V.STICKY_CSS; variantJs = V.STICKY_JS;
+        }
+    }
+
     return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}${variantCss}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
@@ -721,11 +744,11 @@ ${C.mobileNav(page, slots.join(''))}
         <b>No match. Closest commands:</b>
         <div class="cx-sug" id="cx-sug"></div>
       </div>
-      <button class="cx-fold" id="cx-fold" type="button" aria-expanded="true">Browse all commands</button>
+      <button class="cx-fold" id="cx-fold" type="button" aria-expanded="true">Browse all commands</button>${pickInner ? '\n      ' + pickInner : ''}
     </nav>
 
     <div class="cx-doc">
-      ${bands.join('')}
+      ${docHtml}
     </div>
   </div>
 </main>
@@ -742,6 +765,7 @@ ${C.TOTOP_HTML}
 <script>${C.MORPH_JS}</script>
 <script>${C.TOTOP_TRACK_JS}</script>
 <script>${COMMANDS_JS}</script>
+${variantJs ? `<script>${variantJs}</script>` : ''}
 </body></html>`;
 }
 

@@ -8609,6 +8609,22 @@ function build() {
             `${(html.length / 1024).toFixed(1)} KB`);
     }
 
+    /* ⚠️ COMPARISON RENDERS, NOT PAGES. Three spatial directions for the /commands
+       grid, built from the real catalog so the choice is made on the real thing
+       rather than a mockup. They render with TOOL_PAGES[0]'s own chrome on purpose —
+       identical bar, nav, Composer, footer and colours — so what differs between them
+       is the layout and nothing else. They are deliberately NOT in ALL_PAGES,
+       NAV_GROUPS or `built`: no nav tab, no numbered list, and the tab count stays at
+       the seven navSwitcher() has a measured staging for. `.gitignore` excludes their
+       output. Delete this block, commandsVariants.js and the `variant` parameter once
+       one is chosen. */
+    for (const v of [['ledger', '_v-ledger.html'], ['xref', '_v-xref.html'], ['sticky', '_v-sticky.html']]) {
+        LINK_BASE = '';
+        const html = commandsShell({ page: TOOL_PAGES[0], catalog, C: CHROME, variant: v[0] });
+        writePage(path.join(OUT, v[1]), html);
+        console.log(`  \u25CB ${v[1]}  variant: ${v[0]}`);
+    }
+
     // Only the numbered legal set goes in the numbered list.
     writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle && !p.tool)));
     console.log('  ✓ index.html');
