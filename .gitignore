@@ -52,3 +52,8 @@ __pycache__/
 # Structured log sink written by utils/logger.js on the VM (tailed by the Ops Agent, rotated by
 # logrotate). Never committed — it is machine-local runtime output.
 logs/
+
+# macOS Finder custom-folder-icon marker -- a 0-byte artifact Finder recreates on its own,
+# never meaningful content. Untracked 2026-08-18 10:07 EDT after an accidental `git add -A` picked
+# it up (this repo has no global ignore for it, unlike most repos on this machine).
+Icon?
