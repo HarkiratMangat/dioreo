@@ -8618,11 +8618,27 @@ function build() {
        the seven navSwitcher() has a measured staging for. `.gitignore` excludes their
        output. Delete this block, commandsVariants.js and the `variant` parameter once
        one is chosen. */
-    for (const v of [['ledger', '_v-ledger.html'], ['xref', '_v-xref.html'], ['sticky', '_v-sticky.html']]) {
-        LINK_BASE = '';
-        const html = commandsShell({ page: TOOL_PAGES[0], catalog, C: CHROME, variant: v[0] });
-        writePage(path.join(OUT, v[1]), html);
-        console.log(`  \u25CB ${v[1]}  variant: ${v[0]}`);
+    /* 🔴 OFF UNLESS ASKED FOR, AND EXISTING COPIES ARE DELETED — because .gitignore does
+       NOT protect a deploy. Both publish paths run `wrangler pages deploy public`, which
+       uploads the DIRECTORY and has never heard of the git index, so a gitignored file
+       sitting in public/ ships to dioreo.app like any other. CI's staleness check reads
+       `git diff -- public/`, which cannot see them either, so nothing would have gone red.
+       Gating on an env var means a normal build and every CI run never create them at
+       all; unlinking means a stale copy left over from a local run cannot be published
+       by someone else's deploy afterwards. */
+    const variantFiles = ['_v-ledger.html', '_v-xref.html', '_v-sticky.html'];
+    if (process.env.DIOREO_VARIANTS === '1') {
+        for (const v of [['ledger', variantFiles[0]], ['xref', variantFiles[1]], ['sticky', variantFiles[2]]]) {
+            LINK_BASE = '';
+            const html = commandsShell({ page: TOOL_PAGES[0], catalog, C: CHROME, variant: v[0] });
+            writePage(path.join(OUT, v[1]), html);
+            console.log(`  \u25CB ${v[1]}  variant: ${v[0]}  (DIOREO_VARIANTS=1 — never published)`);
+        }
+    } else {
+        for (const f of variantFiles) {
+            const stale = path.join(OUT, f);
+            if (fs.existsSync(stale)) { fs.unlinkSync(stale); console.log(`  \u25CB removed stale ${f}`); }
+        }
     }
 
     // Only the numbered legal set goes in the numbered list.

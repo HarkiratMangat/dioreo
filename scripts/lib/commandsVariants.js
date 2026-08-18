@@ -66,7 +66,7 @@ const LEDGER_CSS = `
 
 /* ── 2. THE CROSS-REFERENCE ───────────────────────────────────────────────────
    snp.agency's index, which the crawl calls the strongest structural idea in the set after the column grid, and which is already parked in docs/ideas/design-ideas.md for the Contributors page. The relational data it needs does not exist there yet -- one contributor, one release -- but it DOES exist here: command <-> option <-> value is a real three-way relation the bot already records. Hover an option and every command that takes it lights while the rest grey out. It is the only one of the three that lets the page do something a printed reference cannot. */
-function renderXref({ groups, C, renderOptions, COMMANDS, esc }) {
+function renderXref({ groups, C, renderOptions, renderCommand, COMMANDS, esc }) {
     const commands = [];
     const optionNames = new Map();
     for (const group of groups) {
@@ -96,16 +96,8 @@ function renderXref({ groups, C, renderOptions, COMMANDS, esc }) {
         bays.push(`<p class="cx-band" id="g-${esc(group.key)}" data-group="${esc(group.key)}">${esc(group.label)}` +
             `<span class="cx-ct">${group.guides.length + group.commands.length}</span></p>`);
         for (const guide of group.guides) bays.push(guide.html);
-        for (const command of group.commands) {
-            const entry = COMMANDS[command.path] || {};
-            const find = [command.path, entry.purpose || '',
-                command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ');
-            bays.push(`<article class="cx-bay" id="${esc(command.id)}" data-group="${esc(group.key)}" ` +
-                `data-cmd="${esc(command.path)}" data-find="${esc(find)}">` +
-                `<div class="cx-top"><h2><span class="cx-sl2">/</span>${esc(command.path.slice(1))}</h2>` +
-                `<p class="cx-why">${esc(entry.purpose || command.description)}</p></div>` +
-                `<div class="cx-opts">${renderOptions(command, C)}</div></article>`);
-        }
+        // Calls the REAL renderer. A hand-copied bay would let the comparison render a different page than the one being compared, which is the one thing a comparison must not do. The ledger below is the deliberate exception — its row IS the change.
+        for (const command of group.commands) bays.push(renderCommand(command, group, C));
     }
     return `<div class="xr" id="xr">
   <div class="xr-c"><p class="xr-h">Commands<span class="cx-ct">${commands.length}</span></p><div class="xr-l">${cmdCol}</div></div>
@@ -163,7 +155,7 @@ const XREF_JS = [
 
 /* ── 3. STICKY LEFT / SCROLLING RIGHT ─────────────────────────────────────────
    allgoodstudio's split, from the crawl: "left column pins a huge Didone 01 OF 06 + -- SELECTED WORKS + headline, while project cards scroll past on the right." Here the pinned half is the GROUP -- a counter, the group name at display size, and that group's commands -- and it swaps as you cross into the next one. The smallest departure from what exists, since a left column is already there, but it turns that column from a flat index into a sense of place. */
-function renderSticky({ groups, C, renderOptions, COMMANDS, esc }) {
+function renderSticky({ groups, C, renderCommand, esc }) {
     const live = groups.filter(g => g.commands.length || g.guides.length);
     const panels = live.map((group, i) =>
         `<div class="st-p" data-group="${esc(group.key)}"${i ? ' hidden' : ''}>` +
@@ -178,16 +170,8 @@ function renderSticky({ groups, C, renderOptions, COMMANDS, esc }) {
         bays.push(`<p class="cx-band" id="g-${esc(group.key)}" data-group="${esc(group.key)}">${esc(group.label)}` +
             `<span class="cx-ct">${group.guides.length + group.commands.length}</span></p>`);
         for (const guide of group.guides) bays.push(guide.html);
-        for (const command of group.commands) {
-            const entry = COMMANDS[command.path] || {};
-            const find = [command.path, entry.purpose || '',
-                command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ');
-            bays.push(`<article class="cx-bay" id="${esc(command.id)}" data-group="${esc(group.key)}" ` +
-                `data-cmd="${esc(command.path)}" data-find="${esc(find)}">` +
-                `<div class="cx-top"><h2><span class="cx-sl2">/</span>${esc(command.path.slice(1))}</h2>` +
-                `<p class="cx-why">${esc(entry.purpose || command.description)}</p></div>` +
-                `<div class="cx-opts">${renderOptions(command, C)}</div></article>`);
-        }
+        // Calls the REAL renderer. A hand-copied bay would let the comparison render a different page than the one being compared, which is the one thing a comparison must not do. The ledger below is the deliberate exception — its row IS the change.
+        for (const command of group.commands) bays.push(renderCommand(command, group, C));
     }
     return { panels, bays: bays.join('') };
 }

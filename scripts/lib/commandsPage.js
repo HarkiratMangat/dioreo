@@ -682,7 +682,7 @@ function commandsShell({ page, catalog, C, variant = null }) {
     let variantJs = '';
     if (variant) {
         const V = require('./commandsVariants');
-        const args = { groups: groupData, C, renderOptions, COMMANDS, esc };
+        const args = { groups: groupData, C, renderOptions, renderCommand, COMMANDS, esc };
         if (variant === 'ledger') { docHtml = V.renderLedger(args); variantCss = V.LEDGER_CSS; }
         if (variant === 'xref') { docHtml = V.renderXref(args); variantCss = V.XREF_CSS; variantJs = V.XREF_JS; }
         if (variant === 'sticky') {
