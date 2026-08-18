@@ -179,6 +179,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-17 19:35 EDT — Recovering storage-channel messages instead of orphaning them (v3.44.0-pre)
 - 2026-08-18 09:52 EDT — A full-branch review, 61 findings fixed, and what got deliberately skipped (v3.45.0-pre)
 - 2026-08-18 12:04 EDT — Settings pickers and /help collapse to shared, self-enforcing shapes (v3.46.0)
+- 2026-08-18 12:50 EDT — A rule written down, then broken twice in the same session (v3.47.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3139,6 +3140,26 @@ Both collapsed into shared, self-enforcing shapes rather than mechanically dedup
 No live dev-bot click-testing was run this session -- explicitly deferred by Harkirat for the whole plan, not just this session. In its place: a before/after snapshot fixture (`scripts/helpBodySnapshot.test.js`) diffing every `/help` page across a 4-way perms matrix, proven able to fail by mutation before being trusted. It caught a real bug mid-refactor: gunsmiths' directory listing (2 commands) doesn't 1:1 match its 3-command detail page, an assumption that would have silently broken had the refactor blindly derived one from the other.
 
 Also found and fixed in the same pass: PR #153's changelog entry never backfilled the previous release's (#152) commit hash, a real gap in the backfill convention that had gone unnoticed for one release.
+
+## 2026-08-18 12:50 EDT — A rule written down, then broken twice in the same session (v3.47.0)
+
+Spent the session auditing which installed skills, CLIs and MCPs actually go unused, and writing the answer into a new machine-global reference at `~/.claude/TOOLING.md` (outside this repo). The repo-side output is small — one filed item under `docs/db-deferred-list.md` naming five installed-but-unrouted CLIs. The lessons are the part worth keeping.
+
+**The mistake, and then the same mistake again.** Asked whether a list of skills was worth using, I searched the filesystem for each, found no file for `design:design-system`, and reported it did not exist. Harkirat replied that he could invoke it — and he could; it worked first try. I wrote that up as a memory and a doc section whose whole thesis is *absence from a listing is not evidence of absence; test by invoking.* Then, in the very next response, I reported that `/verify` did not exist anywhere — having searched four locations. Harkirat sent a screenshot of it.
+
+Writing the rule down did not prevent the repeat, and it is worth being precise about why: **the search felt exhaustive.** Four roots, every plugin cache, all coming back empty. Thoroughness is exactly what made the wrong answer feel trustworthy. A careful search of the wrong space returns a confident wrong answer, and it does not feel like a guess.
+
+**What chasing it down actually found.** `/verify` lives at `/private/tmp/claude-501/bundled-skills/<cc-version>/<hash>/verify` — and that directory had been created *in the same minute I invoked it*, containing only `verify`. Claude Code's bundled skills are extracted to disk **only at first invocation**. So for that whole class, filesystem search is not an incomplete index, it is an empty one: before you invoke a bundled skill there is nothing on disk to find, and no flag combination or extra search root fixes it. The directory only ever tells you what you have already run. My own doc's claim that built-ins have "no file anywhere" was wrong in the same instructive direction — they have files, just not until you act.
+
+That reframes the rule from a reminder into a mechanism: for a skill specifically, invocation is not the *best* check, it is the *only* one. The honest output when a search comes up empty is "I could not find it, want me to try invoking it?" — never "it does not exist."
+
+**Two smaller self-inflicted ones, both from habits this repo already documents.** I confirmed a docs gate with `npm run docs:audit | tail -5; echo $?` — which reads `tail`'s status, not the gate's. That is the exact pipe-masks-exit-status trap that once produced a wrong pushed git tag here, and it is in memory. Caught it on re-read and re-ran redirecting to a file. Separately, while diffing audit warnings against the base branch I ran `git stash -q -u` on a tree that was already clean — so it created nothing — and the matching `git stash pop` then grabbed a *pre-existing, unrelated* WIP stash and left the worktree conflicted across eleven files. Recovered by verifying the stash still held its full content and that my own work was committed and pushed before resetting, so the reset could only discard the partial application. A stash pop that has no stash of its own to pop is not a no-op; it reaches for whatever is on top.
+
+### Lessons
+- **Absence from any index — a skills listing, a tool list, a filesystem — is not evidence of absence.** For skills, invoke to test. Say "I could not find it" rather than "it does not exist"; the two claims have very different truth conditions and only one of them is supported by a search.
+- **A thorough search of the wrong space is more dangerous than a lazy one**, because the thoroughness is what makes the false negative persuasive. Before concluding "nothing there," ask whether the thing being searched for is the kind of thing that would be there at all — bundled skills materialize on invocation, so the answer was structurally no.
+- **Writing a rule down does not install it.** The repeat happened minutes after authoring the rule, in the same session, by the same reasoning path. What the second miss added was the *mechanism* — and a mechanism ("this directory is empty until you invoke") is harder to argue past in the moment than a principle ("be careful about listings").
+- **`git stash pop` is not paired with your own stash.** `git stash -u` on a clean tree silently creates nothing, so a later pop takes whatever sits on top — here, someone else's WIP. Check `git stash list` before popping, and verify the stash still holds its content before resetting anything.
 
 # Part B — Lessons Ledger (thematic)
 
