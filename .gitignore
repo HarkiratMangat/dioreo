@@ -1,27 +1,38 @@
-# Dependencies & System Junk
+## Dependencies
 node_modules/
-.DS_Store
 # `.env` alone is an EXACT match and does NOT cover sibling env files. The glob was added 2026-07-26
 # 15:32 EDT when the local dev bot introduced `.env.dev` (dev Discord token + local Mongo URI) -- without it that
 # file would have been silently stageable. Any future `.env.<anything>` is covered by the same rule.
 .env
 .env.*
 
+
+## System Junk
+.DS_Store
+# macOS Finder custom-folder-icon marker -- a 0-byte artifact Finder recreates on its own,
+# never meaningful content. Untracked 2026-08-18 10:07 EDT after an accidental `git add -A` picked
+# it up (this repo has no global ignore for it, unlike most repos on this machine).
+Icon?
+
+
 # Dev-bot-only emoji overrides consumed by utils/emojiMap.js's refreshEmojiIds() when
 # NODE_ENV=development. Local experimentation only -- never part of a release.
 utils/emojiMap.dev.json
 
-# Project-Specific Local Files
+## Project-Specific Local Files
 gun-builds/
 local/
 .restart-reason
 builds.xlsx
+Dioreo logo/
+
 
 # Python bytecode cache -- introduced 2026-08-15 01:42 EDT by scripts/syncNameplateCatalog.py, the
 # repo's first .py file. Credentials for that script live in scripts/.env.discord-sync, already
 # covered by the .env.* glob above.
 __pycache__/
 *.pyc
+
 
 # AI CLI & Memory Folders
 # NOTE: NOTHING under .claude/ is ignored any more except throwaway backups. The rule files
@@ -49,11 +60,8 @@ __pycache__/
 
 # Harkirats-Space note file
 /docs/ideas/Harkirats-Space.md
+
+
 # Structured log sink written by utils/logger.js on the VM (tailed by the Ops Agent, rotated by
 # logrotate). Never committed — it is machine-local runtime output.
 logs/
-
-# macOS Finder custom-folder-icon marker -- a 0-byte artifact Finder recreates on its own,
-# never meaningful content. Untracked 2026-08-18 10:07 EDT after an accidental `git add -A` picked
-# it up (this repo has no global ignore for it, unlike most repos on this machine).
-Icon?
