@@ -477,10 +477,7 @@ module.exports = {
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,
-    PAGE_META,
-    FILTERABLE_PAGES,
-    PAGE_LABEL,
-    encodeState,
+    // PAGE_META/FILTERABLE_PAGES/PAGE_LABEL/encodeState removed from exports (v3-pre-release review, finding #47) -- confirmed dead as CROSS-MODULE exports (nothing anywhere destructures them off require('../commands/ bot')), while decodeState beside them is genuinely imported by handlers/bot.js, which is what made the dead half easy to miss. All four stay as internal consts/functions -- this file uses every one of them itself.
     decodeState,
 
     data: new SlashCommandBuilder()

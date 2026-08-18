@@ -342,6 +342,13 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     const fallbackKey = visibleKeys.includes('draws') ? 'draws' : visibleKeys[0];
     const pageKey = (PAGES[page] && visibleKeys.includes(page)) ? page : fallbackKey;
     const pageData = PAGES[pageKey];
+    // Guarded (v3-pre-release review, finding #17) -- 'season' is a real grant token (utils/adminAccess.js) but a PSEUDO-page: it is not a key in the PAGES table above. An admin scoped to EXACTLY 'season' (no other page) made visibleKeys=['season'], fallbackKey=undefined, pageData=undefined -- and the render threw on an already-deferred interaction, leaving a dead panel with no message. Fall back to the same "nothing to show" state a genuinely empty allowedPages would produce, rather than crashing.
+    if (!pageData) {
+        return {
+            components: [{ type: 10, content: `# ${emojis.database} Database Management\n${emojis.warning ?? '⚠️'} You have access to Season settings only, which isn't a standalone page here — use \`/manage command:season action:...\` instead.` }],
+            flags: 32768,
+        };
+    }
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
 
     const components = [
@@ -741,6 +748,22 @@ function buildDraftBulkCalendarModal(seasonalDoc) {
     return modal;
 }
 
+// The per-page dynamicData table, defined ONCE (v3-pre-release review, finding #44) -- the dropdown entry point (handlers/manage/shared.js's mng_pagesel handler, via the manageCommand module reference it's passed) and this file's own slash-option entry point below used to each hand-roll this same three-branch table. A page that gained a dynamic block and was added to only one copy rendered correctly from one entry point and empty from the other.
+async function buildDynamicData(page) {
+    const { loadSeasonalDoc } = require('../utils/manageActions');
+    if (page === 'patchnotes') {
+        return { pastSeasons: buildPastSeasonsOptions(await loadSeasonalDoc()) };
+    }
+    if (page === 'seasondraft') {
+        return { draftStatus: buildDraftStatusText(await loadSeasonalDoc()) };
+    }
+    if (page === 'announcement') {
+        const { getActiveAnnouncements } = require('../utils/announcement');
+        return { announcementBlocks: buildAnnouncementListBlocks(await getActiveAnnouncements()) };
+    }
+    return {};
+}
+
 module.exports = {
     ALLOWED_ADMIN_ID, // Exposed so handlers/router.js's centralized panel-interaction guard (button/select/
                       // modal-submit) can check against the same single source of truth instead of a second hardcoded literal drifting out of sync — see the guard right after the anti-spam block in interactionCreate.
@@ -772,7 +795,7 @@ module.exports = {
     get PAGES() { return buildPagesTable(); },
     PURGE_LABELS,
     buildManagePage,
-    buildPastSeasonsOptions,
+    buildPastSeasonsOptions, buildDynamicData,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
     buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal, buildCalendarBannersModal,
@@ -799,13 +822,16 @@ module.exports = {
             if (!allowedPages.includes('season')) {
                 return interaction.reply({ content: "🔒 **You don't have access to Season Titles & Deadlines.** Ask the bot owner to grant it if you need it.", ephemeral: true });
             }
-            const SeasonalData = require('../models/SeasonalData');
-            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            // Shared lookup, not a hand-rolled one (v3-pre-release review, finding #38).
+            const { loadSeasonalDoc } = require('../utils/manageActions');
+            const seasonalDoc = await loadSeasonalDoc();
             return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
         }
 
         if (section !== 'guide' && !allowedPages.includes(section)) {
-            return interaction.reply({ content: `🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.`, ephemeral: true });
+            // DENIAL_MESSAGE.denied, not a restated copy (v3-pre-release review, finding #43).
+            const { DENIAL_MESSAGE } = require('../utils/manageActions');
+            return interaction.reply({ content: DENIAL_MESSAGE.denied, ephemeral: true });
         }
 
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
@@ -838,21 +864,8 @@ module.exports = {
             return sendV2Payload(interaction, buildGuideContainer('draws'));
         }
 
-        // Patch Notes' "Past Seasons" dropdown needs a live DB read to build its options -- every other page renders from PAGES alone. Only fetched when actually landing on that page.
-        let dynamicData = {};
-        if (section === 'patchnotes') {
-            const SeasonalData = require('../models/SeasonalData');
-            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-            dynamicData = { pastSeasons: buildPastSeasonsOptions(seasonalDoc) };
-        } else if (section === 'seasondraft') {
-            const SeasonalData = require('../models/SeasonalData');
-            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-            dynamicData = { draftStatus: buildDraftStatusText(seasonalDoc) };
-        } else if (section === 'announcement') {
-            const { getActiveAnnouncements } = require('../utils/announcement');
-            const announcementDocs = await getActiveAnnouncements();
-            dynamicData = { announcementBlocks: buildAnnouncementListBlocks(announcementDocs) };
-        }
+        // buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- only fetched when actually landing on a page that needs it; every other page renders from PAGES alone.
+        const dynamicData = await buildDynamicData(section);
         return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages), { content: actionFallbackNote });
     }
 };

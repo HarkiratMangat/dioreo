@@ -248,7 +248,8 @@ function noteDep(name, ms, ok = true, extra = null) {
         ctx.deps.push(row);
     }
     row.ms += Math.max(0, Math.round(ms) || 0);
-    row.calls += 1;
+    // countsAsCall opt-out (v3-pre-release review, finding #29) -- utils/visionExtract.js reports the Vertex token total as a deliberate zero-duration SECOND noteDep call on the same dependency row (so the token figure lands beside the timing figure without a second timeDependency wrapper), but that call was also incrementing `calls` a second time for the SAME real network call, doubling the reported call volume and halving the true mean latency (ms/calls) for exactly one dependency.
+    if (extra?.countsAsCall !== false) row.calls += 1;
     if (!ok) row.ok = false;
     if (extra && typeof extra.tokens === 'number') row.tokens = (row.tokens || 0) + extra.tokens;
 }

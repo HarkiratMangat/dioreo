@@ -161,7 +161,8 @@ function buildDrawsBody(perms, client) {
 }
 
 function buildSeasonalBody(perms, client) {
-    return `### ${mentionCommand(client, '/calendar')}\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming (defaults to your ${mentionCommand(client, '/settings')} choice)\n${VISIBILITY_BULLET}\n`
+    // [view] description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; [view] is now a one-off per-invocation choice only, never saved.
+    return `### ${mentionCommand(client, '/calendar')}\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming for this one view (not saved)\n${VISIBILITY_BULLET}\n`
         + `### ${mentionCommand(client, '/patch notes')}\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 \`[season]\` Search for a specific previous season (start typing to see suggestions)\n${VISIBILITY_BULLET}\n`
         + `### ${mentionCommand(client, '/season end')}\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;

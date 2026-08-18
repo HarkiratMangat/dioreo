@@ -175,7 +175,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
         const active = Math.max(0, options.findIndex(o => o.value === activeWeaponKey));
         const start = Math.min(Math.max(0, active - 12), options.length - 25);
         truncated = options.slice(start, start + 25);
-        // A select `placeholder` caps at 150 characters -- this phrasing is well under that even at 3-digit counts, asserted in the snapshot test rather than assumed.
+        // A select `placeholder` caps at 150 characters -- this phrasing is well under that even at 3-digit counts. NOTE (v3-pre-release review, finding #36): the windowing arithmetic below, this placeholder, and the default-marked option staying inside the slice are NOT exercised by any test today -- both cards in scripts/loadoutRenderSnapshot.test.js pass categoryBuilds: null, which returns before this branch runs. Treat as unverified (the old comment here claimed the opposite) until a real >25-weapon case is added.
         placeholder = `Browse ${scopeLabel} — 25 of ${options.length}, use /gunsmiths search for the rest`;
     }
 

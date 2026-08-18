@@ -99,7 +99,7 @@ module.exports = {
         const style = prefs.timestampStyle || 'all_formats';
 
         // Expanded 2026-08-15 13:13 EDT -- see utils/timezoneData.js. QUICK_TIMEZONES is the dropdown's direct one-click picks; the full ALL_TIMEZONES list is only reachable through the dropdown's "Search for your city..." sentinel (see below), fuzzy-matched against city names/aliases via a modal since Discord's own select menu caps at 25 options.
-        const { QUICK_TIMEZONES, findTimezoneLabel } = require('../utils/timezoneData');
+        const { QUICK_TIMEZONES, findTimezoneLabel, displayLabel } = require('../utils/timezoneData');
         const currentTzLabel = findTimezoneLabel(tz);
 
         // NOTE (redesigned during review): aligned these value keys to match the exact style options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/ mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's' and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") — the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already renders them correctly, so they belong here too.
@@ -230,7 +230,8 @@ module.exports = {
                 components: [{
                     type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
                     options: [
-                        ...QUICK_TIMEZONES.map(z => ({ label: z.label, value: z.tz, default: tz === z.tz })),
+                        // displayLabel appends the LIVE abbreviation (finding #45) -- was baked statically into z.label.
+                        ...QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz, default: tz === z.tz })),
                         // Sentinel value (not a real IANA zone) -- handlers/settings.js's `set_` branch intercepts this BEFORE deferUpdate() and opens a search modal instead of saving it. 25th option, right at the select-menu cap.
                         { label: '🔍 Search for your city...', value: '__search__', description: 'Not in the list above? Type a city, country, or abbreviation.' }
                     ]

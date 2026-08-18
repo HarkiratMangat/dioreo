@@ -53,19 +53,21 @@ async function main() {
     const docs = flattenCatalog(catalog);
     console.log(`Parsed ${docs.length} SKU(s) from the catalog file.`);
 
-    let inserted = 0, updated = 0;
-    for (const { skuId, ...rawFields } of docs) {
+    // One bulkWrite, not N sequential findOneAndUpdate round trips (v3-pre-release review, finding #52) -- at this repo's own measured 30-80ms/op Atlas latency, 925 fully-independent SKU upserts cost 28-74s of pure serialized network wait every time the catalog file changes. `matchedCount` is exactly the old `updated` counter's semantics (every doc that already existed, regardless of whether $set actually changed a field -- the original loop counted those as "updated" too), and `upsertedCount` is exactly the old `inserted`.
+    const ops = docs.map(({ skuId, ...rawFields }) => {
         // Drop undefined keys explicitly rather than relying on driver behavior for `undefined` in an update doc (a decoration has no palette/paletteHex; a single-variant design has no variantLabel/variantValue) -- keeps a re-sync from writing explicit nulls over fields that were simply never applicable to begin with.
         const fields = Object.fromEntries(Object.entries(rawFields).filter(([, v]) => v !== undefined));
-        // `returnDocument: 'before'` returns the PRE-update doc -- null means it didn't exist yet (a real insert). Deliberately not `rawResult: true`/`lastErrorObject.upserted`: that shape depends on the underlying MongoDB driver's raw response format, which changed under this Mongoose version and threw "Cannot read properties of null" instead of returning the expected wrapper. Checking the returned document's existence is simpler and driver-shape-independent.
-        const before = await CollectibleCatalog.findOneAndUpdate(
-            { skuId },
-            { $set: fields, $setOnInsert: { skuId, cacheStatus: 'pending' } },
-            { upsert: true, returnDocument: 'before' }
-        );
-        if (before === null) inserted++;
-        else updated++;
-    }
+        return {
+            updateOne: {
+                filter: { skuId },
+                update: { $set: fields, $setOnInsert: { skuId, cacheStatus: 'pending' } },
+                upsert: true,
+            },
+        };
+    });
+    const result = await CollectibleCatalog.bulkWrite(ops, { ordered: false });
+    const inserted = result.upsertedCount;
+    const updated = result.matchedCount;
 
     const nameplateCount = await CollectibleCatalog.countDocuments({ kind: 'nameplate' });
     const decorationCount = await CollectibleCatalog.countDocuments({ kind: 'decoration' });

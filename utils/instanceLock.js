@@ -17,8 +17,9 @@ function isHolderAlive(existing) {
     try {
         process.kill(existing.pid, 0);
         return true;
-    } catch {
-        return false;
+    } catch (err) {
+        // ESRCH = genuinely no such process = dead. Anything else (notably EPERM, when the pid exists but this process lacks permission to signal it -- e.g. the VM's systemd user vs. a manual run from another account) must NOT be read as dead: it is unknown, and assuming alive is the safe default, since the alternative is silently stealing a live lock (v3-pre-release review, finding #32).
+        return err.code !== 'ESRCH';
     }
 }
 
@@ -33,11 +34,25 @@ async function acquireInstanceLock() {
         return false;
     }
 
-    await BotInstance.findByIdAndUpdate(
-        lockId,
-        { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
-        { upsert: true }
-    );
+    // Atomic claim (v3-pre-release review, finding #32) -- the read above and the write below used to be two independent round trips with no conditional filter, so two processes starting within the same window could both read "no fresh/alive holder" and both proceed to write, unconditionally, both returning true -- the exact 2026-07-14 dual-instance incident this module exists to prevent. The filter re-asserts the SAME document state this process just read (either "no doc existed" or "the doc's lastHeartbeat still matches what was read a moment ago") -- optimistic concurrency (CAS). If a concurrent process's OWN claim already landed in between, this write's filter no longer matches and `claimed` comes back null: a real race is DETECTED rather than silently overwritten, instead of the previous unconditional upsert winning blindly.
+    const claimFilter = existing ? { _id: lockId, lastHeartbeat: existing.lastHeartbeat } : { _id: lockId };
+    let claimed;
+    try {
+        claimed = await BotInstance.findOneAndUpdate(
+            claimFilter,
+            { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
+            { upsert: !existing, new: true }
+        );
+    } catch (err) {
+        // upsert:true + a concurrent FIRST-EVER insert of the SAME _id from two processes at once is a real race too -- Mongo surfaces the loser's attempt as a duplicate-key error (E11000) rather than a plain null.
+        if (err?.code === 11000) claimed = null;
+        else throw err;
+    }
+    if (!claimed) {
+        console.error('❌ Refusing to start: lost a race to claim the instance lock for this bot token -- another process claimed it a moment ago.');
+        sendAlert('Startup refused: lost instance-lock race', 'Another process claimed the lock between this one\'s read and write.', 'error');
+        return false;
+    }
 
     // unref() so this timer alone never keeps the process alive -- it should only run for as long as the bot is already running for other reasons (the Discord gateway connection, etc).
     const heartbeatTimer = setInterval(() => {

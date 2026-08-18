@@ -21,6 +21,11 @@ function loadoutModeFor(page) {
     return page === 'loadouts_mp' ? 'MP' : page === 'loadouts_dmz' ? 'DMZ' : null;
 }
 
+// The INVERSE of loadoutModeFor, co-located so the two directions can't drift apart (v3-pre-release review, finding #41) -- this mapping used to be re-derived inline at 7 separate sites, one of which (a page/group selector) disagreed with this function at the edges: loadoutModeFor returns null for an unknown page, while the inline copy silently defaulted to 'DMZ'. Mirrors loadoutModeFor's own null-safety instead.
+function pageForLoadoutMode(mode) {
+    return mode === 'MP' ? 'loadouts_mp' : mode === 'DMZ' ? 'loadouts_dmz' : null;
+}
+
 // ── Shared run() implementations ─────────────────────────────────────────── Edit/Delete can't autocomplete the way a slash option could, so they collect a search query through a one-field modal first; handlers/manage.js's `mng_search_` submit handler fuzzy-matches it. This is why 'delete' is safely slash-exposed: the button opens a SEARCH box, it deletes nothing on its own.
 const openSearchModal = (searchAction) => async ({ interaction, page, manageCommand }) =>
     await interaction.showModal(manageCommand.buildSearchModal(page, searchAction));
@@ -57,6 +62,11 @@ const exportFile = (buildExport) => async (ctx) => {
         ephemeral: true
     });
 };
+
+// followUp variant of exportFile, for a MODAL-SUBMIT caller that already deferred (v3-pre-release review, finding #42) -- exportFile above answers a BUTTON click that hasn't responded yet, so it replies directly; handlers/manage/loadouts.js's two export flows collect input through a modal and defer first, so they need followUp instead. Same file-attachment shape either way.
+function exportFileReply(interaction, content, name, text) {
+    return interaction.followUp({ content, files: [{ attachment: Buffer.from(text, 'utf-8'), name }] });
+}
 
 async function loadSeasonalDoc() {
     const SeasonalData = require('../models/SeasonalData');
@@ -295,7 +305,7 @@ async function resolveAction(page, actionId, userId) {
 const DENIAL_MESSAGE = {
     unknown: "❌ **That action doesn't exist.** It may have been renamed or removed — reopen the panel to see what's available.",
     owner: '🔒 **Only the bot owner can manage the admin list.**',
-    denied: "🔒 **You don't have access to that section.**"
+    denied: "🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it."
 };
 
 // ── Panel button construction ────────────────────────────────────────────── commands/manage.js's buildPagesTable() calls these instead of writing `{ id, label, style }` literals, so a button and the handler behind it cannot exist without each other.
@@ -319,5 +329,9 @@ module.exports = {
     DENIAL_MESSAGE,
     buttonFor,
     buttonsFor,
-    loadoutModeFor
+    loadoutModeFor,
+    pageForLoadoutMode,
+    exportFileReply,
+    // Exported (v3-pre-release review, finding #38) so the lean read-only SeasonalData lookups scattered across commands/manage.js and handlers/manage/patchnotes.js can share this one definition instead of re-deriving the same `.findOne({docType:'global'}).lean()` call by hand.
+    loadSeasonalDoc
 };
