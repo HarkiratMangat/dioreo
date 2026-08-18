@@ -707,6 +707,15 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 
 ---
 
+### 🧰 Installed CLIs this repo has never routed to (filed 2026-08-18 12:08 EDT)
+*Found while building `~/.claude/TOOLING.md`, a machine-global inventory of every CLI/skill/MCP available here. Each tool below is **already installed** (verified by `command -v` and `brew leaves` on 2026-08-18 12:08 EDT) and maps onto a workflow this repo already does by hand. **This is an adoption question, not a bug** — nothing is broken today. ⚠️ Two neighbours are already filed and must NOT be re-filed here: `bats` (the hook-suite migration item above) and `typos`/`shellcheck` (both already wired as hooks). Re-run `command -v <tool>` before acting; an entry here is evidence from its filing date, not a verdict.*
+
+- `[P3 · S · Sonnet5-Medium]` **`markdownlint-cli2` could become a `docs:audit` check.** The audit covers structure, cross-references, version coverage and the conservation rule, but nothing lints Markdown *syntax* — broken link syntax, malformed tables, inconsistent list markers. ⚠️ **Configure it against the soft-wrap convention before enabling**: its default ruleset includes line-length (MD013) and no-hard-tabs rules that would fight this repo's one-line-per-paragraph rule and fail the whole tree. Start with a deliberately narrow rule subset, not the defaults.
+- `[P3 · S]` **`git-cliff` generates changelogs from commit history — but check `dior changelog` first.** The `dior` CLI already has a `changelog` command that drafts the next release's entry from commits, so this may be redundant, a duplicate implementation, or already a wrapper around it. **Resolve that before adopting** — `~/.config/dior/*.zsh` is a separate git repo that no in-repo search reaches, so read it directly. If `dior changelog` is hand-rolled, `git-cliff` with a Conventional-Commits config matches this repo's commit convention exactly and would be the stronger base.
+- `[P3 · XS]` **`shfmt` would format the `.claude/hooks/*.sh` tree.** `shellcheck` already lints them; `shfmt` is the formatting half and is installed but unrun. Cheapest of these to adopt — but decide whether a formatter's churn is worth it on scripts whose WHY-comments carry the incidents they exist for.
+- `[P3 · XS]` **`languagetool` for grammar/style on the published docs.** Relevant only to what actually renders to dioreo.app (`docs/legal/*.md`, `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`) — not the record files, which are append-only history and must not be retroactively edited.
+- `[P3 · XS]` **`difft` (structural diff) and `scc` (LOC/complexity) are pure ad-hoc conveniences** — no integration needed, just habits worth having. `difft` earns its place on a refactor whose plain `git diff` is unreadable; `scc` for "how big did this actually get" questions.
+
 ## 🚫 Decided-no — don't re-raise
 
 ### 🚫 Extending the algorithm fingerprint to the per-user avatar/banner colour caches (decided 2026-08-11 18:39 EDT, Harkirat)
