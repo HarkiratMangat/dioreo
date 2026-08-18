@@ -132,6 +132,18 @@ Also found by manual inspection (not caught by any verifier): `// ===...===` dec
 
 If you touch it: the test file's job is mostly proving each defect above STAYS fixed, same philosophy as `reflow-prose.test.mjs`. Idempotent — a second run is a no-op (bugs 3 exists precisely because that wasn't true once).
 
+## `lib/commandCatalog.js` + `commandCatalog.test.js` — what the website's `/commands` page knows (added 2026-08-17 20:07 EDT)
+
+Reads the **real command builders** (`commands/*.js`'s own `.toJSON()`) at site-build time and returns the grouped, ordered, admin-filtered catalog the `/commands` page renders. Nothing is transcribed, so the page cannot drift from the bot. Wired into `npm test`; needs no Mongo, no Cloudinary and no env.
+
+⚠️ **Ordering and admin-gating come from `commands/help.js`'s own `CATEGORY_DEFS`**, not from a second list here. That is what stops the website and the in-Discord directory disagreeing about how the bot is organised, and it means a new admin command is excluded from the public site by the same `requires` key that hides it in Discord — rather than by someone remembering to add it to an exclusion list. `help.js`'s own header records why that array became the single source of truth.
+
+⚠️ **`buildCatalog()` THROWS on a public command with nowhere to go, and that is the feature.** The failure it prevents is a command that exists, works, and is invisible on the page whose entire job is listing commands. It caught one on its first run: **`/invite` is registered and public but appears nowhere in `CATEGORY_DEFS`**, so it is also missing from `/help`'s directory, category dropdown and `cmd:` autocomplete. `/help` omits itself the same way. Both are placed via `EXTRA_PLACEMENT` so the website is complete; the bot-side gap is filed separately.
+
+⚠️ **Requiring the command modules from a build was MEASURED safe before this was written** (2026-08-17 20:05 EDT), not assumed: zero `mongoose.connect` calls, `readyState` 0, no handle that could hang a build, ~0.5s, exit 0 under `env -i`. If a command module ever connects on require or throws without credentials, this module is the wrong shape and the fallback is a generated, committed catalog with a staleness gate.
+
+Its test's real job is proving the gate **can fail** — it feeds a `CATEGORY_DEFS` that has forgotten a live command and asserts the build throws *and names it*, then asserts the real tree stays silent. A falsifier that cannot fail manufactures confidence.
+
 ## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 14:59 EDT)
 Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`; writes nothing and touches no project state. It measures the 7-day MCP observation window opened 2026-08-02 14:43 EDT (protocol + pre-registered baseline: `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder in `docs/db-deferred-list.md`).
 
