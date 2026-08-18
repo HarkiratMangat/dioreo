@@ -14,7 +14,7 @@ const { resolveDecorationWebp } = require('./decorationWebpCache');
 // PALETTE_COUNTS moved to utils/colorExtract.js 2026-08-11 10:25 EDT -- the nameplate/decoration WebP caches extract palettes too and must use the same counts, and this module requires those caches, so colorExtract (which requires neither) is the only home that all three can import from without a cycle. See its own comment for the three-copies hazard that motivated the move.
 
 // Every image-backed source's URL + the asset-hash identity it should be cached against. Mirrors exactly what utils/accentColor.js already resolves for the single-hex accent system -- avatar's hash/URL come straight off interaction.user (free, no fetch), banner/decoration/nameplate need a live fetch (force-fetched User object for banner, one combined raw REST call for the other two).
-async function getSourceImageInfo(interaction, useGuild = false) {
+async function getSourceImageInfo(interaction, useGuild = false, globalData = null) {
     // Per-server overrides (2026-08-09 13:50 EDT). Resolved PER SOURCE, not all-or-nothing: someone with a server avatar but no server banner sees their server avatar and their ordinary banner, which is what Discord itself shows in that server. A source with no override simply falls through to the global block below, so `useGuild` never produces an empty page.
     const guildProfile = useGuild ? readGuildProfile(interaction) : null;
 
@@ -40,12 +40,20 @@ async function getSourceImageInfo(interaction, useGuild = false) {
     const needsGlobal = !guildProfile
         || !guildProfile.bannerHash || !guildProfile.decorationAsset
         || !guildProfile.nameplateAsset || !guildProfile.displayNameColors;
-    const [userFetch, extras] = needsGlobal
-        ? await Promise.all([
-            interaction.client.users.fetch(interaction.user.id, { force: true }),
-            fetchProfileExtras(interaction.client, interaction.user.id)
-          ])
-        : [{ banner: null }, { decorationUrl: null, nameplateUrl: null, displayNameColors: null }];
+    // `globalData` (2026-08-18, v3-pre-release review finding #57): the global fetch below is guild-INDEPENDENT -- it depends only on interaction.user/client, never on `useGuild` -- so a caller that already resolved it once (getPalettePanelData's cross-view refresh sweep, below) can hand it back in here instead of paying the users.fetch(force:true) + fetchProfileExtras REST round trips a second time for data that cannot have changed between the two calls.
+    let userFetch, extras;
+    if (needsGlobal) {
+        if (globalData) {
+            ({ userFetch, extras } = globalData);
+        } else {
+            [userFetch, extras] = await Promise.all([
+                interaction.client.users.fetch(interaction.user.id, { force: true }),
+                fetchProfileExtras(interaction.client, interaction.user.id)
+            ]);
+        }
+    } else {
+        [userFetch, extras] = [{ banner: null }, { decorationUrl: null, nameplateUrl: null, displayNameColors: null }];
+    }
 
     // DECOUPLED display vs extraction resolution (2026-07-14): `url` is the FULL-size 512px banner shown in the panel's Media Gallery preview (restoring the size it displayed at before the CPU pass -- dropping it to 256 shrank the visible preview, a real regression). `extractUrl` is a small 256px copy used ONLY for color extraction, which halves the pixels Jimp has to decode synchronously on Render's free-tier CPU (k-means only samples ~2500 pixels regardless of source resolution, so 256 is quality-equivalent for clustering -- it just isn't big enough to DISPLAY).
     const banner = guildProfile?.bannerHash
@@ -86,7 +94,8 @@ async function getSourceImageInfo(interaction, useGuild = false) {
         ? await resolveGuildNameColors(interaction, guildProfile, interaction.isChatInputCommand?.() ?? false)
         : null) || extras.displayNameColors;
 
-    return { avatar, banner, decoration, nameplate, displayNameColors };
+    // Surfaced so a caller resolving BOTH views in one call (getPalettePanelData's cross-view refresh) can pass this straight into the second call's `globalData` param -- null when this call never needed the global fetch at all, so a caller has nothing worth reusing.
+    return { avatar, banner, decoration, nameplate, displayNameColors, globalData: needsGlobal ? { userFetch, extras } : null };
 }
 
 // Recomputes+caches one source's 6/8-swatch palette only if its underlying asset actually changed (same source-hash invalidation pattern as every other cache in this bot). A transient extraction failure returns whatever was already cached (possibly null on a first-ever attempt) rather than wiping a previously-good cached palette over a one-off network/decode hiccup. The cache check runs BEFORE the still-frame extraction step (not after) specifically so a cache hit never pays for a still-unnecessary ffmpeg download+extract -- only a genuinely stale/first-time decoration actually re-downloads and re-extracts. `forceRefresh` (2026-07-14, Harkirat's request) skips the cache-hit check entirely and always re-extracts -- used by the main "View Colors" button and its explicit "Refresh Colors" button, NOT by ordinary page-switch navigation (see handlers/colors.js's colors_view/ colors_refresh_ vs colors_page_ handlers) -- still writes the fresh result back to cache afterward, so page-switching within the same viewing session stays fast either way. ⚠️ `paletteFields` MOVED TO utils/colorExtract.js 2026-08-12 23:58 EDT and is re-exported below for the callers that already import it from here. utils/accentColor.js needs the same field-name rule now that Dynamic Profile Colors draws on stored swatches, and it cannot import THIS module -- this one requires it, so that would close a cycle. colorExtract requires neither, which is exactly why PALETTE_COUNTS lives there for the same reason. Two hand-rolled copies of `guild${Kind}Palette` would drift silently, and a wrong field name reads as "no swatches saved" rather than as an error.
@@ -287,7 +296,8 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         await sweep(sources, isGuildSource, true);
 
         if (results.hasServerProfile) {
-            const otherInfo = await getSourceImageInfo(interaction, !useGuild);
+            // `info.globalData` (2026-08-18, finding #57): reuses the primary call's already-resolved global profile instead of re-fetching it -- see getSourceImageInfo's own comment on why that data cannot differ between the two views. null when the primary call never needed it (guildProfile there fully overrode every source), in which case this genuinely is the first time it's needed and getSourceImageInfo fetches it as before.
+            const otherInfo = await getSourceImageInfo(interaction, !useGuild, info.globalData);
             const otherSources = {
                 avatar: otherInfo.avatar, banner: otherInfo.banner,
                 decoration: otherInfo.decoration, nameplate: otherInfo.nameplate
