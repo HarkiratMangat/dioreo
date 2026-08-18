@@ -75,7 +75,21 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.45.0 — 2026-08-18 09:52 EDT (#153) — a full-branch code review, and 61 of its findings fixed same-session
+## Pre-Release v3.46.0 — 2026-08-18 12:04 EDT (#154) — settings pickers and /help collapse to shared, self-enforcing shapes
+
+The first session of a multi-session plan closing out the remaining items from the v3-pre-release code review (`local/handoff/review-remnants-plan.md`, gitignored; tracked via `docs/db-deferred-list.md`), closing findings #48 and #49 — two of the five the previous release deliberately skipped as needing a new architectural abstraction rather than a bounded fix.
+
+`/settings`' CP-currency and Timezone pickers were line-for-line clones across four site-pairs (`utils/cpCurrencyData.js`'s own header admitted it "mirrors utils/timezoneData.js's exact shape"). Collapsed into `utils/pickerUI.js` (`buildPickerSelectRow`/`buildPickerSearchModal`, the shared select-row + search-modal shape) parameterized by `utils/settingsPickers.js`'s `SETTINGS_PICKERS` registry, keyed by the real wire action string (`set_timezone`/`set_cpcurrency`) so the registry can't drift from the custom_id it dispatches on. `searchTimezones`/`searchCurrencies` normalized to return `[{value,label}]`.
+
+`commands/help.js`'s four page builders were duplicated, drifting hand-built markdown concatenations, and `perms` was accepted by all six builders but only read by two — the loose signature that already let a permission filter go silently missing from `buildBotAdminBody` once. Replaced with one `renderCommandBlock()` driven by `description`/`options` data added to `CATEGORY_DEFS`; every builder now receives an already-permission-filtered command list (derived from `visibleCommands()`, the same function governing the directory/dropdown/autocomplete) instead of raw `perms`, so a builder can no longer silently skip a permission check the way it once did.
+
+Both refactors verified byte-identical to their pre-refactor output rather than assumed correct: `scripts/helpBodySnapshot.test.js` diffs every `/help` page across a 4-way perms matrix against a fixture captured before the rewrite, and caught a real granularity mismatch mid-refactor — `CATEGORY_DEFS.gunsmiths.staticCommands` (2 entries, drives the directory) doesn't 1:1 match its 3-command detail page — fixed with a separate `detailCommands` field. `scripts/pickerUI.test.js`/`scripts/settingsPickers.test.js` cover the new picker modules, including literal-string checks that the registry's wording reproduces the original user-facing messages exactly. Both new test harnesses were falsifier-tested (a deliberate mutation goes red, restoring goes green) before being trusted.
+
+A genuine three-way inconsistency in how `/help` renders "no options besides visibility" (a bare `-# **Options**` header vs. a shared page-level footnote vs. a custom "No options of its own" line) was found while building the shared renderer — the original review's "shared Options block" framing undersold it as two-way. Deliberately not resolved this pass, since picking a canonical style is a UX call rather than a mechanical one — filed in `docs/db-deferred-list.md`.
+
+**Live dev-bot click-testing was explicitly deferred for this entire plan** (Harkirat, 2026-08-18 11:56 EDT) — this and every future session on `review-remnants-plan.md` ships against `npm test` alone, not a live click-test, until that deferral is lifted. `npm test` green throughout (3 new test files, full suite).
+
+## Pre-Release v3.45.0 — 2026-08-18 09:52 EDT (#153 · `88afe83`) — a full-branch code review, and 61 of its findings fixed same-session
 
 A `/code-review max` pass over the entire `v3-pre-release` branch (47 commits, 319 files, 21,077 added / 12,219 removed lines vs `main`) surfaced 68 findings — nine ship-blockers, dozens of smaller correctness bugs, cleanup, and stale docs. This release applies 61 of them directly (14 in a first pass covering the ship-blockers and one-line data-integrity fixes, 47 more in a second pass covering the rest); 1 was deliberately left unfixed on an already-settled retention decision, 5 were deliberately skipped as needing a new architectural abstraction rather than a bounded fix, and 1 needed no action. Full report: `local/handoff/2026-08-18-v3-pre-release-code-review.md` (gitignored); status entry: `docs/db-deferred-list.md`.
 
@@ -87,7 +101,7 @@ Held, not fixed: `models/AnalyticsEvent.js`'s missing TTL (finding #9) — Harki
 
 `npm test` green throughout; two existing tests were updated (not reverted) to match intentional behavior changes rather than the bugs they used to encode: `rollupStore.test.js`'s idempotency case now expects the last-rolled day to be re-touched, and `discordCdnAssetIndex.test.js`'s recovery-happy-path assertion now expects the recovered `discordMessageId` in the return.
 
-## Pre-Release v3.44.0 — 2026-08-17 19:35 EDT (#152) — recover storage-channel messages instead of orphaning them
+## Pre-Release v3.44.0 — 2026-08-17 19:35 EDT (#152 · `4e004a5`) — recover storage-channel messages instead of orphaning them
 
 A deleted Cloudinary resource used to permanently orphan its Discord storage-channel message and force a full re-render + duplicate upload on the next view, even though the exact bytes were still sitting in the channel — the same code that posted the message discarded its id instead of remembering it. Traced during a re-verification of an existing `docs/db-deferred-list.md` item ("does the grouped-upload path share the single-file path's orphan behavior?"); confirming the claim held wasn't a good enough answer, since the underlying data to do better was already sitting in the same upload response.
 
