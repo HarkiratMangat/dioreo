@@ -17,7 +17,7 @@ const { assertProseCoverage, optionProse, GUIDES, COMMANDS, SHARED_OPTIONS } = r
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS',
     'GOO_SVG', 'MORPH_JS', 'wordmark', 'repoBtn', 'installBtn', 'themeBtn', 'navSwitcher',
-    'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS',
+    'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
 ];
 
 function requireChrome(C) {
@@ -36,6 +36,22 @@ function requireChrome(C) {
  * The page's accent. 121 degrees, the midpoint of the widest gap on the site's tab hue wheel (citron 62 to teal 180), which leaves 59 degrees of clearance each way — the six document tabs are held to 30. ⚠️ The Changelog's phosphor is 131 degrees, ten away. That is KNOWN AND ACCEPTED, not an oversight: the record group is withdrawn from the nav everywhere except inside /changelog/, so the two are never seen together at tab size. Harkirat chose this hue with that on the table. ⚠️ The bot's own /help command briefly took this green on 2026-08-16 20:38 EDT and Harkirat reversed it the same evening — /help and /invite keep coral. That reversal was about the DISCORD surface only; the website page keeps green.
  */
 const SIGNAL = { light: '#1E6B1F', dark: '#58D05A' };
+
+/* 🔴 THE SITE HAS EXACTLY TWO SURFACES — --desk (the page) and --raised (a card).
+   There is no third, and `--sunk` — which this file used five times — is declared
+   NOWHERE in the repo. Every one of those was an invalid background that painted
+   nothing: the option block, the picker's search bed, the guide cards and the
+   disabled Copy button were all transparent, so the two-zone bay the design is built
+   on did not visually exist. contrastAudit() reads `--name: #hex` declarations only,
+   so a rule painting its own surface is invisible to it and the build stayed green.
+   The site's own idiom for a recessed bed is an INK TINT over whatever surface it
+   lands on — that is exactly what the landing page's command pill does
+   (`color-mix(in srgb,var(--ink) 10%,transparent)`). It inverts correctly per theme
+   with no second declaration, because --ink is near-white on the dark page and
+   near-black on the light one. ⚠️ A color-mix() surface is invisible to the contrast
+   gate; these percentages are hand-checked, not gate-covered. */
+const BED = 'color-mix(in srgb,var(--ink) 6%,transparent)';
+const BED_SOFT = 'color-mix(in srgb,var(--ink) 4%,transparent)';
 
 const COMMANDS_CSS = `
 /* Page-scoped. Every selector here is prefixed cx- so nothing can collide with
@@ -77,28 +93,33 @@ const COMMANDS_CSS = `
    whole column, above BOTH the picker and the bays, because it is the page's
    instrument and not a feature of the right-hand column. */
 .cx-comp{position:sticky;top:54px;z-index:20;display:flex;align-items:center;gap:.9rem;
-  padding:.62rem .5rem .62rem .95rem;margin:0 0 1.5rem;border-radius:9px;
+  padding:.62rem .5rem .62rem .95rem;margin:0 0 1.5rem;border-radius:9px;overflow:hidden;
   background:var(--raised);border:1px solid var(--sig-line);
-  box-shadow:0 1px 0 var(--sig-soft) inset,0 14px 26px -20px rgba(0,0,0,.75)}
+  box-shadow:0 14px 26px -20px rgba(0,0,0,.75)}
+/* The same 3px accent→glow rule .doc::before puts across the top of a legal
+   document's plate. The Composer is this family's plate, so it wears the site's
+   mark in the site's own place rather than inventing a second one. */
+.cx-comp::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
 .cx-line{font-family:var(--mono);font-size:1.02rem;line-height:1.5;min-width:0;flex:1;
   letter-spacing:-.01em;overflow-wrap:anywhere}
-.cx-c{color:var(--ink);font-weight:680}
+/* 🔴 THE THREE ROLES AND THE CARET COME FROM CHROME.cmdRoleCss('.cx-line') — this
+   page does NOT get to invent its own rendering of a slash command. It had one:
+   accent-coloured option text, a rounded chip for the value, a space between the
+   two, and a hand-rolled blinking block. The landing page, two clicks away, already
+   drew the same object the way Discord actually draws it — bold accent command, a
+   grey ink-tint bed for the option NAME, an accent-tint bed for the VALUE, one
+   continuous pill with no colon and a deliberate -1px overlap — checked against a
+   screenshot of a real used command and carrying four separately-measured
+   constants. Two renderings of one object on one site is the exact failure the
+   shared BAR_CSS fixed one layer up. */
 .cx-hold{color:var(--ink3);font-weight:400;margin-left:.45rem}
-/* A caret, because the thing this element imitates has one. Hidden the moment a
-   command is adopted — a caret after a finished line would claim it is still being
-   typed. */
-.cx-line::after{content:"";display:inline-block;width:.5em;height:1.05em;margin-left:.15em;
-  vertical-align:-.18em;background:var(--sig);opacity:.55;animation:cxBlink 1.15s steps(1,end) infinite}
 .cx-comp[data-built="1"] .cx-line::after{display:none}
-@keyframes cxBlink{0%,49%{opacity:.55}50%,100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.cx-line::after{animation:none;opacity:.4}}
-.cx-o{color:var(--sig)}
-.cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
 .cx-copy{font:inherit;font-size:.74rem;font-weight:650;cursor:pointer;flex:none;padding:.5rem .85rem;
   letter-spacing:.02em;border:1px solid var(--sig-line);border-radius:6px;background:var(--sig-soft);color:var(--sig)}
 .cx-copy:hover{background:var(--sig);border-color:var(--sig);color:var(--raised)}
-.cx-copy[disabled]{opacity:.4;cursor:default;background:var(--sunk);border-color:var(--rule);color:var(--ink3)}
-.cx-copy[disabled]:hover{background:var(--sunk);border-color:var(--rule);color:var(--ink3)}
+.cx-copy[disabled]{opacity:.4;cursor:default;background:${BED};border-color:var(--rule);color:var(--ink3)}
+.cx-copy[disabled]:hover{background:${BED};border-color:var(--rule);color:var(--ink3)}
 .cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
 
 .cx-body{display:grid;grid-template-columns:minmax(232px,278px) 1fr;gap:clamp(1.2rem,2.6vw,2.4rem);align-items:start}
@@ -111,7 +132,7 @@ const COMMANDS_CSS = `
 .cx-pick{position:sticky;top:calc(var(--cxbar) + 1.5rem);display:flex;flex-direction:column;
   max-height:calc(100vh - var(--cxbar) - 2.5rem);
   background:var(--raised);border:1px solid var(--rule);border-radius:9px;overflow:hidden;min-width:0}
-.cx-find{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid var(--rule2);background:var(--sunk)}
+.cx-find{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid var(--rule2);background:${BED}}
 .cx-find:focus-within{border-bottom-color:var(--sig-line);box-shadow:inset 0 -1px 0 var(--sig-line)}
 .cx-find .cx-sl{font-family:var(--mono);font-size:.95rem;color:var(--sig);line-height:1}
 .cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.85rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
@@ -160,7 +181,8 @@ const COMMANDS_CSS = `
 .cx-band{display:flex;align-items:center;gap:.7rem;font-family:var(--mono);font-size:.6rem;
   letter-spacing:.2em;text-transform:uppercase;color:var(--sig);margin:2.4rem 0 .85rem;
   scroll-margin-top:calc(var(--cxbar) + 1rem)}
-.cx-band::after{content:"";flex:1;height:1px;background:var(--sig-line)}
+.cx-band::after{content:"";order:1;flex:1;height:1px;background:var(--sig-line)}
+.cx-ct{order:2;font-variant-numeric:tabular-nums;color:var(--ink2);letter-spacing:.1em;padding-left:.15rem}
 .cx-band:first-of-type{margin-top:0}
 .cx-band[hidden]{display:none}
 .cx-bay{border:1px solid var(--rule);border-radius:9px;background:var(--raised);overflow:hidden;
@@ -180,7 +202,7 @@ const COMMANDS_CSS = `
    down a rule rather than a ragged edge. Drawn on the container, not per row —
    a per-row border breaks at every gap. */
 .cx-opts{position:relative;padding:.55rem 1rem .75rem;display:grid;gap:0;
-  background:var(--sunk);border-top:1px solid var(--rule2)}
+  background:${BED_SOFT};border-top:1px solid var(--rule)}
 .cx-opts::before{content:"";position:absolute;left:calc(1rem + 148px);top:.55rem;bottom:.75rem;
   width:1px;background:var(--rule2)}
 .cx-opts:empty{display:none}
@@ -220,7 +242,7 @@ a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3
 
 /* ── guides: a comparison, never a paragraph ──────────────────────────────── */
 .cx-two{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;padding:0 1rem .2rem}
-.cx-card{border:1px solid var(--rule);border-left:2px solid var(--sig-line);border-radius:6px;padding:.65rem .75rem;background:var(--sunk)}
+.cx-card{border:1px solid var(--rule);border-left:2px solid var(--sig-line);border-radius:6px;padding:.65rem .75rem;background:${BED}}
 .cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.2rem}
 .cx-card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
 .cx-note{margin:0;padding:.65rem 1rem .95rem;font-size:.81rem;color:var(--ink3);max-width:70ch;line-height:1.5}
@@ -295,7 +317,7 @@ const COMMANDS_JS = [
     '    var bay=current;',
     '    line.textContent="";',
     '    if(!bay){',
-    '      line.appendChild(span("cx-c","/"));',
+    '      line.appendChild(span("cmd-c","/"));',
     '      line.appendChild(span("cx-hold","pick a command to build one"));',
     '      copy.disabled=true; copy.textContent="Copy"; copy.removeAttribute("data-done");',
     '      copy.setAttribute("aria-label","Copy the command you build here");',
@@ -304,15 +326,17 @@ const COMMANDS_JS = [
     '    }',
     '    copy.disabled=false;',
     '    if(comp)comp.setAttribute("data-built","1");',
-    '    line.appendChild(span("cx-c",bay.getAttribute("data-cmd")));',
+    '    line.appendChild(span("cmd-c",bay.getAttribute("data-cmd")));',
     '    var pick=chosen(bay);',
     '    [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){',
     '      var n=o.getAttribute("data-opt");',
     '      if(pick[n]==null) return;',
     '      line.appendChild(document.createTextNode(" "));',
-    '      line.appendChild(span("cx-o",n));',
-    '      line.appendChild(document.createTextNode(" "));',
-    '      line.appendChild(span("cx-v",pick[n]));',
+    '      line.appendChild(span("cmd-o",n));',
+    /* NO separator between the two beds: Discord draws them as one continuous pill,
+       and cmdRoleCss's -1px overlap depends on them abutting — a text node here would
+       open the very hairline that overlap exists to close. */
+    '      line.appendChild(span("cmd-v",pick[n]));',
     '    });',
     '    /* The line itself is not a live region -- it changes on every scroll and',
     '       would talk over the page. The Copy control carries the value instead, so',
@@ -568,8 +592,10 @@ function commandsShell({ page, catalog, C }) {
         const guides = guidesByGroup.get(group.key) || [];
         if (!guides.length && !group.commands.length) continue;
 
-        // The band is the page's section heading, so it needs an id: mobileNav()'s section menu links to these the way the legal rail links to numbered clauses.
-        bands.push(`<p class="cx-band" id="g-${esc(group.key)}" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
+        // The band is the page's section heading, so it needs an id: mobileNav()'s section menu links to these the way the legal rail links to numbered clauses. allgood's section-header device — mono caps label, a hairline running to the right edge, and a figure riding it. Theirs is an ordinal; a count is the honest version here, because these groups are a set and not a sequence.
+        const tally = guides.length + group.commands.length;
+        bands.push(`<p class="cx-band" id="g-${esc(group.key)}" data-group="${esc(group.key)}">` +
+            `${esc(group.label)}<span class="cx-ct">${tally}</span></p>`);
         slots.push(`<a href="#g-${esc(group.key)}" class="slot"><i>—</i><span>${esc(group.label)}</span></a>`);
         picker.push(`<p class="cx-grp" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
 
@@ -588,15 +614,50 @@ function commandsShell({ page, catalog, C }) {
     }
 
     // ⚠️ THIS SITE IS DARK-FIRST, and getting the polarity backwards is silent. The bare :root block IS the dark theme -- TOKENS declares the dark values there and light arrives as a :root[data-theme="light"] override. Writing it the other way round (light in :root, dark behind a prefers-color-scheme query) renders a dark-on-dark page AND reads as correct in the source. The build's own contrast gate is what caught it: it reported the light green against the DARK desk in both themes, because in both themes that is genuinely what the cascade resolved to.
-    const accent = `:root{--sig:${SIGNAL.dark};--sig-soft:${SIGNAL.dark}26;--sig-line:${SIGNAL.dark}5c}` +
-        `:root[data-theme="light"]{--sig:${SIGNAL.light};--sig-soft:${SIGNAL.light}1a;--sig-line:${SIGNAL.light}55}`;
+    /* 🔴 EVERY OTHER PAGE DECLARES `:root{--accent:<hex>}` AND THIS ONE DID NOT.
+       Measured on the built file: terms #F2994A, contributing #8B9BFF, the landing
+       page #FF7D5C, the chronicle #FF9E3D — and commands.html, nothing. The page
+       invented a private --sig namespace and never joined the site's own. So
+       `--accent-t` (which TOKENS defines as var(--accent)) resolved to nothing, and
+       with it every shared component keyed to the accent: the Install button had NO
+       background at all, the current page's own nav tab lost its --rest tint, and the
+       focus rings, selection colour and skip link all fell back to their initial
+       values. None of that is visible in the generator and no gate reads it, because
+       an undefined custom property is not an error — it just paints nothing.
+       ⚠️ --accent stays the BRIGHT hue in both themes (it is a FILL: buttons, the nav
+       plate); only --accent-t, the text-safe value, darkens for light.
+       ⚠️ AND IT IS HAND-TUNED, NEVER INHERITED. TOKENS derives light --accent-t as
+       38% accent over #120E1C, and this rule file records what that does to a
+       saturated hue: it desaturates toward mud. #1E6B1F is the Accent Lab's own light
+       value for 121°, measured against the light desk rather than mixed toward black.
+       ⚠️ THREE BLOCKS, NOT TWO, mirroring TOKENS exactly. Light arrives two ways — an
+       explicit toggle (`[data-theme=light]`) and a system preference with no toggle
+       (`:root:not([data-theme=dark])` inside a prefers-color-scheme query) — and CSS
+       cannot share a declaration list between them. With only the toggle branch, a
+       reader whose OS is light and who has never pressed the switch got the DARK
+       green on light paper: #58D05A on #EEECF2 is 1.69:1. contrastAudit() cannot see
+       that path either, because it matches [data-theme=light] and not the query. */
+    /* --glow was declared in TOOL_PAGES and read by NOTHING. On the legal set it
+       draws `.doc::before`, the 3px accent→glow rule across the top of the document
+       plate; on the warm pages it is half the radial wash. ⚠️ This family takes the
+       RULE and refuses the WASH, and that is a boundary rather than a preference: the
+       generator's own comment calls the wash "the single strongest signal that you
+       have left the legal set", so wearing it here would say invitation when this
+       page is an instrument. The rule goes on the Composer, which is this family's
+       equivalent of the document plate — its one owned surface. */
+    const lightVars = `--accent-t:${SIGNAL.light};--sig:${SIGNAL.light};` +
+        `--sig-soft:${SIGNAL.light}1a;--sig-line:${SIGNAL.light}55`;
+    const accent = `:root{--accent:${SIGNAL.dark};--glow:${esc(page.glow)};--sig:${SIGNAL.dark};` +
+        `--sig-soft:${SIGNAL.dark}26;--sig-line:${SIGNAL.dark}5c}` +
+        `:root[data-theme=light]{${lightVars}}` +
+        `@media (prefers-color-scheme:light){:root:not([data-theme=dark]){${lightVars}}}`;
 
     return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
@@ -626,7 +687,7 @@ ${C.mobileNav(page, slots.join(''))}
        the fixed bar makes the two read as one block of chrome instead of two things
        that happen to be sticky. -->
   <div class="cx-comp" id="cx-comp">
-    <span class="cx-line" id="cx-line"><span class="cx-c">/</span></span>
+    <span class="cx-line" id="cx-line"><span class="cmd-c">/</span></span>
     <button class="cx-copy" id="cx-copy" type="button">Copy</button>
   </div>
 

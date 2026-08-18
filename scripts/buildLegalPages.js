@@ -2429,6 +2429,75 @@ const PAGE_CSS = `
 @media (max-width:760px){ .page{padding-bottom:2.6rem} }
 `;
 
+/**
+ * The three roles a rendered slash command has, as their own function so TWO pages can draw one identically.
+ *
+ * ⚠️ THIS LAYOUT WAS CHECKED AGAINST A SCREENSHOT OF A REAL USED COMMAND, not recalled — an earlier guess at it was wrong. Discord draws the command as bold plain text, then puts the option NAME and the VALUE each in their own box, one continuous pill with only the outer corners rounded and NO COLON between them: two adjacent boxes already separate the pair. The beds are different materials on purpose — the option name is a neutral grey mixed from --ink, the value an accent tint — because the grey says "label" and the tint says "your selection".
+ *
+ * Extracted 2026-08-18 when the /commands page's Composer turned out to be drawing the same object a different way: accent-coloured option text, a rounded chip for the value, and a space between them. Two renderings of one thing, on one site, two clicks apart. Every constant below is measured and several are load-bearing in ways the comments record — a second copy would have drifted from all of them.
+ */
+function cmdRoleCss(scope) {
+    return `${scope} .cmd-c{color:var(--accent-t);font-weight:700}
+/* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
+   An inline box paints its background over the font's CONTENT AREA, which is
+   derived from the face's ascent/descent metrics and is shorter than the glyphs
+   actually drawn — so the legs of p, g and y hung below the chip however much
+   horizontal padding it had. An inline-block's background covers its content
+   box instead, whose height is the line-height, so the whole glyph range is
+   inside it by construction. vertical-align:baseline keeps the chips sitting on
+   the same baseline as the command beside them.
+   ⚠️ MEASURED BY LOOKING, AFTER ARITHMETIC GOT IT WRONG. A canvas TextMetrics
+   check reported 1.7px of clearance below the descender and therefore no
+   clipping at all; a screenshot showed the legs plainly outside the box. The
+   font the canvas measured was not the box the browser painted. When the two
+   disagree, the render wins — same lesson as the nav indicator's dilation. */
+/* ⚠️ THE PADDING IS ASYMMETRIC ON PURPOSE — .5em at the JUNCTION between the two
+   boxes, .3em at the pill's OUTER edges. The junction is where two words butt
+   together with only a change of bed between them, so it needs the air; the
+   outer edges only meet the page and looked slack carrying the same amount.
+   Harkirat's call, in two passes: open the junction up, then take the outside
+   and the vertical back down. Keep them independent — setting one shorthand for
+   all four sides is what produced both complaints. */
+${scope} .cmd-o,${scope} .cmd-v{display:inline-block;vertical-align:baseline;
+  line-height:1.5;color:var(--ink);font-weight:400}
+/* ⚠️ THE -1px MARGIN IS A DELIBERATE OVERLAP, AND REMOVING IT REOPENS A BUG THAT
+   DOES NOT REPRODUCE IN CHROME. Harkirat photographed the two beds visibly
+   separated on an iPhone (2026-08-05 20:29 EDT) while Chrome measured the gap at
+   EXACTLY ZERO — option right edge and value left edge both at 112.594px. That
+   fractional position is the tell: the boundary lands mid-device-pixel, and at
+   iOS's 3x DPR the antialiasing of two abutting edges can each leave that pixel
+   partly transparent, so the page shows through as a hairline. Two boxes that
+   merely touch are not enough; they have to overlap. The right padding adds the
+   same 1px back so the gap between the two WORDS is unchanged — only the beds
+   move. Do not "simplify" this to a plain .5em. */
+${scope} .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
+  background:color-mix(in srgb,var(--ink) 10%,transparent);
+  border-radius:.34em 0 0 .34em}
+${scope} .cmd-v{padding:.08em .3em .08em .5em;
+  background:color-mix(in srgb,var(--accent) 26%,transparent);
+  border-radius:0 .34em .34em 0}
+/* Set by CMD_JS's paint() while the value has no characters yet — see the note
+   there for why this is a class rather than :has(+ .cmd-v:empty). */
+${scope} .cmd-o.solo{border-radius:.34em;margin-right:0}
+${scope} .cmd-o:empty,${scope} .cmd-v:empty{padding:0;background:none}
+${scope} .cmd-o:empty{margin-right:0}
+${scope}::after{content:"";display:inline-block;width:.5em;height:1em;
+  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
+  animation:cmd-blink 1.1s steps(1) infinite}
+/* Solid while keys are landing, blinking on the hold and the gap — a cursor
+   that blinks through its own typing reads as a glitch. CMD_JS owns this class;
+   it writes nothing else about the cursor. Under prefers-reduced-motion the
+   global animation:none override pins the block solid and CMD_JS stops touching
+   the class at all, which is the correct still frame.
+   ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
+   re-parses the built CSS and flags a brace inside a comment, which is how a
+   comma-carrying comment once destroyed eight rules. It failed this build for
+   exactly that reason. Describe such rules in prose, never in syntax. */
+${scope}.cmd-busy::after{animation:none}
+@keyframes cmd-blink{50%{opacity:0}}
+`;
+}
+
 const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
@@ -7940,64 +8009,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
    ⚠️ :empty is load-bearing — a segment with no characters yet still has the
    chip's padding, so without this a bare coloured blob sits on the line ahead
    of the text the whole time it is typing. */
-.cmd-line .cmd-c{color:var(--accent-t);font-weight:700}
-/* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
-   An inline box paints its background over the font's CONTENT AREA, which is
-   derived from the face's ascent/descent metrics and is shorter than the glyphs
-   actually drawn — so the legs of p, g and y hung below the chip however much
-   horizontal padding it had. An inline-block's background covers its content
-   box instead, whose height is the line-height, so the whole glyph range is
-   inside it by construction. vertical-align:baseline keeps the chips sitting on
-   the same baseline as the command beside them.
-   ⚠️ MEASURED BY LOOKING, AFTER ARITHMETIC GOT IT WRONG. A canvas TextMetrics
-   check reported 1.7px of clearance below the descender and therefore no
-   clipping at all; a screenshot showed the legs plainly outside the box. The
-   font the canvas measured was not the box the browser painted. When the two
-   disagree, the render wins — same lesson as the nav indicator's dilation. */
-/* ⚠️ THE PADDING IS ASYMMETRIC ON PURPOSE — .5em at the JUNCTION between the two
-   boxes, .3em at the pill's OUTER edges. The junction is where two words butt
-   together with only a change of bed between them, so it needs the air; the
-   outer edges only meet the page and looked slack carrying the same amount.
-   Harkirat's call, in two passes: open the junction up, then take the outside
-   and the vertical back down. Keep them independent — setting one shorthand for
-   all four sides is what produced both complaints. */
-.cmd-line .cmd-o,.cmd-line .cmd-v{display:inline-block;vertical-align:baseline;
-  line-height:1.5;color:var(--ink);font-weight:400}
-/* ⚠️ THE -1px MARGIN IS A DELIBERATE OVERLAP, AND REMOVING IT REOPENS A BUG THAT
-   DOES NOT REPRODUCE IN CHROME. Harkirat photographed the two beds visibly
-   separated on an iPhone (2026-08-05 20:29 EDT) while Chrome measured the gap at
-   EXACTLY ZERO — option right edge and value left edge both at 112.594px. That
-   fractional position is the tell: the boundary lands mid-device-pixel, and at
-   iOS's 3x DPR the antialiasing of two abutting edges can each leave that pixel
-   partly transparent, so the page shows through as a hairline. Two boxes that
-   merely touch are not enough; they have to overlap. The right padding adds the
-   same 1px back so the gap between the two WORDS is unchanged — only the beds
-   move. Do not "simplify" this to a plain .5em. */
-.cmd-line .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
-  background:color-mix(in srgb,var(--ink) 10%,transparent);
-  border-radius:.34em 0 0 .34em}
-.cmd-line .cmd-v{padding:.08em .3em .08em .5em;
-  background:color-mix(in srgb,var(--accent) 26%,transparent);
-  border-radius:0 .34em .34em 0}
-/* Set by CMD_JS's paint() while the value has no characters yet — see the note
-   there for why this is a class rather than :has(+ .cmd-v:empty). */
-.cmd-line .cmd-o.solo{border-radius:.34em;margin-right:0}
-.cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
-.cmd-line .cmd-o:empty{margin-right:0}
-.cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
-  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
-  animation:cmd-blink 1.1s steps(1) infinite}
-/* Solid while keys are landing, blinking on the hold and the gap — a cursor
-   that blinks through its own typing reads as a glitch. CMD_JS owns this class;
-   it writes nothing else about the cursor. Under prefers-reduced-motion the
-   global animation:none override pins the block solid and CMD_JS stops touching
-   the class at all, which is the correct still frame.
-   ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
-   re-parses the built CSS and flags a brace inside a comment, which is how a
-   comma-carrying comment once destroyed eight rules. It failed this build for
-   exactly that reason. Describe such rules in prose, never in syntax. */
-.cmd-line.cmd-busy::after{animation:none}
-@keyframes cmd-blink{50%{opacity:0}}
+${cmdRoleCss('.cmd-line')}
 .list{border-top:1px solid var(--rule)}
 /* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
    linear the row snapped rather than moved — the whole page read as abrupt for
@@ -8466,7 +8478,7 @@ const CHROME = {
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
     MORPH_JS,
     wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
-    BAR_CSS, PAGE_CSS, TOTOP_HTML, TOTOP_TRACK_JS,
+    BAR_CSS, PAGE_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
 };
 
 function build() {
