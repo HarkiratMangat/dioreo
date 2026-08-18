@@ -314,6 +314,44 @@ function sessionKey(userHash, command, field) {
     return `${userHash || 'anon'}|${command}|${field}`;
 }
 
+// The aggregate write goes through this SAME buffer-then-flush discipline as the event buffer above (FLUSH_AT / idle timer / a hard MAX_BUFFER ceiling), not a standalone round trip per closed session -- see closeSession() and flushSearchSessions() below. A distinct buffer because it targets a distinct collection with a distinct unique-index upsert shape, but the SAME tunables and the SAME shutdown call site on purpose: two independent flush paths for what is conceptually one "close this search session" event is exactly the kind of drift finding #12 already had to fix once for the event buffer (v3-pre-release review, finding #56).
+const searchTermBuffer = [];
+let searchTermFlushTimer = null;
+
+function scheduleSearchTermFlush() {
+    if (searchTermFlushTimer) return;
+    searchTermFlushTimer = setTimeout(() => { searchTermFlushTimer = null; flushSearchTerms(); }, FLUSH_INTERVAL_MS);
+    if (typeof searchTermFlushTimer.unref === 'function') searchTermFlushTimer.unref();
+}
+
+// Same idiom as flushEvents(): splice out before the await, so a failed bulkWrite drops that batch instead of retrying into an unbounded loop, and a second call after one has already run just finds the buffer empty and no-ops -- load-bearing at shutdown, where flushSearchSessions() can end up racing an idle-timer-triggered flush that fired moments earlier.
+function flushSearchTerms() {
+    if (!searchTermBuffer.length) return Promise.resolve();
+    const ops = searchTermBuffer.splice(0, searchTermBuffer.length);
+    return (async () => {
+        const SearchTerm = require('../models/SearchTerm');
+        await SearchTerm.bulkWrite(ops, { ordered: false });
+    })().catch(() => { /* swallowed, as every write here is */ });
+}
+
+function pushSearchTermOp(term, command, field, results, picked) {
+    const now = new Date();
+    searchTermBuffer.push({
+        updateOne: {
+            filter: { term, command, field },
+            update: {
+                $inc: { searches: 1, zeroResults: results === 0 ? 1 : 0, picked: picked ? 1 : 0 },
+                $min: { firstSeen: now },
+                $max: { lastSeen: now },
+            },
+            upsert: true,
+        },
+    });
+    if (searchTermBuffer.length > MAX_BUFFER) searchTermBuffer.splice(0, searchTermBuffer.length - MAX_BUFFER);
+    if (searchTermBuffer.length >= FLUSH_AT) flushSearchTerms();
+    else scheduleSearchTermFlush();
+}
+
 function closeSession(key) {
     const s = searchSessions.get(key);
     if (!s) return;
@@ -342,20 +380,8 @@ function closeSession(key) {
         createdAt: new Date(),
     });
 
-    // The aggregate carries NO user linkage at all -- see models/SearchTerm.js.
-    (async () => {
-        const SearchTerm = require('../models/SearchTerm');
-        const now = new Date();
-        await SearchTerm.updateOne(
-            { term: s.term, command: s.command, field: s.field },
-            {
-                $inc: { searches: 1, zeroResults: s.results === 0 ? 1 : 0, picked: s.picked ? 1 : 0 },
-                $min: { firstSeen: now },
-                $max: { lastSeen: now },
-            },
-            { upsert: true },
-        );
-    })().catch(() => { /* swallowed, as every write here is */ });
+    // The aggregate carries NO user linkage at all -- see models/SearchTerm.js. Buffered, not a standalone round trip per closed session (v3-pre-release review, finding #56): same FLUSH_AT/idle-timer discipline as the event buffer above, and flushed through the SAME shutdown call site (flushSearchSessions() below) that finding #12 already hooked flushEvents() into -- not a fire-and-forget promise the shutdown sequence has no way to wait on.
+    pushSearchTermOp(s.term, s.command, s.field, s.results, s.picked);
 }
 
 // Patches interaction.respond() so the session records the RESULT COUNT for free -- a zero-result search is the whole point of keeping the term, and it is only knowable at respond() time. One edit in the router's autocomplete route covers every autocomplete site in the bot.
@@ -401,9 +427,10 @@ function instrumentAutocomplete(interaction) {
     } catch { /* instrumentation must never break an autocomplete */ }
 }
 
-// Closes every open search session immediately. Used by the shutdown path (a session mid-flight when systemd stops the unit would otherwise be lost) and by scripts/eventStore.test.js, which asserts the debounce invariant without waiting out a real 3-second idle timer.
+// Closes every open search session immediately AND flushes the SearchTerm buffer those closes just populated, in one call -- this is the ONE shutdown call site both installShutdownFlush (below) and instanceLock.js's releaseLock (finding #12) already invoke, so a caller that awaits the returned promise gets the buffered SearchTerm writes covered by the SAME race protection finding #12 established for the event buffer, with no separate hook to keep in sync (finding #56). Used by the shutdown path (a session mid-flight when systemd stops the unit would otherwise be lost) and by scripts/eventStore.test.js, which asserts the debounce invariant without waiting out a real 3-second idle timer.
 function flushSearchSessions() {
     for (const key of [...searchSessions.keys()]) closeSession(key);
+    return flushSearchTerms();
 }
 
 // A slash command arriving from the same user for the same command right after a search session is the only honest signal we have that the search was followed through. Cheap, and it closes the session early rather than waiting out the idle timer.
@@ -458,19 +485,27 @@ function recordBoot(fields) {
     })().catch(() => { /* swallowed */ });
 }
 
-// systemd sends SIGTERM on every deploy and restart, so without this the last buffer -- up to FLUSH_INTERVAL_MS of events, and the ones immediately before a restart are among the most interesting -- would be lost every single time.
+// TWO independent listeners end up registered on the SAME 'SIGTERM'/'SIGINT' in production -- this one (registered once ClientReady fires) and instanceLock.js's releaseLock (registered at boot, before login, finding #12). Node invokes every listener for one signal synchronously, back-to-back, in registration order, within a single call stack. flushSearchSessions()/flushEvents() SPLICE their buffers the instant they're called, synchronously -- so whichever listener runs SECOND always finds the buffers already drained by the first, and its own Promise.all([...]) resolves via pure microtasks, which Node drains before the FIRST listener's real (macrotask-bound) Mongo write can complete. That means the second listener's process.exit() used to fire before the real write landed regardless of any bounding here -- the exact class of race finding #12 set out to close, just one call-stack deeper than that fix reached (v3-pre-release review, finding #56). flushAllForShutdown() (below) fixes this by memoizing the real flush into ONE shared promise both listeners await, so whichever runs second gets the SAME in-flight write instead of a hollow already-resolved one.
 let shutdownInstalled = false;
+let shutdownFlushPromise = null;
+
+// Memoized on purpose: BOTH this listener and instanceLock.js's releaseLock call this instead of calling flushSearchSessions()/flushEvents() directly, so a second call -- from whichever listener runs second on the SAME signal -- awaits the SAME real promise the first call kicked off, rather than re-invoking functions that have already spliced their buffers empty and would resolve instantly with nothing left to write.
+function flushAllForShutdown() {
+    if (!shutdownFlushPromise) shutdownFlushPromise = Promise.all([flushSearchSessions(), flushEvents()]);
+    return shutdownFlushPromise;
+}
+
+// systemd sends SIGTERM on every deploy and restart, so without this the last buffer -- up to FLUSH_INTERVAL_MS of events, and the ones immediately before a restart are among the most interesting -- would be lost every single time.
 function installShutdownFlush() {
     if (shutdownInstalled) return;
     shutdownInstalled = true;
     for (const signal of ['SIGTERM', 'SIGINT']) {
         process.once(signal, () => {
-            flushSearchSessions();
             const done = () => process.exit(0);
             // Bounded: a flush that hangs must not stop the process from exiting, or systemd's stop timeout turns a clean restart into a SIGKILL.
             const bail = setTimeout(done, 2000);
             if (typeof bail.unref === 'function') bail.unref();
-            flushEvents().then(done, done);
+            flushAllForShutdown().then(done, done);
         });
     }
 }
@@ -483,7 +518,7 @@ module.exports = {
     markOutcome, mergeDetail, noteDep, timeDependency, noteAck, noteResponseFailure, instrumentAck,
     instrumentAutocomplete, notePicked, flushSearchSessions,
     // emission
-    recordInteractionEvent, recordRenderTiming, recordBoot, flushEvents, installShutdownFlush,
+    recordInteractionEvent, recordRenderTiming, recordBoot, flushEvents, installShutdownFlush, flushAllForShutdown,
     // constants worth asserting on
     FLUSH_AT, TERM_MAX_CHARS, DETAIL_MAX_KEYS, DETAIL_MAX_BYTES,
 };

@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.48.0 — 2026-08-18 13:38 EDT (#156) — two more review-remnants findings close, and the record turns out to want a fixture, not a code read
+## Pre-Release v3.49.0 — 2026-08-18 15:34 EDT (#157) — the SearchTerm buffer, and a shutdown race that finding #12 never actually closed
+
+The third and last session of the review-remnants plan (`local/handoff/review-remnants-plan.md`, gitignored), closing finding #56 — the one finding the plan deliberately kept isolated in its own session rather than folding in beside unrelated work, since it directly intersects finding #12's shutdown-race fix.
+
+`utils/eventStore.js`'s `SearchTerm` upsert was the one write in the event plane bypassing the `FLUSH_AT` buffer, issuing a standalone `updateOne` per closed search session. It now goes through a buffered `bulkWrite` — the same `FLUSH_AT`/idle-timer/`MAX_BUFFER` discipline the event buffer already uses — flushed through `flushSearchSessions()`, the same shutdown call site finding #12 hooked `flushEvents()` into.
+
+Re-reading finding #12's fix fresh, rather than trusting it by reputation, surfaced a real defect in it: `installShutdownFlush()` and `utils/instanceLock.js`'s `releaseLock` both register listeners on the same `SIGTERM`/`SIGINT`, and Node invokes every listener for one signal synchronously, back-to-back. `flushSearchSessions()`/`flushEvents()` splice their buffers the instant they're called — so whichever listener ran SECOND always found the buffers already drained by the first and resolved via pure microtasks, calling `process.exit()` before the first listener's real, macrotask-bound Mongo write could land. Finding #12 closed the race only for the narrower pre-`ClientReady` window where `releaseLock` is the sole listener — not the realistic post-`ClientReady` case where both coexist. Fixed by memoizing the shutdown flush into one shared promise, `flushAllForShutdown()`, that every listener on the signal now awaits instead of each independently re-invoking flush functions that are individually idempotent-but-fast-no-op on a second call.
+
+**Live-verified against real local dev Mongo, not just `npm test`** — a real process shutdown is structurally outside what a unit test can exercise. A disposable harness (not committed) reproduced the pre-memoization race directly: a real `SIGTERM` with two independent listeners silently dropped the buffered write, confirmed absent via `mongosh`. The shipped fix landed the write across 4 repeated real `SIGTERM` runs against the actual `acquireInstanceLock()`/`installShutdownFlush()` code paths. 4 new pure-logic cases cover the buffered op shape, the `FLUSH_AT` auto-trigger, and the memoization itself (`scripts/eventStore.test.js`, 27 cases total, up from 23).
+
+`npm test` green throughout (full suite). This closes the review-remnants plan except for finding #9 (`AnalyticsEvent` TTL), which stays a deliberately out-of-scope conditional item until mid-September 2026 per the already-settled retention decision.
+
+## Pre-Release v3.48.0 — 2026-08-18 13:38 EDT (#156 · `239d4d3`) — two more review-remnants findings close, and the record turns out to want a fixture, not a code read
 
 The second session of the review-remnants plan (`local/handoff/review-remnants-plan.md`, gitignored), closing findings #50 and #57 — two of the three the previous releases deliberately left as needing more than a bounded mechanical fix.
 
