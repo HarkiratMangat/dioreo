@@ -17,7 +17,7 @@ const { assertProseCoverage, optionProse, GUIDES, COMMANDS, SHARED_OPTIONS } = r
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS',
     'GOO_SVG', 'MORPH_JS', 'wordmark', 'repoBtn', 'installBtn', 'themeBtn', 'navSwitcher',
-    'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
+    'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'SLOT_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
 ];
 
 function requireChrome(C) {
@@ -250,6 +250,28 @@ a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3
 .cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.2rem}
 .cx-card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
 .cx-note{margin:0;padding:.65rem 1rem .95rem;font-size:.81rem;color:var(--ink3);max-width:70ch;line-height:1.5}
+
+/* ── THE COMPOSER ON A PHONE IS A BOTTOM BAR, NOT A STICKY HEADER ──────────
+   Measured on a 390x844 viewport: the bar is 54px, the mobile nav strip 107px and
+   its section menu 264px, so the Composer -- the page's one signature element --
+   started 335px down and only pinned once you had already scrolled past all of it.
+   Harkirat, 2026-08-18 17:16 EDT: "the command bar at the top, like, literally just
+   stick to the top, and you have to scroll all the way to find it."
+   A phone has no room to stack another sticky band under 425px of chrome, and the
+   thumb is at the BOTTOM. So below 880px it stops being a header and becomes a fixed
+   action bar: always on screen, always reachable, and no longer competing with the
+   nav for the top of the viewport. .cx-floor grows to clear its height so the last
+   bay is never hidden behind it, and the back-to-top button lifts above it rather
+   than landing on it. */
+@media (max-width:880px){
+  .cx-comp{position:fixed;inset:auto 0 0;top:auto;margin:0;z-index:45;
+    border-radius:12px 12px 0 0;border-width:1px 0 0;padding:.6rem .6rem .8rem .85rem;
+    box-shadow:0 -12px 26px -18px rgba(0,0,0,.85)}
+  .cx-comp::before{border-radius:12px 12px 0 0}
+  .cx-floor{padding-bottom:7rem}
+  .gotop{bottom:calc(4.8rem + env(safe-area-inset-bottom,0px))!important}
+  .cx-line{font-size:.92rem;max-height:3.2em;overflow:hidden}
+}
 
 @media (max-width:880px){
   .cx-doc,.cx-pick,.cx-band,.cx-bay{--cxbar:calc(54px + 3.3rem)}
@@ -697,7 +719,7 @@ function commandsShell({ page, catalog, C, variant = null }) {
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}${variantCss}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}${variantCss}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}

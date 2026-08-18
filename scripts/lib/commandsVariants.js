@@ -128,7 +128,33 @@ const XREF_CSS = `
 .xr[data-lit="1"] .xr-i.src{opacity:1}
 .xr[data-lit="1"] .xr-i.src .xr-n::after{content:" \\2192";color:var(--sig)}
 .xr-hint{font-size:.78rem;color:var(--ink3);margin:0 0 1.6rem}
-@media (max-width:880px){ .xr{grid-template-columns:1fr;gap:1.4rem} }`;
+/* ⚠️ ON A PHONE THIS IS A DIFFERENT CONTROL, NOT A NARROWER ONE. Collapsed to one
+   column it read identically to the sticky variant — Harkirat, 2026-08-18 17:16 EDT:
+   "option two and three basically look exactly the same on mobile." Two stacked lists
+   is not a cross-reference; the whole idea is seeing one set light up another, and a
+   phone cannot show two columns at once. So the Options column becomes a horizontal
+   chip rail above the command list and the relation is expressed by FILTERING instead
+   of dimming: tap "timezone" and the list becomes the commands that take it. Same
+   data, same idea, a form a thumb can actually operate. */
+@media (max-width:880px){
+  .xr{grid-template-columns:1fr;gap:.9rem;min-width:0}
+  /* A grid/flex child is min-width:auto by default, so the rail's content sets the
+     column's floor and the whole page grows wider than the phone rather than the rail
+     scrolling inside it. Measured as document overflow, not guessed at. */
+  .xr-c{min-width:0}
+  .xr-c .xr-l{max-width:100%}
+  .xr-c:nth-child(2){order:-1}
+  .xr-c:nth-child(2) .xr-l{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:.4rem;
+    padding-bottom:.4rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .xr-c:nth-child(2) .xr-l::-webkit-scrollbar{width:0;height:0}
+  .xr-c:nth-child(2) .xr-i{flex:none;border:1px solid var(--rule);border-radius:999px;
+    border-left-width:1px;padding:.5rem .8rem;background:var(--raised)}
+  .xr-c:nth-child(2) .xr-d{display:none}
+  .xr-c:nth-child(2) .xr-i[aria-pressed="true"]{background:var(--sig);border-color:var(--sig)}
+  .xr-c:nth-child(2) .xr-i[aria-pressed="true"] .xr-n{color:var(--raised);font-weight:650}
+  .xr[data-lit="1"] .xr-c:nth-child(1) .xr-i:not(.on){display:none}
+  .xr[data-lit="1"] .xr-c:nth-child(1) .xr-i.on{opacity:1}
+}`;
 
 const XREF_JS = [
     '(function(){',
@@ -146,10 +172,23 @@ const XREF_JS = [
     '    });',
     '  }',
     '  items.forEach(function(i){',
-    '    i.addEventListener("pointerenter",function(){ clear(); light(i); });',
+    '    i.addEventListener("pointerenter",function(e){ if(e.pointerType==="mouse"){ clear(); light(i); } });',
     '    i.addEventListener("focus",function(){ clear(); light(i); });',
+    /* Touch has no hover, so a tap has to LATCH — and tapping the lit chip again
+       clears it. Without this the rail lit for one frame and released, which on a
+       phone is indistinguishable from the control not working at all. */
+    '    i.addEventListener("click",function(e){',
+    '      if(i.tagName!=="BUTTON") return;',
+    '      e.preventDefault();',
+    '      var was=i.getAttribute("aria-pressed")==="true";',
+    '      items.forEach(function(x){ x.removeAttribute("aria-pressed"); });',
+    '      clear();',
+    '      if(!was){ i.setAttribute("aria-pressed","true"); light(i); }',
+    '    });',
     '  });',
-    '  xr.addEventListener("pointerleave",clear);',
+    '  xr.addEventListener("pointerleave",function(){',
+    '    if(!xr.querySelector(\'[aria-pressed="true"]\')) clear();',
+    '  });',
     '})();',
 ].join('\n');
 
@@ -191,10 +230,28 @@ const STICKY_CSS = `
 .st-l a{font-family:var(--mono);font-size:.82rem;color:var(--ink2);text-decoration:none;padding:.24rem 0}
 .st-l a:hover{color:var(--sig)}
 .st-l a[aria-current="true"]{color:var(--sig);font-weight:650}
+/* ⚠️ A PHONE GETS THE PINNED HEADER, NOT A BLOCK AT THE TOP. Static, this variant
+   was a paragraph you scrolled past once and then had no sense of place at all —
+   which is what made it read the same as the cross-reference. Here the panel
+   collapses to ONE line that pins under the bar and swaps as you cross into the next
+   group: the counter, the group name, and nothing else. It is the only part of this
+   direction a small screen can carry, and it is the part that does the work. */
 @media (max-width:880px){
   .cx-body{grid-template-columns:1fr}
-  .st{position:static;margin-bottom:1.2rem}
-  .st-n b{font-size:2rem}
+  .st{position:sticky;top:calc(54px + 2.6rem);z-index:30;margin:0 0 1rem;
+    background:var(--desk);padding:.5rem 0;border-bottom:1px solid var(--sig-line)}
+  .st-p{display:flex;align-items:baseline;gap:.6rem}
+  /* ⚠️ MUST COME AFTER .st-p. The browser's own rule for the hidden ATTRIBUTE sits at
+     the bottom of the cascade, so the explicit display above un-hid every panel and
+     all six groups rendered at once — the pinned header became a full index. An author
+     rule is required to put it back. (Written in prose, not syntax: hoverGuardAudit
+     rejects a brace inside a comment, and it just caught this.) */
+  .st-p[hidden]{display:none}
+  .st-n{margin:0;gap:.25rem}
+  .st-n b{font-size:1.35rem;line-height:1}
+  .st-n i{font-size:.66rem}
+  .st-t{font-size:1.05rem;margin:0;letter-spacing:-.02em}
+  .st-l{display:none}
 }`;
 
 const STICKY_JS = [

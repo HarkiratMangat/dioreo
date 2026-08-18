@@ -2514,6 +2514,32 @@ ${scope}.cmd-busy::after{animation:none}
 `;
 }
 
+/* ⚠️ SHARED, AND THIS IS THE FOURTH TIME. `.slot` is the section-index row — the
+   desktop rail uses it AND so does mobileNav()'s "on this page" menu, which every
+   template emits. It lived inside shell()'s own style block, so any family that
+   called mobileNav() with slots got the MARKUP and none of the typography: measured
+   on the /commands page, `.slot` computed to rgb(0,0,238) underlined, i.e. the
+   browser's default link, with a bare em-dash beside it. Harkirat saw it as "the ugly
+   'on this page' links" and he was looking at unstyled HTML.
+   Same shape as BAR_CSS, PAGE_CSS and cmdRoleCss before it. The rule to draw from the
+   set rather than from this one instance: **anything shell() styles that a NAV HELPER
+   emits belongs in CHROME, because the helper is callable from every template while
+   the stylesheet is not.** */
+const SLOT_CSS = `
+.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
+  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
+  transition:border-color .18s,color .18s}
+.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
+  font-weight:500;letter-spacing:-.005em}
+.slot:hover{border-left-color:var(--ink3)}
+.slot:hover span{color:var(--ink)}
+.slot.on{border-left-color:var(--accent)}
+.slot.on i{color:var(--accent-t)}
+.slot.on span{color:var(--ink);font-weight:650}
+`;
+
 const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
@@ -4451,18 +4477,7 @@ ${PAGE_CSS}
    guarded in JS: a viewport check in script would have to be re-run on resize
    and can disagree with the media query that actually governs the layout. */
 .rail>.lab .cur{display:none}
-.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
-  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
-  transition:border-color .18s,color .18s}
-.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
-  font-variant-numeric:tabular-nums}
-.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
-  font-weight:500;letter-spacing:-.005em}
-.slot:hover{border-left-color:var(--ink3)}
-.slot:hover span{color:var(--ink)}
-.slot.on{border-left-color:var(--accent)}
-.slot.on i{color:var(--accent-t)}
-.slot.on span{color:var(--ink);font-weight:650}
+${SLOT_CSS}
 /* ── the plain-text download ──────────────────────────────────────────
    The desktop rail's last row. It reads as an ACTION, not as another section —
    a filled chip rather than a ruled row — because a reader scanning for "where
@@ -8494,7 +8509,7 @@ const CHROME = {
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
     MORPH_JS,
     wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
-    BAR_CSS, PAGE_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
+    BAR_CSS, PAGE_CSS, SLOT_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
 };
 
 function build() {
@@ -8626,7 +8641,8 @@ function build() {
        Gating on an env var means a normal build and every CI run never create them at
        all; unlinking means a stale copy left over from a local run cannot be published
        by someone else's deploy afterwards. */
-    const variantFiles = ['_v-ledger.html', '_v-xref.html', '_v-sticky.html'];
+    // ⚠️ _v-phones.html is the three-in-a-row iframe harness used to compare the mobile forms; it is written by hand rather than by this loop, which is exactly why it has to be listed HERE. A throwaway page that the unlink list does not know about is the same leak all over again — gitignored, sitting in public/, and uploaded by a deploy that reads the directory rather than the git index.
+    const variantFiles = ['_v-ledger.html', '_v-xref.html', '_v-sticky.html', '_v-phones.html'];
     if (process.env.DIOREO_VARIANTS === '1') {
         for (const v of [['ledger', variantFiles[0]], ['xref', variantFiles[1]], ['sticky', variantFiles[2]]]) {
             LINK_BASE = '';
