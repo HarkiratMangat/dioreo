@@ -103,7 +103,8 @@ async function route(interaction) {
             if (!actingUser) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. Reworded 2026-07-18 -- clearer + says what to do instead, per Harkirat's request.
                 try {
-                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
+                    // reply(), not followUp() (v3-pre-release review, finding #16) -- this branch deliberately never defers/replies before this point (see the "single-hop UPDATE_MESSAGE" comment above), and discord.js's followUp() throws InteractionNotReplied when called on an interaction that has neither. That throw was silently swallowed by the catch below, logging a misleading "(interaction likely expired)" while the real cause was the wrong verb -- the user just saw a bare "This interaction failed" with no explanation.
+                    await interaction.reply({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -182,8 +183,8 @@ async function route(interaction) {
             }
 
             const query = interaction.fields.getTextInputValue('query');
-            const { searchTimezones } = require('../utils/timezoneData');
-            const matches = searchTimezones(query, 10);
+            const { searchTimezones, displayLabel } = require('../utils/timezoneData');
+            const matches = searchTimezones(query, 10).map(m => ({ ...m, label: displayLabel(m.tz, m.label) }));
 
             if (matches.length === 0) {
                 return await interaction.reply({ content: `❌ No timezone matched **"${query}"** — try a bigger city near you, a country name, or an abbreviation like \`PST\`.`, ephemeral: true });

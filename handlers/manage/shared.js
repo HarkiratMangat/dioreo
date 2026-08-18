@@ -86,6 +86,23 @@ const pendingManageEdits = new Map(); // token -> { group, match }
 // Pending Bulk Delete confirmations (draws/calendar/loadouts, 2026-07-12) -- holds the DRY-RUN result (what WOULD be removed, computed but not yet saved) plus an `apply()` that performs the actual save and registers its own Undo snapshot, between a page module's modal-submit confirm prompt and index.js's mng_bulkdelconfirm_/mng_bulkdelcancel_ dispatch.
 const pendingBulkDeletes = new Map(); // token -> { description, summary, apply: async () => undoToken }
 
+// The token-mint -> pendingBulkDeletes.set -> 10-min unref'd expiry -> Confirm/Cancel reply shape every bulk-delete modal-submit branch repeated verbatim (v3-pre-release review, finding #37) -- draws.js/calendar.js/loadouts.js, ~22 lines each, differing only in `description`. Returns the same reply the three callers used to build by hand, so `return registerBulkDelete(interaction, {...})` is a drop-in replacement for their old trailing block.
+function registerBulkDelete(interaction, { description, summary, apply }) {
+    const token = randomUUID().slice(0, 8);
+    pendingBulkDeletes.set(token, { description, summary, apply });
+    setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
+    return interaction.reply({
+        content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
+        components: [{
+            type: 1, components: [
+                { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
+                { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
+            ]
+        }],
+        ephemeral: true
+    });
+}
+
 // ==========================================
 // DRAW THUMBNAIL RESOLUTION (2026-07-12)
 // ==========================================
@@ -118,15 +135,15 @@ async function resolveThumbnailsForDraws(draws) {
 // ==========================================
 // BULK REPLACE: UPSERT BY TITLE (2026-07-12)
 // ==========================================
-// "Replace Multiple" fuzzy-matches each pasted title against the array being replaced: updates the existing item in place (same _id) on a match, inserts as new otherwise, and never touches anything not mentioned in the paste (Purge already covers a full wipe). Returns the same array reference mutated in place (plus counts for the confirmation message).
-function upsertDrawsByTitle(existingArray, parsedDraws) {
+// "Replace Multiple" fuzzy-matches each pasted title against the array being replaced: updates the existing item in place (same _id) on a match, inserts as new otherwise, and never touches anything not mentioned in the paste (Purge already covers a full wipe). Returns the same array reference mutated in place (plus counts for the confirmation message). ONE definition, not two byte-identical copies (v3-pre-release review, finding #39) -- upsertDrawsByTitle and upsertEventsByTitle differed only in a loop variable name and a parameter name. Both old names still exported below as aliases so no call site needs to change.
+function upsertByTitle(existingArray, parsedItems) {
     const { fuzzyMatch } = require('../../utils/search');
     let updatedCount = 0;
     let insertedCount = 0;
     const finalArray = [...existingArray];
 
-    for (const parsed of parsedDraws) {
-        const matchIndex = finalArray.findIndex(d => fuzzyMatch(parsed.title, d.title));
+    for (const parsed of parsedItems) {
+        const matchIndex = finalArray.findIndex(item => fuzzyMatch(parsed.title, item.title));
         if (matchIndex > -1) {
             finalArray[matchIndex] = Object.assign(finalArray[matchIndex], parsed);
             updatedCount++;
@@ -138,25 +155,26 @@ function upsertDrawsByTitle(existingArray, parsedDraws) {
 
     return { finalArray, updatedCount, insertedCount };
 }
+const upsertDrawsByTitle = upsertByTitle;
+const upsertEventsByTitle = upsertByTitle;
 
-function upsertEventsByTitle(existingArray, parsedEvents) {
+// Subtractive counterpart to upsertByTitle -- fuzzy-matches each pasted title against `array`, removing the first match and reporting anything not found. (v3-pre-release review, finding #40 -- was copy-pasted twice, once as a local closure in draws.js and once inline in calendar.js.)
+function removeByTitle(array, titlesRaw) {
     const { fuzzyMatch } = require('../../utils/search');
-    let updatedCount = 0;
-    let insertedCount = 0;
-    const finalArray = [...existingArray];
-
-    for (const parsed of parsedEvents) {
-        const matchIndex = finalArray.findIndex(e => fuzzyMatch(parsed.title, e.title));
-        if (matchIndex > -1) {
-            finalArray[matchIndex] = Object.assign(finalArray[matchIndex], parsed);
-            updatedCount++;
+    const requested = titlesRaw.split('\n').map(t => t.trim()).filter(Boolean);
+    const removed = [];
+    const notFound = [];
+    let remaining = array;
+    for (const title of requested) {
+        const match = remaining.find(item => fuzzyMatch(title, item.title));
+        if (match) {
+            removed.push(match.title);
+            remaining = remaining.filter(item => item !== match);
         } else {
-            finalArray.push(parsed);
-            insertedCount++;
+            notFound.push(title);
         }
     }
-
-    return { finalArray, updatedCount, insertedCount };
+    return { remaining, removed, notFound };
 }
 
 // ==========================================
@@ -204,7 +222,9 @@ async function resolveManagePanelMatches(group, rawQuery) {
 
     // Loadouts is two separate panel pages (MP/DMZ) instead of one combined group -- scope the search to whichever mode the page/group encodes rather than searching both.
     if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
-        const mode = group === 'loadouts_mp' ? 'MP' : 'DMZ';
+        // loadoutModeFor, not a re-derived ternary (v3-pre-release review, finding #41).
+        const { loadoutModeFor } = require('../../utils/manageActions');
+        const mode = loadoutModeFor(group);
         const Loadout = require('../../models/Loadout');
         const modeLoadouts = await Loadout.find({ mode }).lean();
         return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName)).slice(0, 25)
@@ -255,7 +275,9 @@ async function renderManagePage(interaction) {
     // Re-checked here even though the dropdown itself only ever OFFERS pages this user is allowed on, for the same defense-in-depth reasoning as every other re-check in this handler: a stale panel message from before a permission change could still carry an option no longer theirs.
     const { getManagePages } = require('../../utils/adminAccess');
     const allowedPages = await getManagePages(interaction.user.id);
-    const deniedReply = { content: "🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it.", ephemeral: true };
+    // DENIAL_MESSAGE.denied, not a restated copy (v3-pre-release review, finding #43) -- three variants of this one string existed; a scoped admin got different guidance depending on which of the three paths denied them for the identical reason.
+    const { DENIAL_MESSAGE } = require('../../utils/manageActions');
+    const deniedReply = { content: DENIAL_MESSAGE.denied, ephemeral: true };
 
     if (targetPage === 'season_titlesdeadlines') {
         if (!allowedPages.includes('season')) return interaction.reply(deniedReply);
@@ -274,21 +296,8 @@ async function renderManagePage(interaction) {
     await interaction.deferUpdate();
     const { sendV2Payload } = require('../../utils/sendV2Payload');
 
-    // Patch Notes' "Past Seasons" dropdown needs a live DB read for its options.
-    let dynamicData = {};
-    if (targetPage === 'patchnotes') {
-        const SeasonalData = require('../../models/SeasonalData');
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        dynamicData = { pastSeasons: manageCommand.buildPastSeasonsOptions(seasonalDoc) };
-    } else if (targetPage === 'seasondraft') {
-        const SeasonalData = require('../../models/SeasonalData');
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
-    } else if (targetPage === 'announcement') {
-        const { getActiveAnnouncements } = require('../../utils/announcement');
-        const announcementDocs = await getActiveAnnouncements();
-        dynamicData = { announcementBlocks: manageCommand.buildAnnouncementListBlocks(announcementDocs) };
-    }
+    // manageCommand.buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- see commands/manage.js's own comment on this function for why the duplication mattered.
+    const dynamicData = await manageCommand.buildDynamicData(targetPage);
     return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client, allowedPages));
 }
 
@@ -415,11 +424,13 @@ module.exports = {
     pendingManageDeletes,
     pendingManageEdits,
     pendingBulkDeletes,
+    registerBulkDelete,
     loadOrCreateSeasonalDoc,
     thumbnailNote,
     resolveThumbnailsForDraws,
     upsertDrawsByTitle,
     upsertEventsByTitle,
+    removeByTitle,
     resolveManagePanelMatches,
     resolveManagePanelAction,
     renderManagePage,

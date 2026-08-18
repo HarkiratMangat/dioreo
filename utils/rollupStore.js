@@ -13,8 +13,8 @@ const DISTINCT_HASHES_CAP = 5000;   // bounded, per the spec's own suggestion --
 const CATCH_UP_WINDOW_DAYS = 14;    // never re-roll further back than this on a catch-up pass -- a
                                     // multi-week gap should be investigated (see docs/db-deferred-list.md's backup-scheduling item), not silently absorbed into ever-longer roll-up runs on the next heartbeat
 
-const OUTCOME_KEYS = ['ok', 'error', 'expired', 'blocked_by_policy', 'swallowed_by_cooldown', 'rejected_admin'];
-const ENTRY_KEYS = ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background'];
+// Imported from the model, never redeclared (v3-pre-release review, finding #31) -- see AnalyticsRollup.js's own comment on why these were a silent-drift trap as two verbatim copies.
+const { OUTCOME_KEYS, ENTRY_KEYS } = AnalyticsRollup;
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
@@ -79,14 +79,17 @@ function buildRollupDoc(day, group) {
 async function rollupDay(day) {
     const AnalyticsEvent = require('../models/AnalyticsEvent');
     const { start, end } = dayBounds(day);
+    // Counted server-side via $sum:$cond, not $push+client-side Array.filter (v3-pre-release review, finding #55) -- the old shape shipped every event's outcome/entry string across the wire and then ran 13 full Array.filter passes per group in Node; at 10k events for one command that was 20,000 strings transferred and 130,000 comparisons, re-run across up to a 14-day catch-up window. It was also a correctness cliff: a $group result document carrying two full per-event arrays is subject to the 16MB BSON limit, so a busy command-day could eventually fail the whole roll-up. Field names are flattened (oc_/en_ prefixes) because Mongo $group accumulator names can't contain dots.
+    const outcomeSums = Object.fromEntries(OUTCOME_KEYS.map(k => [`oc_${k}`, { $sum: { $cond: [{ $eq: ['$outcome', k] }, 1, 0] } }]));
+    const entrySums = Object.fromEntries(ENTRY_KEYS.map(k => [`en_${k}`, { $sum: { $cond: [{ $eq: ['$entry', k] }, 1, 0] } }]));
     const groups = await AnalyticsEvent.aggregate([
         { $match: { createdAt: { $gte: start, $lt: end } } },
         { $group: {
             _id: { command: '$command', subcommand: '$subcommand' },
             invocations: { $sum: 1 },
             userHashes: { $addToSet: '$userHash' },
-            outcomes: { $push: '$outcome' },
-            entries: { $push: '$entry' },
+            ...outcomeSums,
+            ...entrySums,
             ackP: { $percentile: { input: '$ackMs', p: [0.5, 0.95], method: 'approximate' } },
             durP: { $percentile: { input: '$durationMs', p: [0.5, 0.95], method: 'approximate' } },
         } },
@@ -95,8 +98,8 @@ async function rollupDay(day) {
     if (!groups.length) return 0;
 
     const ops = groups.map((g) => {
-        const outcomeRows = OUTCOME_KEYS.map(k => ({ _id: k, c: g.outcomes.filter(o => o === k).length }));
-        const entryRows = ENTRY_KEYS.map(k => ({ _id: k, c: g.entries.filter(e => e === k).length }));
+        const outcomeRows = OUTCOME_KEYS.map(k => ({ _id: k, c: g[`oc_${k}`] || 0 }));
+        const entryRows = ENTRY_KEYS.map(k => ({ _id: k, c: g[`en_${k}`] || 0 }));
         const doc = buildRollupDoc(day, {
             command: g._id.command || 'unknown', subcommand: g._id.subcommand,
             invocations: g.invocations, userHashes: g.userHashes,
@@ -114,15 +117,15 @@ async function rollupDay(day) {
     return ops.length;
 }
 
-// Called from bot/lifecycle.js's daily heartbeat. Rolls up every UTC day from (last rolled day + 1) through (yesterday) inclusive -- "today" is deliberately never rolled, since it is still in progress and a partial day's percentiles would look like real data. Swallowed: a roll-up failure must never take down the heartbeat it rides on.
+// Called from bot/lifecycle.js's daily heartbeat AND once on ClientReady (v3-pre-release review, finding #20). Rolls up every UTC day from (last rolled day, RE-touched) through (yesterday) inclusive -- "today" is deliberately never rolled, since it is still in progress and a partial day's percentiles would look like real data. Swallowed: a roll-up failure must never take down the heartbeat it rides on.
 async function catchUpRollups() {
     try {
         const todayKey = dayKey(new Date());
         const yesterdayKey = prevDayKey(todayKey);
         const state = await RollupState.findById('lastRolledUpDay').lean();
         const earliestAllowed = dayKey(new Date(Date.now() - CATCH_UP_WINDOW_DAYS * 86400 * 1000));
-        // Resume the day AFTER the last one fully rolled up, unless that resume point is further back than the catch-up window allows -- then start from the window edge instead of re-rolling an unbounded backlog.
-        const resumeFrom = state?.day ? nextDayKeySafe(state.day) : earliestAllowed;
+        // Resume the day AFTER the last one fully rolled up, unless that resume point is further back than the catch-up window allows -- then start from the window edge instead of re-rolling an unbounded backlog. Re-roll FROM state.day itself, not nextDayKeySafe(state.day) (v3-pre-release review, finding #19) -- the header above claims a late event lands correctly "the next time that day is (re)rolled," but the old resumeFrom skipped straight past the last-rolled day, so an event flushed after that day's roll-up ran (e.g. buffered at 23:59:57 UTC, flushed by the idle timer at 00:00:04) was never re-counted by any future run. rollupDay() is a full recompute-and-upsert, so re-touching an already-correct day is free.
+        const resumeFrom = state?.day ? state.day : earliestAllowed;
         const fromKey = resumeFrom > earliestAllowed ? resumeFrom : earliestAllowed;
         const targets = fromKey > yesterdayKey ? [] : daysBetweenInclusive(fromKey, yesterdayKey);
         for (const day of targets) {

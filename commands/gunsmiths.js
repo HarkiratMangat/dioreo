@@ -47,7 +47,8 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     } else {
         const UserPreference = require('../models/UserPreference');
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
-        const visibilityChoice = interaction.options.getString('visibility');
+        // isChatInputCommand() guard added, matching every sibling command (v3-pre-release review, finding #68) -- unreachable today since this else-branch is only entered from execute(), but the function is exported and already called from handlers/loadouts.js.
+        const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });

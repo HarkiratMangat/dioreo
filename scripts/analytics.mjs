@@ -13,7 +13,7 @@
 
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -126,6 +126,8 @@ async function main() {
 }
 
 // Only run when invoked directly -- scripts/analytics.test.mjs imports parseArgs/mergeRollups without wanting a live Mongo connection, same guard reflow-prose.mjs's header names as a trap it already paid for (a test importing a CLI's exports ran the whole program before any assertion could execute).
-if (import.meta.url === `file://${process.argv[1]}`) {
+//
+// pathToFileURL(), not a hand-built `file://${...}` template (v3-pre-release review, finding #13) -- import.meta.url is percent-encoded, so a checkout path containing a space (this repo's own "Diors-Builds" lives under "Claude Code/") could never equal the raw-path template: main() was silently never called, and both subcommands exited 0 having done nothing. Matches the guard scripts/reflow-comments.mjs and scripts/reflow-prose.mjs already use.
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
     main().catch((err) => { console.error(err); process.exitCode = 1; });
 }

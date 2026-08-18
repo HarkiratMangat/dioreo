@@ -279,7 +279,8 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
     } else {
         const doubleCpAvailable = buildEntitlementList(state.entitlementMask);
         const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
-        const describeCombo = (r) => r.combo.map(c => `${c.count}× ${normalCp(CP_PACKAGES.find(p => p.id === c.id))} CP${c.mode === 'double' ? ' (2X)' : ''} pack`).join(', ');
+        // Reads the optimizer's OWN cpEach rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so every 2X combo entry rendered the un-doubled figure.
+        const describeCombo = (r) => r.combo.map(c => `${c.count}× ${c.cpEach.toLocaleString('en-US')} CP${c.mode === 'double' ? ' (2X)' : ''} pack`).join(', ');
 
         components.push({ type: 10, content: `**Cheapest:** ${describeCombo(result.cheapest)} — ${formatMoney(result.cheapest.totalCents, currency)}, ${formatCP(result.cheapest.leftoverCp)} CP leftover (${result.cheapest.transactions} purchase${result.cheapest.transactions === 1 ? '' : 's'})` });
         if (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp) {
@@ -288,7 +289,7 @@ function buildResultsPanel(state, accentColor, { currency = 'USD', client } = {}
 
         const savings = result.naive.totalCents - result.cheapest.totalCents;
         if (savings > 0) {
-            components.push({ type: 10, content: `-# 💰 Saves **${formatMoney(savings, currency)}** versus just buying the ${normalCp(CP_PACKAGES.find(p => p.id === result.naive.combo[0].id)).toLocaleString('en-US')} CP pack on its own.` });
+            components.push({ type: 10, content: `-# 💰 Saves **${formatMoney(savings, currency)}** versus just buying the ${result.naive.combo[0].cpEach.toLocaleString('en-US')} CP pack on its own.` });
         }
     }
 

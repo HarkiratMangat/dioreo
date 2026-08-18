@@ -97,7 +97,9 @@ const SeasonalDataSchema = new mongoose.Schema({
             date: { type: Date },
             endDate: { type: Date },
             isOngoing: { type: Boolean, default: false },
-            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
+            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' },
+            // Was missing (v3-pre-release review, finding #2): draft.calendar is a hand-copied duplicate of the LIVE calendar sub-schema above, and never received this field when it was added -- Mongoose silently dropped it, so Promote to Live flattened every staged 2X CP event and /draw calculator quoted normal pricing during a live double-CP window. Keep this in sync with the live calendar sub-schema by hand until the two are extracted into one shared sub-schema (filed as follow-up cleanup).
+            isDoubleCP: { type: Boolean, default: false }
         }],
         drawsBannerUrl: { type: String, default: '' },
         eventsBannerUrl: { type: String, default: '' },

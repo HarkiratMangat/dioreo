@@ -226,7 +226,8 @@ async function route(interaction) {
         );
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}` });
-        return interaction.followUp({ content: `✅ Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}.${note ? ` (${note})` : ''}` });
+        // editReply, not followUp (v3-pre-release review, finding #7) -- followUp posts a NEW message (leaving the deferReply({ephemeral:true}) placeholder hanging forever) and, with no ephemeral flag of its own, lands publicly -- disclosing who holds bot admin and at what scope to the whole channel.
+        return interaction.editReply({ content: `✅ Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}.${note ? ` (${note})` : ''}` });
     }
 
     if (interaction.isModalSubmit() && customId.startsWith('bot_adminmodal_editperms_')) {
@@ -245,11 +246,11 @@ async function route(interaction) {
         const { recordChange } = require('../utils/changeStore');
         const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { permissions } }, { new: true });
         if (!updated) {
-            return interaction.followUp({ content: '❌ That admin no longer exists (they may have just been revoked).' });
+            return interaction.editReply({ content: '❌ That admin no longer exists (they may have just been revoked).' });
         }
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}` });
-        return interaction.followUp({ content: `✅ Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}.` });
+        return interaction.editReply({ content: `✅ Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}.` });
     }
 }
 

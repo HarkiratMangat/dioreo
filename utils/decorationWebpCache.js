@@ -63,6 +63,8 @@ function memoizeResolved(publicId, resolved) {
     if (resolvedCache.size >= RESOLVED_CACHE_MAX) resolvedCache.delete(resolvedCache.keys().next().value);
     resolvedCache.set(publicId, resolved);
 }
+// In-flight de-dup -- see utils/nameplateWebpCache.js's matching comment (v3-pre-release review, finding #24).
+const inFlightRenders = new Map();
 
 // Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already cached without paying for a full resolve. `renderSource` surfaces the context's `render_source` marker ('catalog'|'fallback'|'recovered'|undefined for a pre-existing resource that predates this field).
 async function getCachedDecorationWebp(decorationAsset, catalog) {
@@ -86,7 +88,8 @@ async function getCachedDecorationWebp(decorationAsset, catalog) {
     } catch (err) {
         if (errorHttpCode(err) !== 404) {
             console.error(`Decoration WebP cache lookup failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
-            return null;
+            // Distinguishable sentinel, not null -- see utils/nameplateWebpCache.js's matching comment (v3-pre-release review, finding #21).
+            return { error: true };
         }
         // 404: either genuinely never rendered, OR the Cloudinary resource was deleted out-of-band after an earlier render already posted to the Discord storage channel -- see utils/discordCdnAssetIndex.js's recoverCloudinaryFromDiscordCdnAsset for the full reasoning. Checked before treating this as a cold miss.
         const recovered = await recoverCloudinaryFromDiscordCdnAsset(publicId, FOLDER);
@@ -96,7 +99,8 @@ async function getCachedDecorationWebp(decorationAsset, catalog) {
             discordCdnUrl: recovered.discordCdnUrl,
             palette: null, // re-derived by healPalette, triggered by resolveDecorationWebp's existing `cached.palette ? cached : healPalette(...)` branch
             renderSource: 'recovered',
-            rawContext: { discord_cdn_url: recovered.discordCdnUrl, render_source: 'recovered' }
+            // All three keys mirrored -- see utils/nameplateWebpCache.js's matching comment (finding #23).
+            rawContext: { discord_cdn_url: recovered.discordCdnUrl, discord_message_id: recovered.discordMessageId, render_source: 'recovered' }
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -249,7 +253,11 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
                 messageId, discordCdnUrl, filename
             });
         }
-        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
+        // rawContext included in the memo -- see utils/nameplateWebpCache.js's matching comment (v3-pre-release review, finding #22).
+        const rawContext = { ...paletteContextFields(palette, FRAME_OPTS), render_source: 'fallback' };
+        if (discordCdnUrl) rawContext.discord_cdn_url = discordCdnUrl;
+        if (messageId) rawContext.discord_message_id = String(messageId);
+        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette, rawContext };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
@@ -266,9 +274,17 @@ async function resolveDecorationWebp({ decorationAsset, decorationUrl, skuId }) 
     const catalog = await lookupCatalogEntry(skuId);
 
     const cached = await getCachedDecorationWebp(decorationAsset, catalog);
+    // Transient lookup failure degrades to the static fallback (finding #21) -- do NOT treat it as a miss.
+    if (cached?.error) return null;
     if (cached) return cached.palette ? cached : healPalette(cached, decorationAsset, catalog, decorationUrl);
 
-    return renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, catalog);
+    // In-flight de-dup (finding #24) -- collapses concurrent misses for the SAME publicId onto one render.
+    const publicId = publicIdFor(decorationAsset, catalog);
+    if (inFlightRenders.has(publicId)) return inFlightRenders.get(publicId);
+    const renderPromise = renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuId, catalog)
+        .finally(() => inFlightRenders.delete(publicId));
+    inFlightRenders.set(publicId, renderPromise);
+    return renderPromise;
 }
 
 // Backfills a palette onto a WebP rendered BEFORE palette caching shipped. Without this, such a design never re-renders (the WebP is already cached), so it would fall back to per-user extraction forever -- precisely the cost this cache removes. Paid ONCE per pre-existing design.

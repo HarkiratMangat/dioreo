@@ -13,7 +13,7 @@ const { mentionCommand } = require('../utils/commandMentions');
 // Discord blurple -- this panel configures a SERVER's own behaviour, so it deliberately does not borrow any of the content commands' accents (see .claude/rules/rendering-and-ui.md's colour map).
 const ACCENT = 0x5865F2;
 
-// A select menu accepts at most 25 options. The bot registers 19 gate-able commands today, so this is headroom rather than a live truncation -- but it is a real cliff, and a silent one: Discord rejects the whole payload rather than trimming, which renders as a dead button.
+// A select menu accepts at most 25 options. The bot registers 12 gate-able commands today (measured 2026-08-18, v3-pre-release review finding #64 -- was stale at 19), so this is headroom rather than a live truncation -- but it is a real cliff, and a silent one: Discord rejects the whole payload rather than trimming, which renders as a dead button.
 const SELECT_OPTION_CAP = 25;
 
 const VISIBILITY_LABEL = { public: 'Public', ephemeral: 'Hidden' };
@@ -310,24 +310,39 @@ async function handleComponent(interaction) {
             return sendV2Payload(interaction, buildRoleScope(settings, arg));
 
         case 'admin_cmd_select':
-            settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = values; });
+            settings = await updateGuildSettings(guildId, actorId, doc => {
+                // Merge, not replace (v3-pre-release review, finding #28) -- the menu can only ever show/return the first SELECT_OPTION_CAP (25) of the sorted gateable list (see buildCommands' own comment), so a straight replace silently deleted every existing rule on a command past that cutoff the moment an admin touched this menu for an unrelated reason. Preserve whatever was already set for a command this render of the menu couldn't even show.
+                const shown = [...(interaction.client.gateableCommandNames || [])].sort().slice(0, SELECT_OPTION_CAP);
+                const outsideMenu = (doc.ephemeralCommands || []).filter(c => !shown.includes(c));
+                doc.ephemeralCommands = [...outsideMenu, ...values];
+            });
             break;
 
         default:
             return;
     }
 
-    // Which page to re-render after a write: the one the control lives on.
-    const page = id.startsWith('admin_ch_') ? 'admin_channels'
-        : id.startsWith('admin_role_') ? 'admin_roles'
-            : id === 'admin_cmd_select' ? 'admin_commands'
-                : id === 'admin_default_toggle' ? 'admin_home'
-                    : id;
+    // Which page to re-render after a write: the one the control lives on. A per-id table, not two chained ternaries re-deriving the page and then the builder (v3-pre-release review, finding #46) -- the page step matched by PREFIX, and admin_role_pick/admin_role_scope_public/admin_role_scope_ephemeral all shared the admin_role_ prefix too, safe only because each of those three `return`s earlier in the switch above and never reaches this code. The switch above is the actual source of truth for which id maps to which page; this table just names it directly instead of re-deriving it by string-matching the id a second time.
+    const PAGE_FOR_ID = {
+        admin_home: 'admin_home',
+        admin_channels: 'admin_channels',
+        admin_roles: 'admin_roles',
+        admin_commands: 'admin_commands',
+        admin_default_toggle: 'admin_home',
+        admin_ch_public: 'admin_channels',
+        admin_ch_ephemeral: 'admin_channels',
+        admin_role_public: 'admin_roles',
+        admin_role_ephemeral: 'admin_roles',
+        admin_cmd_select: 'admin_commands',
+    };
+    const page = PAGE_FOR_ID[id] || id;
 
-    const components = page === 'admin_channels' ? buildChannels(settings)
-        : page === 'admin_roles' ? buildRoles(settings)
-            : page === 'admin_commands' ? buildCommands(settings, interaction.client.gateableCommandNames || [])
-                : buildHome(settings, interaction.client);
+    const PAGE_BUILDERS = {
+        admin_channels: () => buildChannels(settings),
+        admin_roles: () => buildRoles(settings),
+        admin_commands: () => buildCommands(settings, interaction.client.gateableCommandNames || []),
+    };
+    const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client)))();
 
     // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT -- switched to sendV2Payload for two reasons at once: (1) it's the established pattern every other handler in the bot uses for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet: discord.js's own high-level reply/followUp/update don't RELIABLY serialize raw V2 JSON), and this command had never been real-world click-tested live (docs/ROADMAP.md's click-test checklist names it the one deliberate holdout) -- so matching the battle-tested path is strictly safer regardless of whether the raw call actually worked; (2) it's what makes this panel pick up the passive 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment). The three `interaction.update()` calls above got the same swap for the same reasons.
     return sendV2Payload(interaction, components);

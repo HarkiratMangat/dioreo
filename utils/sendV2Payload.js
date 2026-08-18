@@ -30,7 +30,7 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         body.attachments = [];
     }
 
-    // For a component-triggered render, `interaction.message` already carries the id of the message being edited -- true whether this ends up going through the light POST path below (which does NOT return a body, so there is nothing to read an id off) or the deferred PATCH path (which does, but the id would be identical). Only the very first render of a fresh slash command has no `.message` yet, so THAT case falls through to reading the PATCH response's own id below.
+    // For the light POST path below (raw interaction-callback, no body returned), `interaction.message` is the only id available and IS correct -- that path only runs for an un-acked click, which always answers the SAME message the component was attached to. For the PATCH path it is NOT reliable (v3-pre-release review, finding #15): a caller that answered the click with deferReply() instead of deferUpdate() -- e.g. handlers/share.js's public "Show Everyone" copy -- patches `@original`, which is that BRAND-NEW message, not the one the component came from. `interaction.message` stayed the OLD message's id in that case, so the passive-expiry timer got armed under the wrong message: the real (new) message never expired, and the timer instead patched some unrelated message ten minutes later. The PATCH response body IS the message that was actually just patched, so its id is preferred below; `interaction.message` is only the fallback for the rare case a PATCH response has no body.
     const knownMessageId = interaction.message?.id;
     const maybeSchedule = (messageId) => {
         if (!skipExpiry && messageId && hasInteractiveComponents(outgoing)) schedulePanelExpiry(interaction, messageId, outgoing);
@@ -55,7 +55,8 @@ async function sendV2Payload(interaction, components, { content = '', flags = 32
         Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
         options
     )).catch((err) => { noteResponseFailure(err); throw err; });
-    maybeSchedule(knownMessageId || response?.id);
+    // response?.id first, not knownMessageId first -- see this function's header comment above (finding #15).
+    maybeSchedule(response?.id || knownMessageId);
     return response;
 }
 

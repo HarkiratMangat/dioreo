@@ -64,13 +64,36 @@ async function route(interaction) {
             return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
         }
 
-        // /gunsmiths list SCOPE PAGING -- a BUTTON. Type-tested for the same reason as the select branch above; `action !== 'next' && action !== 'prev'` guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
+        // /gunsmiths list SCOPE PAGING + COPY -- a BUTTON. `action` outside {next,prev,copy,copyatt} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
-            if (action !== 'next' && action !== 'prev') return;
-            const { parseScopeToken, resolveScopeBuilds } = require('../utils/loadoutScopes');
-            const { renderScopeBrowse } = require('../commands/gunsmiths');
+            const { parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
             const scope = parseScopeToken(scopeToken);
+
+            // COPY CODE / COPY ATTACHMENTS (v3-pre-release review, finding #1) -- resolves through the SAME scope-aware chain the card itself used to render, rather than an unscoped Loadout.find like the legacy mp/dmz branch below. That mismatch (a scope-relative index resolved against an unfiltered, unsorted list) previously let Copy Code hand back a different build's share code than the card on screen.
+            if (action === 'copy' || action === 'copyatt') {
+                const builds = await resolveScopeBuilds(scope);
+                if (!builds.length) {
+                    try {
+                        await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                    } catch (replyError) {
+                        console.error(`Failed to reply to gunsmiths ${action} action (interaction likely expired):`, replyError);
+                    }
+                    return;
+                }
+                const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
+                const build = weaponBuilds[indexWithinWeapon];
+                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : build.attachments.join('\n');
+                try {
+                    await interaction.reply({ content: replyContent, ephemeral: true });
+                } catch (replyError) {
+                    console.error(`Failed to reply to gunsmiths ${action} action (interaction likely expired):`, replyError);
+                }
+                return;
+            }
+
+            if (action !== 'next' && action !== 'prev') return;
+            const { renderScopeBrowse } = require('../commands/gunsmiths');
             const builds = await resolveScopeBuilds(scope);
             // Guard BEFORE the modulo. /manage can purge a scope empty between render and click: `(cur + 1) % 0` is NaN, and flatIndexToPosition's clamp would yield -1 -> builds[-1] is undefined -> throws. renderScopeBrowse has its own empty guard, but it sits DOWNSTREAM of this arithmetic and never gets the chance to fire.
             if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
@@ -93,6 +116,15 @@ async function route(interaction) {
 
             // .lean() -- these builds are only ever read (rendered into the card or replied with directly), never mutated/saved on this path.
             const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode }).lean();
+            // Guard BEFORE the modulo/index -- mirrors the gsb~ browse branch's own guard below (v3-pre-release review, finding #6). /manage can purge a weapon's builds between render and click: `(cur ± 1) % matchingBuilds.length` is NaN on an empty array, and matchingBuilds[newIndex] is undefined for copy/copyatt too -- every branch past this point (category lookup, shareCode, attachments) would throw on an already-acked interaction.
+            if (!matchingBuilds.length) {
+                try {
+                    await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                } catch (replyError) {
+                    console.error(`Failed to notify user of an empty ${mode} build list (interaction likely expired):`, replyError);
+                }
+                return;
+            }
             let newIndex = parseInt(currentIndex);
 
             // Calculate wrap-around pagination index
