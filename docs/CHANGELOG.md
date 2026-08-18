@@ -75,7 +75,15 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.46.0 — 2026-08-18 12:04 EDT (#154) — settings pickers and /help collapse to shared, self-enforcing shapes
+## Pre-Release v3.47.0 — 2026-08-18 12:42 EDT (#155) — the installed-but-unused CLI shelf gets written down
+
+A machine-global tooling audit (building `~/.claude/TOOLING.md`, outside this repo) turned up a shelf of command-line tools that are **already installed on the development machine** and map onto workflows this repo still does by hand. None of it is a bug and nothing is broken today, so it lands as a single filed item under `docs/db-deferred-list.md` → 🧹 Someday / tech-debt rather than as adoption.
+
+Five entries, each carrying the caveat that decides whether it is worth adopting: **`markdownlint-cli2`** could become a `docs:audit` syntax check — nothing currently lints Markdown *syntax*, only structure and cross-references — but its default ruleset includes MD013 line-length, which would fight this repo's soft-wrap convention and fail the entire tree, so it needs a deliberately narrow rule subset rather than the defaults. **`git-cliff`** drafts changelogs from commit history and matches this repo's Conventional Commits convention exactly, but is flagged *resolve-before-adopting* because the `dior` CLI already has a `changelog` command that may duplicate or already wrap it — and `~/.config/dior/*.zsh` is a separate git repo no in-repo search reaches, so that has to be read directly. **`shfmt`** is the formatting half of the `shellcheck` pairing already used on `.claude/hooks/*.sh`. **`languagetool`** applies only to what actually renders to dioreo.app, never the append-only record files. **`difft`** and **`scc`** need no integration at all.
+
+Deliberately excluded after checking for duplicates: **`bats`** is already filed as the hook-suite migration item, and **`typos`** and **`shellcheck`** are already wired as hooks — re-filing any of them would have duplicated a live item. The filed entry says so in its own preamble so the next reader does not re-derive it.
+
+## Pre-Release v3.46.0 — 2026-08-18 12:04 EDT (#154 · `92880fd`) — settings pickers and /help collapse to shared, self-enforcing shapes
 
 The first session of a multi-session plan closing out the remaining items from the v3-pre-release code review (`local/handoff/review-remnants-plan.md`, gitignored; tracked via `docs/db-deferred-list.md`), closing findings #48 and #49 — two of the five the previous release deliberately skipped as needing a new architectural abstraction rather than a bounded fix.
 
