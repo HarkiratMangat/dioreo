@@ -118,25 +118,25 @@ check('the DP agrees with brute force on small shortfalls, within the same trans
     for (const shortfall of [1, 79, 80, 81, 420, 900, 2401, 5000, 7500]) {
         const dp = optimizePurchase(shortfall, {});
         const bf = bruteForce(shortfall);
-        assert.strictEqual(dp.totalCents, bf.cents,
-            `shortfall ${shortfall}: DP said ${dp.totalCents}c, brute force found ${bf.cents}c`);
+        assert.strictEqual(dp.cheapest.totalCents, bf.cents,
+            `shortfall ${shortfall}: DP said ${dp.cheapest.totalCents}c, brute force found ${bf.cents}c`);
     }
 });
 
 check('every result actually covers the shortfall', () => {
     for (const shortfall of [1, 500, 3333, 12000, 29999]) {
         const r = optimizePurchase(shortfall, {});
-        assert.ok(r.totalCp >= shortfall, `shortfall ${shortfall}: only got ${r.totalCp}`);
-        assert.strictEqual(r.leftoverCp, r.totalCp - shortfall);
+        assert.ok(r.cheapest.totalCp >= shortfall, `shortfall ${shortfall}: only got ${r.cheapest.totalCp}`);
+        assert.strictEqual(r.cheapest.leftoverCp, r.cheapest.totalCp - shortfall);
     }
 });
 
 check('combo prices and CP sum to the reported totals', () => {
     const r = optimizePurchase(13000, {});
-    const cents = r.combo.reduce((s, c) => s + c.count * c.priceCents, 0);
-    const cp = r.combo.reduce((s, c) => s + c.count * c.cpEach, 0);
-    assert.strictEqual(cents, r.totalCents);
-    assert.strictEqual(cp, r.totalCp);
+    const cents = r.cheapest.combo.reduce((s, c) => s + c.count * c.priceCents, 0);
+    const cp = r.cheapest.combo.reduce((s, c) => s + c.count * c.cpEach, 0);
+    assert.strictEqual(cents, r.cheapest.totalCents);
+    assert.strictEqual(cp, r.cheapest.totalCp);
 });
 
 check('every result respects the default 6-transaction cap', () => {
@@ -160,7 +160,7 @@ check('least-waste never overshoots more than cheapest', () => {
 check('a 2X entitlement is used at most once each', () => {
     const all = CP_PACKAGES.map(p => p.id);
     const r = optimizePurchase(20000, { doubleCpAvailable: all });
-    r.combo.filter(c => c.mode === 'double')
+    r.cheapest.combo.filter(c => c.mode === 'double')
         .forEach(c => assert.ok(c.count <= 1, `${c.id} used ${c.count} times as a 2X purchase`));
 });
 
@@ -169,8 +169,8 @@ check('2X entitlements make a given shortfall cheaper, never dearer', () => {
     for (const shortfall of [5000, 16000, 25000]) {
         const without = optimizePurchase(shortfall, {});
         const with2x = optimizePurchase(shortfall, { doubleCpAvailable: all });
-        assert.ok(with2x.totalCents <= without.totalCents,
-            `shortfall ${shortfall}: 2X came out more expensive (${with2x.totalCents} vs ${without.totalCents})`);
+        assert.ok(with2x.cheapest.totalCents <= without.cheapest.totalCents,
+            `shortfall ${shortfall}: 2X came out more expensive (${with2x.cheapest.totalCents} vs ${without.cheapest.totalCents})`);
     }
 });
 

@@ -75,7 +75,7 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.47.0 — 2026-08-18 12:42 EDT (#155) — the installed-but-unused CLI shelf gets written down
+## Pre-Release v3.47.0 — 2026-08-18 12:42 EDT (#155 · `24260f4`) — the installed-but-unused CLI shelf gets written down
 
 A machine-global tooling audit (building `~/.claude/TOOLING.md`, outside this repo) turned up a shelf of command-line tools that are **already installed on the development machine** and map onto workflows this repo still does by hand. None of it is a bug and nothing is broken today, so it lands as a single filed item under `docs/db-deferred-list.md` → 🧹 Someday / tech-debt rather than as adoption.
 
