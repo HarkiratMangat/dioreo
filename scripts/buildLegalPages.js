@@ -2486,8 +2486,11 @@ ${scope} .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
 ${scope} .cmd-v{padding:.08em .3em .08em .5em;
   background:color-mix(in srgb,var(--accent) 26%,transparent);
   border-radius:0 .34em .34em 0}
-/* Set by CMD_JS's paint() while the value has no characters yet — see the note
-   there for why this is a class rather than :has(+ .cmd-v:empty). */
+/* Set by the HOST's paint() while the value has no characters yet — see CMD_JS's
+   own note for why this is a class rather than :has(+ .cmd-v:empty). ⚠️ Only the
+   landing page's typewriter has a state where a value is still empty; the /commands
+   Composer renders a bed only once it has something to put in it, so "solo" and the
+   ":empty" rules below are inert there rather than wrong. */
 ${scope} .cmd-o.solo{border-radius:.34em;margin-right:0}
 ${scope} .cmd-o:empty,${scope} .cmd-v:empty{padding:0;background:none}
 ${scope} .cmd-o:empty{margin-right:0}
@@ -2495,10 +2498,13 @@ ${scope}::after{content:"";display:inline-block;width:.5em;height:1em;
   margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
   animation:cmd-blink 1.1s steps(1) infinite}
 /* Solid while keys are landing, blinking on the hold and the gap — a cursor
-   that blinks through its own typing reads as a glitch. CMD_JS owns this class;
-   it writes nothing else about the cursor. Under prefers-reduced-motion the
-   global animation:none override pins the block solid and CMD_JS stops touching
-   the class at all, which is the correct still frame.
+   that blinks through its own typing reads as a glitch. ⚠️ "cmd-busy" belongs to
+   whichever host is TYPING: CMD_JS sets it on the landing page and writes nothing
+   else about the cursor. The /commands Composer never types — it assembles — so it
+   never sets this class and instead hides the caret outright once a command is
+   adopted, which is its own rule rather than one of these. Under
+   prefers-reduced-motion the global animation:none override pins the block solid
+   and CMD_JS stops touching the class at all, which is the correct still frame.
    ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
    re-parses the built CSS and flags a brace inside a comment, which is how a
    comma-carrying comment once destroyed eight rules. It failed this build for
