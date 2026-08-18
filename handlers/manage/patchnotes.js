@@ -142,14 +142,14 @@ async function editSeason(interaction) {
 // --- PURGE (patch notes) --- called from index.js's mng_purgeconfirm_ dispatch. Only scope 'all' -- the one place patch notes HISTORY can actually be cleared (distinct from "Wipe Season", which deliberately keeps patch notes forever).
 async function purge(actorId) {
     const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+    const seasonalDoc = await loadOrCreateSeasonalDoc();
     const prevPatchNotes = seasonalDoc.patchNotes;
     seasonalDoc.patchNotes = [];
     await seasonalDoc.save();
     const confirmMsg = `✅ Purged the patch notes history (${prevPatchNotes.length} entry(s) removed).`;
     recordChange({ actorId, page: 'patchnotes', action: 'purge', model: 'SeasonalData', target: 'all', summary: confirmMsg });
     const undoToken = registerUndo('Purge (patch notes history)', async () => {
-        const doc = await SeasonalData.findOne({ docType: 'global' });
+        const doc = await loadOrCreateSeasonalDoc();
         doc.patchNotes = prevPatchNotes;
         await doc.save();
     });
@@ -160,8 +160,9 @@ async function purge(actorId) {
 async function handlePatchSeasonPick(interaction) {
     const pickedId = interaction.values[0];
     if (pickedId === 'none') return await interaction.deferUpdate(); // the disabled placeholder option -- shouldn't normally fire, but no-op if it somehow does
-    const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+    // Shared lookup, not a hand-rolled one (v3-pre-release review, finding #38).
+    const { loadSeasonalDoc } = require('../../utils/manageActions');
+    const seasonalDoc = await loadSeasonalDoc();
     const entry = seasonalDoc?.patchNotes?.find(p => p._id.toString() === pickedId);
     if (!entry) {
         try {

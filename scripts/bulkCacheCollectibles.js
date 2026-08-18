@@ -65,15 +65,17 @@ function catalogKeyFor(doc) {
 }
 
 async function getCachedFor(doc) {
+    // doc.displayName threaded through (v3-pre-release review, finding #35) -- same reasoning as renderVariant.
     return doc.kind === 'nameplate'
-        ? getCachedNameplateWebp(doc.asset, catalogKeyFor(doc))
+        ? getCachedNameplateWebp(doc.asset, catalogKeyFor(doc), doc.displayName)
         : getCachedDecorationWebp(doc.asset, catalogKeyFor(doc));
 }
 
 async function renderVariant(doc, assetFolder) {
     const url = assetUrlFor(doc.skuId);
     if (doc.kind === 'nameplate') {
-        return renderNameplateWebpForBulk(url, doc.asset, doc.palette, hexToInt(doc.paletteHex), assetFolder, catalogKeyFor(doc));
+        // doc.displayName threaded through (v3-pre-release review, finding #35) -- renderNameplateWebpForBulk's own internal publicIdFor call was missing its 3rd argument; inert while catalogKeyFor(doc) is always truthy here, but this keeps the call shape consistent with every other publicIdFor site in the file.
+        return renderNameplateWebpForBulk(url, doc.asset, doc.palette, hexToInt(doc.paletteHex), assetFolder, catalogKeyFor(doc), doc.displayName);
     }
     return renderDecorationWebpForBulk(url, doc.asset, assetFolder, catalogKeyFor(doc));
 }
@@ -85,8 +87,9 @@ async function attachFor(doc, publicId, palette, discordCdnUrl, extra) {
 }
 
 function publicIdFor(doc) {
+    // doc.displayName threaded through (v3-pre-release review, finding #35) -- same reasoning as renderVariant.
     return doc.kind === 'nameplate'
-        ? nameplatePublicIdFor(doc.asset, catalogKeyFor(doc))
+        ? nameplatePublicIdFor(doc.asset, catalogKeyFor(doc), doc.displayName)
         : decorationPublicIdFor(doc.asset, catalogKeyFor(doc));
 }
 
@@ -229,8 +232,9 @@ async function processGroup(group, args, stats) {
     const toHeal = [];
     const toSkip = [];
 
-    for (const doc of group.variants) {
-        const cached = await getCachedFor(doc);
+    // Promise.all across the group's variants, not sequential awaits (v3-pre-release review, finding #54) -- groups are already parallelized across args.batchSize, so the WITHIN-group serialization here was pure added latency, paid on every invocation including --dry-run.
+    const cachedResults = await Promise.all(group.variants.map(async (doc) => ({ doc, cached: await getCachedFor(doc) })));
+    for (const { doc, cached } of cachedResults) {
         if (cached && cached.discordCdnUrl) {
             // 'recovered' (2026-08-17 19:09 EDT, see utils/discordCdnAssetIndex.js) is treated the same as 'fallback' here: a resource restored from the durable Discord-message index after its Cloudinary resource was deleted out-of-band never had its catalog metadata (sku_id/collection/etc) re-attached, since the recovery path deliberately doesn't try to remember that -- this branch is what closes the loop.
             if (cached.renderSource === 'fallback' || cached.renderSource === 'recovered') toHeal.push({ doc, cached });
@@ -247,8 +251,14 @@ async function processGroup(group, args, stats) {
         return;
     }
 
-    // Already fully cached AND already catalog-sourced -- just reconcile Mongo status in case an earlier run's Cloudinary+Discord work succeeded but its own Mongo write didn't (resumability).
-    for (const doc of toSkip) { await markCached(doc); stats.skipped++; }
+    // One updateMany, not N sequential markCached round trips (v3-pre-release review, finding #53) -- on a resume run (this branch's whole reason to exist) nearly every SKU lands in toSkip, so the dominant cost of re-running used to be hundreds of individual round trips purely to re-stamp an identical cacheStatus. Already fully cached AND already catalog-sourced -- just reconcile Mongo status in case an earlier run's Cloudinary+Discord work succeeded but its own Mongo write didn't (resumability).
+    if (toSkip.length) {
+        await CollectibleCatalog.updateMany(
+            { skuId: { $in: toSkip.map(d => d.skuId) } },
+            { cacheStatus: 'cached', cachedAt: new Date(), lastAttemptAt: new Date(), lastError: null }
+        );
+        stats.skipped += toSkip.length;
+    }
 
     // Healed: a live user rendered this exact design before it existed in our catalog snapshot. Metadata-only patch, no re-render, no new channel message.
     for (const { doc, cached } of toHeal) {

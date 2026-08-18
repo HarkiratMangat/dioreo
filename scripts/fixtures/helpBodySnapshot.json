@@ -1,0 +1,3489 @@
+{
+  "anonymous": {
+    "landing": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    },
+    "gunsmiths": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/gunsmiths search`\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths list`\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 `<scope>` Pick what to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:`AK117`\n-# 🔸 **/gunsmiths search** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths list** scope:`SMG`\n-# 🔸 **/gunsmiths list** scope:`Meta — MP`\n-# 🔸 **/dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "draws": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw calculator`\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw calculator**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "seasonal": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Calendar:1523762208050385107> **Seasonal Info Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/calendar`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 `[view]` Show all events, or only active/upcoming for this one view (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` view:`Active/Upcoming Only`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "utilities": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Eyedropper:1526293991166054541> **Utility Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preferences": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Settings:1523762203537309696> **Preference Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)\n\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "botadmin": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    }
+  },
+  "serverAdminOnly": {
+    "landing": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    },
+    "gunsmiths": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/gunsmiths search`\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths list`\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 `<scope>` Pick what to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:`AK117`\n-# 🔸 **/gunsmiths search** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths list** scope:`SMG`\n-# 🔸 **/gunsmiths list** scope:`Meta — MP`\n-# 🔸 **/dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "draws": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw calculator`\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw calculator**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "seasonal": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Calendar:1523762208050385107> **Seasonal Info Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/calendar`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 `[view]` Show all events, or only active/upcoming for this one view (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` view:`Active/Upcoming Only`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "utilities": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Eyedropper:1526293991166054541> **Utility Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preferences": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:ServerSettings:1536468904996774008> **Preference Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# **Options** · both commands\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → mark `/colors` always-hidden, everything else stays public"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "botadmin": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    }
+  },
+  "fullBotAdmin": {
+    "landing": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:Database:1524967327437815899> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    },
+    "gunsmiths": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/gunsmiths search`\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths list`\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 `<scope>` Pick what to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:`AK117`\n-# 🔸 **/gunsmiths search** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths list** scope:`SMG`\n-# 🔸 **/gunsmiths list** scope:`Meta — MP`\n-# 🔸 **/dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "draws": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw calculator`\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw calculator**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "seasonal": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Calendar:1523762208050385107> **Seasonal Info Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/calendar`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 `[view]` Show all events, or only active/upcoming for this one view (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` view:`Active/Upcoming Only`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "utilities": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Eyedropper:1526293991166054541> **Utility Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preferences": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:ServerSettings:1536468904996774008> **Preference Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/admin`\nWhere Dioreo answers **publicly** and where it stays **private**, for the whole server. Needs **Manage Server**.\n-# Opens a four-page panel — **Overview · Channels · Roles · Commands**\n\n-# **Rule order** · the most specific one wins\n-# 🔹 Command **→** Role **→** Channel **→** the Overview default\n-# 🔹 Threads follow their parent channel · if two roles disagree, **public wins**\n\n-# **Setting it up**\n-# 🔸 Pick a default on **Overview**, then hand-pick the few channels or roles that should differ\n-# 🔸 Rules only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own `/settings`\n\n-# **Worth knowing**\n-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# **Options** · both commands\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → mark `/colors` always-hidden, everything else stays public"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "botadmin": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Database:1524967327437815899> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/bot analytics`\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`\n### `/bot access`\nThe admin allowlist -- owner-only\n-# 🔹 No options of its own\n### `/autobuild`\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n-# 🔹 `[screenshot]` The Gunsmith screenshot to read — or use `url` instead, never both\n-# 🔹 `[url]` A link to the screenshot, when the image is already hosted somewhere\n-# 🔹 `[category]` `AR` · `SMG` · `LMG` · `MARKSMAN` · `SNIPER` · `SHOTGUN` · `SECONDARIES` — looked up from the weapon, or asked for, if left blank\n-# 🔹 `[badges]` `meta,best,top5,toxic` — blank inherits from an existing build of the same weapon\n-# 🔹 `[retry_token]` Only for re-submitting an image after a Cloudinary upload failure\n### `/manage`\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n-# 🔹 `[content]` Open a section directly: `Draws` · `Calendar` · `Patch Notes` · `MP Loadouts` · `DMZ Loadouts` · `Season: Titles & Deadlines` · `Season: Next Season Draft` · `Manage Admins` · `Announcement` · `Bulk Format Guide`\n-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement."
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# **Options** · every command above\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n-# 🔸 **/autobuild** screenshot:`[upload]` category:`SMG` badges:`meta,top5`\n-# 🔸 **/autobuild** url:`https://…` — when the screenshot is already hosted\n-# 🔸 **/manage** content:`Patch Notes` — straight to the section, no clicking through\n-# 🔸 **/manage** content:`Season: Next Season Draft` — stage next season without touching what is live\n\n-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your personal & server admin settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "ServerSettings",
+                    "id": "1536468904996774008"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:Guide:1532894836301238477> Jump straight to a `/manage` bulk format guide:"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_guide_pick",
+              "placeholder": "Open a /manage guide topic...",
+              "options": [
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "New/Returning bulk paste format",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  }
+                },
+                {
+                  "label": "Calendar",
+                  "value": "calendar",
+                  "description": "Bullet-separated event paste format",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  }
+                },
+                {
+                  "label": "Loadouts",
+                  "value": "loadouts",
+                  "description": "MP/DMZ block paste format",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  }
+                },
+                {
+                  "label": "Patch Notes",
+                  "value": "patchnotes",
+                  "description": "Release date, URLs, Additional Info",
+                  "emoji": {
+                    "animated": true,
+                    "name": "PatchNotes",
+                    "id": "1523762216954888286"
+                  }
+                },
+                {
+                  "label": "Next Season Draft",
+                  "value": "seasondraft",
+                  "description": "Same formats, staged instead of live",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  }
+                },
+                {
+                  "label": "Announcement",
+                  "value": "announcements",
+                  "description": "Posting/editing bot-wide announcements",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Info",
+                    "id": "1525337539085340722"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "partialBotAdmin": {
+    "landing": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "## <:DioreoCombo:1534640183230730470> Dioreo's Commands\n> **Dioreo** helps you look up CODM loadouts, lucky draw pricing, the seasonal event calendar, patch notes, and more!"
+            }
+          ],
+          "accessory": {
+            "type": 11,
+            "media": {
+              "url": "https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto,w_256/v1786237039/site_assets/dioreo-mascot-coral.png"
+            }
+          }
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Website",
+              "url": "https://dioreo.app"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Install Dioreo",
+              "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:Database:1524967327437815899> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# Select a category from the dropdown below"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# <a:diorHeart:1525941004929339594> Made with love by <@1139845545754632283>"
+        }
+      ]
+    },
+    "gunsmiths": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Loadouts:1535779248982335618> **Gunsmith Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/gunsmiths search`\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths list`\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 `<scope>` Pick what to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:`AK117`\n-# 🔸 **/gunsmiths search** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths list** scope:`SMG`\n-# 🔸 **/gunsmiths list** scope:`Meta — MP`\n-# 🔸 **/dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "draws": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:NewDraws:1523837409211453613> **Draws Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw calculator`\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw calculator**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "seasonal": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Calendar:1523762208050385107> **Seasonal Info Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/calendar`\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 `[page]` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 `[view]` Show all events, or only active/upcoming for this one view (not saved)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/patch notes`\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 `[season]` Search for a specific previous season (start typing to see suggestions)\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/season end`\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/calendar** page:`Events` view:`Active/Upcoming Only`\n-# 🔸 **/patch notes** season:`Season 6 — Take Your Heart`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "utilities": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Eyedropper:1526293991166054541> **Utility Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preferences": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Settings:1523762203537309696> **Preference Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/settings`\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)\n\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": true
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "botadmin": {
+      "type": 17,
+      "accent_color": 16743772,
+      "components": [
+        {
+          "type": 10,
+          "content": "## <a:Database:1524967327437815899> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "### `/bot analytics`\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n-# 🔹 `[page]` Jump directly to a page: `Health` · `Alerts` · `Changes` · `Usage` · `Timing`"
+        },
+        {
+          "type": 14,
+          "spacing": 1,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# **Options** · every command above\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/bot analytics** page:`Usage` visibility:`Public` — share usage data in a channel\n\n-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all."
+        },
+        {
+          "type": 14,
+          "spacing": 2,
+          "divider": true
+        },
+        {
+          "type": 10,
+          "content": "-# To see other commands, use the dropdown below or **`/help <cmd>`**"
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 3,
+              "custom_id": "help_category",
+              "placeholder": "Choose a category to explore…",
+              "options": [
+                {
+                  "label": "Commands List",
+                  "value": "landing",
+                  "description": "Back to the full command overview",
+                  "emoji": {
+                    "animated": false,
+                    "name": "DioreoCombo",
+                    "id": "1534640183230730470"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Gunsmiths",
+                  "value": "gunsmiths",
+                  "description": "Search MP and DMZ weapon loadouts",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Loadouts",
+                    "id": "1535779248982335618"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Draws",
+                  "value": "draws",
+                  "description": "Browse lucky draws & their CP costs",
+                  "emoji": {
+                    "animated": true,
+                    "name": "NewDraws",
+                    "id": "1523837409211453613"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Seasonal Info",
+                  "value": "seasonal",
+                  "description": "This season's calendar, patch notes & end dates",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Calendar",
+                    "id": "1523762208050385107"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Utilities",
+                  "value": "utilities",
+                  "description": "Timestamp & profile color tools",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Eyedropper",
+                    "id": "1526293991166054541"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Preferences",
+                  "value": "preferences",
+                  "description": "Manage your saved bot settings",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Settings",
+                    "id": "1523762203537309696"
+                  },
+                  "default": false
+                },
+                {
+                  "label": "Bot Admin",
+                  "value": "botadmin",
+                  "description": "Dioreo's data management & ops commands",
+                  "emoji": {
+                    "animated": true,
+                    "name": "Database",
+                    "id": "1524967327437815899"
+                  },
+                  "default": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

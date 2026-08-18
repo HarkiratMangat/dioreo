@@ -24,7 +24,7 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
     // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant.
     if (!builds || builds.length === 0) {
         const { findWeaponMatches } = require('./search');
-        const allCandidates = await Loadout.find({ mode }).select('weaponKey weaponName').lean();
+        const allCandidates = await Loadout.find({ mode }).select('weaponKey weaponName category').lean();
         const uniqueCandidates = Array.from(new Map(allCandidates.map(w => [w.weaponKey, w])).values());
         const fuzzyMatches = findWeaponMatches(rawQuery, uniqueCandidates);
 

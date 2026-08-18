@@ -41,9 +41,17 @@ async function fetchWithTimeout(url, options = {}) {
 }
 
 async function bearerHeaders() {
-    const client = await getAuth().getClient();
-    const token = await client.getAccessToken();
-    return { Authorization: `Bearer ${token.token || token}` };
+    // Raced against HTTP_TIMEOUT_MS (v3-pre-release review, finding #33) -- ADC token acquisition previously sat OUTSIDE fetchWithTimeout entirely, so a wedged metadata server or a hung local `gcloud` refresh could hang this indefinitely -- defeating this module's own header rules ("MUST NEVER THROW PAST ITS OWN BOUNDARY", "Health must never hang the panel"). Every caller already expects a bounded call that resolves or rejects.
+    const timeout = new Promise((_, reject) => {
+        const t = setTimeout(() => reject(new Error(`ADC token acquisition timed out after ${HTTP_TIMEOUT_MS}ms`)), HTTP_TIMEOUT_MS);
+        if (typeof t.unref === 'function') t.unref();
+    });
+    const acquire = (async () => {
+        const client = await getAuth().getClient();
+        const token = await client.getAccessToken();
+        return { Authorization: `Bearer ${token.token || token}` };
+    })();
+    return Promise.race([acquire, timeout]);
 }
 
 // The VM's own numeric instance id -- Cloud Monitoring's `resource.label.instance_id` filter needs this, not the instance NAME. On GCE, the metadata server answers this with no auth and near-zero latency; that path is tried first and is what prod actually uses. The Compute API fallback is for a developer Mac, which has no metadata server, and costs one extra authenticated call the VM never pays.

@@ -25,7 +25,7 @@ const AnalyticsEventSchema = new mongoose.Schema({
     customIdPrefix: { type: String },    // the segment BEFORE the first '_', nothing after it. custom_ids
                                          // here embed Mongo _ids and user snowflakes (mng_admin_*, mng_announce_*), so a looser capture would leak one.
     outcome: { type: String },           // 'ok' | 'error' | 'expired' | 'blocked_by_policy'
-                                         //   | 'swallowed_by_cooldown' | 'rejected_admin'
+                                         //   | 'swallowed_by_cooldown' | 'rejected_admin' -- all 6, see utils/rollupStore.js's OUTCOME_KEYS (finding #65, was stale/incomplete here)
     ackMs: { type: Number },             // time to the first defer/reply -- the 3-second deadline
     durationMs: { type: Number },        // total handler time
     deps: { type: Array, default: undefined }, // [{ name, ms, calls, ok, tokens? }] -- aggregated PER

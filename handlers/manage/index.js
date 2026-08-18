@@ -26,17 +26,17 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// Which page module's purge()/deleteItem() a group's mng_purgeconfirm_/mng_delconfirm_ dispatches to. Loadouts has no purge (no Purge button on either page -- see .claude/rules/manage-panel.md).
+// Which page module's purge()/deleteItem() a group's mng_purgeconfirm_/mng_delconfirm_ dispatches to. Loadouts has no purge (no Purge button on either page -- see .claude/rules/manage-panel.md). actorId threaded through every wrapper (v3-pre-release review, finding #25) -- every one of these six page-module functions declares an actorId parameter, but these arrow wrappers dropped it, so every purge and delete wrote its ChangeLog row with actorId: undefined -- /bot analytics -> Changes showed every add/edit/bulk correctly attributed and every purge/delete attributed to nobody, permanently, for the seven most destructive operations in the panel.
 const PURGE_HANDLERS = {
-    draws: (scope) => draws.purgeDraws(scope),
-    calendar: () => calendar.purge(),
-    patchnotes: () => patchnotes.purge()
+    draws: (scope, actorId) => draws.purgeDraws(scope, actorId),
+    calendar: (scope, actorId) => calendar.purge(actorId),
+    patchnotes: (scope, actorId) => patchnotes.purge(actorId)
 };
 const DELETE_HANDLERS = {
-    draws: (match) => draws.deleteDraw(match),
-    calendar: (match) => calendar.deleteItem(match),
-    loadouts_mp: (match) => loadouts.deleteItem(match),
-    loadouts_dmz: (match) => loadouts.deleteItem(match)
+    draws: (match, actorId) => draws.deleteDraw(match, actorId),
+    calendar: (match, actorId) => calendar.deleteItem(match, actorId),
+    loadouts_mp: (match, actorId) => loadouts.deleteItem(match, actorId),
+    loadouts_dmz: (match, actorId) => loadouts.deleteItem(match, actorId)
 };
 
 async function routeManage(interaction) {
@@ -77,8 +77,22 @@ async function routeManage(interaction) {
         // PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation the registry's 'confirm' kind opens. Each group purges only its OWN data.
         if (customId.startsWith('mng_purgeconfirm_')) {
             const [group, scope] = parseMngId(customId.replace('mng_purgeconfirm_', ''));
+            // Per-page permission re-check (v3-pre-release review, finding #8) -- resolveAction (the registry's documented "ONE choke point") only guards the FIRST click, the mng_act_ that opened this confirmation. Up to 10 minutes can pass before this second click, and an owner narrowing a scoped admin's grant in that window went unnoticed: the purge still ran against a page the admin no longer has, because nothing past the first click re-checked utils/adminAccess.js's getManagePages().
+            const { getManagePages } = require('../../utils/adminAccess');
+            const allowedPages = await getManagePages(interaction.user.id);
+            if (!allowedPages.includes(group)) {
+                require('../../utils/eventStore').markOutcome('rejected_admin');
+                try {
+                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of a revoked manage-panel purge (interaction likely expired):', notifyError);
+                }
+                return;
+            }
             const handler = PURGE_HANDLERS[group];
-            const result = handler ? await handler(scope) : { confirmMsg: '', undoToken: null };
+            // Loud on a missing handler, not a silent empty purge (v3-pre-release review, finding #27) -- an unmapped group used to yield confirmMsg:'', which prompt() drops as empty text, sending an empty V2 body Discord rejects -- the admin saw a dead "Yes, Purge" button with no statement either way.
+            if (!handler) throw new Error(`No PURGE_HANDLERS entry registered for group "${group}"`);
+            const result = await handler(scope, interaction.user.id);
             try {
                 await prompt(interaction, { text: result.confirmMsg, components: result.undoToken ? [undoButtonRow(result.undoToken)] : [] });
             } catch (notifyError) {
@@ -126,8 +140,22 @@ async function routeManage(interaction) {
                 return;
             }
             const { group, match } = pending;
+            // Per-page permission re-check (v3-pre-release review, finding #8) -- same reasoning as the purge branch above: this is the second, destructive step of a two-tap confirmation, and the grant could have narrowed in the (up to 10-minute) window since the first tap opened it.
+            const { getManagePages } = require('../../utils/adminAccess');
+            const allowedPages = await getManagePages(interaction.user.id);
+            if (!allowedPages.includes(group)) {
+                require('../../utils/eventStore').markOutcome('rejected_admin');
+                try {
+                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of a revoked manage-panel delete (interaction likely expired):', notifyError);
+                }
+                return;
+            }
             const handler = DELETE_HANDLERS[group];
-            const undoToken = handler ? await handler(match) : null;
+            // Loud on a missing handler, not a false "Deleted" (v3-pre-release review, finding #27) -- the moment a page gains a delete action without a map entry, the admin was told the record was deleted while it was untouched.
+            if (!handler) throw new Error(`No DELETE_HANDLERS entry registered for group "${group}"`);
+            const undoToken = await handler(match, interaction.user.id);
             try {
                 await prompt(interaction, { text: `🗑️ **Deleted:** ${match.label}`, components: undoToken ? [undoButtonRow(undoToken)] : [] });
             } catch (notifyError) {

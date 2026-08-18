@@ -13,8 +13,8 @@ const VISIBILITY = { type: String, enum: ['public', 'ephemeral'], required: true
 const guildSettingsSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true, index: true },
 
-    // Server-wide baseline. 'public' by default: a bot that is inert or silent on join looks broken and gets removed before anyone finds /admin. Discord's own "Use Application Commands" and "Use External Apps" permissions already give admins a per-channel and per-role gate on day one, so an open default is not an ungoverned one. (Measured 2026-08-10 18:04 EDT: "Use External Apps" governs a GUILD-installed app too, not only user-installed ones -- so that day-one gate covers the v3 launch configuration as well, which is why an open default here is safe rather than merely convenient.)
-    defaultVisibility: { type: String, enum: ['public', 'ephemeral'], default: 'public' },
+    // Server-wide baseline. 'public' by default: a bot that is inert or silent on join looks broken and gets removed before anyone finds /admin. Discord's own "Use Application Commands" and "Use External Apps" permissions already give admins a per-channel and per-role gate on day one, so an open default is not an ungoverned one. (Measured 2026-08-10 18:04 EDT: "Use External Apps" governs a GUILD-installed app too, not only user-installed ones -- so that day-one gate covers the v3 launch configuration as well, which is why an open default here is safe rather than merely convenient.) Reuses VISIBILITY's type/enum instead of hand-writing them a second time (v3-pre-release review, finding #51) -- a third verdict added to VISIBILITY alone used to be silently REJECTED here, and resolveVisibility's `|| 'public'` fallback then papered over the save failure by resolving public, the permissive direction, for exactly the setting meant to be the server-wide ceiling.
+    defaultVisibility: { type: VISIBILITY.type, enum: VISIBILITY.enum, default: 'public' },
 
     // Flips the default inside specific channels. Beats defaultVisibility, loses to any role rule.
     channelRules: [{

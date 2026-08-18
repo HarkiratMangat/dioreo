@@ -9,7 +9,12 @@ const rollupPath = require.resolve('../models/AnalyticsRollup');
 require.cache[rollupPath] = new Module(rollupPath, null);
 require.cache[rollupPath].filename = rollupPath;
 require.cache[rollupPath].loaded = true;
-require.cache[rollupPath].exports = { bulkWrite: async (ops) => { rollupOps.push(...ops); } };
+// OUTCOME_KEYS/ENTRY_KEYS added to the stub (v3-pre-release review, finding #31) -- utils/rollupStore.js now imports these two as statics off the real model instead of declaring its own local copy, so a stub that replaces the model wholesale must carry them too, or rollupStore.js's `const { OUTCOME_KEYS, ENTRY_KEYS } = AnalyticsRollup` destructures undefined. Kept in exact sync with models/AnalyticsRollup.js's own arrays.
+require.cache[rollupPath].exports = {
+    bulkWrite: async (ops) => { rollupOps.push(...ops); },
+    OUTCOME_KEYS: ['ok', 'error', 'expired', 'blocked_by_policy', 'swallowed_by_cooldown', 'rejected_admin'],
+    ENTRY_KEYS: ['slash', 'button', 'select', 'autocomplete', 'modal', 'synthetic', 'background'],
+};
 
 let stateDoc = null;
 const statePath = require.resolve('../models/RollupState');
@@ -127,11 +132,10 @@ check('catchUpRollups never rolls up "today" -- only through yesterday', async (
     const filters = rollupOps.map(op => op.updateOne.filter.day);
     assert.ok(!filters.includes(todayKey), 'today must never be rolled up -- it is still in progress');
 });
-check('catchUpRollups is idempotent: a second call with no new days rolls up nothing', async () => {
-    const before = rollupOps.length;
+check('catchUpRollups is idempotent: a second same-day call re-rolls only the last day, never zero (finding #19)', async () => {
+    // Updated (v3-pre-release review, finding #19) -- this used to assert `rolled === 0`, matching the OLD bug this same finding fixed: resumeFrom skipped straight past the last-rolled day, so a late-arriving event for that day was never picked up by any future run. The fix re-rolls FROM state.day (not state.day + 1), so a same-day re-run with genuinely nothing new still re-touches exactly ONE day -- idempotent in VALUE (rollupDay is a full recompute-and-upsert to the same numbers), never in ops count.
     const rolled = await S.catchUpRollups();
-    assert.strictEqual(rolled, 0, 'once caught up, a same-day re-run should have nothing left to do');
-    assert.strictEqual(rollupOps.length, before);
+    assert.strictEqual(rolled, 1, 'a same-day re-run must still re-roll the last day, not skip it entirely');
 });
 check('catchUpRollups clamps a very old resume point to CATCH_UP_WINDOW_DAYS rather than an unbounded backlog', async () => {
     stateDoc = { _id: 'lastRolledUpDay', day: '2020-01-01' };

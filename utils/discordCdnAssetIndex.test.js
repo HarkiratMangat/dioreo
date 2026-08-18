@@ -146,9 +146,11 @@ check('recoverCloudinaryFromDiscordCdnAsset: happy path re-uploads the recovered
     };
     const result = await recoverCloudinaryFromDiscordCdnAsset(RECORD.publicId, 'nameplate_webp');
     assert.strictEqual(fetchedUrl, RECORD.discordCdnUrl, 'must re-fetch the EXACT recorded Discord CDN url, never a re-derived one');
+    // discordMessageId now included in the return (v3-pre-release review, finding #23) -- the function always wrote it to Cloudinary itself, but used to drop it from what it handed back, so every caller's own rawContext stub for a recovered entry silently lost it.
     assert.deepStrictEqual(result, {
         cloudinaryUrl: 'https://res.cloudinary.com/demo/image/upload/recovered.webp',
-        discordCdnUrl: RECORD.discordCdnUrl
+        discordCdnUrl: RECORD.discordCdnUrl,
+        discordMessageId: RECORD.discordMessageId
     });
     assert.strictEqual(uploadCalls.length, 1, 'must re-upload the recovered bytes to the SAME public_id');
     assert.strictEqual(uploadCalls[0].opts.public_id, RECORD.publicId);

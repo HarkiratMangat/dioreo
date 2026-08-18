@@ -17,8 +17,9 @@ function isHolderAlive(existing) {
     try {
         process.kill(existing.pid, 0);
         return true;
-    } catch {
-        return false;
+    } catch (err) {
+        // ESRCH = genuinely no such process = dead. Anything else (notably EPERM, when the pid exists but this process lacks permission to signal it -- e.g. the VM's systemd user vs. a manual run from another account) must NOT be read as dead: it is unknown, and assuming alive is the safe default, since the alternative is silently stealing a live lock (v3-pre-release review, finding #32).
+        return err.code !== 'ESRCH';
     }
 }
 
@@ -33,11 +34,25 @@ async function acquireInstanceLock() {
         return false;
     }
 
-    await BotInstance.findByIdAndUpdate(
-        lockId,
-        { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
-        { upsert: true }
-    );
+    // Atomic claim (v3-pre-release review, finding #32) -- the read above and the write below used to be two independent round trips with no conditional filter, so two processes starting within the same window could both read "no fresh/alive holder" and both proceed to write, unconditionally, both returning true -- the exact 2026-07-14 dual-instance incident this module exists to prevent. The filter re-asserts the SAME document state this process just read (either "no doc existed" or "the doc's lastHeartbeat still matches what was read a moment ago") -- optimistic concurrency (CAS). If a concurrent process's OWN claim already landed in between, this write's filter no longer matches and `claimed` comes back null: a real race is DETECTED rather than silently overwritten, instead of the previous unconditional upsert winning blindly.
+    const claimFilter = existing ? { _id: lockId, lastHeartbeat: existing.lastHeartbeat } : { _id: lockId };
+    let claimed;
+    try {
+        claimed = await BotInstance.findOneAndUpdate(
+            claimFilter,
+            { hostname: os.hostname(), pid: process.pid, startedAt: new Date(), lastHeartbeat: new Date() },
+            { upsert: !existing, new: true }
+        );
+    } catch (err) {
+        // upsert:true + a concurrent FIRST-EVER insert of the SAME _id from two processes at once is a real race too -- Mongo surfaces the loser's attempt as a duplicate-key error (E11000) rather than a plain null.
+        if (err?.code === 11000) claimed = null;
+        else throw err;
+    }
+    if (!claimed) {
+        console.error('❌ Refusing to start: lost a race to claim the instance lock for this bot token -- another process claimed it a moment ago.');
+        sendAlert('Startup refused: lost instance-lock race', 'Another process claimed the lock between this one\'s read and write.', 'error');
+        return false;
+    }
 
     // unref() so this timer alone never keeps the process alive -- it should only run for as long as the bot is already running for other reasons (the Discord gateway connection, etc).
     const heartbeatTimer = setInterval(() => {
@@ -46,8 +61,18 @@ async function acquireInstanceLock() {
     heartbeatTimer.unref();
 
     // Best-effort release on a clean shutdown so a deliberate restart doesn't have to wait out STALE_MS before the new process can claim the lock. Only releases if we still own it (pid match) -- if another instance somehow already claimed it since, don't clobber that instead.
+    //
+    // Races (bounded) the SAME analytics flush bot/lifecycle.js's installShutdownFlush does (v3-pre-release review, finding #12) -- process.exit() used to fire the instant the lock-delete above settled (~ms), which is registered EARLIER than installShutdownFlush (only installed once ClientReady fires), so on every `systemctl restart` this handler won a race installShutdownFlush's own 2-second bail couldn't protect against and discarded up to FLUSH_INTERVAL_MS of buffered analytics events. Can't simply stop exiting here and defer entirely to that other handler either -- a SIGTERM during a hung gateway handshake (this file's own header notes that can silently take 10+ minutes) would then have NO exit path until ClientReady, which may never come. flushEvents() is idempotent (splices its buffer synchronously, so a second call after another has already run just finds it empty and no-ops), so racing it here is safe either way.
     const releaseLock = () => {
-        BotInstance.deleteOne({ _id: lockId, pid: process.pid }).finally(() => process.exit());
+        const lockCleanup = BotInstance.deleteOne({ _id: lockId, pid: process.pid }).catch(() => {});
+        // flushSearchSessions() too, not just flushEvents() -- matches installShutdownFlush's own shutdown sequence exactly (utils/eventStore.js). Missing this half would have left every open SearchTerm session exposed to the SAME race this fix exists to close.
+        const { flushEvents, flushSearchSessions } = require('./eventStore');
+        flushSearchSessions();
+        const bail = new Promise((resolve) => {
+            const t = setTimeout(resolve, 2000);
+            if (typeof t.unref === 'function') t.unref();
+        });
+        Promise.allSettled([lockCleanup, Promise.race([flushEvents(), bail])]).finally(() => process.exit());
     };
     process.on('SIGINT', releaseLock);
     process.on('SIGTERM', releaseLock);

@@ -61,7 +61,7 @@ async function handleWipeButton(interaction) {
 
         const undoToken = registerUndo(`Start New Season ("${pending.newTitle}")`, async () => {
             const SeasonalData = require('../../models/SeasonalData');
-            const doc = await SeasonalData.findOne({ docType: 'global' });
+            const doc = await loadOrCreateSeasonalDoc();
             doc.currentSeasonTitle = prevTitle;
             doc.newDraws = prevNew;
             doc.returningDraws = prevReturning;
@@ -150,7 +150,7 @@ async function handleDraftButton(interaction) {
 
     if (customId === 'mng_draftpromoteconfirm') {
         const SeasonalData = require('../../models/SeasonalData');
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+        const seasonalDoc = await loadOrCreateSeasonalDoc();
         const draft = seasonalDoc.draft || {};
         if (!draft.active) {
             try { await prompt(interaction, { text: '❌ No draft in progress -- nothing to promote.' }); }
@@ -192,7 +192,7 @@ async function handleDraftButton(interaction) {
         await seasonalDoc.save();
         recordChange({ actorId: interaction.user.id, page: 'seasondraft', action: 'promote', model: 'SeasonalData', target: seasonalDoc.currentSeasonTitle, summary: `Promoted draft to live: "${seasonalDoc.currentSeasonTitle}"` });
         const undoToken = registerUndo('Promote Draft to Live', async () => {
-            const doc = await SeasonalData.findOne({ docType: 'global' });
+            const doc = await loadOrCreateSeasonalDoc();
             Object.assign(doc, prevLive);
             await doc.save();
         });
@@ -215,7 +215,7 @@ async function handleDraftButton(interaction) {
 
     if (customId === 'mng_draftdiscardconfirm') {
         const SeasonalData = require('../../models/SeasonalData');
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+        const seasonalDoc = await loadOrCreateSeasonalDoc();
         seasonalDoc.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
         seasonalDoc.markModified('draft');
         await seasonalDoc.save();

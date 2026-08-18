@@ -14,6 +14,8 @@ const profileExtrasRecheckCache = new Map(); // userId -> { checkedAt, value: fe
 //   guild. Adding a guild id there would fragment a correct cache into one entry per server.
 const guildNameStylesRecheckCache = new Map(); // `${userId}:${guildId}` -> { checkedAt, value }
 const RECHECK_WINDOW_MS = 15 * 60 * 1000;
+// LRU-by-insertion-order cap, same idiom as utils/nameplateWebpCache.js's resolvedCache (v3-pre-release review, finding #34) -- all three caches above had no cap or sweep at all: RECHECK_WINDOW_MS only decided whether a stored value gets REUSED, never whether it gets DROPPED, so long-running process memory grew without bound. guildNameStylesRecheckCache was worst of all, keyed userId:guildId (users x guilds cardinality) on exactly the branch that makes the bot guild-installable. Capping inside this one shared helper covers all three uniformly.
+const RECHECK_CACHE_MAX = 2000;
 
 async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
     const now = Date.now();
@@ -22,6 +24,7 @@ async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
         return cached.value;
     }
     const value = await fetchFn();
+    if (cache.size >= RECHECK_CACHE_MAX) cache.delete(cache.keys().next().value);
     cache.set(userId, { checkedAt: now, value });
     return value;
 }

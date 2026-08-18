@@ -58,7 +58,8 @@ async function recoverCloudinaryFromDiscordCdnAsset(publicId, assetFolder) {
             resource_type: 'image',
             context: { discord_cdn_url: record.discordCdnUrl, discord_message_id: record.discordMessageId, render_source: 'recovered' }
         });
-        return { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl: record.discordCdnUrl };
+        // discordMessageId included (v3-pre-release review, finding #23) -- previously omitted, so every caller's own rawContext stub for a recovered entry silently dropped it, and the FIRST palette heal after a recovery wiped it from Cloudinary within one page view of being restored.
+        return { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl: record.discordCdnUrl, discordMessageId: record.discordMessageId };
     } catch (err) {
         console.error(`Cloudinary recovery from Discord CDN asset failed for "${publicId}": ${safeErrorMessage(err)}`);
         return null;

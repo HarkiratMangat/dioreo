@@ -48,4 +48,8 @@ const AnalyticsRollupSchema = new mongoose.Schema({
 // The upsert key. One roll-up per day/command/subcommand, and the only index this collection needs -- every read is either "one day" (recent report) or a bounded date range scan (multi-day report), both served by a natural sort on `day` for a small, bounded-per-day row count.
 AnalyticsRollupSchema.index({ day: 1, command: 1, subcommand: 1 }, { unique: true });
 
-module.exports = mongoose.model('AnalyticsRollup', AnalyticsRollupSchema);
+const AnalyticsRollup = mongoose.model('AnalyticsRollup', AnalyticsRollupSchema);
+// Attached as statics, not a second export shape (v3-pre-release review, finding #31) -- OUTCOME_KEYS/ ENTRY_KEYS used to be declared VERBATIM TWICE, here and in utils/rollupStore.js, with no shared source. This subdocument schema is strict while AnalyticsEvent.outcome is a free-form String, so a key added to one copy and not the other was silently dropped by Mongoose with no error -- either a real outcome permanently undercounted, or a declared key permanently stuck at 0. require('../models/AnalyticsRollup') still returns the model constructor everywhere else unchanged; only a consumer that wants these two arrays needs to destructure them off it.
+AnalyticsRollup.OUTCOME_KEYS = OUTCOME_KEYS;
+AnalyticsRollup.ENTRY_KEYS = ENTRY_KEYS;
+module.exports = AnalyticsRollup;

@@ -73,6 +73,8 @@ function memoizeResolved(publicId, resolved) {
     if (resolvedCache.size >= RESOLVED_CACHE_MAX) resolvedCache.delete(resolvedCache.keys().next().value);
     resolvedCache.set(publicId, resolved);
 }
+// In-flight de-dup (v3-pre-release review, finding #24) -- resolvedCache above is only written AFTER a render completes, so two viewers opening the same not-yet-cached design within the render window (fetch + ffmpeg extract + per-frame composite + encode -- seconds) both missed and both rendered, each posting its OWN permanent message to the Discord storage channel for the same design.
+const inFlightRenders = new Map();
 
 // Cache-only lookup, no render/upload -- mirrors cloudinaryCache.js's getCachedUrl. A 404 here is the expected, common "never rendered yet" case, not a real error. `context: true` pulls back the persisted Discord CDN url alongside the resource info -- one Admin API call covers both. Exported (2026-08-15 10:31 EDT) so scripts/bulkCacheCollectibles.js can skip a SKU that's already cached without going through the full resolve->render->single-message path. `renderSource` surfaces the context's `render_source` marker ('catalog'|'fallback'|'recovered'|undefined for a pre-existing resource that predates this field) so the bulk script can detect and heal a stale fallback (or recovered) entry.
 async function getCachedNameplateWebp(nameplateAsset, catalog, nameplateName) {
@@ -96,8 +98,9 @@ async function getCachedNameplateWebp(nameplateAsset, catalog, nameplateName) {
         return resolved;
     } catch (err) {
         if (errorHttpCode(err) !== 404) {
-            console.error(`Nameplate WebP cache lookup failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
-            return null;
+            console.error(`Nameplate WebP cache lookup failed for "${nameplateAsset}"/"${nameplateName}": ${safeErrorMessage(err)}`);
+            // Distinguishable sentinel, not null (v3-pre-release review, finding #21) -- null is what a genuine cache miss returns too, so a transient error (429/401/5xx/timeout) used to be indistinguishable from "never rendered," and resolveNameplateWebp treated it as a licence to re-render AND re-post to the Discord storage channel -- a second permanent message for a design that was already cached, plus a context-map replacement that destroyed the catalog metadata the first render wrote.
+            return { error: true };
         }
         // 404: either genuinely never rendered, OR the Cloudinary resource was deleted out-of-band after an earlier render already posted to the Discord storage channel -- see utils/discordCdnAssetIndex.js's recoverCloudinaryFromDiscordCdnAsset for the full reasoning. Checked before treating this as a cold miss.
         const recovered = await recoverCloudinaryFromDiscordCdnAsset(publicId, FOLDER);
@@ -107,7 +110,8 @@ async function getCachedNameplateWebp(nameplateAsset, catalog, nameplateName) {
             discordCdnUrl: recovered.discordCdnUrl,
             palette: null, // re-derived by healPalette, triggered by resolveNameplateWebp's existing `cached.palette ? cached : healPalette(...)` branch
             renderSource: 'recovered',
-            rawContext: { discord_cdn_url: recovered.discordCdnUrl, render_source: 'recovered' }
+            // All three keys mirrored, not two (v3-pre-release review, finding #23) -- discordMessageId was previously dropped here even though recoverCloudinaryFromDiscordCdnAsset now returns it (and always wrote it to Cloudinary itself); healPalette merges onto whatever this stub holds, so the omission meant the first palette heal after ANY recovery silently erased the message id the durable index exists to preserve.
+            rawContext: { discord_cdn_url: recovered.discordCdnUrl, discord_message_id: recovered.discordMessageId, render_source: 'recovered' }
         };
         memoizeResolved(publicId, resolved);
         return resolved;
@@ -173,8 +177,9 @@ async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, ex
 // BULK hook (2026-08-15 10:31 EDT): core render + Cloudinary upload only -- no storage-channel post, no context patch. scripts/bulkCacheCollectibles.js calls this once per not-yet-cached variant of a design, collects the results across the whole design's variants, then posts them together as ONE grouped message and calls attachNameplateDiscordCdnUrl per variant afterward. Cloudinary caching happens immediately per-variant regardless (no reason to defer the part that doesn't need grouping).
 //
 // `assetFolder`: Cloudinary's `asset_folder` (Media Library organization ONLY -- see publicIdFor's comment on why this must never affect `public_id`, the actual cache key). The bulk script passes `${FOLDER}/<collection-slug>`; omitted here it falls back to the flat `FOLDER`, matching what the live path has always used.
-async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder, catalog) {
-    const publicId = publicIdFor(nameplateAsset, catalog);
+async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder, catalog, nameplateName = null) {
+    // nameplateName is now a real parameter, not silently absent (v3-pre-release review, finding #35) -- every other publicIdFor call site in this file passes it; this was the one exception, calling with only 2 of 3 args. Inert TODAY because the bulk path's catalog is always truthy (publicIdFor's legacy/nameplateName branch never runs), but the function's own signature accepts a nullable catalog, so a future caller passing catalog:null would otherwise silently compute a DIFFERENT legacy id than every other call site and permanently miss the shared cache. Defaults to null so the one existing call site with nothing to pass stays behaviourally identical.
+    const publicId = publicIdFor(nameplateAsset, catalog, nameplateName);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
     if (!core) return null;
@@ -255,7 +260,11 @@ async function renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName,
                 messageId, discordCdnUrl, filename
             });
         }
-        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette };
+        // rawContext included in the memo (v3-pre-release review, finding #22) -- built to mirror exactly what attachNameplateDiscordCdnUrl just wrote above, since the memoized object previously had NO rawContext at all. A future healPalette in the same process reads cached.rawContext to MERGE its fresh palette fields onto (see healPalette's own comment) -- with it missing, that merge started from an empty object and the api.update call wiped render_source/discord_message_id/catalog metadata the moment a palette-extraction failure (renderNameplateWebpCore's own null-palette catch) was healed later in the same process.
+        const rawContext = { ...paletteContextFields(palette, FRAME_OPTS), render_source: 'fallback' };
+        if (discordCdnUrl) rawContext.discord_cdn_url = discordCdnUrl;
+        if (messageId) rawContext.discord_message_id = String(messageId);
+        const resolved = { cloudinaryUrl: uploadResult.secure_url, discordCdnUrl, palette, rawContext };
         memoizeResolved(publicId, resolved);
         return resolved;
     } catch (err) {
@@ -272,9 +281,17 @@ async function resolveNameplateWebp({ nameplateAsset, paletteName, apngUrl, bedH
     const catalog = await lookupCatalogEntry(skuId);
 
     const cached = await getCachedNameplateWebp(nameplateAsset, catalog, nameplateName);
+    // Transient lookup failure degrades to the static fallback (finding #21) -- do NOT treat it as a miss.
+    if (cached?.error) return null;
     if (cached) return cached.palette ? cached : healPalette(cached, nameplateAsset, catalog, nameplateName, apngUrl, bedHex);
 
-    return renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, catalog);
+    // In-flight de-dup (finding #24) -- collapses concurrent misses for the SAME publicId onto one render.
+    const publicId = publicIdFor(nameplateAsset, catalog, nameplateName);
+    if (inFlightRenders.has(publicId)) return inFlightRenders.get(publicId);
+    const renderPromise = renderAndCacheNameplateWebp(apngUrl, nameplateAsset, paletteName, bedHex, skuId, nameplateName, catalog)
+        .finally(() => inFlightRenders.delete(publicId));
+    inFlightRenders.set(publicId, renderPromise);
+    return renderPromise;
 }
 
 // A WebP rendered BEFORE palette caching shipped has no palette in its context, and since the render is cached forever it would never re-run to acquire one -- so that design would fall back to per-user extraction indefinitely, which is the cost this cache exists to remove. This backfills it: re-fetch the source, extract, patch the context. Paid ONCE per pre-existing design, never again.

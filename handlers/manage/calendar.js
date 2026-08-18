@@ -6,7 +6,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 
 const { recordChange } = require('../../utils/changeStore');
-const { registerUndo, undoButtonRow, upsertEventsByTitle, loadOrCreateSeasonalDoc } = require('./shared');
+const { registerUndo, undoButtonRow, upsertEventsByTitle, loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle } = require('./shared');
 
 // --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
@@ -100,7 +100,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
 
     const undoToken = registerUndo(`Bulk ${mode === 'add' ? 'Add' : 'Replace'} Calendar`, async () => {
         const SeasonalData = require('../../models/SeasonalData');
-        const doc = await SeasonalData.findOne({ docType: 'global' });
+        const doc = await loadOrCreateSeasonalDoc();
         doc.calendar = prevCalendar;
         await doc.save();
     });
@@ -128,24 +128,10 @@ async function bulkAddOrReplaceCalendar(interaction) {
 
 // --- BULK REMOVE CALENDAR EVENTS --- custom_id: modal_calendar_bulk_remove Dry-run only, same 2-step confirm every other bulk-delete route uses.
 async function bulkDeleteCalendar(interaction) {
-    const { fuzzyMatch } = require('../../utils/search');
-    const { randomUUID } = require('crypto');
-    const { pendingBulkDeletes } = require('./shared');
-    const requested = interaction.fields.getTextInputValue('titles').split('\n').map(t => t.trim()).filter(Boolean);
-
+    // Shared removeByTitle, not an inline loop (v3-pre-release review, finding #40).
+    const titlesRaw = interaction.fields.getTextInputValue('titles');
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const removed = [];
-    const notFound = [];
-    let remaining = seasonalDoc.calendar;
-    for (const title of requested) {
-        const match = remaining.find(e => fuzzyMatch(title, e.title));
-        if (match) {
-            removed.push(match.title);
-            remaining = remaining.filter(e => e !== match);
-        } else {
-            notFound.push(title);
-        }
-    }
+    const { remaining, removed, notFound } = removeByTitle(seasonalDoc.calendar, titlesRaw);
 
     if (removed.length === 0) {
         return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.${notFound.length ? `\n⚠️ Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
@@ -154,35 +140,22 @@ async function bulkDeleteCalendar(interaction) {
     const summary = [`Removed: ${removed.join(', ')}`];
     if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
 
-    const token = randomUUID().slice(0, 8);
-    pendingBulkDeletes.set(token, {
+    // registerBulkDelete, not a hand-rolled confirm scaffold (v3-pre-release review, finding #37).
+    return registerBulkDelete(interaction, {
         description: 'Bulk Delete Calendar Events',
         summary,
         apply: async () => {
-            const SeasonalData = require('../../models/SeasonalData');
-            const doc = await SeasonalData.findOne({ docType: 'global' });
+            const doc = await loadOrCreateSeasonalDoc();
             const prevCalendar = doc.calendar;
             doc.calendar = remaining;
             await doc.save();
             recordChange({ actorId: interaction.user.id, page: 'calendar', action: 'bulkDelete', model: 'SeasonalData', target: 'Calendar', summary: 'Bulk delete calendar events', detail: summary.join(' | ') });
             return registerUndo('Bulk Delete Calendar Events', async () => {
-                const d = await SeasonalData.findOne({ docType: 'global' });
+                const d = await loadOrCreateSeasonalDoc();
                 d.calendar = prevCalendar;
                 await d.save();
             });
         }
-    });
-    setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
-
-    return interaction.reply({
-        content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
-        components: [{
-            type: 1, components: [
-                { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
-                { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
-            ]
-        }],
-        ephemeral: true
     });
 }
 
@@ -225,14 +198,14 @@ async function setBanners(interaction) {
 // --- PURGE (calendar) --- called from index.js's mng_purgeconfirm_ dispatch. Calendar has only one scope ('all') -- there's no per-sub-category purge the way Draws has new/returning.
 async function purge(actorId) {
     const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+    const seasonalDoc = await loadOrCreateSeasonalDoc();
     const prevCalendar = seasonalDoc.calendar;
     seasonalDoc.calendar = [];
     await seasonalDoc.save();
     const confirmMsg = `✅ Purged the calendar (${prevCalendar.length} event(s) removed).`;
     recordChange({ actorId, page: 'calendar', action: 'purge', model: 'SeasonalData', target: 'all', summary: confirmMsg });
     const undoToken = registerUndo('Purge (calendar)', async () => {
-        const doc = await SeasonalData.findOne({ docType: 'global' });
+        const doc = await loadOrCreateSeasonalDoc();
         doc.calendar = prevCalendar;
         await doc.save();
     });
@@ -242,13 +215,13 @@ async function purge(actorId) {
 // --- DELETE (calendar) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
     const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+    const seasonalDoc = await loadOrCreateSeasonalDoc();
     const removedDoc = match.doc;
     seasonalDoc.calendar = seasonalDoc.calendar.filter(e => e._id.toString() !== match.id);
     await seasonalDoc.save();
     recordChange({ actorId, page: 'calendar', action: 'delete', model: 'SeasonalData', target: match.label, summary: `Deleted calendar event "${match.label}"` });
     return registerUndo(`Delete calendar event "${match.label}"`, async () => {
-        const doc = await SeasonalData.findOne({ docType: 'global' });
+        const doc = await loadOrCreateSeasonalDoc();
         doc.calendar.push(removedDoc);
         await doc.save();
     });

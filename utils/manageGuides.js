@@ -31,7 +31,7 @@ function topicDefs() {
         { key: 'loadouts', label: 'Loadouts', description: 'MP/DMZ block paste format', rawEmoji: emojis.newDraws, emoji: emojis.parseEmoji(emojis.newDraws) },
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
         { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
-        { key: 'admins', label: 'Manage Admins', description: 'Granting/editing admin access', rawEmoji: emojis.serverSettings, emoji: emojis.parseEmoji(emojis.serverSettings) },
+        // 'admins' topic REMOVED (v3-pre-release review, finding #62) -- it documented a /manage page that no longer exists (retired to the owner-only /bot access 2026-08-16, see utils/adminAccess.js's own 'manageadmins is RETIRED' comment). This guide is reachable by anyone with ANY manage access, so it was walking a scoped admin through a screen they can't actually reach and that isn't owner-gated here.
         { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.mngInfo, emoji: emojis.parseEmoji(emojis.mngInfo) }
     ];
 }

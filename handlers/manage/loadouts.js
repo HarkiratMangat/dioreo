@@ -68,7 +68,9 @@ async function editLoadout(interaction) {
     const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
     for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib, sib.attachmentSlots);
 
-    recordChange({ actorId: interaction.user.id, page: mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'edit', model: 'Loadout', target: `${weaponName} (${buildName})`, summary: `Edited loadout "${weaponName} (${buildName})"` });
+    // pageForLoadoutMode, not a re-derived ternary (v3-pre-release review, finding #41).
+    const { pageForLoadoutMode } = require('../../utils/manageActions');
+    recordChange({ actorId: interaction.user.id, page: pageForLoadoutMode(mode), action: 'edit', model: 'Loadout', target: `${weaponName} (${buildName})`, summary: `Edited loadout "${weaponName} (${buildName})"` });
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
     if (propagateResult.modifiedCount > 0) {
         confirmation += `\n-# Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.`;
@@ -186,8 +188,8 @@ async function bulkAddLoadouts(interaction) {
 // --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ} Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes just that one build). Dry-run only -- the actual deleteOne/deleteMany calls happen from index.js's mng_bulkdelconfirm_ dispatch via the apply() closure stashed here.
 async function bulkDeleteLoadouts(interaction) {
     const { fuzzyMatch } = require('../../utils/search');
-    const { randomUUID } = require('crypto');
-    const { pendingBulkDeletes } = require('./shared');
+    // registerBulkDelete replaces the old hand-rolled randomUUID/pendingBulkDeletes scaffold here (v3-pre-release review, finding #37) -- see the call site below.
+    const { registerBulkDelete } = require('./shared');
     const Loadout = require('../../models/Loadout');
     const mode = interaction.customId.replace('modal_loadouts_bulk_remove_', '');
     const lines = interaction.fields.getTextInputValue('lines').split('\n').map(l => l.trim()).filter(Boolean);
@@ -224,8 +226,8 @@ async function bulkDeleteLoadouts(interaction) {
     const summary = [`Removed: ${toDelete.map(t => t.label).join(', ')}`];
     if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
 
-    const token = randomUUID().slice(0, 8);
-    pendingBulkDeletes.set(token, {
+    // registerBulkDelete, not a hand-rolled confirm scaffold (v3-pre-release review, finding #37).
+    return registerBulkDelete(interaction, {
         description: `Bulk Delete ${mode} Loadouts`,
         summary,
         apply: async () => {
@@ -233,24 +235,13 @@ async function bulkDeleteLoadouts(interaction) {
                 if (entry.buildName) await Loadout.deleteOne({ weaponKey: entry.weaponKey, mode, buildName: entry.buildName });
                 else await Loadout.deleteMany({ weaponKey: entry.weaponKey, mode });
             }
-            recordChange({ actorId: interaction.user.id, page: mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'bulkDelete', model: 'Loadout', target: `${mode} Loadouts`, summary: `Bulk delete ${mode} loadouts`, detail: summary.join(' | ') });
+            const { pageForLoadoutMode } = require('../../utils/manageActions');
+            recordChange({ actorId: interaction.user.id, page: pageForLoadoutMode(mode), action: 'bulkDelete', model: 'Loadout', target: `${mode} Loadouts`, summary: `Bulk delete ${mode} loadouts`, detail: summary.join(' | ') });
             return registerUndo(`Bulk Delete ${mode} Loadouts`, async () => {
                 const restoreDocs = toDelete.flatMap(t => t.docs).map(d => { const c = { ...d }; delete c._id; return c; });
                 if (restoreDocs.length) await Loadout.insertMany(restoreDocs);
             });
         }
-    });
-    setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
-
-    return interaction.reply({
-        content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
-        components: [{
-            type: 1, components: [
-                { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
-                { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
-            ]
-        }],
-        ephemeral: true
     });
 }
 
@@ -279,7 +270,9 @@ async function exportUpTo5(interaction) {
     const text = formatLoadoutsAsBulkText(matched);
     let content = `📤 **Exported ${matched.length} ${mode} loadout(s)** in Bulk Add format. Paste this back into the Bulk Add action.`;
     if (notFound.length) content += `\n⚠️ Not found: ${notFound.join(', ')}`;
-    return interaction.followUp({ content, files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${mode.toLowerCase()}_loadouts_export.txt` }] });
+    // exportFileReply, not a hand-rolled followUp (v3-pre-release review, finding #42).
+    const { exportFileReply } = require('../../utils/manageActions');
+    return exportFileReply(interaction, content, `${mode.toLowerCase()}_loadouts_export.txt`, text);
 }
 
 // --- EXPORT A LOADOUT CATEGORY --- custom_id: modal_loadouts_exportcategory_{MP|DMZ}
@@ -296,10 +289,14 @@ async function exportCategory(interaction) {
     }
 
     const text = formatLoadoutsAsBulkText(loadouts);
-    return interaction.followUp({
-        content: `📤 **Exported ${loadouts.length} ${mode} ${category} loadout(s)** in Bulk Add format. Paste this back into the Bulk Add action.`,
-        files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${mode.toLowerCase()}_${category.toLowerCase()}_loadouts_export.txt` }]
-    });
+    // exportFileReply, not a hand-rolled followUp (v3-pre-release review, finding #42).
+    const { exportFileReply } = require('../../utils/manageActions');
+    return exportFileReply(
+        interaction,
+        `📤 **Exported ${loadouts.length} ${mode} ${category} loadout(s)** in Bulk Add format. Paste this back into the Bulk Add action.`,
+        `${mode.toLowerCase()}_${category.toLowerCase()}_loadouts_export.txt`,
+        text
+    );
 }
 
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
@@ -307,7 +304,8 @@ async function deleteItem(match, actorId) {
     const Loadout = require('../../models/Loadout');
     const removedDoc = match.doc;
     await Loadout.findByIdAndDelete(match.id);
-    recordChange({ actorId, page: removedDoc.mode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'delete', model: 'Loadout', target: match.label, summary: `Deleted loadout "${match.label}"` });
+    const { pageForLoadoutMode } = require('../../utils/manageActions');
+    recordChange({ actorId, page: pageForLoadoutMode(removedDoc.mode), action: 'delete', model: 'Loadout', target: match.label, summary: `Deleted loadout "${match.label}"` });
     return registerUndo(`Delete loadout "${match.label}"`, async () => {
         const restoreDoc = { ...removedDoc };
         delete restoreDoc._id; // let Mongo assign a fresh _id on re-insert

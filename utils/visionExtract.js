@@ -156,7 +156,7 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
     // Logged as soon as we have a response, regardless of what happens to the text below -- tokens are already spent the moment Vertex AI replies, whether or not the JSON that follows parses cleanly.
     logVisionCallCost(taskName, gcpLocation, gcpModel, data?.usageMetadata);
     // Same reasoning as logVisionCallCost's own placement: tokens are spent the moment Vertex replies, whether or not the JSON below parses. Reported as a zero-duration second call so the token total lands on the dep row the timing wrapper already created, without double-counting the latency.
-    if (data?.usageMetadata?.totalTokenCount) noteDep('vertex', 0, true, { tokens: data.usageMetadata.totalTokenCount });
+    if (data?.usageMetadata?.totalTokenCount) noteDep('vertex', 0, true, { tokens: data.usageMetadata.totalTokenCount, countsAsCall: false });
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Gemini response had no extractable text content');
 

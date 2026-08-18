@@ -181,7 +181,8 @@ async function handleInteractionInner(interaction) {
         markHandler('colors');
         if (await handleColorsButton(interaction)) return;
 
-
+        // Nothing in the button/select chain above consumed this interaction (v3-pre-release review, finding #30) -- markHandler('colors') was the last name set purely because colors happens to be checked last, and left uncleared it misattributed a genuinely dead click (a stale button from an earlier deploy, say) to a subsystem that never touched it. Reset so recordInteractionEvent's finally sees the honest "nothing claimed this" value this file's own contract documents. Must stay AFTER every markHandler(name) call above, never before -- those still need to fire pre-call so in-handler log lines see the right name.
+        markHandler(null);
 
     // ==========================================
     // --- DATABASE AUTOCOMPLETE ROUTE ---
@@ -278,13 +279,17 @@ async function handleInteractionInner(interaction) {
             if (commandName === 'gunsmiths') {
                 const categoryCounts = new Map();
                 for (const w of distinctChoices) categoryCounts.set(w.category, (categoryCounts.get(w.category) || 0) + 1);
+                // Fixed per-list budgets, not a cap on the concatenated union (v3-pre-release review, finding #26) -- catRows is unfiltered when focusedValue is falsy, so the old union-then-slice(0,25) let categories crowd out every weapon slot once enough categories exist (7 today -> 18 weapon slots left; each new DB category takes another), and a short query fuzzy-matching several category names could push the intended weapon off the list entirely.
+                const CATEGORY_BUDGET = 5;
                 const catRows = Array.from(categoryCounts.keys())
                     .sort()
                     .filter(c => !focusedValue || fuzzyMatch(focusedValue, c))
+                    .slice(0, CATEGORY_BUDGET)
                     .map(c => ({ name: `▸ All ${displayCategoryLabel(c)} builds (${categoryCounts.get(c)} weapons)`, value: `~cat~${c}` }));
                 const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
+                    .slice(0, 25 - catRows.length)
                     .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
-                return await interaction.respond([...catRows, ...weaponRows].slice(0, 25));
+                return await interaction.respond([...catRows, ...weaponRows]);
             }
 
             // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
