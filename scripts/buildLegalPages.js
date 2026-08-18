@@ -38,6 +38,9 @@ const fs = require('fs');
 const path = require('path');
 // The third page family. See the header of that file for why it is a separate family and why the dependency runs one way (this file hands it CHROME).
 const { parseChronicle, chronicleShell } = require('./lib/chronicle');
+// The FOURTH family. Same one-way dependency as chronicle.js: this file hands it CHROME, it imports nothing back.
+const { commandsShell } = require('./lib/commandsPage');
+const { buildCatalog } = require('./lib/commandCatalog');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'docs', 'legal');
@@ -57,7 +60,8 @@ const BRAND = {
     violet: '#9B6BE3',
     crimson: '#FF5264',
 
-    // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else.
+    // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else. The /commands page. 121 degrees -- the midpoint of the widest gap on the tab hue wheel (citron 62 to teal 180), so 59 degrees of clearance each way against a 30-degree floor. scripts/lib/commandsPage.js carries the full reasoning and the dark-theme partner value.
+    signal: '#1E6B1F',
     periwinkle: '#8B9BFF',
     citron: '#F8FF4A',
 
@@ -205,7 +209,21 @@ const CHRONICLE_PAGES = [
 /* Every page on the site, in nav order. Several places need "all of them" and each
    used to spell out its own [...PAGES, ...EXTRA_PAGES], which is how a new family
    ends up wired into four of five places. */
-const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...CHRONICLE_PAGES];
+/**
+ * The tool family. One page, and it is deliberately its own table rather than a third EXTRA_PAGE: those are invitations rendered by warmShell(), and this is neither an invitation nor a document but a thing you operate. It also has NO MARKDOWN SOURCE -- the content is read from the bot's own command builders at build time (scripts/lib/commandCatalog.js), so there is no file for readSource() to open and none of the source-vs-output gates apply to it the way they do to the other nine pages.
+ */
+const TOOL_PAGES = [
+    {
+        kind: 'generated', out: 'commands.html',
+        title: 'Commands', short: 'Commands', kicker: 'Every command',
+        accent: BRAND.signal, glow: '#A8E8AA',
+        lede: 'Pick a command, see every option it takes, and copy a line that works.',
+        blurb: 'Every Dioreo command, what it does, and every option it accepts.',
+        desc: 'Every Dioreo command, what each one does, and every option it accepts -- with a copyable example.'
+    },
+];
+
+const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...TOOL_PAGES, ...CHRONICLE_PAGES];
 
 // '' means the site ROOT (the flat document pages + the homepage); 'changelog' is the one remaining subdirectory. Was 'legal' by default until the 2026-08-05 flattening — see the note on OUT.
 const dirOf = p => p.dir || '';
@@ -234,6 +252,7 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 const PUBLISHED_TARGETS = new Set([
     'terms.html', 'privacy.html', 'license.html', 'notice.html', 'index.html', '',
     'contributing.html', 'contributors.html',
+    'commands.html',
     // LICENSE/NOTICE are bare now, not '../LICENSE' — they publish verbatim beside the document pages at the site root since the 2026-08-05 flattening, no longer a level below them.
     'LICENSE', 'NOTICE',
     // The chronicle family, as addressed from a page inside changelog/ …
@@ -1196,7 +1215,7 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
    To restore: put CHRONICLE_PAGES back here, add 'Releases' back to the labels
    below, restore it in pageFoot()'s endnav, and RE-MEASURE the desktop staging —
    the breakpoints in SWITCHER_CSS are measured for the tab count, not derived. */
-const NAV_GROUPS = [PAGES, EXTRA_PAGES];
+const NAV_GROUPS = [TOOL_PAGES, PAGES, EXTRA_PAGES];
 
 /* ⚠️ WITHDRAWN IS NOT UNREACHABLE, and the difference is load-bearing. If the
    record group vanished from the nav on EVERY page, the three chronicle pages
@@ -1213,7 +1232,7 @@ const navLabelFor = gi => NAV_GROUP_LABELS[gi] || 'Releases';
    pills are no longer side by side to make the distinction for themselves. The
    labels are also what the collapsed desktop chips show between 981 and 1100px —
    see SWITCHER_CSS, where the staging is re-derived for three groups. */
-const NAV_GROUP_LABELS = ['Documents', 'Community'];
+const NAV_GROUP_LABELS = ['Using it', 'Documents', 'Community'];
 
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
@@ -1233,7 +1252,7 @@ const NAV_GROUP_LABELS = ['Documents', 'Community'];
    must not quietly inherit someone else's. */
 const navSwitcher = cur => {
     const n = navSetFor(cur).reduce((a, g) => a + g.length, 0);
-    if (n !== 6 && n !== 9) {
+    if (n !== 7 && n !== 10) {
         throw new Error(`navSwitcher: ${n} tabs has no measured breakpoint staging. ` +
             'Measure it (bar.scrollWidth > bar.clientWidth, both sides of every boundary), ' +
             'add a data-fit tier in SWITCHER_CSS, then allow the count here.');
@@ -3792,24 +3811,39 @@ const SWITCHER_CSS = `
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* ── six tabs: tighten below 1060, and that is the whole staging ── */
-@media (max-width:1059px){
-  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="6"] .seg{--gap:.6rem}
+/* ── seven tabs: tighten below 1140 ──
+   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
+   across the desktop range so both sides of the boundary are read from the same
+   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
+   between 1140 and 1139, so the boundary applies where it says it does; and
+   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
+   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
+   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
+   never fails is not a gate, and "no overflow anywhere" is exactly the result a
+   broken probe also returns.
+   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
+   Commands group in the bar, no page produces those counts any more, and a
+   staging nothing selects is a number that rots unread. */
+@media (max-width:1139px){
+  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="7"] .seg{--gap:.6rem}
 }
 
-/* ── nine tabs: tighten below 1465, chips below 1300 ── */
-@media (max-width:1464px){
-  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
+   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
+   the three group chips replace the tabs at 1380 -> 1379, both exactly where
+   declared; zero overflow from 1600 down to 981. */
+@media (max-width:1544px){
+  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="10"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1299px){
+@media (min-width:981px) and (max-width:1379px){
   /* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
 }
 
 /* Desktop shows no mobile menu. */
@@ -8519,8 +8553,19 @@ function build() {
             `${res.parts} parts · ${res.lessons} lessons · ${(res.html.length / 1024).toFixed(1)} KB`);
     }
 
+    // The tool family. Its content comes from the bot's own command builders rather than from a file, so there is no readSource() step and no source-vs-output comparison to make -- but it IS pushed onto `built` so linkAudit(), a11yAudit() and secretScan() cover it exactly like every other page. A page no gate looks at is the one that quietly rots.
+    const catalog = buildCatalog();
+    for (const page of TOOL_PAGES) {
+        LINK_BASE = '';
+        const html = commandsShell({ page, catalog, C: CHROME });
+        writePage(outPath(page), html);
+        built.push({ ...page, tool: true });
+        console.log(`  \u2713 ${page.out}  ${catalog.commandCount} commands \u00b7 ` +
+            `${(html.length / 1024).toFixed(1)} KB`);
+    }
+
     // Only the numbered legal set goes in the numbered list.
-    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle)));
+    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle && !p.tool)));
     console.log('  ✓ index.html');
     buildCompanions();
     return built;
@@ -8576,6 +8621,12 @@ function verify(built) {
     const RUN = 8;
 
     for (const page of built) {
+        // The tool family has no source file, so "did every run of source survive into the HTML" is not a question that exists for it. Reported rather than silently skipped: a page quietly outside every gate is how one rots unnoticed, and this one is still covered by linkAudit(), a11yAudit() and secretScan(), which read the WRITTEN FILE and so need no source. Its own equivalent of this check is commandProse.js's assertProseCoverage(), which fails the build when the page and the bot have drifted apart in either direction.
+        if (page.kind === 'generated') {
+            console.log(`  \u25cb ${page.out}: generated from the command builders, no source to compare ` +
+                '(covered by assertProseCoverage + link/a11y/secret gates)');
+            continue;
+        }
         const out = fs.readFileSync(outPath(page), 'utf8');
         const rendered = ' ' + words(out
             .replace(/<script[\s\S]*?<\/script>/g, ' ')
@@ -8965,7 +9016,8 @@ function contrastAudit(built) {
         const merge = re => [...css.matchAll(re)].map(m => m[1]).join(';');
         const themes = [
             ['dark', merge(/:root\{([^}]*)\}/g)],
-            ['light', merge(/:root\[data-theme="light"\]\{([^}]*)\}/g)],
+            // ⚠️ THE QUOTES ARE OPTIONAL IN CSS AND WERE MANDATORY HERE, which made this gate half-blind for every page that does not declare its own world. TOKENS emits `:root[data-theme=light]` UNQUOTED, so the light merge never matched it, `--desk` fell back to the DARK desk, and every light-theme ratio was computed against the wrong ground. It surfaced when the /commands page declared a quoted light block: its light `--sig` was read while its `--desk` still came from the dark base, reporting 2.78:1 for a pair that never co-occur. Matching both spellings is what the cascade does.
+            ['light', merge(/:root\[data-theme=["']?light["']?\]\{([^}]*)\}/g)],
         ];
         let base = {};
         for (const [name, block] of themes) {

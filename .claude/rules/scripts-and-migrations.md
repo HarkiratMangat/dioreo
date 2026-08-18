@@ -132,7 +132,7 @@ Also found by manual inspection (not caught by any verifier): `// ===...===` dec
 
 If you touch it: the test file's job is mostly proving each defect above STAYS fixed, same philosophy as `reflow-prose.test.mjs`. Idempotent — a second run is a no-op (bugs 3 exists precisely because that wasn't true once).
 
-## `lib/commandCatalog.js` + `commandCatalog.test.js` — what the website's `/commands` page knows (added 2026-08-17 20:07 EDT)
+## `scripts/lib/commandCatalog.js` + `scripts/commandCatalog.test.js` — what the website's `/commands` page knows (added 2026-08-17 20:07 EDT)
 
 Reads the **real command builders** (`commands/*.js`'s own `.toJSON()`) at site-build time and returns the grouped, ordered, admin-filtered catalog the `/commands` page renders. Nothing is transcribed, so the page cannot drift from the bot. Wired into `npm test`; needs no Mongo, no Cloudinary and no env.
 

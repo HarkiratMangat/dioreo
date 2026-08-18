@@ -1,8 +1,4 @@
-// scripts/commandCatalog.test.js -- coverage for scripts/lib/commandCatalog.js, the module that
-// tells the website's /commands page what the bot can do. It reads the REAL command builders, so
-// most of what matters here is not "does it transform correctly" but "can it fail" -- a catalog
-// that silently drops a command produces a page that lies about the bot while every other gate
-// stays green. Run: `node scripts/commandCatalog.test.js` (also via `npm test`).
+// scripts/commandCatalog.test.js -- coverage for scripts/lib/commandCatalog.js, the module that tells the website's /commands page what the bot can do. It reads the REAL command builders, so most of what matters here is not "does it transform correctly" but "can it fail" -- a catalog that silently drops a command produces a page that lies about the bot while every other gate stays green. Run: `node scripts/commandCatalog.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
     buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT,
@@ -73,15 +69,13 @@ check('placementFor: the LONGEST declared prefix wins', () => {
     const placement = readHelpPlacement([
         { key: 'draws', staticCommands: [{ name: '/draw prices' }, { name: '/draw calculator' }] },
     ]);
-    // If a shorter prefix could win, `/draw calculator` would inherit `/draw prices`' entry --
-    // silently filing one command under another's declaration.
+    // If a shorter prefix could win, `/draw calculator` would inherit `/draw prices`' entry -- silently filing one command under another's declaration.
     assert.strictEqual(placementFor('/draw calculator', placement).declared, '/draw calculator');
 });
 
 // ── the completeness gate: the reason this module exists ───────────────────────────────────────
 check('THE GATE CAN FAIL: an unplaced public command throws and names itself', () => {
-    // A CATEGORY_DEFS that has forgotten a real, public, registered command. This is not a
-    // hypothetical shape -- it is exactly the state the live array is in for /help and /invite.
+    // A CATEGORY_DEFS that has forgotten a real, public, registered command. This is not a hypothetical shape -- it is exactly the state the live array is in for /help and /invite.
     const amnesiac = [{ key: 'utilities', staticCommands: [{ name: '/colors' }] }];
     assert.throws(
         () => buildCatalog({ categoryDefs: amnesiac }),
@@ -98,8 +92,7 @@ check('the gate stays SILENT on the real tree', () => {
 // ── what actually reaches the page ─────────────────────────────────────────────────────────────
 check('every non-admin command the bot registers reaches the page', () => {
     const excluded = new Set(catalog.excluded.map(e => e.path));
-    // Rebuilt from the builders independently of the catalog's own grouping, so this is a real
-    // cross-check rather than a restatement of what buildCatalog already decided.
+    // Rebuilt from the builders independently of the catalog's own grouping, so this is a real cross-check rather than a restatement of what buildCatalog already decided.
     const registered = buildCatalog().groups.flatMap(g => g.commands.map(c => c.path));
     for (const path of registered) {
         assert.ok(!excluded.has(path), `${path} is both listed and excluded`);
@@ -113,8 +106,7 @@ check('admin commands are excluded, and by GATING rather than by a hardcoded lis
         assert.ok(excluded.includes(admin), `${admin} must not appear on a public page`);
         assert.ok(!byPath.has(admin), `${admin} leaked into the rendered catalog`);
     }
-    // If this ever stops being true, an admin command is being excluded by NAME somewhere, and the
-    // next admin command added will quietly ship to the public site.
+    // If this ever stops being true, an admin command is being excluded by NAME somewhere, and the next admin command added will quietly ship to the public site.
     for (const e of catalog.excluded) {
         assert.strictEqual(e.reason, 'admin-gated in CATEGORY_DEFS', `${e.path} excluded for the wrong reason`);
     }
@@ -131,8 +123,7 @@ check('/help and /invite are placed despite CATEGORY_DEFS not knowing them', () 
 // ── order, which carries decisions ─────────────────────────────────────────────────────────────
 check('within a group, order follows CATEGORY_DEFS then the builder', () => {
     const gunsmiths = catalog.groups.find(g => g.key === 'gunsmiths').commands.map(c => c.path);
-    // CATEGORY_DEFS declares `/gunsmiths` before `/dmz`; the builder declares `search` before
-    // `list`. One entry covers both subcommands, so only the builder can order those two.
+    // CATEGORY_DEFS declares `/gunsmiths` before `/dmz`; the builder declares `search` before `list`. One entry covers both subcommands, so only the builder can order those two.
     assert.deepStrictEqual(gunsmiths, ['/gunsmiths search', '/gunsmiths list', '/dmz']);
 
     const draws = catalog.groups.find(g => g.key === 'draws').commands.map(c => c.path);
@@ -153,8 +144,7 @@ check('options carry required, autocomplete and choice NAMES', () => {
     const weapon = byPath.get('/gunsmiths search').options.find(o => o.name === 'weapon');
     assert.strictEqual(weapon.autocomplete, true, 'weapon is an autocomplete option');
 
-    // Discord shows a choice's NAME and never its value, so a value on the page would be a string
-    // the reader never sees in the client.
+    // Discord shows a choice's NAME and never its value, so a value on the page would be a string the reader never sees in the client.
     const scope = byPath.get('/gunsmiths list').options.find(o => o.name === 'scope');
     assert.ok(scope.choices.includes('All MP builds'), 'choice NAMES, not values');
     assert.ok(!scope.choices.includes('all'), 'a choice VALUE must never reach the page');

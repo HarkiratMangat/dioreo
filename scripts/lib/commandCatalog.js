@@ -1,31 +1,11 @@
 /**
  * The command catalog — what the website's /commands page knows about the bot.
  *
- * ⚠️ THIS READS THE REAL COMMAND BUILDERS. Nothing here is transcribed, and that
- * is the whole point: a page that lists commands from a hand-written copy drifts
- * the moment a command changes, and nothing reports it. Every name, option,
- * choice label and required flag below comes from `commands/*.js`'s own
- * `.toJSON()` — the identical bytes Discord itself is given.
+ * ⚠️ THIS READS THE REAL COMMAND BUILDERS. Nothing here is transcribed, and that is the whole point: a page that lists commands from a hand-written copy drifts the moment a command changes, and nothing reports it. Every name, option, choice label and required flag below comes from `commands/*.js`'s own `.toJSON()` — the identical bytes Discord itself is given.
  *
- * ⚠️ SAFE TO CALL FROM A SITE BUILD — measured 2026-08-17 20:05 EDT before this
- * module was written, not assumed. Requiring every command module opens ZERO
- * Mongo connections (`mongoose.connect` call count 0, `readyState` 0), leaves no
- * handle that could hang a build, costs ~0.5s, and exits 0 even under a
- * completely empty environment (`env -i`), which is the CI case. The only noise
- * is three CLOUDINARY_URL warnings on stderr from the cache modules' own
- * top-level guards. If that ever stops being true — a module that connects on
- * require, or throws without credentials — this module is the wrong shape and
- * the fallback is a generated, committed catalog with a staleness gate.
+ * ⚠️ SAFE TO CALL FROM A SITE BUILD — measured 2026-08-17 20:05 EDT before this module was written, not assumed. Requiring every command module opens ZERO Mongo connections (`mongoose.connect` call count 0, `readyState` 0), leaves no handle that could hang a build, costs ~0.5s, and exits 0 even under a completely empty environment (`env -i`), which is the CI case. The only noise is three CLOUDINARY_URL warnings on stderr from the cache modules' own top-level guards. If that ever stops being true — a module that connects on require, or throws without credentials — this module is the wrong shape and the fallback is a generated, committed catalog with a staleness gate.
  *
- * ORDERING AND ADMIN-GATING COME FROM `/help`'s OWN `CATEGORY_DEFS`, deliberately.
- * The website and the in-Discord directory then cannot disagree about how the bot
- * is organised, and an admin command cannot leak onto a public page by being
- * forgotten here — it is excluded by the same `requires` key that hides it in
- * Discord. `commands/help.js`'s own header records why that array became the one
- * source of truth: a category was half-added exactly once, appearing in the
- * dropdown and silently missing from the directory. Harkirat, on being told:
- * "that's a real gap that will create staleness and needs a proper solution."
- * This module is that solution applied one surface further out.
+ * ORDERING AND ADMIN-GATING COME FROM `/help`'s OWN `CATEGORY_DEFS`, deliberately. The website and the in-Discord directory then cannot disagree about how the bot is organised, and an admin command cannot leak onto a public page by being forgotten here — it is excluded by the same `requires` key that hides it in Discord. `commands/help.js`'s own header records why that array became the one source of truth: a category was half-added exactly once, appearing in the dropdown and silently missing from the directory. Harkirat, on being told: "that's a real gap that will create staleness and needs a proper solution." This module is that solution applied one surface further out.
  */
 
 const fs = require('fs');
@@ -39,30 +19,14 @@ const TYPE_SUBCOMMAND = 1;
 const TYPE_SUBCOMMAND_GROUP = 2;
 
 /**
- * Commands deliberately kept off the public page, each with the reason it is
- * absent. ⚠️ A NAME HERE IS A DECISION ON THE RECORD, not a way to silence the
- * completeness gate below — the gate exists precisely so that "this command is
- * missing" can never be the *default* outcome of forgetting about it. Admin
- * commands do NOT belong here: they are excluded structurally, by `requires`.
+ * Commands deliberately kept off the public page, each with the reason it is absent. ⚠️ A NAME HERE IS A DECISION ON THE RECORD, not a way to silence the completeness gate below — the gate exists precisely so that "this command is missing" can never be the *default* outcome of forgetting about it. Admin commands do NOT belong here: they are excluded structurally, by `requires`.
  */
 const DELIBERATELY_ABSENT = Object.create(null);
 
 /**
  * Where a command goes when `CATEGORY_DEFS` has no opinion.
  *
- * ⚠️ TWO COMMANDS LAND HERE, AND BOTH ARE REAL GAPS IN `/help` ITSELF, not
- * oversights of this module. Neither `/help` nor `/invite` appears anywhere in
- * `CATEGORY_DEFS`, so neither is listed in the in-Discord directory, offered in
- * its category dropdown, or reachable from its `cmd:` autocomplete.
- * `/help` omitting itself is at least defensible — you are already standing in
- * it. `/invite` (shipped 2026-08-17 in #148/#149) is not: it is a public command
- * a reader has no way to discover from the bot's own directory. Both are placed
- * explicitly here so the WEBSITE is complete while the bot-side gap is decided
- * separately; Harkirat's own framing of the pair (`commands/help.js` line 48) is
- * "the bot's two meta commands — the ones about Dioreo itself rather than about
- * CODM data", which is exactly what this group is.
- * ⚠️ This map is NOT the place to park a command you have not thought about.
- * Anything else that falls through reaches the gate and fails the build.
+ * ⚠️ TWO COMMANDS LAND HERE, AND BOTH ARE REAL GAPS IN `/help` ITSELF, not oversights of this module. Neither `/help` nor `/invite` appears anywhere in `CATEGORY_DEFS`, so neither is listed in the in-Discord directory, offered in its category dropdown, or reachable from its `cmd:` autocomplete. `/help` omitting itself is at least defensible — you are already standing in it. `/invite` (shipped 2026-08-17 in #148/#149) is not: it is a public command a reader has no way to discover from the bot's own directory. Both are placed explicitly here so the WEBSITE is complete while the bot-side gap is decided separately; Harkirat's own framing of the pair (`commands/help.js` line 48) is "the bot's two meta commands — the ones about Dioreo itself rather than about CODM data", which is exactly what this group is. ⚠️ This map is NOT the place to park a command you have not thought about. Anything else that falls through reaches the gate and fails the build.
  */
 const EXTRA_PLACEMENT = {
     '/help': 'start',
@@ -70,11 +34,7 @@ const EXTRA_PLACEMENT = {
 };
 
 /**
- * Groups the page renders, in order. `fromHelp` is the `CATEGORY_DEFS` key this
- * group adopts; a group with none is ours alone (the guides and `/help`).
- * ⚠️ Labels are the page's, not `/help`'s — "Seasonal Info Commands" is right in
- * a Discord panel that has to say what it is, and redundant in a left-hand
- * picker on a page titled Commands.
+ * Groups the page renders, in order. `fromHelp` is the `CATEGORY_DEFS` key this group adopts; a group with none is ours alone (the guides and `/help`). ⚠️ Labels are the page's, not `/help`'s — "Seasonal Info Commands" is right in a Discord panel that has to say what it is, and redundant in a left-hand picker on a page titled Commands.
  */
 const GROUPS = [
     { key: 'start', label: 'Start here', fromHelp: null },
@@ -89,9 +49,7 @@ const GROUPS = [
 const idFor = commandPath => commandPath.replace(/^\//, '').replace(/\s+/g, '-');
 
 /**
- * Every leaf a builder actually registers, as the string a person types.
- * A command with subcommands has no leaf of its own — `/draw` is not usable,
- * `/draw prices` is — so only leaves are returned.
+ * Every leaf a builder actually registers, as the string a person types. A command with subcommands has no leaf of its own — `/draw` is not usable, `/draw prices` is — so only leaves are returned.
  */
 function leavesOf(json) {
     const options = json.options || [];
@@ -126,9 +84,7 @@ const normalizeOption = o => ({
     description: o.description,
     required: Boolean(o.required),
     autocomplete: Boolean(o.autocomplete),
-    // Discord renders the choice's NAME and never its value, so the name is the
-    // only half a reader ever sees — putting the value on the page would print a
-    // string that appears nowhere in the client.
+    // Discord renders the choice's NAME and never its value, so the name is the only half a reader ever sees — putting the value on the page would print a string that appears nowhere in the client.
     choices: (o.choices || []).map(c => c.name),
 });
 
@@ -138,9 +94,7 @@ function readBuilders(dir = COMMANDS_DIR) {
     for (const file of fs.readdirSync(dir).sort()) {
         if (!file.endsWith('.js')) continue;
         const mod = require(path.join(dir, file));
-        // A module with no `data` export is not a registered command — the draw
-        // calculator lives in its own file and is registered as a subcommand of
-        // `/draw` by `commands/drawprices.js`, so it has none.
+        // A module with no `data` export is not a registered command — the draw calculator lives in its own file and is registered as a subcommand of `/draw` by `commands/drawprices.js`, so it has none.
         if (!mod || !mod.data || typeof mod.data.toJSON !== 'function') continue;
         for (const leaf of leavesOf(mod.data.toJSON())) {
             leaves.push({ ...leaf, options: leaf.options.map(normalizeOption), file });
@@ -150,10 +104,7 @@ function readBuilders(dir = COMMANDS_DIR) {
 }
 
 /**
- * `CATEGORY_DEFS` reduced to "which command path sits in which category, and is
- * it gated". A category-level `requires` gates every command under it; a
- * command-level one gates that line alone — the same two-level model
- * `commands/help.js` uses, because it IS that model, read from the same array.
+ * `CATEGORY_DEFS` reduced to "which command path sits in which category, and is it gated". A category-level `requires` gates every command under it; a command-level one gates that line alone — the same two-level model `commands/help.js` uses, because it IS that model, read from the same array.
  */
 function readHelpPlacement(categoryDefs) {
     const placement = new Map();
@@ -162,11 +113,7 @@ function readHelpPlacement(categoryDefs) {
             placement.set(command.name, {
                 helpKey: category.key,
                 gated: Boolean(category.requires || command.requires),
-                // Declaration order IS the order /help renders in, and some of it
-                // is deliberate rather than incidental -- commands/help.js records
-                // that its Bot Admin list is alphabetical on Harkirat's explicit
-                // ask. Reading the array but discarding its order would reproduce
-                // the content and lose the decision.
+                // Declaration order IS the order /help renders in, and some of it is deliberate rather than incidental -- commands/help.js records that its Bot Admin list is alphabetical on Harkirat's explicit ask. Reading the array but discarding its order would reproduce the content and lose the decision.
                 order: placement.size,
             });
         }
@@ -175,11 +122,7 @@ function readHelpPlacement(categoryDefs) {
 }
 
 /**
- * The longest declared prefix that covers a leaf.
- * `CATEGORY_DEFS` names `/gunsmiths`, while the builder registers
- * `/gunsmiths search` and `/gunsmiths list`; both leaves belong to the category
- * that claimed their parent. Longest-prefix rather than exact match is what lets
- * one array entry cover a whole subcommand tree without listing each leaf.
+ * The longest declared prefix that covers a leaf. `CATEGORY_DEFS` names `/gunsmiths`, while the builder registers `/gunsmiths search` and `/gunsmiths list`; both leaves belong to the category that claimed their parent. Longest-prefix rather than exact match is what lets one array entry cover a whole subcommand tree without listing each leaf.
  */
 function placementFor(commandPath, placement) {
     let best = null;
@@ -193,10 +136,7 @@ function placementFor(commandPath, placement) {
 /**
  * Builds the catalog the page renders.
  *
- * ⚠️ THROWS on a public command with nowhere to go, and that is the feature.
- * The failure this prevents is exactly the one `/help` already has: a command
- * that exists, works, and is invisible on the page that exists to list it. A
- * build that fails names the command; a build that quietly drops it does not.
+ * ⚠️ THROWS on a public command with nowhere to go, and that is the feature. The failure this prevents is exactly the one `/help` already has: a command that exists, works, and is invisible on the page that exists to list it. A build that fails names the command; a build that quietly drops it does not.
  */
 function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) {
     const defs = categoryDefs || require(path.join(ROOT, 'commands', 'help.js')).CATEGORY_DEFS;
@@ -207,9 +147,7 @@ function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) 
     const excluded = [];
     const unplaced = [];
 
-    // EXTRA_PLACEMENT commands sort after everything CATEGORY_DEFS declares, in
-    // the order this module lists them -- they are ours to order, since the array
-    // that would otherwise decide has no opinion about them.
+    // EXTRA_PLACEMENT commands sort after everything CATEGORY_DEFS declares, in the order this module lists them -- they are ours to order, since the array that would otherwise decide has no opinion about them.
     const extraKeys = Object.keys(EXTRA_PLACEMENT);
     const extraOrder = commandPath => placement.size + extraKeys.indexOf(commandPath);
 
@@ -243,11 +181,7 @@ function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) 
             id: idFor(leaf.path),
             description: leaf.description,
             options: leaf.options,
-            // Sort keys, dropped before the catalog is returned. `declared` is the
-            // command's position in CATEGORY_DEFS; `leaf` is its position within
-            // its own builder, which is what keeps `/gunsmiths search` ahead of
-            // `/gunsmiths list` -- one CATEGORY_DEFS entry covers both, so the
-            // array cannot order them and the builder is the only thing that can.
+            // Sort keys, dropped before the catalog is returned. `declared` is the command's position in CATEGORY_DEFS; `leaf` is its position within its own builder, which is what keeps `/gunsmiths search` ahead of `/gunsmiths list` -- one CATEGORY_DEFS entry covers both, so the array cannot order them and the builder is the only thing that can.
             _declared: found ? found.info.order : extraOrder(leaf.path),
             _leaf: leafIndex,
         });
