@@ -178,6 +178,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-17 18:32 EDT — The comment-reflow that also had to fix what it broke (v3.43.0-pre)
 - 2026-08-17 19:35 EDT — Recovering storage-channel messages instead of orphaning them (v3.44.0-pre)
 - 2026-08-18 09:52 EDT — A full-branch review, 61 findings fixed, and what got deliberately skipped (v3.45.0-pre)
+- 2026-08-18 12:04 EDT — Settings pickers and /help collapse to shared, self-enforcing shapes (v3.46.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3128,6 +3129,16 @@ Two things from this session are worth writing down because they'll come up agai
 The rest was volume: 24 duplicated `SeasonalData.findOne({docType:'global'})` call sites collapsed to one shared helper (all four already imported it — nobody had gotten around to using it), three copy-pasted bulk-delete confirmation scaffolds collapsed to one, 41 timezone labels that baked a DST abbreviation in permanently now derive it live, and a Cloudinary/Discord-CDN cache-consistency cluster (a distinguishable error sentinel, a complete `rawContext` on every memoized entry, an in-flight render de-dup) closed a class of bug where a transient network blip could re-render and re-post an already-cached design. Two existing tests needed updating — not reverting — because they'd encoded the old buggy behavior as the expected one: `rollupStore.test.js`'s idempotency case asserted "a same-day re-run does nothing," which was true only because of the exact bug being fixed.
 
 `npm test` green throughout, on both commits. PR #153 into `v3-pre-release`, CI green, merged same session.
+
+## 2026-08-18 12:04 EDT — Settings pickers and /help collapse to shared, self-enforcing shapes (v3.46.0)
+
+First session of a multi-session plan closing out the remaining v3-pre-release review findings. Two of the five findings the review deliberately skipped as "needs a new architectural abstraction, not a bounded fix" -- #48 (`/settings`' CP-currency and Timezone pickers were line-for-line clones) and #49 (`commands/help.js`'s four page builders were duplicated, and `perms` was accepted by all six but only read by two, the loose signature that already let a permission filter go silently missing once).
+
+Both collapsed into shared, self-enforcing shapes rather than mechanically deduplicated: #48 into a `SETTINGS_PICKERS` registry keyed by the real wire action string, so it can't drift from the custom_id it dispatches on. #49 into one `renderCommandBlock()` fed by data on `CATEGORY_DEFS`, with every builder now receiving an already-permission-filtered command list instead of raw `perms` -- so a builder can no longer silently skip a permission check.
+
+No live dev-bot click-testing was run this session -- explicitly deferred by Harkirat for the whole plan, not just this session. In its place: a before/after snapshot fixture (`scripts/helpBodySnapshot.test.js`) diffing every `/help` page across a 4-way perms matrix, proven able to fail by mutation before being trusted. It caught a real bug mid-refactor: gunsmiths' directory listing (2 commands) doesn't 1:1 match its 3-command detail page, an assumption that would have silently broken had the refactor blindly derived one from the other.
+
+Also found and fixed in the same pass: PR #153's changelog entry never backfilled the previous release's (#152) commit hash, a real gap in the backfill convention that had gone unnoticed for one release.
 
 # Part B — Lessons Ledger (thematic)
 

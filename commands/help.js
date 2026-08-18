@@ -64,8 +64,8 @@ const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
 //   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
-// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added.
-const cmd = (name, { requires = null, suffix = null } = {}) => ({ name, requires, suffix });
+// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmiths/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
+const cmd = (name, { requires = null, suffix = null, description = null, options = [] } = {}) => ({ name, requires, suffix, description, options });
 
 const permitted = (item, perms) => !item.requires || perms[item.requires] === true;
 const visibleCategories = perms => CATEGORY_DEFS.filter(c => permitted(c, perms));
@@ -74,11 +74,97 @@ const visibleCommands = (category, perms) => category.staticCommands.filter(c =>
 const categoryEmojiKey = (c, perms) => (perms.serverAdmin && c.emojiKeyServerAdmin) || c.emojiKey;
 const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescriptionServerAdmin) || c.dropdownDescription;
 
+const resolveText = (value, client) => typeof value === 'function' ? value(client) : value;
+
+// The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmiths/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
+function renderCommandBlock(command, client) {
+    const optionLines = command.options.map(o =>
+        `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
+    ).join('\n');
+    return `### ${mentionCommand(client, command.name)}\n${resolveText(command.description, client)}\n-# **Options**\n`
+        + (optionLines ? `${optionLines}\n` : '')
+        + `${VISIBILITY_BULLET}\n`;
+}
+
 const CATEGORY_DEFS = [
-    { key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts', staticCommands: [cmd('/gunsmiths'), cmd('/dmz')] },
-    { key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs', staticCommands: [cmd('/draws'), cmd('/draw prices'), cmd('/draw calculator')] },
-    { key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates", staticCommands: [cmd('/calendar'), cmd('/patch notes'), cmd('/season end')] },
-    { key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools', staticCommands: [cmd('/colors'), cmd('/timestamp')] },
+    {
+        key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
+        // staticCommands stays [/gunsmiths, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmiths` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way.
+        staticCommands: [cmd('/gunsmiths'), cmd('/dmz')],
+        detailCommands: [
+            cmd('/gunsmiths search', {
+                description: "Find a specific MP weapon's loadout",
+                options: [
+                    { name: 'weapon', required: true, desc: 'Select weapon (supports autocomplete & partial word matching)' },
+                    { name: 'build', required: false, desc: 'Specify build number' }
+                ]
+            }),
+            cmd('/gunsmiths list', {
+                description: 'Browse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ',
+                options: [{ name: 'scope', required: true, desc: 'Pick what to browse' }]
+            }),
+            cmd('/dmz', {
+                description: 'Search for DMZ specific loadouts',
+                options: [
+                    { name: 'weapon', required: true, desc: 'Select weapon (supports autocomplete & partial word matching)' },
+                    { name: 'build', required: false, desc: 'Specify build number' }
+                ]
+            })
+        ]
+    },
+    {
+        key: 'draws', label: 'Draws', emojiKey: 'newDraws', dropdownDescription: 'Browse lucky draws & their CP costs',
+        staticCommands: [
+            cmd('/draws', {
+                description: "Browse this season's New and Returning lucky draws",
+                options: [{ name: 'page', required: false, desc: 'Jump directly to New Draws or Returning Draws' }]
+            }),
+            cmd('/draw prices', {
+                description: 'CP cost breakdown for every draw type, split by CP region',
+                options: [{ name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' }]
+            }),
+            cmd('/draw calculator', { description: 'How much more CP you need to finish a draw, and the cheapest way to buy it' })
+        ]
+    },
+    {
+        key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates",
+        staticCommands: [
+            cmd('/calendar', {
+                description: "This season's event timeline — Draws, Events, and Game Modes",
+                // [view] description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; [view] is now a one-off per-invocation choice only, never saved.
+                options: [
+                    { name: 'page', required: false, desc: 'Jump directly to Draws/Events/Playlists & Modes' },
+                    { name: 'view', required: false, desc: 'Show all events, or only active/upcoming for this one view (not saved)' }
+                ]
+            }),
+            cmd('/patch notes', {
+                description: 'Latest weapon balance changes, plus the full patch-note history',
+                options: [{ name: 'season', required: false, desc: 'Search for a specific previous season (start typing to see suggestions)' }]
+            }),
+            cmd('/season end', { description: "See when this season's Battle Pass, Ranked, and DMZ seasons end" })
+        ]
+    },
+    {
+        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools',
+        staticCommands: [
+            cmd('/colors', {
+                description: 'View the colors extracted from your Discord profile and pick which one accents your panels',
+                options: [
+                    { name: 'page', required: false, desc: 'Jump directly to Avatar, Banner, Name, Nameplate, or Deco' },
+                    { name: 'source', required: false, desc: 'Read from your main profile, or your profile for this server' }
+                ]
+            }),
+            cmd('/timestamp', {
+                description: 'Convert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone\'s own timezone',
+                options: [
+                    { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"' },
+                    { name: 'timezone', required: false, desc: (client) => `Defaults to your saved ${mentionCommand(client, '/settings')} timezone` },
+                    { name: 'style', required: false, desc: 'Pick one format, or leave blank for all formats' },
+                    { name: 'view', required: false, desc: 'Embed or plain Text, one-off only' }
+                ]
+            })
+        ]
+    },
     // `/admin` lives HERE rather than in a heading of its own (Harkirat, 2026-08-10 18:57 EDT). It is still hidden from non-admins -- the gating is per-COMMAND now, not per-category -- but a whole section for one command made the directory look top-heavy for the two people in a server who can see it. The suffix is what tells an admin why it is sitting next to `/settings`, and the emoji and description swap so the category reads as covering both.
     {
         key: 'preferences', label: 'Preferences',
@@ -145,40 +231,33 @@ async function getAllHelpCommandNames(perms = {}) {
     return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
 
-// `/gunsmiths search` and `/dmz` share one Options block -- their shapes are genuinely identical (weapon/build/visibility). `/gunsmiths list` gets its own -- a `scope` choice replaces weapon+build, so folding it into the shared block would describe an option neither /search nor /dmz has.
-function buildGunsmithsBody(perms, client) {
-    return `### ${mentionCommand(client, '/gunsmiths search')}\nFind a specific MP weapon's loadout\n-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/gunsmiths list')}\nBrowse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ\n-# **Options**\n-# 🔹 \`<scope>\` Pick what to browse\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/dmz')}\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 \`<weapon>\` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 \`[build]\` Specify build number\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:\`AK117\`\n-# 🔸 **/gunsmiths search** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths list** scope:\`SMG\`\n-# 🔸 **/gunsmiths list** scope:\`Meta — MP\`\n-# 🔸 **/dmz** weapon:\`Fennec\``;
+// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmiths) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
+function buildGunsmithsBody(commands, client) {
+    return commands.map(c => renderCommandBlock(c, client)).join('')
+        + `\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:\`AK117\`\n-# 🔸 **/gunsmiths search** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths list** scope:\`SMG\`\n-# 🔸 **/gunsmiths list** scope:\`Meta — MP\`\n-# 🔸 **/dmz** weapon:\`Fennec\``;
 }
 
-function buildDrawsBody(perms, client) {
-    return `### ${mentionCommand(client, '/draws')}\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to New Draws or Returning Draws\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/draw prices')}\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 \`[region]\` Jump directly to the 10, 20, or 30 CP region\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/draw calculator')}\nHow much more CP you need to finish a draw, and the cheapest way to buy it\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw calculator**`;
+function buildDrawsBody(commands, client) {
+    return commands.map(c => renderCommandBlock(c, client)).join('')
+        + `\n-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw calculator**`;
 }
 
-function buildSeasonalBody(perms, client) {
-    // [view] description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; [view] is now a one-off per-invocation choice only, never saved.
-    return `### ${mentionCommand(client, '/calendar')}\nThis season's event timeline — Draws, Events, and Game Modes\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Draws/Events/Playlists & Modes\n-# 🔹 \`[view]\` Show all events, or only active/upcoming for this one view (not saved)\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/patch notes')}\nLatest weapon balance changes, plus the full patch-note history\n-# **Options**\n-# 🔹 \`[season]\` Search for a specific previous season (start typing to see suggestions)\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/season end')}\nSee when this season's Battle Pass, Ranked, and DMZ seasons end\n-# **Options**\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
+function buildSeasonalBody(commands, client) {
+    return commands.map(c => renderCommandBlock(c, client)).join('')
+        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
-function buildUtilitiesBody(perms, client) {
-    return `### ${mentionCommand(client, '/colors')}\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 \`[page]\` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 \`[source]\` Read from your main profile, or your profile for this server\n${VISIBILITY_BULLET}\n`
-        + `### ${mentionCommand(client, '/timestamp')}\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 \`<datetime>\` e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"\n-# 🔹 \`[timezone]\` Defaults to your saved ${mentionCommand(client, '/settings')} timezone\n-# 🔹 \`[style]\` Pick one format, or leave blank for all formats\n-# 🔹 \`[view]\` Embed or plain Text, one-off only\n${VISIBILITY_BULLET}\n\n`
-        + `-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
+function buildUtilitiesBody(commands, client) {
+    return commands.map(c => renderCommandBlock(c, client)).join('')
+        + `\n-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
-// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason.
-function buildPreferencesBody(perms = {}, client) {
+// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
+function buildPreferencesBody(commands, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
+    const hasAdmin = commands.some(c => c.name === '/admin');
 
-    if (!perms.serverAdmin) {
+    if (!hasAdmin) {
         return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
     }
 
@@ -204,18 +283,19 @@ function buildPreferencesBody(perms = {}, client) {
         + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
 }
 
-// Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown.
-function buildBotAdminBody(perms, client) {
+// Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown. `commands` is visibleCommands(category, perms) -- same reasoning as buildPreferencesBody above. Membership (`has(name)`) replaces the old direct `perms.X` checks, so a command's visibility here can never drift from the directory/dropdown/autocomplete again (the exact class of bug that let the per-command filter go missing from this function until 2026-08-15).
+function buildBotAdminBody(commands, client) {
+    const has = (name) => commands.some(c => c.name === name);
     const sections = [];
-    if (perms.bot) {
+    if (has('/bot analytics')) {
         sections.push(`### ${mentionCommand(client, '/bot analytics')}\nThe bot's own usage, timing and health data, read from Discord instead of the VM\n`
             + `-# 🔹 \`[page]\` Jump directly to a page: \`Health\` · \`Alerts\` · \`Changes\` · \`Usage\` · \`Timing\``);
     }
-    if (perms.botAccess) {
+    if (has('/bot access')) {
         sections.push(`### ${mentionCommand(client, '/bot access')}\nThe admin allowlist -- owner-only\n`
             + `-# 🔹 No options of its own`);
     }
-    if (perms.autobuild) {
+    if (has('/autobuild')) {
         sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
@@ -223,19 +303,19 @@ function buildBotAdminBody(perms, client) {
             + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
             + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
     }
-    if (perms.manage) {
+    if (has('/manage')) {
         sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n`
             + `-# 🔹 \`[content]\` Open a section directly: \`Draws\` · \`Calendar\` · \`Patch Notes\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Manage Admins\` · \`Announcement\` · \`Bulk Format Guide\`\n`
             + `-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement.`);
     }
 
     const examples = [];
-    if (perms.bot) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
-    if (perms.autobuild) {
+    if (has('/bot analytics')) examples.push(`-# 🔸 **/bot analytics** page:\`Usage\` visibility:\`Public\` — share usage data in a channel`);
+    if (has('/autobuild')) {
         examples.push(`-# 🔸 **/autobuild** screenshot:\`[upload]\` category:\`SMG\` badges:\`meta,top5\``);
         examples.push(`-# 🔸 **/autobuild** url:\`https://…\` — when the screenshot is already hosted`);
     }
-    if (perms.manage) {
+    if (has('/manage')) {
         examples.push(`-# 🔸 **/manage** content:\`Patch Notes\` — straight to the section, no clicking through`);
         examples.push(`-# 🔸 **/manage** content:\`Season: Next Season Draft\` — stage next season without touching what is live`);
     }
@@ -319,7 +399,9 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
-        const body = BODY_BUILDERS[selectedKey](perms, client);
+        // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmiths only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
+        const detailSource = requested.detailCommands || visibleCommands(requested, perms);
+        const body = BODY_BUILDERS[selectedKey](detailSource, client);
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
         components.push({ type: 14, spacing: 2, divider: true });

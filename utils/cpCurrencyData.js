@@ -16,11 +16,14 @@ function currencyLabel(code) {
     return `${countryOf(code)} (${code})`;
 }
 
-// Fuzzy-matches a typed query against the currency code AND its country name, so "canada", "cad" and "CAD" all resolve the same currency. fuzzyMatch has no scoring, so this preserves CURRENCIES' own (alphabetical) order among whatever matches rather than ranking by closeness -- same convention searchTimezones already uses.
+// Fuzzy-matches a typed query against the currency code AND its country name, so "canada", "cad" and "CAD" all resolve the same currency. Returns up to `limit` matches as {value, label} -- the normalized shape utils/settingsPickers.js's registry expects from every picker's search(), same convention searchTimezones already uses. fuzzyMatch has no scoring, so this preserves CURRENCIES' own (alphabetical) order among whatever matches rather than ranking by closeness.
 function searchCurrencies(query, limit = 25) {
     const q = (query || '').trim();
     if (!q) return [];
-    return CURRENCIES.filter(code => fuzzyMatch(q, code) || fuzzyMatch(q, countryOf(code))).slice(0, limit);
+    return CURRENCIES
+        .filter(code => fuzzyMatch(q, code) || fuzzyMatch(q, countryOf(code)))
+        .slice(0, limit)
+        .map(code => ({ value: code, label: currencyLabel(code) }));
 }
 
 module.exports = { QUICK_CURRENCIES, currencyLabel, searchCurrencies };

@@ -76,13 +76,14 @@ function findTimezoneLabel(tz) {
     return entry ? displayLabel(tz, entry.label) : tz;
 }
 
-// Fuzzy-matches a typed query against every zone's IANA id, label, AND every alias -- so "sydney", "australia", "aest" and even a raw "Australia/Sydney" all find the same entry. Returns up to `limit` zones; fuzzyMatch has no scoring, so this preserves ALL_TIMEZONES' order among whatever matches rather than ranking by closeness.
+// Fuzzy-matches a typed query against every zone's IANA id, label, AND every alias -- so "sydney", "australia", "aest" and even a raw "Australia/Sydney" all find the same entry. Returns up to `limit` matches as {value, label} (label carries the live abbreviation, same as the dropdown's quick picks) -- the normalized shape utils/settingsPickers.js's registry expects from every picker's search(), so handlers/settings.js needs no per-picker special-casing. fuzzyMatch has no scoring, so this preserves ALL_TIMEZONES' order among whatever matches rather than ranking by closeness.
 function searchTimezones(query, limit = 25) {
     const q = (query || '').trim();
     if (!q) return [];
-    return ALL_TIMEZONES.filter(z =>
-        fuzzyMatch(q, z.tz) || fuzzyMatch(q, z.label) || z.aliases.some(a => fuzzyMatch(q, a))
-    ).slice(0, limit);
+    return ALL_TIMEZONES
+        .filter(z => fuzzyMatch(q, z.tz) || fuzzyMatch(q, z.label) || z.aliases.some(a => fuzzyMatch(q, a)))
+        .slice(0, limit)
+        .map(z => ({ value: z.tz, label: displayLabel(z.tz, z.label) }));
 }
 
 module.exports = { ALL_TIMEZONES, QUICK_TIMEZONES, findTimezoneLabel, searchTimezones, displayLabel };
