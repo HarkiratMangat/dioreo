@@ -109,7 +109,8 @@ function readBuilders(dir = COMMANDS_DIR) {
 function readHelpPlacement(categoryDefs) {
     const placement = new Map();
     for (const category of categoryDefs) {
-        for (const command of category.staticCommands || []) {
+        // MIRRORS commands/help.js's own dispatch: `requested.detailCommands || visibleCommands(requested, perms)`. #154 gave CATEGORY_DEFS a second, finer list, and wherever it exists help.js treats it as authoritative -- gunsmiths' directory entry says `/gunsmiths` while its detail page documents `search` and `list` separately. Reading only the coarse list would still place both leaves (longest-prefix covers them), but it would compute `gated` from the PARENT: a future detail entry carrying its own `requires` would be hidden in /help and PUBLISHED on the website, silently. Preferring the finer list makes the failure loud instead -- a detail list that omits something the directory names leaves that leaf with no declared prefix, and buildCatalog throws naming it. Deliberately NOT a union of both lists: a union would paper over exactly that inconsistency.
+        for (const command of category.detailCommands || category.staticCommands || []) {
             placement.set(command.name, {
                 helpKey: category.key,
                 gated: Boolean(category.requires || command.requires),

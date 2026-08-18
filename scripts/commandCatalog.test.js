@@ -65,6 +65,32 @@ check('readHelpPlacement: a COMMAND-level requires gates that one line alone', (
     assert.strictEqual(placement.get('/admin').gated, true);
 });
 
+check('readHelpPlacement: detailCommands WINS over staticCommands, so a finer `requires` cannot leak', () => {
+    // The failure this guards: #154 gave CATEGORY_DEFS a second, finer list that help.js treats as authoritative. If the catalog read only the coarse list, `gated` would come from the PARENT -- a restricted subcommand would be hidden in /help and PUBLISHED on the website, with every other gate still green. Reading staticCommands only, this assertion fails.
+    const placement = readHelpPlacement([
+        {
+            key: 'gunsmiths',
+            staticCommands: [{ name: '/gunsmiths' }],
+            detailCommands: [{ name: '/gunsmiths search' }, { name: '/gunsmiths secret', requires: 'botAdmin' }],
+        },
+    ]);
+    assert.strictEqual(placement.has('/gunsmiths'), false, 'the coarse entry must not be declared once a finer list exists');
+    assert.strictEqual(placement.get('/gunsmiths search').gated, false);
+    assert.strictEqual(placement.get('/gunsmiths secret').gated, true);
+});
+
+check('readHelpPlacement: ORDER comes from detailCommands when the two lists disagree', () => {
+    // Order drives how the page lists a group. If the lists disagree the site must follow the one /help's detail page follows, or the two disagree on screen.
+    const placement = readHelpPlacement([
+        {
+            key: 'gunsmiths',
+            staticCommands: [{ name: '/gunsmiths' }, { name: '/dmz' }],
+            detailCommands: [{ name: '/dmz' }, { name: '/gunsmiths search' }],
+        },
+    ]);
+    assert.ok(placement.get('/dmz').order < placement.get('/gunsmiths search').order);
+});
+
 check('placementFor: the LONGEST declared prefix wins', () => {
     const placement = readHelpPlacement([
         { key: 'draws', staticCommands: [{ name: '/draw prices' }, { name: '/draw calculator' }] },
