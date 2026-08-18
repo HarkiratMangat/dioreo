@@ -1,25 +1,14 @@
 // scripts/colorPaletteCrossViewFetch.test.js -- regression test for utils/colorPalette.js's getPalettePanelData cross-view refresh sweep (v3-pre-release review finding #57, closed 2026-08-18 13:16 EDT). Run: `node scripts/colorPaletteCrossViewFetch.test.js` (also via `npm test`).
 //
-// The `refreshStale` cross-view pass re-derives the OPPOSITE variant's source info by calling
-// getSourceImageInfo(interaction, !useGuild) a second time. That function's global-profile fetch
-// (interaction.client.users.fetch({force:true}) + fetchProfileExtras's raw REST GET) is guild-
-// INDEPENDENT -- the file's own comment says the global profile is identical between the two views
-// -- so a second call re-issues two real network round trips for data the primary call already has
-// in hand. This test instruments both calls and asserts they fire exactly ONCE each across a single
-// getPalettePanelData({refreshStale: true}) call whose guild profile only partially overrides (so
-// BOTH views independently need the global fetch), which is exactly the shape that exposes the bug.
+// The `refreshStale` cross-view pass re-derives the OPPOSITE variant's source info by calling getSourceImageInfo(interaction, !useGuild) a second time. That function's global-profile fetch (interaction.client.users.fetch({force:true}) + fetchProfileExtras's raw REST GET) is guild- INDEPENDENT -- the file's own comment says the global profile is identical between the two views -- so a second call re-issues two real network round trips for data the primary call already has in hand. This test instruments both calls and asserts they fire exactly ONCE each across a single getPalettePanelData({refreshStale: true}) call whose guild profile only partially overrides (so BOTH views independently need the global fetch), which is exactly the shape that exposes the bug.
 //
-// Runs with no Discord/Mongo: utils/guildProfile.js and utils/accentColor.js are stubbed via
-// require.cache, matching the pattern scripts/eventStore.test.js already uses.
+// Runs with no Discord/Mongo: utils/guildProfile.js and utils/accentColor.js are stubbed via require.cache, matching the pattern scripts/eventStore.test.js already uses.
 const assert = require('assert');
 const Module = require('module');
 
 const callLog = [];
 
-// A server profile that overrides ONLY avatar -- banner/decoration/nameplate/displayNameColors all
-// fall through to the global fetch in BOTH the global view (guildProfile === null there) and the
-// guild view (those four fields are absent from this fixture), so `needsGlobal` is true for both
-// and the redundant-fetch path is genuinely exercised, not skipped by the zero-network fast path.
+// A server profile that overrides ONLY avatar -- banner/decoration/nameplate/displayNameColors all fall through to the global fetch in BOTH the global view (guildProfile === null there) and the guild view (those four fields are absent from this fixture), so `needsGlobal` is true for both and the redundant-fetch path is genuinely exercised, not skipped by the zero-network fast path.
 const guildProfileFixture = {
     avatarHash: 'guildAvatarHash123', avatarUrl: 'https://cdn.example/guild-avatar.png',
     avatarFullUrl: 'https://cdn.example/guild-avatar-full.png', avatarAnimatedUrl: null,
@@ -46,8 +35,7 @@ require.cache[accentColorPath] = new Module(accentColorPath, null);
 require.cache[accentColorPath].filename = accentColorPath;
 require.cache[accentColorPath].loaded = true;
 require.cache[accentColorPath].exports = {
-    // The two REST-costly calls getSourceImageInfo makes when needsGlobal is true. Stubbed rather
-    // than wrapping the real implementation so this test needs no fake Discord REST payload shape.
+    // The two REST-costly calls getSourceImageInfo makes when needsGlobal is true. Stubbed rather than wrapping the real implementation so this test needs no fake Discord REST payload shape.
     fetchProfileExtras: async () => {
         callLog.push('fetchProfileExtras');
         return {
@@ -57,8 +45,7 @@ require.cache[accentColorPath].exports = {
             displayNameColors: null
         };
     },
-    // Only reached on the guild-view call (useGuild=true); cheap stub keeps the call log focused
-    // on the two calls actually under test.
+    // Only reached on the guild-view call (useGuild=true); cheap stub keeps the call log focused on the two calls actually under test.
     resolveGuildNameColors: async () => null
 };
 
@@ -82,10 +69,7 @@ const interaction = {
     }
 };
 
-// Both sources' cache entries are already fresh (palette + matching identity hash), so the
-// refreshStale sweep's own `continue` fires for both without ever reaching getCachedPalette --
-// isolating this test to the redundant PROFILE RESOLVE the review finding is actually about,
-// not the separate (and separately tested) extraction pipeline.
+// Both sources' cache entries are already fresh (palette + matching identity hash), so the refreshStale sweep's own `continue` fires for both without ever reaching getCachedPalette -- isolating this test to the redundant PROFILE RESOLVE the review finding is actually about, not the separate (and separately tested) extraction pipeline.
 const prefs = {
     avatarPalette: ['#ABCDEF'],
     avatarPaletteSource: `globalAvatarHash@${PALETTE_ALGO_VERSION}`,
@@ -95,8 +79,7 @@ const prefs = {
 };
 
 async function run() {
-    // activeSource 'name' skips per-source extraction entirely (see the function's own comment),
-    // so this exercises exactly the cross-view profile-resolve path and nothing downstream of it.
+    // activeSource 'name' skips per-source extraction entirely (see the function's own comment), so this exercises exactly the cross-view profile-resolve path and nothing downstream of it.
     const result = await getPalettePanelData(interaction, prefs, 'name', false, 'global', true);
 
     assert.ok(result.hasServerProfile, 'fixture must actually have a server override, or the cross-view sweep never runs and this test proves nothing');
