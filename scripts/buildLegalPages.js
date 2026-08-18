@@ -61,7 +61,17 @@ const BRAND = {
     crimson: '#FF5264',
 
     // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else. The /commands page. 121 degrees -- the midpoint of the widest gap on the tab hue wheel (citron 62 to teal 180), so 59 degrees of clearance each way against a 30-degree floor. scripts/lib/commandsPage.js carries the full reasoning and the dark-theme partner value.
-    signal: '#1E6B1F',
+    /* ⚠️ THE BRIGHT HUE, like every other BRAND entry — NOT the hand-tuned light-theme
+       text value, which is #1E6B1F and lives in commandsPage.js as the --accent-t
+       override. This field feeds a page's `accent`, and a page's `accent` is read in TWO
+       places that must never disagree: `:root{--accent}` (which fills .ins, the focus
+       ring, ::selection) and the tab's own `data-accent`, which the nav script paints the
+       indicator plate from. It held #1E6B1F for a day and the split was visible on the
+       bar — a dark-green pill beside a bright-green Install button — while License, whose
+       two reads are one value, matched exactly. Harkirat caught it with a colour picker.
+       A dark value here is always wrong: this slot is a FILL, and light theme darkens
+       only --accent-t. */
+    signal: '#58D05A',
     periwinkle: '#8B9BFF',
     citron: '#F8FF4A',
 

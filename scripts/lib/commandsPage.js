@@ -35,6 +35,10 @@ function requireChrome(C) {
 /**
  * The page's accent. 121 degrees, the midpoint of the widest gap on the site's tab hue wheel (citron 62 to teal 180), which leaves 59 degrees of clearance each way — the six document tabs are held to 30. ⚠️ The Changelog's phosphor is 131 degrees, ten away. That is KNOWN AND ACCEPTED, not an oversight: the record group is withdrawn from the nav everywhere except inside /changelog/, so the two are never seen together at tab size. Harkirat chose this hue with that on the table. ⚠️ The bot's own /help command briefly took this green on 2026-08-16 20:38 EDT and Harkirat reversed it the same evening — /help and /invite keep coral. That reversal was about the DISCORD surface only; the website page keeps green.
  */
+/* `dark` MIRRORS buildLegalPages.js's BRAND.signal and exists to be asserted against it,
+   never to be used as the value — see the accent block. `light` is the hand-tuned
+   --accent-t for light theme (the Accent Lab's own value for 121 degrees, measured
+   against the light desk rather than mixed toward black by TOKENS' 38% formula). */
 const SIGNAL = { light: '#1E6B1F', dark: '#58D05A' };
 
 /* 🔴 THE SITE HAS EXACTLY TWO SURFACES — --desk (the page) and --raised (a card).
@@ -575,6 +579,13 @@ function renderGuide(guide, C) {
 function commandsShell({ page, catalog, C }) {
     requireChrome(C);
     assertProseCoverage(catalog);
+    // The page table's accent and this module's own idea of the hue are two reads of one colour. They disagreed for a day and it showed on the bar; a build is the right place to find that out, not a colour picker.
+    if (page.accent.toUpperCase() !== SIGNAL.dark.toUpperCase()) {
+        throw new Error(`commandsPage.js: TOOL_PAGES declares accent ${page.accent} but SIGNAL.dark is ` +
+            `${SIGNAL.dark}. These feed the SAME colour by two routes — :root{--accent} and the tab's ` +
+            `data-accent, which the nav paints its indicator from — so a mismatch renders a pill and an ` +
+            `Install button in two different shades. Change BRAND.signal, not this constant.`);
+    }
     const { esc } = C;
 
     const guidesByGroup = new Map();
@@ -647,8 +658,14 @@ function commandsShell({ page, catalog, C }) {
        equivalent of the document plate — its one owned surface. */
     const lightVars = `--accent-t:${SIGNAL.light};--sig:${SIGNAL.light};` +
         `--sig-soft:${SIGNAL.light}1a;--sig-line:${SIGNAL.light}55`;
-    const accent = `:root{--accent:${SIGNAL.dark};--glow:${esc(page.glow)};--sig:${SIGNAL.dark};` +
-        `--sig-soft:${SIGNAL.dark}26;--sig-line:${SIGNAL.dark}5c}` +
+    /* ⚠️ THE DARK VALUE COMES FROM `page.accent`, NOT FROM SIGNAL.dark. Those are the two
+       reads that must agree — the tab's `data-accent` (which the nav paints its indicator
+       plate from) comes from the page table, so a second constant here is a second source
+       of truth and it split once already. SIGNAL.dark is kept only as the assertion below
+       that the two are the same value; SIGNAL.light has no counterpart in the table and
+       stays a real constant. */
+    const accent = `:root{--accent:${esc(page.accent)};--glow:${esc(page.glow)};--sig:${esc(page.accent)};` +
+        `--sig-soft:${esc(page.accent)}26;--sig-line:${esc(page.accent)}5c}` +
         `:root[data-theme=light]{${lightVars}}` +
         `@media (prefers-color-scheme:light){:root:not([data-theme=dark]){${lightVars}}}`;
 
