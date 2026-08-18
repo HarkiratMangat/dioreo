@@ -8,7 +8,8 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleSettingsInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
-const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { SETTINGS_PICKERS } = require('../utils/settingsPickers');
+const { buildPickerSearchModal } = require('../utils/pickerUI');
 
 const OWNED_PREFIXES = ["set_", "toggle_", "settingstz_", "settingscur_"];
 
@@ -24,34 +25,13 @@ async function route(interaction) {
             const currentPage = pageStr ? parseInt(pageStr, 10) : 0;
             const selectedValue = interaction.values[0];
 
-            // Timezone "Search for your city..." sentinel (added 2026-08-15 13:14 EDT) -- MUST be checked before deferUpdate() below, since showModal() has to be the interaction's FIRST response. Every other value on this dropdown still defers+updates normally.
-            if (action === 'set_timezone' && selectedValue === '__search__') {
-                // Builder classes, not raw snake_case API JSON -- matches every other showModal() call in this bot (e.g. commands/manage.js's buildSearchModal). discord.js's high-level showModal() expects a ModalBuilder; sendV2Payload's raw-JSON convention is specific to its own raw REST PATCH path and does not apply here.
-                const modal = new ModalBuilder()
-                    .setCustomId(`settingstz_search|${targetUserId}|${currentPage}`)
-                    .setTitle('Search for your timezone');
-                modal.addComponents(
-                    new ActionRowBuilder().addComponents(
-                        new TextInputBuilder().setCustomId('query').setLabel('City, country, or abbreviation')
-                            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. "Sydney", "Brazil", "PST"')
-                            .setRequired(true).setMaxLength(60)
-                    )
-                );
-                return await interaction.showModal(modal);
-            }
-
-            // CP currency "Search for your currency..." sentinel -- same reasoning as timezone's above: showModal() must be the interaction's FIRST response, so this has to be intercepted before deferUpdate() too.
-            if (action === 'set_cpcurrency' && selectedValue === '__search__') {
-                const modal = new ModalBuilder()
-                    .setCustomId(`settingscur_search|${targetUserId}|${currentPage}`)
-                    .setTitle('Search for your currency');
-                modal.addComponents(
-                    new ActionRowBuilder().addComponents(
-                        new TextInputBuilder().setCustomId('query').setLabel('Country or currency code')
-                            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. "Canada", "CAD"')
-                            .setRequired(true).setMaxLength(60)
-                    )
-                );
+            // "Search for your..." sentinel (added 2026-08-15 13:14 EDT, unified across both pickers 2026-08-18 10:58 EDT, finding #48) -- MUST be checked before deferUpdate() below, since showModal() has to be the interaction's FIRST response. Every other value on either dropdown still defers+updates normally. SETTINGS_PICKERS is keyed by the real wire action string, so this generically covers both `set_timezone` and `set_cpcurrency`.
+            const searchPicker = SETTINGS_PICKERS[action];
+            if (searchPicker && selectedValue === '__search__') {
+                const modal = buildPickerSearchModal({
+                    customId: `${searchPicker.modalPrefix}|${targetUserId}|${currentPage}`,
+                    title: searchPicker.modalTitle, fieldLabel: searchPicker.fieldLabel, fieldPlaceholder: searchPicker.fieldPlaceholder
+                });
                 return await interaction.showModal(modal);
             }
 
@@ -167,90 +147,57 @@ async function route(interaction) {
             return await settingsCommand.execute(syntheticInteraction, targetPage);
         }
 
-        // TIMEZONE SEARCH MODAL SUBMIT (added 2026-08-15 13:14 EDT) -- reached from the "Search for your city..." sentinel above. Fuzzy-matches the typed query against utils/timezoneData.js's full expanded list (city names, country names, and abbreviations, not just IANA ids).
+        // PICKER SEARCH MODAL SUBMIT (added 2026-08-15 13:14 EDT, unified across both pickers 2026-08-18 10:58 EDT, finding #48) -- reached from either "Search for your..." sentinel above. handlePickerSearchSubmit() is the one generic searchable-list submit flow both `settingstz_search` and `settingscur_search` parameterize into via SETTINGS_PICKERS.
         if (interaction.isModalSubmit() && interaction.customId.startsWith('settingstz_search')) {
-            const [, targetUserId, pageStr] = interaction.customId.split('|');
-            const currentPage = pageStr ? parseInt(pageStr, 10) : 1;
-
-            const actingUser = await resolvePanelActor(interaction, targetUserId);
-            if (!actingUser) {
-                try {
-                    await interaction.reply({ content: "🔒 **Not your dashboard!** Run `/settings` yourself to search your own timezone.", ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of blocked timezone search (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-
-            const query = interaction.fields.getTextInputValue('query');
-            const { searchTimezones, displayLabel } = require('../utils/timezoneData');
-            const matches = searchTimezones(query, 10).map(m => ({ ...m, label: displayLabel(m.tz, m.label) }));
-
-            if (matches.length === 0) {
-                return await interaction.reply({ content: `❌ No timezone matched **"${query}"** — try a bigger city near you, a country name, or an abbreviation like \`PST\`.`, ephemeral: true });
-            }
-            if (matches.length > 1) {
-                // Multiple hits -- rather than a second select+pick round-trip (which would need its own message identity to edit back into the real panel), just list the candidates and ask for a more specific search. Keeps this a single, coherent flow.
-                return await interaction.reply({
-                    content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
-                        + matches.map(m => `-# 🔹 \`${m.label}\``).join('\n'),
-                    ephemeral: true
-                });
-            }
-
-            // Exactly one match -- save it and redraw the real /settings panel in place, same save+redraw shape the plain dropdown branch above uses.
-            await interaction.deferUpdate();
-            const UserPreference = require('../models/UserPreference');
-            let prefs = await UserPreference.findOne({ discordId: targetUserId });
-            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
-            prefs.timezone = matches[0].tz;
-            await prefs.save();
-
-            const settingsCommand = interaction.client.commands.get('settings');
-            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
-            return await settingsCommand.execute(renderInteraction, currentPage);
+            return await handlePickerSearchSubmit(interaction, SETTINGS_PICKERS.set_timezone);
         }
-
         if (interaction.isModalSubmit() && interaction.customId.startsWith('settingscur_search')) {
-            const [, targetUserId, pageStr] = interaction.customId.split('|');
-            const currentPage = pageStr ? parseInt(pageStr, 10) : 1;
-
-            const actingUser = await resolvePanelActor(interaction, targetUserId);
-            if (!actingUser) {
-                try {
-                    await interaction.reply({ content: "🔒 **Not your dashboard!** Run `/settings` yourself to search your own currency.", ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of blocked currency search (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-
-            const query = interaction.fields.getTextInputValue('query');
-            const { searchCurrencies, currencyLabel } = require('../utils/cpCurrencyData');
-            const matches = searchCurrencies(query, 10);
-
-            if (matches.length === 0) {
-                return await interaction.reply({ content: `❌ No currency matched **"${query}"** — try a country name or a 3-letter code like \`CAD\`.`, ephemeral: true });
-            }
-            if (matches.length > 1) {
-                return await interaction.reply({
-                    content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
-                        + matches.map(code => `-# 🔹 \`${currencyLabel(code)}\``).join('\n'),
-                    ephemeral: true
-                });
-            }
-
-            await interaction.deferUpdate();
-            const UserPreference = require('../models/UserPreference');
-            let prefs = await UserPreference.findOne({ discordId: targetUserId });
-            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
-            prefs.cpCurrency = matches[0];
-            await prefs.save();
-
-            const settingsCommand = interaction.client.commands.get('settings');
-            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
-            return await settingsCommand.execute(renderInteraction, currentPage);
+            return await handlePickerSearchSubmit(interaction, SETTINGS_PICKERS.set_cpcurrency);
         }
+}
+
+// Shared submit flow for a picker's search modal: resolve the acting user, fuzzy-match the typed query against the picker's own search(), reply with a disambiguation list on 0/N matches, or save+redraw on exactly one -- same save+redraw shape the plain dropdown branch above uses. `picker` is one entry from utils/settingsPickers.js's SETTINGS_PICKERS registry.
+async function handlePickerSearchSubmit(interaction, picker) {
+    const [, targetUserId, pageStr] = interaction.customId.split('|');
+    const currentPage = pageStr ? parseInt(pageStr, 10) : 1;
+
+    // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+    const actingUser = await resolvePanelActor(interaction, targetUserId);
+    if (!actingUser) {
+        try {
+            await interaction.reply({ content: `🔒 **Not your dashboard!** Run \`/settings\` yourself to search your own ${picker.noun}.`, ephemeral: true });
+        } catch (notifyError) {
+            console.error(`Failed to notify user of blocked ${picker.noun} search (interaction likely expired):`, notifyError);
+        }
+        return;
+    }
+
+    const query = interaction.fields.getTextInputValue('query');
+    const matches = picker.search(query);
+
+    if (matches.length === 0) {
+        return await interaction.reply({ content: `❌ No ${picker.noun} matched **"${query}"** — try ${picker.hintText}.`, ephemeral: true });
+    }
+    if (matches.length > 1) {
+        // Multiple hits -- rather than a second select+pick round-trip (which would need its own message identity to edit back into the real panel), just list the candidates and ask for a more specific search. Keeps this a single, coherent flow.
+        return await interaction.reply({
+            content: `🔎 **${matches.length} matches for "${query}"** — search again with just one of these:\n`
+                + matches.map(m => `-# 🔹 \`${m.label}\``).join('\n'),
+            ephemeral: true
+        });
+    }
+
+    // Exactly one match -- save it and redraw the real /settings panel in place.
+    await interaction.deferUpdate();
+    const UserPreference = require('../models/UserPreference');
+    let prefs = await UserPreference.findOne({ discordId: targetUserId });
+    if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+    prefs[picker.prefsField] = matches[0].value;
+    await prefs.save();
+
+    const settingsCommand = interaction.client.commands.get('settings');
+    const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+    return await settingsCommand.execute(renderInteraction, currentPage);
 }
 
 // Returns TRUE when this subsystem owns the interaction (and has now handled it), FALSE otherwise -- the uniform contract every handlers/*.js module follows.

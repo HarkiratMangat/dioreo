@@ -98,10 +98,6 @@ module.exports = {
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
-        // Expanded 2026-08-15 13:13 EDT -- see utils/timezoneData.js. QUICK_TIMEZONES is the dropdown's direct one-click picks; the full ALL_TIMEZONES list is only reachable through the dropdown's "Search for your city..." sentinel (see below), fuzzy-matched against city names/aliases via a modal since Discord's own select menu caps at 25 options.
-        const { QUICK_TIMEZONES, findTimezoneLabel, displayLabel } = require('../utils/timezoneData');
-        const currentTzLabel = findTimezoneLabel(tz);
-
         // NOTE (redesigned during review): aligned these value keys to match the exact style options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/ mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's' and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") — the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already renders them correctly, so they belong here too.
         const styleDisplayMap = {
             all_formats: 'All Formats',
@@ -208,35 +204,24 @@ module.exports = {
                 }]
             });
 
-            // CP currency: which storefront /draw calculator quotes prices from. Same shortlist+search-sentinel shape as Timezone right below (Discord's select menu caps at 25 options, and there are 41 real currencies) -- see utils/cpCurrencyData.js.
-            const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
-            const cpCurrency = prefs.cpCurrency || 'USD';
-            containerComponents.push({ type: 10, content: `**CP Currency** = \`${currencyLabel(cpCurrency)}\`` });
-            containerComponents.push({
-                type: 1,
-                components: [{
-                    type: 3, custom_id: `set_cpcurrency|${userId}|1`, placeholder: "Set which storefront /draw calculator quotes prices from...",
-                    options: [
-                        ...QUICK_CURRENCIES.map(code => ({ label: currencyLabel(code), value: code, default: cpCurrency === code })),
-                        { label: '🔍 Search for your currency...', value: '__search__', description: 'Not in the list above? Type a country or currency code.' }
-                    ]
-                }]
-            });
+            // CP currency + Timezone: both shortlist+search-sentinel pickers, parameterized from the shared utils/settingsPickers.js registry (v3-pre-release review finding #48 -- these two used to be line-for-line clones of each other). renderPickerBlock() below builds the summary line + select row identically for both.
+            const { SETTINGS_PICKERS } = require('../utils/settingsPickers');
+            const { buildPickerSelectRow } = require('../utils/pickerUI');
+            const renderPickerBlock = (action, currentValue) => {
+                const picker = SETTINGS_PICKERS[action];
+                containerComponents.push({ type: 10, content: `**${picker.summaryLabel}** = \`${picker.currentLabel(currentValue)}\`` });
+                // Sentinel value (not a real currency/IANA zone) -- handlers/settings.js's `set_` branch intercepts this BEFORE deferUpdate() and opens a search modal instead of saving it. 25th option, right at the select-menu cap.
+                containerComponents.push(buildPickerSelectRow({
+                    customId: `${action}|${userId}|1`, placeholder: picker.placeholder,
+                    options: picker.quickOptions(), currentValue,
+                    searchLabel: picker.searchLabel, searchDescription: picker.searchDescription
+                }));
+            };
 
-            containerComponents.push({ type: 10, content: `**Timezone** = \`${currentTzLabel}\`` });
+            const cpCurrency = prefs.cpCurrency || 'USD';
+            renderPickerBlock('set_cpcurrency', cpCurrency);
             // NOTE (redesigned during review): moved inside the container, directly under its summary line, instead of living as a separate action row below/outside the embed.
-            containerComponents.push({
-                type: 1,
-                components: [{
-                    type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
-                    options: [
-                        // displayLabel appends the LIVE abbreviation (finding #45) -- was baked statically into z.label.
-                        ...QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz, default: tz === z.tz })),
-                        // Sentinel value (not a real IANA zone) -- handlers/settings.js's `set_` branch intercepts this BEFORE deferUpdate() and opens a search modal instead of saving it. 25th option, right at the select-menu cap.
-                        { label: '🔍 Search for your city...', value: '__search__', description: 'Not in the list above? Type a city, country, or abbreviation.' }
-                    ]
-                }]
-            });
+            renderPickerBlock('set_timezone', tz);
 
             containerComponents.push({ type: 10, content: `**Timestamp Style** = \`${currentStyleLabel}\`` });
             containerComponents.push({
