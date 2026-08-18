@@ -180,6 +180,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-18 09:52 EDT — A full-branch review, 61 findings fixed, and what got deliberately skipped (v3.45.0-pre)
 - 2026-08-18 12:04 EDT — Settings pickers and /help collapse to shared, self-enforcing shapes (v3.46.0)
 - 2026-08-18 12:50 EDT — A rule written down, then broken twice in the same session (v3.47.0)
+- 2026-08-18 13:45 EDT — Two review-remnants findings close, and a completeness sweep catches what the review couldn't (v3.48.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3160,6 +3161,16 @@ That reframes the rule from a reminder into a mechanism: for a skill specificall
 - **A thorough search of the wrong space is more dangerous than a lazy one**, because the thoroughness is what makes the false negative persuasive. Before concluding "nothing there," ask whether the thing being searched for is the kind of thing that would be there at all — bundled skills materialize on invocation, so the answer was structurally no.
 - **Writing a rule down does not install it.** The repeat happened minutes after authoring the rule, in the same session, by the same reasoning path. What the second miss added was the *mechanism* — and a mechanism ("this directory is empty until you invoke") is harder to argue past in the moment than a principle ("be careful about listings").
 - **`git stash pop` is not paired with your own stash.** `git stash -u` on a clean tree silently creates nothing, so a later pop takes whatever sits on top — here, someone else's WIP. Check `git stash list` before popping, and verify the stash still holds its content before resetting anything.
+
+## 2026-08-18 13:45 EDT — Two review-remnants findings close, and a completeness sweep catches what the review couldn't (v3.48.0)
+
+Session 2 of the review-remnants plan closed findings #50 and #57 -- the two of five "deliberately NOT applied" findings from the original v3-pre-release review that turned out to be genuinely fixable this pass, once the earlier "needs an architectural addition" framing was tested against the real code rather than taken at face value.
+
+#50 (`utils/cpPackages.js`'s return-value spread) turned out not to need an architecture change at all -- just a careful test-first repoint of every flattened-field read site before removing the spread, so a weakened-not-removed read site would fail loudly instead of silently passing. #57 (`utils/colorPalette.js`'s cross-view double-fetch) was the harder one: the function's own comments call its internal ordering load-bearing, so the fix wasn't trusted on a code read. A new instrumented fixture (`scripts/colorPaletteCrossViewFetch.test.js`) stubbed the two network-touching dependencies via `require.cache`, was deliberately run against the *pre-fix* code first to confirm it actually caught the redundancy (4 calls logged), then re-run post-fix to confirm exactly 2 -- proof, not a plausible-looking diff.
+
+A completeness-sweep prompt after the first "done" report caught something neither the code review nor `npm test` could see: `docs/db-deferred-list.md`'s tracking bullet still listed #48 and #49 as "deliberately NOT applied," even though both had shipped in the *previous* release (v3.46.0/PR #154) on a separate branch that never came back to update this line. The session's own first-draft summary count inherited that stale baseline and was wrong as a result -- caught only because the sweep asked to re-derive the count from each item's actual state rather than trust the file's existing total.
+
+The same sweep, run again before merge at Harkirat's explicit request, surfaced a real CI-only bug: `scripts/reflow-comments.mjs`'s syntax-check step (`execFileSync("node", ["--check", "/dev/stdin"], ...)`) crashed on this repo's GitHub Actions Linux runner with `ENOENT ... /proc/<pid>/fd/socket:[...]` -- a `/dev/stdin`-as-socket Node quirk that doesn't reproduce on macOS. It only fires for a file with a genuinely proposed change, which is exactly why three separate local `npm test` runs never caught it: the triggering file was untracked (`git ls-files` skips untracked paths) during every one of them, so the checker never actually saw it until it was staged and CI ran against tracked content for the first time. Filed as its own bug rather than fixed here, to keep this PR scoped to the review findings -- but it's a real trap for any future PR that adds or edits a `.js`/`.mjs`/`.sh` file: passing `npm test` locally proves nothing about this specific check if the changed file was still untracked when you ran it.
 
 # Part B — Lessons Ledger (thematic)
 
