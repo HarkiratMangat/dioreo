@@ -16,7 +16,10 @@ const browsed = buildLoadoutCard(fixture, 0, { color: 1, idPrefix: 'mp', isEphem
 const bs = JSON.stringify(browsed);
 assert.ok(bs.includes('gsb~next~MP.AR.std~6'), 'browse card missing scope-paged next id');
 assert.ok(bs.includes('"7 / 35"'), 'browse card indicator must show FLAT position');
-assert.ok(bs.includes('mpcopy_ak117_0'), 'browse card must KEEP the mp copy id (handler reuse)');
+// Scope-aware copy ids (v3-pre-release review, finding #1) -- a browse card's `index` is relative to the FILTERED/RE-SORTED scope subset, not to the unscoped Loadout.find handlers/loadouts.js's legacy mp/dmz branch queries. Reusing the weapon-scoped `mpcopy_ak117_0` id on a browse card was the bug itself: the handler resolved that index against a different, unfiltered list, so Copy Code could hand back a DIFFERENT build's share code than the card on screen.
+assert.ok(bs.includes('gsb~copy~MP.AR.std~6'), 'browse card missing scope-paged copy id');
+assert.ok(bs.includes('gsb~copyatt~MP.AR.std~6'), 'browse card missing scope-paged copyatt id');
+assert.ok(!bs.includes('mpcopy_ak117_0'), 'browse card must NOT emit the weapon-scoped copy id -- handlers/loadouts.js resolves it against the wrong list');
 
 // 3. hideBadges suppresses the badge line without touching anything else.
 const meta = [{ ...fixture[0], isMeta: true }];

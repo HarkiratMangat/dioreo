@@ -124,8 +124,19 @@ function registerLifecycle(client, commands) {
             console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
         }
 
-        await applyGunsmithsScopeChoices(commands);
-        await registerApplicationCommands(client, commands);
+        // Split into two independent try/catches (v3-pre-release review, finding #4) -- these were previously one unguarded `await` pair, so a throw in the FIRST call (unbounded choices, a renamed sub-option) silently skipped the SECOND, meaning no commands reached Discord at all with no loud signal beyond a generic client 'error' alert. Each failure is now independently alerted and neither can cancel the other.
+        try {
+            await applyGunsmithsScopeChoices(commands);
+        } catch (scopeChoicesError) {
+            console.error('❌ /gunsmiths scope choices failed to apply (registering commands anyway):', scopeChoicesError);
+            sendAlert('/gunsmiths scope choices failed', scopeChoicesError, 'error');
+        }
+        try {
+            await registerApplicationCommands(client, commands);
+        } catch (registrationError) {
+            console.error('❌ Command registration failed:', registrationError);
+            sendAlert('Command registration failed', registrationError, 'error');
+        }
 
         // Kick off the Cloudinary temp-draws cleanup on boot, then every 24h -- not awaited, since a slow/failing Cloudinary call has no business delaying command registration above. NOTE: deliberately NOT .unref()'d, matching the pre-split behaviour exactly. The heartbeat timer below is unref'd; this one never was. Left as-is so this move stays a pure move -- if it should be unref'd for consistency, that is its own change with its own reasoning.
         runCloudinaryCleanup();

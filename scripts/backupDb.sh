@@ -32,7 +32,8 @@ fi
 if [ -z "${MONGODB_URI:-}" ]; then
   ENV_FILE="${DIOREO_ENV_FILE:-$REPO_DIR/.env}"
   [ -r "$ENV_FILE" ] || { echo "❌ No MONGODB_URI in the environment and cannot read $ENV_FILE" >&2; exit 1; }
-  MONGODB_URI="$(grep -m1 '^MONGODB_URI=' "$ENV_FILE" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+  # || true -- under set -e/pipefail, grep exiting 1 (key absent) killed the script HERE, before the explicit "MONGODB_URI is empty" guard on the next line could ever run (v3-pre-release review, finding #11).
+  MONGODB_URI="$(grep -m1 '^MONGODB_URI=' "$ENV_FILE" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" || true)"
 fi
 [ -n "${MONGODB_URI:-}" ] || { echo "❌ MONGODB_URI is empty." >&2; exit 1; }
 

@@ -20,10 +20,21 @@ function getContext() {
 //
 // ⚠️ FALLS BACK TO AN EPHEMERAL PER-PROCESS KEY when ANALYTICS_HMAC_KEY is unset, so a missing key degrades (hashes stop correlating across restarts) instead of crashing the bot. This should not trigger in practice -- the key is provisioned in .env and .env.dev as part of this stage -- but a logging path must never be able to take the bot down over a missing env var.
 let warnedMissingKey = false;
+let warnedInvalidKey = false;
 let ephemeralKey = null;
 function getHmacKey() {
     const configured = process.env.ANALYTICS_HMAC_KEY;
-    if (configured) return Buffer.from(configured, 'base64');
+    if (configured) {
+        // Validated, not just decoded (v3-pre-release review, finding #14) -- Buffer.from(x,'base64') silently DISCARDS non-base64 characters rather than throwing, so a malformed key (a plain passphrase, a truncated paste) used to degrade with NO warning to a short-or-empty buffer, and Node accepts an empty HMAC key outright. Treat a too-short decode the same as "unset" -- same fallback, same warning shape -- rather than hashing every user's id with a near-worthless key. Deliberately does NOT throw: this function's whole design (see the header above) is that a logging path must never be able to take the bot down over a bad env var, so degrading (like the missing-key case already does) is the fix, not a boot-time crash. 32 bytes matches crypto.randomBytes(32) below and HMAC-SHA256's own block size.
+        const decoded = Buffer.from(configured, 'base64');
+        if (decoded.length >= 32) return decoded;
+        if (!warnedInvalidKey) {
+            warnedInvalidKey = true;
+            console.warn(`ANALYTICS_HMAC_KEY decodes to only ${decoded.length} bytes after base64 (expected >= 32) -- it may be a plain passphrase or a truncated paste, not base64. Falling back to an ephemeral per-process key; user hashes will not correlate across restarts.`);
+        }
+        if (!ephemeralKey) ephemeralKey = crypto.randomBytes(32);
+        return ephemeralKey;
+    }
     if (!warnedMissingKey) {
         warnedMissingKey = true;
         console.warn('ANALYTICS_HMAC_KEY is not set -- using an ephemeral per-process key; user hashes will not correlate across restarts.');

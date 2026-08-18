@@ -96,7 +96,7 @@ async function getCachedNameplateWebp(nameplateAsset, catalog, nameplateName) {
         return resolved;
     } catch (err) {
         if (errorHttpCode(err) !== 404) {
-            console.error(`Nameplate WebP cache lookup failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
+            console.error(`Nameplate WebP cache lookup failed for "${nameplateAsset}"/"${nameplateName}": ${safeErrorMessage(err)}`);
             return null;
         }
         // 404: either genuinely never rendered, OR the Cloudinary resource was deleted out-of-band after an earlier render already posted to the Discord storage channel -- see utils/discordCdnAssetIndex.js's recoverCloudinaryFromDiscordCdnAsset for the full reasoning. Checked before treating this as a cold miss.

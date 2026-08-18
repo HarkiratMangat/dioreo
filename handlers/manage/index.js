@@ -77,6 +77,18 @@ async function routeManage(interaction) {
         // PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation the registry's 'confirm' kind opens. Each group purges only its OWN data.
         if (customId.startsWith('mng_purgeconfirm_')) {
             const [group, scope] = parseMngId(customId.replace('mng_purgeconfirm_', ''));
+            // Per-page permission re-check (v3-pre-release review, finding #8) -- resolveAction (the registry's documented "ONE choke point") only guards the FIRST click, the mng_act_ that opened this confirmation. Up to 10 minutes can pass before this second click, and an owner narrowing a scoped admin's grant in that window went unnoticed: the purge still ran against a page the admin no longer has, because nothing past the first click re-checked utils/adminAccess.js's getManagePages().
+            const { getManagePages } = require('../../utils/adminAccess');
+            const allowedPages = await getManagePages(interaction.user.id);
+            if (!allowedPages.includes(group)) {
+                require('../../utils/eventStore').markOutcome('rejected_admin');
+                try {
+                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of a revoked manage-panel purge (interaction likely expired):', notifyError);
+                }
+                return;
+            }
             const handler = PURGE_HANDLERS[group];
             const result = handler ? await handler(scope) : { confirmMsg: '', undoToken: null };
             try {
@@ -126,6 +138,18 @@ async function routeManage(interaction) {
                 return;
             }
             const { group, match } = pending;
+            // Per-page permission re-check (v3-pre-release review, finding #8) -- same reasoning as the purge branch above: this is the second, destructive step of a two-tap confirmation, and the grant could have narrowed in the (up to 10-minute) window since the first tap opened it.
+            const { getManagePages } = require('../../utils/adminAccess');
+            const allowedPages = await getManagePages(interaction.user.id);
+            if (!allowedPages.includes(group)) {
+                require('../../utils/eventStore').markOutcome('rejected_admin');
+                try {
+                    await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of a revoked manage-panel delete (interaction likely expired):', notifyError);
+                }
+                return;
+            }
             const handler = DELETE_HANDLERS[group];
             const undoToken = handler ? await handler(match) : null;
             try {

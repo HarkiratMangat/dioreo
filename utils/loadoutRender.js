@@ -246,9 +246,12 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
             indicatorCustomId: `${idPrefix}_page_indicator`
         });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
-    buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}` });
+    // Scope-aware ids for a browse card (v3-pre-release review, finding #1): `index` here is relative to the FILTERED, RE-SORTED scope subset (see utils/loadoutScopes.js's resolveScopeBuilds), not to Loadout.find({weaponKey,mode})'s unfiltered/unsorted result the way a normal card's index is -- these two buttons used the old `${idPrefix}copy(att)_<weaponKey>_<index>` shape regardless, and handlers/loadouts.js resolved that index against the unfiltered query, so Copy Code could hand back a DIFFERENT build's share code than the card actually on screen (matters more once badges become per-BUILD, not per-weapon). A normal (non-browse) card is untouched -- same ids as before.
+    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
+    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
+    buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId });
     if (activeBuild.mode !== 'DMZ') {
-        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: `${idPrefix}copy_${activeBuild.weaponKey}_${index}` });
+        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: copyCustomId });
     }
     containerComponents.push({ type: 1, components: buttonComponents });
 

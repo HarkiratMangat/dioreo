@@ -46,8 +46,18 @@ async function acquireInstanceLock() {
     heartbeatTimer.unref();
 
     // Best-effort release on a clean shutdown so a deliberate restart doesn't have to wait out STALE_MS before the new process can claim the lock. Only releases if we still own it (pid match) -- if another instance somehow already claimed it since, don't clobber that instead.
+    //
+    // Races (bounded) the SAME analytics flush bot/lifecycle.js's installShutdownFlush does (v3-pre-release review, finding #12) -- process.exit() used to fire the instant the lock-delete above settled (~ms), which is registered EARLIER than installShutdownFlush (only installed once ClientReady fires), so on every `systemctl restart` this handler won a race installShutdownFlush's own 2-second bail couldn't protect against and discarded up to FLUSH_INTERVAL_MS of buffered analytics events. Can't simply stop exiting here and defer entirely to that other handler either -- a SIGTERM during a hung gateway handshake (this file's own header notes that can silently take 10+ minutes) would then have NO exit path until ClientReady, which may never come. flushEvents() is idempotent (splices its buffer synchronously, so a second call after another has already run just finds it empty and no-ops), so racing it here is safe either way.
     const releaseLock = () => {
-        BotInstance.deleteOne({ _id: lockId, pid: process.pid }).finally(() => process.exit());
+        const lockCleanup = BotInstance.deleteOne({ _id: lockId, pid: process.pid }).catch(() => {});
+        // flushSearchSessions() too, not just flushEvents() -- matches installShutdownFlush's own shutdown sequence exactly (utils/eventStore.js). Missing this half would have left every open SearchTerm session exposed to the SAME race this fix exists to close.
+        const { flushEvents, flushSearchSessions } = require('./eventStore');
+        flushSearchSessions();
+        const bail = new Promise((resolve) => {
+            const t = setTimeout(resolve, 2000);
+            if (typeof t.unref === 'function') t.unref();
+        });
+        Promise.allSettled([lockCleanup, Promise.race([flushEvents(), bail])]).finally(() => process.exit());
     };
     process.on('SIGINT', releaseLock);
     process.on('SIGTERM', releaseLock);
