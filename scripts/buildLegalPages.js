@@ -215,7 +215,7 @@ const CHRONICLE_PAGES = [
 const TOOL_PAGES = [
     {
         kind: 'generated', out: 'commands.html',
-        title: 'Commands', short: 'Commands', kicker: 'Every command',
+        title: 'Commands', short: 'Commands', kicker: 'Read straight from the bot',
         accent: BRAND.signal, glow: '#A8E8AA',
         lede: 'Pick a command, see every option it takes, and copy a line that works.',
         blurb: 'Every Dioreo command, what it does, and every option it accepts.',
@@ -2396,6 +2396,39 @@ html.liq,html.liq *{cursor:none !important}
    ⚠️ Do not "tidy" this back to the shorter label, and give any NEW icon-only
    control the same consideration — a filter list is a thing your markup can
    collide with, and the failure is silent: the control simply is not there. */
+/* ⚠️ ONE COPY. This block was written out verbatim in shell(), warmShell() and
+   chronicle.js — three byte-identical duplicates of the site's only chrome rule,
+   which meant a fourth page family (the /commands page) could be added carrying the
+   bar MARKUP and none of its CSS, with every build gate still green: they check
+   structure, links, class collisions and contrast, never whether a class resolves
+   to a rule at all. That is exactly what shipped — commands.html had an unstyled
+   `.bar`, which is what "the nav and footer are misaligned" actually was.
+   `#prog` deliberately stays at each call site: its accent variable differs per
+   family (--accent on the documents, --sig on the chronicle) and warmShell has no
+   progress bar at all. */
+const BAR_CSS = `
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+`;
+
+/* .page centres and bounds the document column, and its 54px of top padding is the
+   space the fixed bar occupies. Shared for the same reason as BAR_CSS: a template
+   that centres its own content to a different max-width sits visibly narrower than
+   the chrome above it, and one that forgets the top padding starts underneath it.
+   ⚠️ THE BOTTOM PADDING IS PAIRED WITH warmShell's .wrap AND THE TWO NUMBERS HAVE
+   TO MOVE TOGETHER, or the two templates' footers drift apart. COMPONENT_CSS drops
+   .foot's own bottom padding below 760px on the reasoning that "the wrapper already
+   provides the breathing room" — true of .wrap, false here, where .page ends at 0,
+   so this restores the missing floor. Trimmed 2026-08-05 11:31 EDT from 4rem to
+   2.6rem (paired with .wrap's own trim) after the dead space below the sign-off was
+   reported on every legal, Contributing and Contributors page. */
+const PAGE_CSS = `
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
+`;
+
 const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
@@ -4283,10 +4316,7 @@ ${TOKENS}
 ${COMPONENT_CSS}
 
 /* ── top bar ─────────────────────────────────────────────────────── */
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
-  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
-  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+${BAR_CSS}
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
 
 ${SWITCHER_CSS}
@@ -4296,18 +4326,7 @@ ${SWITCHER_CSS}
    .cols on purpose — see the markup comment: it is what stops the sticky rail from
    travelling into the footer, and keeping it in .page is what stops it stretching to
    the full viewport width. Do not fold these two back together. */
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
-/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
-   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
-   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap, false here,
-   where .page ends at 0. This restores the missing floor, and the two numbers
-   have to move together — see .wrap below — or the templates drift apart again.
-   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
-   original 4rem) was reported as too much dead space below the sign-off on
-   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
-   with .wrap's own trim to the same value. */
-@media (max-width:760px){ .page{padding-bottom:2.6rem} }
+${PAGE_CSS}
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
@@ -7146,10 +7165,7 @@ ${TOKENS}
 :root{--accent:${accent};--glow:${glow}}
 ${COMPONENT_CSS}
 
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
-  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
-  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+${BAR_CSS}
 
 ${SWITCHER_CSS}
 
@@ -8450,6 +8466,7 @@ const CHROME = {
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
     MORPH_JS,
     wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
+    BAR_CSS, PAGE_CSS, TOTOP_HTML, TOTOP_TRACK_JS,
 };
 
 function build() {

@@ -1068,10 +1068,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
+
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
    with an indicator that slides. Because these are separate documents and not
@@ -1726,18 +1728,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
-   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
-   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap, false here,
-   where .page ends at 0. This restores the missing floor, and the two numbers
-   have to move together — see .wrap below — or the templates drift apart again.
-   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
-   original 4rem) was reported as too much dead space below the sign-off on
-   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
-   with .wrap's own trim to the same value. */
 
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
 @media (max-width:760px){ .page{padding-bottom:2.6rem} }
+
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is

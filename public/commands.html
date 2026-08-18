@@ -1053,7 +1053,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
   .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
 }
-@media print{.tipx{display:none!important}}/* ── segmented page switcher ──────────────────────────────────────────
+@media print{.tipx{display:none!important}}
+
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
    with an indicator that slides. Because these are separate documents and not
    an SPA, the slide happens on LOAD: the indicator animates in from the
@@ -1701,95 +1709,174 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 }
 :root{--sig:#58D05A;--sig-soft:#58D05A26;--sig-line:#58D05A5c}:root[data-theme="light"]{--sig:#1E6B1F;--sig-soft:#1E6B1F1a;--sig-line:#1E6B1F55}/* Page-scoped. Every selector here is prefixed cx- so nothing can collide with
    the shared COMPONENT_CSS the rest of the site is built from — a type-vs-modifier
-   clash is exactly how an unrelated block once inherited 155px of padding. */
+   clash is exactly how an unrelated block once inherited 155px of padding.
 
-.cx-wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem) 5rem}
+   THE ONE STRUCTURAL IDEA: a slash command is a line you type, so the page is built
+   around a line you type. The Composer is the instrument — full width, docked under
+   the bar, the only element allowed to be loud — and everything else is quiet
+   reference laid out on a strict two-zone grid: what a command IS, then what it
+   TAKES. Identity comes from that grid, not from colour. (The changelog pages
+   learned this the expensive way: three accent colours read as one template in three
+   shades, and what finally separated them was the grid — see
+   project_changelog_redesign.) *//* No wrapper of its own. This page sits in the site's .page (CHROME.PAGE_CSS),
+   the same column every other family uses — rolling a private one is what put the
+   content 40px narrower than the chrome above it and started it underneath the
+   fixed bar. Only the floor is local: .page ends at 0 so the last bay would
+   otherwise touch the footer. */
 
-.cx-head{padding:clamp(1.6rem,4vw,2.6rem) 0 1.4rem}
-.cx-kick{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sig);margin:0 0 .5rem}
-.cx-head h1{font-family:var(--display);font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.08;letter-spacing:-.022em;margin:0 0 .4rem}
-.cx-head p{margin:0;color:var(--ink2);max-width:56ch}
 
-.cx-body{display:grid;grid-template-columns:minmax(240px,290px) 1fr;gap:clamp(1.2rem,2.6vw,2.2rem);align-items:start}/* ── the picker ─────────────────────────────────────────────────────────────
+
+.cx-floor{padding-bottom:4.5rem}/* The docked instrument's height, so the picker and every anchor can clear it in
+   one place instead of four hand-tuned numbers that drift apart. */
+
+
+.cx-doc,.cx-pick,.cx-band,.cx-bay{--cxbar:calc(54px + 3.55rem)}/* ── masthead ─────────────────────────────────────────────────────────────── */
+
+
+.cx-head{padding:clamp(2.2rem,6vw,3.6rem) 0 1.7rem;max-width:44ch}
+.cx-kick{display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:.66rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--sig);margin:0 0 .9rem}
+.cx-kick::after{content:"";flex:1;height:1px;background:var(--sig-line)}
+.cx-head h1{font-family:var(--display);font-size:clamp(2.3rem,6.5vw,3.5rem);line-height:.98;
+  letter-spacing:-.035em;font-weight:680;margin:0 0 .55rem}
+.cx-head p{margin:0;color:var(--ink2);font-size:1.02rem;line-height:1.5}/* ── THE COMPOSER — the page's one bold element ─────────────────────────────
+   Docked flush under the bar rather than floating a gap below it, so the chrome
+   reads as one block instead of two things that happen to be sticky. It spans the
+   whole column, above BOTH the picker and the bays, because it is the page's
+   instrument and not a feature of the right-hand column. */
+
+
+.cx-comp{position:sticky;top:54px;z-index:20;display:flex;align-items:center;gap:.9rem;
+  padding:.62rem .5rem .62rem .95rem;margin:0 0 1.5rem;border-radius:9px;
+  background:var(--raised);border:1px solid var(--sig-line);
+  box-shadow:0 1px 0 var(--sig-soft) inset,0 14px 26px -20px rgba(0,0,0,.75)}
+.cx-line{font-family:var(--mono);font-size:1.02rem;line-height:1.5;min-width:0;flex:1;
+  letter-spacing:-.01em;overflow-wrap:anywhere}
+.cx-c{color:var(--ink);font-weight:680}
+.cx-hold{color:var(--ink3);font-weight:400;margin-left:.45rem}/* A caret, because the thing this element imitates has one. Hidden the moment a
+   command is adopted — a caret after a finished line would claim it is still being
+   typed. */
+
+.cx-line::after{content:"";display:inline-block;width:.5em;height:1.05em;margin-left:.15em;
+  vertical-align:-.18em;background:var(--sig);opacity:.55;animation:cxBlink 1.15s steps(1,end) infinite}
+.cx-comp[data-built="1"] .cx-line::after{display:none}
+@keyframes cxBlink{0%,49%{opacity:.55}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cx-line::after{animation:none;opacity:.4}}
+.cx-o{color:var(--sig)}
+.cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
+.cx-copy{font:inherit;font-size:.74rem;font-weight:650;cursor:pointer;flex:none;padding:.5rem .85rem;
+  letter-spacing:.02em;border:1px solid var(--sig-line);border-radius:6px;background:var(--sig-soft);color:var(--sig)}@media (hover:hover) and (pointer:fine){
+.cx-copy:hover{background:var(--sig);border-color:var(--sig);color:var(--raised)}}
+.cx-copy[disabled]{opacity:.4;cursor:default;background:var(--sunk);border-color:var(--rule);color:var(--ink3)}@media (hover:hover) and (pointer:fine){
+.cx-copy[disabled]:hover{background:var(--sunk);border-color:var(--rule);color:var(--ink3)}}
+.cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
+
+.cx-body{display:grid;grid-template-columns:minmax(232px,278px) 1fr;gap:clamp(1.2rem,2.6vw,2.4rem);align-items:start}/* ── the picker ─────────────────────────────────────────────────────────────
    Rich rows: the command AND what it is for. A bare list of names is an index,
    not a picker, and an index makes a reader open things to find out what they
    are. It jumps within the document rather than driving a detail pane, so deep
    links, printing and the no-JS case all keep working. */
 
 
-.cx-pick{position:sticky;top:1rem;display:flex;flex-direction:column;max-height:calc(100vh - 2rem);
-  background:var(--raised);border:1px solid var(--rule);border-radius:8px;overflow:hidden;min-width:0}
-.cx-find{display:flex;align-items:center;gap:.5rem;padding:.65rem .75rem;border-bottom:1px solid var(--rule2);background:var(--sunk)}
-.cx-find .cx-sl{font-family:var(--mono);font-size:.9rem;color:var(--sig);line-height:1}
-.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.84rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
+.cx-pick{position:sticky;top:calc(var(--cxbar) + 1.5rem);display:flex;flex-direction:column;
+  max-height:calc(100vh - var(--cxbar) - 2.5rem);
+  background:var(--raised);border:1px solid var(--rule);border-radius:9px;overflow:hidden;min-width:0}
+.cx-find{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid var(--rule2);background:var(--sunk)}
+.cx-find:focus-within{border-bottom-color:var(--sig-line);box-shadow:inset 0 -1px 0 var(--sig-line)}
+.cx-find .cx-sl{font-family:var(--mono);font-size:.95rem;color:var(--sig);line-height:1}
+.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.85rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
 .cx-find input:focus{outline:0}
 .cx-find input::placeholder{color:var(--ink3)}
 .cx-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-.cx-tally{font-size:.68rem;color:var(--ink3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cx-tally{font-size:.67rem;color:var(--ink3);white-space:nowrap;font-variant-numeric:tabular-nums;
+  font-family:var(--mono);letter-spacing:.04em}
 
-.cx-list{overflow-y:auto;padding:.3rem 0;min-height:0}
-.cx-grp{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);padding:.75rem .8rem .25rem;margin:0}
+.cx-list{overflow-y:auto;padding:.35rem 0 .5rem;min-height:0}
+.cx-grp{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.57rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--sig);padding:.9rem .85rem .3rem;margin:0}
+.cx-grp::after{content:"";flex:1;height:1px;background:var(--rule2)}
 .cx-grp[hidden]{display:none}
-.cx-row{display:block;padding:.4rem .8rem;text-decoration:none;border-left:3px solid transparent}
+.cx-row{display:block;padding:.42rem .85rem;text-decoration:none;border-left:3px solid transparent}
 .cx-row[hidden]{display:none}
-.cx-row .cx-n{display:block;font-family:var(--mono);font-size:.83rem;color:var(--ink);line-height:1.35}
-.cx-row .cx-d{display:block;font-size:.75rem;color:var(--ink3);line-height:1.3}@media (hover:hover) and (pointer:fine){
+.cx-row .cx-n{display:block;font-family:var(--mono);font-size:.83rem;color:var(--ink);line-height:1.4}
+.cx-row .cx-d{display:block;font-size:.75rem;color:var(--ink3);line-height:1.32}@media (hover:hover) and (pointer:fine){
 .cx-row:hover{background:var(--sig-soft)}}@media (hover:hover) and (pointer:fine){
 .cx-row:hover .cx-n{color:var(--sig)}}
 .cx-row[aria-current="true"]{background:var(--sig-soft);border-left-color:var(--sig)}
 .cx-row[aria-current="true"] .cx-n{color:var(--sig);font-weight:650}
-.cx-row[aria-current="true"] .cx-d{color:var(--ink2)}
+.cx-row[aria-current="true"] .cx-d{color:var(--ink2)}/* ⚠️ ORDER IS LOAD-BEARING: the @media rule that SHOWS this is (0,1,0), exactly as
+   specific as this one, so it can only win by coming later in the source. This
+   declaration used to sit after it and silently suppressed the button at every width
+   — with setOpen() collapsing the picker below 880px, that made the command list
+   unreachable on a phone. Never move this below the media block. */
+
+
+.cx-fold{display:none}
 
 .cx-nohit{padding:.85rem .8rem;font-size:.8rem;color:var(--ink2)}
 .cx-nohit[hidden]{display:none}
 .cx-nohit b{display:block;color:var(--ink);font-size:.82rem;margin-bottom:.45rem}
 .cx-sug{display:flex;flex-wrap:wrap;gap:.35rem}
 .cx-sug button{font:inherit;font-family:var(--mono);font-size:.76rem;cursor:pointer;padding:.3rem .5rem;
-  border:1px solid var(--sig-line);border-radius:5px;background:var(--sig-soft);color:var(--sig)}/* ── THE COMPOSER — the page's one bold element ───────────────────────────── */
+  border:1px solid var(--sig-line);border-radius:5px;background:var(--sig-soft);color:var(--sig)}/* ── bays ───────────────────────────────────────────────────────────────────
+   Two zones, and the split is the whole point: .cx-top says what the command IS
+   in prose, .cx-opts says what it TAKES as data. One card with fourteen identical
+   siblings is a list of boxes; a card that visibly changes material halfway down
+   tells a reader where to stop reading and start scanning. */
 
 
 .cx-doc{min-width:0}
-.cx-comp{position:sticky;top:1rem;z-index:6;display:flex;align-items:center;gap:.75rem;
-  padding:.7rem .85rem;margin-bottom:1rem;border-radius:8px;
-  background:var(--raised);border:1px solid var(--sig-line);
-  box-shadow:0 6px 18px -12px rgba(0,0,0,.5)}
-.cx-line{font-family:var(--mono);font-size:.95rem;line-height:1.45;min-width:0;flex:1}
-.cx-c{color:var(--ink);font-weight:650}
-.cx-hold{color:var(--ink3);font-weight:400;margin-left:.4rem}
-.cx-copy[disabled]{opacity:.45;cursor:default}@media (hover:hover) and (pointer:fine){
-.cx-copy[disabled]:hover{border-color:var(--rule);color:var(--ink2)}}
-.cx-o{color:var(--sig)}
-.cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
-.cx-copy{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;flex:none;padding:.42rem .7rem;
-  border:1px solid var(--rule);border-radius:5px;background:var(--sunk);color:var(--ink2)}@media (hover:hover) and (pointer:fine){
-.cx-copy:hover{border-color:var(--sig);color:var(--sig)}}
-.cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}/* ── bays ──────────────────────────────────────────────────────────────────── */
-
-
-.cx-band{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:1.8rem 0 .7rem;scroll-margin-top:5.5rem}
+.cx-band{display:flex;align-items:center;gap:.7rem;font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--sig);margin:2.4rem 0 .85rem;
+  scroll-margin-top:calc(var(--cxbar) + 1rem)}
+.cx-band::after{content:"";flex:1;height:1px;background:var(--sig-line)}
 .cx-band:first-of-type{margin-top:0}
 .cx-band[hidden]{display:none}
-.cx-bay{border:1px solid var(--rule);border-radius:8px;background:var(--raised);margin-bottom:.7rem;scroll-margin-top:5.5rem}
+.cx-bay{border:1px solid var(--rule);border-radius:9px;background:var(--raised);overflow:hidden;
+  margin-bottom:.85rem;scroll-margin-top:calc(var(--cxbar) + 1rem)}
 .cx-bay[hidden]{display:none}
-.cx-bay > h2{font-family:var(--mono);font-size:.95rem;font-weight:650;margin:0;padding:.8rem .9rem .1rem;color:var(--ink)}
-.cx-why{margin:0;padding:.25rem .9rem .1rem;color:var(--ink2);font-size:.92rem;max-width:62ch}
+.cx-top{padding:.9rem 1rem .85rem}
+.cx-bay h2{font-family:var(--mono);font-size:1.02rem;font-weight:650;margin:0;color:var(--ink);letter-spacing:-.015em}/* Mono is reserved for things you type. A guide is a thing you understand, so it
+   takes the display face — otherwise a concept and a command read as the same kind
+   of object and the reader has to work out which is which. */
 
-.cx-opts{padding:.55rem .9rem .8rem;display:grid;gap:0}
-.cx-opt{display:grid;grid-template-columns:minmax(92px,auto) 1fr;gap:.2rem .9rem;align-items:baseline;padding:.42rem 0}
+.cx-bay[data-guide] h2{font-family:var(--display);font-size:1.12rem;font-weight:650;letter-spacing:-.02em}
+.cx-sl2{color:var(--sig)}
+.cx-why{margin:.22rem 0 0;color:var(--ink2);font-size:.93rem;line-height:1.45;max-width:60ch}/* The continuous hairline down the option block is the grid made visible: every
+   option name stops at the same x, so a reader scanning for one runs their eye
+   down a rule rather than a ragged edge. Drawn on the container, not per row —
+   a per-row border breaks at every gap. */
+
+
+.cx-opts{position:relative;padding:.55rem 1rem .75rem;display:grid;gap:0;
+  background:var(--sunk);border-top:1px solid var(--rule2)}
+.cx-opts::before{content:"";position:absolute;left:calc(1rem + 148px);top:.55rem;bottom:.75rem;
+  width:1px;background:var(--rule2)}
+.cx-opts:empty{display:none}
+.cx-opt{display:grid;grid-template-columns:148px 1fr;gap:.2rem 1.1rem;align-items:baseline;padding:.44rem 0}
 .cx-opt + .cx-opt{border-top:1px solid var(--rule2)}
-.cx-on{font-family:var(--mono);font-size:.81rem;color:var(--sig);display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap}
-.cx-req{font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+.cx-on{font-family:var(--mono);font-size:.81rem;color:var(--sig);display:flex;align-items:baseline;
+  gap:.4rem;flex-wrap:wrap;text-decoration:none}
+a.cx-on{color:var(--ink3)}@media (hover:hover) and (pointer:fine){
+a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3px}}
+.cx-req{font-size:.57rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
   color:var(--raised);background:var(--sig);padding:.1rem .32rem;border-radius:3px}
 .cx-takes{font-size:.86rem;color:var(--ink2);min-width:0;overflow-wrap:anywhere}
-.cx-eg{display:block;font-family:var(--mono);font-size:.78rem;color:var(--ink3);margin-top:.15rem}/* Choices are VISIBLE. Only the overflow hides, and it says how much.
+.cx-eg{display:block;font-family:var(--mono);font-size:.77rem;color:var(--ink3);margin-top:.2rem}/* The one option every command carries. Dimmed to the weight of a footnote so the
+   options that actually differ between commands are the ones that read first. */
+
+.cx-bare{grid-column:1/-1;margin:0 0 .1rem;font-size:.86rem;color:var(--ink2)}
+.cx-sh{opacity:.72}@media (hover:hover) and (pointer:fine){
+.cx-sh:hover{opacity:1}}/* Choices are VISIBLE. Only the overflow hides, and it says how much.
    Harkirat, 2026-08-17 19:57 EDT: burying the timezone list behind a first click is the
    opposite of helping — the reader came here to see what the values ARE. */
 
 
-.cx-pills{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin-top:.15rem}
-.cx-pill{font:inherit;font-family:var(--mono);font-size:.74rem;cursor:pointer;padding:.26rem .5rem;
-  border:1px solid var(--rule);border-radius:5px;background:var(--sunk);color:var(--ink2);line-height:1.35}@media (hover:hover) and (pointer:fine){
+.cx-pills{display:flex;flex-wrap:wrap;gap:.32rem;align-items:center;margin-top:.2rem}
+.cx-takes:not(:empty) > .cx-pills{margin-top:.28rem}
+.cx-pill{font:inherit;font-family:var(--mono);font-size:.74rem;cursor:pointer;padding:.28rem .52rem;
+  border:1px solid var(--rule);border-radius:5px;background:var(--raised);color:var(--ink2);line-height:1.35}@media (hover:hover) and (pointer:fine){
 .cx-pill:hover{border-color:var(--sig);color:var(--sig)}}
 .cx-pill[aria-pressed="true"]{background:var(--sig);border-color:var(--sig);color:var(--raised);font-weight:600}
 .cx-pill[hidden]{display:none}/* A choice that carries a hint becomes a two-line pill: the name it is actually called,
@@ -1799,16 +1886,17 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .cx-hint{font-size:.68rem;color:var(--ink3);font-weight:400}
 .cx-pill2[aria-pressed="true"] .cx-hint{color:var(--raised);opacity:.85}
 .cx-more{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;color:var(--sig);background:none;
-  border:0;padding:.26rem .3rem;text-decoration:underline;text-underline-offset:3px}/* ── guides: a comparison, never a paragraph ──────────────────────────────── */
+  border:0;padding:.28rem .3rem;text-decoration:underline;text-underline-offset:3px}/* ── guides: a comparison, never a paragraph ──────────────────────────────── */
 
 
-.cx-two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:.5rem .9rem .3rem}
-.cx-card{border:1px solid var(--rule);border-radius:6px;padding:.6rem .7rem}
-.cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.15rem}
-.cx-card span{font-size:.85rem;color:var(--ink2)}
-.cx-note{margin:0;padding:.3rem .9rem .85rem;font-size:.8rem;color:var(--ink3);max-width:70ch}
+.cx-two{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;padding:0 1rem .2rem}
+.cx-card{border:1px solid var(--rule);border-left:2px solid var(--sig-line);border-radius:6px;padding:.65rem .75rem;background:var(--sunk)}
+.cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.2rem}
+.cx-card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
+.cx-note{margin:0;padding:.65rem 1rem .95rem;font-size:.81rem;color:var(--ink3);max-width:70ch;line-height:1.5}
 
 @media (max-width:880px){
+  .cx-doc,.cx-pick,.cx-band,.cx-bay{--cxbar:calc(54px + 3.3rem)}
   .cx-body{grid-template-columns:1fr}
   .cx-pick{position:static;max-height:none;margin-bottom:1rem}
   .cx-list{max-height:min(44vh,340px)}
@@ -1819,20 +1907,26 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .cx-pick[data-open="0"] .cx-list{display:none}
   .cx-two{grid-template-columns:1fr}
   .cx-opt{grid-template-columns:1fr;gap:.1rem}
-  .cx-comp{top:.5rem}
-  .cx-band,.cx-bay{scroll-margin-top:4.5rem}
-}
-.cx-fold{display:none}/* WCAG 2.5.5: a coarse pointer gets real targets. These controls are functional
+  .cx-opts::before{display:none}
+  .cx-head{padding-top:1.8rem}
+  .cx-line{font-size:.95rem}
+}/* WCAG 2.5.5: a coarse pointer gets real targets. These controls are functional
    — a pill rewrites the Composer — so an undersized one is a broken control,
    not a cramped one. */
 
 
 @media (pointer:coarse){
   .cx-pill{padding:.46rem .62rem}
-  .cx-copy{padding:.6rem .8rem}
-  .cx-row{padding:.6rem .8rem}
-  .cx-more{padding:.46rem .35rem}
-  .cx-find input{padding:.35rem 0}
+  .cx-copy{padding:.6rem .85rem}
+  .cx-row{padding:.6rem .85rem}
+  .cx-more{padding:.52rem .4rem}/* Measured on a 390px touch viewport: these two came out at 31px and 27px, just
+     under the 32px minimum, and "nearly" is not a size an AA check accepts. */
+  
+  .cx-find input{padding:.55rem 0}/* The shared option's name is a real link (it jumps to the guide), so it is a real
+     target. Padded with a matching negative margin so the hit area reaches 32px
+     without moving anything around it. */
+  
+  a.cx-on{display:inline-flex;padding:.56rem 0;margin:-.56rem 0}
 }
 @media (prefers-reduced-motion:reduce){.cx-v{transition:none}}
 </style>
@@ -1888,7 +1982,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
 </filter></svg>
-<header class="bar">
+<!-- ⚠️ THE EXACT SHAPE shell() USES, and the three ways this page deviated from it
+     are what "the whole page is misaligned" was. (1) The four controls belong in a
+     <nav>: .bar nav margin-left:auto is what pushes them to the right edge, and
+     as direct children of .bar they crammed left and wrapped to a second row.
+     (2) The content belongs in .page, the shared column — not a private wrapper at
+     a different max-width with no top padding for the fixed bar. (3) The footer is
+     the LAST CHILD of .page: outside it, it stretches to the full viewport instead
+     of the document column. Do not flatten any of these back out. -->
+<div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
       <img class="wm" src="assets/dioreo-wordmark.webp" width="600" height="279" alt="Dioreo">
@@ -1896,7 +1998,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
-  <div class="navwrap" data-fit="7"><div class="seg" data-at="0" data-label="Using it">
+  <nav><div class="navwrap" data-fit="7"><div class="seg" data-at="0" data-label="Using it">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./commands.html">Using it</a>
       <a class="tab on" href="./commands.html" data-accent="#1E6B1F" aria-current="page">Commands</a>
@@ -1908,13 +2010,11 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
-    </div></div>
-  <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
+    </div></div><a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
-</a>
-  <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+</a><a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
   aria-label="Install Dioreo on Discord">
@@ -1922,8 +2022,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
-</a>
-  <button id="th" class="thm " role="switch"
+</a><button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
@@ -1966,8 +2065,8 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
       </svg>
     </span>
   </span>
-</button>
-</header>
+</button></nav>
+</div>
 <aside class="mnav" id="mnav">
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
@@ -1975,13 +2074,26 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
       <a class="mtab on" href="./commands.html" aria-current="page" style="--row:#1E6B1F">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
     </nav>
   </div>
-  
+  <details class="msecd">
+    <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
+    <div class="mp-list msec"><a href="#g-start" class="slot"><i>—</i><span>Start here</span></a><a href="#g-gunsmiths" class="slot"><i>—</i><span>Gunsmiths</span></a><a href="#g-draws" class="slot"><i>—</i><span>Draws</span></a><a href="#g-seasonal" class="slot"><i>—</i><span>Seasonal</span></a><a href="#g-utilities" class="slot"><i>—</i><span>Utilities</span></a><a href="#g-preferences" class="slot"><i>—</i><span>Preferences</span></a></div>
+  </details>
 </aside>
-<main class="cx-wrap" id="main" tabindex="-1">
+<div class="page cx-floor">
+<main id="main" tabindex="-1">
   <div class="cx-head">
-    <p class="cx-kick">Every command</p>
+    <p class="cx-kick">Read straight from the bot</p>
     <h1>Commands</h1>
     <p>Pick a command, see every option it takes, and copy a line that works.</p>
+  </div>
+
+  <!-- The Composer sits ABOVE both columns, not inside the reading one. It is the
+       page's instrument rather than a feature of the bays, and docking it flush under
+       the fixed bar makes the two read as one block of chrome instead of two things
+       that happen to be sticky. -->
+  <div class="cx-comp" id="cx-comp">
+    <span class="cx-line" id="cx-line"><span class="cx-c">/</span></span>
+    <button class="cx-copy" id="cx-copy" type="button">Copy</button>
   </div>
 
   <div class="cx-body">
@@ -2001,19 +2113,28 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     </nav>
 
     <div class="cx-doc">
-      <div class="cx-comp">
-        <span class="cx-line" id="cx-line"><span class="cx-c">/</span></span>
-        <button class="cx-copy" id="cx-copy" type="button">Copy</button>
-      </div>
-      <p class="cx-band" data-group="start">Start here</p><article class="cx-bay" id="guide-visibility" data-group="start" data-guide="1" data-find="Who sees your answer Hidden or Public"><h2>Who sees your answer</h2><div class="cx-two"><div class="cx-card"><b>Hidden</b><span>Only you see the reply.</span></div><div class="cx-card"><b>Public</b><span>Everyone in the channel sees it.</span></div></div><p class="cx-note">Most commands are Public unless you say otherwise. A server admin can require that Dioreo stays hidden in their server.</p></article><article class="cx-bay" id="guide-install" data-group="start" data-guide="1" data-find="Where you can use it Your account or a server"><h2>Where you can use it</h2><div class="cx-two"><div class="cx-card"><b>On your account</b><span>Works in any server, DM or group chat — even where Dioreo is not a member.</span></div><div class="cx-card"><b>On a server</b><span>Everyone there can use it without installing anything.</span></div></div><p class="cx-note">Both work, and you can do both. Adding it to your account is the one that follows you around.</p></article><article class="cx-bay" id="help" data-group="start" data-cmd="/help" data-find="/help The same directory as this page, inside Discord. cmd  visibility Hidden Public"><h2>/help</h2><p class="cx-why">The same directory as this page, inside Discord.</p><div class="cx-opts"><div class="cx-opt" data-opt="cmd"><span class="cx-on">cmd</span><span class="cx-takes">Jump straight to one command &middot; type to search</span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="invite" data-group="start" data-cmd="/invite" data-find="/invite Add Dioreo to a server, or to your own account. visibility Hidden Public"><h2>/invite</h2><p class="cx-why">Add Dioreo to a server, or to your own account.</p><div class="cx-opts"><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" data-group="gunsmiths">Gunsmiths</p><article class="cx-bay" id="gunsmiths-search" data-group="gunsmiths" data-cmd="/gunsmiths search" data-find="/gunsmiths search Find one MP weapon&#39;s loadout. weapon  build  visibility Hidden Public"><h2>/gunsmiths search</h2><p class="cx-why">Find one MP weapon&#39;s loadout.</p><div class="cx-opts"><div class="cx-opt" data-opt="weapon"><span class="cx-on">weapon<span class="cx-req">required</span></span><span class="cx-takes">Any MP weapon &middot; type to search</span></div><div class="cx-opt" data-opt="build"><span class="cx-on">build</span><span class="cx-takes">Pick a build when a weapon has more than one</span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="gunsmiths-list" data-group="gunsmiths" data-cmd="/gunsmiths list" data-find="/gunsmiths list Browse a whole category, the current meta, or every build there is. scope AR LMG MARKSMAN SECONDARIES SHOTGUN SMG SNIPER All MP builds Meta — MP Meta — DMZ DMZ visibility Hidden Public"><h2>/gunsmiths list</h2><p class="cx-why">Browse a whole category, the current meta, or every build there is.</p><div class="cx-opts"><div class="cx-opt" data-opt="scope"><span class="cx-on">scope<span class="cx-req">required</span></span><span class="cx-takes">Which set to browse<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="AR">AR</button><button type="button" class="cx-pill" aria-pressed="false" data-val="LMG">LMG</button><button type="button" class="cx-pill" aria-pressed="false" data-val="MARKSMAN">MARKSMAN</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SECONDARIES">SECONDARIES</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SHOTGUN">SHOTGUN</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SMG">SMG</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SNIPER" hidden>SNIPER</button><button type="button" class="cx-pill" aria-pressed="false" data-val="All MP builds" hidden>All MP builds</button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Meta" hidden>Meta<span class="cx-hint">MP</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Meta" hidden>Meta<span class="cx-hint">DMZ</span></button><button type="button" class="cx-pill" aria-pressed="false" data-val="DMZ" hidden>DMZ</button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 11">Show all 11</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="dmz" data-group="gunsmiths" data-cmd="/dmz" data-find="/dmz DMZ builds, which are a separate set from the MP ones. weapon  build  visibility Hidden Public"><h2>/dmz</h2><p class="cx-why">DMZ builds, which are a separate set from the MP ones.</p><div class="cx-opts"><div class="cx-opt" data-opt="weapon"><span class="cx-on">weapon<span class="cx-req">required</span></span><span class="cx-takes">Any DMZ weapon &middot; type to search</span></div><div class="cx-opt" data-opt="build"><span class="cx-on">build</span><span class="cx-takes">Pick a build when a weapon has more than one</span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" data-group="draws">Draws</p><article class="cx-bay" id="draws" data-group="draws" data-cmd="/draws" data-find="/draws What is in the lucky draws this season. page New Draws Returning Draws visibility Hidden Public"><h2>/draws</h2><p class="cx-why">What is in the lucky draws this season.</p><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Open on one of the two lists<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="New Draws">New Draws</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Returning Draws">Returning Draws</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="draw-prices" data-group="draws" data-cmd="/draw prices" data-find="/draw prices What a draw costs, spin by spin. region 10 CP Region 20 CP Region 30 CP Region visibility Hidden Public"><h2>/draw prices</h2><p class="cx-why">What a draw costs, spin by spin.</p><div class="cx-opts"><div class="cx-opt" data-opt="region"><span class="cx-on">region</span><span class="cx-takes">Your region&#39;s pricing<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="10 CP Region">10 CP Region</button><button type="button" class="cx-pill" aria-pressed="false" data-val="20 CP Region">20 CP Region</button><button type="button" class="cx-pill" aria-pressed="false" data-val="30 CP Region">30 CP Region</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="draw-calculator" data-group="draws" data-cmd="/draw calculator" data-find="/draw calculator Work out the cheapest way to buy the CP you are short. visibility Hidden Public"><h2>/draw calculator</h2><p class="cx-why">Work out the cheapest way to buy the CP you are short.</p><div class="cx-opts"><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" data-group="seasonal">Seasonal</p><article class="cx-bay" id="calendar" data-group="seasonal" data-cmd="/calendar" data-find="/calendar This season&#39;s events, draws and playlist rotation, with dates. page Draws Events Playlists &amp; Modes view All Events Active/Upcoming Only visibility Hidden Public"><h2>/calendar</h2><p class="cx-why">This season&#39;s events, draws and playlist rotation, with dates.</p><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Open on one section<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Draws">Draws</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Events">Events</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Playlists &amp; Modes">Playlists &amp; Modes</button></span></span></div><div class="cx-opt" data-opt="view"><span class="cx-on">view</span><span class="cx-takes">Everything, or only what is still ahead<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="All Events">All Events</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Active/Upcoming Only">Active/Upcoming Only</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="patch-notes" data-group="seasonal" data-cmd="/patch notes" data-find="/patch notes Weapon balance changes — what was buffed, what was nerfed. season  visibility Hidden Public"><h2>/patch notes</h2><p class="cx-why">Weapon balance changes — what was buffed, what was nerfed.</p><div class="cx-opts"><div class="cx-opt" data-opt="season"><span class="cx-on">season</span><span class="cx-takes">Look up an earlier season &middot; type to search</span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="season-end" data-group="seasonal" data-cmd="/season end" data-find="/season end A live countdown to the end of the season. visibility Hidden Public"><h2>/season end</h2><p class="cx-why">A live countdown to the end of the season.</p><div class="cx-opts"><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" data-group="utilities">Utilities</p><article class="cx-bay" id="colors" data-group="utilities" data-cmd="/colors" data-find="/colors Pull the colours out of your own Discord profile as hex values. page Avatar Banner Name Nameplate Deco source From Main Profile From Server Profile visibility Hidden Public"><h2>/colors</h2><p class="cx-why">Pull the colours out of your own Discord profile as hex values.</p><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Which part of your profile to read<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Avatar">Avatar</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Banner">Banner</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Name">Name</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Nameplate">Nameplate</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Deco">Deco</button></span></span></div><div class="cx-opt" data-opt="source"><span class="cx-on">source</span><span class="cx-takes">Your main profile, or your profile for this server<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="From Main Profile">From Main Profile</button><button type="button" class="cx-pill" aria-pressed="false" data-val="From Server Profile">From Server Profile</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="timestamp" data-group="utilities" data-cmd="/timestamp" data-find="/timestamp Turn a time into one that shows in every reader&#39;s own timezone. datetime  timezone (UTC-04:00) Eastern (Toronto/NY) (EDT) (UTC-05:00) Central (Winnipeg/Chicago) (CDT) (UTC-06:00) Mountain (Edmonton/Denver) (MDT) (UTC-07:00) Pacific (Vancouver/LA) (PDT) (UTC-10:00) Hawaii Standard Time (HST) (UTC+00:00) Coordinated Universal Time (UTC 0) (UTC) (UTC+01:00) United Kingdom (London) (GMT+1) (UTC+02:00) Central Europe (Paris/Berlin) (GMT+2) (UTC+02:00) Sweden (Stockholm) (GMT+2) (UTC+05:30) India Standard Time (Delhi) (GMT+5:30) (UTC+08:00) Singapore Standard Time (GMT+8) (UTC+08:00) Hong Kong Time (GMT+8) (UTC+08:00) Mainland China (Beijing) (GMT+8) (UTC+09:00) Japan Standard Time (Tokyo) (GMT+9) (UTC+10:00) Eastern Australia (Sydney) (GMT+10) style Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20 Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20 Long Date (D) — e.g., April 20, 2021 Short Date (d) — e.g., 20/04/2021 Medium Time (T) — e.g., 16:20:30 Short Time (t) — e.g., 16:20 Short Date, Short Time (s) — e.g., 20/04/2021, 16:20 Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30 Relative Time (R) — e.g., 4 years ago visibility Hidden Public view Embed (Styled Panel) Text (Plain, Copyable)"><h2>/timestamp</h2><p class="cx-why">Turn a time into one that shows in every reader&#39;s own timezone.</p><div class="cx-opts"><div class="cx-opt" data-opt="datetime"><span class="cx-on">datetime<span class="cx-req">required</span></span><span class="cx-takes">Plain English, or a clock time<span class="cx-eg">&quot;tomorrow&quot;  &quot;sun 4:30pm&quot;  &quot;19:30&quot;</span></span></div><div class="cx-opt" data-opt="timezone"><span class="cx-on">timezone</span><span class="cx-takes">Yours, if it is not your default<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-04:00) Eastern (Toronto/NY) (EDT)">(UTC-04:00) Eastern (Toronto/NY) (EDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-05:00) Central (Winnipeg/Chicago) (CDT)">(UTC-05:00) Central (Winnipeg/Chicago) (CDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-06:00) Mountain (Edmonton/Denver) (MDT)">(UTC-06:00) Mountain (Edmonton/Denver) (MDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-07:00) Pacific (Vancouver/LA) (PDT)">(UTC-07:00) Pacific (Vancouver/LA) (PDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-10:00) Hawaii Standard Time (HST)">(UTC-10:00) Hawaii Standard Time (HST)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+00:00) Coordinated Universal Time (UTC 0) (UTC)">(UTC+00:00) Coordinated Universal Time (UTC 0) (UTC)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+01:00) United Kingdom (London) (GMT+1)" hidden>(UTC+01:00) United Kingdom (London) (GMT+1)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+02:00) Central Europe (Paris/Berlin) (GMT+2)" hidden>(UTC+02:00) Central Europe (Paris/Berlin) (GMT+2)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+02:00) Sweden (Stockholm) (GMT+2)" hidden>(UTC+02:00) Sweden (Stockholm) (GMT+2)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+05:30) India Standard Time (Delhi) (GMT+5:30)" hidden>(UTC+05:30) India Standard Time (Delhi) (GMT+5:30)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Singapore Standard Time (GMT+8)" hidden>(UTC+08:00) Singapore Standard Time (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Hong Kong Time (GMT+8)" hidden>(UTC+08:00) Hong Kong Time (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Mainland China (Beijing) (GMT+8)" hidden>(UTC+08:00) Mainland China (Beijing) (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+09:00) Japan Standard Time (Tokyo) (GMT+9)" hidden>(UTC+09:00) Japan Standard Time (Tokyo) (GMT+9)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+10:00) Eastern Australia (Sydney) (GMT+10)" hidden>(UTC+10:00) Eastern Australia (Sydney) (GMT+10)</button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 15">Show all 15</button></span></span></div><div class="cx-opt" data-opt="style"><span class="cx-on">style</span><span class="cx-takes">One format, or leave blank for all nine<span class="cx-pills"><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Full Date, Short Time (F)">Full Date, Short Time (F)<span class="cx-hint">e.g., Tuesday, April 20, 2021 at 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Long Date, Short Time (f)">Long Date, Short Time (f)<span class="cx-hint">e.g., April 20, 2021 at 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Long Date (D)">Long Date (D)<span class="cx-hint">e.g., April 20, 2021</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date (d)">Short Date (d)<span class="cx-hint">e.g., 20/04/2021</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Medium Time (T)">Medium Time (T)<span class="cx-hint">e.g., 16:20:30</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Time (t)">Short Time (t)<span class="cx-hint">e.g., 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date, Short Time (s)" hidden>Short Date, Short Time (s)<span class="cx-hint">e.g., 20/04/2021, 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date, Medium Time (S)" hidden>Short Date, Medium Time (S)<span class="cx-hint">e.g., 20/04/2021, 16:20:30</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Relative Time (R)" hidden>Relative Time (R)<span class="cx-hint">e.g., 4 years ago</span></button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 9">Show all 9</button></span></span></div><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div><div class="cx-opt" data-opt="view"><span class="cx-on">view</span><span class="cx-takes">A styled panel, or plain copyable text<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Embed (Styled Panel)">Embed (Styled Panel)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Text (Plain, Copyable)">Text (Plain, Copyable)</button></span></span></div></div></article><p class="cx-band" data-group="preferences">Preferences</p><article class="cx-bay" id="settings" data-group="preferences" data-cmd="/settings" data-find="/settings Your saved preferences — timezone, region, and how Dioreo answers you. visibility Hidden Public"><h2>/settings</h2><p class="cx-why">Your saved preferences — timezone, region, and how Dioreo answers you.</p><div class="cx-opts"><div class="cx-opt" data-opt="visibility"><span class="cx-on">visibility</span><span class="cx-takes">Who sees the answer<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article>
+      <p class="cx-band" id="g-start" data-group="start">Start here</p><article class="cx-bay" id="guide-visibility" data-group="start" data-guide="1" data-find="Who sees your answer Hidden or Public"><div class="cx-top"><h2>Who sees your answer</h2></div><div class="cx-two"><div class="cx-card"><b>Hidden</b><span>Only you see the reply.</span></div><div class="cx-card"><b>Public</b><span>Everyone in the channel sees it.</span></div></div><p class="cx-note">Most commands are Public unless you say otherwise. A server admin can require that Dioreo stays hidden in their server.</p></article><article class="cx-bay" id="guide-install" data-group="start" data-guide="1" data-find="Where you can use it Your account or a server"><div class="cx-top"><h2>Where you can use it</h2></div><div class="cx-two"><div class="cx-card"><b>On your account</b><span>Works in any server, DM or group chat — even where Dioreo is not a member.</span></div><div class="cx-card"><b>On a server</b><span>Everyone there can use it without installing anything.</span></div></div><p class="cx-note">Both work, and you can do both. Adding it to your account is the one that follows you around.</p></article><article class="cx-bay" id="help" data-group="start" data-cmd="/help" data-find="/help The same directory as this page, inside Discord. cmd  visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>help</h2><p class="cx-why">The same directory as this page, inside Discord.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="cmd"><span class="cx-on">cmd</span><span class="cx-takes">Jump straight to one command &middot; type to search</span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="invite" data-group="start" data-cmd="/invite" data-find="/invite Add Dioreo to a server, or to your own account. visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>invite</h2><p class="cx-why">Add Dioreo to a server, or to your own account.</p></div><div class="cx-opts"><p class="cx-bare">Takes nothing else — just run it.</p><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" id="g-gunsmiths" data-group="gunsmiths">Gunsmiths</p><article class="cx-bay" id="gunsmiths-search" data-group="gunsmiths" data-cmd="/gunsmiths search" data-find="/gunsmiths search Find one MP weapon&#39;s loadout. weapon  build  visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>gunsmiths search</h2><p class="cx-why">Find one MP weapon&#39;s loadout.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="weapon"><span class="cx-on">weapon<span class="cx-req">required</span></span><span class="cx-takes">Any MP weapon &middot; type to search</span></div><div class="cx-opt" data-opt="build"><span class="cx-on">build</span><span class="cx-takes">Pick a build when a weapon has more than one</span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="gunsmiths-list" data-group="gunsmiths" data-cmd="/gunsmiths list" data-find="/gunsmiths list Browse a whole category, the current meta, or every build there is. scope AR LMG MARKSMAN SECONDARIES SHOTGUN SMG SNIPER All MP builds Meta — MP Meta — DMZ DMZ visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>gunsmiths list</h2><p class="cx-why">Browse a whole category, the current meta, or every build there is.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="scope"><span class="cx-on">scope<span class="cx-req">required</span></span><span class="cx-takes">Which set to browse<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="AR">AR</button><button type="button" class="cx-pill" aria-pressed="false" data-val="LMG">LMG</button><button type="button" class="cx-pill" aria-pressed="false" data-val="MARKSMAN">MARKSMAN</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SECONDARIES">SECONDARIES</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SHOTGUN">SHOTGUN</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SMG">SMG</button><button type="button" class="cx-pill" aria-pressed="false" data-val="SNIPER" hidden>SNIPER</button><button type="button" class="cx-pill" aria-pressed="false" data-val="All MP builds" hidden>All MP builds</button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Meta" hidden>Meta<span class="cx-hint">MP</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Meta" hidden>Meta<span class="cx-hint">DMZ</span></button><button type="button" class="cx-pill" aria-pressed="false" data-val="DMZ" hidden>DMZ</button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 11">Show all 11</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="dmz" data-group="gunsmiths" data-cmd="/dmz" data-find="/dmz DMZ builds, which are a separate set from the MP ones. weapon  build  visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>dmz</h2><p class="cx-why">DMZ builds, which are a separate set from the MP ones.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="weapon"><span class="cx-on">weapon<span class="cx-req">required</span></span><span class="cx-takes">Any DMZ weapon &middot; type to search</span></div><div class="cx-opt" data-opt="build"><span class="cx-on">build</span><span class="cx-takes">Pick a build when a weapon has more than one</span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" id="g-draws" data-group="draws">Draws</p><article class="cx-bay" id="draws" data-group="draws" data-cmd="/draws" data-find="/draws What is in the lucky draws this season. page New Draws Returning Draws visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>draws</h2><p class="cx-why">What is in the lucky draws this season.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Open on one of the two lists<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="New Draws">New Draws</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Returning Draws">Returning Draws</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="draw-prices" data-group="draws" data-cmd="/draw prices" data-find="/draw prices What a draw costs, spin by spin. region 10 CP Region 20 CP Region 30 CP Region visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>draw prices</h2><p class="cx-why">What a draw costs, spin by spin.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="region"><span class="cx-on">region</span><span class="cx-takes">Your region&#39;s pricing<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="10 CP Region">10 CP Region</button><button type="button" class="cx-pill" aria-pressed="false" data-val="20 CP Region">20 CP Region</button><button type="button" class="cx-pill" aria-pressed="false" data-val="30 CP Region">30 CP Region</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="draw-calculator" data-group="draws" data-cmd="/draw calculator" data-find="/draw calculator Work out the cheapest way to buy the CP you are short. visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>draw calculator</h2><p class="cx-why">Work out the cheapest way to buy the CP you are short.</p></div><div class="cx-opts"><p class="cx-bare">Takes nothing else — just run it.</p><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" id="g-seasonal" data-group="seasonal">Seasonal</p><article class="cx-bay" id="calendar" data-group="seasonal" data-cmd="/calendar" data-find="/calendar This season&#39;s events, draws and playlist rotation, with dates. page Draws Events Playlists &amp; Modes view All Events Active/Upcoming Only visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>calendar</h2><p class="cx-why">This season&#39;s events, draws and playlist rotation, with dates.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Open on one section<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Draws">Draws</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Events">Events</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Playlists &amp; Modes">Playlists &amp; Modes</button></span></span></div><div class="cx-opt" data-opt="view"><span class="cx-on">view</span><span class="cx-takes">Everything, or only what is still ahead<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="All Events">All Events</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Active/Upcoming Only">Active/Upcoming Only</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="patch-notes" data-group="seasonal" data-cmd="/patch notes" data-find="/patch notes Weapon balance changes — what was buffed, what was nerfed. season  visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>patch notes</h2><p class="cx-why">Weapon balance changes — what was buffed, what was nerfed.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="season"><span class="cx-on">season</span><span class="cx-takes">Look up an earlier season &middot; type to search</span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="season-end" data-group="seasonal" data-cmd="/season end" data-find="/season end A live countdown to the end of the season. visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>season end</h2><p class="cx-why">A live countdown to the end of the season.</p></div><div class="cx-opts"><p class="cx-bare">Takes nothing else — just run it.</p><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" id="g-utilities" data-group="utilities">Utilities</p><article class="cx-bay" id="colors" data-group="utilities" data-cmd="/colors" data-find="/colors Pull the colours out of your own Discord profile as hex values. page Avatar Banner Name Nameplate Deco source From Main Profile From Server Profile visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>colors</h2><p class="cx-why">Pull the colours out of your own Discord profile as hex values.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="page"><span class="cx-on">page</span><span class="cx-takes">Which part of your profile to read<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Avatar">Avatar</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Banner">Banner</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Name">Name</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Nameplate">Nameplate</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Deco">Deco</button></span></span></div><div class="cx-opt" data-opt="source"><span class="cx-on">source</span><span class="cx-takes">Your main profile, or your profile for this server<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="From Main Profile">From Main Profile</button><button type="button" class="cx-pill" aria-pressed="false" data-val="From Server Profile">From Server Profile</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><article class="cx-bay" id="timestamp" data-group="utilities" data-cmd="/timestamp" data-find="/timestamp Turn a time into one that shows in every reader&#39;s own timezone. datetime  timezone (UTC-04:00) Eastern (Toronto/NY) (EDT) (UTC-05:00) Central (Winnipeg/Chicago) (CDT) (UTC-06:00) Mountain (Edmonton/Denver) (MDT) (UTC-07:00) Pacific (Vancouver/LA) (PDT) (UTC-10:00) Hawaii Standard Time (HST) (UTC+00:00) Coordinated Universal Time (UTC 0) (UTC) (UTC+01:00) United Kingdom (London) (GMT+1) (UTC+02:00) Central Europe (Paris/Berlin) (GMT+2) (UTC+02:00) Sweden (Stockholm) (GMT+2) (UTC+05:30) India Standard Time (Delhi) (GMT+5:30) (UTC+08:00) Singapore Standard Time (GMT+8) (UTC+08:00) Hong Kong Time (GMT+8) (UTC+08:00) Mainland China (Beijing) (GMT+8) (UTC+09:00) Japan Standard Time (Tokyo) (GMT+9) (UTC+10:00) Eastern Australia (Sydney) (GMT+10) style Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20 Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20 Long Date (D) — e.g., April 20, 2021 Short Date (d) — e.g., 20/04/2021 Medium Time (T) — e.g., 16:20:30 Short Time (t) — e.g., 16:20 Short Date, Short Time (s) — e.g., 20/04/2021, 16:20 Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30 Relative Time (R) — e.g., 4 years ago visibility Hidden Public view Embed (Styled Panel) Text (Plain, Copyable)"><div class="cx-top"><h2><span class="cx-sl2">/</span>timestamp</h2><p class="cx-why">Turn a time into one that shows in every reader&#39;s own timezone.</p></div><div class="cx-opts"><div class="cx-opt" data-opt="datetime"><span class="cx-on">datetime<span class="cx-req">required</span></span><span class="cx-takes">Plain English, or a clock time<span class="cx-eg">&quot;tomorrow&quot;  &quot;sun 4:30pm&quot;  &quot;19:30&quot;</span></span></div><div class="cx-opt" data-opt="timezone"><span class="cx-on">timezone</span><span class="cx-takes">Yours, if it is not your default<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-04:00) Eastern (Toronto/NY) (EDT)">(UTC-04:00) Eastern (Toronto/NY) (EDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-05:00) Central (Winnipeg/Chicago) (CDT)">(UTC-05:00) Central (Winnipeg/Chicago) (CDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-06:00) Mountain (Edmonton/Denver) (MDT)">(UTC-06:00) Mountain (Edmonton/Denver) (MDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-07:00) Pacific (Vancouver/LA) (PDT)">(UTC-07:00) Pacific (Vancouver/LA) (PDT)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC-10:00) Hawaii Standard Time (HST)">(UTC-10:00) Hawaii Standard Time (HST)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+00:00) Coordinated Universal Time (UTC 0) (UTC)">(UTC+00:00) Coordinated Universal Time (UTC 0) (UTC)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+01:00) United Kingdom (London) (GMT+1)" hidden>(UTC+01:00) United Kingdom (London) (GMT+1)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+02:00) Central Europe (Paris/Berlin) (GMT+2)" hidden>(UTC+02:00) Central Europe (Paris/Berlin) (GMT+2)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+02:00) Sweden (Stockholm) (GMT+2)" hidden>(UTC+02:00) Sweden (Stockholm) (GMT+2)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+05:30) India Standard Time (Delhi) (GMT+5:30)" hidden>(UTC+05:30) India Standard Time (Delhi) (GMT+5:30)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Singapore Standard Time (GMT+8)" hidden>(UTC+08:00) Singapore Standard Time (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Hong Kong Time (GMT+8)" hidden>(UTC+08:00) Hong Kong Time (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+08:00) Mainland China (Beijing) (GMT+8)" hidden>(UTC+08:00) Mainland China (Beijing) (GMT+8)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+09:00) Japan Standard Time (Tokyo) (GMT+9)" hidden>(UTC+09:00) Japan Standard Time (Tokyo) (GMT+9)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="(UTC+10:00) Eastern Australia (Sydney) (GMT+10)" hidden>(UTC+10:00) Eastern Australia (Sydney) (GMT+10)</button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 15">Show all 15</button></span></span></div><div class="cx-opt" data-opt="style"><span class="cx-on">style</span><span class="cx-takes">One format, or leave blank for all nine<span class="cx-pills"><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Full Date, Short Time (F)">Full Date, Short Time (F)<span class="cx-hint">e.g., Tuesday, April 20, 2021 at 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Long Date, Short Time (f)">Long Date, Short Time (f)<span class="cx-hint">e.g., April 20, 2021 at 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Long Date (D)">Long Date (D)<span class="cx-hint">e.g., April 20, 2021</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date (d)">Short Date (d)<span class="cx-hint">e.g., 20/04/2021</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Medium Time (T)">Medium Time (T)<span class="cx-hint">e.g., 16:20:30</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Time (t)">Short Time (t)<span class="cx-hint">e.g., 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date, Short Time (s)" hidden>Short Date, Short Time (s)<span class="cx-hint">e.g., 20/04/2021, 16:20</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Short Date, Medium Time (S)" hidden>Short Date, Medium Time (S)<span class="cx-hint">e.g., 20/04/2021, 16:20:30</span></button><button type="button" class="cx-pill cx-pill2" aria-pressed="false" data-val="Relative Time (R)" hidden>Relative Time (R)<span class="cx-hint">e.g., 4 years ago</span></button><button type="button" class="cx-more" data-open="0" data-visible="6" data-label="Show all 9">Show all 9</button></span></span></div><div class="cx-opt" data-opt="view"><span class="cx-on">view</span><span class="cx-takes">A styled panel, or plain copyable text<span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Embed (Styled Panel)">Embed (Styled Panel)</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Text (Plain, Copyable)">Text (Plain, Copyable)</button></span></span></div><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article><p class="cx-band" id="g-preferences" data-group="preferences">Preferences</p><article class="cx-bay" id="settings" data-group="preferences" data-cmd="/settings" data-find="/settings Your saved preferences — timezone, region, and how Dioreo answers you. visibility Hidden Public"><div class="cx-top"><h2><span class="cx-sl2">/</span>settings</h2><p class="cx-why">Your saved preferences — timezone, region, and how Dioreo answers you.</p></div><div class="cx-opts"><p class="cx-bare">Takes nothing else — just run it.</p><div class="cx-opt cx-sh" data-opt="visibility"><a class="cx-on" href="#guide-visibility">visibility</a><span class="cx-takes"><span class="cx-pills"><button type="button" class="cx-pill" aria-pressed="false" data-val="Hidden">Hidden</button><button type="button" class="cx-pill" aria-pressed="false" data-val="Public">Public</button></span></span></div></div></article>
     </div>
   </div>
 </main>
-<footer class="foot">
+  <footer class="foot">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
+</div>
+<!-- Outside .page: a fixed element is trapped by any ancestor with a transform or
+     a filter, and MORPH_JS bails cleanly when #gotop is absent — which is why this
+     page had the back-to-top CSS from COMPONENT_CSS and no button to apply it to.
+     No #prog: a reading-progress bar measures linear progress through a document,
+     and this page is a picker over a reference list, not a read. -->
+<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
+  <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+    <circle class="tt-trk" cx="23" cy="23" r="20"/>
+    <circle class="tt-bar" cx="23" cy="23" r="20"/>
+  </svg>
+  <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
+</button>
 <script>
 (function(){
   var d=document.documentElement, btn=document.getElementById('th');
@@ -4282,12 +4403,50 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     addEventListener('blur',hide);
   })();
 })();</script>
+<script>
+(function(){
+  var tt=document.getElementById('gotop');
+  if(!tt)return;
+  var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
+  /* Cached: getComputedStyle forces a style resolve, and both values change only
+     with the viewport. Re-measured on resize for the same reason. */
+  var base=0, pad=0;
+  function measure(){
+    base=parseFloat(getComputedStyle(tt).bottom)||0;
+    pad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
+  measure();
+  var queued=false;
+  function paint(){
+    queued=false;
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    /* Clamped: iOS rubber-banding reports scrollTop below 0 and past max, and the
+       URL bar showing or hiding moves clientHeight mid-scroll. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
+    if(bar)bar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
+    if(foot){
+      /* Park on the footer's first line of CONTENT, not on its box: the box
+         carries 2.2rem of top padding, and stopping at its edge leaves the button
+         hovering in a gap where nothing needed covering. Read the FOOTER's rect,
+         never the button's — the button's already includes the lift, which would
+         feed back on itself. */
+      var ft=foot.getBoundingClientRect().top+pad;
+      var over=(h.clientHeight-base)-ft+12;
+      tt.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
+    }
+  }
+  function onScroll(){ if(!queued){queued=true;requestAnimationFrame(paint);} }
+  addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',function(){measure();onScroll();},{passive:true});
+  paint();
+})();</script>
 <script>(function(){
   var picker=document.getElementById("cx-pick"); if(!picker) return;
   var q=document.getElementById("cx-q"), tally=document.getElementById("cx-tally");
   var nohit=document.getElementById("cx-nohit"), sug=document.getElementById("cx-sug");
   var list=document.getElementById("cx-list"), fold=document.getElementById("cx-fold");
   var line=document.getElementById("cx-line"), copy=document.getElementById("cx-copy");
+  var comp=document.getElementById("cx-comp");
   var bays=[].slice.call(document.querySelectorAll(".cx-bay"));
   var rows=[].slice.call(document.querySelectorAll(".cx-row"));
   var byId={}; rows.forEach(function(r){ byId[r.getAttribute("href").slice(1)]=r; });
@@ -4315,9 +4474,11 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
       line.appendChild(span("cx-hold","pick a command to build one"));
       copy.disabled=true; copy.textContent="Copy"; copy.removeAttribute("data-done");
       copy.setAttribute("aria-label","Copy the command you build here");
+      if(comp)comp.removeAttribute("data-built");
       return;
     }
     copy.disabled=false;
+    if(comp)comp.setAttribute("data-built","1");
     line.appendChild(span("cx-c",bay.getAttribute("data-cmd")));
     var pick=chosen(bay);
     [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){

@@ -712,10 +712,7 @@ ${WORLD}
 }
 ${C.COMPONENT_CSS}
 
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
-  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
-  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+${C.BAR_CSS}
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--sig)}
 
 ${C.SWITCHER_CSS}

@@ -12,12 +12,12 @@
  * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW. They are template literals, and a backtick — including one inside a comment — ends the string and fails the build with a SyntaxError pointing at prose. Quote with " instead. Same rule the rest of this generator carries, and it has been paid for twice.
  */
 
-const { assertProseCoverage, optionProse, GUIDES, COMMANDS } = require('./commandProse');
+const { assertProseCoverage, optionProse, GUIDES, COMMANDS, SHARED_OPTIONS } = require('./commandProse');
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS',
     'GOO_SVG', 'MORPH_JS', 'wordmark', 'repoBtn', 'installBtn', 'themeBtn', 'navSwitcher',
-    'mobileNav', 'pageFoot',
+    'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS',
 ];
 
 function requireChrome(C) {
@@ -40,44 +40,109 @@ const SIGNAL = { light: '#1E6B1F', dark: '#58D05A' };
 const COMMANDS_CSS = `
 /* Page-scoped. Every selector here is prefixed cx- so nothing can collide with
    the shared COMPONENT_CSS the rest of the site is built from — a type-vs-modifier
-   clash is exactly how an unrelated block once inherited 155px of padding. */
-.cx-wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem) 5rem}
+   clash is exactly how an unrelated block once inherited 155px of padding.
 
-.cx-head{padding:clamp(1.6rem,4vw,2.6rem) 0 1.4rem}
-.cx-kick{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sig);margin:0 0 .5rem}
-.cx-head h1{font-family:var(--display);font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.08;letter-spacing:-.022em;margin:0 0 .4rem}
-.cx-head p{margin:0;color:var(--ink2);max-width:56ch}
+   THE ONE STRUCTURAL IDEA: a slash command is a line you type, so the page is built
+   around a line you type. The Composer is the instrument — full width, docked under
+   the bar, the only element allowed to be loud — and everything else is quiet
+   reference laid out on a strict two-zone grid: what a command IS, then what it
+   TAKES. Identity comes from that grid, not from colour. (The changelog pages
+   learned this the expensive way: three accent colours read as one template in three
+   shades, and what finally separated them was the grid — see
+   project_changelog_redesign.) */
 
-.cx-body{display:grid;grid-template-columns:minmax(240px,290px) 1fr;gap:clamp(1.2rem,2.6vw,2.2rem);align-items:start}
+/* No wrapper of its own. This page sits in the site's .page (CHROME.PAGE_CSS),
+   the same column every other family uses — rolling a private one is what put the
+   content 40px narrower than the chrome above it and started it underneath the
+   fixed bar. Only the floor is local: .page ends at 0 so the last bay would
+   otherwise touch the footer. */
+.cx-floor{padding-bottom:4.5rem}
+
+/* The docked instrument's height, so the picker and every anchor can clear it in
+   one place instead of four hand-tuned numbers that drift apart. */
+.cx-doc,.cx-pick,.cx-band,.cx-bay{--cxbar:calc(54px + 3.55rem)}
+
+/* ── masthead ─────────────────────────────────────────────────────────────── */
+.cx-head{padding:clamp(2.2rem,6vw,3.6rem) 0 1.7rem;max-width:44ch}
+.cx-kick{display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:.66rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--sig);margin:0 0 .9rem}
+.cx-kick::after{content:"";flex:1;height:1px;background:var(--sig-line)}
+.cx-head h1{font-family:var(--display);font-size:clamp(2.3rem,6.5vw,3.5rem);line-height:.98;
+  letter-spacing:-.035em;font-weight:680;margin:0 0 .55rem}
+.cx-head p{margin:0;color:var(--ink2);font-size:1.02rem;line-height:1.5}
+
+/* ── THE COMPOSER — the page's one bold element ─────────────────────────────
+   Docked flush under the bar rather than floating a gap below it, so the chrome
+   reads as one block instead of two things that happen to be sticky. It spans the
+   whole column, above BOTH the picker and the bays, because it is the page's
+   instrument and not a feature of the right-hand column. */
+.cx-comp{position:sticky;top:54px;z-index:20;display:flex;align-items:center;gap:.9rem;
+  padding:.62rem .5rem .62rem .95rem;margin:0 0 1.5rem;border-radius:9px;
+  background:var(--raised);border:1px solid var(--sig-line);
+  box-shadow:0 1px 0 var(--sig-soft) inset,0 14px 26px -20px rgba(0,0,0,.75)}
+.cx-line{font-family:var(--mono);font-size:1.02rem;line-height:1.5;min-width:0;flex:1;
+  letter-spacing:-.01em;overflow-wrap:anywhere}
+.cx-c{color:var(--ink);font-weight:680}
+.cx-hold{color:var(--ink3);font-weight:400;margin-left:.45rem}
+/* A caret, because the thing this element imitates has one. Hidden the moment a
+   command is adopted — a caret after a finished line would claim it is still being
+   typed. */
+.cx-line::after{content:"";display:inline-block;width:.5em;height:1.05em;margin-left:.15em;
+  vertical-align:-.18em;background:var(--sig);opacity:.55;animation:cxBlink 1.15s steps(1,end) infinite}
+.cx-comp[data-built="1"] .cx-line::after{display:none}
+@keyframes cxBlink{0%,49%{opacity:.55}50%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cx-line::after{animation:none;opacity:.4}}
+.cx-o{color:var(--sig)}
+.cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
+.cx-copy{font:inherit;font-size:.74rem;font-weight:650;cursor:pointer;flex:none;padding:.5rem .85rem;
+  letter-spacing:.02em;border:1px solid var(--sig-line);border-radius:6px;background:var(--sig-soft);color:var(--sig)}
+.cx-copy:hover{background:var(--sig);border-color:var(--sig);color:var(--raised)}
+.cx-copy[disabled]{opacity:.4;cursor:default;background:var(--sunk);border-color:var(--rule);color:var(--ink3)}
+.cx-copy[disabled]:hover{background:var(--sunk);border-color:var(--rule);color:var(--ink3)}
+.cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
+
+.cx-body{display:grid;grid-template-columns:minmax(232px,278px) 1fr;gap:clamp(1.2rem,2.6vw,2.4rem);align-items:start}
 
 /* ── the picker ─────────────────────────────────────────────────────────────
    Rich rows: the command AND what it is for. A bare list of names is an index,
    not a picker, and an index makes a reader open things to find out what they
    are. It jumps within the document rather than driving a detail pane, so deep
    links, printing and the no-JS case all keep working. */
-.cx-pick{position:sticky;top:1rem;display:flex;flex-direction:column;max-height:calc(100vh - 2rem);
-  background:var(--raised);border:1px solid var(--rule);border-radius:8px;overflow:hidden;min-width:0}
-.cx-find{display:flex;align-items:center;gap:.5rem;padding:.65rem .75rem;border-bottom:1px solid var(--rule2);background:var(--sunk)}
-.cx-find .cx-sl{font-family:var(--mono);font-size:.9rem;color:var(--sig);line-height:1}
-.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.84rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
+.cx-pick{position:sticky;top:calc(var(--cxbar) + 1.5rem);display:flex;flex-direction:column;
+  max-height:calc(100vh - var(--cxbar) - 2.5rem);
+  background:var(--raised);border:1px solid var(--rule);border-radius:9px;overflow:hidden;min-width:0}
+.cx-find{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid var(--rule2);background:var(--sunk)}
+.cx-find:focus-within{border-bottom-color:var(--sig-line);box-shadow:inset 0 -1px 0 var(--sig-line)}
+.cx-find .cx-sl{font-family:var(--mono);font-size:.95rem;color:var(--sig);line-height:1}
+.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.85rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
 .cx-find input:focus{outline:0}
 .cx-find input::placeholder{color:var(--ink3)}
 .cx-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-.cx-tally{font-size:.68rem;color:var(--ink3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cx-tally{font-size:.67rem;color:var(--ink3);white-space:nowrap;font-variant-numeric:tabular-nums;
+  font-family:var(--mono);letter-spacing:.04em}
 
-.cx-list{overflow-y:auto;padding:.3rem 0;min-height:0}
-.cx-grp{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);padding:.75rem .8rem .25rem;margin:0}
+.cx-list{overflow-y:auto;padding:.35rem 0 .5rem;min-height:0}
+.cx-grp{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.57rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--sig);padding:.9rem .85rem .3rem;margin:0}
+.cx-grp::after{content:"";flex:1;height:1px;background:var(--rule2)}
 .cx-grp[hidden]{display:none}
-.cx-row{display:block;padding:.4rem .8rem;text-decoration:none;border-left:3px solid transparent}
+.cx-row{display:block;padding:.42rem .85rem;text-decoration:none;border-left:3px solid transparent}
 .cx-row[hidden]{display:none}
-.cx-row .cx-n{display:block;font-family:var(--mono);font-size:.83rem;color:var(--ink);line-height:1.35}
-.cx-row .cx-d{display:block;font-size:.75rem;color:var(--ink3);line-height:1.3}
+.cx-row .cx-n{display:block;font-family:var(--mono);font-size:.83rem;color:var(--ink);line-height:1.4}
+.cx-row .cx-d{display:block;font-size:.75rem;color:var(--ink3);line-height:1.32}
 .cx-row:hover{background:var(--sig-soft)}
 .cx-row:hover .cx-n{color:var(--sig)}
 .cx-row[aria-current="true"]{background:var(--sig-soft);border-left-color:var(--sig)}
 .cx-row[aria-current="true"] .cx-n{color:var(--sig);font-weight:650}
 .cx-row[aria-current="true"] .cx-d{color:var(--ink2)}
+
+/* ⚠️ ORDER IS LOAD-BEARING: the @media rule that SHOWS this is (0,1,0), exactly as
+   specific as this one, so it can only win by coming later in the source. This
+   declaration used to sit after it and silently suppressed the button at every width
+   — with setOpen() collapsing the picker below 880px, that made the command list
+   unreachable on a phone. Never move this below the media block. */
+.cx-fold{display:none}
 
 .cx-nohit{padding:.85rem .8rem;font-size:.8rem;color:var(--ink2)}
 .cx-nohit[hidden]{display:none}
@@ -86,48 +151,62 @@ const COMMANDS_CSS = `
 .cx-sug button{font:inherit;font-family:var(--mono);font-size:.76rem;cursor:pointer;padding:.3rem .5rem;
   border:1px solid var(--sig-line);border-radius:5px;background:var(--sig-soft);color:var(--sig)}
 
-/* ── THE COMPOSER — the page's one bold element ───────────────────────────── */
+/* ── bays ───────────────────────────────────────────────────────────────────
+   Two zones, and the split is the whole point: .cx-top says what the command IS
+   in prose, .cx-opts says what it TAKES as data. One card with fourteen identical
+   siblings is a list of boxes; a card that visibly changes material halfway down
+   tells a reader where to stop reading and start scanning. */
 .cx-doc{min-width:0}
-.cx-comp{position:sticky;top:1rem;z-index:6;display:flex;align-items:center;gap:.75rem;
-  padding:.7rem .85rem;margin-bottom:1rem;border-radius:8px;
-  background:var(--raised);border:1px solid var(--sig-line);
-  box-shadow:0 6px 18px -12px rgba(0,0,0,.5)}
-.cx-line{font-family:var(--mono);font-size:.95rem;line-height:1.45;min-width:0;flex:1}
-.cx-c{color:var(--ink);font-weight:650}
-.cx-hold{color:var(--ink3);font-weight:400;margin-left:.4rem}
-.cx-copy[disabled]{opacity:.45;cursor:default}
-.cx-copy[disabled]:hover{border-color:var(--rule);color:var(--ink2)}
-.cx-o{color:var(--sig)}
-.cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
-.cx-copy{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;flex:none;padding:.42rem .7rem;
-  border:1px solid var(--rule);border-radius:5px;background:var(--sunk);color:var(--ink2)}
-.cx-copy:hover{border-color:var(--sig);color:var(--sig)}
-.cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
-
-/* ── bays ──────────────────────────────────────────────────────────────────── */
-.cx-band{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:1.8rem 0 .7rem;scroll-margin-top:5.5rem}
+.cx-band{display:flex;align-items:center;gap:.7rem;font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--sig);margin:2.4rem 0 .85rem;
+  scroll-margin-top:calc(var(--cxbar) + 1rem)}
+.cx-band::after{content:"";flex:1;height:1px;background:var(--sig-line)}
 .cx-band:first-of-type{margin-top:0}
 .cx-band[hidden]{display:none}
-.cx-bay{border:1px solid var(--rule);border-radius:8px;background:var(--raised);margin-bottom:.7rem;scroll-margin-top:5.5rem}
+.cx-bay{border:1px solid var(--rule);border-radius:9px;background:var(--raised);overflow:hidden;
+  margin-bottom:.85rem;scroll-margin-top:calc(var(--cxbar) + 1rem)}
 .cx-bay[hidden]{display:none}
-.cx-bay > h2{font-family:var(--mono);font-size:.95rem;font-weight:650;margin:0;padding:.8rem .9rem .1rem;color:var(--ink)}
-.cx-why{margin:0;padding:.25rem .9rem .1rem;color:var(--ink2);font-size:.92rem;max-width:62ch}
+.cx-top{padding:.9rem 1rem .85rem}
+.cx-bay h2{font-family:var(--mono);font-size:1.02rem;font-weight:650;margin:0;color:var(--ink);letter-spacing:-.015em}
+/* Mono is reserved for things you type. A guide is a thing you understand, so it
+   takes the display face — otherwise a concept and a command read as the same kind
+   of object and the reader has to work out which is which. */
+.cx-bay[data-guide] h2{font-family:var(--display);font-size:1.12rem;font-weight:650;letter-spacing:-.02em}
+.cx-sl2{color:var(--sig)}
+.cx-why{margin:.22rem 0 0;color:var(--ink2);font-size:.93rem;line-height:1.45;max-width:60ch}
 
-.cx-opts{padding:.55rem .9rem .8rem;display:grid;gap:0}
-.cx-opt{display:grid;grid-template-columns:minmax(92px,auto) 1fr;gap:.2rem .9rem;align-items:baseline;padding:.42rem 0}
+/* The continuous hairline down the option block is the grid made visible: every
+   option name stops at the same x, so a reader scanning for one runs their eye
+   down a rule rather than a ragged edge. Drawn on the container, not per row —
+   a per-row border breaks at every gap. */
+.cx-opts{position:relative;padding:.55rem 1rem .75rem;display:grid;gap:0;
+  background:var(--sunk);border-top:1px solid var(--rule2)}
+.cx-opts::before{content:"";position:absolute;left:calc(1rem + 148px);top:.55rem;bottom:.75rem;
+  width:1px;background:var(--rule2)}
+.cx-opts:empty{display:none}
+.cx-opt{display:grid;grid-template-columns:148px 1fr;gap:.2rem 1.1rem;align-items:baseline;padding:.44rem 0}
 .cx-opt + .cx-opt{border-top:1px solid var(--rule2)}
-.cx-on{font-family:var(--mono);font-size:.81rem;color:var(--sig);display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap}
-.cx-req{font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+.cx-on{font-family:var(--mono);font-size:.81rem;color:var(--sig);display:flex;align-items:baseline;
+  gap:.4rem;flex-wrap:wrap;text-decoration:none}
+a.cx-on{color:var(--ink3)}
+a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3px}
+.cx-req{font-size:.57rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
   color:var(--raised);background:var(--sig);padding:.1rem .32rem;border-radius:3px}
 .cx-takes{font-size:.86rem;color:var(--ink2);min-width:0;overflow-wrap:anywhere}
-.cx-eg{display:block;font-family:var(--mono);font-size:.78rem;color:var(--ink3);margin-top:.15rem}
+.cx-eg{display:block;font-family:var(--mono);font-size:.77rem;color:var(--ink3);margin-top:.2rem}
+/* The one option every command carries. Dimmed to the weight of a footnote so the
+   options that actually differ between commands are the ones that read first. */
+.cx-bare{grid-column:1/-1;margin:0 0 .1rem;font-size:.86rem;color:var(--ink2)}
+.cx-sh{opacity:.72}
+.cx-sh:hover{opacity:1}
 
 /* Choices are VISIBLE. Only the overflow hides, and it says how much.
    Harkirat, 2026-08-17 19:57 EDT: burying the timezone list behind a first click is the
    opposite of helping — the reader came here to see what the values ARE. */
-.cx-pills{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin-top:.15rem}
-.cx-pill{font:inherit;font-family:var(--mono);font-size:.74rem;cursor:pointer;padding:.26rem .5rem;
-  border:1px solid var(--rule);border-radius:5px;background:var(--sunk);color:var(--ink2);line-height:1.35}
+.cx-pills{display:flex;flex-wrap:wrap;gap:.32rem;align-items:center;margin-top:.2rem}
+.cx-takes:not(:empty) > .cx-pills{margin-top:.28rem}
+.cx-pill{font:inherit;font-family:var(--mono);font-size:.74rem;cursor:pointer;padding:.28rem .52rem;
+  border:1px solid var(--rule);border-radius:5px;background:var(--raised);color:var(--ink2);line-height:1.35}
 .cx-pill:hover{border-color:var(--sig);color:var(--sig)}
 .cx-pill[aria-pressed="true"]{background:var(--sig);border-color:var(--sig);color:var(--raised);font-weight:600}
 .cx-pill[hidden]{display:none}
@@ -137,16 +216,17 @@ const COMMANDS_CSS = `
 .cx-hint{font-size:.68rem;color:var(--ink3);font-weight:400}
 .cx-pill2[aria-pressed="true"] .cx-hint{color:var(--raised);opacity:.85}
 .cx-more{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;color:var(--sig);background:none;
-  border:0;padding:.26rem .3rem;text-decoration:underline;text-underline-offset:3px}
+  border:0;padding:.28rem .3rem;text-decoration:underline;text-underline-offset:3px}
 
 /* ── guides: a comparison, never a paragraph ──────────────────────────────── */
-.cx-two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:.5rem .9rem .3rem}
-.cx-card{border:1px solid var(--rule);border-radius:6px;padding:.6rem .7rem}
-.cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.15rem}
-.cx-card span{font-size:.85rem;color:var(--ink2)}
-.cx-note{margin:0;padding:.3rem .9rem .85rem;font-size:.8rem;color:var(--ink3);max-width:70ch}
+.cx-two{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;padding:0 1rem .2rem}
+.cx-card{border:1px solid var(--rule);border-left:2px solid var(--sig-line);border-radius:6px;padding:.65rem .75rem;background:var(--sunk)}
+.cx-card b{display:block;font-family:var(--mono);font-size:.8rem;color:var(--sig);margin-bottom:.2rem}
+.cx-card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
+.cx-note{margin:0;padding:.65rem 1rem .95rem;font-size:.81rem;color:var(--ink3);max-width:70ch;line-height:1.5}
 
 @media (max-width:880px){
+  .cx-doc,.cx-pick,.cx-band,.cx-bay{--cxbar:calc(54px + 3.3rem)}
   .cx-body{grid-template-columns:1fr}
   .cx-pick{position:static;max-height:none;margin-bottom:1rem}
   .cx-list{max-height:min(44vh,340px)}
@@ -157,20 +237,26 @@ const COMMANDS_CSS = `
   .cx-pick[data-open="0"] .cx-list{display:none}
   .cx-two{grid-template-columns:1fr}
   .cx-opt{grid-template-columns:1fr;gap:.1rem}
-  .cx-comp{top:.5rem}
-  .cx-band,.cx-bay{scroll-margin-top:4.5rem}
+  .cx-opts::before{display:none}
+  .cx-head{padding-top:1.8rem}
+  .cx-line{font-size:.95rem}
 }
-.cx-fold{display:none}
 
 /* WCAG 2.5.5: a coarse pointer gets real targets. These controls are functional
    — a pill rewrites the Composer — so an undersized one is a broken control,
    not a cramped one. */
 @media (pointer:coarse){
   .cx-pill{padding:.46rem .62rem}
-  .cx-copy{padding:.6rem .8rem}
-  .cx-row{padding:.6rem .8rem}
-  .cx-more{padding:.46rem .35rem}
-  .cx-find input{padding:.35rem 0}
+  .cx-copy{padding:.6rem .85rem}
+  .cx-row{padding:.6rem .85rem}
+  .cx-more{padding:.52rem .4rem}
+  /* Measured on a 390px touch viewport: these two came out at 31px and 27px, just
+     under the 32px minimum, and "nearly" is not a size an AA check accepts. */
+  .cx-find input{padding:.55rem 0}
+  /* The shared option's name is a real link (it jumps to the guide), so it is a real
+     target. Padded with a matching negative margin so the hit area reaches 32px
+     without moving anything around it. */
+  a.cx-on{display:inline-flex;padding:.56rem 0;margin:-.56rem 0}
 }
 @media (prefers-reduced-motion:reduce){.cx-v{transition:none}}
 `;
@@ -185,6 +271,7 @@ const COMMANDS_JS = [
     '  var nohit=document.getElementById("cx-nohit"), sug=document.getElementById("cx-sug");',
     '  var list=document.getElementById("cx-list"), fold=document.getElementById("cx-fold");',
     '  var line=document.getElementById("cx-line"), copy=document.getElementById("cx-copy");',
+    '  var comp=document.getElementById("cx-comp");',
     '  var bays=[].slice.call(document.querySelectorAll(".cx-bay"));',
     '  var rows=[].slice.call(document.querySelectorAll(".cx-row"));',
     '  var byId={}; rows.forEach(function(r){ byId[r.getAttribute("href").slice(1)]=r; });',
@@ -212,9 +299,11 @@ const COMMANDS_JS = [
     '      line.appendChild(span("cx-hold","pick a command to build one"));',
     '      copy.disabled=true; copy.textContent="Copy"; copy.removeAttribute("data-done");',
     '      copy.setAttribute("aria-label","Copy the command you build here");',
+    '      if(comp)comp.removeAttribute("data-built");',
     '      return;',
     '    }',
     '    copy.disabled=false;',
+    '    if(comp)comp.setAttribute("data-built","1");',
     '    line.appendChild(span("cx-c",bay.getAttribute("data-cmd")));',
     '    var pick=chosen(bay);',
     '    [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){',
@@ -373,13 +462,30 @@ const splitChoice = choice => {
 const VISIBLE_CHOICES = 6;
 
 /** Required first — that order is information, not styling. */
-const orderOptions = options => options.slice().sort((a, b) => Number(b.required) - Number(a.required));
+const orderOptions = (options, command) => options.slice().sort((a, b) =>
+    Number(isShared(command, a)) - Number(isShared(command, b))
+    || Number(b.required) - Number(a.required));
+
+/* `visibility` is on every single command, so spelling out "Who sees the answer"
+   under all fourteen of them printed the same sentence fourteen times and buried the
+   options that actually differ. Harkirat made exactly this call on the bot side
+   (2026-08-10 19:28 EDT: "visibility is shared in all the commands so having it
+   individually under each of them makes no sense") — /help states it once at the end
+   of a page rather than under each command. Here it renders last, dimmed, with its
+   name linking to the guide that explains it, and no repeated blurb: the values are
+   the only part a reader needs at the point of use. It stays a real .cx-opt with its
+   data-opt, so the Composer still assembles it. */
+function isShared(command, option) {
+    return Object.prototype.hasOwnProperty.call(SHARED_OPTIONS, option.name)
+        && !((COMMANDS[command.path] || {}).options || {})[option.name];
+}
 
 function renderOptions(command, C) {
     const { esc } = C;
     const entry = COMMANDS[command.path] || {};
-    return orderOptions(command.options).map(option => {
-        const takes = optionProse(command.path, option.name);
+    return orderOptions(command.options, command).map(option => {
+        const shared = isShared(command, option);
+        const takes = shared ? '' : optionProse(command.path, option.name);
         const examples = (entry.examples || {})[option.name];
         let value;
 
@@ -395,7 +501,7 @@ function renderOptions(command, C) {
             const more = option.choices.length > VISIBLE_CHOICES
                 ? `<button type="button" class="cx-more" data-open="0" data-visible="${VISIBLE_CHOICES}" data-label="${esc(label)}">${esc(label)}</button>`
                 : '';
-            value = `<span class="cx-takes">${esc(takes)}<span class="cx-pills">${pills}${more}</span></span>`;
+            value = `<span class="cx-takes">${takes ? esc(takes) : ''}<span class="cx-pills">${pills}${more}</span></span>`;
         } else {
             const hint = option.autocomplete ? ' &middot; type to search' : '';
             const eg = examples ? `<span class="cx-eg">${esc(examples.map(e => `"${e}"`).join('  '))}</span>` : '';
@@ -403,10 +509,16 @@ function renderOptions(command, C) {
         }
 
         const req = option.required ? '<span class="cx-req">required</span>' : '';
-        return `<div class="cx-opt" data-opt="${esc(option.name)}">` +
-            `<span class="cx-on">${esc(option.name)}${req}</span>${value}</div>`;
+        const name = shared
+            ? `<a class="cx-on" href="#guide-visibility">${esc(option.name)}</a>`
+            : `<span class="cx-on">${esc(option.name)}${req}</span>`;
+        return `<div class="cx-opt${shared ? ' cx-sh' : ''}" data-opt="${esc(option.name)}">` +
+            `${name}${value}</div>`;
     }).join('');
 }
+
+/** True when every option the command takes is one every command takes. */
+const bare = command => command.options.every(option => isShared(command, option));
 
 function renderCommand(command, group, C) {
     const { esc } = C;
@@ -416,9 +528,9 @@ function renderCommand(command, group, C) {
         command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ');
     return `<article class="cx-bay" id="${esc(command.id)}" data-group="${esc(group.key)}" ` +
         `data-cmd="${esc(command.path)}" data-find="${esc(find)}">` +
-        `<h2>${esc(command.path)}</h2>` +
-        `<p class="cx-why">${esc(entry.purpose || command.description)}</p>` +
-        `<div class="cx-opts">${renderOptions(command, C)}</div>` +
+        `<div class="cx-top"><h2><span class="cx-sl2">/</span>${esc(command.path.slice(1))}</h2>` +
+        `<p class="cx-why">${esc(entry.purpose || command.description)}</p></div>` +
+        `<div class="cx-opts">${bare(command) ? '<p class="cx-bare">Takes nothing else — just run it.</p>' : ''}${renderOptions(command, C)}</div>` +
         `</article>`;
 }
 
@@ -428,7 +540,7 @@ function renderGuide(guide, C) {
         `<div class="cx-card"><b>${esc(head)}</b><span>${esc(body)}</span></div>`).join('');
     return `<article class="cx-bay" id="${esc(guide.id)}" data-group="${esc(guide.group)}" data-guide="1" ` +
         `data-find="${esc(guide.title + ' ' + guide.sub)}">` +
-        `<h2>${esc(guide.title)}</h2>` +
+        `<div class="cx-top"><h2>${esc(guide.title)}</h2></div>` +
         `<div class="cx-two">${cards}</div>` +
         `<p class="cx-note">${esc(guide.note)}</p></article>`;
 }
@@ -449,12 +561,16 @@ function commandsShell({ page, catalog, C }) {
 
     const bands = [];
     const picker = [];
+    // mobileNav(cur, slots) — the second argument is the phone's section menu, and passing nothing left it empty on every phone. The groups ARE this page's sections.
+    const slots = [];
 
     for (const group of catalog.groups) {
         const guides = guidesByGroup.get(group.key) || [];
         if (!guides.length && !group.commands.length) continue;
 
-        bands.push(`<p class="cx-band" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
+        // The band is the page's section heading, so it needs an id: mobileNav()'s section menu links to these the way the legal rail links to numbered clauses.
+        bands.push(`<p class="cx-band" id="g-${esc(group.key)}" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
+        slots.push(`<a href="#g-${esc(group.key)}" class="slot"><i>—</i><span>${esc(group.label)}</span></a>`);
         picker.push(`<p class="cx-grp" data-group="${esc(group.key)}">${esc(group.label)}</p>`);
 
         for (const guide of guides) {
@@ -480,23 +596,38 @@ function commandsShell({ page, catalog, C }) {
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
-<header class="bar">
+<!-- ⚠️ THE EXACT SHAPE shell() USES, and the three ways this page deviated from it
+     are what "the whole page is misaligned" was. (1) The four controls belong in a
+     <nav>: .bar nav margin-left:auto is what pushes them to the right edge, and
+     as direct children of .bar they crammed left and wrapped to a second row.
+     (2) The content belongs in .page, the shared column — not a private wrapper at
+     a different max-width with no top padding for the fixed bar. (3) The footer is
+     the LAST CHILD of .page: outside it, it stretches to the full viewport instead
+     of the document column. Do not flatten any of these back out. -->
+<div class="bar">
   ${C.wordmark('./', page)}
-  ${C.navSwitcher(page)}
-  ${C.repoBtn}
-  ${C.installBtn()}
-  ${C.themeBtn()}
-</header>
-${C.mobileNav(page)}
-<main class="cx-wrap" id="main" tabindex="-1">
+  <nav>${C.navSwitcher(page)}${C.repoBtn}${C.installBtn()}${C.themeBtn()}</nav>
+</div>
+${C.mobileNav(page, slots.join(''))}
+<div class="page cx-floor">
+<main id="main" tabindex="-1">
   <div class="cx-head">
     <p class="cx-kick">${esc(page.kicker)}</p>
     <h1>${esc(page.title)}</h1>
     <p>${esc(page.lede)}</p>
+  </div>
+
+  <!-- The Composer sits ABOVE both columns, not inside the reading one. It is the
+       page's instrument rather than a feature of the bays, and docking it flush under
+       the fixed bar makes the two read as one block of chrome instead of two things
+       that happen to be sticky. -->
+  <div class="cx-comp" id="cx-comp">
+    <span class="cx-line" id="cx-line"><span class="cx-c">/</span></span>
+    <button class="cx-copy" id="cx-copy" type="button">Copy</button>
   </div>
 
   <div class="cx-body">
@@ -516,18 +647,22 @@ ${C.mobileNav(page)}
     </nav>
 
     <div class="cx-doc">
-      <div class="cx-comp">
-        <span class="cx-line" id="cx-line"><span class="cx-c">/</span></span>
-        <button class="cx-copy" id="cx-copy" type="button">Copy</button>
-      </div>
       ${bands.join('')}
     </div>
   </div>
 </main>
-${C.pageFoot(page)}
+  ${C.pageFoot(page)}
+</div>
+<!-- Outside .page: a fixed element is trapped by any ancestor with a transform or
+     a filter, and MORPH_JS bails cleanly when #gotop is absent — which is why this
+     page had the back-to-top CSS from COMPONENT_CSS and no button to apply it to.
+     No #prog: a reading-progress bar measures linear progress through a document,
+     and this page is a picker over a reference list, not a read. -->
+${C.TOTOP_HTML}
 <script>${C.THEME_JS}</script>
 <script>${C.NAV_JS}</script>
 <script>${C.MORPH_JS}</script>
+<script>${C.TOTOP_TRACK_JS}</script>
 <script>${COMMANDS_JS}</script>
 </body></html>`;
 }
