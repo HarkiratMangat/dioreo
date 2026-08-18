@@ -1,40 +1,15 @@
 /**
  * The /commands page — the site's FOURTH family.
  *
- * WHY IT IS A FAMILY AND NOT A FOURTH VOICE OF AN EXISTING ONE.
- * `PAGES` is the numbered legal set: instruments, and the numbering is what says
- * "these bind you". `EXTRA_PAGES` is the invitation. `chronicle.js` is the
- * record. This page is none of those — it is a TOOL, read by someone mid-task
- * who wants to leave as fast as possible with a command that works. The three
- * existing families are all things you READ; this is a thing you USE, and the
- * difference shows up in the grid rather than in the palette.
+ * WHY IT IS A FAMILY AND NOT A FOURTH VOICE OF AN EXISTING ONE. `PAGES` is the numbered legal set: instruments, and the numbering is what says "these bind you". `EXTRA_PAGES` is the invitation. `chronicle.js` is the record. This page is none of those — it is a TOOL, read by someone mid-task who wants to leave as fast as possible with a command that works. The three existing families are all things you READ; this is a thing you USE, and the difference shows up in the grid rather than in the palette.
  *
- * ⚠️ THE LESSON THIS IS BUILT ON, and it cost a whole rejected build to learn:
- * the first chronicle attempt was the legal shell in three accent colours and
- * Harkirat rejected it on sight. Colour is the weakest carrier of identity. What
- * separates a family is its STRUCTURE. So this page deliberately reuses the
- * site's own type stacks rather than introducing a typeface, and spends its
- * distinctiveness on one structural idea instead.
+ * ⚠️ THE LESSON THIS IS BUILT ON, and it cost a whole rejected build to learn: the first chronicle attempt was the legal shell in three accent colours and Harkirat rejected it on sight. Colour is the weakest carrier of identity. What separates a family is its STRUCTURE. So this page deliberately reuses the site's own type stacks rather than introducing a typeface, and spends its distinctiveness on one structural idea instead.
  *
- * THE SIGNATURE: THE COMPOSER.
- * A slash command is the one thing this product is literally made of, so the
- * page's spine is a command line you are building. It sticks to the top of the
- * reading column, adopts whichever command you have scrolled to, fills in as you
- * choose option values, and Copy takes exactly what it shows. That is the page's
- * single bold element; everything around it stays quiet, and it earns its place
- * by doing the page's actual job — getting a reader to a working invocation —
- * rather than by decorating it.
+ * THE SIGNATURE: THE COMPOSER. A slash command is the one thing this product is literally made of, so the page's spine is a command line you are building. It sticks to the top of the reading column, adopts whichever command you have scrolled to, fills in as you choose option values, and Copy takes exactly what it shows. That is the page's single bold element; everything around it stays quiet, and it earns its place by doing the page's actual job — getting a reader to a working invocation — rather than by decorating it.
  *
- * ⚠️ NO NUMBERED MARKERS ANYWHERE. Commands are a set, not a sequence, and the
- * 01/02/03 device would be borrowed from the legal pages, where the numbering is
- * true (a document series) and load-bearing. Options DO sort required-first,
- * because that order is real information: it is what you must supply.
+ * ⚠️ NO NUMBERED MARKERS ANYWHERE. Commands are a set, not a sequence, and the 01/02/03 device would be borrowed from the legal pages, where the numbering is true (a document series) and load-bearing. Options DO sort required-first, because that order is real information: it is what you must supply.
  *
- * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW. They are
- * template literals, and a backtick — including one inside a comment — ends the
- * string and fails the build with a SyntaxError pointing at prose. Quote with "
- * instead. Same rule the rest of this generator carries, and it has been paid
- * for twice.
+ * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW. They are template literals, and a backtick — including one inside a comment — ends the string and fails the build with a SyntaxError pointing at prose. Quote with " instead. Same rule the rest of this generator carries, and it has been paid for twice.
  */
 
 const { assertProseCoverage, optionProse, GUIDES, COMMANDS } = require('./commandProse');
@@ -58,16 +33,7 @@ function requireChrome(C) {
 }
 
 /**
- * The page's accent. 121 degrees, the midpoint of the widest gap on the site's
- * tab hue wheel (citron 62 to teal 180), which leaves 59 degrees of clearance
- * each way — the six document tabs are held to 30.
- * ⚠️ The Changelog's phosphor is 131 degrees, ten away. That is KNOWN AND
- * ACCEPTED, not an oversight: the record group is withdrawn from the nav
- * everywhere except inside /changelog/, so the two are never seen together at
- * tab size. Harkirat chose this hue with that on the table.
- * ⚠️ The bot's own /help command briefly took this green on 2026-08-16 20:38 EDT and
- * Harkirat reversed it the same evening — /help and /invite keep coral. That
- * reversal was about the DISCORD surface only; the website page keeps green.
+ * The page's accent. 121 degrees, the midpoint of the widest gap on the site's tab hue wheel (citron 62 to teal 180), which leaves 59 degrees of clearance each way — the six document tabs are held to 30. ⚠️ The Changelog's phosphor is 131 degrees, ten away. That is KNOWN AND ACCEPTED, not an oversight: the record group is withdrawn from the nav everywhere except inside /changelog/, so the two are never seen together at tab size. Harkirat chose this hue with that on the table. ⚠️ The bot's own /help command briefly took this green on 2026-08-16 20:38 EDT and Harkirat reversed it the same evening — /help and /invite keep coral. That reversal was about the DISCORD surface only; the website page keeps green.
  */
 const SIGNAL = { light: '#1E6B1F', dark: '#58D05A' };
 
@@ -128,6 +94,9 @@ const COMMANDS_CSS = `
   box-shadow:0 6px 18px -12px rgba(0,0,0,.5)}
 .cx-line{font-family:var(--mono);font-size:.95rem;line-height:1.45;min-width:0;flex:1}
 .cx-c{color:var(--ink);font-weight:650}
+.cx-hold{color:var(--ink3);font-weight:400;margin-left:.4rem}
+.cx-copy[disabled]{opacity:.45;cursor:default}
+.cx-copy[disabled]:hover{border-color:var(--rule);color:var(--ink2)}
 .cx-o{color:var(--sig)}
 .cx-v{color:var(--ink);background:var(--sig-soft);padding:.08em .38em;border-radius:4px;box-decoration-break:clone}
 .cx-copy{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;flex:none;padding:.42rem .7rem;
@@ -162,6 +131,11 @@ const COMMANDS_CSS = `
 .cx-pill:hover{border-color:var(--sig);color:var(--sig)}
 .cx-pill[aria-pressed="true"]{background:var(--sig);border-color:var(--sig);color:var(--raised);font-weight:600}
 .cx-pill[hidden]{display:none}
+/* A choice that carries a hint becomes a two-line pill: the name it is actually called,
+   and underneath, dimmer and smaller, what that name looks like in practice. */
+.cx-pill2{display:inline-flex;flex-direction:column;align-items:flex-start;gap:.05rem;text-align:left;line-height:1.3}
+.cx-hint{font-size:.68rem;color:var(--ink3);font-weight:400}
+.cx-pill2[aria-pressed="true"] .cx-hint{color:var(--raised);opacity:.85}
 .cx-more{font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;color:var(--sig);background:none;
   border:0;padding:.26rem .3rem;text-decoration:underline;text-underline-offset:3px}
 
@@ -233,7 +207,14 @@ const COMMANDS_JS = [
     '  function paint(){',
     '    var bay=current;',
     '    line.textContent="";',
-    '    if(!bay){ line.appendChild(span("cx-c","/")); return; }',
+    '    if(!bay){',
+    '      line.appendChild(span("cx-c","/"));',
+    '      line.appendChild(span("cx-hold","pick a command to build one"));',
+    '      copy.disabled=true; copy.textContent="Copy"; copy.removeAttribute("data-done");',
+    '      copy.setAttribute("aria-label","Copy the command you build here");',
+    '      return;',
+    '    }',
+    '    copy.disabled=false;',
     '    line.appendChild(span("cx-c",bay.getAttribute("data-cmd")));',
     '    var pick=chosen(bay);',
     '    [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){',
@@ -326,6 +307,18 @@ const COMMANDS_JS = [
     '    } else nohit.hidden=true;',
     '    if(v&&matchMedia("(max-width:880px)").matches) setOpen(true);',
     '  }',
+    '  /* Clicking a row adopts it immediately rather than waiting for the scroll',
+    '     observer to notice. Two reasons, and neither is cosmetic: the click is an',
+    '     explicit choice and should be answered at once, and it makes adoption work',
+    '     even where IntersectionObserver does not run at all -- the observer is an',
+    '     enhancement on top, never the only path to the page working. */',
+    '  rows.forEach(function(r){',
+    '    r.addEventListener("click",function(){',
+    '      var t=document.getElementById(r.getAttribute("href").slice(1));',
+    '      rows.forEach(function(o){ o.setAttribute("aria-current",String(o===r)); });',
+    '      if(t&&!t.hasAttribute("data-guide")) adopt(t);',
+    '    });',
+    '  });',
     '  q.addEventListener("input",filter);',
     '  q.addEventListener("keydown",function(e){',
     '    if(e.key!=="Enter") return;',
@@ -355,19 +348,26 @@ const COMMANDS_JS = [
     '    bays.forEach(function(b){ io.observe(b); });',
     '  }',
     '',
-    '  adopt(bays.filter(function(b){ return !b.hasAttribute("data-guide"); })[0]||null);',
+    '  /* Deliberately NOT pre-adopting the first command. The Composer is the boldest',
+    '     thing on the page, and opening it with a command the reader has neither chosen',
+    '     nor scrolled to answers a question nobody asked -- worse, it reads as state they',
+    '     caused. It starts as a prompt and fills in when a command is genuinely in view.',
+    '     A deep link is the one exception: arriving at #timestamp IS choosing it. */',
+    '  var deep=location.hash&&document.getElementById(location.hash.slice(1));',
+    '  current=deep&&!deep.hasAttribute("data-guide")?deep:null;',
+    '  paint();',
     '})();',
 ].join('\n');
 
 /**
- * Some choice names carry their own worked example -- /timestamp's style option is
- * "Full Date, Short Time (F) - e.g., Tuesday, April 20, 2021 at 16:20". That is the
- * right label on a pill you are choosing from and nonsense inside a one-line command,
- * so the Composer takes everything before the example marker. Split on the em dash
- * with spaces around it, which is the separator those labels actually use; a name
- * with no such marker is returned unchanged.
+ * A few choices carry a HINT as well as a name, packed into one string because Discord has only one field for it. /timestamp's style option is the case: "Full Date, Short Time (F) - e.g., Tuesday, April 20, 2021 at 16:20". The choice is "Full Date, Short Time (F)"; the rest describes what that format looks like. So both halves are shown -- the name as the pill's label, the hint on a second line beneath it where it explains the option rather than competing with it -- and only the name goes into the command line, where the example would read as part of the value.
  */
-const shortValue = choice => choice.split(' \u2014 ')[0].trim();
+const splitChoice = choice => {
+    const i = choice.indexOf(' \u2014 ');
+    return i === -1
+        ? { label: choice, hint: '' }
+        : { label: choice.slice(0, i).trim(), hint: choice.slice(i + 3).trim() };
+};
 
 /** How many choices show before the rest fold away. */
 const VISIBLE_CHOICES = 6;
@@ -386,7 +386,10 @@ function renderOptions(command, C) {
         if (option.choices.length) {
             const pills = option.choices.map((choice, i) => {
                 const hidden = i >= VISIBLE_CHOICES ? ' hidden' : '';
-                return `<button type="button" class="cx-pill" aria-pressed="false" data-val="${esc(shortValue(choice))}"${hidden}>${esc(choice)}</button>`;
+                const { label, hint } = splitChoice(choice);
+                const hintEl = hint ? `<span class="cx-hint">${esc(hint)}</span>` : '';
+                return `<button type="button" class="cx-pill${hint ? ' cx-pill2' : ''}" aria-pressed="false" ` +
+                    `data-val="${esc(label)}"${hidden}>${esc(label)}${hintEl}</button>`;
             }).join('');
             const label = `Show all ${option.choices.length}`;
             const more = option.choices.length > VISIBLE_CHOICES
@@ -408,8 +411,7 @@ function renderOptions(command, C) {
 function renderCommand(command, group, C) {
     const { esc } = C;
     const entry = COMMANDS[command.path] || {};
-    // Everything the search can match on, in one attribute: the command, what it
-    // does, its option names and its choice labels.
+    // Everything the search can match on, in one attribute: the command, what it does, its option names and its choice labels.
     const find = [command.path, entry.purpose || '',
         command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ');
     return `<article class="cx-bay" id="${esc(command.id)}" data-group="${esc(group.key)}" ` +
@@ -432,8 +434,7 @@ function renderGuide(guide, C) {
 }
 
 /**
- * Renders the whole page. `catalog` is scripts/lib/commandCatalog.js's output;
- * `page` is the entry from buildLegalPages.js's page table.
+ * Renders the whole page. `catalog` is scripts/lib/commandCatalog.js's output; `page` is the entry from buildLegalPages.js's page table.
  */
 function commandsShell({ page, catalog, C }) {
     requireChrome(C);
@@ -470,14 +471,7 @@ function commandsShell({ page, catalog, C }) {
         }
     }
 
-    // ⚠️ THIS SITE IS DARK-FIRST, and getting the polarity backwards is silent.
-    // The bare :root block IS the dark theme -- TOKENS declares the dark values
-    // there and light arrives as a :root[data-theme="light"] override. Writing it
-    // the other way round (light in :root, dark behind a prefers-color-scheme
-    // query) renders a dark-on-dark page AND reads as correct in the source. The
-    // build's own contrast gate is what caught it: it reported the light green
-    // against the DARK desk in both themes, because in both themes that is
-    // genuinely what the cascade resolved to.
+    // ⚠️ THIS SITE IS DARK-FIRST, and getting the polarity backwards is silent. The bare :root block IS the dark theme -- TOKENS declares the dark values there and light arrives as a :root[data-theme="light"] override. Writing it the other way round (light in :root, dark behind a prefers-color-scheme query) renders a dark-on-dark page AND reads as correct in the source. The build's own contrast gate is what caught it: it reported the light green against the DARK desk in both themes, because in both themes that is genuinely what the cascade resolved to.
     const accent = `:root{--sig:${SIGNAL.dark};--sig-soft:${SIGNAL.dark}26;--sig-line:${SIGNAL.dark}5c}` +
         `:root[data-theme="light"]{--sig:${SIGNAL.light};--sig-soft:${SIGNAL.light}1a;--sig-line:${SIGNAL.light}55}`;
 

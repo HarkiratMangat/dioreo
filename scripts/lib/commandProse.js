@@ -1,29 +1,15 @@
 /**
  * The prose layer for the website's /commands page.
  *
- * The catalog (scripts/lib/commandCatalog.js) supplies everything Discord knows:
- * names, options, choices, which are required. What it cannot supply is why a
- * person would want the command, because Discord's own description field is one
- * line written for a picker — "Look up or browse MP weapon loadouts" is correct
- * and tells a reader nothing they could not guess from the name.
+ * The catalog (scripts/lib/commandCatalog.js) supplies everything Discord knows: names, options, choices, which are required. What it cannot supply is why a person would want the command, because Discord's own description field is one line written for a picker — "Look up or browse MP weapon loadouts" is correct and tells a reader nothing they could not guess from the name.
  *
- * ⚠️ EVERY LINE HERE IS WRITTEN TO BE READ BY SOMEONE WHO NEEDS HELP RIGHT NOW.
- * Harkirat, 2026-08-17 19:57 EDT: "people dont want to read essays, they just
- * need to be guided and shown how to do something ... the user is literally only
- * here because *they need help*." So: one sentence per command, plain verbs, no
- * feature-selling, and an option blurb short enough to read at a glance. If a
- * line here grows past a sentence it is the wrong line.
+ * ⚠️ EVERY LINE HERE IS WRITTEN TO BE READ BY SOMEONE WHO NEEDS HELP RIGHT NOW. Harkirat, 2026-08-17 19:57 EDT: "people dont want to read essays, they just need to be guided and shown how to do something ... the user is literally only here because *they need help*." So: one sentence per command, plain verbs, no feature-selling, and an option blurb short enough to read at a glance. If a line here grows past a sentence it is the wrong line.
  *
- * ⚠️ THE GATE RUNS BOTH WAYS (assertProseCoverage). A command with no prose is a
- * bay with a hole in it; a prose entry with no command is a description of
- * something that no longer exists, which is worse — it reads as current. Neither
- * is a warning, both fail the build.
+ * ⚠️ THE GATE RUNS BOTH WAYS (assertProseCoverage). A command with no prose is a bay with a hole in it; a prose entry with no command is a description of something that no longer exists, which is worse — it reads as current. Neither is a warning, both fail the build.
  */
 
 /**
- * `sample` is the value the Composer opens with, and it must be REAL — a reader
- * copying the line off this page should get an answer, not an error. Weapon
- * names are verbatim from the live Loadout collection's own casing.
+ * `sample` is the value the Composer opens with, and it must be REAL — a reader copying the line off this page should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing.
  */
 const COMMANDS = {
     '/help': {
@@ -100,9 +86,7 @@ const COMMANDS = {
             style: 'One format, or leave blank for all nine',
             view: 'A styled panel, or plain copyable text',
         },
-        // Every one of these parses under chrono-node, which is the parser
-        // /timestamp actually feeds them to. An example that did not parse would
-        // be the page walking a reader into an error.
+        // Every one of these parses under chrono-node, which is the parser /timestamp actually feeds them to. An example that did not parse would be the page walking a reader into an error.
         examples: { datetime: ['tomorrow', 'sun 4:30pm', '19:30'] },
         sample: { datetime: 'sun 4:30pm' },
     },
@@ -114,18 +98,14 @@ const COMMANDS = {
 };
 
 /**
- * `visibility` is on almost every command and means the same thing every time,
- * so it is described ONCE rather than repeated fourteen times. Repeating it
- * would train the reader to skip the option list, which is where the answers are.
+ * `visibility` is on almost every command and means the same thing every time, so it is described ONCE rather than repeated fourteen times. Repeating it would train the reader to skip the option list, which is where the answers are.
  */
 const SHARED_OPTIONS = {
     visibility: 'Who sees the answer',
 };
 
 /**
- * The two things a reader needs that are not a command. Both are a COMPARISON
- * rather than a paragraph — the question in each case is "which of these two am
- * I", and two columns answer that faster than prose can.
+ * The two things a reader needs that are not a command. Both are a COMPARISON rather than a paragraph — the question in each case is "which of these two am I", and two columns answer that faster than prose can.
  */
 const GUIDES = [
     {
@@ -160,8 +140,7 @@ function optionProse(commandPath, optionName) {
 }
 
 /**
- * Fails the build when the prose and the bot have drifted apart, in EITHER
- * direction. Called by the page builder before it renders a byte.
+ * Fails the build when the prose and the bot have drifted apart, in EITHER direction. Called by the page builder before it renders a byte.
  */
 function assertProseCoverage(catalog) {
     const live = catalog.groups.flatMap(g => g.commands);
