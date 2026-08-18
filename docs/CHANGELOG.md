@@ -75,7 +75,19 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.47.0 — 2026-08-18 12:42 EDT (#155) — the installed-but-unused CLI shelf gets written down
+## Pre-Release v3.48.0 — 2026-08-18 13:38 EDT (#156) — two more review-remnants findings close, and the record turns out to want a fixture, not a code read
+
+The second session of the review-remnants plan (`local/handoff/review-remnants-plan.md`, gitignored), closing findings #50 and #57 — two of the three the previous releases deliberately left as needing more than a bounded mechanical fix.
+
+`utils/cpPackages.js`'s `optimizePurchase` no longer spreads `cheapest`'s fields onto its own return value — that spread existed purely so `scripts/cpPackages.test.js` could read `r.totalCp` instead of `r.cheapest.totalCp`, while production code and a second test file (`scripts/drawCalcBudget.test.js`) already read the nested form correctly. Fixed test-first: every flattened read site was repointed to `.cheapest.X` and re-run green **while the spread still existed** (proving the nested form was already valid), then the spread was removed and the suite re-run green again, so a weakened-not-removed read site would have failed loudly rather than silently passing.
+
+`utils/colorPalette.js`'s cross-view "Refresh Colors" sweep re-derived the opposite global/server view by calling `getSourceImageInfo` a second time — re-issuing `users.fetch(id, {force: true})` plus a raw `GET /users/{id}` (inside `fetchProfileExtras`) for data that is guild-*independent* and therefore identical to what the primary call already resolved. `getSourceImageInfo` now accepts an optional `globalData` param, and the cross-view call passes in the primary call's own `info.globalData` instead of re-fetching. The fix touches a function whose internal ordering its own comments call load-bearing, so it wasn't trusted on a code read alone: a new instrumented fixture, `scripts/colorPaletteCrossViewFetch.test.js`, stubs the two network-touching dependencies via `require.cache`, was run against the *pre-fix* code first and confirmed to log 4 calls (2× each), then re-run post-fix and confirmed to log exactly 2 — proof no side effect of the second resolve was silently dropped, not just a plausible-looking diff.
+
+A loose, already-uncommitted `.gitignore` reorganization (headed sections, an `Icon?`/`Dioreo logo/` entries) from an earlier session was folded into this branch's first commit rather than left drifting. A completeness-sweep prompt also caught a stale tracking-list entry in `docs/db-deferred-list.md`: #48 and #49 had shipped in the prior release (v3.46.0/#154, a separate branch) without the "deliberately NOT applied" list ever being updated to drop them — corrected in the same pass. It also surfaced a real CI-only bug: `scripts/reflow-comments.mjs`'s syntax-check subprocess crashes on this repo's GitHub Actions Linux runner for any file with a genuinely proposed change (a `/dev/stdin`-as-socket Node quirk), which this branch's own new test file tripped on its first tracked run — filed rather than fixed, to avoid scope-creeping into the reflow tooling itself.
+
+`npm test` green throughout (1 new test file, full suite); `npm run docs:reflow-comments --write` needed two follow-up passes — the new comments in `colorPalette.js` and (once actually tracked) the new test file were both written wide and had to be joined to the repo's one-logical-line-per-comment-block convention. #9 (`AnalyticsEvent` TTL) remains out of scope until mid-September 2026, per the already-settled decision the prior release recorded.
+
+## Pre-Release v3.47.0 — 2026-08-18 12:42 EDT (#155 · `24260f4`) — the installed-but-unused CLI shelf gets written down
 
 A machine-global tooling audit (building `~/.claude/TOOLING.md`, outside this repo) turned up a shelf of command-line tools that are **already installed on the development machine** and map onto workflows this repo still does by hand. None of it is a bug and nothing is broken today, so it lands as a single filed item under `docs/db-deferred-list.md` → 🧹 Someday / tech-debt rather than as adoption.
 

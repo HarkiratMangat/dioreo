@@ -160,7 +160,7 @@ function optimizePurchase(shortfallCp, { currency = 'USD', doubleCpAvailable = [
     if (shortfallCp <= 0) return null;
     const cheapest = solve(shortfallCp, doubleCpAvailable, currency, maxTransactions, CHEAPEST);
     const leastWaste = solve(shortfallCp, doubleCpAvailable, currency, maxTransactions, LEAST_WASTE);
-    return { ...cheapest, cheapest, leastWaste, naive: naiveCover(shortfallCp, currency) };
+    return { cheapest, leastWaste, naive: naiveCover(shortfallCp, currency) };
 }
 
 module.exports = { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney, optimizePurchase };
