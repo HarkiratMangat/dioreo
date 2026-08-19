@@ -17,7 +17,11 @@ status: live
 
 ## An interactive documentation system
 
-**Status:** explored 2026-08-05 23:30 EDT · **Condition to revisit:** whenever documentation is actually wanted — or sooner, if the *search* half alone starts being missed.
+**Status:** explored 2026-08-05 23:30 EDT · **Doc A SHIPPED** 2026-08-18 as dioreo.app's `/commands` page (Pre-Release v3.51.0) · **Condition to revisit the rest:** whenever the admin operations manual is actually wanted — or sooner, if the *search* half alone starts being missed.
+
+> ✅ **The generated half of §4.1 is built and its central claim held.** `scripts/lib/commandCatalog.js` `require()`s every `commands/*.js`, calls `.toJSON()`, and renders the page from the result, so the reference cannot drift from what Discord shows. Two departures from the design below, both deliberate: the overlay is a **JS module keyed by command path** (`scripts/lib/commandProse.js`) rather than one `docs/help/<command>.md` per command — Harkirat's locked decision from the 2026-08-16 design session — and the audience partition comes from `commands/help.js`'s own `CATEGORY_DEFS` gating rather than from `setIntegrationTypes`, so the website and the in-Discord directory cannot disagree about how the bot is organised. The both-ways coverage gate §4.1 asks for exists as `assertProseCoverage()`, and it covers options as well as commands. **Doc B — the admin operations manual — is untouched and stays parked**, as does the *search* half (static search over the ~337,000 words of prose), which nothing here touched.
+>
+> ⚠️ **The entry's OTHER "idea worth not losing" only half shipped, and it would otherwise read as done:** *"the same generated spec can feed an in-Discord surface as well as the website, so one source serves both."* What actually happened is the reverse direction — the website reads `commands/help.js`'s `CATEGORY_DEFS` for its grouping and gating, so the two surfaces cannot disagree about how the bot is organised. But `/help` still builds its own bodies from that same table by hand; **the generated spec does not feed it**, and a command's *prose* exists twice (`commandProse.js` for the site, `CATEGORY_DEFS`' own `description`/`options` for Discord). One source feeding both surfaces is still unbuilt.
 
 **What it is.** A player-facing help system for the bot's commands, plus an admin operations manual for `/manage`, `/autobuild` and the backend. From a mini brainstorming side-session; **nothing is decided or planned**, and Harkirat is explicitly still open to other shapes entirely.
 

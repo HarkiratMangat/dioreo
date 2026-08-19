@@ -523,6 +523,16 @@ function main() {
   let skipped = 0;
 
   for (const f of files) {
+    /* `git ls-files` lists TRACKED paths, which includes a file deleted in the working tree but
+       not yet staged — and readFileSync then threw a raw ENOENT stack, failing `npm test` with
+       no indication that the cause was an unstaged deletion rather than a broken comment.
+       Measured 2026-08-18 23:02 EDT while deleting commandsVariants.js. Skipping is right: the
+       file has no comments to reflow because it has no bytes. */
+    if (!fs.existsSync(f)) {
+      process.stdout.write(`skip  ${f}  (tracked but not on disk — deleted and not yet staged)\n`);
+      skipped++;
+      continue;
+    }
     const before = fs.readFileSync(f, "utf8");
     const isSh = f.endsWith(".sh");
     let after, blocks, wasSkipped = false;

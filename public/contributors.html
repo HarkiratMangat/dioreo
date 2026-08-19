@@ -1067,6 +1067,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 @media print{.tipx{display:none!important}}
 
 
+
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
@@ -1104,6 +1105,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    far between them, --cm the interpolated colour JS computes for the edge
    and the glow. Width and position come from JS in pixels; there is no --n
    and no --i any more, because the indicator measures the real tabs. */
+
 
 
 
@@ -1396,26 +1398,41 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   text-transform:uppercase;color:var(--ink3);text-decoration:none;
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
-.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── six tabs: tighten below 1060, and that is the whole staging ── */
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── seven tabs: tighten below 1140 ──
+   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
+   across the desktop range so both sides of the boundary are read from the same
+   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
+   between 1140 and 1139, so the boundary applies where it says it does; and
+   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
+   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
+   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
+   never fails is not a gate, and "no overflow anywhere" is exactly the result a
+   broken probe also returns.
+   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
+   Commands group in the bar, no page produces those counts any more, and a
+   staging nothing selects is a number that rots unread. */
 
 
-@media (max-width:1059px){
-  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="6"] .seg{--gap:.6rem}
-}/* ── nine tabs: tighten below 1465, chips below 1300 ── */
+@media (max-width:1139px){
+  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="7"] .seg{--gap:.6rem}
+}/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
+   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
+   the three group chips replace the tabs at 1380 -> 1379, both exactly where
+   declared; zero overflow from 1600 down to 981. */
 
 
-@media (max-width:1464px){
-  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+@media (max-width:1544px){
+  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="10"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1299px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+@media (min-width:981px) and (max-width:1379px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
   
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
 }/* Desktop shows no mobile menu. */
 
 
@@ -2244,7 +2261,11 @@ html{scroll-behavior:smooth}
        changes shape as you move around the site. It replaces the old "‹ Legal"
        back button, which could only ever go one place. -->
   <nav>
-    <div class="navwrap" data-fit="6"><div class="seg" data-at="-1" data-label="Documents">
+    <div class="navwrap" data-fit="7"><div class="seg" data-at="-1" data-label="Using it">
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="./commands.html">Using it</a>
+      <a class="tab" href="./commands.html" data-accent="#58D05A">Commands</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./terms.html">Documents</a>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#FF5264">Notice</a>
@@ -2318,7 +2339,7 @@ html{scroll-behavior:smooth}
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab on" href="./contributors.html" aria-current="page" style="--row:#F8FF4A">Contributors</a>
+      <a class="mtab" href="./commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab on" href="./contributors.html" aria-current="page" style="--row:#F8FF4A">Contributors</a>
     </nav>
   </div>
   
@@ -2346,7 +2367,7 @@ html{scroll-behavior:smooth}
   <footer class="foot nodisc">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <strong>dior</strong><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
-    <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a></nav>
+    <nav class="endnav"><a href="./commands.html">Commands</a><span>&middot;</span><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a></nav>
   </footer>
 </div>
 <!-- Outside .wrap, for the reason given on TOTOP_HTML: a fixed element is trapped

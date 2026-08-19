@@ -38,6 +38,9 @@ const fs = require('fs');
 const path = require('path');
 // The third page family. See the header of that file for why it is a separate family and why the dependency runs one way (this file hands it CHROME).
 const { parseChronicle, chronicleShell } = require('./lib/chronicle');
+// The FOURTH family. Same one-way dependency as chronicle.js: this file hands it CHROME, it imports nothing back.
+const { commandsShell } = require('./lib/commandsPage');
+const { buildCatalog } = require('./lib/commandCatalog');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'docs', 'legal');
@@ -57,7 +60,18 @@ const BRAND = {
     violet: '#9B6BE3',
     crimson: '#FF5264',
 
-    // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else.
+    // The same argument again, one level out. The two warm pages first used emerald and gold, which are neighbours of the teal and amber already taken by privacy and terms — so the invitation pages read as more of the legal set rather than as something else. The /commands page. 121 degrees -- the midpoint of the widest gap on the tab hue wheel (citron 62 to teal 180), so 59 degrees of clearance each way against a 30-degree floor. scripts/lib/commandsPage.js carries the full reasoning and the dark-theme partner value.
+    /* ⚠️ THE BRIGHT HUE, like every other BRAND entry — NOT the hand-tuned light-theme
+       text value, which is #1E6B1F and lives in commandsPage.js as the --accent-t
+       override. This field feeds a page's `accent`, and a page's `accent` is read in TWO
+       places that must never disagree: `:root{--accent}` (which fills .ins, the focus
+       ring, ::selection) and the tab's own `data-accent`, which the nav script paints the
+       indicator plate from. It held #1E6B1F for a day and the split was visible on the
+       bar — a dark-green pill beside a bright-green Install button — while License, whose
+       two reads are one value, matched exactly. Harkirat caught it with a colour picker.
+       A dark value here is always wrong: this slot is a FILL, and light theme darkens
+       only --accent-t. */
+    signal: '#58D05A',
     periwinkle: '#8B9BFF',
     citron: '#F8FF4A',
 
@@ -205,7 +219,31 @@ const CHRONICLE_PAGES = [
 /* Every page on the site, in nav order. Several places need "all of them" and each
    used to spell out its own [...PAGES, ...EXTRA_PAGES], which is how a new family
    ends up wired into four of five places. */
-const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...CHRONICLE_PAGES];
+/**
+ * The tool family. One page, and it is deliberately its own table rather than a third EXTRA_PAGE: those are invitations rendered by warmShell(), and this is neither an invitation nor a document but a thing you operate. It also has NO MARKDOWN SOURCE -- the content is read from the bot's own command builders at build time (scripts/lib/commandCatalog.js), so there is no file for readSource() to open and none of the source-vs-output gates apply to it the way they do to the other nine pages.
+ */
+const TOOL_PAGES = [
+    {
+        kind: 'generated', out: 'commands.html',
+        title: 'Commands', short: 'Commands', kicker: 'Dioreo',
+        accent: BRAND.signal, glow: '#A8E8AA',
+        /* ⚠️ The kicker used to read "Read straight from the bot", which describes the BUILD
+           PIPELINE — true, and a fact the reader has no stake in. It now names the product and
+           the page appends the derived command count beside it, so the one number on the
+           masthead cannot go stale. The lede used to narrate the page's own UI ("Pick a
+           command, see every option it takes, and copy a line that works") on a page whose
+           whole job is to get the reader back into Discord. `ledeEm` is the substring set in
+           serif italic — kept as plain text here rather than markup because a page table feeds
+           escaped strings, and commandsPage.js throws if it cannot find it, so the emphasis
+           cannot silently stop applying. */
+        lede: 'Start from the command you know — or from what you are trying to do.',
+        ledeEm: 'what you are trying to do',
+        blurb: 'Every Dioreo command, what it does, and every option it accepts.',
+        desc: 'Every Dioreo command, what each one does, and every option it accepts -- with a copyable example.'
+    },
+];
+
+const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...TOOL_PAGES, ...CHRONICLE_PAGES];
 
 // '' means the site ROOT (the flat document pages + the homepage); 'changelog' is the one remaining subdirectory. Was 'legal' by default until the 2026-08-05 flattening — see the note on OUT.
 const dirOf = p => p.dir || '';
@@ -234,6 +272,7 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 const PUBLISHED_TARGETS = new Set([
     'terms.html', 'privacy.html', 'license.html', 'notice.html', 'index.html', '',
     'contributing.html', 'contributors.html',
+    'commands.html',
     // LICENSE/NOTICE are bare now, not '../LICENSE' — they publish verbatim beside the document pages at the site root since the 2026-08-05 flattening, no longer a level below them.
     'LICENSE', 'NOTICE',
     // The chronicle family, as addressed from a page inside changelog/ …
@@ -1196,7 +1235,7 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
    To restore: put CHRONICLE_PAGES back here, add 'Releases' back to the labels
    below, restore it in pageFoot()'s endnav, and RE-MEASURE the desktop staging —
    the breakpoints in SWITCHER_CSS are measured for the tab count, not derived. */
-const NAV_GROUPS = [PAGES, EXTRA_PAGES];
+const NAV_GROUPS = [TOOL_PAGES, PAGES, EXTRA_PAGES];
 
 /* ⚠️ WITHDRAWN IS NOT UNREACHABLE, and the difference is load-bearing. If the
    record group vanished from the nav on EVERY page, the three chronicle pages
@@ -1213,7 +1252,7 @@ const navLabelFor = gi => NAV_GROUP_LABELS[gi] || 'Releases';
    pills are no longer side by side to make the distinction for themselves. The
    labels are also what the collapsed desktop chips show between 981 and 1100px —
    see SWITCHER_CSS, where the staging is re-derived for three groups. */
-const NAV_GROUP_LABELS = ['Documents', 'Community'];
+const NAV_GROUP_LABELS = ['Using it', 'Documents', 'Community'];
 
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
@@ -1233,7 +1272,7 @@ const NAV_GROUP_LABELS = ['Documents', 'Community'];
    must not quietly inherit someone else's. */
 const navSwitcher = cur => {
     const n = navSetFor(cur).reduce((a, g) => a + g.length, 0);
-    if (n !== 6 && n !== 9) {
+    if (n !== 7 && n !== 10) {
         throw new Error(`navSwitcher: ${n} tabs has no measured breakpoint staging. ` +
             'Measure it (bar.scrollWidth > bar.clientWidth, both sides of every boundary), ' +
             'add a data-fit tier in SWITCHER_CSS, then allow the count here.');
@@ -2377,6 +2416,147 @@ html.liq,html.liq *{cursor:none !important}
    ⚠️ Do not "tidy" this back to the shorter label, and give any NEW icon-only
    control the same consideration — a filter list is a thing your markup can
    collide with, and the failure is silent: the control simply is not there. */
+/* ⚠️ ONE COPY. This block was written out verbatim in shell(), warmShell() and
+   chronicle.js — three byte-identical duplicates of the site's only chrome rule,
+   which meant a fourth page family (the /commands page) could be added carrying the
+   bar MARKUP and none of its CSS, with every build gate still green: they check
+   structure, links, class collisions and contrast, never whether a class resolves
+   to a rule at all. That is exactly what shipped — commands.html had an unstyled
+   `.bar`, which is what "the nav and footer are misaligned" actually was.
+   `#prog` deliberately stays at each call site: its accent variable differs per
+   family (--accent on the documents, --sig on the chronicle) and warmShell has no
+   progress bar at all. */
+const BAR_CSS = `
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+`;
+
+/* .page centres and bounds the document column, and its 54px of top padding is the
+   space the fixed bar occupies. Shared for the same reason as BAR_CSS: a template
+   that centres its own content to a different max-width sits visibly narrower than
+   the chrome above it, and one that forgets the top padding starts underneath it.
+   ⚠️ THE BOTTOM PADDING IS PAIRED WITH warmShell's .wrap AND THE TWO NUMBERS HAVE
+   TO MOVE TOGETHER, or the two templates' footers drift apart. COMPONENT_CSS drops
+   .foot's own bottom padding below 760px on the reasoning that "the wrapper already
+   provides the breathing room" — true of .wrap, false here, where .page ends at 0,
+   so this restores the missing floor. Trimmed 2026-08-05 11:31 EDT from 4rem to
+   2.6rem (paired with .wrap's own trim) after the dead space below the sign-off was
+   reported on every legal, Contributing and Contributors page. */
+const PAGE_CSS = `
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
+`;
+
+/**
+ * The three roles a rendered slash command has, as their own function so TWO pages can draw one identically.
+ *
+ * ⚠️ THIS LAYOUT WAS CHECKED AGAINST A SCREENSHOT OF A REAL USED COMMAND, not recalled — an earlier guess at it was wrong. Discord draws the command as bold plain text, then puts the option NAME and the VALUE each in their own box, one continuous pill with only the outer corners rounded and NO COLON between them: two adjacent boxes already separate the pair. The beds are different materials on purpose — the option name is a neutral grey mixed from --ink, the value an accent tint — because the grey says "label" and the tint says "your selection".
+ *
+ * Extracted 2026-08-18 when the /commands page turned out to be drawing the same object a different way in its (since-deleted) page-wide Composer: accent-coloured option text, a rounded chip for the value, and a space between them. Two renderings of one thing, on one site, two clicks apart. Every constant below is measured and several are load-bearing in ways the comments record — a second copy would have drifted from all of them.
+ */
+function cmdRoleCss(scope, caret = true) {
+    /* ⚠️ THE CARET IS OPT-OUT, and only the landing page keeps it. A caret says "this
+       is where you type". There it is honest — the line IS being typed, by a script.
+       On the /commands page the line is finished OUTPUT you copy, and a caret on it
+       is a large part of why Harkirat tried to type into that page every time he
+       opened it. Do not turn it back on for a static line. */
+    return `${scope} .cmd-c{color:var(--accent-t);font-weight:700}
+/* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
+   An inline box paints its background over the font's CONTENT AREA, which is
+   derived from the face's ascent/descent metrics and is shorter than the glyphs
+   actually drawn — so the legs of p, g and y hung below the chip however much
+   horizontal padding it had. An inline-block's background covers its content
+   box instead, whose height is the line-height, so the whole glyph range is
+   inside it by construction. vertical-align:baseline keeps the chips sitting on
+   the same baseline as the command beside them.
+   ⚠️ MEASURED BY LOOKING, AFTER ARITHMETIC GOT IT WRONG. A canvas TextMetrics
+   check reported 1.7px of clearance below the descender and therefore no
+   clipping at all; a screenshot showed the legs plainly outside the box. The
+   font the canvas measured was not the box the browser painted. When the two
+   disagree, the render wins — same lesson as the nav indicator's dilation. */
+/* ⚠️ THE PADDING IS ASYMMETRIC ON PURPOSE — .5em at the JUNCTION between the two
+   boxes, .3em at the pill's OUTER edges. The junction is where two words butt
+   together with only a change of bed between them, so it needs the air; the
+   outer edges only meet the page and looked slack carrying the same amount.
+   Harkirat's call, in two passes: open the junction up, then take the outside
+   and the vertical back down. Keep them independent — setting one shorthand for
+   all four sides is what produced both complaints. */
+${scope} .cmd-o,${scope} .cmd-v{display:inline-block;vertical-align:baseline;
+  line-height:1.5;color:var(--ink);font-weight:400}
+/* ⚠️ THE -1px MARGIN IS A DELIBERATE OVERLAP, AND REMOVING IT REOPENS A BUG THAT
+   DOES NOT REPRODUCE IN CHROME. Harkirat photographed the two beds visibly
+   separated on an iPhone (2026-08-05 20:29 EDT) while Chrome measured the gap at
+   EXACTLY ZERO — option right edge and value left edge both at 112.594px. That
+   fractional position is the tell: the boundary lands mid-device-pixel, and at
+   iOS's 3x DPR the antialiasing of two abutting edges can each leave that pixel
+   partly transparent, so the page shows through as a hairline. Two boxes that
+   merely touch are not enough; they have to overlap. The right padding adds the
+   same 1px back so the gap between the two WORDS is unchanged — only the beds
+   move. Do not "simplify" this to a plain .5em. */
+${scope} .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
+  background:color-mix(in srgb,var(--ink) 10%,transparent);
+  border-radius:.34em 0 0 .34em}
+${scope} .cmd-v{padding:.08em .3em .08em .5em;
+  background:color-mix(in srgb,var(--accent) 26%,transparent);
+  border-radius:0 .34em .34em 0}
+/* Set by the HOST's paint() while the value has no characters yet — see CMD_JS's
+   own note for why this is a class rather than :has(+ .cmd-v:empty). ⚠️ Only the
+   landing page's typewriter has a state where a value is still empty; the /commands
+   page's copy line is rendered whole at BUILD time and only ever repainted with a
+   complete value, so "solo" and the ":empty" rules below are inert there rather than
+   wrong. */
+${scope} .cmd-o.solo{border-radius:.34em;margin-right:0}
+${scope} .cmd-o:empty,${scope} .cmd-v:empty{padding:0;background:none}
+${scope} .cmd-o:empty{margin-right:0}
+${scope}::after{content:"";display:inline-block;width:.5em;height:1em;
+  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
+  animation:cmd-blink 1.1s steps(1) infinite}
+/* Solid while keys are landing, blinking on the hold and the gap — a cursor
+   that blinks through its own typing reads as a glitch. ⚠️ "cmd-busy" belongs to
+   whichever host is TYPING: CMD_JS sets it on the landing page and writes nothing
+   else about the cursor. The /commands page never types — its copy line is rendered
+   at build time and repainted only when you pick an option value — so it never sets
+   this class, and it draws no caret at all: the page-wide Composer that used to carry
+   one was deleted 2026-08-18 for reading as a text input it was not. Under
+   prefers-reduced-motion the global animation:none override pins the block solid
+   and CMD_JS stops touching the class at all, which is the correct still frame.
+   ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
+   re-parses the built CSS and flags a brace inside a comment, which is how a
+   comma-carrying comment once destroyed eight rules. It failed this build for
+   exactly that reason. Describe such rules in prose, never in syntax. */
+${scope}.cmd-busy::after{animation:none}
+@keyframes cmd-blink{50%{opacity:0}}
+` + (caret ? '' : `\n${scope}::after{content:none}`);
+}
+
+/* ⚠️ SHARED, AND THIS IS THE FOURTH TIME. `.slot` is the section-index row — the
+   desktop rail uses it AND so does mobileNav()'s "on this page" menu, which every
+   template emits. It lived inside shell()'s own style block, so any family that
+   called mobileNav() with slots got the MARKUP and none of the typography: measured
+   on the /commands page, `.slot` computed to rgb(0,0,238) underlined, i.e. the
+   browser's default link, with a bare em-dash beside it. Harkirat saw it as "the ugly
+   'on this page' links" and he was looking at unstyled HTML.
+   Same shape as BAR_CSS, PAGE_CSS and cmdRoleCss before it. The rule to draw from the
+   set rather than from this one instance: **anything shell() styles that a NAV HELPER
+   emits belongs in CHROME, because the helper is callable from every template while
+   the stylesheet is not.** */
+const SLOT_CSS = `
+.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
+  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
+  transition:border-color .18s,color .18s}
+.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
+  font-weight:500;letter-spacing:-.005em}
+.slot:hover{border-left-color:var(--ink3)}
+.slot:hover span{color:var(--ink)}
+.slot.on{border-left-color:var(--accent)}
+.slot.on i{color:var(--accent-t)}
+.slot.on span{color:var(--ink);font-weight:650}
+`;
+
 const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
@@ -3792,24 +3972,39 @@ const SWITCHER_CSS = `
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* ── six tabs: tighten below 1060, and that is the whole staging ── */
-@media (max-width:1059px){
-  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="6"] .seg{--gap:.6rem}
+/* ── seven tabs: tighten below 1140 ──
+   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
+   across the desktop range so both sides of the boundary are read from the same
+   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
+   between 1140 and 1139, so the boundary applies where it says it does; and
+   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
+   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
+   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
+   never fails is not a gate, and "no overflow anywhere" is exactly the result a
+   broken probe also returns.
+   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
+   Commands group in the bar, no page produces those counts any more, and a
+   staging nothing selects is a number that rots unread. */
+@media (max-width:1139px){
+  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="7"] .seg{--gap:.6rem}
 }
 
-/* ── nine tabs: tighten below 1465, chips below 1300 ── */
-@media (max-width:1464px){
-  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
+   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
+   the three group chips replace the tabs at 1380 -> 1379, both exactly where
+   declared; zero overflow from 1600 down to 981. */
+@media (max-width:1544px){
+  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="10"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1299px){
+@media (min-width:981px) and (max-width:1379px){
   /* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
 }
 
 /* Desktop shows no mobile menu. */
@@ -4249,10 +4444,7 @@ ${TOKENS}
 ${COMPONENT_CSS}
 
 /* ── top bar ─────────────────────────────────────────────────────── */
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
-  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
-  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+${BAR_CSS}
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
 
 ${SWITCHER_CSS}
@@ -4262,18 +4454,7 @@ ${SWITCHER_CSS}
    .cols on purpose — see the markup comment: it is what stops the sticky rail from
    travelling into the footer, and keeping it in .page is what stops it stretching to
    the full viewport width. Do not fold these two back together. */
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
-/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
-   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
-   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap, false here,
-   where .page ends at 0. This restores the missing floor, and the two numbers
-   have to move together — see .wrap below — or the templates drift apart again.
-   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
-   original 4rem) was reported as too much dead space below the sign-off on
-   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
-   with .wrap's own trim to the same value. */
-@media (max-width:760px){ .page{padding-bottom:2.6rem} }
+${PAGE_CSS}
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
@@ -4313,18 +4494,7 @@ ${SWITCHER_CSS}
    guarded in JS: a viewport check in script would have to be re-run on resize
    and can disagree with the media query that actually governs the layout. */
 .rail>.lab .cur{display:none}
-.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
-  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
-  transition:border-color .18s,color .18s}
-.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
-  font-variant-numeric:tabular-nums}
-.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
-  font-weight:500;letter-spacing:-.005em}
-.slot:hover{border-left-color:var(--ink3)}
-.slot:hover span{color:var(--ink)}
-.slot.on{border-left-color:var(--accent)}
-.slot.on i{color:var(--accent-t)}
-.slot.on span{color:var(--ink);font-weight:650}
+${SLOT_CSS}
 /* ── the plain-text download ──────────────────────────────────────────
    The desktop rail's last row. It reads as an ACTION, not as another section —
    a filled chip rather than a ruled row — because a reader scanning for "where
@@ -7112,10 +7282,7 @@ ${TOKENS}
 :root{--accent:${accent};--glow:${glow}}
 ${COMPONENT_CSS}
 
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
-  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
-  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+${BAR_CSS}
 
 ${SWITCHER_CSS}
 
@@ -7890,64 +8057,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
    ⚠️ :empty is load-bearing — a segment with no characters yet still has the
    chip's padding, so without this a bare coloured blob sits on the line ahead
    of the text the whole time it is typing. */
-.cmd-line .cmd-c{color:var(--accent-t);font-weight:700}
-/* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
-   An inline box paints its background over the font's CONTENT AREA, which is
-   derived from the face's ascent/descent metrics and is shorter than the glyphs
-   actually drawn — so the legs of p, g and y hung below the chip however much
-   horizontal padding it had. An inline-block's background covers its content
-   box instead, whose height is the line-height, so the whole glyph range is
-   inside it by construction. vertical-align:baseline keeps the chips sitting on
-   the same baseline as the command beside them.
-   ⚠️ MEASURED BY LOOKING, AFTER ARITHMETIC GOT IT WRONG. A canvas TextMetrics
-   check reported 1.7px of clearance below the descender and therefore no
-   clipping at all; a screenshot showed the legs plainly outside the box. The
-   font the canvas measured was not the box the browser painted. When the two
-   disagree, the render wins — same lesson as the nav indicator's dilation. */
-/* ⚠️ THE PADDING IS ASYMMETRIC ON PURPOSE — .5em at the JUNCTION between the two
-   boxes, .3em at the pill's OUTER edges. The junction is where two words butt
-   together with only a change of bed between them, so it needs the air; the
-   outer edges only meet the page and looked slack carrying the same amount.
-   Harkirat's call, in two passes: open the junction up, then take the outside
-   and the vertical back down. Keep them independent — setting one shorthand for
-   all four sides is what produced both complaints. */
-.cmd-line .cmd-o,.cmd-line .cmd-v{display:inline-block;vertical-align:baseline;
-  line-height:1.5;color:var(--ink);font-weight:400}
-/* ⚠️ THE -1px MARGIN IS A DELIBERATE OVERLAP, AND REMOVING IT REOPENS A BUG THAT
-   DOES NOT REPRODUCE IN CHROME. Harkirat photographed the two beds visibly
-   separated on an iPhone (2026-08-05 20:29 EDT) while Chrome measured the gap at
-   EXACTLY ZERO — option right edge and value left edge both at 112.594px. That
-   fractional position is the tell: the boundary lands mid-device-pixel, and at
-   iOS's 3x DPR the antialiasing of two abutting edges can each leave that pixel
-   partly transparent, so the page shows through as a hairline. Two boxes that
-   merely touch are not enough; they have to overlap. The right padding adds the
-   same 1px back so the gap between the two WORDS is unchanged — only the beds
-   move. Do not "simplify" this to a plain .5em. */
-.cmd-line .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
-  background:color-mix(in srgb,var(--ink) 10%,transparent);
-  border-radius:.34em 0 0 .34em}
-.cmd-line .cmd-v{padding:.08em .3em .08em .5em;
-  background:color-mix(in srgb,var(--accent) 26%,transparent);
-  border-radius:0 .34em .34em 0}
-/* Set by CMD_JS's paint() while the value has no characters yet — see the note
-   there for why this is a class rather than :has(+ .cmd-v:empty). */
-.cmd-line .cmd-o.solo{border-radius:.34em;margin-right:0}
-.cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
-.cmd-line .cmd-o:empty{margin-right:0}
-.cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
-  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
-  animation:cmd-blink 1.1s steps(1) infinite}
-/* Solid while keys are landing, blinking on the hold and the gap — a cursor
-   that blinks through its own typing reads as a glitch. CMD_JS owns this class;
-   it writes nothing else about the cursor. Under prefers-reduced-motion the
-   global animation:none override pins the block solid and CMD_JS stops touching
-   the class at all, which is the correct still frame.
-   ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
-   re-parses the built CSS and flags a brace inside a comment, which is how a
-   comma-carrying comment once destroyed eight rules. It failed this build for
-   exactly that reason. Describe such rules in prose, never in syntax. */
-.cmd-line.cmd-busy::after{animation:none}
-@keyframes cmd-blink{50%{opacity:0}}
+${cmdRoleCss('.cmd-line')}
 .list{border-top:1px solid var(--rule)}
 /* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
    linear the row snapped rather than moved — the whole page read as abrupt for
@@ -8416,6 +8526,7 @@ const CHROME = {
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
     MORPH_JS,
     wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
+    BAR_CSS, PAGE_CSS, SLOT_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
 };
 
 function build() {
@@ -8519,8 +8630,36 @@ function build() {
             `${res.parts} parts · ${res.lessons} lessons · ${(res.html.length / 1024).toFixed(1)} KB`);
     }
 
+    // The tool family. Its content comes from the bot's own command builders rather than from a file, so there is no readSource() step and no source-vs-output comparison to make -- but it IS pushed onto `built` so linkAudit(), a11yAudit() and secretScan() cover it exactly like every other page. A page no gate looks at is the one that quietly rots.
+    const catalog = buildCatalog();
+    for (const page of TOOL_PAGES) {
+        LINK_BASE = '';
+        const html = commandsShell({ page, catalog, C: CHROME });
+        writePage(outPath(page), html);
+        built.push({ ...page, tool: true });
+        console.log(`  \u2713 ${page.out}  ${catalog.commandCount} commands \u00b7 ` +
+            `${(html.length / 1024).toFixed(1)} KB`);
+    }
+
+    /* 🔴 A PERMANENT SWEEP, NOT LEFTOVER VARIANT MACHINERY. `public/_v-*.html` is the agreed
+       prefix for a scratch render — a comparison page, a device harness — and .gitignore
+       excludes it. ⚠️ .gitignore DOES NOT PROTECT A DEPLOY: both publish paths run
+       `wrangler pages deploy public`, which uploads the DIRECTORY and has never consulted the
+       git index, and CI's staleness gate reads `git diff -- public/`, which cannot see an
+       ignored file either. So a scratch page left in public/ ships to dioreo.app with nothing
+       going red anywhere — measured 2026-08-18, when three of them sat one site-touching merge
+       from being live. This sweep is what makes the prefix safe to use: write a scratch render
+       AFTER a build, look at it, and the next ordinary build removes it.
+       ⚠️ It reads the DIRECTORY rather than a hand-written list, because a hardcoded list goes
+       stale the moment the scratch files are renamed — which already happened once in the same
+       session, orphaning three of them where no later build could see them. */
+    for (const f of fs.readdirSync(OUT).filter(n => /^_v-.*\.html$/.test(n))) {
+        fs.unlinkSync(path.join(OUT, f));
+        console.log(`  \u25CB swept scratch render ${f}`);
+    }
+
     // Only the numbered legal set goes in the numbered list.
-    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle)));
+    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle && !p.tool)));
     console.log('  ✓ index.html');
     buildCompanions();
     return built;
@@ -8576,6 +8715,12 @@ function verify(built) {
     const RUN = 8;
 
     for (const page of built) {
+        // The tool family has no source file, so "did every run of source survive into the HTML" is not a question that exists for it. Reported rather than silently skipped: a page quietly outside every gate is how one rots unnoticed, and this one is still covered by linkAudit(), a11yAudit() and secretScan(), which read the WRITTEN FILE and so need no source. Its own equivalent of this check is commandProse.js's assertProseCoverage(), which fails the build when the page and the bot have drifted apart in either direction.
+        if (page.kind === 'generated') {
+            console.log(`  \u25cb ${page.out}: generated from the command builders, no source to compare ` +
+                '(covered by assertProseCoverage + link/a11y/secret gates)');
+            continue;
+        }
         const out = fs.readFileSync(outPath(page), 'utf8');
         const rendered = ' ' + words(out
             .replace(/<script[\s\S]*?<\/script>/g, ' ')
@@ -8965,7 +9110,8 @@ function contrastAudit(built) {
         const merge = re => [...css.matchAll(re)].map(m => m[1]).join(';');
         const themes = [
             ['dark', merge(/:root\{([^}]*)\}/g)],
-            ['light', merge(/:root\[data-theme="light"\]\{([^}]*)\}/g)],
+            // ⚠️ THE QUOTES ARE OPTIONAL IN CSS AND WERE MANDATORY HERE, which made this gate half-blind for every page that does not declare its own world. TOKENS emits `:root[data-theme=light]` UNQUOTED, so the light merge never matched it, `--desk` fell back to the DARK desk, and every light-theme ratio was computed against the wrong ground. It surfaced when the /commands page declared a quoted light block: its light `--sig` was read while its `--desk` still came from the dark base, reporting 2.78:1 for a pair that never co-occur. Matching both spellings is what the cascade does.
+            ['light', merge(/:root\[data-theme=["']?light["']?\]\{([^}]*)\}/g)],
         ];
         let base = {};
         for (const [name, block] of themes) {

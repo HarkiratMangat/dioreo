@@ -65,3 +65,6 @@ __pycache__/
 # Structured log sink written by utils/logger.js on the VM (tailed by the Ops Agent, rotated by
 # logrotate). Never committed — it is machine-local runtime output.
 logs/
+
+# Comparison renders for the /commands grid — build output, never published.
+public/_v-*.html
