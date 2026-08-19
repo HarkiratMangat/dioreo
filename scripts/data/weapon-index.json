@@ -1,0 +1,462 @@
+{
+ "generated": "2026-08-19",
+ "source": "loadouts collection",
+ "counts": {
+  "MP": 68,
+  "DMZ": 7
+ },
+ "MP": [
+  {
+   "name": ".50 GS",
+   "key": ".50gs",
+   "category": "SECONDARIES",
+   "builds": 2
+  },
+  {
+   "name": "3-LINE RIFLE",
+   "key": "3-linerifle",
+   "category": "SNIPER",
+   "builds": 2
+  },
+  {
+   "name": "AK117",
+   "key": "ak117",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "ARGUS",
+   "key": "argus",
+   "category": "SHOTGUN",
+   "builds": 1
+  },
+  {
+   "name": "AS VAL",
+   "key": "asval",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "BAL-27",
+   "key": "bal-27",
+   "category": "AR",
+   "builds": 5
+  },
+  {
+   "name": "BP50",
+   "key": "bp50",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "BY15",
+   "key": "by15",
+   "category": "SHOTGUN",
+   "builds": 1
+  },
+  {
+   "name": "CBR4",
+   "key": "cbr4",
+   "category": "SMG",
+   "builds": 2
+  },
+  {
+   "name": "CHOPPER",
+   "key": "chopper",
+   "category": "LMG",
+   "builds": 1
+  },
+  {
+   "name": "CROSSBOW",
+   "key": "crossbow",
+   "category": "SECONDARIES",
+   "builds": 2
+  },
+  {
+   "name": "CX-9",
+   "key": "cx-9",
+   "category": "SMG",
+   "builds": 3
+  },
+  {
+   "name": "DL Q33",
+   "key": "dlq33",
+   "category": "SNIPER",
+   "builds": 1
+  },
+  {
+   "name": "DOBVRA",
+   "key": "dobvra",
+   "category": "SECONDARIES",
+   "builds": 1
+  },
+  {
+   "name": "DR-H",
+   "key": "dr-h",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "FENNEC",
+   "key": "fennec",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "FFAR 1",
+   "key": "ffar1",
+   "category": "AR",
+   "builds": 3
+  },
+  {
+   "name": "FSS Hurricane",
+   "key": "fsshurricane",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "GKS",
+   "key": "gks",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "GRAU 5.56",
+   "key": "grau5.56",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "HADES",
+   "key": "hades",
+   "category": "LMG",
+   "builds": 1
+  },
+  {
+   "name": "HDR",
+   "key": "hdr",
+   "category": "SNIPER",
+   "builds": 1
+  },
+  {
+   "name": "HG 40",
+   "key": "hg40",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "HOLGER 26",
+   "key": "holger26",
+   "category": "LMG",
+   "builds": 3
+  },
+  {
+   "name": "HS0405",
+   "key": "hs0405",
+   "category": "SHOTGUN",
+   "builds": 2
+  },
+  {
+   "name": "HVK-30",
+   "key": "hvk-30",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "ICR-1",
+   "key": "icr-1",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "JAK-12",
+   "key": "jak-12",
+   "category": "SHOTGUN",
+   "builds": 1
+  },
+  {
+   "name": "KILO 141",
+   "key": "kilo141",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "KILO BOLT-ACTION",
+   "key": "kilobolt-action",
+   "category": "MARKSMAN",
+   "builds": 3
+  },
+  {
+   "name": "KN-44",
+   "key": "kn-44",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "KOSHKA",
+   "key": "koshka",
+   "category": "SNIPER",
+   "builds": 2
+  },
+  {
+   "name": "KRM-262",
+   "key": "krm-262",
+   "category": "SHOTGUN",
+   "builds": 2
+  },
+  {
+   "name": "L-CAR 9",
+   "key": "l-car9",
+   "category": "SECONDARIES",
+   "builds": 2
+  },
+  {
+   "name": "LK24",
+   "key": "lk24",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "LOCUS",
+   "key": "locus",
+   "category": "SNIPER",
+   "builds": 2
+  },
+  {
+   "name": "LW3-TUNDRA",
+   "key": "lw3-tundra",
+   "category": "SNIPER",
+   "builds": 3
+  },
+  {
+   "name": "M21 EBR",
+   "key": "m21ebr",
+   "category": "SNIPER",
+   "builds": 3
+  },
+  {
+   "name": "MAC-10",
+   "key": "mac-10",
+   "category": "SMG",
+   "builds": 2
+  },
+  {
+   "name": "MACHINE PISTOL",
+   "key": "machinepistol",
+   "category": "SECONDARIES",
+   "builds": 1
+  },
+  {
+   "name": "MAN-O-WAR",
+   "key": "man-o-war",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "MG42",
+   "key": "mg42",
+   "category": "LMG",
+   "builds": 1
+  },
+  {
+   "name": "NA-45",
+   "key": "na-45",
+   "category": "SNIPER",
+   "builds": 1
+  },
+  {
+   "name": "ODEN",
+   "key": "oden",
+   "category": "AR",
+   "builds": 2
+  },
+  {
+   "name": "PDW-57",
+   "key": "pdw-57",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "PHARO",
+   "key": "pharo",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "PKM",
+   "key": "pkm",
+   "category": "LMG",
+   "builds": 2
+  },
+  {
+   "name": "PP19 BIZON",
+   "key": "pp19bizon",
+   "category": "SMG",
+   "builds": 3
+  },
+  {
+   "name": "QQ9",
+   "key": "qq9",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "R9-0",
+   "key": "r9-0",
+   "category": "SHOTGUN",
+   "builds": 1
+  },
+  {
+   "name": "RAAL MG",
+   "key": "raalmg",
+   "category": "LMG",
+   "builds": 1
+  },
+  {
+   "name": "RAM-7",
+   "key": "ram-7",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "RPD",
+   "key": "rpd",
+   "category": "LMG",
+   "builds": 1
+  },
+  {
+   "name": "RYTEC AMR",
+   "key": "rytecamr",
+   "category": "SNIPER",
+   "builds": 2
+  },
+  {
+   "name": "SHORTY",
+   "key": "shorty",
+   "category": "SECONDARIES",
+   "builds": 1
+  },
+  {
+   "name": "SKS",
+   "key": "sks",
+   "category": "MARKSMAN",
+   "builds": 4
+  },
+  {
+   "name": "SO-14",
+   "key": "so-14",
+   "category": "MARKSMAN",
+   "builds": 3
+  },
+  {
+   "name": "SP-R 208",
+   "key": "sp-r208",
+   "category": "MARKSMAN",
+   "builds": 2
+  },
+  {
+   "name": "STRIKER",
+   "key": "striker",
+   "category": "SHOTGUN",
+   "builds": 2
+  },
+  {
+   "name": "SWITCHBLADE X9",
+   "key": "switchbladex9",
+   "category": "SMG",
+   "builds": 3
+  },
+  {
+   "name": "TEC-9",
+   "key": "tec-9",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "TYPE 19",
+   "key": "type19",
+   "category": "AR",
+   "builds": 3
+  },
+  {
+   "name": "TYPE 63",
+   "key": "type63",
+   "category": "MARKSMAN",
+   "builds": 2
+  },
+  {
+   "name": "UL736",
+   "key": "ul736",
+   "category": "LMG",
+   "builds": 2
+  },
+  {
+   "name": "USS 9",
+   "key": "uss9",
+   "category": "SMG",
+   "builds": 3
+  },
+  {
+   "name": "VMP",
+   "key": "vmp",
+   "category": "SMG",
+   "builds": 2
+  },
+  {
+   "name": "XM4",
+   "key": "xm4",
+   "category": "AR",
+   "builds": 3
+  },
+  {
+   "name": "XPR-50",
+   "key": "xpr-50",
+   "category": "SNIPER",
+   "builds": 2
+  }
+ ],
+ "DMZ": [
+  {
+   "name": "AK117",
+   "key": "ak117",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "AS VAL",
+   "key": "asval",
+   "category": "AR",
+   "builds": 1
+  },
+  {
+   "name": "FENNEC",
+   "key": "fennec",
+   "category": "SMG",
+   "builds": 1
+  },
+  {
+   "name": "J358",
+   "key": "j358",
+   "category": "SECONDARIES",
+   "builds": 1
+  },
+  {
+   "name": "OUTLAW",
+   "key": "outlaw",
+   "category": "SNIPER",
+   "builds": 1
+  },
+  {
+   "name": "SO-14",
+   "key": "so-14",
+   "category": "MARKSMAN",
+   "builds": 1
+  },
+  {
+   "name": "TYPE 19",
+   "key": "type19",
+   "category": "AR",
+   "builds": 2
+  }
+ ]
+}

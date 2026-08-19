@@ -99,9 +99,11 @@ Measured on the rendered page, light theme: `/patch notes` token is `rgb(0,0,0)`
 
 Six commands derive an accent per render. Drawn as a hollow outlined dot, that true fact read as *missing*: *"why are all of these commands missing unique colors??"*
 
-`utils/loadoutRender.js` has always carried `MP_CATEGORY_ACCENT` — seven real category colours the bot answers in, keyed by exactly the strings `/gunsmiths list` offers as `scope`. The page reads it at build time. The derived six wear a conic sweep of all seven, and **`/gunsmiths list` re-tints the whole panel to the category you choose** — LMG turns it Grape Purple `#845EC2` — because that is what the bot will do. Verified live: base `#7A6E8C` → LMG `#845EC2` → AR `#FF3B5C`, and back to base when deselected.
+`utils/loadoutRender.js` has always carried `MP_CATEGORY_ACCENT` — seven real category colours the bot answers in, keyed by exactly the strings `/gunsmiths list` offers as `scope`. The page reads it at build time. The derived six wear ONE quiet grey, and **`/gunsmiths list` re-tints the whole panel to the category you choose** — LMG turns it Grape Purple `#845EC2` — because that is what the bot will do. Verified live: base → LMG `#845EC2` → AR `#FF3B5C`, and back to base when deselected.
 
-They also get a real neutral (`#7A6E8C`) rather than `var(--ink3)`. An ink token as an accent made a selected chip tint out grey, so it read as unselected beside a command whose chips tinted properly — *"blatant inconsistency in design"*, and correctly so.
+⚠️ **Revised 2026-08-19 15:26 EDT, before this ever left the branch.** The first cut drew the derived six as a conic sweep of all seven category colours. It was true — those really are the colours they answer in — and Harkirat read it as a rainbow bauble: *"i dont like the rainbow ball, pick a single color for those commands."* The fact is now stated calmly by one grey, and demonstrated loudly by the re-tint, which is the right division of labour between a legend and a demo.
+
+They also get a real neutral (`#8A8494`) rather than `var(--ink3)`. An ink token as an accent made a selected chip tint out grey, so it read as unselected beside a command whose chips tinted properly — *"blatant inconsistency in design"*, and correctly so.
 
 ## 8. Search
 
@@ -129,3 +131,26 @@ Every command now carries a hand-written `keywords` string, gated by `SEARCH_CAS
 ⚠️ **A `position:fixed` element can report `position: fixed` and still be in the wrong place.** Read its `getBoundingClientRect()` against `innerHeight` and hit-test its centre with `elementFromPoint`; the computed `position` alone proves nothing.
 
 ⚠️ Headless Chrome clamps the layout viewport to 500px minimum, so `--window-size=390` is a 500px layout cropped. Use the Browser pane's mobile preset, which makes `pointer:coarse` actually match — a coarse-pointer branch cannot be reached by resizing a window.
+
+---
+
+## 12. Revision — 2026-08-19 17:45 EDT
+
+A third review, and the honest reading is that several of its findings were defects introduced by the second round's fixes. **The pattern, stated so it does not repeat: elements were being shipped because they were ACCURATE, and judged on whether they TEACH or DO anything.** Accuracy is the floor. The hollow dot was true. The conic sweep was true. `IN DISCORD <description>` was true. All three were rejected, and the fourth — `No options — just run it.` — was not even true.
+
+| Changed | Because |
+|---|---|
+| Per-option prose **deleted** | Discord's registered `description` is what the client shows; the hand-written duplicate made an option print its description three times |
+| `IN DISCORD` line **deleted**, `facts` added | It restated the sentence above it. Facts state what a reader could not guess: partial matching, live results, what a blank option falls back to |
+| `visibility` is an option row | It is selectable. The prose footnote also let `/invite` claim "No options" while holding one |
+| `scroll-margin-top` **restored** | Zero occurrences in the file; every fragment jump parked the panel under the bar and the rail |
+| Weapon autocomplete | `scripts/exportWeaponIndex.mjs` → committed JSON, 68 MP + 7 DMZ. Exact match re-tints to the weapon's own category colour |
+| All eleven scopes carry a colour | Four fell through to `removeProperty` and the card lost its colour entirely |
+| Rail chip follows the live tint | It stayed grey while the card changed |
+| Copy never disables · Clear added · line tokens open their option | Copying a bare command is a real action; there was no way to undo; the tokens were inert text beside controls you had to hunt for |
+| `VISIBLE_CHOICES` 6 → 12, open slot spans both columns | Thresholds tuned for the two-zone layout survived the move to a full-width card |
+| Landing leads with command cards, **collapsed to names on mobile** | Fourteen full cards made the mobile landing 3292px / 4.1 screenfuls. Harkirat: *"a strong majority of users will view the website on mobile since codm is literally a mobile game and discord is primarily used on mobile."* Measured back to 1934px |
+
+⚠️ **The mobile note is a standing constraint, not a one-off fix.** Every decision on this page is made for a phone first and adapted upward, and where the right answer genuinely differs by device the page is allowed to differ — the command grid does.
+
+🪤 **New traps.** A `<script type="application/json">` fails the build's inline-script gate, correctly, because the gate cannot know the type attribute changes the language — inline data must be a real JS assignment. And the weapon exporter's first run used `weapon` where the schema says `weaponName`, grouped everything into one null-keyed bucket, reported "1 MP + 1 DMZ weapons" and exited 0; it now refuses to write below a floor, and a test asserts that floor can reject exactly that shape.

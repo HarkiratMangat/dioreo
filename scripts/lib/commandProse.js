@@ -1,167 +1,125 @@
 /**
  * The prose layer for the website's /commands page.
  *
- * The catalog (scripts/lib/commandCatalog.js) supplies everything Discord knows: names, options, choices, which are required. What it cannot supply is why a person would want the command, because Discord's own description field is one line written for a picker — "Look up or browse MP weapon loadouts" is correct and tells a reader nothing they could not guess from the name.
+ * ⚠️ THERE IS NO PER-OPTION PROSE HERE ANY MORE, DELIBERATELY. Every option carries a `description` that the bot REGISTERS WITH DISCORD, and that sentence is what the client shows the reader a second after they leave this page. This file used to carry a second, hand-written sentence per option — so the page printed Discord's description, then this one, then this one again in the free-text branch: three near-identical lines under one option name, which Harkirat correctly called lazy (2026-08-19 16:00 EDT). One authoritative sentence beats three that agree. `scripts/lib/commandsPage.js` reads `option.description` straight from the catalog.
  *
- * ⚠️ EVERY LINE HERE IS WRITTEN TO BE READ BY SOMEONE WHO NEEDS HELP RIGHT NOW. Harkirat, 2026-08-17 19:57 EDT: "people dont want to read essays, they just need to be guided and shown how to do something ... the user is literally only here because *they need help*." So: one sentence per command, plain verbs, no feature-selling, and an option blurb short enough to read at a glance. If a line here grows past a sentence it is the wrong line.
+ * ⚠️ EVERY LINE HERE IS WRITTEN TO BE READ BY SOMEONE WHO NEEDS HELP RIGHT NOW. Harkirat, 2026-08-17 19:57 EDT: "people dont want to read essays, they just need to be guided and shown how to do something ... the user is literally only here because *they need help*."
  *
- * ⚠️ THE GATE RUNS BOTH WAYS (assertProseCoverage). A command with no prose is a bay with a hole in it; a prose entry with no command is a description of something that no longer exists, which is worse — it reads as current. Neither is a warning, both fail the build.
+ * ⚠️ AND IT MUST TELL THEM SOMETHING THEY COULD NOT GUESS. A line that restates the command's own name is worse than no line: it costs a read and returns nothing. That is what `facts` is for — the behaviours the bot has that a reader would never assume, like the fact that weapon search matches partial words and updates live as you type.
+ *
+ * ⚠️ THE GATE RUNS BOTH WAYS (assertProseCoverage). A command with no prose is a hole; a prose entry with no command describes something that no longer exists, which is worse, because it reads as current. Neither is a warning, both fail the build.
  */
 
 /**
- * `keywords` is a hand-written search vocabulary, and it exists because matching only what Discord declares is not enough: searching "loadout" matched `/gunsmiths search` alone, while `/gunsmiths list` and `/dmz` — both entirely about loadouts — matched nothing, because neither uses that word in any field the bot registers. Write the words a CODM player would actually type, including the misspellings and the plurals. Gated by SEARCH_CASES below.
- *
- * `sample` is the value the command's copy line is rendered with at build time, and it must be REAL — a reader copying the line off this page should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing.
+ * `purpose` — one sentence, in the reader's words, saying what they GET. Not what the command is called again. `facts` — up to three things the reader could not guess. Behaviours, defaults, limits. Omit rather than pad. `sample` — the value the copy line is rendered with at build time. It must be REAL: someone copying this line should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing. `examples` — tap-to-fill values for a free-text option. Every one must actually parse. `keywords` — the search vocabulary, in the words a CODM player types. Gated by SEARCH_CASES.
  */
 const COMMANDS = {
     '/help': {
-        purpose: 'The same directory as this page, inside Discord.',
+        purpose: 'Every command Dioreo has, listed inside Discord.',
+        facts: ['The `cmd` option jumps straight to one command instead of the whole list.',
+                'This is the only command that answers privately unless you say otherwise.'],
         keywords: 'commands directory list menu what can it do capabilities',
-        options: { cmd: 'Jump straight to one command' },
     },
     '/invite': {
         purpose: 'Add Dioreo to a server, or to your own account.',
+        facts: ['Adding it to your account carries it into every server, DM and group chat you are in — including servers Dioreo has never joined.',
+                'Adding it to a server lets everyone there use it without installing anything.'],
         keywords: 'add install link server account guild user install setup',
-        options: {},
     },
 
     '/gunsmiths search': {
-        purpose: "Find one MP weapon's loadout.",
-        keywords: 'loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp',
-        options: {
-            weapon: 'Any MP weapon',
-            build: 'Pick a build when a weapon has more than one',
-        },
+        purpose: 'The attachment build for one MP weapon.',
+        facts: ['Discord searches as you type, and partial words match — "hol" finds Holger 26.',
+                'A weapon with more than one build opens on the first; `build` jumps to another.',
+                'The reply comes back in that weapon\'s category colour.'],
         sample: { weapon: 'AK117' },
+        keywords: 'loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp',
     },
     '/gunsmiths list': {
-        purpose: 'Browse a whole category, the current meta, or every build there is.',
+        purpose: 'Every build in one category, the current meta, or all of them.',
+        facts: ['Eleven scopes: the seven weapon categories, all MP builds, the MP and DMZ meta picks, and all of DMZ.',
+                'The reply takes the colour of whichever scope you pick.'],
         keywords: 'loadout loadouts build builds attachment gunsmith meta tier best category browse guns mp',
-        options: { scope: 'Which set to browse' },
     },
     '/dmz': {
         purpose: 'DMZ builds, which are a separate set from the MP ones.',
-        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
-        options: {
-            weapon: 'Any DMZ weapon',
-            build: 'Pick a build when a weapon has more than one',
-        },
+        facts: ['DMZ weapons are ranked by combat range rather than by category.',
+                'Searching here never returns an MP build, and vice versa.'],
         sample: { weapon: 'OUTLAW' },
+        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
     },
 
     '/draws': {
-        purpose: 'What is in the lucky draws this season.',
+        purpose: "What is in this season's lucky draws.",
+        facts: ['Split into new draws and returning draws; `page` opens on either.'],
         keywords: 'lucky draw crate spin pull legendary mythic epic what is in',
-        options: { page: 'Open on one of the two lists' },
     },
     '/draw prices': {
         purpose: 'What a draw costs, spin by spin.',
+        facts: ['CP prices differ by region, so pick the one that matches your account.',
+                'Every spin in a draw costs more than the last — the table shows each step.'],
         keywords: 'lucky draw cost price cp spin cheapest money currency region',
-        options: { region: "Your region's pricing" },
     },
     '/draw calculator': {
-        purpose: "Work out the cheapest way to buy the CP you are short.",
+        purpose: 'How much more CP you need, and the cheapest way to buy it.',
+        facts: ['Works out the top-up bundles that reach your target with the least waste.'],
         keywords: 'cp credits cost short top up buy budget how much calculator maths lucky draw',
-        options: {},
     },
 
     '/calendar': {
         purpose: "This season's events, draws and playlist rotation, with dates.",
+        facts: ['`view` hides anything that has already finished.'],
         keywords: 'events schedule playlist rotation dates season what is on when ranked',
-        options: {
-            page: 'Open on one section',
-            view: 'Everything, or only what is still ahead',
-        },
     },
     '/patch notes': {
-        purpose: 'Weapon balance changes — what was buffed, what was nerfed.',
+        purpose: 'What got buffed and what got nerfed.',
+        facts: ['`season` searches earlier seasons, not just the current one.'],
         keywords: 'balance buff nerf buffed nerfed update changes weapon meta patch season',
-        options: { season: 'Look up an earlier season' },
     },
     '/season end': {
         purpose: 'A live countdown to the end of the season.',
+        facts: ['The countdown is live — it keeps counting down in the message after it is posted.'],
         keywords: 'countdown ends ending finish reset time left when days',
-        options: {},
     },
 
     '/colors': {
-        purpose: 'Pull the colours out of your own Discord profile as hex values.',
+        purpose: 'The colours in your own Discord profile, as hex values.',
+        facts: ['Reads your avatar, banner, display name, nameplate and decoration.',
+                'Animated avatars and nameplates are sampled from a still frame.',
+                '`source` switches between your main profile and your profile for this server.'],
         keywords: 'colour colours color hex profile avatar banner nameplate decoration palette pfp accent',
-        options: {
-            page: 'Which part of your profile to read',
-            source: 'Your main profile, or your profile for this server',
-        },
     },
     '/timestamp': {
-        purpose: "Turn a time into one that shows in every reader's own timezone.",
-        keywords: 'time timezone tz clock schedule utc convert date when post countdown discord timestamp',
-        options: {
-            datetime: 'Plain English, or a clock time',
-            timezone: 'Yours, if it is not your default',
-            style: 'One format, or leave blank for all nine',
-            view: 'A styled panel, or plain copyable text',
-        },
-        // Every one of these parses under chrono-node, which is the parser /timestamp actually feeds them to. An example that did not parse would be the page walking a reader into an error.
+        purpose: "A time that reads correctly for every person who sees it.",
+        facts: ['Plain English works — "tomorrow", "sun 4:30pm", "in 2 hours".',
+                'Leave `style` blank and you get all nine formats at once.',
+                'Everyone who reads it sees it in their own timezone, not yours.'],
         examples: { datetime: ['tomorrow', 'sun 4:30pm', '19:30'] },
         sample: { datetime: 'sun 4:30pm' },
+        keywords: 'time timezone tz clock schedule utc convert date when post countdown discord timestamp',
     },
 
     '/settings': {
-        purpose: 'Your saved preferences — timezone, region, and how Dioreo answers you.',
+        purpose: 'Your saved timezone, region, and how Dioreo answers you.',
+        facts: ['What you set here becomes the default for every other command.'],
         keywords: 'preferences prefs timezone region defaults change my profile options',
-        options: {},
     },
 };
-
-/**
- * `visibility` is on almost every command and means the same thing every time, so it is described ONCE rather than repeated fourteen times. Repeating it would train the reader to skip the option list, which is where the answers are.
- */
-const SHARED_OPTIONS = {
-    visibility: 'Who sees the answer',
-};
-
-/**
- * The two things a reader needs that are not a command. Both are a COMPARISON rather than a paragraph — the question in each case is "which of these two am I", and two columns answer that faster than prose can.
- */
-const GUIDES = [
-    {
-        id: 'guide-visibility',
-        group: 'start',
-        title: 'Who sees your answer',
-        sub: 'Hidden or Public',
-        compare: [
-            ['Hidden', 'Only you see the reply.'],
-            ['Public', 'Everyone in the channel sees it.'],
-        ],
-        note: 'Most commands are Public unless you say otherwise. A server admin can require that Dioreo stays hidden in their server.',
-    },
-    {
-        id: 'guide-install',
-        group: 'start',
-        title: 'Where you can use it',
-        sub: 'Your account or a server',
-        compare: [
-            ['On your account', 'Works in any server, DM or group chat — even where Dioreo is not a member.'],
-            ['On a server', 'Everyone there can use it without installing anything.'],
-        ],
-        note: 'Both work, and you can do both. Adding it to your account is the one that follows you around.',
-    },
-];
 
 /**
  * THE ASK INDEX — the reader's question, in the reader's words.
  *
- * The page's groups come from the bot's own CATEGORY_DEFS, which exist because the BOT is organised that way, not because a player thinks that way: nobody arrives wanting "Utilities", they arrive wanting to know how much CP they are short. This is the layer that answers that, and it is the resting state of the page's stage.
+ * The page's groups come from the bot's own CATEGORY_DEFS, which exist because the BOT is organised that way, not because a player thinks that way: nobody arrives wanting "Utilities", they arrive wanting to know how much CP they are short.
  *
- * ⚠️ ORDER IS THE ORDER THEY APPEAR IN. It is roughly "most asked first" rather than alphabetical or grouped, because the list is read top to bottom by someone scanning for their own question. It is a judgement, not derived — if it ever needs to be derived, `/bot analytics` knows which commands actually get used.
+ * ⚠️ ORDER IS THE ORDER THEY APPEAR IN — roughly most-asked first, because the list is read top to bottom by someone scanning for their own question. It is a judgement, not derived.
  *
- * ⚠️ Every entry is gated against the live catalog in BOTH directions by assertAskCoverage below. An ask pointing at a command the bot no longer registers is worse than a missing one: it renders as a working link to a section that is not there.
+ * ⚠️ Gated against the live catalog in BOTH directions by assertAskCoverage. An ask pointing at a retired command is worse than a missing one: it renders as a working link to nothing.
  */
 const ASKS = [
     { q: 'How much CP am I short', to: '/draw calculator' },
     { q: 'What a draw costs, spin by spin', to: '/draw prices' },
     { q: "What's in the draws this season", to: '/draws' },
-    { q: 'A build for one weapon', to: '/gunsmiths search' },
+    { q: 'The build for one weapon', to: '/gunsmiths search' },
     { q: 'Builds for a category, or the meta', to: '/gunsmiths list' },
     { q: 'The same, but for DMZ', to: '/dmz' },
     { q: 'When the season ends', to: '/season end' },
@@ -175,81 +133,9 @@ const ASKS = [
 ];
 
 /**
- * Fails the build when an ask points nowhere, or when a command has no way in from the ask index. The second direction matters as much as the first: a command nobody can reach by describing what they want is invisible to every reader who does not already know its name, which is the exact failure the index exists to fix.
- */
-function assertAskCoverage(catalog) {
-    const livePaths = new Set(catalog.groups.flatMap(g => g.commands).map(c => c.path));
-    const problems = [];
-    const seen = new Set();
-    for (const ask of ASKS) {
-        if (!livePaths.has(ask.to)) problems.push(`the ask "${ask.q}" points at ${ask.to}, which the bot no longer registers.`);
-        seen.add(ask.to);
-    }
-    for (const path of livePaths) {
-        if (!seen.has(path)) problems.push(`${path} has no ask — nobody can reach it without already knowing its name.`);
-    }
-    if (problems.length) {
-        throw new Error('commandProse: the ask index and the bot have drifted apart:\n  - ' +
-            problems.join('\n  - ') + '\nFix ASKS in scripts/lib/commandProse.js.');
-    }
-}
-
-/** The prose for one option, falling back to the shared description. */
-function optionProse(commandPath, optionName) {
-    const entry = COMMANDS[commandPath];
-    if (entry && entry.options && entry.options[optionName]) return entry.options[optionName];
-    return SHARED_OPTIONS[optionName] || null;
-}
-
-/**
- * Fails the build when the prose and the bot have drifted apart, in EITHER direction. Called by the page builder before it renders a byte.
- */
-function assertProseCoverage(catalog) {
-    const live = catalog.groups.flatMap(g => g.commands);
-    const livePaths = new Set(live.map(c => c.path));
-    const problems = [];
-
-    for (const command of live) {
-        const entry = COMMANDS[command.path];
-        if (!entry) {
-            problems.push(`${command.path} is on the page with no prose — it would render as a bare name.`);
-            continue;
-        }
-        if (!entry.purpose) problems.push(`${command.path} has an entry but no purpose line.`);
-        for (const option of command.options) {
-            if (!optionProse(command.path, option.name)) {
-                problems.push(`${command.path}'s "${option.name}" option has no description.`);
-            }
-        }
-        for (const described of Object.keys(entry.options || {})) {
-            if (!command.options.some(o => o.name === described)) {
-                problems.push(`${command.path} describes an option "${described}" that the command no longer has.`);
-            }
-        }
-    }
-
-    for (const path of Object.keys(COMMANDS)) {
-        if (!livePaths.has(path)) {
-            problems.push(`prose describes ${path}, which the bot no longer registers.`);
-        }
-    }
-
-    if (problems.length) {
-        throw new Error(
-            'commandProse: the /commands page and the bot have drifted apart:\n  - ' +
-            problems.join('\n  - ') +
-            '\nFix scripts/lib/commandProse.js in the same change as the command itself.'
-        );
-    }
-}
-
-
-/**
  * THE SEARCH ORACLE.
  *
- * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set can catch both. These are the cases the previous page failed silently: it matched name, purpose, option names and choice labels, all of which are true of the bot and none of which contain the word a player uses.
- *
- * ⚠️ Add a case whenever you add a keyword set, and make it one that could FAIL. A query whose expected answer is every command proves nothing.
+ * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set catches both.
  */
 const SEARCH_CASES = [
     { q: 'loadout', hit: ['/gunsmiths search', '/gunsmiths list', '/dmz'] },
@@ -261,18 +147,54 @@ const SEARCH_CASES = [
     { q: 'hex', hit: ['/colors'] },
 ];
 
-/**
- * The string the page's search actually matches against, in one place so the gate below tests the same haystack the browser does. A test that builds its own haystack tests itself.
- */
+/** The string the page's search matches against, in one place so the gate tests the same haystack the browser does. */
 function searchHaystack(command, groupLabel) {
     const entry = COMMANDS[command.path] || {};
     return [command.path, entry.purpose || '', groupLabel || '', entry.keywords || '',
-        command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ').toLowerCase();
+        (entry.facts || []).join(' '),
+        command.options.map(o => o.name + ' ' + o.description + ' ' + o.choices.join(' ')).join(' ')]
+        .join(' ').toLowerCase();
+}
+
+function assertAskCoverage(catalog) {
+    const livePaths = new Set(catalog.groups.flatMap(g => g.commands).map(c => c.path));
+    const dead = ASKS.filter(a => !livePaths.has(a.to)).map(a => a.to);
+    if (dead.length) {
+        throw new Error('commandProse.js: ASKS points at ' + dead.join(', ') + ', which the bot no longer registers.');
+    }
+    const reached = new Set(ASKS.map(a => a.to));
+    const unreachable = [...livePaths].filter(p => !reached.has(p));
+    if (unreachable.length) {
+        throw new Error('commandProse.js: no ask reaches ' + unreachable.join(', ') +
+            '. A command nobody can find by describing what they want is invisible to every reader ' +
+            'who does not already know its name.');
+    }
 }
 
 /**
- * Fails the build when a command has no search vocabulary at all, and when a known query does not resolve to exactly the commands it should.
+ * Fails the build when a command has no purpose, when a purpose describes a command that is gone, or when a `facts` line is long enough to be an essay.
  */
+function assertProseCoverage(catalog) {
+    const live = catalog.groups.flatMap(g => g.commands);
+    const livePaths = new Set(live.map(c => c.path));
+    const missing = live.filter(c => !(COMMANDS[c.path] || {}).purpose).map(c => c.path);
+    if (missing.length) throw new Error('commandProse.js: no purpose written for ' + missing.join(', ') + '.');
+    const orphan = Object.keys(COMMANDS).filter(p => !livePaths.has(p));
+    if (orphan.length) {
+        throw new Error('commandProse.js: prose exists for ' + orphan.join(', ') +
+            ', which the bot no longer registers. A description of something gone reads as current.');
+    }
+    const windy = [];
+    for (const [path, entry] of Object.entries(COMMANDS)) {
+        for (const f of entry.facts || []) if (f.length > 160) windy.push(path + ': ' + f.slice(0, 50) + '…');
+        if ((entry.facts || []).length > 3) windy.push(path + ': ' + entry.facts.length + ' facts, max 3');
+    }
+    if (windy.length) {
+        throw new Error('commandProse.js: these are too long or too many to be read at a glance —\n  ' +
+            windy.join('\n  ') + '\nA fact a reader skips is worse than one that was never written.');
+    }
+}
+
 function assertSearchCoverage(catalog) {
     const bare = [];
     const byPath = new Map();
@@ -303,4 +225,7 @@ function assertSearchCoverage(catalog) {
     }
 }
 
-module.exports = { COMMANDS, SHARED_OPTIONS, GUIDES, ASKS, SEARCH_CASES, optionProse, searchHaystack, assertProseCoverage, assertAskCoverage, assertSearchCoverage };
+module.exports = {
+    COMMANDS, ASKS, SEARCH_CASES, searchHaystack,
+    assertProseCoverage, assertAskCoverage, assertSearchCoverage,
+};

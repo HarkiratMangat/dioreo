@@ -137,6 +137,14 @@ Also found by manual inspection (not caught by any verifier): `// ===...===` dec
 
 If you touch it: the test file's job is mostly proving each defect above STAYS fixed, same philosophy as `reflow-prose.test.mjs`. Idempotent — a second run is a no-op (bugs 3 exists precisely because that wasn't true once).
 
+## `scripts/exportWeaponIndex.mjs` — the one committed copy of live data the website reads (added 2026-08-19 17:45 EDT)
+
+Dumps weapon names, keys, categories and build counts out of the `loadouts` collection into `scripts/data/weapon-index.json`, which `/commands` inlines so its weapon options can autocomplete the way the bot does. **Read-only; it never writes to the database.** Run it with `node --env-file=.env scripts/exportWeaponIndex.mjs`.
+
+🔴 **THIS IS THE ONLY THING ON THAT PAGE THAT CAN GO STALE**, and it exists because the site builds with **no database** — everything else is read from the bot's own registered builders at build time and therefore cannot drift. Re-run it after any bulk loadout import. `scripts/weaponIndex.test.js` fails on a missing, malformed or implausibly small file, but **nothing can check freshness without a connection**, so the file records the date it was generated.
+
+⚠️ **The exporter refuses to write below a floor, and that guard is load-bearing.** Its first run used `weapon` where the schema says `weaponName`, which grouped every document into one null-keyed bucket, reported "1 MP + 1 DMZ weapons" and exited 0 — a well-formed file that was completely wrong. A generator that can quietly produce a near-empty artifact needs a floor, not just a success message.
+
 ## `scripts/lib/commandCatalog.js` + `scripts/commandCatalog.test.js` — what the website's `/commands` page knows (added 2026-08-17 20:07 EDT)
 
 Reads the **real command builders** (`commands/*.js`'s own `.toJSON()`) at site-build time and returns the grouped, ordered, admin-filtered catalog the `/commands` page renders. Nothing is transcribed, so the page cannot drift from the bot. Wired into `npm test`; needs no Mongo, no Cloudinary and no env.

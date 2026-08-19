@@ -186,6 +186,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-18 14:01 EDT — The page was misaligned because its CSS was never shared, and the phone bug was a declaration order (v3.51.0)
 - 2026-08-18 23:12 EDT — The /commands page, redesigned three times, and the fix was a palette the bot already shipped (v3.51.0)
 - 2026-08-19 14:03 EDT — Four root causes, and a colour strategy that could not fail (v3.51.0)
+- 2026-08-19 17:45 EDT — True but useless, and a generator that cheerfully wrote the wrong file (v3.51.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3251,6 +3252,26 @@ That floor turns out to be sensitive to exactly one decision. Using the site's n
 ### Lesson
 
 **A gate proves the property it measures, and nothing about whether that is the property that matters.** The contrast gate asserted 4.5:1 on thirty-two pairs and passed on brown. The build gates asserted the emitted line was correct and it was — the line went wrong on the first interaction. Both were real checks that ran, and both were answering a question one level away from the one a reader has. The fix in each case was to move the assertion to where the reader stands: solve the foreground against the fill *because that is what is painted*, and build the line from the option list *because a reader wants a command that runs*, then test the worst case rather than the current data. A test whose expected answer is "everything currently in the repo" cannot tell you the approach is sound; it can only tell you today's inputs happen to clear it.
+
+## 2026-08-19 17:45 EDT — True but useless, and a generator that cheerfully wrote the wrong file (v3.51.0)
+
+A third round of critique on the same page, and the useful finding was not in the screenshots — it was that several of the defects they caught were ones I had introduced while fixing the round before.
+
+Round two ended with me adding Discord's own registered option description to every option, on the reasoning that it is authoritative: it is the exact sentence the client shows a reader a second after they leave the page, so it cannot be wrong. That reasoning was sound and the result was that an option printed its description **three times** — Discord's, then the hand-written one I had not removed, then that same one again in the free-text branch. Three sentences that agreed, stacked under one option name. I had added a layer without deleting the layer it superseded, and then verified the new layer rendered rather than verifying what the option now looked like.
+
+The same shape produced the "IN DISCORD" line, which restates the purpose line directly above it, and it produced the sentence `No options — just run it.` on `/invite`, which is false: `visibility` is an option, the list filtered it out, and the empty-check ran after the filter, so the page asserted a command had no options while the option it had just hidden sat three lines below in a footnote.
+
+**The pattern is one thing.** I had been shipping elements because they were ACCURATE and asking to have them judged; the test being applied was whether they TEACH or DO anything. Accuracy is the floor, not a reason to include. Three rounds line up behind that: the hollow dot for the six colour-varying commands was true and read as *missing*; the conic sweep that replaced it was true and read as a rainbow bauble; `IN DISCORD` was true and said nothing new. A page is not a set of claims to be checked, it is a set of things a reader either gains from or pays for.
+
+**And the thing that had been asked for all along was a simulator, not a reference.** Across three rounds the only element ever praised was the card changing colour when a weapon category is tapped — the one moment the page behaves like the bot. Every unmet request pointed the same way: why does the weapon field not autocomplete like the bot, why can I not click the option blocks in the command bar the way I would in Discord, why is there no clear, why can I not copy the bare command. I had been building a reference you can poke.
+
+So the page now searches the same weapon list the bot searches. The site builds with no database, which is exactly why it could not before — so an exporter dumps 68 MP and 7 DMZ weapons into a committed JSON that the page inlines. Typing "hol" finds Holger 26, and an exact match re-tints the whole panel to that weapon's real category colour. That artifact is the first thing on this page that can go stale, and everything else on it is read from the bot's own builders at build time precisely so it cannot; a test now fails on a missing, malformed or implausibly small file.
+
+**Which the exporter needed immediately.** Its first run grouped on `weapon` where the schema says `weaponName`, collapsed every document into one null-keyed bucket, printed "wrote 1 MP + 1 DMZ weapons" and exited 0. A well-formed file, a cheerful success line, and completely wrong. It was caught only because the check printed a sample and the sample read `undefined(SNIPER,125)`. It now refuses to write below a floor, and a test asserts that floor rejects exactly that shape.
+
+### Lesson
+
+**A generator that can produce a plausible artifact from a broken query needs a floor, not a success message** — and more generally, every layer added on top of an existing one has to be accompanied by deleting what it replaced, in the same change, or the page grows a stack of things that agree with each other and cost the reader three reads to learn one fact. Both failures share a root: I verified that the new thing worked, and not that the old thing was gone.
 
 # Part B — Lessons Ledger (thematic)
 
