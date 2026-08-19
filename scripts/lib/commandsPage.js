@@ -486,7 +486,7 @@ const RECEIVER_CSS = `
   .rx-scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
     scroll-snap-type:x proximity;padding-bottom:.15rem}
   .rx-scroll::-webkit-scrollbar{display:none}
-  .rx-chip{scroll-snap-align:start;min-height:38px}
+  .rx-chip{scroll-snap-align:start;min-height:44px}
   .rx-gl{font-size:.58rem;padding:0 .4rem 0 .55rem}
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
@@ -498,6 +498,14 @@ const RECEIVER_CSS = `
     box-shadow:0 6px 26px color-mix(in srgb,#000 42%,transparent)}
   .rx-p:not(:target) .rx-bar{display:none}
   .rx-floor{padding-bottom:5.6rem}
+}
+/* WCAG 2.5.5. Applied on POINTER, not on width — a coarse pointer is the thing that makes a
+   36px target hard to hit, and a narrow window on a mouse is not the same situation. Verified
+   with the media query actually matching, so the pass is not vacuous. */
+@media (pointer:coarse){
+  .rx-chip,.rx-pill,.rx-more,.rx-eg,.rx-copy,.rx-tzbtn,.rx-toggle button{min-height:44px}
+  .rx-ask{min-height:48px}
+  .rx-sum{min-height:48px}
 }
 @media (max-width:520px){
   .rx-name{font-size:1.05rem}
@@ -646,8 +654,12 @@ const RECEIVER_JS = [
     '    if(e.key!=="Escape") return;',
     '    if(!document.querySelector(".rx-p:target")) return;',
     '    if(document.activeElement && document.activeElement.tagName==="INPUT") return;',
-    '    history.pushState("", document.title, location.pathname+location.search);',
-    '    mark();',
+    '    /* 🔴 location.hash, NOT history.pushState. pushState changes the URL without',
+    '       performing a navigation, so :target does NOT update and the panel stayed open —',
+    '       the key appeared to do nothing. Setting the hash is a same-document navigation:',
+    '       it clears :target, fires hashchange, and does not reload, so anything the reader',
+    '       has typed into the panel survives. */',
+    '    location.hash="";',
     '  });',
     '',
     '  /* Search filters the RAIL. It matches the command, what it does, its option NAMES and',
@@ -1041,7 +1053,10 @@ ${C.mobileNav(page, '')}
 
   <div class="rx-rail">
     <nav class="rx-scroll" aria-label="All commands">
-      <a class="rx-chip rx-home-chip" id="rx-homechip" href="./commands.html"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
+      <!-- href="#" clears the fragment as a SAME-DOCUMENT navigation, so :target stops
+           matching and the landing state returns without reloading the page or losing what
+           the reader has filled in. ./commands.html would work too and would cost a reload. -->
+      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       ${rail.join('')}
     </nav>
   </div>

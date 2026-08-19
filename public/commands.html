@@ -2015,7 +2015,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .rx-scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
     scroll-snap-type:x proximity;padding-bottom:.15rem}
   .rx-scroll::-webkit-scrollbar{display:none}
-  .rx-chip{scroll-snap-align:start;min-height:38px}
+  .rx-chip{scroll-snap-align:start;min-height:44px}
   .rx-gl{font-size:.58rem;padding:0 .4rem 0 .55rem}
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
@@ -2027,6 +2027,14 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     box-shadow:0 6px 26px color-mix(in srgb,#000 42%,transparent)}
   .rx-p:not(:target) .rx-bar{display:none}
   .rx-floor{padding-bottom:5.6rem}
+}/* WCAG 2.5.5. Applied on POINTER, not on width — a coarse pointer is the thing that makes a
+   36px target hard to hit, and a narrow window on a mouse is not the same situation. Verified
+   with the media query actually matching, so the pass is not vacuous. */
+
+@media (pointer:coarse){
+  .rx-chip,.rx-pill,.rx-more,.rx-eg,.rx-copy,.rx-tzbtn,.rx-toggle button{min-height:44px}
+  .rx-ask{min-height:48px}
+  .rx-sum{min-height:48px}
 }
 @media (max-width:520px){
   .rx-name{font-size:1.05rem}
@@ -2193,7 +2201,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   <div class="rx-rail">
     <nav class="rx-scroll" aria-label="All commands">
-      <a class="rx-chip rx-home-chip" id="rx-homechip" href="./commands.html"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
+      <!-- href="#" clears the fragment as a SAME-DOCUMENT navigation, so :target stops
+           matching and the landing state returns without reloading the page or losing what
+           the reader has filled in. ./commands.html would work too and would cost a reload. -->
+      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       <span class="rx-gl" aria-hidden="true">Start here</span><a class="rx-chip" href="#help" data-for="help" data-find="/help the same directory as this page, inside discord. start here commands directory list menu what can it do capabilities cmd  visibility hidden public" style="--cc:#FF7D5C;--con:#000000;--ct:#FF7D5C;--ctl:#C22700"><i class="rx-dot" aria-hidden="true"></i>/help</a><a class="rx-chip" href="#invite" data-for="invite" data-find="/invite add dioreo to a server, or to your own account. start here add install link server account guild user install setup visibility hidden public" style="--cc:#FF7D5C;--con:#000000;--ct:#FF7D5C;--ctl:#C22700"><i class="rx-dot" aria-hidden="true"></i>/invite</a><span class="rx-gl" aria-hidden="true">Gunsmiths</span><a class="rx-chip" href="#gunsmiths-search" data-for="gunsmiths-search" data-find="/gunsmiths search find one mp weapon&#39;s loadout. gunsmiths loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp weapon  build  visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/gunsmiths search</a><a class="rx-chip" href="#gunsmiths-list" data-for="gunsmiths-list" data-find="/gunsmiths list browse a whole category, the current meta, or every build there is. gunsmiths loadout loadouts build builds attachment gunsmith meta tier best category browse guns mp scope ar lmg marksman secondaries shotgun smg sniper all mp builds meta — mp meta — dmz dmz visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/gunsmiths list</a><a class="rx-chip" href="#dmz" data-for="dmz" data-find="/dmz dmz builds, which are a separate set from the mp ones. gunsmiths loadout loadouts build builds attachment gunsmith dmz weapon gun class setup weapon  build  visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/dmz</a><span class="rx-gl" aria-hidden="true">Draws</span><a class="rx-chip" href="#draws" data-for="draws" data-find="/draws what is in the lucky draws this season. draws lucky draw crate spin pull legendary mythic epic what is in page new draws returning draws visibility hidden public" style="--cc:#6B4E7D;--con:#FFFFFF;--ct:#9C7EAE;--ctl:#6B4E7D"><i class="rx-dot" aria-hidden="true"></i>/draws</a><a class="rx-chip" href="#draw-prices" data-for="draw-prices" data-find="/draw prices what a draw costs, spin by spin. draws lucky draw cost price cp spin cheapest money currency region region 10 cp region 20 cp region 30 cp region visibility hidden public" style="--cc:#1F8A5E;--con:#000000;--ct:#239B69;--ctl:#1A7550"><i class="rx-dot" aria-hidden="true"></i>/draw prices</a><a class="rx-chip" href="#draw-calculator" data-for="draw-calculator" data-find="/draw calculator work out the cheapest way to buy the cp you are short. draws cp credits cost short top up buy budget how much calculator maths lucky draw visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/draw calculator</a><span class="rx-gl" aria-hidden="true">Seasonal</span><a class="rx-chip" href="#calendar" data-for="calendar" data-find="/calendar this season&#39;s events, draws and playlist rotation, with dates. seasonal events schedule playlist rotation dates season what is on when ranked page draws events playlists &amp; modes view all events active/upcoming only visibility hidden public" style="--cc:#3A5068;--con:#FFFFFF;--ct:#6E8DAE;--ctl:#3A5068"><i class="rx-dot" aria-hidden="true"></i>/calendar</a><a class="rx-chip" href="#patch-notes" data-for="patch-notes" data-find="/patch notes weapon balance changes — what was buffed, what was nerfed. seasonal balance buff nerf buffed nerfed update changes weapon meta patch season season  visibility hidden public" style="--cc:#F2C230;--con:#000000;--ct:#F2C230;--ctl:#7C5F08"><i class="rx-dot" aria-hidden="true"></i>/patch notes</a><a class="rx-chip" href="#season-end" data-for="season-end" data-find="/season end a live countdown to the end of the season. seasonal countdown ends ending finish reset time left when days visibility hidden public" style="--cc:#F2994A;--con:#000000;--ct:#F2994A;--ctl:#9D500B"><i class="rx-dot" aria-hidden="true"></i>/season end</a><span class="rx-gl" aria-hidden="true">Utilities</span><a class="rx-chip" href="#colors" data-for="colors" data-find="/colors pull the colours out of your own discord profile as hex values. utilities colour colours color hex profile avatar banner nameplate decoration palette pfp accent page avatar banner name nameplate deco source from main profile from server profile visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/colors</a><a class="rx-chip" href="#timestamp" data-for="timestamp" data-find="/timestamp turn a time into one that shows in every reader&#39;s own timezone. utilities time timezone tz clock schedule utc convert date when post countdown discord timestamp datetime  timezone (utc-04:00) eastern (toronto/ny) (edt) (utc-05:00) central (winnipeg/chicago) (cdt) (utc-06:00) mountain (edmonton/denver) (mdt) (utc-07:00) pacific (vancouver/la) (pdt) (utc-10:00) hawaii standard time (hst) (utc+00:00) coordinated universal time (utc 0) (utc) (utc+01:00) united kingdom (london) (gmt+1) (utc+02:00) central europe (paris/berlin) (gmt+2) (utc+02:00) sweden (stockholm) (gmt+2) (utc+05:30) india standard time (delhi) (gmt+5:30) (utc+08:00) singapore standard time (gmt+8) (utc+08:00) hong kong time (gmt+8) (utc+08:00) mainland china (beijing) (gmt+8) (utc+09:00) japan standard time (tokyo) (gmt+9) (utc+10:00) eastern australia (sydney) (gmt+10) style full date, short time (f) — e.g., tuesday, april 20, 2021 at 16:20 long date, short time (f) — e.g., april 20, 2021 at 16:20 long date (d) — e.g., april 20, 2021 short date (d) — e.g., 20/04/2021 medium time (t) — e.g., 16:20:30 short time (t) — e.g., 16:20 short date, short time (s) — e.g., 20/04/2021, 16:20 short date, medium time (s) — e.g., 20/04/2021, 16:20:30 relative time (r) — e.g., 4 years ago visibility hidden public view embed (styled panel) text (plain, copyable)" style="--cc:#17A2A2;--con:#000000;--ct:#17A2A2;--ctl:#107171"><i class="rx-dot" aria-hidden="true"></i>/timestamp</a><span class="rx-gl" aria-hidden="true">Preferences</span><a class="rx-chip" href="#settings" data-for="settings" data-find="/settings your saved preferences — timezone, region, and how dioreo answers you. preferences preferences prefs timezone region defaults change my profile options visibility hidden public" style="--cc:#7A6E8C;--con:#FFFFFF;--ct:#8F849F;--ctl:#6B617B"><i class="rx-dot rx-drv" aria-hidden="true"></i>/settings</a>
     </nav>
   </div>
@@ -4687,8 +4698,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     if(e.key!=="Escape") return;
     if(!document.querySelector(".rx-p:target")) return;
     if(document.activeElement && document.activeElement.tagName==="INPUT") return;
-    history.pushState("", document.title, location.pathname+location.search);
-    mark();
+    /* 🔴 location.hash, NOT history.pushState. pushState changes the URL without
+       performing a navigation, so :target does NOT update and the panel stayed open —
+       the key appeared to do nothing. Setting the hash is a same-document navigation:
+       it clears :target, fires hashchange, and does not reload, so anything the reader
+       has typed into the panel survives. */
+    location.hash="";
   });
 
   /* Search filters the RAIL. It matches the command, what it does, its option NAMES and
