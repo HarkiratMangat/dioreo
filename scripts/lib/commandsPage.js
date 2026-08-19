@@ -28,7 +28,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, searchHaystack, optionProse, GUIDES, ASKS, COMMANDS, SHARED_OPTIONS } = require('./commandProse');
+const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, searchHaystack, ASKS, COMMANDS } = require('./commandProse');
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
@@ -1023,7 +1023,7 @@ function renderPanel(command, group, C, accents, cats, scopes) {
 
     const extras = [];
     if (command.path === '/timestamp') {
-        extras.push('<p class="rx-live" id="rx-live" hidden>Where you are it is <b></b>' +
+        extras.push('<p class="rx-live" id="rx-live" hidden>Your timezone looks like <b></b>' +
             '<button type="button" class="rx-btn" hidden>Use this timezone</button></p>');
     }
     if (command.path === '/colors') {
@@ -1031,7 +1031,7 @@ function renderPanel(command, group, C, accents, cats, scopes) {
         const sources = ['Avatar', 'Banner', 'Name', 'Nameplate', 'Deco'];
         extras.push('<div class="rx-swatch" aria-hidden="true">' +
             sources.map((_, i) => '<i style="background:hsl(' + (i * 62) + ' 62% 56%)"></i>').join('') +
-            '<span>every source, every render</span></div>');
+            '<span>a different palette every time</span></div>');
     }
     if (command.path === '/invite') {
         extras.push('<div class="rx-inst">' +
@@ -1200,7 +1200,7 @@ ${C.mobileNav(page, '')}
       <section class="rx-home" tabindex="-1">
         <div class="rx-card" style="--cc:var(--accent);--con:var(--accent-on)">
           <h2>Every command</h2>
-          <p class="rx-lead">Pick one to see what it takes and copy the line. If you are not sure which you want, the questions underneath go straight to it.</p>
+          <p class="rx-lead">Pick one to see what it takes, fill it in, and copy the line into Discord.</p>
           <div class="rx-cards">${cards.join('')}</div>
           <p class="rx-asks-h">Or start from what you want</p>
           <p class="rx-asks-s">Each of these is one command.</p>

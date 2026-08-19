@@ -19,8 +19,7 @@ check('the weapon index exists and parses', () => {
 });
 
 check('it holds a plausible number of weapons, not a broken query', () => {
-    // The first run of the exporter used the wrong field name and wrote "1 MP + 1 DMZ" while
-    // exiting 0. A floor is the difference between that shipping and failing here.
+    // The first run of the exporter used the wrong field name and wrote "1 MP + 1 DMZ" while exiting 0. A floor is the difference between that shipping and failing here.
     const d = loadWeaponIndex();
     assert.ok(d.MP.length >= 20, `only ${d.MP.length} MP weapons`);
     assert.ok(d.DMZ.length >= 3, `only ${d.DMZ.length} DMZ weapons`);
@@ -34,8 +33,7 @@ check('every weapon carries the fields the page reads', () => {
 });
 
 check('every MP category resolves to a real accent', () => {
-    // A weapon whose category is not in MP_CATEGORY_ACCENT would tint the panel to nothing,
-    // which is the same defect the non-category scopes had.
+    // A weapon whose category is not in MP_CATEGORY_ACCENT would tint the panel to nothing, which is the same defect the non-category scopes had.
     const cats = loadCategoryAccents();
     const orphan = [...new Set(loadWeaponIndex().MP.map(w => (w.category || '').toUpperCase()))]
         .filter(c => !cats[c]);
@@ -43,8 +41,7 @@ check('every MP category resolves to a real accent', () => {
 });
 
 check('the plausibility floor can actually FAIL, so the cases above are not vacuous', () => {
-    // Feed the same shape a broken query produces. If the floor did not reject it, every
-    // assertion above would pass on an index holding one weapon.
+    // Feed the same shape a broken query produces. If the floor did not reject it, every assertion above would pass on an index holding one weapon.
     const broken = { MP: [{ name: 'X', key: 'x', builds: 1, category: 'AR' }], DMZ: [] };
     assert.ok(!(broken.MP.length >= 20), 'the floor must reject a one-row index');
 });

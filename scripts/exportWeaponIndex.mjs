@@ -28,9 +28,7 @@ if (!uri) {
 await mongoose.connect(uri);
 const Loadout = mongoose.connection.collection('loadouts');
 
-// One row per distinct weapon, carrying the fields the page needs: the display name the reader
-// types, the key the bot matches on, its category (which decides the answer's colour) and how
-// many builds exist (which is what the `build` option is for).
+// One row per distinct weapon, carrying the fields the page needs: the display name the reader types, the key the bot matches on, its category (which decides the answer's colour) and how many builds exist (which is what the `build` option is for).
 const rows = await Loadout.aggregate([
     /* ⚠️ The display field is `weaponName`, NOT `weapon`. Grouping on `$weapon` returns ONE
        group per mode with a null key and silently reports "1 MP + 1 DMZ weapons" — a
