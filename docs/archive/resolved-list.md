@@ -578,3 +578,13 @@ Filed 2026-07-30 00:35 EDT as `[P1 · M · Opus5-H]` with the warning that **the
 - **The warm pages' aesthetic review happened** and produced a decision rather than a fix: Harkirat asked for a full redesign of Contributing and Contributors. That is now its own scheduled session with an approved mockup, not an open bug.
 
 **What did NOT close, and stays on the active list:** the two Cloudflare deployments that published zero files (cause still unexplained), and light mode at desktop width, which was never checked in either session. Both carried forward.
+
+## The `/commands` index at 855px on a phone — CLOSED 2026-08-19 14:03 EDT (v3.51.0)
+
+Filed 2026-08-19 10:55 EDT as `[P3 · S · Sonnet5-Medium · 🧩needs-design]` out of Harkirat's own real-device review of "the Bench": the command index measured **855px** at 375px — fourteen 44px rows plus six group labels — sat BELOW the stage, and could not be split into two columns because the longest label needs ~168px and two of those exceed the 343px content column. The item's framing was "the question is whether the height is acceptable, not whether it can be narrowed."
+
+**Closed by removing the object rather than by answering the question.** Asked how far a further redesign should go, Harkirat chose a fifth architecture and named mobile as the reason. Measuring the rest of the page made the filed item look small: the index began 2.3 screenfuls down, one command's panel was 1282px, and the command line sat at y=1339 — so the design's premise, *two zones both always on screen*, was false on a phone, where it was a stack.
+
+The vertical index is gone. Its replacement is a **58px horizontal rail** that is the same object on both desktop and mobile, and the page's document height fell from 3010px to 1219px. The two-column question the item posed no longer has a subject.
+
+⚠️ **The item was correct and its measurement was sound.** What it could not see was that it was one symptom of a structural failure, because it measured the index alone. Worth remembering the next time a filed layout item looks like a self-contained sizing question: measure the whole surface before deciding what the item is about.

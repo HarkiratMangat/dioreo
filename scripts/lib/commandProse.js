@@ -9,20 +9,25 @@
  */
 
 /**
+ * `keywords` is a hand-written search vocabulary, and it exists because matching only what Discord declares is not enough: searching "loadout" matched `/gunsmiths search` alone, while `/gunsmiths list` and `/dmz` — both entirely about loadouts — matched nothing, because neither uses that word in any field the bot registers. Write the words a CODM player would actually type, including the misspellings and the plurals. Gated by SEARCH_CASES below.
+ *
  * `sample` is the value the command's copy line is rendered with at build time, and it must be REAL — a reader copying the line off this page should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing.
  */
 const COMMANDS = {
     '/help': {
         purpose: 'The same directory as this page, inside Discord.',
+        keywords: 'commands directory list menu what can it do capabilities',
         options: { cmd: 'Jump straight to one command' },
     },
     '/invite': {
         purpose: 'Add Dioreo to a server, or to your own account.',
+        keywords: 'add install link server account guild user install setup',
         options: {},
     },
 
     '/gunsmiths search': {
         purpose: "Find one MP weapon's loadout.",
+        keywords: 'loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp',
         options: {
             weapon: 'Any MP weapon',
             build: 'Pick a build when a weapon has more than one',
@@ -31,10 +36,12 @@ const COMMANDS = {
     },
     '/gunsmiths list': {
         purpose: 'Browse a whole category, the current meta, or every build there is.',
+        keywords: 'loadout loadouts build builds attachment gunsmith meta tier best category browse guns mp',
         options: { scope: 'Which set to browse' },
     },
     '/dmz': {
         purpose: 'DMZ builds, which are a separate set from the MP ones.',
+        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
         options: {
             weapon: 'Any DMZ weapon',
             build: 'Pick a build when a weapon has more than one',
@@ -44,19 +51,23 @@ const COMMANDS = {
 
     '/draws': {
         purpose: 'What is in the lucky draws this season.',
+        keywords: 'lucky draw crate spin pull legendary mythic epic what is in',
         options: { page: 'Open on one of the two lists' },
     },
     '/draw prices': {
         purpose: 'What a draw costs, spin by spin.',
+        keywords: 'lucky draw cost price cp spin cheapest money currency region',
         options: { region: "Your region's pricing" },
     },
     '/draw calculator': {
         purpose: "Work out the cheapest way to buy the CP you are short.",
+        keywords: 'cp credits cost short top up buy budget how much calculator maths lucky draw',
         options: {},
     },
 
     '/calendar': {
         purpose: "This season's events, draws and playlist rotation, with dates.",
+        keywords: 'events schedule playlist rotation dates season what is on when ranked',
         options: {
             page: 'Open on one section',
             view: 'Everything, or only what is still ahead',
@@ -64,15 +75,18 @@ const COMMANDS = {
     },
     '/patch notes': {
         purpose: 'Weapon balance changes — what was buffed, what was nerfed.',
+        keywords: 'balance buff nerf buffed nerfed update changes weapon meta patch season',
         options: { season: 'Look up an earlier season' },
     },
     '/season end': {
         purpose: 'A live countdown to the end of the season.',
+        keywords: 'countdown ends ending finish reset time left when days',
         options: {},
     },
 
     '/colors': {
         purpose: 'Pull the colours out of your own Discord profile as hex values.',
+        keywords: 'colour colours color hex profile avatar banner nameplate decoration palette pfp accent',
         options: {
             page: 'Which part of your profile to read',
             source: 'Your main profile, or your profile for this server',
@@ -80,6 +94,7 @@ const COMMANDS = {
     },
     '/timestamp': {
         purpose: "Turn a time into one that shows in every reader's own timezone.",
+        keywords: 'time timezone tz clock schedule utc convert date when post countdown discord timestamp',
         options: {
             datetime: 'Plain English, or a clock time',
             timezone: 'Yours, if it is not your default',
@@ -93,6 +108,7 @@ const COMMANDS = {
 
     '/settings': {
         purpose: 'Your saved preferences — timezone, region, and how Dioreo answers you.',
+        keywords: 'preferences prefs timezone region defaults change my profile options',
         options: {},
     },
 };
@@ -227,4 +243,64 @@ function assertProseCoverage(catalog) {
     }
 }
 
-module.exports = { COMMANDS, SHARED_OPTIONS, GUIDES, ASKS, optionProse, assertProseCoverage, assertAskCoverage };
+
+/**
+ * THE SEARCH ORACLE.
+ *
+ * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set can catch both. These are the cases the previous page failed silently: it matched name, purpose, option names and choice labels, all of which are true of the bot and none of which contain the word a player uses.
+ *
+ * ⚠️ Add a case whenever you add a keyword set, and make it one that could FAIL. A query whose expected answer is every command proves nothing.
+ */
+const SEARCH_CASES = [
+    { q: 'loadout', hit: ['/gunsmiths search', '/gunsmiths list', '/dmz'] },
+    { q: 'attachment', hit: ['/gunsmiths search', '/gunsmiths list', '/dmz'] },
+    { q: 'cp', hit: ['/draw prices', '/draw calculator'] },
+    { q: 'timezone', hit: ['/timestamp', '/settings'] },
+    { q: 'countdown', hit: ['/season end', '/timestamp'] },
+    { q: 'nerf', hit: ['/patch notes'] },
+    { q: 'hex', hit: ['/colors'] },
+];
+
+/**
+ * The string the page's search actually matches against, in one place so the gate below tests the same haystack the browser does. A test that builds its own haystack tests itself.
+ */
+function searchHaystack(command, groupLabel) {
+    const entry = COMMANDS[command.path] || {};
+    return [command.path, entry.purpose || '', groupLabel || '', entry.keywords || '',
+        command.options.map(o => o.name + ' ' + o.choices.join(' ')).join(' ')].join(' ').toLowerCase();
+}
+
+/**
+ * Fails the build when a command has no search vocabulary at all, and when a known query does not resolve to exactly the commands it should.
+ */
+function assertSearchCoverage(catalog) {
+    const bare = [];
+    const byPath = new Map();
+    for (const group of catalog.groups) {
+        for (const command of group.commands) {
+            byPath.set(command.path, { command, group });
+            const kw = ((COMMANDS[command.path] || {}).keywords || '').trim();
+            if (kw.split(/\s+/).filter(Boolean).length < 3) bare.push(command.path);
+        }
+    }
+    if (bare.length) {
+        throw new Error('commandProse.js: no search keywords for ' + bare.join(', ') +
+            '. A command reachable only by its own name is invisible to every reader who does not ' +
+            'already know it, which is the exact failure the search field exists to fix.');
+    }
+    const wrong = [];
+    for (const { q, hit } of SEARCH_CASES) {
+        const got = [...byPath.values()]
+            .filter(({ command, group }) => searchHaystack(command, group.label).includes(q.toLowerCase()))
+            .map(({ command }) => command.path).sort();
+        const want = hit.slice().sort();
+        if (got.join('|') !== want.join('|')) wrong.push(q + ': want [' + want.join(', ') + '] got [' + got.join(', ') + ']');
+    }
+    if (wrong.length) {
+        throw new Error('commandProse.js: the search does not answer these the way SEARCH_CASES says it must —\n  ' +
+            wrong.join('\n  ') + '\nEither the keywords are wrong or the expectation is; fix whichever is, ' +
+            'but do not relax the case into "at least these", which is what makes a search test vacuous.');
+    }
+}
+
+module.exports = { COMMANDS, SHARED_OPTIONS, GUIDES, ASKS, SEARCH_CASES, optionProse, searchHaystack, assertProseCoverage, assertAskCoverage, assertSearchCoverage };

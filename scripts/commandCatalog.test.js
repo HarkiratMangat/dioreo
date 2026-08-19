@@ -188,7 +188,7 @@ check('every anchor id is unique across the whole page', () => {
    against --desk alone and three colours then measured 4.00, 4.05 and 4.08 on --raised, which
    is the surface the panel actually paints: it read as passing while failing where it counts.
    ⚠️ Both SURFACES of both themes are asserted, not just the one the solver targets. */
-const { solveText, loadAccents, GROUND_DARK, GROUND_LIGHT, DERIVED } = require('./lib/commandsPage');
+const { solveText, solveOn, loadAccents, loadCategoryAccents, GROUND_DARK, GROUND_LIGHT, DERIVED, DERIVED_NEUTRAL } = require('./lib/commandsPage');
 
 const SURFACES = { 'dark --desk': '#16131B', 'dark --raised': '#241F30', 'light --desk': '#E7E4EC', 'light --raised': '#EEECF2' };
 const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
@@ -218,6 +218,52 @@ check('solveText can actually FAIL a colour it cannot fix, so the case above is 
     assert.ok(contrast(fixed, GROUND_DARK) >= 4.5, 'the solver returned a colour that still fails');
 });
 
+/* ── the fill contract ────────────────────────────────────────────────────────
+   The page's colour strategy changed shape: a command's accent is now used ONLY as a FILL,
+   and the ink printed on top of it is solved instead. The reason is that solving the accent
+   itself into a text colour destroyed it — Patch Gold #F2C230 became #7C5F08 against the
+   light ground, a 31-point lightness drop, which is brown, while the raw hex sat in a dot
+   beside it. Contrast passed and the recognition the colour existed for was gone.
+
+   The virtue of solving the FOREGROUND is that it cannot fail. The worst possible fill is the
+   one where black and white are equally bad, at relative luminance 0.1791 — and even there the
+   better of the two measures 4.58:1. So these cases assert a property of the approach, not a
+   lucky property of the eight hexes that happen to be in the repo today. */
+check('every fill on the page can carry readable ink', () => {
+    const fills = { ...loadAccents(), ...loadCategoryAccents(), 'derived neutral': DERIVED_NEUTRAL, 'page accent': '#58D05A' };
+    const bad = [];
+    for (const [name, hex] of Object.entries(fills)) {
+        const r = contrast(solveOn(hex), hex);
+        if (r < 4.5) bad.push(`${name} ${hex} + ${solveOn(hex)} = ${r.toFixed(2)}`);
+    }
+    assert.deepStrictEqual(bad, [], 'a command token is unreadable on its own fill');
+});
+
+check('solveOn picks the BETTER of the two inks, so the case above is not vacuous', () => {
+    // A near-white fill must take dark ink and a near-black fill must take light ink. A function that always returned one of them would pass the assertion above on roughly half the palette and fail silently on the rest, which is exactly the shape of the bug this replaced.
+    assert.strictEqual(solveOn('#FFD23F'), '#000000', 'Electric Gold is a light fill and needs dark ink');
+    assert.strictEqual(solveOn('#023047'), '#FFFFFF', 'Deep Ice is a dark fill and needs light ink');
+    // The mathematical worst case: the fill where both inks are equally bad. The mathematical crossover sits at relative luminance 0.1791; #767676 is the nearest sRGB grey to it. This is the case that fails the moment anyone "softens" INK_ON_LIGHT back to the site's near-black, which drops the floor from 4.58 to 4.27.
+    const worst = '#767676';
+    assert.ok(contrast(solveOn(worst), worst) >= 4.5,
+        `the worst possible fill measured ${contrast(solveOn(worst), worst).toFixed(2)} — the floor has moved`);
+});
+
+check('the seven weapon-category accents are read from the bot, not from a copy', () => {
+    const cats = loadCategoryAccents();
+    // These six are the scope choices /gunsmiths list actually offers. If the map is ever renamed or moved, this fails loudly rather than the page quietly falling back to a grey dot.
+    for (const key of ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN']) {
+        assert.ok(/^#[0-9A-F]{6}$/.test(cats[key] || ''), `no accent parsed for category ${key}`);
+    }
+    assert.strictEqual(cats.LMG, '#845EC2', 'LMG is Grape Purple in utils/loadoutRender.js');
+});
+
+check('the derived six get a real colour, never an ink token', () => {
+    // They used to inherit var(--ink3) as their accent, so a selected chip tinted with it came out grey and read as unselected beside a command whose chips tinted properly.
+    assert.ok(/^#[0-9A-F]{6}$/.test(DERIVED_NEUTRAL), 'the derived neutral must be a real hex');
+    assert.ok(contrast(solveOn(DERIVED_NEUTRAL), DERIVED_NEUTRAL) >= 4.5);
+});
+
 check('no command is both fixed-colour and derive-per-render', () => {
     const fixed = new Set(Object.keys(loadAccents()));
     const both = [...DERIVED].filter(p => fixed.has(p));
@@ -228,6 +274,13 @@ check('every live command is accounted for as fixed-colour or derive-per-render'
     const fixed = new Set(Object.keys(loadAccents()));
     const missed = allCommands.map(c => c.path).filter(p => !fixed.has(p) && !DERIVED.has(p));
     assert.deepStrictEqual(missed, [], 'a command in neither set renders a grey dot with nothing saying why');
+});
+
+const { assertSearchCoverage } = require('./lib/commandProse');
+
+check('the search answers the queries a reader actually types', () => {
+    // The oracle lives in commandProse.js beside the keywords it tests, and it fails on an exact set rather than a superset — "loadout" must return the three loadout commands and nothing else. The previous page returned exactly one of them and nothing reported it.
+    assert.doesNotThrow(() => assertSearchCoverage({ groups: catalog.groups }));
 });
 
 run();
