@@ -75,7 +75,13 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.51.0 — 2026-08-19 14:03 EDT (#159) — dioreo.app's /commands page becomes a command builder, and an accent stops being used as a text colour
+## Pre-Release v3.52.0 — 2026-08-19 18:25 EDT (#160) — the `/commands` polish pass is filed rather than remembered
+
+Docs only. Harkirat's verdict on the merged page was *"80% good, mostly just needs a polish, refinement, bug fix session, and some minor tweaks/improvements"* — so that pass is now an item in `docs/db-deferred-list.md` rather than a sentence in a chat log, carrying the two things that are known-open rather than merely suspected: the `/colors` swatch demonstrates colour without demonstrating *your* colours, and the ux-copy pass covered the load-bearing strings rather than every one. The item also restates the constraint every future change to that page inherits — measure it on a phone first, because that is where a strong majority of these readers are.
+
+v3.51.0's squash hash is backfilled, as the release convention requires one release later.
+
+## Pre-Release v3.51.0 — 2026-08-19 14:03 EDT (#159 · `07b67e2`) — dioreo.app's /commands page becomes a command builder, and an accent stops being used as a text colour
 
 The website's fourth page family: **`/commands`**, a reference for every public Dioreo command that reads the bot's own command builders at build time, so it cannot drift from what the bot actually registers. `scripts/lib/commandCatalog.js` calls `.toJSON()` on every module in `commands/` and files each leaf under the group `commands/help.js`'s own `CATEGORY_DEFS` puts it in — so the website and the in-Discord directory cannot disagree about how the bot is organised — and **throws, naming the command, if a public one has nowhere to go**. `scripts/lib/commandProse.js` supplies the one thing Discord cannot: why a person would want the command, gated both ways so prose without a command and a command without prose both fail the build. `scripts/lib/commandsPage.js` renders it. Accent is Signal Green 121°, the midpoint of the widest gap on the nav's hue wheel (citron 62° → teal 180°), and the nav restaged from six tabs to seven, ten inside `/changelog/`, both tiers measured in a browser rather than arithmetic'd from the old ones.
 
