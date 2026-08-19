@@ -8,7 +8,9 @@
  */
 
 import assert from "node:assert";
-import { reflowJs, verifyJs, reflowSh, verifySh } from "./reflow-comments.mjs";
+import fs from "node:fs";
+import os from "node:os";
+import { reflowJs, verifyJs, reflowSh, verifySh, externalCheck } from "./reflow-comments.mjs";
 
 let pass = 0;
 const fails = [];
@@ -224,6 +226,42 @@ t("a trailing inline # comment sharing a line with code is never touched", () =>
   const src = "echo hi # trailing note\necho bye\n";
   const { text } = reflowSh(src);
   assert.strictEqual(text, src);
+});
+
+/* ── externalCheck: real temp file, not /dev/stdin (docs/db-deferred-list.md, CI-only bug from PR #156) ── */
+
+t("externalCheck passes valid JS syntax", () => {
+  assert.strictEqual(externalCheck("x.js", "const a = 1;\n"), null);
+});
+
+t("externalCheck FAILS on genuinely broken JS syntax -- proving the check can still fail, not just pass", () => {
+  const err = externalCheck("x.js", "const a = ;\n");
+  assert.ok(err, "expected a syntax error string, got null");
+  assert.ok(/unexpected|syntax/i.test(err), `error text didn't look like a syntax error: ${err}`);
+});
+
+t("externalCheck passes valid shell syntax", () => {
+  assert.strictEqual(externalCheck("x.sh", "#!/bin/bash\necho hi\n"), null);
+});
+
+t("externalCheck FAILS on genuinely broken shell syntax", () => {
+  const err = externalCheck("x.sh", "if [ 1 -eq 1 ]; then\n  echo hi\n");   // unclosed if
+  assert.ok(err, "expected a syntax error string, got null");
+});
+
+t("externalCheck never uses /dev/stdin as an actual argument -- the exact path that crashed on GitHub Actions' Linux runners", () => {
+  // Regression guard for the actual bug, not just its symptom: the fix is writing to a real temp file, so no CODE line (comments legitimately still document the old bug) may pass "/dev/stdin" to execFileSync -- checking that syntax checking merely still works wouldn't catch a revert.
+  const src = fs.readFileSync(new URL("./reflow-comments.mjs", import.meta.url), "utf8");
+  const codeLines = src.split("\n").filter((line) => !line.trim().startsWith("//"));
+  assert.ok(!codeLines.some((line) => line.includes("/dev/stdin")), "a CODE line still passes /dev/stdin");
+});
+
+t("externalCheck cleans up its temp file after a check, pass or fail", () => {
+  const before = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith("reflow-comments-check-"));
+  externalCheck("x.js", "const a = 1;\n");
+  externalCheck("x.js", "const a = ;\n");   // the failing path must clean up too, via the finally block
+  const after = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith("reflow-comments-check-"));
+  assert.deepStrictEqual(after, before, "a temp file was left behind");
 });
 
 if (fails.length) {

@@ -24,6 +24,8 @@
  */
 
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { execFileSync, execSync } from "node:child_process";
 import * as acorn from "acorn";
@@ -479,17 +481,22 @@ export function verifySh(before, after, blocks) {
 
 /* ──────────────────────────────────── CLI ──────────────────────────────────── */
 
-function externalCheck(file, text) {
+export function externalCheck(file, text) {
   const ext = file.slice(file.lastIndexOf("."));
+  // A real temp file, not /dev/stdin (docs/db-deferred-list.md, filed from PR #156's CI run): piping through /dev/stdin fails on GitHub Actions' Linux runners with ENOENT on a /proc/<pid>/fd/socket path when the underlying fd is a socket rather than a regular pipe -- a Node stdin-as-socket quirk that's clean on macOS and only ever fires for a file with a genuinely proposed change, which is why it went unnoticed locally for as long as it did.
+  const tmpFile = path.join(os.tmpdir(), `reflow-comments-check-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
   try {
+    fs.writeFileSync(tmpFile, text);
     if (ext === ".sh") {
-      execFileSync("bash", ["-n", "/dev/stdin"], { input: text, stdio: ["pipe", "pipe", "pipe"] });
+      execFileSync("bash", ["-n", tmpFile], { stdio: ["ignore", "pipe", "pipe"] });
     } else {
-      execFileSync("node", ["--check", "/dev/stdin"], { input: text, stdio: ["pipe", "pipe", "pipe"] });
+      execFileSync("node", ["--check", tmpFile], { stdio: ["ignore", "pipe", "pipe"] });
     }
     return null;
   } catch (e) {
     return (e.stderr || e.message || String(e)).toString().trim();
+  } finally {
+    try { fs.unlinkSync(tmpFile); } catch { /* best-effort cleanup, not load-bearing */ }
   }
 }
 

@@ -15,11 +15,12 @@ require.cache[modelPath].exports = {
     estimatedDocumentCount: async () => 0,
 };
 const termPath = require.resolve('../models/SearchTerm');
-const upserts = [];
+const upserts = [];       // flattened bulkWrite ops across every call
+let bulkWriteCalls = 0;   // count of bulkWrite INVOCATIONS, distinct from upserts.length (ops)
 require.cache[termPath] = new Module(termPath, null);
 require.cache[termPath].filename = termPath;
 require.cache[termPath].loaded = true;
-require.cache[termPath].exports = { updateOne: async (f) => { upserts.push(f); } };
+require.cache[termPath].exports = { bulkWrite: async (ops) => { bulkWriteCalls++; upserts.push(...ops); } };
 
 process.env.ANALYTICS_HMAC_KEY = process.env.ANALYTICS_HMAC_KEY || Buffer.alloc(32, 7).toString('base64');
 const { runWithContext, hashUserId } = require('../utils/requestContext');
@@ -214,9 +215,57 @@ check('autocomplete records ONE event per search session, not one per keystroke'
 });
 check('a closed search session upserts the user-linkage-free aggregate row', () => {
     assert.ok(upserts.length >= 1, 'expected a SearchTerm upsert');
-    const filter = upserts[upserts.length - 1];
+    const filter = upserts[upserts.length - 1].updateOne.filter;
     assert.deepStrictEqual(filter, { term: 'kilo', command: 'gunsmiths', field: 'weapon' });
     assert.ok(!JSON.stringify(filter).includes(RAW_ID), 'the aggregate must carry NO user linkage at all');
+});
+
+// --- SearchTerm buffer: bulkWrite, not a standalone round trip per closed session (finding #56) -- A closed search session now goes through the SAME buffer-then-flush discipline flushEvents() already used, and is flushed through the SAME shutdown call site (flushSearchSessions()) finding #12 already hooked into -- these two checks cover the shape of the buffered bulkWrite op and the FLUSH_AT auto-trigger, the two things a standalone-updateOne design could not offer at all.
+function openAndCloseSearchSession(term, { command = 'gunsmiths', field = 'weapon' } = {}) {
+    const userHash = hashUserId(`${RAW_ID}-${term}`);   // distinct per session so notePicked() only closes THIS one
+    runWithContext({ command, userHash, startedAt: Date.now() }, () => {
+        const ac = fakeInteraction({
+            isAutocomplete: () => true, commandName: command,
+            options: { getFocused: () => ({ name: field, value: term }) },
+            respond: async () => {},
+        });
+        S.instrumentAutocomplete(ac);
+        ac.respond([]);   // zero results, matching the existing autocomplete test above
+    });
+    S.notePicked(userHash, command);   // closes the session immediately -- the "search then run the command" signal, not the idle timer
+}
+
+check('a closed search session buffers a bulkWrite op shaped for the unique index, not a standalone updateOne', () => {
+    const before = upserts.length;
+    openAndCloseSearchSession('shapecheck');
+    S.flushSearchSessions();
+    assert.ok(upserts.length > before, 'expected at least one new buffered op');
+    const op = upserts[upserts.length - 1];
+    assert.deepStrictEqual(op.updateOne.filter, { term: 'shapecheck', command: 'gunsmiths', field: 'weapon' });
+    // picked: 1 because openAndCloseSearchSession() closes via notePicked(), the real "search then run the command" signal -- that's what marks a session picked, by design.
+    assert.deepStrictEqual(op.updateOne.update.$inc, { searches: 1, zeroResults: 1, picked: 1 });
+    assert.ok(op.updateOne.update.$min.firstSeen instanceof Date, 'firstSeen must be set via $min for the upsert path');
+    assert.ok(op.updateOne.update.$max.lastSeen instanceof Date, 'lastSeen must be set via $max');
+    assert.strictEqual(op.updateOne.upsert, true);
+});
+
+check('the SearchTerm buffer auto-flushes at FLUSH_AT -- the same threshold the event buffer uses -- with no explicit flushSearchSessions() call', () => {
+    const callsBefore = bulkWriteCalls;
+    const opsBefore = upserts.length;
+    for (let i = 0; i < S.FLUSH_AT; i++) openAndCloseSearchSession(`auto${i}`);
+    assert.strictEqual(bulkWriteCalls, callsBefore + 1, 'expected exactly one auto-triggered bulkWrite once the buffer reached FLUSH_AT');
+    assert.strictEqual(upserts.length, opsBefore + S.FLUSH_AT, 'the auto-flush must carry every buffered op, not a partial batch');
+});
+
+// --- flushAllForShutdown(): the memoization that closes the TWO-LISTENER race (finding #56) ------ installShutdownFlush() and instanceLock.js's releaseLock both register on the same signal and both used to call flushSearchSessions()/flushEvents() directly -- whichever ran second found the buffers already drained and resolved via a hollow, instantly-resolved promise instead of the real in-flight write. This proves the fix: two callers on the same shutdown get the SAME promise.
+check('flushAllForShutdown() memoizes the shutdown flush -- a second caller gets the SAME in-flight promise, not a hollow one', async () => {
+    openAndCloseSearchSession('memocheck');   // leaves one buffered SearchTerm op pending
+    const callsBefore = bulkWriteCalls;
+    const p1 = S.flushAllForShutdown();
+    const p2 = S.flushAllForShutdown();   // simulates the SECOND listener on the same signal
+    assert.strictEqual(p1, p2, 'a second caller on the same shutdown must await the SAME promise the first call kicked off');
+    await p1;
+    assert.strictEqual(bulkWriteCalls, callsBefore + 1, 'the buffered op must be flushed exactly once, not once per listener');
 });
 
 (async () => {
