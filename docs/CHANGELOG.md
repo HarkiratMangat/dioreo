@@ -75,7 +75,17 @@ Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept ou
 
 ---
 
-## Pre-Release v3.49.0 — 2026-08-18 15:34 EDT (#157) — the SearchTerm buffer, and a shutdown race that finding #12 never actually closed
+## Pre-Release v3.50.0 — 2026-08-18 20:43 EDT (#158) — the reflow-comments CI crash, and a `/help` wording pick that turned out to be a decision already made
+
+A small follow-up session picked up two loose ends from the review-remnants plan, neither of them worth their own review-remnants session: a CI-only bug found (but not fixed) during Session 2, and a filed UX question that turned out not to be as open as it looked.
+
+`scripts/reflow-comments.mjs`'s `externalCheck()` shelled out to `node --check /dev/stdin` (and `bash -n /dev/stdin`), which crashes on GitHub Actions' Linux runners with `ENOENT` on a `/proc/<pid>/fd/socket` path — Node's `/dev/stdin` resolution breaks when the underlying fd is a socket rather than a regular pipe, a quirk that's invisible on macOS and only ever fires for a file with a genuinely proposed change. Found live on PR #156's CI run, deliberately not fixed there to avoid scope-creeping a review-remnants PR into the reflow tooling itself. Fixed here with the identified workaround: `text` now writes to a real temp file (cleaned up in a `finally` block) instead of being piped through `/dev/stdin`. 6 new regression cases (27 total, up from 21) cover valid/invalid JS and shell syntax, temp-file cleanup, and a structural guard that no code line references `/dev/stdin` any more — a revert would fail that test even if syntax checking happened to still work locally.
+
+`/help`'s "no options besides visibility" wording — filed from Session 1 as three inconsistent treatments needing a canonical pick — turned out to be two things, not one, on a closer look: the four single-command categories already use the correct shape (`renderCommandBlock()`'s per-command header), and the two admin pages' shared-footnote pattern isn't an inconsistency at all — it's Harkirat's own explicit 2026-08-10 decision to stop repeating the Options header per command specifically because it read as overwhelming. Applying "pick one style everywhere" would have silently reverted that. Surfaced before touching anything; folded into a broader `/help` design pass Harkirat already has planned, rather than treated as a standalone quick pick.
+
+`npm test` green throughout (full suite). `docs:audit` clean on this branch's own commits.
+
+## Pre-Release v3.49.0 — 2026-08-18 15:34 EDT (#157 · `b56d504`) — the SearchTerm buffer, and a shutdown race that finding #12 never actually closed
 
 The third and last session of the review-remnants plan (`local/handoff/review-remnants-plan.md`, gitignored), closing finding #56 — the one finding the plan deliberately kept isolated in its own session rather than folding in beside unrelated work, since it directly intersects finding #12's shutdown-race fix.
 
