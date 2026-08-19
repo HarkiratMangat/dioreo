@@ -2446,7 +2446,12 @@ const PAGE_CSS = `
  *
  * Extracted 2026-08-18 when the /commands page's Composer turned out to be drawing the same object a different way: accent-coloured option text, a rounded chip for the value, and a space between them. Two renderings of one thing, on one site, two clicks apart. Every constant below is measured and several are load-bearing in ways the comments record — a second copy would have drifted from all of them.
  */
-function cmdRoleCss(scope) {
+function cmdRoleCss(scope, caret = true) {
+    /* ⚠️ THE CARET IS OPT-OUT, and only the landing page keeps it. A caret says "this
+       is where you type". There it is honest — the line IS being typed, by a script.
+       On the /commands page the line is finished OUTPUT you copy, and a caret on it
+       is a large part of why Harkirat tried to type into that page every time he
+       opened it. Do not turn it back on for a static line. */
     return `${scope} .cmd-c{color:var(--accent-t);font-weight:700}
 /* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
    An inline box paints its background over the font's CONTENT AREA, which is
@@ -2511,7 +2516,7 @@ ${scope}::after{content:"";display:inline-block;width:.5em;height:1em;
    exactly that reason. Describe such rules in prose, never in syntax. */
 ${scope}.cmd-busy::after{animation:none}
 @keyframes cmd-blink{50%{opacity:0}}
-`;
+` + (caret ? '' : `\n${scope}::after{content:none}`);
 }
 
 /* ⚠️ SHARED, AND THIS IS THE FOURTH TIME. `.slot` is the section-index row — the

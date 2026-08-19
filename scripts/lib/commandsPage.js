@@ -5,7 +5,7 @@
  *
  * ⚠️ THE LESSON THIS IS BUILT ON, and it cost a whole rejected build to learn: the first chronicle attempt was the legal shell in three accent colours and Harkirat rejected it on sight. Colour is the weakest carrier of identity. What separates a family is its STRUCTURE. So this page deliberately reuses the site's own type stacks rather than introducing a typeface, and spends its distinctiveness on one structural idea instead.
  *
- * THE SIGNATURE: THE COMPOSER. A slash command is the one thing this product is literally made of, so the page's spine is a command line you are building. It sticks to the top of the reading column, adopts whichever command you have scrolled to, fills in as you choose option values, and Copy takes exactly what it shows. That is the page's single bold element; everything around it stays quiet, and it earns its place by doing the page's actual job — getting a reader to a working invocation — rather than by decorating it.
+ * NO PAGE-WIDE COMPOSER, AND THAT IS THE DESIGN. The page used to open on one big monospace box that assembled a command from clicks elsewhere. It read as a text input in every respect except being one -- bordered, monospace, a blinking caret, on a page about typing commands -- and Harkirat tried to type in it EVERY time he opened the site (2026-08-18 18:17 EDT: "literally every time I've opened the website, I've accidentally attempted to type inside it"). The page also had a second, quieter box you COULD type in, which made it exactly backwards. So the assembler is gone and its job moved into each command's own bay: the line you copy sits with the command it belongs to, and the only input on the page is the search field, which is a real one. ⚠️ Do not reintroduce a global command bar. Three grid variants were built and all three inherited this defect, which is why none of them felt right -- the layout was never the problem.
  *
  * ⚠️ NO NUMBERED MARKERS ANYWHERE. Commands are a set, not a sequence, and the 01/02/03 device would be borrowed from the legal pages, where the numbering is true (a document series) and load-bearing. Options DO sort required-first, because that order is real information: it is what you must supply.
  *
@@ -91,40 +91,22 @@ const COMMANDS_CSS = `
   letter-spacing:-.035em;font-weight:680;margin:0 0 .55rem}
 .cx-head p{margin:0;color:var(--ink2);font-size:1.02rem;line-height:1.5}
 
-/* ── THE COMPOSER — the page's one bold element ─────────────────────────────
-   Docked flush under the bar rather than floating a gap below it, so the chrome
-   reads as one block instead of two things that happen to be sticky. It spans the
-   whole column, above BOTH the picker and the bays, because it is the page's
-   instrument and not a feature of the right-hand column. */
-.cx-comp{position:sticky;top:54px;z-index:20;display:flex;align-items:center;gap:.9rem;
-  padding:.62rem .5rem .62rem .95rem;margin:0 0 1.5rem;border-radius:9px;overflow:hidden;
-  background:var(--raised);border:1px solid var(--sig-line);
-  box-shadow:0 14px 26px -20px rgba(0,0,0,.75)}
-/* The same 3px accent→glow rule .doc::before puts across the top of a legal
-   document's plate. The Composer is this family's plate, so it wears the site's
-   mark in the site's own place rather than inventing a second one. */
-.cx-comp::before{content:"";position:absolute;inset:0 0 auto;height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
-.cx-line{font-family:var(--mono);font-size:1.02rem;line-height:1.5;min-width:0;flex:1;
-  letter-spacing:-.01em;overflow-wrap:anywhere}
-/* 🔴 THE THREE ROLES AND THE CARET COME FROM CHROME.cmdRoleCss('.cx-line') — this
-   page does NOT get to invent its own rendering of a slash command. It had one:
-   accent-coloured option text, a rounded chip for the value, a space between the
-   two, and a hand-rolled blinking block. The landing page, two clicks away, already
-   drew the same object the way Discord actually draws it — bold accent command, a
-   grey ink-tint bed for the option NAME, an accent-tint bed for the VALUE, one
-   continuous pill with no colon and a deliberate -1px overlap — checked against a
-   screenshot of a real used command and carrying four separately-measured
-   constants. Two renderings of one object on one site is the exact failure the
-   shared BAR_CSS fixed one layer up. */
-.cx-hold{color:var(--ink3);font-weight:400;margin-left:.45rem}
-.cx-comp[data-built="1"] .cx-line::after{display:none}
-.cx-copy{font:inherit;font-size:.74rem;font-weight:650;cursor:pointer;flex:none;padding:.5rem .85rem;
-  letter-spacing:.02em;border:1px solid var(--sig-line);border-radius:6px;background:var(--sig-soft);color:var(--sig)}
-.cx-copy:hover{background:var(--sig);border-color:var(--sig);color:var(--raised)}
-.cx-copy[disabled]{opacity:.4;cursor:default;background:${BED};border-color:var(--rule);color:var(--ink3)}
-.cx-copy[disabled]:hover{background:${BED};border-color:var(--rule);color:var(--ink3)}
-.cx-copy[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
+/* ── the line you copy, inside the bay it belongs to ───────────────────────
+   A strip carrying a label and the control, then the invocation itself drawn with
+   the shared cmd-* roles. It is not a box you could mistake for a field: no caret,
+   no focus ring, and it sits at the FOOT of a command rather than at the top of the
+   page. The value pills above it write into this line, so assembling still works --
+   it just can never be ambiguous which command you are assembling. */
+.cx-run{margin-top:.15rem;border-top:1px solid var(--rule2)}
+.cx-run-h{display:flex;align-items:center;gap:.5rem;padding:.4rem .5rem .4rem .9rem}
+.cx-run-l{font-family:var(--mono);font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+.cx-run-c{margin-left:auto;font:inherit;font-size:.72rem;font-weight:650;cursor:pointer;
+  padding:.34rem .7rem;letter-spacing:.02em;border:1px solid var(--rule);border-radius:6px;
+  background:transparent;color:var(--ink2)}
+.cx-run-c:hover{border-color:var(--sig);color:var(--sig);background:var(--sig-soft)}
+.cx-run-c[data-done="1"]{background:var(--sig);border-color:var(--sig);color:var(--raised)}
+.cx-line{display:block;font-family:var(--mono);font-size:.9rem;line-height:1.6;
+  padding:0 .9rem .85rem;overflow-wrap:anywhere;letter-spacing:-.005em}
 
 .cx-body{display:grid;grid-template-columns:minmax(232px,278px) 1fr;gap:clamp(1.2rem,2.6vw,2.4rem);align-items:start}
 
@@ -136,10 +118,13 @@ const COMMANDS_CSS = `
 .cx-pick{position:sticky;top:calc(var(--cxbar) + 1.5rem);display:flex;flex-direction:column;
   max-height:calc(100vh - var(--cxbar) - 2.5rem);
   background:var(--raised);border:1px solid var(--rule);border-radius:9px;overflow:hidden;min-width:0}
-.cx-find{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid var(--rule2);background:${BED}}
+/* THE PAGE'S ONLY INPUT, and now its primary control — it used to be the quiet
+   second box beneath a large one you could not type in. */
+.cx-find{display:flex;align-items:center;gap:.6rem;padding:.85rem .85rem;
+  border-bottom:1px solid var(--rule2);background:${BED}}
 .cx-find:focus-within{border-bottom-color:var(--sig-line);box-shadow:inset 0 -1px 0 var(--sig-line)}
-.cx-find .cx-sl{font-family:var(--mono);font-size:.95rem;color:var(--sig);line-height:1}
-.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.85rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
+.cx-find .cx-sl{font-family:var(--mono);font-size:1.05rem;font-weight:650;color:var(--sig);line-height:1}
+.cx-find input{flex:1;min-width:0;font:inherit;font-family:var(--mono);font-size:.95rem;border:0;background:transparent;color:var(--ink);padding:.1rem 0}
 .cx-find input:focus{outline:0}
 .cx-find input::placeholder{color:var(--ink3)}
 .cx-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
@@ -251,26 +236,12 @@ a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3
 .cx-card span{font-size:.86rem;color:var(--ink2);line-height:1.45}
 .cx-note{margin:0;padding:.65rem 1rem .95rem;font-size:.81rem;color:var(--ink3);max-width:70ch;line-height:1.5}
 
-/* ── THE COMPOSER ON A PHONE IS A BOTTOM BAR, NOT A STICKY HEADER ──────────
-   Measured on a 390x844 viewport: the bar is 54px, the mobile nav strip 107px and
-   its section menu 264px, so the Composer -- the page's one signature element --
-   started 335px down and only pinned once you had already scrolled past all of it.
-   Harkirat, 2026-08-18 17:16 EDT: "the command bar at the top, like, literally just
-   stick to the top, and you have to scroll all the way to find it."
-   A phone has no room to stack another sticky band under 425px of chrome, and the
-   thumb is at the BOTTOM. So below 880px it stops being a header and becomes a fixed
-   action bar: always on screen, always reachable, and no longer competing with the
-   nav for the top of the viewport. .cx-floor grows to clear its height so the last
-   bay is never hidden behind it, and the back-to-top button lifts above it rather
-   than landing on it. */
+/* The search field is now the only input on the page, so on a phone it is the
+   primary action and pins under the bar rather than scrolling away with the list. */
 @media (max-width:880px){
-  .cx-comp{position:fixed;inset:auto 0 0;top:auto;margin:0;z-index:45;
-    border-radius:12px 12px 0 0;border-width:1px 0 0;padding:.6rem .6rem .8rem .85rem;
-    box-shadow:0 -12px 26px -18px rgba(0,0,0,.85)}
-  .cx-comp::before{border-radius:12px 12px 0 0}
-  .cx-floor{padding-bottom:7rem}
-  .gotop{bottom:calc(4.8rem + env(safe-area-inset-bottom,0px))!important}
-  .cx-line{font-size:.92rem;max-height:3.2em;overflow:hidden}
+  .cx-pick{position:sticky;top:calc(54px + 2.6rem);z-index:35}
+  .cx-find{background:var(--raised)}
+  .cx-line{font-size:.86rem}
 }
 
 @media (max-width:880px){
@@ -295,7 +266,7 @@ a.cx-on:hover{color:var(--sig);text-decoration:underline;text-underline-offset:3
    not a cramped one. */
 @media (pointer:coarse){
   .cx-pill{padding:.46rem .62rem}
-  .cx-copy{padding:.6rem .85rem}
+  .cx-run-c{padding:.6rem .9rem}
   .cx-row{padding:.6rem .85rem}
   .cx-more{padding:.52rem .4rem}
   /* Measured on a 390px touch viewport: these two came out at 31px and 27px, just
@@ -318,19 +289,19 @@ const COMMANDS_JS = [
     '  var q=document.getElementById("cx-q"), tally=document.getElementById("cx-tally");',
     '  var nohit=document.getElementById("cx-nohit"), sug=document.getElementById("cx-sug");',
     '  var list=document.getElementById("cx-list"), fold=document.getElementById("cx-fold");',
-    '  var line=document.getElementById("cx-line"), copy=document.getElementById("cx-copy");',
-    '  var comp=document.getElementById("cx-comp");',
     '  var bays=[].slice.call(document.querySelectorAll(".cx-bay"));',
     '  var rows=[].slice.call(document.querySelectorAll(".cx-row"));',
     '  var byId={}; rows.forEach(function(r){ byId[r.getAttribute("href").slice(1)]=r; });',
     '',
-    '  /* THE COMPOSER. One line for the whole page: it adopts whichever command you',
-    '     have scrolled to and shows the values you have chosen for it. Per-command',
-    '     state lives on the bay, so scrolling away and back does not lose it. */',
-    '  var current=null;',
+    '  /* EVERY BAY OWNS ITS OWN LINE. There is no page-wide composer any more, so a',
+    '     bay repaints only itself and nothing has to work out which command you mean.',
+    '     Chosen values live on the bay, so the line survives scrolling away and back.',
+    '     The server already rendered a correct line (command + required options at',
+    '     their sample values), which is what a reader with no JS gets and what this',
+    '     starts from. */',
+    '  function span(cls,text){ var e=document.createElement("span"); e.className=cls; e.textContent=text; return e; }',
     '  function chosen(bay){ if(!bay.__pick) bay.__pick={}; return bay.__pick; }',
     '  function plain(bay){',
-    '    if(!bay) return "/";',
     '    var s=bay.getAttribute("data-cmd"), pick=chosen(bay);',
     '    [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){',
     '      var n=o.getAttribute("data-opt");',
@@ -338,20 +309,10 @@ const COMMANDS_JS = [
     '    });',
     '    return s;',
     '  }',
-    '  function span(cls,text){ var e=document.createElement("span"); e.className=cls; e.textContent=text; return e; }',
-    '  function paint(){',
-    '    var bay=current;',
+    '  function paintBay(bay){',
+    '    var line=bay.querySelector(".cx-line"), btn=bay.querySelector(".cx-run-c");',
+    '    if(!line) return;',
     '    line.textContent="";',
-    '    if(!bay){',
-    '      line.appendChild(span("cmd-c","/"));',
-    '      line.appendChild(span("cx-hold","pick a command to build one"));',
-    '      copy.disabled=true; copy.textContent="Copy"; copy.removeAttribute("data-done");',
-    '      copy.setAttribute("aria-label","Copy the command you build here");',
-    '      if(comp)comp.removeAttribute("data-built");',
-    '      return;',
-    '    }',
-    '    copy.disabled=false;',
-    '    if(comp)comp.setAttribute("data-built","1");',
     '    line.appendChild(span("cmd-c",bay.getAttribute("data-cmd")));',
     '    var pick=chosen(bay);',
     '    [].slice.call(bay.querySelectorAll(".cx-opt")).forEach(function(o){',
@@ -359,27 +320,30 @@ const COMMANDS_JS = [
     '      if(pick[n]==null) return;',
     '      line.appendChild(document.createTextNode(" "));',
     '      line.appendChild(span("cmd-o",n));',
-    /* NO separator between the two beds: Discord draws them as one continuous pill,
-       and cmdRoleCss's -1px overlap depends on them abutting — a text node here would
-       open the very hairline that overlap exists to close. */
+    /* No separator between the two beds: cmdRoleCss overlaps them by -1px to close an
+       iOS hairline, and a text node here would reopen it. */
     '      line.appendChild(span("cmd-v",pick[n]));',
     '    });',
-    '    /* The line itself is not a live region -- it changes on every scroll and',
-    '       would talk over the page. The Copy control carries the value instead, so',
-    '       a screen-reader user hears exactly what they are about to copy. */',
-    '    copy.setAttribute("aria-label","Copy "+plain(bay));',
-    '    copy.removeAttribute("data-done"); copy.textContent="Copy";',
+    '    if(btn){',
+    '      btn.removeAttribute("data-done"); btn.textContent="Copy";',
+    '      btn.setAttribute("aria-label","Copy "+plain(bay));',
+    '    }',
     '  }',
-    '  function adopt(bay){ if(bay===current) return; current=bay; paint(); }',
     '',
     '  bays.forEach(function(bay){',
+    '    var btn=bay.querySelector(".cx-run-c");',
+    '    if(btn) btn.addEventListener("click",function(){',
+    '      var text=plain(bay);',
+    '      if(navigator.clipboard) navigator.clipboard.writeText(text)["catch"](function(){});',
+    '      btn.textContent="Copied"; btn.setAttribute("data-done","1");',
+    '    });',
     '    [].slice.call(bay.querySelectorAll(".cx-pill")).forEach(function(p){',
     '      p.addEventListener("click",function(){',
     '        var opt=p.closest(".cx-opt"), n=opt.getAttribute("data-opt"), v=p.getAttribute("data-val");',
     '        var pick=chosen(bay), was=pick[n]===v;',
     '        [].slice.call(opt.querySelectorAll(".cx-pill")).forEach(function(x){ x.setAttribute("aria-pressed","false"); });',
     '        if(was){ delete pick[n]; } else { pick[n]=v; p.setAttribute("aria-pressed","true"); }',
-    '        adopt(bay); paint();',
+    '        paintBay(bay);',
     '      });',
     '    });',
     '    [].slice.call(bay.querySelectorAll(".cx-more")).forEach(function(m){',
@@ -392,12 +356,6 @@ const COMMANDS_JS = [
     '        m.textContent=open?m.getAttribute("data-label"):"Show fewer";',
     '      });',
     '    });',
-    '  });',
-    '',
-    '  copy.addEventListener("click",function(){',
-    '    var text=plain(current);',
-    '    if(navigator.clipboard) navigator.clipboard.writeText(text)["catch"](function(){});',
-    '    copy.textContent="Copied"; copy.setAttribute("data-done","1");',
     '  });',
     '',
     '  /* search: matches the command, what it does, its option NAMES and its choice',
@@ -455,7 +413,6 @@ const COMMANDS_JS = [
     '    r.addEventListener("click",function(){',
     '      var t=document.getElementById(r.getAttribute("href").slice(1));',
     '      rows.forEach(function(o){ o.setAttribute("aria-current",String(o===r)); });',
-    '      if(t&&!t.hasAttribute("data-guide")) adopt(t);',
     '    });',
     '  });',
     '  q.addEventListener("input",filter);',
@@ -476,7 +433,6 @@ const COMMANDS_JS = [
     '      es.forEach(function(e){',
     '        if(!e.isIntersecting) return;',
     '        rows.forEach(function(r){ r.setAttribute("aria-current",String(byId[e.target.id]===r)); });',
-    '        if(!e.target.hasAttribute("data-guide")) adopt(e.target);',
     '        var row=byId[e.target.id];',
     '        if(row&&list.scrollHeight>list.clientHeight){',
     '          var lb=list.getBoundingClientRect(), rb=row.getBoundingClientRect();',
@@ -567,6 +523,28 @@ function renderOptions(command, C) {
     }).join('');
 }
 
+/**
+ * The invocation a reader copies, rendered at BUILD time so it is correct with no JS at all: the command, then each REQUIRED option at the real sample value from commandProse.js. Optional options are left off — a line you can paste and have work is more useful than a line showing everything the command could take, which the options table above already does. Drawn with the shared cmd-* roles, so it is the same object the landing page draws and the same one Discord itself draws.
+ */
+function runLine(command, C) {
+    const { esc } = C;
+    const entry = COMMANDS[command.path] || {};
+    const sample = entry.sample || {};
+    const parts = [`<span class="cmd-c">${esc(command.path)}</span>`];
+    let plain = command.path;
+    for (const option of command.options) {
+        if (!option.required) continue;
+        const value = sample[option.name]
+            || (option.choices.length ? splitChoice(option.choices[0]).label : null);
+        if (!value) continue;
+        parts.push(` <span class="cmd-o">${esc(option.name)}</span><span class="cmd-v">${esc(value)}</span>`);
+        plain += ` ${option.name} ${value}`;
+    }
+    return `<div class="cx-run"><div class="cx-run-h"><span class="cx-run-l">Copy this</span>` +
+        `<button type="button" class="cx-run-c" aria-label="Copy ${esc(plain)}">Copy</button></div>` +
+        `<code class="cx-line">${parts.join('')}</code></div>`;
+}
+
 /** True when every option the command takes is one every command takes. */
 const bare = command => command.options.every(option => isShared(command, option));
 
@@ -581,6 +559,7 @@ function renderCommand(command, group, C) {
         `<div class="cx-top"><h2><span class="cx-sl2">/</span>${esc(command.path.slice(1))}</h2>` +
         `<p class="cx-why">${esc(entry.purpose || command.description)}</p></div>` +
         `<div class="cx-opts">${bare(command) ? '<p class="cx-bare">Takes nothing else — just run it.</p>' : ''}${renderOptions(command, C)}</div>` +
+        runLine(command, C) +
         `</article>`;
 }
 
@@ -719,7 +698,7 @@ function commandsShell({ page, catalog, C, variant = null }) {
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line')}${variantCss}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${accent}${COMMANDS_CSS}${C.cmdRoleCss('.cx-line', false)}${variantCss}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
@@ -742,15 +721,6 @@ ${C.mobileNav(page, slots.join(''))}
     <p class="cx-kick">${esc(page.kicker)}</p>
     <h1>${esc(page.title)}</h1>
     <p>${esc(page.lede)}</p>
-  </div>
-
-  <!-- The Composer sits ABOVE both columns, not inside the reading one. It is the
-       page's instrument rather than a feature of the bays, and docking it flush under
-       the fixed bar makes the two read as one block of chrome instead of two things
-       that happen to be sticky. -->
-  <div class="cx-comp" id="cx-comp">
-    <span class="cx-line" id="cx-line"><span class="cmd-c">/</span></span>
-    <button class="cx-copy" id="cx-copy" type="button">Copy</button>
   </div>
 
   <div class="cx-body">
