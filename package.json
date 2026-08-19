@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "check": "find . -name \"*.js\" -not -path \"./node_modules/*\" -print0 | xargs -0 -n1 node --check",
-    "site": "node --check scripts/buildLegalPages.js && node --check scripts/lib/chronicle.js && node --check scripts/lib/commandsPage.js && node --check scripts/lib/commandCatalog.js && node --check scripts/lib/commandProse.js && node --check scripts/lib/commandsVariants.js && node scripts/buildLegalPages.js",
+    "site": "node --check scripts/buildLegalPages.js && node --check scripts/lib/chronicle.js && node --check scripts/lib/commandsPage.js && node --check scripts/lib/commandCatalog.js && node --check scripts/lib/commandProse.js && node scripts/buildLegalPages.js",
     "docs:audit": "node scripts/docs-audit.mjs",
     "docs:audit:test": "node scripts/docs-audit.test.mjs",
     "test:hooks": "bash .claude/hooks/run-all-tests.sh",

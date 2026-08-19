@@ -1253,8 +1253,9 @@ h1 em{font-style:normal;color:var(--accent-t)}
   border-radius:0 .34em .34em 0}/* Set by the HOST's paint() while the value has no characters yet — see CMD_JS's
    own note for why this is a class rather than :has(+ .cmd-v:empty). ⚠️ Only the
    landing page's typewriter has a state where a value is still empty; the /commands
-   Composer renders a bed only once it has something to put in it, so "solo" and the
-   ":empty" rules below are inert there rather than wrong. */
+   page's copy line is rendered whole at BUILD time and only ever repainted with a
+   complete value, so "solo" and the ":empty" rules below are inert there rather than
+   wrong. */
 
 .cmd-line .cmd-o.solo{border-radius:.34em;margin-right:0}
 .cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
@@ -1264,9 +1265,10 @@ h1 em{font-style:normal;color:var(--accent-t)}
   animation:cmd-blink 1.1s steps(1) infinite}/* Solid while keys are landing, blinking on the hold and the gap — a cursor
    that blinks through its own typing reads as a glitch. ⚠️ "cmd-busy" belongs to
    whichever host is TYPING: CMD_JS sets it on the landing page and writes nothing
-   else about the cursor. The /commands Composer never types — it assembles — so it
-   never sets this class and instead hides the caret outright once a command is
-   adopted, which is its own rule rather than one of these. Under
+   else about the cursor. The /commands page never types — its copy line is rendered
+   at build time and repainted only when you pick an option value — so it never sets
+   this class, and it draws no caret at all: the page-wide Composer that used to carry
+   one was deleted 2026-08-18 for reading as a text input it was not. Under
    prefers-reduced-motion the global animation:none override pins the block solid
    and CMD_JS stops touching the class at all, which is the correct still frame.
    ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit

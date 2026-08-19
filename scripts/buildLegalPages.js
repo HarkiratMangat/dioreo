@@ -225,9 +225,19 @@ const CHRONICLE_PAGES = [
 const TOOL_PAGES = [
     {
         kind: 'generated', out: 'commands.html',
-        title: 'Commands', short: 'Commands', kicker: 'Read straight from the bot',
+        title: 'Commands', short: 'Commands', kicker: 'Dioreo',
         accent: BRAND.signal, glow: '#A8E8AA',
-        lede: 'Pick a command, see every option it takes, and copy a line that works.',
+        /* ⚠️ The kicker used to read "Read straight from the bot", which describes the BUILD
+           PIPELINE — true, and a fact the reader has no stake in. It now names the product and
+           the page appends the derived command count beside it, so the one number on the
+           masthead cannot go stale. The lede used to narrate the page's own UI ("Pick a
+           command, see every option it takes, and copy a line that works") on a page whose
+           whole job is to get the reader back into Discord. `ledeEm` is the substring set in
+           serif italic — kept as plain text here rather than markup because a page table feeds
+           escaped strings, and commandsPage.js throws if it cannot find it, so the emphasis
+           cannot silently stop applying. */
+        lede: 'Start from the command you know — or from what you are trying to do.',
+        ledeEm: 'what you are trying to do',
         blurb: 'Every Dioreo command, what it does, and every option it accepts.',
         desc: 'Every Dioreo command, what each one does, and every option it accepts -- with a copyable example.'
     },
@@ -2444,7 +2454,7 @@ const PAGE_CSS = `
  *
  * ⚠️ THIS LAYOUT WAS CHECKED AGAINST A SCREENSHOT OF A REAL USED COMMAND, not recalled — an earlier guess at it was wrong. Discord draws the command as bold plain text, then puts the option NAME and the VALUE each in their own box, one continuous pill with only the outer corners rounded and NO COLON between them: two adjacent boxes already separate the pair. The beds are different materials on purpose — the option name is a neutral grey mixed from --ink, the value an accent tint — because the grey says "label" and the tint says "your selection".
  *
- * Extracted 2026-08-18 when the /commands page's Composer turned out to be drawing the same object a different way: accent-coloured option text, a rounded chip for the value, and a space between them. Two renderings of one thing, on one site, two clicks apart. Every constant below is measured and several are load-bearing in ways the comments record — a second copy would have drifted from all of them.
+ * Extracted 2026-08-18 when the /commands page turned out to be drawing the same object a different way in its (since-deleted) page-wide Composer: accent-coloured option text, a rounded chip for the value, and a space between them. Two renderings of one thing, on one site, two clicks apart. Every constant below is measured and several are load-bearing in ways the comments record — a second copy would have drifted from all of them.
  */
 function cmdRoleCss(scope, caret = true) {
     /* ⚠️ THE CARET IS OPT-OUT, and only the landing page keeps it. A caret says "this
@@ -2494,8 +2504,9 @@ ${scope} .cmd-v{padding:.08em .3em .08em .5em;
 /* Set by the HOST's paint() while the value has no characters yet — see CMD_JS's
    own note for why this is a class rather than :has(+ .cmd-v:empty). ⚠️ Only the
    landing page's typewriter has a state where a value is still empty; the /commands
-   Composer renders a bed only once it has something to put in it, so "solo" and the
-   ":empty" rules below are inert there rather than wrong. */
+   page's copy line is rendered whole at BUILD time and only ever repainted with a
+   complete value, so "solo" and the ":empty" rules below are inert there rather than
+   wrong. */
 ${scope} .cmd-o.solo{border-radius:.34em;margin-right:0}
 ${scope} .cmd-o:empty,${scope} .cmd-v:empty{padding:0;background:none}
 ${scope} .cmd-o:empty{margin-right:0}
@@ -2505,9 +2516,10 @@ ${scope}::after{content:"";display:inline-block;width:.5em;height:1em;
 /* Solid while keys are landing, blinking on the hold and the gap — a cursor
    that blinks through its own typing reads as a glitch. ⚠️ "cmd-busy" belongs to
    whichever host is TYPING: CMD_JS sets it on the landing page and writes nothing
-   else about the cursor. The /commands Composer never types — it assembles — so it
-   never sets this class and instead hides the caret outright once a command is
-   adopted, which is its own rule rather than one of these. Under
+   else about the cursor. The /commands page never types — its copy line is rendered
+   at build time and repainted only when you pick an option value — so it never sets
+   this class, and it draws no caret at all: the page-wide Composer that used to carry
+   one was deleted 2026-08-18 for reading as a text input it was not. Under
    prefers-reduced-motion the global animation:none override pins the block solid
    and CMD_JS stops touching the class at all, which is the correct still frame.
    ⚠️ Do not spell that global rule out here with its braces — hoverGuardAudit
@@ -8629,37 +8641,21 @@ function build() {
             `${(html.length / 1024).toFixed(1)} KB`);
     }
 
-    /* ⚠️ COMPARISON RENDERS, NOT PAGES. Three spatial directions for the /commands
-       grid, built from the real catalog so the choice is made on the real thing
-       rather than a mockup. They render with TOOL_PAGES[0]'s own chrome on purpose —
-       identical bar, nav, Composer, footer and colours — so what differs between them
-       is the layout and nothing else. They are deliberately NOT in ALL_PAGES,
-       NAV_GROUPS or `built`: no nav tab, no numbered list, and the tab count stays at
-       the seven navSwitcher() has a measured staging for. `.gitignore` excludes their
-       output. Delete this block, commandsVariants.js and the `variant` parameter once
-       one is chosen. */
-    /* 🔴 OFF UNLESS ASKED FOR, AND EXISTING COPIES ARE DELETED — because .gitignore does
-       NOT protect a deploy. Both publish paths run `wrangler pages deploy public`, which
-       uploads the DIRECTORY and has never heard of the git index, so a gitignored file
-       sitting in public/ ships to dioreo.app like any other. CI's staleness check reads
-       `git diff -- public/`, which cannot see them either, so nothing would have gone red.
-       Gating on an env var means a normal build and every CI run never create them at
-       all; unlinking means a stale copy left over from a local run cannot be published
-       by someone else's deploy afterwards. */
-    // ⚠️ _v-phones.html is the three-in-a-row iframe harness used to compare the mobile forms; it is written by hand rather than by this loop, which is exactly why it has to be listed HERE. A throwaway page that the unlink list does not know about is the same leak all over again — gitignored, sitting in public/, and uploaded by a deploy that reads the directory rather than the git index.
-    const variantFiles = ['_v-ledger.html', '_v-xref.html', '_v-sticky.html', '_v-phones.html'];
-    if (process.env.DIOREO_VARIANTS === '1') {
-        for (const v of [['ledger', variantFiles[0]], ['xref', variantFiles[1]], ['sticky', variantFiles[2]]]) {
-            LINK_BASE = '';
-            const html = commandsShell({ page: TOOL_PAGES[0], catalog, C: CHROME, variant: v[0] });
-            writePage(path.join(OUT, v[1]), html);
-            console.log(`  \u25CB ${v[1]}  variant: ${v[0]}  (DIOREO_VARIANTS=1 — never published)`);
-        }
-    } else {
-        for (const f of variantFiles) {
-            const stale = path.join(OUT, f);
-            if (fs.existsSync(stale)) { fs.unlinkSync(stale); console.log(`  \u25CB removed stale ${f}`); }
-        }
+    /* 🔴 A PERMANENT SWEEP, NOT LEFTOVER VARIANT MACHINERY. `public/_v-*.html` is the agreed
+       prefix for a scratch render — a comparison page, a device harness — and .gitignore
+       excludes it. ⚠️ .gitignore DOES NOT PROTECT A DEPLOY: both publish paths run
+       `wrangler pages deploy public`, which uploads the DIRECTORY and has never consulted the
+       git index, and CI's staleness gate reads `git diff -- public/`, which cannot see an
+       ignored file either. So a scratch page left in public/ ships to dioreo.app with nothing
+       going red anywhere — measured 2026-08-18, when three of them sat one site-touching merge
+       from being live. This sweep is what makes the prefix safe to use: write a scratch render
+       AFTER a build, look at it, and the next ordinary build removes it.
+       ⚠️ It reads the DIRECTORY rather than a hand-written list, because a hardcoded list goes
+       stale the moment the scratch files are renamed — which already happened once in the same
+       session, orphaning three of them where no later build could see them. */
+    for (const f of fs.readdirSync(OUT).filter(n => /^_v-.*\.html$/.test(n))) {
+        fs.unlinkSync(path.join(OUT, f));
+        console.log(`  \u25CB swept scratch render ${f}`);
     }
 
     // Only the numbered legal set goes in the numbered list.

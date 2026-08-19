@@ -181,6 +181,55 @@ check('every anchor id is unique across the whole page', () => {
     assert.strictEqual(new Set(ids).size, ids.length, 'a duplicate id would make one deep link unreachable');
 });
 
+/* ── the /commands page's colour contract ─────────────────────────────────────
+   Every command name on that page is painted in the bot's OWN accent for that command, and
+   those hexes were chosen for a Discord embed rather than for a web page — so each one is
+   solved to a text-safe variant per theme. These cases exist because the first version solved
+   against --desk alone and three colours then measured 4.00, 4.05 and 4.08 on --raised, which
+   is the surface the panel actually paints: it read as passing while failing where it counts.
+   ⚠️ Both SURFACES of both themes are asserted, not just the one the solver targets. */
+const { solveText, loadAccents, GROUND_DARK, GROUND_LIGHT, DERIVED } = require('./lib/commandsPage');
+
+const SURFACES = { 'dark --desk': '#16131B', 'dark --raised': '#241F30', 'light --desk': '#E7E4EC', 'light --raised': '#EEECF2' };
+const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const relLum = h => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const [r, g, b] = hx(h).map(f); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const contrast = (a, b) => { const [x, y] = [relLum(a), relLum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+
+check('every command colour clears WCAG AA on BOTH surfaces of its own theme', () => {
+    const bad = [];
+    for (const [path, hex] of Object.entries(loadAccents())) {
+        const pairs = [
+            [solveText(hex, GROUND_DARK), 'dark --desk'], [solveText(hex, GROUND_DARK), 'dark --raised'],
+            [solveText(hex, GROUND_LIGHT), 'light --desk'], [solveText(hex, GROUND_LIGHT), 'light --raised'],
+        ];
+        for (const [colour, surface] of pairs) {
+            const r = contrast(colour, SURFACES[surface]);
+            if (r < 4.5) bad.push(`${path} ${colour} on ${surface} = ${r.toFixed(2)}`);
+        }
+    }
+    assert.deepStrictEqual(bad, [], 'a command name below 4.5:1 is unreadable on the surface it is painted on');
+});
+
+check('solveText can actually FAIL a colour it cannot fix, so the case above is not vacuous', () => {
+    // Black can never clear 4.5:1 against a near-black ground unchanged. If the solver returned it untouched the assertion above would pass on a colour nobody can read.
+    const fixed = solveText('#000000', GROUND_DARK);
+    assert.notStrictEqual(fixed, '#000000', 'the solver returned an impossible colour unchanged');
+    assert.ok(contrast(fixed, GROUND_DARK) >= 4.5, 'the solver returned a colour that still fails');
+});
+
+check('no command is both fixed-colour and derive-per-render', () => {
+    const fixed = new Set(Object.keys(loadAccents()));
+    const both = [...DERIVED].filter(p => fixed.has(p));
+    assert.deepStrictEqual(both, [], 'a command cannot both ship a PRESET_ACCENT and derive one per render');
+});
+
+check('every live command is accounted for as fixed-colour or derive-per-render', () => {
+    const fixed = new Set(Object.keys(loadAccents()));
+    const missed = allCommands.map(c => c.path).filter(p => !fixed.has(p) && !DERIVED.has(p));
+    assert.deepStrictEqual(missed, [], 'a command in neither set renders a grey dot with nothing saying why');
+});
+
 run();
 if (failures > 0) {
     console.error(`❌ commandCatalog: ${failures} case(s) failed`);

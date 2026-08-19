@@ -9,7 +9,7 @@
  */
 
 /**
- * `sample` is the value the Composer opens with, and it must be REAL — a reader copying the line off this page should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing.
+ * `sample` is the value the command's copy line is rendered with at build time, and it must be REAL — a reader copying the line off this page should get an answer, not an error. Weapon names are verbatim from the live Loadout collection's own casing.
  */
 const COMMANDS = {
     '/help': {
@@ -132,6 +132,52 @@ const GUIDES = [
     },
 ];
 
+/**
+ * THE ASK INDEX — the reader's question, in the reader's words.
+ *
+ * The page's groups come from the bot's own CATEGORY_DEFS, which exist because the BOT is organised that way, not because a player thinks that way: nobody arrives wanting "Utilities", they arrive wanting to know how much CP they are short. This is the layer that answers that, and it is the resting state of the page's stage.
+ *
+ * ⚠️ ORDER IS THE ORDER THEY APPEAR IN. It is roughly "most asked first" rather than alphabetical or grouped, because the list is read top to bottom by someone scanning for their own question. It is a judgement, not derived — if it ever needs to be derived, `/bot analytics` knows which commands actually get used.
+ *
+ * ⚠️ Every entry is gated against the live catalog in BOTH directions by assertAskCoverage below. An ask pointing at a command the bot no longer registers is worse than a missing one: it renders as a working link to a section that is not there.
+ */
+const ASKS = [
+    { q: 'How much CP am I short', to: '/draw calculator' },
+    { q: 'What a draw costs, spin by spin', to: '/draw prices' },
+    { q: "What's in the draws this season", to: '/draws' },
+    { q: 'A build for one weapon', to: '/gunsmiths search' },
+    { q: 'Builds for a category, or the meta', to: '/gunsmiths list' },
+    { q: 'The same, but for DMZ', to: '/dmz' },
+    { q: 'When the season ends', to: '/season end' },
+    { q: "What's on this season, and when", to: '/calendar' },
+    { q: 'What got buffed or nerfed', to: '/patch notes' },
+    { q: 'Post a time that reads right everywhere', to: '/timestamp' },
+    { q: 'The colours in my own profile', to: '/colors' },
+    { q: 'Change my timezone or region', to: '/settings' },
+    { q: 'Everything Dioreo can do, inside Discord', to: '/help' },
+    { q: 'Add Dioreo to a server, or to my account', to: '/invite' },
+];
+
+/**
+ * Fails the build when an ask points nowhere, or when a command has no way in from the ask index. The second direction matters as much as the first: a command nobody can reach by describing what they want is invisible to every reader who does not already know its name, which is the exact failure the index exists to fix.
+ */
+function assertAskCoverage(catalog) {
+    const livePaths = new Set(catalog.groups.flatMap(g => g.commands).map(c => c.path));
+    const problems = [];
+    const seen = new Set();
+    for (const ask of ASKS) {
+        if (!livePaths.has(ask.to)) problems.push(`the ask "${ask.q}" points at ${ask.to}, which the bot no longer registers.`);
+        seen.add(ask.to);
+    }
+    for (const path of livePaths) {
+        if (!seen.has(path)) problems.push(`${path} has no ask — nobody can reach it without already knowing its name.`);
+    }
+    if (problems.length) {
+        throw new Error('commandProse: the ask index and the bot have drifted apart:\n  - ' +
+            problems.join('\n  - ') + '\nFix ASKS in scripts/lib/commandProse.js.');
+    }
+}
+
 /** The prose for one option, falling back to the shared description. */
 function optionProse(commandPath, optionName) {
     const entry = COMMANDS[commandPath];
@@ -181,4 +227,4 @@ function assertProseCoverage(catalog) {
     }
 }
 
-module.exports = { COMMANDS, SHARED_OPTIONS, GUIDES, optionProse, assertProseCoverage };
+module.exports = { COMMANDS, SHARED_OPTIONS, GUIDES, ASKS, optionProse, assertProseCoverage, assertAskCoverage };
