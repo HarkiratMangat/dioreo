@@ -471,9 +471,45 @@ async function buildAccessPanel(client) {
     }];
 }
 
+// Renders one of four outcomes. The refusal cases carry the two buttons Harkirat asked for --
+// "refuse and say so AND *offer* to full restart or exit" -- so a refusal is never a dead end.
+function buildHotpatchPanel(out) {
+    const { plan, result, commit, changed } = out;
+    const body = [];
+    const head = t => body.push({ type: 10, content: t });
+
+    if (!changed.length && !plan.members.length) {
+        head(`### 🩹 Nothing to patch\nThe working tree is already at \`${commit.slice(0, 7)}\` — the running process is up to date.`);
+        return [{ type: 17, accent_color: 0x5865F2, components: body }];
+    }
+    head(`### 🩹 Hotpatch · \`${commit.slice(0, 7)}\`\n**${changed.length}** changed runtime file(s), **${plan.members.length}** module(s) in the reload closure.`);
+
+    if (plan.verdict === 'ALLOW' && result?.ok) {
+        head(`✅ **Applied.** No restart, no gateway reconnect.\n${result.applied.map(f => `• \`${f}\``).join('\n')}`);
+        return [{ type: 17, accent_color: 0x57F287, components: body }];
+    }
+    if (plan.verdict === 'ALLOW' && !result) {
+        head(`🔍 **Dry run — nothing changed.** These would reload:\n${plan.members.map(f => `• \`${f}\``).join('\n')}`);
+        return [{ type: 17, accent_color: 0x5865F2, components: body }];
+    }
+    if (plan.verdict === 'REFUSE_STRUCTURAL') {
+        head(`⛔ **Can't hotpatch this — a full restart is required.**\n${plan.escaped.map(f => `• \`${f}\` — owns process lifecycle or is a Mongoose model`).join('\n')}${plan.unresolved?.length ? `\n\nNot a runtime module (deleted by the pull, or a typo): ${plan.unresolved.map(f => `\`${f}\``).join(', ')}` : ''}${plan.stray?.length ? `\n\nYou named ${plan.stray.map(f => `\`${f}\``).join(', ')}, which the pull did not change.` : ''}\n\nThis is permanent for these files, not a missing feature.`);
+    } else if (plan.verdict === 'REFUSE_STATE') {
+        head(`⚠️ **Refused — live state in the reload closure.**\n${Object.entries(plan.blocked).map(([f, r]) => `• \`${f}\` — ${r.join(', ')}`).join('\n')}\n\nEach of these can opt in later with a \`__hotSwap\` contract. Until then a restart is the honest option.`);
+    } else if (result && !result.ok) {
+        head(`❌ **Nothing was applied.**\n\`\`\`\n${String(result.error).slice(0, 800)}\n\`\`\`\nThe process is still running the code it had.`);
+    }
+    body.push({ type: 1, components: [
+        { type: 2, style: 4, custom_id: 'bot_hp_restart', label: 'Full restart', emoji: { name: '♻️' } },
+        { type: 2, style: 2, custom_id: 'bot_hp_cancel', label: 'Cancel' },
+    ] });
+    return [{ type: 17, accent_color: 0xFEE75C, components: body }];
+}
+
 module.exports = {
     buildAnalyticsPanel,
     buildAccessPanel,
+    buildHotpatchPanel,
     buildUsageExport,
     buildTimingExport,
     buildAdminListBlocks,
@@ -495,7 +531,11 @@ module.exports = {
             ))
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub.setName('access').setDescription('View and manage the admin allowlist (owner-only)')
-            .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))),
+            .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
+        .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files into the running bot without a restart (owner-only)')
+            .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
+            .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
+            .addStringOption(o => o.setName('file').setDescription('Limit to one changed file (default: everything the pull brought in)').setAutocomplete(true))),
 
     async execute(interaction) {
         const sub = interaction.options.getSubcommand();
@@ -508,6 +548,22 @@ module.exports = {
             const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
             return sendV2Payload(interaction, await buildAccessPanel(interaction.client));
+        }
+
+        if (sub === 'hotpatch') {
+            // isOwner ONLY -- this runs new code in the process. The 'bot' token is grantable to any admin.
+            if (!isOwner(interaction.user.id)) {
+                return interaction.reply({ content: '🔒 **Only the bot owner can hotpatch.** This one loads new code into the running process.', ephemeral: true });
+            }
+            await interaction.deferReply({ flags: 64 });   // always ephemeral; this is never a public panel
+            const { runHotpatch } = require('../utils/hotpatch');
+            const out = await runHotpatch({
+                client: interaction.client,
+                files: [interaction.options.getString('file')].filter(Boolean),
+                pull: interaction.options.getBoolean('pull') ?? true,
+                dryRun: interaction.options.getBoolean('dry_run') ?? false,
+            });
+            return sendV2Payload(interaction, buildHotpatchPanel(out));
         }
 
         // analytics
