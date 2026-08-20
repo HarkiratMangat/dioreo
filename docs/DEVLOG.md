@@ -189,6 +189,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-19 17:45 EDT — True but useless, and a generator that cheerfully wrote the wrong file (v3.51.0)
 - 2026-08-20 10:38 EDT — Three false 'shipped' claims, and the fact that outran itself (v3.52.0)
 - 2026-08-20 13:17 EDT — Hotpatch v1 built (v3.53.0-pre)
+- 2026-08-20 14:10 EDT — self-check.sh rename-string gate fixed (v3.53.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3298,6 +3299,12 @@ Two defects from the earlier falsification pass mattered enough to build the who
 Shipped with zero `__hotSwap` declarations on purpose. Nine files hold nearly all the state that would otherwise block a patch, and the plan's own measurement showed declaring all nine only gets coverage from 46 of 108 modules to 79 — worth doing the first time one of them is actually in the way of a real hot fix, not worth doing speculatively now. Filed both that and the `dior` CLI wrapper as their own queued items.
 
 Also caught, mid-session and unrelated to the feature itself: the self-check hook that nudges a `/rename` string and a model recommendation at the start of every session turned out to only actually check for the model recommendation — so giving that alone silently satisfied both halves of its own stated gate, and the rename string got skipped without anyone noticing until Harkirat did. Flagged as a separate fix rather than folding it into this branch.
+
+## 2026-08-20 14:10 EDT — self-check.sh rename-string gate fixed (v3.53.0-pre)
+
+Found and fixed a real bug in the model-selection gate hook while building Hotpatch v1, on the same branch that had shipped the gate itself hours earlier. The FIRST ACTION message has always asked for two things at the start of a session — a ready-to-paste `/rename` string and a one-line model+effort recommendation — but the "already given, do not repeat it" short-circuit only ever checked for the model recommendation's shape. Stating that alone silently satisfied the whole gate, and the rename string went unrequested for the rest of the session. This wasn't theoretical: it reproduced live, in the same session that was building the hotpatch feature. Fixed by adding a second, deliberately stricter detector for the rename-string's fixed `Model-Effort · Title · Mon DD` shape — stricter than the model-derivation detector on purpose, since a loose separator there false-matched ordinary prose that happened to mention a model name near a date — and requiring both before the gate goes quiet, while keeping the wrong-pick correction independent so it still fires even when the rename string hasn't been given yet.
+
+The investigation also surfaced a second, more interesting failure mode live: quoting the bug's own bad example in a normal explanatory sentence — without knowing to append the hook's existing "MG-EXAMPLE" escape token — made that sentence itself look like a fresh, wrong derivation to the hook's regex, which then "corrected" it again on the very next turn. The fix doesn't need new code for that half; it needs the escape token used correctly, which is now the plan going forward. Also tagged the worked rename-string example inside `docs/SESSION-START.md` with the same escape, since it's read into every session's context and would otherwise have made the new detector permanently fire-blind from turn one — the same trap the model-derivation detector had already been bitten by once.
 
 # Part B — Lessons Ledger (thematic)
 
