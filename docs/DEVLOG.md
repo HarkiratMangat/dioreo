@@ -188,6 +188,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-19 14:03 EDT — Four root causes, and a colour strategy that could not fail (v3.51.0)
 - 2026-08-19 17:45 EDT — True but useless, and a generator that cheerfully wrote the wrong file (v3.51.0)
 - 2026-08-20 10:38 EDT — Three false 'shipped' claims, and the fact that outran itself (v3.52.0)
+- 2026-08-20 13:17 EDT — Hotpatch v1 built (v3.53.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3285,6 +3286,18 @@ Asked to reconcile `docs/ROADMAP.md` and `docs/db-deferred-list.md` against seve
 Also removed `CHANGELOG.md`'s "Planned & Upcoming" and `CHANGELOG-SUMMARY.md`'s "Coming soon" sections outright, on Harkirat's call after a sequential-thinking deliberation he asked for directly. Both required a three-way manual sync with `docs/ROADMAP.md` that had been silently failing (five shipped features still listed as unbuilt), and the pages have no live audience right now. Verified the removal didn't break anything parsing those files by actually running `buildLegalPages.js` as a probe rather than trusting a docs-audit pass — the chronicle parser explicitly special-cases a `## Coming soon` heading, and confirming that removal was survivable meant running the real consumer, not reading the code and guessing.
 
 Two completeness-sweep passes surfaced the changelog-artifact miss and confirmed three global memory files (`feedback_docs_at_push_time.md`, `project_dior_builds_changelog_system.md`, `project_changelog_redesign.md`, `user_working_agreement.md`) described conventions or statuses that no longer matched — memory files never show up in a git diff, so nothing else would have caught them.
+
+## 2026-08-20 13:17 EDT — Hotpatch v1 built (v3.53.0-pre)
+
+Built Hotpatch v1 from the plan a prior session designed and audited: a way to reload an already-pulled code change into the running bot without a `systemctl restart`. The core idea is one invariant — a reload is sound iff its dependent closure terminates at a late-bound boundary and every member of that closure is either stateless or opts in with a `__hotSwap` contract — and `utils/hotpatch.js` computes that closure from a static require graph read straight off disk, never from `require.cache`, specifically so the answer doesn't depend on what the bot happened to run and can be tested offline.
+
+The one change with real teeth was making `handlers/router.js` resolve its fifteen handler modules at call time instead of capturing them once when the process boots. That's what makes a handler hot-swappable at all, and it's also what keeps the router itself a "boundary" rather than a member of the closure — its own cooldown state never has to be considered when deciding whether a patch is safe. `applyHotpatch` is verify-then-swap and deliberately all-or-nothing: syntax-check every file first, snapshot the old module cache and command collection, swap, validate shape, and roll back to the exact snapshot on any failure. A bot that looks fine while quietly running half-old code is worse than one that's plainly restarting.
+
+Two defects from the earlier falsification pass mattered enough to build the whole design around avoiding them. First, the baseline commit a hotpatch diffs against has to come from `utils/logger.js`'s own require-time commit value, never `git rev-parse HEAD` — Harkirat's actual workflow is pull, then hotpatch, so by the time a hotpatch runs `HEAD` already equals the new commit, and diffing against it would silently report "nothing to patch" over a process still running stale code. Second, a `commands/*.js` swap that changes what Discord shows — a new command, a changed option — has to be refused rather than applied, because the command list only updates through one REST call at boot; swapping the module changes what the code does without changing what Discord displays, and that's a half-shipped feature wearing a green checkmark.
+
+Shipped with zero `__hotSwap` declarations on purpose. Nine files hold nearly all the state that would otherwise block a patch, and the plan's own measurement showed declaring all nine only gets coverage from 46 of 108 modules to 79 — worth doing the first time one of them is actually in the way of a real hot fix, not worth doing speculatively now. Filed both that and the `dior` CLI wrapper as their own queued items.
+
+Also caught, mid-session and unrelated to the feature itself: the self-check hook that nudges a `/rename` string and a model recommendation at the start of every session turned out to only actually check for the model recommendation — so giving that alone silently satisfied both halves of its own stated gate, and the rename string got skipped without anyone noticing until Harkirat did. Flagged as a separate fix rather than folding it into this branch.
 
 # Part B — Lessons Ledger (thematic)
 
