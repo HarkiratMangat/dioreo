@@ -43,19 +43,16 @@ Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release wo
 Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary changelog until v3 actually launches.
 - **`/manage` gains slash-driven actions** (`/manage command:{x} action:{y}`), with `action` choices scoped to the chosen command, alongside the existing dashboard panel. Plus an internal DB-change logging/tracking system. ⚠️ *Retitled 2026-08-14 11:14 EDT — was planned as a `/manage`→`/admin` rename; that naming is retired now that `/admin` is permanently claimed by the `/server`→`/admin` rename (shipped this same date). `/manage` keeps its own name; only the wording above changed, the feature idea did not. Full design work deferred to its own session — see `docs/db-deferred-list.md`'s Queued entry.*
 - **`/meta`** — browse every weapon marked Meta, paginated, category-switchable, per-category accent.
-- **Draw cost calculator** — cost to finish a draw from region + attempts done/remaining + CP balance, with a suggested top-up package.
 - **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta` above; pick one shape at design time). `/dmz` stays as-is.
 - **`/settings` jump-to options** and **detaching `/colors`' visibility** from settings.
-- A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour pages and the reworded block message.
 - **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
 - **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.
 - **Privacy Policy / Terms of Service** — needed for Discord compliance, especially once verified/past 100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics item below if that ships first.
 - **Richer usage analytics** — ✅ **collection shipped v3.35.0-pre**, one event per interaction identified by a keyed hash; reading it in-bot is stage 3 — who ran what command, when, how often, and how people actually navigate a feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure attribution, this is usage telemetry).
-- **`/define` (Urban Dictionary integration)** — pure fun, not CODM-related, low priority.
 - **Extend the passive auto-disable pattern** beyond `/settings` (which shipped it in v2.22.0) to draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse `utils/passiveExpiry.js`), open question is whether 10 minutes is the right window everywhere.
 
 ### 💭 Considering — ideas, not committed
-- Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.
+- Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused; can ship any time, not tied to the v3 launch date.
 - Possibly promote the View Colors / accent-personalization system to a **`v3.0.0`** milestone rather than leaving it inside the v2 line — Harkirat's call (a MAJOR bump is never made without his OK).
 - **v4 — guild install + text/prefix commands** (`d b ak117`), with a settable per-server prefix and server-exclusive commands. ⚠️ This reverses the bot's user-installed-only architecture and needs Dev Portal changes: Guild Install enabled, `setIntegrationTypes([0, 1])`, and the **privileged MESSAGE CONTENT intent** (which needs Discord approval past 100 servers).
 - **v4 — user-submitted loadouts**, gated behind manual review (deny / accept / accept-with-edit).
