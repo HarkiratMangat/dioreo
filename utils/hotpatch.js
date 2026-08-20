@@ -250,4 +250,58 @@ async function applyHotpatchInner(plan, { client }) {
     }
 }
 
-module.exports = { planHotpatch, applyHotpatch, REPO_ROOT, BOUNDARIES };
+const RUNTIME_RE = /^(index\.js|(commands|handlers|utils|bot|models)\/.*\.js)$/;
+
+function git(args) {
+    return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000 }).trim();
+}
+
+// The commit whose code this PROCESS is running -- from utils/logger.js, which resolved it at
+// require time and which noteHotpatch() keeps current across successive patches.
+// 🔴 NOT `git rev-parse HEAD`. Harkirat pulls separately and then hotpatches, so HEAD is ALREADY the
+// new commit by the time this runs: diffing against it yields an empty changed set and a cheerful
+// "nothing to patch" over a process still running old code. Verified 2026-08-20 11:47 EDT that
+// DIORS_COMMIT is never set by anything, so there is no env-var shortcut either.
+function runningCommit() { return require('./logger').currentCommit(); }
+
+// Cheap: one `git diff`, no graph, no file scanning. Autocomplete calls THIS, never runHotpatch --
+// building the graph reads 128 files, and autocomplete fires per keystroke inside Discord's 3s
+// budget on a shared-core e2-micro. commands/settings.js:54 records what happened the last time
+// something heavy sat on that path: unrelated interactions missed the ACK window and died with 10062.
+function changedRuntimeFiles() {
+    const head = git(['rev-parse', 'HEAD']);
+    const base = runningCommit();
+    if (!base || base === 'unknown' || base === head.slice(0, base.length)) return [];
+    return git(['diff', '--name-only', base, head]).split('\n').filter(f => RUNTIME_RE.test(f));
+}
+
+async function runHotpatch({ client, files = [], pull = false, dryRun = false }) {
+    if (pull) git(['pull', '--ff-only']);
+    const after = git(['rev-parse', 'HEAD']);
+    const changed = changedRuntimeFiles();
+
+    const stray = files.filter(f => !changed.includes(f));
+    if (stray.length && changed.length) {
+        return { plan: { verdict: 'REFUSE_STRUCTURAL', members: [], blocked: {}, escaped: [], unresolved: [], stray }, result: null, commit: after, changed };
+    }
+    const target = changed.length ? changed : files;
+    if (!target.length) return { plan: { verdict: 'ALLOW', members: [], blocked: {}, escaped: [], unresolved: [], stray: [] }, result: { ok: true, applied: [] }, commit: after, changed: [] };
+
+    const plan = planHotpatch({ files: target });
+    if (dryRun || plan.verdict !== 'ALLOW') return { plan, result: null, commit: after, changed };
+
+    const result = await applyHotpatch(plan, { client });
+    if (result.ok) {
+        // OBSERVABILITY. logBootBanner()/.restart-reason/BootRecord all key on a PROCESS START, so a
+        // hotpatch is invisible to every one of them -- and "attribute every journal line to a
+        // version+commit" is the property the whole ops layer rests on. These three lines are what
+        // keep it true. Do not tidy them away; see .claude/rules/hotpatch.md.
+        require('./logger').noteHotpatch(after);
+        console.log(`🩹 HOTPATCH ${after.slice(0, 7)} · ${result.applied.length} module(s): ${result.applied.join(', ')}`);
+        require('./alertWebhook').sendAlert('Hotpatch applied', `${result.applied.length} module(s) reloaded at commit \`${after.slice(0, 7)}\`\n${result.applied.map(f => `• \`${f}\``).join('\n')}`, 'info');
+        if (client) (client.hotpatches ||= []).push({ at: new Date(), commit: after.slice(0, 7), files: result.applied });
+    }
+    return { plan, result, commit: after, changed };
+}
+
+module.exports = { planHotpatch, applyHotpatch, runHotpatch, changedRuntimeFiles, REPO_ROOT, BOUNDARIES };

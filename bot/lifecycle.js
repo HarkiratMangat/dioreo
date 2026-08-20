@@ -142,6 +142,10 @@ function registerLifecycle(client, commands) {
         runCloudinaryCleanup();
         setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
 
+        // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a
+        // restart is exactly when it stops being true -- the process is back on its boot commit.
+        client.hotpatches = [];
+
         // --- BOOT RECORD (2026-08-16, observability layer stage 2) --- One row per process start, written HERE rather than in the listener below because this is the point where the two boot facts worth having actually exist: the emoji sync result (the known stale-prod-id trap) and the registered command count. Fire-and-forget like every other write in the event plane. This collection is also where restart COUNT comes from -- see models/BootRecord.js for why process.uptime() cannot answer that.
         const { recordBoot, installShutdownFlush } = require('../utils/eventStore');
         recordBoot({

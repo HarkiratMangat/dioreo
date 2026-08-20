@@ -105,6 +105,14 @@ check('__hotSwap state is carried across a reload', async () => {
     fsx.unlinkSync(FIXTURE);
 });
 
+check('runHotpatch plans over the whole changed set, not just the named file', async () => {
+    const { runHotpatch } = require('../utils/hotpatch');
+    const out = await runHotpatch({ client: null, files: ['commands/drawprices.js'], pull: false, dryRun: true });
+    assert.ok(Array.isArray(out.changed), 'changed set must be reported');
+    assert.ok(out.plan, 'a plan must be produced even in dry-run');
+    assert.strictEqual(out.result, null, 'dry-run must not apply anything');
+});
+
 (async () => {
     for (const [name, fn] of checks) {
         try { await fn(); console.log(`  ✓ ${name}`); }

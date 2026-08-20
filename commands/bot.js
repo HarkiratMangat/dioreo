@@ -115,6 +115,8 @@ async function buildHealthBody(client) {
         { type: 14, spacing: 1 },
         { type: 10, content: `**Gateway:** ${gatewayLabel} · **Uptime:** ${formatUptime(stats.uptimeSec)} · **Memory:** ${stats.rssMb}MB` },
         { type: 10, content: `**Restarts:** ${stats.boots24h} (24h) · ${stats.boots7d} (7d)${lastBootTs ? ` — last boot <t:${lastBootTs}:R>` : ''}` },
+        // Only rendered when there ARE any -- a permanent "0 hotpatches" row is noise on every panel view.
+        ...(client.hotpatches?.length ? [{ type: 10, content: `🩹 **Hotpatched since boot:** ${client.hotpatches.length} · latest \`${client.hotpatches.at(-1).commit}\` <t:${Math.floor(client.hotpatches.at(-1).at.getTime() / 1000)}:R>` }] : []),
         { type: 14, spacing: 1 },
         { type: 10, content: `**Alerts, last 24h:** ${line(s.last24h)}\n**Alerts, last 7d:** ${line(s.last7d)}\n**Last error:** ${lastErr}` },
         { type: 10, content: tierLine },
