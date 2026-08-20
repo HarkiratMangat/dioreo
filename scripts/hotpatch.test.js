@@ -68,9 +68,12 @@ check('a directory require resolves to its index.js', () => {
 const { applyHotpatch } = require('../utils/hotpatch');
 const fsx = require('fs'); const pathx = require('path');
 const FIXTURE = pathx.join(__dirname, '..', 'utils', '__hotpatchFixture.js');
+// A manual require() does NOT reload from disk once the path is cached -- Node caches by resolved path, and rewriting the FILE never invalidates an existing require.cache entry. All four checks below share this one fixture path, so a direct (non-applyHotpatch) require() after a fresh write must bust any stale entry first, or it silently returns whatever a PRIOR check last loaded. Found live: two tests failed with the prior check's cached export ('new' instead of 'good', and a plain {value} object with no .seen at all) once this file actually ran end-to-end for the first time.
+const bustCache = (f) => { try { delete require.cache[require.resolve(f)]; } catch { /* not cached yet */ } };
 
 check('applyHotpatch swaps a module and the new body runs', async () => {
     fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "old" };');
+    bustCache(FIXTURE);
     assert.strictEqual(require(FIXTURE).value(), 'old');
     fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "new" };');
     const result = await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
@@ -81,6 +84,7 @@ check('applyHotpatch swaps a module and the new body runs', async () => {
 
 check('a syntactically broken file leaves the OLD module live', async () => {
     fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "good" };');
+    bustCache(FIXTURE);
     require(FIXTURE);
     fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => {{{ };');   // deliberate syntax error
     const result = await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
@@ -96,6 +100,7 @@ check('applyHotpatch refuses a plan it did not approve', async () => {
 
 check('__hotSwap state is carried across a reload', async () => {
     fsx.writeFileSync(FIXTURE, 'const seen = new Map(); seen.set("a", 1);\nmodule.exports = { seen, __hotSwap: { retain: () => seen, adopt: (p) => { for (const [k,v] of p) seen.set(k,v); } } };');
+    bustCache(FIXTURE);
     require(FIXTURE).seen.set('b', 2);
     await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
     assert.strictEqual(require(FIXTURE).seen.get('b'), 2, 'adopted state was lost');
