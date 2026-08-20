@@ -117,6 +117,18 @@ check 'mode 3: names the cell the table actually gives' 'is: Sonnet5-Medium'
 check 'mode 3: names the failure mode by name' 'the axes written to fit it'
 check 'mode 3: re-shows the grid so it can be re-derived' 'Opus5-Max'
 
+# --- 🔴 SELF-REFERENCE. The correction quotes the stated derivation verbatim, so without the escape
+#     the hook's own output matches its own detector: the echo lands in the transcript and becomes
+#     evidence for the next firing. Found by the completeness sweep, not by design.
+# ⚠️ NO `-o` here, deliberately: -o prints only the matched span, which ENDS before the trailing
+#    MG-EXAMPLE -- so an -o pipeline can never see the escape and the check fails even when correct.
+#    That is exactly what happened on the first attempt. Match whole LINES.
+if printf '%s' "$OUT" | grep -iE 'Premise[ _-]*(Low|Med|Medium|High)[^A-Za-z]{1,8}Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)[^A-Za-z]{0,10}(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)' | grep -qv 'MG-EXAMPLE'; then
+    bad 'mode 3: the correction does not self-match its own detector' 'an unescaped derivation is echoed back -- the hook will re-validate its own output forever'
+else
+    ok 'mode 3: the correction does not self-match its own detector'
+fi
+
 # ===========================================================================
 # MODE 4 — a /compact landed AFTER the derivation: the reasoning is gone, re-derive once.
 # Order matters, so the reverse case must NOT trigger it.

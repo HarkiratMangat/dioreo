@@ -122,7 +122,12 @@ if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
     # ⚠️ UserPromptSubmit has a 30-SECOND timeout -- a quarter of the 600s most events get -- and a
     # hook that times out is CANCELLED with its additionalContext silently discarded. On a long
     # session this transcript is tens of MB, so every avoidable pass over it is a real risk.
-    # ⚠️ MG-EXAMPLE -- the per-line escape, added 2026-08-20 12:54 EDT after this gate fired a FALSE
+    # ⚠️ THE CORRECTION MESSAGE CARRIES MG-EXAMPLE TOO, and that is not cosmetic. It quotes the stated
+# derivation back verbatim, so its own output MATCHES ITS OWN DETECTOR -- the hook's echo lands in the
+# transcript and becomes evidence for the next firing, which is the classic "a hook whose block
+# message quotes its own detector suppresses itself forever". Found by the completeness sweep
+# 2026-08-20 12:58 EDT, one commit after the escape token was introduced for the neighbouring case.
+# ⚠️ MG-EXAMPLE -- the per-line escape, added 2026-08-20 12:54 EDT after this gate fired a FALSE
     # POSITIVE on its own self-test within minutes of shipping: self-check.test.sh's fixture strings
     # travel into the SESSION transcript as tool-call text, and the validator read one as a real
     # recommendation. Anything that QUOTES a derivation rather than making one -- test code, this
@@ -131,10 +136,12 @@ if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
     # because writing ABOUT a fabricated stamp kept tripping the fabricated-stamp check.
     # ⚠️ The fixture FILES the test points the hook at are unaffected: they are separate .jsonl files
     # whose lines carry no marker, so detection still works there and the tests still mean something.
-    DERIV_RAW="$(grep -voiE 'MG-EXAMPLE' "$TRANSCRIPT" 2>/dev/null | grep -noiE "$DERIV_RE" 2>/dev/null | tail -1 || true)"
-    # -n renumbers after the -v filter, so the line number is taken from a numbered pass over the
-    # ORIGINAL file, filtered afterwards -- otherwise it could not be compared to COMPACT_LINE below.
-    DERIV_LINE="$(grep -nE '.' "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | grep -iE "$DERIV_RE" | tail -1 | cut -d: -f1)"
+    # ⚠️ ONE numbered pass, THEN filter, THEN extract. The first version chained `grep -voiE` into
+    # `grep -noiE`: combining -v with -o is UNDEFINED (there is no match to print on a non-matching
+    # line) and only worked here by luck of this grep's behaviour -- on a grep that honours it
+    # literally the filter would emit nothing and the whole gate would silently never fire.
+    CAND="$(grep -niE "$DERIV_RE" "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | tail -1 || true)"
+    DERIV_LINE="${CAND%%:*}"
     # A /compact wipes the CONTEXT but not the transcript FILE, so a derivation from before one is
     # still greppable while the session no longer remembers making it. Harkirat, 2026-08-20 12:16 EDT:
     # "I really only need it at the very start, or if a compact was run." Marker verified against the
@@ -142,8 +149,8 @@ if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
     # transcripts. Comparing LINE NUMBERS is what makes "after the last compact" a fact rather than a
     # guess: a derivation is only current if it comes AFTER the newest boundary.
     COMPACT_LINE="$(grep -n '"subtype":"compact_boundary"' "$TRANSCRIPT" 2>/dev/null | tail -1 | cut -d: -f1)"
-    if [ -n "$DERIV_RAW" ]; then
-        HIT="${DERIV_RAW#*:}"
+    if [ -n "$CAND" ]; then
+        HIT="$(printf '%s' "$CAND" | grep -oiE "$DERIV_RE" | tail -1)"
         PREMISE="$(printf '%s' "$HIT" | grep -oiE 'Premise[ _-]*(Low|Med|Medium|High)' | grep -oiE '(Low|Med|Medium|High)$')"
         DELIB="$(printf '%s' "$HIT" | grep -oiE 'Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)' | grep -oiE '(Very high|Low|Med|Medium|High)$')"
         STATED="$(printf '%s' "$HIT" | grep -oE '(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)$')"
@@ -219,7 +226,7 @@ SELFCHECK="$FIRST_ACTION"
 if [ "$CURRENT" -eq 1 ] && [ "$STATED" != "$EXPECTED" ]; then
     MODEL_BLOCK="$(printf '%s\n' \
 "[model-gate] 🔴 THE STATED DERIVATION DOES NOT MATCH THE TABLE." \
-"  You wrote: Premise ${PREMISE} · Delib ${DELIB} -> ${STATED}" \
+"  You wrote: Premise ${PREMISE} · Delib ${DELIB} -> ${STATED}   MG-EXAMPLE" \
 "  The table says that pair is: ${EXPECTED}" \
 "  One of the two is wrong and BOTH are cheap to fix. Either the axis values were misjudged -- re-read" \
 "  them below and re-derive -- or the cell was picked first and the axes written to fit it, which is" \
