@@ -50,9 +50,7 @@ check('a models/ member forces REFUSE_STRUCTURAL', () => {
     assert.strictEqual(p.verdict, 'REFUSE_STRUCTURAL');
 });
 
-// The router late-binding change (Task 2) rests on "require() on a cached module is a Map lookup".
-// That is true by CommonJS's definition -- which is exactly the kind of premise this project's rules
-// say to TEST rather than assert (a precondition that drives an expensive decision).
+// The router late-binding change (Task 2) rests on "require() on a cached module is a Map lookup". That is true by CommonJS's definition -- which is exactly the kind of premise this project's rules say to TEST rather than assert (a precondition that drives an expensive decision).
 check('a late-bound call costs nothing meaningful per interaction', () => {
     const t0 = process.hrtime.bigint();
     for (let i = 0; i < 100_000; i++) require('../utils/hotpatch');
@@ -60,8 +58,7 @@ check('a late-bound call costs nothing meaningful per interaction', () => {
     assert.ok(perCallNs < 2000, `cached require() cost ${perCallNs.toFixed(0)}ns/call — too slow to sit in the dispatch path`);
 });
 
-// handlers/manage is a DIRECTORY. The edge router.js -> handlers/manage/index.js must resolve, or
-// the graph silently loses it.
+// handlers/manage is a DIRECTORY. The edge router.js -> handlers/manage/index.js must resolve, or the graph silently loses it.
 check('a directory require resolves to its index.js', () => {
     const p = planHotpatch({ files: ['handlers/manage/shared.js'] });
     assert.ok(p.members.includes('handlers/manage/index.js'),

@@ -35,24 +35,16 @@ async function renderAnalyticsPage(interaction, page, subState = {}) {
 async function route(interaction) {
     const customId = interaction.customId;
 
-    // --- HOTPATCH PANEL BUTTONS ---
-    // 🔴 Owner re-check, independent of the router's coarse `bot_` -> hasCommandAccess(userId,'bot')
-    // guard, exactly as every /bot access mutation does. That guard proves "has SOME /bot access", not
-    // ownership -- and this button restarts production.
+    // --- HOTPATCH PANEL BUTTONS --- 🔴 Owner re-check, independent of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard, exactly as every /bot access mutation does. That guard proves "has SOME /bot access", not ownership -- and this button restarts production.
     if (interaction.isButton() && customId === 'bot_hp_restart') {
         const { isOwner } = require('../utils/adminAccess');
         if (!isOwner(interaction.user.id)) return await respondText(interaction, '🔒 Owner only.');
         await interaction.deferUpdate();
         await respondText(interaction, '♻️ **Restarting.** Back in ~15s — watch for the “Bot online” alert.');
-        // NO sudo. Write the marker deploy.sh writes, then SIGTERM ourselves; systemd's Restart=always
-        // brings the unit back and bot/lifecycle.js's readRestartReason() labels the alert "Manual
-        // restart". Handing a Discord button passwordless sudo would be a real privilege grant for no gain.
+        // NO sudo. Write the marker deploy.sh writes, then SIGTERM ourselves; systemd's Restart=always brings the unit back and bot/lifecycle.js's readRestartReason() labels the alert "Manual restart". Handing a Discord button passwordless sudo would be a real privilege grant for no gain.
         const fs = require('fs'); const path = require('path');
         try { fs.writeFileSync(path.join(__dirname, '..', '.restart-reason'), `manual ${Math.floor(Date.now() / 1000)}`); } catch { /* labelling only */ }
-        // 🔴 SIGTERM, never process.exit(). utils/instanceLock.js's releaseLock and bot/lifecycle.js's
-        // installShutdownFlush are both registered on SIGINT/SIGTERM -- they exist (v3 review findings
-        // #12 and #56) precisely so a restart does not strand the instance lock or discard the buffered
-        // analytics. A bare exit() runs NEITHER. No .unref() either: this timer must fire.
+        // 🔴 SIGTERM, never process.exit(). utils/instanceLock.js's releaseLock and bot/lifecycle.js's installShutdownFlush are both registered on SIGINT/SIGTERM -- they exist (v3 review findings #12 and #56) precisely so a restart does not strand the instance lock or discard the buffered analytics. A bare exit() runs NEITHER. No .unref() either: this timer must fire.
         setTimeout(() => process.kill(process.pid, 'SIGTERM'), 500);   // let the reply reach Discord first
         return true;
     }

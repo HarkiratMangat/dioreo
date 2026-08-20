@@ -1,7 +1,11 @@
 ---
 kind: rule
 status: live
-paths: utils/hotpatch.js, scripts/hotpatch.*, handlers/router.js, bot/lifecycle.js
+paths:
+  - "utils/hotpatch.js"
+  - "scripts/hotpatch.*"
+  - "handlers/router.js"
+  - "bot/lifecycle.js"
 ---
 
 # Hotpatch — reload a pulled file into the running bot without a restart

@@ -27,16 +27,7 @@ const FILE_SINK_ENABLED = UNDER_JOURNALD && process.env.DIORS_LOG_FILE !== 'off'
 
 const { version: VERSION } = require('../package.json');
 
-// The commit the running process was actually deployed from. Resolved once at require time from the
-// git call -- the fallback for a plain `node index.js` on the VM. DIORS_COMMIT is checked first but
-// is NOT currently set by anything (verified 2026-08-20 11:47 EDT: not deploy.sh, not the systemd
-// unit, nowhere in the tree) -- it is read defensively in case that changes, not because it does today.
-// ⚠️ It is `let`, not `const`, ONLY because of hotpatch (2026-08-20 11:47 EDT): a swapped module means the
-// process is no longer running the commit it booted from, and this file can never reload itself to
-// notice (index.js requires it, so utils/hotpatch.js classifies it REFUSE_STRUCTURAL forever).
-// utils/hotpatch.js calls noteHotpatch() so the journal, the boot banner's successors and Cloud
-// Error Reporting's serviceContext keep naming the code that is ACTUALLY running. Nothing else may
-// write to it.
+// The commit the running process was actually deployed from. Resolved once at require time from the git call -- the fallback for a plain `node index.js` on the VM. DIORS_COMMIT is checked first but is NOT currently set by anything (verified 2026-08-20 11:47 EDT: not deploy.sh, not the systemd unit, nowhere in the tree) -- it is read defensively in case that changes, not because it does today. ⚠️ It is `let`, not `const`, ONLY because of hotpatch (2026-08-20 11:47 EDT): a swapped module means the process is no longer running the commit it booted from, and this file can never reload itself to notice (index.js requires it, so utils/hotpatch.js classifies it REFUSE_STRUCTURAL forever). utils/hotpatch.js calls noteHotpatch() so the journal, the boot banner's successors and Cloud Error Reporting's serviceContext keep naming the code that is ACTUALLY running. Nothing else may write to it.
 let COMMIT = (() => {
     if (process.env.DIORS_COMMIT) return process.env.DIORS_COMMIT.slice(0, 7);
     try {
@@ -51,8 +42,7 @@ let COMMIT = (() => {
 function noteHotpatch(commit) {
     if (typeof commit === 'string' && commit.trim()) COMMIT = commit.trim().slice(0, 7);
 }
-// A GETTER, deliberately. `module.exports.COMMIT` froze the boot value at require time, so every
-// caller reading that property would keep seeing it after a hotpatch. utils/hotpatch.js reads this.
+// A GETTER, deliberately. `module.exports.COMMIT` froze the boot value at require time, so every caller reading that property would keep seeing it after a hotpatch. utils/hotpatch.js reads this.
 function currentCommit() { return COMMIT; }
 
 let fileStream = null;

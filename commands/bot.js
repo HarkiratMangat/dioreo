@@ -471,8 +471,7 @@ async function buildAccessPanel(client) {
     }];
 }
 
-// Renders one of four outcomes. The refusal cases carry the two buttons Harkirat asked for --
-// "refuse and say so AND *offer* to full restart or exit" -- so a refusal is never a dead end.
+// Renders one of four outcomes. The refusal cases carry the two buttons Harkirat asked for -- "refuse and say so AND *offer* to full restart or exit" -- so a refusal is never a dead end.
 function buildHotpatchPanel(out) {
     const { plan, result, commit, changed } = out;
     const body = [];

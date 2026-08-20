@@ -18,16 +18,9 @@ const { recordInteractionEvent, markOutcome, instrumentAck, instrumentAutocomple
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
 const { OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
 
-// LATE-BOUND (2026-08-20 11:47 EDT, hotpatch). These used to be captured once at require time, which meant
-// deleting a handler's require.cache entry changed nothing -- the router kept calling the old
-// function object. Resolving through require() at CALL time makes every handler hot-swappable, and
-// it costs a Map lookup per interaction (require() on an already-cached module does not re-read
-// disk). This is also what makes router.js a BOUNDARY rather than a closure member, so its
-// interactionCooldowns Map survives a hotpatch untouched -- see utils/hotpatch.js's header.
+// LATE-BOUND (2026-08-20 11:47 EDT, hotpatch). These used to be captured once at require time, which meant deleting a handler's require.cache entry changed nothing -- the router kept calling the old function object. Resolving through require() at CALL time makes every handler hot-swappable, and it costs a Map lookup per interaction (require() on an already-cached module does not re-read disk). This is also what makes router.js a BOUNDARY rather than a closure member, so its interactionCooldowns Map survives a hotpatch untouched -- see utils/hotpatch.js's header.
 //
-// ⚠️ The list below IS the contract utils/hotpatch.js validates a reloaded handler against. Add a
-// handler here and in the dispatch chain together; scripts/handlerRouting.test.js fails if the
-// bindings and the files on disk disagree.
+// ⚠️ The list below IS the contract utils/hotpatch.js validates a reloaded handler against. Add a handler here and in the dispatch chain together; scripts/handlerRouting.test.js fails if the bindings and the files on disk disagree.
 const HANDLER_BINDINGS = [
     ['colors', 'handleColorsButton'],
     ['manage', 'handleManageInteraction'],
@@ -47,8 +40,7 @@ const HANDLER_BINDINGS = [
 ];
 const late = (mod, fn) => (...args) => {
     const impl = require(`./${mod}`)[fn];
-    // A reloaded module that lost its export would otherwise fail as "impl is not a function" from
-    // deep inside the dispatch chain, where it reads like a routing bug rather than a bad patch.
+    // A reloaded module that lost its export would otherwise fail as "impl is not a function" from deep inside the dispatch chain, where it reads like a routing bug rather than a bad patch.
     if (typeof impl !== 'function') throw new Error(`handlers/${mod}.js no longer exports ${fn}() — hotpatch left it in a bad shape?`);
     return impl(...args);
 };
@@ -287,11 +279,7 @@ async function handleInteractionInner(interaction) {
             if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'hotpatch') {
                 const { isOwner } = require('../utils/adminAccess');
                 if (!isOwner(interaction.user.id)) return interaction.respond([]);
-                // Offers the CHANGED set, which is the only thing `file` may name -- so the option is
-                // self-documenting rather than something to memorise.
-                // ⚠️ changedRuntimeFiles(), NOT runHotpatch(): this fires per KEYSTROKE inside Discord's 3s
-                // autocomplete budget. One `git diff` is fine; building the require graph reads 128 files and is
-                // exactly the kind of event-loop block that produced 10062s here before (commands/settings.js:54).
+                // Offers the CHANGED set, which is the only thing `file` may name -- so the option is self-documenting rather than something to memorise. ⚠️ changedRuntimeFiles(), NOT runHotpatch(): this fires per KEYSTROKE inside Discord's 3s autocomplete budget. One `git diff` is fine; building the require graph reads 128 files and is exactly the kind of event-loop block that produced 10062s here before (commands/settings.js:54).
                 const { changedRuntimeFiles } = require('../utils/hotpatch');
                 const changed = changedRuntimeFiles();
                 const typed = (interaction.options.getFocused() || '').toLowerCase();
