@@ -23,13 +23,7 @@ absent() { if printf '%s' "$OUT" | grep -qF -- "$2"; then bad "$1" "present but 
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-# Runs the hook against a fixture transcript and leaves the injected context in $OUT.
-# ⚠️ Every call site carries a trailing `# MG-EXAMPLE` so that THIS FILE's text, once it lands in a
-# real session transcript as tool-call output, is not read by the hook as a genuine recommendation.
-# It must sit AFTER the closing quote: put it on the opening line of a multi-line fixture and it goes
-# INSIDE the string, excluding the fixture's own derivation and silently converting a mode test into
-# a mode-1 test. That happened on the first attempt and mode 4 failed loudly, which is the only
-# reason it was caught.
+# Runs the hook against a fixture transcript and leaves the injected context in $OUT. ⚠️ Every call site carries a trailing `# MG-EXAMPLE` so that THIS FILE's text, once it lands in a real session transcript as tool-call output, is not read by the hook as a genuine recommendation. It must sit AFTER the closing quote: put it on the opening line of a multi-line fixture and it goes INSIDE the string, excluding the fixture's own derivation and silently converting a mode test into a mode-1 test. That happened on the first attempt and mode 4 failed loudly, which is the only reason it was caught.
 run_with() {
     printf '%s\n' "$1" > "$TMP/t.jsonl"
     OUT="$(printf '{"transcript_path":"%s/t.jsonl"}' "$TMP" | bash "$HOOK" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
@@ -95,10 +89,9 @@ else
 fi
 
 # ===========================================================================
-# MODE 2 — a valid derivation on record: short block, and the rename gate goes QUIET.
-# The fix for "sessions give me the model recommendation on nearly every prompt".
+# MODE 2 — a valid derivation on record: short block, and the rename gate goes QUIET. The fix for "sessions give me the model recommendation on nearly every prompt".
 # ===========================================================================
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High for this one."}'   # MG-EXAMPLE
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High for this one."}'   # MG-EXAMPLE
 check  'mode 2: says the derivation is on record' 'Derivation on record'
 check  'mode 2: tells the session NOT to repeat the rename+model' 'do NOT repeat either'
 check  'mode 2: names the only reasons to re-state' 'drastically pivots'
@@ -130,26 +123,24 @@ else
 fi
 
 # ===========================================================================
-# MODE 4 — a /compact landed AFTER the derivation: the reasoning is gone, re-derive once.
-# Order matters, so the reverse case must NOT trigger it.
+# MODE 4 — a /compact landed AFTER the derivation: the reasoning is gone, re-derive once. Order matters, so the reverse case must NOT trigger it.
 # ===========================================================================
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}
 {"type":"system","subtype":"compact_boundary"}'   # MG-EXAMPLE
 check 'mode 4: compact AFTER the derivation forces a re-derive' 'A /compact ran after the last derivation'
 check 'mode 4: brings the FIRST ACTION gate back' 'FIRST ACTION'
 
 run_with '{"type":"system","subtype":"compact_boundary"}
-{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
+{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 check  'mode 4b: compact BEFORE the derivation stays quiet' 'Derivation on record'
 absent 'mode 4b: does not falsely claim a compact invalidated it' 'A /compact ran after'
 
 # ===========================================================================
-# MODE 5 — the fork/compact SessionStart marker. A fork COPIES the transcript, so without this the
-# inherited derivation would suppress the one re-pick Harkirat explicitly asked for.
+# MODE 5 — the fork/compact SessionStart marker. A fork COPIES the transcript, so without this the inherited derivation would suppress the one re-pick Harkirat explicitly asked for.
 # ===========================================================================
 MARKER="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset"
 touch "$MARKER"
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 check 'mode 5: the marker forces a fresh derivation despite an inherited one' 'started from a FORK or a COMPACT'
 if [ -f "$MARKER" ]; then
     bad 'mode 5: marker is consumed once' 'marker still present -- every later prompt would re-fire'
@@ -165,8 +156,28 @@ run_with '{"type":"assistant","text":"e.g. Premise Low · Delib Med → Opus5-XH
 check  'MG-EXAMPLE: a quoted derivation is ignored, not validated' 'FIRST ACTION'
 absent 'MG-EXAMPLE: does not fire the mismatch correction on a quoted example' 'DOES NOT MATCH THE TABLE'
 
+# ===========================================================================
+# THE RENAME-STRING GATE (added 2026-08-20 14:07 EDT). FIRST_ACTION has always asked for the /rename string ALONGSIDE the model recommendation, but until now nothing checked for the rename half, so stating the derivation alone silently satisfied the WHOLE gate. Reproduced live: session 6b0ed127 stated only the model derivation on its first message and the very next prompt got "already given -- do NOT repeat it" for BOTH, and the rename string was never asked for again until Harkirat pointed out its absence by hand. These three cases pin the fix from both directions.
+# ===========================================================================
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High for this one."}'   # MG-EXAMPLE
+check 'rename gate: model given ALONE keeps the FIRST ACTION gate open' 'FIRST ACTION'
+absent 'rename gate: model given ALONE does not claim both are already given' 'already given'
+
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20"}'   # MG-EXAMPLE
+check 'rename gate: rename given ALONE keeps the FIRST ACTION gate open' 'FIRST ACTION'
+absent 'rename gate: rename given ALONE does not claim both are already given' 'already given'
+
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High for this one."}'   # MG-EXAMPLE
+check  'rename gate: BOTH given together goes quiet' 'Derivation on record'
+absent 'rename gate: BOTH given together drops the FIRST ACTION gate' 'FIRST ACTION'
+
+# --- A wrong pick must still be flagged even when the rename string hasn't been given yet -- MODEL_OK
+#     is independent of RENAME_GIVEN so this doesn't regress just because the two got coupled above.
+run_with '{"type":"assistant","text":"Premise Low · Delib Med → Opus5-XHigh because this is complex."}'   # MG-EXAMPLE
+check 'rename gate: a wrong pick is still flagged with no rename string given' 'DOES NOT MATCH THE TABLE'
+
 # --- The same transcript with no marker must go quiet again. Proves the MARKER did it, not the text.
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
+run_with '{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 absent 'mode 5b: without the marker the same transcript is quiet' 'started from a FORK'
 
 # ===========================================================================
