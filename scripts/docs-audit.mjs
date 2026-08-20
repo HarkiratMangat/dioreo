@@ -219,22 +219,11 @@ check(
 );
 
 /* --------------------------- plan-audit-log ------------------------- */
-// Added 2026-08-20 12:00 EDT. A plan is approved once and then executed by someone (or some session)
-// with none of the context that produced it, so the moment to find its defects is BEFORE approval --
-// and "review the plan" does not find them. Asked to REVIEW its own hotpatch plan, a session found
-// polish; asked to FALSIFY it, the same session found ten defects, two of which would have shipped a
-// silent wrong result (a baseline commit that made the whole feature a no-op, and a command that
-// never reached Discord under a success message). Neither was visible from the plan text -- both came
-// from going and checking a claim the plan had accepted.
+// Added 2026-08-20 12:00 EDT. A plan is approved once and then executed by someone (or some session) with none of the context that produced it, so the moment to find its defects is BEFORE approval -- and "review the plan" does not find them. Asked to REVIEW its own hotpatch plan, a session found polish; asked to FALSIFY it, the same session found ten defects, two of which would have shipped a silent wrong result (a baseline commit that made the whole feature a no-op, and a command that never reached Discord under a success message). Neither was visible from the plan text -- both came from going and checking a claim the plan had accepted.
 //
-// So: a plan must carry the record of that pass. Not because the section is valuable in itself, but
-// because a plan with no audit log is a plan nobody tried to break, and that is invisible afterwards.
-// Empty-is-honest is allowed -- "no defects found" is a legitimate outcome and must be WRITABLE, or
-// the check just teaches people to invent findings.
+// So: a plan must carry the record of that pass. Not because the section is valuable in itself, but because a plan with no audit log is a plan nobody tried to break, and that is invisible afterwards. Empty-is-honest is allowed -- "no defects found" is a legitimate outcome and must be WRITABLE, or the check just teaches people to invent findings.
 //
-// ⚠️ DATED FLOOR, not retroactive. The three plans predating this convention are not defective for
-// lacking a section that did not exist; failing them would only teach the next reader that the audit
-// lies. Same shape as the changelog audit's TAG_RULE_FROM exemption.
+// ⚠️ DATED FLOOR, not retroactive. The three plans predating this convention are not defective for lacking a section that did not exist; failing them would only teach the next reader that the audit lies. Same shape as the changelog audit's TAG_RULE_FROM exemption.
 const PLAN_AUDIT_FROM = "2026-08-20";
 check(
   "plan-audit-log",

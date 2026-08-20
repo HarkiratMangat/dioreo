@@ -163,8 +163,7 @@ const makeFixture = () => {
       // `ideas/` is named as a DIRECTORY, not by the file inside it: readme-map's coverage unit is the top-level entry under docs/, so a loose file is covered by its name but anything inside a subdirectory is covered only by naming that directory. The notes file moved from a loose `docs/…notes.md` into `docs/ideas/` on 2026-08-06 08:00 EDT, which flipped which of the two applies — and the baseline meta-test caught the fixture still spelling it the old way.
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `ideas/` | intake + proposals |\n" +
       "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
-      // Named as a DIRECTORY (readme-map's coverage unit): the fixture carries a plans/ file so
-      // plan-audit-log examines something, and without this row readme-map fires on the BASELINE.
+      // Named as a DIRECTORY (readme-map's coverage unit): the fixture carries a plans/ file so plan-audit-log examines something, and without this row readme-map fires on the BASELINE.
       "| `superpowers/` | specs + plans |\n" +
       "| `legal/PRIVACY.md` | policy |\n" +
       "\nPath-scoped rules: example (1 file).\n"
@@ -186,8 +185,7 @@ const makeFixture = () => {
     "docs/ideas/diors-notes.md",
     "# Notes\n\n## Questions/Notes for Claude\n\n- an open intake item long enough to count as substance, not reflow churn\n\n## 📍 Where everything else lives\n"
   );
-  // A post-convention plan, so plan-audit-log examines something on the baseline instead of scoring a
-  // vacuous pass. The date must be >= PLAN_AUDIT_FROM in docs-audit.mjs or the check skips it.
+  // A post-convention plan, so plan-audit-log examines something on the baseline instead of scoring a vacuous pass. The date must be >= PLAN_AUDIT_FROM in docs-audit.mjs or the check skips it.
   write(root, "docs/superpowers/plans/2026-08-21-fixture.md", "# Fixture plan\n\n## Audit log\n\nNo defects found.\n");
   write(root, "docs/archive/graveyard.md", "# Graveyard\n");
   write(root, "docs/archive/resolved-list.md", "# Resolved\n");
