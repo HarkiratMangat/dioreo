@@ -28,7 +28,13 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.51.0 — 2026-08-19 14:03 EDT (#159) — dioreo.app's /commands page becomes a command builder, and an accent stops being used as a text colour
+## Pre-Release v3.52.0 — 2026-08-20 10:32 EDT (#161) — roadmap corrections, and the changelog's own stale Planned/Coming-soon sections removed
+
+Nothing changed in the bot. A documentation-only pass: `/draw calculator` was corrected from "unbuilt" to shipped (it shipped in v3.28.0) in `docs/ROADMAP.md` and `docs/db-deferred-list.md`, with a new design-passover session filed at Harkirat's request; the animated nameplate/decoration WebP item was archived as fully shipped after sitting stale in the active Queued list; "Recommended"/"Troll Build" loadout badges and the personality pass were carved out of v3 launch scope into a new "Post-v3.0.0 afterthought" section; the changelog artifact ("Armory Terminal") was corrected to its precise state — built and deployed, but deliberately withdrawn from the live site nav, not unbuilt and not publicly shipped — after two wrong intermediate framings were caught and fixed in the same session. `CHANGELOG.md`'s own "🔮 Planned & Upcoming" and `CHANGELOG-SUMMARY.md`'s "🔜 Coming soon" sections (see the note above the versioning intro) were removed rather than fixed: both required manual sync with `docs/ROADMAP.md` with no automated check catching drift, and the pages have no live audience right now. A checkable reinstatement trigger is filed in `docs/db-deferred-list.md`'s 🔔 Reminders.
+
+---
+
+## Pre-Release v3.51.0 — 2026-08-19 14:03 EDT (#159 · `07b67e2`) — dioreo.app's /commands page becomes a command builder, and an accent stops being used as a text colour
 
 The website's fourth page family: **`/commands`**, a reference for every public Dioreo command that reads the bot's own command builders at build time, so it cannot drift from what the bot actually registers. `scripts/lib/commandCatalog.js` calls `.toJSON()` on every module in `commands/` and files each leaf under the group `commands/help.js`'s own `CATEGORY_DEFS` puts it in — so the website and the in-Discord directory cannot disagree about how the bot is organised — and **throws, naming the command, if a public one has nowhere to go**. `scripts/lib/commandProse.js` supplies the one thing Discord cannot: why a person would want the command, gated both ways so prose without a command and a command without prose both fail the build. `scripts/lib/commandsPage.js` renders it. Accent is Signal Green 121°, the midpoint of the widest gap on the nav's hue wheel (citron 62° → teal 180°), and the nav restaged from six tabs to seven, ten inside `/changelog/`, both tiers measured in a browser rather than arithmetic'd from the old ones.
 
