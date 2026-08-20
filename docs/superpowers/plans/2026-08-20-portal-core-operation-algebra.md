@@ -163,18 +163,31 @@ function premise5_renderImports() {
 }
 ```
 
+- [ ] **Step 3b: Make the local database capable of the thing you are about to test**
+
+⚠️ **MEASURED 2026-08-20 18:15 EDT: the local MongoDB is a STANDALONE** (`db.hello().setName` is `null`, version 8.3.7). **Transactions require a replica set**, so running Step 4 against `.env.dev` as-is fails for a reason that has nothing to do with Atlas — and reading that failure as "M0 does not support transactions" would reopen the spec for nothing. **This probe as originally written would have produced a confident, wrong answer.**
+
+```bash
+mongod --dbpath /usr/local/var/mongodb --replSet rs0   # or add `replication.replSetName: rs0` to mongod.conf
+mongosh --eval 'rs.initiate()'
+mongosh --quiet --eval 'db.hello().setName'            # must now print rs0, not null
+```
+
+**If you will not change the local instance, run the probe against a throwaway database on the Atlas cluster instead** — the design question is about Atlas, not about localhost. Either way, **the findings note must state which database the probe ran against**, or the result answers a question nobody asked.
+
 - [ ] **Step 4: Run it and read every result**
 
-Run: `node --env-file=.env.dev scripts/portalPremises.test.js` Expected: all three report PASS. **If premise 1 fails, STOP and re-open the spec** — tier 2 needs a different commit strategy and Task 5 as written is invalid.
+Run `mongosh --quiet --eval 'db.hello().setName'` first — **if it prints `null`, stop and do Step 3b.** Then: `node --env-file=.env.dev scripts/portalPremises.test.js` Expected: all three report PASS. **If premise 1 fails against a CONFIRMED replica set, STOP and re-open the spec** — tier 2 needs a different commit strategy and Task 5 as written is invalid.
 
 - [ ] **Step 5: Measure the two premises a script cannot**
 
+✅ **Both were measured 2026-08-20 18:20 EDT.** Re-run immediately before plan 3 Task 7 anyway — these move.
+
 ```bash
-# Premise 2 — live VM headroom. The spec's 112MB/127MB figures are dated 2026-07-17.
-gcloud compute ssh diors-builds-bot --zone=us-east1-b --command='free -m; systemctl show diors-bot -p MemoryCurrent'
-# Premise 3 — cloudflared availability on Debian 12.
-gcloud compute ssh diors-builds-bot --zone=us-east1-b --command='which cloudflared || echo NOT-INSTALLED'
+gcloud compute ssh diors-builds-bot --zone=us-east1-b --quiet --command='free -m | head -2; systemctl show diors-bot -p MemoryCurrent; which cloudflared || echo cloudflared:NOT-INSTALLED'
 ```
+
+**Measured:** 969 MB total · 579 MB used · **390 MB available** · `diors-bot` at **131 MB** · `cloudflared` **NOT INSTALLED** · disk 24 GB free of 30. Two things follow. The bot has grown ~17% since the 112 MB in `docs/reference/deployment-and-ops.md`, so **that figure is stale and gets re-dated in this task**. And 390 MB against plan 3's 250 MB stop-threshold is a real but not generous margin — a 125 MB portal leaves ~265 MB.
 
 - [ ] **Step 6: Write the findings down**
 
@@ -1388,5 +1401,9 @@ A falsification pass was run against this plan — the question was *where is th
 **P7 — the plan's own premise that `utils/adminAccess.js` is reusable was false, and nothing in the plan would have caught it.** Task 5's `commitSet` and every future portal route resolve permissions through it, and it transitively pulls 39 files including `discord.js` and `jimp`. Found by computing the require closure rather than reading imports one level deep. Task 0b now fixes it *before* anything depends on it, and `scripts/ownerModule.test.js` asserts the closure stays clean so it cannot regress.
 
 **P8 — `canRevert()` would have lied for weeks.** `registerUndo` has 13 call sites across five entity files; this plan converts only draws' four. Between this plan and plan 2, a calendar row written five minutes ago also has `inverse: null`, and the original message said it "predates revert support". Now two distinct reasons, with a test asserting an unmigrated entity is never described as historical.
+
+**P9 — the premise probe would have produced a confident wrong answer.** Task 0 pinned itself to `.env.dev` with `assert.ok(/dev/.test(uri))` — a good guard against writing to prod, and it forces the probe onto a **standalone** local MongoDB where transactions cannot work regardless of Atlas. A failure there reads exactly like "M0 does not support transactions", which would have reopened the spec for nothing. Step 3b now converts the local instance to a single-node replica set first, and the findings note must record which database was used.
+
+**P10 — draws does not exercise both concurrency models, so this plan locks a contract it has only half-tested.** Draws lives in `SeasonalData`'s arrays and proves `core/mongo/positional.js`; it never touches a standalone document, so `core/mongo/document.js` — and any pressure it puts on the four-verb shape — is not discovered until plan 2. **Accepted rather than restructured**, because plan 2 already places `document.js` as its *first* task, before any standalone entity converts, so the discovery happens at the cheapest moment. Plan 2 Task 1 now carries an explicit step to re-validate the contract against a standalone document before anything else proceeds.
 
 **Not found:** no defect in the op contract's four-verb shape, in the element-identity filter design, or in the task ordering after P2 was fixed. That is an absence of findings, not proof they are right.

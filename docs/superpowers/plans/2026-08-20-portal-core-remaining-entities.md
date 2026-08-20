@@ -142,6 +142,12 @@ module.exports = { buildVersionedFilter, updateDocument, createDocument, deleteD
 
 Run: `node scripts/documentWrite.test.js` Expected: three ✓, exit 0
 
+- [ ] **Step 4b: Re-validate the four-verb contract against a standalone document BEFORE converting anything**
+
+Plan 1 proved the contract on draws, which lives in `SeasonalData`'s arrays and only ever exercises `positional.js`. **Nothing has yet tested whether `{ validate, preview, apply, invert }` fits an entity that is its own document** — and this is the first and cheapest moment to find out. Write one throwaway op against `Announcement` (the simplest standalone entity), run it through `core/changeset.js`, and confirm four things: `apply()` returns the same `{ ok, change, applied }` shape; `invert()` can reconstruct the record from `applied` alone; a conflicting write returns `{ ok: false, reason: 'conflict' }` rather than throwing; and the whole thing rolls back inside a transaction.
+
+**If any of those need a different shape, stop and fix the contract here** — before five entities are built on it. Delete the throwaway op afterwards; its job was the answer, not the code.
+
 - [ ] **Step 5: Commit**
 
 ```bash
