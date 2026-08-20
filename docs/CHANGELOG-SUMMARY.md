@@ -8,19 +8,7 @@ published: true
 
 The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG.md).
 
-## 🔜 Coming soon
-A peek at what's planned (not built yet):
-- **Faster, safer bulk editing** in the admin panel — search for items and pick them from a list instead of pasting names.
-- **Reliability polish** so the bot never double-responds or drops a click.
-- **Snappier page-switching** in busier commands (like flipping between New/Returning draws).
-- **Richer colour extraction** — more variety pulled from your avatar, so a standout colour doesn't get missed.
-
-### Further out
-- **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for bug reports or requests.
-- **`/meta`** — see every weapon currently marked Meta, in one place.
-- **In-bot announcements** — a heads-up message (e.g. "sorry the bot was down — we've moved to a better host") shown once the next time you use any command.
-- **An easier way to add & share the bot**, including where user-installed apps are blocked.
-- Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
+> **"Coming soon" was removed 2026-08-20 10:07 EDT** (Harkirat's call) — same reasoning as `CHANGELOG.md`'s removed "Planned & Upcoming" section: it required manual sync with `docs/ROADMAP.md`, nothing caught drift, and the changelog/devlog pages are currently paused off the live site nav, so it had no real audience. Reinstate once the pages go live again or release cadence steadies out — see `docs/db-deferred-list.md`'s 🔔 Reminders.
 
 ---
 
