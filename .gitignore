@@ -71,3 +71,8 @@ public/_v-*.html
 
 # Consume-once marker: SessionStart(compact|fork) -> self-check.sh forces one fresh model derivation.
 .claude/.model-gate-reset
+
+# hotpatch test fixture + IPC markers
+utils/__hotpatchFixture.js
+.hotpatch-request
+.hotpatch-result

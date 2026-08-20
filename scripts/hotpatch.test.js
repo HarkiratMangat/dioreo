@@ -68,6 +68,43 @@ check('a directory require resolves to its index.js', () => {
         `manage/index.js must appear as a dependent of shared.js — got ${JSON.stringify(p.members)}`);
 });
 
+const { applyHotpatch } = require('../utils/hotpatch');
+const fsx = require('fs'); const pathx = require('path');
+const FIXTURE = pathx.join(__dirname, '..', 'utils', '__hotpatchFixture.js');
+
+check('applyHotpatch swaps a module and the new body runs', async () => {
+    fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "old" };');
+    assert.strictEqual(require(FIXTURE).value(), 'old');
+    fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "new" };');
+    const result = await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
+    assert.ok(result.ok, result.error);
+    assert.strictEqual(require(FIXTURE).value(), 'new');
+    fsx.unlinkSync(FIXTURE);
+});
+
+check('a syntactically broken file leaves the OLD module live', async () => {
+    fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => "good" };');
+    require(FIXTURE);
+    fsx.writeFileSync(FIXTURE, 'module.exports = { value: () => {{{ };');   // deliberate syntax error
+    const result = await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
+    assert.strictEqual(result.ok, false, 'a broken file must not apply');
+    assert.strictEqual(require(FIXTURE).value(), 'good', 'the old module must still be live');
+    fsx.unlinkSync(FIXTURE);
+});
+
+check('applyHotpatch refuses a plan it did not approve', async () => {
+    const result = await applyHotpatch({ verdict: 'REFUSE_STATE', members: [], blocked: { x: ['y'] }, escaped: [] }, { client: null });
+    assert.strictEqual(result.ok, false);
+});
+
+check('__hotSwap state is carried across a reload', async () => {
+    fsx.writeFileSync(FIXTURE, 'const seen = new Map(); seen.set("a", 1);\nmodule.exports = { seen, __hotSwap: { retain: () => seen, adopt: (p) => { for (const [k,v] of p) seen.set(k,v); } } };');
+    require(FIXTURE).seen.set('b', 2);
+    await applyHotpatch({ verdict: 'ALLOW', members: ['utils/__hotpatchFixture.js'], blocked: {}, escaped: [] }, { client: null });
+    assert.strictEqual(require(FIXTURE).seen.get('b'), 2, 'adopted state was lost');
+    fsx.unlinkSync(FIXTURE);
+});
+
 (async () => {
     for (const [name, fn] of checks) {
         try { await fn(); console.log(`  ✓ ${name}`); }
