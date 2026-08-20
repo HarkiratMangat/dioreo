@@ -620,6 +620,8 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 
 ## 🧹 Someday / tech-debt
 
+- **🖼️ Publish the redesigned changelog artifact ("Armory Terminal")** `[P3 · S · Sonnet5-Medium]` — the redesign is BUILT (`scripts/lib/chronicle.js` renders `public/changelog/`'s What's New/Changelog/Devlog pages, per [[project_changelog_redesign]]) but deliberately **paused and withdrawn from the live site nav**. What's pending is publishing it, not building it. Can be released any time, not tied to the v3 launch date. ⇄ Also on `docs/ROADMAP.md`'s Post-v3.0.0 afterthought section.
+
 
 
 - `[P3 · S · Sonnet5-Medium]` **The per-user ACCENT cache is now the ONLY colour cache with no algorithm marker — give `getDominantColor` its own fingerprint, or accept the scoped-`$unset` discipline forever.** Filed 2026-08-12 20:44 EDT while fixing the palette half. `avatarColorHex` / `bannerColorHex` / `displayNameColorHex` / `decorationColorHex` / `nameplateColorHex` and their five `guild*` twins are keyed on the **image hash alone**, so a change to `getDominantColor` is invisible to every existing user until their picture changes — exactly the trap that had just cost a live bug report on the palette side (Harkirat had to press Refresh Colors once per source). Both other colour caches are now protected: nameplate/decoration via `palette_version` in Cloudinary context, and the per-user **palettes** via `paletteIdentity()`'s `@<PALETTE_ALGO_VERSION>` stamp.
