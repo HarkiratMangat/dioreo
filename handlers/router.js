@@ -15,22 +15,58 @@
 const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
 const { runWithContext, getContext, hashUserId } = require("../utils/requestContext");
 const { recordInteractionEvent, markOutcome, instrumentAck, instrumentAutocomplete } = require("../utils/eventStore");
-const { handleColorsButton } = require("./colors");
-const { handleManageInteraction, OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
-const { handleTimestampInteraction } = require("./timestamp");
-const { handleHelpInteraction } = require("./help");
-const { handleInviteInteraction } = require("./invite");
-const { handlePatchnotesInteraction } = require("./patchnotes");
-const { handleSettingsInteraction } = require("./settings");
-const { handleLoadoutsInteraction } = require("./loadouts");
-const { handleBotInteraction } = require("./bot");
-const { handleAutobuildInteraction } = require("./autobuild");
-const { handleDrawpricesInteraction } = require("./drawprices");
-const { handleDrawCalcInteraction } = require("./drawCalc");
-const { handleShareInteraction } = require("./share");
-const { handlePaginationInteraction } = require("./pagination");
-const { handleNavigationInteraction } = require("./navigation");
+const { OWNED_PREFIXES: MANAGE_OWNED_PREFIXES } = require("./manage");
+
+// LATE-BOUND (2026-08-20 11:47 EDT, hotpatch). These used to be captured once at require time, which meant
+// deleting a handler's require.cache entry changed nothing -- the router kept calling the old
+// function object. Resolving through require() at CALL time makes every handler hot-swappable, and
+// it costs a Map lookup per interaction (require() on an already-cached module does not re-read
+// disk). This is also what makes router.js a BOUNDARY rather than a closure member, so its
+// interactionCooldowns Map survives a hotpatch untouched -- see utils/hotpatch.js's header.
+//
+// ⚠️ The list below IS the contract utils/hotpatch.js validates a reloaded handler against. Add a
+// handler here and in the dispatch chain together; scripts/handlerRouting.test.js fails if the
+// bindings and the files on disk disagree.
+const HANDLER_BINDINGS = [
+    ['colors', 'handleColorsButton'],
+    ['manage', 'handleManageInteraction'],
+    ['timestamp', 'handleTimestampInteraction'],
+    ['help', 'handleHelpInteraction'],
+    ['invite', 'handleInviteInteraction'],
+    ['patchnotes', 'handlePatchnotesInteraction'],
+    ['settings', 'handleSettingsInteraction'],
+    ['loadouts', 'handleLoadoutsInteraction'],
+    ['bot', 'handleBotInteraction'],
+    ['autobuild', 'handleAutobuildInteraction'],
+    ['drawprices', 'handleDrawpricesInteraction'],
+    ['drawCalc', 'handleDrawCalcInteraction'],
+    ['share', 'handleShareInteraction'],
+    ['pagination', 'handlePaginationInteraction'],
+    ['navigation', 'handleNavigationInteraction'],
+];
+const late = (mod, fn) => (...args) => {
+    const impl = require(`./${mod}`)[fn];
+    // A reloaded module that lost its export would otherwise fail as "impl is not a function" from
+    // deep inside the dispatch chain, where it reads like a routing bug rather than a bad patch.
+    if (typeof impl !== 'function') throw new Error(`handlers/${mod}.js no longer exports ${fn}() — hotpatch left it in a bad shape?`);
+    return impl(...args);
+};
+const handleColorsButton = late('colors', 'handleColorsButton');
+const handleManageInteraction = late('manage', 'handleManageInteraction');
+const handleTimestampInteraction = late('timestamp', 'handleTimestampInteraction');
+const handleHelpInteraction = late('help', 'handleHelpInteraction');
+const handleInviteInteraction = late('invite', 'handleInviteInteraction');
+const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
+const handleSettingsInteraction = late('settings', 'handleSettingsInteraction');
+const handleLoadoutsInteraction = late('loadouts', 'handleLoadoutsInteraction');
+const handleBotInteraction = late('bot', 'handleBotInteraction');
+const handleAutobuildInteraction = late('autobuild', 'handleAutobuildInteraction');
+const handleDrawpricesInteraction = late('drawprices', 'handleDrawpricesInteraction');
+const handleDrawCalcInteraction = late('drawCalc', 'handleDrawCalcInteraction');
+const handleShareInteraction = late('share', 'handleShareInteraction');
+const handlePaginationInteraction = late('pagination', 'handlePaginationInteraction');
+const handleNavigationInteraction = late('navigation', 'handleNavigationInteraction');
 
 // ==========================================
 // ROUTER-PRIVATE STATE
@@ -352,4 +388,4 @@ async function handleInteractionInner(interaction) {
   }
 }
 
-module.exports = { handleInteraction };
+module.exports = { handleInteraction, HANDLER_BINDINGS };
