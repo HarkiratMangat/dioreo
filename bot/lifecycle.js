@@ -88,6 +88,24 @@ function registerLifecycle(client, commands) {
         sendAlert('Discord client error', error, 'error');
     });
 
+    // --- HOTPATCH CHANNEL (2026-08-20 11:47 EDT) --- scripts/hotpatch.mjs writes .hotpatch-request and signals
+    // this pid. Consume-once, exactly like readRestartReason()'s marker. Fully swallowed: a malformed
+    // request must never be able to disturb a running bot.
+    process.on('SIGUSR2', async () => {
+        const reqPath = path.join(__dirname, '..', '.hotpatch-request');
+        const resPath = path.join(__dirname, '..', '.hotpatch-result');
+        let request;
+        try { request = JSON.parse(fs.readFileSync(reqPath, 'utf8')); fs.unlinkSync(reqPath); }
+        catch { return; }                       // no request, or unreadable -> nothing to do
+        try {
+            const out = await require('../utils/hotpatch').runHotpatch({ client, ...request });
+            fs.writeFileSync(resPath, JSON.stringify(out, null, 2));
+        } catch (error) {
+            console.error('Hotpatch request failed (bot stays alive):', error);
+            try { fs.writeFileSync(resPath, JSON.stringify({ error: error.message })); } catch { /* best effort */ }
+        }
+    });
+
     // --- GATEWAY / SHARD DIAGNOSTICS --- DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above -- MongoDB connects fine, but handleBotReady() (which logs "fully authenticated"/"routing links integrated") never fires until the WS layer's internal retry/backoff eventually succeeds. That internal retry activity was completely invisible, so a real multi-minute production gap looked identical to "nothing is happening" from the logs alone. These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood production logs; these five only fire on real state transitions. Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is visible in real time, not just in journald. shardReady stays console-only (the initial connect is announced by the "Bot online" alert below); the rest map to warn/error/info by severity. ⚠️ RECOVERY IS PAIRED TO THE ANNOUNCEMENT (2026-08-06 14:54 EDT). Harkirat: he learns the bot broke and never that it healed — "there is no signal at all when the bot recovers".
     //
     // The naive fix (make 'Gateway resumed' loud) is WRONG and would undo a correct decision: that pair fires every 1-3h as routine churn, and posting it would restore exactly the noise the 2026-07-20 `silent` call removed. Noise is not a lesser problem than silence — it is how someone learns to stop reading the channel, and then the loud alerts stop working too.
