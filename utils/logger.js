@@ -27,8 +27,8 @@ const FILE_SINK_ENABLED = UNDER_JOURNALD && process.env.DIORS_LOG_FILE !== 'off'
 
 const { version: VERSION } = require('../package.json');
 
-// The commit the running process was actually deployed from. `deploy.sh` exports DIORS_COMMIT so the value survives even if the checkout is later moved or the git binary is absent; the git call is the fallback for a plain `node index.js` on the VM. Resolved ONCE at require time -- the answer cannot change while the process lives, and shelling out per log line would be absurd.
-const COMMIT = (() => {
+// The commit the running process was actually deployed from. Resolved once at require time from the git call -- the fallback for a plain `node index.js` on the VM. DIORS_COMMIT is checked first but is NOT currently set by anything (verified 2026-08-20 11:47 EDT: not deploy.sh, not the systemd unit, nowhere in the tree) -- it is read defensively in case that changes, not because it does today. ⚠️ It is `let`, not `const`, ONLY because of hotpatch (2026-08-20 11:47 EDT): a swapped module means the process is no longer running the commit it booted from, and this file can never reload itself to notice (index.js requires it, so utils/hotpatch.js classifies it REFUSE_STRUCTURAL forever). utils/hotpatch.js calls noteHotpatch() so the journal, the boot banner's successors and Cloud Error Reporting's serviceContext keep naming the code that is ACTUALLY running. Nothing else may write to it.
+let COMMIT = (() => {
     if (process.env.DIORS_COMMIT) return process.env.DIORS_COMMIT.slice(0, 7);
     try {
         return execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
@@ -38,6 +38,12 @@ const COMMIT = (() => {
         return 'unknown'; // never fatal — a missing commit degrades the display, nothing more
     }
 })();
+
+function noteHotpatch(commit) {
+    if (typeof commit === 'string' && commit.trim()) COMMIT = commit.trim().slice(0, 7);
+}
+// A GETTER, deliberately. `module.exports.COMMIT` froze the boot value at require time, so every caller reading that property would keep seeing it after a hotpatch. utils/hotpatch.js reads this.
+function currentCommit() { return COMMIT; }
 
 let fileStream = null;
 if (FILE_SINK_ENABLED) {
@@ -135,4 +141,4 @@ function logBootBanner() {
     console.log(`🏷️ diors-builds v${VERSION} · ${COMMIT} · node ${process.version} · pid ${process.pid}`);
 }
 
-module.exports = { patchConsole, logBootBanner, VERSION, COMMIT, LOG_FILE };
+module.exports = { patchConsole, logBootBanner, VERSION, COMMIT, LOG_FILE, noteHotpatch, currentCommit };

@@ -178,5 +178,14 @@ t('end-to-end: a real thrown error through handlers/router.js\'s ACTUAL handleIn
     assert.strictEqual(errorLine.context, undefined, 'an interaction-context entry must not also carry the lifecycle tag');
 });
 
+t('noteHotpatch updates the commit carried on structured log lines', () => {
+    const [e] = emit(`
+        const logger = require(${JSON.stringify(path.join(__dirname, '..', 'utils', 'logger.js'))});
+        logger.noteHotpatch('deadbee');
+        console.log('after hotpatch');
+    `);
+    assert.strictEqual(e.commit, 'deadbee', 'a hotpatched process must report the NEW commit');
+});
+
 console.log(`\n  ${pass} passed, ${failures.length} failed`);
 if (failures.length) process.exit(1);

@@ -382,6 +382,23 @@ check('the admin guard covers exactly the prefixes its modules declare', () => {
     assert.deepStrictEqual(offenders, [], `\n      ${offenders.join('\n      ')}`);
 });
 
+check('HANDLER_BINDINGS matches the handler files on disk', () => {
+    const fs = require('fs');
+    const { HANDLER_BINDINGS } = require('../handlers/router');
+    const onDisk = fs.readdirSync(`${__dirname}/../handlers`)
+        .filter(f => f.endsWith('.js') && f !== 'router.js')
+        .map(f => f.replace(/\.js$/, ''))
+        .concat('manage');                      // handlers/manage/ is a directory
+    const bound = HANDLER_BINDINGS.map(([mod]) => mod);
+    for (const mod of new Set(onDisk)) {
+        assert.ok(bound.includes(mod), `handlers/${mod} exists but is not in HANDLER_BINDINGS`);
+    }
+    for (const [mod, fn] of HANDLER_BINDINGS) {
+        assert.strictEqual(typeof require(`../handlers/${mod}`)[fn], 'function',
+            `handlers/${mod}.js does not export ${fn}()`);
+    }
+});
+
 setTimeout(() => {
     console.log(failures === 0
         ? `\nAll routing-contract checks passed (${moduleNames.length} handlers).`

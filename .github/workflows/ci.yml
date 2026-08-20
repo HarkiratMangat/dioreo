@@ -26,6 +26,18 @@ permissions:
 jobs:
   syntax-check:
     runs-on: ubuntu-latest
+    # CLAUDE_PROJECT_DIR is normally set by the Claude Code harness itself, so every hook script's
+    # fallback (`${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}`) exists purely for a
+    # bare `bash <hook>` on Harkirat's own Mac -- it was never meant to be load-bearing here. CI has
+    # no harness and never set it, so every one of those fallbacks silently resolved to a path that
+    # does not exist on this runner. Found real: self-check.test.sh's marker test (`touch` on the
+    # fallback path) and its settings.json-registration check (`open()` on the fallback path) both
+    # failed outright the first time CI actually reached them -- earlier runs never got this far,
+    # since npm test's own `&&` chain stopped at an unrelated failure first. Setting this once, job-
+    # wide, makes every hardcoded fallback in the tree resolve correctly here instead of finding and
+    # patching each script's fallback path individually.
+    env:
+      CLAUDE_PROJECT_DIR: ${{ github.workspace }}
     steps:
       # fetch-depth: 0 is REQUIRED by scripts/docs-audit.mjs, not a preference. The default depth-1
       # checkout has no tags and no history, which breaks the audit in both directions: `hash-chain`
