@@ -178,3 +178,7 @@ Two invariants that CLAUDE.md's licensing section had stated in prose and nothin
 - **`notice-attribution`** (ERROR) — every runtime dependency appears in NOTICE §1 **at the version the lockfile resolves**. The version half matters: "regenerate when dependencies change" is mostly about changes, and a name-only check calls a two-majors-stale attribution correct. ⚠️ Its section boundary is the next **line-initial** numbered heading. The first version searched for the literal `"2."` and matched inside `chrono-node 2.9.1` — the first entry — so the section came out empty and every dependency was reported missing against a NOTICE that was entirely correct.
 
 ⚠️ **`scripts/checkEmojiCaptures.js` now runs in CI.** It was documented in memory as "run it after touching emoji rendering" and nothing ran it.
+
+## `scripts/hotpatch.mjs` + `scripts/hotpatch.test.js` — the hotpatch CLI + its classifier/applier tests (added 2026-08-20 14:26 EDT)
+
+`scripts/hotpatch.mjs` drives a reload of the running bot over `SIGUSR2`; `scripts/hotpatch.test.js` covers `utils/hotpatch.js`'s classifier, applier and orchestrator (13 cases, wired into `npm test`). Full design, the invariant, and every trap already paid for → **`.claude/rules/hotpatch.md`**, which loads automatically alongside `utils/hotpatch.js`, `scripts/hotpatch.*`, `handlers/router.js` and `bot/lifecycle.js`.
