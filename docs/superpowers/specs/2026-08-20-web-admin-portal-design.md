@@ -27,9 +27,11 @@ Four findings from reading the codebase, each of which removes work that would o
 
 **The bot barely caches domain data, so edits are already live.** `commands/draws.js`, `commands/calendar.js` and `commands/patchnotes.js` each call `SeasonalData.findOne({docType:'global'}).lean()` **fresh on every interaction**; loadouts read fresh too; no module-level memo holds a domain document anywhere. The only TTL caches over portal-writable data are `utils/adminAccess.js` (60s) and `utils/guildPolicy.js` (5 min), and both already expose invalidators. **A portal that writes Mongo is visible to the bot immediately**, worst case 60 seconds for a permission change. There is no sync mechanism to build, no change stream, no push channel. v1 needs zero bot-side runtime changes for this to hold.
 
-**The business logic is already in requireable modules.** `utils/adminAccess.js` is the entire permission vocabulary. `utils/adminParser.js` exports 22 parse and format functions covering every bulk format, date parsing, title casing, gunsmith-code correction and attachment ordering. `utils/changeStore.js` is a working audit trail with human-referenceable ids, pagination and export. `utils/search.js` is the fuzzy matcher. None of them import discord.js. A Node server `require()`s them verbatim.
+**Most of the business logic is already in requireable modules — but not all of it, and the exception matters.** ⚠️ **`utils/adminAccess.js` is NOT reusable as it stands.** Measured 2026-08-20 by computing the transitive require closure: it pulls **39 local files plus `discord.js`, `jimp` and `child_process`**, because `isOwner()` does `require('../commands/manage')` to read `ALLOWED_ADMIN_ID`, and that command module drags in the entire command surface. Requiring it in the portal would load discord.js and an image library into a process that has no client and no business holding either. **The fix is small and is a prerequisite, not a nicety: extract `ALLOWED_ADMIN_ID` into a leaf module** (`utils/owner.js`) that imports nothing, and repoint `utils/adminAccess.js`, `handlers/router.js` and `scripts/botAccessPermissions.test.js` at it. ⚠️ `docs/legal/PRIVACY.md`'s verification table names `commands/manage.js` as where the admin guard lives, so it must be updated in the same change or the published policy becomes false. Once that lands, `utils/adminAccess.js` is the entire permission vocabulary and is genuinely reusable. `utils/adminParser.js` exports 22 parse and format functions covering every bulk format, date parsing, title casing, gunsmith-code correction and attachment ordering. `utils/changeStore.js` is a working audit trail with human-referenceable ids, pagination and export. `utils/search.js` is the fuzzy matcher. None of them import discord.js. A Node server `require()`s them verbatim.
 
 **The render functions are pure.** `utils/loadoutRender.js`'s `buildLoadoutCard()` returns plain Components V2 JSON and imports no discord.js. **The browser can render exactly what Discord will send**, by calling the bot's own function. A preview that can drift from the real render is worse than no preview; this one structurally cannot.
+
+**`utils/logger.js` is reusable, and the portal must use it.** Measured the same way: **2 local files, zero npm dependencies beyond Node builtins**. So the portal gets the bot's exact structured Cloud Logging — severity, `version`, `commit`, and the `serviceContext` that feeds Error Reporting — for one `require`. **A second production process with no logging story is how an outage becomes unexplainable**, and this one costs nothing. Log under a distinct `service` value (`dioreo-portal`) so Error Reporting groups the two separately.
 
 **Mutations are the only thing not reusable.** `handlers/manage/*.js` is 2,163 lines in which parsing, mutation, audit, undo registration and Discord reply formatting are interleaved. That is what §4 extracts.
 
@@ -241,7 +243,27 @@ The door is **not linked from the public site** and carries `noindex` — not as
 4. **Subdocument `_id` stability across a positional update.** §6.1's whole concurrency model rests on it. Verify that an `arrayFilters` update preserves `_id` and that a prior-value assertion actually rejects a stale write.
 5. **`buildLoadoutCard()` in a browser.** It imports `utils/emojiMap.js`, whose ids are rewritten at bot boot by `refreshEmojiIds(client)`. **The portal has no client**, so it will render pre-sync production ids. Confirm those are correct in the portal's context, or the preview shows wrong emoji — silently.
 
+6. **M0 storage headroom.** 512 MB total, shared with everything the observability layer already writes. Measure current usage per collection before adding `PortalSession` and `Changeset`, and decide the inverse-storage format (object array vs. round-trippable bulk text) from that number rather than from taste.
+
 > Premise 5 was found by reading `commands/manage.js`'s own warning about a module-level `PAGES` table freezing stale ids. It is exactly that bug in a new place.
+
+## 12a. Categories examined only after the first draft
+
+A second, hostile pass asked what whole *categories* the design had never looked at, rather than re-reading its own text. Seven, with the answer each got.
+
+**Capacity — the cluster is M0 free tier, 512 MB total, and the design adds three writers to it.** `PortalSession`, `Changeset` (whose snapshots hold full prior arrays — a loadouts bulk-replace inverse is 125 build objects), and `ChangeLog.inverse` on 1,140 existing rows, all sharing 512 MB with the observability layer's `AnalyticsEvent` stream, which is already writing. **This was never asked and is a hard external limit.** Added as premise 6. Mitigations if it is tight, in order of preference: a TTL on `Changeset` (a staged set older than 30 days is abandoned, not precious), storing a bulk-replace inverse as the round-trippable **bulk-text export** rather than an object array, and capping `ChangeLog.inverse` size with a documented refusal rather than silent truncation.
+
+**Concurrent staging is detected but invisible.** Admin A stages a season rewrite in the portal; admin B edits the same draws in `/manage`, seeing nothing. A's commit then conflicts on every element. The conflict is caught (§6.1), but nothing *warns B first*. **Answer: `/manage`'s page header shows a one-line notice when an uncommitted changeset targets that page** — a single indexed query on `Changeset` at panel-render time. Cheap, and it turns a surprise into a heads-up.
+
+**Degraded modes were unstated.** Mongo unreachable → the portal renders the shell and every realm shows a stated error; it never renders an empty list, because an empty list and a dead database look identical and one of them is a lie. Cloudinary down during an upload → the op fails validation with the reason and nothing is staged. Discord OAuth down mid-sign-in → the door says so and offers retry; an existing session is unaffected, since no Discord token is retained.
+
+**Backup.** The tier-3 export is a *per-operation* restore path, not a backup. `scripts/backupDb.sh` exists but is **unscheduled**, and the portal adds new ways to destroy data — behind better guardrails than Discord's, but "better guardrails plus no scheduled backup" is still one bad commit from loss. **Scheduling that backup is a prerequisite for the portal's first tier-3 operation**, and is filed separately rather than absorbed here.
+
+**Abuse.** The door is on a public domain and anyone can drive the OAuth flow, which spends the client secret against Discord's API. Cloudflare's proxy gives baseline protection; the portal adds a per-IP limit on `/auth/*` and a fixed backoff after repeated failures. Not a security boundary — a cost control.
+
+**`/autobuild` is deliberately not in the Armory.** It is the third admin command and it creates loadouts from an image via Vertex AI. A drag-and-drop version in the portal is an obvious fit and would be genuinely better than Discord's attachment flow — but it is a *different* subsystem with its own cost model, its own failure modes and a live pending migration, and folding it in here would make this design about two things. Named so the next reader knows it was considered, not overlooked.
+
+**Frontend testing had no story at all.** The core's tests are plain node scripts; Preact components had nothing. **Answer: the render functions stay pure and are tested as data** — a component takes state and returns a tree, so a test asserts the tree, with no DOM and no browser. Anything needing a real browser is verified through the existing preview tooling instead, and that boundary is stated rather than discovered.
 
 ## 13. Out of scope
 
@@ -273,11 +295,18 @@ A falsification pass was run against this document — the question asked was *w
 
 **F11 — a resident-memory figure was presented as if measured.** The 90–125 MB in §7 is a construction from component estimates, and §12 flagged only the *VM's* dated numbers, not this one. Now labelled as an estimate at the point of use rather than only in the premise list.
 
+**F12 — the "reused core" claim was false for its most load-bearing member, and the check that found it was one I had already refused to generalize.** F9 checked `loadoutRender`'s imports one level deeper and I wrote that surviving it "was luck, not diligence" — then did not apply the same test to anything else. Computing the transitive require closure for all five claimed-reusable modules took one script and found that `utils/adminAccess.js` pulls 39 files, `discord.js`, `jimp` and `child_process` through `isOwner()`'s `require('../commands/manage')`. **A finding you name and then do not generalize is worse than one you never made**, because the audit log records diligence that did not happen.
+
+**F13 — the same script found good news that was also unstated.** `utils/logger.js` is 2 files with no npm dependencies, so the portal gets the bot's structured Cloud Logging for one require. The first draft had **no observability story for a second production process at all** — not a wrong answer, an absent one.
+
+**F14 — `canRevert()`'s message is wrong for the window between plans 1 and 2.** `registerUndo` has **13 call sites across five entity files**; plan 1 converts only draws' four. So calendar rows written the same day would show "predates revert support", which is false and reads as a bug. The message must distinguish *historically un-inverted* from *entity not yet on the core*, and plan 1 now carries that.
+
 **Not found, and worth stating:** no defect was found in the two-layer IA, the tier derivation, or the hosting choice. That is an absence of findings, not evidence they are right.
 
 ## 15. References
 
 - **Approved mockups (gitignored):** `local/portal-mockups/` — six screens, listed at the top of this file
+- **Implementation plans, in order:** `docs/superpowers/plans/2026-08-20-portal-core-operation-algebra.md` (the core, proven on draws) → `docs/superpowers/plans/2026-08-20-portal-core-remaining-entities.md` (the other five entities, then the in-memory undo store retires) → `docs/superpowers/plans/2026-08-20-portal-server-and-realms.md` (the server, OAuth, and the five realms)
 - **Superseded roadmap item:** `docs/ROADMAP.md` and `docs/db-deferred-list.md` 🧹 Someday — the `/manage` search+multi-select entry
 - **Filed out of this session:** `docs/db-deferred-list.md` 🗂️ Queued — the `Announcement.startsAt` schema gap
 - `utils/manageActions.js` — the action registry the portal must read from, and its header on why two copies is unacceptable

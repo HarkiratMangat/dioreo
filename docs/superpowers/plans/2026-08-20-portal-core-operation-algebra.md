@@ -22,8 +22,8 @@ The spec covers three independent subsystems. Executing them as one plan would p
 | Plan | Subsystem | Depends on |
 |---|---|---|
 | **This one** | The core algebra, proven end-to-end on draws | nothing |
-| Plan 2 | The remaining entities (calendar · loadouts · patchnotes · season · announcements) + their handler refactors | this plan's proven pattern |
-| Plan 3 | `portal/` — the server, Discord OAuth, sessions, and the five realms | plans 1 and 2 |
+| **Plan 2** — `docs/superpowers/plans/2026-08-20-portal-core-remaining-entities.md` | The remaining entities (calendar · loadouts · patchnotes · season · announcements), then `registerUndo` retires | this plan's proven pattern |
+| **Plan 3** — `docs/superpowers/plans/2026-08-20-portal-server-and-realms.md` | `portal/` — the server, Discord OAuth, sessions, and the five realms | plans 1 and 2 |
 
 **Draws is the chosen vertical slice** because it is the only entity carrying all three tiers (single add/edit/delete, bulk add/replace/delete, and three separate purge scopes), so proving the pattern there proves it everywhere.
 
@@ -185,6 +185,119 @@ Record every result in `local/portal-premise-findings.md` with the date and the 
 ```bash
 git add scripts/portalPremises.test.js
 git commit -m "test(portal): probe the five premises the portal design rests on"
+```
+
+---
+
+### Task 0b: Extract `ALLOWED_ADMIN_ID` out of `commands/manage.js`
+
+**Files:**
+- Create: `utils/owner.js`
+- Modify: `utils/adminAccess.js` · `handlers/router.js` · `commands/manage.js` · `scripts/botAccessPermissions.test.js`
+- Modify: `docs/legal/PRIVACY.md`
+- Test: `scripts/ownerModule.test.js`
+
+**Interfaces:**
+- Consumes: nothing — `utils/owner.js` must import nothing at all
+- Produces: `ALLOWED_ADMIN_ID` (string) · `isOwnerId(id)` → boolean
+
+**Why this is a prerequisite and not cleanup:** measured 2026-08-20, `utils/adminAccess.js` has a transitive require closure of **39 local files plus `discord.js`, `jimp` and `child_process`**, entirely because `isOwner()` reaches for `require('../commands/manage')`. The portal must resolve permissions on every request; doing that today would load discord.js and an image library into a process with no Discord client. **The spec's whole "reuse the core" argument fails without this.**
+
+- [ ] **Step 1: Write the failing test**
+
+```js
+// scripts/ownerModule.test.js
+// The property under test is the CLOSURE, not the value. utils/owner.js exists so that requiring
+// the permission layer does not drag in the command surface.
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+function closure(entry) {
+    const stack = [path.resolve(__dirname, '..', entry)];
+    const local = new Set(); const ext = new Set();
+    while (stack.length) {
+        const f = stack.pop();
+        if (local.has(f)) continue;
+        local.add(f);
+        let src; try { src = fs.readFileSync(f, 'utf8'); } catch { continue; }
+        for (const m of src.matchAll(/require\(['"]([^'"]+)['"]\)/g)) {
+            const r = m[1];
+            if (!r.startsWith('.')) { ext.add(r); continue; }
+            let q = path.resolve(path.dirname(f), r);
+            if (!q.endsWith('.js')) q += '.js';
+            if (fs.existsSync(q)) stack.push(q);
+        }
+    }
+    return { local, ext };
+}
+
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  \u2713 ${name}`); }
+    catch (e) { failures++; console.error(`  \u2717 ${name}\n      ${e.message}`); }
+}
+
+check('utils/owner.js imports nothing', () => {
+    const c = closure('utils/owner.js');
+    assert.strictEqual(c.local.size, 1, `owner.js pulled ${c.local.size} local files; it must be a leaf`);
+    assert.strictEqual(c.ext.size, 0, `owner.js pulled npm modules: ${[...c.ext].join(',')}`);
+});
+
+check('utils/adminAccess.js never reaches a command module or discord.js', () => {
+    const c = closure('utils/adminAccess.js');
+    const bad = [...c.local].filter(f => f.includes('/commands/'));
+    assert.deepStrictEqual(bad, [], `adminAccess reaches command modules: ${bad.join(', ')}`);
+    for (const heavy of ['discord.js', 'jimp', 'child_process']) {
+        assert.ok(!c.ext.has(heavy), `adminAccess still pulls ${heavy} — the portal cannot require it`);
+    }
+});
+
+process.exit(failures ? 1 : 0);
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `node scripts/ownerModule.test.js` Expected: both FAIL — owner.js does not exist, and adminAccess reaches `commands/manage.js`.
+
+- [ ] **Step 3: Create the leaf module**
+
+```js
+// utils/owner.js
+//
+// The hardcoded ultimate owner, and NOTHING else. This file must never import anything.
+//
+// \u26a0\ufe0f WHY IT IS ITS OWN FILE. This constant used to live in commands/manage.js, which meant
+// utils/adminAccess.js -- the permission layer every admin surface calls -- transitively pulled in
+// 39 files including discord.js, jimp and child_process just to answer "is this the owner". That is
+// invisible inside the bot, where all of it is loaded anyway, and fatal for any process that is NOT
+// the bot. scripts/ownerModule.test.js asserts the closure stays empty.
+const ALLOWED_ADMIN_ID = '1139845545754632283';
+
+const isOwnerId = (id) => id === ALLOWED_ADMIN_ID;
+
+module.exports = { ALLOWED_ADMIN_ID, isOwnerId };
+```
+
+- [ ] **Step 4: Repoint every reader**
+
+`utils/adminAccess.js` — replace the lazy `require('../commands/manage')` inside `isOwner()` with a top-level `const { isOwnerId } = require('./owner');` and call it directly. `handlers/router.js` and `scripts/botAccessPermissions.test.js` — import from `utils/owner` instead of `commands/manage`. `commands/manage.js` — re-export it (`const { ALLOWED_ADMIN_ID } = require('../utils/owner');`) so nothing outside this task's file list breaks, and leave a one-line comment saying where it moved and why.
+
+- [ ] **Step 5: Update the published privacy policy in the same change**
+
+`docs/legal/PRIVACY.md`'s verification table asserts *"`ALLOWED_ADMIN_ID` guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router."* That sentence becomes false the moment Step 4 lands. Repoint it at `utils/owner.js`. **This is a published document** — `dior legal build` must be re-run and `public/` committed, per the site rules.
+
+- [ ] **Step 6: Run the full suite**
+
+Run: `node scripts/ownerModule.test.js && npm test` Expected: the two new checks pass and all 28 existing tests still pass. `scripts/botAccessPermissions.test.js` is the one most likely to break — it imported the constant from the old location.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add utils/owner.js utils/adminAccess.js handlers/router.js commands/manage.js \
+        scripts/ownerModule.test.js scripts/botAccessPermissions.test.js \
+        docs/legal/PRIVACY.md public/ package.json
+git commit -m "refactor(admin): move ALLOWED_ADMIN_ID to a leaf module"
 ```
 
 ---
@@ -1146,10 +1259,21 @@ function check(name, fn) {
     catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
 }
 
-check('a row with no stored inverse cannot be reverted', () => {
-    const r = canRevert({ changeId: 'Aug20-01', inverse: null, undone: false });
+check('a row from BEFORE the core existed says so', () => {
+    const r = canRevert({ changeId: 'Aug20-01', inverse: null, undone: false, page: 'draws' });
     assert.strictEqual(r.ok, false);
     assert.match(r.reason, /predates/i, 'the message must explain WHY, since every pre-Task-2 row is in this state');
+});
+
+check('a row from an entity NOT YET on the core says something different', () => {
+    // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the
+    // in-memory registerUndo (13 call sites across five files). Their rows are BRAND NEW and also
+    // have inverse: null — telling the user they "predate revert support" would be plainly false and
+    // would read as a bug.
+    const r = canRevert({ changeId: 'Aug20-09', inverse: null, undone: false, page: 'calendar' });
+    assert.strictEqual(r.ok, false);
+    assert.match(r.reason, /not yet/i, 'an unmigrated entity must not be described as historical');
+    assert.doesNotMatch(r.reason, /predates/i);
 });
 
 check('an already-undone row cannot be reverted twice', () => {
@@ -1182,10 +1306,20 @@ Run: `node scripts/revert.test.js` Expected: FAIL with `Cannot find module '../c
 const { getChange, markUndone } = require('../utils/changeStore');
 const { commitSet } = require('./changeset');
 
+// Entities routed through core/ops. Grows in plan 2 until it covers everything, then this whole
+// distinction disappears along with handlers/manage/shared.js's registerUndo.
+const ON_CORE = new Set(['draws']);
+
 function canRevert(row) {
     if (!row) return { ok: false, reason: 'That change no longer exists.' };
     if (row.undone) return { ok: false, reason: 'That change was already reverted.' };
-    if (!row.inverse) return { ok: false, reason: 'That change predates revert support, so there is nothing to undo it with.' };
+    if (!row.inverse) {
+        // TWO different reasons produce inverse: null, and conflating them tells the user something
+        // false. A pre-core row is historical; an unmigrated entity's row is minutes old.
+        return ON_CORE.has(row.page)
+            ? { ok: false, reason: 'That change predates revert support, so there is nothing to undo it with.' }
+            : { ok: false, reason: `Reverting ${row.page || 'this section'} is not yet supported — use the Undo button on the original message.` };
+    }
     return { ok: true };
 }
 
@@ -1250,5 +1384,9 @@ A falsification pass was run against this plan — the question was *where is th
 **P5 — `validateSet` stopping at the first failure was the obvious implementation and is the wrong one.** With a forty-row bulk paste it would make you fix errors one round trip at a time. The test asserts every failure is reported *and* carries its index, since without the index the UI cannot point at the offending row.
 
 **P6 — Task 2's privacy question was nearly skipped as "no new per-user field".** True today, and false the moment plan 3 adds an admin-grant op, whose inverse payload carries a third party's Discord id. Recorded in the schema comment rather than left for the next reader to rediscover, because `docs-audit`'s `privacy-model-coverage` will not catch it — the field is `Mixed`, and the check looks at field names.
+
+**P7 — the plan's own premise that `utils/adminAccess.js` is reusable was false, and nothing in the plan would have caught it.** Task 5's `commitSet` and every future portal route resolve permissions through it, and it transitively pulls 39 files including `discord.js` and `jimp`. Found by computing the require closure rather than reading imports one level deep. Task 0b now fixes it *before* anything depends on it, and `scripts/ownerModule.test.js` asserts the closure stays clean so it cannot regress.
+
+**P8 — `canRevert()` would have lied for weeks.** `registerUndo` has 13 call sites across five entity files; this plan converts only draws' four. Between this plan and plan 2, a calendar row written five minutes ago also has `inverse: null`, and the original message said it "predates revert support". Now two distinct reasons, with a test asserting an unmigrated entity is never described as historical.
 
 **Not found:** no defect in the op contract's four-verb shape, in the element-identity filter design, or in the task ordering after P2 was fixed. That is an absence of findings, not proof they are right.
