@@ -68,3 +68,6 @@ logs/
 
 # Comparison renders for the /commands grid — build output, never published.
 public/_v-*.html
+
+# Consume-once marker: SessionStart(compact|fork) -> self-check.sh forces one fresh model derivation.
+.claude/.model-gate-reset

@@ -1,40 +1,51 @@
 #!/usr/bin/env bash
-# .claude/hooks/self-check.test.sh -- self-test for self-check.sh (added 2026-08-11 21:08 EDT).
+# .claude/hooks/self-check.test.sh -- self-test for self-check.sh (added 2026-08-11 21:08 EDT, rebuilt 2026-08-20 12:25 EDT).
 #
-# ⚠️ WHAT THIS IS ACTUALLY GUARDING, because it is not "does the hook print something". The hook now carries a SECOND COPY of the model-selection grid, duplicated from the `reference_priority_tier_system` memory. That copy was accepted knowingly -- a pointer is what measurably failed -- but duplicated state rots silently, and the values that rot are precisely the ones that discriminate between cells. So this pins the DISCRIMINATING content, not the prose: the axis definitions, the corner cells, and the retired-cell rule. Reword the surrounding text freely; change a cell or drop an axis definition and the suite fails.
+# ⚠️ WHAT THIS IS ACTUALLY GUARDING, because it is not "does the hook print something". The hook carries a SECOND COPY of the model-selection grid, duplicated from the `reference_priority_tier_system` memory. That copy was accepted knowingly -- a pointer is what measurably failed -- but duplicated state rots silently, and the values that rot are precisely the ones that discriminate between cells. So this pins the DISCRIMINATING content, not the prose: the axis definitions, the corner cells, the retired-cell rule, both OFF-GRID moves, and the anti-calibration rule. Reword the surrounding text freely; change a cell or drop one of those and the suite fails.
 #
-# ⚠️ It also pins `hookEventName`, whose absence makes the whole payload SILENTLY DISCARDED -- the failure that left two hooks dead for weeks while exiting 0 and printing valid JSON.
+# ⚠️ It also pins the five MODES added 2026-08-20 12:25 EDT. Those exist because Harkirat measured two failures in the field: sessions re-emitting the rename+model line on nearly every prompt, and sessions picking a cell pre-emptively rather than deriving it. A mode that silently stops working would restore both with no other symptom -- the hook would still print a perfectly good grid forever.
+#
+# ⚠️ And it pins the SINGLE-SOURCE property: the printed table is rendered from `cell_for()`, so the validator cannot drift away from the grid it validates against. That check fails if anyone re-introduces a hand-written table.
+#
+# ⚠️ It pins `hookEventName`, whose absence makes the whole payload SILENTLY DISCARDED -- the failure that left two hooks dead for weeks while exiting 0 and printing valid JSON.
 set -uo pipefail
 
-HOOK="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/self-check.sh"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOOK="$HERE/self-check.sh"
 fails=0
 pass=0
 
-check() { # check <description> <pattern>
-    if printf '%s' "$OUT" | grep -qF -- "$2"; then
-        pass=$((pass + 1)); printf '  PASS  %s\n' "$1"
-    else
-        fails=$((fails + 1)); printf '  FAIL  %s\n        missing: %s\n' "$1" "$2"
-    fi
+ok()  { pass=$((pass + 1)); printf '  PASS  %s\n' "$1"; }
+bad() { fails=$((fails + 1)); printf '  FAIL  %s\n        %s\n' "$1" "$2"; }
+
+check()  { if printf '%s' "$OUT" | grep -qF -- "$2"; then ok "$1"; else bad "$1" "missing: $2"; fi; }
+absent() { if printf '%s' "$OUT" | grep -qF -- "$2"; then bad "$1" "present but must NOT be: $2"; else ok "$1"; fi; }
+
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+# Runs the hook against a fixture transcript and leaves the injected context in $OUT.
+run_with() {
+    printf '%s\n' "$1" > "$TMP/t.jsonl"
+    OUT="$(printf '{"transcript_path":"%s/t.jsonl"}' "$TMP" | bash "$HOOK" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
 }
+run_bare() { OUT="$(printf '{}' | bash "$HOOK" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"; }
 
-printf '\nself-check.sh — the model grid must survive verbatim\n\n'
+printf '\nself-check.sh — the model grid, and the five modes that decide how much of it to show\n\n'
 
-OUT="$(bash "$HOOK" 2>/dev/null)" || { printf '  FAIL  hook exited non-zero\n'; exit 1; }
-
-# --- The payload has to be reachable at all.
-if printf '%s' "$OUT" | jq -e '.hookSpecificOutput.hookEventName == "UserPromptSubmit"' >/dev/null 2>&1; then
-    pass=$((pass + 1)); printf '  PASS  emits hookEventName (without it the payload is silently discarded)\n'
+# ===========================================================================
+# MODE 1 — no derivation on record: the full grid, plus the FIRST ACTION gate.
+# ===========================================================================
+RAW="$(printf '{}' | bash "$HOOK" 2>/dev/null)" || { printf '  FAIL  hook exited non-zero\n'; exit 1; }
+if printf '%s' "$RAW" | jq -e '.hookSpecificOutput.hookEventName == "UserPromptSubmit"' >/dev/null 2>&1; then
+    ok 'emits hookEventName (without it the payload is silently discarded)'
 else
-    fails=$((fails + 1)); printf '  FAIL  hookEventName missing or wrong -- payload would reach nobody\n'
+    bad 'emits hookEventName' 'missing or wrong -- payload would reach nobody'
 fi
 
-OUT="$(printf '%s' "$OUT" | jq -r '.hookSpecificOutput.additionalContext')"
-
-# --- The three original self-check items must not be lost in the promotion to a script.
-check 'still carries the FIRST ACTION gate' 'FIRST ACTION'
-check 'still carries the CHAPTERS nudge' 'CHAPTERS'
-check 'still carries the JUDGMENT RULES' 'JUDGMENT RULES'
+run_bare
+check 'mode 1: carries the FIRST ACTION gate' 'FIRST ACTION'
+check 'mode 1: carries the CHAPTERS nudge' 'CHAPTERS'
+check 'mode 1: carries the JUDGMENT RULES' 'JUDGMENT RULES'
 
 # --- Axis definitions. These are the two facts whose ABSENCE caused two wrong picks on 2026-08-11: the grid was named everywhere and defined nowhere that loads.
 check 'defines premise risk (High = the framing itself is in question)' 'the task IS working out whether the framing is right'
@@ -54,6 +65,101 @@ check 'states the practical floor' 'floor is Sonnet5-Medium'
 # --- Anti-wobble and event-driven escalation.
 check 'forbids naming a range' 'ONE cell, never a range'
 check 'requires event-driven escalation' 'never pre-emptively'
+check 'carries the tie-break question' 'missed one of many things'
+
+# --- The three things the hook was MISSING until 2026-08-20 while claiming "needs no file read". A
+#     session working from the hook alone could not reach either off-grid cell: the twelve-cell table
+#     read as complete and was not.
+check 'off-grid: Sonnet5-Max, with its trigger' 'Sonnet5-Max'
+check 'off-grid: Sonnet5-Max names the script alternative' 'WRITING A SCRIPT'
+check 'off-grid: Opus5-Low, the downshift' 'Opus5-Low'
+check 'off-grid: Opus5-Low names its fallback' 'it is Sonnet5-Medium'
+check 'forbids calibrating on past usage' 'DO NOT calibrate on Harkirat'
+
+# --- The SHAPE requirement is the whole anti-pre-emption mechanism. Without it, a bare cell plus a
+#     justification satisfies every gate -- which is exactly what was happening in the field.
+check 'demands the derivation shape' 'Premise <Low|Med|High>'
+check 'explains why a bare cell is not enough' 'A bare cell with a justification'
+
+# --- Single-source proof: the printed table must be RENDERED from cell_for(), not a second literal.
+if grep -q 'tbl_row' "$HOOK" && ! grep -qE '^\s*Premise (Low|Med|High)[[:space:]]+\| Sonnet5' "$HOOK"; then
+    ok 'printed table is RENDERED from cell_for(), not a hand-written second copy'
+else
+    bad 'printed table is rendered from cell_for()' 'found a literal table in the source -- the validator can now drift from the grid it validates against'
+fi
+
+# ===========================================================================
+# MODE 2 — a valid derivation on record: short block, and the rename gate goes QUIET.
+# The fix for "sessions give me the model recommendation on nearly every prompt".
+# ===========================================================================
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High for this one."}'
+check  'mode 2: says the derivation is on record' 'Derivation on record'
+check  'mode 2: tells the session NOT to repeat the rename+model' 'do NOT repeat either'
+check  'mode 2: names the only reasons to re-state' 'drastically pivots'
+absent 'mode 2: DROPS the FIRST ACTION gate' 'FIRST ACTION'
+absent 'mode 2: DROPS the full table' 'Opus5-Max'   # table-only string: a vacuous 'Delib Very high' passed here for free
+check  'mode 2: keeps the escalation triggers' 'never pre-emptively'
+check  'mode 2: keeps the off-grid moves reachable' 'Opus5-Low'
+
+# ===========================================================================
+# MODE 3 — the stated cell contradicts the stated axes. The pre-emptive pick, caught.
+# ===========================================================================
+run_with '{"type":"assistant","text":"Premise Low · Delib Med → Opus5-XHigh because this is complex."}'
+check 'mode 3: flags the mismatch' 'DOES NOT MATCH THE TABLE'
+check 'mode 3: quotes what was written' 'Premise Low · Delib Med -> Opus5-XHigh'
+check 'mode 3: names the cell the table actually gives' 'is: Sonnet5-Medium'
+check 'mode 3: names the failure mode by name' 'the axes written to fit it'
+check 'mode 3: re-shows the grid so it can be re-derived' 'Opus5-Max'
+
+# ===========================================================================
+# MODE 4 — a /compact landed AFTER the derivation: the reasoning is gone, re-derive once.
+# Order matters, so the reverse case must NOT trigger it.
+# ===========================================================================
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}
+{"type":"system","subtype":"compact_boundary"}'
+check 'mode 4: compact AFTER the derivation forces a re-derive' 'A /compact ran after the last derivation'
+check 'mode 4: brings the FIRST ACTION gate back' 'FIRST ACTION'
+
+run_with '{"type":"system","subtype":"compact_boundary"}
+{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+check  'mode 4b: compact BEFORE the derivation stays quiet' 'Derivation on record'
+absent 'mode 4b: does not falsely claim a compact invalidated it' 'A /compact ran after'
+
+# ===========================================================================
+# MODE 5 — the fork/compact SessionStart marker. A fork COPIES the transcript, so without this the
+# inherited derivation would suppress the one re-pick Harkirat explicitly asked for.
+# ===========================================================================
+MARKER="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset"
+touch "$MARKER"
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+check 'mode 5: the marker forces a fresh derivation despite an inherited one' 'started from a FORK or a COMPACT'
+if [ -f "$MARKER" ]; then
+    bad 'mode 5: marker is consumed once' 'marker still present -- every later prompt would re-fire'
+    rm -f "$MARKER"
+else
+    ok 'mode 5: marker is consumed once (a sticky marker would re-fire forever)'
+fi
+
+# --- The same transcript with no marker must go quiet again. Proves the MARKER did it, not the text.
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+absent 'mode 5b: without the marker the same transcript is quiet' 'started from a FORK'
+
+# ===========================================================================
+# The registration that makes mode 5 reachable at all. A hook nobody runs is documentation.
+# ===========================================================================
+SETTINGS="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/settings.json"
+if python3 -c "
+import json,sys
+d=json.load(open('$SETTINGS'))
+for g in d['hooks'].get('SessionStart',[]):
+    if g.get('matcher')=='compact|fork' and any('model-gate-reset' in h.get('command','') for h in g.get('hooks',[])):
+        sys.exit(0)
+sys.exit(1)
+" 2>/dev/null; then
+    ok 'SessionStart(compact|fork) writes the reset marker (mode 5 is actually wired)'
+else
+    bad 'SessionStart(compact|fork) marker hook is registered' 'not found in .claude/settings.json -- mode 5 can never fire'
+fi
 
 printf '\n  %d passed, %d failed\n\n' "$pass" "$fails"
 [ "$fails" -eq 0 ]
