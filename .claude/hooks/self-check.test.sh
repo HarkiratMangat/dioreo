@@ -24,6 +24,12 @@ absent() { if printf '%s' "$OUT" | grep -qF -- "$2"; then bad "$1" "present but 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 # Runs the hook against a fixture transcript and leaves the injected context in $OUT.
+# ⚠️ Every call site carries a trailing `# MG-EXAMPLE` so that THIS FILE's text, once it lands in a
+# real session transcript as tool-call output, is not read by the hook as a genuine recommendation.
+# It must sit AFTER the closing quote: put it on the opening line of a multi-line fixture and it goes
+# INSIDE the string, excluding the fixture's own derivation and silently converting a mode test into
+# a mode-1 test. That happened on the first attempt and mode 4 failed loudly, which is the only
+# reason it was caught.
 run_with() {
     printf '%s\n' "$1" > "$TMP/t.jsonl"
     OUT="$(printf '{"transcript_path":"%s/t.jsonl"}' "$TMP" | bash "$HOOK" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
@@ -92,7 +98,7 @@ fi
 # MODE 2 — a valid derivation on record: short block, and the rename gate goes QUIET.
 # The fix for "sessions give me the model recommendation on nearly every prompt".
 # ===========================================================================
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High for this one."}'
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High for this one."}'   # MG-EXAMPLE
 check  'mode 2: says the derivation is on record' 'Derivation on record'
 check  'mode 2: tells the session NOT to repeat the rename+model' 'do NOT repeat either'
 check  'mode 2: names the only reasons to re-state' 'drastically pivots'
@@ -104,7 +110,7 @@ check  'mode 2: keeps the off-grid moves reachable' 'Opus5-Low'
 # ===========================================================================
 # MODE 3 — the stated cell contradicts the stated axes. The pre-emptive pick, caught.
 # ===========================================================================
-run_with '{"type":"assistant","text":"Premise Low · Delib Med → Opus5-XHigh because this is complex."}'
+run_with '{"type":"assistant","text":"Premise Low · Delib Med → Opus5-XHigh because this is complex."}'   # MG-EXAMPLE
 check 'mode 3: flags the mismatch' 'DOES NOT MATCH THE TABLE'
 check 'mode 3: quotes what was written' 'Premise Low · Delib Med -> Opus5-XHigh'
 check 'mode 3: names the cell the table actually gives' 'is: Sonnet5-Medium'
@@ -116,12 +122,12 @@ check 'mode 3: re-shows the grid so it can be re-derived' 'Opus5-Max'
 # Order matters, so the reverse case must NOT trigger it.
 # ===========================================================================
 run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}
-{"type":"system","subtype":"compact_boundary"}'
+{"type":"system","subtype":"compact_boundary"}'   # MG-EXAMPLE
 check 'mode 4: compact AFTER the derivation forces a re-derive' 'A /compact ran after the last derivation'
 check 'mode 4: brings the FIRST ACTION gate back' 'FIRST ACTION'
 
 run_with '{"type":"system","subtype":"compact_boundary"}
-{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 check  'mode 4b: compact BEFORE the derivation stays quiet' 'Derivation on record'
 absent 'mode 4b: does not falsely claim a compact invalidated it' 'A /compact ran after'
 
@@ -131,7 +137,7 @@ absent 'mode 4b: does not falsely claim a compact invalidated it' 'A /compact ra
 # ===========================================================================
 MARKER="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset"
 touch "$MARKER"
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 check 'mode 5: the marker forces a fresh derivation despite an inherited one' 'started from a FORK or a COMPACT'
 if [ -f "$MARKER" ]; then
     bad 'mode 5: marker is consumed once' 'marker still present -- every later prompt would re-fire'
@@ -140,8 +146,15 @@ else
     ok 'mode 5: marker is consumed once (a sticky marker would re-fire forever)'
 fi
 
+# --- MG-EXAMPLE escape. A derivation QUOTED rather than made -- in this very file, in the hook's
+#     docs, in a message explaining the gate -- must not be read as a real pick. This fired as a real
+#     false positive on 2026-08-20 12:54 EDT, minutes after shipping, on this test's own fixtures.
+run_with '{"type":"assistant","text":"e.g. Premise Low · Delib Med → Opus5-XHigh   MG-EXAMPLE"}'   # MG-EXAMPLE
+check  'MG-EXAMPLE: a quoted derivation is ignored, not validated' 'FIRST ACTION'
+absent 'MG-EXAMPLE: does not fire the mismatch correction on a quoted example' 'DOES NOT MATCH THE TABLE'
+
 # --- The same transcript with no marker must go quiet again. Proves the MARKER did it, not the text.
-run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'
+run_with '{"type":"assistant","text":"Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
 absent 'mode 5b: without the marker the same transcript is quiet' 'started from a FORK'
 
 # ===========================================================================

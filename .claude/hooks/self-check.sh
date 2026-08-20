@@ -122,8 +122,19 @@ if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
     # ⚠️ UserPromptSubmit has a 30-SECOND timeout -- a quarter of the 600s most events get -- and a
     # hook that times out is CANCELLED with its additionalContext silently discarded. On a long
     # session this transcript is tens of MB, so every avoidable pass over it is a real risk.
-    DERIV_RAW="$(grep -noiE "$DERIV_RE" "$TRANSCRIPT" 2>/dev/null | tail -1 || true)"
-    DERIV_LINE="${DERIV_RAW%%:*}"
+    # ⚠️ MG-EXAMPLE -- the per-line escape, added 2026-08-20 12:54 EDT after this gate fired a FALSE
+    # POSITIVE on its own self-test within minutes of shipping: self-check.test.sh's fixture strings
+    # travel into the SESSION transcript as tool-call text, and the validator read one as a real
+    # recommendation. Anything that QUOTES a derivation rather than making one -- test code, this
+    # hook's own docs, a message explaining the gate -- carries the marker on that line and is
+    # skipped. Same shape and same reason as the timestamp hook's TS-EXAMPLE token, which exists
+    # because writing ABOUT a fabricated stamp kept tripping the fabricated-stamp check.
+    # ⚠️ The fixture FILES the test points the hook at are unaffected: they are separate .jsonl files
+    # whose lines carry no marker, so detection still works there and the tests still mean something.
+    DERIV_RAW="$(grep -voiE 'MG-EXAMPLE' "$TRANSCRIPT" 2>/dev/null | grep -noiE "$DERIV_RE" 2>/dev/null | tail -1 || true)"
+    # -n renumbers after the -v filter, so the line number is taken from a numbered pass over the
+    # ORIGINAL file, filtered afterwards -- otherwise it could not be compared to COMPACT_LINE below.
+    DERIV_LINE="$(grep -nE '.' "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | grep -iE "$DERIV_RE" | tail -1 | cut -d: -f1)"
     # A /compact wipes the CONTEXT but not the transcript FILE, so a derivation from before one is
     # still greppable while the session no longer remembers making it. Harkirat, 2026-08-20 12:16 EDT:
     # "I really only need it at the very start, or if a compact was run." Marker verified against the
