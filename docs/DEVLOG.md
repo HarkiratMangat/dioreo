@@ -187,6 +187,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-18 23:12 EDT — The /commands page, redesigned three times, and the fix was a palette the bot already shipped (v3.51.0)
 - 2026-08-19 14:03 EDT — Four root causes, and a colour strategy that could not fail (v3.51.0)
 - 2026-08-19 17:45 EDT — True but useless, and a generator that cheerfully wrote the wrong file (v3.51.0)
+- 2026-08-20 10:38 EDT — Three false 'shipped' claims, and the fact that outran itself (v3.52.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3272,6 +3273,18 @@ So the page now searches the same weapon list the bot searches. The site builds 
 ### Lesson
 
 **A generator that can produce a plausible artifact from a broken query needs a floor, not a success message** — and more generally, every layer added on top of an existing one has to be accompanied by deleting what it replaced, in the same change, or the page grows a stack of things that agree with each other and cost the reader three reads to learn one fact. Both failures share a root: I verified that the new thing worked, and not that the old thing was gone.
+
+## 2026-08-20 10:38 EDT — Three false 'shipped' claims, and the fact that outran itself (v3.52.0)
+
+Asked to reconcile `docs/ROADMAP.md` and `docs/db-deferred-list.md` against seven specific corrections — a draw calculator already built, an auto-expire item's real timing, a timezone picker now downstream of the `/commands` page work, three "afterthought" features to push past v3 launch, `/define` to someday. Straightforward-looking work that turned into a real lesson about trusting a doc's framing over checking current reality.
+
+**The pattern repeated three times before it was named.** First: the `/draw calculator` entry in both files still read "only the implementation remains" — it had shipped in v3.28.0 five days earlier. Second: the animated nameplate/decoration WebP item sat in the active Queued list with its own sub-bullet already recording both open questions as resolved — it had been fully shipped and live in `colorPaletteView.js` since 2026-08-10, just never moved to archive. Third, and the one that mattered most: the changelog artifact ("Armory Terminal"). A code grep found it in `scripts/lib/chronicle.js` and `public/changelog/*.html`, and that got marked "already shipped" — directly contradicting a fact established correctly earlier in the *same conversation*, that the changelog/devlog pages are deliberately withdrawn from the live site nav. Harkirat caught it immediately: "IT IS PAUSED! it's partly built but it's disabled for public viewing." The fix took three independent sources to get precise — `CLAUDE.md`'s own note, `buildLegalPages.js`'s comment ("still built, still deployed and still reachable at /changelog/... what is withdrawn is the landing page's invitation"), and `deploy-site.yml`'s comment — landing on: built and deployed, but nothing links to it, so what's pending is publishing, not building.
+
+**The real lesson wasn't "check code more carefully" — it was "a fact already established in this session can get silently overridden by a later, narrower signal."** Code-exists is not the same question as publicly-reachable, and having correctly used that distinction once doesn't mean it stays applied under later pressure to find something to fix.
+
+Also removed `CHANGELOG.md`'s "Planned & Upcoming" and `CHANGELOG-SUMMARY.md`'s "Coming soon" sections outright, on Harkirat's call after a sequential-thinking deliberation he asked for directly. Both required a three-way manual sync with `docs/ROADMAP.md` that had been silently failing (five shipped features still listed as unbuilt), and the pages have no live audience right now. Verified the removal didn't break anything parsing those files by actually running `buildLegalPages.js` as a probe rather than trusting a docs-audit pass — the chronicle parser explicitly special-cases a `## Coming soon` heading, and confirming that removal was survivable meant running the real consumer, not reading the code and guessing.
+
+Two completeness-sweep passes surfaced the changelog-artifact miss and confirmed three global memory files (`feedback_docs_at_push_time.md`, `project_dior_builds_changelog_system.md`, `project_changelog_redesign.md`, `user_working_agreement.md`) described conventions or statuses that no longer matched — memory files never show up in a git diff, so nothing else would have caught them.
 
 # Part B — Lessons Ledger (thematic)
 
