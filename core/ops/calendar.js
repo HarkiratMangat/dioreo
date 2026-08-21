@@ -141,10 +141,12 @@ registerEntity('calendar', {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element: e, session });
             }
             if (withIds.length) await resortByDate(session);
+            // `added`/`total` mirror core/ops/draws.js's bulkAdd -- handlers/manage/calendar.js's per-category breakdown text and "(now N total)" summary both need them, and neither is derivable from `ids` alone.
+            const fresh = await SeasonalData.findOne(DOC).select(PATH).lean().session(session);
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${withIds.length} events`, summary: `Added ${withIds.length} calendar events in bulk` },
-                applied: { ids: withIds.map(e => String(e._id)) }
+                applied: { ids: withIds.map(e => String(e._id)), added: withIds, total: fresh[PATH].length }
             };
         },
         invert: (c) => ({ type: 'calendar.bulkDelete', payload: { ids: c.applied.ids } })
@@ -235,24 +237,29 @@ registerEntity('calendar', {
         },
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).lean().session(session);
-            const prior = {}; const $set = {};
+            const prior = {}; const $set = {}; const changes = [];
             for (const f of BANNER_FIELDS) {
                 if (!(f.key in (op.payload || {}))) continue;
                 prior[f.key] = before[f.urlKey] || '';
                 const raw = (op.payload[f.key] || '').trim();
                 if (!raw) {
-                    if (before[f.urlKey]) await clearBannerImage(f.page);
+                    if (before[f.urlKey]) {
+                        await clearBannerImage(f.page);
+                        changes.push({ key: f.key, action: 'cleared' });
+                    }
                     $set[f.urlKey] = '';
                 } else {
                     const result = await cacheBannerImage(f.page, raw);
                     $set[f.urlKey] = result.url || '';
+                    changes.push({ key: f.key, action: 'set', cached: !!result.cached });
                 }
             }
             if (Object.keys($set).length) await SeasonalData.updateOne(DOC, { $set }, { session });
+            // ⚠️ Always records ONE ChangeLog row, even when every field was already blank (a true no-op submit) -- the pre-core handler skipped recordChange() in that case. Deliberately left as a minor, documented deviation rather than threading an ok:false "nothing changed" non-error through commitSet's failure path, which would render as a false ❌ to the admin.
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'Calendar Banners', summary: 'Updated calendar banners' },
-                applied: { prior }
+                applied: { prior, changes }
             };
         },
         invert: (c) => ({ type: 'calendar.setBanners', payload: c.applied.prior })

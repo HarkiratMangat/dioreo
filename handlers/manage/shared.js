@@ -120,18 +120,20 @@ function removeByTitle(array, titlesRaw) {
     const { fuzzyMatch } = require('../../utils/search');
     const requested = titlesRaw.split('\n').map(t => t.trim()).filter(Boolean);
     const removed = [];
+    const ids = [];
     const notFound = [];
     let remaining = array;
     for (const title of requested) {
         const match = remaining.find(item => fuzzyMatch(title, item.title));
         if (match) {
             removed.push(match.title);
+            ids.push(String(match._id));
             remaining = remaining.filter(item => item !== match);
         } else {
             notFound.push(title);
         }
     }
-    return { remaining, removed, notFound };
+    return { remaining, removed, ids, notFound };
 }
 
 // ==========================================
