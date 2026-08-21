@@ -76,3 +76,9 @@ public/_v-*.html
 utils/__hotpatchFixture.js
 .hotpatch-request
 .hotpatch-result
+
+# portal/public/ is BUILD OUTPUT (scripts/buildPortal.js) -- unlike the legal site's public/, which
+# Cloudflare Pages serves with no server-side build step (so it must be committed), the portal runs
+# as a Node process on the VM and can run its own build during deploy.sh, so nothing needs this
+# tracked. Vendored preact.mjs/htm.mjs land here too, which would otherwise bloat every diff.
+portal/public/

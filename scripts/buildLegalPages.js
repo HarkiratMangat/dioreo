@@ -9221,41 +9221,52 @@ function secretScan(built) {
     return true;
 }
 
-console.log('Building the site →', path.relative(ROOT, path.join(ROOT, 'public')));
-const built = build();
-console.log('\nVerifying rendered output against source:');
-const contentOk = verify(built);
-console.log('\nAuditing internal links:');
-const linksOk = linkAudit();
-console.log('\nChecking column-aligned blocks survived:');
-const structOk = structureAudit(built);
-console.log('\nChecking cross-references to published files are live:');
-const xrefOk = crossRefAudit(built);
-console.log('\nChecking the warm pages kept their structure:');
-const warmOk = warmStructAudit(warmResults);
-console.log('\nChecking layout and content class names do not overlap:');
-const classOk = classCollisionAudit();
-console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
-const hoverOk = hoverGuardAudit(guardedPages);
-console.log('\nChecking every source entry became an entry on the page:');
-const chronOk = chronicleStructAudit(chronicleResults);
-console.log('\nChecking the emitted client scripts parse:');
-const scriptOk = scriptSyntaxAudit(built);
-console.log('\nChecking structural accessibility (skip link, landmarks, headings):');
-const a11yOk = a11yAudit(built);
-console.log('\nChecking text contrast meets WCAG AA in both themes:');
-const contrastOk = contrastAudit(built);
-console.log('\nChecking shared-parser markup is styled on every template that emits it:');
-const parserOk = parserStyleAudit(built);
-console.log('\nScanning published output for credential-shaped strings:');
-const secretOk = secretScan(built);
-const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
-    && chronOk && parserOk && scriptOk && a11yOk && contrastOk && secretOk;
-// Names each property that was actually checked, rather than one word that reads as "the output is correct". Each gate tests a different thing, and a pass on one has already been mistaken for a pass on another once. Read this roster rather than a count written down somewhere — it grows.
-console.log(ok
-    ? '\nDone. Content complete · links resolve · aligned blocks intact · '
-      + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean · every source entry rendered · parser markup styled · '
-      + 'scripts parse · skip links land · contrast AA · no credentials published.'
-    : '\nFAILED — see the findings above.');
-process.exit(ok ? 0 : 1);
+// ⚠️ GUARDED (portal plan 3 Task 4) — this used to be an unconditional top-level
+// script, so `require('./buildLegalPages')` ran the ENTIRE site build (and its own
+// `process.exit()`, which would have killed whatever process required it). scripts/buildPortal.js
+// needs `contrastAudit` importable without any of that. Wrapping the site's own CLI invocation in
+// `require.main === module` is the whole fix — `build()` and every audit function above are
+// ordinary function declarations that already did nothing until called.
+function runSiteBuildCli() {
+    console.log('Building the site →', path.relative(ROOT, path.join(ROOT, 'public')));
+    const built = build();
+    console.log('\nVerifying rendered output against source:');
+    const contentOk = verify(built);
+    console.log('\nAuditing internal links:');
+    const linksOk = linkAudit();
+    console.log('\nChecking column-aligned blocks survived:');
+    const structOk = structureAudit(built);
+    console.log('\nChecking cross-references to published files are live:');
+    const xrefOk = crossRefAudit(built);
+    console.log('\nChecking the warm pages kept their structure:');
+    const warmOk = warmStructAudit(warmResults);
+    console.log('\nChecking layout and content class names do not overlap:');
+    const classOk = classCollisionAudit();
+    console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
+    const hoverOk = hoverGuardAudit(guardedPages);
+    console.log('\nChecking every source entry became an entry on the page:');
+    const chronOk = chronicleStructAudit(chronicleResults);
+    console.log('\nChecking the emitted client scripts parse:');
+    const scriptOk = scriptSyntaxAudit(built);
+    console.log('\nChecking structural accessibility (skip link, landmarks, headings):');
+    const a11yOk = a11yAudit(built);
+    console.log('\nChecking text contrast meets WCAG AA in both themes:');
+    const contrastOk = contrastAudit(built);
+    console.log('\nChecking shared-parser markup is styled on every template that emits it:');
+    const parserOk = parserStyleAudit(built);
+    console.log('\nScanning published output for credential-shaped strings:');
+    const secretOk = secretScan(built);
+    const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
+        && chronOk && parserOk && scriptOk && a11yOk && contrastOk && secretOk;
+    // Names each property that was actually checked, rather than one word that reads as "the output is correct". Each gate tests a different thing, and a pass on one has already been mistaken for a pass on another once. Read this roster rather than a count written down somewhere — it grows.
+    console.log(ok
+        ? '\nDone. Content complete · links resolve · aligned blocks intact · '
+          + 'cross-refs live · warm structure applied · class names distinct · '
+          + 'hover guard clean · every source entry rendered · parser markup styled · '
+          + 'scripts parse · skip links land · contrast AA · no credentials published.'
+        : '\nFAILED — see the findings above.');
+    process.exit(ok ? 0 : 1);
+}
+
+if (require.main === module) { runSiteBuildCli(); }
+module.exports = { contrastAudit };
