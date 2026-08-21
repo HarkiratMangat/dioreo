@@ -81,3 +81,15 @@ function createServer({ port, mongoUri, env }) {
 }
 
 module.exports = { createServer, assertEnvironment, route, ROUTES };
+
+// Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same
+// hazard: these modules require('../auth') and this file's `route`, so if they were required before
+// module.exports was assigned, `route` would still be undefined at the moment they read it.
+require('./auth').registerAuthRoutes(route);
+require('./api/changesets').register(route);
+require('./api/season').register(route);
+require('./api/armory').register(route);
+require('./api/broadcast').register(route);
+require('./api/access').register(route);
+require('./api/analytics').register(route);
+
