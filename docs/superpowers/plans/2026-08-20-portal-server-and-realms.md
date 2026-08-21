@@ -19,7 +19,7 @@ status: frozen
 
 **Depends on:** plans 1 and 2 — every entity must be on the core before the portal has anything to drive. **Also depends on plan 1 Task 0b**, without which requiring the permission layer pulls discord.js and jimp into this process.
 
-**Approved visual design:** `local/portal-mockups/` (**gitignored** — no search will find it; six screens). Open them before building any surface. Spec §9 records the rules; the mockups are what was approved.
+**Approved visual design:** `docs/superpowers/mockups/2026-08-20-portal/` (**tracked**; six screens — a convenience copy also exists at `local/portal-mockups/`). Open them before building any surface. Spec §9 records the rules; the mockups are what was approved.
 
 ## Global Constraints
 
@@ -515,14 +515,14 @@ git commit -m "build(portal): add the frontend build with a proven contrast gate
 - Consumes: the API from Task 3
 - Produces: `<Shell>` · `<Manifest>` · `<Track>` · `<Board>` · `<Tray>`
 
-**Build from `local/portal-mockups/03-three-surfaces.html`.**
+**Build from `docs/superpowers/mockups/2026-08-20-portal/03-three-surfaces.html`.**
 
-🔴 **THIS TASK CANNOT BE EXECUTED IN A WORKTREE OR A FRESH CLONE AS WRITTEN, and naming the hazard is not mitigating it.** This plan's header says to execute it with `superpowers:subagent-driven-development`, which runs tasks in fresh worktrees — and `local/` is gitignored, so it does not exist there. Two tasks would fail on their first step for a reason no error message would explain.
+✅ **RESOLVED 2026-08-21 — this task now CAN be executed in a worktree or a fresh clone.** The hazard below was real when written: this plan's header says to execute it with `superpowers:subagent-driven-development`, which runs tasks in fresh worktrees, and `local/` is gitignored so it did not exist there. The mockups are now tracked at `docs/superpowers/mockups/2026-08-20-portal/` (operation-core branch, folded into plan 1's Task 0), so a worktree or fresh clone has them automatically like any other tracked file — no copy step, no per-worktree repetition. The original hazard text is kept below for the historical record.
 
-**Do one of these before starting Task 5, and record which:**
-1. **Copy the six mockups into the worktree** (`cp -r ../Diors-Builds/local/portal-mockups local/`) as an explicit setup step. Simplest; must be repeated per worktree.
-2. **Move them into the repo** at `docs/superpowers/mockups/2026-08-20-portal/` and track them. They are 16–27 KB of self-contained HTML with no secrets, they are the approved design of record, and tracking them ends the whole class of problem — including the spec's own repeated warning that no search can find them. **This is the better answer** and the only reason it was not the original one is that `local/` is where Harkirat asked for a reference copy; tracking them does not remove that copy.
-3. Execute Tasks 5 and 6 **inline rather than in a worktree**, which contradicts the plan header.
+**This was decided 2026-08-21: option 2 below.** They are tracked at `docs/superpowers/mockups/2026-08-20-portal/`, so no per-worktree setup step is needed — a worktree or fresh clone has them like any other tracked file. The original three options are kept for the historical record:
+1. ~~Copy the six mockups into the worktree (`cp -r ../Diors-Builds/local/portal-mockups local/`) as an explicit setup step. Simplest; must be repeated per worktree.~~
+2. ~~Move them into the repo at `docs/superpowers/mockups/2026-08-20-portal/` and track them.~~ They are 16–27 KB of self-contained HTML with no secrets, they are the approved design of record, and tracking them ends the whole class of problem — including the spec's own repeated warning that no search can find them. **This was the better answer**, and the `local/` reference copy Harkirat asked for still exists alongside the tracked one.
+3. ~~Execute Tasks 5 and 6 inline rather than in a worktree, which contradicts the plan header.~~
 
 - [ ] **Step 1: Write the failing test — components are tested as data**
 

@@ -1,0 +1,369 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Armory &amp; Commit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#0F1418;--paper:#171E24;--raised:#1F272E;--sunk:#0B0F12;--hi:#232C34;
+ --rule:#2A343D;--rule2:#3A4752;--ink:#E8EDF1;--ink2:#9DAAB4;--ink3:#6E7C87;--ink4:#4E5A64;
+ --ar:#FF3B5C;--smg:#FFD23F;--lmg:#845EC2;--mm:#3DDC97;--sn:#4361EE;--sg:#F6A93B;--sec:#3E6E8E;
+ --patch:#F2C230;--warn:#FF7A45;--ok:#3DDC97;--add:#3DDC97;--del:#FF6B6B;
+ --ui:"Space Grotesk",system-ui,sans-serif;--data:"JetBrains Mono",monospace;--rad:6px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;
+ padding:0 0 90px;-webkit-font-smoothing:antialiased}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.top{position:sticky;top:0;z-index:40;background:rgba(15,20,24,.94);backdrop-filter:blur(9px);
+ border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
+.mk{font-family:var(--data);font-size:11.5px;letter-spacing:.16em;font-weight:600}.mk b{color:var(--patch)}
+.top a{color:var(--ink3);font-size:12.5px;text-decoration:none;font-weight:600}
+.top a:hover{color:var(--ink)}
+section{padding:32px 24px 0;max-width:1560px}
+.lede{display:flex;align-items:baseline;gap:12px;margin:0 0 5px}
+.lede h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+.lede .job{font-family:var(--data);font-size:11px;letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
+.dek{margin:0 0 15px;font-size:13.5px;color:var(--ink3);max-width:84ch}.dek b{color:var(--ink2);font-weight:600}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.55;margin:11px 2px 0;max-width:86ch}
+.note b{color:var(--ink2);font-weight:600}
+.panel{border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);border-bottom:1px solid var(--rule)}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:3px}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+
+/* ══ layered shell (his correction) ══ */
+.layer-v{border-bottom:2px solid var(--rule2)}
+.layer-tag{position:absolute;left:-1px;top:0;writing-mode:vertical-rl;font-family:var(--data);font-size:8.5px;
+ letter-spacing:.18em;color:var(--ink4);padding:8px 3px;background:var(--sunk);border-right:1px solid var(--rule);
+ text-transform:uppercase}
+.stack{position:relative}
+.stack .inner{margin-left:22px}
+
+/* ══ ARMORY: rack ══ */
+.rack{padding:13px 14px;display:grid;gap:14px}
+.cat{display:grid;gap:8px}
+.cat h4{margin:0;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--c);
+ display:flex;align-items:center;gap:9px}
+.cat h4 .bar{flex:1;height:1px;background:linear-gradient(90deg,var(--c),transparent);opacity:.5}
+.cat h4 .ct{font-family:var(--data);color:var(--ink4);letter-spacing:.06em}
+.guns{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.gun{background:var(--raised);border:1px solid var(--rule);border-left:2px solid var(--c);border-radius:5px;
+ padding:8px 9px;transition:transform .1s,border-color .1s}
+.gun:hover{transform:translateY(-1px);border-color:var(--c)}
+.gun .gn{font-size:12px;font-weight:600;color:var(--ink);display:block;letter-spacing:.01em}
+.gun .gm{font-family:var(--data);font-size:9.5px;color:var(--ink4);display:flex;gap:7px;margin-top:3px;align-items:center}
+.gun .img{width:100%;height:34px;margin-top:6px;border-radius:3px;
+ background:repeating-linear-gradient(135deg,#1A2229 0 6px,#1E2830 6px 12px);position:relative}
+.gun .img.none{border:1.5px dashed var(--warn);background:none}
+.gun .img.none::after{content:"no image";position:absolute;inset:0;display:grid;place-items:center;
+ font-family:var(--data);font-size:8.5px;color:var(--warn)}
+.gun .dupe{color:var(--warn)}
+
+/* ══ ARMORY: coverage ══ */
+.cov{padding:13px 14px}
+.covt{width:100%;border-collapse:separate;border-spacing:3px}
+.covt th{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+ padding:4px 6px;text-align:center}
+.covt th.l{text-align:right;width:118px}
+.covt td{text-align:center;padding:0}
+.covt td.l{text-align:right;font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--c);padding-right:9px;
+ text-transform:uppercase}
+.cell{border-radius:4px;padding:8px 4px;font-family:var(--data);font-size:12px;font-weight:600;
+ background:var(--sunk);color:var(--ink4);border:1px solid var(--rule);cursor:pointer}
+.cell:hover{border-color:var(--ink3);color:var(--ink2)}
+.cell.ok{color:var(--ink4)}
+.cell.hot{background:rgba(255,122,69,.13);border-color:rgba(255,122,69,.5);color:var(--warn)}
+.cell.zero{opacity:.35}
+
+/* ══ shared manifest ══ */
+.mtools{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--rule)}
+.srch{position:relative;flex:0 0 275px}
+.srch input{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;color:var(--ink);
+ font-family:var(--ui);font-size:13px;padding:7px 10px 7px 30px}
+.srch svg{position:absolute;left:9px;top:8px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
+.chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
+ padding:5px 10px;border-radius:20px}
+.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
+.mtools .rt{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)}
+table.m{width:100%;border-collapse:collapse;font-size:13.5px}
+table.m th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
+ font-weight:700;padding:9px 11px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap}
+table.m td{padding:8px 11px;border-bottom:1px solid #1C242A;color:var(--ink2)}
+table.m tr:hover td{background:#1A222A}
+table.m tr.sel td{background:rgba(242,194,48,.055)}
+table.m tr.on td{background:#20303B;box-shadow:inset 2px 0 0 var(--patch)}
+td.n{color:var(--ink);font-weight:500}
+td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.cb{width:15px;height:15px;border:1.5px solid var(--rule2);border-radius:3px;display:inline-block;vertical-align:-2px;position:relative}
+.cb.on{background:var(--patch);border-color:var(--patch)}
+.cb.on::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #07090A;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+.tagx{font-family:var(--data);font-size:9px;letter-spacing:.07em;padding:1px 6px;border-radius:3px;
+ border:1px solid var(--rule2);color:var(--ink3);margin-right:4px}
+.tagx.meta{color:var(--patch);border-color:var(--patch)}
+.tagx.tox{color:var(--warn);border-color:var(--warn)}
+.bulk{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--hi);border-top:1px solid var(--rule2)}
+.bulk .c{font-family:var(--data);font-size:11.5px;color:var(--patch)}
+.bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:12px;font-weight:600;
+ padding:5px 11px;border-radius:4px}
+.bulk button.danger{color:#FF8A85;border-color:#54322F}
+.bulk .sp{margin-left:auto;font-size:11.5px;color:var(--ink4)}
+
+/* ══ live discord preview ══ */
+.withprev{display:grid;grid-template-columns:1fr 316px}
+.prev{border-left:1px solid var(--rule);background:var(--sunk);padding:12px}
+.prev .pt2{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+ display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.prev .pt2 em{font-style:normal;font-family:var(--data);font-size:9px;color:var(--ink4);margin-left:auto}
+.dcard{background:#2B2D31;border-radius:8px;border-left:4px solid var(--c);padding:11px 13px;
+ font-family:"gg sans",var(--ui);color:#DBDEE1;font-size:12.5px}
+.dcard h5{margin:0 0 3px;font-size:14px;color:#F2F3F5;font-weight:700}
+.dcard .sub2{font-size:11px;color:#B5BAC1;margin-bottom:8px}
+.dcard .att{display:flex;justify-content:space-between;padding:2.5px 0;border-bottom:1px solid #3A3C41;font-size:11.5px}
+.dcard .att:last-of-type{border:0}
+.dcard .att b{color:#F2F3F5;font-weight:500}
+.dcard .att span{color:#949BA4;font-family:var(--data);font-size:10.5px}
+.dcard .badges{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.dcard .bdg{background:#1E1F22;border-radius:4px;padding:2px 7px;font-size:10px;color:#B5BAC1}
+.dcard .code{margin-top:9px;background:#1E1F22;border-radius:4px;padding:6px 8px;font-family:var(--data);
+ font-size:10.5px;color:#A8B0B8;letter-spacing:.04em}
+.prev .warnrow{margin-top:11px;font-size:11.5px;color:var(--warn);display:flex;gap:7px;align-items:flex-start;line-height:1.4}
+
+/* ══ COMMIT & DIFF ══ */
+.rev{display:grid;grid-template-columns:264px 1fr}
+.revl{border-right:1px solid var(--rule);background:var(--sunk);padding:12px}
+.revl h5{margin:0 0 10px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.op{background:var(--raised);border:1px solid var(--rule);border-radius:5px;padding:8px 10px;margin-bottom:7px;cursor:pointer}
+.op[aria-current]{border-color:var(--patch);box-shadow:inset 2px 0 0 var(--patch)}
+.op .oh{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.op .tr{font-family:var(--data);font-size:8.5px;padding:1px 5px;border-radius:3px;border:1px solid var(--rule2);color:var(--ink3);font-weight:600}
+.op.t3 .tr{color:var(--warn);border-color:var(--warn)}
+.op .on2{font-size:12.5px;color:var(--ink);font-weight:600}
+.op .od{font-family:var(--data);font-size:10px;color:var(--ink4)}
+.op .blk{margin-top:5px;font-size:10.5px;color:var(--warn)}
+.revr{padding:14px 16px}
+.difhd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.difhd h4{margin:0;font-size:15px;font-weight:600}
+.difhd .tag2{font-family:var(--data);font-size:9.5px;letter-spacing:.09em;color:var(--warn);
+ border:1px solid var(--warn);padding:2px 7px;border-radius:3px}
+.dif2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.dcol h6{margin:0 0 7px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+ display:flex;align-items:center;gap:7px}
+.dcol.b h6{color:var(--ink3)}.dcol.a h6{color:var(--patch)}
+.fields{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;font-family:var(--data);font-size:11.5px;overflow:hidden}
+.fr{display:flex;gap:9px;padding:5px 9px;border-bottom:1px solid #1A2229}
+.fr:last-child{border:0}
+.fr .k{color:var(--ink4);width:74px;flex:none}
+.fr .v{color:var(--ink2)}
+.fr.del{background:rgba(255,107,107,.09)}.fr.del .v{color:var(--del);text-decoration:line-through}
+.fr.add{background:rgba(61,220,151,.09)}.fr.add .v{color:var(--add)}
+.destroy{background:var(--sunk);border:1px solid rgba(255,107,107,.4);border-radius:5px;padding:11px 12px;margin-bottom:14px}
+.destroy h6{margin:0 0 8px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--del);font-weight:700}
+.destroy ul{margin:0;padding-left:17px;font-size:12.5px;color:var(--ink2);line-height:1.7}
+.destroy ul li span{font-family:var(--data);font-size:10.5px;color:var(--ink4);margin-left:7px}
+.gate{border:1px solid var(--warn);border-radius:5px;background:rgba(255,122,69,.06);padding:12px 13px}
+.gate h6{margin:0 0 7px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--warn);font-weight:700}
+.gate p{margin:0 0 10px;font-size:12.5px;color:var(--ink2);line-height:1.5}
+.gsteps{display:grid;gap:8px}
+.gstep{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink2)}
+.gstep .num{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--rule2);color:var(--ink4);
+ font-family:var(--data);font-size:10px;display:grid;place-items:center;flex:none}
+.gstep.done .num{background:var(--ok);border-color:var(--ok);color:#07090A}
+.gstep.now .num{border-color:var(--warn);color:var(--warn)}
+.gstep input{background:var(--sunk);border:1.5px solid var(--warn);border-radius:4px;color:var(--ink);
+ font-family:var(--data);font-size:12px;padding:5px 9px;width:190px}
+.gstep button{background:var(--sunk);border:1px solid var(--warn);color:var(--warn);font-size:11.5px;
+ font-weight:600;padding:4px 11px;border-radius:4px}
+.revf{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--rule);background:var(--raised)}
+.revf .st3{font-size:12.5px;color:var(--ink3)}.revf .st3 b{color:var(--ink)}
+.revf .sp{margin-left:auto;display:flex;gap:9px}
+.bt{border-radius:5px;font-size:13px;font-weight:700;padding:8px 16px;letter-spacing:.01em}
+.bt.go{background:var(--patch);color:#07090A;border:0}
+.bt.go:disabled{background:var(--raised);color:var(--ink4);border:1px solid var(--rule2);cursor:not-allowed}
+.bt.no{background:none;border:1px solid var(--rule2);color:var(--ink3)}
+.cflict{display:flex;align-items:center;gap:9px;padding:9px 16px;background:rgba(255,122,69,.1);
+ border-top:1px solid rgba(255,122,69,.4);font-size:12.5px;color:var(--ink2)}
+.cflict b{color:var(--warn)}
+.cflict button{margin-left:auto;background:none;border:1px solid var(--warn);color:var(--warn);font-size:11.5px;
+ font-weight:600;padding:3px 10px;border-radius:4px}
+</style></head><body>
+
+<div class="top"><span class="mk">DIOREO<b>/</b>PORTAL</span>
+  <a href="#layers">Layering</a><a href="#armory">Armory</a><a href="#commit">Commit &amp; diff</a>
+  <span style="margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)">screen 4</span></div>
+
+<section id="layers">
+  <div class="lede"><h2>The two layers</h2><span class="job">your correction, applied everywhere</span></div>
+  <p class="dek">Track and Board are both <b>looking</b>; Manifest is <b>doing</b>. So they aren't peers.
+    The visual layer sits on top and switches; the Manifest is always beneath it, always editable.
+    This becomes the standing shape of <b>every realm</b> &mdash; Season, Armory, Broadcast &mdash; so
+    there is one thing to learn rather than three. The switcher only ever changes the top half.</p>
+  <div class="panel stack">
+    <div class="layer-tag" style="height:52px">view</div>
+    <div class="ph inner layer-v"><span class="t">Season</span>
+      <div class="seg"><button aria-pressed="true">Track</button><button>Board</button></div>
+      <span class="sp">the top half switches &mdash; the half below never does</span></div>
+    <div style="position:relative"><div class="layer-tag" style="height:100%">manifest</div>
+      <div class="inner" style="padding:26px 14px;text-align:center;color:var(--ink4);font-family:var(--data);font-size:11.5px;
+        background:repeating-linear-gradient(135deg,#141B21 0 8px,#171E24 8px 16px)">
+        always present &middot; search, filter, multi-select, inline edit</div></div>
+  </div>
+</section>
+
+<section id="armory">
+  <div class="lede"><h2>Armory</h2><span class="job">same two layers, no time axis</span></div>
+  <p class="dek">Loadouts have no dates, so there is no Track &mdash; but the layering holds. The visual layer offers
+    <b>Rack</b> (what exists, by category, with its real accent) and <b>Coverage</b> (what's <i>wrong</i>, by category).
+    Coverage is the Armory's answer to the Track's defect flags: instead of overlaps and gaps in time, it surfaces
+    missing images, unbadged builds, near-duplicate gunsmith codes and stale entries &mdash; every cell filters the
+    Manifest below it. Real numbers throughout: <b>68 MP weapons, 125 builds, 7 categories</b>, read from the same
+    weapon index the site's /commands page uses.</p>
+  <div class="panel">
+    <div class="ph"><span class="t">Armory &mdash; MP</span>
+      <div class="seg"><button aria-pressed="true">Rack</button><button>Coverage</button></div>
+      <span class="sp">68 weapons &middot; 125 builds &middot; 7 categories</span></div>
+    <div id="rack" class="rack"></div>
+    <div id="cov" class="cov" style="border-top:1px solid var(--rule)"></div>
+    <div class="withprev" style="border-top:2px solid var(--rule2)">
+      <div><div class="mtools">
+        <span class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input value="fen" placeholder="Search 125 builds…"></span>
+        <button class="chip" aria-pressed="true">SMG <span style="color:var(--ink4)">&times;</span></button>
+        <button class="chip">Missing image</button><button class="chip">+ Filter</button>
+        <span class="rt">4 of 125 shown</span></div>
+        <div id="mrows"></div>
+        <div class="bulk"><span class="c">2 selected</span>
+          <button>Set badges…</button><button>Re-fetch images</button><button>Export selection</button>
+          <button class="danger">Stage deletion</button>
+          <span class="sp">Replace Multiple stages a diff &mdash; it never overwrites from here.</span></div>
+      </div>
+      <div class="prev" id="prev"></div>
+    </div>
+  </div>
+  <p class="note"><b>The preview is not a mock-up.</b> It calls <b>the bot's own</b>
+    <span style="font-family:var(--data)">buildLoadoutCard()</span> over the working copy &mdash; that function returns
+    plain Components&nbsp;V2 JSON and imports no discord.js, so the browser can render exactly what Discord will send.
+    A preview that drifts from the real render would be worse than none, and this one cannot drift.</p>
+</section>
+
+<section id="commit">
+  <div class="lede"><h2>Commit &amp; diff</h2><span class="job">the highest-consequence screen in the portal</span></div>
+  <p class="dek">Everything staged converges here. Each operation shows a <b>field diff</b> and, where the change is
+    something a player will see, the <b>real Discord card before and after</b>. A tier-3 operation cannot be committed
+    until what it destroys has been exported &mdash; and because
+    <span style="font-family:var(--data)">adminParser</span>'s export formats round-trip back through its own bulk
+    parsers, that download is a genuine restore path, not a receipt. Live state is re-read at this moment, so anything
+    that moved underneath you since staging is caught <b>here</b>, not silently overwritten.</p>
+  <div class="panel">
+    <div class="ph"><span class="t">Review changeset</span><span class="sp">3 operations &middot; Season 7 &middot; dior</span></div>
+    <div class="rev">
+      <div class="revl" id="ops"></div>
+      <div class="revr" id="dif"></div>
+    </div>
+    <div class="cflict"><b>Conflict:</b> <span>&nbsp;Shadow Blade rerun changed in Discord 4 minutes ago, after you staged this set.</span>
+      <button>Show what changed</button></div>
+    <div class="revf"><span class="st3"><b>2 of 3</b> ready &middot; 1 blocked &middot; 1 conflict</span>
+      <span class="sp"><button class="bt no">Keep staged</button><button class="bt go" disabled>Commit all 3</button></span></div>
+  </div>
+  <p class="note"><b>Why commit is all-or-nothing:</b> the whole set applies in one Mongo transaction. A half-applied
+    changeset is the worst outcome available &mdash; the bot reads fresh on every interaction, so it would serve the
+    broken middle state to real users within seconds. <b>This premise is unverified</b> and gets proven with a real
+    two-document transaction on the M0 cluster before anything is built on it.</p>
+</section>
+
+<script>
+const CAT=[['AR','--ar',17,35],['SMG','--smg',15,26],['SNIPER','--sn',10,19],['MARKSMAN','--mm',5,14],
+ ['LMG','--lmg',8,12],['SHOTGUN','--sg',7,10],['SECONDARIES','--sec',6,9]];
+const GUNS={AR:[['AK-47',3,1],['M4',2,1],['ASM10',2,1],['KILO 141',2,0],['AK117',3,1],['TYPE 19',2,1]],
+ SMG:[['FENNEC',3,1],['QQ9',2,1],['PDW-57',2,1],['CBR4',1,0],['AGR 556',2,1]],
+ SNIPER:[['DL Q33',3,1],['LOCUS',2,1],['ARCTIC .50',2,1],['NA-45',1,1]]};
+document.getElementById('rack').innerHTML=Object.entries(GUNS).map(([c,gs])=>{
+ const v=CAT.find(x=>x[0]===c);
+ return `<div class="cat" style="--c:var(${v[1]})"><h4>${c}<span class="bar"></span>
+  <span class="ct">${v[2]} weapons · ${v[3]} builds</span></h4><div class="guns">
+  ${gs.map(([n,b,img])=>`<div class="gun" style="--c:var(${v[1]})"><span class="gn">${n}</span>
+    <span class="gm">${b} build${b>1?'s':''}${b>2?' <span class="dupe">· dupe?</span>':''}</span>
+    <div class="img ${img?'':'none'}"></div></div>`).join('')}</div></div>`}).join('');
+
+const CHECKS=['Builds','No image','No badges','Near-dupe code','Attachments ≠5','Not updated 90d'];
+document.getElementById('cov').innerHTML=`<table class="covt"><thead><tr><th class="l"></th>
+ ${CHECKS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>
+ ${CAT.map(([c,v,w,b])=>{const d=[b,c==='SMG'?4:c==='AR'?2:0,c==='SNIPER'?3:0,c==='AR'?1:0,0,c==='SHOTGUN'?5:c==='LMG'?2:0];
+   return `<tr><td class="l" style="--c:var(${v})">${c}</td>${d.map((n,i)=>
+   `<td><div class="cell ${i===0?'ok':n===0?'zero':n>2?'hot':''}">${n}</div></td>`).join('')}</tr>`}).join('')}
+ </tbody></table>
+ <p style="margin:11px 2px 0;font-size:11.5px;color:var(--ink4);font-family:var(--data)">
+ every cell is a filter · click 4 under “No image” to load exactly those four into the Manifest below</p>`;
+
+const B=[[1,'FENNEC','Close Quarters','--smg','3.2k',1,1,'2026-08-14'],
+ [1,'FENNEC','Long Range','--smg','—',0,0,'2026-06-02'],
+ [0,'FENNEC','No Recoil','--smg','1.1k',0,1,'2026-08-01'],
+ [0,'AGR 556','Meta Build','--smg','2.7k',1,0,'2026-07-22']];
+document.getElementById('mrows').innerHTML=`<table class="m"><thead><tr>
+ <th style="width:34px"><span class="cb"></span></th><th style="width:20%">Weapon</th><th>Build</th>
+ <th>Image</th><th>Tags</th><th>Updated</th></tr></thead><tbody>
+ ${B.map(([s,w,bn,c,im,meta,img,up],i)=>`<tr class="${i===0?'sel on':s?'sel':''}">
+  <td><span class="cb ${s?'on':''}"></span></td>
+  <td class="n"><span class="dot" style="background:var(${c})"></span>${w}</td><td>${bn}</td>
+  <td class="d" style="${img?'':'color:var(--warn)'}">${img?im:'not fetched'}</td>
+  <td>${meta?'<span class="tagx meta">META</span>':''}${i===1?'<span class="tagx tox">TOXIC</span>':''}
+    ${!img?'<span class="tagx">NO IMG</span>':''}</td>
+  <td class="d">${up}</td></tr>`).join('')}
+ </tbody></table>`;
+
+document.getElementById('prev').innerHTML=`<div class="pt2">Live preview <em>as Discord renders it</em></div>
+ <div class="dcard" style="--c:var(--smg)"><h5>FENNEC — Close Quarters</h5>
+ <div class="sub2">SMG · Meta build</div>
+ <div class="att"><b>Muzzle</b><span>MIP Light Flash Guard</span></div>
+ <div class="att"><b>Barrel</b><span>MIP Light Barrel (Short)</span></div>
+ <div class="att"><b>Laser</b><span>OWC Laser — Tactical</span></div>
+ <div class="att"><b>Stock</b><span>No Stock</span></div>
+ <div class="att"><b>Rear Grip</b><span>Granulated Grip Tape</span></div>
+ <div class="badges"><span class="bdg">⚡ Fastest ADS</span><span class="bdg">🎯 Low recoil</span><span class="bdg">🥇 Meta</span></div>
+ <div class="code">6ZQ4-KP2M-VX90</div></div>
+ <div class="warnrow"><span>⚠</span><span>This build's image is cached and current. Two other FENNEC builds
+   share 9 of 10 characters of this gunsmith code — likely a duplicate.</span></div>`;
+
+const OPS=[['T1','Havoc rerun','add returning draw',0,0],
+ ['T1','Shadow Blade rerun','shift end date +3d',0,'Changed in Discord 4m ago'],
+ ['T3','Nightfall','replaces 4 draws',1,0]];
+document.getElementById('ops').innerHTML=`<h5>Operations</h5>`+OPS.map(([t,n,d,cur,blk],i)=>
+ `<div class="op ${t==='T3'?'t3':''}" ${cur?'aria-current="true"':''}>
+  <div class="oh"><span class="tr">${t}</span><span class="on2">${n}</span></div>
+  <span class="od">${d}</span>${blk?`<div class="blk">⚠ ${blk}</div>`:''}</div>`).join('');
+
+document.getElementById('dif').innerHTML=`
+ <div class="difhd"><h4>Nightfall — Legendary</h4><span class="tag2">TIER 3 · IRREVERSIBLE</span></div>
+ <div class="dif2">
+  <div class="dcol b"><h6>Before &mdash; live now</h6><div class="fields">
+   <div class="fr"><span class="k">draws</span><span class="v">4 entries</span></div>
+   <div class="fr del"><span class="k">— </span><span class="v">Iron Wolf — Legendary</span></div>
+   <div class="fr del"><span class="k">— </span><span class="v">Vector — Mythic Drop</span></div>
+   <div class="fr del"><span class="k">— </span><span class="v">Frostbite — Epic</span></div>
+   <div class="fr del"><span class="k">— </span><span class="v">Wraith — Legendary</span></div></div></div>
+  <div class="dcol a"><h6>After &mdash; if you commit</h6><div class="fields">
+   <div class="fr"><span class="k">draws</span><span class="v">1 entry</span></div>
+   <div class="fr add"><span class="k">+ </span><span class="v">Nightfall — Legendary</span></div>
+   <div class="fr"><span class="k">window</span><span class="v">Aug 25 → Sep 10</span></div>
+   <div class="fr"><span class="k">items</span><span class="v">8</span></div>
+   <div class="fr"><span class="k">thumbnail</span><span class="v" style="color:var(--warn)">not fetched</span></div></div></div>
+ </div>
+ <div class="destroy"><h6>This permanently removes 4 draws</h6>
+  <ul><li>Iron Wolf — Legendary <span>9 items · Aug 1 → Aug 10</span></li>
+   <li>Vector — Mythic Drop <span>12 items · Aug 12 → Aug 22</span></li>
+   <li>Frostbite — Epic <span>7 items · Jul 28 → Aug 4</span></li>
+   <li>Wraith — Legendary <span>10 items · Aug 5 → Aug 15</span></li></ul></div>
+ <div class="gate"><h6>Before this can commit</h6>
+  <p>Tier 3 destroys state with no exact inverse. The export below is in Bulk Add format &mdash; pasting it
+   back into Add Multiple restores all four draws exactly.</p>
+  <div class="gsteps">
+   <div class="gstep done"><span class="num">✓</span>Previewed the rendered result</div>
+   <div class="gstep now"><span class="num">2</span>Download the 4 draws being replaced
+     <button style="margin-left:8px">Export .txt</button></div>
+   <div class="gstep"><span class="num">3</span>Type <b style="font-family:var(--data);color:var(--ink)">Nightfall</b> to confirm
+     <input placeholder="draw name" disabled></div>
+  </div></div>`;
+</script></body></html>

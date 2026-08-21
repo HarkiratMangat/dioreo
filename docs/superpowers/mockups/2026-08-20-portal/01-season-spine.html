@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Season</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#0E1216; --paper:#151B21; --raised:#1C242C; --sunk:#0A0E11;
+  --rule:#26313A; --rule2:#33424E;
+  --ink:#E4EAEF; --ink2:#93A3B0; --ink3:#63737F;
+  --staged:#5FD4E8; --conflict:#FF5C5C; --ok:#5BD99A;
+  --mp:#FF3430; --dmz:#337BA6; --patch:#F2C230; --cp:#1F8A5E; --play:#8A6BD1;
+  --ui:"IBM Plex Sans Condensed",-apple-system,"Segoe UI",system-ui,sans-serif;
+  --data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --rail:76px; --hdr:52px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── shell ───────────────────────────────────────────────── */
+.app{display:grid;grid-template-columns:var(--rail) 1fr;grid-template-rows:var(--hdr) 1fr;height:100vh}
+header{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 18px;
+  background:var(--paper);border-bottom:1px solid var(--rule)}
+.mark{font-family:var(--data);font-weight:600;letter-spacing:.14em;font-size:12px;color:var(--ink)}
+.mark b{color:var(--staged);font-weight:600}
+.crumb{font-size:13px;color:var(--ink3);letter-spacing:.04em}
+.crumb b{color:var(--ink2);font-weight:500}
+.spacer{flex:1}
+.who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)}
+.who .dot{width:22px;height:22px;border-radius:50%;background:linear-gradient(140deg,#3A4C5A,#1C242C);
+  border:1px solid var(--rule2)}
+
+/* rail: four realms, not a sidebar */
+nav.rail{background:var(--sunk);border-right:1px solid var(--rule);display:flex;flex-direction:column;
+  align-items:stretch;padding-top:10px;gap:2px}
+.realm{appearance:none;background:none;border:0;color:var(--ink3);font-family:var(--ui);cursor:pointer;
+  padding:12px 4px 11px;display:grid;gap:5px;justify-items:center;position:relative;
+  font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600}
+.realm svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}
+.realm:hover{color:var(--ink2)}
+.realm[aria-current]{color:var(--ink)}
+.realm[aria-current]::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--staged)}
+.realm .cnt{position:absolute;top:8px;right:14px;font-family:var(--data);font-size:9px;color:var(--staged)}
+
+main{overflow:auto;padding:0 0 120px}
+
+/* ── season header ───────────────────────────────────────── */
+.shead{display:flex;align-items:flex-end;gap:26px;padding:22px 26px 16px}
+.shead h1{margin:0;font-size:27px;font-weight:600;letter-spacing:-.015em}
+.shead .sub{font-family:var(--data);font-size:12px;color:var(--ink3);letter-spacing:.02em;padding-bottom:5px}
+.stat{padding-bottom:4px}
+.stat .v{font-family:var(--data);font-size:19px;font-weight:600;letter-spacing:-.01em}
+.stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--ink3);font-weight:600}
+.stat.warn .v{color:var(--patch)}
+
+/* ── THE SPINE — the signature ───────────────────────────── */
+.spine{margin:0 26px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);overflow:hidden}
+.spine-top{display:flex;align-items:center;gap:14px;padding:9px 14px;border-bottom:1px solid var(--rule);
+  background:var(--raised)}
+.spine-top .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--ink2)}
+.legend{display:flex;gap:14px;margin-left:auto;font-size:11px;color:var(--ink3);font-family:var(--data)}
+.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:1px}
+.legend .live i{background:var(--ink3)}
+.legend .stg i{background:transparent;border:1px dashed var(--staged)}
+.legend .cfl i{background:var(--conflict)}
+
+.grid{position:relative;padding:0 0 6px}
+.ruler{position:relative;height:24px;border-bottom:1px solid var(--rule);margin-left:96px}
+.tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule);padding-left:6px;
+  font-family:var(--data);font-size:10px;color:var(--ink3);line-height:22px;white-space:nowrap}
+.lane{position:relative;height:34px;display:flex;align-items:center;border-bottom:1px solid #1B242B}
+.lane:last-child{border-bottom:0}
+.lane .name{width:96px;flex:none;padding-right:12px;text-align:right;font-size:10px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.track{position:relative;flex:1;height:100%}
+.band{position:absolute;top:7px;height:20px;border-radius:2px;display:flex;align-items:center;
+  padding:0 8px;font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;cursor:default;
+  color:#000;transition:filter .12s}
+.band:hover{filter:brightness(1.18)}
+.band.ghost{background:transparent!important;border:1px dashed var(--staged);color:var(--staged);
+  font-style:normal}
+.band.ghost::after{content:"staged";margin-left:8px;font-family:var(--data);font-size:9px;opacity:.75;
+  letter-spacing:.1em;text-transform:uppercase}
+.band.bad{border-color:var(--conflict);color:var(--conflict)}
+.band.bad::after{color:var(--conflict)}
+.pt{position:absolute;top:11px;width:12px;height:12px;transform:rotate(45deg);border-radius:1px}
+
+/* today + season end markers */
+.lanes{position:relative}
+.overlay{position:absolute;left:96px;right:0;top:0;bottom:0;pointer-events:none;z-index:2}
+.now{position:absolute;top:0;bottom:0;width:1px;background:var(--staged);opacity:.6;z-index:3}
+.now::before{content:"NOW";position:absolute;top:-17px;left:-13px;font-family:var(--data);font-size:9px;
+  letter-spacing:.1em;color:var(--staged);white-space:nowrap;font-weight:600}
+.bpend{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);opacity:.7;z-index:3}
+.bpend::before{content:"BP END";position:absolute;top:-17px;right:2px;font-family:var(--data);font-size:9px;
+  letter-spacing:.1em;color:var(--patch);white-space:nowrap;font-weight:600}
+.cpwin{position:absolute;top:0;bottom:0;background:rgba(31,138,94,.10);
+  border-left:1px solid rgba(31,138,94,.5);border-right:1px solid rgba(31,138,94,.5);z-index:0}
+.cpwin span{position:absolute;top:-17px;left:5px;font-family:var(--data);font-size:9px;letter-spacing:.1em;
+  color:var(--cp)}
+
+/* ── defect strip ────────────────────────────────────────── */
+.flags{margin:14px 26px 0;display:flex;gap:10px;flex-wrap:wrap}
+.flag{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid var(--rule);
+  border-left:2px solid var(--conflict);border-radius:2px;background:var(--paper);font-size:12.5px;color:var(--ink2)}
+.flag b{color:var(--ink);font-weight:600}
+.flag.warn{border-left-color:var(--patch)}
+.flag button{appearance:none;background:none;border:1px solid var(--rule2);color:var(--ink2);
+  font-family:var(--ui);font-size:11px;padding:2px 8px;border-radius:2px;cursor:pointer}
+.flag button:hover{color:var(--ink);border-color:var(--ink3)}
+
+/* ── list under the spine ────────────────────────────────── */
+.sect{margin:26px 26px 0}
+.sect h2{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--ink3);
+  margin:0 0 9px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);
+  font-weight:600;padding:0 10px 7px;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px;border-bottom:1px solid #1A2229;color:var(--ink2)}
+tr:hover td{background:#161D24}
+td.n{color:var(--ink);font-weight:500}
+td.d{font-family:var(--data);font-size:12px;color:var(--ink3);white-space:nowrap}
+.tier{font-family:var(--data);font-size:10px;padding:1px 5px;border-radius:2px;background:var(--raised);
+  border:1px solid var(--rule2);color:var(--ink2);margin-right:4px}
+tr.staged td{background:rgba(95,212,232,.05)}
+tr.staged td.n::before{content:"◇ ";color:var(--staged)}
+
+/* ── the tray = a loaded magazine ────────────────────────── */
+.tray{position:fixed;right:22px;bottom:22px;width:322px;background:var(--paper);
+  border:1px solid var(--rule2);border-radius:3px;box-shadow:0 24px 60px -18px rgba(0,0,0,.9);z-index:9}
+.tray-h{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--rule)}
+.tray-h .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;font-weight:700;color:var(--ink2)}
+.tray-h .n{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--staged)}
+.rounds{display:flex;flex-direction:column-reverse;padding:6px 0}
+.round{display:flex;align-items:center;gap:9px;padding:7px 12px;font-size:12.5px;color:var(--ink2);
+  border-left:2px solid var(--staged);margin:1px 0}
+.round .tier2{font-family:var(--data);font-size:9px;letter-spacing:.08em;color:var(--ink3);
+  border:1px solid var(--rule2);padding:0 4px;border-radius:2px}
+.round.t3{border-left-color:var(--conflict)}
+.round.t3 .tier2{color:var(--conflict);border-color:var(--conflict)}
+.round b{color:var(--ink);font-weight:500}
+.tray-f{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule)}
+.btn{flex:1;appearance:none;font-family:var(--ui);font-size:12.5px;font-weight:600;padding:7px 10px;
+  border-radius:2px;cursor:pointer;letter-spacing:.02em}
+.btn.go{background:var(--staged);color:#00151A;border:1px solid var(--staged)}
+.btn.go:hover{filter:brightness(1.09)}
+.btn.no{background:none;color:var(--ink3);border:1px solid var(--rule2)}
+.btn.no:hover{color:var(--ink2)}
+.hint{padding:0 12px 10px;font-size:11px;color:var(--ink3);line-height:1.4}
+</style></head><body>
+<div class="app">
+  <header>
+    <span class="mark">DIOREO<b>/</b>PORTAL</span>
+    <span class="crumb">Season <b>&rsaquo;</b> Timeline</span>
+    <span class="spacer"></span>
+    <span class="who"><span class="dot"></span>dior · owner</span>
+  </header>
+
+  <nav class="rail">
+    <button class="realm" aria-current="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Season<span class="cnt">3</span></button>
+    <button class="realm"><svg viewBox="0 0 24 24"><path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/></svg>Armory</button>
+    <button class="realm"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/></svg>Broadcast</button>
+    <button class="realm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Ops</button>
+  </nav>
+
+  <main>
+    <div class="shead">
+      <h1>Season 7 &mdash; Reckoning</h1>
+      <span class="sub">2026-08-01 &rarr; 2026-09-04</span>
+      <span class="spacer"></span>
+      <span class="stat"><span class="v">14</span> <span class="k">days left</span></span>
+      <span class="stat"><span class="v">6</span> <span class="k">draws live</span></span>
+      <span class="stat warn"><span class="v">3</span> <span class="k">staged</span></span>
+    </div>
+
+    <section class="spine">
+      <div class="spine-top">
+        <span class="t">Season track</span>
+        <span class="legend">
+          <span class="live"><i></i>live</span>
+          <span class="stg"><i></i>staged</span>
+          <span class="cfl"><i></i>conflict</span>
+        </span>
+      </div>
+      <div class="grid">
+        <div class="ruler">
+          <span class="tick" style="left:0%">Aug 1</span>
+          <span class="tick" style="left:20%">Aug 8</span>
+          <span class="tick" style="left:40%">Aug 15</span>
+          <span class="tick" style="left:60%">Aug 22</span>
+          <span class="tick" style="left:80%">Aug 29</span>
+        </div>
+        <div class="lanes">
+          <div class="overlay">
+            <div class="cpwin" style="left:31%;width:11%"><span>2XCP</span></div>
+            <div class="now" style="left:57%"></div>
+            <div class="bpend" style="left:94%"></div>
+          </div>
+
+        <div class="lane"><span class="name">New draws</span><div class="track">
+          <div class="band" style="left:2%;width:26%;background:var(--mp)">Iron Wolf &mdash; Legendary</div>
+          <div class="band" style="left:34%;width:30%;background:var(--mp);opacity:.8">Vector &mdash; Mythic Drop</div>
+          <div class="band ghost bad" style="left:70%;width:34%">Nightfall &mdash; Legendary</div>
+        </div></div>
+
+        <div class="lane"><span class="name">Returning</span><div class="track">
+          <div class="band" style="left:12%;width:22%;background:var(--dmz)">Shadow Blade rerun</div>
+          <div class="band ghost" style="left:52%;width:24%">Havoc rerun</div>
+        </div></div>
+
+        <div class="lane"><span class="name">Events</span><div class="track">
+          <div class="band" style="left:0%;width:18%;background:var(--cp)">Season launch</div>
+          <div class="band" style="left:31%;width:11%;background:var(--cp)">Double CP</div>
+          <div class="band" style="left:64%;width:20%;background:var(--cp);opacity:.8">Clan wars</div>
+        </div></div>
+
+        <div class="lane"><span class="name">Playlists</span><div class="track">
+          <div class="band" style="left:8%;width:34%;background:var(--play)">Ranked reset window</div>
+          <div class="band ghost" style="left:60%;width:28%">Hardpoint 24/7</div>
+        </div></div>
+
+        <div class="lane"><span class="name">Patch notes</span><div class="track">
+          <span class="pt" style="left:1%;background:var(--patch)" title="Aug 1 — Season launch notes"></span>
+          <span class="pt" style="left:29%;background:var(--patch)" title="Aug 11 — Balance pass"></span>
+          <span class="pt" style="left:56%;background:var(--patch)" title="Aug 21 — Hotfix"></span>
+        </div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="flags">
+      <span class="flag"><b>Nightfall</b> ends 6 days after the battle pass &mdash; it will outlive the season.
+        <button>Clamp to BP end</button></span>
+      <span class="flag warn"><b>Aug 24&ndash;28</b> has no draw and no event scheduled.
+        <button>Fill</button></span>
+    </div>
+
+    <section class="sect">
+      <h2>New draws &mdash; 3 live, 1 staged</h2>
+      <table>
+        <thead><tr><th style="width:34%">Draw</th><th>Window</th><th>Items</th><th>Thumbnail</th></tr></thead>
+        <tbody>
+          <tr><td class="n">Iron Wolf &mdash; Legendary</td><td class="d">Aug 1 &rarr; Aug 10</td>
+            <td><span class="tier">LEG</span><span class="tier">EPIC</span> 9 items</td><td class="d">cached &check;</td></tr>
+          <tr><td class="n">Vector &mdash; Mythic Drop</td><td class="d">Aug 12 &rarr; Aug 22</td>
+            <td><span class="tier">MYTH</span><span class="tier">LEG</span> 12 items</td><td class="d">cached &check;</td></tr>
+          <tr class="staged"><td class="n">Nightfall &mdash; Legendary</td><td class="d">Aug 25 &rarr; Sep 10</td>
+            <td><span class="tier">LEG</span> 8 items</td><td class="d">not fetched</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<aside class="tray">
+  <div class="tray-h"><span class="t">Staged</span><span class="n">3 changes</span></div>
+  <div class="rounds">
+    <div class="round"><span class="tier2">T1</span><b>Havoc rerun</b> added</div>
+    <div class="round"><span class="tier2">T1</span><b>Hardpoint 24/7</b> added</div>
+    <div class="round t3"><span class="tier2">T3</span><b>Nightfall</b> replaces 4 draws</div>
+  </div>
+  <div class="tray-f">
+    <button class="btn no">Discard</button>
+    <button class="btn go">Review &amp; commit</button>
+  </div>
+  <p class="hint">One tier-3 change needs an export before it will commit.</p>
+</aside>
+</body></html>

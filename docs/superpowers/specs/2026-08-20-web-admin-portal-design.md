@@ -16,7 +16,7 @@ status: frozen
 
 > **This supersedes the roadmap item "The real search + multi-select flow — `/manage`'s Delete Multiple and Loadouts' Replace Multiple"** (`docs/ROADMAP.md`, `docs/db-deferred-list.md` 🧹 Someday, `[P2 · L]`). That item was filed as a Discord-side interaction and was flagged as un-schedulable for having no named first slice. Harkirat changed his mind on the implementation, not the goal: search-then-tick-then-act is a table's default behaviour on the web, so it stops being a feature to design and becomes a consequence of the surface. **Strike the item and point it here rather than building both.**
 
-> ⚠️ **The visual design is not in this file.** Six annotated mockups were built and approved during the design session and live at **`local/portal-mockups/`** — `01-season-spine.html` · `02-skins-and-structures.html` · `03-three-surfaces.html` · `04-armory-and-commit.html` · `05-door-broadcast-ops.html` · `06-access-and-analytics.html`. **That folder is gitignored, so no repo search will ever surface it** — this pointer is the only route back. Open them before designing any portal surface; §9 below records the rules they encode, but the mockups are what was actually approved.
+> ⚠️ **The visual design is not in this file.** Six annotated mockups were built and approved during the design session and live at **`docs/superpowers/mockups/2026-08-20-portal/`** — `01-season-spine.html` · `02-skins-and-structures.html` · `03-three-surfaces.html` · `04-armory-and-commit.html` · `05-door-broadcast-ops.html` · `06-access-and-analytics.html`. **Tracked in git as of the operation-core branch** — a convenience copy also still lives at `local/portal-mockups/`. Open them before designing any portal surface; §9 below records the rules they encode, but the mockups are what was actually approved.
 
 ---
 
@@ -215,7 +215,7 @@ This is the standing shape of **every realm**, so there is one thing to learn ra
 
 ## 9. The visual system
 
-Full detail is in the approved mockups at `local/portal-mockups/`. These are the rules they encode.
+Full detail is in the approved mockups at `docs/superpowers/mockups/2026-08-20-portal/`. These are the rules they encode.
 
 **Grid, not colour, carries identity.** The legal family is a numbered index; contributing is a warm invitation; chronicle is notice board / ledger / timeline; `/commands` is the Receiver. The portal's grid is a **track** — a time spine with content hanging off it. That is not an imported metaphor: it is the shape of `SeasonalData` and of CODM's own battle-pass UI. No two families read alike in greyscale.
 
@@ -325,7 +325,7 @@ A falsification pass was run against this document — the question asked was *w
 
 **F5 — the transaction premise is still unproven and the design depends on it totally.** Called out as premise 1 rather than buried. If M0 refuses transactions, §5 tier 2 needs redesign, not patching.
 
-**F6 — `local/portal-mockups/` is gitignored, so the approved visual design is invisible to every future search.** `rg -uu --hidden` included. The pointer at the top of this file is the only route back, which is why it is stated twice.
+**F6 — `local/portal-mockups/` was gitignored, so the approved visual design was invisible to every future search.** `rg -uu --hidden` included. The pointer at the top of this file was the only route back, which is why it was stated twice. **Resolved 2026-08-21:** the six mockups are now tracked at `docs/superpowers/mockups/2026-08-20-portal/`, folded into the operation-core branch — see that plan's Task 0. The `local/` copy remains as a convenience only.
 
 **F7 — a claimed reuse was checked rather than assumed.** `utils/adminParser.js`'s exporters were verified to round-trip through the matching parsers before §5 tier 3 was designed around that property. If they had not, the forced-export gate would have produced a file that could not restore anything — a safeguard that manufactures false confidence, which is worse than none.
 
@@ -381,7 +381,7 @@ A fresh agent with **no context from the design session** was given the spec and
 
 ## 15. References
 
-- **Approved mockups (gitignored):** `local/portal-mockups/` — six screens, listed at the top of this file
+- **Approved mockups (tracked):** `docs/superpowers/mockups/2026-08-20-portal/` — six screens, listed at the top of this file. A convenience copy also exists at `local/portal-mockups/`.
 - **Implementation plans, in order:** `docs/superpowers/plans/2026-08-20-portal-core-operation-algebra.md` (the core, proven on draws) → `docs/superpowers/plans/2026-08-20-portal-core-remaining-entities.md` (the other five entities, then the in-memory undo store retires) → `docs/superpowers/plans/2026-08-20-portal-server-and-realms.md` (the server, OAuth, and the five realms)
 - **Superseded roadmap item:** `docs/ROADMAP.md` and `docs/db-deferred-list.md` 🧹 Someday — the `/manage` search+multi-select entry
 - **Filed out of this session:** `docs/db-deferred-list.md` 🗂️ Queued — the `Announcement.startsAt` schema gap
