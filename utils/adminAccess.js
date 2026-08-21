@@ -1,6 +1,6 @@
 // utils/adminAccess.js
 //
-// Single source of truth for "is this user an admin" -- checks the hardcoded ALLOWED_ADMIN_ID (commands/manage.js, the ultimate owner) OR the Mongo-backed AdminUser allowlist.
+// Single source of truth for "is this user an admin" -- checks the hardcoded ALLOWED_ADMIN_ID (utils/owner.js, the ultimate owner) OR the Mongo-backed AdminUser allowlist.
 //
 // ⚠️ EXPANDED 2026-08-13, TWICE THE SAME DAY -- first to per-COMMAND permissions (/manage vs /alerts vs /autobuild individually), then to per-PAGE scoping WITHIN /manage itself (Harkirat: "not just the 3 admin commands, each command... such as editing /manage calendar data"). The owner always has everything implicitly; a Mongo-granted admin's access is exactly the tokens on their AdminUser.permissions array.
 //
@@ -15,6 +15,7 @@
 //
 // /bot access -- the runtime admin allowlist itself (moved out of /manage's former owner-only `manageadmins` page 2026-08-16) -- has NO permission token at all, ever: it is OWNER-ONLY VISIBILITY, checked directly via isOwner(), never grantable to anyone at any scope.
 const AdminUser = require('../models/AdminUser');
+const { isOwnerId } = require('./owner');
 
 const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot'];
 
@@ -40,8 +41,7 @@ function invalidateAdminCache() {
 }
 
 function isOwner(userId) {
-    const { ALLOWED_ADMIN_ID } = require('../commands/manage');
-    return userId === ALLOWED_ADMIN_ID;
+    return isOwnerId(userId);
 }
 
 // "Is this person an admin in ANY capacity" -- owner, or a Mongo-granted admin with at least one permission token. Correct for coarse checks (does the Bot Admin category show up at all in /help; may this person admin-override someone else's /settings panel) but NOT for gating one specific command's own surface -- use hasCommandAccess for that, or hasManagePageAccess for a specific /manage page.

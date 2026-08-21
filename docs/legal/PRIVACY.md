@@ -553,7 +553,7 @@ A privacy policy is a set of **enforceable representations**. Saying more than i
 | Cloudinary stores in the US | Cloudinary's published documentation: standard accounts default to US storage; EU residency is an Enterprise option. |
 | We use Vertex AI, not the consumer Gemini API | The request endpoint in `utils/visionExtract.js` is `aiplatform.googleapis.com`, project- and location-scoped — not `generativelanguage.googleapis.com`. |
 | No AI receives end-user data | `/autobuild` is the only AI call site and is gated on the administrator's Discord ID. |
-| Admin commands are locked to one account | `ALLOWED_ADMIN_ID` guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router. |
+| Admin commands are locked to one account | `ALLOWED_ADMIN_ID` (declared in `utils/owner.js` as of the portal operation core) guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router. |
 | **There is no automated deletion** | Searched for every `deleteOne` / `deleteMany` / `findOneAndDelete` in the codebase. **None operates on `UserPreference`.** This is why §7.1 discloses a shortcoming instead of claiming a capability. |
 | `/settings` has no reset or delete | Searched `commands/settings.js` for reset/restore-default handling. None exists — it only overwrites individual values. |
 | No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for `document.cookie` — no occurrences. |

@@ -12,7 +12,10 @@ const emojis = require('../utils/emojiMap');
 const { mentionCommand } = require('../utils/commandMentions');
 const { buttonFor } = require('../utils/manageActions'); // the /manage action registry (2026-08-14)
 
-const ALLOWED_ADMIN_ID = '1139845545754632283'; // Your exact Discord ID
+// Moved to utils/owner.js (2026-08-20, portal core Task 0b) -- utils/adminAccess.js used to reach
+// into this file just for this constant, which transitively pulled discord.js/jimp into any process
+// that needed permission checks. Re-exported here so nothing outside this task's file list breaks.
+const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
 // Per-page "Purge" wording — each page's Purge button nukes ONLY that page's own data (distinct from Season's existing "Start New Season" (formerly "Wipe Season"), which resets draws+calendar together as part of starting a new season but deliberately preserves patch notes history forever). Loadouts has NO Purge entry at all — deliberate, per Harkirat's explicit call (2026-07-12): loadout data is meant to persist long-term, unlike draws/calendar/patch-notes which are seasonal and benefit from a quick manual reset. Don't add one back in without him asking again.
 //
