@@ -181,6 +181,38 @@ const checks = [];
 const check = (id, severity, title, run, opts = {}) =>
   checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
 
+/* ----------------------- changelog-pr-cite -------------------------- */
+// Born 2026-08-20 from a defect that shipped through a fully green audit: the v3.55.0 entry was written with a literal `(#PR)` placeholder, because the PR number does not exist yet at the moment the pre-merge changelog entry is composed on the branch. Every check passed — the version was covered, the hash chain was intact, the structure was sound — because none of them look at whether the citation is a real number or a note-to-self. It reached `main` and needed a follow-up release to correct, which is exactly what this suite exists to prevent.
+//
+// Deliberately narrow: it flags PLACEHOLDER shapes only, never a missing citation. A missing `(#N)` has legitimate historical instances in this file; `(#PR)` and `(#XXX)` can never be correct.
+check(
+  "changelog-pr-cite",
+  "ERROR",
+  "no changelog entry cites an unfilled PR placeholder",
+  () => {
+    const out = [];
+    let examined = 0;
+    const PLACEHOLDER = /\(#(PR|X+|N+|TBD|\?+)\b/i;
+    for (const f of ["docs/CHANGELOG.md", "docs/CHANGELOG-SUMMARY.md", "docs/DEVLOG.md"]) {
+      const txt = read(f);
+      if (txt === null) continue;
+      for (const [i, line] of txt.split("\n").entries()) {
+        if (!/^#{2,3} /.test(line)) continue;
+        examined++;
+        const m = line.match(PLACEHOLDER);
+        if (m) {
+          // A finding is an OBJECT with a `msg` key, not a bare string — the renderer prints `r.msg`, so a string finding renders as `undefined` while still failing the run.
+          out.push({ msg: `${f}:${i + 1} cites \`(#${m[1]})\` — an unfilled placeholder, not a PR ` +
+            `number. Replace it with the real number before merging; after the merge the only ` +
+            `remedy is another release.` });
+        }
+      }
+    }
+    // 🔴 The key is `findings`, not `problems`. Every other check in this file returns `findings`, and the runner reads only that — so a check returning `problems` reports zero findings, passes green, and is VACUOUS. This check shipped that way for one run and was caught only by running it against deliberately broken input, which is the reason that step is not optional here.
+    return { findings: out, examined };
+  }
+);
+
 /* ------------------------ record-structure -------------------------- */
 // Born 2026-08-01 from a real corruption this suite did NOT catch: an edit to docs/CHANGELOG.md spliced the file's ENTIRE 183-line header back into the middle of the newest entry, truncating a sentence mid-word. Every other check passed — links resolved, versions were covered, the hash chain was intact, because none of them look at the file's SHAPE. A duplicated H1 is the cheapest possible signal that a record has been spliced into itself, and it costs one pass over each file.
 check(

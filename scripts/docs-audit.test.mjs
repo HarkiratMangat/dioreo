@@ -653,6 +653,12 @@ proves("a record file with its top-level heading spliced in twice", "record-stru
   write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
 });
 
+proves("a changelog entry left citing an unfilled PR placeholder", "changelog-pr-cite", (root) => {
+  // The real incident: the v3.55.0 entry shipped with a literal `(#PR)`, because the PR number does not exist yet when the pre-merge entry is composed on the branch. Every other check passed — version coverage, hash chain, structure — none of them read whether the citation is a number.
+  const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
+  write(root, "docs/CHANGELOG.md", c.replace("# Changelog\n", "# Changelog\n\n## v2.34.0 — 2026-08-01 (#PR) — placeholder never filled\n"));
+});
+
 proves("a changelog entry whose built page was never regenerated", "chronicle-drift", (root) => {
   // The allowance's meter: add a version to the source and leave the built page alone.
   const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
