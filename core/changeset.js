@@ -43,6 +43,11 @@ async function commitSet(ops, { actorId }) {
 
     const session = await mongoose.startSession();
     const changeIds = [];
+    // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a
+    // handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already
+    // stores res.change.detail, but a Discord confirmation message needs res.applied directly, and
+    // nothing was returning it. Found during plan 1 Task 6 integration.
+    const results = [];
     let failedAt = null;
     try {
         await session.withTransaction(async () => {
@@ -62,6 +67,7 @@ async function commitSet(ops, { actorId }) {
                     inverse: impl.invert({ ...res.change, applied: res.applied })
                 });
                 changeIds.push(row.changeId);
+                results.push({ index, change: res.change, applied: res.applied });
             }
         });
     } catch (e) {
@@ -69,7 +75,7 @@ async function commitSet(ops, { actorId }) {
     } finally {
         await session.endSession();
     }
-    return { ok: true, changeIds };
+    return { ok: true, changeIds, results };
 }
 
 module.exports = { validateSet, previewSet, commitSet };

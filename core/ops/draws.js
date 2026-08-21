@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateElement, appendElement, removeElement } = require('../mongo/positional');
 const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser');
+const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
 const SeasonalData = require('../../models/SeasonalData');
 
 const DOC = { docType: 'global' };
@@ -169,9 +170,16 @@ registerEntity('draws', {
             }
         }),
         apply: async (op, { session }) => {
-            const { newDraws = [], returningDraws = [] } = op.payload.parsed;
+            const { newDraws: rawNew = [], returningDraws: rawReturning = [] } = op.payload.parsed;
+            // ⚠️ FOUND DURING TASK 6 INTEGRATION: the pre-core handler always ran every parsed draw
+            // through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with
+            // neither a provided URL nor a cache hit) before saving. A first draft of this op skipped
+            // that entirely and would have saved draws with an undefined thumbnailUrl. See
+            // utils/bulkMerge.js's header for the matching bulkReplace defect found the same pass.
+            const newRes = await resolveThumbnailsForDraws(rawNew);
+            const returningRes = await resolveThumbnailsForDraws(rawReturning);
             const added = { newDraws: [], returningDraws: [] };
-            for (const [path, list] of [['newDraws', newDraws], ['returningDraws', returningDraws]]) {
+            for (const [path, list] of [['newDraws', newRes.validDraws], ['returningDraws', returningRes.validDraws]]) {
                 if (!list.length) continue;
                 for (const d of list) {
                     await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
@@ -179,15 +187,18 @@ registerEntity('draws', {
                 await resortByDate(session, path);
                 added[path] = list;
             }
-            const total = newDraws.length + returningDraws.length;
+            const total = added.newDraws.length + added.returningDraws.length;
             const fresh = await SeasonalData.findOne(DOC).lean().session(session);
-            const ids = { newDraws: fresh.newDraws.slice(-newDraws.length).map(d => String(d._id)),
-                          returningDraws: fresh.returningDraws.slice(-returningDraws.length).map(d => String(d._id)) };
+            const ids = { newDraws: fresh.newDraws.slice(-added.newDraws.length).map(d => String(d._id)),
+                          returningDraws: fresh.returningDraws.slice(-added.returningDraws.length).map(d => String(d._id)) };
+            const skipped = [...newRes.skipped, ...returningRes.skipped];
+            const warnings = [...newRes.warnings, ...returningRes.warnings];
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${total} draws`,
-                          summary: `Added ${total} draws in bulk` },
-                applied: { ids }
+                          summary: `Added ${total} draws in bulk`,
+                          detail: skipped.length ? `Skipped (no URL/no cache hit): ${skipped.join(', ')}` : undefined },
+                applied: { ids, skipped, warnings }
             };
         },
         invert: (change) => ({
@@ -213,13 +224,21 @@ registerEntity('draws', {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const replaced = before[path];                       // the full prior set — this IS the inverse
-            const incoming = [...(op.payload.parsed[path] || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
-            await SeasonalData.updateOne(DOC, { $set: { [path]: incoming } }, { session });
+            // 🔴 NOT a wholesale $set of the parsed text. "Replace Multiple" has ALWAYS been an
+            // upsert-by-fuzzy-title merge (handlers/manage/shared.js's original upsertByTitle,
+            // relocated to utils/bulkMerge.js): update the matching item in place, insert anything
+            // new, and NEVER touch an existing entry the pasted text didn't mention — Purge already
+            // covers a full wipe. A wholesale overwrite here would silently delete every draw not in
+            // the paste. Found during Task 6 integration, before any handler was wired to this op.
+            const { validDraws } = await resolveThumbnailsForDraws(op.payload.parsed[path] || []);
+            const { finalArray, updatedCount, insertedCount } = upsertByTitle(before[path], validDraws);
+            finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+            await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
             return {
                 ok: true,
                 change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`,
-                          summary: `Replaced ${replaced.length} draws with ${incoming.length}` },
-                applied: { category: op.target.category, replaced, added: incoming }
+                          summary: `Replaced draws — updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)` },
+                applied: { category: op.target.category, replaced, added: validDraws }
             };
         },
         invert: (change) => ({
