@@ -38,13 +38,29 @@ if [ ${#tests[@]} -eq 0 ]; then
   exit 1
 fi
 
+# PARALLEL, added 2026-08-21 10:05 EDT, revised 2026-08-21 10:47 EDT. Measured serial: ~50.5s total, but 3 of the 28 tests (completeness-sweep, records-close-check, stale-reference-sweep — each an rg sweep over the real repo tree, repeated per test case) account for 64% of it (~32.4s) while the other 25 sum to ~18.1s. Each test already builds its own throwaway fixture via `mktemp -d` (verified by grepping every *.test.sh for a fixed, non-mktemp /tmp path before this change — none exist), so the 28 runs are independent and safe to run concurrently.
+#
+# Uses `xargs -P`, the same mechanism package.json's `check` script already uses for `node --check` — a first version hand-rolled a `jobs -r -p | wc -l` busy-poll scheduler here to work around bash 3.2 lacking `wait -n`, which code review correctly flagged as solving an already-solved problem: `xargs -P` needs no `wait -n`, adds no poll-loop CPU churn, and that same review caught that the poll loop's own `HOOK_TEST_JOBS=0` override deadlocked the suite forever (0 running jobs, gate condition `0 -ge 0` never opens). `xargs -P` doesn't have that failure mode, but JOBS is still clamped to a floor of 1 defensively — a bad/empty override should never be able to hang the suite silently.
+JOBS="${HOOK_TEST_JOBS:-8}"
+case "$JOBS" in ''|*[!0-9]*) JOBS=8;; esac
+[ "$JOBS" -lt 1 ] && JOBS=1
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+export WORK="$work"
+
+printf '%s\n' "${tests[@]}" | xargs -I{} -P "$JOBS" bash -c '
+  bash "$1" >"$WORK/$1.out" 2>&1
+  echo $? >"$WORK/$1.rc"
+' _ {}
+
 for t in "${tests[@]}"; do
-  if out=$(bash "$t" 2>&1); then
+  rc="$(cat "$work/$t.rc" 2>/dev/null || echo 1)"
+  if [ "$rc" -eq 0 ]; then
     printf '  ✓ %s\n' "$t"
     pass=$((pass+1))
   else
     printf '  ✗ %s\n' "$t"
-    printf '%s\n' "$out" | sed 's/^/      /'
+    sed 's/^/      /' "$work/$t.out"
     fail=$((fail+1)); failed_names="$failed_names $t"
   fi
 done
