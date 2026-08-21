@@ -38,8 +38,36 @@ check('draw.bulkReplace inverts to a bulkReplace carrying the FULL prior set', (
         action: 'bulkReplace', applied: { category: 'new', replaced: prior, added: [{ title: 'Nightfall' }] }
     });
     assert.strictEqual(inv.type, 'draw.bulkReplace');
-    assert.deepStrictEqual(inv.payload.draws, prior,
+    assert.deepStrictEqual(inv.payload.parsed, prior,
         'the inverse of a replace must restore every element it destroyed, not just record the count');
+});
+
+// The next three checks pin defects found during Task 6 integration — parseBulkDrawList()
+// (utils/adminParser.js) returns a FLAT array, never { newDraws, returningDraws }, and the real
+// "Bulk Delete Draws" modal collects pasted TITLES, never element ids.
+check('draw.bulkAdd requires a category, and validates a flat parsed array', () => {
+    const noCategory = ops.resolveOp('draw.bulkAdd').validate({ type: 'draw.bulkAdd', payload: { text: 'x' } });
+    assert.strictEqual(noCategory.ok, false, 'a bulk add with no category could not know which array to append to');
+
+    const r = ops.resolveOp('draw.bulkAdd').validate({
+        type: 'draw.bulkAdd', target: { category: 'new' },
+        payload: { text: 'Iron Wolf, m Item 1, Aug 24' }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+    assert.ok(Array.isArray(r.normalized.payload.parsed), 'parseBulkDrawList returns a flat array, not {newDraws,returningDraws}');
+    assert.strictEqual(r.normalized.payload.parsed[0].title, 'Iron Wolf');
+});
+
+check('draw.bulkReplace requires a category too, for the same reason', () => {
+    const r = ops.resolveOp('draw.bulkReplace').validate({ type: 'draw.bulkReplace', payload: { text: 'x' } });
+    assert.strictEqual(r.ok, false, 'a replace with no category would not know which list to merge into');
+});
+
+check('draw.bulkDelete accepts pasted TITLES (the real UI), not just ids', () => {
+    const r = ops.resolveOp('draw.bulkDelete').validate({
+        type: 'draw.bulkDelete', payload: { titles: { newDraws: ['Iron Wolf'] } }
+    });
+    assert.strictEqual(r.ok, true, 'the modal collects titles the admin typed — an ids-only op could never be constructed from it');
 });
 
 check('every draw op declares a tier, and purge/bulkReplace are tier 3 and 2', () => {

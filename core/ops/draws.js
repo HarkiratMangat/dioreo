@@ -11,6 +11,7 @@ const { registerEntity } = require('./index');
 const { updateElement, appendElement, removeElement } = require('../mongo/positional');
 const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
+const { fuzzyMatch } = require('../../utils/search');
 const SeasonalData = require('../../models/SeasonalData');
 
 const DOC = { docType: 'global' };
@@ -152,59 +153,54 @@ registerEntity('draws', {
         })
     },
 
+    // ⚠️ TARGET SHAPE FIXED DURING TASK 6 INTEGRATION (2026-08-20 23:48 EDT). An earlier draft had bulkAdd
+    // parse ONE text blob into `{newDraws, returningDraws}` and mutate both categories from a single
+    // op. That doesn't match parseBulkDrawList() (utils/adminParser.js), which returns a FLAT array —
+    // category comes from which of the two independently-optional textareas (new_text/returning_text)
+    // the admin filled in, not from the pasted text itself. bulkAdd/bulkReplace are therefore
+    // single-category, like draw.edit/draw.delete — the handler builds up to two ops (one per filled
+    // field) and commits them together in one changeset, preserving the original one-save atomicity.
     'draw.bulkAdd': {
         action: 'draws:bulkadd', tier: 2,
         validate: (op) => {
             if (alreadyParsed(op)) return { ok: true, errors: [], normalized: op };  // an inverse — do not re-parse
+            if (!['new', 'returning'].includes(op.target?.category)) {
+                return { ok: false, errors: ['Bulk add needs a category (new or returning).'] };
+            }
             const parsed = parseBulkDrawList(op.payload.text || '');
-            if (!parsed || (!parsed.newDraws?.length && !parsed.returningDraws?.length)) {
+            if (!parsed?.length) {
                 return { ok: false, errors: ['Nothing in that text parsed as a draw. Check the Bulk Format Guide.'] };
             }
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed } } };
         },
         preview: (op, live) => ({
-            before: { new: live.newDraws.length, returning: live.returningDraws.length },
-            after: {
-                new: live.newDraws.length + (op.payload.parsed.newDraws?.length || 0),
-                returning: live.returningDraws.length + (op.payload.parsed.returningDraws?.length || 0)
-            }
+            before: { count: live[pathFor(op.target.category)].length },
+            after: { count: live[pathFor(op.target.category)].length + op.payload.parsed.length }
         }),
         apply: async (op, { session }) => {
-            const { newDraws: rawNew = [], returningDraws: rawReturning = [] } = op.payload.parsed;
-            // ⚠️ FOUND DURING TASK 6 INTEGRATION: the pre-core handler always ran every parsed draw
-            // through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with
-            // neither a provided URL nor a cache hit) before saving. A first draft of this op skipped
-            // that entirely and would have saved draws with an undefined thumbnailUrl. See
-            // utils/bulkMerge.js's header for the matching bulkReplace defect found the same pass.
-            const newRes = await resolveThumbnailsForDraws(rawNew);
-            const returningRes = await resolveThumbnailsForDraws(rawReturning);
-            const added = { newDraws: [], returningDraws: [] };
-            for (const [path, list] of [['newDraws', newRes.validDraws], ['returningDraws', returningRes.validDraws]]) {
-                if (!list.length) continue;
-                for (const d of list) {
-                    await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
-                }
-                await resortByDate(session, path);
-                added[path] = list;
+            const path = pathFor(op.target.category);
+            // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws()
+            // (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache
+            // hit) before saving. Found during Task 6 integration: a first draft of this op skipped
+            // that entirely and would have saved draws with an undefined thumbnailUrl.
+            const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(op.payload.parsed);
+            for (const d of validDraws) {
+                await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
             }
-            const total = added.newDraws.length + added.returningDraws.length;
-            const fresh = await SeasonalData.findOne(DOC).lean().session(session);
-            const ids = { newDraws: fresh.newDraws.slice(-added.newDraws.length).map(d => String(d._id)),
-                          returningDraws: fresh.returningDraws.slice(-added.returningDraws.length).map(d => String(d._id)) };
-            const skipped = [...newRes.skipped, ...returningRes.skipped];
-            const warnings = [...newRes.warnings, ...returningRes.warnings];
+            if (validDraws.length) await resortByDate(session, path);
+            const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
+            const ids = validDraws.length ? fresh[path].slice(-validDraws.length).map(d => String(d._id)) : [];
             return {
                 ok: true,
-                change: { action: 'bulkAdd', model: 'SeasonalData', target: `${total} draws`,
-                          summary: `Added ${total} draws in bulk`,
+                change: { action: 'bulkAdd', model: 'SeasonalData', target: `${validDraws.length} draws`,
+                          summary: `Added ${validDraws.length} draws in bulk`,
                           detail: skipped.length ? `Skipped (no URL/no cache hit): ${skipped.join(', ')}` : undefined },
-                applied: { ids, skipped, warnings }
+                applied: { category: op.target.category, ids, skipped, warnings }
             };
         },
         invert: (change) => ({
             type: 'draw.bulkDelete',
-            target: { ids: change.applied.ids },
-            payload: {}
+            payload: { ids: { [pathFor(change.applied.category)]: change.applied.ids } }
         })
     },
 
@@ -212,13 +208,16 @@ registerEntity('draws', {
         action: 'draws:bulkreplace', tier: 2,
         validate: (op) => {
             if (alreadyParsed(op)) return { ok: true, errors: [], normalized: op };  // an inverse — do not re-parse
+            if (!['new', 'returning'].includes(op.target?.category)) {
+                return { ok: false, errors: ['Replace Multiple needs a category — without one it would wipe the wrong list.'] };
+            }
             const parsed = parseBulkDrawList(op.payload.text || '');
             if (!parsed) return { ok: false, errors: ['Nothing in that text parsed as a draw.'] };
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed } } };
         },
         preview: (op, live) => ({
             before: { draws: live[pathFor(op.target.category)] },
-            after: { draws: op.payload.parsed[pathFor(op.target.category)] || [] }
+            after: { draws: op.payload.parsed }
         }),
         apply: async (op, { session }) => {
             const path = pathFor(op.target.category);
@@ -230,7 +229,7 @@ registerEntity('draws', {
             // new, and NEVER touch an existing entry the pasted text didn't mention — Purge already
             // covers a full wipe. A wholesale overwrite here would silently delete every draw not in
             // the paste. Found during Task 6 integration, before any handler was wired to this op.
-            const { validDraws } = await resolveThumbnailsForDraws(op.payload.parsed[path] || []);
+            const { validDraws } = await resolveThumbnailsForDraws(op.payload.parsed);
             const { finalArray, updatedCount, insertedCount } = upsertByTitle(before[path], validDraws);
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
             await SeasonalData.updateOne(DOC, { $set: { [path]: finalArray } }, { session });
@@ -244,39 +243,84 @@ registerEntity('draws', {
         invert: (change) => ({
             type: 'draw.bulkReplace',
             target: { category: change.applied.category },
-            payload: { draws: change.applied.replaced, parsed: { [pathFor(change.applied.category)]: change.applied.replaced } }
+            payload: { parsed: change.applied.replaced }
         })
     },
 
+    // ⚠️ RESHAPED DURING TASK 6 INTEGRATION. The real "Bulk Delete Draws" UI (handlers/manage/draws.js's
+    // pre-core bulkDeleteDraws) takes PASTED TITLES, fuzzy-matched (utils/search.js's fuzzyMatch) —
+    // never element ids, which the admin never sees or types. A first draft of this op only accepted
+    // an ids-shaped target, which no real caller could ever construct from the modal it serves.
     'draw.bulkDelete': {
         action: 'draws:bulkdelete', tier: 2,
-        validate: (op) => (op.target?.ids || op.payload?.titles)
-            ? { ok: true, errors: [], normalized: op }
-            : { ok: false, errors: ['Nothing was selected to delete.'] },
-        preview: (op, live) => ({ before: { count: live.newDraws.length + live.returningDraws.length },
-                                  after: { removing: (op.target.ids?.newDraws?.length || 0) + (op.target.ids?.returningDraws?.length || 0) } }),
+        validate: (op) => {
+            const ids = op.payload?.ids || {};
+            const titles = op.payload?.titles || {};
+            const has = (m) => (m.newDraws?.length || 0) + (m.returningDraws?.length || 0) > 0;
+            return (has(ids) || has(titles))
+                ? { ok: true, errors: [], normalized: op }
+                : { ok: false, errors: ['Nothing was selected to delete.'] };
+        },
+        preview: (op, live) => {
+            const willRemove = (path) => {
+                if (op.payload.ids?.[path]?.length) return op.payload.ids[path].length;
+                const titles = op.payload.titles?.[path] || [];
+                let remaining = live[path];
+                let count = 0;
+                for (const title of titles) {
+                    const match = remaining.find(item => fuzzyMatch(title, item.title));
+                    if (match) { count++; remaining = remaining.filter(i => i !== match); }
+                }
+                return count;
+            };
+            return { before: { count: live.newDraws.length + live.returningDraws.length },
+                     after: { removing: willRemove('newDraws') + willRemove('returningDraws') } };
+        },
         apply: async (op, { session }) => {
             const removed = { newDraws: [], returningDraws: [] };
+            const notFound = { newDraws: [], returningDraws: [] };
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             for (const path of ['newDraws', 'returningDraws']) {
-                for (const id of op.target.ids?.[path] || []) {
-                    const gone = before[path].find(d => String(d._id) === id);
-                    if (gone) removed[path].push(gone);
-                    await removeElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, elementId: id, session });
+                // An id-based removal (from this op's own invert()) skips the fuzzy-title path entirely
+                // — replaying a title match against a document that may have changed since the forward
+                // op ran could match the WRONG element, or nothing at all. An id, once known, is exact.
+                if (op.payload.ids?.[path]?.length) {
+                    for (const id of op.payload.ids[path]) {
+                        const gone = before[path].find(d => String(d._id) === id);
+                        if (gone) removed[path].push(gone);
+                    }
+                } else {
+                    let remaining = [...before[path]];
+                    for (const title of op.payload.titles?.[path] || []) {
+                        const match = remaining.find(item => fuzzyMatch(title, item.title));
+                        if (match) { removed[path].push(match); remaining = remaining.filter(i => i !== match); }
+                        else notFound[path].push(title);
+                    }
+                }
+                for (const gone of removed[path]) {
+                    await removeElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, elementId: String(gone._id), session });
                 }
             }
             const total = removed.newDraws.length + removed.returningDraws.length;
+            if (!total) return { ok: false, reason: 'missing' };
             return {
                 ok: true,
                 change: { action: 'bulkDelete', model: 'SeasonalData', target: `${total} draws`,
-                          summary: `Deleted ${total} draws in bulk` },
-                applied: { removed }
+                          summary: `Deleted ${total} draws in bulk`,
+                          detail: (notFound.newDraws.length || notFound.returningDraws.length)
+                              ? `Not found: ${[...notFound.newDraws, ...notFound.returningDraws].join(', ')}` : undefined },
+                applied: { removed, notFound }
             };
         },
-        invert: (change) => ({
-            type: 'draw.bulkAdd',
-            payload: { parsed: change.applied.removed }
-        })
+        // Restores by re-appending the exact removed subdocuments (title/date/thumbnailUrl/items/_id
+        // discarded and re-minted, matching draw.delete's own invert — an add, not a positional
+        // restore-by-id, since the element's slot in the array is gone).
+        invert: (change) => [
+            ...(change.applied.removed.newDraws.length
+                ? [{ type: 'draw.bulkAdd', target: { category: 'new' }, payload: { parsed: change.applied.removed.newDraws } }] : []),
+            ...(change.applied.removed.returningDraws.length
+                ? [{ type: 'draw.bulkAdd', target: { category: 'returning' }, payload: { parsed: change.applied.removed.returningDraws } }] : [])
+        ]
     },
 
     'draw.purge': {
@@ -310,9 +354,9 @@ registerEntity('draws', {
         // scope:'all' purge is TWO ops — which is why invert() may return an array.
         invert: (change) => [
             { type: 'draw.bulkReplace', target: { category: 'new' },
-              payload: { parsed: { newDraws: change.applied.newDraws } } },
+              payload: { parsed: change.applied.newDraws } },
             { type: 'draw.bulkReplace', target: { category: 'returning' },
-              payload: { parsed: { returningDraws: change.applied.returningDraws } } }
+              payload: { parsed: change.applied.returningDraws } }
         ]
     }
 });
