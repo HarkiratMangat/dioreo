@@ -237,8 +237,28 @@ const makeFixture = () => {
 // Every check id any prove case claims to exercise. The coverage assertion at the bottom compares this against the audit's own --list, so a check registered with no test cannot ship unnoticed.
 const proven = new Set();
 
+// PROCESS-SHARDED PARALLELISM, added 2026-08-21 11:20 EDT, hardened 2026-08-21 11:55 EDT after code review. Instrumented timing measured 68 of the 71 checks at 1.5-5.2s each (median 3.1s) -- a flat distribution, unlike the hooks suite's 3-heavy/25-light skew, so process-level sharding across N node subprocesses gives close to linear speedup with no long-pole straggler. DOCS_AUDIT_TEST_SHARD="i/N" (0-indexed) restricts this process to roughly 1/N of the checks; unset (or "0/1") runs every check, IDENTICAL to this file's behavior before sharding existed -- that default-safety property is deliberate and lets anyone run this file directly, by hand, exactly as before. ⚠️ CI does NOT take that unsharded path any more: `npm run docs:audit:test` now always routes through scripts/docs-audit-test-parallel.mjs, so CI always shards. The safety net for that is NOT "CI happens to skip sharding" (it doesn't) -- it is the cross-shard total-slot-count invariant in docs-audit-test-parallel.mjs, which asserts every shard agrees on how many check-slots exist and that executed checks sum to that total. That invariant is what actually catches a desynced or malformed shard assignment; do not rely on this comment's claim of "identical to before" as a substitute for it.
+//
+// THE KEY SAFETY PROPERTY: `proven.add(checkId)` stays the unconditional FIRST line of both `proves()` and `provesSilent()` below -- it always registers the checkId, in every shard, before the shard gate is even consulted. Only the EXPENSIVE body (fixture build, subprocess audit run, passed++) is gated. That means every shard's own `proven` Set ends up containing ALL registered checkIds regardless of which subset it actually executed, so the coverage meta-check below (which asserts `proven` covers every check docs-audit.mjs registers) is correct in every shard with no cross-process merging required for it specifically -- a structural guarantee, not something a shard-count change could silently break. ⚠️ THIS GUARANTEES REGISTRATION, NEVER EXECUTION -- a malformed DOCS_AUDIT_TEST_SHARD that makes every `__mine()` call return false still registers every checkId (coverage stays green) while running zero real assertions. That exact bug shipped in the first version of this file and was caught by code review, not by this comment's reasoning -- see the DOCS_AUDIT_TEST_SHARD validation immediately below and the total-slot-count assertion in the aggregator, both added specifically because "structurally guaranteed" was not the same as "tested."
+const [SHARD_I, SHARD_N] = (process.env.DOCS_AUDIT_TEST_SHARD || "0/1").split("/").map(Number);
+if (!Number.isInteger(SHARD_I) || !Number.isInteger(SHARD_N) || SHARD_N < 1 || SHARD_I < 0 || SHARD_I >= SHARD_N) {
+  console.error(
+    `docs-audit.test.mjs: invalid DOCS_AUDIT_TEST_SHARD="${process.env.DOCS_AUDIT_TEST_SHARD}" -- expected "i/N" with 0 <= i < N. ` +
+      `A malformed value here previously made every check silently skip while still reporting a clean pass -- refusing to run rather than repeating that.`,
+  );
+  process.exit(2);
+}
+let __idx = 0;
+// Call exactly once per check-slot (each proves/provesSilent/provesBaselineClean call, and each of the three bare archive-conservation blocks) -- increments the shared index and reports whether THIS shard owns that slot. Never call it twice for the same slot.
+const __mine = () => {
+  // __idx++ must run UNCONDITIONALLY, every call, before the shard decision — not inside a `||` short-circuit. The first version wrote `SHARD_N <= 1 || __idx++ % SHARD_N === SHARD_I`, and when SHARD_N<=1 (the default unsharded path) the `||` short-circuits and __idx++ never executes at all — the total-slot-count this file reports in SHARD_RESULT came out 0 instead of 71, caught by running the unsharded path for real and reading the number rather than trusting the logic. A wrapper invoked with exactly 1 real shard (DOCS_AUDIT_TEST_JOBS=1) would have hit the identical bug and reported a false "some checks silently never ran" failure despite every check actually running correctly.
+  const i = __idx++;
+  return SHARD_N <= 1 || i % SHARD_N === SHARD_I;
+};
+
 const proves = (name, checkId, breakIt, args = []) => {
   proven.add(checkId);
+  if (!__mine()) return;
   const root = makeFixture();
   try {
     // 1. The baseline must be clean, or nothing below means anything.
@@ -266,6 +286,7 @@ const proves = (name, checkId, breakIt, args = []) => {
  */
 const provesSilent = (name, checkId, setup) => {
   proven.add(checkId);
+  if (!__mine()) return;
   const root = makeFixture();
   try {
     setup(root);
@@ -310,7 +331,7 @@ const provesBaselineClean = () => {
 
 console.log("\ndocs-audit self-test — each check must fail on a broken tree and pass on a valid one\n");
 
-provesBaselineClean();
+if (__mine()) provesBaselineClean();
 
 proves("a tracked docs/ file nothing in the README names", "readme-map", (root) => {
   write(root, "docs/orphan-record.md", "# Nobody maps me\n");
@@ -730,7 +751,7 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 });
 
 // The CONTENT-TRACING branch: the archive grew, but not with the item that was removed. This branch hid a real bug for its whole life because the zero-growth branch always fired first, so it is exercised explicitly here.
-{
+if (__mine()) {
   const root = makeFixture();
   try {
     write(root, "docs/ideas/diors-notes.md",
@@ -751,7 +772,7 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 }
 
 // An in-place EDIT must not read as a deletion. A unified diff renders a changed line as "-" plus "+", so counting bare "-" lines demanded a graveyard entry for a one-line path correction. That would have trained everyone to bypass the gate — worse than not having it.
-{
+if (__mine()) {
   const root = makeFixture();
   try {
     const p = join(root, "docs/ideas/diors-notes.md");
@@ -773,7 +794,7 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 }
 
 // A HEADING edit must not read as a deletion either, and this is the case the in-place test above does NOT cover: editedInPlace() pairs a removal with an addition by a six-word fingerprint, so it only rescues an edit that kept six consecutive words. Renaming the product changes the file's own H1 and breaks exactly that — which is how a project rename got reported as an item deleted rather than resolved (v2.52.0, 2026-08-04 16:29 EDT). The fixture renames the title and nothing else.
-{
+if (__mine()) {
   const root = makeFixture();
   try {
     const p = join(root, "docs/ideas/diors-notes.md");
@@ -841,6 +862,8 @@ proves(
 }
 
 console.log();
+// One machine-readable line on stderr for scripts/docs-audit-test-parallel.mjs's aggregator to parse — stdout above stays plain human prose, same as before sharding existed, so nothing that already reads this file's stdout is affected. __idx (the fifth number) is the total check-slot count this process iterated over, identical across every shard by construction — the aggregator asserts all shards report the same value AND that executed-check counts sum to it, which is what actually catches a desynced or malformed shard assignment rather than just reasoning that it cannot happen.
+console.error(`SHARD_RESULT ${SHARD_I} ${SHARD_N} ${passed} ${failures.length} ${__idx}`);
 if (failures.length) {
   console.log(`❌ ${failures.length} self-test failure(s):\n`);
   for (const f of failures) console.log(`  - ${f}`);
