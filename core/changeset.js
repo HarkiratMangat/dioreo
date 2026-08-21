@@ -81,4 +81,4 @@ async function commitSet(ops, { actorId }) {
     return { ok: true, changeIds, results };
 }
 
-module.exports = { validateSet, previewSet, commitSet };
+module.exports = { validateSet, previewSet, commitSet, pageForOp };
