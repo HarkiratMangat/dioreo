@@ -14,12 +14,11 @@ check('a row from BEFORE the core existed says so', () => {
     assert.match(r.reason, /predates/i, 'the message must explain WHY, since every pre-Task-2 row is in this state');
 });
 
-check('a row from an entity NOT YET on the core says something different', () => {
-    // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the in-memory registerUndo. Their rows are BRAND NEW and also have inverse: null -- telling the user they "predate revert support" would be plainly false and would read as a bug.
+check('every entity is on the core now -- there is no more per-page distinction', () => {
+    // Plan 2 Task 7 retired the ON_CORE set and its two-reason branch: EVERY page is on the operation core now, so an inverse:null row means exactly one thing regardless of `page` -- it predates revert support. A page-specific "not yet supported" message would be a lie.
     const r = canRevert({ changeId: 'Aug20-09', inverse: null, undone: false, page: 'calendar' });
     assert.strictEqual(r.ok, false);
-    assert.match(r.reason, /not yet/i, 'an unmigrated entity must not be described as historical');
-    assert.doesNotMatch(r.reason, /predates/i);
+    assert.match(r.reason, /predates/i, 'inverse:null means the same thing for every page post-Task-7');
 });
 
 check('an already-undone row cannot be reverted twice', () => {

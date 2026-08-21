@@ -8,7 +8,7 @@
 // ⚠️ THE ADMIN GUARD IS NOT HERE AND MUST NOT BE COPIED HERE. Who may click these lives at ONE choke point in the router, above this dispatch (utils/adminAccess.js). This handler assumes that check already passed.
 
 const {
-    parseMngId, prompt, undoButtonRow, handleUndo,
+    parseMngId, prompt,
     pendingManageDeletes, pendingBulkDeletes,
     renderManagePage, renderGuidePick, handlePick, handleSearchSubmit, handleEditButton
 } = require('./shared');
@@ -94,7 +94,7 @@ async function routeManage(interaction) {
             if (!handler) throw new Error(`No PURGE_HANDLERS entry registered for group "${group}"`);
             const result = await handler(scope, interaction.user.id);
             try {
-                await prompt(interaction, { text: result.confirmMsg, components: result.undoToken ? [undoButtonRow(result.undoToken)] : [] });
+                await prompt(interaction, { text: result.confirmMsg });
             } catch (notifyError) {
                 console.error(`Failed to confirm manage-panel purge for ${group} (interaction likely expired):`, notifyError);
             }
@@ -123,8 +123,7 @@ async function routeManage(interaction) {
             return await season.handleWipeButton(interaction);
         }
 
-        // UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start New Season, and every delete/replace confirmation above). Fully generic: the restore() closure already carries whatever page-specific logic it needs.
-        if (customId.startsWith('mng_undo_')) return await handleUndo(interaction);
+        // UNDO -- retired in plan 2 Task 7. Every entity routes through the operation core now; reverting a change permanently lives on /bot analytics' Changes page (core/revert.js) instead of a short-lived in-memory Undo button on the confirmation message itself.
 
         // SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of resolveManagePanelAction's delete branch (shared.js). Performs the actual deletion only from here, snapshotting the removed doc first so it can be undone.
         if (customId.startsWith('mng_delconfirm_')) {
@@ -155,9 +154,9 @@ async function routeManage(interaction) {
             const handler = DELETE_HANDLERS[group];
             // Loud on a missing handler, not a false "Deleted" (v3-pre-release review, finding #27) -- the moment a page gains a delete action without a map entry, the admin was told the record was deleted while it was untouched.
             if (!handler) throw new Error(`No DELETE_HANDLERS entry registered for group "${group}"`);
-            const undoToken = await handler(match, interaction.user.id);
+            await handler(match, interaction.user.id);
             try {
-                await prompt(interaction, { text: `🗑️ **Deleted:** ${match.label}`, components: undoToken ? [undoButtonRow(undoToken)] : [] });
+                await prompt(interaction, { text: `🗑️ **Deleted:** ${match.label}` });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel delete (interaction likely expired):', notifyError);
             }
@@ -188,10 +187,9 @@ async function routeManage(interaction) {
                 return;
             }
             try {
-                const undoToken = await pending.apply();
+                await pending.apply();
                 await prompt(interaction, {
-                    text: `🗑️ **${pending.description} Complete!**\n${pending.summary.join('\n')}`,
-                    components: undoToken ? [undoButtonRow(undoToken)] : []
+                    text: `🗑️ **${pending.description} Complete!**\n${pending.summary.join('\n')}`
                 });
             } catch (applyError) {
                 console.error(`Failed to apply bulk delete (${pending.description}):`, applyError);

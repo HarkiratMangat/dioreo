@@ -29,51 +29,9 @@ function prompt(interaction, { text = '', components = [] } = {}) {
 }
 
 // ==========================================
-// UNDO STORE (2026-07-12)
-// ==========================================
-// In-memory, short-lived snapshot cache for the "Undo" button attached to destructive /manage confirmations (Purge, single Delete, Bulk Delete, Bulk Replace). Deliberately NOT persisted to Mongo -- these are meant to reverse a mistake made seconds ago in the same session, not act as a real audit log/version history (see the upcoming stage 4 for that). A token expires (and its snapshot is dropped) after 10 minutes so this can't grow unbounded across a long-running process; only an already-authorized admin can ever trigger one of these anyway.
-const manageUndoStore = new Map(); // token -> { description, restore: async () => {} }
-function registerUndo(description, restore) {
-    const token = randomUUID().slice(0, 8);
-    manageUndoStore.set(token, { description, restore });
-    setTimeout(() => manageUndoStore.delete(token), 10 * 60 * 1000).unref();
-    return token;
-}
-function undoButtonRow(token) {
-    return { type: 1, components: [{ type: 2, style: 2, label: 'Undo', custom_id: `mng_undo_${token}` }] };
-}
-
-// The mng_undo_ button handler itself -- fully generic (the restore() closure already carries whatever page-specific logic it needs), so it lives here rather than in any one page module.
-async function handleUndo(interaction) {
-    const token = interaction.customId.replace('mng_undo_', '');
-    const entry = manageUndoStore.get(token);
-    if (!entry) {
-        try {
-            await interaction.reply({ content: '❌ This undo has expired or was already used.', ephemeral: true });
-        } catch (notifyError) {
-            console.error('Failed to notify user of expired undo (interaction likely expired):', notifyError);
-        }
-        return;
-    }
-    manageUndoStore.delete(token);
-    try {
-        await interaction.deferReply({ ephemeral: true });
-        await entry.restore();
-        await interaction.followUp({ content: `↩️ **Undone:** ${entry.description}` });
-    } catch (undoError) {
-        console.error('Failed to apply manage-panel undo:', undoError);
-        try {
-            await interaction.followUp({ content: '❌ Something went wrong while undoing that -- check the data manually.' });
-        } catch (notifyError) {
-            console.error('Failed to notify user of undo failure:', notifyError);
-        }
-    }
-}
-
-// ==========================================
 // PENDING-CONFIRMATION TOKEN MAPS
 // ==========================================
-// Pending "Start New Season" confirmations (2026-07-12) -- holds the entered title between the modal submit and the Confirm/Cancel click. See season.js's promptWipeSeason/handleWipeButton.
+// The old in-memory Undo store (the mng_undo_ button and its supporting functions) lived here until plan 2 Task 7 retired it -- every entity now routes through the operation core, and undo lives permanently on /bot analytics' Changes page instead (core/revert.js). Pending "Start New Season" confirmations (2026-07-12) -- holds the entered title between the modal submit and the Confirm/Cancel click. See season.js's promptWipeSeason/handleWipeButton.
 const pendingSeasonWipes = new Map(); // token -> { newTitle }
 
 // Pending single-item Delete confirmations (2026-07-12) -- holds the already-resolved { group, match } between resolveManagePanelAction's confirm prompt and index.js's mng_delconfirm_/mng_delcancel_ dispatch.
@@ -376,9 +334,6 @@ async function handleEditButton(interaction) {
 module.exports = {
     parseMngId,
     prompt,
-    registerUndo,
-    undoButtonRow,
-    handleUndo,
     pendingSeasonWipes,
     pendingManageDeletes,
     pendingManageEdits,
