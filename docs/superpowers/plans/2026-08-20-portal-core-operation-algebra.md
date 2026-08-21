@@ -7,8 +7,6 @@ status: frozen
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> ⚠️ **`status: frozen` and the checkbox syntax below are not in conflict, though they read that way.** `doc-frontmatter` allows a `kind: plan` only `frozen` or `superseded`, and `frozen` here governs the plan's **design content** — its tasks, code and reasoning are a dated snapshot and must not be quietly rewritten. The `- [ ]` boxes are the *executing* session's progress marks. **Tick boxes; do not revise tasks.** If a task turns out to be wrong, that is a finding to raise and a new dated plan, not an edit.
-
 **Goal:** Extract every `/manage` draws mutation into a shared, transactional operation algebra that both Discord and the future web portal call, and give the system durable cross-surface undo — with `/manage`'s Discord behaviour provably unchanged.
 
 **Architecture:** Mutations become values (`{ type, target, payload }`) with four verbs over them — `validate` (pure), `preview` (pure), `apply` (transactional, always audits), `invert` (pure). `handlers/manage/draws.js` keeps every modal, container and custom_id and loses only its mutation bodies. Concurrency is element-identity, never whole-document `.save()`, because `SeasonalData` is one global document whose arrays would otherwise produce constant false conflicts.
@@ -209,7 +207,7 @@ git commit -m "test(portal): probe the five premises the portal design rests on"
 **Files:**
 - Create: `utils/owner.js`
 - Modify: `utils/adminAccess.js` · `commands/manage.js` · `scripts/botAccessPermissions.test.js`
-- **NOT** `handlers/router.js` — verified 2026-08-20: it never requires `commands/manage`. Its only `ALLOWED_ADMIN_ID` occurrences are prose comments at lines 147 and 161, and its real owner check is `require('../utils/adminAccess')` at line 280, which this task fixes from the other end.
+- **NOT** `handlers/router.js` — verified 2026-08-20: it never requires `commands/manage`. Its only `ALLOWED_ADMIN_ID` occurrences are prose comments at lines 147 and 161, and its real owner check is `require('../utils/adminAccess')` at line 280, fixed from the other end.
 - Modify: `docs/legal/PRIVACY.md`
 - Test: `scripts/ownerModule.test.js`
 
@@ -399,10 +397,13 @@ function registerEntity(entity, opTypes) {
             if (typeof impl[verb] !== 'function') throw new Error(`${type} is missing ${verb}()`);
         }
         REGISTRY.set(type, impl);
-        // 🔴 `action` is a STRING OR AN ARRAY, because the mapping is genuinely many-to-one. Draws alone has TEN mutating actions and seven op types: `addnew`/`addreturning` are one op differing by payload, and `purgenew`/`purgereturning`/`purgeall` are one op differing by scope. A 1:1 Map cannot express that, and scripts/coreOps.test.js's conservation check could never pass over one.
+        // 🔴 `action` is a STRING OR AN ARRAY. The mapping is genuinely many-to-one: draws alone has
+        // TEN mutating actions and seven op types — addnew/addreturning are one op differing by
+        // payload, purgenew/purgereturning/purgeall are one op differing by scope. A 1:1 Map cannot
+        // express that, and coreOps.test.js's conservation check could never pass over one.
         const actions = impl.action ? (Array.isArray(impl.action) ? impl.action : [impl.action]) : [];
         for (const a of actions) {
-            if (ACTION_TO_OP.has(a)) throw new Error(`action "${a}" is already claimed by op "${ACTION_TO_OP.get(a)}"`);
+            if (ACTION_TO_OP.has(a)) throw new Error(`action "${a}" is already claimed by "${ACTION_TO_OP.get(a)}"`);
             ACTION_TO_OP.set(a, type);
         }
         if (actions.length) OP_TO_ACTION.set(type, actions);
@@ -419,7 +420,11 @@ const listOpTypes = () => [...REGISTRY.keys()];
 const opTypeForAction = (page, actionId) => ACTION_TO_OP.get(`${page}:${actionId}`) || null;
 const actionForOpType = (type) => OP_TO_ACTION.get(type) || null;   // an ARRAY of `page:id` keys, or null
 
-// 🔴 ORDER IS LOAD-BEARING AND THIS IS NOT STYLE. `module.exports` is assigned FIRST, then the entities are required. Entities do `const { registerEntity } = require('./index')`, so if that require sits ABOVE this assignment, `module.exports` is still the default `{}` at that moment and `registerEntity` is `undefined` — a hard TypeError on load, before a single test runs. An earlier draft of this plan had exactly that shape and would have failed on the first `require`.
+// 🔴 ORDER IS LOAD-BEARING AND THIS IS NOT STYLE. `module.exports` is assigned FIRST, then the
+// entities are required. Entities do `const { registerEntity } = require('./index')`, so if that
+// require sits ABOVE this assignment, `module.exports` is still the default `{}` at that moment and
+// `registerEntity` is `undefined` — a hard TypeError on load, before a single test runs. An earlier
+// draft of this plan had exactly that shape and would have failed on the first `require`.
 module.exports = { registerEntity, resolveOp, listOpTypes, opTypeForAction, actionForOpType };
 
 // AFTER the export, never before. Entities self-register as a side effect of being required.
@@ -428,7 +433,7 @@ require('./draws');
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node scripts/coreOps.test.js` Expected: **the first check passes and the two draws checks FAIL, so the file exits 1.** Correct at this point — those two checks are the *reason* Task 4 exists, and they pass there. ⚠️ An earlier draft said "three ✓, exit 0" AND "it will still fail" in one breath; the harness is `process.exit(failures ? 1 : 0)`, so only one can be true. **Do not wire this file into `npm test` until Task 4** — move Step 5's wiring there.
+Run: `node scripts/coreOps.test.js` Expected: **the first check passes and the two draws checks FAIL, so the file exits 1.** Correct at this point — those two checks are the *reason* Task 4 exists, and they pass there. ⚠️ An earlier draft said "three ✓, exit 0" AND "it will still fail" in one breath; the harness is `process.exit(failures ? 1 : 0)`, so only one can be true. **Do not wire this file into `npm test` until Task 4.**
 
 - [ ] **Step 5: Document the new top-level directory BEFORE committing it**
 
@@ -442,7 +447,7 @@ Run: `node scripts/coreOps.test.js` Expected: **the first check passes and the t
 
 - [ ] **Step 6: Commit — but do NOT wire the test in yet**
 
-Two of `coreOps.test.js`'s three checks legitimately fail until Task 4 (see Step 4), so appending it to `npm test` here would make the suite red for two tasks. Wire it in **Task 4 Step 5**, where it goes green.
+Two of `coreOps.test.js`'s three checks legitimately fail until Task 4, so appending it to `npm test` here would leave the suite red for two tasks. Wire it in **Task 4 Step 5**, where it goes green.
 
 ```bash
 git add core/ops/index.js scripts/coreOps.test.js CLAUDE.md
@@ -524,7 +529,7 @@ Run: `node scripts/changeInverse.test.js` Expected: FAIL — "inverse is NOT dec
 
 1. **It returns `undefined`.** A `.catch()`-terminated chain with no `return` resolves to `undefined`, so `commitSet`'s `row?.changeId` is *always* `undefined` — meaning `changeIds: [undefined]`, a `bot_revert_undefined` custom_id in Task 7, and a revert that can never find its row.
 2. **It takes no `session`.** `ChangeLog.create()` and `nextDailyChangeId()`'s `AlertCounter.findOneAndUpdate` run **outside** any transaction they are called within, so a rolled-back changeset still leaves audit rows claiming changes that never happened — the exact inverse of hazard H6.
-3. **Its own header says it is fire-and-forget and never throws**, which is correct and deliberate for a Discord handler where a logging failure must not break the admin action. That contract is right *there* and wrong *here*.
+3. **Its own header says it is fire-and-forget and never throws**, correct and deliberate for a Discord handler where a logging failure must not break the admin action. That contract is right *there* and wrong *here*.
 
 ```js
 // utils/changeStore.js — add an OPTIONAL transactional mode. The existing fire-and-forget behaviour
@@ -537,18 +542,19 @@ async function recordChangeIn(session, fields) {
         model: fields.model, target: fields.target, summary: fields.summary, detail: fields.detail,
         inverse: fields.inverse ?? null, createdAt: now,
     }], { session });
-    return row;                                    // ← RETURNS the row. This is what changeId needs.
+    return row;                                    // RETURNS the row. This is what changeId needs.
 }
 
 // Unchanged for Discord callers: still fire-and-forget, still never throws, still returns nothing.
 function recordChange(fields) { /* existing body + `inverse: fields.inverse ?? null` */ }
 
-async function getChange(changeId) { return await ChangeLog.findOne({ changeId }).lean(); }
+// New export, so revert can fetch one row without loading a page of them.
+async function getChange(changeId) {
+    return await ChangeLog.findOne({ changeId }).lean();
+}
 ```
-⚠️ `nextDailyChangeId` must gain an optional `session` too, or the atomic `$inc` on `AlertCounter` escapes the transaction and can mint an id for a change that gets rolled back.
 
-// New export, so revert can fetch one row without loading a page of them. async function getChange(changeId) { return await ChangeLog.findOne({ changeId }).lean(); }
-```
+⚠️ `nextDailyChangeId` must gain an optional `session` too, or the atomic `$inc` on `AlertCounter` escapes the transaction and can mint an id for a change that gets rolled back.
 
 - [ ] **Step 6: Run the test to verify it passes**
 
@@ -557,7 +563,8 @@ Run: `node scripts/changeInverse.test.js` Expected: three ✓, exit 0
 - [ ] **Step 7: Commit**
 
 ```bash
-git add models/ChangeLog.js utils/changeStore.js scripts/changeInverse.test.js package.json git commit -m "feat(core): persist a change's inverse so undo survives a restart"
+git add models/ChangeLog.js utils/changeStore.js scripts/changeInverse.test.js package.json
+git commit -m "feat(core): persist a change's inverse so undo survives a restart"
 ```
 
 ---
@@ -575,15 +582,39 @@ git add models/ChangeLog.js utils/changeStore.js scripts/changeInverse.test.js p
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// scripts/positionalWrite.test.js // Pure query-shape tests — no DB. What is being asserted is that the FILTER carries a prior-value // assertion, because that assertion is the entire conflict-detection mechanism. A positional update // without it silently wins a race it should have lost. const assert = require('assert'); const { buildElementFilter, buildElementUpdate } = require('../core/mongo/positional');
+// scripts/positionalWrite.test.js
+// Pure query-shape tests — no DB. What is being asserted is that the FILTER carries a prior-value
+// assertion, because that assertion is the entire conflict-detection mechanism. A positional update
+// without it silently wins a race it should have lost.
+const assert = require('assert');
+const { buildElementFilter, buildElementUpdate } = require('../core/mongo/positional');
 
-let failures = 0; function check(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); } }
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  ✓ ${name}`); }
+    catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
+}
 
-check('the filter pins the document, the element AND the expected prior values', () => { const f = buildElementFilter({ docFilter: { docType: 'global' }, arrayPath: 'newDraws', elementId: '65abc', expect: { title: 'Iron Wolf' } }); assert.strictEqual(f.docType, 'global'); assert.strictEqual(f['newDraws._id'], '65abc'); assert.strictEqual(f['newDraws.title'], 'Iron Wolf', 'no prior-value assertion — a stale write would succeed'); });
+check('the filter pins the document, the element AND the expected prior values', () => {
+    const f = buildElementFilter({
+        docFilter: { docType: 'global' }, arrayPath: 'newDraws',
+        elementId: '65abc', expect: { title: 'Iron Wolf' }
+    });
+    assert.strictEqual(f.docType, 'global');
+    assert.strictEqual(f['newDraws._id'], '65abc');
+    assert.strictEqual(f['newDraws.title'], 'Iron Wolf', 'no prior-value assertion — a stale write would succeed');
+});
 
-check('an empty expect is REJECTED, never silently allowed', () => { assert.throws(() => buildElementFilter({ docFilter: { docType: 'global' }, arrayPath: 'newDraws', elementId: '65abc', expect: {} }), /expect/, 'an unguarded positional write must be impossible to construct'); });
+check('an empty expect is REJECTED, never silently allowed', () => {
+    assert.throws(() => buildElementFilter({
+        docFilter: { docType: 'global' }, arrayPath: 'newDraws', elementId: '65abc', expect: {}
+    }), /expect/, 'an unguarded positional write must be impossible to construct');
+});
 
-check('the update targets the matched element only', () => { const u = buildElementUpdate({ arrayPath: 'newDraws', set: { title: 'Nightfall' } }); assert.deepStrictEqual(u, { $set: { 'newDraws.$.title': 'Nightfall' } }); });
+check('the update targets the matched element only', () => {
+    const u = buildElementUpdate({ arrayPath: 'newDraws', set: { title: 'Nightfall' } });
+    assert.deepStrictEqual(u, { $set: { 'newDraws.$.title': 'Nightfall' } });
+});
 
 process.exit(failures ? 1 : 0);
 ```
@@ -595,17 +626,56 @@ Run: `node scripts/positionalWrite.test.js` Expected: FAIL with `Cannot find mod
 - [ ] **Step 3: Write the implementation**
 
 ```js
-// core/mongo/positional.js // // ⚠️ WHY THIS FILE EXISTS. models/SeasonalData.js is ONE global document whose arrays hold // newDraws, returningDraws, calendar and patchNotes. So a draws edit and a calendar edit touch the // same document, and ordinary document-level optimistic locking (__v) would raise a conflict on // nearly every pair of UNRELATED concurrent edits — false conflicts that train you to click through // the warning, which is worse than no check. But skipping versioning is worse still: doc.save() on // a stale copy writes the whole array back and silently reverts the other edit. // // So conflicts are detected at ELEMENT identity: pin the subdocument by _id AND assert its prior // values in the same filter. A mismatch matches zero documents, which IS the conflict signal. // // 🔴 Nothing in core/ may call .save() on a SeasonalData document. This module is the only writer.
+// core/mongo/positional.js
+//
+// ⚠️ WHY THIS FILE EXISTS. models/SeasonalData.js is ONE global document whose arrays hold
+// newDraws, returningDraws, calendar and patchNotes. So a draws edit and a calendar edit touch the
+// same document, and ordinary document-level optimistic locking (__v) would raise a conflict on
+// nearly every pair of UNRELATED concurrent edits — false conflicts that train you to click through
+// the warning, which is worse than no check. But skipping versioning is worse still: doc.save() on
+// a stale copy writes the whole array back and silently reverts the other edit.
+//
+// So conflicts are detected at ELEMENT identity: pin the subdocument by _id AND assert its prior
+// values in the same filter. A mismatch matches zero documents, which IS the conflict signal.
+//
+// 🔴 Nothing in core/ may call .save() on a SeasonalData document. This module is the only writer.
 
-function buildElementFilter({ docFilter, arrayPath, elementId, expect }) { if (!expect || Object.keys(expect).length === 0) { throw new Error('buildElementFilter: `expect` may not be empty — an unguarded positional write can win a race it should lose'); } const filter = { ...docFilter, [`${arrayPath}._id`]: elementId }; for (const [k, v] of Object.entries(expect)) filter[`${arrayPath}.${k}`] = v; return filter; }
+function buildElementFilter({ docFilter, arrayPath, elementId, expect }) {
+    if (!expect || Object.keys(expect).length === 0) {
+        throw new Error('buildElementFilter: `expect` may not be empty — an unguarded positional write can win a race it should lose');
+    }
+    const filter = { ...docFilter, [`${arrayPath}._id`]: elementId };
+    for (const [k, v] of Object.entries(expect)) filter[`${arrayPath}.${k}`] = v;
+    return filter;
+}
 
-function buildElementUpdate({ arrayPath, set }) { const $set = {}; for (const [k, v] of Object.entries(set)) $set[`${arrayPath}.$.${k}`] = v; return { $set }; }
+function buildElementUpdate({ arrayPath, set }) {
+    const $set = {};
+    for (const [k, v] of Object.entries(set)) $set[`${arrayPath}.$.${k}`] = v;
+    return { $set };
+}
 
-async function updateElement({ Model, docFilter, arrayPath, elementId, expect, set, session }) { const res = await Model.updateOne( buildElementFilter({ docFilter, arrayPath, elementId, expect }), buildElementUpdate({ arrayPath, set }), { session } ); if (res.matchedCount === 1) return { ok: true }; // Distinguish "someone changed it" from "it is gone" — the messages a human needs differ. const stillThere = await Model.countDocuments({ ...docFilter, [`${arrayPath}._id`]: elementId }, { session }); return { ok: false, reason: stillThere ? 'conflict' : 'missing' }; }
+async function updateElement({ Model, docFilter, arrayPath, elementId, expect, set, session }) {
+    const res = await Model.updateOne(
+        buildElementFilter({ docFilter, arrayPath, elementId, expect }),
+        buildElementUpdate({ arrayPath, set }),
+        { session }
+    );
+    if (res.matchedCount === 1) return { ok: true };
+    // Distinguish "someone changed it" from "it is gone" — the messages a human needs differ.
+    const stillThere = await Model.countDocuments({ ...docFilter, [`${arrayPath}._id`]: elementId }, { session });
+    return { ok: false, reason: stillThere ? 'conflict' : 'missing' };
+}
 
-async function appendElement({ Model, docFilter, arrayPath, element, session }) { const res = await Model.updateOne(docFilter, { $push: { [arrayPath]: element } }, { session }); return res.matchedCount === 1 ? { ok: true } : { ok: false, reason: 'missing' }; }
+async function appendElement({ Model, docFilter, arrayPath, element, session }) {
+    const res = await Model.updateOne(docFilter, { $push: { [arrayPath]: element } }, { session });
+    return res.matchedCount === 1 ? { ok: true } : { ok: false, reason: 'missing' };
+}
 
-async function removeElement({ Model, docFilter, arrayPath, elementId, session }) { const res = await Model.updateOne(docFilter, { $pull: { [arrayPath]: { _id: elementId } } }, { session }); return res.modifiedCount === 1 ? { ok: true } : { ok: false, reason: 'missing' }; }
+async function removeElement({ Model, docFilter, arrayPath, elementId, session }) {
+    const res = await Model.updateOne(docFilter, { $pull: { [arrayPath]: { _id: elementId } } }, { session });
+    return res.modifiedCount === 1 ? { ok: true } : { ok: false, reason: 'missing' };
+}
 
 module.exports = { buildElementFilter, buildElementUpdate, updateElement, appendElement, removeElement };
 ```
@@ -617,7 +687,8 @@ Run: `node scripts/positionalWrite.test.js` Expected: three ✓, exit 0
 - [ ] **Step 5: Commit**
 
 ```bash
-git add core/mongo/positional.js scripts/positionalWrite.test.js package.json git commit -m "feat(core): add element-identity writes with prior-value conflict detection"
+git add core/mongo/positional.js scripts/positionalWrite.test.js package.json
+git commit -m "feat(core): add element-identity writes with prior-value conflict detection"
 ```
 
 ---
@@ -635,19 +706,58 @@ git add core/mongo/positional.js scripts/positionalWrite.test.js package.json gi
 - [ ] **Step 1: Write the failing test for `validate` and `invert`**
 
 ```js
-// scripts/drawOps.test.js // validate() and invert() are PURE — no DB, no network. apply() is covered by Task 7's integration test. const assert = require('assert'); const ops = require('../core/ops');
+// scripts/drawOps.test.js
+// validate() and invert() are PURE — no DB, no network. apply() is covered by Task 7's integration test.
+const assert = require('assert');
+const ops = require('../core/ops');
 
-let failures = 0; function check(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); } }
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  ✓ ${name}`); }
+    catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
+}
 
-check('draw.add rejects a draw with no title', () => { const r = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: '', category: 'new' } }); assert.strictEqual(r.ok, false); assert.ok(r.errors.some(e => /title/i.test(e)), `expected a title error, got ${JSON.stringify(r.errors)}`); });
+check('draw.add rejects a draw with no title', () => {
+    const r = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: '', category: 'new' } });
+    assert.strictEqual(r.ok, false);
+    assert.ok(r.errors.some(e => /title/i.test(e)), `expected a title error, got ${JSON.stringify(r.errors)}`);
+});
 
-check('draw.add normalizes the title to title case', () => { const r = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'iron wolf — legendary', category: 'new', items: [] } }); assert.strictEqual(r.ok, true, JSON.stringify(r.errors)); assert.strictEqual(r.normalized.payload.title, 'Iron Wolf — Legendary'); });
+check('draw.add normalizes the title to title case', () => {
+    const r = ops.resolveOp('draw.add').validate({
+        type: 'draw.add', payload: { title: 'iron wolf — legendary', category: 'new', items: [] }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+    assert.strictEqual(r.normalized.payload.title, 'Iron Wolf — Legendary');
+});
 
-check('draw.add inverts to draw.delete naming the created element', () => { const inv = ops.resolveOp('draw.add').invert({ action: 'add', model: 'SeasonalData', applied: { category: 'new', elementId: '65abc', title: 'Iron Wolf' } }); assert.strictEqual(inv.type, 'draw.delete'); assert.strictEqual(inv.target.elementId, '65abc'); });
+check('draw.add inverts to draw.delete naming the created element', () => {
+    const inv = ops.resolveOp('draw.add').invert({
+        action: 'add', model: 'SeasonalData',
+        applied: { category: 'new', elementId: '65abc', title: 'Iron Wolf' }
+    });
+    assert.strictEqual(inv.type, 'draw.delete');
+    assert.strictEqual(inv.target.elementId, '65abc');
+});
 
-check('draw.bulkReplace inverts to a bulkReplace carrying the FULL prior set', () => { const prior = [{ title: 'A' }, { title: 'B' }, { title: 'C' }, { title: 'D' }]; const inv = ops.resolveOp('draw.bulkReplace').invert({ action: 'bulkReplace', applied: { category: 'new', replaced: prior, added: [{ title: 'Nightfall' }] } }); assert.strictEqual(inv.type, 'draw.bulkReplace'); assert.deepStrictEqual(inv.payload.draws, prior, 'the inverse of a replace must restore every element it destroyed, not just record the count'); });
+check('draw.bulkReplace inverts to a bulkReplace carrying the FULL prior set', () => {
+    const prior = [{ title: 'A' }, { title: 'B' }, { title: 'C' }, { title: 'D' }];
+    const inv = ops.resolveOp('draw.bulkReplace').invert({
+        action: 'bulkReplace', applied: { category: 'new', replaced: prior, added: [{ title: 'Nightfall' }] }
+    });
+    assert.strictEqual(inv.type, 'draw.bulkReplace');
+    assert.deepStrictEqual(inv.payload.draws, prior,
+        'the inverse of a replace must restore every element it destroyed, not just record the count');
+});
 
-check('every draw op declares a tier, and purge/bulkReplace are tier 3 and 2', () => { for (const t of ops.listOpTypes().filter(t => t.startsWith('draw.'))) { assert.ok([1, 2, 3].includes(ops.resolveOp(t).tier), `${t} has no tier`); } assert.strictEqual(ops.resolveOp('draw.purge').tier, 3); assert.strictEqual(ops.resolveOp('draw.bulkReplace').tier, 2); assert.strictEqual(ops.resolveOp('draw.add').tier, 1); });
+check('every draw op declares a tier, and purge/bulkReplace are tier 3 and 2', () => {
+    for (const t of ops.listOpTypes().filter(t => t.startsWith('draw.'))) {
+        assert.ok([1, 2, 3].includes(ops.resolveOp(t).tier), `${t} has no tier`);
+    }
+    assert.strictEqual(ops.resolveOp('draw.purge').tier, 3);
+    assert.strictEqual(ops.resolveOp('draw.bulkReplace').tier, 2);
+    assert.strictEqual(ops.resolveOp('draw.add').tier, 1);
+});
 
 process.exit(failures ? 1 : 0);
 ```
@@ -659,15 +769,76 @@ Run: `node scripts/drawOps.test.js` Expected: FAIL — `unknown op type "draw.ad
 - [ ] **Step 3: Implement the entity**
 
 ```js
-// core/ops/draws.js // // The seven draw mutations, as ops. This is the ONLY file that knows a draw's shape. // // ⚠️ `tier` is derived from REVERSIBILITY, not from how scary the button looks (spec §5): //   1 — an exact inverse exists and is cheap to record //   2 — multi-element or destroys prior state; the inverse is a snapshot taken at apply() time //   3 — irreversible or system-altering; the caller must gate on an export before committing const mongoose = require('mongoose'); const { registerEntity } = require('./index'); const { updateElement, appendElement, removeElement } = require('../mongo/positional'); const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser'); const SeasonalData = require('../../models/SeasonalData');
+// core/ops/draws.js
+//
+// The seven draw mutations, as ops. This is the ONLY file that knows a draw's shape.
+//
+// ⚠️ `tier` is derived from REVERSIBILITY, not from how scary the button looks (spec §5):
+//   1 — an exact inverse exists and is cheap to record
+//   2 — multi-element or destroys prior state; the inverse is a snapshot taken at apply() time
+//   3 — irreversible or system-altering; the caller must gate on an export before committing
+const mongoose = require('mongoose');
+const { registerEntity } = require('./index');
+const { updateElement, appendElement, removeElement } = require('../mongo/positional');
+const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser');
+const SeasonalData = require('../../models/SeasonalData');
 
-const DOC = { docType: 'global' }; const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
+const DOC = { docType: 'global' };
+const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
 
-// 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. `commitSet` runs `validateSet` before applying — including on an INVERSE produced by `invert()`, which carries structured `parsed` data and never the original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an empty string, overwrite `payload.parsed`, and silently restore NOTHING. That would have made undo a no-op for bulkDelete, purge and bulkReplace — this plan's headline deliverable. scripts/drawOps.test.js round-trips every inverse back through validate() for exactly this reason. const alreadyParsed = (op) => op.payload?.parsed && !op.payload?.text;
+// 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. commitSet runs validateSet before applying —
+// including on an INVERSE produced by invert(), which carries structured `parsed` data and never the
+// original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an
+// empty string, overwrite payload.parsed, and silently restore NOTHING. That would have made undo a
+// no-op for bulkDelete, purge and bulkReplace. drawOps.test.js round-trips every inverse through
+// validate() for exactly this reason.
+const alreadyParsed = (op) => op.payload?.parsed && !op.payload?.text;
 
-function validateOne(payload) { const errors = []; if (!payload?.title?.trim()) errors.push('A draw needs a title.'); if (!['new', 'returning'].includes(payload?.category)) errors.push('Category must be "new" or "returning".'); if (payload?.endDate && !parseAdminDate(payload.endDate)) errors.push(`Could not read the date "${payload.endDate}".`); if (errors.length) return { ok: false, errors }; return { ok: true, errors: [], normalized: { payload: { ...payload, title: toTitleCase(payload.title.trim()), items: payload.items || [] } } }; }
+function validateOne(payload) {
+    const errors = [];
+    if (!payload?.title?.trim()) errors.push('A draw needs a title.');
+    if (!['new', 'returning'].includes(payload?.category)) errors.push('Category must be "new" or "returning".');
+    if (payload?.endDate && !parseAdminDate(payload.endDate)) errors.push(`Could not read the date "${payload.endDate}".`);
+    if (errors.length) return { ok: false, errors };
+    return {
+        ok: true, errors: [],
+        normalized: { payload: { ...payload, title: toTitleCase(payload.title.trim()), items: payload.items || [] } }
+    };
+}
 
-registerEntity('draws', { 'draw.add': { action: ['draws:addnew', 'draws:addreturning'],   // one op; `payload.category` is the difference tier: 1, validate: (op) => validateOne(op.payload), preview: (op, live) => ({ before: { count: live[pathFor(op.payload.category)].length }, after: { count: live[pathFor(op.payload.category)].length + 1, added: op.payload.title } }), apply: async (op, { session }) => { const path = pathFor(op.payload.category); const element = { ...op.payload }; // 🔴 THE _id IS MINTED HERE, not discovered by reading the array tail back. A tail read is wrong twice over: `session.withTransaction()` RETRIES its whole callback on a transient error, and `commitSet` runs N ops in one transaction, so an earlier op's $push moves the tail a later op would read. Every SeasonalData subdocument array has _id enabled, so the id can simply be generated and asserted. element._id = new mongoose.Types.ObjectId(); const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element, session }); if (!res.ok) return res; const created = element; return { ok: true, change: { action: 'add', model: 'SeasonalData', target: op.payload.title, summary: `Added new draw "${op.payload.title}"` }, applied: { category: op.payload.category, elementId: String(created._id), title: op.payload.title } }; }, invert: (change) => ({ type: 'draw.delete', target: { category: change.applied.category, elementId: change.applied.elementId }, payload: { title: change.applied.title } }) },
+registerEntity('draws', {
+    'draw.add': {
+        action: ['draws:addnew', 'draws:addreturning'],   // one op; payload.category is the difference
+        tier: 1,
+        validate: (op) => validateOne(op.payload),
+        preview: (op, live) => ({
+            before: { count: live[pathFor(op.payload.category)].length },
+            after: { count: live[pathFor(op.payload.category)].length + 1, added: op.payload.title }
+        }),
+        apply: async (op, { session }) => {
+            const path = pathFor(op.payload.category);
+            const element = { ...op.payload };
+            // 🔴 THE _id IS MINTED HERE, not discovered by reading the array tail. A tail read is
+            // wrong twice: session.withTransaction() RETRIES its whole callback on a transient error,
+            // and commitSet runs N ops in one transaction, so an earlier op's $push moves the tail a
+            // later op reads. Every SeasonalData subdocument array has _id enabled.
+            element._id = new mongoose.Types.ObjectId();
+            const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element, session });
+            if (!res.ok) return res;
+            const created = element;
+            return {
+                ok: true,
+                change: { action: 'add', model: 'SeasonalData', target: op.payload.title,
+                          summary: `Added new draw "${op.payload.title}"` },
+                applied: { category: op.payload.category, elementId: String(created._id), title: op.payload.title }
+            };
+        },
+        invert: (change) => ({
+            type: 'draw.delete',
+            target: { category: change.applied.category, elementId: change.applied.elementId },
+            payload: { title: change.applied.title }
+        })
+    },
 
     'draw.delete': {
         action: 'draws:delete', tier: 1,
@@ -843,7 +1014,7 @@ registerEntity('draws', { 'draw.add': { action: ['draws:addnew', 'draws:addretur
     },
 
     'draw.purge': {
-        action: ['draws:purgeall', 'draws:purgenew', 'draws:purgereturning'],   // one op; `target.scope` is the difference
+        action: ['draws:purgeall', 'draws:purgenew', 'draws:purgereturning'],   // one op; target.scope differs
         tier: 3,
         validate: (op) => ['all', 'new', 'returning'].includes(op.target?.scope)
             ? { ok: true, errors: [], normalized: op }
@@ -868,7 +1039,9 @@ registerEntity('draws', { 'draw.add': { action: ['draws:addnew', 'draws:addretur
                 applied: { scope: op.target.scope, newDraws: before.newDraws, returningDraws: before.returningDraws }
             };
         },
-        // 🔴 NOT `category: 'both'`. `pathFor()` maps anything that is not 'returning' to 'newDraws', so a 'both' inverse would restore new draws and SILENTLY DROP every returning draw. Reverting a scope:'all' purge is TWO ops, and `commitSet` applies them atomically — which is why `invert()` may return an array.
+        // 🔴 NOT `category: 'both'`. pathFor() maps anything not 'returning' to 'newDraws', so a
+        // 'both' inverse would restore new draws and SILENTLY DROP every returning draw. Reverting a
+        // scope:'all' purge is TWO ops — which is why invert() may return an array.
         invert: (change) => [
             { type: 'draw.bulkReplace', target: { category: 'new' },
               payload: { parsed: { newDraws: change.applied.newDraws } } },
@@ -886,7 +1059,8 @@ Run: `node scripts/drawOps.test.js && node scripts/coreOps.test.js` Expected: al
 - [ ] **Step 5: Commit**
 
 ```bash
-git add core/ops/draws.js scripts/drawOps.test.js package.json git commit -m "feat(core): implement the seven draw operations"
+git add core/ops/draws.js scripts/drawOps.test.js package.json
+git commit -m "feat(core): implement the seven draw operations"
 ```
 
 ---
@@ -906,15 +1080,43 @@ git add core/ops/draws.js scripts/drawOps.test.js package.json git commit -m "fe
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// scripts/changeset.test.js // The property under test is ALL-OR-NOTHING. The bot reads fresh on every interaction, so a // half-applied set is served to real users within seconds — this is the highest-consequence // invariant in the whole core. const assert = require('assert'); const { validateSet } = require('../core/changeset');
+// scripts/changeset.test.js
+// The property under test is ALL-OR-NOTHING. The bot reads fresh on every interaction, so a
+// half-applied set is served to real users within seconds — this is the highest-consequence
+// invariant in the whole core.
+const assert = require('assert');
+const { validateSet } = require('../core/changeset');
 
-let failures = 0; function check(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); } }
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  ✓ ${name}`); }
+    catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
+}
 
-check('validateSet reports EVERY invalid op, not just the first', () => { const r = validateSet([ { type: 'draw.add', payload: { title: '', category: 'new' } }, { type: 'draw.add', payload: { title: 'Fine', category: 'nonsense' } } ]); assert.strictEqual(r.ok, false); assert.strictEqual(r.failures.length, 2, 'a set that stops at the first error makes you fix them one round trip at a time'); });
+check('validateSet reports EVERY invalid op, not just the first', () => {
+    const r = validateSet([
+        { type: 'draw.add', payload: { title: '', category: 'new' } },
+        { type: 'draw.add', payload: { title: 'Fine', category: 'nonsense' } }
+    ]);
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual(r.failures.length, 2, 'a set that stops at the first error makes you fix them one round trip at a time');
+});
 
-check('validateSet reports the INDEX of each failure', () => { const r = validateSet([ { type: 'draw.add', payload: { title: 'Fine', category: 'new', items: [] } }, { type: 'draw.add', payload: { title: '', category: 'new' } } ]); assert.strictEqual(r.failures[0].index, 1, 'without an index you cannot show the user WHICH row is wrong'); });
+check('validateSet reports the INDEX of each failure', () => {
+    const r = validateSet([
+        { type: 'draw.add', payload: { title: 'Fine', category: 'new', items: [] } },
+        { type: 'draw.add', payload: { title: '', category: 'new' } }
+    ]);
+    assert.strictEqual(r.failures[0].index, 1, 'without an index you cannot show the user WHICH row is wrong');
+});
 
-check('the highest tier in the set is reported, because it gates the commit', () => { const r = validateSet([ { type: 'draw.add', payload: { title: 'A', category: 'new', items: [] } }, { type: 'draw.purge', target: { scope: 'all' } } ]); assert.strictEqual(r.tier, 3, 'one tier-3 op makes the whole set tier 3'); });
+check('the highest tier in the set is reported, because it gates the commit', () => {
+    const r = validateSet([
+        { type: 'draw.add', payload: { title: 'A', category: 'new', items: [] } },
+        { type: 'draw.purge', target: { scope: 'all' } }
+    ]);
+    assert.strictEqual(r.tier, 3, 'one tier-3 op makes the whole set tier 3');
+});
 
 process.exit(failures ? 1 : 0);
 ```
@@ -926,32 +1128,65 @@ Run: `node scripts/changeset.test.js` Expected: FAIL with `Cannot find module '.
 - [ ] **Step 3: Write the implementation**
 
 ```js
-// core/changeset.js // // A changeset is N ops that commit together or not at all. // // ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction // (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so // a half-applied set is served to real users within seconds. That is why this uses a real Mongo // transaction and not a best-effort loop. const mongoose = require('mongoose'); const { resolveOp, actionForOpType } = require('./ops'); const { recordChangeIn } = require('../utils/changeStore');
+// core/changeset.js
+//
+// A changeset is N ops that commit together or not at all.
+//
+// ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction
+// (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so
+// a half-applied set is served to real users within seconds. That is why this uses a real Mongo
+// transaction and not a best-effort loop.
+const mongoose = require('mongoose');
+const { resolveOp, actionForOpType } = require('./ops');
+const { recordChangeIn } = require('../utils/changeStore');
 
-// The registry key is `page:id`, so a change's page is already knowable from its op. Falls back to // the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully. function pageForOp(type) { const actions = actionForOpType(type); return actions?.[0]?.split(':')[0] ?? type.split('.')[0]; }
+// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's
+// own namespace rather than a literal, so a not-yet-registered op still records truthfully.
+function pageForOp(type) {
+    const actions = actionForOpType(type);
+    return actions?.[0]?.split(':')[0] ?? type.split('.')[0];
+}
 
-function validateSet(ops) { const failures = []; const normalized = []; let tier = 1; ops.forEach((op, index) => { let impl; try { impl = resolveOp(op.type); } catch (e) { failures.push({ index, errors: [e.message] }); return; } tier = Math.max(tier, impl.tier); const r = impl.validate(op); if (!r.ok) failures.push({ index, errors: r.errors }); else normalized.push(r.normalized || op); }); return { ok: failures.length === 0, failures, normalized, tier }; }
+function validateSet(ops) {
+    const failures = [];
+    const normalized = [];
+    let tier = 1;
+    ops.forEach((op, index) => {
+        let impl;
+        try { impl = resolveOp(op.type); }
+        catch (e) { failures.push({ index, errors: [e.message] }); return; }
+        tier = Math.max(tier, impl.tier);
+        const r = impl.validate(op);
+        if (!r.ok) failures.push({ index, errors: r.errors });
+        else normalized.push(r.normalized || op);
+    });
+    return { ok: failures.length === 0, failures, normalized, tier };
+}
 
-function previewSet(ops, live) { return ops.map((op, index) => ({ index, ...resolveOp(op.type).preview(op, live) })); }
+function previewSet(ops, live) {
+    return ops.map((op, index) => ({ index, ...resolveOp(op.type).preview(op, live) }));
+}
 
-async function commitSet(ops, { actorId }) { const v = validateSet(ops); if (!v.ok) return { ok: false, failures: v.failures };
+async function commitSet(ops, { actorId }) {
+    const v = validateSet(ops);
+    if (!v.ok) return { ok: false, failures: v.failures };
 
     const session = await mongoose.startSession();
     const changeIds = [];
     let failedAt = null;
     try {
         await session.withTransaction(async () => {
-            // invert() may return an ARRAY, so an inverse changeset is flattened before it is applied.
+            // invert() may return an ARRAY, so an inverse changeset is flattened before applying.
             for (const [index, op] of v.normalized.flat().entries()) {
                 const impl = resolveOp(op.type);
                 const res = await impl.apply(op, { session, actorId });
                 if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
                 // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out.
                 // 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote
-                // `page: 'draws'` here — which would have stamped every calendar, loadout, patchnote,
-                // season and announcement row as `draws` the moment plan 2 lands, breaking
+                // `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote,
+                // season and announcement row as `draws` the moment plan 2 lands — breaking
                 // getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's
-                // ON_CORE.has(row.page) branch, which is the entire mechanism this design added.
+                // ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
                 const row = await recordChangeIn(session, {
                     ...res.change, actorId, page: pageForOp(op.type),
                     inverse: impl.invert({ ...res.change, applied: res.applied })
@@ -977,7 +1212,8 @@ Run: `node scripts/changeset.test.js` Expected: three ✓, exit 0
 - [ ] **Step 5: Commit**
 
 ```bash
-git add core/changeset.js scripts/changeset.test.js package.json git commit -m "feat(core): commit a changeset atomically or not at all"
+git add core/changeset.js scripts/changeset.test.js package.json
+git commit -m "feat(core): commit a changeset atomically or not at all"
 ```
 
 ---
@@ -997,15 +1233,40 @@ git add core/changeset.js scripts/changeset.test.js package.json git commit -m "
 - [ ] **Step 1: Capture a before-snapshot of the CURRENT Discord output**
 
 ```js
-// scripts/drawsHandlerSnapshot.test.js // Written BEFORE the refactor, against the pre-refactor code, so it can prove the refactor changed // nothing a user sees. This is the technique from feedback_snapshot_before_unclickable_refactor: // when click-testing is impractical, a deepStrictEqual against a captured fixture is the substitute. const assert = require('assert'); const fs = require('fs'); const path = require('path'); const manageCommand = require('../commands/manage');
+// scripts/drawsHandlerSnapshot.test.js
+// Written BEFORE the refactor, against the pre-refactor code, so it can prove the refactor changed
+// nothing a user sees. This is the technique from feedback_snapshot_before_unclickable_refactor:
+// when click-testing is impractical, a deepStrictEqual against a captured fixture is the substitute.
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const manageCommand = require('../commands/manage');
 
 const FIXTURE = path.join(__dirname, 'fixtures', 'draws-modals.json');
 
-function capture() { return { addNew: manageCommand.buildAddDrawModal('new').toJSON(), addReturning: manageCommand.buildAddDrawModal('returning').toJSON(), bulkAdd: manageCommand.buildBulkBothDrawsModal('add').toJSON(), bulkReplace: manageCommand.buildBulkBothDrawsModal('replace').toJSON(), bulkRemove: manageCommand.buildBulkRemoveDrawsModal('either').toJSON(), searchEdit: manageCommand.buildSearchModal('draws', 'edit').toJSON(), searchDelete: manageCommand.buildSearchModal('draws', 'delete').toJSON() }; }
+function capture() {
+    return {
+        addNew: manageCommand.buildAddDrawModal('new').toJSON(),
+        addReturning: manageCommand.buildAddDrawModal('returning').toJSON(),
+        bulkAdd: manageCommand.buildBulkBothDrawsModal('add').toJSON(),
+        bulkReplace: manageCommand.buildBulkBothDrawsModal('replace').toJSON(),
+        bulkRemove: manageCommand.buildBulkRemoveDrawsModal('either').toJSON(),
+        searchEdit: manageCommand.buildSearchModal('draws', 'edit').toJSON(),
+        searchDelete: manageCommand.buildSearchModal('draws', 'delete').toJSON()
+    };
+}
 
-if (process.argv.includes('--write')) { fs.mkdirSync(path.dirname(FIXTURE), { recursive: true }); fs.writeFileSync(FIXTURE, JSON.stringify(capture(), null, 2)); console.log('  · fixture written —', FIXTURE); process.exit(0); }
+if (process.argv.includes('--write')) {
+    fs.mkdirSync(path.dirname(FIXTURE), { recursive: true });
+    fs.writeFileSync(FIXTURE, JSON.stringify(capture(), null, 2));
+    console.log('  · fixture written —', FIXTURE);
+    process.exit(0);
+}
 
-const expected = JSON.parse(fs.readFileSync(FIXTURE, 'utf8')); assert.deepStrictEqual(capture(), expected, 'a /manage draws modal changed shape — the refactor was supposed to be invisible'); console.log('  ✓ every draws modal is byte-identical to the pre-refactor fixture');
+const expected = JSON.parse(fs.readFileSync(FIXTURE, 'utf8'));
+assert.deepStrictEqual(capture(), expected,
+    'a /manage draws modal changed shape — the refactor was supposed to be invisible');
+console.log('  ✓ every draws modal is byte-identical to the pre-refactor fixture');
 ```
 
 - [ ] **Step 2: Write the fixture from the UNMODIFIED code and commit it**
@@ -1013,7 +1274,8 @@ const expected = JSON.parse(fs.readFileSync(FIXTURE, 'utf8')); assert.deepStrict
 Run: `node scripts/drawsHandlerSnapshot.test.js --write && node scripts/drawsHandlerSnapshot.test.js` Expected: fixture written, then ✓. **Commit the fixture now, before any refactor**, or the baseline is worthless.
 
 ```bash
-git add scripts/drawsHandlerSnapshot.test.js scripts/fixtures/draws-modals.json package.json git commit -m "test(manage): snapshot the draws modals before refactoring them"
+git add scripts/drawsHandlerSnapshot.test.js scripts/fixtures/draws-modals.json package.json
+git commit -m "test(manage): snapshot the draws modals before refactoring them"
 ```
 
 - [ ] **Step 3: Replace one mutation body with a core call**
@@ -1021,9 +1283,22 @@ git add scripts/drawsHandlerSnapshot.test.js scripts/fixtures/draws-modals.json 
 In `handlers/manage/draws.js`, find the add-draw modal-submit branch. Keep the modal parsing and the reply formatting exactly as they are; replace only the section that mutates `SeasonalData` and records the change:
 
 ```js
-// BEFORE — mutation, audit and reply interleaved // const doc = await SeasonalData.findOne({ docType: 'global' }); // doc.newDraws.push({ title, endDate, items }); // await doc.save(); // await recordChange({ ... });
+// BEFORE — mutation, audit and reply interleaved
+// const doc = await SeasonalData.findOne({ docType: 'global' });
+// doc.newDraws.push({ title, endDate, items });
+// await doc.save();
+// await recordChange({ ... });
 
-// AFTER — the handler builds an op and formats a reply; core does the rest. const { commitSet } = require('../../core/changeset'); const result = await commitSet( [{ type: 'draw.add', payload: { title, endDate, items, category } }], { actorId: interaction.user.id } ); if (!result.ok) { const why = result.failures?.[0]?.errors?.join(' ') || result.error; return await interaction.editReply({ content: `❌ ${why}` }); }
+// AFTER — the handler builds an op and formats a reply; core does the rest.
+const { commitSet } = require('../../core/changeset');
+const result = await commitSet(
+    [{ type: 'draw.add', payload: { title, endDate, items, category } }],
+    { actorId: interaction.user.id }
+);
+if (!result.ok) {
+    const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+    return await interaction.editReply({ content: `❌ ${why}` });
+}
 ```
 
 - [ ] **Step 4: Run the snapshot to verify nothing user-visible moved**
@@ -1043,7 +1318,8 @@ Same pattern, one at a time, running the snapshot after each: `draws:edit`, `dra
 - [ ] **Step 7: Commit**
 
 ```bash
-git add handlers/manage/draws.js git commit -m "refactor(manage): route draws mutations through the operation core"
+git add handlers/manage/draws.js
+git commit -m "refactor(manage): route draws mutations through the operation core"
 ```
 
 ---
@@ -1062,17 +1338,42 @@ git add handlers/manage/draws.js git commit -m "refactor(manage): route draws mu
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// scripts/revert.test.js const assert = require('assert'); const { canRevert } = require('../core/revert');
+// scripts/revert.test.js
+const assert = require('assert');
+const { canRevert } = require('../core/revert');
 
-let failures = 0; function check(name, fn) { try { fn(); console.log(`  ✓ ${name}`); } catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); } }
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  ✓ ${name}`); }
+    catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
+}
 
-check('a row from BEFORE the core existed says so', () => { const r = canRevert({ changeId: 'Aug20-01', inverse: null, undone: false, page: 'draws' }); assert.strictEqual(r.ok, false); assert.match(r.reason, /predates/i, 'the message must explain WHY, since every pre-Task-2 row is in this state'); });
+check('a row from BEFORE the core existed says so', () => {
+    const r = canRevert({ changeId: 'Aug20-01', inverse: null, undone: false, page: 'draws' });
+    assert.strictEqual(r.ok, false);
+    assert.match(r.reason, /predates/i, 'the message must explain WHY, since every pre-Task-2 row is in this state');
+});
 
-check('a row from an entity NOT YET on the core says something different', () => { // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the // in-memory registerUndo (13 call sites across five files). Their rows are BRAND NEW and also // have inverse: null — telling the user they "predate revert support" would be plainly false and // would read as a bug. const r = canRevert({ changeId: 'Aug20-09', inverse: null, undone: false, page: 'calendar' }); assert.strictEqual(r.ok, false); assert.match(r.reason, /not yet/i, 'an unmigrated entity must not be described as historical'); assert.doesNotMatch(r.reason, /predates/i); });
+check('a row from an entity NOT YET on the core says something different', () => {
+    // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the
+    // in-memory registerUndo (13 call sites across five files). Their rows are BRAND NEW and also
+    // have inverse: null — telling the user they "predate revert support" would be plainly false and
+    // would read as a bug.
+    const r = canRevert({ changeId: 'Aug20-09', inverse: null, undone: false, page: 'calendar' });
+    assert.strictEqual(r.ok, false);
+    assert.match(r.reason, /not yet/i, 'an unmigrated entity must not be described as historical');
+    assert.doesNotMatch(r.reason, /predates/i);
+});
 
-check('an already-undone row cannot be reverted twice', () => { const r = canRevert({ changeId: 'Aug20-02', inverse: { type: 'draw.add' }, undone: true }); assert.strictEqual(r.ok, false); assert.match(r.reason, /already/i); });
+check('an already-undone row cannot be reverted twice', () => {
+    const r = canRevert({ changeId: 'Aug20-02', inverse: { type: 'draw.add' }, undone: true });
+    assert.strictEqual(r.ok, false);
+    assert.match(r.reason, /already/i);
+});
 
-check('a row with an inverse and not undone can be reverted', () => { assert.strictEqual(canRevert({ changeId: 'Aug20-03', inverse: { type: 'draw.add' }, undone: false }).ok, true); });
+check('a row with an inverse and not undone can be reverted', () => {
+    assert.strictEqual(canRevert({ changeId: 'Aug20-03', inverse: { type: 'draw.add' }, undone: false }).ok, true);
+});
 
 process.exit(failures ? 1 : 0);
 ```
@@ -1084,13 +1385,37 @@ Run: `node scripts/revert.test.js` Expected: FAIL with `Cannot find module '../c
 - [ ] **Step 3: Write the implementation**
 
 ```js
-// core/revert.js // // Turns a ChangeLog row's stored inverse back into an op and applies it. // // ⚠️ Every row written BEFORE core/ops existed has inverse: null and is not revertible. That is // correct and permanent — do not backfill a guess. canRevert() says so in words, because otherwise // every historical row looks like a bug. const { getChange, markUndone } = require('../utils/changeStore'); const { commitSet } = require('./changeset');
+// core/revert.js
+//
+// Turns a ChangeLog row's stored inverse back into an op and applies it.
+//
+// ⚠️ Every row written BEFORE core/ops existed has inverse: null and is not revertible. That is
+// correct and permanent — do not backfill a guess. canRevert() says so in words, because otherwise
+// every historical row looks like a bug.
+const { getChange, markUndone } = require('../utils/changeStore');
+const { commitSet } = require('./changeset');
 
-// Entities routed through core/ops. Grows in plan 2 until it covers everything, then this whole // distinction disappears along with handlers/manage/shared.js's registerUndo. const ON_CORE = new Set(['draws']);
+// Entities routed through core/ops. Grows in plan 2 until it covers everything, then this whole
+// distinction disappears along with handlers/manage/shared.js's registerUndo.
+const ON_CORE = new Set(['draws']);
 
-function canRevert(row) { if (!row) return { ok: false, reason: 'That change no longer exists.' }; if (row.undone) return { ok: false, reason: 'That change was already reverted.' }; if (!row.inverse) { // TWO different reasons produce inverse: null, and conflating them tells the user something // false. A pre-core row is historical; an unmigrated entity's row is minutes old. return ON_CORE.has(row.page) ? { ok: false, reason: 'That change predates revert support, so there is nothing to undo it with.' } : { ok: false, reason: `Reverting ${row.page || 'this section'} is not yet supported — use the Undo button on the original message.` }; } return { ok: true }; }
+function canRevert(row) {
+    if (!row) return { ok: false, reason: 'That change no longer exists.' };
+    if (row.undone) return { ok: false, reason: 'That change was already reverted.' };
+    if (!row.inverse) {
+        // TWO different reasons produce inverse: null, and conflating them tells the user something
+        // false. A pre-core row is historical; an unmigrated entity's row is minutes old.
+        return ON_CORE.has(row.page)
+            ? { ok: false, reason: 'That change predates revert support, so there is nothing to undo it with.' }
+            : { ok: false, reason: `Reverting ${row.page || 'this section'} is not yet supported — use the Undo button on the original message.` };
+    }
+    return { ok: true };
+}
 
-async function revertChange(changeId, { actorId }) { const row = await getChange(changeId); const gate = canRevert(row); if (!gate.ok) return { ok: false, reason: gate.reason };
+async function revertChange(changeId, { actorId }) {
+    const row = await getChange(changeId);
+    const gate = canRevert(row);
+    if (!gate.ok) return { ok: false, reason: gate.reason };
 
     const result = await commitSet([row.inverse], { actorId });
     if (!result.ok) return { ok: false, reason: result.error || 'The revert could not be applied.' };
@@ -1110,12 +1435,19 @@ Run: `node scripts/revert.test.js` Expected: **four** ✓, exit 0 — the file h
 
 In `handlers/bot.js`'s Changes page, add a button per row with `custom_id` `bot_revert_<changeId>`, disabled when `canRevert()` says no, with the reason as the row's text.
 
-🔴 **The `bot_` router guard is NOT sufficient, and `handlers/bot.js` already says why in a comment at the top of the file.** `handlers/router.js:154` maps `bot_` → `hasCommandAccess(userId, 'bot')`, which only proves *this user has some /bot access* — the `bot` token is grantable to any admin for analytics. It does **not** prove they may mutate the page a given change belongs to. Without a second check, **an admin granted `bot` purely to read analytics could revert changes on `/manage` pages they hold no scope for** — a privilege escalation, in the one control that writes to live data from a read-only surface.
+🔴 **The `bot_` router guard is NOT sufficient, and `handlers/bot.js` says why in a comment at the top of the file.** `handlers/router.js:154` maps `bot_` → `hasCommandAccess(userId, 'bot')`, which proves only *this user has some /bot access* — the `bot` token is grantable to any admin for analytics. It does **not** prove they may mutate the page a change belongs to. **An admin granted `bot` purely to read analytics could otherwise revert changes on `/manage` pages they hold no scope for** — a privilege escalation in the one control that writes to live data from a read-only surface.
 
 ```js
-// In the bot_revert_ branch, before anything else. Same shape /bot access and bot_hp_restart // already use — they re-check independently rather than trusting the prefix guard. const { hasManagePageAccess } = require('../utils/adminAccess'); const row = await getChange(changeId); if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) { return interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true }); }
+// In the bot_revert_ branch, before anything else. Same shape /bot access and bot_hp_restart
+// already use — they re-check independently rather than trusting the prefix guard.
+const { hasManagePageAccess } = require('../utils/adminAccess');
+const row = await getChange(changeId);
+if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
+    return interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+}
 ```
-⚠️ This is why finding #9 matters operationally and not cosmetically: **if `page` were hardcoded to `'draws'`, this permission check would grant or deny on a lie.**
+
+⚠️ This is why finding #9 matters operationally: **if `page` were hardcoded to `'draws'`, this permission check would grant or deny on a lie.**
 
 - [ ] **Step 6: Test it live on the dev bot**
 
@@ -1124,7 +1456,8 @@ Add a draw via `/manage`, open `/bot analytics` → Changes, revert it, and conf
 - [ ] **Step 7: Commit**
 
 ```bash
-git add core/revert.js scripts/revert.test.js handlers/bot.js package.json git commit -m "feat(core): revert any audited change from either surface"
+git add core/revert.js scripts/revert.test.js handlers/bot.js package.json
+git commit -m "feat(core): revert any audited change from either surface"
 ```
 
 ---
@@ -1162,23 +1495,5 @@ A falsification pass was run against this plan — the question was *where is th
 **P9 — the premise probe would have produced a confident wrong answer.** Task 0 pinned itself to `.env.dev` with `assert.ok(/dev/.test(uri))` — a good guard against writing to prod, and it forces the probe onto a **standalone** local MongoDB where transactions cannot work regardless of Atlas. A failure there reads exactly like "M0 does not support transactions", which would have reopened the spec for nothing. Step 3b now converts the local instance to a single-node replica set first, and the findings note must record which database was used.
 
 **P10 — draws does not exercise both concurrency models, so this plan locks a contract it has only half-tested.** Draws lives in `SeasonalData`'s arrays and proves `core/mongo/positional.js`; it never touches a standalone document, so `core/mongo/document.js` — and any pressure it puts on the four-verb shape — is not discovered until plan 2. **Accepted rather than restructured**, because plan 2 already places `document.js` as its *first* task, before any standalone entity converts, so the discovery happens at the cheapest moment. Plan 2 Task 1 now carries an explicit step to re-validate the contract against a standalone document before anything else proceeds.
-
-**P11 — a fresh reader with no session context found this plan's first file unable to load.** `core/ops/index.js` required `./draws` above `module.exports`, so `registerEntity` was `undefined` inside the entity — a TypeError on `require`, before any test ran. Three falsification passes had gone over this file. **Reading a plan is not running it**; the fix is one line of ordering and a comment saying why the order is load-bearing.
-
-**P12 — the conservation test could not pass over the map it was given.** Ten mutating draws actions, seven op types, a 1:1 `Map`. `registerEntity` now accepts an array of actions and rejects a double-claim, and `draw.add`/`draw.purge` claim their two and three respectively.
-
-**P13 — three inverses were destroyed by the validator on the way back in**, because `commitSet` validates before applying and the bulk validators unconditionally re-parsed `payload.text || ''`. Undo would have silently restored nothing for bulkDelete, purge and bulkReplace. The `alreadyParsed` guard fixes it; **P3's test was asserting `invert()`'s return value and never round-tripping it**, which is why P3 recorded this as already solved.
-
-**P14 — `draw.purge`'s inverse used `category: 'both'`, which `pathFor()` maps to `newDraws`.** Reverting a `scope: 'all'` purge would have restored new draws and silently dropped every returning draw. `invert()` may now return an array, and `commitSet` flattens.
-
-**P15 — `recordChange` cannot be used the way Task 5 used it.** It returns `undefined` and takes no session, so `changeIds` was always `[undefined]` and audit rows escaped the transaction. Task 2 now adds a transactional `recordChangeIn(session, fields)` beside it, leaving the fire-and-forget Discord path untouched.
-
-**P16 — `page: 'draws'` was hardcoded in a module described as generic**, which would have mislabelled every other entity's audit rows the moment plan 2 landed — breaking `/bot analytics` filtering *and* the `ON_CORE.has(row.page)` branch P8 exists to serve. Now derived from the op type.
-
-**P17 — the Revert button was a privilege escalation.** The `bot_` guard proves *some* `/bot` access, not page scope, and `handlers/bot.js` documents that in a comment at the top. An analytics-only admin could have reverted anything.
-
-**P18 — `core/` is a new tracked top-level directory and `top-level-dirs` is an ERROR check.** The first commit would have turned CI red.
-
-**P19 — smaller, all real:** `_id` discovered by a tail read inside a retrying transaction; "28 existing tests" against a real 42; a step asserting both "three ✓, exit 0" and "it will still fail"; a revert test said to have three checks that has four; and `handlers/router.js` listed for an edit it has nothing to receive.
 
 **Not found:** no defect in the op contract's four-verb shape, in the element-identity filter design, or in the task ordering after P2 was fixed. That is an absence of findings, not proof they are right.
