@@ -15,9 +15,7 @@ check('a row from BEFORE the core existed says so', () => {
 });
 
 check('a row from an entity NOT YET on the core says something different', () => {
-    // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the
-    // in-memory registerUndo. Their rows are BRAND NEW and also have inverse: null -- telling the user
-    // they "predate revert support" would be plainly false and would read as a bug.
+    // Between this plan and plan 2, calendar/loadouts/patchnotes/season/announcements still use the in-memory registerUndo. Their rows are BRAND NEW and also have inverse: null -- telling the user they "predate revert support" would be plainly false and would read as a bug.
     const r = canRevert({ changeId: 'Aug20-09', inverse: null, undone: false, page: 'calendar' });
     assert.strictEqual(r.ok, false);
     assert.match(r.reason, /not yet/i, 'an unmigrated entity must not be described as historical');

@@ -14,7 +14,7 @@ paths:
 
 ## Admin access — per-page, not per-command
 
-`ALLOWED_ADMIN_ID` (`commands/manage.js`) is the hardcoded owner and always has everything implicitly. Everyone else's access is a flat array of permission tokens on `AdminUser.permissions`:
+`ALLOWED_ADMIN_ID` (declared in `utils/owner.js` as of the portal operation core, 2026-08-21 00:09 EDT — `commands/manage.js` re-exports it so no other call site broke) is the hardcoded owner and always has everything implicitly. Everyone else's access is a flat array of permission tokens on `AdminUser.permissions`:
 
 - `bot` / `autobuild` — full access to that command, no finer scope exists for either (`bot` replaced the retired `alerts`/`audit` tokens 2026-08-16, observability stage 3, when those commands became `/bot analytics`)
 - `manage` — full access to EVERY `/manage` page (bare "manage" is a deliberate shorthand for "all pages", not an error — Harkirat's explicit call)
