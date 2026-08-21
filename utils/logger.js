@@ -120,9 +120,7 @@ function writeStructured(severity, text, serviceCtx) {
 
 // Patch console rather than rewriting ~60 call sites across the tree. Two reasons this is the right call and not laziness: (1) it cannot MISS a site, including ones added later and ones in third-party code paths that log through console; (2) the alternative is a sprawling mechanical diff across the whole codebase whose only content is an import change, which is far harder to review for an actual behavioural regression. The patch is additive — original console behaviour is preserved exactly, we only prepend a marker journald strips, and tee a copy to the JSON sink.
 function patchConsole(opts = {}) {
-    // opts.service overrides the 'dioreo-bot' default in Cloud Error Reporting's serviceContext —
-    // used by portal/server.js to group portal errors separately from the bot's. Previously this
-    // parameter didn't exist and passing one was a silent no-op (verified 2026-08-20).
+    // opts.service overrides the 'dioreo-bot' default in Cloud Error Reporting's serviceContext — used by portal/server.js to group portal errors separately from the bot's. Previously this parameter didn't exist and passing one was a silent no-op (verified 2026-08-20).
     const serviceCtx = Object.keys(opts).length ? { ...SERVICE_CONTEXT, ...opts } : null;
     for (const [method, severity] of [['error', 'ERROR'], ['warn', 'WARNING'], ['log', 'INFO']]) {
         const original = console[method];

@@ -1,7 +1,4 @@
-// scripts/portalBoot.test.js
-// The environment guard is the first thing written because it is the one mistake that cannot be
-// undone: a dev session pointed at the production database. Same failure class as the
-// multiple-bot-instances rule.
+// scripts/portalBoot.test.js The environment guard is the first thing written because it is the one mistake that cannot be undone: a dev session pointed at the production database. Same failure class as the multiple-bot-instances rule.
 const assert = require('assert');
 const { assertEnvironment } = require('../portal/server');
 

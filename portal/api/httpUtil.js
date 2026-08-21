@@ -1,8 +1,6 @@
 // portal/api/httpUtil.js
 //
-// Tiny shared helpers every portal/api/*.js route uses. No framework — this project's node:http
-// server has no body parser or path-param extraction, so these exist once here instead of five
-// times.
+// Tiny shared helpers every portal/api/*.js route uses. No framework — this project's node:http server has no body parser or path-param extraction, so these exist once here instead of five times.
 function readJsonBody(req) {
     return new Promise((resolve, reject) => {
         let raw = '';

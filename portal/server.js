@@ -1,20 +1,14 @@
 // portal/server.js
 //
-// The portal's HTTP entry point. It routes, serves static files and catches errors. It contains NO
-// business logic and performs NO direct Mongo write — a route parses a request into an op and hands
-// it to core/changeset.js.
+// The portal's HTTP entry point. It routes, serves static files and catches errors. It contains NO business logic and performs NO direct Mongo write — a route parses a request into an op and hands it to core/changeset.js.
 //
-// ⚠️ RUNTIME-AGNOSTIC ON PURPOSE. Every setting arrives through the environment; nothing assumes the
-// repo layout, a sibling bot process or a writable filesystem beyond portal/public. That is what
-// keeps a later move to Cloud Run a config change rather than a rewrite.
+// ⚠️ RUNTIME-AGNOSTIC ON PURPOSE. Every setting arrives through the environment; nothing assumes the repo layout, a sibling bot process or a writable filesystem beyond portal/public. That is what keeps a later move to Cloud Run a config change rather than a rewrite.
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const { patchConsole } = require('../utils/logger');
 
-// `patchConsole({ service: 'dioreo-portal' })` groups this process's errors separately from the
-// bot's in Cloud Error Reporting — see utils/logger.js's patchConsole/writeStructured for how the
-// override actually reaches the serviceContext (it used to be a silent no-op; fixed in this task).
+// `patchConsole({ service: 'dioreo-portal' })` groups this process's errors separately from the bot's in Cloud Error Reporting — see utils/logger.js's patchConsole/writeStructured for how the override actually reaches the serviceContext (it used to be a silent no-op; fixed in this task).
 patchConsole({ service: 'dioreo-portal' });
 
 function assertEnvironment({ env, mongoUri }) {
@@ -32,16 +26,12 @@ function assertEnvironment({ env, mongoUri }) {
 const ROUTES = [];
 const route = (method, pattern, handler) => ROUTES.push({ method, pattern, handler });
 
-// Static file serving for portal/public — the built frontend (scripts/buildPortal.js's output).
-// Deliberately minimal: no directory listing, no range requests, no caching headers beyond the
-// browser default. This is an admin-only, low-traffic surface; a CDN-grade static server is not
-// the problem this file exists to solve.
+// Static file serving for portal/public — the built frontend (scripts/buildPortal.js's output). Deliberately minimal: no directory listing, no range requests, no caching headers beyond the browser default. This is an admin-only, low-traffic surface; a CDN-grade static server is not the problem this file exists to solve.
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
 function serveStatic(req, res, url) {
-    // Reject any path segment that could escape PUBLIC_DIR (../, encoded or not) BEFORE resolving —
-    // resolving first and comparing after is the classic path-traversal mistake this avoids.
+    // Reject any path segment that could escape PUBLIC_DIR (../, encoded or not) BEFORE resolving — resolving first and comparing after is the classic path-traversal mistake this avoids.
     const decoded = decodeURIComponent(url.pathname);
     if (decoded.includes('..')) { res.writeHead(400); return res.end('Bad request'); }
     const rel = decoded === '/' ? '/index.html' : decoded;
@@ -58,8 +48,7 @@ function serveStatic(req, res, url) {
 function createServer({ port, mongoUri, env }) {
     assertEnvironment({ env, mongoUri });
     const server = http.createServer(async (req, res) => {
-        // ONE top-level catch, mirroring handlers/router.js's crash net. A thrown route must never
-        // take the process down — the portal is a convenience; being down must be quiet, not fatal.
+        // ONE top-level catch, mirroring handlers/router.js's crash net. A thrown route must never take the process down — the portal is a convenience; being down must be quiet, not fatal.
         try {
             const url = new URL(req.url, `http://${req.headers.host}`);
             const match = ROUTES.find(r => r.method === req.method && r.pattern.test(url.pathname));
@@ -82,9 +71,7 @@ function createServer({ port, mongoUri, env }) {
 
 module.exports = { createServer, assertEnvironment, route, ROUTES };
 
-// Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same
-// hazard: these modules require('../auth') and this file's `route`, so if they were required before
-// module.exports was assigned, `route` would still be undefined at the moment they read it.
+// Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same hazard: these modules require('../auth') and this file's `route`, so if they were required before module.exports was assigned, `route` would still be undefined at the moment they read it.
 require('./auth').registerAuthRoutes(route);
 require('./api/changesets').register(route);
 require('./api/season').register(route);

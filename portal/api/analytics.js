@@ -1,9 +1,6 @@
 // portal/api/analytics.js
 //
-// Analytics realm \u2014 read-only except for revert (handled generically by
-// portal/api/changesets.js's POST /api/revert/:changeId, which re-checks the change's OWN page \u2014
-// F24). "Nothing is re-derived": Usage/Timing reuse the exact export functions /bot analytics calls,
-// and the event river reads ChangeLog/AlertLog/BootRecord directly rather than recomputing anything.
+// Analytics realm \u2014 read-only except for revert (handled generically by portal/api/changesets.js's POST /api/revert/:changeId, which re-checks the change's OWN page \u2014 F24). "Nothing is re-derived": Usage/Timing reuse the exact export functions /bot analytics calls, and the event river reads ChangeLog/AlertLog/BootRecord directly rather than recomputing anything.
 const ChangeLog = require('../../models/ChangeLog');
 const AlertLog = require('../../models/AlertLog');
 const BootRecord = require('../../models/BootRecord');

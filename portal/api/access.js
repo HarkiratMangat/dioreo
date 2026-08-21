@@ -1,10 +1,6 @@
 // portal/api/access.js
 //
-// Access realm \u2014 owner-only, exactly like /bot access (spec \u00a78.2: "no column, no grantable
-// scope"). NOT part of the core operation algebra: admin grants/revokes are direct AdminUser writes,
-// same as they always have been through /bot access, and a live PortalSession end is a direct write
-// too. gateCommit is still used for grant/revoke (tier 3 \u2014 irreversible in effect, since a grant
-// is a real privilege change) so the same typed-confirmation control governs every tier-3 action.
+// Access realm \u2014 owner-only, exactly like /bot access (spec §8.2: "no column, no grantable scope"). NOT part of the core operation algebra: admin grants/revokes are direct AdminUser writes, same as they always have been through /bot access, and a live PortalSession end is a direct write too. gateCommit is still used for grant/revoke (tier 3 \u2014 irreversible in effect, since a grant is a real privilege change) so the same typed-confirmation control governs every tier-3 action.
 const AdminUser = require('../../models/AdminUser');
 const PortalSession = require('../../models/PortalSession');
 const { isOwner, parsePermissionsInput, invalidateAdminCache, MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require('../../utils/adminAccess');
@@ -81,9 +77,7 @@ function register(route) {
         res.end(JSON.stringify({ ok: true }));
     })));
 
-    // Ending a live session is NOT tier 3 \u2014 it costs the signed-in device a re-login, nothing
-    // irreversible. The spec's H8/\u00a78.2 calls this out as something the bot itself cannot do at all
-    // (revoking an admin in Discord does not kill a browser session).
+    // Ending a live session is NOT tier 3 \u2014 it costs the signed-in device a re-login, nothing irreversible. The spec's H8/§8.2 calls this out as something the bot itself cannot do at all (revoking an admin in Discord does not kill a browser session).
     route('POST', /^\/api\/access\/session\/end$/, requireAdmin(ownerOnly(async (req, res) => {
         const body = await readJsonBody(req);
         await PortalSession.updateOne({ sessionHash: body.sessionHash }, { revokedAt: new Date() });

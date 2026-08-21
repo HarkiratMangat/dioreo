@@ -29,10 +29,7 @@ check('tier 1 and 2 need neither gate', () => {
     assert.strictEqual(gateCommit({ tier: 2 }).ok, true);
 });
 
-// Source-scan, matching the shape of scripts/botAccessPermissions.test.js: asserts an invariant
-// rather than a unit. Every mutating (POST) route registered anywhere in portal/api/ must wrap its
-// handler in requireAdmin \u2014 a client-reachable POST route with no requireAdmin call in its own
-// registration line is a route this test can catch mechanically, before it ever ships.
+// Source-scan, matching the shape of scripts/botAccessPermissions.test.js: asserts an invariant rather than a unit. Every mutating (POST) route registered anywhere in portal/api/ must wrap its handler in requireAdmin \u2014 a client-reachable POST route with no requireAdmin call in its own registration line is a route this test can catch mechanically, before it ever ships.
 check('every mutating route is wrapped in requireAdmin', () => {
     const fs = require('fs'), path = require('path');
     const dir = path.join(__dirname, '..', 'portal', 'api');

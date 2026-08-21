@@ -1,9 +1,6 @@
 // portal/api/armory.js
 //
-// Armory realm \u2014 covers /manage's 'loadouts_mp' and 'loadouts_dmz' pages. No dates, so no Track
-// \u2014 Rack (by category) and Coverage (data-quality flags) are both derived read-only views over
-// the same Loadout collection. Mutations go through the generic changeset pathway (loadout.add,
-// loadout.bulkReplace, etc.) built by the frontend.
+// Armory realm \u2014 covers /manage's 'loadouts_mp' and 'loadouts_dmz' pages. No dates, so no Track \u2014 Rack (by category) and Coverage (data-quality flags) are both derived read-only views over the same Loadout collection. Mutations go through the generic changeset pathway (loadout.add, loadout.bulkReplace, etc.) built by the frontend.
 const Loadout = require('../../models/Loadout');
 const { findDuplicateLoadouts, getMpCategoryAccent } = require('../../utils/loadoutRender');
 const { getManagePages } = require('../../utils/adminAccess');
@@ -11,8 +8,7 @@ const { getManagePages } = require('../../utils/adminAccess');
 const ARMORY_PAGES = ['loadouts_mp', 'loadouts_dmz'];
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
-// Coverage flags \u2014 every flag here is meant to be a filter into the Manifest (spec \u00a78.2), so
-// each build carries which ones it tripped rather than a single pass/fail.
+// Coverage flags \u2014 every flag here is meant to be a filter into the Manifest (spec §8.2), so each build carries which ones it tripped rather than a single pass/fail.
 function coverageFlags(build, mpBuilds) {
     const flags = [];
     if (!build.imageKey) flags.push('missing-image');

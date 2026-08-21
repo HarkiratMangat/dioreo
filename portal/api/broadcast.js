@@ -1,9 +1,6 @@
 // portal/api/broadcast.js
 //
-// Broadcast realm \u2014 covers /manage's 'announcement' page. Now showing is the live set exactly as
-// Discord would render it (createdAt order \u2014 models/Announcement.js has no ordering field, see
-// the spec's \u00a78.2 note); Airtime puts every announcement on a time axis. Mutations go through
-// the generic changeset pathway (announcement.post/edit/delete).
+// Broadcast realm \u2014 covers /manage's 'announcement' page. Now showing is the live set exactly as Discord would render it (createdAt order \u2014 models/Announcement.js has no ordering field, see the spec's §8.2 note); Airtime puts every announcement on a time axis. Mutations go through the generic changeset pathway (announcement.post/edit/delete).
 const Announcement = require('../../models/Announcement');
 const { getManagePages } = require('../../utils/adminAccess');
 

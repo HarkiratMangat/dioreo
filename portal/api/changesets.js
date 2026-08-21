@@ -1,12 +1,8 @@
 // portal/api/changesets.js
 //
-// The generic changeset pathway shared by every realm that drives core/ops (Season, Armory,
-// Broadcast) — compose ops, preview them, commit atomically. Access and Analytics do NOT go through
-// this: Access mutates AdminUser/PortalSession directly (there is no core/ops entity for admin
-// grants), and Analytics only ever reverts an already-committed change via core/revert.js.
+// The generic changeset pathway shared by every realm that drives core/ops (Season, Armory, Broadcast) — compose ops, preview them, commit atomically. Access and Analytics do NOT go through this: Access mutates AdminUser/PortalSession directly (there is no core/ops entity for admin grants), and Analytics only ever reverts an already-committed change via core/revert.js.
 //
-// Permission is resolved per-op, server-side, on every request (H7) — never trusted from which
-// realm the client claims to be showing.
+// Permission is resolved per-op, server-side, on every request (H7) — never trusted from which realm the client claims to be showing.
 const Changeset = require('../../models/Changeset');
 const { validateSet, previewSet, commitSet, pageForOp } = require('../../core/changeset');
 const { revertChange } = require('../../core/revert');
@@ -104,8 +100,7 @@ function register(route) {
         const changeId = segment(url, 2);
         const row = await getChange(changeId);
         if (!row) { res.writeHead(404); return res.end(JSON.stringify({ error: 'no such change' })); }
-        // F24: a 'bot'-token analytics admin re-checks the CHANGE'S OWN PAGE before reverting it —
-        // the bot_ router prefix (and here, requireAdmin's door check) proves only SOME admin access.
+        // F24: a 'bot'-token analytics admin re-checks the CHANGE'S OWN PAGE before reverting it — the bot_ router prefix (and here, requireAdmin's door check) proves only SOME admin access.
         if (!isOwner(session.discordId) && !(await hasManagePageAccess(session.discordId, row.page))) {
             res.writeHead(403, { 'content-type': 'application/json' });
             return res.end(JSON.stringify({ error: `You do not have access to the "${row.page}" page.` }));

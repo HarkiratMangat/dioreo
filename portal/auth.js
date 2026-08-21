@@ -1,13 +1,8 @@
 // portal/auth.js
 //
-// Discord OAuth (identify scope only) + host-only session cookies. The Discord token itself is
-// discarded immediately after the callback exchanges it for a user id — this process never holds a
-// live Discord API credential beyond the few milliseconds it takes to make that one call.
+// Discord OAuth (identify scope only) + host-only session cookies. The Discord token itself is discarded immediately after the callback exchanges it for a user id — this process never holds a live Discord API credential beyond the few milliseconds it takes to make that one call.
 //
-// 🔴 The DOOR gate is `isAdmin(userId)` — owner, or any admin holding at least one permission token.
-// There is no separate 'portal' permission and none is added (spec §8.2): holding any `manage.*`
-// scope, or `bot`, is what admits you. Each realm and each control re-checks its OWN scope
-// server-side afterwards — requireAdmin below only answers "may this person open the door at all".
+// 🔴 The DOOR gate is `isAdmin(userId)` — owner, or any admin holding at least one permission token. There is no separate 'portal' permission and none is added (spec §8.2): holding any `manage.*` scope, or `bot`, is what admits you. Each realm and each control re-checks its OWN scope server-side afterwards — requireAdmin below only answers "may this person open the door at all".
 const crypto = require('node:crypto');
 const https = require('node:https');
 const PortalSession = require('../models/PortalSession');
@@ -35,9 +30,7 @@ function buildAuthorizeUrl({ clientId, redirectUri, state }) {
     return u.toString();
 }
 
-// Not a true constant-time compare across unequal lengths (timingSafeEqual throws on that), but a
-// length mismatch leaks nothing an attacker doesn't already know (state tokens are a fixed length),
-// and the fallback keeps this from ever throwing on a forged/missing value.
+// Not a true constant-time compare across unequal lengths (timingSafeEqual throws on that), but a length mismatch leaks nothing an attacker doesn't already know (state tokens are a fixed length), and the fallback keeps this from ever throwing on a forged/missing value.
 function verifyState(received, expected) {
     if (!received || !expected) return false;
     const a = Buffer.from(String(received));
@@ -47,8 +40,7 @@ function verifyState(received, expected) {
 }
 
 function cookieAttrs({ maxAge } = {}) {
-    // No `Domain` attribute — a host-only cookie is never sent to dioreo.app, which is the whole
-    // reason portal.dioreo.app is a separate subdomain (spec decision 8).
+    // No `Domain` attribute — a host-only cookie is never sent to dioreo.app, which is the whole reason portal.dioreo.app is a separate subdomain (spec decision 8).
     const parts = ['Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax'];
     if (maxAge != null) parts.push(`Max-Age=${maxAge}`);
     return parts;
@@ -169,8 +161,7 @@ async function sessionFor(req) {
 }
 
 function csrfToken(session) {
-    // Derived deterministically from the session hash rather than stored separately — nothing new
-    // to persist, and it changes automatically if the session ever does.
+    // Derived deterministically from the session hash rather than stored separately — nothing new to persist, and it changes automatically if the session ever does.
     return crypto.createHash('sha256').update(`csrf:${session.sessionId}`).digest('hex');
 }
 
@@ -180,9 +171,7 @@ function verifyCsrf(req, session) {
     return verifyState(header, csrfToken(session));
 }
 
-// The DOOR gate, not a realm gate. Every mutating request additionally needs a valid CSRF token
-// (H10) — checked here so no route can forget it. Each realm's own routes layer their own
-// page/owner/command scope check on top of this.
+// The DOOR gate, not a realm gate. Every mutating request additionally needs a valid CSRF token (H10) — checked here so no route can forget it. Each realm's own routes layer their own page/owner/command scope check on top of this.
 function requireAdmin(handler) {
     return async (req, res, url) => {
         const session = await sessionFor(req);

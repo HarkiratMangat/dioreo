@@ -9221,12 +9221,7 @@ function secretScan(built) {
     return true;
 }
 
-// ⚠️ GUARDED (portal plan 3 Task 4) — this used to be an unconditional top-level
-// script, so `require('./buildLegalPages')` ran the ENTIRE site build (and its own
-// `process.exit()`, which would have killed whatever process required it). scripts/buildPortal.js
-// needs `contrastAudit` importable without any of that. Wrapping the site's own CLI invocation in
-// `require.main === module` is the whole fix — `build()` and every audit function above are
-// ordinary function declarations that already did nothing until called.
+// ⚠️ GUARDED (portal plan 3 Task 4) — this used to be an unconditional top-level script, so `require('./buildLegalPages')` ran the ENTIRE site build (and its own `process.exit()`, which would have killed whatever process required it). scripts/buildPortal.js needs `contrastAudit` importable without any of that. Wrapping the site's own CLI invocation in `require.main === module` is the whole fix — `build()` and every audit function above are ordinary function declarations that already did nothing until called.
 function runSiteBuildCli() {
     console.log('Building the site →', path.relative(ROOT, path.join(ROOT, 'public')));
     const built = build();

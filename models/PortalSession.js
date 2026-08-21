@@ -1,12 +1,8 @@
 // models/PortalSession.js
 //
-// ⚠️ PRIVACY: this model carries a per-user Discord ID **and** a device string, which is a category
-// of data this project has never stored before. docs/legal/PRIVACY.md §2 and Appendix A must name it
-// with its own row and a retention answer — docs-audit's privacy-model-coverage exists precisely to
-// catch a new model gaining a discordId without one.
+// ⚠️ PRIVACY: this model carries a per-user Discord ID **and** a device string, which is a category of data this project has never stored before. docs/legal/PRIVACY.md §2 and Appendix A must name it with its own row and a retention answer — docs-audit's privacy-model-coverage exists precisely to catch a new model gaining a discordId without one.
 //
-// The session id is stored HASHED. The cookie holds the raw value; a database leak must not hand
-// anyone a working session.
+// The session id is stored HASHED. The cookie holds the raw value; a database leak must not hand anyone a working session.
 const mongoose = require('mongoose');
 
 const PortalSessionSchema = new mongoose.Schema({

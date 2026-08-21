@@ -1,6 +1,4 @@
-// scripts/portalAuth.test.js
-// Pure crypto and policy checks — no network, no Discord. What is asserted is the shape of the
-// cookie and the state parameter, because those are the two things that fail silently and unsafely.
+// scripts/portalAuth.test.js Pure crypto and policy checks — no network, no Discord. What is asserted is the shape of the cookie and the state parameter, because those are the two things that fail silently and unsafely.
 const assert = require('assert');
 const { buildCookie, buildAuthorizeUrl, verifyState, hashSession } = require('../portal/auth');
 
