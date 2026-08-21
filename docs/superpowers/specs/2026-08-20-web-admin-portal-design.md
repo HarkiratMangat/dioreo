@@ -245,7 +245,7 @@ The door is **not linked from the public site** and carries `noindex` — not as
 
 ⚠️ **Harkirat creates the OAuth client secret and registers the redirect URI himself. Claude does not handle the credential.**
 
-**Development runs against the dev application, decided 2026-08-20 23:00 EDT** (Harkirat: *"we're use the dev bot's OAuth for now"*). `Dioreo (Dev)` (`1529636846248919263`) already exists for exactly this purpose, so the portal can be built and signed into end-to-end without prod's secret existing — which takes the credential off the critical path and leaves prod's as a launch-time step.
+**Development runs against the dev application, decided 2026-08-20 22:54 EDT** (Harkirat: *"we're use the dev bot's OAuth for now"*). `Dioreo (Dev)` (`1529636846248919263`) already exists for exactly this purpose, so the portal can be built and signed into end-to-end without prod's secret existing — which takes the credential off the critical path and leaves prod's as a launch-time step.
 
 | | application | redirect URI to register | secret lives in |
 |---|---|---|---|

@@ -28,7 +28,9 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.57.0 — 2026-08-20 23:00 EDT (#166) — the portal's ship-after-v3.0.0 gate, reversed
+## Pre-Release v3.57.0 — 2026-08-20 22:54 EDT (#166) — the portal's ship-after-v3.0.0 gate, reversed
+
+⚠️ **A note on this entry's own timestamp.** Its first draft was stamped `23:00 EDT` while the clock read `22:54` — estimated, not read. `.claude/hooks/timestamp-check.sh` caught it on the DEVLOG write and denied the tool call, but the same fabricated stamp had already reached the spec, the ROADMAP and this file in an earlier commit. All three are corrected to `22:54`. Recorded rather than quietly fixed, because the 2026-08-02 incident this hook exists for produced thirty well-formed fabricated stamps and the only thing wrong with any of them was that nobody had looked at a clock.
 
 Nothing changed in the bot. Harkirat reversed decision 4 of the web-admin-portal spec — *"I want to build it now, forget after v3.0.0"* — so build starts immediately. The spec is `status: frozen`, so the reversal lands as a **dated amendment banner** at the top rather than a rewrite, and the decision-table row is **struck in place with its rationale kept**: it was sound and is not disowned, it was outweighed.
 
