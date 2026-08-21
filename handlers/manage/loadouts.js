@@ -6,9 +6,10 @@
 // ⚠️ NO PURGE HERE, DELIBERATELY -- Loadouts has no Purge button at all (see .claude/rules/manage-panel.md). Only draws.js/calendar.js/patchnotes.js export a purge().
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
+//
+// ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 3 (2026-08-21 13:01 EDT). Badge parsing (utils/adminParser.js's parseLoadoutBadges) and the DMZ categoryRank->dmzRangeRank swap stay HERE, same as before -- the op expects already-parsed badge fields, not raw modal text. Cloudinary structured-metadata sync, badge propagation to sibling builds, and the attachmentSlots byte-identity check all moved INTO core/ops/loadouts.js's apply() (see that file's own header for the real defects found integrating this: weaponKey must be a plain normalize, not /autobuild's auto-namer; "Add"/"Replace Multiple" share ONE upsert body since there is no wholesale-replace for loadouts; a shareCode key must be OMITTED entirely on edit or it silently wipes an /autobuild-set gunsmith code). Undo now lives on /bot analytics' Changes page (core/revert.js) -- registerUndo/undoButtonRow are GONE from every mutation here. Export flows (exportUpTo5/exportCategory) are read-only and untouched.
 
-const { recordChange } = require('../../utils/changeStore');
-const { registerUndo } = require('./shared');
+const { commitSet } = require('../../core/changeset');
 
 // --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
 async function editLoadout(interaction) {
@@ -18,22 +19,15 @@ async function editLoadout(interaction) {
     const Loadout = require('../../models/Loadout');
     const targetId = interaction.customId.replace('edit_loadout_', '');
 
-    // Field is "Category | Badges" (2 segments) -- Mode is not editable through this modal at all (MP/DMZ are separate panel pages, so there's no "move a loadout to the other mode" action); it's read straight off the existing document instead.
+    // Mode is not editable through this modal at all (MP/DMZ are separate panel pages) -- read straight off the existing document, same as before the refactor.
     const existingLoadout = await Loadout.findById(targetId).lean();
+    if (!existingLoadout) return; // Preserves the original's silent no-op on a stale search result.
+    const mode = existingLoadout.mode || 'MP';
+
+    // Field is "Category | Badges" (2 segments).
     const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
     const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
     let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
-
-    // Slot labels (Muzzle/Barrel/...) only ever come from /autobuild's vision extraction, so this plain-text modal can't supply new ones -- the best it can do is KEEP the existing mapping, and only when it's still valid: valid only if the attachment list is byte-for-byte unchanged (same length + same names in the same order); any real content/order change invalidates slot identity, so it's cleared rather than carried forward misaligned onto the wrong attachment.
-    const existingAttachments = existingLoadout?.attachments || [];
-    const attachmentsUnchanged = attachmentsArray.length === existingAttachments.length
-        && attachmentsArray.every((a, i) => a === existingAttachments[i]);
-    const attachmentSlots = attachmentsUnchanged ? (existingLoadout?.attachmentSlots || []) : [];
-
-    const weaponName = interaction.fields.getTextInputValue('weapon');
-    const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
-    const buildName = interaction.fields.getTextInputValue('build');
-    const mode = existingLoadout?.mode || 'MP';
 
     // DMZ never uses the per-category Best/TopN system -- a bare "best"/"topN" token (no -close/-midlong suffix) still parses into categoryRank since the parser doesn't know the mode, so move it over to dmzRangeRank here instead.
     if (mode === 'DMZ' && categoryRank && !dmzRangeRank) {
@@ -41,39 +35,25 @@ async function editLoadout(interaction) {
         categoryRank = null;
     }
 
+    const weaponName = interaction.fields.getTextInputValue('weapon');
+    const buildName = interaction.fields.getTextInputValue('build');
     const imageKey = interaction.fields.getTextInputValue('image');
 
-    await Loadout.findByIdAndUpdate(targetId, {
-        weaponName,
-        weaponKey,
-        buildName,
-        attachments: attachmentsArray,
-        attachmentSlots,
-        imageKey,
-        category: metaParts[0]?.toUpperCase() || 'AR',
-        mode,
-        isMeta,
-        categoryRank,
-        dmzRangeRank,
-        isToxic
-    });
-
-    // Badges describe the WEAPON, not one specific build variant -- propagate the same badges to every other build sharing this weaponKey+mode. Only done on edit (not on creating a brand-new build) -- the add-loadout modal has no badges pre-filled, so propagating from there would silently wipe existing siblings' badges any time a new build is added without retyping them.
-    const propagateResult = await Loadout.updateMany(
-        { weaponKey, mode, _id: { $ne: targetId } },
-        { isMeta, categoryRank, dmzRangeRank, isToxic }
+    const result = await commitSet(
+        [{ type: 'loadout.edit', target: { id: targetId },
+           payload: { weaponName, buildName, mode, attachments: attachmentsArray, imageKey,
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic } }],
+        { actorId: interaction.user.id }
     );
+    if (!result.ok) {
+        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
+    }
+    const { applied } = result.results[0];
 
-    // Keep Cloudinary structured metadata in sync -- re-sync this build AND every sibling, since badges are weapon-level and may have just propagated. Best-effort, never throws. Each sibling now carries its OWN persisted attachmentSlots -- pass it through so per-slot fields actually re-sync when valid, instead of unconditionally skipping them.
-    const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
-    for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib, sib.attachmentSlots);
-
-    // pageForLoadoutMode, not a re-derived ternary (v3-pre-release review, finding #41).
-    const { pageForLoadoutMode } = require('../../utils/manageActions');
-    recordChange({ actorId: interaction.user.id, page: pageForLoadoutMode(mode), action: 'edit', model: 'Loadout', target: `${weaponName} (${buildName})`, summary: `Edited loadout "${weaponName} (${buildName})"` });
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
-    if (propagateResult.modifiedCount > 0) {
-        confirmation += `\n-# Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.`;
+    if (applied.propagatedCount > 0) {
+        confirmation += `\n-# Badges also synced to ${applied.propagatedCount} other build(s) of this weapon.`;
     }
     if (unrecognized.length > 0) {
         confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
@@ -91,40 +71,34 @@ async function addLoadout(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { parseLoadoutBadges } = require('../../utils/adminParser');
     const { checkImageExists } = require('../../utils/loadoutRender');
-    const Loadout = require('../../models/Loadout');
     const pageMode = interaction.customId.replace('add_loadout_', '');
 
     // Field is "Category | Badges" (2 segments) -- Mode has no modal field since the Add button itself is already MP/DMZ-scoped by which page it's on.
     const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
     const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    // Unlike editLoadout above, this does NOT propagate badges to sibling builds of the same weapon -- this modal has nothing pre-filled, so a blank badges field here (the common case when just adding another build variant) would silently wipe any badges already set on the weapon's existing builds. Re-editing an existing build is the supported way to (re)sync badges.
+    // Unlike editLoadout above, this does NOT propagate badges to sibling builds of the same weapon (the op's loadout.add never calls propagateBadges) -- this modal has nothing pre-filled, so a blank badges field here (the common case when just adding another build variant) would silently wipe any badges already set on the weapon's existing builds. Re-editing an existing build is the supported way to (re)sync badges.
     let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
     if (pageMode === 'DMZ' && categoryRank && !dmzRangeRank) {
         dmzRangeRank = categoryRank;
         categoryRank = null;
     }
 
+    const weaponName = interaction.fields.getTextInputValue('weapon');
+    const buildName = interaction.fields.getTextInputValue('build');
     const imageKey = interaction.fields.getTextInputValue('image');
 
-    const newLoadout = new Loadout({
-        weaponName: interaction.fields.getTextInputValue('weapon'),
-        weaponKey: interaction.fields.getTextInputValue('weapon').toLowerCase().replace(/\s+/g, ''),
-        buildName: interaction.fields.getTextInputValue('build'),
-        attachments: attachmentsArray,
-        imageKey,
-        category: metaParts[0]?.toUpperCase() || 'AR',
-        mode: pageMode,
-        isMeta,
-        categoryRank,
-        dmzRangeRank,
-        isToxic
-    });
+    const result = await commitSet(
+        [{ type: 'loadout.add',
+           payload: { weaponName, buildName, mode: pageMode, attachments: attachmentsArray, imageKey,
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic } }],
+        { actorId: interaction.user.id }
+    );
+    if (!result.ok) {
+        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
+    }
 
-    await newLoadout.save();
-    recordChange({ actorId: interaction.user.id, page: pageMode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'add', model: 'Loadout', target: `${newLoadout.weaponName} (${newLoadout.buildName})`, summary: `Added loadout "${newLoadout.weaponName} (${newLoadout.buildName})"` });
-    // Sync Cloudinary structured metadata for the new build. Best-effort: if the admin hasn't uploaded the image to that key yet, the asset doesn't exist and this is a silent no-op (the metadata gets set on the next edit once the image is there). No slot data (only /autobuild has it). No badge propagation on ADD (see the note above), so only this one build is synced.
-    await require('../../utils/loadoutImageCache').syncLoadoutMetadata(newLoadout);
-    let confirmation = `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.buildName}, ${newLoadout.mode})!**`;
+    let confirmation = `✅ **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
     if (unrecognized.length > 0) {
         confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
     }
@@ -134,67 +108,41 @@ async function addLoadout(interaction) {
     return interaction.followUp({ content: confirmation });
 }
 
-// --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Unlike the draws/calendar bulk routes, this NEVER wholesale-replaces the Loadout collection -- that would wipe every loadout in the database. Each parsed block upserts by {weaponKey, mode, buildName}. `pageMode` force-overrides every parsed entry's mode regardless of what's typed in the pasted text's Mode field -- the page already scopes it, this just guards against a stray mismatched value silently filing a loadout under the wrong page.
+// --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Parsing now happens INSIDE the op (core/ops/loadouts.js), which upserts by {weaponKey, mode, buildName} -- this handler just relays the raw pasted text and `mode`.
 async function bulkAddLoadouts(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const { parseBulkLoadoutList } = require('../../utils/adminParser');
-    const { checkImageExists } = require('../../utils/loadoutRender');
-    const Loadout = require('../../models/Loadout');
     const pageMode = interaction.customId.replace('modal_loadouts_bulk_add_', '');
     const bulkText = interaction.fields.getTextInputValue('bulk_text');
-    const { parsed, errors } = parseBulkLoadoutList(bulkText);
 
-    let created = 0;
-    let updated = 0;
-    const missingImages = []; // { label, imageKey }
-    const touchedKeys = new Set(); // weaponKeys to re-sync Cloudinary metadata for after the loop
-    for (const rawEntry of parsed) {
-        const entry = { ...rawEntry, mode: pageMode };
-        const { weaponKey, mode, buildName, imageKey } = entry;
-        touchedKeys.add(weaponKey);
-        const existing = await Loadout.findOne({ weaponKey, mode, buildName });
-        if (existing) {
-            await Loadout.updateOne({ _id: existing._id }, entry);
-            updated++;
-        } else {
-            await new Loadout(entry).save();
-            created++;
-        }
-        // Weapon-level badges sync across every other build sharing this weaponKey+mode -- same reasoning as editLoadout above.
-        await Loadout.updateMany(
-            { weaponKey, mode, buildName: { $ne: buildName } },
-            { isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic }
-        );
-        if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
+    const result = await commitSet(
+        [{ type: 'loadout.bulkAdd', target: { mode: pageMode }, payload: { text: bulkText } }],
+        { actorId: interaction.user.id }
+    );
+    if (!result.ok) {
+        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
     }
+    const { applied } = result.results[0];
 
-    // Synced once per weaponKey after the loop (not per-block) so a paste with several builds of one weapon doesn't re-sync the same siblings repeatedly. Best-effort, never throws.
-    const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
-    for (const wk of touchedKeys) {
-        for (const b of await Loadout.find({ weaponKey: wk, mode: pageMode })) await syncLoadoutMetadata(b);
+    let confirmation = `✅ **Bulk Loadout Import Complete!**\n${applied.created} new build(s) added, ${applied.updated} existing build(s) updated.`;
+    if (applied.parseErrors.length > 0) {
+        confirmation += `\n⚠️ ${applied.parseErrors.length} block(s) skipped:\n${applied.parseErrors.map(e => `- ${e}`).join('\n')}`;
     }
-
-    recordChange({ actorId: interaction.user.id, page: pageMode === 'MP' ? 'loadouts_mp' : 'loadouts_dmz', action: 'bulkAdd', model: 'Loadout', target: `${pageMode} Loadouts`, summary: `Bulk import ${pageMode} loadouts`, detail: `${created} created, ${updated} updated` });
-    let confirmation = `✅ **Bulk Loadout Import Complete!**\n${created} new build(s) added, ${updated} existing build(s) updated.`;
-    if (errors.length > 0) {
-        confirmation += `\n⚠️ ${errors.length} block(s) skipped:\n${errors.map(e => `- ${e}`).join('\n')}`;
-    }
-    if (missingImages.length > 0) {
-        confirmation += `\n⚠️ No Cloudinary image found for ${missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
+    if (applied.missingImages.length > 0) {
+        confirmation += `\n⚠️ No Cloudinary image found for ${applied.missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${applied.missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
     }
     return interaction.followUp({ content: confirmation });
 }
 
-// --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ} Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes just that one build). Dry-run only -- the actual deleteOne/deleteMany calls happen from index.js's mng_bulkdelconfirm_ dispatch via the apply() closure stashed here.
+// --- BULK DELETE LOADOUTS --- custom_id: modal_loadouts_bulk_remove_{MP|DMZ} Lines are "Weapon" (removes every build of that weapon) or "Weapon | Build Name" (removes just that one build). Dry-run only -- the confirmed delete targets the exact ids collected here rather than re-matching titles at commit time, same reasoning as draws.js/calendar.js's bulk-delete routes.
 async function bulkDeleteLoadouts(interaction) {
     const { fuzzyMatch } = require('../../utils/search');
-    // registerBulkDelete replaces the old hand-rolled randomUUID/pendingBulkDeletes scaffold here (v3-pre-release review, finding #37) -- see the call site below.
     const { registerBulkDelete } = require('./shared');
     const Loadout = require('../../models/Loadout');
     const mode = interaction.customId.replace('modal_loadouts_bulk_remove_', '');
     const lines = interaction.fields.getTextInputValue('lines').split('\n').map(l => l.trim()).filter(Boolean);
 
-    const toDelete = []; // { weaponKey, buildName?, label, docs (for undo) }
+    const toDelete = []; // { label, ids }
     const notFound = [];
     const candidates = await Loadout.find({ mode }).lean();
     for (const line of lines) {
@@ -211,11 +159,11 @@ async function bulkDeleteLoadouts(interaction) {
 
         if (buildPart) {
             const buildDoc = candidates.find(l => l.weaponKey === match.weaponKey && l.mode === mode && l.buildName === buildPart);
-            if (buildDoc) toDelete.push({ weaponKey: match.weaponKey, buildName: buildPart, label: `${match.weaponName} (${buildPart})`, docs: [buildDoc] });
+            if (buildDoc) toDelete.push({ label: `${match.weaponName} (${buildPart})`, ids: [String(buildDoc._id)] });
             else notFound.push(`${weaponPart} | ${mode} | ${buildPart}`);
         } else {
             const docs = candidates.filter(l => l.weaponKey === match.weaponKey && l.mode === mode);
-            toDelete.push({ weaponKey: match.weaponKey, buildName: null, label: `${match.weaponName} (all ${docs.length} build(s))`, docs });
+            toDelete.push({ label: `${match.weaponName} (all ${docs.length} build(s))`, ids: docs.map(d => String(d._id)) });
         }
     }
 
@@ -225,27 +173,23 @@ async function bulkDeleteLoadouts(interaction) {
 
     const summary = [`Removed: ${toDelete.map(t => t.label).join(', ')}`];
     if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
+    const ids = toDelete.flatMap(t => t.ids);
 
-    // registerBulkDelete, not a hand-rolled confirm scaffold (v3-pre-release review, finding #37).
     return registerBulkDelete(interaction, {
         description: `Bulk Delete ${mode} Loadouts`,
         summary,
         apply: async () => {
-            for (const entry of toDelete) {
-                if (entry.buildName) await Loadout.deleteOne({ weaponKey: entry.weaponKey, mode, buildName: entry.buildName });
-                else await Loadout.deleteMany({ weaponKey: entry.weaponKey, mode });
-            }
-            const { pageForLoadoutMode } = require('../../utils/manageActions');
-            recordChange({ actorId: interaction.user.id, page: pageForLoadoutMode(mode), action: 'bulkDelete', model: 'Loadout', target: `${mode} Loadouts`, summary: `Bulk delete ${mode} loadouts`, detail: summary.join(' | ') });
-            return registerUndo(`Bulk Delete ${mode} Loadouts`, async () => {
-                const restoreDocs = toDelete.flatMap(t => t.docs).map(d => { const c = { ...d }; delete c._id; return c; });
-                if (restoreDocs.length) await Loadout.insertMany(restoreDocs);
-            });
+            const result = await commitSet(
+                [{ type: 'loadout.bulkDelete', target: { mode }, payload: { ids } }],
+                { actorId: interaction.user.id }
+            );
+            if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+            return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
         }
     });
 }
 
-// --- EXPORT UP TO 5 LOADOUTS --- custom_id: modal_loadouts_export5_{MP|DMZ} Fuzzy-matches each pasted weapon name (up to 5) against that mode's collection -- the real search+multi-select-from-a-list version is deferred future work (see manage-panel.md); this is a working placeholder for the same outcome.
+// --- EXPORT UP TO 5 LOADOUTS --- custom_id: modal_loadouts_export5_{MP|DMZ} Read-only -- fuzzy-matches each pasted weapon name (up to 5) against that mode's collection. The real search+multi-select-from-a-list version is deferred future work (see manage-panel.md); this is a working placeholder for the same outcome.
 async function exportUpTo5(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { fuzzyMatch } = require('../../utils/search');
@@ -270,12 +214,11 @@ async function exportUpTo5(interaction) {
     const text = formatLoadoutsAsBulkText(matched);
     let content = `📤 **Exported ${matched.length} ${mode} loadout(s)** in Bulk Add format. Paste this back into the Bulk Add action.`;
     if (notFound.length) content += `\n⚠️ Not found: ${notFound.join(', ')}`;
-    // exportFileReply, not a hand-rolled followUp (v3-pre-release review, finding #42).
     const { exportFileReply } = require('../../utils/manageActions');
     return exportFileReply(interaction, content, `${mode.toLowerCase()}_loadouts_export.txt`, text);
 }
 
-// --- EXPORT A LOADOUT CATEGORY --- custom_id: modal_loadouts_exportcategory_{MP|DMZ}
+// --- EXPORT A LOADOUT CATEGORY --- custom_id: modal_loadouts_exportcategory_{MP|DMZ} Read-only.
 async function exportCategory(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { formatLoadoutsAsBulkText } = require('../../utils/adminParser');
@@ -289,7 +232,6 @@ async function exportCategory(interaction) {
     }
 
     const text = formatLoadoutsAsBulkText(loadouts);
-    // exportFileReply, not a hand-rolled followUp (v3-pre-release review, finding #42).
     const { exportFileReply } = require('../../utils/manageActions');
     return exportFileReply(
         interaction,
@@ -301,16 +243,9 @@ async function exportCategory(interaction) {
 
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
-    const Loadout = require('../../models/Loadout');
-    const removedDoc = match.doc;
-    await Loadout.findByIdAndDelete(match.id);
-    const { pageForLoadoutMode } = require('../../utils/manageActions');
-    recordChange({ actorId, page: pageForLoadoutMode(removedDoc.mode), action: 'delete', model: 'Loadout', target: match.label, summary: `Deleted loadout "${match.label}"` });
-    return registerUndo(`Delete loadout "${match.label}"`, async () => {
-        const restoreDoc = { ...removedDoc };
-        delete restoreDoc._id; // let Mongo assign a fresh _id on re-insert
-        await Loadout.create(restoreDoc);
-    });
+    const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id } }], { actorId });
+    if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+    return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
 module.exports = { editLoadout, addLoadout, bulkAddLoadouts, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

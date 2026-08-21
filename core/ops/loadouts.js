@@ -15,6 +15,7 @@ const { registerEntity } = require('./index');
 const { updateDocument, createDocument, deleteDocument } = require('../mongo/document');
 const { parseBulkLoadoutList, correctGunsmithCode } = require('../../utils/adminParser');
 const { fuzzyMatch } = require('../../utils/search');
+const { checkImageExists } = require('../../utils/loadoutRender');
 const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
 const Loadout = require('../../models/Loadout');
 
@@ -37,7 +38,10 @@ function validateBuild(payload) {
                 weaponName, weaponKey,
                 buildName: (payload.buildName || 'Standard Build').trim(),
                 category: (payload.category || 'AR').toUpperCase(),
-                shareCode: payload.shareCode ? correctGunsmithCode(payload.shareCode.trim()) : (payload.shareCode ?? ''),
+                // Only rewritten when the caller actually supplied one -- the key must be ABSENT otherwise, not present-with-value-''. /manage's single add/edit modal never collects shareCode at all (only /autobuild sets it), and loadout.edit's apply() spreads this whole object straight into a Mongo $set -- an always-present '' would silently wipe a real gunsmith code an admin never touched. Found during handler-refactor integration.
+                ...(payload.shareCode !== undefined
+                    ? { shareCode: payload.shareCode ? correctGunsmithCode(payload.shareCode.trim()) : payload.shareCode }
+                    : {}),
                 attachments: payload.attachments || [],
                 isMeta: !!payload.isMeta, isToxic: !!payload.isToxic,
                 categoryRank: payload.categoryRank ?? null, dmzRangeRank: payload.dmzRangeRank ?? null
@@ -65,9 +69,11 @@ async function syncSiblings(weaponKey, mode, session) {
 async function upsertBulkBlocks(parsed, mode, session) {
     let created = 0, updated = 0;
     const touchedKeys = new Set();
+    // Advisory only, matching the real pre-core handler -- never blocks the save, just reported back so the confirmation can flag a build whose Cloudinary key isn't uploaded yet.
+    const missingImages = [];
     for (const rawEntry of parsed) {
         const entry = { ...rawEntry, mode };
-        const { weaponKey, buildName } = entry;
+        const { weaponKey, buildName, imageKey } = entry;
         touchedKeys.add(weaponKey);
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         if (existing) {
@@ -81,12 +87,13 @@ async function upsertBulkBlocks(parsed, mode, session) {
             weaponKey, mode, session,
             isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic
         });
+        if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
     }
     // Synced once per weaponKey after the whole loop (not per-block), same as the real handler -- a paste with several builds of one weapon shouldn't re-sync the same siblings repeatedly. MISSING from the first draft of this function: touchedKeys was collected and returned but never actually used to sync anything -- found in a second-pass audit, not the first.
     for (const weaponKey of touchedKeys) {
         await syncSiblings(weaponKey, mode, session);
     }
-    return { created, updated, touchedKeys };
+    return { created, updated, touchedKeys, missingImages };
 }
 
 registerEntity('loadouts', {
@@ -140,7 +147,7 @@ registerEntity('loadouts', {
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
                           summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"`,
                           detail: propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : undefined },
-                applied: { id: op.target.id, prior, version: res.version }
+                applied: { id: op.target.id, prior, version: res.version, propagatedCount: propagateResult.modifiedCount }
             };
         },
         invert: (c) => ({ type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior })
@@ -179,14 +186,15 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk import ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
-                applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys] }
+                applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
+                           missingImages, parseErrors: op.payload.parseErrors || [] }
             };
         },
         invert: (c) => ({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } })
@@ -206,14 +214,15 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
                 ok: true,
                 change: { action: 'bulkReplace', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk replace ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
-                applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys] }
+                applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
+                           missingImages, parseErrors: op.payload.parseErrors || [] }
             };
         },
         invert: (c) => ({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } })
