@@ -15,6 +15,20 @@ const SeasonalData = require('../../models/SeasonalData');
 const DOC = { docType: 'global' };
 const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
 
+// ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass:
+// nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the
+// stored array order. The pre-core handler always re-sorted the whole array after every mutation
+// that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s
+// without re-sorting would silently degrade `/draws` display order the first time an edit changed a
+// date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing
+// changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the
+// same transaction before returning.
+async function resortByDate(session, path) {
+    const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
+    const sorted = [...fresh[path]].sort((a, b) => new Date(a.date) - new Date(b.date));
+    await SeasonalData.updateOne(DOC, { $set: { [path]: sorted } }, { session });
+}
+
 // 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. commitSet runs validateSet before applying —
 // including on an INVERSE produced by invert(), which carries structured `parsed` data and never the
 // original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an
@@ -54,6 +68,7 @@ registerEntity('draws', {
             element._id = new mongoose.Types.ObjectId();
             const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element, session });
             if (!res.ok) return res;
+            await resortByDate(session, path);
             const created = element;
             return {
                 ok: true,
@@ -121,6 +136,7 @@ registerEntity('draws', {
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
             if (!res.ok) return res;
+            if ('date' in op.payload) await resortByDate(session, path);
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: cur.title,
@@ -156,9 +172,11 @@ registerEntity('draws', {
             const { newDraws = [], returningDraws = [] } = op.payload.parsed;
             const added = { newDraws: [], returningDraws: [] };
             for (const [path, list] of [['newDraws', newDraws], ['returningDraws', returningDraws]]) {
+                if (!list.length) continue;
                 for (const d of list) {
                     await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
                 }
+                await resortByDate(session, path);
                 added[path] = list;
             }
             const total = newDraws.length + returningDraws.length;
@@ -195,7 +213,7 @@ registerEntity('draws', {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const replaced = before[path];                       // the full prior set — this IS the inverse
-            const incoming = op.payload.parsed[path] || [];
+            const incoming = [...(op.payload.parsed[path] || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
             await SeasonalData.updateOne(DOC, { $set: { [path]: incoming } }, { session });
             return {
                 ok: true,
