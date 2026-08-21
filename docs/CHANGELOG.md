@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.55.0 — 2026-08-20 20:15 EDT (#PR) — the web admin portal, designed: spec, three plans, and 28 defects a context-free reader found in them
+## Pre-Release v3.55.0 — 2026-08-20 20:15 EDT (#164) — the web admin portal, designed: spec, three plans, and 28 defects a context-free reader found in them
 
 Nothing changed in the bot. A design-only pass producing `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` and three dependency-ordered plans for **`portal.dioreo.app`** — a browser admin console, Discord-OAuth-gated, that does everything `/manage` does plus scheduling, previewing, diffing and search-then-tick bulk editing that a Discord modal physically cannot host. `/manage` stays live and its behaviour unchanged. Ships after v3.0.0. **This supersedes the `[P2 · L]` "real search + multi-select flow" roadmap item** — Harkirat changed his mind on the implementation, not the goal, so that item is struck in place in both trackers rather than deleted, and `.claude/rules/manage-panel.md`'s own "Build the real version next, not a silent gap" instruction was struck too: that file auto-loads on any `commands/manage.js` edit and would otherwise have read as a live to-do.
 
@@ -40,7 +40,7 @@ The design is an **operation algebra** — every mutation becomes a value `{ typ
 
 Repairing those exposed a second bug, in this repo's own tooling. An orphaned fence left by one of the fixes gave a plan an odd fence count; `scripts/reflow-prose.mjs` pairs fences positionally, so a later opening fence was consumed as an earlier block's close and **nine code blocks after that point were reflowed as prose and collapsed onto single lines**, including an entire module implementation. `verify()` passed, because it compares fenced-block *content* and under a mispairing compared the same wrong blocks before and after — a vacuous check. The plan was restored from the last clean commit and all 22 fixes re-applied deterministically; `reflow-prose.mjs` now reports an odd fence count as its own problem before any content comparison, with two test cases including a falsifier for the guard itself, proven by disabling it and watching the suite go red.
 
-## Pre-Release v3.54.0 — 2026-08-20 15:24 EDT (#163) — the memory-index-visibility insight, and a sequential-thinking audit of the record-keeping timing rules
+## Pre-Release v3.54.0 — 2026-08-20 15:24 EDT (#163 · `9cb560a`) — the memory-index-visibility insight, and a sequential-thinking audit of the record-keeping timing rules
 
 Nothing changed in the bot. Two documentation-only findings, filed rather than fixed: folded the "a `MEMORY.md` index line needs to carry the actual rule, not just point at it" insight (traced behind two real hook-caught compliance failures this session — the squash-merge `--body` requirement, the `/rename` string gate) into the existing MEMORY.md-compaction item in `docs/db-deferred-list.md`'s 🗂️ Queued section; and bundled a sequential-thinking stress-test of this repo's own CHANGELOG/DEVLOG/memory/version-bump timing rules against what actually happened on PR #162, written up in `local/handoff/2026-08-20-record-keeping-timing-audit.md` (gitignored, pointer-only in the tracked list). Findings only — nothing prescribed in either is fixed yet.
 
