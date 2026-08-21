@@ -7,6 +7,8 @@ status: frozen
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> ⚠️ **`status: frozen` and the checkbox syntax below are not in conflict, though they read that way.** `doc-frontmatter` allows a `kind: plan` only `frozen` or `superseded`, and `frozen` here governs the plan's **design content** — its tasks, code and reasoning are a dated snapshot and must not be quietly rewritten. The `- [ ]` boxes are the *executing* session's progress marks. **Tick boxes; do not revise tasks.** If a task turns out to be wrong, that is a finding to raise and a new dated plan, not an edit.
+
 **Goal:** Move calendar, loadouts, patch notes, season and announcements onto the operation core proven on draws, then retire the in-memory undo store entirely so every audited change in the system is revertible from either surface.
 
 **Architecture:** Same four verbs as plan 1. The one genuinely new thing is that **two of these entities are separate Mongo documents rather than array elements inside `SeasonalData`**, so they need a second concurrency helper — element-identity does not apply to them, and using it would be a category error.

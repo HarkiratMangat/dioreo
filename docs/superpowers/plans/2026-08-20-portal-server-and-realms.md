@@ -7,6 +7,8 @@ status: frozen
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> ⚠️ **`status: frozen` and the checkbox syntax below are not in conflict, though they read that way.** `doc-frontmatter` allows a `kind: plan` only `frozen` or `superseded`, and `frozen` here governs the plan's **design content** — its tasks, code and reasoning are a dated snapshot and must not be quietly rewritten. The `- [ ]` boxes are the *executing* session's progress marks. **Tick boxes; do not revise tasks.** If a task turns out to be wrong, that is a finding to raise and a new dated plan, not an edit.
+
 **Goal:** Stand up `portal.dioreo.app` — a Node server on the existing VM behind a Cloudflare Tunnel, authenticated by Discord OAuth, serving a Preact frontend that drives the operation core through a thin API.
 
 **Architecture:** One origin, one process, one deploy. The VM serves both the page and the API, so there is no CORS and no split routing. Every mutation goes through `core/changeset.js` — the server contains no business logic and no direct Mongo write. Runtime-agnostic by discipline: plain Node, all config via env, so containerising for Cloud Run later is a config change.
@@ -50,7 +52,7 @@ status: frozen
 
 **Files:**
 - Create: `portal/server.js` · `scripts/portalBoot.test.js`
-- Modify: `package.json` (a `portal` script)
+- Modify: `package.json` (a `portal` script) · **`utils/logger.js`** · **`CLAUDE.md`**
 
 **Interfaces:**
 - Consumes: `utils/logger.js`
@@ -118,8 +120,10 @@ Run: `node scripts/portalBoot.test.js` Expected: FAIL with `Cannot find module '
 const http = require('node:http');
 const { patchConsole } = require('../utils/logger');
 
-// Same structured Cloud Logging the bot uses — severity, version, commit, serviceContext — for one
-// require. A distinct service value so Error Reporting groups portal errors separately from the bot's.
+// 🔴 `patchConsole()` TAKES NO ARGUMENTS TODAY and SERVICE_CONTEXT is a module-level const hardcoded
+// to 'dioreo-bot' (utils/logger.js:69, :122, verified 2026-08-20). Passing an object here without
+// changing that file is a SILENT NO-OP: portal errors would group under the bot in Error Reporting
+// and nothing would indicate why. Step 2b makes the parameter real before this line means anything.
 patchConsole({ service: 'dioreo-portal' });
 
 function assertEnvironment({ env, mongoUri }) {
@@ -160,6 +164,20 @@ function createServer({ port, mongoUri, env }) {
 module.exports = { createServer, assertEnvironment, route };
 ```
 
+- [ ] **Step 2b: Make `patchConsole`'s service override real, and give the portal its own log file**
+
+Two one-line changes in `utils/logger.js`, both backward-compatible:
+
+```js
+// utils/logger.js
+function patchConsole(opts = {}) {                       // was: patchConsole()
+    const ctx = { ...SERVICE_CONTEXT, ...opts };         // opts.service overrides 'dioreo-bot'
+    // …use `ctx` where SERVICE_CONTEXT was read (line ~116) instead of the module const
+}
+```
+
+⚠️ **And set `DIORS_LOG_FILE` for the portal unit.** `LOG_FILE` defaults to `<repo>/logs/app.log`; both systemd units run from the same `WorkingDirectory`, so bot and portal would open **independent buffered write streams on the same file** and interleave partial lines into the NDJSON the Ops Agent parses as structured records. Point the portal at `logs/portal.log` in `dioreo-portal.service` (Task 7 Step 3) and add it to the Ops Agent config.
+
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalBoot.test.js` Expected: four ✓, exit 0
@@ -172,10 +190,18 @@ sleep 1; curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8787/nope
 ```
 Expected: `404`. **It must bind `127.0.0.1`, never `0.0.0.0`** — the tunnel is the only route in, and binding all interfaces would expose it on the VM's public IP directly.
 
+- [ ] **Step 5b: Document the new top-level directory BEFORE committing it**
+
+🔴 Same gate `core/` hit in plan 1 Task 1: **`docs-audit`'s `top-level-dirs` is an ERROR check** and `portal/` appears in neither `CLAUDE.md` nor `docs/README.md` (verified 2026-08-20: 0 occurrences). Add a row to `CLAUDE.md`'s 🧭 Runtime code layout table before the commit, or CI goes red on the next run.
+
+| Path | Holds | Notes |
+|---|---|---|
+| **`portal/`** | The web admin portal — HTTP server, Discord OAuth, the realm API, and the built frontend | Drives `core/` and contains no business logic of its own. Served at `portal.dioreo.app` through a Cloudflare Tunnel. Design: `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` |
+
 - [ ] **Step 6: Commit**
 
 ```bash
-git add portal/server.js scripts/portalBoot.test.js package.json
+git add portal/server.js utils/logger.js scripts/portalBoot.test.js package.json CLAUDE.md
 git commit -m "feat(portal): add the server skeleton with an environment guard"
 ```
 
@@ -300,13 +326,17 @@ git commit -m "feat(portal): authenticate with Discord OAuth and issue host-only
 ### Task 3: The API layer
 
 **Files:**
-- Create: `portal/api/season.js` · `portal/api/armory.js` · `portal/api/broadcast.js` · `portal/api/access.js` · `portal/api/analytics.js` · `models/Changeset.js` · `scripts/portalApi.test.js`
+- Create: `portal/api/policy.js` · `portal/api/season.js` · `portal/api/armory.js` · `portal/api/broadcast.js` · `portal/api/access.js` · `portal/api/analytics.js` · `models/Changeset.js` · `scripts/portalApi.test.js`
+
+🔴 **`gateCommit` lives in `portal/api/policy.js`, NOT in `season.js`.** An earlier draft put it there, and tier 3 spans Season (`purgeall`, `promote`), Armory (loadouts bulk replace) and Access (grant/revoke) — so every realm would either import policy from `season.js`, which is the wrong boundary, or grow its own copy. **A second copy of the one control standing between an admin and irreversible data loss is exactly the failure `utils/manageActions.js` exists to prevent**, reproduced inside the plan that cites it as precedent.
 
 **Interfaces:**
 - Consumes: `core/changeset.js`, `core/revert.js`, `utils/adminAccess.js`
 - Produces: `GET /api/<realm>` · `POST /api/changeset` · `POST /api/changeset/:id/commit` · `POST /api/revert/:changeId`
 
 - [ ] **Step 1: Add the `Changeset` model**
+
+⚠️ **Also add the index and the `/manage` notice the spec's §12a promises**, or that commitment has nowhere to land: a compound index on `{ realm: 1, state: 1 }`, and a one-line notice in `commands/manage.js`'s panel header when an uncommitted changeset targets the page being viewed. The spec names this as the answer to concurrent staging; without these two it is a paragraph.
 
 ```js
 // models/Changeset.js
@@ -333,7 +363,16 @@ const ChangesetSchema = new mongoose.Schema({
     committedAt: { type: Date, default: null }
 });
 
-ChangesetSchema.index({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+ChangesetSchema.index({ realm: 1, state: 1 });   // the /manage "someone has changes staged here" notice
+
+// 🔴 TTL ONLY ON ABANDONED WORK. A bare createdAt TTL would also delete `committed` changesets after
+// 30 days, and those are the record of what was actually applied. `partialFilterExpression` scopes
+// the expiry to sets that were never committed, which is what the spec's justification actually said.
+ChangesetSchema.index(
+    { createdAt: 1 },
+    { expireAfterSeconds: 30 * 24 * 60 * 60,
+      partialFilterExpression: { state: { $in: ['draft', 'staged', 'blocked'] } } }
+);
 
 module.exports = mongoose.model('Changeset', ChangesetSchema);
 ```
@@ -343,7 +382,7 @@ module.exports = mongoose.model('Changeset', ChangesetSchema);
 ```js
 // scripts/portalApi.test.js
 const assert = require('assert');
-const { gateCommit } = require('../portal/api/season');
+const { gateCommit } = require('../portal/api/policy');
 
 let failures = 0;
 function check(name, fn) {
@@ -377,7 +416,7 @@ process.exit(failures ? 1 : 0);
 
 - [ ] **Step 3: Run it to verify it fails, then implement the routes**
 
-Every route is thin: parse the body, build ops, call `validateSet`/`previewSet`/`commitSet`, return JSON. `gateCommit` is the only policy the API itself owns — the tier-3 export and typed-confirmation requirements from spec §5, enforced **server-side** because a client-side gate is decoration.
+Every route is thin: parse the body, build ops, call `validateSet`/`previewSet`/`commitSet`, return JSON. `gateCommit`, in `portal/api/policy.js`, is the only policy the API itself owns — the tier-3 export and typed-confirmation requirements from spec §5, enforced **server-side** because a client-side gate is decoration.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
@@ -415,7 +454,7 @@ git commit -m "feat(portal): add the realm API over the operation core"
 
 **Files:**
 - Create: `scripts/buildPortal.js` · `portal/ui/app.js` · `portal/ui/tokens.css`
-- Modify: `package.json` (`preact` + `htm` as **devDependencies**) · `NOTICE`
+- Modify: `package.json` (`preact` + `htm` as **devDependencies**) · `NOTICE` · **`scripts/buildLegalPages.js`**
 
 **Interfaces:**
 - Consumes: nothing at runtime
@@ -439,7 +478,16 @@ npm run docs:audit   # dep-licences is an ERROR check and will fail on a GPL/AGP
 
 - [ ] **Step 3: Write the build script with the contrast gate wired in**
 
-`scripts/buildPortal.js` emits the three files, copies the vendor bundle, and — the load-bearing part — runs `contrastAudit()` from `scripts/buildLegalPages.js` over the portal's built CSS. ⚠️ That function reads `--name: #hex` declarations only, so **a component that paints its own surface is invisible to it** and its contrast must be worked out by hand. Say so in the script's header; a green gate that is not evidence is worse than no gate.
+🔴 **`contrastAudit()` cannot be imported today, and this step is impossible until that changes.** `scripts/buildLegalPages.js` has **no `module.exports` at all** (verified 2026-08-20) — `contrastAudit` is a local function at line ~9091 of a 9,000-line script whose top level *runs the entire site build* as a side effect. `require()`ing it would rebuild the site. **First** add a bottom-of-file export guarded so the build only self-runs when invoked directly:
+
+```js
+// scripts/buildLegalPages.js — at the very bottom
+if (require.main === module) { build(); }              // was: an unconditional top-level call
+module.exports = { contrastAudit };
+```
+⚠️ That is a change to the script that publishes the live site. Run `dior legal build` afterwards and diff `public/` to prove the output is byte-identical before relying on it.
+
+Then `scripts/buildPortal.js` emits the three files, copies the vendor bundle, and runs `contrastAudit()` over the portal's built CSS. ⚠️ That function reads `--name: #hex` declarations only, so **a component that paints its own surface is invisible to it** and its contrast must be worked out by hand. Say so in the script's header; a green gate that is not evidence is worse than no gate.
 
 - [ ] **Step 4: Prove the gate against broken input before trusting it**
 
@@ -457,14 +505,24 @@ git commit -m "build(portal): add the frontend build with a proven contrast gate
 ### Task 5: The two-layer shell and the Season realm
 
 **Files:**
-- Create: `portal/ui/shell.js` · `portal/ui/season.js` · `portal/ui/manifest.js` · `portal/ui/track.js` · `portal/ui/board.js` · `portal/ui/tray.js`
+- Create: `portal/ui/shell.js` · `portal/ui/season.js` · `portal/ui/manifest.js` · `portal/ui/track.js` · `portal/ui/board.js` · `portal/ui/tray.js` (**ESM**, import Preact)
+- Create: `portal/ui/track.logic.js` · `portal/ui/manifest.logic.js` · `portal/ui/board.logic.js` (**CommonJS**, import nothing)
+
+🔴 **The split is not tidiness, it is the only way both halves of this plan can be true at once.** `package.json` declares no `"type"`, so Node treats `.js` as CommonJS, and a `require()` cannot load a browser module that does `import { html } from './vendor/preact.mjs'`. Every pure function the tests assert on — `bandClass`, `laneFor`, `tierOf`, filter and sort predicates — lives in a `.logic.js` CommonJS file that Node can require and the ESM component imports. **The browser never loads a CJS file; Node never loads an ESM one.**
 - Test: `scripts/portalUi.test.js`
 
 **Interfaces:**
 - Consumes: the API from Task 3
 - Produces: `<Shell>` · `<Manifest>` · `<Track>` · `<Board>` · `<Tray>`
 
-**Build from `local/portal-mockups/03-three-surfaces.html`** — it is the approved design and it is gitignored, so it exists nowhere a search will find it.
+**Build from `local/portal-mockups/03-three-surfaces.html`.**
+
+🔴 **THIS TASK CANNOT BE EXECUTED IN A WORKTREE OR A FRESH CLONE AS WRITTEN, and naming the hazard is not mitigating it.** This plan's header says to execute it with `superpowers:subagent-driven-development`, which runs tasks in fresh worktrees — and `local/` is gitignored, so it does not exist there. Two tasks would fail on their first step for a reason no error message would explain.
+
+**Do one of these before starting Task 5, and record which:**
+1. **Copy the six mockups into the worktree** (`cp -r ../Diors-Builds/local/portal-mockups local/`) as an explicit setup step. Simplest; must be repeated per worktree.
+2. **Move them into the repo** at `docs/superpowers/mockups/2026-08-20-portal/` and track them. They are 16–27 KB of self-contained HTML with no secrets, they are the approved design of record, and tracking them ends the whole class of problem — including the spec's own repeated warning that no search can find them. **This is the better answer** and the only reason it was not the original one is that `local/` is where Harkirat asked for a reference copy; tracking them does not remove that copy.
+3. Execute Tasks 5 and 6 **inline rather than in a worktree**, which contradicts the plan header.
 
 - [ ] **Step 1: Write the failing test — components are tested as data**
 
@@ -474,7 +532,7 @@ git commit -m "build(portal): add the frontend build with a proven contrast gate
 // the whole frontend testing story, and it only works because the components take state as an
 // argument rather than reaching for it.
 const assert = require('assert');
-const { bandClass, laneFor, tierOf } = require('../portal/ui/track');
+const { bandClass, laneFor, tierOf } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
 
 let failures = 0;
 function check(name, fn) {
@@ -535,17 +593,17 @@ git commit -m "feat(portal): build the two-layer shell and the Season realm"
 
 - [ ] **Step 1: Armory — Rack and Coverage**
 
-From `local/portal-mockups/04-armory-and-commit.html`. Rack groups by category using the bot's real `MP_CATEGORY_ACCENT`. Coverage is a matrix of quality checks (missing image, no badges, near-duplicate code, attachments ≠ 5, not updated in 90 days) where **every cell is a filter** into the Manifest. The preview panel calls the bot's own `buildLoadoutCard()`.
+From the approved mockups (see Task 5's note on where they must be before this runs) — `04-armory-and-commit.html`. Rack groups by category using the bot's real `MP_CATEGORY_ACCENT`. Coverage is a matrix of quality checks (missing image, no badges, near-duplicate code, attachments ≠ 5, not updated in 90 days) where **every cell is a filter** into the Manifest. The preview panel calls the bot's own `buildLoadoutCard()`.
 
 ⚠️ **Spec premise 5 applies here and must be settled before this ships.** `utils/emojiMap.js` values are rewritten at bot boot by `refreshEmojiIds(client)`; the portal has no client, so it renders **pre-sync production ids**. Either accept that (correct on prod, wrong on dev) or have the portal read the ids from Mongo. **Decide with evidence, and write a test pinning whichever answer you choose** — this fails silently and looks like nothing at all.
 
 - [ ] **Step 2: Broadcast — Now showing and Airtime**
 
-From mockup 05. Now showing renders the live set as Discord sends it, in slot order. Airtime puts each announcement on a time axis, which is what makes "up for 19 days with no expiry" visible. Uses `startsAt` from plan 2 Task 6.
+From mockup `05-door-broadcast-ops.html`, subject to Task 5's availability note. Now showing renders the live set as Discord sends it, in slot order. Airtime puts each announcement on a time axis, which is what makes "up for 19 days with no expiry" visible. Uses `startsAt` from plan 2 Task 6.
 
 - [ ] **Step 3: Access — By admin and By scope**
 
-From mockup 06. The matrix writes through `utils/adminAccess.js`'s existing vocabulary; inherited scopes (bare `manage` covering every page) render in a paler fill so what you actually granted is visible. **By scope flags a single point of failure** — a scope held by exactly one non-owner. The Manifest lists live `PortalSession` rows with an End session control.
+From mockup `06-access-and-analytics.html`, subject to Task 5's availability note. The matrix writes through `utils/adminAccess.js`'s existing vocabulary; inherited scopes (bare `manage` covering every page) render in a paler fill so what you actually granted is visible. **By scope flags a single point of failure** — a scope held by exactly one non-owner. The Manifest lists live `PortalSession` rows with an End session control.
 
 ⚠️ `/bot access` is **owner-only and not a grantable scope**, so it gets no column and the whole realm is behind `isOwner()`, not a permission token.
 
@@ -649,5 +707,17 @@ git commit -m "build(portal): serve portal.dioreo.app through a Cloudflare Tunne
 **R6 — the contrast gate would have been trusted without being proven.** This project has already shipped a contrast gate that passed 63 pairs while three signals sat at 1.47:1, because it matched only the first `:root{}` block. Task 4 Step 4 now proves it against deliberately broken input before it is trusted, and the script's header states what it structurally cannot see.
 
 **R7 — premise 5 was inherited from the spec without an owner.** The emoji-id risk lands squarely in Armory's preview panel and would have shipped as "the preview looks slightly wrong and nobody can say why". Task 6 Step 1 now forces a decision *with evidence* and a test pinning whichever answer is chosen.
+
+**R8 — the logging story was a silent no-op.** `patchConsole()` takes zero parameters and `SERVICE_CONTEXT` is a hardcoded const, so `patchConsole({ service: 'dioreo-portal' })` did nothing and portal errors would have grouped under the bot. Separately, both units would have opened the same `logs/app.log` from the same working directory and interleaved partial writes into NDJSON the Ops Agent parses. Task 1 Step 2b fixes both.
+
+**R9 — Task 4 Step 3 was impossible.** `scripts/buildLegalPages.js` has no `module.exports`, so `contrastAudit()` could not be imported, and its top level runs the whole site build — so `require`ing it would have rebuilt the site. R6's entire argument rested on a function that is not reachable.
+
+**R10 — the frontend could not have been both tested and served.** `package.json` declares no `"type"`, so a CJS `require()` cannot load a browser ESM module. The `.logic.js` split resolves it, and every assertion in the example test already pointed at exactly those functions.
+
+**R11 — two tasks depended on a gitignored directory while the plan header mandates worktree execution.** Naming the hazard three times is not mitigating it; Task 5 now carries three concrete options and requires recording which was taken.
+
+**R12 — `gateCommit` was defined in `portal/api/season.js` while governing three realms.** Either every realm imports policy from `season.js` or each grows a copy — a second copy of the one control between an admin and irreversible data loss. Now `portal/api/policy.js`.
+
+**R13 — the `Changeset` TTL had no state predicate**, so it would have deleted committed sets after 30 days along with abandoned ones. Now a `partialFilterExpression`. And `portal/` needed the same `top-level-dirs` treatment `core/` did.
 
 **Not found:** no defect in the one-origin topology, the thin-API rule, or the decision to test components as pure data.
