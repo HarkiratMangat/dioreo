@@ -16,7 +16,8 @@ const { hasCommandAccess, isOwner, MANAGE_PAGE_SCOPES, formatPermissions } = req
 const { mentionCommand } = require('../utils/commandMentions');
 
 const ALERTS_PER_PAGE = 8;
-const CHANGES_PER_PAGE = 8;
+// ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated.
+const CHANGES_PER_PAGE = 5;
 // Matches utils/alertWebhook.js's LEVEL_ICON — kept in sync by hand (both are tiny, stable maps).
 const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' };
 // discord.js's Status enum values, hardcoded rather than imported so a library rename can't silently blank this map — Health is meant to survive as "unknown code N" worst case, not throw.
@@ -209,10 +210,15 @@ async function buildChangesBody({ page = 0, filterPage = null, filterActor = nul
         { type: 14, spacing: 2 },
     ];
     if (recent.items.length) {
-        const rows = recent.items.map(c =>
-            `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>`
-        ).join('\n');
-        body.push({ type: 10, content: `**Recent changes** (newest first)\n${rows}` });
+        // One Text Display + Action Row PER CHANGE (rather than the single joined block this used to be) so each row can carry its own Revert button (core/revert.js, portal core Task 7). canRevert() distinguishes "predates revert support" (a pre-core row) from "not yet supported" (an entity plan 2 hasn't converted yet) -- both currently read `inverse: null`, and conflating them would tell a reader something false about a change made seconds ago.
+        const { canRevert } = require('../core/revert');
+        body.push({ type: 10, content: '**Recent changes** (newest first)' });
+        for (const c of recent.items) {
+            const gate = canRevert(c);
+            const reasonLine = c.undone ? '' : (gate.ok ? '' : `\n-# _${gate.reason}_`);
+            body.push({ type: 10, content: `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reasonLine}` });
+            body.push({ type: 1, components: [{ type: 2, style: 2, label: 'Revert', custom_id: `bot_revert_${c.changeId}`, disabled: !gate.ok }] });
+        }
     } else {
         body.push({ type: 10, content: `**Recent changes**\n_No changes recorded yet${(filterPage || filterActor) ? ' matching this filter' : ''}._` });
     }
