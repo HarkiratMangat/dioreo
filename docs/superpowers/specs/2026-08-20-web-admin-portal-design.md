@@ -5,7 +5,14 @@ status: frozen
 
 # Web admin portal — design
 
-**Decided 2026-08-20, in one session with Harkirat.** A browser-based management surface at `portal.dioreo.app`, covering everything `/manage` does and a class of work Discord cannot host at all. `/manage` stays live and unchanged in behaviour. Ships **after v3.0.0**.
+> ## ⚠️ AMENDED 2026-08-20 22:50 EDT — decision 4 is REVERSED: build starts NOW, not after v3.0.0
+> Harkirat, verbatim: *"I want to build it now, forget after v3.0.0."* **Every other decision in this document stands unchanged**; only the timing moved. The body below is left as written, because a frozen spec records what was decided on its date — this banner is the amendment, not a rewrite.
+>
+> **What moves earlier with it**, stated once as a cost line rather than an objection: the Discord OAuth client secret and redirect URI become a real dependency on Harkirat before plan 3 can finish (§10); `docs/legal/PRIVACY.md` needs its revision for `PortalSession` and `Changeset` *before* the v3 launch rather than after (§11); and a second resident process joins a VM measured at 390 MB available (§7) while the v3 checklist is still open. None of these is new — decision 4's own rationale named them — they are simply no longer deferred.
+>
+> ⚠️ **Plan sequencing is unaffected.** Plan 1 never touched portal code and was always safe to build; plans 2 and 3 were gated on plan 1's proven pattern, not on the v3 launch. Nothing in the three plans needs re-ordering.
+
+**Decided 2026-08-20, in one session with Harkirat.** A browser-based management surface at `portal.dioreo.app`, covering everything `/manage` does and a class of work Discord cannot host at all. `/manage` stays live and unchanged in behaviour. ~~Ships **after v3.0.0**.~~ **Build starts immediately — see the amendment above.**
 
 > **This supersedes the roadmap item "The real search + multi-select flow — `/manage`'s Delete Multiple and Loadouts' Replace Multiple"** (`docs/ROADMAP.md`, `docs/db-deferred-list.md` 🧹 Someday, `[P2 · L]`). That item was filed as a Discord-side interaction and was flagged as un-schedulable for having no named first slice. Harkirat changed his mind on the implementation, not the goal: search-then-tick-then-act is a table's default behaviour on the web, so it stops being a feature to design and becomes a consequence of the surface. **Strike the item and point it here rather than building both.**
 
@@ -44,7 +51,7 @@ Four findings from reading the codebase, each of which removes work that would o
 | 1 | **Hybrid interaction model**, tiers derived from reversibility (§5) | Pure direct-write is `/manage` with bigger textboxes. Pure changeset makes fixing one typo a ceremony. |
 | 2 | **Shared mutation core**, extracted from `handlers/manage/*.js`; the web surface may expose *more* capability over the same ops | Two independent implementations. `utils/manageActions.js` exists because two hand-synced copies of the action list was judged unacceptable, and `models/SeasonalData.js`'s `draft.calendar` is the recorded cost of ignoring that. |
 | 3 | **VM sibling process behind Cloudflare Tunnel**, written runtime-agnostic so Cloud Run stays a config change away | Cloudflare Workers — cannot `require()` the bot's CommonJS utils, which forfeits every reuse in §2, and the Atlas Data API that would have replaced a driver was sunset 2025-09-30 with all of App Services. In-process — rejected on blast radius. Cloud Run now — better infrastructure, but a second ops world for one service. |
-| 4 | **Ships after v3.0.0** | The v3 launch checklist is already deep, and this adds a runtime, an auth surface and a privacy revision. |
+| 4 | ~~**Ships after v3.0.0**~~ → ⚠️ **REVERSED 2026-08-20 22:50 EDT: build starts now.** See the amendment at the top. | The rationale was sound and is not disowned — the v3 checklist *is* deep, and this *does* add a runtime, an auth surface and a privacy revision. Harkirat weighed that and chose to take the cost now. Kept struck rather than deleted so the reasoning survives for whoever asks why it was ever deferred. |
 | 5 | **Admins only.** Users and a public read-only view are possible later and deliberately **not** designed for now | Designing for hypothetical users now costs a two-zone security model that nothing needs yet. |
 | 6 | **Preact + htm, no build step** — one vendored ~12KB file, installed as a `devDependency` so `dep-licences` can see it | Vanilla — stale-UI bugs prevented only by remembering, and they fail silently. Vite — three working gates (`npm run check`, `deploy-site.yml`, `reflow-comments.mjs`) need rework before a line of portal code exists. |
 | 7 | **Desktop-first, mobile-capable.** Phone gets search, single-record edit, the audit river, and commit/discard of an already-staged set | Desktop-only forecloses fixing a typo from bed. Fully responsive doubles the frontend work on the two hardest things to shrink — a timeline and a data grid. |
