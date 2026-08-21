@@ -59,7 +59,7 @@ function runCache(key, commandArgs, extraEnv = {}) {
   try {
     execFileSync("node", [SCRIPT, key, inputFile, "--", ...commandArgs], {
       cwd: root,
-      env: { ...process.env, TEST_CACHE_DIR: cacheDir, ...extraEnv },
+      env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir, ...extraEnv },
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -126,7 +126,7 @@ try {
     try {
       const out = execFileSync("node", [SCRIPT, key, inputPath, "--", ...commandArgs], {
         cwd: root,
-        env: { ...process.env, TEST_CACHE_DIR: cacheDir },
+        env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -145,7 +145,7 @@ try {
     try {
       execFileSync("node", [SCRIPT, "k3", dir, "--", "node", counterScript], {
         cwd: root,
-        env: { ...process.env, TEST_CACHE_DIR: cacheDir },
+        env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       });
