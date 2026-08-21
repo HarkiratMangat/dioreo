@@ -31,7 +31,13 @@ function expiryToInputValue(expiresAt) {
 
 async function getActiveAnnouncements() {
     const now = new Date();
-    return Announcement.find({ $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }).sort({ createdAt: 1 }).lean();
+    // startsAt is schema-declared and already settable via core/ops/announcements.js's post/edit ops (added for the future portal's Broadcast realm) -- no live /manage modal field reaches it yet, but this read-side check has to exist NOW so a scheduled announcement doesn't show immediately the moment something does start setting it.
+    return Announcement.find({
+        $and: [
+            { $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] },
+            { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] }
+        ]
+    }).sort({ createdAt: 1 }).lean();
 }
 
 // Genuinely random per-announcement accent color, generated ONCE at creation time and stored on the doc (Announcement.color) -- 2026-08-13, superseding an earlier position-in-batch palette (Harkirat: "why don't you just make each new created announcement generate a unique accent color" instead of cycling a fixed set). NEVER regenerated on edit -- an edit is a correction to the SAME announcement, not a new one, so its color is part of its identity, not its render.

@@ -60,9 +60,8 @@ async function propagateBadges({ weaponKey, mode, excludeId, isMeta, categoryRan
 
 // ⚠️ MUST read WITH the transaction's own session -- a read with no session against a document inside an in-flight transaction does not see that transaction's own uncommitted writes (Mongo transactions use snapshot isolation outside the session), so this would otherwise sync Cloudinary metadata from PRE-edit data every time. Found during a second-pass audit, not the first.
 async function syncSiblings(weaponKey, mode, session) {
-    for (const sib of await Loadout.find({ weaponKey, mode }).session(session)) {
-        await syncLoadoutMetadata(sib, sib.attachmentSlots);
-    }
+    // Promise.all is safe here specifically because syncLoadoutMetadata is a pure Cloudinary HTTP call -- it never touches `session`, so there's no MongoDB ClientSession concurrent-use hazard (a session must not have 2+ in-flight operations at once; that constraint is why the DB-session-bound loops elsewhere in this file stay sequential).
+    await Promise.all((await Loadout.find({ weaponKey, mode }).session(session)).map(sib => syncLoadoutMetadata(sib, sib.attachmentSlots)));
 }
 
 // The real "Add Multiple"/"Replace Multiple" upsert -- shared by both op types (see header note #3).
@@ -71,12 +70,16 @@ async function upsertBulkBlocks(parsed, mode, session) {
     const touchedKeys = new Set();
     // Advisory only, matching the real pre-core handler -- never blocks the save, just reported back so the confirmation can flag a build whose Cloudinary key isn't uploaded yet.
     const missingImages = [];
+    // 🔴 Every doc UPDATED in place (not created) needs its PRE-update state captured here, or a bulk invert can only delete the newly-created docs and silently leaves every in-place overwrite un-reverted -- the same class of bug draws/calendar's bulk ops already solved by replaying the whole prior array.
+    const updatedPriors = [];
     for (const rawEntry of parsed) {
         const entry = { ...rawEntry, mode };
         const { weaponKey, buildName, imageKey } = entry;
         touchedKeys.add(weaponKey);
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         if (existing) {
+            const { _id, __v, ...prior } = existing.toObject();
+            updatedPriors.push({ id: String(existing._id), prior });
             await Loadout.updateOne({ _id: existing._id }, entry, { session });
             updated++;
         } else {
@@ -93,7 +96,7 @@ async function upsertBulkBlocks(parsed, mode, session) {
     for (const weaponKey of touchedKeys) {
         await syncSiblings(weaponKey, mode, session);
     }
-    return { created, updated, touchedKeys, missingImages };
+    return { created, updated, touchedKeys, missingImages, updatedPriors };
 }
 
 registerEntity('loadouts', {
@@ -186,7 +189,7 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys, missingImages } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages, updatedPriors } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
@@ -194,10 +197,16 @@ registerEntity('loadouts', {
                 change: { action: 'bulkAdd', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk import ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
                 applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
-                           missingImages, parseErrors: op.payload.parseErrors || [] }
+                           missingImages, parseErrors: op.payload.parseErrors || [], updatedPriors }
             };
         },
-        invert: (c) => ({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } })
+        // 🔴 Deleting only the newly-created ids is HALF an inverse -- any build this bulk paste overwrote IN PLACE (matched an existing {weaponKey,mode,buildName}) is left un-reverted with no error. A compound changeset restores both halves: delete what was created, and restore every overwritten doc to its captured prior state.
+        invert: (c) => {
+            const ops = [];
+            if (c.applied.newIds?.length) ops.push({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } });
+            for (const p of c.applied.updatedPriors || []) ops.push({ type: 'loadout.edit', target: { id: p.id }, payload: p.prior });
+            return ops;
+        }
     },
 
     // Same apply() as loadout.bulkAdd -- see the header note. Kept a distinct op type only so the registry's separate `bulkreplace` action id has something to resolve to.
@@ -214,7 +223,7 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const before = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const ids = before.map(b => String(b._id));
-            const { created, updated, touchedKeys, missingImages } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
+            const { created, updated, touchedKeys, missingImages, updatedPriors } = await upsertBulkBlocks(op.payload.parsed, op.target.mode, session);
             const after = await Loadout.find({ mode: op.target.mode }).session(session).lean();
             const newIds = after.map(b => String(b._id)).filter(id => !ids.includes(id));
             return {
@@ -222,10 +231,16 @@ registerEntity('loadouts', {
                 change: { action: 'bulkReplace', model: 'Loadout', target: `${op.target.mode} Loadouts`,
                           summary: `Bulk replace ${op.target.mode} loadouts`, detail: `${created} created, ${updated} updated` },
                 applied: { mode: op.target.mode, newIds, touchedKeys: [...touchedKeys], created, updated,
-                           missingImages, parseErrors: op.payload.parseErrors || [] }
+                           missingImages, parseErrors: op.payload.parseErrors || [], updatedPriors }
             };
         },
-        invert: (c) => ({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } })
+        // 🔴 Deleting only the newly-created ids is HALF an inverse -- any build this bulk paste overwrote IN PLACE (matched an existing {weaponKey,mode,buildName}) is left un-reverted with no error. A compound changeset restores both halves: delete what was created, and restore every overwritten doc to its captured prior state.
+        invert: (c) => {
+            const ops = [];
+            if (c.applied.newIds?.length) ops.push({ type: 'loadout.bulkDelete', target: { mode: c.applied.mode }, payload: { ids: c.applied.newIds } });
+            for (const p of c.applied.updatedPriors || []) ops.push({ type: 'loadout.edit', target: { id: p.id }, payload: p.prior });
+            return ops;
+        }
     },
 
     'loadout.bulkDelete': {

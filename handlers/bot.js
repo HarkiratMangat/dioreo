@@ -143,13 +143,13 @@ async function route(interaction) {
         const { hasManagePageAccess } = require('../utils/adminAccess');
         const row = await getChange(changeId);
         if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
-            return interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+            return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
         }
         await interaction.deferReply({ ephemeral: true });
         const { revertChange } = require('../core/revert');
         const result = await revertChange(changeId, { actorId: interaction.user.id });
         if (!result.ok) {
-            return interaction.followUp({ content: `❌ ${result.reason}` });
+            return await interaction.followUp({ content: `❌ ${result.reason}` });
         }
         // Matches handleUndo's own pattern (handlers/manage/shared.js) -- a plain confirmation followUp, no re-render. The interaction is already acknowledged via deferReply/followUp above; deferUpdate() (what renderAnalyticsPage needs to refresh the panel in place) cannot be called on an interaction a second time. Re-opening the Changes page shows the update.
         return await interaction.followUp({ content: `↩️ **Reverted** \`${changeId}\`.` });

@@ -21,7 +21,8 @@ async function editLoadout(interaction) {
 
     // Mode is not editable through this modal at all (MP/DMZ are separate panel pages) -- read straight off the existing document, same as before the refactor.
     const existingLoadout = await Loadout.findById(targetId).lean();
-    if (!existingLoadout) return; // Preserves the original's silent no-op on a stale search result.
+    // A stale search result (the build was deleted/edited elsewhere between the search modal and this submit) still needs a reply -- deferReply() already ran above, so a bare `return` here leaves the interaction "thinking..." until the token expires. The pre-core handler always replied on this path too (confirmed via git history); a prior comment here claiming otherwise was wrong.
+    if (!existingLoadout) return await interaction.followUp({ content: '❌ That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
     const mode = existingLoadout.mode || 'MP';
 
     // Field is "Category | Badges" (2 segments).

@@ -160,12 +160,15 @@ registerEntity('draws', {
             const path = pathFor(op.target.category);
             // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache hit) before saving. Found during Task 6 integration: a first draft of this op skipped that entirely and would have saved draws with an undefined thumbnailUrl.
             const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(op.payload.parsed);
+            // 🔴 IDs captured via a BEFORE-snapshot diff, not a post-resort tail-slice. resortByDate re-sorts the WHOLE array by date -- a newly-added draw whose date sorts earlier than an existing one lands mid-array, not at the tail, so slice(-N) after the sort would silently pick up unrelated pre-existing draws' ids instead. Those ids feed straight into this op's own invert() (bulkDelete) -- a wrong id here means reverting a bulk-add deletes the WRONG draws. Found by the plan-1-range code review.
+            const before = await SeasonalData.findOne(DOC).select(path).session(session).lean();
+            const beforeIds = new Set(before[path].map(d => String(d._id)));
             for (const d of validDraws) {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
             }
             if (validDraws.length) await resortByDate(session, path);
             const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
-            const ids = validDraws.length ? fresh[path].slice(-validDraws.length).map(d => String(d._id)) : [];
+            const ids = fresh[path].filter(d => !beforeIds.has(String(d._id))).map(d => String(d._id));
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${validDraws.length} draws`,
