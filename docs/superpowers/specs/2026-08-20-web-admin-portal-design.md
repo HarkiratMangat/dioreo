@@ -243,7 +243,18 @@ Discord OAuth2 authorization-code flow, `identify` scope only. The code is excha
 
 The door is **not linked from the public site** and carries `noindex` — not as security, which it is not, but so that state 2 stays rare rather than being invited. `dioreo.app/portal` is a **302** into it (not 301, which browsers cache permanently and which would fight every stale cache if the portal ever moved).
 
-⚠️ **Harkirat must create the OAuth client secret and register the redirect URI himself** in the Discord Developer Portal. New env var: `DISCORD_OAUTH_CLIENT_SECRET`. Redirect URI to register: `https://portal.dioreo.app/auth/callback`. **Claude does not handle the credential.**
+⚠️ **Harkirat creates the OAuth client secret and registers the redirect URI himself. Claude does not handle the credential.**
+
+**Development runs against the dev application, decided 2026-08-20 23:00 EDT** (Harkirat: *"we're use the dev bot's OAuth for now"*). `Dioreo (Dev)` (`1529636846248919263`) already exists for exactly this purpose, so the portal can be built and signed into end-to-end without prod's secret existing — which takes the credential off the critical path and leaves prod's as a launch-time step.
+
+| | application | redirect URI to register | secret lives in |
+|---|---|---|---|
+| **Development** | `Dioreo (Dev)` `1529636846248919263` | `http://localhost:<PORTAL_PORT>/auth/callback` | `.env.dev` |
+| **Production** | the live app | `https://portal.dioreo.app/auth/callback` | `.env` on the VM |
+
+Discord accepts an `http://localhost` redirect URI, so development needs no tunnel and no TLS. **Both the client id and the secret are read from the environment — never hardcoded** — because the two applications have different ids and a hardcoded one would silently authenticate against the wrong app. Env vars: `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET`, `PORTAL_PUBLIC_URL` (which the redirect URI is derived from, so the two cannot drift).
+
+⚠️ **The dotenv backfill trap applies here.** `index.js` runs `dotenv.config()` *after* `--env-file`, so a key omitted from `.env.dev` silently inherits prod's value. To point the portal at the dev app, `.env.dev` must set these **explicitly** — omitting them is not the same as unsetting them, and the failure mode is a dev portal quietly authenticating against the production application.
 
 ## 11. Data model changes
 
