@@ -39,3 +39,8 @@ module.exports = { registerEntity, resolveOp, listOpTypes, opTypeForAction, acti
 
 // AFTER the export, never before. Entities self-register as a side effect of being required.
 require('./draws');
+require('./calendar');
+require('./loadouts');
+require('./patchnotes');
+require('./season');
+require('./announcements');
