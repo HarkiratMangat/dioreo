@@ -192,6 +192,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-20 14:10 EDT — self-check.sh rename-string gate fixed (v3.53.0-pre)
 - 2026-08-20 15:25 EDT — memory-index visibility + record-keeping timing audit filed (v3.54.0-pre)
 - 2026-08-20 21:56 EDT — The web admin portal, designed — and 28 defects a stranger found in the design (v3.55.0)
+- 2026-08-20 22:15 EDT — Writing a vacuous check minutes after writing about vacuous checks (v3.56.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3339,6 +3340,20 @@ The repair was to restore the plan from the last clean commit and re-apply all 2
 The near-miss: the transaction probe was pinned to `.env.dev` by a guard written to keep it *safe*, and the local database is a **standalone**, where transactions cannot work under any circumstances. It would have failed, and that failure reads exactly like "M0 does not support transactions" — **closing the design's highest-risk question with a confident wrong answer, manufactured by a safety measure.**
 
 **The transferable lesson, stated as a rule rather than a story:** reading a plan is not testing it. Before approving one, run `node -e` on its own snippets and `rg` every claim it makes about existing code. Both are cheap. Neither happened until a stranger did it.
+
+## 2026-08-20 22:15 EDT — Writing a vacuous check minutes after writing about vacuous checks (v3.56.0)
+
+The release immediately before this one carries a long entry about a check that passed while doing nothing — `reflow-prose.mjs`'s `verify()`, which compared fenced-block content and, under a fence mispairing, compared the same *wrong* blocks before and after. Vacuous in exactly the case it existed for.
+
+Then v3.55.0 shipped citing a literal `(#PR)`, and the fix was a new `docs-audit` check. **That check was vacuous twice, in two different ways, within minutes of writing the entry about vacuous checks.**
+
+The first version returned `{ problems: out, examined }`. Every other check in that file returns **`findings`**, and the runner reads only that key — so the check ran, iterated the right files, matched the right pattern, built the right list, and reported nothing. It passed green. The second version returned bare strings; the renderer prints `r.msg`, so findings rendered as `undefined` while still correctly failing the run.
+
+Neither was visible from reading the code. Both took the same thirty seconds to find: inject `(#PR)` into the changelog, run the audit, look at the exit code. **The falsifier is not a formality appended to a finished check — it is the only thing that distinguishes a check from a comment**, and it caught two consecutive failures that careful reading did not.
+
+The underlying defect is worth separating from the fix. **`(#PR)` was structural, not careless.** The workflow composes the changelog entry on the branch as a pre-merge checkpoint, so it can fold into the squash — and at that moment the PR number does not exist. A placeholder is the only honest thing to write. Every audit check passed on it because none of them read whether a citation is a *number*: version coverage saw a version, the hash chain saw a chain, record structure saw a well-formed heading.
+
+So the check is the backstop, and **the actual remedy is ordering**: open the PR first, then write the entry with the real number on the branch. This release did that, which is why its own entry cites `(#165)` and needed no backfill. A rule that requires remembering is worse than a sequence that makes the mistake impossible — and this one cost a whole extra release to learn, which is precisely what the release gate exists to prevent and could not, because the gate reads structure rather than content.
 
 # Part B — Lessons Ledger (thematic)
 
