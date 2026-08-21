@@ -16,6 +16,27 @@ check('addSeason is tier 2 and its inverse removes only the entry it created', (
     assert.strictEqual(inv.target.elementId, 'a');
 });
 
+// removeSeason must invert to restoreSeason (exact _id preserved), never back to addSeason (which always mints a NEW _id) -- a double-undo (reverting an already-reverted addSeason) would otherwise orphan the original entry's Cloudinary image cache. Fixed 2026-08-21 10:00 EDT -- see docs/archive/resolved-list.md.
+check('removeSeason inverts to restoreSeason, carrying the exact removed entry', () => {
+    const removed = { _id: 'p1', title: 'Season 7', titleOverride: '', description: 'x', releaseDate: new Date('2026-08-01'), images: ['url1'] };
+    const inv = ops.resolveOp('patchnote.removeSeason').invert({ action: 'delete', applied: { removed } });
+    assert.strictEqual(inv.type, 'patchnote.restoreSeason');
+    assert.deepStrictEqual(inv.payload.entry, removed, 'must restore the exact subdocument, not a re-derived addSeason payload');
+});
+
+check('restoreSeason is symmetric: its own invert is removeSeason again', () => {
+    const impl = ops.resolveOp('patchnote.restoreSeason');
+    assert.strictEqual(typeof impl.apply, 'function');
+    const inv = impl.invert({ action: 'add', applied: { elementId: 'p1' } });
+    assert.strictEqual(inv.type, 'patchnote.removeSeason');
+    assert.strictEqual(inv.target.elementId, 'p1');
+});
+
+check('restoreSeason requires a real entry with an _id', () => {
+    const r = ops.resolveOp('patchnote.restoreSeason').validate({ type: 'patchnote.restoreSeason', payload: {} });
+    assert.strictEqual(r.ok, false);
+});
+
 check('setDateInfo edits IN PLACE, preserving the subdocument _id', () => {
     const inv = ops.resolveOp('patchnote.setDateInfo').invert({
         action: 'edit', applied: { elementId: 'a', prior: { description: 'old', releaseDate: new Date(), titleOverride: '' } }

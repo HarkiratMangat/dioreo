@@ -149,15 +149,26 @@ registerEntity('patchnotes', {
                 applied: { removed: gone }
             };
         },
-        // ⚠️ ACCEPTED LIMITATION: reverting a revert (undoing THIS op) mints a brand-new _id via addSeason rather than restoring the original one, so the original Cloudinary image cache keyed on the old _id is orphaned. Only reachable by reverting an already-reverted addSeason -- a double-undo -- which is a low-frequency enough path that a full restore-by-exact-id op wasn't built for it. Documented, not silent.
-        invert: (c) => ({
-            type: 'patchnote.addSeason',
-            payload: {
-                titleOverride: c.applied.removed.titleOverride, description: c.applied.removed.description,
-                releaseDate: c.applied.removed.releaseDate,
-                urls1: (c.applied.removed.images || []).slice(0, 5), urls2: (c.applied.removed.images || []).slice(5, 10)
-            }
-        })
+        // Inverts to restoreSeason (re-inserts the EXACT removed subdocument, same _id), never back to addSeason -- addSeason always MINTS A NEW _id, which would orphan the original's Cloudinary image cache on a double-undo (reverting an already-reverted addSeason). See restoreSeason's own comment for the symmetric pair this forms.
+        invert: (c) => ({ type: 'patchnote.restoreSeason', payload: { entry: c.applied.removed } })
+    },
+
+    // Not a registry action -- exists solely as removeSeason's inverse, restoring the EXACT removed subdocument (same _id, same images) rather than minting a new one via addSeason. Symmetric with removeSeason: restoreSeason's own invert is removeSeason again, so a chain of repeated undo/redo on one addSeason stays exact indefinitely instead of degrading after one hop.
+    'patchnote.restoreSeason': {
+        tier: 2,
+        validate: (op) => op.payload?.entry?._id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
+        preview: (op, live) => ({ before: { count: live.patchNotes.length }, after: { count: live.patchNotes.length + 1 } }),
+        apply: async (op, { session }) => {
+            const element = op.payload.entry;
+            const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element, session });
+            if (!res.ok) return res;
+            return {
+                ok: true,
+                change: { action: 'add', model: 'SeasonalData', target: displayTitle(element), summary: `Restored patch notes entry "${displayTitle(element)}"` },
+                applied: { elementId: String(element._id) }
+            };
+        },
+        invert: (c) => ({ type: 'patchnote.removeSeason', target: { elementId: c.applied.elementId } })
     },
 
     // Not in the plan's own Interfaces line at all -- found by reading the real handler's handlePatchSeasonPick -> modal_patch_editseason_{id} flow, not by reading utils/manageActions.js (its id embeds a Mongo _id the registry's group/action split can't represent, so it never shows up in ACTIONS_BY_PAGE for a registry-only read to find).
