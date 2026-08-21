@@ -193,6 +193,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-20 15:25 EDT — memory-index visibility + record-keeping timing audit filed (v3.54.0-pre)
 - 2026-08-20 21:56 EDT — The web admin portal, designed — and 28 defects a stranger found in the design (v3.55.0)
 - 2026-08-20 22:15 EDT — Writing a vacuous check minutes after writing about vacuous checks (v3.56.0)
+- 2026-08-20 22:55 EDT — A deferred item nobody filed, and two costs that were not costs (v3.57.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3354,6 +3355,20 @@ Neither was visible from reading the code. Both took the same thirty seconds to 
 The underlying defect is worth separating from the fix. **`(#PR)` was structural, not careless.** The workflow composes the changelog entry on the branch as a pre-merge checkpoint, so it can fold into the squash — and at that moment the PR number does not exist. A placeholder is the only honest thing to write. Every audit check passed on it because none of them read whether a citation is a *number*: version coverage saw a version, the hash chain saw a chain, record structure saw a well-formed heading.
 
 So the check is the backstop, and **the actual remedy is ordering**: open the PR first, then write the entry with the real number on the branch. This release did that, which is why its own entry cites `(#165)` and needed no backfill. A rule that requires remembering is worse than a sequence that makes the mistake impossible — and this one cost a whole extra release to learn, which is precisely what the release gate exists to prevent and could not, because the gate reads structure rather than content.
+
+## 2026-08-20 22:55 EDT — A deferred item nobody filed, and two costs that were not costs (v3.57.0)
+
+Harkirat reversed the portal's "ships after v3.0.0" gate the same day it was written. The mechanical part — a dated amendment banner on a frozen spec, decision 4 struck in place with its rationale kept — is the easy half. Two other things came out of it that are worth keeping.
+
+**The reversal surfaced a gap nothing else would have found.** The web admin portal had **no `docs/ROADMAP.md` entry at all.** The spec had deferred it past the launch, so nothing ever filed it — and the single largest piece of designed-but-unbuilt work in the project was invisible to the one file whose entire job is tracking exactly that. Every cross-reference resolved, every audit check passed, and the roadmap was silently incomplete in the way that matters most: **a deferred item that nobody files reads identically to an item that does not exist.** No sweep catches that, because there is nothing to sweep.
+
+**Then I listed three costs of moving the date, and Harkirat corrected two of them.** The systemd unit "moving earlier" was wrong on its face — it is part of building the portal at all, so it happens now or later regardless of when the portal ships. Framing it as a cost of the *timing change* was a category error dressed as diligence: it looks like careful accounting and is actually a made-up number. The `PRIVACY.md` revision was real work but never a blocker, and calling it a cost implied a veto I did not have.
+
+The third was real, and his answer dissolved it: **use the dev bot's OAuth.** `Dioreo (Dev)` already exists for precisely this kind of thing, its secret can be created without touching prod, and Discord accepts an `http://localhost` redirect URI — so no tunnel, no TLS, and the portal is buildable end to end before prod's credential exists at all. What I had written as a hard dependency on him was a dependency on *one* application, and there were two.
+
+**The transferable shape:** when you enumerate the costs of a decision, check each one against the counterfactual — *would this still happen if we did the other thing?* Two of my three failed that test, and a cost that survives both branches is not a cost of the choice. It is just work, and listing it makes a decision look more expensive than it is, which is its own way of arguing without saying so.
+
+**One more thing this release caught, about itself.** The first draft of its DEVLOG title was stamped `23:00 EDT` while the clock read `22:54` — six minutes ahead, estimated rather than read. `timestamp-check.sh` denied the write outright, which is the behaviour that hook was built for after 2026-08-02 put thirty fabricated stamps into docs, memory, a released CHANGELOG and a git tag. But the same stamp had *already* reached the spec, the ROADMAP and the CHANGELOG in a commit that went out before the DEVLOG write triggered the gate. **A hook that fires on one file does not protect the other five in the same batch** — it caught the instance, not the habit, and the habit is the thing that produces a plausible number instead of reading the clock sitting one tool call away.
 
 # Part B — Lessons Ledger (thematic)
 
