@@ -1,6 +1,4 @@
-// scripts/ownerModule.test.js
-// The property under test is the CLOSURE, not the value. utils/owner.js exists so that requiring
-// the permission layer does not drag in the command surface.
+// scripts/ownerModule.test.js The property under test is the CLOSURE, not the value. utils/owner.js exists so that requiring the permission layer does not drag in the command surface.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');

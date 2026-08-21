@@ -1,7 +1,4 @@
-// scripts/drawsHandlerSnapshot.test.js
-// Written BEFORE the refactor, against the pre-refactor code, so it can prove the refactor changed
-// nothing a user sees. This is the technique from feedback_snapshot_before_unclickable_refactor:
-// when click-testing is impractical, a deepStrictEqual against a captured fixture is the substitute.
+// scripts/drawsHandlerSnapshot.test.js Written BEFORE the refactor, against the pre-refactor code, so it can prove the refactor changed nothing a user sees. This is the technique from feedback_snapshot_before_unclickable_refactor: when click-testing is impractical, a deepStrictEqual against a captured fixture is the substitute.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');

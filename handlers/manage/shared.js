@@ -112,9 +112,7 @@ function thumbnailNote(thumbResult) {
     return null;
 }
 
-// Moved to utils/bulkMerge.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can
-// share the SAME real merge semantics instead of a divergent copy -- re-exported here so no
-// existing call site in this directory needs to change. See that file's header for the story.
+// Moved to utils/bulkMerge.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can share the SAME real merge semantics instead of a divergent copy -- re-exported here so no existing call site in this directory needs to change. See that file's header for the story.
 const { resolveThumbnailsForDraws, upsertByTitle, upsertDrawsByTitle, upsertEventsByTitle } = require('../../utils/bulkMerge');
 
 // Subtractive counterpart to upsertByTitle -- fuzzy-matches each pasted title against `array`, removing the first match and reporting anything not found. (v3-pre-release review, finding #40 -- was copy-pasted twice, once as a local closure in draws.js and once inline in calendar.js.)

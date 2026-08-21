@@ -1,7 +1,4 @@
-// scripts/changeset.test.js
-// The property under test is ALL-OR-NOTHING. The bot reads fresh on every interaction, so a
-// half-applied set is served to real users within seconds — this is the highest-consequence
-// invariant in the whole core.
+// scripts/changeset.test.js The property under test is ALL-OR-NOTHING. The bot reads fresh on every interaction, so a half-applied set is served to real users within seconds — this is the highest-consequence invariant in the whole core.
 const assert = require('assert');
 const { validateSet } = require('../core/changeset');
 

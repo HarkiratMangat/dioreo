@@ -1,7 +1,4 @@
-// scripts/positionalWrite.test.js
-// Pure query-shape tests — no DB. What is being asserted is that the FILTER carries a prior-value
-// assertion, because that assertion is the entire conflict-detection mechanism. A positional update
-// without it silently wins a race it should have lost.
+// scripts/positionalWrite.test.js Pure query-shape tests — no DB. What is being asserted is that the FILTER carries a prior-value assertion, because that assertion is the entire conflict-detection mechanism. A positional update without it silently wins a race it should have lost.
 const assert = require('assert');
 const { buildElementFilter, buildElementUpdate } = require('../core/mongo/positional');
 

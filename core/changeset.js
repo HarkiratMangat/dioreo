@@ -2,16 +2,12 @@
 //
 // A changeset is N ops that commit together or not at all.
 //
-// ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction
-// (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so
-// a half-applied set is served to real users within seconds. That is why this uses a real Mongo
-// transaction and not a best-effort loop.
+// ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so a half-applied set is served to real users within seconds. That is why this uses a real Mongo transaction and not a best-effort loop.
 const mongoose = require('mongoose');
 const { resolveOp, actionForOpType } = require('./ops');
 const { recordChangeIn } = require('../utils/changeStore');
 
-// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's
-// own namespace rather than a literal, so a not-yet-registered op still records truthfully.
+// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully.
 function pageForOp(type) {
     const actions = actionForOpType(type);
     return actions?.[0]?.split(':')[0] ?? type.split('.')[0];
@@ -43,10 +39,7 @@ async function commitSet(ops, { actorId }) {
 
     const session = await mongoose.startSession();
     const changeIds = [];
-    // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a
-    // handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already
-    // stores res.change.detail, but a Discord confirmation message needs res.applied directly, and
-    // nothing was returning it. Found during plan 1 Task 6 integration.
+    // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already stores res.change.detail, but a Discord confirmation message needs res.applied directly, and nothing was returning it. Found during plan 1 Task 6 integration.
     const results = [];
     let failedAt = null;
     try {
@@ -56,12 +49,7 @@ async function commitSet(ops, { actorId }) {
                 const impl = resolveOp(op.type);
                 const res = await impl.apply(op, { session, actorId });
                 if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
-                // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out.
-                // 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote
-                // `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote,
-                // season and announcement row as `draws` the moment plan 2 lands — breaking
-                // getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's
-                // ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
+                // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out. 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote, season and announcement row as `draws` the moment plan 2 lands — breaking getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
                 const row = await recordChangeIn(session, {
                     ...res.change, actorId, page: pageForOp(op.type),
                     inverse: impl.invert({ ...res.change, applied: res.applied })

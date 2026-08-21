@@ -1,5 +1,4 @@
-// scripts/drawOps.test.js
-// validate() and invert() are PURE — no DB, no network. apply() is covered by Task 7's integration test.
+// scripts/drawOps.test.js validate() and invert() are PURE — no DB, no network. apply() is covered by Task 7's integration test.
 const assert = require('assert');
 const ops = require('../core/ops');
 
@@ -42,9 +41,7 @@ check('draw.bulkReplace inverts to a bulkReplace carrying the FULL prior set', (
         'the inverse of a replace must restore every element it destroyed, not just record the count');
 });
 
-// The next three checks pin defects found during Task 6 integration — parseBulkDrawList()
-// (utils/adminParser.js) returns a FLAT array, never { newDraws, returningDraws }, and the real
-// "Bulk Delete Draws" modal collects pasted TITLES, never element ids.
+// The next three checks pin defects found during Task 6 integration — parseBulkDrawList() (utils/adminParser.js) returns a FLAT array, never { newDraws, returningDraws }, and the real "Bulk Delete Draws" modal collects pasted TITLES, never element ids.
 check('draw.bulkAdd requires a category, and validates a flat parsed array', () => {
     const noCategory = ops.resolveOp('draw.bulkAdd').validate({ type: 'draw.bulkAdd', payload: { text: 'x' } });
     assert.strictEqual(noCategory.ok, false, 'a bulk add with no category could not know which array to append to');

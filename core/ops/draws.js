@@ -17,26 +17,14 @@ const SeasonalData = require('../../models/SeasonalData');
 const DOC = { docType: 'global' };
 const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
 
-// ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass:
-// nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the
-// stored array order. The pre-core handler always re-sorted the whole array after every mutation
-// that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s
-// without re-sorting would silently degrade `/draws` display order the first time an edit changed a
-// date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing
-// changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the
-// same transaction before returning.
+// ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass: nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the stored array order. The pre-core handler always re-sorted the whole array after every mutation that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s without re-sorting would silently degrade `/draws` display order the first time an edit changed a date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the same transaction before returning.
 async function resortByDate(session, path) {
     const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
     const sorted = [...fresh[path]].sort((a, b) => new Date(a.date) - new Date(b.date));
     await SeasonalData.updateOne(DOC, { $set: { [path]: sorted } }, { session });
 }
 
-// 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. commitSet runs validateSet before applying —
-// including on an INVERSE produced by invert(), which carries structured `parsed` data and never the
-// original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an
-// empty string, overwrite payload.parsed, and silently restore NOTHING. That would have made undo a
-// no-op for bulkDelete, purge and bulkReplace. drawOps.test.js round-trips every inverse through
-// validate() for exactly this reason.
+// 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. commitSet runs validateSet before applying — including on an INVERSE produced by invert(), which carries structured `parsed` data and never the original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an empty string, overwrite payload.parsed, and silently restore NOTHING. That would have made undo a no-op for bulkDelete, purge and bulkReplace. drawOps.test.js round-trips every inverse through validate() for exactly this reason.
 const alreadyParsed = (op) => op.payload?.parsed && !op.payload?.text;
 
 function validateOne(payload) {
@@ -63,10 +51,7 @@ registerEntity('draws', {
         apply: async (op, { session }) => {
             const path = pathFor(op.payload.category);
             const element = { ...op.payload };
-            // 🔴 THE _id IS MINTED HERE, not discovered by reading the array tail. A tail read is
-            // wrong twice: session.withTransaction() RETRIES its whole callback on a transient error,
-            // and commitSet runs N ops in one transaction, so an earlier op's $push moves the tail a
-            // later op reads. Every SeasonalData subdocument array has _id enabled.
+            // 🔴 THE _id IS MINTED HERE, not discovered by reading the array tail. A tail read is wrong twice: session.withTransaction() RETRIES its whole callback on a transient error, and commitSet runs N ops in one transaction, so an earlier op's $push moves the tail a later op reads. Every SeasonalData subdocument array has _id enabled.
             element._id = new mongoose.Types.ObjectId();
             const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element, session });
             if (!res.ok) return res;
@@ -153,13 +138,7 @@ registerEntity('draws', {
         })
     },
 
-    // ⚠️ TARGET SHAPE FIXED DURING TASK 6 INTEGRATION (2026-08-20 23:48 EDT). An earlier draft had bulkAdd
-    // parse ONE text blob into `{newDraws, returningDraws}` and mutate both categories from a single
-    // op. That doesn't match parseBulkDrawList() (utils/adminParser.js), which returns a FLAT array —
-    // category comes from which of the two independently-optional textareas (new_text/returning_text)
-    // the admin filled in, not from the pasted text itself. bulkAdd/bulkReplace are therefore
-    // single-category, like draw.edit/draw.delete — the handler builds up to two ops (one per filled
-    // field) and commits them together in one changeset, preserving the original one-save atomicity.
+    // ⚠️ TARGET SHAPE FIXED DURING TASK 6 INTEGRATION (2026-08-20 23:48 EDT). An earlier draft had bulkAdd parse ONE text blob into `{newDraws, returningDraws}` and mutate both categories from a single op. That doesn't match parseBulkDrawList() (utils/adminParser.js), which returns a FLAT array — category comes from which of the two independently-optional textareas (new_text/returning_text) the admin filled in, not from the pasted text itself. bulkAdd/bulkReplace are therefore single-category, like draw.edit/draw.delete — the handler builds up to two ops (one per filled field) and commits them together in one changeset, preserving the original one-save atomicity.
     'draw.bulkAdd': {
         action: 'draws:bulkadd', tier: 2,
         validate: (op) => {
@@ -179,10 +158,7 @@ registerEntity('draws', {
         }),
         apply: async (op, { session }) => {
             const path = pathFor(op.target.category);
-            // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws()
-            // (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache
-            // hit) before saving. Found during Task 6 integration: a first draft of this op skipped
-            // that entirely and would have saved draws with an undefined thumbnailUrl.
+            // ⚠️ The pre-core handler always ran every parsed draw through resolveThumbnailsForDraws() (Cloudinary resolve/cache, dropping anything with neither a provided URL nor a cache hit) before saving. Found during Task 6 integration: a first draft of this op skipped that entirely and would have saved draws with an undefined thumbnailUrl.
             const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(op.payload.parsed);
             for (const d of validDraws) {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
@@ -195,7 +171,7 @@ registerEntity('draws', {
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${validDraws.length} draws`,
                           summary: `Added ${validDraws.length} draws in bulk`,
                           detail: skipped.length ? `Skipped (no URL/no cache hit): ${skipped.join(', ')}` : undefined },
-                applied: { category: op.target.category, ids, skipped, warnings }
+                applied: { category: op.target.category, ids, added: validDraws, skipped, warnings, total: fresh[path].length }
             };
         },
         invert: (change) => ({
@@ -223,12 +199,7 @@ registerEntity('draws', {
             const path = pathFor(op.target.category);
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const replaced = before[path];                       // the full prior set — this IS the inverse
-            // 🔴 NOT a wholesale $set of the parsed text. "Replace Multiple" has ALWAYS been an
-            // upsert-by-fuzzy-title merge (handlers/manage/shared.js's original upsertByTitle,
-            // relocated to utils/bulkMerge.js): update the matching item in place, insert anything
-            // new, and NEVER touch an existing entry the pasted text didn't mention — Purge already
-            // covers a full wipe. A wholesale overwrite here would silently delete every draw not in
-            // the paste. Found during Task 6 integration, before any handler was wired to this op.
+            // 🔴 NOT a wholesale $set of the parsed text. "Replace Multiple" has ALWAYS been an upsert-by-fuzzy-title merge (handlers/manage/shared.js's original upsertByTitle, relocated to utils/bulkMerge.js): update the matching item in place, insert anything new, and NEVER touch an existing entry the pasted text didn't mention — Purge already covers a full wipe. A wholesale overwrite here would silently delete every draw not in the paste. Found during Task 6 integration, before any handler was wired to this op.
             const { validDraws } = await resolveThumbnailsForDraws(op.payload.parsed);
             const { finalArray, updatedCount, insertedCount } = upsertByTitle(before[path], validDraws);
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -237,7 +208,7 @@ registerEntity('draws', {
                 ok: true,
                 change: { action: 'bulkReplace', model: 'SeasonalData', target: `${path}`,
                           summary: `Replaced draws — updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)` },
-                applied: { category: op.target.category, replaced, added: validDraws }
+                applied: { category: op.target.category, replaced, added: validDraws, updatedCount, insertedCount, total: finalArray.length }
             };
         },
         invert: (change) => ({
@@ -247,10 +218,7 @@ registerEntity('draws', {
         })
     },
 
-    // ⚠️ RESHAPED DURING TASK 6 INTEGRATION. The real "Bulk Delete Draws" UI (handlers/manage/draws.js's
-    // pre-core bulkDeleteDraws) takes PASTED TITLES, fuzzy-matched (utils/search.js's fuzzyMatch) —
-    // never element ids, which the admin never sees or types. A first draft of this op only accepted
-    // an ids-shaped target, which no real caller could ever construct from the modal it serves.
+    // ⚠️ RESHAPED DURING TASK 6 INTEGRATION. The real "Bulk Delete Draws" UI (handlers/manage/draws.js's pre-core bulkDeleteDraws) takes PASTED TITLES, fuzzy-matched (utils/search.js's fuzzyMatch) — never element ids, which the admin never sees or types. A first draft of this op only accepted an ids-shaped target, which no real caller could ever construct from the modal it serves.
     'draw.bulkDelete': {
         action: 'draws:bulkdelete', tier: 2,
         validate: (op) => {
@@ -281,9 +249,7 @@ registerEntity('draws', {
             const notFound = { newDraws: [], returningDraws: [] };
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             for (const path of ['newDraws', 'returningDraws']) {
-                // An id-based removal (from this op's own invert()) skips the fuzzy-title path entirely
-                // — replaying a title match against a document that may have changed since the forward
-                // op ran could match the WRONG element, or nothing at all. An id, once known, is exact.
+                // An id-based removal (from this op's own invert()) skips the fuzzy-title path entirely — replaying a title match against a document that may have changed since the forward op ran could match the WRONG element, or nothing at all. An id, once known, is exact.
                 if (op.payload.ids?.[path]?.length) {
                     for (const id of op.payload.ids[path]) {
                         const gone = before[path].find(d => String(d._id) === id);
@@ -312,9 +278,7 @@ registerEntity('draws', {
                 applied: { removed, notFound }
             };
         },
-        // Restores by re-appending the exact removed subdocuments (title/date/thumbnailUrl/items/_id
-        // discarded and re-minted, matching draw.delete's own invert — an add, not a positional
-        // restore-by-id, since the element's slot in the array is gone).
+        // Restores by re-appending the exact removed subdocuments (title/date/thumbnailUrl/items/_id discarded and re-minted, matching draw.delete's own invert — an add, not a positional restore-by-id, since the element's slot in the array is gone).
         invert: (change) => [
             ...(change.applied.removed.newDraws.length
                 ? [{ type: 'draw.bulkAdd', target: { category: 'new' }, payload: { parsed: change.applied.removed.newDraws } }] : []),
@@ -349,9 +313,7 @@ registerEntity('draws', {
                 applied: { scope: op.target.scope, newDraws: before.newDraws, returningDraws: before.returningDraws }
             };
         },
-        // 🔴 NOT `category: 'both'`. pathFor() maps anything not 'returning' to 'newDraws', so a
-        // 'both' inverse would restore new draws and SILENTLY DROP every returning draw. Reverting a
-        // scope:'all' purge is TWO ops — which is why invert() may return an array.
+        // 🔴 NOT `category: 'both'`. pathFor() maps anything not 'returning' to 'newDraws', so a 'both' inverse would restore new draws and SILENTLY DROP every returning draw. Reverting a scope:'all' purge is TWO ops — which is why invert() may return an array.
         invert: (change) => [
             { type: 'draw.bulkReplace', target: { category: 'new' },
               payload: { parsed: change.applied.newDraws } },

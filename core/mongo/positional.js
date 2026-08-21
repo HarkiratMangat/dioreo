@@ -1,14 +1,8 @@
 // core/mongo/positional.js
 //
-// ⚠️ WHY THIS FILE EXISTS. models/SeasonalData.js is ONE global document whose arrays hold
-// newDraws, returningDraws, calendar and patchNotes. So a draws edit and a calendar edit touch the
-// same document, and ordinary document-level optimistic locking (__v) would raise a conflict on
-// nearly every pair of UNRELATED concurrent edits — false conflicts that train you to click through
-// the warning, which is worse than no check. But skipping versioning is worse still: doc.save() on
-// a stale copy writes the whole array back and silently reverts the other edit.
+// ⚠️ WHY THIS FILE EXISTS. models/SeasonalData.js is ONE global document whose arrays hold newDraws, returningDraws, calendar and patchNotes. So a draws edit and a calendar edit touch the same document, and ordinary document-level optimistic locking (__v) would raise a conflict on nearly every pair of UNRELATED concurrent edits — false conflicts that train you to click through the warning, which is worse than no check. But skipping versioning is worse still: doc.save() on a stale copy writes the whole array back and silently reverts the other edit.
 //
-// So conflicts are detected at ELEMENT identity: pin the subdocument by _id AND assert its prior
-// values in the same filter. A mismatch matches zero documents, which IS the conflict signal.
+// So conflicts are detected at ELEMENT identity: pin the subdocument by _id AND assert its prior values in the same filter. A mismatch matches zero documents, which IS the conflict signal.
 //
 // 🔴 Nothing in core/ may call .save() on a SeasonalData document. This module is the only writer.
 

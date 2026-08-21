@@ -16,11 +16,7 @@ function dateKey(date) {
 
 // Namespaced under the SAME AlertCounter collection AlertLog already uses ("chg-" prefix on the _id), rather than a second counter model -- the two logs' daily sequences never collide because their keys never collide, and there's no second collection to create/maintain for one more counter.
 //
-// ⚠️ `session` is OPTIONAL and forwarded to the atomic $inc so a caller running inside a Mongo
-// transaction (core/changeset.js's commitSet) doesn't mint an id outside it -- an id minted outside
-// a transaction that then rolls back is an id that was never actually used, but the counter still
-// moved, which is harmless (ids are just unique labels, not a dense sequence) but worth being
-// deliberate about since core/'s whole contract is "nothing escapes the transaction".
+// ⚠️ `session` is OPTIONAL and forwarded to the atomic $inc so a caller running inside a Mongo transaction (core/changeset.js's commitSet) doesn't mint an id outside it -- an id minted outside a transaction that then rolls back is an id that was never actually used, but the counter still moved, which is harmless (ids are just unique labels, not a dense sequence) but worth being deliberate about since core/'s whole contract is "nothing escapes the transaction".
 async function nextDailyChangeId(date = new Date(), session = undefined) {
     const key = `chg-${dateKey(date)}`;
     const doc = await AlertCounter.findOneAndUpdate(
@@ -52,11 +48,7 @@ function recordChange(fields) {
     })().catch((err) => { console.error('Failed to record /manage change (non-fatal):', err); });
 }
 
-// Transactional counterpart to recordChange(), for core/changeset.js's commitSet(). Unlike
-// recordChange() this is NOT fire-and-forget: it AWAITS, it CAN THROW, and it RETURNS the created
-// row -- because commitSet runs inside a real Mongo transaction where an audit write that silently
-// failed (or ran outside the transaction and survived a rollback) would violate the "apply() always
-// audits, unconditionally" invariant the whole operation core is built on.
+// Transactional counterpart to recordChange(), for core/changeset.js's commitSet(). Unlike recordChange() this is NOT fire-and-forget: it AWAITS, it CAN THROW, and it RETURNS the created row -- because commitSet runs inside a real Mongo transaction where an audit write that silently failed (or ran outside the transaction and survived a rollback) would violate the "apply() always audits, unconditionally" invariant the whole operation core is built on.
 async function recordChangeIn(session, fields) {
     const now = new Date();
     const changeId = await nextDailyChangeId(now, session);
@@ -68,8 +60,7 @@ async function recordChangeIn(session, fields) {
     return row;
 }
 
-// One row by its human-referenceable id, for core/revert.js -- fetching a single row rather than a
-// page of them.
+// One row by its human-referenceable id, for core/revert.js -- fetching a single row rather than a page of them.
 async function getChange(changeId) {
     return await ChangeLog.findOne({ changeId }).lean();
 }
