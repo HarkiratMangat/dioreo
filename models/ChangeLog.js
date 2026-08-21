@@ -15,6 +15,15 @@ const ChangeLogSchema = new mongoose.Schema({
     detail: { type: String },      // optional longer detail (counts, warnings) -- truncated same as AlertLog's detail
     // Flipped true when a registered Undo (handlers/manage/shared.js's registerUndo) consumes and reverses the change this row recorded. Undo itself is not separately audited -- this flag is the extent of undo-awareness in scope (see the design spec's Out of scope section).
     undone: { type: Boolean, default: false },
+    // The op that reverses this change, stored so revert works from EITHER surface and survives a
+    // restart. handlers/manage/shared.js's registerUndo() holds a closure in a router-private Map:
+    // it dies with the process and the web cannot see it. This does neither.
+    //
+    // ⚠️ PRIVACY: today every op payload here describes CONTENT (a draw, an event, a build), so the
+    // only per-user field on this model is still `actorId`, already inventoried in PRIVACY.md §2.1b
+    // and Appendix A. THAT CHANGES the moment an admin-grant op is stored, because its payload
+    // carries a third party's Discord id — update the policy in the SAME change that adds one.
+    inverse: { type: mongoose.Schema.Types.Mixed, default: null },
     // Authoritative ordering + retention key, same convention as AlertLog: explicit createdAt only, no updatedAt (Mongoose `timestamps` would add one nothing here ever needs).
     createdAt: { type: Date, default: Date.now, index: true },
 });

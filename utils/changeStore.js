@@ -15,12 +15,18 @@ function dateKey(date) {
 }
 
 // Namespaced under the SAME AlertCounter collection AlertLog already uses ("chg-" prefix on the _id), rather than a second counter model -- the two logs' daily sequences never collide because their keys never collide, and there's no second collection to create/maintain for one more counter.
-async function nextDailyChangeId(date = new Date()) {
+//
+// ⚠️ `session` is OPTIONAL and forwarded to the atomic $inc so a caller running inside a Mongo
+// transaction (core/changeset.js's commitSet) doesn't mint an id outside it -- an id minted outside
+// a transaction that then rolls back is an id that was never actually used, but the counter still
+// moved, which is harmless (ids are just unique labels, not a dense sequence) but worth being
+// deliberate about since core/'s whole contract is "nothing escapes the transaction".
+async function nextDailyChangeId(date = new Date(), session = undefined) {
     const key = `chg-${dateKey(date)}`;
     const doc = await AlertCounter.findOneAndUpdate(
         { _id: key },
         { $inc: { seq: 1 } },
-        { upsert: true, returnDocument: 'after' }
+        { upsert: true, returnDocument: 'after', session }
     );
     return `${dateKey(date)}-${pad2(doc.seq)}`;
 }
@@ -39,10 +45,33 @@ function recordChange(fields) {
             target: fields.target,
             summary: fields.summary,
             detail: fields.detail,
+            inverse: fields.inverse ?? null,
             createdAt: now,
         });
         pruneChanges(); // fire-and-forget; own throttle + swallow
     })().catch((err) => { console.error('Failed to record /manage change (non-fatal):', err); });
+}
+
+// Transactional counterpart to recordChange(), for core/changeset.js's commitSet(). Unlike
+// recordChange() this is NOT fire-and-forget: it AWAITS, it CAN THROW, and it RETURNS the created
+// row -- because commitSet runs inside a real Mongo transaction where an audit write that silently
+// failed (or ran outside the transaction and survived a rollback) would violate the "apply() always
+// audits, unconditionally" invariant the whole operation core is built on.
+async function recordChangeIn(session, fields) {
+    const now = new Date();
+    const changeId = await nextDailyChangeId(now, session);
+    const [row] = await ChangeLog.create([{
+        changeId, actorId: fields.actorId, page: fields.page, action: fields.action,
+        model: fields.model, target: fields.target, summary: fields.summary, detail: fields.detail,
+        inverse: fields.inverse ?? null, createdAt: now,
+    }], { session });
+    return row;
+}
+
+// One row by its human-referenceable id, for core/revert.js -- fetching a single row rather than a
+// page of them.
+async function getChange(changeId) {
+    return await ChangeLog.findOne({ changeId }).lean();
 }
 
 // Retention: >180d OR beyond a 5000 hard cap, whichever bites first. Self-throttled to <=1/hour.
@@ -142,6 +171,8 @@ module.exports = {
     HARD_CAP,
     nextDailyChangeId,
     recordChange,
+    recordChangeIn,
+    getChange,
     pruneChanges,
     markUndone,
     getRecentChanges,
