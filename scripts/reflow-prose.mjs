@@ -269,14 +269,7 @@ function fences(s) {
   return res;
 }
 
-// 🔴 AN ODD NUMBER OF FENCE LINES MEANS THE DOCUMENT IS MALFORMED, AND REFLOW SILENTLY CORRUPTS IT.
-// The fence skipping above pairs fences positionally, so one unbalanced fence makes a later OPENING
-// fence get consumed as the CLOSE of an earlier block — every code block after that point lands
-// outside any fence and is reflowed as prose. Measured 2026-08-20: an unbalanced fence in a plan
-// collapsed NINE code blocks, including an entire module implementation, onto single lines.
-// verify() did not catch it, because it computed the same wrong block boundaries before and after,
-// so the fenced-content comparison was vacuously equal. This counts fence LINES, which is the one
-// thing that cannot be fooled by a mispairing.
+// 🔴 AN ODD NUMBER OF FENCE LINES MEANS THE DOCUMENT IS MALFORMED, AND REFLOW SILENTLY CORRUPTS IT. The fence skipping above pairs fences positionally, so one unbalanced fence makes a later OPENING fence get consumed as the CLOSE of an earlier block — every code block after that point lands outside any fence and is reflowed as prose. Measured 2026-08-20: an unbalanced fence in a plan collapsed NINE code blocks, including an entire module implementation, onto single lines. verify() did not catch it, because it computed the same wrong block boundaries before and after, so the fenced-content comparison was vacuously equal. This counts fence LINES, which is the one thing that cannot be fooled by a mispairing.
 const fenceLineCount = (s) => s.split("\n").filter((l) => isFence(l)).length;
 
 export function verify(before, after) {

@@ -30,10 +30,7 @@ const clean = (src) => {
 
 /* ── the verifier must REJECT real corruption ─────────────────────────────── */
 
-// Added 2026-08-20 after an unbalanced fence in a plan silently collapsed NINE code blocks — an
-// entire module implementation — onto single lines, while verify() reported success. verify()
-// compared fenced-block CONTENT, and under a mispairing it compared the same WRONG blocks before and
-// after, so that comparison was vacuously equal. Counting fence LINES cannot be fooled that way.
+// Added 2026-08-20 after an unbalanced fence in a plan silently collapsed NINE code blocks — an entire module implementation — onto single lines, while verify() reported success. verify() compared fenced-block CONTENT, and under a mispairing it compared the same WRONG blocks before and after, so that comparison was vacuously equal. Counting fence LINES cannot be fooled that way.
 t("verifier rejects an odd number of code fences", () => {
   const malformed = [
     "Some prose.", "", "```js", "const a = 1;", "```", "",
@@ -47,8 +44,7 @@ t("verifier rejects an odd number of code fences", () => {
   );
 });
 
-// The falsifier for the check above: a BALANCED document must NOT trip it, or the guard fails every
-// well-formed file and gets disabled — which is worse than not having it.
+// The falsifier for the check above: a BALANCED document must NOT trip it, or the guard fails every well-formed file and gets disabled — which is worse than not having it.
 t("verifier does not flag a balanced document", () => {
   const fine = ["Prose.", "", "```js", "const a = 1;", "```", "", "More prose."].join("\n");
   assert.ok(!verify(fine, fine).some((p) => /unbalanced code fences/.test(p)));
