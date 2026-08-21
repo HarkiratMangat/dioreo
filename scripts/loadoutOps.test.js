@@ -85,4 +85,21 @@ check('loadout.bulkDelete refuses an empty selection', () => {
     assert.strictEqual(r.ok, false);
 });
 
+// Second-pass audit finding: the first draft collected touchedKeys but never actually synced Cloudinary metadata for them -- the real handler syncs once per weaponKey after a bulk add/replace. Structural check (source-string, matching the sibling check above) rather than a live DB assertion, consistent with this file's other pure-logic checks.
+check('bulk add/replace sync Cloudinary metadata for every touched weapon, not just single add/edit', () => {
+    const fs = require('fs');
+    const src = fs.readFileSync(require.resolve('../core/ops/loadouts.js'), 'utf8');
+    const upsertBody = src.slice(src.indexOf('async function upsertBulkBlocks'), src.indexOf('registerEntity('));
+    assert.ok(upsertBody.includes('syncSiblings'), 'upsertBulkBlocks must sync every touched weaponKey');
+});
+
+check('loadout.add requires MP or DMZ to be registered on BOTH pages, not just MP', () => {
+    // The real defect this pins: an earlier draft declared `action: 'loadouts_mp:add'` as a bare string, which left every `loadouts_dmz:*` registry action with no op at all -- caught only by scripts/coreOps.test.js's whole-registry conservation check, not by any per-entity test.
+    const { actionForOpType } = ops;
+    const actions = actionForOpType('loadout.add');
+    assert.ok(Array.isArray(actions), 'loadout.add must register an ARRAY of actions, not a single string');
+    assert.ok(actions.includes('loadouts_mp:add') && actions.includes('loadouts_dmz:add'),
+        `loadout.add must cover both pages, got: ${JSON.stringify(actions)}`);
+});
+
 process.exit(failures ? 1 : 0);

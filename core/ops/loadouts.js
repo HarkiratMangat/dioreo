@@ -54,8 +54,9 @@ async function propagateBadges({ weaponKey, mode, excludeId, isMeta, categoryRan
     );
 }
 
-async function syncSiblings(weaponKey, mode) {
-    for (const sib of await Loadout.find({ weaponKey, mode })) {
+// ⚠️ MUST read WITH the transaction's own session -- a read with no session against a document inside an in-flight transaction does not see that transaction's own uncommitted writes (Mongo transactions use snapshot isolation outside the session), so this would otherwise sync Cloudinary metadata from PRE-edit data every time. Found during a second-pass audit, not the first.
+async function syncSiblings(weaponKey, mode, session) {
+    for (const sib of await Loadout.find({ weaponKey, mode }).session(session)) {
         await syncLoadoutMetadata(sib, sib.attachmentSlots);
     }
 }
@@ -81,12 +82,16 @@ async function upsertBulkBlocks(parsed, mode, session) {
             isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic
         });
     }
+    // Synced once per weaponKey after the whole loop (not per-block), same as the real handler -- a paste with several builds of one weapon shouldn't re-sync the same siblings repeatedly. MISSING from the first draft of this function: touchedKeys was collected and returned but never actually used to sync anything -- found in a second-pass audit, not the first.
+    for (const weaponKey of touchedKeys) {
+        await syncSiblings(weaponKey, mode, session);
+    }
     return { created, updated, touchedKeys };
 }
 
 registerEntity('loadouts', {
     'loadout.add': {
-        action: 'loadouts_mp:add', tier: 1,
+        action: ['loadouts_mp:add', 'loadouts_dmz:add'], tier: 1,
         validate: (op) => validateBuild(op.payload),
         preview: async (op) => {
             const siblings = await Loadout.find({ weaponKey: op.payload.weaponKey, mode: op.payload.mode }).lean();
@@ -107,7 +112,7 @@ registerEntity('loadouts', {
     },
 
     'loadout.edit': {
-        action: 'loadouts_mp:edit', tier: 1,
+        action: ['loadouts_mp:edit', 'loadouts_dmz:edit'], tier: 1,
         validate: (op) => op.target?.id ? validateBuild(op.payload) : { ok: false, errors: ['No build was selected.'] },
         preview: async (op) => {
             const cur = await Loadout.findById(op.target.id).lean();
@@ -129,7 +134,7 @@ registerEntity('loadouts', {
                 weaponKey: op.payload.weaponKey, mode: op.payload.mode, excludeId: op.target.id, session,
                 isMeta: op.payload.isMeta, categoryRank: op.payload.categoryRank, dmzRangeRank: op.payload.dmzRangeRank, isToxic: op.payload.isToxic
             });
-            await syncSiblings(op.payload.weaponKey, op.payload.mode);
+            await syncSiblings(op.payload.weaponKey, op.payload.mode, session);
             return {
                 ok: true,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
@@ -142,7 +147,7 @@ registerEntity('loadouts', {
     },
 
     'loadout.delete': {
-        action: 'loadouts_mp:delete', tier: 1,
+        action: ['loadouts_mp:delete', 'loadouts_dmz:delete'], tier: 1,
         validate: (op) => op.target?.id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No build was selected.'] },
         preview: async (op) => ({ before: { build: await Loadout.findById(op.target.id).lean() }, after: { build: null } }),
         apply: async (op, { session }) => {
@@ -162,7 +167,7 @@ registerEntity('loadouts', {
     },
 
     'loadout.bulkAdd': {
-        action: 'loadouts_mp:bulkadd', tier: 2,
+        action: ['loadouts_mp:bulkadd', 'loadouts_dmz:bulkadd'], tier: 2,
         validate: (op) => {
             if (!MODES.includes(op.target?.mode)) return { ok: false, errors: ['Bulk add needs a mode (MP or DMZ).'] };
             if (op.payload?.parsed) return { ok: true, errors: [], normalized: op }; // an inverse -- do not re-parse
@@ -189,7 +194,7 @@ registerEntity('loadouts', {
 
     // Same apply() as loadout.bulkAdd -- see the header note. Kept a distinct op type only so the registry's separate `bulkreplace` action id has something to resolve to.
     'loadout.bulkReplace': {
-        action: 'loadouts_mp:bulkreplace', tier: 2,
+        action: ['loadouts_mp:bulkreplace', 'loadouts_dmz:bulkreplace'], tier: 2,
         validate: (op) => {
             if (!MODES.includes(op.target?.mode)) return { ok: false, errors: ['Replace needs a mode (MP or DMZ).'] };
             if (op.payload?.parsed) return { ok: true, errors: [], normalized: op };
@@ -215,7 +220,7 @@ registerEntity('loadouts', {
     },
 
     'loadout.bulkDelete': {
-        action: 'loadouts_mp:bulkdelete', tier: 2,
+        action: ['loadouts_mp:bulkdelete', 'loadouts_dmz:bulkdelete'], tier: 2,
         validate: (op) => {
             const hasIds = op.payload?.ids?.length > 0;
             const hasLines = op.payload?.lines?.length > 0;
