@@ -8,7 +8,7 @@
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 6 (2026-08-21 13:12 EDT). core/ops/announcements.js's validatePost() reproduces utils/announcement.js's computeExpiresAt() contract exactly (blank/60-day default, a day count, or "never") -- this handler just relays the raw `expiry` string. The pre-core handler's try/catch hardening around a stale-index create failure (2026-08-13 incident) is now redundant: commitSet's own transaction wraps every apply() in a try/catch and reports any thrown error through `result.error`, so any future create failure surfaces the same way instead of leaving the interaction deferred forever. Undo now lives on /bot analytics' Changes page (core/revert.js).
 
 const { commitSet } = require('../../core/changeset');
-const { prompt } = require('./shared');
+const { prompt, extractCommitError } = require('./shared');
 
 // --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced.
 async function postAnnouncement(interaction) {
@@ -18,7 +18,7 @@ async function postAnnouncement(interaction) {
 
     const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry } }], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { expiresAt } = result.results[0].applied;
@@ -40,7 +40,7 @@ async function editAnnouncement(interaction) {
         if (result.failedAt?.reason === 'missing') {
             return await interaction.followUp({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).' });
         }
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { expiresAt } = result.results[0].applied;
@@ -86,7 +86,7 @@ async function handleButton(interaction) {
             if (!result.ok) {
                 const why = result.failedAt?.reason === 'missing'
                     ? 'That announcement no longer exists (it may have just been deleted or expired).'
-                    : (result.failures?.[0]?.errors?.join(' ') || result.error);
+                    : (extractCommitError(result));
                 await prompt(interaction, { text: `❌ ${why}` });
                 return;
             }

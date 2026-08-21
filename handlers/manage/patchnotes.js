@@ -8,21 +8,12 @@
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 4 (2026-08-21 13:06 EDT). core/ops/patchnotes.js's setDateInfo/setUrls1/setUrls2 all require an EXISTING entry (element-identity, matching draws.edit/calendar.edit) -- they cannot create one on demand the way the pre-core getOrCreateCurrentPatch() did. So when no entry exists yet (fresh install, or right after Wipe Season), this handler routes the SAME submission into a single patchnote.addSeason op instead -- addSeason's own payload already accepts titleOverride/description/releaseDate/urls1/urls2, so folding one action's fields into it needs no chaining across two ops (commitSet validates every op BEFORE any of them apply, so a later op can never target an id an earlier op in the same batch just minted). The confirmation wording always matches which BUTTON was clicked, not which op actually ran underneath. Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo mechanism is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live), except purge, which still returns a confirmMsg the same shape as every other page's purge().
 
 const { commitSet } = require('../../core/changeset');
-const { loadOrCreateSeasonalDoc, prompt } = require('./shared');
-const { displayTitle } = require('../../commands/patchnotes');
-
+const { loadOrCreateSeasonalDoc, prompt, extractCommitError } = require('./shared');
 // The "current entry" is simply the last item in patchNotes[] -- null when the array is empty.
 async function currentPatchElementId() {
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     if (!seasonalDoc.patchNotes.length) return null;
     return String(seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1]._id);
-}
-
-// Post-commit read for confirmation text (title/image count) -- simpler and more robust than growing every op's `applied` shape to carry rendering-only data the ChangeLog itself has no use for.
-async function reloadEntry(elementId) {
-    const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
-    return seasonalDoc.patchNotes.find(p => String(p._id) === elementId);
 }
 
 // --- DATE/INFO --- custom_id: modal_patch_dateinfo
@@ -43,7 +34,7 @@ async function setDateInfo(interaction) {
 
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${result.results[0].change.target}` });
@@ -63,12 +54,11 @@ async function setUrls(interaction) {
 
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
-    const finalElementId = elementId || result.results[0].applied.elementId;
-    const entry = await reloadEntry(finalElementId);
-    return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${displayTitle(entry)} now has ${entry.images.length} image(s) total.` });
+    const { title, imageCount } = result.results[0].applied;
+    return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${title} now has ${imageCount} image(s) total.` });
 }
 
 // --- ADD NEW SEASON --- custom_id: modal_patch_addseason Always PUSHES a brand-new patchNotes[] entry, becoming the new "current" entry (the old current entry automatically becomes a past season). URLs come in as two multi-line fields instead of 5 individually-addressable Short fields, matching the original mockup shape.
@@ -91,11 +81,11 @@ async function addSeason(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
-    const entry = await reloadEntry(result.results[0].applied.elementId);
-    return interaction.followUp({ content: `✅ **New Season Added!** "${displayTitle(entry)}" is now the Current Season (${entry.images.length} image(s)). The previous entry has moved to Past Seasons.` });
+    const { title, imageCount } = result.results[0].applied;
+    return interaction.followUp({ content: `✅ **New Season Added!** "${title}" is now the Current Season (${imageCount} image(s)). The previous entry has moved to Past Seasons.` });
 }
 
 // --- PAST SEASONS: EDIT --- custom_id: modal_patch_editseason_{id} Updates ONE SPECIFIC existing entry in place (picked via handlePatchSeasonPick below), never touches which entry is "current".
@@ -122,18 +112,18 @@ async function editSeason(interaction) {
         if (result.failedAt?.reason === 'missing') {
             return await interaction.followUp({ content: '❌ That season no longer exists -- it may have been changed or removed since this modal opened.' });
         }
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
-    const entry = await reloadEntry(entryId);
-    return interaction.followUp({ content: `✅ **Past Season Updated!** "${displayTitle(entry)}" now has ${entry.images.length} image(s).` });
+    const { title, imageCount } = result.results[0].applied;
+    return interaction.followUp({ content: `✅ **Past Season Updated!** "${title}" now has ${imageCount} image(s).` });
 }
 
 // --- PURGE (patch notes) --- called from index.js's mng_purgeconfirm_ dispatch. Only scope 'all' -- the one place patch notes HISTORY can actually be cleared (distinct from "Wipe Season", which deliberately keeps patch notes forever).
 async function purge(actorId) {
     const result = await commitSet([{ type: 'patchnote.purge' }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `❌ ${result.failures?.[0]?.errors?.join(' ') || result.error}` };
+        return { confirmMsg: `❌ ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
     return { confirmMsg: `✅ Purged the patch notes history (${applied.entries.length} entry(s) removed).` };

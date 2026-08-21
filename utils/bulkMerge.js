@@ -43,7 +43,4 @@ function upsertByTitle(existingArray, parsedItems) {
 
     return { finalArray, updatedCount, insertedCount };
 }
-const upsertDrawsByTitle = upsertByTitle;
-const upsertEventsByTitle = upsertByTitle;
-
-module.exports = { resolveThumbnailsForDraws, upsertByTitle, upsertDrawsByTitle, upsertEventsByTitle };
+module.exports = { resolveThumbnailsForDraws, upsertByTitle };

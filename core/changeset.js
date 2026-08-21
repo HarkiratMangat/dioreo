@@ -7,8 +7,7 @@ const mongoose = require('mongoose');
 const { resolveOp, actionForOpType } = require('./ops');
 const { recordChangeIn } = require('../utils/changeStore');
 
-// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully.
-// 🔴 An op registered under MULTIPLE pages (loadouts_mp/loadouts_dmz share one op type) cannot just take index [0] -- that permanently mislabels every DMZ mutation's ChangeLog row as loadouts_mp, which breaks getRecentChanges({filterPage}) AND core/revert.js's per-page access check (utils/adminAccess.js's hasManagePageAccess) for the whole loadouts_dmz page. Resolve using the op's own mode when more than one candidate page exists.
+// The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully. 🔴 An op registered under MULTIPLE pages (loadouts_mp/loadouts_dmz share one op type) cannot just take index [0] -- that permanently mislabels every DMZ mutation's ChangeLog row as loadouts_mp, which breaks getRecentChanges({filterPage}) AND core/revert.js's per-page access check (utils/adminAccess.js's hasManagePageAccess) for the whole loadouts_dmz page. Resolve using the op's own mode when more than one candidate page exists.
 function pageForOp(op) {
     const actions = actionForOpType(op.type);
     if (!actions?.length) return op.type.split('.')[0];

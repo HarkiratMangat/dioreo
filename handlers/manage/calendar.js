@@ -8,7 +8,7 @@
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 2 (2026-08-21 12:56 EDT). Every mutation body below used to read the document, mutate it in memory, .save() it, then call utils/changeStore.js's recordChange() directly -- this page no longer does either. commitSet() applies the op transactionally, records the ChangeLog row itself with an `inverse`, and returns the changeId. Undo for calendar-page changes now lives on /bot analytics' Changes page (core/revert.js) instead of the inline Undo button that used to render here -- that mechanism is simply GONE from this file (see handlers/manage/shared.js's own header for where it used to live). Modal parsing and reply formatting are UNTOUCHED where the op's contract allows it to stay in the handler; single add/edit's date-parsing and category-normalization stay HERE (the op accepts either raw modal strings or an already-parsed Date, and passing a Date keeps this handler's user-facing wording byte-identical). See core/ops/calendar.js for the op contract and its own header for the real defects found and fixed during this integration pass.
 
 const { commitSet } = require('../../core/changeset');
-const { loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle } = require('./shared');
+const { loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle, extractCommitError } = require('./shared');
 
 // --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
@@ -31,7 +31,7 @@ async function addCalendarEvent(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
 
@@ -68,7 +68,7 @@ async function editCalendarEvent(interaction) {
             { actorId: interaction.user.id }
         );
         if (!result.ok) {
-            const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+            const why = extractCommitError(result);
             return await interaction.followUp({ content: `❌ ${why}` });
         }
 
@@ -87,7 +87,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
 
     const result = await commitSet([{ type: opType, payload: { text: bulkText } }], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.editReply({ content: `❌ ${why}` });
     }
 
@@ -130,7 +130,7 @@ async function bulkDeleteCalendar(interaction) {
         summary,
         apply: async () => {
             const result = await commitSet([{ type: 'calendar.bulkDelete', payload: { ids } }], { actorId: interaction.user.id });
-            if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+            if (!result.ok) throw new Error(extractCommitError(result));
             return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
         }
     });
@@ -149,7 +149,7 @@ async function setBanners(interaction) {
 
     const result = await commitSet([{ type: 'calendar.setBanners', payload }], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
 
@@ -170,7 +170,7 @@ async function setBanners(interaction) {
 async function purge(actorId) {
     const result = await commitSet([{ type: 'calendar.purge' }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `❌ ${result.failures?.[0]?.errors?.join(' ') || result.error}` };
+        return { confirmMsg: `❌ ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
     return { confirmMsg: `✅ Purged the calendar (${applied.events.length} event(s) removed).` };
@@ -179,7 +179,7 @@ async function purge(actorId) {
 // --- DELETE (calendar) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
     const result = await commitSet([{ type: 'calendar.delete', target: { elementId: match.id } }], { actorId });
-    if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+    if (!result.ok) throw new Error(extractCommitError(result));
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 

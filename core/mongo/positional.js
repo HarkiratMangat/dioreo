@@ -43,4 +43,12 @@ async function removeElement({ Model, docFilter, arrayPath, elementId, session }
     return res.modifiedCount === 1 ? { ok: true } : { ok: false, reason: 'missing' };
 }
 
-module.exports = { buildElementFilter, buildElementUpdate, updateElement, appendElement, removeElement };
+// Hoisted out of core/ops/draws.js and core/ops/calendar.js (2026-08-21) -- both entities had a byte-for-byte-identical copy, needed for the same reason: neither read side (commands/draws.js, commands/calendar.js) sorts these arrays, so every mutation that can change order re-sorts in the same transaction before returning. Returns the sorted array so a caller doesn't need its own extra fetch just to read the post-sort array/count.
+async function resortByDate(Model, docFilter, arrayPath, session) {
+    const fresh = await Model.findOne(docFilter).select(arrayPath).lean().session(session);
+    const sorted = [...fresh[arrayPath]].sort((a, b) => new Date(a.date) - new Date(b.date));
+    await Model.updateOne(docFilter, { $set: { [arrayPath]: sorted } }, { session });
+    return sorted;
+}
+
+module.exports = { buildElementFilter, buildElementUpdate, updateElement, appendElement, removeElement, resortByDate };

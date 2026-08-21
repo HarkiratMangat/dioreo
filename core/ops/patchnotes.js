@@ -29,9 +29,9 @@ function cleanUrls(list) {
 }
 
 async function cacheUrlList(patchId, urls, meta) {
-    const cached = [];
-    for (let i = 0; i < urls.length; i++) cached.push((await cachePatchImage(patchId, i, urls[i], meta)).url);
-    return cached;
+    // Promise.all is safe -- cachePatchImage is a pure Cloudinary HTTP call, it never touches a Mongo session, so there's no ClientSession concurrent-use hazard.
+    const cached = await Promise.all(urls.map((url, i) => cachePatchImage(patchId, i, url, meta)));
+    return cached.map(c => c.url);
 }
 
 function makeSetUrlsOp(slot) {
@@ -50,19 +50,20 @@ function makeSetUrlsOp(slot) {
             const rawUrls = cleanUrls(op.payload.urls).slice(0, 5);
             const priorImages = cur.images || [];
             const patchMeta = { season: displayTitle(cur), releaseDate: cur.releaseDate };
-            // cachePatchImage indexes by the field's ABSOLUTE slot in images[] (URLs 1 = 0-4, URLs 2 = 5-9), matching handlers/manage/patchnotes.js exactly -- resubmitting a slot overwrites the same cached asset in place rather than accumulating duplicates.
-            const cachedSlice = [];
-            for (let i = 0; i < rawUrls.length; i++) cachedSlice.push((await cachePatchImage(String(cur._id), slotOffset + i, rawUrls[i], patchMeta)).url);
+            // cachePatchImage indexes by the field's ABSOLUTE slot in images[] (URLs 1 = 0-4, URLs 2 = 5-9), matching handlers/manage/patchnotes.js exactly -- resubmitting a slot overwrites the same cached asset in place rather than accumulating duplicates. Promise.all is safe here for the same reason as cacheUrlList above.
+            const cachedSlice = (await Promise.all(rawUrls.map((url, i) => cachePatchImage(String(cur._id), slotOffset + i, url, patchMeta)))).map(c => c.url);
             const otherSlice = slot === 1 ? priorImages.slice(5, 10) : priorImages.slice(0, 5);
             const images = slot === 1 ? [...cachedSlice, ...otherSlice] : [...otherSlice, ...cachedSlice];
             const priorSlice = slot === 1 ? priorImages.slice(0, 5) : priorImages.slice(5, 10);
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH,
                                               elementId: op.target.elementId, expect: { images: priorImages }, set: { images }, session });
             if (!res.ok) return res;
+            const title = displayTitle(cur);
             return {
                 ok: true,
-                change: { action: 'edit', model: 'SeasonalData', target: displayTitle(cur), summary: `Updated Patch Notes URLs ${slot} for "${displayTitle(cur)}"` },
-                applied: { elementId: op.target.elementId, priorSlice, slot }
+                change: { action: 'edit', model: 'SeasonalData', target: title, summary: `Updated Patch Notes URLs ${slot} for "${title}"` },
+                // title/imageCount: SURFACED so the handler doesn't need its own post-commit re-read just to build the confirmation text -- see handlers/manage/patchnotes.js's now-deleted reloadEntry() for the bandaid this replaces.
+                applied: { elementId: op.target.elementId, priorSlice, slot, title, imageCount: images.length }
             };
         },
         invert: (c) => ({ type: `patchnote.setUrls${c.applied.slot}`, target: { elementId: c.applied.elementId }, payload: { urls: c.applied.priorSlice } })
@@ -117,16 +118,19 @@ registerEntity('patchnotes', {
             };
             await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element, session });
             const rawUrls = [...cleanUrls(op.payload.urls1), ...cleanUrls(op.payload.urls2)].slice(0, 10);
+            let imageCount = 0;
             if (rawUrls.length) {
                 const patchMeta = { season: displayTitle(element), releaseDate };
                 const cachedUrls = await cacheUrlList(String(element._id), rawUrls, patchMeta);
                 await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, elementId: String(element._id),
                                       expect: { images: [] }, set: { images: cachedUrls }, session });
+                imageCount = cachedUrls.length;
             }
+            const title = displayTitle(element);
             return {
                 ok: true,
-                change: { action: 'add', model: 'SeasonalData', target: displayTitle(element), summary: `Added new Patch Notes season "${displayTitle(element)}"` },
-                applied: { elementId: String(element._id) }
+                change: { action: 'add', model: 'SeasonalData', target: title, summary: `Added new Patch Notes season "${title}"` },
+                applied: { elementId: String(element._id), title, imageCount }
             };
         },
         invert: (c) => ({ type: 'patchnote.removeSeason', target: { elementId: c.applied.elementId } })
@@ -194,7 +198,7 @@ registerEntity('patchnotes', {
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: effectiveTitle, summary: `Edited past Patch Notes season "${effectiveTitle}"` },
-                applied: { elementId: op.target.elementId, prior: expect }
+                applied: { elementId: op.target.elementId, prior: expect, title: effectiveTitle, imageCount: cachedUrls.length }
             };
         },
         invert: (c) => ({

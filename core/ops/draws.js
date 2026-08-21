@@ -8,7 +8,7 @@
 //   3 — irreversible or system-altering; the caller must gate on an export before committing
 const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
-const { updateElement, appendElement, removeElement } = require('../mongo/positional');
+const { updateElement, appendElement, removeElement, resortByDate } = require('../mongo/positional');
 const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
@@ -17,12 +17,7 @@ const SeasonalData = require('../../models/SeasonalData');
 const DOC = { docType: 'global' };
 const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
 
-// ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass: nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the stored array order. The pre-core handler always re-sorted the whole array after every mutation that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s without re-sorting would silently degrade `/draws` display order the first time an edit changed a date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the same transaction before returning.
-async function resortByDate(session, path) {
-    const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
-    const sorted = [...fresh[path]].sort((a, b) => new Date(a.date) - new Date(b.date));
-    await SeasonalData.updateOne(DOC, { $set: { [path]: sorted } }, { session });
-}
+// ⚠️ FOUND DURING TASK 6 INTEGRATION (2026-08-20), not caught by plan 1's falsification pass: nothing on the READ side sorts newDraws/returningDraws by date -- commands/draws.js trusts the stored array order. The pre-core handler always re-sorted the whole array after every mutation that could change it (add/edit/bulk). An op that only appendElement()s or updateElement()s without re-sorting would silently degrade `/draws` display order the first time an edit changed a date or an add landed out of chronological order -- a real regression Task 6's own goal ("nothing changes for the user") exists to prevent. Every op below that can disturb order re-sorts in the same transaction before returning. (resortByDate itself moved to core/mongo/positional.js 2026-08-21 -- calendar.js had a byte-for-byte duplicate.)
 
 // 🔴 AN ALREADY-PARSED PAYLOAD IS NOT RE-PARSED. commitSet runs validateSet before applying — including on an INVERSE produced by invert(), which carries structured `parsed` data and never the original `text`. A validator that unconditionally re-parses `payload.text || ''` would parse an empty string, overwrite payload.parsed, and silently restore NOTHING. That would have made undo a no-op for bulkDelete, purge and bulkReplace. drawOps.test.js round-trips every inverse through validate() for exactly this reason.
 const alreadyParsed = (op) => op.payload?.parsed && !op.payload?.text;
@@ -55,7 +50,7 @@ registerEntity('draws', {
             element._id = new mongoose.Types.ObjectId();
             const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element, session });
             if (!res.ok) return res;
-            await resortByDate(session, path);
+            await resortByDate(SeasonalData, DOC, path, session);
             const created = element;
             return {
                 ok: true,
@@ -123,7 +118,7 @@ registerEntity('draws', {
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
             if (!res.ok) return res;
-            if ('date' in op.payload) await resortByDate(session, path);
+            if ('date' in op.payload) await resortByDate(SeasonalData, DOC, path, session);
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: cur.title,
@@ -166,15 +161,15 @@ registerEntity('draws', {
             for (const d of validDraws) {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path, element: d, session });
             }
-            if (validDraws.length) await resortByDate(session, path);
-            const fresh = await SeasonalData.findOne(DOC).select(path).lean().session(session);
-            const ids = fresh[path].filter(d => !beforeIds.has(String(d._id))).map(d => String(d._id));
+            // resortByDate's own return value stands in for the extra fetch a separate "give me the fresh array" query would otherwise need.
+            const sorted = validDraws.length ? await resortByDate(SeasonalData, DOC, path, session) : before[path];
+            const ids = sorted.filter(d => !beforeIds.has(String(d._id))).map(d => String(d._id));
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${validDraws.length} draws`,
                           summary: `Added ${validDraws.length} draws in bulk`,
                           detail: skipped.length ? `Skipped (no URL/no cache hit): ${skipped.join(', ')}` : undefined },
-                applied: { category: op.target.category, ids, added: validDraws, skipped, warnings, total: fresh[path].length }
+                applied: { category: op.target.category, ids, added: validDraws, skipped, warnings, total: sorted.length }
             };
         },
         invert: (change) => ({

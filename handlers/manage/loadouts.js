@@ -10,6 +10,7 @@
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 3 (2026-08-21 13:01 EDT). Badge parsing (utils/adminParser.js's parseLoadoutBadges) and the DMZ categoryRank->dmzRangeRank swap stay HERE, same as before -- the op expects already-parsed badge fields, not raw modal text. Cloudinary structured-metadata sync, badge propagation to sibling builds, and the attachmentSlots byte-identity check all moved INTO core/ops/loadouts.js's apply() (see that file's own header for the real defects found integrating this: weaponKey must be a plain normalize, not /autobuild's auto-namer; "Add"/"Replace Multiple" share ONE upsert body since there is no wholesale-replace for loadouts; a shareCode key must be OMITTED entirely on edit or it silently wipes an /autobuild-set gunsmith code). Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live). Export flows (exportUpTo5/exportCategory) are read-only and untouched.
 
 const { commitSet } = require('../../core/changeset');
+const { extractCommitError } = require('./shared');
 
 // --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
 async function editLoadout(interaction) {
@@ -47,7 +48,7 @@ async function editLoadout(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { applied } = result.results[0];
@@ -95,7 +96,7 @@ async function addLoadout(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
 
@@ -120,7 +121,7 @@ async function bulkAddLoadouts(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { applied } = result.results[0];
@@ -184,7 +185,7 @@ async function bulkDeleteLoadouts(interaction) {
                 [{ type: 'loadout.bulkDelete', target: { mode }, payload: { ids } }],
                 { actorId: interaction.user.id }
             );
-            if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+            if (!result.ok) throw new Error(extractCommitError(result));
             return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
         }
     });
@@ -245,7 +246,7 @@ async function exportCategory(interaction) {
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
     const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id } }], { actorId });
-    if (!result.ok) throw new Error(result.failures?.[0]?.errors?.join(' ') || result.error);
+    if (!result.ok) throw new Error(extractCommitError(result));
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 

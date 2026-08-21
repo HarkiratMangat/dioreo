@@ -8,7 +8,7 @@
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 5 (2026-08-21 13:10 EDT) -- the highest blast-radius entity in the system. `season.promoteDraft`/`season.startNew` are tier 3 rotations whose inverse is a FULL pre-rotation snapshot (`season.restoreSnapshot`), never a diff. `utils/manageActions.js`'s `draftGuard('promote'/'discard')` still refuses BEFORE the confirm buttons even render when no draft is active -- the `reason: 'missing'` branches below are a defensive re-check for the (rare) case a draft got discarded in the few seconds between that prompt and the click, same as patchnotes.js's editSeason. Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live).
 
 const { commitSet } = require('../../core/changeset');
-const { prompt, pendingSeasonWipes } = require('./shared');
+const { prompt, pendingSeasonWipes, extractCommitError } = require('./shared');
 
 // --- START NEW SEASON, STEP 1 --- custom_id: modal_wipe_season Stashes the entered title in pendingSeasonWipes and shows a Confirm/Cancel step -- the actual wipe only happens from handleWipeButton below. Read-only, unchanged by the operation-core migration.
 async function promptWipeSeason(interaction) {
@@ -49,7 +49,7 @@ async function handleWipeButton(interaction) {
 
         const result = await commitSet([{ type: 'season.startNew', payload: { newTitle: pending.newTitle } }], { actorId: interaction.user.id });
         if (!result.ok) {
-            const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+            const why = extractCommitError(result);
             try { await prompt(interaction, { text: `❌ ${why}` }); }
             catch (notifyError) { console.error('Failed to notify user of season-wipe failure:', notifyError); }
             return;
@@ -91,7 +91,7 @@ async function setTitlesDeadlines(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { change } = result.results[0];
@@ -109,7 +109,7 @@ async function handleDraftButton(interaction) {
         if (!result.ok) {
             const text = result.failedAt?.reason === 'missing'
                 ? '❌ No draft in progress -- nothing to promote.'
-                : `❌ ${result.failures?.[0]?.errors?.join(' ') || result.error}`;
+                : `❌ ${extractCommitError(result)}`;
             try { await prompt(interaction, { text }); }
             catch (notifyError) { console.error('Failed to notify empty-draft promote attempt:', notifyError); }
             return;
@@ -134,7 +134,7 @@ async function handleDraftButton(interaction) {
     if (customId === 'mng_draftdiscardconfirm') {
         const result = await commitSet([{ type: 'season.discardDraft' }], { actorId: interaction.user.id });
         if (!result.ok) {
-            try { await prompt(interaction, { text: `❌ ${result.failures?.[0]?.errors?.join(' ') || result.error}` }); }
+            try { await prompt(interaction, { text: `❌ ${extractCommitError(result)}` }); }
             catch (notifyError) { console.error('Failed to notify draft discard failure:', notifyError); }
             return;
         }
@@ -150,7 +150,7 @@ async function handleDraftButton(interaction) {
     }
 }
 
-// --- NEXT SEASON DRAFT: submit handlers --- custom_id: modal_draft_titles_dates Same parsing as the live equivalent above, writing into seasonalDoc.draft.* instead of the top-level fields -- none of this touches what's currently live.
+// --- NEXT SEASON DRAFT: submit handlers --- custom_id: modal_draft_titles_dates Same shape as setTitlesDeadlines above -- parsing (splitTitleDate/TBD handling) lives entirely in core/ops/season.js, this just writes into seasonalDoc.draft.* instead of the top-level fields, so none of it touches what's currently live.
 async function setDraftTitlesDeadlines(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const mainTitle = interaction.fields.getTextInputValue('main_title').trim();
@@ -163,7 +163,7 @@ async function setDraftTitlesDeadlines(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { change } = result.results[0];
@@ -183,7 +183,7 @@ async function bulkDraftDraws(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { summary } = result.results[0].applied;
@@ -200,7 +200,7 @@ async function bulkDraftCalendar(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
     const { count } = result.results[0].applied;

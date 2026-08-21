@@ -10,7 +10,7 @@
 //   - "Banners" re-hosts through utils/calendarBannerCache.js (Cloudinary cache/clear per field) -- a plain field $set would silently skip that and, worse, never clear a previously-cached asset.
 const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
-const { updateElement, appendElement, removeElement } = require('../mongo/positional');
+const { updateElement, appendElement, removeElement, resortByDate } = require('../mongo/positional');
 const { parseBulkEvents, normalizeCalendarCategory, parseAdminDate } = require('../../utils/adminParser');
 const { upsertByTitle } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
@@ -19,12 +19,6 @@ const SeasonalData = require('../../models/SeasonalData');
 
 const DOC = { docType: 'global' };
 const PATH = 'calendar';
-
-async function resortByDate(session) {
-    const fresh = await SeasonalData.findOne(DOC).select(PATH).lean().session(session);
-    const sorted = [...fresh[PATH]].sort((a, b) => new Date(a.date) - new Date(b.date));
-    await SeasonalData.updateOne(DOC, { $set: { [PATH]: sorted } }, { session });
-}
 
 // An invert()-produced payload (or a bulk op's already-parsed payload) carries a real `date` (a Date instance) -- never re-run it through parseAdminDate, which expects a raw modal string.
 const isAlreadyDated = (payload) => payload?.date instanceof Date;
@@ -72,7 +66,7 @@ registerEntity('calendar', {
             const element = { ...op.payload, _id: new mongoose.Types.ObjectId() };
             const res = await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element, session });
             if (!res.ok) return res;
-            await resortByDate(session);
+            await resortByDate(SeasonalData, DOC, PATH, session);
             return {
                 ok: true,
                 change: { action: 'add', model: 'SeasonalData', target: op.payload.title, summary: `Added calendar event "${op.payload.title}"` },
@@ -116,7 +110,7 @@ registerEntity('calendar', {
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
             if (!res.ok) return res;
-            await resortByDate(session);
+            await resortByDate(SeasonalData, DOC, PATH, session);
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: cur.title, summary: `Edited calendar event "${cur.title}"` },
@@ -140,13 +134,12 @@ registerEntity('calendar', {
             for (const e of withIds) {
                 await appendElement({ Model: SeasonalData, docFilter: DOC, arrayPath: PATH, element: e, session });
             }
-            if (withIds.length) await resortByDate(session);
-            // `added`/`total` mirror core/ops/draws.js's bulkAdd -- handlers/manage/calendar.js's per-category breakdown text and "(now N total)" summary both need them, and neither is derivable from `ids` alone.
-            const fresh = await SeasonalData.findOne(DOC).select(PATH).lean().session(session);
+            // `added`/`total` mirror core/ops/draws.js's bulkAdd -- handlers/manage/calendar.js's per-category breakdown text and "(now N total)" summary both need them, and neither is derivable from `ids` alone. `sorted` (resortByDate's own return) stands in for what would otherwise be a THIRD fetch -- validate() already guarantees withIds.length > 0, so this always runs.
+            const sorted = await resortByDate(SeasonalData, DOC, PATH, session);
             return {
                 ok: true,
                 change: { action: 'bulkAdd', model: 'SeasonalData', target: `${withIds.length} events`, summary: `Added ${withIds.length} calendar events in bulk` },
-                applied: { ids: withIds.map(e => String(e._id)), added: withIds, total: fresh[PATH].length }
+                applied: { ids: withIds.map(e => String(e._id)), added: withIds, total: sorted.length }
             };
         },
         invert: (c) => ({ type: 'calendar.bulkDelete', payload: { ids: c.applied.ids } })
