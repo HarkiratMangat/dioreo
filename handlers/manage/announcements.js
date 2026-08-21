@@ -4,56 +4,46 @@
 // Post/edit/delete for the multi-announcement system (models/Announcement.js). Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
+//
+// ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 6 (2026-08-21 13:12 EDT). core/ops/announcements.js's validatePost() reproduces utils/announcement.js's computeExpiresAt() contract exactly (blank/60-day default, a day count, or "never") -- this handler just relays the raw `expiry` string. The pre-core handler's try/catch hardening around a stale-index create failure (2026-08-13 incident) is now redundant: commitSet's own transaction wraps every apply() in a try/catch and reports any thrown error through `result.error`, so any future create failure surfaces the same way instead of leaving the interaction deferred forever. Undo now lives on /bot analytics' Changes page (core/revert.js).
 
-const { recordChange } = require('../../utils/changeStore');
+const { commitSet } = require('../../core/changeset');
 const { prompt } = require('./shared');
 
 // --- POST NEW --- custom_id: modal_announce_post Creates an independent doc rather than overwriting anything -- see models/Announcement.js's header for why the old singleton design was replaced.
 async function postAnnouncement(interaction) {
-    const text = interaction.fields.getTextInputValue('text').trim();
-    const rawExpiry = interaction.fields.getTextInputValue('expiry');
-    const { computeExpiresAt, generateAccentColor } = require('../../utils/announcement');
-    const expiresAt = computeExpiresAt(rawExpiry);
-    if (expiresAt === undefined) {
-        return interaction.reply({ content: `❌ "${rawExpiry}" wasn't understood -- leave it blank for the 60-day default, type a whole number of days, or type "never".`, ephemeral: true });
-    }
     await interaction.deferReply({ ephemeral: true });
-    const Announcement = require('../../models/Announcement');
-    try {
-        // Color is generated ONCE here, at creation -- never on edit.
-        await Announcement.create({ text, createdBy: interaction.user.id, expiresAt, color: generateAccentColor() });
-    } catch (createError) {
-        // Hardened after a real bug (2026-08-13): a stale MongoDB unique index (`docType_1`) survived the singleton->collection redesign, so every SECOND announcement collided on `docType: null` and threw here, AFTER deferReply() had already acknowledged the interaction -- with nothing wrapping this call, that exception fell all the way to the outer crash-safety catch, leaving the interaction deferred FOREVER (Discord's "thinking..." spinner). The stale index itself is fixed (dropped from the dev DB); this try/catch is the hardening so ANY future failure here surfaces a real error instead of silently hanging again.
-        console.error('Failed to create announcement:', createError);
-        return interaction.followUp({ content: `❌ Something went wrong saving that announcement: ${createError.message}` });
+    const text = interaction.fields.getTextInputValue('text').trim();
+    const expiry = interaction.fields.getTextInputValue('expiry');
+
+    const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry } }], { actorId: interaction.user.id });
+    if (!result.ok) {
+        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
     }
-    recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'add', model: 'Announcement', target: text.length > 60 ? `${text.slice(0, 57)}...` : text, summary: 'Posted a new announcement' });
+    const { expiresAt } = result.results[0].applied;
     return interaction.followUp({ content: `✅ Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}. Anyone who hasn't seen it yet will, on their next command.` });
 }
 
 // --- EDIT --- custom_id: modal_announce_edit_{id} Updates ONE existing doc in place by its own _id -- never touches any other announcement, and never resets who's already seen this one (an edit is a correction, not a new notice).
 async function editAnnouncement(interaction) {
+    await interaction.deferReply({ ephemeral: true });
     const id = interaction.customId.replace('modal_announce_edit_', '');
     const text = interaction.fields.getTextInputValue('text').trim();
-    const rawExpiry = interaction.fields.getTextInputValue('expiry');
-    const { computeExpiresAt } = require('../../utils/announcement');
-    const expiresAt = computeExpiresAt(rawExpiry);
-    if (expiresAt === undefined) {
-        return interaction.reply({ content: `❌ "${rawExpiry}" wasn't understood -- leave it blank for the 60-day default, type a whole number of days, or type "never".`, ephemeral: true });
+    const expiry = interaction.fields.getTextInputValue('expiry');
+
+    const result = await commitSet(
+        [{ type: 'announcement.edit', target: { id }, payload: { text, expiry } }],
+        { actorId: interaction.user.id }
+    );
+    if (!result.ok) {
+        if (result.failedAt?.reason === 'missing') {
+            return await interaction.followUp({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).' });
+        }
+        const why = result.failures?.[0]?.errors?.join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
     }
-    await interaction.deferReply({ ephemeral: true });
-    const Announcement = require('../../models/Announcement');
-    let updated;
-    try {
-        updated = await Announcement.findByIdAndUpdate(id, { $set: { text, expiresAt } }, { new: true });
-    } catch (updateError) {
-        console.error('Failed to update announcement:', updateError);
-        return interaction.followUp({ content: `❌ Something went wrong updating that announcement: ${updateError.message}` });
-    }
-    if (!updated) {
-        return interaction.followUp({ content: '❌ That announcement no longer exists (it may have just been deleted or expired).' });
-    }
-    recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'edit', model: 'Announcement', target: text.length > 60 ? `${text.slice(0, 57)}...` : text, summary: 'Edited an announcement' });
+    const { expiresAt } = result.results[0].applied;
     return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.` });
 }
 
@@ -91,13 +81,18 @@ async function handleButton(interaction) {
 
     if (customId.startsWith('mng_announce_delconfirm_')) {
         const id = customId.replace('mng_announce_delconfirm_', '');
-        // Fetched BEFORE deleting so the success message can still show what was removed.
-        const doc = await Announcement.findById(id).lean();
-        const preview = doc ? (doc.text.length > 200 ? `${doc.text.slice(0, 200)}…` : doc.text) : null;
-        await Announcement.deleteOne({ _id: id });
-        recordChange({ actorId: interaction.user.id, page: 'announcement', action: 'delete', model: 'Announcement', target: preview || id, summary: 'Deleted an announcement' });
+        const result = await commitSet([{ type: 'announcement.delete', target: { id } }], { actorId: interaction.user.id });
         try {
-            await prompt(interaction, { text: preview ? `✅ Deleted:\n> ${preview.replace(/\n/g, '\n> ')}` : '✅ Announcement deleted.' });
+            if (!result.ok) {
+                const why = result.failedAt?.reason === 'missing'
+                    ? 'That announcement no longer exists (it may have just been deleted or expired).'
+                    : (result.failures?.[0]?.errors?.join(' ') || result.error);
+                await prompt(interaction, { text: `❌ ${why}` });
+                return;
+            }
+            const removedText = result.results[0].applied.removed.text;
+            const preview = removedText.length > 200 ? `${removedText.slice(0, 200)}…` : removedText;
+            await prompt(interaction, { text: `✅ Deleted:\n> ${preview.replace(/\n/g, '\n> ')}` });
         } catch (notifyError) {
             console.error('Failed to confirm manage-panel announcement delete (interaction likely expired):', notifyError);
         }
