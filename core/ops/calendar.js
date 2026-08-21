@@ -255,7 +255,7 @@ registerEntity('calendar', {
                 }
             }
             if (Object.keys($set).length) await SeasonalData.updateOne(DOC, { $set }, { session });
-            // ⚠️ Always records ONE ChangeLog row, even when every field was already blank (a true no-op submit) -- the pre-core handler skipped recordChange() in that case. Deliberately left as a minor, documented deviation rather than threading an ok:false "nothing changed" non-error through commitSet's failure path, which would render as a false ❌ to the admin.
+            // ⚠️ DECIDED (2026-08-21 13:33 EDT, this integration pass, flagged to Harkirat but not yet reconfirmed by him): always records ONE ChangeLog row, even when every field was already blank (a true no-op submit) -- the pre-core handler skipped recordChange() in that case, this one doesn't. Chose this over threading an ok:false "nothing changed" non-error through commitSet's failure path, which would render as a false ❌ to the admin for a legitimate no-op submit.
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'Calendar Banners', summary: 'Updated calendar banners' },
