@@ -8,6 +8,8 @@
 const { registerEntity } = require('./index');
 const { splitTitleDate, parseAdminDate, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
+const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
+const { cleanPatchTitle } = require('../../commands/patchnotes');
 const SeasonalData = require('../../models/SeasonalData');
 
 const DOC = { docType: 'global' };
@@ -60,6 +62,8 @@ registerEntity('season', {
                 const last = before.patchNotes[before.patchNotes.length - 1];
                 patchPrior = { elementId: String(last._id), title: last.title };
                 await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle } }, { session });
+                // The pre-core handler always re-synced the latest patch entry's cached-image Cloudinary metadata after a title rename -- missed on a first pass of this op (DB field updates fine; only the Cloudinary-side metadata would have gone stale). Best-effort, matching the original's own no-throw contract.
+                await syncPatchEntryMetadata({ ...last, title: currentSeasonTitle }, cleanPatchTitle(currentSeasonTitle));
             }
             return {
                 ok: true,
@@ -131,6 +135,8 @@ registerEntity('season', {
             if (draft.playlistsBannerUrl) $set.playlistsBannerUrl = draft.playlistsBannerUrl;
             $set.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
             await SeasonalData.updateOne(DOC, { $set }, { session });
+            // Post-promote counts -- the handler's confirmation reports what's now LIVE, and `prior` above only carries the pre-promote snapshot needed for the inverse.
+            const counts = { newDraws: $set.newDraws.length, returningDraws: $set.returningDraws.length, calendar: $set.calendar.length };
             const newTitle = $set.currentSeasonTitle || before.currentSeasonTitle;
             let patchPrior = null;
             if (draft.currentSeasonTitle && before.patchNotes.length > 0) {
@@ -141,7 +147,7 @@ registerEntity('season', {
             return {
                 ok: true,
                 change: { action: 'promote', model: 'SeasonalData', target: newTitle, summary: `Promoted draft to live: "${newTitle}"` },
-                applied: { prior, patchPrior }
+                applied: { prior, patchPrior, counts }
             };
         },
         invert: (c) => ({ type: 'season.restoreSnapshot', payload: { ...c.applied.prior, ...(c.applied.patchPrior ? { __patchTitleRestore: c.applied.patchPrior } : {}) } })
@@ -280,7 +286,7 @@ registerEntity('season', {
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'draft draws', summary: 'Staged draft draws', detail: summary.join(' | ') || undefined },
-                applied: { prior }
+                applied: { prior, summary }
             };
         },
         invert: (c) => ({ type: 'season.bulkDraftDraws', payload: { parsed: c.applied.prior } })
@@ -303,7 +309,7 @@ registerEntity('season', {
             return {
                 ok: true,
                 change: { action: 'edit', model: 'SeasonalData', target: 'draft calendar', summary: `Staged ${sorted.length} draft calendar event(s)` },
-                applied: { prior }
+                applied: { prior, count: sorted.length }
             };
         },
         invert: (c) => ({ type: 'season.bulkDraftCalendar', payload: { parsed: c.applied.prior } })
