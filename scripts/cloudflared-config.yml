@@ -1,0 +1,10 @@
+# scripts/cloudflared-config.yml — installed at /etc/cloudflared/config.yml on the VM.
+# Outbound-only tunnel (plan Task 7 Step 2): no inbound firewall rule is ever created, and the VM's
+# ephemeral external IP is never referenced — cloudflared dials OUT to Cloudflare's edge.
+tunnel: dioreo-portal
+credentials-file: /etc/cloudflared/dioreo-portal.json
+
+ingress:
+  - hostname: portal.dioreo.app
+    service: http://127.0.0.1:${PORTAL_PORT}
+  - service: http_status:404
