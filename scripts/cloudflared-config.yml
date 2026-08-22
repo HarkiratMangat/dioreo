@@ -5,6 +5,10 @@ tunnel: dioreo-portal
 credentials-file: /etc/cloudflared/dioreo-portal.json
 
 ingress:
+  # cloudflared's config.yml has no env-var expansion and nothing in this repo runs envsubst on
+  # install, so this must be a literal port, kept in sync BY HAND with PORTAL_PORT in .env (default
+  # 8787, portal/server.js). ${PORTAL_PORT} sat here unexpanded until 2026-08-22 -- cloudflared would
+  # have dialed a literal host named "${PORTAL_PORT}" and 502'd every request.
   - hostname: portal.dioreo.app
-    service: http://127.0.0.1:${PORTAL_PORT}
+    service: http://127.0.0.1:8787
   - service: http_status:404
