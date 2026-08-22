@@ -93,7 +93,7 @@ function register(route) {
 
         const gate = gateCommit({
             tier: doc.tier, exportedAt: doc.exportedAt,
-            confirmText: body.confirmText, expectText: String(doc._id),
+            confirmText: body.confirmText, expectText: String(doc._id).slice(-8).toUpperCase(),
         });
         if (!gate.ok) { res.writeHead(409, { 'content-type': 'application/json' }); return res.end(JSON.stringify(gate)); }
 
