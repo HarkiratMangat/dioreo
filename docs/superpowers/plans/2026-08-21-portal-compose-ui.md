@@ -39,7 +39,7 @@ status: frozen
 - Consumes: `fetchJson` from `portal/ui/httpClient.js`; `buildLoadoutCard`, `getMpCategoryAccent` from `utils/loadoutRender.js`; `grantedPagesFor` from `portal/api/realmAccess.js`; `sendJson`, `forbidden` from `portal/api/httpUtil.js`.
 - Produces: `stageOps(realm, ops, csrfToken) -> Promise<{changesetId,state,tier,failures,preview}>`, `stageAndCommit(realm, ops, csrfToken) -> Promise<{ok,changeIds?,results?,reason?}>` (both consumed by Tasks 2-6). `renderV2(components) -> htm tree` (consumed by Task 5). `parseV2Markdown(text) -> {type:'h1'|'h3'|'small'|'blockquote'|'p', text}[]` (pure, CommonJS, tested directly).
 
-- [ ] **Step 1: Write the failing test for the markdown line parser and op-staging client**
+- [x] **Step 1: Write the failing test for the markdown line parser and op-staging client**
 
 ```js
 // scripts/portalComposeClient.test.js
@@ -81,11 +81,11 @@ check('a bold **word** segment inside a line is preserved as literal text (rende
 process.exit(failures ? 1 : 0);
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node scripts/portalComposeClient.test.js` Expected: `Cannot find module '../portal/ui/v2Render.logic'`
 
-- [ ] **Step 3: Write `v2Render.logic.js`**
+- [x] **Step 3: Write `v2Render.logic.js`**
 
 ```js
 // portal/ui/v2Render.logic.js — CommonJS, imports nothing. The pure per-line markdown classifier
@@ -107,11 +107,11 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalComposeClient.test.js` Expected: `5 passed, 0 failed` (well, all `check()` calls print `✓`; script exits 0)
 
-- [ ] **Step 5: Write `v2Render.js`**
+- [x] **Step 5: Write `v2Render.js`**
 
 Renders exactly the 5 Components V2 types `buildLoadoutCard()` emits: type 17 (Container), type 10 (TextDisplay, run through `parseV2Markdown`), type 14 (Separator), type 12 (MediaGallery, one image), type 1 (ActionRow of type-2 Buttons, rendered inert).
 
@@ -162,7 +162,7 @@ export function renderV2(components) {
 }
 ```
 
-- [ ] **Step 6: Write `composeClient.js`**
+- [x] **Step 6: Write `composeClient.js`**
 
 ```js
 // portal/ui/composeClient.js — ESM. The one client every realm uses to turn a composed op (or a
@@ -194,7 +194,7 @@ export async function stageAndCommit(realm, ops, csrfToken) {
 }
 ```
 
-- [ ] **Step 7: Add the Armory preview endpoint**
+- [x] **Step 7: Add the Armory preview endpoint**
 
 Read the current `route('GET', /^\/api\/armory$/, ...)` block in `portal/api/armory.js` first (it was rewritten earlier this session to use `grantedPagesFor`/`sendJson`/`forbidden` — match that exact style). Add a second route in the same `register(route)` function, after the existing one:
 
@@ -212,7 +212,7 @@ Read the current `route('GET', /^\/api\/armory$/, ...)` block in `portal/api/arm
 
 Add `buildLoadoutCard` to the existing `require('../../utils/loadoutRender')` line's destructure (it already imports `findDuplicateLoadouts, getMpCategoryAccent` from that module — add `buildLoadoutCard` alongside them).
 
-- [ ] **Step 8: Boot-test the new route**
+- [x] **Step 8: Boot-test the new route**
 
 ```bash
 node --check portal/api/armory.js && node --check portal/ui/composeClient.js
@@ -222,7 +222,7 @@ sleep 2
 
 Then, using the same seeded-owner-session technique already proven this session (`crypto.randomBytes` raw token → hash → `PortalSession.create` → `fetch` with a `Cookie` header), hit `GET /api/armory` to get a real loadout `_id`, then `GET /api/armory/preview?id=<that id>` with the session cookie and confirm the response is `200` with a `card.components` array whose first element has `type: 17`. Stop the server and delete the seeded session afterward.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add portal/ui/composeClient.js portal/ui/v2Render.js portal/ui/v2Render.logic.js portal/api/armory.js scripts/portalComposeClient.test.js package.json
@@ -241,7 +241,7 @@ git commit -m "feat(portal): add the shared compose client, a scoped V2 preview 
 - Consumes: `composeClient.stageAndCommit` (called internally by Manifest when a `columns[].editable` cell commits).
 - Produces: `<Manifest>` now accepts two new optional props — `onAdd: () => void` and, per-column, `editable: true` + a realm-supplied `buildEditOp: (row, columnKey, newValue) => op`. Consumed by Tasks 3, 5, 6.
 
-- [ ] **Step 1: Add the toolbar Add button and inline-edit state**
+- [x] **Step 1: Add the toolbar Add button and inline-edit state**
 
 Read `portal/ui/manifest.js` first — it's small (54 lines). Replace the whole file:
 
@@ -330,11 +330,11 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], st
 }
 ```
 
-- [ ] **Step 2: Syntax-check**
+- [x] **Step 2: Syntax-check**
 
 Run: `node --check portal/ui/manifest.js` — expected to fail (ESM `import`/`export` in a CJS-default project); instead confirm no stray syntax error by eye and defer real verification to Step 4's browser check (matches how every other `portal/ui/*.js` file in this repo is verified — none of them pass `node --check` for the same reason).
 
-- [ ] **Step 3: Add `.v2-*` and `.mtools button` CSS**
+- [x] **Step 3: Add `.v2-*` and `.mtools button` CSS**
 
 Read `portal/ui/*.css` to find where `.mtools` is styled (in the shared stylesheet the build concatenates — check `scripts/buildPortal.js` for which files it concatenates and in what order). Add, in that file:
 
@@ -352,7 +352,7 @@ Read `portal/ui/*.css` to find where `.mtools` is styled (in the shared styleshe
 .v2-card .v2-row button { opacity: 0.6; cursor: default; }
 ```
 
-- [ ] **Step 4: Rebuild and verify in the browser**
+- [x] **Step 4: Rebuild and verify in the browser**
 
 ```bash
 node scripts/buildPortal.js
@@ -362,7 +362,7 @@ sleep 2
 
 Open the portal in the Browser pane at `http://127.0.0.1:8787/review/index.html` (the static fixture harness from Session C — confirm it still exists at `portal/public/review/index.html`; if it was cleaned up, seed a real owner session the way Task 1 Step 8 did and hit the real signed-in app instead). Confirm no console errors, and that `<Manifest>` renders without `onAdd`/`buildEditOp` (both optional) exactly as it did before this task — the existing Access/Analytics realms pass neither prop, so this is a regression check as much as a new-feature check. Stop the server.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add portal/ui/manifest.js portal/ui/*.css
@@ -381,7 +381,7 @@ git commit -m "feat(portal): give Manifest an opt-in Add button and click-to-edi
 - Consumes: `stageOps`/`stageAndCommit` (Task 1), `onAdd`/`buildEditOp` (Task 2).
 - Produces: `buildSeasonAddOp(kind, fields) -> op`, `buildSeasonEditOp(row, columnKey, newValue) -> op` — both pure, exported from a new `portal/ui/season.logic.js` so they're testable as data.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // added to scripts/portalRealms.test.js
@@ -415,11 +415,11 @@ check('buildSeasonEditOp on an event row edits via calendar.edit', () => {
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/season.logic'`
 
-- [ ] **Step 3: Write `portal/ui/season.logic.js`**
+- [x] **Step 3: Write `portal/ui/season.logic.js`**
 
 Read `core/ops/draws.js` (`draw.add`/`draw.edit`/`draw.delete`, `pathFor(category)`) and `core/ops/calendar.js` (`calendar.add`/`calendar.edit`) first to confirm the exact `target`/`payload` fields each `validate()` reads, then:
 
@@ -454,11 +454,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
 **Before finalizing this step:** read `core/ops/draws.js`'s `'draw.edit'` and `core/ops/calendar.js`'s `'calendar.edit'` entries in full (their `validate`/`apply` bodies) to confirm `target` shape (`{category, elementId}` vs `{elementId}`) and required payload fields exactly — the snippet above is the design's best read of the op signatures gathered during Task 1's research pass, but this step is where it gets checked against the real `validate()` bodies, not assumed a second time.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalRealms.test.js` Expected: all 4 new checks pass, plus every pre-existing check in that file still passes (5 from before this plan, per this session's earlier verification).
 
-- [ ] **Step 5: Wire the Add composer and Manifest hooks into `season.js`**
+- [x] **Step 5: Wire the Add composer and Manifest hooks into `season.js`**
 
 Read the current `portal/ui/season.js` (already modified once this session for the `/simplify` fixes — re-read it fresh, don't rely on the earlier-in-session version from memory). Add:
 - An `AddComposer` component: a kind picker (`draw`/`returning`/`event`/`playlist`) that reveals the relevant fields, an inline `<form>`-like block rendered above `<Manifest>` in `viewSlot` when a `showAdd` state flag is true, calling `stageOps('season', [buildSeasonAddOp(kind, fields)], session.csrfToken)` on submit, then closing itself and calling `fetchChangesets('season').then(setChangesets)` so the new staged item appears on Board immediately.
@@ -468,7 +468,7 @@ Read the current `portal/ui/season.js` (already modified once this session for t
 
 Import `{ buildSeasonAddOp, buildSeasonEditOp }` from `./season.logic.js` and `{ stageOps }` from `./composeClient.js` at the top of `season.js`.
 
-- [ ] **Step 6: Rebuild and verify in the browser against real local Mongo**
+- [x] **Step 6: Rebuild and verify in the browser against real local Mongo**
 
 ```bash
 node scripts/buildPortal.js
@@ -478,7 +478,7 @@ sleep 2
 
 Using the seeded-owner-session technique (Task 1 Step 8), sign in via the Browser pane by setting the cookie through an actual `Set-Cookie` response is not possible for `HttpOnly` — instead drive this verification the way Task 1 did: direct `fetch` calls with an explicit `Cookie` header exercising the real `AddComposer`-equivalent flow (`POST /api/changeset` with a `draw.add` op built by hand matching `buildSeasonAddOp`'s output), confirming it stages, appears in `GET /api/changeset?realm=season`, and commits cleanly, THEN separately browser-load the signed-out Door page to confirm the rebuilt bundle has no console errors (parallel to Task 2 Step 4). Revert/delete every test-created draw/session afterward exactly as Task 1 Step 8 and the earlier `/simplify` verification pass did. Stop the server.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add portal/ui/season.js portal/ui/season.logic.js scripts/portalRealms.test.js package.json
