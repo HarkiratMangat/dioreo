@@ -57,6 +57,13 @@ check('restoreSnapshot is self-symmetric -- reverting a revert stays revertible'
     assert.deepStrictEqual(inv.payload, { currentSeasonTitle: 'Old' });
 });
 
+check('LANE_LABELS humanizes every internal lane key toManifestRows produces', () => {
+    const { LANE_LABELS } = require('../portal/ui/season.logic');
+    assert.strictEqual(LANE_LABELS.newDraws, 'New draw');
+    assert.strictEqual(LANE_LABELS.returningDraws, 'Returning draw');
+    assert.strictEqual(LANE_LABELS.calendar, 'Event');
+});
+
 check('every season op type declares a tier', () => {
     for (const t of ops.listOpTypes().filter(t => t.startsWith('season.'))) {
         assert.ok([1, 2, 3].includes(ops.resolveOp(t).tier), `${t} has no tier`);
