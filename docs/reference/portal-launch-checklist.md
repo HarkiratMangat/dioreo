@@ -9,6 +9,8 @@ The portal (`portal.dioreo.app`) is fully built and, as of PR #168 (`009931a`, m
 
 Consolidated 2026-08-21 23:48 EDT from two places that used to say part of this each: `docs/ROADMAP.md`'s web-admin-portal bullet (the "why" and the plan links) and `docs/reference/deployment-and-ops.md`'s "Web admin portal" section (the "how" — exact commands, config keys, unit files). Both now point here for status; neither duplicates this checklist.
 
+⚠️ **Superseded in priority, 2026-08-22 10:42 EDT (Harkirat's call) — do not work this checklist before `docs/superpowers/plans/2026-08-22-portal-design-alignment.md`'s Phase 3/4 land.** Viewing the live portal on a real device the same day this file was last updated showed it doesn't resemble its own approved mockups (`docs/superpowers/specs/2026-08-22-portal-mockup-vs-live-gap-audit.md`) — whole designed surfaces were simplified away during implementation, not just left unstyled. Deploying *that* to prod and registering real Discord OAuth for it would ship the skeleton, not the intended product. This file's steps are still real and still needed eventually — nothing below is wrong — they're just not the next thing to do. Re-check this note once the design-alignment plan's Session status table shows Phase 3/4 complete.
+
 ## Status
 
 - [ ] **Deploy the code to the VM.** `git pull` + `scripts/deploy.sh` (or a manual first pull) — the branch is already merged to `v3-pre-release` as of PR #168, so this is unblocked.
