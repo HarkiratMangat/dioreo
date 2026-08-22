@@ -18,4 +18,15 @@ function segment(url, index) {
     return url.pathname.split('/').filter(Boolean)[index];
 }
 
-module.exports = { readJsonBody, segment };
+// The res.writeHead(status, {...}); res.end(JSON.stringify(body)) pair, written out 20+ times across portal/api/*.js before this existed (simplify review).
+function sendJson(res, status, body) {
+    res.writeHead(status, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(body));
+}
+
+// 403 with a consistent {error: reason} body — every realm's initial-load fetch checks this exact field to decide whether to render its "no access" state.
+function forbidden(res, reason) {
+    sendJson(res, 403, { error: reason });
+}
+
+module.exports = { readJsonBody, segment, sendJson, forbidden };

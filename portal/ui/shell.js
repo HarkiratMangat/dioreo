@@ -30,6 +30,11 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     `;
 }
 
+// Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6).
+export function NoAccess() {
+    return html`<p style="padding:24px">You do not have access to this realm.</p>`;
+}
+
 export function Door({ forbidden }) {
     // Three door states read identically (spec §10) — a stranger, a never-granted account and a revoked admin all see this exact page. `forbidden` changes nothing visible on purpose.
     return html`

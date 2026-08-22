@@ -2,8 +2,9 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell } from './shell.js';
+import { Shell, NoAccess } from './shell.js';
 import { Manifest } from './manifest.js';
+import { fetchJson } from './httpClient.js';
 
 const ARMORY_COLUMNS = [
     { key: 'weaponName', label: 'Weapon' },
@@ -52,10 +53,10 @@ export function ArmoryRealm({ session }) {
     const [builds, setBuilds] = useState([]);
     const [coverageFilter, setCoverageFilter] = useState(null);
 
-    const [error, setError] = useState(null);
-    useEffect(() => { fetch('/api/armory', { credentials: 'same-origin' }).then(r => r.json()).then(d => { if (d.error) return setError(d.error); setBuilds(d.builds || []); }); }, []);
+    const [error, setError] = useState(false);
+    useEffect(() => { fetchJson('/api/armory').then(d => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }, []);
 
-    if (error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
+    if (error) return html`<${NoAccess} />`;
 
     const rows = coverageFilter ? builds.filter(b => (b.coverage || []).includes(coverageFilter)) : builds;
 

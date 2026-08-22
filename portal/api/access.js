@@ -4,7 +4,7 @@
 const AdminUser = require('../../models/AdminUser');
 const PortalSession = require('../../models/PortalSession');
 const { isOwner, parsePermissionsInput, invalidateAdminCache, MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require('../../utils/adminAccess');
-const { readJsonBody } = require('./httpUtil');
+const { readJsonBody, sendJson, forbidden } = require('./httpUtil');
 
 // Access grant/revoke reuses ONLY the typed-confirmation half of the tier-3 model, never the export leg -- gateCommit's exportedAt check has no meaning for a permission change (there is no data to export), and this review pass caught that the original code accepted `body.exportedAt` straight from the client, which would have let any caller satisfy that half of the gate by just sending a timestamp. A permission change has exactly one real safeguard: the admin must type the target's own Discord ID before it takes effect.
 function confirmMatchesTarget(confirmText, discordId) {
@@ -13,10 +13,7 @@ function confirmMatchesTarget(confirmText, discordId) {
 
 function ownerOnly(handler) {
     return async (req, res, url, session) => {
-        if (!isOwner(session.discordId)) {
-            res.writeHead(403, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'Access is owner-only.' }));
-        }
+        if (!isOwner(session.discordId)) return forbidden(res, 'Access is owner-only.');
         return handler(req, res, url, session);
     };
 }
@@ -47,20 +44,15 @@ function register(route) {
     route('GET', /^\/api\/access$/, requireAdmin(ownerOnly(async (req, res) => {
         const admins = await AdminUser.find({}).lean();
         const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ admins, sessions, singlePointsOfFailure: singlePointsOfFailure(admins) }));
+        sendJson(res, 200, { admins, sessions, singlePointsOfFailure: singlePointsOfFailure(admins) });
     })));
 
     route('POST', /^\/api\/access\/grant$/, requireAdmin(ownerOnly(async (req, res, url, session) => {
         const body = await readJsonBody(req);
         const permissions = parsePermissionsInput((body.permissions || []).join(','));
-        if (!permissions) {
-            res.writeHead(400, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'One or more permission tokens were not recognized.' }));
-        }
+        if (!permissions) return sendJson(res, 400, { error: 'One or more permission tokens were not recognized.' });
         if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
-            res.writeHead(409, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ ok: false, reason: 'Type the exact Discord ID being granted to confirm.' }));
+            return sendJson(res, 409, { ok: false, reason: 'Type the exact Discord ID being granted to confirm.' });
         }
 
         await AdminUser.findOneAndUpdate(
@@ -69,28 +61,24 @@ function register(route) {
             { upsert: true, new: true }
         );
         invalidateAdminCache();
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
+        sendJson(res, 200, { ok: true });
     })));
 
     route('POST', /^\/api\/access\/revoke$/, requireAdmin(ownerOnly(async (req, res, url, session) => {
         const body = await readJsonBody(req);
         if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
-            res.writeHead(409, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ ok: false, reason: 'Type the exact Discord ID being revoked to confirm.' }));
+            return sendJson(res, 409, { ok: false, reason: 'Type the exact Discord ID being revoked to confirm.' });
         }
         await AdminUser.deleteOne({ discordId: body.discordId });
         invalidateAdminCache();
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
+        sendJson(res, 200, { ok: true });
     })));
 
     // Ending a live session is NOT tier 3 \u2014 it costs the signed-in device a re-login, nothing irreversible. The spec's H8/§8.2 calls this out as something the bot itself cannot do at all (revoking an admin in Discord does not kill a browser session).
     route('POST', /^\/api\/access\/session\/end$/, requireAdmin(ownerOnly(async (req, res) => {
         const body = await readJsonBody(req);
         await PortalSession.updateOne({ sessionHash: body.sessionHash }, { revokedAt: new Date() });
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
+        sendJson(res, 200, { ok: true });
     })));
 }
 

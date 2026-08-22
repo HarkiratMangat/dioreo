@@ -2,8 +2,9 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell } from './shell.js';
+import { Shell, NoAccess } from './shell.js';
 import { Manifest } from './manifest.js';
+import { fetchJson } from './httpClient.js';
 
 const RIVER_COLUMNS = [
     { key: 'kind', label: 'Kind' },
@@ -21,14 +22,14 @@ function MetricsPanel({ title, text }) {
 }
 
 export function AnalyticsRealm({ session }) {
-    const [data, setData] = useState({ river: [], usage: '', timing: '', alerts: '', error: null });
-    useEffect(() => { fetch('/api/analytics', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }, []);
+    const [data, setData] = useState({ river: [], usage: '', timing: '', alerts: '' });
+    useEffect(() => { fetchJson('/api/analytics').then(setData); }, []);
 
-    if (data.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
+    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
 
     async function revert(changeId) {
-        await fetch(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
-        fetch('/api/analytics', { credentials: 'same-origin' }).then(r => r.json()).then(setData);
+        await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        fetchJson('/api/analytics').then(setData);
     }
 
     const rows = data.river.map(r => ({ ...r, id: r.changeId || r.alertId || r._id }));

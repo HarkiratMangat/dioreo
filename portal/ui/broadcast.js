@@ -2,8 +2,9 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell } from './shell.js';
+import { Shell, NoAccess } from './shell.js';
 import { Manifest } from './manifest.js';
+import { fetchJson } from './httpClient.js';
 
 const BROADCAST_COLUMNS = [
     { key: 'text', label: 'Text' },
@@ -43,10 +44,10 @@ function Airtime({ all }) {
 }
 
 export function BroadcastRealm({ session }) {
-    const [data, setData] = useState({ live: [], all: [], error: null });
-    useEffect(() => { fetch('/api/broadcast', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }, []);
+    const [data, setData] = useState({ live: [], all: [] });
+    useEffect(() => { fetchJson('/api/broadcast').then(setData); }, []);
 
-    if (data.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
+    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
     return html`
         <${Shell} realm="broadcast" session=${session}
                   viewSlot=${html`<${NowShowing} live=${data.live} /><${Airtime} all=${data.all} />`}

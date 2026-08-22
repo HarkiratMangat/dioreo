@@ -3,7 +3,8 @@
 // Armory realm \u2014 covers /manage's 'loadouts_mp' and 'loadouts_dmz' pages. No dates, so no Track \u2014 Rack (by category) and Coverage (data-quality flags) are both derived read-only views over the same Loadout collection. Mutations go through the generic changeset pathway (loadout.add, loadout.bulkReplace, etc.) built by the frontend.
 const Loadout = require('../../models/Loadout');
 const { findDuplicateLoadouts, getMpCategoryAccent } = require('../../utils/loadoutRender');
-const { getManagePages } = require('../../utils/adminAccess');
+const { sendJson, forbidden } = require('./httpUtil');
+const { grantedPagesFor } = require('./realmAccess');
 
 const ARMORY_PAGES = ['loadouts_mp', 'loadouts_dmz'];
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
@@ -28,17 +29,12 @@ function register(route) {
     const { requireAdmin } = require('../auth');
 
     route('GET', /^\/api\/armory$/, requireAdmin(async (req, res, url, session) => {
-        const pages = await getManagePages(session.discordId);
-        const grantedPages = pages.filter(p => ARMORY_PAGES.includes(p));
-        if (grantedPages.length === 0) {
-            res.writeHead(403, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'forbidden' }));
-        }
+        const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
+        if (grantedPages.length === 0) return forbidden(res, 'forbidden');
         const all = await Loadout.find({}).lean();
         const mpBuilds = all.filter(b => b.mode === 'MP');
         const builds = all.map(b => ({ ...b, coverage: coverageFlags(b, mpBuilds), accent: getMpCategoryAccent(b.category) }));
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ builds, grantedPages }));
+        sendJson(res, 200, { builds, grantedPages });
     }));
 }
 

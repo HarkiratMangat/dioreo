@@ -7,6 +7,7 @@ const crypto = require('node:crypto');
 const https = require('node:https');
 const PortalSession = require('../models/PortalSession');
 const { isAdmin, isOwner } = require('../utils/adminAccess');
+const { sendJson, forbidden } = require('./api/httpUtil');
 
 const SESSION_COOKIE = 'portal_session';
 const STATE_COOKIE = 'portal_oauth_state';
@@ -153,10 +154,12 @@ async function sessionFor(req) {
     const raw = cookies[SESSION_COOKIE];
     if (!raw) return null;
     const sessionHash = hashSession(raw);
-    const row = await PortalSession.findOne({ sessionHash });
+    const row = await PortalSession.findOne({ sessionHash }).lean();
     if (!row || row.revokedAt) return null;
-    row.lastSeenAt = new Date();
-    await row.save();
+    // A full load-then-save on EVERY request (including GETs) just to bump lastSeenAt doubled the Mongo round-trip on the hot path of every portal request (efficiency review). Throttled to only write when the existing value has gone stale, fired without blocking the response.
+    if (Date.now() - new Date(row.lastSeenAt).getTime() > 60_000) {
+        PortalSession.updateOne({ sessionHash }, { lastSeenAt: new Date() }).catch((e) => console.error('Portal lastSeenAt update failed:', e));
+    }
     return { discordId: row.discordId, sessionId: sessionHash };
 }
 
@@ -175,18 +178,9 @@ function verifyCsrf(req, session) {
 function requireAdmin(handler) {
     return async (req, res, url) => {
         const session = await sessionFor(req);
-        if (!session) {
-            res.writeHead(401, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'not signed in' }));
-        }
-        if (!(await isAdmin(session.discordId))) {
-            res.writeHead(403, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'forbidden' }));
-        }
-        if (req.method !== 'GET' && !verifyCsrf(req, session)) {
-            res.writeHead(403, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'missing or invalid CSRF token' }));
-        }
+        if (!session) return sendJson(res, 401, { error: 'not signed in' });
+        if (!(await isAdmin(session.discordId))) return forbidden(res, 'forbidden');
+        if (req.method !== 'GET' && !verifyCsrf(req, session)) return forbidden(res, 'missing or invalid CSRF token');
         return handler(req, res, url, session);
     };
 }
@@ -195,21 +189,14 @@ function registerAuthRoutes(route) {
     route('GET', /^\/auth\/login$/, async (req, res) => startOAuth(req, res));
     route('GET', /^\/auth\/callback$/, handleCallback);
     route('GET', /^\/auth\/csrf$/, requireAdmin(async (req, res, url, session) => {
-        // Code review Important #4: the nav rail showed all 5 realms regardless of what the signed-in admin actually holds, unlike this codebase's own established convention (/manage's getManagePages() filters its dropdown the same way). Computed here, once, so every realm page and the Shell agree on the same list rather than each re-deriving it.
-        const { getManagePages, hasCommandAccess } = require('../utils/adminAccess');
+        // Code review Important #4: the nav rail showed all 5 realms regardless of what the signed-in admin actually holds, unlike this codebase's own established convention (/manage's getManagePages() filters its dropdown the same way). realmAccess.js computes this once so every realm route's own 403 check and the Shell's rail agree on the same list rather than each re-deriving it (simplify Altitude #14-15).
+        const { visibleRealms } = require('./api/realmAccess');
         const { SEASON_PAGES } = require('./api/season');
         const { ARMORY_PAGES } = require('./api/armory');
         const { BROADCAST_PAGES } = require('./api/broadcast');
         const owner = isOwner(session.discordId);
-        const pages = await getManagePages(session.discordId);
-        const visibleRealms = [];
-        if (owner || pages.some(p => SEASON_PAGES.includes(p))) visibleRealms.push('season');
-        if (owner || pages.some(p => ARMORY_PAGES.includes(p))) visibleRealms.push('armory');
-        if (owner || pages.some(p => BROADCAST_PAGES.includes(p))) visibleRealms.push('broadcast');
-        if (owner) visibleRealms.push('access');
-        if (owner || (await hasCommandAccess(session.discordId, 'bot'))) visibleRealms.push('analytics');
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms }));
+        const realms = await visibleRealms(session.discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES });
+        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms: realms });
     }));
     route('POST', /^\/auth\/logout$/, requireAdmin(async (req, res, url, session) => {
         await PortalSession.updateOne({ sessionHash: session.sessionId }, { revokedAt: new Date() });

@@ -5,6 +5,7 @@ const ChangeLog = require('../../models/ChangeLog');
 const AlertLog = require('../../models/AlertLog');
 const BootRecord = require('../../models/BootRecord');
 const { hasCommandAccess } = require('../../utils/adminAccess');
+const { sendJson, forbidden } = require('./httpUtil');
 
 async function eventRiver({ limit = 100 } = {}) {
     const [changes, alerts, boots] = await Promise.all([
@@ -24,17 +25,13 @@ function register(route) {
     const { requireAdmin } = require('../auth');
 
     route('GET', /^\/api\/analytics$/, requireAdmin(async (req, res, url, session) => {
-        if (!(await hasCommandAccess(session.discordId, 'bot'))) {
-            res.writeHead(403, { 'content-type': 'application/json' });
-            return res.end(JSON.stringify({ error: 'forbidden' }));
-        }
+        if (!(await hasCommandAccess(session.discordId, 'bot'))) return forbidden(res, 'forbidden');
         const { buildUsageExport, buildTimingExport } = require('../../commands/bot');
         const { buildAlertExport } = require('../../utils/alertStore');
         const [river, usage, timing, alerts] = await Promise.all([
             eventRiver({}), buildUsageExport(), buildTimingExport(), buildAlertExport(),
         ]);
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ river, usage, timing, alerts }));
+        sendJson(res, 200, { river, usage, timing, alerts });
     }));
 }
 

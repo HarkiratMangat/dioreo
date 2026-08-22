@@ -4,6 +4,7 @@
 import { h, render } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { Door } from './shell.js';
+import { fetchJson } from './httpClient.js';
 import { SeasonRealm } from './season.js';
 import { ArmoryRealm } from './armory.js';
 import { BroadcastRealm } from './broadcast.js';
@@ -15,13 +16,6 @@ const REALM_COMPONENTS = {
     season: SeasonRealm, armory: ArmoryRealm, broadcast: BroadcastRealm,
     access: AccessRealm, analytics: AnalyticsRealm,
 };
-
-async function fetchJson(path, opts) {
-    const res = await fetch(path, { credentials: 'same-origin', ...opts });
-    if (res.status === 401) return { signedOut: true };
-    if (res.status === 403) return { forbidden: true };
-    return res.json();
-}
 
 function currentRealm() {
     const hash = (location.hash || '#/season').replace(/^#\//, '');

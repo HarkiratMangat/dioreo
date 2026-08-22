@@ -2,8 +2,9 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell } from './shell.js';
+import { Shell, NoAccess } from './shell.js';
 import { Manifest } from './manifest.js';
+import { fetchJson } from './httpClient.js';
 
 const SESSION_COLUMNS = [
     { key: 'discordId', label: 'Discord ID' },
@@ -82,14 +83,14 @@ function ByScope({ spof }) {
 }
 
 export function AccessRealm({ session }) {
-    const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [], error: null });
+    const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [] });
     const [notice, setNotice] = useState('');
 
-    function refresh() { fetch('/api/access', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }
+    function refresh() { fetchJson('/api/access').then(setData); }
     useEffect(refresh, []);
 
     async function endSession(sessionHash) {
-        await fetch('/api/access/session/end', {
+        await fetchJson('/api/access/session/end', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ sessionHash }),
         });
@@ -97,26 +98,24 @@ export function AccessRealm({ session }) {
     }
 
     async function grant(discordId, permissions, confirmText) {
-        const res = await fetch('/api/access/grant', {
+        const body = await fetchJson('/api/access/grant', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ discordId, permissions, confirmText }),
         });
-        const body = await res.json();
-        setNotice(res.ok ? '' : (body.reason || 'Grant failed'));
+        setNotice(body.ok ? '' : (body.reason || body.error || 'Grant failed'));
         refresh();
     }
 
     async function revoke(discordId, confirmText) {
-        const res = await fetch('/api/access/revoke', {
+        const body = await fetchJson('/api/access/revoke', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ discordId, confirmText }),
         });
-        const body = await res.json();
-        setNotice(res.ok ? '' : (body.reason || 'Revoke failed'));
+        setNotice(body.ok ? '' : (body.reason || body.error || 'Revoke failed'));
         refresh();
     }
 
-    if (data.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
+    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
 
     return html`
         <${Shell} realm="access" session=${session}
