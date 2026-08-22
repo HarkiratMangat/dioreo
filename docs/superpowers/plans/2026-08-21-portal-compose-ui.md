@@ -1,6 +1,6 @@
 ---
 kind: plan
-status: live
+status: frozen
 ---
 
 # Portal compose UI Implementation Plan
