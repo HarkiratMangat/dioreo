@@ -83,8 +83,7 @@ process.exit(failures ? 1 : 0);
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/portalComposeClient.test.js`
-Expected: `Cannot find module '../portal/ui/v2Render.logic'`
+Run: `node scripts/portalComposeClient.test.js` Expected: `Cannot find module '../portal/ui/v2Render.logic'`
 
 - [ ] **Step 3: Write `v2Render.logic.js`**
 
@@ -110,8 +109,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node scripts/portalComposeClient.test.js`
-Expected: `5 passed, 0 failed` (well, all `check()` calls print `✓`; script exits 0)
+Run: `node scripts/portalComposeClient.test.js` Expected: `5 passed, 0 failed` (well, all `check()` calls print `✓`; script exits 0)
 
 - [ ] **Step 5: Write `v2Render.js`**
 
@@ -419,8 +417,7 @@ check('buildSeasonEditOp on an event row edits via calendar.edit', () => {
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/portalRealms.test.js`
-Expected: `Cannot find module '../portal/ui/season.logic'`
+Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/season.logic'`
 
 - [ ] **Step 3: Write `portal/ui/season.logic.js`**
 
@@ -459,8 +456,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node scripts/portalRealms.test.js`
-Expected: all 4 new checks pass, plus every pre-existing check in that file still passes (5 from before this plan, per this session's earlier verification).
+Run: `node scripts/portalRealms.test.js` Expected: all 4 new checks pass, plus every pre-existing check in that file still passes (5 from before this plan, per this session's earlier verification).
 
 - [ ] **Step 5: Wire the Add composer and Manifest hooks into `season.js`**
 
@@ -538,8 +534,7 @@ check('editOpFor resolves calendar items to calendar.edit', () => {
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/portalUi.test.js`
-Expected: `Cannot find module` error, or (once `track.logic.js` exists) `dateFromOffset is not a function`.
+Run: `node scripts/portalUi.test.js` Expected: `Cannot find module` error, or (once `track.logic.js` exists) `dateFromOffset is not a function`.
 
 - [ ] **Step 3: Implement `dateFromOffset` and `editOpFor` in `track.logic.js`**
 
@@ -575,8 +570,7 @@ Update the `module.exports` line to include `dateFromOffset, editOpFor`.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node scripts/portalUi.test.js`
-Expected: all checks pass, including the 3 pre-existing ones from this session's `/simplify` verification.
+Run: `node scripts/portalUi.test.js` Expected: all checks pass, including the 3 pre-existing ones from this session's `/simplify` verification.
 
 - [ ] **Step 5: Wire pointer events in `track.js`**
 
@@ -637,8 +631,7 @@ check('buildArmoryEditOp edits a badges field via loadout.edit, preserving weapo
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/portalRealms.test.js`
-Expected: `Cannot find module '../portal/ui/armory.logic'`
+Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/armory.logic'`
 
 - [ ] **Step 3: Write `portal/ui/armory.logic.js`**
 
@@ -742,8 +735,7 @@ check('buildBroadcastEditOp edits an announcement via announcement.edit, targeti
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `node scripts/portalRealms.test.js`
-Expected: `Cannot find module '../portal/ui/broadcast.logic'`
+Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/broadcast.logic'`
 
 - [ ] **Step 3: Write `portal/ui/broadcast.logic.js`**
 
