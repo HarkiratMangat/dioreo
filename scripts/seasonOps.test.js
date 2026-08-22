@@ -64,6 +64,30 @@ check('LANE_LABELS humanizes every internal lane key toManifestRows produces', (
     assert.strictEqual(LANE_LABELS.calendar, 'Event');
 });
 
+check('toManifestRows derives real state instead of hardcoding live (gap audit §3.4 finding 2)', () => {
+    const { toManifestRows } = require('../portal/ui/season.logic');
+    const live = { newDraws: [{ _id: 'd1', title: 'Draw One', date: '2026-09-01' },
+                               { _id: 'd2', title: 'Draw Two', date: '2026-09-02' },
+                               { _id: 'd3', title: 'Draw Three', date: '2026-09-03' }],
+                   returningDraws: [], calendar: [] };
+    const changesets = [
+        { state: 'staged', ops: [{ type: 'draw.edit', target: { elementId: 'd1' }, payload: {} }] },
+        { state: 'blocked', ops: [{ type: 'draw.delete', target: { elementId: 'd2' }, payload: {} }] },
+        { state: 'committed', ops: [{ type: 'draw.edit', target: { elementId: 'd3' }, payload: {} }] },
+    ];
+    const rows = toManifestRows(live, changesets);
+    assert.strictEqual(rows.find((r) => r.id === 'd1').state, 'staged');
+    assert.strictEqual(rows.find((r) => r.id === 'd2').state, 'conflict');
+    // d3's only referencing changeset is already committed -- must read as live, not staged.
+    assert.strictEqual(rows.find((r) => r.id === 'd3').state, 'live');
+});
+
+check('toManifestRows treats every row as live when no changesets are open', () => {
+    const { toManifestRows } = require('../portal/ui/season.logic');
+    const rows = toManifestRows({ newDraws: [{ _id: 'd1', title: 'X', date: '2026-09-01' }], returningDraws: [], calendar: [] }, []);
+    assert.strictEqual(rows[0].state, 'live');
+});
+
 check('every season op type declares a tier', () => {
     for (const t of ops.listOpTypes().filter(t => t.startsWith('season.'))) {
         assert.ok([1, 2, 3].includes(ops.resolveOp(t).tier), `${t} has no tier`);
