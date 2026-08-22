@@ -47,13 +47,24 @@ function validateSet(ops) {
     return { ok: failures.length === 0, failures, normalized, tier };
 }
 
-function previewSet(ops, live) {
+// 🔴 MUST BE ASYNC AND AWAITED -- loadouts' and announcements' edit/delete preview() implementations
+// are themselves async (they self-fetch via Loadout.findById/Announcement.findById rather than
+// reading the `live` param). A prior, synchronous version of this function called impl.preview(...)
+// without awaiting it: for those entities it silently spread a Promise's own (zero) enumerable
+// properties into the result -- every preview came back as bare {index}, no before/after -- and
+// worse, a preview() that THROWS before its first await (e.g. a malformed op with no `target`)
+// produced a rejected promise nobody ever awaited or .catch()ed. An unhandled rejection crashes the
+// whole Node process by default, bypassing portal/api/changesets.js's own try/catch around this call
+// (that catch can only see a promise IT awaits) and portal/server.js's per-request crash net (which
+// had already returned by the time the rejection fired asynchronously). Found live: staging a
+// malformed loadout.edit/calendar.edit op took down the entire portal server, not just that request.
+async function previewSet(ops, live) {
     // 🔴 NORMALIZED, not raw -- a bulk op's preview() reads fields (e.g. payload.parsed) that only exist after validate() normalizes the payload. Previewing a raw un-normalized op threw; falls back to the raw op only when validation itself fails, matching what apply() would do anyway.
-    return ops.map((op, index) => {
+    return Promise.all(ops.map(async (op, index) => {
         const impl = resolveOp(op.type);
         const v = impl.validate(op);
-        return { index, ...impl.preview(v.normalized || op, live) };
-    });
+        return { index, ...(await impl.preview(v.normalized || op, live)) };
+    }));
 }
 
 async function commitSet(ops, { actorId }) {

@@ -42,7 +42,17 @@ function buildSeasonEditOp(row, columnKey, newValue) {
     // real payload key per entity before it reaches core/ops.
     const rawPayload = { ...row, [columnKey]: newValue };
     delete rawPayload.id; delete rawPayload.lane; delete rawPayload.state; delete rawPayload.window; delete rawPayload.topicVar;
-    if (isDraw) { rawPayload.date = rawPayload.endDate ?? rawPayload.date; delete rawPayload.endDate; }
+    if (isDraw) {
+        rawPayload.date = rawPayload.endDate ?? rawPayload.date; delete rawPayload.endDate;
+    } else {
+        // core/ops/calendar.js's validateEvent reads the START date as raw payload.startDate, even
+        // though the STORED field is `date` -- a real field-name mismatch (matching the class of bug
+        // already fixed for draws) found auditing Task 4's editOpFor, which shares this exact
+        // contract. A Manifest row's own field is `date` (the raw SeasonalData subdocument's real
+        // name), so it must be renamed before it reaches validateEvent, or a calendar edit fails
+        // validation outright ("Could not read the start date").
+        rawPayload.startDate = rawPayload.date; delete rawPayload.date;
+    }
     const payload = { ...rawPayload };
     if (payload.startDate) payload.startDate = toChronoDateString(payload.startDate);
     if (payload.endDate) payload.endDate = toChronoDateString(payload.endDate);

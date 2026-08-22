@@ -77,11 +77,77 @@ check('buildSeasonEditOp on a returningDraws row maps to category "returning"', 
 });
 
 check('buildSeasonEditOp on an event row edits via calendar.edit and passes a chrono-parseable date string', () => {
-    const row = { id: 'x3', lane: 'calendar', title: 'Season launch', startDate: '2026-08-01', endDate: '2026-08-08' };
+    // A real raw calendar subdocument's start field is `date` (core/ops/calendar.js's own stored
+    // shape), never `startDate` -- this fixture used to say `startDate` directly, which happened to
+    // pass against the OLD code but never matched what toManifestRows actually spreads from live
+    // data. Fixed alongside the `date`->`startDate` rename regression test below.
+    const row = { id: 'x3', lane: 'calendar', title: 'Season launch', date: '2026-08-01', endDate: '2026-08-08' };
     const op = buildSeasonEditOp(row, 'title', 'Season 8 launch');
     assert.strictEqual(op.type, 'calendar.edit');
     assert.strictEqual(op.payload.title, 'Season 8 launch');
     assert.strictEqual(op.payload.startDate, '2026-08-01');
+});
+
+check('buildSeasonEditOp on a calendar row whose real field is `date` (not `startDate`) renames it before sending -- core/ops/calendar.js’s validateEvent reads raw payload.startDate even though the STORED field is `date`', () => {
+    const row = { id: 'x4', lane: 'calendar', title: 'Clan Wars', date: '2026-08-01', endDate: '2026-08-08' };
+    const op = buildSeasonEditOp(row, 'title', 'Clan Wars Rerun');
+    assert.strictEqual(op.payload.startDate, '2026-08-01');
+    assert.strictEqual(op.payload.date, undefined, 'a stray `date` key would be silently discarded by validateEvent’s normalized output, but the START value must survive under the key it actually reads');
+});
+
+const { buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken } = require('../portal/ui/armory.logic');
+
+check('parseBadgesToken parses meta/best/toxic/topN tokens', () => {
+    const r = parseBadgesToken('meta, top3, toxic', 'MP');
+    assert.strictEqual(r.isMeta, true);
+    assert.strictEqual(r.categoryRank, 'top3');
+    assert.strictEqual(r.isToxic, true);
+    assert.deepStrictEqual(r.unrecognized, []);
+});
+
+check('parseBadgesToken moves a bare categoryRank onto dmzRangeRank for DMZ mode', () => {
+    const r = parseBadgesToken('top3', 'DMZ');
+    assert.strictEqual(r.categoryRank, null);
+    assert.strictEqual(r.dmzRangeRank, 'top3');
+});
+
+check('parseBadgesToken reports an unrecognized token instead of silently dropping it', () => {
+    const r = parseBadgesToken('meta, bogus', 'MP');
+    assert.deepStrictEqual(r.unrecognized, ['bogus']);
+});
+
+check('buildArmoryAddOp builds a loadout.add op with badges parsed from the token field', () => {
+    const op = buildArmoryAddOp({ weaponName: 'AK-47', category: 'AR', buildName: 'No Recoil', mode: 'MP', attachments: ['a', 'b'], badges: 'meta' });
+    assert.strictEqual(op.type, 'loadout.add');
+    assert.strictEqual(op.payload.mode, 'MP');
+    assert.strictEqual(op.payload.weaponName, 'AK-47');
+    assert.strictEqual(op.payload.isMeta, true);
+});
+
+check('buildArmoryEditOp edits a field via loadout.edit, targeting { id }, preserving weaponKey/mode', () => {
+    const row = { id: 'l1', weaponKey: 'ak-47', mode: 'MP', category: 'AR', buildName: 'No Recoil', attachments: ['a'], isMeta: false, isToxic: false, categoryRank: null };
+    const op = buildArmoryEditOp(row, 'isMeta', true);
+    assert.strictEqual(op.type, 'loadout.edit');
+    assert.deepStrictEqual(op.target, { id: 'l1' });
+    assert.strictEqual(op.payload.isMeta, true);
+    assert.strictEqual(op.payload.weaponKey, 'ak-47');
+});
+
+const { buildBroadcastAddOp, buildBroadcastEditOp } = require('../portal/ui/broadcast.logic');
+
+check('buildBroadcastAddOp builds an announcement.post op', () => {
+    const op = buildBroadcastAddOp({ text: 'Season 8 is live', expiresAt: '2026-10-01', startsAt: null, color: 0xf2c230 });
+    assert.strictEqual(op.type, 'announcement.post');
+    assert.strictEqual(op.payload.text, 'Season 8 is live');
+    assert.strictEqual(op.payload.expiresAt, '2026-10-01');
+});
+
+check('buildBroadcastEditOp edits an announcement via announcement.edit, targeting { id }', () => {
+    const row = { id: 'a1', text: 'Old text', expiresAt: '2026-10-01', startsAt: null };
+    const op = buildBroadcastEditOp(row, 'text', 'New text');
+    assert.strictEqual(op.type, 'announcement.edit');
+    assert.deepStrictEqual(op.target, { id: 'a1' });
+    assert.strictEqual(op.payload.text, 'New text');
 });
 
 process.exit(failures ? 1 : 0);

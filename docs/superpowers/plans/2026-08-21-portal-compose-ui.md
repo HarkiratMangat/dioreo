@@ -498,7 +498,7 @@ git commit -m "feat(portal): wire Season's Add composer, inline edit, and bulk s
 - Consumes: `barGeometry` (existing, `track.logic.js`), `stageOps` (Task 1).
 - Produces: `dateFromOffset(offsetPercent, window) -> Date`, `editOpFor(item, newEndDate) -> op` — both pure.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // added to scripts/portalUi.test.js
@@ -532,11 +532,11 @@ check('editOpFor resolves calendar items to calendar.edit', () => {
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node scripts/portalUi.test.js` Expected: `Cannot find module` error, or (once `track.logic.js` exists) `dateFromOffset is not a function`.
 
-- [ ] **Step 3: Implement `dateFromOffset` and `editOpFor` in `track.logic.js`**
+- [x] **Step 3: Implement `dateFromOffset` and `editOpFor` in `track.logic.js`**
 
 Read the current file (already shown above — `barGeometry` already computes `left`/`width` percentages from a window; `dateFromOffset` is its inverse). Add, before the final `module.exports` guard:
 
@@ -568,15 +568,15 @@ function editOpFor(item, newEndDate) {
 
 Update the `module.exports` line to include `dateFromOffset, editOpFor`.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalUi.test.js` Expected: all checks pass, including the 3 pre-existing ones from this session's `/simplify` verification.
 
-- [ ] **Step 5: Wire pointer events in `track.js`**
+- [x] **Step 5: Wire pointer events in `track.js`**
 
 Read the current `portal/ui/track.js`. Add a right-edge handle (a thin absolutely-positioned div at the end of each band, `onPointerDown`) that tracks `pointermove`/`pointerup` on `window` (not the element, so the drag survives leaving the band's bounding box), computes the pointer's x-offset as a percent of the ruler's own bounding rect width (`getBoundingClientRect()`), calls `dateFromOffset` for a live tooltip during the drag, and on `pointerup` calls `editOpFor` then `stageOps('season', [op], session.csrfToken)` followed by the same `fetchChangesets('season').then(setChangesets)` refresh Task 3's Add composer uses (passed down from `season.js` as a new `onDragCommit` prop, since `track.js` itself has no `session`/`csrfToken` — keep it a dumb rendering component per the spec's reuse philosophy, same reasoning as Manifest not knowing op shapes).
 
-- [ ] **Step 6: Verify in the browser**
+- [x] **Step 6: Verify in the browser**
 
 ```bash
 node scripts/buildPortal.js
@@ -586,7 +586,7 @@ sleep 2
 
 Seed an owner session (Task 1 Step 8's technique), drive a drag via `mcp__Claude_Browser__computer`'s `left_click_drag` on a real band's right edge in the signed-in Track view, screenshot before/after, then confirm via a direct `GET /api/changeset?realm=season` fetch that a new staged changeset with a `draw.edit`/`calendar.edit` op appeared. Revert/clean up the same way as prior tasks. Stop the server.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add portal/ui/track.js portal/ui/track.logic.js scripts/portalUi.test.js package.json
@@ -607,7 +607,7 @@ git commit -m "feat(portal): add Track drag handles for shifting an item's end d
 - Consumes: `stageOps`/`stageAndCommit` (Task 1), `renderV2` (Task 1), `onAdd`/`buildEditOp` (Task 2).
 - Produces: `buildArmoryAddOp(fields) -> op`, `buildArmoryEditOp(row, columnKey, newValue) -> op`, `parseBadgesToken` re-exported from the same badges grammar `/manage` uses.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // added to scripts/portalRealms.test.js
@@ -629,11 +629,11 @@ check('buildArmoryEditOp edits a badges field via loadout.edit, preserving weapo
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/armory.logic'`
 
-- [ ] **Step 3: Write `portal/ui/armory.logic.js`**
+- [x] **Step 3: Write `portal/ui/armory.logic.js`**
 
 Read `core/ops/loadouts.js`'s `'loadout.add'`/`'loadout.edit'` entries in full first to confirm `target` shape (an existing build is targeted by `op.target.id`, per the earlier grep showing `excludeId: op.target.id` inside `loadout.edit`'s `apply`) and every payload field `validate`/`apply` actually reads, then:
 
@@ -665,11 +665,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
 **Before finalizing:** confirm `op.target.id` (vs. `op.target.elementId` or a bare string) against `core/ops/loadouts.js`'s real `'loadout.edit'.apply` body — the grep in Task 1's research showed `op.target.id` used once (`excludeId: op.target.id`), but read the full block to be certain there isn't a second, different target field the delete/edit path also expects.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalRealms.test.js` — all checks pass, including every earlier one from this plan and from before it.
 
-- [ ] **Step 5: Wire the Add form, inline edit, bulk actions, and live preview into `armory.js`**
+- [x] **Step 5: Wire the Add form, inline edit, bulk actions, and live preview into `armory.js`**
 
 Read the current `portal/ui/armory.js` (already modified once this session). Add:
 - An `AddBuildForm` mirroring `/manage`'s real add-loadout modal fields (weapon name, category select, build name, image key, share code, badges token input using the same comma-separated grammar `utils/adminParser.js`'s `parseLoadoutBadges` validates — surface its rejected-token message verbatim on a validation failure, don't invent new wording), rendered above `<Rack>`/`<Coverage>` when `showAdd` is true. On submit, `stageOps('armory', [buildArmoryAddOp({...fields, mode: 'MP'})], session.csrfToken)`.
@@ -688,11 +688,11 @@ Read the current `portal/ui/armory.js` (already modified once this session). Add
 ```
 the frontend triggers a browser download of the returned `text` the same way a native `<a>` with a `data:` URL or `Blob` would — no server-side file write), "Stage deletion" (`loadout.bulkDelete`). **"Re-fetch images" is deliberately not built** — see the design doc §5.
 
-- [ ] **Step 6: Verify in the browser against real local Mongo**
+- [x] **Step 6: Verify in the browser against real local Mongo**
 
 Same pattern as Task 3 Step 6 and Task 4 Step 6: direct authenticated `fetch` calls proving `loadout.add`/`loadout.edit` stage and commit correctly against real data, plus a browser screenshot of the LIVE PREVIEW panel actually rendering a real build's card via `GET /api/armory/preview`. Clean up every test-created loadout/session afterward. Stop the server.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add portal/ui/armory.js portal/ui/armory.logic.js scripts/portalRealms.test.js package.json
@@ -712,7 +712,7 @@ git commit -m "feat(portal): wire Armory's Add form, inline edit, bulk staging, 
 - Consumes: `stageOps`/`stageAndCommit` (Task 1), `onAdd`/`buildEditOp` (Task 2).
 - Produces: `buildBroadcastAddOp(fields) -> op`, `buildBroadcastEditOp(row, columnKey, newValue) -> op`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // added to scripts/portalRealms.test.js
@@ -733,11 +733,11 @@ check('buildBroadcastEditOp edits an announcement via announcement.edit, targeti
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node scripts/portalRealms.test.js` Expected: `Cannot find module '../portal/ui/broadcast.logic'`
 
-- [ ] **Step 3: Write `portal/ui/broadcast.logic.js`**
+- [x] **Step 3: Write `portal/ui/broadcast.logic.js`**
 
 Read `core/ops/announcements.js`'s `'announcement.post'`/`'announcement.edit'`/`'announcement.delete'` entries in full first (target shape for edit/delete — check whether it's `op.target.id` or `op.target.elementId`, since this hasn't been confirmed the way loadouts' has), then:
 
@@ -756,19 +756,19 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `node scripts/portalRealms.test.js` — all checks pass.
 
-- [ ] **Step 5: Wire the Post form, inline edit, and bulk actions into `broadcast.js`**
+- [x] **Step 5: Wire the Post form, inline edit, and bulk actions into `broadcast.js`**
 
 Read the current `portal/ui/broadcast.js`. Add a `PostForm` (text textarea, `startsAt`/`expiresAt` date inputs, a colour swatch defaulting to a generated accent) above `<NowShowing>`/`<Airtime>` when `showAdd` is true, wired to `onAdd`. Mark `text`/`expiresAt` columns `editable: true` on `<Manifest>` with `buildEditOp={buildBroadcastEditOp}`. Bulk actions: "Export selection", "Stage deletion" (`announcement.delete` per selected id — no bulk-delete op exists for announcements, so this builds one `announcement.delete` op per selected id in a single `ops[]` array passed to one `stageOps` call, which is exactly what a multi-op changeset is for).
 
-- [ ] **Step 6: Verify in the browser against real local Mongo**
+- [x] **Step 6: Verify in the browser against real local Mongo**
 
 Same pattern as Tasks 3-5: direct authenticated `fetch` proving `announcement.post`/`edit`/`delete` stage and commit correctly, clean up test data, confirm no console errors on a rebuild.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add portal/ui/broadcast.js portal/ui/broadcast.logic.js scripts/portalRealms.test.js package.json
@@ -783,7 +783,7 @@ git commit -m "feat(portal): wire Broadcast's Post form, inline edit, and bulk s
 
 **Interfaces:** none — this task consumes everything from Tasks 1-6 and asserts the whole system together.
 
-- [ ] **Step 1: Run every portal test file directly**
+- [x] **Step 1: Run every portal test file directly**
 
 ```bash
 node scripts/portalBoot.test.js
@@ -796,11 +796,11 @@ node scripts/portalComposeClient.test.js
 
 Expected: every one exits 0. (Run them directly, not through `npm test`'s `&&` chain — the chain still breaks on the pre-existing, already-filed `announcementsHandlerSnapshot.test.js` flake before reaching the portal tests, exactly as it did earlier this session.)
 
-- [ ] **Step 2: End-to-end browser walkthrough with a real seeded session**
+- [x] **Step 2: End-to-end browser walkthrough with a real seeded session**
 
 Boot the portal against local dev Mongo, seed a fresh owner `PortalSession` (Task 1 Step 8's technique), and — using the Browser pane with the session cookie set the only way that works for an `HttpOnly` cookie (a real `Set-Cookie` response; if no OAuth-free login path exists, continue using direct authenticated `fetch` calls as the primary verification and the signed-out Door page as the browser-console check, exactly as every task above already did) — walk through: stage a Season draw add, drag a Track band's end date, stage an Armory build add and view its live preview, stage a Broadcast post, commit each from Board, and revert one. Screenshot the Board mid-pipeline (Staged/Blocked/Ready) and the Armory live preview panel. Delete every test-created document and the seeded session afterward.
 
-- [ ] **Step 3: Run the full project gate**
+- [x] **Step 3: Run the full project gate**
 
 ```bash
 npm run docs:audit
@@ -808,11 +808,11 @@ npm run docs:audit
 
 Expected: `docs-audit: all checks passed.`
 
-- [ ] **Step 4: Update the handoff's own gap statement**
+- [x] **Step 4: Update the handoff's own gap statement**
 
 `local/handoff/2026-08-21-portal-plan3-session-C.md` is gitignored (lives under `local/`), so it needs no edit for tracked history — but re-read its "THE ONE THING TO INTERNALIZE FIRST" section one more time and confirm every bullet it lists (Track drag handles, Armory add/edit form + `buildLoadoutCard()` preview, Broadcast form, `Manifest`'s `bulkActions` actually driving `core/ops`) is now true. If any bullet is still false, that's a real gap this plan missed — file it in `docs/db-deferred-list.md` rather than silently leaving it unstated.
 
-- [ ] **Step 5: Commit the final state**
+- [x] **Step 5: Commit the final state**
 
 ```bash
 git status --short
@@ -833,5 +833,13 @@ A falsification pass was run per `.claude/rules/plan-drafting.md` before this pl
 **F4 — Task 2's Step 2 ("syntax-check... expected to fail") reads like a placeholder step with no real verification, and it is genuinely the only step in this plan that can't run a real check before Task 2's own Step 4.** This isn't a plan defect — every other `portal/ui/*.js` file in the existing, already-shipped codebase has the identical property (ESM `import`/`export` can't be `node --check`ed in a project with no `"type": "module"`), and Step 4's real browser check is what actually verifies it. Named here so a future reader doesn't mistake Step 2's honesty about that limitation for an unfixed gap.
 
 **F5 — cleared, not a defect: whether committing per-task (Task 1 through 6) versus one final commit changes anything about `docs-audit`'s hash-chain or version-coverage checks.** Checked `docs/README.md`'s per-push chore checklist and `scripts/docs-audit.mjs --list` (already run once this session, clean) — those checks operate on the changelog/version state at PUSH time, not per-commit, so per-task commits on a branch (free per this project's own git-workflow convention, `project_git_workflow` memory) are exactly the existing convention, not a new risk this plan introduces.
+
+**F6 — a real, previously-shipped bug found executing Task 4, not drafting it: `season.js` ESM-imported named exports from `season.logic.js`.** `season.logic.js` is loaded as a classic (non-module) `<script>` per this codebase's own established convention (see track.js's header comment) -- it has no `export` statement, so `import { buildSeasonAddOp, buildSeasonEditOp } from './season.logic.js'` throws a SyntaxError in every real browser. Every prior verification of Season (Task 3) used direct authenticated `fetch` calls or the signed-out Door page, neither of which ever actually loaded `season.js` as real ESM, so this shipped and stayed undetected. Fixed by reading both functions as bare globals, matching `track.js`'s own convention; verified live by loading the app's root page in a real browser and confirming the console shows only the expected 401 (the CSRF probe), not a module-resolution error.
+
+**F7 — `season.js`'s local `const window = {start, end}` shadowed the real browser global for the entire component body**, including `handleExportSelection`'s `window.open(...)` call -- a live, never-yet-clicked crash (`TypeError: window.open is not a function`) since that identifier resolved to the date-range object instead. Found auditing the same file for Track's drag handles, which genuinely need the real global. Fixed by renaming the local variable to `visibleWindow`.
+
+**F8 — `core/ops/calendar.js`'s `validateEvent` reads the START date from raw `payload.startDate`, but the STORED field on a real calendar subdocument is `date`** -- the same class of field-name mismatch already found once for draws (F-numbered bugs in the design doc), now found a second time for calendar. `buildSeasonEditOp` (season.logic.js) and the new `editOpFor` (track.logic.js) both needed a rename step before sending an edit op, or `calendar.edit` fails validation outright ("Could not read the start date"). One of the pre-existing pure-function tests for this exact path had a fixture (`row.startDate` set directly) that happened to pass against the OLD, wrong code -- it never matched what a real Manifest row actually carries. Fixed the fixture alongside the code.
+
+**F9 — the most severe finding, not caught until live-testing against the real portal server: `core/changeset.js`'s `previewSet()` never awaited its ops' `preview()` calls.** Loadouts' and announcements' edit/delete previews are `async` (they self-fetch via `Loadout.findById`/`Announcement.findById` rather than reading the `live` param every other entity's preview reads). The old, synchronous `previewSet` called `impl.preview(...)` and spread its return value directly -- for an async preview that just silently discarded the real `before`/`after` data (a Promise has no own enumerable properties), and for a preview that THROWS before its first `await` (e.g. a malformed op with a missing `target`), the resulting rejected promise was never awaited or `.catch()`ed anywhere. An unhandled rejection crashes the whole Node process by default -- **staging a single malformed loadout or announcement op took down the entire portal server for every user**, bypassing both `portal/api/changesets.js`'s own try/catch (which can only see a promise it actually awaits) and `portal/server.js`'s per-request crash net (which had already returned by the time the rejection fired asynchronously). Reproduced live twice during this session's own verification pass. Fixed by making `previewSet` `async` and properly `await`ing each op's `preview()` inside a `Promise.all`; 2 new regression tests in `scripts/changeset.test.js` prove both halves (the data is now really awaited; a throwing preview now rejects catchably instead of crashing the process) -- verified against the real server before and after: the exact same malformed-op requests that killed the process pre-fix now log a caught error and the server keeps serving every subsequent request.
 
 **Not found, and worth stating:** no defect in the decision to skip a dedicated `superpowers:subagent-driven-development` dispatch for Tasks 1-6 — Harkirat's delegation this session asked for autonomous execution without further check-ins, and per this project's own turn-cost convention (`feedback_token_conscious_tool_routing` memory: "subagent/Agent spawns — explicit request only"), inline execution via `superpowers:executing-plans` is the correct default absent an explicit ask for subagents.
