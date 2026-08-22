@@ -67,6 +67,22 @@ check('draw.bulkDelete accepts pasted TITLES (the real UI), not just ids', () =>
     assert.strictEqual(r.ok, true, 'the modal collects titles the admin typed — an ids-only op could never be constructed from it');
 });
 
+// Real crash, reproduced live 2026-08-22 15:20 EDT: handlers/manage/draws.js's addDraw/editDraw pre-parse the modal's date string via parseAdminDate() BEFORE building the op payload (so commitSet always sees payload.date as a real Date instance, never the raw string) -- but validateOne() unconditionally re-ran payload.date through parseAdminDate() again, which calls dateStr.trim() and threw `TypeError: dateStr.trim is not a function` on a Date. Every single draw add/edit via /manage crashed uncaught (the router's crash net only logs, so the interaction just hung on "thinking..." forever -- exactly what Harkirat saw testing the dev bot). core/ops/calendar.js's validateEvent already had the right guard (isAlreadyDated) for this exact hazard; draws.js never got it.
+check('draw.add validates successfully when payload.date already arrives as a real Date (the actual shape handlers/manage/draws.js sends)', () => {
+    const r = ops.resolveOp('draw.add').validate({
+        type: 'draw.add', payload: { title: 'Iron Wolf', category: 'new', date: new Date('2026-09-01'), items: [] }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+});
+
+check('draw.edit validates successfully when payload.date already arrives as a real Date', () => {
+    const r = ops.resolveOp('draw.edit').validate({
+        type: 'draw.edit', target: { elementId: '65abc', category: 'new' },
+        payload: { title: 'Iron Wolf', date: new Date('2026-09-01'), items: [] }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+});
+
 check('every draw op declares a tier, and purge/bulkReplace are tier 3 and 2', () => {
     for (const t of ops.listOpTypes().filter(t => t.startsWith('draw.'))) {
         assert.ok([1, 2, 3].includes(ops.resolveOp(t).tier), `${t} has no tier`);
