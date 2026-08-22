@@ -25,6 +25,16 @@ async function assertOpsAccess(discordId, ops) {
 function register(route) {
     const { requireAdmin } = require('../auth');
 
+    // GET /api/changeset?realm=X -> the caller's own changesets for that realm (any state). Board (Task 5/6) has nothing to render without this -- it was missing entirely until this review pass, so every realm's Board column stayed permanently empty.
+    route('GET', /^\/api\/changeset$/, requireAdmin(async (req, res, url, session) => {
+        const realm = url.searchParams.get('realm');
+        const query = { authorId: session.discordId, state: { $ne: 'discarded' } };
+        if (realm) query.realm = realm;
+        const docs = await Changeset.find(query).sort({ createdAt: -1 }).lean();
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ changesets: docs }));
+    }));
+
     // POST /api/changeset  { realm, ops[], changesetId? } -> stage/update a draft, return preview
     route('POST', /^\/api\/changeset$/, requireAdmin(async (req, res, url, session) => {
         const body = await readJsonBody(req);

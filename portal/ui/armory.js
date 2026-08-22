@@ -1,7 +1,4 @@
-// portal/ui/armory.js — ESM. The Armory realm: Rack (by category) + Coverage (data-quality flags),
-// reusing <Shell>/<Manifest> unchanged (spec §8.2). No dates, so no Track — see the spec's own
-// reasoning for why Armory has no view-layer switcher at all, just one static view above the
-// Manifest.
+// portal/ui/armory.js — ESM. The Armory realm: Rack (by category) + Coverage (data-quality flags), reusing <Shell>/<Manifest> unchanged (spec §8.2). No dates, so no Track — see the spec's own reasoning for why Armory has no view-layer switcher at all, just one static view above the Manifest.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';

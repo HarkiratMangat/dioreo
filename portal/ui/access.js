@@ -1,7 +1,4 @@
-// portal/ui/access.js — ESM. The Access realm: By admin + By scope, owner-only (spec §8.2 — no
-// grantable scope, exactly like /bot access). Reuses <Manifest> for the live-session list, which
-// carries an End session control the bot itself cannot offer (revoking in Discord does not kill a
-// browser session).
+// portal/ui/access.js — ESM. The Access realm: By admin + By scope, owner-only (spec §8.2 — no grantable scope, exactly like /bot access). Reuses <Manifest> for the live-session list, which carries an End session control the bot itself cannot offer (revoking in Discord does not kill a browser session).
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -14,17 +11,37 @@ const SESSION_COLUMNS = [
     { key: 'userAgent', label: 'Device' },
 ];
 
-function ByAdmin({ admins }) {
+// "By admin is the grid you grant from" (spec §8.2) — a review pass found the API's grant/revoke routes had no caller anywhere: this form is what was missing. Grant/revoke both require the admin to type the exact target Discord ID as the tier-3 confirmation (portal/api/access.js's confirmMatchesTarget) — there is no separate export step for a permission change.
+function GrantForm({ onGrant }) {
+    const [discordId, setDiscordId] = useState('');
+    const [permissions, setPermissions] = useState('');
+    const [confirmText, setConfirmText] = useState('');
+    const ready = discordId && confirmText === discordId;
+    return html`
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px dashed var(--rule);margin-top:8px">
+            <input placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
+            <input placeholder="permissions (e.g. manage.draws,bot)" value=${permissions} onInput=${(e) => setPermissions(e.target.value)} />
+            <input placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
+            <button disabled=${!ready} onClick=${() => onGrant(discordId, permissions.split(',').map(p => p.trim()).filter(Boolean), confirmText)}>Grant</button>
+        </div>
+    `;
+}
+
+function ByAdmin({ admins, onGrant, onRevoke }) {
     return html`
         <div class="panel" id="by-admin">
             <div class="ph"><span class="t">By admin</span></div>
             <div style="padding:12px 14px">
                 ${admins.map(a => html`
-                    <div style="padding:8px 0;border-bottom:1px solid var(--sunk)">
-                        <b>${a.discordId}</b> — ${(a.permissions || []).join(', ') || 'no permissions'}
-                        ${a.note ? html` <span style="color:var(--ink3)">(${a.note})</span>` : null}
+                    <div style="padding:8px 0;border-bottom:1px solid var(--sunk);display:flex;align-items:center;gap:10px">
+                        <div style="flex:1">
+                            <b>${a.discordId}</b> — ${(a.permissions || []).join(', ') || 'no permissions'}
+                            ${a.note ? html` <span style="color:var(--ink3)">(${a.note})</span>` : null}
+                        </div>
+                        <button class="danger" onClick=${() => onRevoke(a.discordId)}>Revoke</button>
                     </div>
                 `)}
+                <${GrantForm} onGrant=${onGrant} />
             </div>
         </div>
     `;
@@ -47,19 +64,47 @@ function ByScope({ spof }) {
 
 export function AccessRealm({ session }) {
     const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [] });
-    useEffect(() => { fetch('/api/access', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }, []);
+    const [notice, setNotice] = useState('');
+
+    function refresh() { fetch('/api/access', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }
+    useEffect(refresh, []);
 
     async function endSession(sessionHash) {
         await fetch('/api/access/session/end', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ sessionHash }),
         });
-        fetch('/api/access', { credentials: 'same-origin' }).then(r => r.json()).then(setData);
+        refresh();
+    }
+
+    async function grant(discordId, permissions, confirmText) {
+        const res = await fetch('/api/access/grant', {
+            method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
+            body: JSON.stringify({ discordId, permissions, confirmText }),
+        });
+        const body = await res.json();
+        setNotice(res.ok ? '' : (body.reason || 'Grant failed'));
+        refresh();
+    }
+
+    async function revoke(discordId) {
+        const confirmText = prompt(`Type ${discordId} to confirm revoking this admin.`);
+        const res = await fetch('/api/access/revoke', {
+            method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
+            body: JSON.stringify({ discordId, confirmText }),
+        });
+        const body = await res.json();
+        setNotice(res.ok ? '' : (body.reason || 'Revoke failed'));
+        refresh();
     }
 
     return html`
         <${Shell} realm="access" session=${session}
-                  viewSlot=${html`<${ByAdmin} admins=${data.admins} /><${ByScope} spof=${data.singlePointsOfFailure} />`}
+                  viewSlot=${html`
+                      ${notice ? html`<p style="color:var(--warn);padding:0 14px">${notice}</p>` : null}
+                      <${ByAdmin} admins=${data.admins} onGrant=${grant} onRevoke=${revoke} />
+                      <${ByScope} spof=${data.singlePointsOfFailure} />
+                  `}
                   manifestSlot=${html`<${Manifest} rows=${data.sessions.map(s => ({ ...s, id: s.sessionHash }))} columns=${SESSION_COLUMNS}
                                                     searchableFields=${['discordId']} stateOf=${() => 'live'}
                                                     bulkActions=${[{ label: 'End session', danger: true, onClick: (ids) => ids.forEach(endSession) }]} />`} />

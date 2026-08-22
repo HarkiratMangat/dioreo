@@ -1,5 +1,4 @@
-// portal/ui/broadcast.js — ESM. The Broadcast realm: Now showing + Airtime, reusing
-// <Shell>/<Manifest> unchanged.
+// portal/ui/broadcast.js — ESM. The Broadcast realm: Now showing + Airtime, reusing <Shell>/<Manifest> unchanged.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -26,8 +25,7 @@ function NowShowing({ live }) {
 }
 
 function Airtime({ all }) {
-    // How long each announcement has been up — the defect this view exists to surface (spec §8.2's
-    // "up for 19 days with no expiry" case), computed from createdAt rather than flagged by hand.
+    // How long each announcement has been up — the defect this view exists to surface (spec §8.2's "up for 19 days with no expiry" case), computed from createdAt rather than flagged by hand.
     const now = Date.now();
     return html`
         <div class="panel" id="airtime">

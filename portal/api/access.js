@@ -4,8 +4,12 @@
 const AdminUser = require('../../models/AdminUser');
 const PortalSession = require('../../models/PortalSession');
 const { isOwner, parsePermissionsInput, invalidateAdminCache, MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require('../../utils/adminAccess');
-const { gateCommit } = require('./policy');
 const { readJsonBody } = require('./httpUtil');
+
+// Access grant/revoke reuses ONLY the typed-confirmation half of the tier-3 model, never the export leg -- gateCommit's exportedAt check has no meaning for a permission change (there is no data to export), and this review pass caught that the original code accepted `body.exportedAt` straight from the client, which would have let any caller satisfy that half of the gate by just sending a timestamp. A permission change has exactly one real safeguard: the admin must type the target's own Discord ID before it takes effect.
+function confirmMatchesTarget(confirmText, discordId) {
+    return typeof confirmText === 'string' && confirmText === discordId;
+}
 
 function ownerOnly(handler) {
     return async (req, res, url, session) => {
@@ -54,8 +58,10 @@ function register(route) {
             res.writeHead(400, { 'content-type': 'application/json' });
             return res.end(JSON.stringify({ error: 'One or more permission tokens were not recognized.' }));
         }
-        const gate = gateCommit({ tier: 3, exportedAt: body.exportedAt, confirmText: body.confirmText, expectText: body.discordId });
-        if (!gate.ok) { res.writeHead(409, { 'content-type': 'application/json' }); return res.end(JSON.stringify(gate)); }
+        if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
+            res.writeHead(409, { 'content-type': 'application/json' });
+            return res.end(JSON.stringify({ ok: false, reason: 'Type the exact Discord ID being granted to confirm.' }));
+        }
 
         await AdminUser.findOneAndUpdate(
             { discordId: body.discordId },
@@ -69,8 +75,10 @@ function register(route) {
 
     route('POST', /^\/api\/access\/revoke$/, requireAdmin(ownerOnly(async (req, res, url, session) => {
         const body = await readJsonBody(req);
-        const gate = gateCommit({ tier: 3, exportedAt: body.exportedAt, confirmText: body.confirmText, expectText: body.discordId });
-        if (!gate.ok) { res.writeHead(409, { 'content-type': 'application/json' }); return res.end(JSON.stringify(gate)); }
+        if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
+            res.writeHead(409, { 'content-type': 'application/json' });
+            return res.end(JSON.stringify({ ok: false, reason: 'Type the exact Discord ID being revoked to confirm.' }));
+        }
         await AdminUser.deleteOne({ discordId: body.discordId });
         invalidateAdminCache();
         res.writeHead(200, { 'content-type': 'application/json' });

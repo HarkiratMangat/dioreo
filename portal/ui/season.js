@@ -34,6 +34,12 @@ export async function fetchSeasonState() {
     return res.json();
 }
 
+async function fetchChangesets(realm) {
+    const res = await fetch(`/api/changeset?realm=${realm}`, { credentials: 'same-origin' });
+    const body = await res.json();
+    return body.changesets || [];
+}
+
 export function SeasonRealm({ session }) {
     const [view, setView] = useState('Track');
     const [state, setState] = useState(null);
@@ -41,18 +47,38 @@ export function SeasonRealm({ session }) {
     const [notices, setNotices] = useState([]);
 
     useEffect(() => { fetchSeasonState().then(setState); }, []);
+    // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
+    useEffect(() => { fetchChangesets('season').then(setChangesets); }, [view]);
 
     if (!state) return html`<p style="padding:24px">Loading…</p>`;
     if (state.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
 
     const window = { start: new Date().toISOString().slice(0, 10), end: state.live?.bpEnd || new Date().toISOString().slice(0, 10) };
 
+    async function handleExport(changeset) {
+        await fetch(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        fetchChangesets('season').then(setChangesets);
+    }
+
+    async function handleCommit(ready, confirmText) {
+        for (const c of ready) {
+            const res = await fetch(`/api/changeset/${c._id}/commit`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
+                body: JSON.stringify({ confirmText }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+                setNotices([...notices, { changeId: c._id, summary: `Commit failed: ${body.reason || 'unknown error'}` }]);
+            }
+        }
+        fetchChangesets('season').then(setChangesets);
+    }
+
     const viewSlot = view === 'Track'
         ? html`<${Track} data=${{ draw: state.live?.newDraws || [], returning: state.live?.returningDraws || [], event: state.live?.calendar || [] }}
                           draft=${state.draft} window=${window} season=${state.live} />`
-        : html`<${Board} changesets=${changesets}
-                          onCommit=${async (ready) => { for (const c of ready) await fetch(`/api/changeset/${c._id}/commit`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken }, body: JSON.stringify({}) }); }}
-                          onExport=${async (c) => { await fetch(`/api/changeset/${c._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } }); }} />`;
+        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} />`;
 
     const manifestSlot = html`<${Manifest} rows=${toManifestRows(state.live)} columns=${SEASON_COLUMNS} searchableFields=${['title']} />`;
 

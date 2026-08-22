@@ -10,25 +10,19 @@ function gateCommit({ tier, exportedAt, confirmText, expectText }) {
     return { ok: true };
 }
 
-// Which Board column a changeset belongs in. 'blocked' is a REAL column stating why (spec §8.2), derived from the same gate the server enforces -- never a separate client-side guess that could disagree with what commit would actually do.
+// Which Board column a changeset belongs in. 'blocked' is a REAL column stating why (spec §8.2), derived from the same gate the server enforces -- never a separate client-side guess that could disagree with what commit would actually do. 🔴 CONFIRMATION TEXT IS NEVER KNOWN IN ADVANCE, so columnFor cannot depend on it -- an earlier draft of this function called gateCommit with `changeset.confirmText`, a field that does not exist anywhere until the moment a human actually types it into the Commit control, which meant no tier-3 changeset could EVER reach Ready (confirmText was always undefined). The typed confirmation is entered at the moment of committing (see board.js's Commit control) and verified SERVER-SIDE at that moment -- this function only classifies the structural half: has it been exported yet.
 function columnFor(changeset) {
     if (changeset.state === 'committed') return null; // left the board once committed
     if (changeset.state === 'discarded') return null;
     if (changeset.state === 'draft') return 'draft';
-    const gate = gateCommit({
-        tier: changeset.tier, exportedAt: changeset.exportedAt,
-        confirmText: changeset.confirmText, expectText: changeset.realm,
-    });
-    return gate.ok ? 'ready' : 'blocked';
+    if (changeset.tier >= 3 && !changeset.exportedAt) return 'blocked';
+    return 'ready';
 }
 
 // Why a changeset sits in Blocked -- the Board's card shows this, never just "blocked".
 function blockedReason(changeset) {
-    const gate = gateCommit({
-        tier: changeset.tier, exportedAt: changeset.exportedAt,
-        confirmText: changeset.confirmText, expectText: changeset.realm,
-    });
-    return gate.ok ? null : gate.reason;
+    if (changeset.tier >= 3 && !changeset.exportedAt) return gateCommit({ tier: changeset.tier, exportedAt: null }).reason;
+    return null;
 }
 
 function groupByColumn(changesets) {

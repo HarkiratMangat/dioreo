@@ -23,9 +23,7 @@ echo "$REASON $(date -u +%s)" > .restart-reason
 echo "── restart diors-bot ($REASON) ──"
 sudo systemctl restart diors-bot
 
-# 🔴 CHECKED INDEPENDENTLY, NEVER &&-CHAINED (plan Task 7 Step 4 / R5 finding). A portal failure
-# must not abort before the bot's own restart is verified below, and must not read as a bot problem
-# — so its result is captured and reported on its own line rather than aborting the script.
+# 🔴 CHECKED INDEPENDENTLY, NEVER &&-CHAINED (plan Task 7 Step 4 / R5 finding). A portal failure must not abort before the bot's own restart is verified below, and must not read as a bot problem — so its result is captured and reported on its own line rather than aborting the script.
 echo "── restart dioreo-portal ($REASON) ──"
 if sudo systemctl restart dioreo-portal 2>/dev/null; then
   PORTAL_RESULT="ok"

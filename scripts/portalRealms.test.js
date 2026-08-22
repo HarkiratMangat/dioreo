@@ -1,8 +1,4 @@
-// scripts/portalRealms.test.js
-// Task 6's four realms reuse <Shell>/<Manifest> unchanged and supply only their view layer (spec
-// §8.2). Their pure functions already live in portal/api/*.js (coverageFlags, singlePointsOfFailure,
-// the event-river merge) rather than a duplicate .logic.js copy — this file is what tests them as
-// data, matching scripts/portalUi.test.js's "render functions are pure" story.
+// scripts/portalRealms.test.js Task 6's four realms reuse <Shell>/<Manifest> unchanged and supply only their view layer (spec §8.2). Their pure functions already live in portal/api/*.js (coverageFlags, singlePointsOfFailure, the event-river merge) rather than a duplicate .logic.js copy — this file is what tests them as data, matching scripts/portalUi.test.js's "render functions are pure" story.
 const assert = require('assert');
 const { coverageFlags } = require('../portal/api/armory');
 const { singlePointsOfFailure } = require('../portal/api/access');

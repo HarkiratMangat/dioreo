@@ -1,6 +1,4 @@
-// portal/ui/analytics.js — ESM. The Analytics realm: Health/Usage/Timing (read-only, reusing the
-// bot's own export functions — nothing re-derived, spec §8.2) over one filterable event river as
-// the Manifest, with revert as its one action.
+// portal/ui/analytics.js — ESM. The Analytics realm: Health/Usage/Timing (read-only, reusing the bot's own export functions — nothing re-derived, spec §8.2) over one filterable event river as the Manifest, with revert as its one action.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
