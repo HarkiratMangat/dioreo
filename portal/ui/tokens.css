@@ -88,8 +88,14 @@ body {
 /* The login CTA is its own rule, not .accent-fill's shared topic-accent fallback, because it has
    no topic and must never depend on one being set (portal mockup-vs-live gap audit §2.3/§3.1:
    with no --topic-accent set anywhere in shell.js, the button fell back to --raised, a flat dark
-   grey, under pure-black text -- ~1.3:1 contrast on the one element every user must read). */
-.door-cta {
+   grey, under pure-black text -- ~1.3:1 contrast on the one element every user must read).
+   Selector is `.door .door-cta` (two classes, specificity 0,2,0), not bare `.door-cta` (0,1,0) --
+   shell.css's PRE-EXISTING `.door a{display:inline-block;...}` rule (0,1,1) still matches this
+   same anchor structurally (it's inside `.door`), and a bare `.door-cta` LOSES the `display`
+   cascade to it. Verified live: getComputedStyle(el).display read back 'inline-block' with the
+   original bare selector, and align-items:center is a silent no-op on a non-flex box -- the SVG
+   icon sat 3.5px off-center instead of vertically centered. Two classes wins deterministically. */
+.door .door-cta {
     background: #5865F2;
     color: #fff;
     display: inline-flex;
