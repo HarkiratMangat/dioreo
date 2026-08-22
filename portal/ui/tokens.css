@@ -31,6 +31,15 @@
     --warn: #FF7A45;
     --ok: #3DDC97;
 
+    /* Season topic-accent tokens (gap audit §2.2) -- track.js's TOPIC_VAR and manifest.js's
+       row.topicVar both reference these by name; only --patch existed here before, so every
+       draw/returning/event/playlist bar fell through --topic-accent's own fallback to --raised,
+       a flat grey. Values read directly from the approved mockup (03-three-surfaces.html:10-11). */
+    --draw: #FF3430;
+    --ret: #337BA6;
+    --ev: #1F8A5E;
+    --play: #8A6BD1;
+
     /* geometry */
     --radius: 6px;
 
