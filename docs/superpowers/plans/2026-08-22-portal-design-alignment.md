@@ -21,7 +21,7 @@ Three sessions execute this plan at different times with no shared memory except
 
 | Session | Phases owned | Recommended model | Status | Handoff note |
 |---|---|---|---|---|
-| A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | 🔄 In progress | — |
+| A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | ✅ Complete | `local/handoff/2026-08-22-portal-alignment-session-A.md` |
 | B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ⬜ Not started | — |
 | C | 4 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (verifying "is this actually fixed" is itself a judgment call, not a mechanical check, applied across every realm and every finding, plus an explicitly requested deep sequential-thinking pass) | ⬜ Not started | — |
 
@@ -43,7 +43,7 @@ Harkirat's own structure, preserved exactly:
 
 - **Never hand-roll a fix `docs/superpowers/specs/2026-08-22-portal-mockup-vs-live-gap-audit.md` already root-caused.** Where that document names an exact file:line and an exact cause, implement that fix — do not re-diagnose from scratch. Where it says "unverified" or "inferred," verify before building on it.
 - **Respect the existing `Manifest` component contract (spec §8.2, reaffirmed by the audit spec §3.4): one reusable component, realm-specific behavior arrives only via `columns`/`rows`/config props.** Do not fork or duplicate `manifest.js`/`manifest.logic.js` for Season specifically — fix Season's *config*, per the audit's precise diagnosis.
-- **`Announcement.startsAt` is a schema addition — the schema-save gotcha in `.claude/rules/models.md` applies: it is not real until it's in `models/Announcement.js`.** Not a per-user field, so `docs-audit`'s `privacy-inventory` does not apply (confirmed in the audit spec §3.5).
+- ~~**`Announcement.startsAt` is a schema addition — the schema-save gotcha in `.claude/rules/models.md` applies: it is not real until it's in `models/Announcement.js`.**~~ **Corrected by Task 2.6 (2026-08-22 14:12 EDT): the field already existed before this plan was written.** Not a per-user field, so `docs-audit`'s `privacy-inventory` does not apply (confirmed in the audit spec §3.5).
 - **This project's own hard invariants still apply throughout:** the `.env`/`.env.dev` boundary, the branch/commit/PR workflow (branch commits free, push/merge/deploy need Harkirat's explicit yes), soft-wrapped Markdown prose, `kind:`/`status:` front matter on any new tracked doc, and `npm run docs:audit` clean before any PR.
 - **Every new/changed doc in any phase gets reflowed** (`node scripts/reflow-prose.mjs --write <path>`) before commit — this repo's prose is soft-wrapped, not hard-wrapped (see root `CLAUDE.md`).
 - **Any new UI copy (masthead paragraphs, error/empty states, button labels) follows `design:ux-copy`'s principles**: active voice, name things by what the user recognizes, specific over clever. The audit spec §5 has the starting inventory of what's missing and what already works.
@@ -323,11 +323,11 @@ git commit -m "feat(portal): expose the admin permission matrix via the API"
 
 ### Task 2.7: Write Session A's handoff note for Session B
 
-- [ ] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/2026-08-22-portal-alignment-session-A.md`** (use the date this session STARTED the phase, not whenever it happens to finish writing this note — the filename convention is `YYYY-MM-DD-portal-alignment-session-<A|B|C>.md`) covering everything the handoff protocol above requires: what Phase 1 actually found in the six previously-unverified items (not a repeat of the audit spec — a summary of what changed), what Phase 2 actually shipped vs. this plan's original task list (especially Task 2.4's real `state` derivation, which this plan explicitly could not specify in advance), and anything Session B needs to know before starting Phase 3 that isn't already obvious from reading the updated audit spec and this plan.
+- [x] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/2026-08-22-portal-alignment-session-A.md`** (use the date this session STARTED the phase, not whenever it happens to finish writing this note — the filename convention is `YYYY-MM-DD-portal-alignment-session-<A|B|C>.md`) covering everything the handoff protocol above requires: what Phase 1 actually found in the six previously-unverified items (not a repeat of the audit spec — a summary of what changed), what Phase 2 actually shipped vs. this plan's original task list (especially Task 2.4's real `state` derivation, which this plan explicitly could not specify in advance), and anything Session B needs to know before starting Phase 3 that isn't already obvious from reading the updated audit spec and this plan.
 
-- [ ] **Step 2: Update the Session status table** — Session A row to ✅ Complete, with the handoff note's path in the last column.
+- [x] **Step 2: Update the Session status table** — Session A row to ✅ Complete, with the handoff note's path in the last column.
 
-- [ ] **Step 3: Commit everything together** (the handoff note is gitignored and won't be part of this commit, but the Session status table edit is):
+- [x] **Step 3: Commit everything together** (the handoff note is gitignored and won't be part of this commit, but the Session status table edit is):
 
 ```bash
 git add docs/superpowers/plans/2026-08-22-portal-design-alignment.md
