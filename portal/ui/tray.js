@@ -1,7 +1,4 @@
-// portal/ui/tray.js — ESM. The inline "saved · undo" tray for tier-1 direct edits (spec §5's
-// governing principle: reversible is not the same as invisible, so a tier-1 save must show WHAT
-// was saved, not just that something was, and stay undoable as long as the row does — not a
-// ten-second toast).
+// portal/ui/tray.js — ESM. The inline "saved · undo" tray for tier-1 direct edits (spec §5's governing principle: reversible is not the same as invisible, so a tier-1 save must show WHAT was saved, not just that something was, and stay undoable as long as the row does — not a ten-second toast).
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 

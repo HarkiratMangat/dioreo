@@ -1,8 +1,6 @@
 // portal/ui/shell.js — ESM. The rail (five realms) + view-layer switcher + Manifest slot.
 //
-// 🔴 THE MANIFEST LAYER NEVER SWITCHES (spec §8.1/§8.2) — only `view` (the top half) does. This is
-// enforced structurally here, not just by convention: Shell always renders `manifestSlot` in the
-// SAME place regardless of `view`, and the tab switcher below only ever changes `view`.
+// 🔴 THE MANIFEST LAYER NEVER SWITCHES (spec §8.1/§8.2) — only `view` (the top half) does. This is enforced structurally here, not just by convention: Shell always renders `manifestSlot` in the SAME place regardless of `view`, and the tab switcher below only ever changes `view`.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
@@ -33,8 +31,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
 }
 
 export function Door({ forbidden }) {
-    // Three door states read identically (spec §10) — a stranger, a never-granted account and a
-    // revoked admin all see this exact page. `forbidden` changes nothing visible on purpose.
+    // Three door states read identically (spec §10) — a stranger, a never-granted account and a revoked admin all see this exact page. `forbidden` changes nothing visible on purpose.
     return html`
         <div class="door">
             <h1>Dioreo Admin Portal</h1>

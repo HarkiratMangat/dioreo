@@ -1,13 +1,6 @@
 // portal/ui/track.js — ESM. The Track view layer: ruler + lanes + bars + flags.
 //
-// bandClass/laneFor/tierOf/barGeometry/findOverlaps/findGaps come from track.logic.js, loaded as a
-// plain CLASSIC <script> before this module (see portal/render.js's script order) -- a classic
-// script's top-level function declarations become globals, which an ESM module can read like any
-// other global without an import statement. This is the actual working resolution of the "Node
-// never loads ESM, browser never loads CJS" split: Node's require() reads the SAME file as CommonJS
-// via module.exports, and the browser reads it as a non-module script that defines globals. A
-// literal `import {...} from './track.logic.js'` would fail in every real browser (no export
-// statement exists), so this file deliberately does not attempt one.
+// bandClass/laneFor/tierOf/barGeometry/findOverlaps/findGaps come from track.logic.js, loaded as a plain CLASSIC <script> before this module (see portal/render.js's script order) -- a classic script's top-level function declarations become globals, which an ESM module can read like any other global without an import statement. This is the actual working resolution of the "Node never loads ESM, browser never loads CJS" split: Node's require() reads the SAME file as CommonJS via module.exports, and the browser reads it as a non-module script that defines globals. A literal `import {...} from './track.logic.js'` would fail in every real browser (no export statement exists), so this file deliberately does not attempt one.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
@@ -31,9 +24,7 @@ function Lane({ name, items, window, season }) {
     `;
 }
 
-// <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the
-// switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the
-// staged second rail below the divider (the existing draft area given a picture for the first time).
+// <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
 export function Track({ data, draft, window, season, flags = [] }) {
     const lanes = Object.keys(LANE_LABEL);
     return html`

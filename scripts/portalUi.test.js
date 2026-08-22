@@ -1,7 +1,4 @@
-// scripts/portalUi.test.js
-// Render functions are PURE: state in, tree out. No DOM, no browser, no framework harness. That is
-// the whole frontend testing story, and it only works because the components take state as an
-// argument rather than reaching for it.
+// scripts/portalUi.test.js Render functions are PURE: state in, tree out. No DOM, no browser, no framework harness. That is the whole frontend testing story, and it only works because the components take state as an argument rather than reaching for it.
 const assert = require('assert');
 const { bandClass, laneFor, tierOf } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
 

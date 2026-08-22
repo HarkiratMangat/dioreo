@@ -34,8 +34,15 @@ function Forbidden() {
 }
 
 import { SeasonRealm } from './season.js';
+import { ArmoryRealm } from './armory.js';
+import { BroadcastRealm } from './broadcast.js';
+import { AccessRealm } from './access.js';
+import { AnalyticsRealm } from './analytics.js';
 
-const REALM_COMPONENTS = { season: SeasonRealm };
+const REALM_COMPONENTS = {
+    season: SeasonRealm, armory: ArmoryRealm, broadcast: BroadcastRealm,
+    access: AccessRealm, analytics: AnalyticsRealm,
+};
 
 function currentRealm() {
     const hash = (location.hash || '#/season').replace(/^#\//, '');

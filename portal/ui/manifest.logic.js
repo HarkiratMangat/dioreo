@@ -1,9 +1,6 @@
 // portal/ui/manifest.logic.js — CommonJS, imports nothing. Pure functions <Manifest> renders from.
 //
-// The Manifest is the SAME component every realm reuses unchanged (spec §8.2) -- search, filter,
-// sort, multi-select, bulk bar -- so its logic must not assume any one realm's row shape beyond
-// {id, state}. Everything realm-specific (which columns, which fields are searchable) arrives as
-// config from the caller.
+// The Manifest is the SAME component every realm reuses unchanged (spec §8.2) -- search, filter, sort, multi-select, bulk bar -- so its logic must not assume any one realm's row shape beyond {id, state}. Everything realm-specific (which columns, which fields are searchable) arrives as config from the caller.
 
 function matchesSearch(row, query, searchableFields) {
     if (!query) return true;
@@ -30,8 +27,7 @@ function sortRows(rows, { column, direction = 'asc' } = {}) {
     });
 }
 
-// Toggling a row's selection never mutates the caller's array/set -- every render function here is
-// pure, state in tree out (spec §12a).
+// Toggling a row's selection never mutates the caller's array/set -- every render function here is pure, state in tree out (spec §12a).
 function toggleSelection(selectedIds, id) {
     const next = new Set(selectedIds);
     if (next.has(id)) next.delete(id); else next.add(id);

@@ -1,6 +1,4 @@
-// portal/ui/season.js — ESM. The Season realm: Track/Board as the switchable view layer, Manifest
-// (never switches) underneath. Covers /manage's draws/calendar/patchnotes/seasondraft/season pages
-// (spec §8.2's join table) — visible if the signed-in admin holds ANY of them.
+// portal/ui/season.js — ESM. The Season realm: Track/Board as the switchable view layer, Manifest (never switches) underneath. Covers /manage's draws/calendar/patchnotes/seasondraft/season pages (spec §8.2's join table) — visible if the signed-in admin holds ANY of them.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';

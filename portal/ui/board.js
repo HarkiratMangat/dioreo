@@ -1,7 +1,6 @@
 // portal/ui/board.js — ESM. The changeset pipeline: Draft -> Staged -> Blocked -> Ready.
 //
-// columnFor/blockedReason/groupByColumn/gateCommit come from board.logic.js, loaded as a classic
-// script before this module — see track.js's header for why that is the real cross-runtime split.
+// columnFor/blockedReason/groupByColumn/gateCommit come from board.logic.js, loaded as a classic script before this module — see track.js's header for why that is the real cross-runtime split.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
@@ -18,8 +17,7 @@ function Card({ changeset }) {
     `;
 }
 
-// onCommit(changeset, confirmText) is called when Ready's Commit button fires; onExport(changeset)
-// for the tier-3 export step. Both are thin — they just POST to the changeset API (Task 3).
+// onCommit(changeset, confirmText) is called when Ready's Commit button fires; onExport(changeset) for the tier-3 export step. Both are thin — they just POST to the changeset API (Task 3).
 export function Board({ changesets, onCommit, onExport }) {
     const cols = groupByColumn(changesets);
     const readyCount = cols.ready.length;

@@ -1,12 +1,8 @@
 // portal/ui/track.logic.js — CommonJS, imports nothing. Pure functions <Track> renders from.
 //
-// This file (not track.js) is what scripts/portalUi.test.js requires — Node can \u0027t load an ESM
-// module doing `import { html } from \u0027../vendor/htm-preact.mjs\u0027`, and the browser never loads
-// this file\u0027s CJS sibling. See the plan\u0027s R10 finding.
+// This file (not track.js) is what scripts/portalUi.test.js requires — Node can \u0027t load an ESM module doing `import { html } from \u0027../vendor/htm-preact.mjs\u0027`, and the browser never loads this file\u0027s CJS sibling. See the plan\u0027s R10 finding.
 
-// 🔴 SHAPE carries state, COLOUR carries topic (spec §9) \u2014 do not invert. `state` always maps
-// to a class suffix (live/stag/conf); `topic` never appears in the returned class at all \u2014 it is
-// applied by the caller as a `--c` CSS custom property, exactly like the approved mockup does.
+// 🔴 SHAPE carries state, COLOUR carries topic (spec §9) \u2014 do not invert. `state` always maps to a class suffix (live/stag/conf); `topic` never appears in the returned class at all \u2014 it is applied by the caller as a `--c` CSS custom property, exactly like the approved mockup does.
 function bandClass({ state }) {
     if (state === 'live') return 'bar live';
     if (state === 'staged') return 'bar stag';
@@ -21,17 +17,13 @@ function laneFor(item) {
     return LANE_ORDER.includes(kind) ? kind : 'event';
 }
 
-// An item is a conflict when it runs past the battle-pass end \u2014 computed from real dates, never
-// flagged by hand. `ok` is the only other tier this function returns; staged/live is a SEPARATE axis
-// (state), not something tierOf decides.
+// An item is a conflict when it runs past the battle-pass end \u2014 computed from real dates, never flagged by hand. `ok` is the only other tier this function returns; staged/live is a SEPARATE axis (state), not something tierOf decides.
 function tierOf(item, season) {
     if (!item || !item.endDate || !season || !season.bpEnd) return 'ok';
     return new Date(item.endDate) > new Date(season.bpEnd) ? 'conflict' : 'ok';
 }
 
-// Percent-of-window left/width for a Track bar, given the visible window\u0027s [start,end] and the
-// item\u0027s own [start,end]. Clamped to the visible window so an item that starts before/ends after
-// it still renders sensibly instead of running off the ruler.
+// Percent-of-window left/width for a Track bar, given the visible window\u0027s [start,end] and the item\u0027s own [start,end]. Clamped to the visible window so an item that starts before/ends after it still renders sensibly instead of running off the ruler.
 function barGeometry(item, window) {
     const wStart = new Date(window.start).getTime();
     const wEnd = new Date(window.end).getTime();
@@ -58,8 +50,7 @@ function findOverlaps(items) {
     return out;
 }
 
-// A gap flag: a lane with a stretch of the visible window covered by nothing \u2014 the third defect
-// the Track exists to surface (spec §8.2).
+// A gap flag: a lane with a stretch of the visible window covered by nothing \u2014 the third defect the Track exists to surface (spec §8.2).
 function findGaps(items, window, minGapMs = 2 * 24 * 60 * 60 * 1000) {
     const sorted = [...items].sort((a, b) => new Date(a.startDate || a.endDate) - new Date(b.startDate || b.endDate));
     const gaps = [];
