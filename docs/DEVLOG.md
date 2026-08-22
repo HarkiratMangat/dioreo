@@ -3409,32 +3409,11 @@ The throughline, if there is one: an operation-core pattern is only as safe as i
 
 ## 2026-08-22 10:47 EDT — The portal doesn't look like its own mockups (v3.61.0-pre)
 
-Harkirat asked for a mobile-friendliness pass on the live portal, viewed on a real phone through a
-Cloudflare quick-tunnel session against the dev bot. The first read of it was CSS-shaped: missing
-color tokens, no responsive breakpoints. Asked directly whether the live portal even remotely
-resembles its six approved mockups, actually rendering them side by side with real screenshots
-showed something the CSS framing missed entirely — whole designed surfaces were simplified away
-during implementation, not just left unstyled. Access shipped as three plain text inputs where the
-mockup specs a full admin-times-permission grid. The login page shipped with no Discord branding at
-all — reproduced live in an artifact, literal black text on a near-black button. Every realm's
-explanatory masthead copy never made it into the build.
+Harkirat asked for a mobile-friendliness pass on the live portal, viewed on a real phone through a Cloudflare quick-tunnel session against the dev bot. The first read of it was CSS-shaped: missing color tokens, no responsive breakpoints. Asked directly whether the live portal even remotely resembles its six approved mockups, actually rendering them side by side with real screenshots showed something the CSS framing missed entirely — whole designed surfaces were simplified away during implementation, not just left unstyled. Access shipped as three plain text inputs where the mockup specs a full admin-times-permission grid. The login page shipped with no Discord branding at all — reproduced live in an artifact, literal black text on a near-black button. Every realm's explanatory masthead copy never made it into the build.
 
-Two tracked docs now carry the investigation: a gap-audit spec with every finding graded by
-evidence strength, and a 4-phase, 3-session implementation plan with a live session-status table
-and an explicit local/handoff/ protocol so the three future sessions executing it don't lose
-context between each other. The audit was corrected twice mid-investigation after actually reading
-the component code instead of assuming — Season's Manifest already has a working filter/sort/
-state-pill engine, and Access's permission data already exists server-side, both narrower gaps than
-first assumed. A cold sub-agent reader-tested both documents with zero conversation context and
-caught 6 real defects before they shipped, worst among them a document telling its reader it was
-status:live while its own front matter said frozen.
+Two tracked docs now carry the investigation: a gap-audit spec with every finding graded by evidence strength, and a 4-phase, 3-session implementation plan with a live session-status table and an explicit local/handoff/ protocol so the three future sessions executing it don't lose context between each other. The audit was corrected twice mid-investigation after actually reading the component code instead of assuming — Season's Manifest already has a working filter/sort/ state-pill engine, and Access's permission data already exists server-side, both narrower gaps than first assumed. A cold sub-agent reader-tested both documents with zero conversation context and caught 6 real defects before they shipped, worst among them a document telling its reader it was status:live while its own front matter said frozen.
 
-Also fixed along the way: scripts/cloudflared-config.yml's ingress target was the literal
-unexpanded string ${PORTAL_PORT} — cloudflared does no env-var expansion and nothing in this repo
-ran envsubst on install, so the tunnel would have 502'd every request the first time it was
-installed for real. And docs/reference/portal-launch-checklist.md is marked superseded in priority
-— deploying today's portal to prod would ship the skeleton this audit found, not the intended
-product.
+Also fixed along the way: scripts/cloudflared-config.yml's ingress target was the literal unexpanded string ${PORTAL_PORT} — cloudflared does no env-var expansion and nothing in this repo ran envsubst on install, so the tunnel would have 502'd every request the first time it was installed for real. And docs/reference/portal-launch-checklist.md is marked superseded in priority — deploying today's portal to prod would ship the skeleton this audit found, not the intended product.
 
 # Part B — Lessons Ledger (thematic)
 
