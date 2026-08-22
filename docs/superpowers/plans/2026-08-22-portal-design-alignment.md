@@ -21,7 +21,7 @@ Three sessions execute this plan at different times with no shared memory except
 
 | Session | Phases owned | Recommended model | Status | Handoff note |
 |---|---|---|---|---|
-| A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | ⬜ Not started | — |
+| A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | 🔄 In progress | — |
 | B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ⬜ Not started | — |
 | C | 4 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (verifying "is this actually fixed" is itself a judgment call, not a mechanical check, applied across every realm and every finding, plus an explicitly requested deep sequential-thinking pass) | ⬜ Not started | — |
 
