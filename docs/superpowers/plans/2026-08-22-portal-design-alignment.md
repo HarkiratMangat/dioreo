@@ -106,6 +106,8 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 
 ---
 
+> **Phase 1 completeness note (Session A, 2026-08-22 12:12 EDT):** all six §7 unverified items were resolved with real evidence — a local dev portal boot, a dev-only seeded `PortalSession`, and real Chrome screenshots/DOM queries (the in-app browser pane was abandoned mid-session for horizontal-scroll interactions per Harkirat's own direction; real Chrome via `claude-in-chrome` was used instead). Full findings are in the audit spec's new `## Addendum — 2026-08-22` section. **Nothing below in Phase 2's task list needs to change** — every task's file:line citations and root-cause diagnosis held up against real data (Armory's 133-loadout dev catalogue, Season's 38-row Manifest, a live keyboard-Tab test). The one thing worth flagging for whoever plans Phase 3, not for Phase 2: the mockup's Season nav is a left icon rail, not the shipped horizontal top bar, and the header-overflow bug is content-dependent (triggers on Season's Track/Board toggle, not on Broadcast's simpler header) rather than a single global breakpoint failure — both are addendum items 6, noted here because they change Phase 3's scope, not Phase 2's.
+
 ## Phase 2 — Build the missing functionality (Session A, continuing)
 
 **Why this phase exists:** every task below fixes something the audit spec traced to a precise, confirmed root cause — none of this is "build a filter/sort system from scratch" or "build a permission model from scratch." Read audit spec §3.2, §3.4, and §3.5 before starting; each task here cites the exact section it implements.
