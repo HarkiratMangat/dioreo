@@ -19,7 +19,7 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], st
     return html`
         <div class="panel" id="manifest">
             <div class="mtools">
-                <span class="srch"><input value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
+                <span class="srch"><label class="sr-only" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
                 <span class="rt">${visible.length} of ${rows.length} shown${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
             <table>
@@ -30,7 +30,7 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], st
                 <tbody>
                     ${visible.map(row => html`
                         <tr class=${selected.has(row.id) ? 'sel' : ''}>
-                            <td><input type="checkbox" checked=${selected.has(row.id)} onChange=${() => setSelected(toggleSelection(selected, row.id))} /></td>
+                            <td><label class="sr-only" for=${`sel-${row.id}`}>Select ${row[columns[0].key]}</label><input id=${`sel-${row.id}`} type="checkbox" checked=${selected.has(row.id)} onChange=${() => setSelected(toggleSelection(selected, row.id))} /></td>
                             ${columns.map(c => html`
                                 <td class=${c.key === columns[0].key ? 'n' : c.dataKind === 'date' ? 'd' : ''}>
                                     ${c.key === columns[0].key ? html`<span class="dot" style=${`--topic-accent:var(${row.topicVar || '--ink3'})`}></span>` : null}

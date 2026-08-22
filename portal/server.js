@@ -3,9 +3,11 @@
 // The portal's HTTP entry point. It routes, serves static files and catches errors. It contains NO business logic and performs NO direct Mongo write — a route parses a request into an op and hands it to core/changeset.js.
 //
 // ⚠️ RUNTIME-AGNOSTIC ON PURPOSE. Every setting arrives through the environment; nothing assumes the repo layout, a sibling bot process or a writable filesystem beyond portal/public. That is what keeps a later move to Cloud Run a config change rather than a rewrite.
+require('dotenv').config({ quiet: true }); // same backfill role as index.js's own call — real values come from --env-file/systemd's EnvironmentFile; see the dotenv-backfill-trap note in CLAUDE.md
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const mongoose = require('mongoose');
 const { patchConsole } = require('../utils/logger');
 
 // `patchConsole({ service: 'dioreo-portal' })` groups this process's errors separately from the bot's in Cloud Error Reporting — see utils/logger.js's patchConsole/writeStructured for how the override actually reaches the serviceContext (it used to be a silent no-op; fixed in this task).
@@ -80,3 +82,20 @@ require('./api/broadcast').register(route);
 require('./api/access').register(route);
 require('./api/analytics').register(route);
 
+// 🔴 THE ACTUAL BOOTSTRAP — found missing in code review. Every earlier manual check in this repo exercised createServer() via a one-off `node -e` one-liner that called it directly, which never exposed that running this file the way the systemd unit and package.json's "portal" script both do (`node portal/server.js`) executed NOTHING: module.exports was assigned and the routes were wired, but nothing ever called mongoose.connect() or createServer() itself. Every Mongoose query would have buffered forever against a connection that was never opened. Mirrors index.js's own connect-then-log pattern.
+if (require.main === module) {
+    const mongoUri = process.env.MONGODB_URI;
+    const env = process.env.NODE_ENV || 'development';
+    const port = Number(process.env.PORTAL_PORT) || 8787;
+    mongoose.connect(mongoUri)
+        .then(() => {
+            const host = mongoose.connection.host || 'unknown host';
+            const dbName = mongoose.connection.name || 'unknown db';
+            console.log(`🍃 Portal connected to MongoDB (${host}/${dbName})`);
+            createServer({ port, mongoUri, env });
+        })
+        .catch((err) => {
+            console.error('❌ Portal could not connect to MongoDB:', err);
+            process.exit(1);
+        });
+}

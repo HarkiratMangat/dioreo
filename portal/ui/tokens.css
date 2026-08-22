@@ -33,6 +33,9 @@
 
     /* geometry */
     --radius: 6px;
+
+    /* the ink used ON TOP of a topic-accent fill -- design-system audit found 4 separate hardcoded #000/#000000 literals for this one concept across tokens.css/track.css/manifest.css/board.css */
+    --on-accent: #000000;
 }
 
 body {
@@ -70,5 +73,18 @@ body {
    /commands page's own history of solving an embed hue into readable text and getting brown). */
 .accent-fill {
     background: var(--topic-accent, var(--raised));
-    color: #000000;
+    color: var(--on-accent);
 }
+
+/* Accessibility review findings: no visible focus indicator anywhere, and every input relied on
+   placeholder text alone (WCAG 2.4.7 / 3.3.2) -- the approved mockup HAD a focus-visible rule that
+   did not make it into this file. */
+:focus-visible {
+    outline: 2px solid var(--patch);
+    outline-offset: 2px;
+}
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+

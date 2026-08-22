@@ -10,7 +10,7 @@ export function Tray({ notices, onUndo, onDismiss }) {
                 <div class="tray-item" key=${n.changeId}>
                     <span>Saved: <b>${n.summary}</b></span>
                     <button onClick=${() => onUndo(n.changeId)}>Undo</button>
-                    <button class="dismiss" onClick=${() => onDismiss(n.changeId)}>&times;</button>
+                    <button class="dismiss" onClick=${() => onDismiss(n.changeId)}>×</button>
                 </div>
             `)}
         </div>

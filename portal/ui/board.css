@@ -12,6 +12,6 @@
 .card.t3 .tr{color:var(--warn);border-color:var(--warn)}
 .card.blocked{border-left:2px solid var(--warn)}
 .card .why{margin-top:6px;font-size:10.5px;color:var(--warn)}
-.commit{width:100%;background:var(--patch);color:#000;border:0;border-radius:5px;font-size:13px;
+.commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;
   font-weight:700;padding:9px;margin-top:2px}
 .commit:disabled{background:var(--raised);color:var(--ink3);cursor:not-allowed}

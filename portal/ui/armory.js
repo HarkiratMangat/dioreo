@@ -52,7 +52,10 @@ export function ArmoryRealm({ session }) {
     const [builds, setBuilds] = useState([]);
     const [coverageFilter, setCoverageFilter] = useState(null);
 
-    useEffect(() => { fetch('/api/armory', { credentials: 'same-origin' }).then(r => r.json()).then(d => setBuilds(d.builds || [])); }, []);
+    const [error, setError] = useState(null);
+    useEffect(() => { fetch('/api/armory', { credentials: 'same-origin' }).then(r => r.json()).then(d => { if (d.error) return setError(d.error); setBuilds(d.builds || []); }); }, []);
+
+    if (error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
 
     const rows = coverageFilter ? builds.filter(b => (b.coverage || []).includes(coverageFilter)) : builds;
 

@@ -34,4 +34,7 @@ function toggleSelection(selectedIds, id) {
     return next;
 }
 
-module.exports = { filterRows, sortRows, toggleSelection, matchesSearch, matchesFilters };
+// Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { filterRows, sortRows, toggleSelection, matchesSearch, matchesFilters };
+}

@@ -65,4 +65,7 @@ function findGaps(items, window, minGapMs = 2 * 24 * 60 * 60 * 1000) {
     return gaps;
 }
 
-module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, LANE_ORDER };
+// Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, LANE_ORDER };
+}

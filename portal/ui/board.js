@@ -13,6 +13,7 @@ function Card({ changeset, onExport }) {
         <div class=${'card' + (changeset.tier >= 3 ? ' t3' : '') + (reason ? ' blocked' : '')}>
             <div class="ch"><span class="tr">T${changeset.tier}</span> <span class="cn">${changeset.realm}</span></div>
             <span class="cd">${(changeset.ops || []).length} op(s)</span>
+            ${changeset.tier >= 3 ? html`<span class="cd" style="display:block;word-break:break-all">confirm id: ${String(changeset._id)}</span>` : null}
             ${reason ? html`
                 <div class="why">
                     ${reason}
@@ -39,7 +40,8 @@ export function Board({ changesets, onCommit, onExport }) {
                         ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} />`)}
                         ${key === 'ready' ? html`
                             ${needsConfirm ? html`
-                                <input placeholder="Type the realm name to confirm" value=${confirmText}
+                                <label class="sr-only" for="board-confirm">Type the full changeset ID shown on the card to confirm</label>
+                                <input id="board-confirm" placeholder="Type the full changeset ID shown on the card to confirm" value=${confirmText}
                                        onInput=${(e) => setConfirmText(e.target.value)}
                                        style="width:100%;margin-bottom:8px;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;color:var(--ink);padding:6px 8px" />
                             ` : null}

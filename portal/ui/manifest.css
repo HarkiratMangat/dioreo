@@ -16,7 +16,7 @@ td.d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink3);w
 .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px;
   background:var(--topic-accent,var(--ink3))}
 .stt{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.09em;padding:2px 7px;border-radius:3px;font-weight:600}
-.stt.live{background:var(--topic-accent,var(--ok));color:#000}
+.stt.live{background:var(--topic-accent,var(--ok));color:var(--on-accent)}
 .stt.stag{border:1.5px dashed var(--topic-accent,var(--ink2));color:var(--topic-accent,var(--ink2))}
 .stt.conf{border:1.5px dashed var(--warn);color:var(--warn)}
 .bulk{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--raised);border-top:1px solid var(--rule)}

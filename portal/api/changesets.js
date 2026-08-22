@@ -4,6 +4,7 @@
 //
 // Permission is resolved per-op, server-side, on every request (H7) — never trusted from which realm the client claims to be showing.
 const Changeset = require('../../models/Changeset');
+const SeasonalData = require('../../models/SeasonalData');
 const { validateSet, previewSet, commitSet, pageForOp } = require('../../core/changeset');
 const { revertChange } = require('../../core/revert');
 const { getChange } = require('../../utils/changeStore');
@@ -60,7 +61,8 @@ function register(route) {
 
         let preview = null;
         try {
-            const live = {}; // preview() takes live state per-op; entities fetch their own inside preview()
+            // 🔴 CODE REVIEW FOUND: this used to pass an empty {} as live state. draws/calendar/ patchnotes/season op preview()s all read live.newDraws/.calendar/.patchNotes/ .currentSeasonTitle/.draft directly (no defensive guard), so previewSet threw on an empty object -- confirmed reproduced (season.startNew / season.promoteDraft, both tier 3, both threw). loadouts/announcements previews self-fetch or ignore the param, so passing the real SeasonalData doc for every realm is harmless where it is unused.
+            const live = (await SeasonalData.findOne({ docType: 'global' }).lean()) || {};
             preview = v.ok ? previewSet(v.normalized, live) : null;
         } catch (e) { console.error('Portal changeset preview failed:', e); }
 
@@ -91,7 +93,7 @@ function register(route) {
 
         const gate = gateCommit({
             tier: doc.tier, exportedAt: doc.exportedAt,
-            confirmText: body.confirmText, expectText: doc.realm,
+            confirmText: body.confirmText, expectText: String(doc._id),
         });
         if (!gate.ok) { res.writeHead(409, { 'content-type': 'application/json' }); return res.end(JSON.stringify(gate)); }
 

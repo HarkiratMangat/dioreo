@@ -34,4 +34,4 @@ fi
 echo "── status ──"
 sleep 2
 "$(dirname "$0")/vmstatus.sh" || true
-echo "── portal: $PORTAL_RESULT ──" 
+echo "── portal: $PORTAL_RESULT ──"

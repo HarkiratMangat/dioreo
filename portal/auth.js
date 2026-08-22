@@ -195,8 +195,21 @@ function registerAuthRoutes(route) {
     route('GET', /^\/auth\/login$/, async (req, res) => startOAuth(req, res));
     route('GET', /^\/auth\/callback$/, handleCallback);
     route('GET', /^\/auth\/csrf$/, requireAdmin(async (req, res, url, session) => {
+        // Code review Important #4: the nav rail showed all 5 realms regardless of what the signed-in admin actually holds, unlike this codebase's own established convention (/manage's getManagePages() filters its dropdown the same way). Computed here, once, so every realm page and the Shell agree on the same list rather than each re-deriving it.
+        const { getManagePages, hasCommandAccess } = require('../utils/adminAccess');
+        const { SEASON_PAGES } = require('./api/season');
+        const { ARMORY_PAGES } = require('./api/armory');
+        const { BROADCAST_PAGES } = require('./api/broadcast');
+        const owner = isOwner(session.discordId);
+        const pages = await getManagePages(session.discordId);
+        const visibleRealms = [];
+        if (owner || pages.some(p => SEASON_PAGES.includes(p))) visibleRealms.push('season');
+        if (owner || pages.some(p => ARMORY_PAGES.includes(p))) visibleRealms.push('armory');
+        if (owner || pages.some(p => BROADCAST_PAGES.includes(p))) visibleRealms.push('broadcast');
+        if (owner) visibleRealms.push('access');
+        if (owner || (await hasCommandAccess(session.discordId, 'bot'))) visibleRealms.push('analytics');
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ csrfToken: csrfToken(session), discordId: session.discordId, isOwner: isOwner(session.discordId) }));
+        res.end(JSON.stringify({ csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms }));
     }));
     route('POST', /^\/auth\/logout$/, requireAdmin(async (req, res, url, session) => {
         await PortalSession.updateOne({ sessionHash: session.sessionId }, { revokedAt: new Date() });

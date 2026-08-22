@@ -12,7 +12,7 @@
 .bar{position:absolute;top:50%;transform:translateY(-50%);height:21px;border-radius:4px;
   display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11.5px;font-weight:600;
   white-space:nowrap;overflow:hidden;z-index:2;border:1px solid var(--topic-accent,var(--rule))}
-.bar.live{background:var(--topic-accent,var(--raised));color:#000}
+.bar.live{background:var(--topic-accent,var(--raised));color:var(--on-accent)}
 .bar.stag{background:rgba(255,255,255,.02);color:var(--topic-accent,var(--ink2));border-style:dashed}
 .bar.conf{background:transparent;color:var(--warn);border-color:var(--warn);border-style:dashed;
   background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,122,69,.45) 4px 5px)}

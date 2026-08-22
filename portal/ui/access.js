@@ -19,11 +19,30 @@ function GrantForm({ onGrant }) {
     const ready = discordId && confirmText === discordId;
     return html`
         <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px dashed var(--rule);margin-top:8px">
-            <input placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
-            <input placeholder="permissions (e.g. manage.draws,bot)" value=${permissions} onInput=${(e) => setPermissions(e.target.value)} />
-            <input placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
+            <label class="sr-only" for="grant-discordid">Discord ID to grant</label>
+            <input id="grant-discordid" placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
+            <label class="sr-only" for="grant-permissions">Permissions</label>
+            <input id="grant-permissions" placeholder="permissions (e.g. manage.draws,bot)" value=${permissions} onInput=${(e) => setPermissions(e.target.value)} />
+            <label class="sr-only" for="grant-confirm">Type the Discord ID to confirm</label>
+            <input id="grant-confirm" placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
             <button disabled=${!ready} onClick=${() => onGrant(discordId, permissions.split(',').map(p => p.trim()).filter(Boolean), confirmText)}>Grant</button>
         </div>
+    `;
+}
+
+// Revoke used to fire a blocking native prompt() while Grant used an inline styled input -- inconsistent confirmation UX within the same realm (code review Important #6). Same reveal-then-type-to-confirm pattern as GrantForm now, no native dialog anywhere.
+function RevokeControl({ discordId, onRevoke }) {
+    const [confirming, setConfirming] = useState(false);
+    const [confirmText, setConfirmText] = useState('');
+    if (!confirming) return html`<button class="danger" onClick=${() => setConfirming(true)}>Revoke</button>`;
+    return html`
+        <span style="display:flex;gap:6px;align-items:center">
+            <label class="sr-only" for=${`revoke-confirm-${discordId}`}>Type ${discordId} to confirm</label>
+            <input id=${`revoke-confirm-${discordId}`} placeholder=${`Type ${discordId} to confirm`} value=${confirmText}
+                   onInput=${(e) => setConfirmText(e.target.value)} />
+            <button class="danger" disabled=${confirmText !== discordId} onClick=${() => onRevoke(discordId, confirmText)}>Confirm revoke</button>
+            <button onClick=${() => { setConfirming(false); setConfirmText(''); }}>Cancel</button>
+        </span>
     `;
 }
 
@@ -38,7 +57,7 @@ function ByAdmin({ admins, onGrant, onRevoke }) {
                             <b>${a.discordId}</b> — ${(a.permissions || []).join(', ') || 'no permissions'}
                             ${a.note ? html` <span style="color:var(--ink3)">(${a.note})</span>` : null}
                         </div>
-                        <button class="danger" onClick=${() => onRevoke(a.discordId)}>Revoke</button>
+                        <${RevokeControl} discordId=${a.discordId} onRevoke=${onRevoke} />
                     </div>
                 `)}
                 <${GrantForm} onGrant=${onGrant} />
@@ -63,7 +82,7 @@ function ByScope({ spof }) {
 }
 
 export function AccessRealm({ session }) {
-    const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [] });
+    const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [], error: null });
     const [notice, setNotice] = useState('');
 
     function refresh() { fetch('/api/access', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }
@@ -87,8 +106,7 @@ export function AccessRealm({ session }) {
         refresh();
     }
 
-    async function revoke(discordId) {
-        const confirmText = prompt(`Type ${discordId} to confirm revoking this admin.`);
+    async function revoke(discordId, confirmText) {
         const res = await fetch('/api/access/revoke', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ discordId, confirmText }),
@@ -97,6 +115,8 @@ export function AccessRealm({ session }) {
         setNotice(res.ok ? '' : (body.reason || 'Revoke failed'));
         refresh();
     }
+
+    if (data.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
 
     return html`
         <${Shell} realm="access" session=${session}

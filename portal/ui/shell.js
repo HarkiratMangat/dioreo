@@ -11,7 +11,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
         <div class="top">
             <span class="mk">DIOREO<b>/</b>PORTAL</span>
             <nav class="rail">
-                ${REALMS.map(r => html`<a href=${'#/' + r} class=${r === realm ? 'active' : ''}>${r}</a>`)}
+                ${(session?.visibleRealms || REALMS).map(r => html`<a href=${'#/' + r} class=${r === realm ? 'active' : ''}>${r}</a>`)}
             </nav>
             ${viewOptions ? html`
                 <div class="tabs" role="tablist">

@@ -21,8 +21,10 @@ function MetricsPanel({ title, text }) {
 }
 
 export function AnalyticsRealm({ session }) {
-    const [data, setData] = useState({ river: [], usage: '', timing: '', alerts: '' });
+    const [data, setData] = useState({ river: [], usage: '', timing: '', alerts: '', error: null });
     useEffect(() => { fetch('/api/analytics', { credentials: 'same-origin' }).then(r => r.json()).then(setData); }, []);
+
+    if (data.error) return html`<p style="padding:24px">You do not have access to this realm.</p>`;
 
     async function revert(changeId) {
         await fetch(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
