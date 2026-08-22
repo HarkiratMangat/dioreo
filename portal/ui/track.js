@@ -1,14 +1,6 @@
 // portal/ui/track.js — ESM. The Track view layer: ruler + lanes + bars + flags + drag handles.
 //
-// bandClass/laneFor/tierOf/barGeometry/findOverlaps/findGaps/dateFromOffset/editOpFor come from
-// track.logic.js, loaded as a plain CLASSIC <script> before this module (see portal/render.js's
-// script order) -- a classic script's top-level function declarations become globals, which an ESM
-// module can read like any other global without an import statement. This is the actual working
-// resolution of the "Node never loads ESM, browser never loads CJS" split: Node's require() reads
-// the SAME file as CommonJS via module.exports, and the browser reads it as a non-module script that
-// defines globals. A literal `import {...} from './track.logic.js'` would fail in every real browser
-// (no export statement exists), so this file deliberately does not attempt one -- season.js shipped
-// exactly that mistake once; see its own header for the live-verified fix.
+// bandClass/laneFor/tierOf/barGeometry/findOverlaps/findGaps/dateFromOffset/editOpFor come from track.logic.js, loaded as a plain CLASSIC <script> before this module (see portal/render.js's script order) -- a classic script's top-level function declarations become globals, which an ESM module can read like any other global without an import statement. This is the actual working resolution of the "Node never loads ESM, browser never loads CJS" split: Node's require() reads the SAME file as CommonJS via module.exports, and the browser reads it as a non-module script that defines globals. A literal `import {...} from './track.logic.js'` would fail in every real browser (no export statement exists), so this file deliberately does not attempt one -- season.js shipped exactly that mistake once; see its own header for the live-verified fix.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState } from '../vendor/preact-hooks.mjs';
@@ -16,12 +8,7 @@ import { useState } from '../vendor/preact-hooks.mjs';
 const TOPIC_VAR = { draw: '--draw', returning: '--ret', event: '--ev', playlist: '--play', patchnote: '--patch' };
 const LANE_LABEL = { draw: 'New draws', returning: 'Returning', event: 'Events', playlist: 'Playlists', patchnote: 'Patch notes' };
 
-// Drag handle on a band's right edge -- reassigns the item's END date only (the mockup's only worked
-// example; the start edge and whole-band move are deliberately out of this pass's scope). Uses
-// `globalThis.addEventListener`, not the bare `window` global, because this component's OWN `window`
-// prop (the visible date range) shadows the real global for its entire body -- `globalThis` resolves
-// unambiguously regardless of that shadow, so the prop keeps its established name across every
-// Track/Lane/Bar call site instead of a renamed-just-here special case.
+// Drag handle on a band's right edge -- reassigns the item's END date only (the mockup's only worked example; the start edge and whole-band move are deliberately out of this pass's scope). Uses `globalThis.addEventListener`, not the bare `window` global, because this component's OWN `window` prop (the visible date range) shadows the real global for its entire body -- `globalThis` resolves unambiguously regardless of that shadow, so the prop keeps its established name across every Track/Lane/Bar call site instead of a renamed-just-here special case.
 function Bar({ item, window, season, onDragCommit }) {
     const { left, width } = barGeometry(item, window);
     const state = item.state || (tierOf(item, season) === 'conflict' ? 'conflict' : 'live');
@@ -70,11 +57,7 @@ function Lane({ name, items, window, season, onDragCommit }) {
 
 // <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
 //
-// `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version
-// filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning
-// lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally
-// equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the
-// same contract `draft` already had.
+// `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the same contract `draft` already had.
 export function Track({ data, draft, window, season, flags = [], onDragCommit }) {
     const lanes = Object.keys(LANE_LABEL);
     return html`

@@ -77,10 +77,7 @@ check('buildSeasonEditOp on a returningDraws row maps to category "returning"', 
 });
 
 check('buildSeasonEditOp on an event row edits via calendar.edit and passes a chrono-parseable date string', () => {
-    // A real raw calendar subdocument's start field is `date` (core/ops/calendar.js's own stored
-    // shape), never `startDate` -- this fixture used to say `startDate` directly, which happened to
-    // pass against the OLD code but never matched what toManifestRows actually spreads from live
-    // data. Fixed alongside the `date`->`startDate` rename regression test below.
+    // A real raw calendar subdocument's start field is `date` (core/ops/calendar.js's own stored shape), never `startDate` -- this fixture used to say `startDate` directly, which happened to pass against the OLD code but never matched what toManifestRows actually spreads from live data. Fixed alongside the `date`->`startDate` rename regression test below.
     const row = { id: 'x3', lane: 'calendar', title: 'Season launch', date: '2026-08-01', endDate: '2026-08-08' };
     const op = buildSeasonEditOp(row, 'title', 'Season 8 launch');
     assert.strictEqual(op.type, 'calendar.edit');

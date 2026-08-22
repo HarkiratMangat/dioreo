@@ -1,11 +1,6 @@
-// portal/ui/armory.js — ESM. The Armory realm: Rack (by category) + Coverage (data-quality flags) +
-// an Add form + inline edit + bulk actions + a LIVE PREVIEW panel, reusing <Shell>/<Manifest>
-// unchanged (spec §8.2). No dates, so no Track.
+// portal/ui/armory.js — ESM. The Armory realm: Rack (by category) + Coverage (data-quality flags) + an Add form + inline edit + bulk actions + a LIVE PREVIEW panel, reusing <Shell>/<Manifest> unchanged (spec §8.2). No dates, so no Track.
 //
-// buildArmoryAddOp/buildArmoryEditOp/parseBadgesToken come from armory.logic.js, loaded as a plain
-// CLASSIC <script> before this module -- see track.js's header comment for why that is the real
-// working cross-runtime resolution here, and why a literal `import {...} from './armory.logic.js'`
-// would fail in every real browser (found live in season.js's own prior version).
+// buildArmoryAddOp/buildArmoryEditOp/parseBadgesToken come from armory.logic.js, loaded as a plain CLASSIC <script> before this module -- see track.js's header comment for why that is the real working cross-runtime resolution here, and why a literal `import {...} from './armory.logic.js'` would fail in every real browser (found live in season.js's own prior version).
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -60,11 +55,7 @@ function Coverage({ builds, onFilter }) {
     `;
 }
 
-// Mirrors /manage's real add-loadout modal fields (handlers/manage/loadouts.js's addLoadout): weapon
-// name, category, build name, image key, a comma-separated badges token field (parsed client-side by
-// parseBadgesToken -- the exact grammar utils/adminParser.js's parseLoadoutBadges validates
-// server-side), and attachments one-per-line. Mode is a real field here (unlike the modal, whose Add
-// button is already page-scoped) since Armory shows both MP and DMZ builds on one page.
+// Mirrors /manage's real add-loadout modal fields (handlers/manage/loadouts.js's addLoadout): weapon name, category, build name, image key, a comma-separated badges token field (parsed client-side by parseBadgesToken -- the exact grammar utils/adminParser.js's parseLoadoutBadges validates server-side), and attachments one-per-line. Mode is a real field here (unlike the modal, whose Add button is already page-scoped) since Armory shows both MP and DMZ builds on one page.
 function AddBuildForm({ onSubmit, onCancel }) {
     const [weaponName, setWeaponName] = useState('');
     const [category, setCategory] = useState('AR');
@@ -118,9 +109,7 @@ function AddBuildForm({ onSubmit, onCancel }) {
     `;
 }
 
-// Bulk "Set badges…" -- a small inline panel, not a native prompt() (this session already removed
-// prompt() from Access's Revoke for the same UX reason). Applies the same badges grammar to every
-// selected build via one loadout.edit op each, in one changeset.
+// Bulk "Set badges…" -- a small inline panel, not a native prompt() (this session already removed prompt() from Access's Revoke for the same UX reason). Applies the same badges grammar to every selected build via one loadout.edit op each, in one changeset.
 function BulkBadgesPanel({ ids, onApply, onCancel }) {
     const [badges, setBadges] = useState('');
     return html`
@@ -133,9 +122,7 @@ function BulkBadgesPanel({ ids, onApply, onCancel }) {
     `;
 }
 
-// The Armory compose UI's LIVE PREVIEW panel -- calls the already-built GET /api/armory/preview,
-// which itself calls the bot's own buildLoadoutCard(), so this renders exactly what Discord will
-// show rather than a second hand-built approximation that could drift from the real one.
+// The Armory compose UI's LIVE PREVIEW panel -- calls the already-built GET /api/armory/preview, which itself calls the bot's own buildLoadoutCard(), so this renders exactly what Discord will show rather than a second hand-built approximation that could drift from the real one.
 function LivePreview({ buildId }) {
     const [card, setCard] = useState(null);
     useEffect(() => {
@@ -167,8 +154,7 @@ export function ArmoryRealm({ session }) {
 
     if (error) return html`<${NoAccess} />`;
 
-    // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried
-    // _id, so nothing selectable/editable/previewable actually worked before this mapping existed.
+    // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed.
     const rows = (coverageFilter ? builds.filter((b) => (b.coverage || []).includes(coverageFilter)) : builds)
         .map((b) => ({ ...b, id: b._id }));
 

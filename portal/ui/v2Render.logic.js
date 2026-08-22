@@ -1,7 +1,4 @@
-// portal/ui/v2Render.logic.js — CommonJS, imports nothing. The pure per-line markdown classifier
-// v2Render.js renders from. Scoped to exactly what buildLoadoutCard() (utils/loadoutRender.js)
-// emits inside a type-10 TextDisplay: `# `/`### `/`-# ` line prefixes and `> ` blockquote lines,
-// never a general markdown grammar.
+// portal/ui/v2Render.logic.js — CommonJS, imports nothing. The pure per-line markdown classifier v2Render.js renders from. Scoped to exactly what buildLoadoutCard() (utils/loadoutRender.js) emits inside a type-10 TextDisplay: `# `/`### `/`-# ` line prefixes and `> ` blockquote lines, never a general markdown grammar.
 function parseV2Markdown(text) {
     return String(text || '').split('\n').map((line) => {
         if (line.startsWith('# ')) return { type: 'h1', text: line.slice(2) };

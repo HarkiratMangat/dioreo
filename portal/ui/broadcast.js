@@ -1,9 +1,6 @@
-// portal/ui/broadcast.js — ESM. The Broadcast realm: Now showing + Airtime + a Post form + inline
-// edit + bulk actions, reusing <Shell>/<Manifest> unchanged.
+// portal/ui/broadcast.js — ESM. The Broadcast realm: Now showing + Airtime + a Post form + inline edit + bulk actions, reusing <Shell>/<Manifest> unchanged.
 //
-// buildBroadcastAddOp/buildBroadcastEditOp come from broadcast.logic.js, loaded as a plain CLASSIC
-// <script> before this module -- see track.js's header comment for why a literal ESM import of a
-// .logic.js sibling would fail in a real browser (found live in season.js's own prior version).
+// buildBroadcastAddOp/buildBroadcastEditOp come from broadcast.logic.js, loaded as a plain CLASSIC <script> before this module -- see track.js's header comment for why a literal ESM import of a .logic.js sibling would fail in a real browser (found live in season.js's own prior version).
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -48,10 +45,7 @@ function Airtime({ all }) {
     `;
 }
 
-// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task --
-// core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is
-// a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows
-// immediately" -- both sent as null rather than guessed at client-side.
+// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task -- core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows immediately" -- both sent as null rather than guessed at client-side.
 function PostForm({ onSubmit, onCancel }) {
     const [text, setText] = useState('');
     const [startsAt, setStartsAt] = useState('');
@@ -96,8 +90,7 @@ export function BroadcastRealm({ session }) {
 
     if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
 
-    // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or
-    // editable on this Manifest actually worked before this mapping existed.
+    // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or editable on this Manifest actually worked before this mapping existed.
     const rows = data.all.map((a) => ({ ...a, id: a._id }));
 
     async function handleAdd(op) {
@@ -106,9 +99,7 @@ export function BroadcastRealm({ session }) {
         refresh();
     }
 
-    // No bulk-delete op exists for announcements (unlike loadouts' loadout.bulkDelete) -- one
-    // announcement.delete per selected id, in a single changeset, which is exactly what a multi-op
-    // changeset is for.
+    // No bulk-delete op exists for announcements (unlike loadouts' loadout.bulkDelete) -- one announcement.delete per selected id, in a single changeset, which is exactly what a multi-op changeset is for.
     async function handleBulkDelete(ids) {
         const ops = ids.map((id) => ({ type: 'announcement.delete', target: { id }, payload: {} }));
         if (ops.length) await stageOps('broadcast', ops, session.csrfToken);

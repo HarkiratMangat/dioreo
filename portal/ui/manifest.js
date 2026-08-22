@@ -1,10 +1,6 @@
-// portal/ui/manifest.js — ESM. The Manifest: search, filter chips, sortable table, multi-select, bulk bar,
-// and (new) an opt-in Add button + click-to-edit cell + click-to-preview row. Reused UNCHANGED by every realm
-// (spec §8.2) — a realm supplies only `columns`/`rows`/`bulkActions`/`onAdd`/`buildEditOp`/`onRowClick`, never
-// its own copy of this component.
+// portal/ui/manifest.js — ESM. The Manifest: search, filter chips, sortable table, multi-select, bulk bar, and (new) an opt-in Add button + click-to-edit cell + click-to-preview row. Reused UNCHANGED by every realm (spec §8.2) — a realm supplies only `columns`/`rows`/`bulkActions`/`onAdd`/`buildEditOp`/`onRowClick`, never its own copy of this component.
 //
-// filterRows/sortRows/toggleSelection come from manifest.logic.js, loaded as a classic script — see track.js's
-// header comment for why that is the real cross-runtime resolution here.
+// filterRows/sortRows/toggleSelection come from manifest.logic.js, loaded as a classic script — see track.js's header comment for why that is the real cross-runtime resolution here.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useMemo } from '../vendor/preact-hooks.mjs';

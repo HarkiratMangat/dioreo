@@ -1,12 +1,6 @@
 // portal/ui/season.js — ESM. The Season realm: Track/Board as the switchable view layer, Manifest (never switches) underneath. Covers /manage's draws/calendar/patchnotes/seasondraft/season pages (spec §8.2's join table) — visible if the signed-in admin holds ANY of them.
 //
-// buildSeasonAddOp/buildSeasonEditOp (season.logic.js) and editOpFor (track.logic.js) are read as
-// bare GLOBALS, not imported -- both are loaded as classic <script> tags before this module (see
-// track.js's own header comment for why). A literal `import {...} from './season.logic.js'` shipped
-// here once and would throw in every real browser (no `export` statement exists in a classic
-// script); found auditing this file for Task 4 and never actually exercised live before, since every
-// prior verification pass used direct authenticated `fetch` calls or the signed-out Door page,
-// neither of which loads this module as real ESM.
+// buildSeasonAddOp/buildSeasonEditOp (season.logic.js) and editOpFor (track.logic.js) are read as bare GLOBALS, not imported -- both are loaded as classic <script> tags before this module (see track.js's own header comment for why). A literal `import {...} from './season.logic.js'` shipped here once and would throw in every real browser (no `export` statement exists in a classic script); found auditing this file for Task 4 and never actually exercised live before, since every prior verification pass used direct authenticated `fetch` calls or the signed-out Door page, neither of which loads this module as real ESM.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -38,14 +32,10 @@ function toManifestRows(live) {
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {
         for (const item of live[key] || []) {
             rows.push({
-                // The full item ships on the row (not just the display fields below) so buildSeasonEditOp
-                // has every field draw.edit/calendar.edit's validate() needs -- an edit op built from a
-                // display-only row would silently drop items/startDate/category on every commit.
+                // The full item ships on the row (not just the display fields below) so buildSeasonEditOp has every field draw.edit/calendar.edit's validate() needs -- an edit op built from a display-only row would silently drop items/startDate/category on every commit.
                 ...item,
                 id: item._id, title: item.title, lane: key, state: 'live',
-                // A draw's real schema field is `date` (no separate start/end); calendar events have
-                // both `date`(start) and `endDate`. This pre-existing display line always fell to '—'
-                // for every draw before this fix, since item.endDate is never set on a draw record.
+                // A draw's real schema field is `date` (no separate start/end); calendar events have both `date`(start) and `endDate`. This pre-existing display line always fell to '—' for every draw before this fix, since item.endDate is never set on a draw record.
                 window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
             });
         }
@@ -53,13 +43,7 @@ function toManifestRows(live) {
     return rows;
 }
 
-// Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect --
-// deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/
-// 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event',
-// matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own
-// consumer rather than one row shape trying to serve two different vocabularies. `startDate` is
-// synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to
-// read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js.
+// Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect -- deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/ 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event', matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own consumer rather than one row shape trying to serve two different vocabularies. `startDate` is synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js.
 function toTrackItems(live, path, lane) {
     return (live?.[path] || []).map((item) => ({
         ...item, id: String(item._id), kind: lane, lane,
@@ -67,8 +51,7 @@ function toTrackItems(live, path, lane) {
     }));
 }
 
-// The Add composer -- a kind picker revealing only the fields that kind's op actually needs,
-// rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome).
+// The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome).
 function AddComposer({ onSubmit, onCancel }) {
     const [kind, setKind] = useState('draw');
     const [title, setTitle] = useState('');
@@ -124,11 +107,7 @@ export function SeasonRealm({ session }) {
     if (!state) return html`<p style="padding:24px">Loading…</p>`;
     if (state.signedOut || state.forbidden) return html`<${NoAccess} />`;
 
-    // Renamed from `window` (Task 4) -- that name silently SHADOWED the real browser global for the
-    // rest of this component's body, including handleExportSelection's `window.open()` call below,
-    // which was a live, never-yet-clicked bug (TypeError: window.open is not a function, since that
-    // identifier resolved to this {start,end} object instead of the global). Found auditing this
-    // file for Track's own drag handles, which genuinely need the real global.
+    // Renamed from `window` (Task 4) -- that name silently SHADOWED the real browser global for the rest of this component's body, including handleExportSelection's `window.open()` call below, which was a live, never-yet-clicked bug (TypeError: window.open is not a function, since that identifier resolved to this {start,end} object instead of the global). Found auditing this file for Track's own drag handles, which genuinely need the real global.
     const visibleWindow = { start: new Date().toISOString().slice(0, 10), end: state.live?.bpEnd || new Date().toISOString().slice(0, 10) };
 
     async function handleExport(changeset) {
@@ -158,11 +137,7 @@ export function SeasonRealm({ session }) {
         fetchChangesets('season').then(setChangesets);
     }
 
-    // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline
-    // amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra
-    // argument) -- deliberately scoped out of this pass rather than reaching for a native
-    // prompt(), which this session already removed from Access's Revoke for the same UX reason.
-    // Stage deletion and Export selection need no such input and are built here.
+    // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra argument) -- deliberately scoped out of this pass rather than reaching for a native prompt(), which this session already removed from Access's Revoke for the same UX reason. Stage deletion and Export selection need no such input and are built here.
     const allRows = toManifestRows(state.live);
     function rowsById(ids) { return allRows.filter((r) => ids.includes(r.id)); }
 
@@ -184,9 +159,7 @@ export function SeasonRealm({ session }) {
         window.open(`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`, '_blank');
     }
 
-    // Task 4 -- Track's drag handles. editOpFor (track.logic.js, a bare global) preserves every field
-    // of the dragged item except the edited date; a draw writes to `date`, a calendar item to
-    // `endDate` (see that function's own header for the full field-name reasoning).
+    // Task 4 -- Track's drag handles. editOpFor (track.logic.js, a bare global) preserves every field of the dragged item except the edited date; a draw writes to `date`, a calendar item to `endDate` (see that function's own header for the full field-name reasoning).
     async function handleDragCommit(item, newDate) {
         const op = editOpFor(item, newDate);
         await stageOps('season', [op], session.csrfToken);
@@ -198,9 +171,7 @@ export function SeasonRealm({ session }) {
         returning: toTrackItems(state.live, 'returningDraws', 'returning'),
         event: toTrackItems(state.live, 'calendar', 'event'),
     };
-    // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are
-    // newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since
-    // it's the same reshape, not a second task.
+    // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since it's the same reshape, not a second task.
     const draftData = state.draft ? {
         draw: toTrackItems(state.draft, 'newDraws', 'draw'),
         returning: toTrackItems(state.draft, 'returningDraws', 'returning'),

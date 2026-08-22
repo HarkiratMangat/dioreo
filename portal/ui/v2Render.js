@@ -1,12 +1,6 @@
-// portal/ui/v2Render.js — ESM. Renders the raw Components V2 JSON buildLoadoutCard() returns.
-// Scoped to exactly the 5 component types that function emits — NOT a general Components V2
-// interpreter (see docs/superpowers/specs/2026-08-21-portal-compose-ui-design.md §2). Buttons
-// render disabled: this is a picture of what Discord will show, not a live Discord message.
+// portal/ui/v2Render.js — ESM. Renders the raw Components V2 JSON buildLoadoutCard() returns. Scoped to exactly the 5 component types that function emits — NOT a general Components V2 interpreter (see docs/superpowers/specs/2026-08-21-portal-compose-ui-design.md §2). Buttons render disabled: this is a picture of what Discord will show, not a live Discord message.
 //
-// parseV2Markdown comes from v2Render.logic.js, loaded as a classic <script> (not imported) —
-// see track.js's header comment for why every .logic.js sibling in this directory is loaded that
-// way rather than ESM-imported: package.json declares no "type", so this file's CJS
-// `module.exports` guard produces no ES module export the browser could import.
+// parseV2Markdown comes from v2Render.logic.js, loaded as a classic <script> (not imported) — see track.js's header comment for why every .logic.js sibling in this directory is loaded that way rather than ESM-imported: package.json declares no "type", so this file's CJS `module.exports` guard produces no ES module export the browser could import.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 

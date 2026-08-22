@@ -32,8 +32,7 @@ const { dateFromOffset, editOpFor } = require('../portal/ui/track.logic');
 check('dateFromOffset is the inverse of barGeometry’s left/width math, snapped to a day', () => {
     const window = { start: '2026-08-01', end: '2026-08-08' }; // exactly 7 days wide
     const half = dateFromOffset(50, window);
-    // 50% of 7 days = 3.5 days in = Aug 4 12:00 -- Math.round rounds .5 toward +Infinity, so this
-    // snaps UP to Aug 5, not down. (First draft of this assertion assumed "snapped down" and was wrong.)
+    // 50% of 7 days = 3.5 days in = Aug 4 12:00 -- Math.round rounds .5 toward +Infinity, so this snaps UP to Aug 5, not down. (First draft of this assertion assumed "snapped down" and was wrong.)
     assert.strictEqual(half.toISOString().slice(0, 10), '2026-08-05');
 });
 

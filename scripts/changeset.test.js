@@ -34,14 +34,7 @@ check('the highest tier in the set is reported, because it gates the commit', ()
     assert.strictEqual(r.tier, 3, 'one tier-3 op makes the whole set tier 3');
 });
 
-// Found live against the real portal server, not by inspection: draw.add's (and calendar.add/edit's,
-// loadout.add/edit's, announcement.post/edit's) validate() deliberately returns ONLY `{payload}` in
-// `normalized`, relying on the caller to carry type/target forward. validateSet used to do
-// `r.normalized || op` -- a straight OR, which silently dropped type/target the moment `r.normalized`
-// was truthy (any object is truthy, including `{payload:{...}}`). previewSet/commitSet then both call
-// resolveOp(op.type) on the result and throw "unknown op type \"undefined\"" -- so staging a draw.add
-// validated fine (this property is invisible to `ok`/`failures`) and committing it 409'd. The two
-// checks below are what would have caught this before it ever reached a real server.
+// Found live against the real portal server, not by inspection: draw.add's (and calendar.add/edit's, loadout.add/edit's, announcement.post/edit's) validate() deliberately returns ONLY `{payload}` in `normalized`, relying on the caller to carry type/target forward. validateSet used to do `r.normalized || op` -- a straight OR, which silently dropped type/target the moment `r.normalized` was truthy (any object is truthy, including `{payload:{...}}`). previewSet/commitSet then both call resolveOp(op.type) on the result and throw "unknown op type \"undefined\"" -- so staging a draw.add validated fine (this property is invisible to `ok`/`failures`) and committing it 409'd. The two checks below are what would have caught this before it ever reached a real server.
 check('validateSet PRESERVES type/target on an op whose validate() returns only {payload} in normalized (the bug this regression pins)', () => {
     const r = validateSet([{ type: 'draw.add', payload: { title: 'Nightfall', category: 'new', items: [] } }]);
     assert.strictEqual(r.ok, true);
@@ -61,14 +54,7 @@ check('validateSet stays correct for an op whose validate() already returns the 
     assert.strictEqual(r.normalized[0].payload.mainTitle, 'Season 8');
 });
 
-// Found live against the real portal server: previewSet() called impl.preview(...) WITHOUT awaiting
-// it. loadouts' and announcements' edit/delete previews are async (self-fetching via Loadout.
-// findById/Announcement.findById rather than reading the `live` param). A synchronous previewSet
-// spread a Promise's own (zero) enumerable properties into the result -- every real preview came
-// back as bare {index}, no before/after -- and a preview() that THREW before its first await became
-// an unhandled promise rejection nobody awaited or .catch()ed, which crashes the whole Node process.
-// Registers two throwaway op types (never used by any real entity) so this is provable without a
-// live Mongo connection: one with an async preview that resolves with real data, one that rejects.
+// Found live against the real portal server: previewSet() called impl.preview(...) WITHOUT awaiting it. loadouts' and announcements' edit/delete previews are async (self-fetching via Loadout. findById/Announcement.findById rather than reading the `live` param). A synchronous previewSet spread a Promise's own (zero) enumerable properties into the result -- every real preview came back as bare {index}, no before/after -- and a preview() that THREW before its first await became an unhandled promise rejection nobody awaited or .catch()ed, which crashes the whole Node process. Registers two throwaway op types (never used by any real entity) so this is provable without a live Mongo connection: one with an async preview that resolves with real data, one that rejects.
 registerEntity('__previewSetRegressionOk', {
     '__previewSetRegressionOk.op': {
         action: '__test:ok', tier: 1,

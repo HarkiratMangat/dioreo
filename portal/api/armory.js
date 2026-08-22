@@ -37,9 +37,7 @@ function register(route) {
         sendJson(res, 200, { builds, grantedPages });
     }));
 
-    // The Armory compose UI's "LIVE PREVIEW" panel — calls the bot's own buildLoadoutCard() so the
-    // browser renders exactly what Discord will send (spec §4/§2 of the compose-UI design), rather
-    // than a second hand-built approximation of the card that could drift from the real one.
+    // The Armory compose UI's "LIVE PREVIEW" panel — calls the bot's own buildLoadoutCard() so the browser renders exactly what Discord will send (spec §4/§2 of the compose-UI design), rather than a second hand-built approximation of the card that could drift from the real one.
     route('GET', /^\/api\/armory\/preview$/, requireAdmin(async (req, res, url, session) => {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
@@ -50,8 +48,7 @@ function register(route) {
         sendJson(res, 200, { card });
     }));
 
-    // Bulk "Export selection" — utils/adminParser.js's formatLoadoutsAsBulkText was only ever wired
-    // to Discord-side callers (handlers/manage/loadouts.js, utils/manageActions.js) before this.
+    // Bulk "Export selection" — utils/adminParser.js's formatLoadoutsAsBulkText was only ever wired to Discord-side callers (handlers/manage/loadouts.js, utils/manageActions.js) before this.
     route('GET', /^\/api\/armory\/export$/, requireAdmin(async (req, res, url, session) => {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');

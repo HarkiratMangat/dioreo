@@ -65,8 +65,7 @@ function findGaps(items, window, minGapMs = 2 * 24 * 60 * 60 * 1000) {
     return gaps;
 }
 
-// The inverse of barGeometry's left-percent math: given a pointer's percent-position across the
-// visible window, return the snapped (day-granularity) date under it. Clamped to the window.
+// The inverse of barGeometry's left-percent math: given a pointer's percent-position across the visible window, return the snapped (day-granularity) date under it. Clamped to the window.
 function dateFromOffset(offsetPercent, window) {
     const wStart = new Date(window.start).getTime();
     const wEnd = new Date(window.end).getTime();
@@ -76,22 +75,9 @@ function dateFromOffset(offsetPercent, window) {
     return new Date(Math.max(wStart, Math.min(wEnd, snapped)));
 }
 
-// Builds an edit op for a dragged Track item, preserving every field except the edited date.
-// draw.edit/calendar.edit's validate() needs the full record -- same contract as season.logic.js's
-// buildSeasonEditOp, duplicated here (not imported) because this file must import nothing (see the
-// header comment above) and season.js's ESM sibling can't be required from a CJS file. A draw's real
-// schema/op field is `date` (see the LANE_TO_CATEGORY note in season.logic.js), so a dragged draw
-// item writes its new date onto `date`, never `endDate` -- the exact bug already found once there.
+// Builds an edit op for a dragged Track item, preserving every field except the edited date. draw.edit/calendar.edit's validate() needs the full record -- same contract as season.logic.js's buildSeasonEditOp, duplicated here (not imported) because this file must import nothing (see the header comment above) and season.js's ESM sibling can't be required from a CJS file. A draw's real schema/op field is `date` (see the LANE_TO_CATEGORY note in season.logic.js), so a dragged draw item writes its new date onto `date`, never `endDate` -- the exact bug already found once there.
 //
-// item.startDate is a SYNTHETIC field season.js's toTrackItems adds only so barGeometry (this file)
-// has something to read for a draw, which has no real startDate/endDate in its own schema -- for a
-// draw it must be stripped before this reaches core/ops/draws.js's validateOne, which SPREADS the
-// whole payload through unlike calendar's validateEvent (see the else-branch comment below), so a
-// stray key here would reach Mongo's $set verbatim. For a calendar item the same synthetic field
-// already equals the item's real stored `date` (start) value, and validateEvent's own contract reads
-// raw input on `payload.startDate` -- a real, previously-unverified field-name mismatch against the
-// STORED field name `date` (core/ops/calendar.js's own header explains why validate's input
-// vocabulary and its stored vocabulary differ) -- so for calendar it is kept, not deleted.
+// item.startDate is a SYNTHETIC field season.js's toTrackItems adds only so barGeometry (this file) has something to read for a draw, which has no real startDate/endDate in its own schema -- for a draw it must be stripped before this reaches core/ops/draws.js's validateOne, which SPREADS the whole payload through unlike calendar's validateEvent (see the else-branch comment below), so a stray key here would reach Mongo's $set verbatim. For a calendar item the same synthetic field already equals the item's real stored `date` (start) value, and validateEvent's own contract reads raw input on `payload.startDate` -- a real, previously-unverified field-name mismatch against the STORED field name `date` (core/ops/calendar.js's own header explains why validate's input vocabulary and its stored vocabulary differ) -- so for calendar it is kept, not deleted.
 function editOpFor(item, newEndDate) {
     const isDraw = item.lane === 'draw' || item.lane === 'returning';
     const type = isDraw ? 'draw.edit' : 'calendar.edit';
