@@ -311,28 +311,15 @@ git commit -m "feat(portal): expose the admin permission matrix via the API"
 
 **Note for Phase 3, not a Phase 2 task:** this task deliberately stops at the API. Building the actual grid *component* that renders this data as the mockup's matrix (rows/columns/checkmarks, "By admin"/"By scope" tabs) is real UI design work — it belongs in Phase 3, which will consume this endpoint.
 
-### Task 2.6: Add `Announcement.startsAt`
+### Task 2.6: Add `Announcement.startsAt` — ✅ ALREADY DONE, verified not built
 
-Implements the Phase-2-before-Phase-3 dependency identified in audit spec §3.5 — Broadcast's `SCHEDULED` pill cannot be built in Phase 3 without this field existing first.
+**Step 0 finding (2026-08-22 14:12 EDT):** `Announcement.startsAt` already exists — added 2026-08-21 09:31 EDT, the day *before* this audit spec was written, and wired end-to-end (`core/ops/announcements.js` validate/invert, `portal/ui/broadcast.js`'s Add form, `broadcast.logic.js`'s op builders). The audit spec's §3.5 claim that this field was missing was stale at the moment it was written — confirmed and struck in place in the spec itself (2026-08-22 addendum). `docs/db-deferred-list.md` no longer carries a "not built" entry for it either; its current `startsAt` entry is about a separate, narrower validation gap (a `startsAt > expiresAt` comparison that silently no-ops when both arrive as JSON strings), not the field's existence.
 
-**Files:**
-- Modify: `models/Announcement.js`
-- Test: wherever this model's existing schema tests live — check for an `Announcement.test.js` or equivalent before assuming none exists.
+**No code change needed for this task.** What audit §3.5 got right and what still stands unblocked for Phase 3: the `LIVE`/`SCHEDULED`/`EXPIRED` state-pill *rendering* genuinely does not exist yet (`portal/ui/broadcast.js` hardcodes `stateOf=${() => 'live'}`) — Phase 3 builds that from data that was already there, with no schema dependency to wait on.
 
-- [ ] **Step 1: Read `models/Announcement.js` in full first** — the shape below assumes a plain `Date`-typed optional field matching `expiresAt`'s pattern, which is a reasonable default but was not independently re-confirmed against the file's current state at plan-writing time. Adjust if the real schema differs. Add the field:
+~~Original Steps 1-3 (read the schema, add `startsAt: { type: Date, default: null }`, commit) — struck rather than deleted per this doc's own §0 convention, since they describe work that turned out to already be done.~~
 
-```js
-startsAt: { type: Date, default: null },
-```
-
-- [ ] **Step 2: Confirm no other code path needs updating for a field that's additive and optional** — `docs/db-deferred-list.md`'s existing entry for this field (cross-referenced in the audit spec §3.5) is the source of truth for why this was deferred; re-read it in case it records a reason beyond "not built yet" that affects how this field should behave.
-
-- [ ] **Step 3: Commit.**
-
-```bash
-git add models/Announcement.js
-git commit -m "feat(models): add Announcement.startsAt, unblocking Broadcast's scheduled state"
-```
+- [x] **Step 0 (the only step actually needed): confirm the field's real state before writing anything, per this task's own original caution — and it turned out to already exist.**
 
 ### Task 2.7: Write Session A's handoff note for Session B
 
