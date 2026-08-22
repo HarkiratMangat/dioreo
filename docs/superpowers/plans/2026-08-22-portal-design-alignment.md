@@ -25,6 +25,8 @@ Three sessions execute this plan at different times with no shared memory except
 | B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ⬜ Not started | — |
 | C | 4 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (verifying "is this actually fixed" is itself a judgment call, not a mechanical check, applied across every realm and every finding, plus an explicitly requested deep sequential-thinking pass) | ⬜ Not started | — |
 
+*(The `Premise <X> · Delib <Y> -> <Cell>` notation is an existing personal convention from Harkirat's global Claude Code config (a premise-risk × deliberation-load model-selection grid), not something defined in this repo — the recommendation itself is usable as a plain instruction even without that grid in hand; it names the reasoning for whoever does have it.)*
+
 **Status values:** ⬜ Not started · 🔄 In progress · ✅ Complete · ⚠️ Blocked (write the reason directly in this cell — don't make the next session hunt for it). A session changes ⬜→🔄 as its first edit (Task X.0, below) and 🔄→✅/⚠️ as its last (the handoff-note task, below), always in the same commit as the rest of that session's work — never a separate, easy-to-forget follow-up commit.
 
 ## How this plan is organized
@@ -96,7 +98,7 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 
 - [ ] **Task 1.3: Run a sequential-thinking pass asking "what does this audit still not consider?", not "does this audit look complete?"** This is a falsification pass per `.claude/rules/plan-drafting.md` — the question is where the spec is *wrong*, not a review of whether it reads well. Concretely check: has every realm's *empty state* been compared, not just its populated state? Has keyboard navigation/tab order been checked anywhere (the audit only checked `:focus-visible`'s CSS rule exists, never that it's reachable in a real tab sequence)? Does the audit's severity grading in §2–§3 match what a real user would experience, or does it over-index on what happened to be screenshotted first? Are there Discord-side surfaces (the bot's own `/manage` panel) that the portal is supposed to match in *behavior*, not just visuals, that haven't been cross-checked?
 
-- [ ] **Task 1.4: Amend the audit spec with everything Tasks 1.2–1.3 found.** The audit spec is `status: live` specifically so it can be corrected — per this repo's established convention (see `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md`'s own dated amendment banner for precedent), add a dated `## Addendum — <date>` section at the end rather than rewriting existing findings in place. If Task 1.2 or 1.3 contradicts an earlier finding, strike the old claim rather than deleting it (`~~struck text~~`) and explain why next to it — the audit spec's own §0 exists because a silently-corrected document hides the lesson.
+- [ ] **Task 1.4: Amend the audit spec with everything Tasks 1.2–1.3 found.** The audit spec's front matter reads `status: frozen` — in this repo's convention that names the doc's *kind* vocabulary (`spec`-kind docs use frozen/superseded, never live/dead), it is not a ban on correction. Amend it anyway, the same way (see `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md`'s own dated amendment banner for precedent), add a dated `## Addendum — <date>` section at the end rather than rewriting existing findings in place. If Task 1.2 or 1.3 contradicts an earlier finding, strike the old claim rather than deleting it (`~~struck text~~`) and explain why next to it — the audit spec's own §0 exists because a silently-corrected document hides the lesson.
 
 - [ ] **Task 1.5: Write a short completeness note at the top of Phase 2, confirming it's safe to proceed.** One paragraph, prepended to this plan's Phase 2 section: what Phase 1 checked, what it found, and explicit confirmation that Phase 2's task list below still matches reality (or a note on what changed and why, if it doesn't).
 
@@ -192,10 +194,12 @@ Implements audit spec §3.4, finding 1. The humanized strings already exist in `
 - Consumes: the existing `[{value, label}]` array at `season.js:23-26`.
 - Produces: a `LANE_LABELS` lookup object other Season code may reuse later — export it if `season.js` doesn't already have a barrel export pattern; check the file's existing `module.exports`/`export` shape first and match it.
 
-- [ ] **Step 1: Write the failing test.** In `scripts/seasonOps.test.js`, add:
+- [ ] **Step 0: Confirm the real module boundary before writing anything.** `season.js`'s existing header comments (and every other realm's `*.logic.js` file) establish the pattern of a pure-logic file loaded as a classic `<script>`, required via CommonJS in Node tests — but do not assume `LANE_LABELS` belongs in a NEW `season.logic.js` versus directly in `season.js` versus an existing one. Read `season.js` in full, check whether a `season.logic.js` already exists (it wasn't seen during the audit, which read `season.js` but not exhaustively enumerated `portal/ui/`), and pick the real path before Step 1's `require(...)` can be anything but a placeholder.
+
+- [ ] **Step 1: Write the failing test.** In `scripts/seasonOps.test.js`, add (replace `PATH-NOT-YET-CONFIRMED` with what Step 0 found):
 
 ```js
-const { LANE_LABELS } = require('../portal/ui/season.logic.js'); // or wherever the pure function lands — see season.js's existing require/export pattern for .logic.js files before picking the path
+const { LANE_LABELS } = require('PATH-NOT-YET-CONFIRMED'); // Step 0 below finds the real path — do not run this until it's replaced
 
 test('LANE_LABELS humanizes every internal lane key used by toManifestRows', () => {
     assert.strictEqual(LANE_LABELS.newDraws, 'New draw');
@@ -273,7 +277,7 @@ Implements audit spec §3.2. The data layer (`getAdminPermissionsMap()`) and the
 - Test: `scripts/portalApi.test.js` (existing file, per `.claude/rules/scripts-and-migrations.md`)
 
 **Interfaces:**
-- Consumes: `utils/adminAccess.js`'s `getAdminPermissionsMap()` (returns `Map<discordId, permissions[]>`) and `utils/manageActions.js`'s `ACTIONS_BY_PAGE`/command registry (exact export names: check `utils/manageActions.js`'s `module.exports` at line 323 before writing the route — do not assume names not confirmed there).
+- Consumes: `utils/adminAccess.js`'s `getAdminPermissionsMap()` (returns `Map<discordId, permissions[]>`) and `utils/manageActions.js`'s `ACTIONS_BY_PAGE`/command registry (its `module.exports` block was seen near the end of the file during the audit, but the exact line and exact export names were NOT individually confirmed — read the file yourself before writing the route; do not trust a line number from this plan for this one).
 - Produces: a new route, e.g. `GET /api/access/matrix`, returning `{ admins: [{ discordId, grants: { [scopeKey]: boolean } }], scopes: [{ key, label, kind: 'command'|'page' }] }` — shape this to match exactly what a grid component needs (rows = admins, columns = scopes), not a raw dump of the underlying data structures.
 
 - [ ] **Step 1: Read `portal/api/access.js`'s current route registrations and `utils/manageActions.js`'s exact exports (both files, in full) before writing anything** — this task's whole point is reusing what exists correctly, so get the real names right first.
@@ -313,7 +317,7 @@ Implements the Phase-2-before-Phase-3 dependency identified in audit spec §3.5 
 - Modify: `models/Announcement.js`
 - Test: wherever this model's existing schema tests live — check for an `Announcement.test.js` or equivalent before assuming none exists.
 
-- [ ] **Step 1: Add the field**, matching `expiresAt`'s existing shape:
+- [ ] **Step 1: Read `models/Announcement.js` in full first** — the shape below assumes a plain `Date`-typed optional field matching `expiresAt`'s pattern, which is a reasonable default but was not independently re-confirmed against the file's current state at plan-writing time. Adjust if the real schema differs. Add the field:
 
 ```js
 startsAt: { type: Date, default: null },
@@ -330,7 +334,7 @@ git commit -m "feat(models): add Announcement.startsAt, unblocking Broadcast's s
 
 ### Task 2.7: Write Session A's handoff note for Session B
 
-- [ ] **Step 1: Write `local/handoff/2026-08-22-portal-alignment-session-A.md`** (adjust the date to whenever Session A actually runs — the filename convention is `YYYY-MM-DD-portal-alignment-session-<A|B|C>.md`) covering everything the handoff protocol above requires: what Phase 1 actually found in the six previously-unverified items (not a repeat of the audit spec — a summary of what changed), what Phase 2 actually shipped vs. this plan's original task list (especially Task 2.4's real `state` derivation, which this plan explicitly could not specify in advance), and anything Session B needs to know before starting Phase 3 that isn't already obvious from reading the updated audit spec and this plan.
+- [ ] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/2026-08-22-portal-alignment-session-A.md`** (use the date this session STARTED the phase, not whenever it happens to finish writing this note — the filename convention is `YYYY-MM-DD-portal-alignment-session-<A|B|C>.md`) covering everything the handoff protocol above requires: what Phase 1 actually found in the six previously-unverified items (not a repeat of the audit spec — a summary of what changed), what Phase 2 actually shipped vs. this plan's original task list (especially Task 2.4's real `state` derivation, which this plan explicitly could not specify in advance), and anything Session B needs to know before starting Phase 3 that isn't already obvious from reading the updated audit spec and this plan.
 
 - [ ] **Step 2: Update the Session status table** — Session A row to ✅ Complete, with the handoff note's path in the last column.
 
@@ -373,7 +377,7 @@ git commit -m "docs(portal): mark Session A complete, phases 1-2 of the design a
 
 ### Task 3.6: Write Session B's handoff note for Session C
 
-- [ ] **Step 1: Write `local/handoff/YYYY-MM-DD-portal-alignment-session-B.md`** covering: the new visual-design spec's path and a one-paragraph summary of the direction taken, the per-finding resolution notes from Task 3.5 (or a pointer to them if they're long), anything deferred out of Phase 3 with a reason, and anything Session C should specifically scrutinize given what was hardest to get right during the redesign.
+- [ ] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/YYYY-MM-DD-portal-alignment-session-B.md`** (real date, not the literal string — use the date this session started Phase 3) covering: the new visual-design spec's path and a one-paragraph summary of the direction taken, the per-finding resolution notes from Task 3.5 (or a pointer to them if they're long), anything deferred out of Phase 3 with a reason, and anything Session C should specifically scrutinize given what was hardest to get right during the redesign.
 
 - [ ] **Step 2: Update the Session status table** — Session B row to ✅ Complete, with the handoff note's path.
 
