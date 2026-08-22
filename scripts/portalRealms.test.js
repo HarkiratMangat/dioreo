@@ -41,4 +41,47 @@ check('Access By-scope does NOT flag a scope held by two or more admins', () => 
     assert.ok(!spof.some(s => s.scope === 'bot'), 'a scope held by two admins is not a single point of failure');
 });
 
+const { buildSeasonAddOp, buildSeasonEditOp } = require('../portal/ui/season.logic');
+
+check('buildSeasonAddOp builds a draw.add op with the real "new"/"returning" category vocabulary, not the Manifest lane name', () => {
+    const op = buildSeasonAddOp('draw', { title: 'Wraith', endDate: '2026-09-01', items: ['a', 'b'] });
+    assert.strictEqual(op.type, 'draw.add');
+    assert.strictEqual(op.payload.title, 'Wraith');
+    assert.strictEqual(op.payload.category, 'new');
+});
+
+check('buildSeasonAddOp builds a draw.add op with category "returning" for kind=returning', () => {
+    const op = buildSeasonAddOp('returning', { title: 'Havoc rerun', endDate: '2026-09-01' });
+    assert.strictEqual(op.payload.category, 'returning');
+});
+
+check('buildSeasonAddOp builds a calendar.add op for kind=event', () => {
+    const op = buildSeasonAddOp('event', { title: 'Clan wars', startDate: '2026-09-01', endDate: '2026-09-08' });
+    assert.strictEqual(op.type, 'calendar.add');
+});
+
+check('buildSeasonEditOp on a draw row edits the date via draw.edit (real schema field is date, not the Manifest display key endDate), mapping the Manifest lane back to "new"/"returning"', () => {
+    const row = { id: 'x1', lane: 'newDraws', title: 'Iron Wolf', items: ['a'], endDate: '2026-08-10T00:00:00.000Z' };
+    const op = buildSeasonEditOp(row, 'endDate', '2026-08-13');
+    assert.strictEqual(op.type, 'draw.edit');
+    assert.strictEqual(op.target.category, 'new');
+    assert.strictEqual(op.payload.date, '2026-08-13', 'core/ops/draws.js validates payload.date, not payload.endDate -- a real pre-existing bug found and fixed this session');
+    assert.strictEqual(op.payload.endDate, undefined, 'the wrong field name must not also be sent -- Mongoose silently drops it, which is exactly how this bug shipped a draw with no date at all');
+    assert.deepStrictEqual(op.payload.items, ['a']);
+});
+
+check('buildSeasonEditOp on a returningDraws row maps to category "returning"', () => {
+    const row = { id: 'x2', lane: 'returningDraws', title: 'Shadow Blade rerun', endDate: '2026-08-13' };
+    const op = buildSeasonEditOp(row, 'title', 'Shadow Blade Rerun');
+    assert.strictEqual(op.target.category, 'returning');
+});
+
+check('buildSeasonEditOp on an event row edits via calendar.edit and passes a chrono-parseable date string', () => {
+    const row = { id: 'x3', lane: 'calendar', title: 'Season launch', startDate: '2026-08-01', endDate: '2026-08-08' };
+    const op = buildSeasonEditOp(row, 'title', 'Season 8 launch');
+    assert.strictEqual(op.type, 'calendar.edit');
+    assert.strictEqual(op.payload.title, 'Season 8 launch');
+    assert.strictEqual(op.payload.startDate, '2026-08-01');
+});
+
 process.exit(failures ? 1 : 0);

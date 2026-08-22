@@ -26,7 +26,7 @@ function validateOne(payload) {
     const errors = [];
     if (!payload?.title?.trim()) errors.push('A draw needs a title.');
     if (!['new', 'returning'].includes(payload?.category)) errors.push('Category must be "new" or "returning".');
-    if (payload?.endDate && !parseAdminDate(payload.endDate)) errors.push(`Could not read the date "${payload.endDate}".`);
+    if (payload?.date && !parseAdminDate(payload.date)) errors.push(`Could not read the date "${payload.date}".`);
     if (errors.length) return { ok: false, errors };
     return {
         ok: true, errors: [],

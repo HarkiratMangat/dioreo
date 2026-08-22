@@ -30,7 +30,19 @@ function validateSet(ops) {
         tier = Math.max(tier, impl.tier);
         const r = impl.validate(op);
         if (!r.ok) failures.push({ index, errors: r.errors });
-        else normalized.push(r.normalized || op);
+        // 🔴 MERGED onto the original op, never substituted -- most entities' validate() (draw.add/edit,
+        // calendar.add/edit, loadout.add/edit, announcement.post/edit, all built on a shared
+        // validateOne/validateEvent/validateBuild/validatePost helper) deliberately returns ONLY
+        // `{ payload: {...} }` in `normalized`, relying on the caller to carry `type`/`target` forward
+        // from the original op. The old `r.normalized || op` was a straight OR, so any such partial
+        // result silently DISCARDED type/target -- previewSet and commitSet then both call
+        // resolveOp(op.type) on the result and throw "unknown op type \"undefined\"". Confirmed live
+        // against the real server: staging a draw.add validated fine (this bug is invisible to
+        // validateSet's own ok/failures result) and committing it 409'd with exactly that error. A
+        // handful of ops (season.*, loadout.edit/delete, most of patchnotes.js) already return the FULL
+        // op in `normalized`, so `{...op, ...r.normalized}` is a no-op for them -- spreading a full op
+        // over itself changes nothing, which is what keeps this change backward compatible.
+        else normalized.push(r.normalized ? { ...op, ...r.normalized } : op);
     });
     return { ok: failures.length === 0, failures, normalized, tier };
 }
