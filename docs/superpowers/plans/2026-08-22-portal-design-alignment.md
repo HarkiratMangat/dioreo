@@ -84,11 +84,11 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 
 **Why this phase exists:** the audit spec is thorough but self-admittedly incomplete — §7 lists six explicitly unverified items, and the spec itself was corrected once already mid-investigation (§3.4's Manifest finding replaced an earlier, wrong version of itself). A phase whose only job is "go check what's unverified and see if anything else was missed" is cheap insurance against Phase 2 or Phase 3 building on a wrong premise.
 
-- [ ] **Task 1.0: Orient yourself — you are Session A, and you own Phases 1 and 2 of a four-phase, three-session plan.** Read "Session status" and "Session handoff protocol" above in full if you haven't already. Confirm no handoff note exists yet at `local/handoff/` for this plan (there shouldn't be one — you're first). Change the Session status table's Session A row to 🔄 In progress as your first commit, before starting Task 1.1.
+- [x] **Task 1.0: Orient yourself — you are Session A, and you own Phases 1 and 2 of a four-phase, three-session plan.** Read "Session status" and "Session handoff protocol" above in full if you haven't already. Confirm no handoff note exists yet at `local/handoff/` for this plan (there shouldn't be one — you're first). Change the Session status table's Session A row to 🔄 In progress as your first commit, before starting Task 1.1.
 
-- [ ] **Task 1.1: Read the full audit spec and the four source documents it cites.** Files to read: `docs/superpowers/specs/2026-08-22-portal-mockup-vs-live-gap-audit.md` (full), `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` (full — the original portal design decisions), `docs/superpowers/specs/2026-08-21-portal-compose-ui-design.md` (full), and all six mockups at `docs/superpowers/mockups/2026-08-20-portal/*.html`, rendered in a real browser — not read as markup. Do not skip rendering the mockups; the audit spec's own §0 explains why reading CSS is not a substitute for looking at the page.
+- [x] **Task 1.1: Read the full audit spec and the four source documents it cites.** Files to read: `docs/superpowers/specs/2026-08-22-portal-mockup-vs-live-gap-audit.md` (full), `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` (full — the original portal design decisions), `docs/superpowers/specs/2026-08-21-portal-compose-ui-design.md` (full), and all six mockups at `docs/superpowers/mockups/2026-08-20-portal/*.html`, rendered in a real browser — not read as markup. Do not skip rendering the mockups; the audit spec's own §0 explains why reading CSS is not a substitute for looking at the page.
 
-- [ ] **Task 1.2: Resolve the six unverified items in audit spec §7, in order.** For each, produce either a real screenshot (real device or the Cloudflare quick-tunnel technique the original investigation used — `.env.dev`'s portal keys are already populated, see `docs/reference/portal-launch-checklist.md` if the tunnel needs restarting) or a direct code read, and write the finding as a dated addendum to the audit spec (see Task 1.4 for the amendment convention):
+- [x] **Task 1.2: Resolve the six unverified items in audit spec §7, in order.** For each, produce either a real screenshot (real device or the Cloudflare quick-tunnel technique the original investigation used — `.env.dev`'s portal keys are already populated, see `docs/reference/portal-launch-checklist.md` if the tunnel needs restarting) or a direct code read, and write the finding as a dated addendum to the audit spec (see Task 1.4 for the amendment convention):
   1. Armory's real rendering vs. `04-armory-and-commit.html`'s card grid.
   2. Board's real rendering vs. the mockup's Draft/Staged/Blocked/Ready pipeline.
   3. The Commit & diff flow's real rendering vs. the mockup's conflict-callout/typed-confirmation UI (the underlying logic is confirmed real in audit spec §6 — this task is purely about the *visual* treatment).
@@ -96,11 +96,11 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
   5. Confirm whether `season.js`'s hardcoded `state: 'live'` bug (audit spec §3.4) is independently visible on a real device, or fully masked by the header/column overflow.
   6. Check tablet-width (768–1024px) rendering, mockup and real, in both directions.
 
-- [ ] **Task 1.3: Run a sequential-thinking pass asking "what does this audit still not consider?", not "does this audit look complete?"** This is a falsification pass per `.claude/rules/plan-drafting.md` — the question is where the spec is *wrong*, not a review of whether it reads well. Concretely check: has every realm's *empty state* been compared, not just its populated state? Has keyboard navigation/tab order been checked anywhere (the audit only checked `:focus-visible`'s CSS rule exists, never that it's reachable in a real tab sequence)? Does the audit's severity grading in §2–§3 match what a real user would experience, or does it over-index on what happened to be screenshotted first? Are there Discord-side surfaces (the bot's own `/manage` panel) that the portal is supposed to match in *behavior*, not just visuals, that haven't been cross-checked?
+- [x] **Task 1.3: Run a sequential-thinking pass asking "what does this audit still not consider?", not "does this audit look complete?"** This is a falsification pass per `.claude/rules/plan-drafting.md` — the question is where the spec is *wrong*, not a review of whether it reads well. Concretely check: has every realm's *empty state* been compared, not just its populated state? Has keyboard navigation/tab order been checked anywhere (the audit only checked `:focus-visible`'s CSS rule exists, never that it's reachable in a real tab sequence)? Does the audit's severity grading in §2–§3 match what a real user would experience, or does it over-index on what happened to be screenshotted first? Are there Discord-side surfaces (the bot's own `/manage` panel) that the portal is supposed to match in *behavior*, not just visuals, that haven't been cross-checked?
 
-- [ ] **Task 1.4: Amend the audit spec with everything Tasks 1.2–1.3 found.** The audit spec's front matter reads `status: frozen` — in this repo's convention that names the doc's *kind* vocabulary (`spec`-kind docs use frozen/superseded, never live/dead), it is not a ban on correction. Amend it anyway, the same way (see `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md`'s own dated amendment banner for precedent), add a dated `## Addendum — <date>` section at the end rather than rewriting existing findings in place. If Task 1.2 or 1.3 contradicts an earlier finding, strike the old claim rather than deleting it (`~~struck text~~`) and explain why next to it — the audit spec's own §0 exists because a silently-corrected document hides the lesson.
+- [x] **Task 1.4: Amend the audit spec with everything Tasks 1.2–1.3 found.** The audit spec's front matter reads `status: frozen` — in this repo's convention that names the doc's *kind* vocabulary (`spec`-kind docs use frozen/superseded, never live/dead), it is not a ban on correction. Amend it anyway, the same way (see `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md`'s own dated amendment banner for precedent), add a dated `## Addendum — <date>` section at the end rather than rewriting existing findings in place. If Task 1.2 or 1.3 contradicts an earlier finding, strike the old claim rather than deleting it (`~~struck text~~`) and explain why next to it — the audit spec's own §0 exists because a silently-corrected document hides the lesson.
 
-- [ ] **Task 1.5: Write a short completeness note at the top of Phase 2, confirming it's safe to proceed.** One paragraph, prepended to this plan's Phase 2 section: what Phase 1 checked, what it found, and explicit confirmation that Phase 2's task list below still matches reality (or a note on what changed and why, if it doesn't).
+- [x] **Task 1.5: Write a short completeness note at the top of Phase 2, confirming it's safe to proceed.** One paragraph, prepended to this plan's Phase 2 section: what Phase 1 checked, what it found, and explicit confirmation that Phase 2's task list below still matches reality (or a note on what changed and why, if it doesn't).
 
 **Phase 1 exit criteria:** all six §7 items resolved with real evidence; the audit spec has a dated addendum; this plan's Phase 2 section has Task 1.5's completeness note. Do not start Phase 2 without all three.
 
@@ -124,7 +124,7 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 - Consumes: nothing new.
 - Produces: nothing consumed elsewhere — this is a leaf UI change.
 
-- [ ] **Step 1: Add a dedicated `.door a` color rule to `tokens.css`, next to the existing `.door` rule in `shell.css` (audit spec §3.1 confirms `#5865F2` is Discord's real brand color, taken directly from `05-door-broadcast-ops.html`):**
+- [x] **Step 1: Add a dedicated `.door a` color rule to `tokens.css`, next to the existing `.door` rule in `shell.css` (audit spec §3.1 confirms `#5865F2` is Discord's real brand color, taken directly from `05-door-broadcast-ops.html`):**
 
 ```css
 /* shell.css — the login CTA is its own rule, not .accent-fill's shared
@@ -139,7 +139,7 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 }
 ```
 
-- [ ] **Step 2: Add the Discord glyph and drop the shared `accent-fill` class in `shell.js:44`:**
+- [x] **Step 2: Add the Discord glyph and drop the shared `accent-fill` class in `shell.js:44`:**
 
 ```js
 <a class="door-cta" href="/auth/login">
@@ -150,9 +150,9 @@ Confusion between sessions — Session B not knowing Session A changed the plan,
 
 Rename the CSS rule from Step 1 to `.door-cta` to match (both must use the same class name — pick one and use it in both places; `.door-cta` is used here to avoid colliding with the generic `.door a` selector matching any future link added inside `.door`).
 
-- [ ] **Step 3: Boot the portal locally (`node --env-file=.env.dev portal/server.js`) and visually confirm in a real browser at a 375px viewport that the button text is legible and the Discord icon renders.** This is a visual fix — there is no automated test that would catch a contrast regression; the manual check is the test.
+- [x] **Step 3: Boot the portal locally (`node --env-file=.env.dev portal/server.js`) and visually confirm in a real browser at a 375px viewport that the button text is legible and the Discord icon renders.** This is a visual fix — there is no automated test that would catch a contrast regression; the manual check is the test.
 
-- [ ] **Step 4: Commit.**
+- [x] **Step 4: Commit.**
 
 ```bash
 git add portal/ui/shell.js portal/ui/tokens.css
@@ -166,7 +166,7 @@ Implements audit spec §2.2. Values read directly from the approved mockup, not 
 **Files:**
 - Modify: `portal/ui/tokens.css` (add to the existing single `:root` block — see that file's own header comment on why a second `:root` block is a real, previously-shipped bug class)
 
-- [ ] **Step 1: Add these four lines inside the existing `:root { ... }` block, in the "signal" comment section alongside `--patch`/`--warn`/`--ok`:**
+- [x] **Step 1: Add these four lines inside the existing `:root { ... }` block, in the "signal" comment section alongside `--patch`/`--warn`/`--ok`:**
 
 ```css
 --draw: #FF3430;
@@ -175,9 +175,9 @@ Implements audit spec §2.2. Values read directly from the approved mockup, not 
 --play: #8A6BD1;
 ```
 
-- [ ] **Step 2: Boot the portal locally, open Season → Track, and visually confirm the four lane types now render in distinct colors instead of flat grey.**
+- [x] **Step 2: Boot the portal locally, open Season → Track, and visually confirm the four lane types now render in distinct colors instead of flat grey.**
 
-- [ ] **Step 3: Commit.**
+- [x] **Step 3: Commit.**
 
 ```bash
 git add portal/ui/tokens.css
@@ -196,9 +196,9 @@ Implements audit spec §3.4, finding 1. The humanized strings already exist in `
 - Consumes: the existing `[{value, label}]` array at `season.js:23-26`.
 - Produces: a `LANE_LABELS` lookup object other Season code may reuse later — export it if `season.js` doesn't already have a barrel export pattern; check the file's existing `module.exports`/`export` shape first and match it.
 
-- [ ] **Step 0: Confirm the real module boundary before writing anything.** `season.js`'s existing header comments (and every other realm's `*.logic.js` file) establish the pattern of a pure-logic file loaded as a classic `<script>`, required via CommonJS in Node tests — but do not assume `LANE_LABELS` belongs in a NEW `season.logic.js` versus directly in `season.js` versus an existing one. Read `season.js` in full, check whether a `season.logic.js` already exists (it wasn't seen during the audit, which read `season.js` but not exhaustively enumerated `portal/ui/`), and pick the real path before Step 1's `require(...)` can be anything but a placeholder.
+- [x] **Step 0: Confirm the real module boundary before writing anything.** `season.js`'s existing header comments (and every other realm's `*.logic.js` file) establish the pattern of a pure-logic file loaded as a classic `<script>`, required via CommonJS in Node tests — but do not assume `LANE_LABELS` belongs in a NEW `season.logic.js` versus directly in `season.js` versus an existing one. Read `season.js` in full, check whether a `season.logic.js` already exists (it wasn't seen during the audit, which read `season.js` but not exhaustively enumerated `portal/ui/`), and pick the real path before Step 1's `require(...)` can be anything but a placeholder.
 
-- [ ] **Step 1: Write the failing test.** In `scripts/seasonOps.test.js`, add (replace `PATH-NOT-YET-CONFIRMED` with what Step 0 found):
+- [x] **Step 1: Write the failing test.** In `scripts/seasonOps.test.js`, add (replace `PATH-NOT-YET-CONFIRMED` with what Step 0 found):
 
 ```js
 const { LANE_LABELS } = require('PATH-NOT-YET-CONFIRMED'); // Step 0 below finds the real path — do not run this until it's replaced
@@ -210,9 +210,9 @@ test('LANE_LABELS humanizes every internal lane key used by toManifestRows', () 
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails** (`LANE_LABELS` doesn't exist yet).
+- [x] **Step 2: Run it to verify it fails** (`LANE_LABELS` doesn't exist yet).
 
-- [ ] **Step 3: Build `LANE_LABELS` from the existing lane-choice array and apply it to the column.** Derive it rather than hand-writing a second copy, so the two can't drift:
+- [x] **Step 3: Build `LANE_LABELS` from the existing lane-choice array and apply it to the column.** Derive it rather than hand-writing a second copy, so the two can't drift:
 
 ```js
 const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', calendar: 'Event' };
@@ -224,11 +224,11 @@ const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', ca
 
   If `Manifest`'s column config has no per-column formatter today, add one (`columns[].format?: (value, row) => string`) to `portal/ui/manifest.js`'s render function, defaulting to the raw value so every other realm's existing column config keeps working unchanged. Then set `SEASON_COLUMNS`' `lane` entry to `{ key: 'lane', label: 'Type', format: (v) => LANE_LABELS[v] || v }`.
 
-- [ ] **Step 4: Run the test again to verify it passes.**
+- [x] **Step 4: Run the test again to verify it passes.**
 
-- [ ] **Step 5: Boot the portal locally, open Season → Manifest, confirm the Type column shows "New draw" etc. instead of `newDraws`.**
+- [x] **Step 5: Boot the portal locally, open Season → Manifest, confirm the Type column shows "New draw" etc. instead of `newDraws`.**
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add portal/ui/season.js portal/ui/manifest.js scripts/seasonOps.test.js

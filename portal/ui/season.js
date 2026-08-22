@@ -12,11 +12,7 @@ import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
 
-// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as
-// buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js
-// can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4
-// finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since
-// nothing humanized it for display.
+// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
     { key: 'lane', label: 'Type', render: (row) => LANE_LABELS[row.lane] || row.lane },

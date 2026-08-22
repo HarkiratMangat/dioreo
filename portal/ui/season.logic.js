@@ -2,8 +2,7 @@
 //
 // 🔴 THE MANIFEST ROW'S `lane` ('newDraws'/'returningDraws'/'calendar' — the SeasonalData ARRAY PATH name, see season.js's toManifestRows) is NOT the vocabulary core/ops/draws.js's validate() accepts for payload.category/target.category ('new'/'returning' — see LANE_TO_CATEGORY below). Passing the lane straight through fails validation silently differently than expected; this mapping is the fix, found by reading core/ops/draws.js's validateOne() before writing this file.
 const LANE_TO_CATEGORY = { newDraws: 'new', returningDraws: 'returning' };
-// The Manifest column's own humanized label for a row's lane -- gap audit §3.4 finding 1.
-// Season.js references this as a bare global (loaded before it, same as everything else here).
+// The Manifest column's own humanized label for a row's lane -- gap audit §3.4 finding 1. Season.js references this as a bare global (loaded before it, same as everything else here).
 const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', calendar: 'Event' };
 const KIND_TO_ENTITY = { draw: 'draw', returning: 'draw', event: 'calendar', playlist: 'calendar' };
 const KIND_TO_DRAW_CATEGORY = { draw: 'new', returning: 'returning' };
