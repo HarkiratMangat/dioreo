@@ -8694,9 +8694,11 @@ function buildCompanions() {
         + '/security /contributing#security-vulnerabilities 302\n'
         // The chronicle family's landing page. Pages already serves the directory index, so this exists for the bare, no-slash form a person types or a Discord message carries — /changelog, not /changelog/.
         + '/changelog /changelog/ 302\n'
-        + `/install ${INSTALL_URL} 302\n`);
+        + `/install ${INSTALL_URL} 302\n`
+        // The web admin portal lives on its own subdomain (spec decision 8: a host-only session cookie must never be sent to dioreo.app), so this is a convenience alias for the shorter, more memorable path -- same shape as /install pointing at an external target. Was hand-edited directly into a prior build of public/_redirects (bypassing the generator entirely, which every rebuild since then silently discarded) rather than added here; found when CI's "public/ is up to date" gate caught the drift.
+        + '/portal https://portal.dioreo.app/ 302\n');
     console.log('  ✓ _redirects (/legal/* → flat paths, /security → contributing#security, '
-        + '/changelog → /changelog/, /install → Discord)');
+        + '/changelog → /changelog/, /install → Discord, /portal → portal.dioreo.app)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason it was reversed is worth keeping: CONTRIBUTING was pulled the first time because a link audit found it shipped four dead links and because it documents working on a repo the reader might not be able to see. Both objections are now answered — CONTRIBUTORS.md is published so that link resolves, the rest degrade to inert text via PUBLISHED_TARGETS, and the header carries a repo link on every page. linkAudit() enforces the first part on every build rather than trusting this note.
 }
