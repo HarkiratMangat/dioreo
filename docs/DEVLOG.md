@@ -196,6 +196,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-20 22:55 EDT — A deferred item nobody filed, and two costs that were not costs (v3.57.0)
 - 2026-08-21 12:31 EDT — Parallelizing the test suite, and the bugs sharding almost shipped (v3.58.0)
 - 2026-08-21 19:05 EDT — The operation core's own sharp edges — plan 2 wired, and what a second caller exposed (v3.59.0)
+- 2026-08-22 10:47 EDT — The portal doesn't look like its own mockups (v3.61.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3405,6 +3406,14 @@ Eight more real bugs came out of the same pass, most of them the unglamorous kin
 A second, smaller pass fixed 7 lower-severity findings from the same review rather than leaving them as a "known cleanup" note nobody would act on — a duplicated `resortByDate` hoisted to a shared home, a fragile post-commit re-read replaced by surfacing the data on the op's own result, a 31-times-repeated error-extraction expression collapsed into one helper, some dead exports removed, one doc section that still described a retired mechanism corrected. None of them changed behavior; all of them make the next person's read of this code shorter.
 
 The throughline, if there is one: an operation-core pattern is only as safe as its SECOND real caller. Plan 1 built and tested `commitSet` against one entity calling it one way. Plan 2 added five more callers with genuinely different shapes — multi-page action registration, array-valued inverses, bulk upserts that both create and update — and every one of those differences is exactly where the two core-level bugs were hiding. The lesson isn't "test more" in the abstract; it's that a shared mechanism's test suite needs at least one caller from every *shape* of caller it will actually have, not just coverage of the mechanism's own internal logic in isolation.
+
+## 2026-08-22 10:47 EDT — The portal doesn't look like its own mockups (v3.61.0-pre)
+
+Harkirat asked for a mobile-friendliness pass on the live portal, viewed on a real phone through a Cloudflare quick-tunnel session against the dev bot. The first read of it was CSS-shaped: missing color tokens, no responsive breakpoints. Asked directly whether the live portal even remotely resembles its six approved mockups, actually rendering them side by side with real screenshots showed something the CSS framing missed entirely — whole designed surfaces were simplified away during implementation, not just left unstyled. Access shipped as three plain text inputs where the mockup specs a full admin-times-permission grid. The login page shipped with no Discord branding at all — reproduced live in an artifact, literal black text on a near-black button. Every realm's explanatory masthead copy never made it into the build.
+
+Two tracked docs now carry the investigation: a gap-audit spec with every finding graded by evidence strength, and a 4-phase, 3-session implementation plan with a live session-status table and an explicit local/handoff/ protocol so the three future sessions executing it don't lose context between each other. The audit was corrected twice mid-investigation after actually reading the component code instead of assuming — Season's Manifest already has a working filter/sort/ state-pill engine, and Access's permission data already exists server-side, both narrower gaps than first assumed. A cold sub-agent reader-tested both documents with zero conversation context and caught 6 real defects before they shipped, worst among them a document telling its reader it was status:live while its own front matter said frozen.
+
+Also fixed along the way: scripts/cloudflared-config.yml's ingress target was the literal unexpanded string ${PORTAL_PORT} — cloudflared does no env-var expansion and nothing in this repo ran envsubst on install, so the tunnel would have 502'd every request the first time it was installed for real. And docs/reference/portal-launch-checklist.md is marked superseded in priority — deploying today's portal to prod would ship the skeleton this audit found, not the intended product.
 
 # Part B — Lessons Ledger (thematic)
 

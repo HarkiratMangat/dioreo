@@ -5,16 +5,18 @@ status: live
 
 # Web admin portal — production launch checklist
 
-The portal (`portal.dioreo.app`) is fully built on `feat/portal-operation-core`, developed and verified entirely against the `Dioreo (Dev)` Discord application and a local Mongo — never against prod. Merging the branch only updates code on GitHub; none of the steps below happen automatically, and as of the last check (2026-08-21 23:48 EDT) none of them have been done. This file is the single place that tracks whether each one is.
+The portal (`portal.dioreo.app`) is fully built and, as of PR #168 (`009931a`, merged 2026-08-21 23:44 EDT, `v3.60.0-pre`), merged into `v3-pre-release` — developed and verified entirely against the `Dioreo (Dev)` Discord application and a local Mongo, never against prod. Merging the branch only updates code on GitHub; none of the steps below happen automatically, and as of the last check (2026-08-22 09:20 EDT) none of them have been done. This file is the single place that tracks whether each one is.
 
 Consolidated 2026-08-21 23:48 EDT from two places that used to say part of this each: `docs/ROADMAP.md`'s web-admin-portal bullet (the "why" and the plan links) and `docs/reference/deployment-and-ops.md`'s "Web admin portal" section (the "how" — exact commands, config keys, unit files). Both now point here for status; neither duplicates this checklist.
 
+⚠️ **Superseded in priority, 2026-08-22 10:42 EDT (Harkirat's call) — do not work this checklist before `docs/superpowers/plans/2026-08-22-portal-design-alignment.md`'s Phase 3/4 land.** Viewing the live portal on a real device the same day this file was last updated showed it doesn't resemble its own approved mockups (`docs/superpowers/specs/2026-08-22-portal-mockup-vs-live-gap-audit.md`) — whole designed surfaces were simplified away during implementation, not just left unstyled. Deploying *that* to prod and registering real Discord OAuth for it would ship the skeleton, not the intended product. This file's steps are still real and still needed eventually — nothing below is wrong — they're just not the next thing to do. Re-check this note once the design-alignment plan's Session status table shows Phase 3/4 complete.
+
 ## Status
 
-- [ ] **Deploy the code to the VM.** `git pull` + `scripts/deploy.sh` (or a manual first pull) once the branch has merged to `v3-pre-release`.
-- [ ] **Register real Discord OAuth credentials for prod.** A redirect URI + `DISCORD_OAUTH_CLIENT_ID`/`DISCORD_OAUTH_CLIENT_SECRET` for whichever Discord application will serve the portal in prod, set in the VM's `.env` alongside `PORTAL_PUBLIC_URL`/`PORTAL_PORT`. Every session on this branch has only ever tested against the `Dioreo (Dev)` application's own client secret and an `http://localhost` redirect URI (`docs/ROADMAP.md`'s plan-3 note) — this step has never been done for prod.
+- [ ] **Deploy the code to the VM.** `git pull` + `scripts/deploy.sh` (or a manual first pull) — the branch is already merged to `v3-pre-release` as of PR #168, so this is unblocked.
+- [ ] **Register real Discord OAuth credentials for prod.** A redirect URI (`https://portal.dioreo.app/auth/callback`) + `DISCORD_OAUTH_CLIENT_ID`/`DISCORD_OAUTH_CLIENT_SECRET` for the live `Dioreo` application (`1491474871778021550`), set in the VM's `.env` alongside `PORTAL_PUBLIC_URL=https://portal.dioreo.app`/`PORTAL_PORT=8787`. Every session on this branch has only ever tested against the `Dioreo (Dev)` application's own client secret and an `http://localhost` redirect URI (`docs/ROADMAP.md`'s plan-3 note) — this step has never been done for prod. Per the design spec §10, **Harkirat creates the client secret and registers the redirect URI himself**; Claude does not handle the credential.
 - [ ] **Install the two systemd units for the first time.** `dioreo-portal.service` and `cloudflared.service` exist as files in this repo (`scripts/dioreo-portal.service`, `scripts/cloudflared-config.yml`) but have never been installed on the VM. Before installing, re-measure VM headroom (`free -m`) against the ~250MB-available threshold noted in the portal design spec §7/§12 — the VM is an `e2-micro` already running the bot as a second resident process.
-- [ ] **Verify the Cloudflare Tunnel actually routes `portal.dioreo.app`.** `cloudflared-config.yml` points the hostname at `http://127.0.0.1:${PORTAL_PORT}`; confirm DNS + the tunnel credentials file are in place and the route resolves.
+- [ ] **Verify the Cloudflare Tunnel actually routes `portal.dioreo.app`.** `cloudflared-config.yml` points the hostname at a literal `http://127.0.0.1:8787` (fixed 2026-08-22 — it previously read the unexpanded template `${PORTAL_PORT}`, which cloudflared cannot substitute and would have 502'd every request; kept in sync BY HAND with `PORTAL_PORT` in `.env`); confirm DNS + the tunnel credentials file are in place and the route resolves.
 
 Full command-level detail for each step (exact systemd commands, `journalctl` checks, how to take either unit down without touching the bot) lives in `docs/reference/deployment-and-ops.md`'s "Web admin portal" section — this file tracks *whether* each step is done, that file explains *how* to do it.
 
@@ -24,7 +26,7 @@ Check off a line the moment that step is actually done on the real VM, not when 
 
 ## Full audit trail
 
-Everything that produced the portal, in order, so a future session can reconstruct the whole history without re-deriving it. All of `feat/portal-operation-core`; not yet merged as of this writing.
+Everything that produced the portal, in order, so a future session can reconstruct the whole history without re-deriving it. All of `feat/portal-operation-core`, squash-merged as PR #168 (`009931a`) and deleted per this repo's branch-hygiene convention — it no longer exists as a ref.
 
 **Design (tracked):**
 - `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` — the original spec: the operation-core algebra, the five realms, the tier-1/2/3 changeset model, OAuth, and the reasoning behind all of it. Six premises measured live, 34 defects found and fixed across three falsification passes before any code.
