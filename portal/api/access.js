@@ -38,6 +38,32 @@ function singlePointsOfFailure(admins) {
     return spof;
 }
 
+// Human-readable column labels for MANAGE_PAGE_SCOPES -- read from commands/manage.js's own content-picker choices (the real, already-shipped display names) rather than inventing new copy, per this repo's naming convention.
+const PAGE_LABELS = {
+    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP', loadouts_dmz: 'DMZ',
+    patchnotes: 'Patch Notes', seasondraft: 'Season Draft', season: 'Season', announcement: 'Announcement',
+};
+const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot' };
+
+// Gap audit §3.2: the permission-grid data this needs already exists (getAdminPermissionsMap, MANAGE_PAGE_SCOPES) -- this reuses the EXACT same scope enumeration singlePointsOfFailure() above already established, rather than a second list that could drift from it. Shaped for a grid component directly (rows=admins, columns=scopes), not a raw dump of AdminUser docs.
+function buildPermissionMatrix(admins) {
+    const scopes = [
+        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command' })),
+        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page' })),
+    ];
+    const rows = admins.map((admin) => {
+        const perms = admin.permissions || [];
+        const grants = {};
+        for (const scope of scopes) {
+            grants[scope.key] = scope.kind === 'page'
+                ? (perms.includes('manage') || perms.includes(scope.key))
+                : perms.includes(scope.key);
+        }
+        return { discordId: admin.discordId, grants };
+    });
+    return { admins: rows, scopes };
+}
+
 function register(route) {
     const { requireAdmin } = require('../auth');
 
@@ -45,6 +71,11 @@ function register(route) {
         const admins = await AdminUser.find({}).lean();
         const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
         sendJson(res, 200, { admins, sessions, singlePointsOfFailure: singlePointsOfFailure(admins) });
+    })));
+
+    route('GET', /^\/api\/access\/matrix$/, requireAdmin(ownerOnly(async (req, res) => {
+        const admins = await AdminUser.find({}).lean();
+        sendJson(res, 200, buildPermissionMatrix(admins));
     })));
 
     route('POST', /^\/api\/access\/grant$/, requireAdmin(ownerOnly(async (req, res, url, session) => {
@@ -82,4 +113,4 @@ function register(route) {
     })));
 }
 
-module.exports = { register, singlePointsOfFailure };
+module.exports = { register, singlePointsOfFailure, buildPermissionMatrix };

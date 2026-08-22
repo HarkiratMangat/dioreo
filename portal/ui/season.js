@@ -12,9 +12,10 @@ import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
 
+// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
-    { key: 'lane', label: 'Type' },
+    { key: 'lane', label: 'Type', render: (row) => LANE_LABELS[row.lane] || row.lane },
     { key: 'window', label: 'Window', dataKind: 'date' },
     { key: 'state', label: 'State' },
 ];
@@ -25,23 +26,6 @@ const ADD_KINDS = [
     { value: 'event', label: 'Event' },
     { value: 'playlist', label: 'Playlist' },
 ];
-
-function toManifestRows(live) {
-    if (!live) return [];
-    const rows = [];
-    for (const key of ['newDraws', 'returningDraws', 'calendar']) {
-        for (const item of live[key] || []) {
-            rows.push({
-                // The full item ships on the row (not just the display fields below) so buildSeasonEditOp has every field draw.edit/calendar.edit's validate() needs -- an edit op built from a display-only row would silently drop items/startDate/category on every commit.
-                ...item,
-                id: item._id, title: item.title, lane: key, state: 'live',
-                // A draw's real schema field is `date` (no separate start/end); calendar events have both `date`(start) and `endDate`. This pre-existing display line always fell to '—' for every draw before this fix, since item.endDate is never set on a draw record.
-                window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
-            });
-        }
-    }
-    return rows;
-}
 
 // Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect -- deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/ 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event', matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own consumer rather than one row shape trying to serve two different vocabularies. `startDate` is synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js.
 function toTrackItems(live, path, lane) {
@@ -137,8 +121,8 @@ export function SeasonRealm({ session }) {
         fetchChangesets('season').then(setChangesets);
     }
 
-    // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra argument) -- deliberately scoped out of this pass rather than reaching for a native prompt(), which this session already removed from Access's Revoke for the same UX reason. Stage deletion and Export selection need no such input and are built here.
-    const allRows = toManifestRows(state.live);
+    // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra argument) -- deliberately scoped out of this pass rather than reaching for a native prompt(), which this session already removed from Access's Revoke for the same UX reason. Stage deletion and Export selection need no such input and are built here. toManifestRows/stateForElement now live in season.logic.js (bare global, same pattern as LANE_LABELS above) -- real state derivation needs `changesets` (already fetched for Board), so it moved out of a browser-only local function to become properly testable.
+    const allRows = toManifestRows(state.live, changesets);
     function rowsById(ids) { return allRows.filter((r) => ids.includes(r.id)); }
 
     async function handleBulkDelete(ids) {

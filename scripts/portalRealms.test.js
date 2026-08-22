@@ -1,7 +1,7 @@
 // scripts/portalRealms.test.js Task 6's four realms reuse <Shell>/<Manifest> unchanged and supply only their view layer (spec §8.2). Their pure functions already live in portal/api/*.js (coverageFlags, singlePointsOfFailure, the event-river merge) rather than a duplicate .logic.js copy — this file is what tests them as data, matching scripts/portalUi.test.js's "render functions are pure" story.
 const assert = require('assert');
 const { coverageFlags } = require('../portal/api/armory');
-const { singlePointsOfFailure } = require('../portal/api/access');
+const { singlePointsOfFailure, buildPermissionMatrix } = require('../portal/api/access');
 
 let failures = 0;
 function check(name, fn) {
@@ -39,6 +39,22 @@ check('Access By-scope does NOT flag a scope held by two or more admins', () => 
     const admins = [{ discordId: 'A', permissions: ['bot'] }, { discordId: 'B', permissions: ['bot'] }];
     const spof = singlePointsOfFailure(admins);
     assert.ok(!spof.some(s => s.scope === 'bot'), 'a scope held by two admins is not a single point of failure');
+});
+
+check('buildPermissionMatrix grants every manage.<page> scope for bare "manage"', () => {
+    const { admins, scopes } = buildPermissionMatrix([{ discordId: 'A', permissions: ['manage'] }]);
+    assert.ok(scopes.some(s => s.key === 'manage.draws' && s.kind === 'page'));
+    assert.ok(scopes.some(s => s.key === 'bot' && s.kind === 'command'));
+    assert.strictEqual(admins[0].grants['manage.draws'], true);
+    assert.strictEqual(admins[0].grants['manage.loadouts_dmz'], true);
+    assert.strictEqual(admins[0].grants.bot, false, 'bare "manage" grants every /manage page, never bot/autobuild');
+});
+
+check('buildPermissionMatrix grants only the named page for a scoped admin', () => {
+    const { admins } = buildPermissionMatrix([{ discordId: 'B', permissions: ['manage.calendar', 'bot'] }]);
+    assert.strictEqual(admins[0].grants['manage.calendar'], true);
+    assert.strictEqual(admins[0].grants['manage.draws'], false);
+    assert.strictEqual(admins[0].grants.bot, true);
 });
 
 const { buildSeasonAddOp, buildSeasonEditOp } = require('../portal/ui/season.logic');

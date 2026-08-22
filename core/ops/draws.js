@@ -26,7 +26,8 @@ function validateOne(payload) {
     const errors = [];
     if (!payload?.title?.trim()) errors.push('A draw needs a title.');
     if (!['new', 'returning'].includes(payload?.category)) errors.push('Category must be "new" or "returning".');
-    if (payload?.date && !parseAdminDate(payload.date)) errors.push(`Could not read the date "${payload.date}".`);
+    // Live bug, reproduced 2026-08-22 15:20 EDT: handlers/manage/draws.js's addDraw/editDraw already parse the modal's raw date string via parseAdminDate() before building the op payload, so payload.date always arrives here as a real Date instance, never a string -- re-running it through parseAdminDate() called dateStr.trim() on a Date and crashed uncaught, on every single draw add/edit. core/ops/calendar.js's validateEvent already guards this exact hazard (isAlreadyDated); mirrored here rather than re-parsing a value that's already valid by construction (a real Date instance can't be an unparseable date the way a string can).
+    if (payload?.date && !(payload.date instanceof Date) && !parseAdminDate(payload.date)) errors.push(`Could not read the date "${payload.date}".`);
     if (errors.length) return { ok: false, errors };
     return {
         ok: true, errors: [],
