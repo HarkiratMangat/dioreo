@@ -136,6 +136,24 @@ async function route(interaction) {
     if (interaction.isButton() && customId === 'bot_changes_clearfilters') {
         return await renderAnalyticsPage(interaction, 'changes', { changesState: { page: 0 } });
     }
+    // 🔴 THE ROUTER'S bot_ -> hasCommandAccess(userId,'bot') GUARD IS NOT SUFFICIENT HERE. It proves only "this user has SOME /bot access" -- the 'bot' token is grantable to any admin purely for analytics. It does NOT prove they may mutate the /manage page the change belongs to. Without this independent re-check, an admin granted 'bot' to read analytics could revert changes on pages they hold no scope for -- a privilege escalation in the one control that writes to live data from a read-only surface. Same shape /bot access and bot_hp_restart already use.
+    if (interaction.isButton() && customId.startsWith('bot_revert_')) {
+        const changeId = customId.replace('bot_revert_', '');
+        const { getChange } = require('../utils/changeStore');
+        const { hasManagePageAccess } = require('../utils/adminAccess');
+        const row = await getChange(changeId);
+        if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
+            return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+        }
+        await interaction.deferReply({ ephemeral: true });
+        const { revertChange } = require('../core/revert');
+        const result = await revertChange(changeId, { actorId: interaction.user.id });
+        if (!result.ok) {
+            return await interaction.followUp({ content: `❌ ${result.reason}` });
+        }
+        // Matches handleUndo's own pattern (handlers/manage/shared.js) -- a plain confirmation followUp, no re-render. The interaction is already acknowledged via deferReply/followUp above; deferUpdate() (what renderAnalyticsPage needs to refresh the panel in place) cannot be called on an interaction a second time. Re-opening the Changes page shows the update.
+        return await interaction.followUp({ content: `↩️ **Reverted** \`${changeId}\`.` });
+    }
 
     // --- ACCESS PAGE (ported from the retired handlers/manage/admins.js) ---
     if (interaction.isButton() && customId === 'bot_admin_grant') {

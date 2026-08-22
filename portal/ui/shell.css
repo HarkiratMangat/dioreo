@@ -1,0 +1,22 @@
+/* portal/ui/shell.css — chrome shared by every realm (rail, tabs, panel scaffolding). */
+.top{position:sticky;top:0;z-index:30;background:rgba(15,20,24,.93);backdrop-filter:blur(9px);
+  border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
+.mk{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.16em;font-weight:600}
+.mk b{color:var(--patch);font-weight:600}
+.rail{display:flex;gap:3px;margin-left:12px}
+.rail a{color:var(--ink3);font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:4px;
+  text-decoration:none;text-transform:capitalize}
+.rail a.active{background:var(--raised);color:var(--ink)}
+.rail a:hover{color:var(--ink2)}
+.tabs{display:flex;gap:3px;margin-left:12px;background:var(--sunk);padding:3px;border-radius:var(--radius);
+  border:1px solid var(--rule)}
+.tab{appearance:none;background:none;border:0;color:var(--ink3);font-size:12.5px;font-weight:600;
+  padding:5px 13px;border-radius:4px}
+.tab[aria-selected=true]{background:var(--raised);color:var(--ink)}
+.top .r{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3)}
+.panel{border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);overflow:hidden;margin:16px 24px}
+.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);
+  border-bottom:1px solid var(--rule)}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.door{max-width:420px;margin:15vh auto;text-align:center}
+.door a{display:inline-block;margin-top:12px;padding:10px 20px;border-radius:var(--radius);text-decoration:none;font-weight:700}

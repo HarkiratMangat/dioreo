@@ -1,0 +1,90 @@
+/* portal/ui/tokens.css
+ *
+ * The portal's palette — "blued steel" (spec §9), distinct from the public site's violet-graphite
+ * (legal) and green-black (chronicle) while obviously the same house.
+ *
+ * ⚠️ ONE :root BLOCK, DELIBERATELY. scripts/buildLegalPages.js's contrastAudit() reads `--name: #hex`
+ * declarations and has previously shipped a gate that silently matched only the FIRST :root{} block
+ * in a file — 63 pairs passed while three signals sat at 1.47:1. Splitting these tokens across two
+ * :root blocks would reproduce that exact defect against a different file.
+ */
+:root {
+    /* surfaces */
+    --desk: #0F1418;
+    --paper: #171E24;
+    --raised: #1F272E;
+    --sunk: #0B0F12;
+    --rule: #2A343D;
+
+    /* ink — text sits on --desk/--paper/--raised, never used as a fill */
+    --ink: #E8EDF1;
+    --ink2: #9DAAB4;
+    --ink3: #80909D; /* spec sect9 literally gives #6E7C87 here, which FAILS WCAG AA -- as low as
+       3.53:1 on --raised -- caught by actually running portalContrastAudit against real input
+       (Task 4 Step 4). Same blue-grey hue, scaled up (~1.16x per channel) to clear 4.5:1 against
+       every portal background with margin (4.61:1 on --raised, the worst case). Flagged as a
+       spec correction, not a silent edit -- see the portal build's audit log / final report. */
+
+    /* signal — shape carries state, colour carries topic (spec §9); these three are the
+       state-signal exception: patch/warn/ok read as status regardless of topic accent */
+    --patch: #F2C230;
+    --warn: #FF7A45;
+    --ok: #3DDC97;
+
+    /* geometry */
+    --radius: 6px;
+
+    /* the ink used ON TOP of a topic-accent fill -- design-system audit found 4 separate hardcoded #000/#000000 literals for this one concept across tokens.css/track.css/manifest.css/board.css */
+    --on-accent: #000000;
+}
+
+body {
+    background: var(--desk);
+    color: var(--ink);
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Every date, count, id and code is mono so numerals align in columns (spec §9). */
+.mono, .track-ruler, .track-date, .board-id, .manifest-cell[data-kind="date"],
+.manifest-cell[data-kind="id"], .manifest-cell[data-kind="code"] {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* SHAPE carries state — solid fill = live, hollow dashed = staged, diagonal hatch = conflict.
+   Colour is the topic's own accent, applied via --topic-accent on the element (never a class). */
+.bar {
+    border-radius: var(--radius);
+    border: 1px solid var(--rule);
+}
+.bar.live {
+    background: var(--topic-accent, var(--raised));
+    border-style: solid;
+}
+.bar.stag {
+    background: transparent;
+    border: 1px dashed var(--topic-accent, var(--ink3));
+}
+.bar.conf {
+    background: repeating-linear-gradient(45deg, var(--topic-accent, var(--warn)) 0 4px, transparent 4px 8px);
+    border-color: var(--warn);
+}
+
+/* The accent is a FILL, never a text colour (proven floor 4.58:1 with #000 ink — see the
+   /commands page's own history of solving an embed hue into readable text and getting brown). */
+.accent-fill {
+    background: var(--topic-accent, var(--raised));
+    color: var(--on-accent);
+}
+
+/* Accessibility review findings: no visible focus indicator anywhere, and every input relied on
+   placeholder text alone (WCAG 2.4.7 / 3.3.2) -- the approved mockup HAD a focus-visible rule that
+   did not make it into this file. */
+:focus-visible {
+    outline: 2px solid var(--patch);
+    outline-offset: 2px;
+}
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+

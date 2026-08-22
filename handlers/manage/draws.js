@@ -1,15 +1,16 @@
 // ==========================================
 // /manage — DRAWS PAGE
 // ==========================================
-// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for registerUndo/undoButtonRow/thumbnailNote/resolveThumbnailsForDraws/upsertDrawsByTitle/ loadOrCreateSeasonalDoc, all shared with calendar.js/season.js.
+// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for thumbnailNote/resolveThumbnailsForDraws/extractCommitError/loadOrCreateSeasonalDoc, all shared with calendar.js/season.js -- the old in-memory Undo mechanism that also used to live there was retired in plan 2 Task 7.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Every function here is awaited from inside handlers/router.js's single top-level try/catch (via handlers/manage/index.js) -- do NOT add a try/catch here that swallows, and keep every error-branch reply an AWAITED call. See .claude/rules/interaction-router.md.
+//
+// ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of the portal operation core (plan 1 Task 6, 2026-08-20 23:51 EDT). Every mutation body below used to read the document, mutate it in memory, .save() it, then call utils/changeStore.js's recordChange() -- that write path still exists (utils/changeStore.js) but this page no longer calls it directly. commitSet() applies the op transactionally, records the ChangeLog row itself with an `inverse`, and returns the changeId. Undo for draws-page changes now lives on /bot analytics' Changes page (core/revert.js, Task 7) instead of the inline Undo button that used to render here -- that mechanism is simply GONE from this file, not replaced. Modal parsing and reply formatting are UNTOUCHED; only the mutate+audit section of each function changed. See core/ops/draws.js for the op contract, and its own header for two real defects (bulkReplace's merge semantics, and the bulk-parse payload shape) found and fixed during this exact integration pass.
 
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
-const { recordChange } = require('../../utils/changeStore');
+const { commitSet } = require('../../core/changeset');
 const {
-    registerUndo, undoButtonRow, thumbnailNote, resolveThumbnailsForDraws,
-    upsertDrawsByTitle, loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle
+    thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
 } = require('./shared');
 
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
@@ -61,12 +62,14 @@ async function addDraw(interaction) {
         newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url };
     }
 
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
-    arrayTarget.push(newDrawObj);
-    arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
-    await seasonalDoc.save();
-    recordChange({ actorId: interaction.user.id, page: 'draws', action: 'add', model: 'SeasonalData', target: newDrawObj.title, summary: `Added ${drawType} draw "${newDrawObj.title}"` });
+    const result = await commitSet(
+        [{ type: 'draw.add', payload: { ...newDrawObj, category: drawType } }],
+        { actorId: interaction.user.id }
+    );
+    if (!result.ok) {
+        const why = extractCommitError(result);
+        return await interaction.followUp({ content: `❌ ${why}` });
+    }
 
     let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
     if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
@@ -79,6 +82,7 @@ async function editDraw(interaction) {
     const { toTitleCase, parseItemLine, parseAdminDate } = require('../../utils/adminParser');
     const [_, __, targetId, drawType] = interaction.customId.split('_');
 
+    // Existence pre-check kept exactly as before the refactor -- draw.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
     const seasonalDoc = await loadOrCreateSeasonalDoc();
     const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
     const drawIndex = arrayTarget.findIndex(d => d._id.toString() === targetId);
@@ -88,8 +92,6 @@ async function editDraw(interaction) {
         const parsedDrawDate = parseAdminDate(drawDateStr);
         if (!parsedDrawDate) return interaction.followUp({ content: `❌ Date "${drawDateStr}" wasn't understood -- nothing was saved.` });
         const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
-        arrayTarget[drawIndex].title = newTitle;
-        arrayTarget[drawIndex].date = parsedDrawDate;
 
         // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. A blank field with no cache hit at all is a real validation error -- the draw needs SOME thumbnail, so this rejects the edit rather than saving with a broken image field.
         const rawUrl = interaction.fields.getTextInputValue('url');
@@ -97,116 +99,106 @@ async function editDraw(interaction) {
         if (!thumbResult.url) {
             return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${newTitle}" -- provide a thumbnail URL.` });
         }
-        arrayTarget[drawIndex].thumbnailUrl = thumbResult.url;
 
         const rawItems = interaction.fields.getTextInputValue('items');
-        arrayTarget[drawIndex].items = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
+        const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
 
-        arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
-        await seasonalDoc.save();
-        recordChange({ actorId: interaction.user.id, page: 'draws', action: 'edit', model: 'SeasonalData', target: newTitle, summary: `Edited ${drawType} draw "${newTitle}"` });
-        let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases <t:${Math.floor(new Date(arrayTarget[drawIndex].date).getTime() / 1000)}:D>).`;
+        const result = await commitSet(
+            [{ type: 'draw.edit', target: { elementId: targetId, category: drawType },
+               payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems } }],
+            { actorId: interaction.user.id }
+        );
+        if (!result.ok) {
+            const why = extractCommitError(result);
+            return await interaction.followUp({ content: `❌ ${why}` });
+        }
+
+        let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
         const editThumbNote = thumbnailNote(thumbResult);
         if (editThumbNote) confirmation += `\n${editThumbNote}`;
         return interaction.followUp({ content: confirmation });
     }
 }
 
-// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed.
+// --- BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE --- custom_id: modal_draws_bulk_{add|replace}_both One modal, two independently-optional fields -- only whichever field was actually filled in gets touched. Replace upserts by fuzzy-matched title (update in place, keep _id) rather than wholesale- overwriting the array; Add just appends everything parsed. Both categories commit in ONE changeset (matching the pre-core handler's single seasonalDoc.save() for both).
 async function bulkAddOrReplaceDraws(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const { parseBulkDrawList } = require('../../utils/adminParser');
     const customId = interaction.customId;
     const mode = customId === 'modal_draws_bulk_add_both' ? 'add' : 'replace';
+    const opType = mode === 'add' ? 'draw.bulkAdd' : 'draw.bulkReplace';
     const newText = interaction.fields.getTextInputValue('new_text')?.trim();
     const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
 
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const updated = [];
-    const allSkipped = [];
-    const allWarnings = [];
-    // Snapshot BEFORE mutating either array, so Undo can restore exactly what was there.
-    const prevNew = seasonalDoc.newDraws;
-    const prevReturning = seasonalDoc.returningDraws;
-
-    if (newText) {
-        const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(newText));
-        const { finalArray, updatedCount, insertedCount } = mode === 'add'
-            ? { finalArray: [...seasonalDoc.newDraws, ...validDraws], updatedCount: 0, insertedCount: validDraws.length }
-            : upsertDrawsByTitle(seasonalDoc.newDraws, validDraws);
-        finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
-        seasonalDoc.newDraws = finalArray;
-        const newTitleList = validDraws.map(d => `"${d.title}"`).join(', ');
-        updated.push((mode === 'add'
-            ? `**New Draws:** added ${insertedCount} (now ${finalArray.length} total)`
-            : `**New Draws:** updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`)
-            + (newTitleList ? `\n-# ${newTitleList}` : ''));
-        allSkipped.push(...skipped);
-        allWarnings.push(...warnings);
-    }
-    if (returningText) {
-        const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(returningText));
-        const { finalArray, updatedCount, insertedCount } = mode === 'add'
-            ? { finalArray: [...seasonalDoc.returningDraws, ...validDraws], updatedCount: 0, insertedCount: validDraws.length }
-            : upsertDrawsByTitle(seasonalDoc.returningDraws, validDraws);
-        finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
-        seasonalDoc.returningDraws = finalArray;
-        const returningTitleList = validDraws.map(d => `"${d.title}"`).join(', ');
-        updated.push((mode === 'add'
-            ? `**Returning Draws:** added ${insertedCount} (now ${finalArray.length} total)`
-            : `**Returning Draws:** updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`)
-            + (returningTitleList ? `\n-# ${returningTitleList}` : ''));
-        allSkipped.push(...skipped);
-        allWarnings.push(...warnings);
-    }
-
-    if (updated.length === 0) {
+    if (!newText && !returningText) {
         return interaction.followUp({ content: '❌ Both fields were left blank -- nothing was changed.' });
     }
 
-    await seasonalDoc.save();
-    recordChange({ actorId: interaction.user.id, page: 'draws', action: mode === 'add' ? 'bulkAdd' : 'bulkReplace', model: 'SeasonalData', target: 'New/Returning Draws', summary: `Bulk ${mode === 'add' ? 'add' : 'replace'} draws`, detail: updated.join(' | ') });
-    const undoToken = registerUndo(`Bulk ${mode === 'add' ? 'Add' : 'Replace'} Draws`, async () => {
-        const SeasonalData = require('../../models/SeasonalData');
-        const doc = await loadOrCreateSeasonalDoc();
-        if (newText) doc.newDraws = prevNew;
-        if (returningText) doc.returningDraws = prevReturning;
-        await doc.save();
-    });
+    const ops = [];
+    if (newText) ops.push({ type: opType, target: { category: 'new' }, payload: { text: newText } });
+    if (returningText) ops.push({ type: opType, target: { category: 'returning' }, payload: { text: returningText } });
+
+    const result = await commitSet(ops, { actorId: interaction.user.id });
+    if (!result.ok) {
+        const why = result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error;
+        return await interaction.followUp({ content: `❌ ${why}` });
+    }
+
+    const updated = [];
+    const allSkipped = [];
+    const allWarnings = [];
+    for (const r of result.results) {
+        const label = r.applied.category === 'new' ? 'New Draws' : 'Returning Draws';
+        if (mode === 'add') {
+            const titleList = r.applied.added.map(d => `"${d.title}"`).join(', ');
+            updated.push(`**${label}:** added ${r.applied.ids.length} (now ${r.applied.total} total)`
+                + (titleList ? `\n-# ${titleList}` : ''));
+            allSkipped.push(...r.applied.skipped);
+            allWarnings.push(...r.applied.warnings);
+        } else {
+            updated.push(`**${label}:** updated ${r.applied.updatedCount}, added ${r.applied.insertedCount} (now ${r.applied.total} total)`);
+        }
+    }
 
     let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${updated.join('\n')}`;
     if (allSkipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
     if (allWarnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
-    return interaction.followUp({ content: confirmation, components: [undoButtonRow(undoToken)] });
+    return interaction.followUp({ content: confirmation });
 }
 
 // --- BULK DELETE DRAWS --- custom_id: modal_draws_bulk_remove_{new|returning|either} Dry-run only: computes what WOULD be removed and shows a Confirm/Cancel prompt; the actual save happens from index.js's mng_bulkdelconfirm_ dispatch, via the `apply()` closure stashed here.
 async function bulkDeleteDraws(interaction) {
     const { fuzzyMatch } = require('../../utils/search');
-    const { randomUUID } = require('crypto');
-    const { pendingBulkDeletes } = require('./shared');
     const customId = interaction.customId;
     const drawType = customId.replace('modal_draws_bulk_remove_', ''); // 'new' | 'returning' | 'either'
     const newTitlesRaw = drawType !== 'returning' ? interaction.fields.getTextInputValue('new_titles')?.trim() : '';
     const returningTitlesRaw = drawType !== 'new' ? interaction.fields.getTextInputValue('returning_titles')?.trim() : '';
 
     const seasonalDoc = await loadOrCreateSeasonalDoc();
-    // Shared removeByTitle, not a local closure (v3-pre-release review, finding #40).
-    const removeFrom = removeByTitle;
+
+    // Dry-run preview only -- fuzzy-matches against the CURRENT live doc, same as before the refactor, so the Confirm prompt shows real matches. The actual removal (by exact id, not a second fuzzy match against possibly-changed data) happens in the op's apply() on Confirm.
+    function preview(array, titlesRaw) {
+        const requested = titlesRaw.split('\n').map(t => t.trim()).filter(Boolean);
+        const removedTitles = [], notFound = [], ids = [];
+        let remaining = array;
+        for (const title of requested) {
+            const match = remaining.find(item => fuzzyMatch(title, item.title));
+            if (match) { removedTitles.push(match.title); ids.push(String(match._id)); remaining = remaining.filter(i => i !== match); }
+            else notFound.push(title);
+        }
+        return { removedTitles, notFound, ids };
+    }
 
     const summary = [];
-    let newRemaining = null, returningRemaining = null;
+    const idsByPath = {};
     let anyRemoved = false;
     if (newTitlesRaw) {
-        const { remaining, removed, notFound } = removeFrom(seasonalDoc.newDraws, newTitlesRaw);
-        newRemaining = remaining;
-        if (removed.length) { summary.push(`Removed from New: ${removed.join(', ')}`); anyRemoved = true; }
+        const { removedTitles, notFound, ids } = preview(seasonalDoc.newDraws, newTitlesRaw);
+        if (removedTitles.length) { summary.push(`Removed from New: ${removedTitles.join(', ')}`); anyRemoved = true; idsByPath.newDraws = ids; }
         if (notFound.length) summary.push(`⚠️ Not found in New: ${notFound.join(', ')}`);
     }
     if (returningTitlesRaw) {
-        const { remaining, removed, notFound } = removeFrom(seasonalDoc.returningDraws, returningTitlesRaw);
-        returningRemaining = remaining;
-        if (removed.length) { summary.push(`Removed from Returning: ${removed.join(', ')}`); anyRemoved = true; }
+        const { removedTitles, notFound, ids } = preview(seasonalDoc.returningDraws, returningTitlesRaw);
+        if (removedTitles.length) { summary.push(`Removed from Returning: ${removedTitles.join(', ')}`); anyRemoved = true; idsByPath.returningDraws = ids; }
         if (notFound.length) summary.push(`⚠️ Not found in Returning: ${notFound.join(', ')}`);
     }
 
@@ -214,65 +206,42 @@ async function bulkDeleteDraws(interaction) {
         return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.\n${summary.join('\n')}`, ephemeral: true });
     }
 
-    // registerBulkDelete, not a hand-rolled confirm scaffold (v3-pre-release review, finding #37).
     return registerBulkDelete(interaction, {
         description: 'Bulk Delete Draws',
         summary,
         apply: async () => {
-            const doc = await loadOrCreateSeasonalDoc();
-            const prevNew = doc.newDraws, prevReturning = doc.returningDraws;
-            if (newRemaining !== null) doc.newDraws = newRemaining;
-            if (returningRemaining !== null) doc.returningDraws = returningRemaining;
-            await doc.save();
-            recordChange({ actorId: interaction.user.id, page: 'draws', action: 'bulkDelete', model: 'SeasonalData', target: 'New/Returning Draws', summary: 'Bulk delete draws', detail: summary.join(' | ') });
-            return registerUndo('Bulk Delete Draws', async () => {
-                const d = await loadOrCreateSeasonalDoc();
-                if (newRemaining !== null) d.newDraws = prevNew;
-                if (returningRemaining !== null) d.returningDraws = prevReturning;
-                await d.save();
-            });
+            const result = await commitSet(
+                [{ type: 'draw.bulkDelete', payload: { ids: idsByPath } }],
+                { actorId: interaction.user.id }
+            );
+            if (!result.ok) throw new Error(result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error);
+            return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
         }
     });
 }
 
 // --- PURGE (draws) --- called from index.js's mng_purgeconfirm_ dispatch. scope: 'new'|'returning'|'all'.
 async function purgeDraws(scope, actorId) {
-    const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
-    // Snapshot whatever's about to be wiped so Undo can restore it exactly.
-    const prevNew = seasonalDoc.newDraws;
-    const prevReturning = seasonalDoc.returningDraws;
-    if (scope === 'new' || scope === 'all') seasonalDoc.newDraws = [];
-    if (scope === 'returning' || scope === 'all') seasonalDoc.returningDraws = [];
-    await seasonalDoc.save();
+    const result = await commitSet([{ type: 'draw.purge', target: { scope } }], { actorId });
+    if (!result.ok) {
+        return { confirmMsg: `❌ ${extractCommitError(result)}` };
+    }
+    const { applied } = result.results[0];
     const removedCounts = [];
-    if (scope === 'new' || scope === 'all') removedCounts.push(`${prevNew.length} New`);
-    if (scope === 'returning' || scope === 'all') removedCounts.push(`${prevReturning.length} Returning`);
+    if (scope === 'new' || scope === 'all') removedCounts.push(`${applied.newDraws.length} New`);
+    if (scope === 'returning' || scope === 'all') removedCounts.push(`${applied.returningDraws.length} Returning`);
     const confirmMsg = `✅ Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
-    recordChange({ actorId, page: 'draws', action: 'purge', model: 'SeasonalData', target: scope, summary: confirmMsg });
-    const undoToken = registerUndo(`Purge (${scope} draws)`, async () => {
-        const doc = await loadOrCreateSeasonalDoc();
-        if (scope === 'new' || scope === 'all') doc.newDraws = prevNew;
-        if (scope === 'returning' || scope === 'all') doc.returningDraws = prevReturning;
-        await doc.save();
-    });
-    return { confirmMsg, undoToken };
+    return { confirmMsg };
 }
 
 // --- DELETE (draws) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteDraw(match, actorId) {
-    const SeasonalData = require('../../models/SeasonalData');
-    const seasonalDoc = await loadOrCreateSeasonalDoc();
-    const removedDoc = match.doc;
-    if (match.type === 'new') seasonalDoc.newDraws = seasonalDoc.newDraws.filter(d => d._id.toString() !== match.id);
-    else seasonalDoc.returningDraws = seasonalDoc.returningDraws.filter(d => d._id.toString() !== match.id);
-    await seasonalDoc.save();
-    recordChange({ actorId, page: 'draws', action: 'delete', model: 'SeasonalData', target: match.label, summary: `Deleted draw "${match.label}"` });
-    return registerUndo(`Delete draw "${match.label}"`, async () => {
-        const doc = await loadOrCreateSeasonalDoc();
-        if (match.type === 'new') doc.newDraws.push(removedDoc); else doc.returningDraws.push(removedDoc);
-        await doc.save();
-    });
+    const result = await commitSet(
+        [{ type: 'draw.delete', target: { category: match.type, elementId: match.id } }],
+        { actorId }
+    );
+    if (!result.ok) throw new Error(extractCommitError(result));
+    return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
 module.exports = { addDraw, editDraw, bulkAddOrReplaceDraws, bulkDeleteDraws, purgeDraws, deleteDraw };

@@ -1,0 +1,327 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Three Surfaces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#0F1418; --paper:#171E24; --raised:#1F272E; --sunk:#0B0F12; --hi:#232C34;
+  --rule:#2A343D; --rule2:#3A4752;
+  --ink:#E8EDF1; --ink2:#9DAAB4; --ink3:#6E7C87; --ink4:#4E5A64;
+  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --patch:#F2C230;
+  --warn:#FF7A45;
+  --ui:"Space Grotesk",-apple-system,system-ui,sans-serif;
+  --data:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --rad:6px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;
+  line-height:1.5;padding:0 0 90px;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+button{font-family:var(--ui);cursor:pointer}
+
+/* page chrome */
+.top{position:sticky;top:0;z-index:30;background:rgba(15,20,24,.93);backdrop-filter:blur(9px);
+  border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
+.mk{font-family:var(--data);font-size:11.5px;letter-spacing:.16em;font-weight:600}
+.mk b{color:var(--patch);font-weight:600}
+.tabs{display:flex;gap:3px;margin-left:12px;background:var(--sunk);padding:3px;border-radius:var(--rad);
+  border:1px solid var(--rule)}
+.tab{appearance:none;background:none;border:0;color:var(--ink3);font-size:12.5px;font-weight:600;
+  padding:5px 13px;border-radius:4px;letter-spacing:.02em}
+.tab[aria-selected=true]{background:var(--raised);color:var(--ink)}
+.tab:hover{color:var(--ink2)}
+.top .r{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)}
+
+section{padding:30px 24px 0;max-width:1500px}
+.lede{display:flex;align-items:baseline;gap:12px;margin:0 0 5px}
+.lede h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+.lede .job{font-family:var(--data);font-size:11px;letter-spacing:.11em;color:var(--patch);
+  text-transform:uppercase}
+.lede .n{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)}
+.dek{margin:0 0 15px;font-size:13.5px;color:var(--ink3);max-width:82ch}
+.dek b{color:var(--ink2);font-weight:600}
+
+.panel{border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);
+  border-bottom:1px solid var(--rule)}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11px;font-weight:600;padding:3px 9px;border-radius:3px}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+.ph .sp{margin-left:auto;display:flex;gap:16px;font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.key{display:flex;gap:13px;font-family:var(--data);font-size:10px;color:var(--ink3)}
+.key i{display:inline-block;width:16px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+.key .l i{background:var(--ink3)}
+.key .s i{border:1.5px dashed var(--ink3)}
+.key .c i{border:1.5px dashed var(--warn);background-image:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px)}
+
+/* ═════ TRACK ═════ */
+.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:104px}
+.ruler span{position:absolute;top:0;line-height:26px;padding-left:7px;border-left:1px solid var(--rule);
+  font-family:var(--data);font-size:10px;color:var(--ink4);white-space:nowrap}
+.lanes{position:relative;padding-bottom:4px}
+.lane{display:flex;align-items:center;height:38px;border-bottom:1px solid #1C242A}
+.lane.divider{height:auto;border:0;padding:9px 0 5px 104px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.16em;color:var(--ink4);text-transform:uppercase;border-top:1px solid var(--rule);margin-top:5px}
+.lane .nm{width:104px;flex:none;text-align:right;padding-right:13px;font-size:10px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.tk{position:relative;flex:1;height:100%}
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:21px;border-radius:4px;
+  display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11.5px;font-weight:600;
+  white-space:nowrap;overflow:hidden;transition:filter .12s,box-shadow .12s;z-index:2}
+.bar:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(255,255,255,.14)}
+.bar.live{background:var(--c);color:#07090A;border:1px solid var(--c)}
+.bar.stag{background:rgba(255,255,255,.02);color:var(--c);border:1.5px dashed var(--c)}
+.bar.conf{background:transparent;color:var(--warn);border:1.5px dashed var(--warn);
+  background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,122,69,.55) 4px 5px)}
+.bar .gr{position:absolute;top:0;bottom:0;width:5px;cursor:ew-resize;opacity:0}
+.bar:hover .gr{opacity:1;background:rgba(255,255,255,.35)}
+.bar .gr.a{left:0}.bar .gr.b{right:0}
+.pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);
+  border-radius:2px;background:var(--patch);z-index:2}
+.pt.stag{background:transparent;border:1.5px dashed var(--patch)}
+.ov{position:absolute;left:104px;right:0;top:0;bottom:0;pointer-events:none;z-index:1}
+.now{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);opacity:.8}
+.now::after{content:"NOW";position:absolute;top:-21px;left:-12px;font-family:var(--data);font-size:9px;
+  font-weight:600;letter-spacing:.1em;color:var(--patch);white-space:nowrap}
+.bpe{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.75;
+  border-left:1px dashed var(--warn)}
+.bpe::after{content:"BP END";position:absolute;top:-21px;right:2px;font-family:var(--data);font-size:9px;
+  font-weight:600;letter-spacing:.1em;color:var(--warn);white-space:nowrap}
+.win{position:absolute;top:0;bottom:0;background:rgba(31,138,94,.09);
+  border-left:1px solid rgba(31,138,94,.45);border-right:1px solid rgba(31,138,94,.45)}
+.win::after{content:attr(data-l);position:absolute;top:-21px;left:4px;font-family:var(--data);font-size:9px;
+  letter-spacing:.1em;color:var(--ev);white-space:nowrap}
+.flags{display:flex;gap:9px;flex-wrap:wrap;padding:12px 14px 14px;border-top:1px solid var(--rule)}
+.flag{display:flex;align-items:center;gap:10px;padding:7px 11px;border:1px solid var(--rule);
+  border-left:2px solid var(--warn);border-radius:4px;font-size:12.5px;color:var(--ink2);background:var(--sunk)}
+.flag b{color:var(--ink);font-weight:600}
+.flag.info{border-left-color:var(--ink4)}
+.flag button{background:none;border:1px solid var(--rule2);color:var(--ink2);font-size:11px;
+  padding:2px 9px;border-radius:4px;font-weight:600}
+.flag button:hover{color:var(--ink);border-color:var(--ink3)}
+
+/* ═════ MANIFEST ═════ */
+.mtools{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--rule)}
+.srch{position:relative;flex:0 0 290px}
+.srch input{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;
+  color:var(--ink);font-family:var(--ui);font-size:13px;padding:7px 10px 7px 30px}
+.srch input::placeholder{color:var(--ink4)}
+.srch svg{position:absolute;left:9px;top:8px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
+.chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;
+  font-weight:600;padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
+.chip .x{color:var(--ink4);font-family:var(--data)}
+.mtools .rt{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
+  font-weight:700;padding:9px 11px;border-bottom:1px solid var(--rule);background:var(--sunk);
+  position:relative;white-space:nowrap}
+th.sortable::after{content:"↕";margin-left:6px;color:var(--ink4);font-size:10px}
+th.sorted::after{content:"↓";color:var(--patch)}
+td{padding:9px 11px;border-bottom:1px solid #1C242A;color:var(--ink2);vertical-align:middle}
+tr:hover td{background:#1A222A}
+tr.sel td{background:rgba(242,194,48,.055)}
+td.n{color:var(--ink);font-weight:500}
+td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.cb{width:15px;height:15px;border:1.5px solid var(--rule2);border-radius:3px;display:inline-block;
+  vertical-align:-2px;position:relative}
+.cb.on{background:var(--patch);border-color:var(--patch)}
+.cb.on::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #07090A;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+.stt{font-family:var(--data);font-size:9px;letter-spacing:.09em;padding:2px 7px;border-radius:3px;font-weight:600}
+.stt.live{background:var(--c);color:#07090A}
+.stt.stag{border:1.5px dashed var(--c);color:var(--c)}
+.stt.conf{border:1.5px dashed var(--warn);color:var(--warn);
+  background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,122,69,.5) 3px 4px)}
+td.edit{padding:3px 7px}
+td.edit input{width:100%;background:var(--sunk);border:1.5px solid var(--patch);border-radius:4px;
+  color:var(--ink);font-family:var(--ui);font-size:13.5px;padding:5px 7px}
+.bulk{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--hi);
+  border-top:1px solid var(--rule2)}
+.bulk .c{font-family:var(--data);font-size:11.5px;color:var(--patch)}
+.bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:12px;
+  font-weight:600;padding:5px 11px;border-radius:4px}
+.bulk button:hover{color:var(--ink);border-color:var(--ink3)}
+.bulk button.danger{color:#FF8A85;border-color:#54322F}
+.bulk .sp{margin-left:auto;font-size:11.5px;color:var(--ink4)}
+
+/* ═════ BOARD ═════ */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:10px;min-height:238px}
+.col.gate{border-color:var(--rule2);position:relative}
+.col h4{margin:0 0 10px;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);
+  font-weight:700;display:flex;align-items:center;gap:7px}
+.col h4 .ct{margin-left:auto;font-family:var(--data);color:var(--ink4)}
+.col h4 .bad{color:var(--warn)}
+.card{background:var(--raised);border:1px solid var(--rule2);border-radius:5px;padding:9px 10px;
+  margin-bottom:8px;cursor:grab;transition:transform .1s,box-shadow .1s}
+.card:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
+.card .ch{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.card .tr{font-family:var(--data);font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:3px;
+  border:1px solid var(--rule2);color:var(--ink3);font-weight:600}
+.card.t3 .tr{color:var(--warn);border-color:var(--warn)}
+.card .cn{font-size:12.5px;color:var(--ink);font-weight:600}
+.card .cd{font-family:var(--data);font-size:10px;color:var(--ink4);display:block}
+.card .inv{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule2);font-size:10.5px;color:var(--ink3)}
+.card .inv b{color:var(--ink2);font-weight:600}
+.card.blocked{border-left:2px solid var(--warn)}
+.card .why{margin-top:6px;font-size:10.5px;color:var(--warn);display:flex;align-items:center;gap:6px}
+.card .why button{background:none;border:1px solid var(--warn);color:var(--warn);font-size:10px;
+  padding:1px 7px;border-radius:3px;font-weight:600}
+.commit{width:100%;background:var(--patch);color:#07090A;border:0;border-radius:5px;font-size:13px;
+  font-weight:700;padding:9px;letter-spacing:.02em;margin-top:2px}
+.commit:hover{filter:brightness(1.08)}
+.commit:disabled{background:var(--raised);color:var(--ink4);cursor:not-allowed}
+.colnote{font-size:10.5px;color:var(--ink4);margin-top:8px;line-height:1.45}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.55;margin:11px 2px 0;max-width:84ch}
+.note b{color:var(--ink2);font-weight:600}
+</style></head><body>
+
+<div class="top">
+  <span class="mk">DIOREO<b>/</b>PORTAL</span>
+  <div class="tabs" role="tablist">
+    <button class="tab" aria-selected="true">Track</button>
+    <button class="tab">Manifest</button>
+    <button class="tab">Board</button>
+  </div>
+  <span class="r">skin: dark palette · Space Grotesk · roomy</span>
+</div>
+
+<section>
+  <div class="lede"><h2>Track</h2><span class="job">answers: when, and does it fit</span>
+    <span class="n">Season 7 · 14d left</span></div>
+  <p class="dek">The masthead. Nothing here is typed into &mdash; it is read, and dragged. Its job is to make the
+    three defects that <b>have no signal at all today</b> impossible to miss: something running past the battle-pass
+    end, two things overlapping that shouldn't, and a stretch of season with nothing scheduled.
+    The staging rail below the divider is the <b>existing <span style="font-family:var(--data)">draft</span> area</b>
+    given a picture for the first time &mdash; that is what Promote to Live has never been able to show you before you pull it.</p>
+  <div class="panel" id="track"></div>
+  <p class="note"><b>New here vs. screen 1:</b> a zoom control (season / month / week), the draft rail as a second
+    track under the divider, drag handles on band edges, patch notes as staged-or-live diamonds, and flags that
+    name the fix rather than just the problem.</p>
+</section>
+
+<section>
+  <div class="lede"><h2>Manifest</h2><span class="job">answers: what exists, and change many at once</span>
+    <span class="n">7 items · 2 selected</span></div>
+  <p class="dek">The working surface, docked under the Track. This is where <b>the feature you originally filed lives</b>
+    &mdash; search narrows as you type, tick what you want, act on the selection. Discord cannot do this because a modal
+    has no live channel and no checkbox; here it is just what a table does.</p>
+  <div class="panel" id="manifest"></div>
+  <p class="note"><b>New here vs. screen 1:</b> live search, filter chips, sortable columns, checkbox multi-select with a
+    bulk bar that only appears when something is selected, one row shown mid-inline-edit, and state as a
+    <b>shape</b> chip so it survives greyscale.</p>
+</section>
+
+<section>
+  <div class="lede"><h2>Board</h2><span class="job">answers: what am I changing, and what's blocking it</span>
+    <span class="n">3 staged · 1 blocked</span></div>
+  <p class="dek">Re-jobbed. It is <b>not a third view of your content</b> &mdash; that was the redundancy. It is the
+    changeset workspace: the pipeline a change moves along before it becomes real, with the tier-3 export requirement
+    as a <b>visible blocker in its own column</b> rather than a dialog that ambushes you at commit. Every card carries
+    its own inverse, so you can read what undoing it would do before you commit it.</p>
+  <div class="panel" id="board"></div>
+  <p class="note"><b>New here vs. screen 1:</b> columns are pipeline stages, not content states. Blocked is a real column
+    with a stated reason and a one-click resolution. Commit is gated at the column boundary. And it is the only one of the
+    three that <b>works properly on a phone</b> &mdash; columns become tabs.</p>
+</section>
+
+<script>
+const C={draw:'var(--draw)',ret:'var(--ret)',ev:'var(--ev)',play:'var(--play)',patch:'var(--patch)'};
+const bar=(s,c,l,w,t,g)=>`<div class="bar ${s}" style="--c:${c};left:${l}%;width:${w}%">${g?'<span class="gr a"></span>':''}${t}${g?'<span class="gr b"></span>':''}</div>`;
+const lane=(n,inner)=>`<div class="lane"><span class="nm">${n}</span><div class="tk">${inner}</div></div>`;
+
+document.getElementById('track').innerHTML=`
+<div class="ph"><span class="t">Season track</span>
+  <div class="seg"><button aria-pressed="true">Season</button><button>Month</button><button>Week</button></div>
+  <span class="key"><span class="l"><i></i>live</span><span class="s"><i></i>staged</span><span class="c"><i></i>conflict</span></span>
+  <span class="sp"><span>Aug 1 → Sep 4</span></span></div>
+<div style="padding:8px 14px 0">
+  <div class="ruler"><span style="left:0%">Aug 1</span><span style="left:20%">Aug 8</span><span style="left:40%">Aug 15</span><span style="left:60%">Aug 22</span><span style="left:80%">Aug 29</span></div>
+  <div class="lanes">
+    ${lane('New draws',bar('live',C.draw,2,26,'Iron Wolf — Legendary',1)+bar('live',C.draw,34,30,'Vector — Mythic Drop',1)+bar('conf',C.draw,70,34,'Nightfall — Legendary',1))}
+    ${lane('Returning',bar('live',C.ret,12,22,'Shadow Blade rerun',1)+bar('stag',C.ret,52,24,'Havoc rerun',1))}
+    ${lane('Events',bar('live',C.ev,0,18,'Season launch',1)+bar('live',C.ev,31,11,'Double CP',1)+bar('live',C.ev,64,20,'Clan wars',1))}
+    ${lane('Playlists',bar('live',C.play,8,34,'Ranked reset',1)+bar('stag',C.play,60,28,'Hardpoint 24/7',1))}
+    ${lane('Patch notes','<span class="pt" style="left:1%"></span><span class="pt" style="left:29%"></span><span class="pt" style="left:56%"></span><span class="pt stag" style="left:88%"></span>')}
+    <div class="lane divider">Season 8 draft — staged, not live</div>
+    ${lane('Draft draws',bar('stag',C.draw,86,26,'Reaper — Mythic',1))}
+    ${lane('Draft events',bar('stag',C.ev,84,18,'S8 launch',1))}
+    <div class="ov">
+      <div class="win" data-l="2XCP" style="left:31%;width:11%"></div>
+      <div class="now" style="left:57%"></div><div class="bpe" style="left:94%"></div>
+    </div>
+  </div>
+</div>
+<div class="flags">
+  <span class="flag"><b>Nightfall</b> ends 6 days after the battle pass. <button>Clamp to BP end</button></span>
+  <span class="flag"><b>Clan wars</b> and <b>Hardpoint 24/7</b> overlap Aug 22–28. <button>Show both</button></span>
+  <span class="flag info"><b>Aug 24–28</b> has no draw scheduled. <button>Fill</button></span>
+</div>`;
+
+const rows=[
+ [0,'Iron Wolf — Legendary','Draw','--draw','Aug 1 → Aug 10','9 items','live'],
+ [1,'Shadow Blade rerun','Returning','--ret','Aug 4 → Aug 13','6 items','live'],
+ [0,'Season launch','Event','--ev','Aug 1 → Aug 8','—','live'],
+ [1,'Double CP','Event','--ev','Aug 11 → Aug 15','2× multiplier','live'],
+ [0,'Havoc rerun','Returning','--ret','Aug 18 → Aug 27','6 items','staged'],
+ [0,'Hardpoint 24/7','Playlist','--play','Aug 20 → Sep 1','—','staged'],
+ [0,'Nightfall — Legendary','Draw','--draw','Aug 25 → Sep 10','8 items','conflict']];
+const stt=(s,c)=>s==='live'?`<span class="stt live" style="--c:var(${c})">LIVE</span>`
+  :s==='staged'?`<span class="stt stag" style="--c:var(${c})">STAGED</span>`
+  :`<span class="stt conf">CONFLICT</span>`;
+document.getElementById('manifest').innerHTML=`
+<div class="mtools">
+  <span class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input value="ha" placeholder="Search this season…"></span>
+  <button class="chip" aria-pressed="true">Type: all <span class="x">×</span></button>
+  <button class="chip" aria-pressed="true">State: staged <span class="x">×</span></button>
+  <button class="chip">+ Filter</button>
+  <span class="rt">7 of 22 shown</span>
+</div>
+<table>
+ <thead><tr><th style="width:34px"><span class="cb"></span></th><th class="sortable" style="width:31%">Item</th>
+ <th class="sortable">Type</th><th class="sorted">Window</th><th>Detail</th><th>State</th></tr></thead>
+ <tbody>
+ ${rows.map(([sel,n,t,c,w,d,s],i)=>i===4
+   ? `<tr class="sel"><td><span class="cb on"></span></td>
+      <td class="edit" colspan="1"><input value="Havoc rerun — Epic"></td>
+      <td>${t}</td><td class="d">${w}</td><td>${d}</td><td>${stt(s,c)}</td></tr>`
+   : `<tr class="${sel?'sel':''}"><td><span class="cb ${sel?'on':''}"></span></td>
+      <td class="n"><span class="dot" style="background:var(${c})"></span>${n}</td>
+      <td>${t}</td><td class="d">${w}</td><td>${d}</td><td>${stt(s,c)}</td></tr>`).join('')}
+ </tbody></table>
+<div class="bulk"><span class="c">2 selected</span>
+  <button>Shift dates…</button><button>Change type…</button><button>Export selection</button>
+  <button class="danger">Stage deletion</button>
+  <span class="sp">Destructive actions stage — they never fire from here.</span></div>`;
+
+const card=(t,n,d,inv,why)=>`<div class="card ${t==='T3'?'t3':''} ${why?'blocked':''}">
+  <div class="ch"><span class="tr">${t}</span><span class="cn">${n}</span></div>
+  <span class="cd">${d}</span>
+  ${inv?`<div class="inv">Undo would <b>${inv}</b></div>`:''}
+  ${why?`<div class="why">${why[0]} <button>${why[1]}</button></div>`:''}</div>`;
+document.getElementById('board').innerHTML=`
+<div class="ph"><span class="t">Changeset pipeline</span>
+  <span class="sp"><span>edits move left → right · commit is the last boundary</span></span></div>
+<div class="cols">
+  <div class="col"><h4>Draft<span class="ct">1</span></h4>
+    ${card('T1','Vector thumbnail','swap cached image','restore the old image')}
+    <p class="colnote">Started, not yet staged. Nothing here is visible to the bot.</p></div>
+  <div class="col"><h4>Staged<span class="ct">2</span></h4>
+    ${card('T1','Havoc rerun','add returning draw · Aug 18 → 27','remove the draw')}
+    ${card('T1','Hardpoint 24/7','add playlist · Aug 20 → Sep 1','remove the playlist')}
+    <p class="colnote">Validated and previewed. Waiting on the rest of the set.</p></div>
+  <div class="col"><h4>Blocked<span class="bad ct">1</span></h4>
+    ${card('T3','Nightfall','replaces 4 draws · Aug 25 → Sep 10','restore all 4 replaced draws',
+      ['Export the 4 draws first','Download'])}
+    <p class="colnote">Tier 3 will not commit until what it destroys has been downloaded.</p></div>
+  <div class="col gate"><h4>Ready<span class="ct">0</span></h4>
+    <button class="commit" disabled>Commit 0 of 3</button>
+    <p class="colnote">One blocker remains. Committing applies the whole set in a single
+      transaction — all of it lands, or none of it does.</p></div>
+</div>`;
+</script></body></html>

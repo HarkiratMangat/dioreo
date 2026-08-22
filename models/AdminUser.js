@@ -1,6 +1,6 @@
 // models/AdminUser.js
 //
-// A runtime-editable admin allowlist that SUPPLEMENTS the hardcoded ALLOWED_ADMIN_ID (commands/manage.js) -- the owner stays hardcoded/ultimate; this lets Harkirat grant trusted people admin access via /manage's "Manage Admins" page without a code deploy per grant/revoke. One doc per granted admin (not a single doc with an array) -- keeps grant/revoke/list atomic single-doc operations, matching the per-entity style of Loadout.js/AlertLog.js.
+// A runtime-editable admin allowlist that SUPPLEMENTS the hardcoded ALLOWED_ADMIN_ID (utils/owner.js as of the portal operation core, 2026-08-21 00:09 EDT -- commands/manage.js re-exports it) -- the owner stays hardcoded/ultimate; this lets Harkirat grant trusted people admin access via /manage's "Manage Admins" page without a code deploy per grant/revoke. One doc per granted admin (not a single doc with an array) -- keeps grant/revoke/list atomic single-doc operations, matching the per-entity style of Loadout.js/AlertLog.js.
 //
 // ⚠️ SCHEMA-SAVE GOTCHA (root CLAUDE.md, .claude/rules/models.md): Mongoose only persists fields declared here. Adding a new field elsewhere without declaring it works in memory and silently reverts on the next fetch. Declare the field in the SAME change.
 const mongoose = require('mongoose');

@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal — Access &amp; Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#0F1418;--paper:#171E24;--raised:#1F272E;--sunk:#0B0F12;--hi:#232C34;
+ --rule:#2A343D;--rule2:#3A4752;--ink:#E8EDF1;--ink2:#9DAAB4;--ink3:#6E7C87;--ink4:#4E5A64;
+ --patch:#F2C230;--warn:#FF7A45;--ok:#3DDC97;--del:#FF6B6B;--play:#8A6BD1;--sn:#4361EE;
+ --ui:"Space Grotesk",system-ui,sans-serif;--data:"JetBrains Mono",monospace;--rad:6px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;
+ padding:0 0 90px;-webkit-font-smoothing:antialiased}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.top{position:sticky;top:0;z-index:40;background:rgba(15,20,24,.94);backdrop-filter:blur(9px);
+ border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
+.mk{font-family:var(--data);font-size:11.5px;letter-spacing:.16em;font-weight:600}.mk b{color:var(--patch)}
+.rail{display:flex;gap:3px;background:var(--sunk);border:1px solid var(--rule);border-radius:6px;padding:3px}
+.rail button{background:none;border:0;color:var(--ink3);font-size:12px;font-weight:600;padding:5px 12px;border-radius:4px}
+.rail button[aria-current]{background:var(--raised);color:var(--ink)}
+section{padding:32px 24px 0;max-width:1560px}
+.lede{display:flex;align-items:baseline;gap:12px;margin:0 0 5px}
+.lede h2{margin:0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+.lede .job{font-family:var(--data);font-size:11px;letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
+.dek{margin:0 0 15px;font-size:13.5px;color:var(--ink3);max-width:86ch}.dek b{color:var(--ink2);font-weight:600}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.55;margin:11px 2px 0;max-width:88ch}
+.note b{color:var(--ink2);font-weight:600}
+.panel{border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);border-bottom:1px solid var(--rule)}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:3px}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+.vlayer{border-bottom:2px solid var(--rule2)}
+
+/* matrix */
+.mtx{padding:14px;overflow-x:auto}
+table.x{border-collapse:separate;border-spacing:3px;font-size:12px;min-width:100%}
+table.x th{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+ padding:3px 2px;text-align:center;white-space:nowrap;vertical-align:bottom}
+table.x th.l{text-align:left;width:186px;font-size:9.5px;letter-spacing:.12em}
+table.x th.grp{color:var(--patch);border-bottom:1px solid var(--rule);padding-bottom:5px}
+table.x td.l b{color:var(--ink);font-weight:600;font-size:12.5px}
+table.x td.l span{font-family:var(--data);font-size:9.5px;color:var(--ink4);display:block}
+.tick{width:26px;height:26px;border-radius:4px;background:var(--sunk);border:1px solid var(--rule);
+ display:grid;place-items:center;margin:0 auto;cursor:pointer;color:transparent;font-size:13px;font-weight:700}
+.tick:hover{border-color:var(--ink3)}
+.tick.on{background:var(--ok);border-color:var(--ok);color:#07090A}
+.tick.inh{background:rgba(61,220,151,.13);border-color:rgba(61,220,151,.4);color:var(--ok);opacity:.85}
+.owner td{opacity:.75}.owner .tick{cursor:not-allowed}
+.legend2{margin:10px 2px 0;font-size:11.5px;color:var(--ink4);line-height:1.6}
+/* by-scope */
+.scope{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.sc{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:9px 11px;display:flex;
+ align-items:center;gap:11px}
+.sc .sn{font-family:var(--data);font-size:11.5px;color:var(--ink2);width:150px;flex:none}
+.sc .who{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.sc .p{font-size:11px;background:var(--raised);border:1px solid var(--rule2);border-radius:20px;padding:1px 9px;color:var(--ink2)}
+.sc .p.own{border-color:var(--patch);color:var(--patch)}
+.sc.alone{border-color:rgba(255,122,69,.5)}
+.sc .only{font-family:var(--data);font-size:9.5px;color:var(--warn);white-space:nowrap}
+/* manifest */
+table.m{width:100%;border-collapse:collapse;font-size:13.5px}
+table.m th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
+ font-weight:700;padding:9px 12px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap}
+table.m td{padding:9px 12px;border-bottom:1px solid #1C242A;color:var(--ink2);vertical-align:middle}
+table.m tr:hover td{background:#1A222A}
+td.n b{color:var(--ink);font-weight:600}
+td.n span{font-family:var(--data);font-size:10px;color:var(--ink4);display:block}
+td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.ses{display:inline-flex;align-items:center;gap:6px;font-family:var(--data);font-size:10px;letter-spacing:.06em}
+.ses .b{width:7px;height:7px;border-radius:50%}
+.ses.on{color:var(--ok)}.ses.on .b{background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.16)}
+.ses.off{color:var(--ink4)}.ses.off .b{background:var(--ink4)}
+.mini{background:none;border:1px solid var(--rule2);color:var(--ink3);font-size:11px;font-weight:600;
+ padding:3px 10px;border-radius:4px}
+.mini:hover{color:var(--ink)}
+.mini.danger:hover{color:var(--del);border-color:var(--del)}
+.addrow{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--hi);border-top:1px solid var(--rule2)}
+.addrow input{background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;color:var(--ink);
+ font-family:var(--data);font-size:12.5px;padding:6px 10px;width:230px}
+.addrow .sp{margin-left:auto;font-size:11.5px;color:var(--ink4)}
+.addrow button{background:var(--patch);color:#07090A;border:0;border-radius:5px;font-size:12.5px;font-weight:700;padding:6px 14px}
+/* analytics */
+.hcards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.hc{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:11px 12px}
+.hc .k{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.hc .v{font-family:var(--data);font-size:22px;font-weight:600;margin:3px 0 1px;letter-spacing:-.01em}
+.hc .s{font-family:var(--data);font-size:10px;color:var(--ink4)}
+.hc.good .v{color:var(--ok)}.hc.warn .v{color:var(--warn)}
+.spark{display:flex;align-items:flex-end;gap:2px;height:28px;margin-top:8px}
+.spark i{flex:1;background:var(--rule2);border-radius:1px}
+.spark i.hi{background:var(--patch)}
+.src{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--rule);
+ font-family:var(--data);font-size:10.5px;color:var(--ink4)}
+.src b{color:var(--ink3);font-weight:600}
+.chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
+ padding:5px 11px;border-radius:20px;font-family:var(--ui)}
+.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
+.chip .n{font-family:var(--data);font-size:9.5px;color:var(--ink4);margin-left:5px}
+.rrow{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid #1C242A;font-size:13px}
+.rrow:hover{background:#1A222A}
+.rrow .id{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:74px;flex:none}
+.kind{font-family:var(--data);font-size:8.5px;letter-spacing:.07em;padding:1px 6px;border-radius:3px;
+ border:1px solid var(--rule2);color:var(--ink3);width:62px;text-align:center;flex:none}
+.kind.chg{color:var(--patch);border-color:var(--patch)}
+.kind.alr{color:var(--warn);border-color:var(--warn)}
+.kind.boot{color:var(--sn);border-color:var(--sn)}
+.pill{font-family:var(--data);font-size:8.5px;letter-spacing:.07em;padding:1px 6px;border-radius:3px;
+ border:1px solid var(--rule2);color:var(--ink4);width:62px;text-align:center;flex:none}
+.pill.web{color:var(--play);border-color:var(--play)}
+.rrow .txt{flex:1;color:var(--ink2)}.rrow .txt b{color:var(--ink);font-weight:600}
+.rrow .who3{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:88px;flex:none}
+.rrow .when{font-family:var(--data);font-size:10.5px;color:var(--ink4);width:78px;flex:none;text-align:right}
+.rrow .act{width:96px;flex:none;text-align:right}
+.rrow.undone .txt{text-decoration:line-through;color:var(--ink4)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:1240px){.split{grid-template-columns:1fr}}
+</style></head><body>
+
+<div class="top"><span class="mk">DIOREO<b>/</b>PORTAL</span>
+ <div class="rail"><button>Season</button><button>Armory</button><button>Broadcast</button>
+  <button aria-current="true">Access</button><button>Analytics</button></div>
+ <span style="margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink4)">screen 6 — five realms</span></div>
+
+<section>
+  <div class="lede"><h2>Access</h2><span class="job">who can do what &mdash; and who is in here right now</span></div>
+  <p class="dek">Split out because it is the only page here that <b>changes state</b>. Its visual layer answers the
+    question two directions: <b>By admin</b> is the grid you grant from; <b>By scope</b> answers "who can touch the
+    calendar?" without reading across a row. Underneath, the manifest carries something the bot cannot know at all
+    &mdash; <b>live portal sessions</b>, and the ability to end one. Revoking an admin in Discord doesn't kill a browser
+    session; here it does.</p>
+  <div class="panel">
+    <div class="ph vlayer"><span class="t">Access</span>
+      <div class="seg"><button aria-pressed="true">By admin</button><button>By scope</button></div>
+      <span class="sp">owner + 3 granted &middot; 2 signed in now</span></div>
+    <div class="mtx" id="mtx"></div>
+    <div class="scope" id="scope" style="border-top:1px solid var(--rule)"></div>
+    <div id="sess" style="border-top:2px solid var(--rule2)"></div>
+    <div class="addrow"><input placeholder="Discord user ID"><span style="font-size:12.5px;color:var(--ink3)">
+      then tick scopes in the grid above</span>
+      <span class="sp">A new admin starts with nothing ticked &mdash; there is no default grant.</span>
+      <button>Add admin</button></div>
+  </div>
+  <p class="note"><b>Two things the grid does that the modal can't.</b> It shows <b>inheritance</b> &mdash; a bare
+    <span style="font-family:var(--data)">manage</span> lights every page in a paler green, so you can see what you
+    actually handed over instead of remembering that rule. And <b>By scope</b> flags a
+    <span style="color:var(--warn)">single point of failure</span>: if exactly one non-owner holds a scope, losing them
+    means only you can do that job. Neither is visible in a comma-separated string.</p>
+</section>
+
+<section>
+  <div class="lede"><h2>Analytics</h2><span class="job">read-only &mdash; nothing here is re-derived</span></div>
+  <p class="dek">Your framing, and it is the right one: these numbers are <b>fetched live from where they already live</b>
+    &mdash; <span style="font-family:var(--data)">AnalyticsRollup</span>,
+    <span style="font-family:var(--data)">AlertLog</span>, <span style="font-family:var(--data)">ChangeLog</span>,
+    <span style="font-family:var(--data)">BootRecord</span> and Cloud Monitoring, exactly the sources
+    <span style="font-family:var(--data)">/bot analytics</span> reads. There is no second computation to keep true, so
+    the only maintenance is the same maintenance every page has: <b>if you add a metric, you show it.</b>
+    The web adds two things a Discord embed cannot: <b>history as a shape</b>, and one action &mdash; revert.</p>
+  <div class="panel">
+    <div class="ph vlayer"><span class="t">Analytics</span>
+      <div class="seg"><button aria-pressed="true">Health</button><button>Usage</button><button>Timing</button></div>
+      <span class="sp">live &middot; refreshed 12s ago</span></div>
+    <div class="hcards" id="hc"></div>
+    <div class="src"><b>SOURCES</b> AnalyticsRollup · AlertLog · ChangeLog · BootRecord · Cloud Monitoring
+      <span style="margin-left:auto">no derived state · no cache to invalidate</span></div>
+    <div id="riv"></div>
+  </div>
+  <p class="note"><b>Why the river is one table and not four.</b> Alerts, changes and boots are all <i>events</i>, and
+    they already live in four event-shaped collections. Filtering one stream beats switching between four lists, and it
+    is the only way to see that <b>an alert fired ninety seconds after a change was committed</b> &mdash; which is the
+    question you actually have when something breaks. The source column stays because both surfaces write through the
+    same core: <b>one history, two front doors.</b></p>
+</section>
+
+<script>
+const SCOPES=[['bot','cmd'],['autobuild','cmd'],['draws','mng'],['calendar','mng'],['loadouts_mp','mng'],
+ ['loadouts_dmz','mng'],['patchnotes','mng'],['seasondraft','mng'],['season','mng'],['announcement','mng']];
+const ADMINS=[['dior','owner · hardcoded','owner'],['moderator_k','granted 2026-08-13','manage,bot'],
+ ['calendar_helper','granted 2026-08-16','manage.calendar,manage.announcement'],
+ ['gunsmith_ray','granted 2026-08-18','manage.loadouts_mp,manage.loadouts_dmz']];
+const has=(p,s,g)=>p==='owner'?'inh':(p.includes('manage')&&g==='mng'&&!p.includes('manage.'))?'inh'
+ :p.split(',').includes(g==='mng'?'manage.'+s:s)?'on':'';
+document.getElementById('mtx').innerHTML=`<table class="x"><thead>
+ <tr><th class="l"></th><th class="grp" colspan="2">Commands</th><th class="grp" colspan="8">/manage pages</th><th></th></tr>
+ <tr><th class="l">Admin</th>${SCOPES.map(([s])=>`<th>${s.replace('loadouts_','')}</th>`).join('')}<th style="width:70px"></th></tr>
+ </thead><tbody>${ADMINS.map(([n,d,p])=>`<tr class="${p==='owner'?'owner':''}">
+  <td class="l"><b>${n}</b><span>${d}</span></td>
+  ${SCOPES.map(([s,g])=>`<td><div class="tick ${has(p,s,g)}">✓</div></td>`).join('')}
+  <td style="text-align:right">${p==='owner'?'<span class="pill">LOCKED</span>':'<button class="mini danger">Revoke</button>'}</td>
+ </tr>`).join('')}</tbody></table>
+ <p class="legend2"><span style="color:var(--ok)">■</span> granted directly &nbsp;
+ <span style="color:var(--ok);opacity:.5">■</span> inherited — bare <span style="font-family:var(--data)">manage</span>
+ covers every page. The owner has everything and cannot be edited.
+ <span style="font-family:var(--data)">/bot access</span> is owner-only and not grantable, so it has no column.</p>`;
+
+const holders={bot:['moderator_k'],autobuild:[],draws:['moderator_k'],calendar:['moderator_k','calendar_helper'],
+ loadouts_mp:['gunsmith_ray','moderator_k'],loadouts_dmz:['gunsmith_ray','moderator_k'],
+ patchnotes:['moderator_k'],seasondraft:['moderator_k'],season:['moderator_k'],
+ announcement:['moderator_k','calendar_helper']};
+document.getElementById('scope').innerHTML=SCOPES.map(([s])=>{const h=holders[s];
+ return `<div class="sc ${h.length===1?'alone':''}"><span class="sn">${s}</span>
+ <span class="who"><span class="p own">dior</span>${h.map(x=>`<span class="p">${x}</span>`).join('')}
+ ${h.length===0?'<span class="only">owner only</span>':''}</span>
+ ${h.length===1?'<span class="only">⚠ single point</span>':''}</div>`}).join('');
+
+const SESS=[['dior','owner · hardcoded','—','—',1,'Chrome · macOS','now'],
+ ['moderator_k','granted by dior','2026-08-13','manage, bot',1,'Firefox · Windows','8m ago'],
+ ['calendar_helper','granted by dior','2026-08-16','manage.calendar +1',0,'—','3d ago'],
+ ['gunsmith_ray','granted by dior','2026-08-18','manage.loadouts_mp +1',0,'—','19h ago']];
+document.getElementById('sess').innerHTML=`<table class="m"><thead><tr>
+ <th style="width:22%">Admin</th><th>Granted</th><th>Scopes</th><th>Portal session</th><th>Last seen</th><th></th>
+ </tr></thead><tbody>${SESS.map(([n,g,d,sc,on,dev,seen])=>`<tr>
+  <td class="n"><b>${n}</b><span>${g}</span></td><td class="d">${d}</td><td>${sc}</td>
+  <td><span class="ses ${on?'on':'off'}"><span class="b"></span>${on?dev:'signed out'}</span></td>
+  <td class="d">${seen}</td>
+  <td style="text-align:right">${on?'<button class="mini danger">End session</button>':'<button class="mini">Edit scopes</button>'}</td>
+ </tr>`).join('')}</tbody></table>`;
+
+document.getElementById('hc').innerHTML=[
+ ['Uptime','good','14d 6h','since last deploy',[3,4,4,5,4,5,5,5]],
+ ['Errors 24h','good','0','3 alerts · 14 noise',[1,0,2,0,0,1,0,0]],
+ ['RAM peak 7d','','38%','of 1 GB · peak Aug 18',[5,4,6,5,7,5,6,5]],
+ ['Commands 24h','','1,284','412 distinct users',[3,5,4,7,6,8,5,7]]
+].map(([k,c,v,s,sp])=>`<div class="hc ${c}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div>
+ <div class="spark">${sp.map((h,i)=>`<i class="${i===sp.length-1?'hi':''}" style="height:${h*12}%"></i>`).join('')}</div></div>`).join('');
+
+const EV=[['Aug20-07','chg','web','Nightfall','replaced 4 draws','dior','2m',0],
+ ['Aug20-12','alr','—','Cloudinary','upload retried once (429)','system','4m',0],
+ ['Aug20-06','chg','disc','Shadow Blade rerun','end date +3 days','moderator_k','6m',0],
+ ['Aug20-05','chg','web','FENNEC — Close Quarters','badges changed','gunsmith_ray','41m',0],
+ ['Aug20-02','boot','—','diors-bot','restarted — manual deploy v3.54.0','system','2h',0],
+ ['Aug20-03','chg','web','Frostbite — Epic','deleted','dior','5h',1]];
+document.getElementById('riv').innerHTML=`
+ <div class="src" style="border-top:2px solid var(--rule2);gap:8px">
+  <button class="chip" aria-pressed="true">All <span class="n">1,140</span></button>
+  <button class="chip">Changes <span class="n">903</span></button>
+  <button class="chip">Alerts <span class="n">180</span></button>
+  <button class="chip">Boots <span class="n">57</span></button>
+  <button class="chip">Errors only <span class="n">19</span></button>
+  <span style="margin-left:auto">one stream · filter, don't switch</span></div>
+ ${EV.map(([id,k,src,tgt,what,who,when,un])=>`<div class="rrow ${un?'undone':''}">
+  <span class="id">${id}</span>
+  <span class="kind ${k}">${k==='chg'?'CHANGE':k==='alr'?'ALERT':'BOOT'}</span>
+  <span class="pill ${src==='web'?'web':''}">${src==='web'?'PORTAL':src==='disc'?'DISCORD':'—'}</span>
+  <span class="txt"><b>${tgt}</b> — ${what}</span>
+  <span class="who3">${who}</span><span class="when">${when}</span>
+  <span class="act">${k!=='chg'?'':un?'<button class="mini" disabled style="opacity:.35">reverted</button>'
+   :'<button class="mini">Revert…</button>'}</span></div>`).join('')}`;
+</script></body></html>

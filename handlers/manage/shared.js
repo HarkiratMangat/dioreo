@@ -6,7 +6,6 @@
 // ⚠️ THE STORES BELOW ARE MODULE-LEVEL AND MANAGE-PRIVATE, same as before the split. They rely on Node caching this module so exactly one instance exists -- require it by exactly one path (`./shared` from inside handlers/manage/, never a relative path that resolves differently).
 
 const { randomUUID } = require('crypto');
-const { resolveThumbnail } = require('../../utils/cloudinaryCache');
 
 // ==========================================
 // CUSTOM_ID PARSING
@@ -30,51 +29,9 @@ function prompt(interaction, { text = '', components = [] } = {}) {
 }
 
 // ==========================================
-// UNDO STORE (2026-07-12)
-// ==========================================
-// In-memory, short-lived snapshot cache for the "Undo" button attached to destructive /manage confirmations (Purge, single Delete, Bulk Delete, Bulk Replace). Deliberately NOT persisted to Mongo -- these are meant to reverse a mistake made seconds ago in the same session, not act as a real audit log/version history (see the upcoming stage 4 for that). A token expires (and its snapshot is dropped) after 10 minutes so this can't grow unbounded across a long-running process; only an already-authorized admin can ever trigger one of these anyway.
-const manageUndoStore = new Map(); // token -> { description, restore: async () => {} }
-function registerUndo(description, restore) {
-    const token = randomUUID().slice(0, 8);
-    manageUndoStore.set(token, { description, restore });
-    setTimeout(() => manageUndoStore.delete(token), 10 * 60 * 1000).unref();
-    return token;
-}
-function undoButtonRow(token) {
-    return { type: 1, components: [{ type: 2, style: 2, label: 'Undo', custom_id: `mng_undo_${token}` }] };
-}
-
-// The mng_undo_ button handler itself -- fully generic (the restore() closure already carries whatever page-specific logic it needs), so it lives here rather than in any one page module.
-async function handleUndo(interaction) {
-    const token = interaction.customId.replace('mng_undo_', '');
-    const entry = manageUndoStore.get(token);
-    if (!entry) {
-        try {
-            await interaction.reply({ content: '❌ This undo has expired or was already used.', ephemeral: true });
-        } catch (notifyError) {
-            console.error('Failed to notify user of expired undo (interaction likely expired):', notifyError);
-        }
-        return;
-    }
-    manageUndoStore.delete(token);
-    try {
-        await interaction.deferReply({ ephemeral: true });
-        await entry.restore();
-        await interaction.followUp({ content: `↩️ **Undone:** ${entry.description}` });
-    } catch (undoError) {
-        console.error('Failed to apply manage-panel undo:', undoError);
-        try {
-            await interaction.followUp({ content: '❌ Something went wrong while undoing that -- check the data manually.' });
-        } catch (notifyError) {
-            console.error('Failed to notify user of undo failure:', notifyError);
-        }
-    }
-}
-
-// ==========================================
 // PENDING-CONFIRMATION TOKEN MAPS
 // ==========================================
-// Pending "Start New Season" confirmations (2026-07-12) -- holds the entered title between the modal submit and the Confirm/Cancel click. See season.js's promptWipeSeason/handleWipeButton.
+// The old in-memory Undo store (the mng_undo_ button and its supporting functions) lived here until plan 2 Task 7 retired it -- every entity now routes through the operation core, and undo lives permanently on /bot analytics' Changes page instead (core/revert.js). Pending "Start New Season" confirmations (2026-07-12) -- holds the entered title between the modal submit and the Confirm/Cancel click. See season.js's promptWipeSeason/handleWipeButton.
 const pendingSeasonWipes = new Map(); // token -> { newTitle }
 
 // Pending single-item Delete confirmations (2026-07-12) -- holds the already-resolved { group, match } between resolveManagePanelAction's confirm prompt and index.js's mng_delconfirm_/mng_delcancel_ dispatch.
@@ -113,68 +70,33 @@ function thumbnailNote(thumbResult) {
     return null;
 }
 
-async function resolveThumbnailsForDraws(draws) {
-    const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl)));
-    const validDraws = [];
-    const skipped = [];
-    const warnings = [];
-    draws.forEach((draw, i) => {
-        const result = results[i];
-        if (!result.url) {
-            skipped.push(draw.title);
-            return;
-        }
-        draw.thumbnailUrl = result.url;
-        validDraws.push(draw);
-        if (result.error) warnings.push(`${draw.title} (${result.error})`);
-        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from a similarly-named cached draw: "${result.matchedTitle}")`);
-    });
-    return { validDraws, skipped, warnings };
-}
-
-// ==========================================
-// BULK REPLACE: UPSERT BY TITLE (2026-07-12)
-// ==========================================
-// "Replace Multiple" fuzzy-matches each pasted title against the array being replaced: updates the existing item in place (same _id) on a match, inserts as new otherwise, and never touches anything not mentioned in the paste (Purge already covers a full wipe). Returns the same array reference mutated in place (plus counts for the confirmation message). ONE definition, not two byte-identical copies (v3-pre-release review, finding #39) -- upsertDrawsByTitle and upsertEventsByTitle differed only in a loop variable name and a parameter name. Both old names still exported below as aliases so no call site needs to change.
-function upsertByTitle(existingArray, parsedItems) {
-    const { fuzzyMatch } = require('../../utils/search');
-    let updatedCount = 0;
-    let insertedCount = 0;
-    const finalArray = [...existingArray];
-
-    for (const parsed of parsedItems) {
-        const matchIndex = finalArray.findIndex(item => fuzzyMatch(parsed.title, item.title));
-        if (matchIndex > -1) {
-            finalArray[matchIndex] = Object.assign(finalArray[matchIndex], parsed);
-            updatedCount++;
-        } else {
-            finalArray.push(parsed);
-            insertedCount++;
-        }
-    }
-
-    return { finalArray, updatedCount, insertedCount };
-}
-const upsertDrawsByTitle = upsertByTitle;
-const upsertEventsByTitle = upsertByTitle;
+// Moved to utils/bulkMerge.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can share the SAME real merge semantics instead of a divergent copy -- re-exported here so no existing call site in this directory needs to change. See that file's header for the story. (upsertDrawsByTitle/upsertEventsByTitle -- dead aliases nothing called by those names -- removed 2026-08-21.)
+const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
 
 // Subtractive counterpart to upsertByTitle -- fuzzy-matches each pasted title against `array`, removing the first match and reporting anything not found. (v3-pre-release review, finding #40 -- was copy-pasted twice, once as a local closure in draws.js and once inline in calendar.js.)
 function removeByTitle(array, titlesRaw) {
     const { fuzzyMatch } = require('../../utils/search');
     const requested = titlesRaw.split('\n').map(t => t.trim()).filter(Boolean);
     const removed = [];
+    const ids = [];
     const notFound = [];
     let remaining = array;
     for (const title of requested) {
         const match = remaining.find(item => fuzzyMatch(title, item.title));
         if (match) {
             removed.push(match.title);
+            ids.push(String(match._id));
             remaining = remaining.filter(item => item !== match);
         } else {
             notFound.push(title);
         }
     }
-    return { remaining, removed, notFound };
+    return { removed, ids, notFound };
+}
+
+// The `result.failures?.[0]?.errors?.join(' ') || result.error` shape was duplicated ~31x across every entity handler in this directory -- one place to read a commitSet failure's human-readable reason.
+function extractCommitError(result) {
+    return result.failures?.[0]?.errors?.join(' ') || result.error;
 }
 
 // ==========================================
@@ -417,9 +339,6 @@ async function handleEditButton(interaction) {
 module.exports = {
     parseMngId,
     prompt,
-    registerUndo,
-    undoButtonRow,
-    handleUndo,
     pendingSeasonWipes,
     pendingManageDeletes,
     pendingManageEdits,
@@ -428,9 +347,8 @@ module.exports = {
     loadOrCreateSeasonalDoc,
     thumbnailNote,
     resolveThumbnailsForDraws,
-    upsertDrawsByTitle,
-    upsertEventsByTitle,
     removeByTitle,
+    extractCommitError,
     resolveManagePanelMatches,
     resolveManagePanelAction,
     renderManagePage,

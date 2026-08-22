@@ -14,7 +14,11 @@ const announcementSchema = new mongoose.Schema({
     // null = never expires. Always set EXPLICITLY by the caller (utils/announcement.js's computeExpiresAt, default 60 days) rather than relying on a schema default here -- one source of truth for "what does blank mean" instead of it living in two places.
     expiresAt: { type: Date, default: null },
     // Random per-announcement accent color (added 2026-08-13), generated ONCE at creation via utils/announcement.js's generateAccentColor() and never regenerated on edit -- see that function's header for why (an edit is a correction to the same announcement, not a new one).
-    color: { type: Number, required: true }
+    color: { type: Number, required: true },
+    // Scheduling (added with the operation core, 2026-08-21 09:31 EDT). Without this an announcement goes live the instant it is posted and the only time control is an END. null means "live now", which is exactly the pre-existing behaviour, so every existing document keeps working untouched.
+    //
+    // ⚠️ Declared here in the SAME change as the op that writes it -- root CLAUDE.md's schema-save gotcha. models/SeasonalData.js's draft.calendar is the recorded cost of getting this wrong.
+    startsAt: { type: Date, default: null }
 });
 
 module.exports = mongoose.model('Announcement', announcementSchema);

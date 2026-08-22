@@ -98,7 +98,7 @@ function captureComponent() {
     return null;
 }
 
-function writeStructured(severity, text) {
+function writeStructured(severity, text, serviceCtx) {
     if (!fileStream) return;
     try {
         const ctx = getContext();
@@ -113,19 +113,21 @@ function writeStructured(severity, text) {
             ...(ctx ? { interactionId: ctx.interactionId, command: ctx.command, handler: ctx.handler, userHash: ctx.userHash } : { context: 'lifecycle' }),
             version: VERSION,
             commit: COMMIT,
-            ...(severity === 'ERROR' ? { serviceContext: SERVICE_CONTEXT } : {}),
+            ...(severity === 'ERROR' ? { serviceContext: serviceCtx || SERVICE_CONTEXT } : {}),
         }) + '\n');
     } catch { /* best-effort: never let a log write surface */ }
 }
 
 // Patch console rather than rewriting ~60 call sites across the tree. Two reasons this is the right call and not laziness: (1) it cannot MISS a site, including ones added later and ones in third-party code paths that log through console; (2) the alternative is a sprawling mechanical diff across the whole codebase whose only content is an import change, which is far harder to review for an actual behavioural regression. The patch is additive — original console behaviour is preserved exactly, we only prepend a marker journald strips, and tee a copy to the JSON sink.
-function patchConsole() {
+function patchConsole(opts = {}) {
+    // opts.service overrides the 'dioreo-bot' default in Cloud Error Reporting's serviceContext — used by portal/server.js to group portal errors separately from the bot's. Previously this parameter didn't exist and passing one was a silent no-op (verified 2026-08-20).
+    const serviceCtx = Object.keys(opts).length ? { ...SERVICE_CONTEXT, ...opts } : null;
     for (const [method, severity] of [['error', 'ERROR'], ['warn', 'WARNING'], ['log', 'INFO']]) {
         const original = console[method];
         console[method] = (...args) => {
             let text;
             try { text = format(...args); } catch { text = String(args[0]); }
-            writeStructured(severity, text);
+            writeStructured(severity, text, serviceCtx);
 
             const prefix = UNDER_JOURNALD ? PRIO[method] : undefined;
             if (!prefix) return original(...args); // console.log, or running locally — untouched

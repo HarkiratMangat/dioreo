@@ -1,0 +1,17 @@
+/* portal/ui/board.css — the Board (changeset pipeline: Draft/Staged/Blocked/Ready). */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--radius);padding:10px;min-height:160px}
+.col.gate{border-color:var(--ink3)}
+.col h4{margin:0 0 10px;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);
+  font-weight:700;display:flex;align-items:center;gap:7px}
+.col h4 .ct{margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--ink3)}
+.col h4 .bad{color:var(--warn)}
+.card{background:var(--raised);border:1px solid var(--rule);border-radius:5px;padding:9px 10px;margin-bottom:8px}
+.card .tr{font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:1px 5px;border-radius:3px;
+  border:1px solid var(--rule);color:var(--ink3);font-weight:600}
+.card.t3 .tr{color:var(--warn);border-color:var(--warn)}
+.card.blocked{border-left:2px solid var(--warn)}
+.card .why{margin-top:6px;font-size:10.5px;color:var(--warn)}
+.commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;
+  font-weight:700;padding:9px;margin-top:2px}
+.commit:disabled{background:var(--raised);color:var(--ink3);cursor:not-allowed}

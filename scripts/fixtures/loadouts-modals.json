@@ -1,0 +1,380 @@
+{
+  "addMP": {
+    "custom_id": "add_loadout_MP",
+    "title": "Create New MP Loadout",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "weapon",
+            "label": "Weapon Name",
+            "style": 1,
+            "placeholder": "e.g. BP50",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "build",
+            "label": "Build Name / Share Code",
+            "style": 1,
+            "placeholder": "e.g. Aggressive Flex",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "attachments",
+            "label": "Attachments (One per line)",
+            "style": 2,
+            "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "image",
+            "label": "Cloudinary Image Key (Public ID)",
+            "style": 1,
+            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "meta",
+            "label": "Category | Badges",
+            "style": 1,
+            "placeholder": "AR | meta,best,toxic  (or top3/top5/etc.)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "addDMZ": {
+    "custom_id": "add_loadout_DMZ",
+    "title": "Create New DMZ Loadout",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "weapon",
+            "label": "Weapon Name",
+            "style": 1,
+            "placeholder": "e.g. BP50",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "build",
+            "label": "Build Name / Share Code",
+            "style": 1,
+            "placeholder": "e.g. Aggressive Flex",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "attachments",
+            "label": "Attachments (One per line)",
+            "style": 2,
+            "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "image",
+            "label": "Cloudinary Image Key (Public ID)",
+            "style": 1,
+            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "meta",
+            "label": "Category | Badges",
+            "style": 1,
+            "placeholder": "AR | meta,best,toxic  (or top3/top5/etc.)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "editMP": {
+    "custom_id": "edit_loadout_507f1f77bcf86cd799439011",
+    "title": "Edit Loadout",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "weapon",
+            "label": "Weapon Name",
+            "style": 1,
+            "value": "FENNEC"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "build",
+            "label": "Build Name / Share Code",
+            "style": 1,
+            "value": "CQB"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "attachments",
+            "label": "Attachments (One per line)",
+            "style": 2,
+            "placeholder": "Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock",
+            "value": "Gauge-9 Mono\nCrown-H3 Barrel"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "image",
+            "label": "Cloudinary Image Key (Public ID)",
+            "style": 1,
+            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "value": "FENNEC-1"
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "meta",
+            "label": "Category | Badges",
+            "style": 1,
+            "value": "SMG | meta,best"
+          }
+        ]
+      }
+    ]
+  },
+  "bulkAddMP": {
+    "custom_id": "modal_loadouts_bulk_add_MP",
+    "title": "Bulk Add MP Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Weapon | Category | Mode | Build | etc",
+            "style": 2,
+            "placeholder": "BAL-27 | AR | MP | Build 1 | BAL-27-1 | 1I2C6B8A9D | meta,best\nGauge-9 Mono\nCrown-H3 Barrel",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkAddDMZ": {
+    "custom_id": "modal_loadouts_bulk_add_DMZ",
+    "title": "Bulk Add DMZ Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "bulk_text",
+            "label": "Weapon | Category | Mode | Build | etc",
+            "style": 2,
+            "placeholder": "BAL-27 | AR | DMZ | Build 1 | BAL-27-1 | 1I2C6B8A9D | meta,best\nGauge-9 Mono\nCrown-H3 Barrel",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkRemoveMP": {
+    "custom_id": "modal_loadouts_bulk_remove_MP",
+    "title": "Delete Multiple MP Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "lines",
+            "label": "Weapon | [Build Name]",
+            "style": 2,
+            "placeholder": "BAL-27  (removes ALL builds of this weapon)\nBAL-27 | Build 2  (removes just this one build)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "bulkRemoveDMZ": {
+    "custom_id": "modal_loadouts_bulk_remove_DMZ",
+    "title": "Delete Multiple DMZ Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "lines",
+            "label": "Weapon | [Build Name]",
+            "style": 2,
+            "placeholder": "BAL-27  (removes ALL builds of this weapon)\nBAL-27 | Build 2  (removes just this one build)",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "export5MP": {
+    "custom_id": "modal_loadouts_export5_MP",
+    "title": "Export Up To 5 MP Loadouts",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "weapons",
+            "label": "Weapon Names (up to 5, one per line)",
+            "style": 2,
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "exportCategoryMP": {
+    "custom_id": "modal_loadouts_exportcategory_MP",
+    "title": "Export a MP Category",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "category",
+            "label": "Category",
+            "style": 1,
+            "placeholder": "e.g. AR",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "exportCategoryDMZ": {
+    "custom_id": "modal_loadouts_exportcategory_DMZ",
+    "title": "Export a DMZ Category",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "category",
+            "label": "Category",
+            "style": 1,
+            "placeholder": "e.g. AR",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "searchEditMP": {
+    "custom_id": "mng_search_loadouts_mp_edit",
+    "title": "Search: Edit MP Loadout",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "MP Loadout name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "searchDeleteDMZ": {
+    "custom_id": "mng_search_loadouts_dmz_delete",
+    "title": "Search: Delete DMZ Loadout",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "DMZ Loadout name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

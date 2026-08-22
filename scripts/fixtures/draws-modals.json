@@ -1,0 +1,270 @@
+{
+  "addNew": {
+    "custom_id": "add_draw_new",
+    "title": "Add New Draw",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "title",
+            "label": "Draw Title",
+            "style": 1,
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "items",
+            "label": "Items (Shorthand)",
+            "style": 2,
+            "placeholder": "m Character Name\nl Gun Name\ne Emote Name\n-# Optional note",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "date",
+            "label": "Release Date",
+            "style": 1,
+            "placeholder": "e.g. July 15",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "url",
+            "label": "Thumbnail URL (blank = reuse cached image)",
+            "style": 1,
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "combined",
+            "label": "Or Paste As One Line (overrides fields above)",
+            "style": 2,
+            "placeholder": "Title, m Item 1, l Item 2, July 15, url.jpg",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "addReturning": {
+    "custom_id": "add_draw_returning",
+    "title": "Add Returning Draw",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "title",
+            "label": "Draw Title",
+            "style": 1,
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "items",
+            "label": "Items (Shorthand)",
+            "style": 2,
+            "placeholder": "m Character Name\nl Gun Name\ne Emote Name\n-# Optional note",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "date",
+            "label": "Release Date",
+            "style": 1,
+            "placeholder": "e.g. July 15",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "url",
+            "label": "Thumbnail URL (blank = reuse cached image)",
+            "style": 1,
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "combined",
+            "label": "Or Paste As One Line (overrides fields above)",
+            "style": 2,
+            "placeholder": "Title, m Item 1, l Item 2, July 15, url.jpg",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "bulkAdd": {
+    "custom_id": "modal_draws_bulk_add_both",
+    "title": "Bulk Add New + Returning Draws",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "new_text",
+            "label": "New Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, m Item 1, july 10, url.jpg",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "returning_text",
+            "label": "Returning Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, l Item, aug 5, url.jpg",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "bulkReplace": {
+    "custom_id": "modal_draws_bulk_replace_both",
+    "title": "Bulk Replace New + Returning Draws",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "new_text",
+            "label": "New Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, m Item 1, july 10, url.jpg",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "returning_text",
+            "label": "Returning Draws (leave blank to skip)",
+            "style": 2,
+            "placeholder": "Title, l Item, aug 5, url.jpg",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "bulkRemove": {
+    "custom_id": "modal_draws_bulk_remove_either",
+    "title": "Bulk Delete Draws",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "new_titles",
+            "label": "Remove from New (titles, one per line)",
+            "style": 2,
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "returning_titles",
+            "label": "Remove from Returning (one per line)",
+            "style": 2,
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "searchEdit": {
+    "custom_id": "mng_search_draws_edit",
+    "title": "Search: Edit Draw",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "Draw name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "searchDelete": {
+    "custom_id": "mng_search_draws_delete",
+    "title": "Search: Delete Draw",
+    "components": [
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "query",
+            "label": "Draw name to search for",
+            "style": 1,
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

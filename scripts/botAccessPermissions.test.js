@@ -19,7 +19,7 @@ const {
     isOwner, hasCommandAccess, hasManagePageAccess, getManagePages,
     parsePermissionsInput, formatPermissions, invalidateAdminCache, ADMIN_COMMANDS, MANAGE_PAGE_SCOPES,
 } = require('../utils/adminAccess');
-const { ALLOWED_ADMIN_ID } = require('../commands/manage');
+const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
 const NON_OWNER = '999999999999999999';
 const GRANTED_BOT_ADMIN = '888888888888888888';

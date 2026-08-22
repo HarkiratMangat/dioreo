@@ -75,6 +75,19 @@ Development dependencies:
                                  Not used at runtime; required only by
                                  scripts/migrateBuildsToMongo.js.
 
+  preact 10.x                    MIT
+                                 Copyright (c) 2015-present Jason Miller
+                                 https://preactjs.com
+                                 Vendored into portal/public/vendor/ by scripts/buildPortal.js;
+                                 not used at runtime by the Discord bot itself.
+
+  htm 3.x                        MIT (Apache-2.0 for a small number of contributed
+                                 files — see the package's own LICENSE)
+                                 Copyright (c) 2018 Jason Miller
+                                 https://github.com/developit/htm
+                                 Vendored alongside Preact for the web admin portal's
+                                 no-build-step frontend.
+
 Vendored web assets, served from public/assets/:
 
 These are not npm dependencies and do not appear in package.json. They are

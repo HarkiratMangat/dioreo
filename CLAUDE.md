@@ -150,6 +150,8 @@ This codebase has inline comments explaining **why** something is written a cert
 | **`handlers/router.js`** | The one `interactionCreate` dispatcher + the router-private stores (`/manage`'s undo + pending Maps, id parsing, bulk upserts, anti-spam cooldown) | Holds the top-level try/catch — the crash net. Branch ORDER is load-bearing |
 | **`handlers/<subsystem>.js`** | One subsystem's branches, lifted out of the router | Contract: one `async` fn, returns **`true` if it consumed the interaction**, `false` to fall through. `colors.js` is the reference implementation |
 | **`utils/interactionContext.js`** | `buildSyntheticInteraction` · `resolvePanelActor` | Shared by the router and every handler — **never copy these into a handler** |
+| **`core/`** | The operation algebra — every DB mutation as a value, with `validate`/`preview`/`apply`/`invert` | Imports no discord.js and knows nothing about HTTP. Both `/manage` and the web portal drive it. Design: `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` |
+| **`portal/`** | The web admin portal — HTTP server, Discord OAuth, the realm API, and the built frontend | Drives `core/` and contains no business logic of its own. Served at `portal.dioreo.app` through a Cloudflare Tunnel. Design: `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` |
 | `commands/` · `models/` · `utils/` · `scripts/` | unchanged | |
 
 ### `.claude/rules/` — load automatically when you touch matching code
