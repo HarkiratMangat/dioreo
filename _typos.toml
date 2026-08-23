@@ -2,6 +2,7 @@
 # hyphenated prefix — mis-described, mis-filed, mis-indexed. Measured 2026-08-02 15:25 EDT: it was the
 # single largest false-positive source, and a linter that is usually wrong is one you learn to ignore.
 [default.extend-words]
+inh = "inh"          # portal/ui/access.css's `.cel.inh` — an INHERITED permission cell
 mis = "mis"
 unparseable = "unparseable"
 # `cpy` is the copy-control class family in scripts/buildLegalPages.js — .cpy, .cpy-t, .cpy-s and
