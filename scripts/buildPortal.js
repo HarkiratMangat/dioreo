@@ -98,6 +98,8 @@ function portalContrastAudit(css) {
     for (const m of rootBlock.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;/g)) vars[m[1]] = m[2];
     const backgrounds = ['desk', 'paper', 'raised', 'sunk'].filter(b => vars[b]);
     const foregrounds = ['ink', 'ink2', 'ink3'].filter(f => vars[f]);
+    // 🔴 SIGNAL COLOURS ARE CHECKED TOO, and they were the gap. This audit used to pair ONLY ink/ink2/ink3 against the four surfaces -- 12 pairs -- so every colour used as text that is not an ink token was invisible to it. The portal mockup-vs-live gap audit filed that as its §8 finding, and on 2026-08-23 it bit for real: a new Analytics kind-chip borrowed --ret (a Season TOPIC accent, designed to be a bar FILL) as chip text and measured 4.15:1 on --sunk. Nothing failed. Adding the pair below is not the whole of §8 -- that asks for computed contrast on rendered elements, which would also catch a var() fallback chain -- but it closes the half that is checkable from the token file alone, which is where this one lived.
+    const SIGNAL_TEXT_ON = { patch: ['desk', 'raised', 'sunk'], warn: ['paper', 'raised', 'sunk'], ok: ['paper', 'sunk'], staged: ['paper', 'raised', 'sunk'], info: ['sunk'] };
     const bad = [];
     let checked = 0;
     for (const fg of foregrounds) {
@@ -105,6 +107,15 @@ function portalContrastAudit(css) {
             checked++;
             const r = contrastRatio(vars[fg], vars[bg]);
             if (r < CONTRAST_MIN) bad.push(`--${fg} ${vars[fg]} on --${bg} ${vars[bg]} is ${r.toFixed(2)}:1, below ${CONTRAST_MIN}:1`);
+        }
+    }
+    for (const [fg, surfaces] of Object.entries(SIGNAL_TEXT_ON)) {
+        if (!vars[fg]) continue;
+        for (const bg of surfaces) {
+            if (!vars[bg]) continue;
+            checked++;
+            const r = contrastRatio(vars[fg], vars[bg]);
+            if (r < CONTRAST_MIN) bad.push(`--${fg} ${vars[fg]} used as TEXT on --${bg} ${vars[bg]} is ${r.toFixed(2)}:1, below ${CONTRAST_MIN}:1`);
         }
     }
     if (bad.length) {

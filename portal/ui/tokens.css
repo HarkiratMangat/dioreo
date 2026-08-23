@@ -30,6 +30,15 @@
     --patch: #F2C230;
     --warn: #FF7A45;
     --ok: #3DDC97;
+    /* The fourth signal, added 2026-08-23 15:52 EDT because the Analytics kind-chips needed a third
+       colour and the first attempt borrowed --ret, a SEASON TOPIC token that exists to be a FILL on
+       a Track bar. As chip TEXT on --sunk it measured 4.15:1 -- below the 4.5:1 body floor, in an
+       8.5px mono chip. Same defect class as the login button this whole plan started from, and
+       portalContrastAudit could not see it because it only ever paired ink/ink2/ink3 against the four
+       surfaces. Derived the way --ink3 already was: the same hue scaled up (1.25x per channel) until
+       it clears 4.5:1 on EVERY portal surface with margin rather than on the line -- 6.19 on --sunk,
+       5.41 on --paper, 4.86 on --raised. The audit now checks this pair and the ones beside it. */
+    --info: #409AD0;
 
     /* Season topic-accent tokens (gap audit §2.2) -- track.js's TOPIC_VAR and manifest.js's
        row.topicVar both reference these by name; only --patch existed here before, so every

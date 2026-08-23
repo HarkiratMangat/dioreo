@@ -32,7 +32,7 @@
   border-radius:3px;border:1px solid var(--rule);color:var(--ink3);font-weight:600;white-space:nowrap}
 .kind.change{color:var(--patch);border-color:var(--patch)}
 .kind.alert{color:var(--warn);border-color:var(--warn)}
-.kind.boot{color:var(--ret);border-color:var(--ret)}
+.kind.boot{color:var(--info);border-color:var(--info)}
 .src{font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:2px 6px;border-radius:3px;
   border:1px solid var(--rule);color:var(--ink3);white-space:nowrap}
 .metrics pre{padding:12px 14px;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;
