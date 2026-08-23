@@ -22,7 +22,7 @@ Three sessions execute this plan at different times with no shared memory except
 | Session | Phases owned | Recommended model | Status | Handoff note |
 |---|---|---|---|---|
 | A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | ✅ Complete | `local/handoff/2026-08-22-portal-alignment-session-A.md` |
-| B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ⬜ Not started | — |
+| B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | 🔄 In progress | — |
 | C | 4 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (verifying "is this actually fixed" is itself a judgment call, not a mechanical check, applied across every realm and every finding, plus an explicitly requested deep sequential-thinking pass) | ⬜ Not started | — |
 
 *(The `Premise <X> · Delib <Y> -> <Cell>` notation is an existing personal convention from Harkirat's global Claude Code config (a premise-risk × deliberation-load model-selection grid), not something defined in this repo — the recommendation itself is usable as a plain instruction even without that grid in hand; it names the reasoning for whoever does have it.)*
