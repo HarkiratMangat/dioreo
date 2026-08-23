@@ -75,8 +75,7 @@ function drawsBulkSnippet(values) {
     return parts.join('\n\n');
 }
 
-// ---------------------------------------------------------------- the modal table
-// Each entry rebuilds its modal from the customId alone. Every EDIT builder is handed a SYNTHETIC empty document rather than a database read: every field it would pre-fill is overwritten from the captured values one step later, so a re-fetch would be a round trip whose result is discarded -- and it would also fail exactly when the record was deleted between the two clicks, which is precisely when the admin most wants their typing back.
+// ---------------------------------------------------------------- the modal table Each entry rebuilds its modal from the customId alone. Every EDIT builder is handed a SYNTHETIC empty document rather than a database read: every field it would pre-fill is overwritten from the captured values one step later, so a re-fetch would be a round trip whose result is discarded -- and it would also fail exactly when the record was deleted between the two clicks, which is precisely when the admin most wants their typing back.
 function specs() {
     const m = require('../../commands/manage');
     return [

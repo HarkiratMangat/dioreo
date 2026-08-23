@@ -1,5 +1,4 @@
-// scripts/loadoutBulkFormat.test.js
-// Covers the three loadout changes shipped 2026-08-22: the labelled-block bulk format (replacing the seven-segment positional pipe line), the image-key-or-URL intake, and the cross-cutting failed-submission retry.
+// scripts/loadoutBulkFormat.test.js Covers the three loadout changes shipped 2026-08-22: the labelled-block bulk format (replacing the seven-segment positional pipe line), the image-key-or-URL intake, and the cross-cutting failed-submission retry.
 //
 // ⚠️ EVERY ASSERTION HERE IS ABLE TO FAIL. The old format's own test would have been vacuous -- it asserted a parse succeeded, which the redesign also does. The discriminating checks are: the OLD format must now be REJECTED (not merely re-parsed differently), a typo'd key must ERROR rather than become an attachment, and a formatter->parser round trip must reproduce the FIELD VALUES, not just a non-empty result.
 const assert = require('assert');
@@ -66,8 +65,7 @@ check('a header missing either half is rejected', () => {
     assert.ok(/first line/.test(parseBulkLoadoutList('BAL-27 |\n- Gauge-9 Mono').errors[0]));
 });
 
-// A typo'd key silently becoming an attachment is the exact silent-wrong-result the redesign exists to remove.
-// Audit finding: a stray trailing pipe used to be diagnosed as "the OLD pipe format", which is a wrong diagnosis of a right rejection -- and the old format's own optional trailing segments make this the most likely typo of all.
+// A typo'd key silently becoming an attachment is the exact silent-wrong-result the redesign exists to remove. Audit finding: a stray trailing pipe used to be diagnosed as "the OLD pipe format", which is a wrong diagnosis of a right rejection -- and the old format's own optional trailing segments make this the most likely typo of all.
 check('a stray trailing pipe is a typo, not the old format', () => {
     const { parsed, errors } = parseBulkLoadoutList('BAL-27 | AR |\n- Gauge-9 Mono');
     assert.deepStrictEqual(errors, [], 'a trailing empty segment should just be ignored');

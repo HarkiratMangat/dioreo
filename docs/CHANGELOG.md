@@ -28,6 +28,22 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.64.0 — 2026-08-23 00:09 EDT (#172) — a copy-pasteable retry for every failed `/manage` submit, loadout images by URL, and a bulk format that finally has a principle
+
+Four items off the deferred list, one deferred by name, and one turned into a spec instead of code.
+
+**Every failed `/manage` submit now hands you your work back.** A rejected add, edit, or bulk paste replies with what you entered — reconstructed in that entity's own bulk format, so it pastes back into either the field it came from or that entity's Bulk Add — plus a **Try Again** button that reopens the same form already refilled. 14 modals, 12 failure branches across draws, calendar and loadouts. The button rather than a modal is Discord's rule, not a preference: a modal submit cannot be answered with another modal. The snippet and the button expire differently on purpose — the button lasts 10 minutes, the text doesn't expire at all — which is why both were worth having.
+
+**Loadout images can be a URL now.** The Cloudinary Image Key field on Add and Edit takes either a Public ID or a pasted image link, told apart by the URL scheme, so it needed no sixth field in a modal that was already at Discord's hard five-field cap. On Edit the upload lands on the build's *existing* key, so swapping a picture never breaks anything pointing at it. If Cloudinary is unreachable the raw URL is saved instead of the save failing — already a supported state, and the same fallback draw thumbnails have always had.
+
+**The loadout bulk format was rewritten**, and the complaint behind it turned out to be exactly right. Asked why some things were on one line and others on their own, the honest answer was that there was no principle to state. There is one now — identity on the first line, every optional field on its own labelled line, everything else an attachment — and the old seven-segment pipe line is rejected outright rather than half-parsed, at Harkirat's call.
+
+🔴 **Reading that format for the rewrite turned up a real bug.** The parser *required* a Mode field that the save path then threw away and replaced with whichever page you were on. Confirmed live before anything changed: a block typed `DMZ`, pasted into the MP page, parsed with zero errors and saved as MP — and since Export emitted Mode too, exporting DMZ builds and pasting them on the MP page silently reassigned every one of them. Mode is gone from the format; the page has always been what decided it.
+
+**`/bot analytics` got a design spec and an 8-task plan rather than a rebuild.** The report that Alerts and Changes "show the exact same info" was checked first, because a data bug would have been a one-line fix — they read different collections entirely. What is real is that all five pages are one skeleton differing only in accent colour, so on a quiet bot they collapse into the same near-empty panel. Mid-drafting the whole thing was reframed: the web portal now carries in-depth analytics, so Discord becomes a glance — one question, one screenful, with pagers and filters and exports moving to the portal. The portal was checked to actually carry all of it, including revert, before the spec relied on that.
+
+New emoji for `/manage`'s Announcement page, `/bot access` and `/help`'s Bot Admin category, and `/invite`'s Share Link button. DMZ Loadouts stays deliberately open — asked about and deferred by name, with the real gameplay differences recorded for when it comes back. 28 new tests; an audit pass before merge found one more defect (a stray trailing pipe being diagnosed as the retired format) and fixed it.
+
 ## Pre-Release v3.63.0 — 2026-08-22 20:24 EDT (#171 · `3240c6d`) — a batch of live /manage click-test fixes across draws, calendar, loadouts, and announcements
 
 A live click-test session on the dev bot (Harkirat testing `/manage` and `/bot analytics` directly) surfaced a batch of real findings, each root-caused against the actual code before fixing rather than guessed at.
