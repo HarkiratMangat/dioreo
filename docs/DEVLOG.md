@@ -203,6 +203,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-23 09:29 EDT — /bot analytics: five glances, not one dashboard (v3.65.0-pre)
 - 2026-08-23 11:43 EDT — /bot analytics: five rounds of live review rebuilt the design (v3.65.0-pre)
 - 2026-08-23 13:10 EDT — The plan's premises were the bug (v3.66.0-pre)
+- 2026-08-23 14:06 EDT — Five items that said a thing was missing (v3.67.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3506,6 +3507,18 @@ The filing also named `patchnote.addSeason` among the culprits, and it has a reg
 **Two small things fell out of the extraction work.** A build with no `imageKey` crashed the loadout renderer — `buildImageUrl` calls `.startsWith()` on it — which `/gunsmiths` never hit because every stored build has one, but a reconstructed before-state carries only the fields an edit touched. The panel's try/catch would have swallowed it and fallen back to a field list: a budget guard firing for the wrong reason, indistinguishable from working. And a test in the analytics suite had pinned the *singular* spelling in place as an invariant, so fixing the defect broke the check written to guard against it. What it should have asserted, and now does, is the subset property.
 
 **One self-inflicted wound worth recording.** Pointing `reflow-prose.mjs` at a `.js` file deleted a third of it — requires, constants, whole functions — and reported success. It is the Markdown reflower; `reflow-comments.mjs` is the one that understands code, and `npm test` had named it correctly. Recovered from git in one command because every edit this session was a scripted heredoc rather than hand-typed, which is the first time that habit has paid for itself in recovery rather than turns.
+
+## 2026-08-23 14:06 EDT — Five items that said a thing was missing (v3.67.0-pre)
+
+Harkirat read a summary of open work, stopped on two lines, and said *"check these, thought they were implemented."* He was right about both, and about a third he flagged separately. Checking turned up two more. Five tracker entries described work that already existed.
+
+**All five asserted an absence, and that is the whole finding.** "Draws has no way to add a draw with no image." "Edit never lets you set the real shareCode." "Announcement: no start date support." An item phrased that way is uniquely fragile: the moment someone fills the gap, the code changes and the list does not, and nothing anywhere notices the contradiction. An item that says *"build X"* at least stays coherent after X is built — someone eventually strikes it. An item that says *"X does not exist"* becomes a lie the day X ships, and reads exactly as it did the day before.
+
+The three Harkirat named were fixed on 2026-08-22, in `handlers/manage/loadouts.js` (a `Build Name | Share Code` pipe syntax, with the omit-vs-clear distinction that stops an edit silently wiping an `/autobuild`-set gunsmith code), in `handlers/manage/draws.js` (a no-image draw renders a plain row rather than being rejected outright), and across the announcement stack (`startsAt` collected by both modals, range-checked against `expiresAt`, and enforced at read time so a scheduled announcement genuinely does not show early). None of those were quiet changes. Two of them shipped with their reasoning written into the code as inline comments. They simply never travelled back to the file that claimed they were missing.
+
+**The two the sweep added are more interesting, because both were already marked done and still read as open.** The `index.js` split carried a full `✅ SHIPPED IN FULL` paragraph in its body — under a bold header that was never struck. Anyone scanning headers, which is how anyone actually reads a 180-line roadmap, saw an open P1. And "extend the passive auto-disable pattern to more commands" was delivered *generically*: `sendV2Payload()` schedules panel expiry at the send boundary for every payload with interactive components, so one call site covered every command at once. It didn't look like the item because the item's own wording — "to more commands" — presumed a per-command answer. Its `🧩needs-design` flag was discharged not by a design document but by the implementation deciding the design question was the wrong one.
+
+**What I would not claim is that a sweep fixed this.** I found these by grepping open items for absence-shaped phrasing and checking each against the code, which took one command and about ten minutes. That works and it is repeatable, but it is a thing someone has to remember to do. The structural version — a check that reads an absence claim and tests it — does not exist and probably cannot in general, because "no way to create a draw with no image" is not a property any script can evaluate. So the honest residue is a habit rather than a gate: **before working an item that says something is missing, read the code and confirm it still is.**
 
 # Part B — Lessons Ledger (thematic)
 
