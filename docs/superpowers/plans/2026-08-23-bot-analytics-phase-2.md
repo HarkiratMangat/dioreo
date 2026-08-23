@@ -1,7 +1,6 @@
 ---
 kind: plan
-status: superseded
-superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-premises-design.md
+status: frozen
 ---
 
 # `/bot analytics` phase 2 — the gaps live review left open
@@ -15,6 +14,26 @@ superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-pre
 **Design:** `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` — **read §2's seven rules before writing anything.** They are the output of six rounds of live review and four of them contradict something the earlier, frozen spec asserted.
 
 **Tech stack:** discord.js v14 Components V2 written as raw JSON, Node's `assert`, the repo's hand-rolled runner. All new checks go in `scripts/botAnalyticsBody.test.js` (26 checks today).
+
+---
+
+> ## ⚠️ CORRECTIONS — annotated after execution, 2026-08-23 13:27 EDT
+>
+> **This plan stays frozen and its body below is unedited.** The notes marked **⚠️ CORRECTION** were added *after* the work ran, because three of the premises underneath turned out to be false and a reader who trusts them would repeat the mistakes. The original wording is deliberately left in place: it is the evidence that the plan was confidently wrong, which is the most useful thing this document now carries.
+>
+> The lesson generalises past the specifics. The spec this plan was written from opens by saying a design for a rendered surface cannot be validated by reading it — and then this plan, written in the same session from that spec, asserted five things about the codebase that one command each would have disproved. **A claim about code cannot be validated by reading the notes about the code either.**
+>
+> | The plan said | Actually true | Found by |
+> |---|---|---|
+> | Four ops emit `patchnote`, including **`addSeason`** | `addSeason` has a registered action. The set is `removeSeason`/`restoreSeason`/`editSeason`/**`restore`** | enumerating `listOpTypes()` through `actionForOpType()` |
+> | The `patchnote` split is the defect | **`season.restoreDraft` is worse.** It records `season` while reversing a *draft* discard — wrong in **both** directions (`manage.seasondraft` admins denied their own page, `manage.season`-only admins let into draft state). The patch-note case at least fails closed | the same enumeration, which this plan never ran |
+> | The owner is `utils/manageActions.js` — give those ops registered actions | **Wrong owner, wrong fix.** These ops are inverse-only: no `/manage` button exists and none should. `coreOps.test.js` has exempted them for months. Fabricating actions would fabricate buttons | reading the exemption list this plan itself cites |
+> | A draw's `date` decides whether players see it | **`/draws` has no filter of any kind** — no `.filter()`, no `Date.now()`, no visibility test in the file. The date is a label it prints | reading the render path, which Task 4 step 1 demanded |
+> | Verify with `⊆ MANAGE_PAGE_SCOPES ∪ {'access'}` | The union is **wrong and weakens the check**. `access` rows go straight through `recordChange()` and never reach `pageForOp()` | writing the assertion |
+>
+> **What was built instead of the shim:** an op may declare **`page:`** beside `action:`. `core/ops/index.js` resolves it and `registerEntity()` throws at boot when an op declares both and they disagree — before any registry mutation, so a rejected registration leaves nothing behind. Full rule: `.claude/rules/operation-core.md`.
+
+---
 
 ## Global constraints
 
@@ -32,7 +51,9 @@ superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-pre
 **The one with a security consequence — do it first.** `core/changeset.js`'s `pageForOp()` falls back to `op.type.split('.')[0]` for any op with no registered `/manage` action, so `ChangeLog.page` can hold **`patchnote`** (singular) while `MANAGE_PAGE_SCOPES` has `patchnotes`. `handlers/bot.js`'s revert and change-detail gates both call `hasManagePageAccess(userId, row.page)` with that value.
 
 - [ ] **Step 1: Reproduce it as a failing assertion.** `pageForOp()`'s full output set over `listOpTypes()` must be a subset of `MANAGE_PAGE_SCOPES ∪ {'access'}`. It is not today — four patch-note ops (`removeSeason`/`restoreSeason`/`editSeason`/`addSeason`) emit `patchnote`.
-- [ ] **Step 2: Decide the direction before patching.** The likely owner is `utils/manageActions.js` — give those four ops registered actions (or an explicit page mapping) so exactly one spelling exists. ⚠️ **A normalising shim at each call site is the wrong answer** and recreates the two-hand-synced-copies problem `core/ops/index.js`'s own header says the registry exists to prevent.
+    > ⚠️ **CORRECTION (2026-08-23 13:27 EDT):** `addSeason` has an action (`patchnotes:addseason`); the fourth is **`patchnote.restore`**. And `season.restoreDraft`/`season.restoreSnapshot` emit `season` — `restoreDraft` wrongly, since it reverses a *draft* discard. Drop the `∪ {'access'}`: those rows never pass through `pageForOp()`, so including it only weakens the assertion. Done, in `scripts/coreOps.test.js`; it failed before the fix and passes after.
+- [ ] **Step 2: Decide the direction before patching.** The likely owner is `utils/manageActions.js` — give those four ops registered actions (or an explicit page mapping) so exactly one spelling exists.
+    > ⚠️ **CORRECTION (2026-08-23 13:27 EDT):** the owner is **`core/ops/index.js`**, not `manageActions.js`, and "give them registered actions" is the wrong half of the either/or — an action implies a button, and these ops are inverse-only by design. The **explicit page mapping** is what shipped: `page:` on the impl, validated against `action:` at registration. The warning below about the shim was right and was followed. ⚠️ **A normalising shim at each call site is the wrong answer** and recreates the two-hand-synced-copies problem `core/ops/index.js`'s own header says the registry exists to prevent.
 - [ ] **Step 3: Check what an admin actually experiences today.** Grant a scoped `manage.patchnotes` admin, have them open a patch-note change's Details. Whether they are wrongly denied or wrongly allowed decides the severity, and neither has been observed — only inferred.
 - [ ] **Step 4:** Keep the subset assertion as a permanent test, and leave `commands/bot.js`'s `RECORD_VIEWS.patchnote` alias in place regardless — historical rows already carry the singular key.
 
@@ -63,6 +84,7 @@ superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-pre
 Reverting a title on a draw players can currently see is a bigger decision than reverting one scheduled for next month, and the panel presents them identically.
 
 - [ ] **Step 1: Test the premise first.** Read `commands/draws.js` and `commands/calendar.js` and establish what actually decides visibility. **It may not be the date** — `/draws` may list every draw in the season doc regardless. If visibility is not date-driven, this task changes shape or dies, and that is a real outcome.
+    > ⚠️ **CORRECTION (2026-08-23 13:27 EDT): the hedge was right and the task half-died.** `/draws` lists everything in the season document — no filter of any kind — so the planned "scheduled until X / already past" line would have been false on every panel it appeared on. The panel now says what is true: every draw is live the instant it saves, and the date is a label. **`/calendar` genuinely does gate visibility** via `isEventEnded()`, so that half is real and takes its answer from that exported function rather than a second date rule.
 - [ ] **Step 2:** If it is real, take the answer **from the render path**, never a fresh date comparison here. A second hand-rolled rule would drift from what `/draws` shows and confidently state the opposite.
 - [ ] **Step 3:** One line above the revert button: live now / scheduled until `<t:…:D>` / already past.
 - [ ] **Step 4: Verify with three real records** — one past, one live, one future — each matching what `/draws` actually renders.
@@ -104,3 +126,11 @@ A pass whose stated job was to find where this plan is wrong.
 3. 🟡 **Task 1 was nearly written as "add a normaliser".** That is the fast fix and it is wrong — it would put a second spelling-reconciliation in every caller. The plan now requires deciding the owner before patching, and names the registry header that argues against the shim.
 4. 🟡 **Task 5 can be made to pass by adjusting the seed.** A test whose input you control until the output looks right proves nothing. Step 3 makes "they are still not distinguishable" a reportable result.
 5. 🟢 **Cleared:** whether phase 2 needs its own branch. It does not — phase 1 is unmerged and unpushed on `feat/bot-analytics-redesign`, so the work continues there and ships as one PR.
+
+### Added after execution (2026-08-23 13:27 EDT)
+
+6. 🔴 **A defect the fix itself introduced, caught only because the test asserted the CONSEQUENCE rather than the message.** `registerEntity()`'s new conflict check first ran *after* `REGISTRY.set()` and the `ACTION_TO_OP` writes, so a rejected op stayed resolvable and its action stayed claimed — poisoning every later lookup in the process. `assert.throws(..., /message/)` passed against exactly that bug; adding "and it must leave nothing behind" failed immediately. **Asserting that an error fires proves nothing about what the failure left behind.**
+7. 🔴 **A rule from the design spec had been applied to one branch out of two, while the spec recorded it as adopted verbatim.** The stacked before/after notation reached the *array* diff and never the *scalar* one, which kept shipping the inline `A → B` the rule forbids — the common case, and the one the mockup was about. Now asserted by a test that reads the source, with comments stripped first (the rule is written down inside the function it governs, and an assertion that reads its own documentation as a violation is a false positive).
+8. 🟡 **Tasks 5 and 6 were looked at, not verified as specified.** The seed produced a real severity spread and a dense timing shape, it was checked and looked fine, and the seed was then cleared. That is a genuine observation and **not** the structured mobile pass this plan asked for — so the Alerts item stays open on the deferred list and a matching Usage/Timing item was filed rather than quietly closed. Item 4 above predicted exactly this pressure.
+9. 🟡 **`scripts/fixChangeLogPageKeys.js` has run against dev only, repairing 0 rows** — honest, and not a proof: the dev database has never held a patch-note revert. The prod run is filed against the v3 launch. The `season.restoreDraft` rows are **not** retro-identifiable (`ChangeLog` stores no op type and `season` is legitimate for every other season op), so they are fixed forward only and the script says so rather than implying completeness.
+10. 🟢 **Recorded so it is not re-proposed:** normalising `row.page` at each call site. Rejected twice now, for the same reason both times.

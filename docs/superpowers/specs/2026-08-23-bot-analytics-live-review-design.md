@@ -1,7 +1,6 @@
 ---
 kind: spec
-status: superseded
-superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-premises-design.md
+status: frozen
 ---
 
 # `/bot analytics` — what live review changed, and the rules that came out of it
@@ -52,6 +51,8 @@ The original spec was approved, built exactly as written, shipped — and was th
 
 > **Rule G — Structure carries meaning; prose does not.** Harkirat's own redesign of the diff block, adopted verbatim 2026-08-23 12:31 EDT, and generalised across every panel. A section gets a real `###` heading rather than bold body text wearing an emoji. A label sits on its own line ending in a colon. A value is **code-styled**, so it reads as data and its whitespace and lookalike characters are visible — on `Drop` vs `Draw` that is the difference between reading a change and guessing it. And a before/after **stacks**, one value per line, each led by its own `DiffMinus`/`DiffAdd` glyph: an inline `A → B` puts two long values on one line, which is the same ribbon-wrap failure as the vitals row and the peaks block. The glyphs are the same at both scales — on the field rows and on the BEFORE/AFTER card headings — so they read as one notation rather than two.
 >
+> ⚠️ **CORRECTION (2026-08-23 13:27 EDT) — "adopted verbatim" was not true of the code.** This rule reached `describeListChange()`, the **array** branch, and never reached the **scalar** branch, which kept emitting the inline `A → B` this very paragraph forbids — for a whole release, in the common case, and the one Harkirat's own mockup was about (`Drop` vs `Draw`). The `BEFORE`/`AFTER` headings carried no glyph either, against the sentence above saying the glyphs are the same at both scales. Fixed in v3.66.0-pre and now asserted by a test that reads `commands/bot.js` and fails on an arrow. **This document's own §0 says a design for a rendered surface cannot be validated by reading it. That includes this document.**
+>
 > ⚠️ The hint under an action is `-#` **subtext sitting directly on the button row, with no divider between them.** At body weight above a divider it reads as the panel's conclusion; as a caption it is what it actually is, and the buttons become the anchor.
 
 > **Rule F — A destructive control states its blast radius first.** Revert writes old values back over anything that came after it, so the panel names later changes to the same record, with who and when, above the red button.
@@ -75,6 +76,8 @@ One entry per page in `RECORD_VIEWS` (`commands/bot.js`), and pages are **derive
 `core/changeset.js`'s `pageForOp()` falls back to `op.type.split('.')[0]` for any op with no registered `/manage` action. Four patch-note ops have none, so **`ChangeLog.page` can hold `patchnote`** — a key `MANAGE_PAGE_SCOPES` does not contain. Every consumer treating that column as a *scope* is then comparing against a string no scope list has, including `handlers/bot.js`'s revert and detail gates via `hasManagePageAccess(userId, row.page)`.
 
 The panel handles both spellings. **The permission consequence is filed, not patched** (`docs/db-deferred-list.md`), because the owner is almost certainly `utils/manageActions.js` and a normalising shim at each call site would recreate the two-hand-synced-copies problem `core/ops/index.js` exists to prevent.
+
+> ⚠️ **CORRECTION (2026-08-23 13:27 EDT) — patched in v3.66.0-pre, and this section understated it twice.** The fourth op is **`patchnote.restore`**, not `addSeason` (which has a registered action). And the same fallback made **`season.restoreDraft` record `season`** while reversing a *draft* discard — wrong in **both** directions, where the patch-note case at least failed closed. The owner turned out to be **`core/ops/index.js`**, not `manageActions.js`: an op may now declare **`page:`** beside `action:`, and registration throws when the two disagree. The shim was correctly refused. Full rule and both failure modes: `.claude/rules/operation-core.md`.
 
 ## 5. Audit log
 
