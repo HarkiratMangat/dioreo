@@ -198,6 +198,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-21 19:05 EDT — The operation core's own sharp edges — plan 2 wired, and what a second caller exposed (v3.59.0)
 - 2026-08-22 10:47 EDT — The portal doesn't look like its own mockups (v3.61.0-pre)
 - 2026-08-22 16:06 EDT — Portal design-alignment Phase 1-2, and a live /manage crash found on the dev bot (v3.62.0-pre)
+- 2026-08-22 20:24 EDT — A batch of live /manage click-test fixes (v3.63.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3425,6 +3426,16 @@ Phase 2 shipped all 6 tasks: the login CTA gets Discord's real brand treatment (
 A requested falsification pass on this session's own "done" work found and fixed a real cascade-specificity bug: the login button's `.door-cta` rule (one class) was losing the `display` cascade to a pre-existing `.door a{display:inline-block}` rule (one class + one element, higher specificity), leaving the Discord icon 3.5px off-center — caught only by checking `getComputedStyle`, not by trusting the earlier screenshot. The plan's own Task 2.1 text had asserted the wrong reasoning for why the original selector was collision-safe; corrected in place.
 
 Separately — launching the local dev bot for live click-testing (unrelated to the portal plan, Harkirat's own request) found a real, 100%-reproducible crash: every `/manage` draw add/edit threw uncaught, because `core/ops/draws.js`'s `validateOne()` re-ran an already-parsed `Date` through `parseAdminDate()`, which calls `.trim()` on it. The router's crash net only logs, so the interaction just hung on "thinking..." forever with nothing written. `core/ops/calendar.js`/`patchnotes.js`/`announcements.js` already had the right guard for this exact hazard; `draws.js` never got it — almost certainly the first entity migrated onto the shared operation core, before that pattern existed anywhere to copy. Reproduced the crash in a failing test first (TDD), fixed it, and swept every other `core/ops/*.js` entity for the same bug class — draws.js was the only gap, confirmed by running each entity's own op-test suite individually, not just the aggregate. New rule file `.claude/rules/operation-core.md` documents the pattern so a future new entity doesn't reintroduce it.
+
+## 2026-08-22 20:24 EDT — A batch of live /manage click-test fixes (v3.63.0-pre)
+
+Live click-testing on the dev bot (Harkirat running `/manage` and `/bot analytics` directly) surfaced a batch of real, specific findings instead of hypothetical ones -- each root-caused against the actual code before touching anything, several turning out to be pure wiring (`core/ops/announcements.js` already fully supported `startsAt`, built for the portal's Broadcast realm; only Discord's modal never collected it) rather than new plumbing.
+
+The most interesting thread was the calendar Double-CP marker: the first version accepted bare "CP" as a trailing marker, which immediately mis-flagged real non-2x CP promotions ("CP Rebate Offer", "CP Summer Sale") the moment Harkirat gave real examples. The second correction removed the bare-CP case but kept bare "2x" alone as sufficient -- which broke just as fast against CODM's OTHER 2x events ("2x XP Weekend", "2x Weapon XP") that have nothing to do with CP. The final rule requires both a CP token and a doubling indicator, adjacent, in either order -- a good reminder that a plausible-sounding keyword regex needs real adversarial examples, not just the happy-path ones that motivated it, before it's trustworthy.
+
+A sequential-thinking audit pass (explicitly requested) caught four more gaps before they shipped: two confirmation messages (Announcement, Loadout Share Code) that computed the right values but never told the admin what happened, a calendar Replace flag-change hazard where a re-paste could silently flip an existing event's Double-CP status with zero warning, and zero persisted test coverage for any of the session's new parsing logic despite two live regex corrections already proving how fragile it was. All four got fixed in the same pass rather than filed for later.
+
+Also caught, entirely by accident: implementing the bulletless-entry grammar for calendar bulk-paste surfaced a pre-existing title-truncation bug in the ORIGINAL bulleted-entry regex (a title ending in certain letters loses its last character) that had apparently been live since the format was introduced weeks ago. Filed, not fixed -- it's a genuine parsing ambiguity, not a quick patch, and guessing at a fix without real usage data risked a worse, differently-silent regression.
 
 # Part B — Lessons Ledger (thematic)
 
