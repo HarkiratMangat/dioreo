@@ -28,6 +28,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
+
+Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.
+
+**Three deferred items were already built.** Draws' no-image path was fixed the day before in the click-test pass; the Loadout modal's `Build Name | Share Code` pipe syntax has shipped, including the omit-vs-clear distinction that stops an edit silently wiping an `/autobuild`-set code; and announcement `startsAt` is complete end to end — both `/manage` modals collect it, the op parses and range-checks it, and the read path genuinely hides a scheduled announcement until its time.
+
+**Two roadmap entries said open when their own bodies said shipped.** The `index.js` split was struck only in its body, so anyone scanning bold headers read it as outstanding. And "extend the passive auto-disable pattern to more commands" was delivered **generically rather than command-by-command**: `sendV2Payload()` schedules expiry at the send boundary for every payload with interactive components, so one call site covered every command. Its `needs-design` flag was discharged by the implementation deciding the design question was the wrong one.
+
+**The shared shape is worth naming.** Every stale entry asserted an *absence* — "no way to", "never lets you", "has no". That is the one kind of item the code can silently invalidate, because filling the gap leaves the list untouched. Nothing checks for it, so re-read an absence claim against the code before working it.
+
 ## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#173) — the change panel covers every entity, and a permission check that compared against nothing
 
 Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is. ⚠️ **This and v3.65.0-pre below ship in the SAME pull request** — phase 1 was never separately merged, so both entries cite `#173`. They stay two entries because they are two versions of the code and two distinct bodies of work, not because they were two merges.
