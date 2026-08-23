@@ -1,6 +1,7 @@
 ---
 kind: plan
-status: frozen
+status: superseded
+superseded_by: docs/superpowers/specs/2026-08-23-analytics-phase-2-falsified-premises-design.md
 ---
 
 # `/bot analytics` phase 2 — the gaps live review left open

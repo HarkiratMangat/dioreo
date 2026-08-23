@@ -88,6 +88,10 @@ check('an op may not declare a page that contradicts its own action', () => {
         }),
         /declares page "calendar" but its actions live on draws/
     );
+    // 🔴 AND IT MUST LEAVE NOTHING BEHIND. A throw that fires after the registry writes is worse than no check: the rejected op stays resolvable, its action stays claimed, and every later lookup in the process sees a type that was never accepted. Asserting the message alone would have passed against exactly that bug.
+    assert.throws(() => ops.resolveOp('probe.mismatch'), /unknown op type/, 'a rejected registration must not leave the op resolvable');
+    assert.strictEqual(ops.opTypeForAction('draws', 'probe'), null, 'a rejected registration must not leave its action claimed');
+    assert.ok(!ops.listOpTypes().includes('probe.mismatch'), 'a rejected registration must not appear in the op list');
 });
 
 process.exit(failures ? 1 : 0);

@@ -40,6 +40,8 @@ Phase 2 of the analytics work, and three of its own premises turned out to be fa
 
 **"Is this live to players?" — asked, and answered honestly.** The planned line assumed a draw's date decides whether players see it. It does not: `/draws` lists every draw in the season document with no filter of any kind, so the date is a label it prints. The panel says that instead. `/calendar` genuinely does hide ended entries, and takes its answer from the same `isEventEnded()` the command uses rather than a second date rule that would drift.
 
+**The audit pass found a defect in its own fix.** `registerEntity()`'s new conflict check originally ran *after* the registry writes, so a rejected op stayed resolvable and its action stayed claimed. `assert.throws(..., /message/)` passed against exactly that — asserting an error fires proves nothing about what the failure left behind. The check now runs before any mutation, and the test asserts the rejection is clean rather than merely loud.
+
 **One crash that had been waiting for a partial record.** `buildImageUrl()` calls `.startsWith()` on `imageKey`; every stored build has one, so `/gunsmiths` never hit it — but a reconstructed before-state carries only the fields an edit touched. The panel's own try/catch would have swallowed it and fallen back silently, which is a budget guard firing for the wrong reason.
 
 ## Pre-Release v3.65.0 — 2026-08-23 11:34 EDT (#173) — `/bot analytics` becomes five glances, and the change log becomes readable

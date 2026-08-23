@@ -14,22 +14,20 @@ function registerEntity(entity, opTypes) {
         for (const verb of ['validate', 'preview', 'apply', 'invert']) {
             if (typeof impl[verb] !== 'function') throw new Error(`${type} is missing ${verb}()`);
         }
-        REGISTRY.set(type, impl);
         // 🔴 `action` is a STRING OR AN ARRAY. The mapping is genuinely many-to-one: draws alone has TEN mutating actions and seven op types — addnew/addreturning are one op differing by payload, purgenew/purgereturning/purgeall are one op differing by scope. A 1:1 Map cannot express that, and coreOps.test.js's conservation check could never pass over one.
         const actions = impl.action ? (Array.isArray(impl.action) ? impl.action : [impl.action]) : [];
+        // 🔴 VALIDATED BEFORE ANY MUTATION BELOW. Two spellings of one fact must never coexist, and a boot-time throw is far cheaper than a permission check silently comparing against nothing -- but the throw has to happen while this registration is still a no-op. An earlier version of this check sat AFTER the REGISTRY/ACTION_TO_OP writes, so a rejected op left half of itself behind and poisoned every later lookup in the same process (including coreOps.test.js's own conservation check, which only passed because the failing case happened to run last).
+        if (impl.page && actions.length && !actions.some(a => a.split(':')[0] === impl.page)) {
+            throw new Error(`op "${type}" declares page "${impl.page}" but its actions live on ${actions.map(a => a.split(':')[0]).join('/')}`);
+        }
+        REGISTRY.set(type, impl);
         for (const a of actions) {
             if (ACTION_TO_OP.has(a)) throw new Error(`action "${a}" is already claimed by "${ACTION_TO_OP.get(a)}"`);
             ACTION_TO_OP.set(a, type);
         }
         if (actions.length) OP_TO_ACTION.set(type, actions);
         // 🔴 `page` EXISTS FOR INVERSE-ONLY OPS, and giving them an `action` instead would be wrong. Six ops here (patchnote.removeSeason/restoreSeason/editSeason/restore, season.restoreSnapshot/restoreDraft) are reachable ONLY as another op's invert() target -- there is no /manage button for them and there must not be one. Without a declared page, core/changeset.js's pageForOp() fell back to `op.type.split('.')[0]`, which stamped ChangeLog.page with `patchnote` (SINGULAR) -- a key utils/adminAccess.js's MANAGE_PAGE_SCOPES does not contain, so hasManagePageAccess(userId, row.page) could never match a `manage.patchnotes` grant and silently denied every scoped admin. season.restoreDraft was worse in both directions: it recorded `season`, so reverting a discarded DRAFT was gated on manage.season rather than manage.seasondraft.
-        if (impl.page) {
-            // Two spellings of the same fact must never coexist -- if an op somehow has both, they have to agree, and a boot-time throw is far cheaper than a wrong permission check nobody can see.
-            if (actions.length && !actions.some(a => a.split(':')[0] === impl.page)) {
-                throw new Error(`op "${type}" declares page "${impl.page}" but its actions live on ${actions.map(a => a.split(':')[0]).join('/')}`);
-            }
-            OP_TO_PAGE.set(type, impl.page);
-        }
+        if (impl.page) OP_TO_PAGE.set(type, impl.page);
     }
 }
 
