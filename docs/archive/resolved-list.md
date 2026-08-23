@@ -15,6 +15,9 @@ Where entries from **`docs/db-deferred-list.md`** come to rest once they ship, g
 - Newest at the top of each section.
 - **Not for standing "decided-no" calls that could get re-raised** — those stay visible in `db-deferred-list.md`'s own 🚫 Decided-no section, precisely so nobody re-opens them.
 
+## Bot analytics
+- **`/bot analytics`: the whole subsystem needed a UX/UI/copy overhaul — ✅ SHIPPED v3.65.0-pre (#173), 2026-08-23 09:29 EDT.** Spec + 8-task TDD plan (`docs/superpowers/specs/2026-08-22-bot-analytics-redesign-design.md`, `docs/superpowers/plans/2026-08-22-bot-analytics-redesign.md`) built as written. Discord's five pages became five one-screenful glances (Health = verdict + vitals block, Alerts = severity ledger of 3, Changes = ledger with per-row Revert, Usage = proportional bars, Timing = headroom-against-budget), each with its own empty state and one Link button into the portal's Analytics realm — pagers/filters/exports relocated there, nothing deleted. Full story: `docs/CHANGELOG.md`'s v3.65.0 entry.
+
 ## Its sibling in this folder
 `docs/archive/graveyard.md` — the same idea for **`docs/diors-builds notes.md`**: resolved and ℋ-confirmed intake is swept there. Two archives, deliberately separate, so it stays obvious which active file a given dead item came out of.
 

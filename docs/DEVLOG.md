@@ -200,6 +200,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-22 16:06 EDT — Portal design-alignment Phase 1-2, and a live /manage crash found on the dev bot (v3.62.0-pre)
 - 2026-08-22 20:24 EDT — A batch of live /manage click-test fixes (v3.63.0-pre)
 - 2026-08-22 23:40 EDT — Five deferred items, two false premises checked, and one spec reframed mid-draft (v3.64.0-pre)
+- 2026-08-23 09:29 EDT — /bot analytics: five glances, not one dashboard (v3.65.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3451,6 +3452,22 @@ Loadout images by URL needed no new modal field at all. The Cloudinary Image Key
 The `/bot analytics` overhaul got a spec and an 8-task plan rather than code, and then got reframed mid-drafting. The first draft assumed Discord had to remain a full analytics dashboard and spent its effort making five dense pages distinguishable. Harkirat's correction — the portal now carries the depth, so make Discord a glance — was the better answer to the original complaint, and the premise the first draft never stated out loud was exactly the thing a falsification pass is supposed to catch. It took him noticing rather than the pass. Before writing "move it to the portal" into a spec, `portal/ui/analytics.js` was confirmed to actually exist and to carry revert; otherwise rule 0 would have deleted real capability and called it design.
 
 DMZ Loadouts was asked about and deferred by name, so it stays open on purpose with the menu of real gameplay differences recorded against it for whenever it reopens.
+
+## 2026-08-23 09:29 EDT — /bot analytics: five glances, not one dashboard (v3.65.0-pre)
+
+`/bot analytics` was shipping as one dashboard wearing five colours — Health, Alerts, Changes, Usage, Timing all rendered the same skeleton (`-#` intro → summary counts → divider → list-or-empty → pager → action row), differing only in `PAGE_META`'s accent. On a quiet bot every page collapsed to a heading, a row of zeros, and near-identical italic empty states, and the reported bug — "Alerts and Changes show the exact same info" — turned out to be a correct reading of that design, not a data bug: the two pages read entirely different collections.
+
+The investigation mattered because it ruled out the cheap fix. Then, mid-drafting the redesign spec, Harkirat reframed the whole premise: the web portal now carries in-depth analytics, so Discord doesn't need to stay a dashboard at all — it can become a glance. That single sentence cut the scope of every remaining task: pagers, filters, and exports all left for the portal, which was checked first to actually carry all of it (including revert) before the spec relied on that.
+
+The plan's own falsification pass caught two real defects before any code was written: a claimed component-count saving on the Changes grid that recounted to zero saving (9+10+2 and 10+1+2 are both 3), and an unverified premise that a Components V2 Section's accessory could be a Button — `/help`'s landing page had only ever proven a Thumbnail accessory. That premise became its own no-commit spike task rather than an assumption Task 4 was built on.
+
+Built via TDD, one page per task. A genuine bug turned up in the plan's own reference code for Health's vitals block — `(label + ':').padEnd(pad + 2)` pins the colon right after each label's raw length, not at a shared column, so "Gateway:"/"Restarts:" land at different offsets on a phone. The test that was supposed to prove alignment caught it immediately; the fix is padding the label before appending the colon, not after.
+
+Each page found its own identity from a property its data already had: Health already opened with a verdict function, Alerts already had a severity-glyph map, Changes already had per-row Revert, Usage already computed a percentage delta, Timing already knew the 3,000ms deadline. Nothing was invented for variety — the redesign's second governing rule, kept honest by the first (colour is a label, never the identity).
+
+Every removed Discord control left a matching `handlers/bot.js` branch that had to be deleted, not just orphaned — an unreachable branch reads as live code to the next person who greps for it. `FILTERABLE_PAGES`/`encodeState`/`decodeState` and six handler branches came out in the same passes as their buttons.
+
+The Section+Button premise was resolved by reading Discord's own published API schema (`discord-api-types`'s `APISectionComponent.accessory` type, which documents "a thumbnail or a button component" verbatim) rather than a live interactive click-test — this session had no interactive Discord client tool available, and firing a probe message crossed into territory that wanted an explicit go-ahead rather than being fired silently. Flagged plainly as a follow-up rather than claimed as fully verified.
 
 # Part B — Lessons Ledger (thematic)
 

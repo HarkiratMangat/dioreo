@@ -28,6 +28,18 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.65.0 — 2026-08-23 09:29 EDT (#173) — `/bot analytics` becomes five glances instead of one dashboard wearing five colours
+
+The plan and spec filed in v3.64.0, built.
+
+Discord is a glance now; the web portal already carries the depth. Every page drops its pager, its filters, and its Export button, replaced by one Link button into the matching portal view — the portal was confirmed to already carry everything before any of this was cut, so nothing here is a removal, only a relocation.
+
+**Health** states its verdict before any facts, then a single aligned vitals block (Gateway/Uptime/Memory/Restarts) instead of four separate sentence-shaped rows — the only page with no list at all. **Alerts** keeps its severity ledger, the one signature no other page has, cut to the 3 most recent, with an empty state that finally says what actually produces an alert instead of reusing Changes' wording. **Changes** becomes a ledger of the 3 most recent edits, each one a Components V2 Section with Revert as its own row accessory — confirmed against Discord's published API schema that a Section accessory can be a button, not assumed — so Revert is the one control that stayed on Discord; everything else about this page moved. **Usage** draws proportional bars against the leading command instead of a numbered list, fixed-width so the name truncates and the bar never does. **Timing** states every ack/duration number against Discord's 3,000ms deadline with a headroom verdict icon, and ranks by risk — worst p95 first — instead of by call frequency.
+
+Every empty state was rewritten to name its own cause rather than share one generic sentence across all five pages — the actual root of "Alerts and Changes look identical," which turned out to be a design problem, not a data bug. The page switcher's dropdown now carries the question each page answers as its description field, at zero cost against the 40-component budget.
+
+8 tasks, TDD throughout; the Section+Button premise was a spike with a documented fallback rather than an assumption Task 4 was built on. Usage and Timing's dense layouts remain unverified against production-shaped data — `AnalyticsEvent` is near-empty on the dev bot — tracked as a follow-up rather than implied as done.
+
 ## Pre-Release v3.64.0 — 2026-08-23 00:09 EDT (#172) — a copy-pasteable retry for every failed `/manage` submit, loadout images by URL, and a bulk format that finally has a principle
 
 Four items off the deferred list, one deferred by name, and one turned into a spec instead of code.
