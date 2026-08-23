@@ -67,6 +67,15 @@ check('a header missing either half is rejected', () => {
 });
 
 // A typo'd key silently becoming an attachment is the exact silent-wrong-result the redesign exists to remove.
+// Audit finding: a stray trailing pipe used to be diagnosed as "the OLD pipe format", which is a wrong diagnosis of a right rejection -- and the old format's own optional trailing segments make this the most likely typo of all.
+check('a stray trailing pipe is a typo, not the old format', () => {
+    const { parsed, errors } = parseBulkLoadoutList('BAL-27 | AR |\n- Gauge-9 Mono');
+    assert.deepStrictEqual(errors, [], 'a trailing empty segment should just be ignored');
+    assert.strictEqual(parsed[0].category, 'AR');
+    // ...but a REAL third segment is still the old format and must still be caught.
+    assert.ok(/OLD pipe format/.test(parseBulkLoadoutList('BAL-27 | AR | MP\n- Gauge-9 Mono').errors[0]));
+});
+
 check('a typo\'d field key ERRORS rather than becoming an attachment', () => {
     const { parsed, errors } = parseBulkLoadoutList('BAL-27 | AR\nBuld: Aggressive Flex\n- Gauge-9 Mono');
     assert.strictEqual(parsed.length, 0);

@@ -422,7 +422,9 @@ function parseBulkLoadoutList(bulkText) {
         const headerLine = lines[0];
         const snippet = headerLine.length > 60 ? `${headerLine.slice(0, 60)}...` : headerLine;
 
+        // Trailing EMPTY segments are dropped before the length test -- a half-typed `BAL-27 | AR |` (and the muscle memory of the old seven-segment format, which ended in optional empties) would otherwise be diagnosed as "the OLD pipe format" when it is really just a stray pipe. Found in the audit pass, not in testing: the guidance that followed was still correct, so nobody would have been misled into a wrong save, but being told you are using a retired format when you made a typo is its own kind of wrong.
         const headerParts = headerLine.split('|').map(p => p.trim());
+        while (headerParts.length > 2 && headerParts[headerParts.length - 1] === '') headerParts.pop();
         if (headerParts.length > 2) {
             errors.push(`"${snippet}" -- that looks like the OLD pipe format. The first line is now just "Weapon | Category"; Build, Image, Code and Badges each go on their own line below it (e.g. "Build: Aggressive Flex").`);
             continue;
