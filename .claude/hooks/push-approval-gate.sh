@@ -25,8 +25,7 @@ echo "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_]
 # A dry run publishes nothing, so there is nothing to authorize.
 echo "$cmd" | grep -q -- '--dry-run' && exit 0
 
-# Deleting a remote branch is the UNDO of a push, not a push. Gating it would make cleaning up an
-# unauthorized push harder than making one, which is backwards.
+# Deleting a remote branch is the UNDO of a push, not a push. Gating it would make cleaning up an unauthorized push harder than making one, which is backwards.
 echo "$cmd" | grep -qE 'git +push[^;&|]*--delete' && exit 0
 
 jq -n '{
