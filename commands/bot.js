@@ -29,13 +29,15 @@ const GATEWAY_STATUS_LABEL = {
 
 // Each page's own identity color — Alerts/Changes reuse their retired commands' exact accents (continuity for anyone used to the old panels); Health/Usage/Timing/Access are new.
 const PAGE_META = {
-    health: { label: '🩺 Health', accent: 0x2FA88E },
-    alerts: { label: '🔔 Alerts', accent: 0x546E7A },
-    changes: { label: '📒 Changes', accent: 0x6C5DD3 },
-    usage: { label: '📊 Usage', accent: 0x4A7FE8 },
-    timing: { label: '⏱️ Timing', accent: 0xD98A3D },
+    health: { label: '🩺 Health', accent: 0x2FA88E, question: 'Is the bot okay right now?' },
+    alerts: { label: '🔔 Alerts', accent: 0x546E7A, question: 'What has gone wrong, and when' },
+    changes: { label: '📒 Changes', accent: 0x6C5DD3, question: 'Who edited what — and undo it' },
+    usage: { label: '📊 Usage', accent: 0x4A7FE8, question: 'What people actually use' },
+    timing: { label: '⏱️ Timing', accent: 0xD98A3D, question: 'Where the time goes' },
 };
 const ACCESS_ACCENT = 0xB33F40;
+// Every analytics page ends with this. Discord is the glance; the portal is the depth (see the spec's rule 0). Route matches portal/ui/app.js's hash-based router (`location.hash`, keyed by realm name in REALM_COMPONENTS).
+const PORTAL_ANALYTICS_URL = 'https://portal.dioreo.app/#/analytics';
 
 function unix(d) { return Math.floor(new Date(d).getTime() / 1000); }
 function truncate(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
@@ -46,7 +48,9 @@ function pageSelectRow(current) {
         type: 1,
         components: [{
             type: 3, custom_id: 'bot_pagesel', placeholder: 'Switch page…',
-            options: Object.entries(PAGE_META).map(([key, meta]) => ({ label: meta.label, value: key, default: key === current })),
+            options: Object.entries(PAGE_META).map(([key, meta]) => ({
+                label: meta.label, value: key, description: meta.question, default: key === current,
+            })),
         }],
     };
 }
@@ -516,13 +520,15 @@ function buildHotpatchPanel(out) {
 module.exports = {
     buildAnalyticsPanel,
     buildAccessPanel,
+    pageSelectRow,
+    PAGE_META,
     buildHotpatchPanel,
     buildUsageExport,
     buildTimingExport,
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,
-    // PAGE_META/FILTERABLE_PAGES/PAGE_LABEL/encodeState removed from exports (v3-pre-release review, finding #47) -- confirmed dead as CROSS-MODULE exports (nothing anywhere destructures them off require('../commands/ bot')), while decodeState beside them is genuinely imported by handlers/bot.js, which is what made the dead half easy to miss. All four stay as internal consts/functions -- this file uses every one of them itself.
+    // FILTERABLE_PAGES/PAGE_LABEL/encodeState stay OUT of exports (v3-pre-release review, finding #47) -- confirmed dead as CROSS-MODULE exports, this file uses every one of them itself. PAGE_META/pageSelectRow were re-added 2026-08-23 00:22 EDT (bot analytics redesign) so scripts/botAnalyticsBody.test.js can assert on the page-switcher descriptions without duplicating them; decodeState stays exported for the same reason it always was -- handlers/bot.js genuinely imports it.
     decodeState,
 
     data: new SlashCommandBuilder()
