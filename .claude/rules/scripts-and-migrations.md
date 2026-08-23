@@ -70,6 +70,14 @@ Three tracked scripts from the health/roll-up stage, all wired into `npm test` a
 
 ⚠️ **All three shipped with no entry in this pointer map**, which `docs-audit`'s `scripts-documented` check reports — and it reports at **WARN**, never ERROR, which is exactly why three of them accumulated unnoticed rather than one being caught on the day. If you add a script here, add its line in the same change; a warning that nothing blocks on is only as good as the habit. The subsystem itself is documented in `docs/superpowers/specs/2026-08-16-observability-layer-design.md`.
 
+## `portSeasonalToLocal.mjs` — copy the LIVE season document into local dev Mongo (added 2026-08-23 16:24 EDT)
+
+`node scripts/portSeasonalToLocal.mjs` (dry run) · `--write` to apply · `--keep-draft` to preserve the local `draft` field. Everything the portal's Season realm renders — draws, returning draws, the calendar, the season titles and end dates, the patch notes — lives in ONE document (`seasonaldatas`, `docType:'global'`), so this is a single-document copy rather than a multi-collection sync. Written because the portal's Season realm is only as reviewable as the data behind it: on a fresh dev database `bpEnd` is unset, which collapses the Track's window to a point (see `portal/ui/season.logic.js`'s `seasonWindow`).
+
+🔴 **Three guards, because this script holds BOTH URIs open at once.** The **target must be `mongodb://localhost`** — it refuses otherwise, since a copy running the wrong way round would overwrite the live season with dev test data (same failure class `portal/server.js`'s `assertEnvironment()` exists for). The **source must not look local**, so a local-to-local copy cannot silently succeed and read as a real port. And the **local document is backed up** to `local/db-backups/` before anything is written, so an unwanted port is one restore away.
+
+⚠️ **It verifies by RE-READING the target**, not by trusting `updateOne`'s result, and dies loudly if the re-read disagrees. ⚠️ **It parses both env files itself** (prod `.env` for the source, `.env.dev` for the target) because `--env-file` takes only one — and greps rather than sources them, since sourcing executes the file and exports every other secret into the process for no reason (same reasoning as `backupDb.sh`).
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 
