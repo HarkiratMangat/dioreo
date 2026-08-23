@@ -179,6 +179,14 @@ button[aria-busy="true"]::after {
     background: repeating-linear-gradient(45deg, var(--topic-accent, var(--warn)) 0 4px, transparent 4px 8px);
     border-color: var(--warn);
 }
+.bar.exp {
+    /* MUTED, distinct from .stag's hollow dash — an expired announcement is done, not pending.
+       Flattened to --ink3 rather than the topic accent, at reduced opacity, so it reads as inert. */
+    background: var(--ink3);
+    border-style: solid;
+    border-color: var(--ink3);
+    opacity: .5;
+}
 
 /* The accent is a FILL, never a text colour (proven floor 4.58:1 with #000 ink — see the
    /commands page's own history of solving an embed hue into readable text and getting brown). */

@@ -167,7 +167,7 @@ function AddBuildForm({ onSubmit, onCancel }) {
                 <button class="accent-fill" disabled=${!ready} onClick=${submit}>Stage</button>
                 <button onClick=${onCancel}>Cancel</button>
             </div>
-            ${badgeWarning ? html`<p style="color:var(--warn);padding:0 14px 10px;font-size:12px">${badgeWarning}</p>` : null}
+            ${badgeWarning ? html`<p style="color:var(--warn);padding:0 var(--gut) 10px;font-size:12px">${badgeWarning}</p>` : null}
         </div>
     `;
 }
@@ -269,7 +269,7 @@ export function ArmoryRealm({ session }) {
         <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage']} onSetView=${setView}
                   masthead=${html`<${Masthead} title="Armory" sub=${modeLine} stats=${armoryStats} />`}
                   viewSlot=${html`
-                      ${notice ? html`<p style="color:var(--warn);padding:0 14px">${notice}</p>` : null}
+                      ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <div class="armcols">
                           <div class="armmain">
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}

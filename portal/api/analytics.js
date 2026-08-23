@@ -21,7 +21,8 @@ async function eventRiver({ limit = 100 } = {}) {
     const river = [
         ...changes.map(c => ({ kind: 'change', at: c.createdAt, ...c })),
         ...alerts.map(a => ({ kind: 'alert', at: a.createdAt, ...a })),
-        ...boots.map(b => ({ kind: 'boot', at: b.createdAt, ...b })),
+        // spread FIRST: BootRecord's own `kind` ('deploy'/'manual'/'automatic') must not win over the river row's kind — a real bug where it silently did, because the literal came first and object spread applies in source order, so the DB field clobbered it.
+        ...boots.map(b => ({ ...b, bootKind: b.kind, kind: 'boot', at: b.createdAt })),
     ].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, limit);
     return river;
 }
@@ -82,13 +83,15 @@ function register(route) {
         if (!(await hasCommandAccess(session.discordId, 'bot'))) return forbidden(res, 'forbidden');
         const { buildUsageExport, buildTimingExport, computeUsageStats, computeTimingStats } = require('../../commands/bot');
         const { buildAlertExport } = require('../../utils/alertStore');
-        const [river, usage, timing, alerts, health, usageStats, timingStats, events7d] = await Promise.all([
-            eventRiver({}), buildUsageExport(), buildTimingExport(), buildAlertExport(),
+        const [river, alerts, health, usageStats, timingStats, events7d] = await Promise.all([
+            eventRiver({}), buildAlertExport(),
             healthStats(), computeUsageStats(), computeTimingStats(),
             AnalyticsEvent.find({ createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) } }).select('createdAt').lean(),
         ]);
         health.spark.commands = bucketByDay(events7d, 7);
-        // usage/timing/alerts stay in the payload: they are the /bot analytics text exports and the Usage and Timing panels still render them verbatim under their own stat tiles. Nothing here is a second computation of the same numbers (spec §8.2's "nothing is re-derived") — the tiles read the stats objects those same functions were built from.
+        // usage/timing/alerts stay in the payload: they are the /bot analytics text exports and the Usage and Timing panels still render them verbatim under their own stat tiles. Nothing here is a second computation of the same numbers (spec §8.2's "nothing is re-derived") — the tiles read the stats objects those same functions were built from. 🔴 usageStats/timingStats are computed ONCE above and threaded into the export builders below — buildUsageExport/buildTimingExport used to be called with no args, which silently re-ran the exact same aggregation (2 counts + 3 aggregates, and a full $percentile pipeline) a second time on every page load.
+        const usage = await buildUsageExport(usageStats);
+        const timing = await buildTimingExport(timingStats);
         sendJson(res, 200, { river, usage, timing, alerts, health, usageStats, timingStats });
     }));
 }

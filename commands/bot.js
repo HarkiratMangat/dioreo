@@ -683,8 +683,9 @@ async function buildUsageBody() {
 function fmtUtc(d) { return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?'; }
 
 // Matches buildAlertExport()/buildChangeExport()'s downloadable-.txt shape — the fuller record beyond what fits in the panel, same convention every export button in this command uses.
-async function buildUsageExport() {
-    const { current, previous, byCommand, byEntry, byOutcome } = await computeUsageStats();
+async function buildUsageExport(stats) {
+    // accepts a precomputed stats object (the portal's /api/analytics passes one so this doesn't re-run the aggregation a second time in the same request) — falls back to computing its own when called standalone, e.g. from /bot analytics.
+    const { current, previous, byCommand, byEntry, byOutcome } = stats || await computeUsageStats();
     const lines = [
         `Dioreo — usage export`,
         `Generated: ${fmtUtc(new Date())}`,
@@ -809,8 +810,9 @@ async function buildTimingBody() {
     ];
 }
 
-async function buildTimingExport() {
-    const { overall, byCommand, byDep } = await computeTimingStats();
+async function buildTimingExport(stats) {
+    // same reasoning as buildUsageExport above.
+    const { overall, byCommand, byDep } = stats || await computeTimingStats();
     const ackP = overall?.ackP || [null, null];
     const durP = overall?.durP || [null, null];
     const lines = [

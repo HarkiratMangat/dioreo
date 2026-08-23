@@ -97,7 +97,7 @@ function Airtime({ all }) {
                             const item = { startDate: a.startsAt || a.createdAt, endDate: a.expiresAt || window.end };
                             const { left, width } = barGeometry(item, window);
                             // Shape carries state: live is a solid fill, scheduled is hollow+dashed, expired is muted. "No expiry" additionally has NO RIGHT EDGE -- it fades past the window rather than stopping, because a bar that stops reads as an end date and that is the exact misreading to prevent.
-                            const cls = 'bar ' + (a.state === 'scheduled' ? 'stag' : a.state === 'expired' ? 'stag' : 'live') + (a.state === 'live' && !a.expiresAt ? ' forever' : '');
+                            const cls = 'bar ' + (a.state === 'scheduled' ? 'stag' : a.state === 'expired' ? 'exp' : 'live') + (a.state === 'live' && !a.expiresAt ? ' forever' : '');
                             const style = `left:${left}%;width:${width}%;` + (accentOf(a) ? `--topic-accent:${accentOf(a)}` : '');
                             return html`
                                 <div class="lane">

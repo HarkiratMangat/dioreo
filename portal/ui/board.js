@@ -65,11 +65,13 @@ function OpDiff({ op, entry }) {
 }
 
 // A tier-3 op destroys state with no exact inverse, so the review names WHAT it destroys rather than how many. "This permanently removes 4 draws" plus the four titles is the difference between a warning you can act on and a number you have to go and look up.
-function Destructive({ op, entry }) {
+function Destructive({ entry, tier }) {
+    // 🔴 GATED ON TIER 3, AND SHAPE-AGNOSTIC ON PURPOSE. A tier-2 op like bulkReplace returns before:{draws:[...]} — the FULL current list, because that list IS its own inverse — which this component used to read as "N items removed" on a routine, non-destructive edit. The tier gate alone kills that false alarm. A single delete's preview returns before:{draw:{...}} (an object, not an array), which the old array-only filter never matched either — so a real delete showed no warning at all. Both directions were wrong; this reads either shape.
+    if (tier < 3) return null;
     const before = (entry && entry.before) || {};
     const removed = Object.entries(before)
-        .filter(([, v]) => Array.isArray(v) && v.length)
-        .flatMap(([, v]) => v);
+        .filter(([, v]) => v && typeof v === 'object')
+        .flatMap(([, v]) => Array.isArray(v) ? v : [v]);
     if (!removed.length) return null;
     return html`
         <div class="callout bad" style="border-top:0;margin-top:12px">
@@ -117,7 +119,7 @@ function Review({ detail, onExport, onCommit, onClose, busy }) {
                             ${detail.failures.map(f => html`<span style="flex:1 1 100%">• ${f.reason || f.message || JSON.stringify(f)}</span>`)}
                         </div>
                     ` : html`<${OpDiff} op=${op} entry=${entry} />`}
-                    <${Destructive} op=${op} entry=${entry} />
+                    <${Destructive} entry=${entry} tier=${detail.tier} />
                     ${tier3 ? html`
                         <div class="gate">
                             <h6>Before this can commit</h6>
@@ -125,7 +127,7 @@ function Review({ detail, onExport, onCommit, onClose, busy }) {
                             <div class="step done"><span class="n">1</span><span class="lbl">Previewed the rendered result</span></div>
                             <div class=${'step' + (exported ? ' done' : '')}>
                                 <span class="n">2</span><span class="lbl">Download what this replaces</span>
-                                ${exported ? null : html`<button onClick=${() => onExport(detail)}>Export .txt</button>`}
+                                ${exported ? null : html`<button onClick=${() => onExport({ ...detail, _id: detail.changesetId })}>Export .txt</button>`}
                             </div>
                             <div class=${'step' + (typed ? ' done' : '')}>
                                 <span class="n">3</span>
@@ -164,7 +166,8 @@ export function Board({ changesets, onCommit, onExport }) {
         // Re-fetched rather than read from the list, because the preview has to be computed against state as it is NOW — see the GET /api/changeset/:id/preview route's own header.
         fetchJson(`/api/changeset/${openId}/preview`)
             .then((d) => setDetail({ ...d, remaining: Math.max(0, cols.ready.length - 1) }));
-    }, [openId, changesets]);
+    // openId ONLY — depending on `changesets` re-ran this preview (a real server round-trip re-checking permissions against live state) on every unrelated changeset elsewhere updating, for whichever changeset happened to be open.
+    }, [openId]);
 
     async function commitOne(d, confirmText) {
         setBusy(true);
@@ -196,6 +199,6 @@ export function Board({ changesets, onCommit, onExport }) {
                 </div>
             `}
         </div>
-        ${detail ? html`<${Review} detail=${detail} onExport=${onExport} onCommit=${commitOne} onClose=${() => setOpenId(null)} busy=${busy} />` : null}
+        ${detail ? html`<${Review} key=${detail.changesetId} detail=${detail} onExport=${onExport} onCommit=${commitOne} onClose=${() => setOpenId(null)} busy=${busy} />` : null}
     `;
 }
