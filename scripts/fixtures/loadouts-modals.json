@@ -22,9 +22,9 @@
           {
             "type": 4,
             "custom_id": "build",
-            "label": "Build Name / Share Code",
+            "label": "Build Name | Share Code (optional)",
             "style": 1,
-            "placeholder": "e.g. Aggressive Flex",
+            "placeholder": "Aggressive Flex | ABCD-1234-EFGH",
             "required": true
           }
         ]
@@ -93,9 +93,9 @@
           {
             "type": 4,
             "custom_id": "build",
-            "label": "Build Name / Share Code",
+            "label": "Build Name | Share Code (optional)",
             "style": 1,
-            "placeholder": "e.g. Aggressive Flex",
+            "placeholder": "Aggressive Flex | ABCD-1234-EFGH",
             "required": true
           }
         ]
@@ -163,7 +163,7 @@
           {
             "type": 4,
             "custom_id": "build",
-            "label": "Build Name / Share Code",
+            "label": "Build Name | Share Code (optional)",
             "style": 1,
             "value": "CQB"
           }

@@ -28,7 +28,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.62.0 — 2026-08-22 15:56 EDT (#170) — the design-alignment plan's Phase 1-2, and a live /manage crash found and fixed on the dev bot
+## Pre-Release v3.63.0 — 2026-08-22 20:24 EDT (#171) — a batch of live /manage click-test fixes across draws, calendar, loadouts, and announcements
+
+A live click-test session on the dev bot (Harkirat testing `/manage` and `/bot analytics` directly) surfaced a batch of real findings, each root-caused against the actual code before fixing rather than guessed at.
+
+`/manage action:` autocomplete showed a blank dropdown when `content:` hadn't been picked yet -- now shows a guidance entry instead. The calendar bulk parser gained `g`/`m` as playlist-prefix aliases for `p`, a bulletless newline-delimited entry format alongside the existing bullet-joined one (resolved via AskUserQuestion rather than left filed), and a Double-CP marker (`2x`/`double`/`x2` paired with `CP`/`COD Points`, either order) that flags bulk-imported events -- corrected twice live after real CODM event names broke each looser first attempt (bare "CP" alone matched real non-2x promotions like "CP Rebate Offer"; bare "2x" alone matched unrelated events like "2x XP Weekend"). Both the detection and, for Replace specifically, a flag-CHANGE warning (an existing event's flag silently flipping on an unrelated re-paste) are now surfaced directly in the confirmation message, not left to be discovered once already live.
+
+The loadout "Build Name / Share Code" field actually does something now: pipe-delimited (`Build Name | Share Code`), the same convention the modal already used for Category|Badges, since a real 6th field wasn't possible (Discord's modal cap was already maxed at 5). Announcement `startsAt` turned out to need only Discord-side wiring -- `core/ops/announcements.js` already validated and applied it end-to-end for the portal's Broadcast realm. Draws single add/edit no longer hard-rejects a submission with no image URL or cache hit, saving with a plain no-image render instead of a broken thumbnail.
+
+A pre-existing calendar bulk-parser title-truncation bug was found and filed (not fixed -- a genuine format ambiguity needing a real decision) while touching the same regex for the alias work. Every change was cross-checked against the web portal (a thin pass-through over the same `core/ops/*`) before merging -- nothing broke; one stale portal comment was fixed and the portal Armory form's own missing Share Code field was filed as a follow-up. 6 new regression tests cover the calendar bulk parser's new grammar.
+
+## Pre-Release v3.62.0 — 2026-08-22 15:56 EDT (#170 · `2843fed`) — the design-alignment plan's Phase 1-2, and a live /manage crash found and fixed on the dev bot
 
 Session A of the 4-phase design-alignment plan. Phase 1 resolved all six items the gap audit spec had left unverified, with real evidence — a local dev portal boot, a dev-only seeded `PortalSession` to reach gated realms without a real OAuth login, and real Chrome screenshots/DOM queries. Two new findings beyond the original six: the `state:'live'` bug is confirmed independently visible (not masked by the header overflow the audit had hedged about), and the mockup's Season nav is a left icon rail while the shipped code is a horizontal top bar — a nav-shape gap Phase 3 needs to decide on, not just a missing breakpoint.
 

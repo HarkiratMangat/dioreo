@@ -74,8 +74,12 @@ function calendarSections() {
             '`[d|p|e]•M/D - M/D | Event Title` or `[d|p|e]•M/D - All Season | Event Title`\n' +
             '-# Bullet-separated (a `•` character), NOT one-per-line -- this is what survives a copy-paste out of Notes.'),
         section('🏷️ Section Prefix',
-            `\`d\` ${emojis.newDraws} Draws · \`p\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
-            '-# The prefix sits directly touching the bullet (`d•`, not `d •`).'),
+            `\`d\` ${emojis.newDraws} Draws · \`p\`/\`g\`/\`m\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
+            '-# The prefix sits directly touching the bullet (`d•`, not `d •`). `g`/`m` are aliases for `p` (playlist = game mode = mode).'),
+        section('↩️ No-Bullet Lines',
+            'Each entry can ALSO stand on its own line with no `•` at all — prefix (optional) then a space instead of a bullet: `p 8/6 - 8/19 | Krai BR`. Mixing both styles in one paste is fine; a line with no `•` anywhere is read as one complete entry.'),
+        section('🎁 Double CP',
+            'Add `2x`, `(2x)`, `CP`, `2xCP`, or similar to a title to flag it as a Double CP event — `Krai BR 2x` strips the marker off the saved title; `Krai BR 2x CP Sale` keeps it (it reads as the event\'s real name) and still sets the flag.'),
         section('✨ What Gets Auto-Formatted',
             '• **Title** is kept **exactly as typed** -- NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
             '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword -- words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +

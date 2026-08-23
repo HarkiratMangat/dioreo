@@ -48,7 +48,8 @@ function validateEvent(payload) {
 }
 
 function mapParsedEvents(parsed) {
-    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
+    // isDoubleCP added 2026-08-22 19:47 EDT -- parseBulkEvents() has set this since the same-day bulk-marker feature landed, but this whitelist-map would have silently dropped it on the floor without this line (bulk-imported events would never be able to power the 2x-CP entitlement in /draw calculator).
+    return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category, isDoubleCP: !!e.isDoubleCP }));
 }
 
 const BANNER_FIELDS = [

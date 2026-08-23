@@ -15,14 +15,18 @@ async function postAnnouncement(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const text = interaction.fields.getTextInputValue('text').trim();
     const expiry = interaction.fields.getTextInputValue('expiry');
+    // Blank means "show now" -- omitting the key lets core/ops/announcements.js's `payload?.startsAt ?? null` default apply, rather than sending an empty string through as a literal (unparseable) date value.
+    const startsAtRaw = interaction.fields.getTextInputValue('starts_at')?.trim();
 
-    const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry } }], { actorId: interaction.user.id });
+    const result = await commitSet([{ type: 'announcement.post', payload: { text, expiry, ...(startsAtRaw ? { startsAt: startsAtRaw } : {}) } }], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
-    const { expiresAt } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}. Anyone who hasn't seen it yet will, on their next command.` });
+    const { expiresAt, startsAt } = result.results[0].applied;
+    // Surfaced in the confirmation, not left to be discovered on /calendar-adjacent surfaces later (same reasoning as the Double CP callout on calendar bulk imports, 2026-08-22 20:11 EDT) -- posting with a future startsAt is easy to misread as "live now" if the confirmation doesn't say otherwise.
+    const startsLine = startsAt ? ` **Scheduled to start** <t:${Math.floor(new Date(startsAt).getTime() / 1000)}:R> -- won't show to anyone before then.` : ' Anyone who hasn\'t seen it yet will, on their next command.';
+    return interaction.followUp({ content: `✅ Posted a new announcement${expiresAt ? ` (expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}` });
 }
 
 // --- EDIT --- custom_id: modal_announce_edit_{id} Updates ONE existing doc in place by its own _id -- never touches any other announcement, and never resets who's already seen this one (an edit is a correction, not a new notice).
@@ -31,9 +35,11 @@ async function editAnnouncement(interaction) {
     const id = interaction.customId.replace('modal_announce_edit_', '');
     const text = interaction.fields.getTextInputValue('text').trim();
     const expiry = interaction.fields.getTextInputValue('expiry');
+    // Same overwrite-on-every-submit convention as `expiry` -- blank explicitly clears back to "show now", it is not a "leave whatever was there" no-op (the modal always re-submits every field in full).
+    const startsAtRaw = interaction.fields.getTextInputValue('starts_at')?.trim();
 
     const result = await commitSet(
-        [{ type: 'announcement.edit', target: { id }, payload: { text, expiry } }],
+        [{ type: 'announcement.edit', target: { id }, payload: { text, expiry, startsAt: startsAtRaw || null } }],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
@@ -43,8 +49,18 @@ async function editAnnouncement(interaction) {
         const why = extractCommitError(result);
         return await interaction.followUp({ content: `❌ ${why}` });
     }
-    const { expiresAt } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.` });
+    const { expiresAt, startsAt, prior } = result.results[0].applied;
+    // Same reasoning as postAnnouncement's confirmation -- state the scheduled start plainly. Also flags a START-DATE CHANGE specifically (added vs cleared vs moved) since editing an announcement for an unrelated reason (a typo in the text) could otherwise silently reschedule -- or un-schedule -- it with nothing in the confirmation to catch that before it's live.
+    const startsLine = startsAt ? ` **Scheduled to start** <t:${Math.floor(new Date(startsAt).getTime() / 1000)}:R>.` : '';
+    const priorStarts = prior?.startsAt ? new Date(prior.startsAt).getTime() : null;
+    const nowStarts = startsAt ? new Date(startsAt).getTime() : null;
+    let startChangeNote = '';
+    if (priorStarts !== nowStarts) {
+        if (nowStarts && !priorStarts) startChangeNote = ' ⚠️ A start date was ADDED -- this announcement is no longer immediately visible.';
+        else if (!nowStarts && priorStarts) startChangeNote = ' ⚠️ The start date was REMOVED -- this announcement is now immediately visible.';
+        else if (nowStarts && priorStarts) startChangeNote = ' ⚠️ The start date CHANGED.';
+    }
+    return interaction.followUp({ content: `✅ Updated the announcement${expiresAt ? ` (now expires <t:${Math.floor(expiresAt.getTime() / 1000)}:R>)` : ' (never expires)'}.${startsLine}${startChangeNote}` });
 }
 
 // --- BUTTONS: edit_ / delete_ / delconfirm_ / delcancel_ --- all embed the target announcement's own Mongo _id, matched by exact prefix here rather than going through the registry.

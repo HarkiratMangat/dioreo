@@ -107,8 +107,30 @@ async function bulkAddOrReplaceCalendar(interaction) {
             const line = `**${CATEGORY_LABELS[cat]} (${titles.length}):** ${joined}`;
             return line.length > 400 ? `${line.slice(0, 397)}...` : line;
         });
+    // Surfaced in the SAME confirmation message, not just left to show up on the live /calendar page later (Harkirat's explicit ask, 2026-08-22 20:09 EDT) -- the double-CP marker (adminParser.js's extractDoubleCp) is a keyword match, not a certainty, so a wrongly-flagged (or wrongly-MISSED) title needs to be catchable right here, in the same window this paste is still fresh, rather than discovered once it's already live. Same 400-char truncation safety as the category breakdown above, for the same reason (one giant paste can't blow Discord's 2000-char content cap on the reply).
+    const doubleCpTitles = applied.added.filter(e => e.isDoubleCP).map(e => e.title);
+    let doubleCpLine = '';
+    if (doubleCpTitles.length) {
+        const joined = doubleCpTitles.join(', ');
+        const line = `🎁 **Double CP detected (${doubleCpTitles.length}):** ${joined} -- double-check these before they go live; Edit if any are wrong.`;
+        doubleCpLine = `\n${line.length > 400 ? `${line.slice(0, 397)}...` : line}`;
+    }
+    // Replace-only: `upsertByTitle` (utils/bulkMerge.js) does a full FIELD OVERWRITE on a matched title (Object.assign onto the existing element), and `isDoubleCP` is ALWAYS a present key on every parsed entry -- so a re-paste that fixes an unrelated typo but no longer matches the marker (or never had it typed the same way twice) silently FLIPS an existing event's flag with nothing in the confirmation to catch it, until /draw calculator quietly starts quoting the wrong price. Caught via sequential-thinking audit, 2026-08-22 20:15 EDT -- `applied.replaced` (the pre-replace array) is already returned by the op, so the diff costs nothing extra to compute here.
+    let flagChangeLine = '';
+    if (mode === 'replace' && applied.replaced) {
+        const { fuzzyMatch } = require('../../utils/search');
+        const changes = applied.added
+            .map(e => ({ e, prior: applied.replaced.find(p => fuzzyMatch(e.title, p.title)) }))
+            .filter(({ e, prior }) => prior && !!prior.isDoubleCP !== !!e.isDoubleCP)
+            .map(({ e, prior }) => `${e.title} (${prior.isDoubleCP ? 'was ON' : 'was OFF'} → ${e.isDoubleCP ? 'ON' : 'OFF'})`);
+        if (changes.length) {
+            const joined = changes.join(', ');
+            const line = `⚠️ **Double CP flag CHANGED (${changes.length}):** ${joined} -- confirm this was intentional, not a side effect of an unrelated edit.`;
+            flagChangeLine = `\n${line.length > 400 ? `${line.slice(0, 397)}...` : line}`;
+        }
+    }
     return interaction.editReply({
-        content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}`
+        content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}${doubleCpLine}${flagChangeLine}`
     });
 }
 

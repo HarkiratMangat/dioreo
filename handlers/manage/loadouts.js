@@ -38,13 +38,19 @@ async function editLoadout(interaction) {
     }
 
     const weaponName = interaction.fields.getTextInputValue('weapon');
-    const buildName = interaction.fields.getTextInputValue('build');
+    // "Build Name | Share Code" -- pipe optional. No `|` at all omits shareCode from the payload entirely (preserves whatever's already saved, e.g. an /autobuild-set code); `|` with an empty tail explicitly clears it to ''; `|` with real text sets it (core/ops/loadouts.js normalizes via correctGunsmithCode()).
+    const buildRaw = interaction.fields.getTextInputValue('build');
+    const buildPipeIndex = buildRaw.indexOf('|');
+    const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
+    const hasShareCodeSegment = buildPipeIndex !== -1;
+    const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const imageKey = interaction.fields.getTextInputValue('image');
 
     const result = await commitSet(
         [{ type: 'loadout.edit', target: { id: targetId },
            payload: { weaponName, buildName, mode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic } }],
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic,
+                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
@@ -54,6 +60,12 @@ async function editLoadout(interaction) {
     const { applied } = result.results[0];
 
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
+    // States what happened to the Share Code explicitly (sequential-thinking audit finding, 2026-08-22 20:15 EDT) -- the omit/clear/set distinction is exactly the kind of non-obvious field behavior this session's other confirmation-message additions exist to surface, and this field in particular can silently wipe an /autobuild-set code if a future edit gets this wrong.
+    if (hasShareCodeSegment) {
+        confirmation += shareCodeInput ? `\n-# Share Code: set to \`${shareCodeInput}\`.` : '\n-# Share Code: cleared.';
+    } else if (existingLoadout.shareCode) {
+        confirmation += `\n-# Share Code: unchanged (\`${existingLoadout.shareCode}\` preserved).`;
+    }
     if (applied.propagatedCount > 0) {
         confirmation += `\n-# Badges also synced to ${applied.propagatedCount} other build(s) of this weapon.`;
     }
@@ -86,13 +98,19 @@ async function addLoadout(interaction) {
     }
 
     const weaponName = interaction.fields.getTextInputValue('weapon');
-    const buildName = interaction.fields.getTextInputValue('build');
+    // Same "Build Name | Share Code" convention as editLoadout -- see that function's comment.
+    const buildRaw = interaction.fields.getTextInputValue('build');
+    const buildPipeIndex = buildRaw.indexOf('|');
+    const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
+    const hasShareCodeSegment = buildPipeIndex !== -1;
+    const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const imageKey = interaction.fields.getTextInputValue('image');
 
     const result = await commitSet(
         [{ type: 'loadout.add',
            payload: { weaponName, buildName, mode: pageMode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic } }],
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic,
+                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
@@ -101,6 +119,10 @@ async function addLoadout(interaction) {
     }
 
     let confirmation = `✅ **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
+    // Only worth a line when a code was actually typed -- unlike editLoadout there's no prior state to report on a brand-new build, so staying silent when the field was left as a bare build name (the common case) avoids cluttering every single Add confirmation with a non-event.
+    if (hasShareCodeSegment && shareCodeInput) {
+        confirmation += `\n-# Share Code: \`${shareCodeInput}\`.`;
+    }
     if (unrecognized.length > 0) {
         confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
     }
