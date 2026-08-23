@@ -202,6 +202,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-22 23:40 EDT — Five deferred items, two false premises checked, and one spec reframed mid-draft (v3.64.0-pre)
 - 2026-08-23 09:29 EDT — /bot analytics: five glances, not one dashboard (v3.65.0-pre)
 - 2026-08-23 11:43 EDT — /bot analytics: five rounds of live review rebuilt the design (v3.65.0-pre)
+- 2026-08-23 13:10 EDT — The plan's premises were the bug (v3.66.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3489,6 +3490,22 @@ The plan was executed exactly as written, all eight tasks, tests green, audit cl
 **Two defects fell out of that, in other people's code.** Enumerating `listOpTypes()` through `pageForOp()` — rather than assuming the page set equals `MANAGE_PAGE_SCOPES` — showed it emits `patchnote` (singular) for four ops with no registered action. That key is in no scope list anywhere, and the revert permission gate is being called with it. Filed rather than patched: the owner is the action registry, and a normalising shim at each call site is the two-hand-synced-copies problem the registry exists to prevent.
 
 The second is sharper. `docs-audit`'s `superseded_by` existence check referenced three identifiers that do not exist in that module, and threw a `ReferenceError` the first time any document used the field — which was this session, because nothing in the repo ever had. Its self-test passed the whole time: `proves()` only asked whether the check *reported*, and a crash reports under the same id as a real finding. A check that cannot run was counted among the passing gates for as long as it existed. Both are fixed, and `proves()` now rejects a proof whose check only spoke by crashing — a guard I then falsified by reintroducing the bug, because the first version of it looked for the wrong result shape and would have been a vacuous guard against vacuous proofs.
+
+## 2026-08-23 13:10 EDT — The plan's premises were the bug (v3.66.0-pre)
+
+Phase 2 was a plan with seven tasks. Three of its premises were false, and finding that out was worth more than the tasks.
+
+**A permission check was comparing against nothing.** `pageForOp()` stamps every audit row with a page key, and that key is used as a permission *scope* — `hasManagePageAccess(userId, row.page)` gates both revert and the change-detail panel. For the six ops that have no `/manage` action by design (they exist only as another op's `invert()` target) it fell back to the op's own namespace, which is a different vocabulary. Four patch-note ops recorded `patchnote`, singular, which no scope list contains — so the gate could never match a `manage.patchnotes` grant and silently denied every scoped admin. That much was filed last session. What the filing missed is the mirror image: `season.restoreDraft` recorded `season` while reversing a *draft* discard, wrong in both directions at once — a `manage.seasondraft` admin locked out of their own page, and a `manage.season`-only admin let into draft state. The patch-note case at least failed closed. This one did not.
+
+The filing also named `patchnote.addSeason` among the culprits, and it has a registered action. Enumerating the registry took one command and corrected both errors; reasoning about it from the notes would have reproduced them.
+
+**A rule the last release recorded as "adopted verbatim" had been applied to one branch out of two.** The stacked before/after notation — one value per line, each led by its own glyph — reached the list diff and never reached the scalar diff, which kept shipping the inline `A → B` the rule exists to forbid. On a 32-column phone that is the difference between reading `Drop` versus `Draw` and guessing. The frozen spec's own opening paragraph says a design for a rendered surface cannot be validated by reading it. That turned out to include the spec.
+
+**"Is this live to players right now?" was answerable, but not the way the plan assumed.** It rested on a draw's date deciding visibility. `/draws` has no filter of any kind — no `.filter()`, no `Date.now()`, nothing — so every draw in the season document is live and the date is a label it prints. The planned "scheduled, not visible until…" line would have been a confident falsehood on every panel it appeared on. The true statement is more useful anyway: an admin now knows every draw edit is live the instant it saves. `/calendar` genuinely does hide ended entries, so that half of the feature is real, and its answer comes from the same `isEventEnded()` the command uses rather than a second date rule that would drift from it.
+
+**Two small things fell out of the extraction work.** A build with no `imageKey` crashed the loadout renderer — `buildImageUrl` calls `.startsWith()` on it — which `/gunsmiths` never hit because every stored build has one, but a reconstructed before-state carries only the fields an edit touched. The panel's try/catch would have swallowed it and fallen back to a field list: a budget guard firing for the wrong reason, indistinguishable from working. And a test in the analytics suite had pinned the *singular* spelling in place as an invariant, so fixing the defect broke the check written to guard against it. What it should have asserted, and now does, is the subset property.
+
+**One self-inflicted wound worth recording.** Pointing `reflow-prose.mjs` at a `.js` file deleted a third of it — requires, constants, whole functions — and reported success. It is the Markdown reflower; `reflow-comments.mjs` is the one that understands code, and `npm test` had named it correctly. Recovered from git in one command because every edit this session was a scripted heredoc rather than hand-typed, which is the first time that habit has paid for itself in recovery rather than turns.
 
 # Part B — Lessons Ledger (thematic)
 

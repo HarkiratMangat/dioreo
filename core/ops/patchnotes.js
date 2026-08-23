@@ -138,7 +138,7 @@ registerEntity('patchnotes', {
 
     // Not a registry action -- exists solely as addSeason's inverse (the way core/ops/season.js's season.restoreSnapshot exists solely as promoteDraft's inverse). Not reachable from /manage.
     'patchnote.removeSeason': {
-        tier: 2,
+        page: 'patchnotes', tier: 2,
         validate: (op) => op.target?.elementId ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No entry to remove.'] },
         preview: (op, live) => ({ before: { entry: live.patchNotes.find(p => String(p._id) === op.target.elementId) }, after: { entry: null } }),
         apply: async (op, { session }) => {
@@ -159,7 +159,7 @@ registerEntity('patchnotes', {
 
     // Not a registry action -- exists solely as removeSeason's inverse, restoring the EXACT removed subdocument (same _id, same images) rather than minting a new one via addSeason. Symmetric with removeSeason: restoreSeason's own invert is removeSeason again, so a chain of repeated undo/redo on one addSeason stays exact indefinitely instead of degrading after one hop.
     'patchnote.restoreSeason': {
-        tier: 2,
+        page: 'patchnotes', tier: 2,
         validate: (op) => op.payload?.entry?._id ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
         preview: (op, live) => ({ before: { count: live.patchNotes.length }, after: { count: live.patchNotes.length + 1 } }),
         apply: async (op, { session }) => {
@@ -177,7 +177,7 @@ registerEntity('patchnotes', {
 
     // Not in the plan's own Interfaces line at all -- found by reading the real handler's handlePatchSeasonPick -> modal_patch_editseason_{id} flow, not by reading utils/manageActions.js (its id embeds a Mongo _id the registry's group/action split can't represent, so it never shows up in ACTIONS_BY_PAGE for a registry-only read to find).
     'patchnote.editSeason': {
-        tier: 1,
+        page: 'patchnotes', tier: 1,
         validate: (op) => op.target?.elementId ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['No entry to edit.'] },
         preview: (op, live) => ({ before: live.patchNotes.find(p => String(p._id) === op.target.elementId), after: op.payload }),
         apply: async (op, { session }) => {
@@ -229,7 +229,7 @@ registerEntity('patchnotes', {
 
     // Not a registry action -- exists solely as purge's inverse, restoring the whole history verbatim (exact _ids preserved, unlike addSeason) in one wholesale $set. A snapshot restore, not a merge -- purge is the one place patch notes history can be fully wiped, so its undo is a full replace.
     'patchnote.restore': {
-        tier: 3,
+        page: 'patchnotes', tier: 3,
         validate: (op) => Array.isArray(op.payload?.entries) ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
         preview: (op, live) => ({ before: { count: live.patchNotes.length }, after: { count: op.payload.entries.length } }),
         apply: async (op, { session }) => {

@@ -9,6 +9,19 @@ paths:
 
 *Loads when you touch any file under `core/`. Every mutation across `/manage` and the web portal routes through here as a value (`{type, target, payload}`) with four verbs — `validate`/`preview`/ `apply`/`invert` — per entity. Full design: `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md`.*
 
+## 🔴 An op that has no `/manage` action MUST declare `page:` — a missing one silently breaks a permission check
+
+Added 2026-08-23 13:05 EDT (v3.66.0-pre). `core/changeset.js`'s `pageForOp()` stamps every `ChangeLog` row with a page key, and **that key is used as a permission SCOPE**: `handlers/bot.js` and `portal/api/changesets.js` both gate revert and change-detail on `hasManagePageAccess(userId, row.page)`. When an op has no registered action, `pageForOp()` used to fall back to `op.type.split('.')[0]` — the op's own namespace — which is not the same vocabulary as `utils/adminAccess.js`'s `MANAGE_PAGE_SCOPES`.
+
+**Six ops have no action by design.** They are reachable only as another op's `invert()` target, so there is no `/manage` button for them and there must not be one — `scripts/coreOps.test.js`'s exemption list has said so for months. The namespace fallback therefore fired on all six, and produced two different failures:
+
+- `patchnote.removeSeason` / `restoreSeason` / `editSeason` / `restore` recorded **`patchnote`** (singular), a string no scope list contains, so `hasManagePageAccess` could never match a `manage.patchnotes` grant. **A check comparing against nothing is not a stricter gate; it is an absent one** — a scoped admin was silently denied, and only the hardcoded owner got through.
+- `season.restoreDraft` recorded **`season`** when it reverses a *draft* discard. That one is wrong in **both** directions: a `manage.seasondraft` admin was denied their own page, and a `manage.season`-only admin was allowed to revert draft state.
+
+**So: `page:` sits beside `action:` on the impl, and `registerEntity()` throws at boot if an op declares both and they disagree.** Two spellings of one fact, with the registry refusing them when they contradict — the same reason `action` lives here rather than being re-declared beside `utils/manageActions.js`. ⚠️ **A normalising shim at each call site is the wrong fix** and was explicitly rejected: it recreates the two-hand-synced-copies problem this registry exists to prevent, in every consumer rather than in one place.
+
+`scripts/coreOps.test.js` asserts `pageForOp()`'s full output over `listOpTypes()` is a subset of `MANAGE_PAGE_SCOPES`. **It failed before this change and passes after**, so it is not a vacuous pass — and it makes adding a new inverse-only op a test failure rather than a permission hole. Rows written before the fix are repaired by `scripts/fixChangeLogPageKeys.js` (the `patchnote` spelling only; `season` rows are not retro-identifiable, and that file says so rather than pretending otherwise).
+
 ## 🔴 An op's `validate()` runs on BOTH a fresh submission and its own inverse — never assume a
 ## field's raw, unparsed shape
 

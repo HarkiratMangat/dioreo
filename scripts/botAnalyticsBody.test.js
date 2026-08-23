@@ -227,7 +227,12 @@ check('EVERY page the change log can carry has a record view -- not just draws',
     for (const page of emitted) {
         assert.ok(RECORD_VIEWS[page], `pageForOp emits "${page}" but no record view handles it`);
     }
-    assert.ok(emitted.includes('patchnote'), 'the singular key must stay covered by this check, not be quietly dropped');
+    // 🔴 THE ASSERTION THAT USED TO ENCODE THE BUG AS AN INVARIANT. It read `assert.ok(emitted.includes('patchnote'))` -- pinning the SINGULAR spelling in place, so fixing the defect broke the test that was meant to guard against it. What actually matters is the subset property: every page pageForOp can emit must be a real permission scope, because handlers/bot.js gates revert and detail on hasManagePageAccess(userId, row.page). Fails before the core/ops `page:` fix, passes after.
+    const scopes = new Set(MANAGE_PAGE_SCOPES);
+    const orphans = emitted.filter(p => !scopes.has(p));
+    assert.deepStrictEqual(orphans, [], `pageForOp emits ${orphans.join('/')}, which no MANAGE_PAGE_SCOPES entry contains -- hasManagePageAccess can never match it`);
+    // The alias stays regardless: rows written BEFORE the fix still carry the singular key and must still render.
+    assert.ok(RECORD_VIEWS.patchnote, 'historical rows carry the singular key -- the view alias must outlive the fix');
     // 🔴 THE TEST THAT WOULD HAVE CAUGHT THE REAL COMPLAINT. Four rounds of fixes were all draws fixes wearing a general name, while the log carries nine pages -- "these changes need to be trickled into other edit/add/delete database changes as well, not just applying to draws". A page missing here silently falls back to "the contents weren't recorded", which is a lie: its inverse payload has named fields.
     for (const page of [...MANAGE_PAGE_SCOPES, 'access']) {
         assert.ok(RECORD_VIEWS[page], `page "${page}" has no record view — its change panel will say nothing`);
@@ -235,6 +240,57 @@ check('EVERY page the change log can carry has a record view -- not just draws',
     }
     // And an unknown page must still degrade to something sane rather than throwing.
     assert.strictEqual(viewFor('a-page-that-does-not-exist').noun, 'record');
+});
+
+check('every canonical renderer REUSES its own command, and a pair fits the 40-component cap', () => {
+    const { RECORD_VIEWS, countPanelComponents, renderRecord } = require('../commands/bot').__testables;
+    const build = { _id: 'b', weaponName: 'AK117', attachments: ['Muzzle: MIP', 'Barrel: OWC', 'Optic: Red Dot', 'Stock: No Stock', 'Laser: OWC'], lastUpdated: new Date(), category: 'AR', mode: 'MP', shareCode: 'ABC123', description: 'A test build', imageKey: 'x.png' };
+    const mine = RECORD_VIEWS.loadouts_mp.render(build);
+    const theirs = require('../utils/loadoutRender').buildLoadoutCardBody(build, { index: 0, total: 1, hideBadges: false });
+    assert.deepStrictEqual(mine, theirs, 'the panel must draw the build with /gunsmiths own renderer, not a copy');
+    assert.ok(!JSON.stringify(mine).includes('custom_id'), 'no live control may ride into the panel -- its ids resolve against a query only /gunsmiths made');
+    assert.ok(!mine.some(c => c.type === 17), 'a Container cannot nest inside the panel own Container');
+    // MEASURED, not assumed -- this repo has already taken the 40-cap as a production crash.
+    assert.ok(countPanelComponents(mine) * 2 <= 26, `a before/after pair of loadout cards is ${countPanelComponents(mine) * 2} components, which crowds out the panel own chrome`);
+    // A build with no image must not throw: buildImageUrl calls imageKey.startsWith().
+    assert.doesNotThrow(() => RECORD_VIEWS.loadouts_mp.render({ ...build, imageKey: undefined }));
+    // THE FALLBACK MUST ACTUALLY FIRE. A budget guard that never fires is decoration.
+    const squeezed = renderRecord('loadouts_mp', build, [], 2);
+    assert.strictEqual(squeezed.length, 1, 'an impossible budget must fall back to the field list, not ship an oversized card');
+    assert.strictEqual(squeezed[0].type, 10);
+});
+
+check('the calendar view uses /calendar own entry line, and never renders <t:NaN:D>', () => {
+    const { RECORD_VIEWS } = require('../commands/bot').__testables;
+    const { buildEntryLine } = require('../commands/calendar');
+    const event = { _id: 'e', title: 'Test Event', date: new Date('2026-08-20T00:00:00Z'), endDate: new Date('2026-08-27T00:00:00Z') };
+    assert.strictEqual(RECORD_VIEWS.calendar.render(event)[0].content, buildEntryLine(event, { bpEnd: null, bpEndTBD: false }));
+    // 🔴 A partial record -- a reconstructed BEFORE state, or a delete payload -- may carry no endDate. new Date(undefined) is NaN, and `<t:NaN:D>` RENDERS as literal text rather than throwing, so nothing else would catch it.
+    const partial = RECORD_VIEWS.calendar.render({ _id: 'e', title: 'Half a row', date: new Date('2026-08-20T00:00:00Z') });
+    assert.ok(!partial[0].content.includes('NaN'), 'a row with no end date must render as date-only, not as <t:NaN:D>');
+});
+
+check('a visibility note is present only where the render path can actually answer', () => {
+    const { RECORD_VIEWS } = require('../commands/bot').__testables;
+    // 🔴 /draws HAS NO DATE FILTER. Verified by reading the command: no .filter(), no Date.now(). The planned "scheduled until X" line would have been false, so the note says what is true instead.
+    const drawsSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'commands', 'draws.js'), 'utf8');
+    assert.ok(!/newDraws[\s\S]{0,200}?\.filter\(/.test(drawsSrc), 'if /draws ever gains a visibility filter, this note becomes a lie and must be rewritten from the render path');
+    assert.ok(/Players can see this now/.test(RECORD_VIEWS.draws.visibility()));
+    assert.ok(!/scheduled|upcoming/i.test(RECORD_VIEWS.draws.visibility()), 'a draw is never "scheduled" -- /draws shows it regardless of date');
+    // Pages with no visibility concept must say NOTHING rather than invent one.
+    for (const page of ['announcement', 'patchnotes', 'season', 'seasondraft', 'access']) {
+        assert.ok(!RECORD_VIEWS[page].visibility, `page "${page}" has no render-path answer, so it must not claim one`);
+    }
+});
+
+check('the diff STACKS its before and after, and never writes an inline arrow', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'commands', 'bot.js'), 'utf8');
+    // Comments are stripped first -- the rule is written down INSIDE this function ("NEVER `A -> B`"), and an assertion that reads its own documentation as a violation is a false positive that teaches nobody anything.
+    const body = src.slice(src.indexOf('async function buildChangeDetailBody')).split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
+    // 🔴 Spec 2026-08-23 §2 rule G, which shipped applied to the ARRAY branch only while the SCALAR branch -- the common case -- kept the arrow for a whole release. Two long values on one line is the ribbon-wrap failure the 32-column budget exists to prevent.
+    assert.ok(!body.includes(' → '), 'an inline `A → B` wraps into a ribbon on a phone; stack the values instead');
+    assert.ok(/diffMinus.*\n.*diffAdd|diffMinus[\s\S]{0,200}diffAdd/.test(body), 'each half of a change needs its own glyph -- colour and position are not carriers');
+    assert.ok(/### \\`\$\{rows\.length\}\\` Field/.test(body), 'a section gets a real ### heading, not bold body text wearing an emoji');
 });
 
 check('the draw view REUSES commands/draws.js, byte for byte -- never a copy', () => {

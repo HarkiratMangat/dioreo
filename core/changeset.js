@@ -4,13 +4,14 @@
 //
 // ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so a half-applied set is served to real users within seconds. That is why this uses a real Mongo transaction and not a best-effort loop.
 const mongoose = require('mongoose');
-const { resolveOp, actionForOpType } = require('./ops');
+const { resolveOp, actionForOpType, pageForOpType } = require('./ops');
 const { recordChangeIn } = require('../utils/changeStore');
 
 // The registry key is `page:id`, so a change's page is knowable from its op. Falls back to the op's own namespace rather than a literal, so a not-yet-registered op still records truthfully. 🔴 An op registered under MULTIPLE pages (loadouts_mp/loadouts_dmz share one op type) cannot just take index [0] -- that permanently mislabels every DMZ mutation's ChangeLog row as loadouts_mp, which breaks getRecentChanges({filterPage}) AND core/revert.js's per-page access check (utils/adminAccess.js's hasManagePageAccess) for the whole loadouts_dmz page. Resolve using the op's own mode when more than one candidate page exists.
 function pageForOp(op) {
     const actions = actionForOpType(op.type);
-    if (!actions?.length) return op.type.split('.')[0];
+    // An action-less op declares its own page (see core/ops/index.js's OP_TO_PAGE). The namespace split stays as a last resort so a not-yet-registered op still records SOMETHING truthful mid-transaction rather than throwing -- but scripts/coreOps.test.js now fails the suite if any registered op reaches it, because what it produces is a page key no scope list contains.
+    if (!actions?.length) return pageForOpType(op.type) || op.type.split('.')[0];
     if (actions.length > 1) {
         const mode = (op.target?.mode || op.payload?.mode || '').toLowerCase();
         const match = mode && actions.find(a => a.split(':')[0].endsWith(mode));

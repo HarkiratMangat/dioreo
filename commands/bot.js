@@ -318,7 +318,7 @@ function describeListChange(before, after) {
 
 
 // ── RECORD VIEWS ── 🔴 ONE CONTRACT PER ENTITY, NOT AN IF-ELSE OVER PAGE KEYS. Harkirat, 2026-08-23 10:56 EDT, on the previous version: "why not literally JUST RENDER the draw since it's 1 simple text+thumbnail accessory component?" and "these changes need to be trickled into other edit/add/delete database changes as well ... not just applying to draws." Both land, and the second is the deeper one. Every fix before this was a DRAWS fix wearing a general name, while the Changes log carries nine pages. And the first retires the whole approach: this file was writing a bespoke description of each record -- pick fields, label them, format them -- when the bot already owns polished renderers for these exact objects. So a view REUSES the canonical renderer (never a copy of it: a copy drifts, and a panel that quietly stops matching the real card is worse than one that never tried), and any page without one still works through the generic payload view below.
-//   { noun, fetch(target) -> record|null, render(record) -> V2 blocks|null, dateOnly: [field] }
+//   { noun, fetch(target, row) -> record|null, render(record) -> V2 blocks|null, visibility(record) -> string|null, dateOnly: [field] }
 const RECORD_VIEWS = {
     draws: {
         noun: 'draw', dateOnly: ['date'],
@@ -330,6 +330,8 @@ const RECORD_VIEWS = {
         },
         // The player-facing card, from commands/draws.js itself.
         render: (d) => require('./draws').buildDrawSections([{ ...d, items: d.items || [] }]),
+        // 🔴 MEASURED, AND IT KILLED THE FEATURE THIS WAS PLANNED AS. The phase-2 plan assumed a draw's `date` decides whether players see it, so this panel would say "scheduled until X / already past". It does not: commands/draws.js renders seasonalDoc.newDraws / returningDraws IN FULL -- no .filter(), no Date.now(), no visibility test anywhere in the file. The date is a label it prints, nothing more. "Scheduled" would have been a confident falsehood, and the true statement is the more useful one anyway: every draw edit is live the instant it saves.
+        visibility: () => `🟢 **Players can see this now.** \`/draws\` lists every draw in the season — the date is a label it shows, not a schedule that hides it.`,
     },
     calendar: {
         noun: 'event', dateOnly: ['date', 'endDate'],
@@ -338,12 +340,29 @@ const RECORD_VIEWS = {
             const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
             return (doc?.calendar || []).find(x => String(x._id) === String(t.elementId || t.id)) || null;
         },
-        render: null,
+        // /calendar's own buildEntryLine, exported rather than copied. ⚠️ NORMALISED FIRST: buildEntryLine reads endDate for any entry that is neither `dateOnly` nor `isOngoing`, and `new Date(undefined).getTime()` is NaN -- which renders as a literal `<t:NaN:D>` on screen rather than throwing, so renderRecord()'s try/catch would never have caught it. A reconstructed BEFORE state ({...now, ...inversePayload}) or a delete payload can easily lack endDate; a row with a start and no end IS a date-only entry, which is exactly what /calendar's own synthetic draw entries already are.
+        render: (e) => {
+            const { buildEntryLine } = require('./calendar');
+            const entry = (e.dateOnly || e.isOngoing || e.endDate) ? e : { ...e, dateOnly: true };
+            return [{ type: 10, content: buildEntryLine(entry, { bpEnd: null, bpEndTBD: false }) }];
+        },
+        // 🔴 THE ANSWER COMES FROM THE RENDER PATH, never a fresh date comparison here -- a second rule would drift from what /calendar actually shows and then state the opposite with confidence. isEventEnded() is the only thing that hides an entry, and its own header records a live bug (2026-08-07) from conflating RELEASED with ENDED.
+        visibility: async (e) => {
+            const { isEventEnded } = require('./calendar');
+            const SeasonalData = require('../models/SeasonalData');
+            // Two fields, lean, on an admin-only panel -- an `isOngoing` entry ends when the Battle Pass does, and that lives on the season doc rather than the entry.
+            const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
+            return isEventEnded(e, doc || {}, Date.now())
+                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active/Upcoming view, but still listed in the default All view.`
+                : `🟢 **Players can see this now.** It shows on \`/calendar\` in both the default view and Active/Upcoming.`;
+        },
     },
     loadouts_mp: {
         noun: 'build', dateOnly: [],
         fetch: async (t) => { const L = require('../models/Loadout'); const id = t.id || t.elementId; return id ? L.findById(id).lean() : null; },
-        render: null,
+        // The content half of the real /gunsmiths card. NOT buildLoadoutCard -- that returns a whole Container ending in a live pagination/Copy row whose custom_ids resolve an index against a query only /gunsmiths has made, so those buttons would either mislead or misfire here, and a Container cannot nest inside the panel's own. See utils/loadoutRender.js's buildLoadoutCardBody header.
+        render: (b) => require('../utils/loadoutRender').buildLoadoutCardBody(b, { index: 0, total: 1, hideBadges: false }),
+        visibility: () => `🟢 **Players can see this now.** \`/gunsmiths\` serves whatever is stored — a build is live the moment it saves.`,
     },
     announcement: {
         noun: 'announcement', dateOnly: [],
@@ -377,7 +396,7 @@ RECORD_VIEWS.loadouts_dmz = RECORD_VIEWS.loadouts_mp;
 // See PAGE_LABEL above: pageForOp() really does emit both spellings, so both must resolve to the same view.
 RECORD_VIEWS.patchnote = RECORD_VIEWS.patchnotes;
 
-const viewFor = (page) => RECORD_VIEWS[page] || { noun: 'record', dateOnly: [], fetch: null, render: null };
+const viewFor = (page) => RECORD_VIEWS[page] || { noun: 'record', dateOnly: [], fetch: null, render: null, visibility: null };
 
 // Every field the change actually carries, in the data's own vocabulary. Generic on purpose: it is what makes patch notes, the season draft, season settings and bot access work WITHOUT a bespoke branch each, which is the difference between "covers nine pages" and "covers whichever five I remembered".
 function genericFields(obj, dateOnly, limit = 8) {
@@ -476,24 +495,27 @@ async function buildChangeDetailBody(changeId) {
             const rows = changed.slice(0, 6).map(k => {
                 if (Array.isArray(payload[k]) || Array.isArray(record.raw[k])) {
                     const moved = describeListChange(payload[k], record.raw[k]);
-                    return moved ? `**${fieldLabel(k)}**\n${moved}` : null;
+                    return moved ? `**${fieldLabel(k)}:**\n${moved}` : null;
                 }
-                return `**${fieldLabel(k)}** ${fmtFieldValue(payload[k], k, dateOnly)} → ${fmtFieldValue(record.raw[k], k, dateOnly)}`;
+                // 🔴 STACKED, NEVER `A → B` -- spec 2026-08-23 §2 rule G, which is Harkirat's own design. The glyphs landed on the ARRAY branch above and this scalar branch kept the inline arrow for a whole release, so the rule and the code disagreed in the COMMON case while the frozen spec asserted it had been "adopted verbatim". Two long values on one line is the same ribbon-wrap failure as the vitals row: on a 32-column phone `Drop` vs `Draw` becomes a guess. One value per line, each led by its own glyph, and the label carries the colon so it reads as a field.
+                return `**${fieldLabel(k)}:**\n${emojis.diffMinus}${fmtFieldValue(payload[k], k, dateOnly)}\n${emojis.diffAdd}${fmtFieldValue(record.raw[k], k, dateOnly)}`;
             }).filter(Boolean);
+            // A real `###` heading, not bold body text wearing an emoji -- structure carries the meaning (rule G). The count is code-styled so it reads as data.
             body.push({ type: 10, content: rows.length
-                ? `✏️ **${plural(rows.length, 'field')} changed**\n${rows.join('\n')}`
-                : `✏️ **Nothing visible changed** — the saved values differ only in ordering or internal ids.` });
+                ? `### \`${rows.length}\` Field${rows.length === 1 ? '' : 's'} Changed\n${rows.join('\n')}`
+                : `### Nothing Visible Changed\n-# The saved values differ only in ordering or internal ids.` });
             if (untouched) body.push({ type: 10, content: `-# ${plural(untouched, 'other field')} left as ${untouched === 1 ? 'it was' : 'they were'}.` });
         } else {
-            body.push({ type: 10, content: `✏️ **Nothing actually changed.** Every field was saved with the value it already had — a no-op edit.` });
+            body.push({ type: 10, content: `### Nothing Actually Changed\n-# Every field was saved with the value it already had — a no-op edit.` });
         }
 
         if (beforeBlocks && afterBlocks) {
             body.push({ type: 14, spacing: 2, divider: true });
-            body.push({ type: 10, content: `**BEFORE** — the ${noun} as it was` });
+            // The SAME glyphs as the field rows above, so the two scales read as one notation rather than two (rule G).
+            body.push({ type: 10, content: `${emojis.diffMinus}**BEFORE** — the ${noun} as it was` });
             body.push(...beforeBlocks);
             body.push({ type: 14, spacing: 2, divider: true });
-            body.push({ type: 10, content: `**AFTER** — the ${noun} as it stands now` });
+            body.push({ type: 10, content: `${emojis.diffAdd}**AFTER** — the ${noun} as it stands now` });
             body.push(...afterBlocks);
         }
     } else if (record) {
@@ -515,6 +537,16 @@ async function buildChangeDetailBody(changeId) {
     }
 
     if (row.detail) body.push({ type: 10, content: `-# ${truncate(row.detail, 400)}` });
+
+    // Reverting something players are looking at RIGHT NOW is a different decision from reverting something nobody can reach, and the panel used to present the two identically. Only three entities have a real answer; the rest say NOTHING rather than invent one -- which is why this is a per-entity `visibility` in the registry, not a rule applied across every page.
+    if (record && view.visibility) {
+        try {
+            const note = await view.visibility(record.raw);
+            if (note) body.push({ type: 10, content: note });
+        } catch (visibilityError) {
+            console.error(`Change-detail visibility check failed for ${row.page}:`, visibilityError?.message || visibilityError);
+        }
+    }
 
     // 🔴 THE ONE GENUINELY DANGEROUS CASE. Reverting an edit writes old values back over whatever came AFTER it, so a later change to the same record is silently destroyed by a button that looks isolated.
     if (later.length && !row.undone) {

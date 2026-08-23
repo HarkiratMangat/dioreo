@@ -206,6 +206,9 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer,
+    // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
+    buildEntryLine,
+    isEventEnded,
 
     async execute(interaction, pageOverride = null) {
         const userId = interaction.user.id;

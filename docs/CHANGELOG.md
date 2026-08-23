@@ -28,6 +28,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#174) — the change panel covers every entity, and a permission check that compared against nothing
+
+Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is.
+
+🔴 **A permission gate was comparing against a string no grant can hold.** `core/changeset.js`'s `pageForOp()` fell back to an op's own namespace for the six ops that have no `/manage` action by design, and that namespace is not the permission vocabulary. Four patch-note ops recorded **`patchnote`** (singular) — so `hasManagePageAccess(userId, 'patchnote')` could never match `manage.patchnotes`, and every scoped admin was silently denied on those rows. `season.restoreDraft` was wrong in **both** directions: it recorded `season` while reversing a *draft* discard, denying `manage.seasondraft` admins their own page and letting `manage.season`-only admins reach draft state. Ops now declare `page:` beside `action:`, registration throws if the two disagree, and a subset assertion that **failed before this change** guards it permanently. `scripts/fixChangeLogPageKeys.js` repairs existing rows.
+
+🔴 **A rule the last release recorded as "adopted verbatim" was applied to one branch out of two.** The stacked before/after notation — one value per line, each led by its own glyph — reached the *list* diff and never reached the *scalar* diff, which kept shipping the inline `A → B` the rule exists to forbid. On a 32-column phone that is the difference between reading `Drop` vs `Draw` and guessing. Fixed, with a test that reads the source and fails on an arrow. **A design spec cannot be validated by reading it — including the spec that says so.**
+
+**Loadouts and calendar events now draw themselves.** `utils/loadoutRender.js` splits into a content half and its chrome, so a build renders in the panel without dragging in pagination buttons whose ids resolve against a query only `/gunsmiths` has made. `/calendar` exports the entry line it already uses. Neither is a copy: a copied renderer drifts, and a panel that quietly stops matching the real card is worse than one that never tried.
+
+**"Is this live to players?" — asked, and answered honestly.** The planned line assumed a draw's date decides whether players see it. It does not: `/draws` lists every draw in the season document with no filter of any kind, so the date is a label it prints. The panel says that instead. `/calendar` genuinely does hide ended entries, and takes its answer from the same `isEventEnded()` the command uses rather than a second date rule that would drift.
+
+**One crash that had been waiting for a partial record.** `buildImageUrl()` calls `.startsWith()` on `imageKey`; every stored build has one, so `/gunsmiths` never hit it — but a reconstructed before-state carries only the fields an edit touched. The panel's own try/catch would have swallowed it and fallen back silently, which is a budget guard firing for the wrong reason.
+
 ## Pre-Release v3.65.0 — 2026-08-23 11:34 EDT (#173) — `/bot analytics` becomes five glances, and the change log becomes readable
 
 The plan and spec filed in v3.64.0, built — and then substantially rebuilt, five times, against a real Discord client on desktop and on a phone. The rebuild is the bigger half of this release and most of it came from looking at the rendered thing rather than re-reading the design.
