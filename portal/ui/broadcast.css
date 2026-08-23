@@ -1,0 +1,35 @@
+/* portal/ui/broadcast.css — Now showing (slot cards) and Airtime (a real time axis).
+ *
+ * Spec §8.2: "Now showing renders the live set exactly as Discord sends it, in the order it sends
+ * them. Airtime puts every announcement on a time axis, which is how 'this has been up for nineteen
+ * days with no expiry' becomes visible instead of forgotten."
+ *
+ * ⚠️ ORDER IS createdAt, NOT A SLOT FIELD. models/Announcement.js has no ordering field and the
+ * spec flags that adding one would be a schema change filed rather than assumed. The SLOT n label
+ * describes delivery position, which is what createdAt already determines -- it does not imply a
+ * stored slot.
+ */
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:12px 14px}
+.slot{background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--topic-accent,var(--rule));
+  border-radius:5px;padding:10px 12px}
+.slot .sl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;color:var(--ink3);font-weight:700}
+.slot .tx{display:block;margin-top:5px;font-size:13px;color:var(--ink);line-height:1.5}
+.slot .mt{display:block;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3)}
+.slot .mt .warn{color:var(--warn)}
+/* Airtime reuses the Track's ruler/lane geometry rather than inventing a second timeline; the lane
+   label column is narrower here because an announcement's name is the content, not a lane type. */
+.air{padding:8px 14px 14px}
+.air .ruler{margin-left:120px}
+.air .lane{height:30px}
+.air .lane .nm{width:120px;text-transform:none;letter-spacing:0;font-size:11px;font-weight:500;color:var(--ink2)}
+.air .bar{height:16px;font-size:10px}
+/* "no expiry" is the one bar that has no right edge, so it is drawn without one -- a gradient that
+   fades out past the visible window. That is the finding rendered as a shape, not as a caption. */
+.air .bar.forever{background:linear-gradient(90deg,var(--topic-accent,var(--patch)) 0%,var(--topic-accent,var(--patch)) 55%,transparent 100%);
+  border-right:0;color:var(--on-accent)}
+@media(max-width:900px){
+  .slots{grid-template-columns:1fr;padding:var(--gut)}
+  .air{padding:8px var(--gut) 12px}
+  .air .ruler{margin-left:78px}
+  .air .lane .nm{width:78px;font-size:10px}
+}

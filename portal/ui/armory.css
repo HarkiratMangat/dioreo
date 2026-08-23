@@ -1,0 +1,52 @@
+/* portal/ui/armory.css — the Rack (weapon cards by category) and Coverage (the defect matrix).
+ *
+ * Spec §8.2: "Rack shows what exists by category in the bot's real MP_CATEGORY_ACCENT hues" and
+ * "Coverage is the Armory's equivalent of the Track's defect flags ... every cell is a filter".
+ * The accent is real DATA (portal/api/armory.js stamps b.accent from getMpCategoryAccent), not a
+ * CSS token -- a different and correct mechanism from Season's --topic-accent tokens, so this file
+ * deliberately consumes an inline --cat rather than adding six more tokens that could drift.
+ */
+.catsec{padding:0 14px}
+.cathead{display:flex;align-items:center;gap:10px;padding:12px 0 8px}
+.cathead .nm{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;font-weight:700;color:var(--cat,var(--ink2))}
+.cathead .ln{flex:1;height:1px;background:var(--rule)}
+.cathead .ct{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink3);white-space:nowrap}
+.wcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding-bottom:6px}
+.wcard{background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--cat,var(--rule));
+  border-radius:5px;padding:9px 10px;min-height:0;text-align:left;display:block;font-weight:400}
+.wcard:hover{border-color:var(--rule);border-left-color:var(--cat,var(--rule));background:var(--raised)}
+.wcard .nm{font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--ink);display:block}
+.wcard .mt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:block;margin-top:3px}
+.wcard .dupe{color:var(--warn)}
+.noimg{margin-top:7px;border:1px dashed var(--rule);border-radius:3px;padding:5px;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3)}
+/* Coverage as a real matrix. A cell holding zero is not a problem and must not read like one; a
+   non-zero cell is a filter you can click, so it is a button and it is tinted by severity. */
+.covwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 14px 12px}
+.cov{border-collapse:collapse;width:100%;font-size:12px}
+.cov th{background:transparent;cursor:default;text-align:center;font-size:9px;padding:8px 6px;border-bottom:1px solid var(--rule)}
+.cov th.who{text-align:right;min-width:96px}
+.cov td{padding:4px;text-align:center;border-bottom:1px solid var(--sunk)}
+.cov td.who{text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:.1em;color:var(--cat,var(--ink3))}
+.covcell{width:100%;min-height:32px;padding:6px 4px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  background:var(--sunk);border:1px solid var(--rule);color:var(--ink3);border-radius:4px}
+.covcell.zero{color:var(--ink3);opacity:.45;cursor:default}
+.covcell.hit{color:var(--ink);background:rgba(255,122,69,.14);border-color:rgba(255,122,69,.45)}
+.covcell.on{border-color:var(--patch);color:var(--patch)}
+.covnote{padding:0 14px 12px;font-size:11px;color:var(--ink3)}
+/* The view layer and the Live Preview sit side by side so the Manifest -- the surface you actually
+   work in -- is not pushed a screen and a half down the page. The preview keeps a real minimum
+   because a Discord card below ~250px stops resembling what Discord renders, which is its whole job. */
+.armcols{display:flex;gap:14px;align-items:flex-start}
+.armmain{flex:2;min-width:0}
+.armside{flex:1;min-width:250px;max-width:360px}
+
+@media(max-width:900px){
+  .armcols{flex-direction:column}
+  .armmain,.armside{width:100%;max-width:none;min-width:0}
+  .catsec,.covwrap,.covnote{padding-left:var(--gut);padding-right:var(--gut)}
+  .wcards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){.wcards{grid-template-columns:1fr}}
+@media(max-width:900px){.covcell{min-height:44px}.wcard{min-height:44px}}

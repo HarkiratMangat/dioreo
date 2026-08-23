@@ -1,57 +1,198 @@
-// portal/ui/board.js — ESM. The changeset pipeline: Draft -> Staged -> Blocked -> Ready.
+// portal/ui/board.js — ESM. The changeset pipeline (Draft -> Staged -> Blocked -> Ready) and the REVIEW CHANGESET screen it opens into.
 //
-// columnFor/blockedReason/groupByColumn/gateCommit come from board.logic.js, loaded as a classic script before this module — see track.js's header for why that is the real cross-runtime split.
+// columnFor/blockedReason/groupByColumn/gateCommit/describeOp/describeInverse/diffRows come from board.logic.js, loaded as a classic script before this module — see track.js's header for why that is the real cross-runtime split.
+//
+// 🔴 THE REVIEW SCREEN IS 04-armory-and-commit.html's third section, and it did not exist. The whole tier-3 gate was a bare "type the confirm code" input in the Ready column plus a Download link on a blocked card, which is exactly the "dialog that ambushes you at commit" the design spec §8.2 says this realm exists to replace. Built at Harkirat's call, 2026-08-23 15:00 EDT: the operations get listed, each one shows a real before/after field diff against LIVE state, the destructive summary names what is being removed rather than counting it, and the gate is three visible steps.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
-import { useState } from '../vendor/preact-hooks.mjs';
+import { useState, useEffect } from '../vendor/preact-hooks.mjs';
+import { fetchJson } from './httpClient.js';
 
 const COLUMN_LABEL = { draft: 'Draft', staged: 'Staged', blocked: 'Blocked', ready: 'Ready' };
+const COLUMN_NOTE = {
+    draft: 'Started, not yet staged. Nothing here is visible to the bot.',
+    staged: 'Validated and previewed. Waiting on the rest of the set.',
+    blocked: 'Will not commit until the stated reason is resolved.',
+    ready: 'Committing applies the whole set in one transaction — all of it lands, or none of it does.',
+};
 
-function Card({ changeset, onExport }) {
+function Card({ changeset, onExport, onOpen, selected }) {
     const reason = blockedReason(changeset);
+    const ops = changeset.ops || [];
     return html`
-        <div class=${'card' + (changeset.tier >= 3 ? ' t3' : '') + (reason ? ' blocked' : '')}>
-            <div class="ch"><span class="tr">T${changeset.tier}</span> <span class="cn">${changeset.realm}</span></div>
-            <span class="cd">${(changeset.ops || []).length} op(s)</span>
-            ${changeset.tier >= 3 ? html`<span class="cd" style="display:block;word-break:break-all">confirm code: ${String(changeset._id).slice(-8).toUpperCase()}</span>` : null}
+        <button class=${'card' + (changeset.tier >= 3 ? ' t3' : '') + (reason ? ' blocked' : '') + (selected ? ' on' : '')}
+                onClick=${() => onOpen(changeset)}>
+            <div class="ch"><span class="tr">T${changeset.tier}</span> <span class="cn">${describeOp(ops[0])}</span></div>
+            ${ops.length > 1 ? html`<span class="cd">+ ${ops.length - 1} more operation${ops.length === 2 ? '' : 's'}</span>` : null}
+            ${describeInverse(ops[0]) ? html`<span class="inv"><b>${describeInverse(ops[0])}</b></span>` : null}
             ${reason ? html`
                 <div class="why">
                     ${reason}
-                    <button onClick=${() => onExport(changeset)}>Download</button>
+                    ${changeset.tier >= 3 && !changeset.exportedAt
+                        ? html`<span role="button" tabindex="0" class="holder" style="margin-left:6px"
+                                     onClick=${(e) => { e.stopPropagation(); onExport(changeset); }}
+                                     onKeyDown=${(e) => { if (e.key === 'Enter') { e.stopPropagation(); onExport(changeset); } }}>Download</span>`
+                        : null}
                 </div>
             ` : null}
+        </button>
+    `;
+}
+
+// One operation's before/after. `preview` entries come from core/changeset.js's previewSet, whose per-op shape is {index, before, after} — every entity's own preview() returns exactly that pair.
+function OpDiff({ op, entry }) {
+    const rows = diffRows(entry && entry.before, entry && entry.after);
+    const before = (entry && entry.before) || {};
+    const after = (entry && entry.after) || {};
+    return html`
+        <div class="diffs">
+            <div class="diff">
+                <h6>Before — live now</h6>
+                <div class="rows">
+                    ${rows.length === 0 ? html`<div class="r"><span class="v">Nothing exists yet.</span></div>` : null}
+                    ${rows.map(r => html`<div class=${'r ' + (r.kind === 'add' ? '' : 'del')}><span class="s">${r.kind === 'add' ? '' : '−'}</span><span class="k">${r.key}</span><span class="v">${r.from}</span></div>`)}
+                </div>
+            </div>
+            <div class="diff">
+                <h6>After — if you commit</h6>
+                <div class="rows">
+                    ${rows.length === 0 ? html`<div class="r"><span class="v">${describeOp(op)}</span></div>` : null}
+                    ${rows.map(r => html`<div class=${'r ' + (r.kind === 'del' ? '' : 'add')}><span class="s">${r.kind === 'del' ? '' : '+'}</span><span class="k">${r.key}</span><span class="v">${r.to}</span></div>`)}
+                </div>
+            </div>
         </div>
     `;
 }
 
-// onCommit(readyChangesets, confirmText) fires on the Ready column's Commit button; onExport(changeset) satisfies a Blocked tier-3 card's export requirement. confirmText is typed HERE, at commit time — it is never known in advance (board.logic.js's columnFor cannot depend on it, see that file's own header), and the server is the actual arbiter of whether it matches; a mismatch surfaces as a 409 the caller reports.
+// A tier-3 op destroys state with no exact inverse, so the review names WHAT it destroys rather than how many. "This permanently removes 4 draws" plus the four titles is the difference between a warning you can act on and a number you have to go and look up.
+function Destructive({ op, entry }) {
+    const before = (entry && entry.before) || {};
+    const removed = Object.entries(before)
+        .filter(([, v]) => Array.isArray(v) && v.length)
+        .flatMap(([, v]) => v);
+    if (!removed.length) return null;
+    return html`
+        <div class="callout bad" style="border-top:0;margin-top:12px">
+            <b>This permanently removes ${removed.length} item${removed.length === 1 ? '' : 's'}:</b>
+            ${removed.slice(0, 8).map(r => html`<span style="flex:1 1 100%">• ${r.title || r.text || r.weaponName || String(r).slice(0, 50)}</span>`)}
+            ${removed.length > 8 ? html`<span style="flex:1 1 100%">…and ${removed.length - 8} more.</span>` : null}
+        </div>
+    `;
+}
+
+function Review({ detail, onExport, onCommit, onClose, busy }) {
+    const [opIndex, setOpIndex] = useState(0);
+    const [confirmText, setConfirmText] = useState('');
+    const ops = detail.ops || [];
+    const op = ops[opIndex];
+    const entry = (detail.preview || []).find(p => p.index === opIndex);
+    const tier3 = detail.tier >= 3;
+    const exported = !!detail.exportedAt;
+    const typed = confirmText === detail.confirmText;
+    const gate = gateCommit({ tier: detail.tier, exportedAt: detail.exportedAt, confirmText, expectText: detail.confirmText });
+
+    return html`
+        <div class="panel" id="review">
+            <div class="ph">
+                <span class="t">Review changeset</span>
+                <span class="rt">${ops.length} operation${ops.length === 1 ? '' : 's'} · ${detail.realm}</span>
+            </div>
+            <div class="review">
+                <div class="oplist">
+                    <h5>Operations</h5>
+                    ${ops.map((o, i) => html`
+                        <button class=${'card' + (i === opIndex ? ' on' : '')} onClick=${() => setOpIndex(i)}>
+                            <div class="ch"><span class="tr">T${detail.tier}</span> <span class="cn">${describeOp(o)}</span></div>
+                            ${describeInverse(o) ? html`<span class="cd">${describeInverse(o)}</span>` : null}
+                        </button>
+                    `)}
+                </div>
+                <div class="revbody">
+                    <div class="revhead">
+                        <span class="ttl">${describeOp(op)}</span>
+                        <span class=${'tierbadge' + (tier3 ? ' t3' : '')}>${tier3 ? 'Tier 3 — irreversible' : `Tier ${detail.tier}`}</span>
+                    </div>
+                    ${(detail.failures || []).length ? html`
+                        <div class="callout bad"><b>This set failed validation.</b>
+                            ${detail.failures.map(f => html`<span style="flex:1 1 100%">• ${f.reason || f.message || JSON.stringify(f)}</span>`)}
+                        </div>
+                    ` : html`<${OpDiff} op=${op} entry=${entry} />`}
+                    <${Destructive} op=${op} entry=${entry} />
+                    ${tier3 ? html`
+                        <div class="gate">
+                            <h6>Before this can commit</h6>
+                            <p class="why">Tier 3 destroys state with no exact inverse. The export below is the genuine restore path — the bulk formats round-trip back through the bot's own parsers, so it is a real backup rather than a receipt.</p>
+                            <div class="step done"><span class="n">1</span><span class="lbl">Previewed the rendered result</span></div>
+                            <div class=${'step' + (exported ? ' done' : '')}>
+                                <span class="n">2</span><span class="lbl">Download what this replaces</span>
+                                ${exported ? null : html`<button onClick=${() => onExport(detail)}>Export .txt</button>`}
+                            </div>
+                            <div class=${'step' + (typed ? ' done' : '')}>
+                                <span class="n">3</span>
+                                <label class="sr-only" for="review-confirm">Type ${detail.confirmText} to confirm</label>
+                                <span class="lbl">Type <code>${detail.confirmText}</code> to confirm</span>
+                                <input id="review-confirm" value=${confirmText} placeholder="confirm code"
+                                       onInput=${(e) => setConfirmText(e.target.value)} />
+                            </div>
+                        </div>
+                    ` : null}
+                </div>
+            </div>
+            <div class="revfoot">
+                <span class="tally">${gate.ok ? 'Ready to commit' : gate.reason}</span>
+                <span class="sp"></span>
+                <button onClick=${onClose}>Keep staged</button>
+                <button class="commit" style="width:auto" disabled=${!gate.ok} aria-busy=${busy ? 'true' : null}
+                        onClick=${() => onCommit(detail, confirmText)}>Commit ${ops.length} operation${ops.length === 1 ? '' : 's'}</button>
+            </div>
+        </div>
+    `;
+}
+
+// onCommit(readyChangesets, confirmText) fires on the Ready column's Commit button; onExport(changeset) satisfies a Blocked tier-3 card's export requirement. confirmText is typed at commit time — it is never known in advance (board.logic.js's columnFor cannot depend on it, see that file's own header), and the server is the actual arbiter of whether it matches; a mismatch surfaces as a 409 the caller reports.
 export function Board({ changesets, onCommit, onExport }) {
     const cols = groupByColumn(changesets);
     const readyCount = cols.ready.length;
-    const needsConfirm = cols.ready.some(c => c.tier >= 3);
-    const [confirmText, setConfirmText] = useState('');
+    const [openId, setOpenId] = useState(null);
+    const [detail, setDetail] = useState(null);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+        if (!openId) { setDetail(null); return; }
+        // Re-fetched rather than read from the list, because the preview has to be computed against state as it is NOW — see the GET /api/changeset/:id/preview route's own header.
+        fetchJson(`/api/changeset/${openId}/preview`).then(setDetail);
+    }, [openId, changesets]);
+
+    async function commitOne(d, confirmText) {
+        setBusy(true);
+        await onCommit([{ _id: d.changesetId, tier: d.tier }], confirmText);
+        setBusy(false);
+        setOpenId(null);
+    }
+
     return html`
         <div class="panel" id="board">
-            <div class="ph"><span class="t">Changeset pipeline</span></div>
-            <div class="cols">
-                ${['draft', 'staged', 'blocked', 'ready'].map(key => html`
-                    <div class=${'col' + (key === 'ready' ? ' gate' : '')}>
-                        <h4>${COLUMN_LABEL[key]}<span class=${'ct' + (key === 'blocked' && cols[key].length ? ' bad' : '')}>${cols[key].length}</span></h4>
-                        ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} />`)}
-                        ${key === 'ready' ? html`
-                            ${needsConfirm ? html`
-                                <label class="sr-only" for="board-confirm">Type the confirm code shown on the card</label>
-                                <input id="board-confirm" placeholder="Type the confirm code shown on the card" value=${confirmText}
-                                       onInput=${(e) => setConfirmText(e.target.value)}
-                                       style="width:100%;margin-bottom:8px;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;color:var(--ink);padding:6px 8px" />
-                            ` : null}
-                            <button class="commit" disabled=${readyCount === 0} onClick=${() => onCommit(cols.ready, confirmText)}>
-                                Commit ${readyCount} of ${changesets.length}
-                            </button>
-                        ` : null}
-                    </div>
-                `)}
+            <div class="ph">
+                <span class="t">Changeset pipeline</span>
+                <span class="rt">edits move left → right · commit is the last boundary</span>
             </div>
+            ${changesets.length === 0 ? html`<p class="empty">Nothing is staged. Changes you compose in the Track or the manifest land here before they go live.</p>` : html`
+                <div class="cols">
+                    ${['draft', 'staged', 'blocked', 'ready'].map(key => html`
+                        <div class=${'col' + (key === 'ready' ? ' gate' : '')}>
+                            <h4>${COLUMN_LABEL[key]}<span class=${'ct' + (key === 'blocked' && cols[key].length ? ' bad' : '')}>${cols[key].length}</span></h4>
+                            ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} onOpen=${(cs) => setOpenId(String(cs._id))} selected=${openId === String(c._id)} />`)}
+                            ${key === 'ready' && readyCount ? html`
+                                <button class="commit" disabled=${readyCount === 0} onClick=${() => onCommit(cols.ready, '')}>
+                                    Commit ${readyCount} of ${changesets.length}
+                                </button>
+                            ` : null}
+                            <p class="colnote">${COLUMN_NOTE[key]}</p>
+                        </div>
+                    `)}
+                </div>
+            `}
         </div>
+        ${detail ? html`<${Review} detail=${detail} onExport=${onExport} onCommit=${commitOne} onClose=${() => setOpenId(null)} busy=${busy} />` : null}
     `;
 }

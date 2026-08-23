@@ -28,6 +28,28 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.68.0 — 2026-08-23 15:29 EDT (#PR) — the portal stops looking like scaffolding, and three audited claims turn out to be wrong
+
+Phase 3 of the portal design-alignment plan: the redesign. The job was to close the gap between the live admin portal and its approved mockups — and the first thing it produced was three corrections to the audit it was supposed to implement.
+
+🔴 **The horizontal realm bar was never the design.** `01-season-spine.html` is a **full-style** mockup — one page, designed completely — and its chrome is a 76px left icon rail plus a thin top bar carrying a wordmark, a breadcrumb and identity. Mockups 02–06 are **compiled-style** sheets: several pages stacked into one file for review, wrapped in a document-navigation bar. The bar that shipped is almost exactly mockup 06's *document* nav — review scaffolding built as product. It is gone. The rail becomes a bottom tab bar below 900px, off a single `--rail` token that names a **thickness** rather than a width, so one declaration flips it between axes.
+
+**Measured before and after at a real 375px layout viewport, not a described one: horizontal overflow went from +336px (every realm) and +496px (Season) to exactly 0 on all five.** The old header alone overflowed by 344px carrying nothing but the wordmark, five links and the owner id.
+
+**Three claims in the frozen audit did not survive being checked.** ⓵ `row.topicVar` is read by the Manifest and **set nowhere in the repo** — so Phase 2's token fix reached the Track's bars and never reached the row dots, and all 39 Season rows drew the same grey square. ⓶ Form controls had no base styling *at all*, not merely no hover state: measured, the grant input was a white box in Arial, 21.5px tall, and exactly five form rules existed in the whole stylesheet. ⓷ The audit listed typography under *what's already working*; the portal declared Space Grotesk and JetBrains Mono and **loaded neither**. The falsifier: render the same string in both faces and compare — a proportional sans and a monospace cannot measure identically, and they did.
+
+**Broadcast was showing announcements Discord was correctly withholding.** `/api/broadcast` filtered on `expiresAt` only, while `utils/announcement.js` has always filtered on `startsAt` too — so a scheduled announcement listed under "Now showing" in the panel whose entire claim is that it renders the live set exactly as Discord sends it. State is now decided once, server-side.
+
+**Three functions that existed, were tested, and had never once been called.** `findOverlaps`, `findGaps` and `tierOf` back the Track's defect flags — the realm's stated reason for existing — and every caller passed nothing, so the row never rendered. Wired, ranked conflict → gap → overlap, and **capped at three**: run uncapped against the real catalogue it produced ~50 rows, because concurrent events are normal and fifty pieces of information is none.
+
+**Two latent Board defects, neither with any test coverage.** A changeset whose own state was `blocked` — validation failed — rendered in the **Ready** column under the Commit button, and the Staged column was structurally unreachable because nothing ever returned it. Ready is now all-or-nothing, which is the mockup's own stated semantic: while anything is blocked, nothing is ready.
+
+**The surfaces that were simplified away are back.** Access has the permission grid, with granted-directly and inherited-from-`manage` rendered distinctly — that distinction is the whole reason a grid beats a comma-separated string, and the API was collapsing it into one boolean. Armory has category-coloured rack cards and a coverage matrix whose every cell filters the manifest. Analytics stops being three `<pre>` blocks of the `/bot analytics` text export and becomes a real dashboard; its event river needed **no API change at all**, because the structured JSON was always there and the UI was throwing it away.
+
+⚠️ **Analytics health is read from Mongo and says so.** The portal is a separate process with no gateway connection, so `computeHealthStats(client)` would report the *portal's* uptime and memory while looking exactly like the bot's. Uptime and restarts come from `BootRecord`, errors and the memory figure from `AlertLog`, and the panel states that rather than implying a live reading.
+
+**Masthead copy turned out to be a smaller job than the audit scoped, for a reason worth keeping.** The `ANSWERS:` tags and explanatory paragraphs the audit found missing appear only in the compiled sheets — they are reviewer annotation, not chrome. Every realm now carries mockup 01's data masthead instead: a title, a context line, and a stat cluster computed from live data.
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

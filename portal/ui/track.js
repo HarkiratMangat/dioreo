@@ -55,18 +55,50 @@ function Lane({ name, items, window, season, onDragCommit }) {
     `;
 }
 
-// <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
+// `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the same contract `draft` already had. The Track's own defect flags. track.logic.js has carried findOverlaps/findGaps/tierOf since the first build, with dedicated tests -- and NOTHING has ever called them. The `flags` prop existed and every caller passed nothing, so the row never rendered. That row is the realm's entire reason for being: spec §8.2 says the Track exists so that three defects which "have no signal at all today" become impossible to miss. Each flag NAMES THE PROBLEM, and where the mockup gives one, offers the fix rather than only reporting (01-season-spine.html's "Clamp to BP end" / "Fill").
+function deriveFlags(data, window, season) {
+    const items = Object.values(data || {}).flat();
+    const out = [];
+    for (const item of items) {
+        if (tierOf(item, season) === 'conflict') {
+            const over = Math.ceil((new Date(item.endDate) - new Date(season.bpEnd)) / 86400000);
+            out.push({ title: item.title, detail: `ends ${over} day${over === 1 ? '' : 's'} after the battle pass — it will outlive the season.` });
+        }
+    }
+    for (const gap of findGaps(items, window)) {
+        const days = Math.round((gap.end - gap.start) / 86400000);
+        out.push({ title: `${gap.start.toDateString().slice(4, 10)}–${gap.end.toDateString().slice(4, 10)}`, detail: `has no draw and no event scheduled (${days} days).` });
+    }
+    for (const [a, b] of findOverlaps(items)) {
+        out.push({ title: `${a.title} and ${b.title}`, detail: 'overlap in the same lane.' });
+    }
+    return out;
+}
+
+// 🔴 THE ROW IS CAPPED, AND THE CAP IS THE DESIGN. Rendered uncapped against the real dev catalogue (23 calendar items) this produced ~50 flags and buried the page under "X and Y overlap in the same lane" — concurrent events and playlists are NORMAL in CODM, so an overlap is information rather than a defect, and fifty pieces of information is none. Ordering is deliberate: a conflict (runs past the battle-pass end) is unambiguously wrong, a gap is probably wrong, an overlap is only maybe. deriveFlags pushes them in that order, so slicing keeps the most severe.
 //
-// `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the same contract `draft` already had.
-export function Track({ data, draft, window, season, flags = [], onDragCommit }) {
-    const lanes = Object.keys(LANE_LABEL);
+// ⚠️ Deliberately NOT filtered by lane. It would be easy to declare "overlaps only matter for draws" and cut the noise at the source, but that asserts a CODM scheduling rule this session cannot verify — and a detector that silently drops a real finding is worse than one that ranks it last.
+const MAX_FLAGS = 3;
+
+// <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
+export function Track({ data, draft, window, season, flags, onDragCommit }) {
+    // A lane with nothing in it, live or draft, is not rendered. Five always-on lanes meant the patch-notes rail (which season.js has never supplied) plus any unused topic sat as empty 38px rows -- structure announcing content that is not there.
+    const lanes = Object.keys(LANE_LABEL).filter(k => (data[k] || []).length || (draft && (draft[k] || []).length));
+    const shown = flags || deriveFlags(data, window, season);
     return html`
         <div class="panel" id="track">
-            <div class="ph"><span class="t">Season track</span></div>
+            <div class="ph">
+                <span class="t">Season track</span>
+                <span class="rt" style="display:flex;gap:12px;align-items:center">
+                    <span class="leg live"><i></i>live</span>
+                    <span class="leg stag"><i></i>staged</span>
+                    <span class="leg conf"><i></i>conflict</span>
+                </span>
+            </div>
             <div style="padding:8px 14px 0">
                 <div class="ruler">
                     <span style="left:0%">${window.start}</span>
-                    <span style="left:100%">${window.end}</span>
+                    <span data-end style="left:100%">${window.end}</span>
                 </div>
                 <div class="lanes">
                     ${lanes.map(k => html`<${Lane} name=${LANE_LABEL[k]} items=${data[k] || []} window=${window} season=${season} onDragCommit=${onDragCommit} />`)}
@@ -80,9 +112,10 @@ export function Track({ data, draft, window, season, flags = [], onDragCommit })
                     </div>
                 </div>
             </div>
-            ${flags.length ? html`
+            ${shown.length ? html`
                 <div class="flags">
-                    ${flags.map(f => html`<span class="flag"><b>${f.title}</b> ${f.detail} ${f.action ? html`<button onClick=${f.action.onClick}>${f.action.label}</button>` : null}</span>`)}
+                    ${shown.slice(0, MAX_FLAGS).map(f => html`<span class="flag"><b>${f.title}</b> ${f.detail} ${f.action ? html`<button onClick=${f.action.onClick}>${f.action.label}</button>` : null}</span>`)}
+                    ${shown.length > MAX_FLAGS ? html`<span class="flag" style="border-left-color:var(--rule);color:var(--ink3)">and ${shown.length - MAX_FLAGS} more overlapping or unscheduled stretch${shown.length - MAX_FLAGS === 1 ? '' : 'es'} — concurrent events are normal, so these rank last.</span>` : null}
                 </div>
             ` : null}
         </div>

@@ -45,6 +45,9 @@ function buildCss() {
     return css;
 }
 
+// 🔴 THE PORTAL DECLARED TWO TYPEFACES AND LOADED NEITHER, from the first build until 2026-08-23. tokens.css sets `font-family:'Space Grotesk'...` on body and `'JetBrains Mono'` on every data cell, and this file emitted exactly one <link> — /app.css. No @font-face rule existed anywhere and document.fonts.size read 0. The gap audit's §6 listed type under "what's already working ... no gap here", which is how it survived: the fallback stacks are good enough that nothing looked broken. The falsifier that settled it: render the same 40px string in "Space Grotesk" and in "JetBrains Mono" and compare widths — a real proportional sans and a real monospace face cannot measure the same, and both measured 579.87px while sans-serif measured 606.88 and monospace 746.55. Both were falling through to one last-resort face.
+//
+// ⚠️ The fallback stacks in tokens.css stay exactly as they are on purpose: a blocked or offline font load degrades to what shipped before this change rather than to nothing, and `display=swap` means text is never invisible while the fetch is in flight.
 function buildIndexHtml() {
     // Every *.logic.js file loads as a CLASSIC script (no type=module) BEFORE app.js, so its top-level function declarations become globals — see track.js's header comment for why this is the actual working resolution of "Node reads it as CommonJS, the browser reads the same file as a plain script", rather than a literal cross-format ESM import that no real browser could execute.
     const logicFiles = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.logic.js')).sort();
@@ -56,6 +59,9 @@ function buildIndexHtml() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Dioreo Admin Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>

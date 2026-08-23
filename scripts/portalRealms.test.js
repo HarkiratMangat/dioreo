@@ -41,20 +41,35 @@ check('Access By-scope does NOT flag a scope held by two or more admins', () => 
     assert.ok(!spof.some(s => s.scope === 'bot'), 'a scope held by two admins is not a single point of failure');
 });
 
-check('buildPermissionMatrix grants every manage.<page> scope for bare "manage"', () => {
+// 🔴 `grants[key]` IS NO LONGER A BOOLEAN. It is {direct, inherited, held} as of the Phase 3 grid (2026-08-23): a bare `manage` token lights every page column, but you did not hand those pages over individually and revoking `manage` takes all of them back at once. Collapsing the two into one boolean is exactly what made the old comma-separated permission string unreadable, so the grid has to be able to tell them apart. `held` is the old boolean, preserved for any caller that only cares whether the scope is reachable.
+check('buildPermissionMatrix distinguishes a DIRECT grant from one INHERITED via bare "manage"', () => {
     const { admins, scopes } = buildPermissionMatrix([{ discordId: 'A', permissions: ['manage'] }]);
     assert.ok(scopes.some(s => s.key === 'manage.draws' && s.kind === 'page'));
     assert.ok(scopes.some(s => s.key === 'bot' && s.kind === 'command'));
-    assert.strictEqual(admins[0].grants['manage.draws'], true);
-    assert.strictEqual(admins[0].grants['manage.loadouts_dmz'], true);
-    assert.strictEqual(admins[0].grants.bot, false, 'bare "manage" grants every /manage page, never bot/autobuild');
+    assert.deepStrictEqual(admins[0].grants['manage.draws'], { direct: false, inherited: true, held: true });
+    assert.deepStrictEqual(admins[0].grants['manage.loadouts_dmz'], { direct: false, inherited: true, held: true });
+    assert.deepStrictEqual(admins[0].grants.manage, { direct: true, inherited: false, held: true },
+        'the token itself is a DIRECT grant on its own command column');
+    assert.deepStrictEqual(admins[0].grants.bot, { direct: false, inherited: false, held: false },
+        'bare "manage" grants every /manage page, never bot/autobuild');
 });
 
-check('buildPermissionMatrix grants only the named page for a scoped admin', () => {
+check('buildPermissionMatrix grants only the named page for a scoped admin, and marks it direct', () => {
     const { admins } = buildPermissionMatrix([{ discordId: 'B', permissions: ['manage.calendar', 'bot'] }]);
-    assert.strictEqual(admins[0].grants['manage.calendar'], true);
-    assert.strictEqual(admins[0].grants['manage.draws'], false);
-    assert.strictEqual(admins[0].grants.bot, true);
+    assert.deepStrictEqual(admins[0].grants['manage.calendar'], { direct: true, inherited: false, held: true });
+    assert.deepStrictEqual(admins[0].grants['manage.draws'], { direct: false, inherited: false, held: false });
+    assert.deepStrictEqual(admins[0].grants.bot, { direct: true, inherited: false, held: true });
+});
+
+check('a scope held directly is never ALSO reported as inherited', () => {
+    // Both halves true would double-count the scope in By-scope's holder chips and paint the grid cell in two states at once.
+    const { admins, scopes } = buildPermissionMatrix([{ discordId: 'C', permissions: ['manage', 'manage.calendar'] }]);
+    for (const s of scopes) {
+        const g = admins[0].grants[s.key];
+        assert.ok(!(g.direct && g.inherited), `${s.key} is reported as both direct and inherited`);
+        assert.strictEqual(g.held, g.direct || g.inherited, `${s.key}: held must equal direct || inherited`);
+    }
+    assert.strictEqual(admins[0].grants['manage.calendar'].direct, true, 'an explicit page grant beside bare manage stays DIRECT');
 });
 
 const { buildSeasonAddOp, buildSeasonEditOp } = require('../portal/ui/season.logic');

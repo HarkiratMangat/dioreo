@@ -205,6 +205,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-23 13:10 EDT — The plan's premises were the bug (v3.66.0-pre)
 - 2026-08-23 14:06 EDT — Five items that said a thing was missing (v3.67.0-pre)
 - 2026-08-23 14:18 EDT — The rule was loaded both times (v3.67.0-pre)
+- 2026-08-23 15:29 EDT — The portal stops looking like scaffolding, and three audited claims turn out to be wrong (v3.68.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3534,6 +3535,24 @@ So I stopped treating it as a knowledge gap and went looking for the mechanism t
 So `push-approval-gate.sh` fires on any real `git push` and demands `Approved by: <who> · to: <what> · when: <the message>` before it runs, with all five traps named in the text. It does **not** deny — Harkirat's standing constraint on the memory-write gate was *"a gate is better than advisory but i dont want it denying things"*, and it applies here with more force: a deny would block a push authorized in the same breath and would train the retry reflex this is meant to interrupt. It is silent on `--dry-run` and on `--delete`, because gating the undo would make cleaning up an unauthorized push harder than making one.
 
 **It cannot verify an approval and does not pretend to.** Approval is conversational; a shell script cannot read a transcript. What it does is convert an unconscious step into a deliberate one — the same limit `outstanding-not-filed.sh` states about itself: a gate proves a list was opened, never that the right thing was written in it.
+
+## 2026-08-23 15:29 EDT — The portal stops looking like scaffolding, and three audited claims turn out to be wrong (v3.68.0-pre)
+
+Phase 3 of the portal design-alignment plan, and it began by disagreeing with the document it was meant to implement.
+
+**The plan said "confirm the audit's predictions match what Phase 2 shipped." Taken literally, three did not.** `row.topicVar` is read by the Manifest and set nowhere in the repo, so the four accent tokens Phase 2 added reached the Track's bars and never reached the row dots — 39 identical grey squares on a realm whose whole colour system had supposedly just been fixed. Form controls had no base styling *at all*, not merely no hover state; the audit's completeness table recorded "Default ✅" and the measured reality was a white box in Arial, 21.5px tall, with exactly five form rules in the entire stylesheet. And typography, listed under *what's already working*, had never once shipped: the portal declared Space Grotesk and JetBrains Mono and loaded neither.
+
+That third one is the one worth keeping, because of how it was settled. Comparing a named font against `sans-serif` proves nothing — the fallback is a real font and it measures differently. The falsifier that could actually fail was comparing the two declared families **against each other**: a proportional sans and a monospace face cannot measure identically, and they did, to two decimal places. A test that cannot come out wrong is not a test.
+
+**Harkirat's own correction reframed the whole phase.** Mockup 01 is a *full-style* mockup — one page, designed completely. Mockups 02–06 are *compiled-style* sheets: several pages stacked into one file for review, wrapped in a document-navigation bar and annotated with prose. The horizontal five-realm bar that shipped is almost exactly mockup 06's **document** nav, i.e. review scaffolding built as product. And the "ANSWERS: WHEN, AND DOES IT FIT" mastheads the audit found missing from every realm are reviewer annotation, not chrome — which turned the single most labour-intensive item on the plan's list into a smaller one, by reclassifying a finding rather than cutting scope.
+
+**Three functions had existed, been tested, and never once been called.** `findOverlaps`, `findGaps` and `tierOf` back the Track's defect flags — the feature the design spec names as the realm's reason for existing. The `flags` prop was there and every caller passed nothing, so the row never rendered. Wiring them was four lines. Then the real catalogue produced **fifty flags**, because concurrent events are normal in CODM and an overlap is information rather than a defect. The fix was ranking and a cap, not a filter: declaring "overlaps only matter for draws" would have cut the noise by asserting a domain rule this session cannot verify, and a detector that silently drops a real finding is worse than one that ranks it last.
+
+**Two Board defects had no test coverage, which is exactly why they survived.** A changeset whose own state was `blocked` — validation failed — rendered in the Ready column under the Commit button. And the Staged column was structurally unreachable: nothing ever returned it. Both are now asserted.
+
+**Measured, at a real 375px viewport rather than a described one:** horizontal overflow went from +336px on every realm and +496px on Season to exactly 0 on all five; controls under the WCAG 2.2 AA target-size minimum went from every control on every realm to none. The first mobile measurement reported `innerWidth: 871` and read like an emulation failure — it was the symptom. Overflowing content stretches the visual viewport, so `innerWidth` is a result and `documentElement.clientWidth` is the guard. Every number here asserts the guard first.
+
+**And the trap Session A wrote down cost turns anyway.** A hard reload with cache disabled did not pick up rebuilt ES modules or CSS; only a brand-new tab did, twice. Reading that warning is not the same as acting on it.
 
 # Part B — Lessons Ledger (thematic)
 

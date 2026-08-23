@@ -4,7 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess } from './shell.js';
+import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
 import { Track } from './track.js';
@@ -15,9 +15,20 @@ import { Tray } from './tray.js';
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
-    { key: 'lane', label: 'Type', render: (row) => LANE_LABELS[row.lane] || row.lane },
+    // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
+    { key: 'lane', label: 'Type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane },
     { key: 'window', label: 'Window', dataKind: 'date' },
     { key: 'state', label: 'State' },
+];
+
+// 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value.
+const SEASON_FILTERS = [
+    { key: 'lane', label: 'Type', options: [
+        { value: 'newDraws', label: 'New draw' }, { value: 'returningDraws', label: 'Returning draw' }, { value: 'calendar', label: 'Event' },
+    ] },
+    { key: 'state', label: 'State', options: [
+        { value: 'live', label: 'live' }, { value: 'staged', label: 'staged' }, { value: 'conflict', label: 'conflict' },
+    ] },
 ];
 
 const ADD_KINDS = [
@@ -92,7 +103,9 @@ export function SeasonRealm({ session }) {
     if (state.signedOut || state.forbidden) return html`<${NoAccess} />`;
 
     // Renamed from `window` (Task 4) -- that name silently SHADOWED the real browser global for the rest of this component's body, including handleExportSelection's `window.open()` call below, which was a live, never-yet-clicked bug (TypeError: window.open is not a function, since that identifier resolved to this {start,end} object instead of the global). Found auditing this file for Track's own drag handles, which genuinely need the real global.
-    const visibleWindow = { start: new Date().toISOString().slice(0, 10), end: state.live?.bpEnd || new Date().toISOString().slice(0, 10) };
+    //
+    // seasonWindow (season.logic.js, a bare global) replaces what used to be an inline {start: today, end: live.bpEnd || today}. With bpEnd unset -- the dev database's actual state -- that made start === end, so barGeometry divided by a 1ms window and every bar on the Track collapsed to a sliver at 0%. See that function's own header.
+    const visibleWindow = seasonWindow(state.live);
 
     async function handleExport(changeset) {
         await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
@@ -150,17 +163,40 @@ export function SeasonRealm({ session }) {
         fetchChangesets('season').then(setChangesets);
     }
 
+    // Playlists are split out of `calendar` into their own lane. Track's LANE_LABEL and TOPIC_VAR have carried a `playlist` entry since the first build and nothing ever filled it, so every playlist-category calendar item rendered in the Events lane in the Events colour -- flagged by Session A's own post-hoc pass as pre-existing and left for this phase.
+    const splitCalendar = (src) => {
+        const all = (src && src.calendar) || [];
+        return { events: { calendar: all.filter((i) => !isPlaylist(i)) }, playlists: { calendar: all.filter(isPlaylist) } };
+    };
+    const liveCal = splitCalendar(state.live);
     const trackData = {
         draw: toTrackItems(state.live, 'newDraws', 'draw'),
         returning: toTrackItems(state.live, 'returningDraws', 'returning'),
-        event: toTrackItems(state.live, 'calendar', 'event'),
+        event: toTrackItems(liveCal.events, 'calendar', 'event'),
+        playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist'),
     };
     // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since it's the same reshape, not a second task.
-    const draftData = state.draft ? {
+    const draftCal = splitCalendar(state.draft);
+    const draftRails = state.draft ? {
         draw: toTrackItems(state.draft, 'newDraws', 'draw'),
         returning: toTrackItems(state.draft, 'returningDraws', 'returning'),
-        event: toTrackItems(state.draft, 'calendar', 'event'),
+        event: toTrackItems(draftCal.events, 'calendar', 'event'),
+        playlist: toTrackItems(draftCal.playlists, 'calendar', 'playlist'),
     } : null;
+    // An EMPTY draft is not a draft. `state.draft` is a truthy object as soon as the season doc has the key at all, so the divider plus five empty lanes rendered ~200px of dead space announcing "Next season draft" for a draft holding nothing.
+    const draftData = draftRails && Object.values(draftRails).some((items) => items.length) ? draftRails : null;
+
+    // The masthead's numbers, from real data rather than a caption (01-season-spine.html's "14 DAYS LEFT · 6 DRAWS LIVE · 3 STAGED"). bpEnd is genuinely optional, so "days left" says so rather than printing a number derived from a missing field.
+    const drawsLive = (state.live?.newDraws || []).length + (state.live?.returningDraws || []).length;
+    const stagedCount = changesets.filter((c) => c.state === 'staged' || c.state === 'blocked').length;
+    const daysLeft = state.live?.bpEnd
+        ? Math.max(0, Math.ceil((new Date(state.live.bpEnd).getTime() - Date.now()) / 86400000))
+        : '—';
+    const seasonStats = [
+        { value: daysLeft, label: 'days left' },
+        { value: drawsLive, label: 'draws live' },
+        { value: stagedCount, label: 'staged', tone: stagedCount ? 'hot' : undefined },
+    ];
 
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
@@ -169,6 +205,10 @@ export function SeasonRealm({ session }) {
         : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
+                                            title="Everything in the season" filterGroups=${SEASON_FILTERS}
+                                            headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
+                                            bulkNote="Destructive actions stage — they never fire from here."
+                                            emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
                                             onEditError=${(msg) => setNotices([...notices, { changeId: `edit-${Date.now()}`, summary: msg }])}
@@ -179,6 +219,9 @@ export function SeasonRealm({ session }) {
 
     return html`
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board']} onSetView=${setView}
+                  badges=${{ season: stagedCount }}
+                  masthead=${html`<${Masthead} title=${state.live?.currentSeasonTitle || 'Season'}
+                                               sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats} />`}
                   viewSlot=${viewSlot} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;

@@ -40,8 +40,24 @@
     --ev: #1F8A5E;
     --play: #8A6BD1;
 
+    /* The staged-state accent, from 01-season-spine.html:15's own --staged. Distinct from the four
+       topic accents on purpose: staged is a STATE, and shape carries state, so this only ever tints
+       a shape that is already dashed/hollow -- it never becomes the sole signal. */
+    --staged: #5FD4E8;
+
     /* geometry */
     --radius: 6px;
+
+    /* LAYOUT DIMENSIONS (gap audit §4: "shell dimensions are hardcoded per-property in shell.css
+       instead of tokenized"). Values from 01-season-spine.html:15, the full-style mockup.
+       🔴 --rail names a THICKNESS, not a width. The nav rail is VERTICAL on desktop (thickness =
+       width) and HORIZONTAL along the bottom on phone (thickness = height), so one token serves
+       both axes and the 900px breakpoint overrides ONE declaration rather than a dozen scattered
+       per-property values. That is the whole reason this token exists -- see the redesign spec §3.1. */
+    --rail: 76px;
+    --hdr: 52px;
+    --gut: 24px;
+    --gap: 16px;
 
     /* the ink used ON TOP of a topic-accent fill -- design-system audit found 4 separate hardcoded #000/#000000 literals for this one concept across tokens.css/track.css/manifest.css/board.css */
     --on-accent: #000000;
@@ -51,12 +67,80 @@ body {
     background: var(--desk);
     color: var(--ink);
     font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    margin: 0;
 }
 
 /* Every date, count, id and code is mono so numerals align in columns (spec §9). */
 .mono, .track-ruler, .track-date, .board-id, .manifest-cell[data-kind="date"],
 .manifest-cell[data-kind="id"], .manifest-cell[data-kind="code"] {
     font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORM CONTROLS — the base state, which did not exist before this pass.
+   🔴 STYLED AS ELEMENTS, NEVER AS CLASSES, and that is a decision not a shortcut.
+   The gap audit's §4 completeness table recorded "Form inputs | Default ✅ | Hover not found |
+   Disabled not found". The "Default ✅" was wrong: measuring getComputedStyle on the live page
+   found #grant-discordid at background rgb(255,255,255), colour #000, border 2px inset, Arial,
+   21.5px tall -- browser chrome, a white box on a near-black page. Enumerating every rule in the
+   whole stylesheet whose selector touches input|select|textarea|button returned FIVE: .srch input,
+   td input, .bulk button, .v2-card .v2-row button, .tray-item button. Everything else was unstyled.
+   There are ~20 bare control call sites across six files; a class-based fix is one you can forget
+   at the 21st, an element selector cannot be. These also sit at LOWER specificity than the existing
+   .accent-fill/.danger/.commit modifiers, so nothing that already worked changes.
+   ⚠️ font-family is set explicitly because form controls do NOT inherit it -- that is why the one
+   search input that WAS styled still rendered in Arial. */
+input, select, textarea, button {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 7px 10px;
+    min-height: 32px;              /* dense on desktop, per spec §7; 44px on phone, below */
+    box-sizing: border-box;
+}
+button {
+    background: var(--raised);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+button:hover:not(:disabled) { background: var(--rule); border-color: var(--ink3); }
+input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: var(--ink3); }
+input:disabled, select:disabled, textarea:disabled, button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+input::placeholder, textarea::placeholder { color: var(--ink3); }
+select { padding-right: 6px; }
+
+/* The loading state the audit found nowhere. aria-busy is the accessible signal AND the styling
+   hook, so a control can never look busy without announcing it. */
+button[aria-busy="true"], [aria-busy="true"] button {
+    color: transparent;
+    pointer-events: none;
+    position: relative;
+}
+button[aria-busy="true"]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 13px; height: 13px;
+    border: 2px solid var(--ink3);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: portal-spin .7s linear infinite;
+}
+@keyframes portal-spin { to { transform: rotate(360deg); } }
+
+/* Reduced motion: five of the six mockups carry this and none of it reached the build (gap audit
+   §2.1). A spinner that cannot spin still has to READ as busy, so it keeps its ring. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    button[aria-busy="true"]::after { border-top-color: var(--patch); }
 }
 
 /* SHAPE carries state — solid fill = live, hollow dashed = staged, diagonal hatch = conflict.
@@ -100,12 +184,16 @@ body {
     color: #fff;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    border: 0;
 }
+.door .door-cta:hover { background: #4752C4; }
 
 /* Accessibility review findings: no visible focus indicator anywhere, and every input relied on
    placeholder text alone (WCAG 2.4.7 / 3.3.2) -- the approved mockup HAD a focus-visible rule that
-   did not make it into this file. */
+   did not make it into this file. Confirmed keyboard-reachable with a real Tab sequence by the gap
+   audit's Phase 1 addendum, so this is a working rule and not just a present one. */
 :focus-visible {
     outline: 2px solid var(--patch);
     outline-offset: 2px;
@@ -115,3 +203,15 @@ body {
     overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
+/* Below 900px every control gets a 44px minimum. Measured before this rule existed: EVERY control
+   on EVERY realm was under 44px -- 48 of 48 on Season, 145 of 145 on Armory, 106 of 106 on
+   Analytics. Not "some are small"; none were big enough. One rule, not a per-component fix. */
+@media (max-width: 900px) {
+    input, select, textarea, button { min-height: 44px; }
+    /* 🔴 16px, not 15px, and only on the TEXT-ENTRY controls. iOS Safari auto-zooms the page when a
+       focused input/select/textarea has a computed font-size below 16px, and that zoom does not
+       reverse on blur -- it strands the user at a scrolled-in viewport. Buttons never trigger it,
+       so they stay at 15px and a dense bulk bar still fits four across 375px. */
+    input, select, textarea { font-size: 16px; }
+    button { font-size: 15px; }
+}

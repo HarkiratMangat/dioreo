@@ -67,6 +67,29 @@ function register(route) {
         sendJson(res, 200, { changesetId: doc._id, state: doc.state, tier: doc.tier, failures: v.failures, preview });
     }));
 
+    // GET /api/changeset/:id/preview -> the stored ops' before/after, re-run against live state.
+    //
+    // The POST route above already computes a preview and returns it, and the client threw it away (composeClient.js's stageOps ignores the body). That preview is also a snapshot from staging time, which is precisely the wrong thing for the review screen: the whole point of reviewing a tier-3 change is to see what it would do to the state that exists RIGHT NOW, so a set staged an hour ago and edited in Discord since shows its real, current consequence rather than the one it would have had. previewSet is pure and reads live state, so re-running it is the correct answer and not a cache miss.
+    route('GET', /^\/api\/changeset\/[^/]+\/preview$/, requireAdmin(async (req, res, url, session) => {
+        const id = segment(url, 2);
+        const doc = await Changeset.findOne({ _id: id, authorId: session.discordId }).lean();
+        if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
+        const access = await assertOpsAccess(session.discordId, doc.ops);
+        if (!access.ok) return forbidden(res, access.reason);
+
+        const v = validateSet(doc.ops);
+        let preview = [];
+        try {
+            const live = (await SeasonalData.findOne({ docType: 'global' }).lean()) || {};
+            preview = v.ok ? await previewSet(v.normalized, live) : [];
+        } catch (e) { console.error('Portal changeset preview failed:', e); }
+        sendJson(res, 200, {
+            changesetId: doc._id, tier: doc.tier, state: doc.state, realm: doc.realm,
+            ops: doc.ops, exportedAt: doc.exportedAt, failures: v.failures || [], preview,
+            confirmText: String(doc._id).slice(-8).toUpperCase(),
+        });
+    }));
+
     // POST /api/changeset/:id/export -> marks the tier-3 export gate satisfied
     route('POST', /^\/api\/changeset\/[^/]+\/export$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);

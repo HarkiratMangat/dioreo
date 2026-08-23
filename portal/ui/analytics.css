@@ -1,0 +1,42 @@
+/* portal/ui/analytics.css — the Health/Usage/Timing dashboard and the event river.
+ *
+ * Gap audit §7.4 + Phase 1's addendum: the live tab was the raw /bot analytics text export, which is
+ * a missing DASHBOARD, not a missing style. Harkirat's call (2026-08-23 15:00 EDT) was to build it.
+ *
+ * ⚠️ The portal is a SEPARATE PROCESS from the bot, so commands/bot.js's computeHealthStats(client)
+ * is unreachable here -- there is no gateway client to read ws.status or process RSS from. Uptime
+ * and restarts come from BootRecord and errors from AlertLog, and the panel says so rather than
+ * implying a live reading.
+ */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:14px}
+.kpi{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--radius);padding:12px 13px}
+.kpi h5{margin:0 0 8px;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.kpi .v{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1;color:var(--ink)}
+.kpi.ok .v{color:var(--ok)}
+.kpi.bad .v{color:var(--warn)}
+.kpi .sub{display:block;margin-top:6px;font-size:11px;color:var(--ink3)}
+/* A sparkline of real buckets, drawn as flex-sized divs rather than an SVG path: the series is at
+   most a dozen points and a bar chart reads the shape as well as a line does at this size. The last
+   bucket is the current one and gets the accent, matching the mockup's own gold tail. */
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:10px}
+.spark i{flex:1;background:var(--rule);border-radius:1px;min-height:2px}
+.spark i.tip{background:var(--patch)}
+.srcline{display:flex;gap:10px;flex-wrap:wrap;padding:9px 14px;border-top:1px solid var(--rule);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink3)}
+.srcline .rt{margin-left:auto}
+/* The event river -- one stream, filtered, never four lists. Spec §8.2 and the mockup both make the
+   same argument: an alert firing ninety seconds after a change is only visible in one table. */
+.riverfilters{display:flex;gap:7px;flex-wrap:wrap;padding:11px 14px;border-bottom:1px solid var(--rule);align-items:center}
+.riverfilters .rt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3)}
+.kind{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.09em;padding:2px 6px;
+  border-radius:3px;border:1px solid var(--rule);color:var(--ink3);font-weight:600;white-space:nowrap}
+.kind.change{color:var(--patch);border-color:var(--patch)}
+.kind.alert{color:var(--warn);border-color:var(--warn)}
+.kind.boot{color:var(--ret);border-color:var(--ret)}
+.src{font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:2px 6px;border-radius:3px;
+  border:1px solid var(--rule);color:var(--ink3);white-space:nowrap}
+.metrics pre{padding:12px 14px;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)}
+@media(max-width:900px){.kpis{grid-template-columns:1fr 1fr;padding:var(--gut);gap:8px}.kpi .v{font-size:21px}
+  .riverfilters{padding:10px var(--gut)}.srcline{padding:9px var(--gut)}}
+@media(max-width:640px){.kpis{grid-template-columns:1fr}}

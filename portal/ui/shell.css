@@ -1,22 +1,195 @@
-/* portal/ui/shell.css — chrome shared by every realm (rail, tabs, panel scaffolding). */
-.top{position:sticky;top:0;z-index:30;background:rgba(15,20,24,.93);backdrop-filter:blur(9px);
-  border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:16px;padding:11px 24px}
-.mk{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.16em;font-weight:600}
-.mk b{color:var(--patch);font-weight:600}
-.rail{display:flex;gap:3px;margin-left:12px}
-.rail a{color:var(--ink3);font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:4px;
-  text-decoration:none;text-transform:capitalize}
-.rail a.active{background:var(--raised);color:var(--ink)}
-.rail a:hover{color:var(--ink2)}
-.tabs{display:flex;gap:3px;margin-left:12px;background:var(--sunk);padding:3px;border-radius:var(--radius);
-  border:1px solid var(--rule)}
-.tab{appearance:none;background:none;border:0;color:var(--ink3);font-size:12.5px;font-weight:600;
-  padding:5px 13px;border-radius:4px}
-.tab[aria-selected=true]{background:var(--raised);color:var(--ink)}
-.top .r{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3)}
-.panel{border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);overflow:hidden;margin:16px 24px}
-.ph{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);
-  border-bottom:1px solid var(--rule)}
-.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
-.door{max-width:420px;margin:15vh auto;text-align:center}
-.door a{display:inline-block;margin-top:12px;padding:10px 20px;border-radius:var(--radius);text-decoration:none;font-weight:700}
+/* portal/ui/shell.css — chrome shared by every realm (top bar, nav rail, masthead, panels).
+ *
+ * 🔴 THE HORIZONTAL REALM BAR IS GONE, ON PURPOSE. It was never the design. `01-season-spine.html`
+ * is the FULL-STYLE mockup — one page, designed completely — and its chrome is a 76px LEFT ICON
+ * RAIL plus a thin 52px top bar carrying only the wordmark, a breadcrumb and identity. Mockups
+ * 02–06 are COMPILED-STYLE sheets: several pages stacked into one file for review, wrapped in a
+ * document-navigation bar. The shipped top bar — wordmark + five realm links + owner id in one
+ * non-wrapping flex row — is almost exactly 06's *document* nav, i.e. review scaffolding that got
+ * built as product. Measured before removing it: that bar's scrollWidth was 863px inside a 359px
+ * viewport, overflowing by 504px on Season and by 344px on every other realm with nothing in it
+ * but the wordmark, the links and the id. See the redesign spec §0/§1.
+ */
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.top {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    height: var(--hdr);
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 var(--gut);
+    background: rgba(15, 20, 24, .93);
+    backdrop-filter: blur(9px);
+    border-bottom: 1px solid var(--rule);
+}
+.mk { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: .16em; font-weight: 600; white-space: nowrap; }
+.mk b { color: var(--patch); font-weight: 600; }
+/* The breadcrumb replaces the realm links the bar used to carry: one line that says where you are,
+   rather than five links that say where you could go (the rail already says that). */
+.crumb { font-size: 12.5px; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumb b { color: var(--ink2); font-weight: 600; }
+.who {
+    margin-left: auto; display: flex; align-items: center; gap: 7px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink3);
+    white-space: nowrap;
+}
+.who .dot-id { display: inline-block; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); border: 1px solid var(--rule); flex: none; }
+.who .role { color: var(--patch); }
+
+/* ── Nav rail — vertical on desktop, bottom tab bar on phone ─────────────── */
+.rail {
+    position: fixed; z-index: 29;
+    top: var(--hdr); bottom: 0; left: 0; width: var(--rail);
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 10px 0;
+    background: var(--sunk);
+    border-right: 1px solid var(--rule);
+}
+.rl {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+    padding: 11px 2px;
+    color: var(--ink3); text-decoration: none;
+    font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700;
+    border-left: 2px solid transparent;
+    transition: color .12s ease, background .12s ease;
+}
+.rl svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.rl:hover { color: var(--ink2); background: rgba(255, 255, 255, .03); }
+.rl.active { color: var(--ink); border-left-color: var(--patch); background: var(--raised); }
+/* The rail's own count badge (01-season-spine.html: a "3" over the Season icon) — how many of your
+   own changesets are staged in that realm. Absent, not zero, when there is nothing staged. */
+.rl .badge {
+    position: absolute; transform: translate(15px, -12px);
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--staged); font-weight: 700;
+}
+
+/* ── Stage (everything the chrome wraps) ─────────────────────────────────── */
+.stage { margin-left: var(--rail); padding-top: var(--hdr); }
+
+/* ── Masthead ────────────────────────────────────────────────────────────── */
+/* DATA ONLY, per 01-season-spine.html: a title, a context line, and a right-aligned stat cluster.
+   Deliberately NO "ANSWERS: …" tag and no explanatory paragraph — those appear only in the
+   compiled sheets (03–06) and are reviewer annotation, not chrome (Harkirat, 2026-08-23 14:47 EDT). The gap
+   audit's §3.3 read them as product copy; see the redesign spec §5 for that finding's disposition. */
+.mast {
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 22px var(--gut) 14px;
+}
+.mast h1 { font-size: 26px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+.mast .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink3); }
+.stats { margin-left: auto; display: flex; align-items: baseline; gap: 22px; }
+.stat { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.stat b { font-size: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+.stat i {
+    font-style: normal; font-size: 9px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 700;
+}
+.stat.hot b { color: var(--patch); }
+.stat.bad b { color: var(--warn); }
+
+/* ── View switcher — lives with the view layer, never in the top bar ─────── */
+/* 04-armory-and-commit.html's "two layers" diagram states the contract literally: the switcher only
+   ever changes the top half, and the Manifest below never switches. Putting the tabs in the global
+   header (where they shipped) implied they governed the whole page, and cost 160px of a 375px
+   viewport on Season alone. */
+.viewbar { display: flex; align-items: center; gap: 10px; padding: 0 var(--gut) 10px; }
+.tabs {
+    display: inline-flex; gap: 3px; padding: 3px;
+    background: var(--sunk); border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.tab {
+    background: none; border: 0; color: var(--ink3);
+    font-size: 12.5px; font-weight: 600; padding: 5px 13px; border-radius: 4px; min-height: 0;
+}
+.tab[aria-selected=true] { background: var(--raised); color: var(--ink); }
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+.panel {
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--paper); overflow: hidden;
+    margin: 0 var(--gut) var(--gap);
+}
+.ph {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--raised); border-bottom: 1px solid var(--rule);
+}
+.ph .t { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; font-weight: 700; color: var(--ink2); }
+/* The panel header's right-hand slot: a legend, or a count line ("68 weapons · 125 builds"). */
+.ph .rt { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink3); }
+.pb { padding: 12px 14px; }
+
+/* A legend chip pair — a swatch in the state's own SHAPE plus its name (01's track legend). */
+.leg { display: flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink3); }
+.leg i { width: 10px; height: 10px; border-radius: 2px; font-style: normal; }
+.leg.live i { background: var(--ink3); }
+.leg.stag i { border: 1px dashed var(--staged); }
+.leg.conf i { background: repeating-linear-gradient(45deg, var(--warn) 0 3px, transparent 3px 6px); }
+
+/* A callout that names a real data problem and, where there is one, its fix. Used by Broadcast's
+   "Heads up", Season's flags, and the review screen's destructive summary. */
+.callout {
+    display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
+    padding: 10px 14px; font-size: 12.5px; color: var(--ink2);
+    background: rgba(242, 194, 48, .07); border-top: 1px solid var(--rule);
+    border-left: 2px solid var(--patch);
+}
+.callout b { color: var(--ink); font-weight: 600; }
+.callout.bad { background: rgba(255, 122, 69, .07); border-left-color: var(--warn); }
+.empty { color: var(--ink3); font-size: 13px; padding: 14px; margin: 0; }
+
+/* ── The door ────────────────────────────────────────────────────────────── */
+.door { max-width: 420px; margin: 12vh auto; padding: 0 20px; text-align: center; }
+.door h1 { font-size: 15px; letter-spacing: .16em; font-family: 'JetBrains Mono', monospace; font-weight: 600; margin: 0 0 4px; }
+.door h1 b { color: var(--patch); font-weight: 600; }
+.door .tag { font-size: 12px; color: var(--ink3); letter-spacing: .04em; }
+.door a { display: inline-block; margin-top: 18px; padding: 12px 20px; border-radius: var(--radius); text-decoration: none; font-weight: 700; width: 100%; box-sizing: border-box; }
+/* The two disclosure blocks from 05-door-broadcast-ops.html. The door is the only page a stranger
+   can reach, so what it says about the OAuth request is the page's actual content — spec §10. */
+.door .facts { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); text-align: left; }
+.door .facts h2 { font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink2); font-weight: 700; margin: 0 0 7px; }
+.door .facts + .facts { margin-top: 14px; }
+.door .facts li { list-style: none; font-size: 12px; color: var(--ink3); line-height: 1.75; }
+.door .facts ul { margin: 0; padding: 0; }
+.door .facts .y { color: var(--ok); }
+.door .facts .n { color: var(--ink3); }
+
+/* ── Phone: the rail becomes a bottom tab bar ────────────────────────────── */
+/* --rail flips from a width to a height and everything else follows from that one token — which is
+   the entire reason it is named for a THICKNESS. */
+@media (max-width: 900px) {
+    :root { --rail: 58px; --hdr: 48px; --gut: 12px; --gap: 10px; }
+    .rail {
+        top: auto; bottom: 0; left: 0; right: 0;
+        width: auto; height: var(--rail);
+        flex-direction: row;
+        padding: 0;
+        border-right: 0; border-top: 1px solid var(--rule);
+        /* iOS home-indicator inset — without this the last row of tabs sits under the gesture bar. */
+        padding-bottom: env(safe-area-inset-bottom, 0);
+        height: calc(var(--rail) + env(safe-area-inset-bottom, 0));
+    }
+    .rl { flex: 1; padding: 7px 1px; border-left: 0; border-top: 2px solid transparent; gap: 3px; font-size: 7.5px; }
+    .rl.active { border-left-color: transparent; border-top-color: var(--patch); }
+    .rl svg { width: 18px; height: 18px; }
+    .rl .badge { transform: translate(13px, -10px); }
+    /* Bottom padding clears the tab bar so the last row of a table is never trapped under it. */
+    .stage { margin-left: 0; padding-bottom: calc(var(--rail) + env(safe-area-inset-bottom, 0) + 8px); }
+    .crumb { display: none; }        /* the active tab already says where you are */
+    .mast { padding: 16px var(--gut) 10px; gap: 8px; }
+    .mast h1 { font-size: 20px; }
+    .stats { margin-left: 0; width: 100%; gap: 16px; flex-wrap: wrap; }
+    .stat b { font-size: 17px; }
+    .viewbar { padding: 0 var(--gut) 8px; }
+    .tabs { width: 100%; }
+    /* .tab carries min-height:0 in its base rule (it is a dense inline control on desktop), which
+       beats the blanket `button{min-height:44px}` in tokens.css purely by source order -- both are
+       specificity 0,1,0 and shell.css is concatenated after tokens.css. Re-stated here rather than
+       removing the base min-height:0, because on DESKTOP a 32px tab in a 3px-padded tab group is
+       exactly right and 44px would swell the whole switcher. */
+    .tab { flex: 1; min-height: 44px; }
+}
+
+@media (max-width: 640px) {
+    .who .id { display: none; }      /* the role alone identifies the session on a phone */
+    .mast h1 { font-size: 18px; }
+}

@@ -4,7 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess } from './shell.js';
+import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
@@ -20,37 +20,100 @@ const ARMORY_COLUMNS = [
     { key: 'coverage', label: 'Coverage', render: (r) => (r.coverage || []).join(', ') || '—' },
 ];
 
+const ARMORY_FILTERS = [
+    { key: 'mode', label: 'Mode', options: [{ value: 'MP', label: 'MP' }, { value: 'DMZ', label: 'DMZ' }] },
+];
+
 const COVERAGE_LABEL = {
     'missing-image': 'Missing image', 'no-badges': 'No badges', 'wrong-attachment-count': 'Wrong attachment count',
     'stale-90d': 'Not updated in 90 days', 'near-duplicate': 'Near-duplicate code',
 };
 
-function Rack({ builds }) {
+// Rack -- what exists, by category, in the bot's REAL per-category accent (spec §8.2). It shipped as one row of uniform grey chips: a count per category and nothing else. 04-armory-and-commit.html specs a card per WEAPON under a per-category section divider, each card carrying its build count, a dupe warning where one applies, and a dashed placeholder where the image is missing -- so the panel answers "what is in the armory" at a glance instead of "how many categories are there".
+//
+// `accent` is real DATA (portal/api/armory.js stamps it from getMpCategoryAccent), not a CSS token. That is the correct mechanism and deliberately unlike Season's --topic-accent tokens: the bot owns these hues, so reading them from the payload means the two can never drift apart.
+function Rack({ builds, onPick }) {
     const byCategory = {};
     for (const b of builds) (byCategory[b.category] = byCategory[b.category] || []).push(b);
     return html`
         <div class="panel" id="rack">
-            <div class="ph"><span class="t">Rack — by category</span></div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px">
-                ${Object.entries(byCategory).map(([cat, list]) => html`
-                    <span class="chip" style=${`background:${list[0]?.accent || 'var(--sunk)'}22;border-color:${list[0]?.accent || 'var(--rule)'}`}>${cat} (${list.length})</span>
-                `)}
+            <div class="ph">
+                <span class="t">Rack — by category</span>
+                <span class="rt">${Object.keys(byCategory).length} categories</span>
             </div>
+            ${builds.length === 0 ? html`<p class="empty">No builds in this catalogue yet.</p>` : null}
+            ${Object.entries(byCategory).map(([cat, list]) => {
+                const byWeapon = {};
+                for (const b of list) (byWeapon[b.weaponName] = byWeapon[b.weaponName] || []).push(b);
+                const accent = list[0]?.accent || 'var(--rule)';
+                return html`
+                    <section class="catsec" style=${`--cat:${accent}`}>
+                        <div class="cathead">
+                            <span class="nm">${cat}</span><span class="ln"></span>
+                            <span class="ct">${Object.keys(byWeapon).length} weapons · ${list.length} builds</span>
+                        </div>
+                        <div class="wcards">
+                            ${Object.entries(byWeapon).map(([weapon, wb]) => {
+                                const dupe = wb.some((b) => (b.coverage || []).includes('near-duplicate'));
+                                const noImage = wb.every((b) => (b.coverage || []).includes('missing-image'));
+                                return html`
+                                    <button class="wcard" onClick=${() => onPick(weapon)} title=${`Filter the manifest to ${weapon}`}>
+                                        <span class="nm">${weapon}</span>
+                                        <span class="mt">${wb.length} build${wb.length === 1 ? '' : 's'}${dupe ? html` · <span class="dupe">dupe?</span>` : null}</span>
+                                        ${noImage ? html`<span class="noimg">no image</span>` : null}
+                                    </button>
+                                `;
+                            })}
+                        </div>
+                    </section>
+                `;
+            })}
         </div>
     `;
 }
 
-function Coverage({ builds, onFilter }) {
-    const counts = {};
-    for (const flag of Object.keys(COVERAGE_LABEL)) counts[flag] = builds.filter(b => (b.coverage || []).includes(flag)).length;
+// Coverage -- the Armory's equivalent of the Track's defect flags (spec §8.2). It shipped as a flat row of six totals; 04-armory-and-commit.html specs a MATRIX, category down the side and defect across the top, because "SMG has 4 missing images" is the actionable fact and "there are 6 missing images somewhere" is not. Every cell is a filter, exactly as the mockup's own caption promises.
+//
+// A zero cell must not read like a problem, so it is dimmed and inert rather than tinted and clickable -- the tint is reserved for a count that is actually a defect.
+function Coverage({ builds, active, onFilter }) {
+    const categories = [...new Set(builds.map((b) => b.category))];
+    const flags = Object.keys(COVERAGE_LABEL);
+    const accentOf = (cat) => builds.find((b) => b.category === cat)?.accent || 'var(--ink3)';
     return html`
         <div class="panel" id="coverage">
-            <div class="ph"><span class="t">Coverage</span></div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px">
-                ${Object.entries(COVERAGE_LABEL).map(([flag, label]) => html`
-                    <button class="chip" onClick=${() => onFilter(flag)}>${label}: ${counts[flag]}</button>
-                `)}
+            <div class="ph">
+                <span class="t">Coverage</span>
+                <span class="rt">${builds.filter((b) => (b.coverage || []).length).length} of ${builds.length} builds flagged</span>
             </div>
+            <div class="covwrap">
+                <table class="cov">
+                    <thead><tr>
+                        <th class="who"></th>
+                        <th>Builds</th>
+                        ${flags.map((f) => html`<th>${COVERAGE_LABEL[f]}</th>`)}
+                    </tr></thead>
+                    <tbody>
+                        ${categories.map((cat) => {
+                            const inCat = builds.filter((b) => b.category === cat);
+                            return html`
+                                <tr style=${`--cat:${accentOf(cat)}`}>
+                                    <td class="who">${cat}</td>
+                                    <td><span class="covcell zero">${inCat.length}</span></td>
+                                    ${flags.map((f) => {
+                                        const n = inCat.filter((b) => (b.coverage || []).includes(f)).length;
+                                        const on = active && active.flag === f && active.category === cat;
+                                        if (!n) return html`<td><span class="covcell zero">0</span></td>`;
+                                        return html`<td><button class=${'covcell hit' + (on ? ' on' : '')}
+                                            title=${`Show the ${n} ${cat} build${n === 1 ? '' : 's'} flagged "${COVERAGE_LABEL[f]}"`}
+                                            onClick=${() => onFilter(on ? null : { flag: f, category: cat })}>${n}</button></td>`;
+                                    })}
+                                </tr>
+                            `;
+                        })}
+                    </tbody>
+                </table>
+            </div>
+            <p class="covnote">Every cell is a filter — click a count to load exactly those builds into the manifest below.</p>
         </div>
     `;
 }
@@ -142,21 +205,36 @@ function LivePreview({ buildId }) {
 
 export function ArmoryRealm({ session }) {
     const [builds, setBuilds] = useState([]);
-    const [coverageFilter, setCoverageFilter] = useState(null);
+    const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
+    const [weaponFilter, setWeaponFilter] = useState(null);
     const [error, setError] = useState(false);
     const [showAdd, setShowAdd] = useState(false);
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
+    const [view, setView] = useState('Rack');
 
     function refresh() { fetchJson('/api/armory').then((d) => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }
     useEffect(refresh, []);
 
     if (error) return html`<${NoAccess} />`;
 
-    // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed.
-    const rows = (coverageFilter ? builds.filter((b) => (b.coverage || []).includes(coverageFilter)) : builds)
-        .map((b) => ({ ...b, id: b._id }));
+    // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page.
+    const weapons = new Set(builds.map((b) => b.weaponName));
+    const flagged = builds.filter((b) => (b.coverage || []).length).length;
+    const modes = [...new Set(builds.map((b) => b.mode))].sort();
+    const modeLine = modes.length ? modes.join(' · ') : '';
+    const armoryStats = [
+        { value: weapons.size, label: 'weapons' },
+        { value: builds.length, label: 'builds' },
+        { value: flagged, label: 'flagged', tone: flagged ? 'bad' : undefined },
+    ];
+
+    // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
+    const rows = builds
+        .filter((b) => !coverageFilter || ((b.coverage || []).includes(coverageFilter.flag) && b.category === coverageFilter.category))
+        .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
+        .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent }));
 
     async function handleAdd(op) {
         await stageOps('armory', [op], session.csrfToken);
@@ -188,22 +266,28 @@ export function ArmoryRealm({ session }) {
     }
 
     return html`
-        <${Shell} realm="armory" session=${session}
+        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage']} onSetView=${setView}
+                  masthead=${html`<${Masthead} title="Armory" sub=${modeLine} stats=${armoryStats} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 14px">${notice}</p>` : null}
-                      <div style="display:flex;gap:14px;flex-wrap:wrap">
-                          <div style="flex:2;min-width:280px">
+                      <div class="armcols">
+                          <div class="armmain">
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-                              <${Rack} builds=${builds} />
-                              <${Coverage} builds=${builds} onFilter=${setCoverageFilter} />
+                              ${view === 'Rack'
+                                  ? html`<${Rack} builds=${builds} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
+                                  : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
-                          <div style="flex:1;min-width:260px">
+                          <div class="armside">
                               <${LivePreview} buildId=${selectedBuildId} />
                           </div>
                       </div>
                   `}
                   manifestSlot=${html`
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
+                                   title="Every build" filterGroups=${ARMORY_FILTERS}
+                                   headerRight=${weaponFilter || (coverageFilter ? `${coverageFilter.category} · ${COVERAGE_LABEL[coverageFilter.flag]}` : '')}
+                                   bulkNote="Destructive actions stage — they never fire from here."
+                                   emptyText="No builds match this filter." 
                                    onAdd=${() => setShowAdd(true)} realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}

@@ -4,6 +4,33 @@
 const LANE_TO_CATEGORY = { newDraws: 'new', returningDraws: 'returning' };
 // The Manifest column's own humanized label for a row's lane -- gap audit §3.4 finding 1. Season.js references this as a bare global (loaded before it, same as everything else here).
 const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', calendar: 'Event' };
+// The Manifest row's COLOUR DOT. manifest.js:61 has always read `row.topicVar` -- and nothing in the repo has ever SET it, so every row's dot in every realm rendered the --ink3 grey fallback. The gap audit's §2.2 asserted toManifestRows was the source of it; `rg topicVar portal/` returns the read, a `delete` in buildSeasonEditOp below, and nothing else. Phase 2's token fix therefore reached Track's bars (track.js computes its own --topic-accent) and never reached the Manifest.
+//
+// Playlist gets its own accent here rather than being folded into Event. --play and TOPIC_VAR.playlist have both existed since the first build with nothing ever assigning them: a playlist-category calendar item was indistinguishable from an event on every Season surface.
+const LANE_TOPIC_VAR = { newDraws: '--draw', returningDraws: '--ret', calendar: '--ev' };
+function isPlaylist(item) { return String((item && item.category) || '').toLowerCase() === 'playlist'; }
+function topicVarFor(laneKey, item) { return (laneKey === 'calendar' && isPlaylist(item)) ? '--play' : (LANE_TOPIC_VAR[laneKey] || '--ink3'); }
+function typeLabelFor(laneKey, item) { return (laneKey === 'calendar' && isPlaylist(item)) ? 'Playlist' : (LANE_LABELS[laneKey] || laneKey); }
+
+// The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point.
+function seasonWindow(live, now = Date.now()) {
+    const stamps = [now];
+    for (const key of ['newDraws', 'returningDraws', 'calendar']) {
+        for (const item of (live && live[key]) || []) {
+            for (const value of [item.date, item.startDate, item.endDate]) {
+                const t = value ? new Date(value).getTime() : NaN;
+                if (Number.isFinite(t)) stamps.push(t);
+            }
+        }
+    }
+    const bp = live && live.bpEnd ? new Date(live.bpEnd).getTime() : NaN;
+    if (Number.isFinite(bp)) stamps.push(bp);
+    const lo = Math.min(...stamps);
+    let hi = Math.max(...stamps);
+    const MIN_SPAN_MS = 14 * 86400000;
+    if (hi - lo < MIN_SPAN_MS) hi = lo + MIN_SPAN_MS;
+    return { start: new Date(lo).toISOString().slice(0, 10), end: new Date(hi).toISOString().slice(0, 10) };
+}
 const KIND_TO_ENTITY = { draw: 'draw', returning: 'draw', event: 'calendar', playlist: 'calendar' };
 const KIND_TO_DRAW_CATEGORY = { draw: 'new', returning: 'returning' };
 
@@ -36,6 +63,8 @@ function toManifestRows(live, changesets) {
                 ...item,
                 id: item._id, title: item.title, lane: key,
                 state: stateForElement(item._id, changesets),
+                // Display-only, both stripped again by buildSeasonEditOp before an op is built.
+                topicVar: topicVarFor(key, item), typeLabel: typeLabelFor(key, item),
                 // A draw's real schema field is `date` (no separate start/end); calendar events have both `date`(start) and `endDate`. This pre-existing display line always fell to '—' for every draw before this fix, since item.endDate is never set on a draw record.
                 window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
             });
@@ -65,7 +94,7 @@ function buildSeasonEditOp(row, columnKey, newValue) {
     const target = isDraw ? { category: LANE_TO_CATEGORY[row.lane], elementId: row.id } : { elementId: row.id };
     // The Manifest row's own display field is called `window`/`endDate` regardless of entity (see toManifestRows above), but a draw's real schema/op field is `date`, not `endDate` -- a row edit on the Manifest's synthetic `endDate` display key must be routed onto the correct real payload key per entity before it reaches core/ops.
     const rawPayload = { ...row, [columnKey]: newValue };
-    delete rawPayload.id; delete rawPayload.lane; delete rawPayload.state; delete rawPayload.window; delete rawPayload.topicVar;
+    delete rawPayload.id; delete rawPayload.lane; delete rawPayload.state; delete rawPayload.window; delete rawPayload.topicVar; delete rawPayload.typeLabel;
     if (isDraw) {
         rawPayload.date = rawPayload.endDate ?? rawPayload.date; delete rawPayload.endDate;
     } else {
@@ -80,5 +109,5 @@ function buildSeasonEditOp(row, columnKey, newValue) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement };
+    module.exports = { buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
 }

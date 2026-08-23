@@ -1,0 +1,42 @@
+/* portal/ui/access.css — the permission grid and the By-scope cards.
+ *
+ * Gap audit §3.2: the grid did not exist and the data for it already did. Phase 2 added
+ * GET /api/access/matrix; this is the surface that consumes it. Rows are admins, columns are the
+ * real scopes from utils/adminAccess.js's ADMIN_COMMANDS + MANAGE_PAGE_SCOPES -- never a second
+ * hand-kept list, which is the drift the API's own comment exists to prevent.
+ */
+.gwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.grid{border-collapse:collapse;font-size:12px;width:100%}
+.grid th{background:transparent;border-bottom:1px solid var(--rule);cursor:default;text-align:center;padding:7px 6px}
+.grid th.who{text-align:left;min-width:150px}
+.grid th.grp{font-size:9px;letter-spacing:.13em;color:var(--ink2);border-bottom:0;padding-bottom:2px}
+.grid td{border-bottom:1px solid var(--sunk);text-align:center;padding:7px 6px}
+.grid td.who{text-align:left}
+.grid .who b{color:var(--ink);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.grid .who span{display:block;font-size:10px;color:var(--ink3);margin-top:2px}
+/* Three distinct cell states, and the difference between two of them is the whole reason a grid
+   beats a comma-separated string: DIRECT is what you actually handed over, INHERITED is what a bare
+   `manage` token covers for free. A paler fill plus a lighter glyph carries it without relying on
+   hue alone -- the box border differs too, so it survives greyscale. */
+.cel{display:inline-block;width:20px;height:20px;border-radius:3px;border:1px solid var(--rule);
+  background:var(--sunk);line-height:18px;font-size:12px;color:transparent}
+.cel.on{background:var(--ok);border-color:var(--ok);color:var(--on-accent)}
+.cel.inh{background:rgba(61,220,151,.22);border-color:rgba(61,220,151,.5);color:var(--ok)}
+.glegend{display:flex;gap:16px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--rule);
+  font-size:11px;color:var(--ink3);align-items:center}
+.glegend .cel{width:12px;height:12px;line-height:10px;font-size:9px;vertical-align:-2px;margin-right:5px}
+/* By scope -- one card per scope with its holders as chips, and the single-point-of-failure warning
+   the grid structurally cannot show (spec §8.2: "By scope is the inverse, and it does something the
+   grid cannot"). */
+.scopes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;padding:12px 14px}
+.scope{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;background:var(--sunk);
+  border:1px solid var(--rule);border-radius:5px}
+.scope.spof{border-color:var(--warn)}
+.scope .nm{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink2);min-width:140px}
+.holder{font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:2px 7px;border-radius:20px;
+  border:1px solid var(--rule);color:var(--ink3)}
+.holder.owner{border-color:var(--patch);color:var(--patch)}
+.scope .flag{margin-left:auto;font-size:10.5px;color:var(--warn);white-space:nowrap}
+.grantrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-top:1px solid var(--rule)}
+.grantrow .hint{font-size:11px;color:var(--ink3);flex:1 1 100%}
+@media(max-width:900px){.scopes{grid-template-columns:1fr;padding:var(--gut)}.scope .nm{min-width:0;flex:1 1 100%}}

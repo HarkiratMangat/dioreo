@@ -7,6 +7,15 @@ const { grantedPagesFor } = require('./realmAccess');
 
 const BROADCAST_PAGES = ['announcement'];
 
+// 🔴 THE ONE PLACE AN ANNOUNCEMENT'S STATE IS DECIDED, and it has to agree with what Discord shows. utils/announcement.js's getActiveAnnouncements() already filters on BOTH expiresAt and startsAt -- its own comment says the startsAt check "has to exist NOW so a scheduled announcement doesn't show immediately the moment something does start setting it." This route only ever checked expiresAt, so the portal listed a not-yet-started announcement under "Now showing" while the bot correctly withheld it. Reproduced live 2026-08-23 with a real announcement dated three days out: it rendered as item 3 of the live set. The portal's whole claim about this panel is that it renders the live set exactly as Discord sends it, so a second, laxer definition of "live" is the bug.
+//
+// Computed server-side rather than in broadcast.js so the pill, the ordering and the Now-showing membership all read the same answer -- three client-side re-derivations is three chances to drift.
+function announcementState(a, now) {
+    if (a.expiresAt && new Date(a.expiresAt) <= now) return 'expired';
+    if (a.startsAt && new Date(a.startsAt) > now) return 'scheduled';
+    return 'live';
+}
+
 function register(route) {
     const { requireAdmin } = require('../auth');
 
@@ -14,10 +23,11 @@ function register(route) {
         const grantedPages = await grantedPagesFor(session.discordId, BROADCAST_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
         const now = new Date();
-        const all = await Announcement.find({}).sort({ createdAt: 1 }).lean();
-        const live = all.filter(a => !a.expiresAt || new Date(a.expiresAt) > now);
+        const rows = await Announcement.find({}).sort({ createdAt: 1 }).lean();
+        const all = rows.map(a => ({ ...a, state: announcementState(a, now) }));
+        const live = all.filter(a => a.state === 'live');
         sendJson(res, 200, { live, all });
     }));
 }
 
-module.exports = { register, BROADCAST_PAGES };
+module.exports = { register, BROADCAST_PAGES, announcementState };

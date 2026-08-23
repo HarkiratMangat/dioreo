@@ -55,11 +55,13 @@ function buildPermissionMatrix(admins) {
         const perms = admin.permissions || [];
         const grants = {};
         for (const scope of scopes) {
-            grants[scope.key] = scope.kind === 'page'
-                ? (perms.includes('manage') || perms.includes(scope.key))
-                : perms.includes(scope.key);
+            // 🔴 DIRECT vs INHERITED is the whole reason a grid beats the comma-separated string it replaces, and the original shape collapsed them into one boolean. A bare `manage` token lights every page column -- but you did not hand those pages over individually, and revoking `manage` takes all of them back at once. 06-access-and-analytics.html renders the two differently for exactly that reason, and its own legend spells it out: "granted directly / inherited — bare manage covers every page."
+            const direct = perms.includes(scope.key);
+            const inherited = scope.kind === 'page' && !direct && perms.includes('manage');
+            grants[scope.key] = { direct, inherited, held: direct || inherited };
         }
-        return { discordId: admin.discordId, grants };
+        // ⚠️ `grantedAt` is DERIVED, not stored. models/AdminUser.js has discordId/permissions/ grantedBy/note and no timestamp at all, so the mockup's "granted 2026-08-13" sub-line has no field behind it. An ObjectId's first four bytes ARE a Unix timestamp, which is a real creation time rather than a guess -- but it is the DOCUMENT's creation, so it does not move when permissions are later edited. Named `grantedAt` and derived here rather than adding a schema field, because a stored one would need a migration for every existing admin.
+        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', grantedAt: admin._id ? new Date(parseInt(String(admin._id).slice(0, 8), 16) * 1000) : null };
     });
     return { admins: rows, scopes };
 }

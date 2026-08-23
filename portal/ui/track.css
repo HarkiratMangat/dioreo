@@ -2,6 +2,11 @@
 .ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:104px}
 .ruler span{position:absolute;top:0;line-height:26px;padding-left:7px;border-left:1px solid var(--rule);
   font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap}
+/* The END label is anchored to the ruler's right edge, not to left:100%. Positioned from the left it
+   starts exactly where the ruler ends and its whole width hangs outside the panel -- which .panel's
+   own overflow:hidden then clips, so at 375px the closing date read as a bare "2". Verified on a real
+   375px render before and after. */
+.ruler span[data-end]{left:auto;right:0;padding-left:0;padding-right:7px;border-left:0;border-right:1px solid var(--rule)}
 .lanes{position:relative;padding-bottom:4px}
 .lane{display:flex;align-items:center;height:38px;border-bottom:1px solid var(--sunk)}
 .lane.divider{height:auto;border:0;padding:9px 0 5px 104px;font-family:'JetBrains Mono',monospace;font-size:9.5px;

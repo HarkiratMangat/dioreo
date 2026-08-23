@@ -1,0 +1,52 @@
+/* portal/ui/review.css — the REVIEW CHANGESET screen (04-armory-and-commit.html, third section).
+ *
+ * "The highest-consequence screen in the portal." Built at Harkirat's call (2026-08-23 15:00 EDT)
+ * rather than only enriching Board's cards. Every operation shows a real field diff, the destructive
+ * summary names what is being removed, and the tier-3 gate is three visible steps rather than a
+ * dialog that ambushes you at commit (spec §8.2's own framing of the Board's Blocked column).
+ */
+.review{display:grid;grid-template-columns:230px 1fr;gap:0}
+.oplist{border-right:1px solid var(--rule);padding:12px;background:var(--sunk)}
+.oplist h5{margin:0 0 9px;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.revbody{padding:14px}
+.revhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.revhead .ttl{font-size:16px;font-weight:600;color:var(--ink)}
+.tierbadge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.09em;padding:3px 8px;
+  border-radius:3px;border:1px solid var(--rule);color:var(--ink3);font-weight:700}
+.tierbadge.t3{color:var(--warn);border-color:var(--warn)}
+.diffs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.diff{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.diff h6{margin:0;padding:7px 10px;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);font-weight:700;background:var(--raised);border-bottom:1px solid var(--rule)}
+.diff .rows{padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px}
+.diff .r{display:flex;gap:8px;padding:2px 0;color:var(--ink3)}
+.diff .r .k{min-width:78px;color:var(--ink3)}
+.diff .r .v{color:var(--ink2);overflow-wrap:anywhere}
+/* A removed line is struck AND prefixed, an added line is prefixed and tinted -- two signals, so the
+   diff survives greyscale exactly like every state pill in this portal does. */
+.diff .r.del .v{color:var(--warn);text-decoration:line-through}
+.diff .r.add .v{color:var(--ok)}
+.diff .r .s{color:var(--ink3);width:9px;flex:none}
+/* The three-step gate. A step is done, current, or pending, and the number is the fallback signal so
+   the sequence reads without colour. */
+.gate{margin-top:12px;border:1px solid var(--warn);border-radius:5px;overflow:hidden}
+.gate h6{margin:0;padding:7px 10px;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--warn);font-weight:700;background:rgba(255,122,69,.08);border-bottom:1px solid var(--rule)}
+.gate .why{padding:9px 10px;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--rule)}
+.step{display:flex;align-items:center;gap:9px;padding:9px 10px;font-size:12.5px;color:var(--ink2);flex-wrap:wrap}
+.step .n{width:18px;height:18px;flex:none;border-radius:50%;border:1px solid var(--rule);color:var(--ink3);
+  font-family:'JetBrains Mono',monospace;font-size:10px;line-height:16px;text-align:center}
+.step.done{color:var(--ink3)}
+.step.done .n{background:var(--ok);border-color:var(--ok);color:var(--on-accent)}
+.step.done .lbl{text-decoration:line-through}
+.step input{flex:1;min-width:130px}
+.revfoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;
+  background:var(--raised);border-top:1px solid var(--rule)}
+.revfoot .tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3)}
+.revfoot .sp{margin-left:auto}
+@media(max-width:900px){
+  .review{grid-template-columns:1fr}
+  .oplist{border-right:0;border-bottom:1px solid var(--rule)}
+  .diffs{grid-template-columns:1fr}
+  .revbody{padding:var(--gut)}
+}

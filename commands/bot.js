@@ -968,6 +968,9 @@ module.exports = {
     buildChangeDetailBody,
     buildUsageExport,
     buildTimingExport,
+    // Exported for the WEB PORTAL's Analytics dashboard, which needs the numbers rather than the rendered text. ⚠️ computeHealthStats is deliberately NOT here: it takes a discord.js `client` and reads client.ws.status plus this process's RSS, and the portal is a SEPARATE systemd unit with no gateway connection -- calling it there would report the portal's own health while looking like the bot's. portal/api/analytics.js derives health from Mongo instead and says so.
+    computeUsageStats,
+    computeTimingStats,
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,

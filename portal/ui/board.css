@@ -1,4 +1,4 @@
-/* portal/ui/board.css — the Board (changeset pipeline: Draft/Staged/Blocked/Ready). */
+/* portal/ui/board.css — the Board (changeset pipeline: Draft/Staged/Blocked/Ready) and the review screen's own column. */
 .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
 .col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--radius);padding:10px;min-height:160px}
 .col.gate{border-color:var(--ink3)}
@@ -6,12 +6,31 @@
   font-weight:700;display:flex;align-items:center;gap:7px}
 .col h4 .ct{margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--ink3)}
 .col h4 .bad{color:var(--warn)}
-.card{background:var(--raised);border:1px solid var(--rule);border-radius:5px;padding:9px 10px;margin-bottom:8px}
+.card{background:var(--raised);border:1px solid var(--rule);border-radius:5px;padding:9px 10px;margin-bottom:8px;
+  width:100%;text-align:left;display:block;min-height:0;font-weight:400}
+.card:hover{border-color:var(--ink3);background:var(--raised)}
+.card.on{border-color:var(--patch)}
+.card .ch{display:flex;align-items:center;gap:7px}
 .card .tr{font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:1px 5px;border-radius:3px;
   border:1px solid var(--rule);color:var(--ink3);font-weight:600}
 .card.t3 .tr{color:var(--warn);border-color:var(--warn)}
+.card .cn{font-size:12.5px;color:var(--ink);font-weight:600}
+.card .cd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:block;margin-top:4px}
 .card.blocked{border-left:2px solid var(--warn)}
 .card .why{margin-top:6px;font-size:10.5px;color:var(--warn)}
+/* "Undo would remove the draw" -- the mockup's cards state their own INVERSE, so you can read what
+   undoing would do before you commit. That is the one thing a Discord modal can never show. */
+.card .inv{margin-top:6px;font-size:10.5px;color:var(--ink3);border-top:1px dashed var(--rule);padding-top:5px}
+.card .inv b{color:var(--ink2);font-weight:600}
 .commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;
   font-weight:700;padding:9px;margin-top:2px}
-.commit:disabled{background:var(--raised);color:var(--ink3);cursor:not-allowed}
+.commit:hover:not(:disabled){background:#FFD24D}
+.commit:disabled{background:var(--raised);color:var(--ink3);cursor:not-allowed;opacity:1}
+.colnote{font-size:10.5px;color:var(--ink3);margin-top:8px;line-height:1.5}
+/* Phone: 04's own caption says Board "works properly on a phone -- columns become tabs". Four 80px
+   columns on a 375px screen is exactly what the gap audit predicted from board.css:2's bare
+   repeat(4,1fr), so the columns stack and each keeps its own heading as the divider. */
+@media(max-width:900px){
+  .cols{grid-template-columns:1fr;padding:var(--gut);gap:10px}
+  .col{min-height:0}
+}
