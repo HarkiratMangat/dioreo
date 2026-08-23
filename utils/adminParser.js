@@ -391,15 +391,27 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Comi
 /**
  * Parses /manage loadouts bulk-add's paragraph field into loadout-ready objects. One loadout per block, blocks separated by a blank line:
  *
- *   Weapon | Category | Mode | Build Name | ImageKey | ShareCode | Badges
- *   Attachment line 1
- *   Attachment line 2
- *   ...
+ *   Weapon | Category
+ *   Build: Aggressive Flex
+ *   Image: BAL-27-1
+ *   Code: 1I2C6B8A9D
+ *   Badges: meta, best
+ *   - Gauge-9 Mono
+ *   - Crown-H3 Barrel
  *
- * Only Weapon/Category/Mode are required — Build Name/ImageKey/ShareCode/Badges are optional trailing pipe segments (mirrors the single-add modal's "Category | Mode | Badges" convention, just extended since a bulk block has no separate fields to put them in). A block missing a required piece, with an unrecognized Mode, or with no attachment lines at all doesn't silently vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin gets told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
+ * ⚠️ FORMAT REDESIGNED 2026-08-22 (Harkirat: "why are some things in 1 line, while other things are in their own lines... there's no intuitiveness to its structure at all"). The old shape was ONE line of seven positional pipe segments (`Weapon | Category | Mode | Build | Image | Code | Badges`) followed by bare attachment lines -- four of the seven were optional, their order was unmemorable, and one of them did nothing at all (see the Mode note below). There is now a single stated principle: **the first line is the weapon's IDENTITY, every optional field gets its own `Key: value` line, and everything else is an attachment.** Key lines may appear in any order and any of them may be omitted entirely. Attachments may be bulleted (`-`, `•`, `*`) or bare -- a bullet is checked FIRST, which doubles as the escape hatch for an attachment name that would otherwise read as a `Key:` line.
  *
- * Handles MP and DMZ in the same submission (Mode is per-block) -- there's no need for separate "bulk add MP loadouts" / "bulk add DMZ loadouts" flows.
+ * ⚠️ THE OLD PIPE FORMAT IS DELIBERATELY REJECTED, not quietly accepted (Harkirat's explicit call: no back-compat). A header line carrying more than two pipe segments produces an error naming the new shape, so an old export file fails LOUDLY instead of half-parsing -- under the old positional reading, `Weapon | Category | Mode | Build` would have silently become a weapon named "Weapon" in category "Category" with the remaining fields dropped.
+ *
+ * ⚠️ MODE IS GONE FROM THIS FORMAT, and that is a BUG FIX rather than a feature removal. It used to be REQUIRED as pipe-segment 3 -- a block omitting it was rejected outright -- while core/ops/loadouts.js's upsertBulkBlocks does `{ ...rawEntry, mode }` and overwrites it with the page's own mode unconditionally. Verified live 2026-08-22: a block typed `DMZ` pasted into the MP page parsed with ZERO errors and saved as MP, and formatLoadoutsAsBulkText emitted that same Mode, so exporting DMZ builds and pasting them on the MP page silently reassigned every one of them. So the parser demanded a field whose value it then threw away, and the exporter round-tripped a value that could not survive the trip. Which page the modal was opened from is the only thing that has ever decided the mode; the format now says so by not asking.
+ *
+ * A block missing its Weapon/Category header, carrying an unrecognized `Key:`, or with no attachment lines at all doesn't silently vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin is told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
  */
+const LOADOUT_BLOCK_KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges' };
+// A `Key: value` line. Deliberately NARROW (a letter, then at most 13 more letters/spaces, then the colon) so a real attachment name can't be swallowed as a mistyped field -- and the bullet test below runs first regardless, so `- Ammo: 40 Round` is always an attachment no matter what precedes the colon.
+const LOADOUT_KEYED_LINE = /^([A-Za-z][A-Za-z ]{0,13})\s*:\s*(.*)$/;
+const LOADOUT_BULLET = /^[-•*]\s+/;
+
 function parseBulkLoadoutList(bulkText) {
     const blocks = bulkText.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
     const parsed = [];
@@ -410,40 +422,56 @@ function parseBulkLoadoutList(bulkText) {
         const headerLine = lines[0];
         const snippet = headerLine.length > 60 ? `${headerLine.slice(0, 60)}...` : headerLine;
 
+        // Trailing EMPTY segments are dropped before the length test -- a half-typed `BAL-27 | AR |` (and the muscle memory of the old seven-segment format, which ended in optional empties) would otherwise be diagnosed as "the OLD pipe format" when it is really just a stray pipe. Found in the audit pass, not in testing: the guidance that followed was still correct, so nobody would have been misled into a wrong save, but being told you are using a retired format when you made a typo is its own kind of wrong.
         const headerParts = headerLine.split('|').map(p => p.trim());
-        const [weaponName, categoryRaw, modeRaw, buildNameRaw, imageKeyRaw, shareCodeRaw, badgesRaw] = headerParts;
-
-        if (!weaponName || !categoryRaw || !modeRaw) {
-            errors.push(`"${snippet}" -- missing Weapon/Category/Mode (need at least 3 pipe-delimited fields)`);
+        while (headerParts.length > 2 && headerParts[headerParts.length - 1] === '') headerParts.pop();
+        if (headerParts.length > 2) {
+            errors.push(`"${snippet}" -- that looks like the OLD pipe format. The first line is now just "Weapon | Category"; Build, Image, Code and Badges each go on their own line below it (e.g. "Build: Aggressive Flex").`);
+            continue;
+        }
+        const [weaponName, categoryRaw] = headerParts;
+        if (!weaponName || !categoryRaw) {
+            errors.push(`"${snippet}" -- a block's first line must be "Weapon | Category", and both halves are required.`);
             continue;
         }
 
-        const mode = modeRaw.toUpperCase();
-        if (mode !== 'MP' && mode !== 'DMZ') {
-            errors.push(`"${snippet}" -- Mode must be MP or DMZ, got "${modeRaw}"`);
+        const fields = {};
+        const attachments = [];
+        let badKey = null;
+        for (const line of lines.slice(1)) {
+            if (LOADOUT_BULLET.test(line)) { attachments.push(line.replace(LOADOUT_BULLET, '').trim()); continue; }
+            const keyed = LOADOUT_KEYED_LINE.exec(line);
+            if (!keyed) { attachments.push(line); continue; }
+            const key = keyed[1].trim().toLowerCase();
+            // A typo'd key must NOT fall through into `attachments` -- "Buld: Aggressive Flex" quietly becoming an attachment named "Buld: Aggressive Flex" is precisely the silent-wrong-result this format redesign exists to remove.
+            if (!Object.prototype.hasOwnProperty.call(LOADOUT_BLOCK_KEYS, key)) { badKey = keyed[1].trim(); break; }
+            fields[LOADOUT_BLOCK_KEYS[key]] = keyed[2].trim();
+        }
+        if (badKey) {
+            errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Image, Code and Badges; an attachment whose name contains a colon needs a leading "- " bullet.`);
             continue;
         }
 
-        const attachments = lines.slice(1);
-        if (attachments.length === 0) {
+        const cleanAttachments = attachments.filter(Boolean);
+        if (cleanAttachments.length === 0) {
             errors.push(`"${snippet}" -- no attachment lines found under the header`);
             continue;
         }
 
-        const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(badgesRaw);
+        const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(fields.badges);
         if (unrecognized.length > 0) {
             errors.push(`"${snippet}" -- unrecognized badge token(s): ${unrecognized.join(', ')} (loadout still saved, just without these)`);
         }
 
+        // No `mode` here, deliberately -- see the Mode note in this function's docblock. core/ops/loadouts.js's upsertBulkBlocks supplies it from the page.
         parsed.push({
             weaponName,
             weaponKey: weaponName.toLowerCase().replace(/\s+/g, ''),
             category: categoryRaw.toUpperCase(),
-            mode,
-            buildName: buildNameRaw || 'Standard Build',
-            attachments,
-            imageKey: imageKeyRaw || PLACEHOLDER_IMAGE,
-            shareCode: shareCodeRaw || '',
+            buildName: fields.buildName || 'Standard Build',
+            attachments: cleanAttachments,
+            imageKey: fields.imageKey || PLACEHOLDER_IMAGE,
+            shareCode: fields.shareCode || '',
             isMeta,
             categoryRank,
             dmzRangeRank,
@@ -499,7 +527,7 @@ function formatPatchNotesAsText(patchNotes) {
 }
 
 /**
- * Bulk-import-compatible export of loadouts -- round-trips straight back into parseBulkLoadoutList()'s expected "Weapon | Category | Mode | Build | Image | Code | Badges" + attachment-lines format (blocks separated by a blank line), added for /manage's Loadouts Export (2026-07-12 panel redesign). Badge reconstruction mirrors manage.js's buildEditLoadoutModal (dmzRangeRank is stored hyphenated -- "best-close" -- but the parser's token format has no hyphen, so it's stripped back out here too).
+ * Bulk-import-compatible export of loadouts -- round-trips straight back into parseBulkLoadoutList()'s labelled-block format (see that function for the format itself and for why it changed on 2026-08-22). An optional field with no value is OMITTED rather than emitted empty: a trailing `Code:` with nothing after it is exactly the noise the redesign set out to delete, and the old format's `... | | meta` gap was the same problem in pipe form. Mode is deliberately NOT emitted -- the page a paste lands on decides it, and emitting it used to let a DMZ export silently reassign itself to MP. Badge reconstruction mirrors manage.js's buildEditLoadoutModal (dmzRangeRank is stored hyphenated -- "best-close" -- but the parser's token format has no hyphen, so it's stripped back out here too).
  */
 function formatLoadoutsAsBulkText(loadouts) {
     return loadouts.map(l => {
@@ -508,9 +536,15 @@ function formatLoadoutsAsBulkText(loadouts) {
             l.categoryRank,
             l.dmzRangeRank ? l.dmzRangeRank.replace('-', '') : null,
             l.isToxic ? 'toxic' : null
-        ].filter(Boolean).join(',');
-        const header = [l.weaponName, l.category, l.mode, l.buildName, l.imageKey, l.shareCode || '', badges].join(' | ');
-        return [header, ...l.attachments].join('\n');
+        ].filter(Boolean).join(', ');
+        const lines = [`${l.weaponName} | ${l.category}`];
+        if (l.buildName) lines.push(`Build: ${l.buildName}`);
+        // A raw-URL imageKey is a legitimate stored state (see loadoutRender.js's buildImageUrl) but re-importing one would only re-save the same external URL, so only a real Cloudinary key round-trips.
+        if (l.imageKey && !String(l.imageKey).startsWith('http')) lines.push(`Image: ${l.imageKey}`);
+        if (l.shareCode) lines.push(`Code: ${l.shareCode}`);
+        if (badges) lines.push(`Badges: ${badges}`);
+        lines.push(...(l.attachments || []).map(a => `- ${a}`));
+        return lines.join('\n');
     }).join('\n\n');
 }
 

@@ -18,6 +18,7 @@ const loadouts = require('./loadouts');
 const patchnotes = require('./patchnotes');
 const season = require('./season');
 const announcements = require('./announcements');
+const { buildRetryModal } = require('./retry');
 
 // The same prefix set the router's admin guard keys its per-command permission map on. Kept as one list so the two can be compared by eye; if a new manage prefix is ever added, it belongs in BOTH.
 const OWNED_PREFIXES = ['mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_'];
@@ -212,7 +213,14 @@ async function routeManage(interaction) {
             return;
         }
 
-        // EDIT CONFIRM BUTTON (the intermediate "Edit: {label}" click) -- see shared.js's handleEditButton for why this extra click exists.
+        // EDIT CONFIRM BUTTON (the intermediate "Edit: {label}" click) -- see shared.js's handleEditButton for why this extra click exists. Try Again on a failed modal submit (2026-08-22) -- see handlers/manage/retry.js. showModal() MUST be this button's first response, so nothing above may defer it, which is why this sits with the other modal-opening branches rather than after the deferring ones.
+        if (customId.startsWith('mng_retry_')) {
+            const modalJson = buildRetryModal(customId.replace('mng_retry_', ''));
+            if (!modalJson) {
+                return await interaction.reply({ content: '⌛ That retry expired (they last 10 minutes). Reopen the action from the `/manage` panel — the text in the message above is still copy-pasteable.', ephemeral: true });
+            }
+            return await interaction.showModal(modalJson);
+        }
         if (customId.startsWith('mng_editbtn_')) return await handleEditButton(interaction);
     }
 

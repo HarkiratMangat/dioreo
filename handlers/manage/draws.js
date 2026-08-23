@@ -12,6 +12,7 @@ const { commitSet } = require('../../core/changeset');
 const {
     thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
 } = require('./shared');
+const { failWithRetry } = require('./retry');
 
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
 async function addDraw(interaction) {
@@ -29,7 +30,7 @@ async function addDraw(interaction) {
     if (combinedLine) {
         const [parsed] = parseBulkDrawList(combinedLine);
         if (!parsed) {
-            return interaction.followUp({ content: '❌ Could not parse that line -- expected format: `Title, m Item 1, l Item 2, Date, URL` (URL optional).' });
+            return await failWithRetry(interaction, 'Could not parse that line -- expected format: `Title, m Item 1, l Item 2, Date, URL` (URL optional).');
         }
         // No URL + no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
         const thumbResult = await resolveThumbnail(parsed.title, parsed.thumbnailUrl);
@@ -42,11 +43,11 @@ async function addDraw(interaction) {
         const rawItems = interaction.fields.getTextInputValue('items');
 
         if (!title || !dateStr || !rawItems) {
-            return interaction.followUp({ content: '❌ Fill in Title, Items, and Release Date, or use the "Or Paste As One Line" field instead.' });
+            return await failWithRetry(interaction, 'Fill in Title, Items, and Release Date, or use the "Or Paste As One Line" field instead.');
         }
         const parsedSingleDate = parseAdminDate(dateStr);
         if (!parsedSingleDate) {
-            return interaction.followUp({ content: `❌ Date "${dateStr}" wasn't understood -- nothing was saved.` });
+            return await failWithRetry(interaction, `Date "${dateStr}" wasn't understood -- nothing was saved.`);
         }
 
         // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead -- see the combined-line branch above for the full reasoning.
@@ -62,8 +63,7 @@ async function addDraw(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
 
     let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
@@ -85,7 +85,7 @@ async function editDraw(interaction) {
     if (drawIndex > -1) {
         const drawDateStr = interaction.fields.getTextInputValue('date');
         const parsedDrawDate = parseAdminDate(drawDateStr);
-        if (!parsedDrawDate) return interaction.followUp({ content: `❌ Date "${drawDateStr}" wasn't understood -- nothing was saved.` });
+        if (!parsedDrawDate) return await failWithRetry(interaction, `Date "${drawDateStr}" wasn't understood -- nothing was saved.`);
         const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
 
         // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead (matches addDraw's same-day fix) rather than blocking an otherwise-valid edit.
@@ -101,8 +101,7 @@ async function editDraw(interaction) {
             { actorId: interaction.user.id }
         );
         if (!result.ok) {
-            const why = extractCommitError(result);
-            return await interaction.followUp({ content: `❌ ${why}` });
+            return await failWithRetry(interaction, extractCommitError(result));
         }
 
         let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;

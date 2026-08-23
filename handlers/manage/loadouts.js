@@ -11,6 +11,39 @@
 
 const { commitSet } = require('../../core/changeset');
 const { extractCommitError } = require('./shared');
+const { failWithRetry } = require('./retry');
+
+// --- IMAGE FIELD: Public ID *or* a pasted URL --- (2026-08-22, deferred item "MP/DMZ Loadout: no way to provide an image by URL") Every other image-bearing entity (draws/calendar/patch-notes) already accepts a raw URL and re-hosts it to Cloudinary; loadouts alone required the admin to have uploaded the file and to know the exact Public ID convention BEFORE opening the modal -- the one field in that modal depending on a step outside the bot. This closes that gap without spending a 6th modal slot (Discord's hard cap is 5 and the modal already uses all 5): the SAME field takes either form, told apart by the URL scheme.
+//
+// `existingKey` is what makes Edit safe. Harkirat's ask was to replace the picture while KEEPING the same public_id so nothing referencing the key breaks -- uploadLoadoutImage passes `overwrite: true, invalidate: true`, so re-uploading at the existing key is exactly that, and the stored imageKey never changes.
+//
+// A FAILED upload does not fail the save: the raw URL is stored as the imageKey instead. That is a supported state, not a fudge -- utils/loadoutRender.js's buildImageUrl passes an `http`-prefixed imageKey straight through as the card's image URL (it exists for the originally-imgur-hosted LOCUS rows) -- and it mirrors utils/cloudinaryCache.js's resolveThumbnail, which falls back to the raw URL for the same reason so a draw still saves when Cloudinary is unreachable or a dev instance is write-blocked.
+async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) {
+    const { isHttpImageSource, deriveImageKey, uploadLoadoutImage } = require('../../utils/loadoutImageCache');
+    const value = (raw || '').trim();
+    if (!isHttpImageSource(value)) return { imageKey: value, uploaded: false, note: null };
+
+    const Loadout = require('../../models/Loadout');
+    let imageKey = existingKey && !isHttpImageSource(existingKey) && !String(existingKey).startsWith('PENDING-UPLOAD-')
+        ? existingKey
+        : null;
+    if (!imageKey) {
+        // Only the keys that could actually collide with the one about to be minted -- a full-collection scan would work too, but this stays correct as the collection grows.
+        const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const taken = await Loadout.find({ imageKey: new RegExp(`^(DMZ-)?${base}-\\d+$`, 'i') }).select('imageKey').lean();
+        imageKey = deriveImageKey(weaponName, mode, taken.map(t => t.imageKey));
+    }
+
+    const result = await uploadLoadoutImage(value, imageKey);
+    if (!result.success) {
+        return { imageKey: value, uploaded: false,
+                 note: `\n⚠️ Couldn't upload that image to Cloudinary (${result.error}) -- the raw URL was saved as the image instead, so the card still renders but the image isn't re-hosted.` };
+    }
+    return { imageKey, uploaded: true,
+             note: existingKey === imageKey
+                 ? `\n-# 🖼️ Image replaced on Cloudinary at the same key \`${imageKey}\` -- nothing referencing that key changed.`
+                 : `\n-# 🖼️ Image uploaded to Cloudinary as \`${imageKey}\`.` };
+}
 
 // --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
 async function editLoadout(interaction) {
@@ -44,7 +77,11 @@ async function editLoadout(interaction) {
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
-    const imageKey = interaction.fields.getTextInputValue('image');
+    const image = await resolveImageInput({
+        raw: interaction.fields.getTextInputValue('image'),
+        weaponName, mode, existingKey: existingLoadout.imageKey
+    });
+    const imageKey = image.imageKey;
 
     const result = await commitSet(
         [{ type: 'loadout.edit', target: { id: targetId },
@@ -54,12 +91,12 @@ async function editLoadout(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
     const { applied } = result.results[0];
 
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
+    if (image.note) confirmation += image.note;
     // States what happened to the Share Code explicitly (sequential-thinking audit finding, 2026-08-22 20:15 EDT) -- the omit/clear/set distinction is exactly the kind of non-obvious field behavior this session's other confirmation-message additions exist to surface, and this field in particular can silently wipe an /autobuild-set code if a future edit gets this wrong.
     if (hasShareCodeSegment) {
         confirmation += shareCodeInput ? `\n-# Share Code: set to \`${shareCodeInput}\`.` : '\n-# Share Code: cleared.';
@@ -72,8 +109,8 @@ async function editLoadout(interaction) {
     if (unrecognized.length > 0) {
         confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
     }
-    // Real Cloudinary existence check -- catches the exact silent-failure mode where a mismatched key saves fine and only shows up as a broken card image later. Advisory only -- never blocks the save, which already happened above.
-    if (!(await checkImageExists(imageKey))) {
+    // Real Cloudinary existence check -- catches the exact silent-failure mode where a mismatched key saves fine and only shows up as a broken card image later. Advisory only -- never blocks the save, which already happened above. Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
+    if (!image.uploaded && !(await checkImageExists(imageKey))) {
         confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
     }
 
@@ -104,7 +141,11 @@ async function addLoadout(interaction) {
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
-    const imageKey = interaction.fields.getTextInputValue('image');
+    const image = await resolveImageInput({
+        raw: interaction.fields.getTextInputValue('image'),
+        weaponName, mode: pageMode
+    });
+    const imageKey = image.imageKey;
 
     const result = await commitSet(
         [{ type: 'loadout.add',
@@ -114,11 +155,11 @@ async function addLoadout(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
 
     let confirmation = `✅ **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
+    if (image.note) confirmation += image.note;
     // Only worth a line when a code was actually typed -- unlike editLoadout there's no prior state to report on a brand-new build, so staying silent when the field was left as a bare build name (the common case) avoids cluttering every single Add confirmation with a non-event.
     if (hasShareCodeSegment && shareCodeInput) {
         confirmation += `\n-# Share Code: \`${shareCodeInput}\`.`;
@@ -126,7 +167,8 @@ async function addLoadout(interaction) {
     if (unrecognized.length > 0) {
         confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
     }
-    if (!(await checkImageExists(imageKey))) {
+    // Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
+    if (!image.uploaded && !(await checkImageExists(imageKey))) {
         confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
     }
     return interaction.followUp({ content: confirmation });
@@ -143,8 +185,7 @@ async function bulkAddLoadouts(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
     const { applied } = result.results[0];
 

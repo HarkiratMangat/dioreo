@@ -48,9 +48,9 @@
           {
             "type": 4,
             "custom_id": "image",
-            "label": "Cloudinary Image Key (Public ID)",
+            "label": "Cloudinary Image Key, or an Image URL",
             "style": 1,
-            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "placeholder": "e.g. BP50-1 -- or paste an image URL to upload it",
             "required": true
           }
         ]
@@ -119,9 +119,9 @@
           {
             "type": 4,
             "custom_id": "image",
-            "label": "Cloudinary Image Key (Public ID)",
+            "label": "Cloudinary Image Key, or an Image URL",
             "style": 1,
-            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "placeholder": "e.g. BP50-1 -- or paste an image URL to upload it",
             "required": true
           }
         ]
@@ -188,9 +188,9 @@
           {
             "type": 4,
             "custom_id": "image",
-            "label": "Cloudinary Image Key (Public ID)",
+            "label": "Cloudinary Image Key, or an Image URL",
             "style": 1,
-            "placeholder": "e.g. BP50-1 -- must match Cloudinary exactly",
+            "placeholder": "e.g. BP50-1 -- or paste an image URL to upload it",
             "value": "FENNEC-1"
           }
         ]
@@ -219,9 +219,9 @@
           {
             "type": 4,
             "custom_id": "bulk_text",
-            "label": "Weapon | Category | Mode | Build | etc",
+            "label": "Weapon | Category, then one field per line",
             "style": 2,
-            "placeholder": "BAL-27 | AR | MP | Build 1 | BAL-27-1 | 1I2C6B8A9D | meta,best\nGauge-9 Mono\nCrown-H3 Barrel",
+            "placeholder": "BAL-27 | AR\nBuild: Flex\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta\n- Gauge-9 Mono",
             "required": true
           }
         ]
@@ -238,9 +238,9 @@
           {
             "type": 4,
             "custom_id": "bulk_text",
-            "label": "Weapon | Category | Mode | Build | etc",
+            "label": "Weapon | Category, then one field per line",
             "style": 2,
-            "placeholder": "BAL-27 | AR | DMZ | Build 1 | BAL-27-1 | 1I2C6B8A9D | meta,best\nGauge-9 Mono\nCrown-H3 Barrel",
+            "placeholder": "BAL-27 | AR\nBuild: Flex\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta\n- Gauge-9 Mono",
             "required": true
           }
         ]

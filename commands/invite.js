@@ -56,7 +56,8 @@ function buildContainer(accentColor, client) {
         type: 1,
         components: [
             { type: 2, style: 5, label: 'Invite', url: urls.chooser },
-            { type: 2, style: 1, label: 'Share Link', custom_id: 'invite_share' }
+            // STYLE 1 (blurple) KEPT deliberately with the heart icon, 2026-08-22. The row's other button is a LINK button, which Discord renders grey -- dropping this one to Secondary to "match" the heart would flatten the row and leave no primary action on the panel. Danger/red would read as destructive on a share button, and Success/green fights the icon. So the heart carries the colour and the button carries the emphasis.
+            { type: 2, style: 1, label: 'Share Link', custom_id: 'invite_share', emoji: emojis.parseEmoji(emojis.shareHeart) }
         ]
     });
 
