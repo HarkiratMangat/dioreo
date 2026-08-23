@@ -310,42 +310,84 @@ function describeListChange(before, after) {
     ].join('\n');
 }
 
-async function fetchRecord(row) {
-    const target = (row.inverse && row.inverse.target) || {};
-    const id = String(target.elementId || target.id || '');
-    if (row.page === 'draws') {
-        const SeasonalData = require('../models/SeasonalData');
-        const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        const path = target.category === 'returning' ? 'returningDraws' : 'newDraws';
-        const d = (doc?.[path] || []).find(x => String(x._id) === id);
-        return d ? { noun: 'draw', raw: d, show: ['title', 'date', 'items', 'thumbnailUrl'], dateOnly: ['date'] } : null;
-    }
-    if (row.page === 'calendar') {
-        const SeasonalData = require('../models/SeasonalData');
-        const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
-        const e = (doc?.calendar || []).find(x => String(x._id) === id);
-        return e ? { noun: 'event', raw: e, show: ['title', 'date', 'endDate', 'category'], dateOnly: ['date', 'endDate'] } : null;
-    }
-    if (row.page === 'loadouts_mp' || row.page === 'loadouts_dmz') {
-        const Loadout = require('../models/Loadout');
-        const l = id ? await Loadout.findById(id).lean() : null;
-        return l ? { noun: 'build', raw: l, show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] } : null;
-    }
-    if (row.page === 'announcement') {
-        const Announcement = require('../models/Announcement');
-        const a = id ? await Announcement.findById(id).lean() : null;
-        return a ? { noun: 'announcement', raw: a, show: ['text', 'startsAt', 'expiresAt'], dateOnly: [] } : null;
-    }
-    return null;
-}
-// The noun and field set for a page whose record can no longer be FETCHED -- which is every delete, by definition. Without this the emptiest panel was the one whose payload held the most.
-const PAGE_SHAPE = {
-    draws: { noun: 'draw', show: ['title', 'date', 'items', 'thumbnailUrl'], dateOnly: ['date'] },
-    calendar: { noun: 'event', show: ['title', 'date', 'endDate', 'category'], dateOnly: ['date', 'endDate'] },
-    loadouts_mp: { noun: 'build', show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] },
-    loadouts_dmz: { noun: 'build', show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] },
-    announcement: { noun: 'announcement', show: ['text', 'startsAt', 'expiresAt'], dateOnly: [] },
+
+// ── RECORD VIEWS ── 🔴 ONE CONTRACT PER ENTITY, NOT AN IF-ELSE OVER PAGE KEYS. Harkirat, 2026-08-23 10:56 EDT, on the previous version: "why not literally JUST RENDER the draw since it's 1 simple text+thumbnail accessory component?" and "these changes need to be trickled into other edit/add/delete database changes as well ... not just applying to draws." Both land, and the second is the deeper one. Every fix before this was a DRAWS fix wearing a general name, while the Changes log carries nine pages. And the first retires the whole approach: this file was writing a bespoke description of each record -- pick fields, label them, format them -- when the bot already owns polished renderers for these exact objects. So a view REUSES the canonical renderer (never a copy of it: a copy drifts, and a panel that quietly stops matching the real card is worse than one that never tried), and any page without one still works through the generic payload view below.
+//   { noun, fetch(target) -> record|null, render(record) -> V2 blocks|null, dateOnly: [field] }
+const RECORD_VIEWS = {
+    draws: {
+        noun: 'draw', dateOnly: ['date'],
+        fetch: async (t) => {
+            const SeasonalData = require('../models/SeasonalData');
+            const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            const path = t.category === 'returning' ? 'returningDraws' : 'newDraws';
+            return (doc?.[path] || []).find(x => String(x._id) === String(t.elementId || t.id)) || null;
+        },
+        // The player-facing card, from commands/draws.js itself.
+        render: (d) => require('./draws').buildDrawSections([{ ...d, items: d.items || [] }]),
+    },
+    calendar: {
+        noun: 'event', dateOnly: ['date', 'endDate'],
+        fetch: async (t) => {
+            const SeasonalData = require('../models/SeasonalData');
+            const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            return (doc?.calendar || []).find(x => String(x._id) === String(t.elementId || t.id)) || null;
+        },
+        render: null,
+    },
+    loadouts_mp: {
+        noun: 'build', dateOnly: [],
+        fetch: async (t) => { const L = require('../models/Loadout'); const id = t.id || t.elementId; return id ? L.findById(id).lean() : null; },
+        render: null,
+    },
+    announcement: { noun: 'announcement', dateOnly: [], fetch: async (t) => { const A = require('../models/Announcement'); const id = t.id || t.elementId; return id ? A.findById(id).lean() : null; }, render: null },
+    // Pages with no fetcher yet still get the generic payload view -- they are NOT unsupported.
+    patchnotes: { noun: 'patch note', dateOnly: [], fetch: null, render: null },
+    seasondraft: { noun: 'draft entry', dateOnly: ['date', 'endDate'], fetch: null, render: null },
+    season: { noun: 'season setting', dateOnly: ['bpEnd', 'seasonEnd'], fetch: null, render: null },
+    access: { noun: 'admin', dateOnly: [], fetch: null, render: null },
 };
+RECORD_VIEWS.loadouts_dmz = RECORD_VIEWS.loadouts_mp;
+
+const viewFor = (page) => RECORD_VIEWS[page] || { noun: 'record', dateOnly: [], fetch: null, render: null };
+
+// Every field the change actually carries, in the data's own vocabulary. Generic on purpose: it is what makes patch notes, the season draft, season settings and bot access work WITHOUT a bespoke branch each, which is the difference between "covers nine pages" and "covers whichever five I remembered".
+function genericFields(obj, dateOnly, limit = 8) {
+    return Object.entries(obj || {})
+        .filter(([k, v]) => k !== '_id' && v != null && v !== '')
+        .slice(0, limit)
+        .map(([k, v]) => `**${fieldLabel(k)}** · ${fmtFieldValue(v, k, dateOnly)}`)
+        .join('\n');
+}
+
+// A canonical card if the entity has a renderer AND it fits; otherwise the field list. MEASURED, never assumed: Components V2 caps at 40 counted recursively and this repo has already taken that as a production crash, so a before/after pair of rich cards has to prove it fits before it is used.
+function renderRecord(page, record, dateOnly, budget) {
+    const view = viewFor(page);
+    if (view.render && record) {
+        try {
+            const blocks = view.render(record);
+            if (blocks && blocks.length && countPanelComponents(blocks) <= budget) return blocks;
+        } catch (renderError) {
+            console.error(`Change-detail canonical render failed for ${page}:`, renderError?.message || renderError);
+        }
+    }
+    const listed = genericFields(record, dateOnly);
+    return listed ? [{ type: 10, content: listed }] : null;
+}
+
+// The same recursive walker Discord applies -- `components`, `accessory` and `items`. A walker following only `components` would miss exactly the Section accessories a draw card is made of.
+const countPanelComponents = (node) => Array.isArray(node)
+    ? node.reduce((n, x) => n + countPanelComponents(x), 0)
+    : (node && typeof node === 'object')
+        ? 1 + countPanelComponents(node.components || []) + (node.accessory ? countPanelComponents(node.accessory) : 0) + countPanelComponents(node.items || [])
+        : 0;
+
+async function fetchRecord(row) {
+    const view = viewFor(row.page);
+    if (!view.fetch) return null;
+    const raw = await view.fetch((row.inverse && row.inverse.target) || {});
+    return raw ? { noun: view.noun, raw, dateOnly: view.dateOnly } : null;
+}
+
 
 function revertSentence(row, noun, changedCount) {
     const verb = String(row.inverse?.type || '').split('.')[1];
@@ -356,9 +398,8 @@ function revertSentence(row, noun, changedCount) {
     return `↩️ **Reverting applies the inverse** recorded when this change was made.`;
 }
 
-function fieldList(fields, raw, dateOnly) {
-    return fields.filter(k => raw[k] != null && raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(raw[k], k, dateOnly)}`).join('\n');
-}
+// fieldList retired 2026-08-23 11:04 EDT -- genericFields() replaced it, and generically: it renders whatever fields the record actually carries instead of a hardcoded per-page list, which is what made patch notes / season / seasondraft / access work without a branch each.
+
 
 async function buildChangeDetailBody(changeId) {
     const { getChange, getLaterChangesTo } = require('../utils/changeStore');
@@ -367,6 +408,8 @@ async function buildChangeDetailBody(changeId) {
     if (!row) return [{ type: 10, content: `**That change no longer exists.**\n-# \`${truncate(changeId, 40)}\` is not in the log — it may have aged out of the 180-day window.` }];
 
     const gate = canRevert(row);
+    const view = viewFor(row.page);
+    const dateOnly = view.dateOnly;
     let record = null, later = [];
     try { record = await fetchRecord(row); } catch (recordError) {
         console.error(`Change-detail record lookup failed for ${changeId}:`, recordError?.message || recordError);
@@ -377,9 +420,7 @@ async function buildChangeDetailBody(changeId) {
 
     const verb = String(row.inverse?.type || '').split('.')[1];
     const payload = row.inverse && typeof row.inverse.payload === 'object' ? row.inverse.payload : null;
-    const shape = record || PAGE_SHAPE[row.page] || null;
-    const noun = shape?.noun;
-    const dateOnly = shape?.dateOnly || [];
+    const noun = view.noun;
 
     const body = [
         { type: 10, content: `### ${truncate(row.summary || `${row.action} on ${row.page}`, 90)}${row.undone ? ' ↩️' : ''}` },
@@ -389,59 +430,79 @@ async function buildChangeDetailBody(changeId) {
 
     let changed = [];
     if (verb === 'edit' && payload && record) {
+        // 🔴 THE BEFORE STATE IS RECONSTRUCTABLE, AND I WAS RENDERING NEITHER HALF. The inverse holds the PREVIOUS values for exactly the fields the edit touched, so {...now, ...payload} IS the record as it was. Two canonical cards, labelled, is what "I need a better before/after" actually asks for -- and it needed no new data or query, only noticing that both halves were already in hand.
+        const before = { ...record.raw, ...payload };
         const keys = Object.keys(payload).filter(k => k !== '_id');
         changed = keys.filter(k => !sameValue(record.raw[k], payload[k]));
         const untouched = keys.length - changed.length;
+
+        // Budgeted BEFORE it is used: two rich cards plus the panel's own chrome must clear 40 counted recursively. Roughly half the remaining budget each, so neither card can crowd the other out.
+        const chrome = countPanelComponents(body) + 14;
+        const each = Math.max(1, Math.floor((40 - chrome) / 2));
+        const beforeBlocks = renderRecord(row.page, before, dateOnly, each);
+        const afterBlocks = renderRecord(row.page, record.raw, dateOnly, each);
+
         if (changed.length) {
             const rows = changed.slice(0, 6).map(k => {
-                // 🔴 A LIST FIELD MUST NEVER RENDER AS "2 items -> 2 items". Either say what moved, or do not claim the field changed at all -- an assertion the reader can see is false costs more trust than the row was ever worth.
                 if (Array.isArray(payload[k]) || Array.isArray(record.raw[k])) {
                     const moved = describeListChange(payload[k], record.raw[k]);
                     return moved ? `**${fieldLabel(k)}**\n${moved}` : null;
                 }
                 return `**${fieldLabel(k)}** ${fmtFieldValue(payload[k], k, dateOnly)} → ${fmtFieldValue(record.raw[k], k, dateOnly)}`;
             }).filter(Boolean);
-            if (rows.length) body.push({ type: 10, content: `✏️ **What changed** _(${plural(rows.length, 'field')})_\n${rows.join('\n')}` });
-            else body.push({ type: 10, content: `✏️ **Nothing visible changed** — the saved values differ only in ordering or internal ids.` });
+            body.push({ type: 10, content: rows.length
+                ? `✏️ **${plural(rows.length, 'field')} changed**\n${rows.join('\n')}`
+                : `✏️ **Nothing visible changed** — the saved values differ only in ordering or internal ids.` });
             if (untouched) body.push({ type: 10, content: `-# ${plural(untouched, 'other field')} left as ${untouched === 1 ? 'it was' : 'they were'}.` });
         } else {
             body.push({ type: 10, content: `✏️ **Nothing actually changed.** Every field was saved with the value it already had — a no-op edit.` });
         }
-        // Only the fields the diff did NOT already show. Repeating Title two inches under the diff that just highlighted it is precisely the noise this panel keeps being criticised for.
-        const rest = record.show.filter(k => !changed.includes(k));
-        if (rest.length) {
-            const listed = fieldList(rest, record.raw, dateOnly);
-            if (listed) { body.push({ type: 14, spacing: 1 }); body.push({ type: 10, content: `**Otherwise, the ${noun} reads**\n${listed}` }); }
+
+        if (beforeBlocks && afterBlocks) {
+            body.push({ type: 14, spacing: 2, divider: true });
+            body.push({ type: 10, content: `**BEFORE** — the ${noun} as it was` });
+            body.push(...beforeBlocks);
+            body.push({ type: 14, spacing: 2, divider: true });
+            body.push({ type: 10, content: `**AFTER** — the ${noun} as it stands now` });
+            body.push(...afterBlocks);
         }
     } else if (record) {
-        body.push({ type: 10, content: `**The ${noun} it ${verb === 'delete' ? 'created' : 'affected'}**\n${fieldList(record.show, record.raw, dateOnly)}` });
-    } else if (payload && shape) {
-        // The record cannot be fetched -- which is EVERY delete, by definition, since the row is gone. The inverse's payload is the removed record in full, so this is the richest panel available, not the poorest.
-        body.push({ type: 10, content: `**The ${noun} it removed**\n${fieldList(shape.show, payload, dateOnly)}` });
+        // add: the record it created. delete-inverse cannot reach here (the row is gone by definition).
+        const blocks = renderRecord(row.page, record.raw, dateOnly, 22);
+        if (blocks) {
+            body.push({ type: 10, content: `**The ${noun} it created**` });
+            body.push(...blocks);
+        }
+    } else if (payload) {
+        // EVERY delete lands here -- the record is gone, and the inverse payload is that record in full. It is also the path every page without a fetcher takes, which is why it renders generically over the payload rather than from a hardcoded field list: patch notes, the season draft, season settings and bot access all work here without a bespoke branch each.
+        const blocks = renderRecord(row.page, payload, dateOnly, 22);
+        if (blocks) {
+            body.push({ type: 10, content: `**The ${noun} it ${verb === 'delete' ? 'affected' : 'removed'}**` });
+            body.push(...blocks);
+        }
     } else {
         body.push({ type: 10, content: `-# The contents weren't recorded for this kind of change. Open it in the portal for the full record.` });
     }
 
     if (row.detail) body.push({ type: 10, content: `-# ${truncate(row.detail, 400)}` });
 
-    // 🔴 THE ONE GENUINELY DANGEROUS CASE. Reverting an edit writes the old values back over whatever came AFTER it, so a later change to the same record is silently destroyed by a button that looks isolated.
+    // 🔴 THE ONE GENUINELY DANGEROUS CASE. Reverting an edit writes old values back over whatever came AFTER it, so a later change to the same record is silently destroyed by a button that looks isolated.
     if (later.length && !row.undone) {
         body.push({ type: 14, spacing: 1 });
-        body.push({ type: 10, content: `⚠️ **${plural(later.length, 'later change')} touched this same ${noun || 'record'} after this one.**\n`
+        body.push({ type: 10, content: `⚠️ **${plural(later.length, 'later change')} touched this same ${noun} after this one.**\n`
             + later.slice(0, 3).map(c => `-# • ${truncate(c.summary || c.action, 60)} — <@${c.actorId}>, <t:${unix(c.createdAt)}:R>`).join('\n')
             + `\n-# Reverting this one puts the old values back over ${later.length === 1 ? 'that' : 'those'} too.` });
     }
     body.push({ type: 14, spacing: 1 });
 
-    const reference = { type: 10, content: `-# Reference \`${row.changeId}\` — an internal id for this log entry, **not** a date.` };
+    const reference = { type: 10, content: `-# Log entry \`${row.changeId}\`` };
     if (!gate.ok) {
         body.push({ type: 10, content: `⛔ **This one can't be reverted.**\n${gate.reason}` });
         body.push(reference);
         return body;
     }
-    // A revert of an edit/delete-inverse goes through commitSet, whose ops return {ok:false, reason:'missing'} when the element is gone. Saying so BEFORE the press beats discovering it after.
-    if (verb === 'edit' && !record) {
-        body.push({ type: 10, content: `⚠️ **This ${noun || 'record'} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
+    if (verb === 'edit' && !record && view.fetch) {
+        body.push({ type: 10, content: `⚠️ **This ${noun} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
     }
     body.push({ type: 10, content: revertSentence(row, noun, changed.length) });
     body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
@@ -455,6 +516,7 @@ async function buildChangeDetailBody(changeId) {
     body.push(reference);
     return body;
 }
+
 
 const CHANGES_EMPTY = '**No edits in this window.**\n-# Every `/manage` save writes a row here with who made it and a one-click Revert. Make a change and it appears immediately.';
 
@@ -839,7 +901,7 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { revertSentence, fmtFieldValue, sameValue, describeListChange, fmtItems, fmtUtcDay, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
+    __testables: { revertSentence, fmtFieldValue, sameValue, describeListChange, fmtItems, fmtUtcDay, RECORD_VIEWS, viewFor, genericFields, renderRecord, countPanelComponents, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
     buildHotpatchPanel,
     buildChangeDetailBody,
     buildUsageExport,

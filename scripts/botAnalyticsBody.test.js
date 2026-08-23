@@ -216,4 +216,55 @@ check('a Changes row opens a DETAIL panel -- it never reverts on one tap', () =>
     assert.notStrictEqual(acc.disabled, true, 'an unrevertable row must still be able to say WHY');
 });
 
+check('EVERY page the change log can carry has a record view -- not just draws', () => {
+    const { RECORD_VIEWS, viewFor } = require('../commands/bot').__testables;
+    const { MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
+    // 🔴 THE TEST THAT WOULD HAVE CAUGHT THE REAL COMPLAINT. Four rounds of fixes were all draws fixes wearing a general name, while the log carries nine pages -- "these changes need to be trickled into other edit/add/delete database changes as well, not just applying to draws". A page missing here silently falls back to "the contents weren't recorded", which is a lie: its inverse payload has named fields.
+    for (const page of [...MANAGE_PAGE_SCOPES, 'access']) {
+        assert.ok(RECORD_VIEWS[page], `page "${page}" has no record view — its change panel will say nothing`);
+        assert.ok(RECORD_VIEWS[page].noun && RECORD_VIEWS[page].noun !== 'record', `page "${page}" needs a real noun, not the generic fallback`);
+    }
+    // And an unknown page must still degrade to something sane rather than throwing.
+    assert.strictEqual(viewFor('a-page-that-does-not-exist').noun, 'record');
+});
+
+check('the draw view REUSES commands/draws.js, byte for byte -- never a copy', () => {
+    const { RECORD_VIEWS, countPanelComponents } = require('../commands/bot').__testables;
+    const draw = { _id: 'x', title: 'Test Draw', date: new Date('2026-08-28T00:00:00Z'), items: [{ tier: 'mythic', name: 'Test Item' }], thumbnailUrl: 'https://example.test/a.png' };
+    const mine = RECORD_VIEWS.draws.render(draw);
+    const theirs = require('../commands/draws').buildDrawSections([draw]);
+    // Identical output is the POINT: a copied renderer drifts, and a panel that quietly stops matching the real card is worse than one that never tried to match it.
+    assert.deepStrictEqual(mine, theirs);
+    assert.strictEqual(mine[0].type, 9, 'a draw with an image renders as a Section with a thumbnail accessory');
+    assert.strictEqual(countPanelComponents(mine), 3, 'section + text + accessory');
+});
+
+check('a before/after pair is BUDGETED, and the walker can see accessories', () => {
+    const { RECORD_VIEWS, renderRecord, countPanelComponents } = require('../commands/bot').__testables;
+    const draw = { title: 'A', date: new Date(), items: [], thumbnailUrl: 'https://example.test/a.png' };
+    const pair = countPanelComponents(RECORD_VIEWS.draws.render(draw)) * 2;
+    assert.ok(pair + 14 <= 40, `two cards plus chrome is ${pair + 14}, over the 40-component cap`);
+    // The guard must actually BITE, or it is decoration: a budget of 1 cannot fit a 3-component card, so the renderer has to fall back to the field list rather than shipping something that will fail to send.
+    const squeezed = renderRecord('draws', draw, ['date'], 1);
+    assert.ok(countPanelComponents(squeezed) <= 2, 'an unaffordable card must degrade, not blow the cap');
+    assert.strictEqual(squeezed[0].type, 10);
+});
+
+check('a page with no fetcher still shows its contents, generically', () => {
+    const { genericFields, viewFor } = require('../commands/bot').__testables;
+    // patchnotes/seasondraft/season/access have no bespoke fetcher and must NOT therefore be blank -- the inverse payload carries real named fields for all of them.
+    assert.strictEqual(viewFor('patchnotes').fetch, null);
+    const out = genericFields({ title: 'Season 6 notes', date: '2026-08-14T00:00:00.000Z', _id: 'zzz' }, ['date']);
+    assert.ok(/Title/.test(out) && /Season 6 notes/.test(out));
+    assert.ok(/Aug 14, 2026/.test(out), 'a date-only field keeps its UTC day here too');
+    assert.ok(!/zzz/.test(out), '_id is plumbing, never shown');
+});
+
+check('a change id is not date-shaped any more', () => {
+    // `Aug22-28` sat inches from "19 hours ago" and read as a contradicting date.
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'utils', 'changeStore.js'), 'utf8');
+    assert.ok(/return `#\$\{doc\.seq\}`;/.test(src), 'nextDailyChangeId must mint a #N sequence');
+    assert.ok(!/MONTHS\[date\.getUTCMonth/.test(src), 'the MMMDD date-key builder must be gone, not just unused');
+});
+
 console.log(`  ✓ ${passed} /bot analytics checks passed`);
