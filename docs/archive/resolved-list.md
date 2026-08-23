@@ -607,3 +607,30 @@ Filed 2026-08-19 10:55 EDT as `[P3 · S · Sonnet5-Medium · 🧩needs-design]` 
 The vertical index is gone. Its replacement is a **58px horizontal rail** that is the same object on both desktop and mobile, and the page's document height fell from 3010px to 1219px. The two-column question the item posed no longer has a subject.
 
 ⚠️ **The item was correct and its measurement was sound.** What it could not see was that it was one symptom of a structural failure, because it measured the index alone. Worth remembering the next time a filed layout item looks like a self-contained sizing question: measure the whole surface before deciding what the item is about.
+
+
+## `/manage`-wide failed-submission retry snippet + Try Again button — CLOSED 2026-08-22 23:20 EDT (v3.64.0-pre)
+
+Filed as `[P2 · M · Sonnet5-Medium · 🧩needs-design]`. Shipped as `handlers/manage/retry.js`, covering 14 modals and wired into 12 failure branches across draws/calendar/loadouts.
+
+**The two decisions the item left open, and how they were settled.** *Reconstruction format:* the snippet is written in the entity's OWN bulk format (`parseBulkDrawList`'s comma line, `parseBulkEvents`' bullet line, loadouts' labelled block), not as a dump of raw fields — so it pastes back into either the field it came from or that entity's Bulk Add modal. A raw field dump would paste back into neither. Each format is pinned by a test that re-imports the snippet through the real parser, because asserting the snippet's SHAPE would pass against a format the parser rejects. *Prefill vs blank:* prefilled with the failed values, which is the entire point of the button.
+
+**The item's own caution was right and was honoured:** it warned that reusing the loadout bulk format as a retry snippet "may want to wait on that redesign." The format was redesigned first, in the same change, so the snippet was written once rather than twice.
+
+⚠️ **The button is a platform constraint, not a preference.** Discord cannot answer a MODAL_SUBMIT interaction with another modal (`ModalSubmitInteraction.prototype.showModal` is `undefined` in discord.js v14.26.4), so the error reply hands out a button and the BUTTON opens the refilled modal — the same one-extra-click detour `pendingManageEdits` already pays. The snippet and the token deliberately have different lifetimes: the token expires in 10 minutes, the text never does, which is why both were asked for rather than either alone.
+
+## MP/DMZ Loadout image by URL — CLOSED 2026-08-22 23:20 EDT (v3.64.0-pre)
+
+Filed as `[P2 · M · Sonnet5-Medium]`. The Cloudinary Image Key field on both Add and Edit now takes either a bare Public ID or a pasted http(s) URL, told apart by the URL scheme — so it costs no extra modal slot, which mattered because Discord caps a modal at 5 fields and this one already used all 5. `utils/loadoutImageCache.js` gained `isHttpImageSource()` and `deriveImageKey()`; `handlers/manage/loadouts.js` gained `resolveImageInput()`.
+
+**On Edit the upload targets the build's EXISTING public_id** (`uploadLoadoutImage` already passed `overwrite: true, invalidate: true`), which was the explicit ask — replacing a picture never changes the key anything else references. **A failed upload does not fail the save**: the raw URL is stored as the imageKey instead, which is a supported state rather than a fudge (`loadoutRender.js`'s `buildImageUrl` passes an `http`-prefixed key straight through, and it exists for the originally-imgur-hosted LOCUS rows), and it mirrors `cloudinaryCache.js`'s own fallback.
+
+⚠️ **`deriveImageKey` deliberately does NOT reuse `computeWeaponKeyAndBuild`.** That helper picks N from the highest existing `Build N` build NAME, which is right for `/autobuild` and wrong here: `/manage` builds carry human names like "Aggressive Flex" that contain no number, so it would return 1 forever and overwrite the weapon's existing image on every add. N is chosen against the Public IDs already taken instead. DMZ keys are prefixed `DMZ-`, matching the hand-named `DMZ-AK117-1` assets already in the account — Cloudinary public_ids are global (`asset_folder` is not part of an asset's identity), so an unprefixed key would let a DMZ image overwrite the MP build of the same weapon.
+
+## MP/DMZ Loadout bulk format redesign — CLOSED 2026-08-22 23:20 EDT (v3.64.0-pre)
+
+Filed as `[P3 · M · Sonnet5-Medium · 🧩needs-design]` from Harkirat's own words: *"why are some things in 1 line, while other things are in their own lines... there's no intuitiveness to its structure at all."* Replaced with a labelled block — `Weapon | Category` on line one, then any of `Build:` / `Image:` / `Code:` / `Badges:` on their own lines in any order, then the attachments with an optional `-` bullet.
+
+**The answer to his question turned out to be that there WAS no principle**, which is why it could not be stated. There is one now: identity on line one, every optional field on its own line, everything else is an attachment. **The old seven-segment pipe format is REJECTED rather than silently re-read** — his explicit no-back-compat call — because under the old positional reading `Weapon | Category | Mode | Build` half-parses into a weapon literally named "Weapon", and a loud failure naming the new format beats that.
+
+🔴 **A real defect was found while reading, not while testing, and it was the sharpest edge of the complaint.** `parseBulkLoadoutList` REQUIRED Mode as pipe-segment 3 — a block omitting it was rejected outright — while `core/ops/loadouts.js`'s `upsertBulkBlocks` did `{ ...rawEntry, mode }` and overwrote it with the page's mode unconditionally. **Verified live before changing anything:** a block typed `DMZ` pasted into the MP page parsed with ZERO errors and saved as MP, and `formatLoadoutsAsBulkText` emitted that same Mode — so exporting DMZ builds and pasting them on the MP page silently reassigned every one of them. The parser demanded a field whose value it discarded; the exporter round-tripped a value that could not survive the trip. Asked how to resolve it, Harkirat chose "page always wins, drop the field", so the format no longer asks a question whose answer it ignores.

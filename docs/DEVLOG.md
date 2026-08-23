@@ -199,6 +199,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-22 10:47 EDT — The portal doesn't look like its own mockups (v3.61.0-pre)
 - 2026-08-22 16:06 EDT — Portal design-alignment Phase 1-2, and a live /manage crash found on the dev bot (v3.62.0-pre)
 - 2026-08-22 20:24 EDT — A batch of live /manage click-test fixes (v3.63.0-pre)
+- 2026-08-22 23:40 EDT — Five deferred items, two false premises checked, and one spec reframed mid-draft (v3.64.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3436,6 +3437,20 @@ The most interesting thread was the calendar Double-CP marker: the first version
 A sequential-thinking audit pass (explicitly requested) caught four more gaps before they shipped: two confirmation messages (Announcement, Loadout Share Code) that computed the right values but never told the admin what happened, a calendar Replace flag-change hazard where a re-paste could silently flip an existing event's Double-CP status with zero warning, and zero persisted test coverage for any of the session's new parsing logic despite two live regex corrections already proving how fragile it was. All four got fixed in the same pass rather than filed for later.
 
 Also caught, entirely by accident: implementing the bulletless-entry grammar for calendar bulk-paste surfaced a pre-existing title-truncation bug in the ORIGINAL bulleted-entry regex (a title ending in certain letters loses its last character) that had apparently been live since the format was introduced weeks ago. Filed, not fixed -- it's a genuine parsing ambiguity, not a quick patch, and guessing at a fix without real usage data risked a worse, differently-silent regression.
+
+## 2026-08-22 23:40 EDT — Five deferred items, two false premises checked, and one spec reframed mid-draft (v3.64.0-pre)
+
+Five deferred items in one sitting, and the two framed as "confirmed X, not Y" both survived the check — which is the only reason the rest of the session was spent on the right problems.
+
+The loadout bulk format was filed as a taste complaint: *"why are some things in 1 line, while other things are in their own lines... there's no intuitiveness to its structure at all."* Reading it to answer that question turned up a real defect underneath. `parseBulkLoadoutList` REQUIRED Mode as pipe-segment 3 — a block omitting it was rejected outright — while `core/ops/loadouts.js` overwrote it with the page's mode unconditionally. Verified live before touching anything: a block typed `DMZ` pasted into the MP page parsed with zero errors and saved as MP, and the exporter emitted that same Mode, so exporting DMZ builds and pasting them on the MP page silently reassigned every one of them. The parser demanded a field whose value it discarded; the exporter round-tripped a value that could not survive the trip. The honest answer to "why is there no intuitiveness" was that there was no principle to state. There is one now — identity on line one, every optional field on its own labelled line, everything else an attachment — and the old format is rejected loudly rather than half-parsed.
+
+The retry pattern is the cross-cutting one: a failed `/manage` submit now replies with what you typed, reconstructed in that entity's own bulk format, plus a button that reopens the same modal already refilled. The snippet is in the bulk format rather than a raw field dump specifically so it pastes back into *something*, and each format is pinned by a test that re-imports it through the real parser — asserting the snippet's shape would have passed against a format the parser rejects. The button exists because Discord cannot answer a MODAL_SUBMIT with another modal; that is a platform toll `pendingManageEdits` already pays elsewhere.
+
+Loadout images by URL needed no new modal field at all. The Cloudinary Image Key input tells a Public ID from a pasted URL by its scheme, which mattered because the modal was already at Discord's hard 5-field cap. On Edit the upload targets the build's existing public_id, so replacing a picture never breaks a reference.
+
+The `/bot analytics` overhaul got a spec and an 8-task plan rather than code, and then got reframed mid-drafting. The first draft assumed Discord had to remain a full analytics dashboard and spent its effort making five dense pages distinguishable. Harkirat's correction — the portal now carries the depth, so make Discord a glance — was the better answer to the original complaint, and the premise the first draft never stated out loud was exactly the thing a falsification pass is supposed to catch. It took him noticing rather than the pass. Before writing "move it to the portal" into a spec, `portal/ui/analytics.js` was confirmed to actually exist and to carry revert; otherwise rule 0 would have deleted real capability and called it design.
+
+DMZ Loadouts was asked about and deferred by name, so it stays open on purpose with the menu of real gameplay differences recorded against it for whenever it reopens.
 
 # Part B — Lessons Ledger (thematic)
 

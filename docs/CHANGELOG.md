@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.63.0 — 2026-08-22 20:24 EDT (#171) — a batch of live /manage click-test fixes across draws, calendar, loadouts, and announcements
+## Pre-Release v3.63.0 — 2026-08-22 20:24 EDT (#171 · `3240c6d`) — a batch of live /manage click-test fixes across draws, calendar, loadouts, and announcements
 
 A live click-test session on the dev bot (Harkirat testing `/manage` and `/bot analytics` directly) surfaced a batch of real findings, each root-caused against the actual code before fixing rather than guessed at.
 
