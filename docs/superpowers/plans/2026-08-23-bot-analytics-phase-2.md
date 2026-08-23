@@ -11,7 +11,7 @@ status: frozen
 
 **Branch:** `feat/bot-analytics-redesign` — **already exists, 16 commits, unpushed, based on `v3-pre-release`.** Do not branch again. The worktree is `/Applications/Claude Code/Diors-Builds-worktrees/bot-analytics-redesign` and it has its own `node_modules` and `.env.dev`.
 
-**Design:** `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` — **read §2's six rules before writing anything.** They are the output of five rounds of live review and four of them contradict something the earlier, frozen spec asserted.
+**Design:** `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` — **read §2's seven rules before writing anything.** They are the output of six rounds of live review and four of them contradict something the earlier, frozen spec asserted.
 
 **Tech stack:** discord.js v14 Components V2 written as raw JSON, Node's `assert`, the repo's hand-rolled runner. All new checks go in `scripts/botAnalyticsBody.test.js` (26 checks today).
 

@@ -7,13 +7,13 @@ status: frozen
 
 **Date:** 2026-08-23 11:34 EDT · **Author:** Claude Opus 5 with Harkirat · **Status:** supersedes the design half of `2026-08-22-bot-analytics-redesign-design.md`
 
-> **Read this before touching `/bot analytics` or the change-detail panel.** The 2026-08-22 spec's §1 (the investigation) and §2 rule 0 (Discord is a glance, the portal is the depth) still stand and are not repeated here. Everything else in its §3–§5 was written before a single page had been seen on a real client, and five rounds of live review on desktop **and iPhone** falsified enough of it that a snapshot amendment is the honest record rather than an edit.
+> **Read this before touching `/bot analytics` or the change-detail panel.** The 2026-08-22 spec's §1 (the investigation) and §2 rule 0 (Discord is a glance, the portal is the depth) still stand and are not repeated here. Everything else in its §3–§5 was written before a single page had been seen on a real client, and six rounds of live review on desktop **and iPhone** falsified enough of it that a snapshot amendment is the honest record rather than an edit.
 
 ## 0. Why this document exists
 
 The original spec was approved, built exactly as written, shipped — and was then wrong in ways no amount of re-reading it would have surfaced. Every finding below came from **looking at the rendered thing**, most of them from Harkirat looking at it on his phone. That is the single most transferable lesson here and it is deliberately stated before any of the specifics:
 
-> **A design spec for a rendered surface cannot be validated by reading it.** Four of the six rules in §2 below contradict something the earlier spec asserted confidently, and each contradiction cost a shipped release to find.
+> **A design spec for a rendered surface cannot be validated by reading it.** Four of the seven rules in §2 below contradict something the earlier spec asserted confidently, and each contradiction cost a shipped release to find.
 
 ## 1. The findings, in the order they were found
 
