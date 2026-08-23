@@ -1,7 +1,13 @@
 ---
 kind: plan
-status: frozen
+status: superseded
+superseded_by: docs/superpowers/plans/2026-08-23-bot-analytics-phase-2.md
 ---
+
+> ## ✅ EXECUTED 2026-08-23 — all 8 tasks built on `feat/bot-analytics-redesign`, then substantially rebuilt on live feedback
+> Tasks 1–8 shipped as written. Five rounds of review on desktop and iPhone then changed most of what they produced — see `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` for the findings, and `docs/superpowers/plans/2026-08-23-bot-analytics-phase-2.md` for the six gaps still open.
+>
+> ⚠️ **Two of this plan's own instructions were not followed, and neither was caught by a test until afterwards:** `CHANGES_PER_PAGE` shipped at 5 where the Global Constraints say 3, and Task 3's reference snippet for the vitals block contained a real alignment bug that its own test then locked in. Both are fixed; both are recorded in the successor spec's §1 table. **A plan constraint that nothing asserts is a suggestion.**
 
 # `/bot analytics` Redesign Implementation Plan
 

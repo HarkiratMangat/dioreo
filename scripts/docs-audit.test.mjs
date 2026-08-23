@@ -48,6 +48,18 @@ const idsReported = (root, extraArgs) => {
   }
 };
 
+// 🔴 A CRASHED CHECK REPORTS ITS OWN ID, so `proves` cannot tell "correctly found the defect" from "threw a ReferenceError while looking". Measured 2026-08-23 11:36 EDT: `doc-frontmatter`'s superseded_by branch referenced three identifiers that do not exist in that module (`fs`, `path`, `ROOT`) and had NEVER once executed, because nothing in the repo carried a superseded_by field until that day -- and its self-test ("a superseded_by pointing at a file that does not exist") passed the whole time, against a check that could not run. The crash satisfied the only thing the test asked for. This makes that impossible for every check, not just that one: a proof is only a proof if the check reached a real conclusion.
+const crashedChecks = (root, extraArgs) => {
+  const { out } = runAudit(root, extraArgs);
+  try {
+    return new Set(JSON.parse(out).results
+      .filter((r) => /check crashed/.test(String(r.msg || "")))
+      .map((r) => r.id));
+  } catch {
+    return new Set();
+  }
+};
+
 // Mirrors FM_RULE / fmExpected in docs-audit.mjs. Duplicated ON PURPOSE and kept tiny: the fixture must be built by something INDEPENDENT of the code under test, or `doc-frontmatter` would be checking its own assumptions against itself and would pass no matter what either side said.
 const fixtureKind = (rel) => {
   if (rel.startsWith(".claude/rules/")) return ["rule", "live"];
@@ -272,6 +284,11 @@ const proves = (name, checkId, breakIt, args = []) => {
     const after = idsReported(root, args);
     if (!after.has(checkId)) {
       failures.push(`${name}: broke the invariant but [${checkId}] stayed SILENT — the check is dead.`);
+      return;
+    }
+    // Reporting is not the same as CONCLUDING -- see crashedChecks above.
+    if (crashedChecks(root, args).has(checkId)) {
+      failures.push(`${name}: [${checkId}] reported only because it CRASHED — the proof is vacuous, the check never ran.`);
       return;
     }
     passed++;

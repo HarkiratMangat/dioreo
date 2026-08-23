@@ -1,7 +1,13 @@
 ---
 kind: spec
-status: frozen
+status: superseded
+superseded_by: docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md
 ---
+
+> ## ⏭️ SUPERSEDED 2026-08-23 11:34 EDT — this design was built exactly as written, shipped, and was then found wrong on a real client
+> **Read `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` first.** It carries the seventeen live-review findings and the six rules that replaced this document's §3–§5, plus the phase-2 plan pointer.
+>
+> **This file is deliberately left otherwise UNEDITED.** Its §1 investigation and §2 rule 0 still stand. The rest is kept as-is because the most useful thing it now contains is the evidence that a confidently-argued spec for a *rendered* surface cannot be validated by reading it: four of the successor's six rules contradict something asserted here, and each contradiction cost a shipped release to find. Correcting the text in place would destroy exactly that record.
 
 # `/bot analytics` redesign — design
 

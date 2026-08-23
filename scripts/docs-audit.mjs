@@ -993,7 +993,8 @@ check(
         if (status !== "superseded") {
           out.push({ msg: `${f} names superseded_by: but its status is ${status}, not superseded.` });
         }
-        if (!fs.existsSync(path.join(ROOT, supersededBy))) {
+        // 🔴 `existsSync`/`join`, NOT `fs.`/`path.` -- this module imports them as NAMED bindings (line 49/51), so the original `fs.existsSync(path.join(ROOT, supersededBy))` referenced three identifiers that do not exist here (`fs`, `path`, and `ROOT` -- the repo root is `REPO`). It threw ReferenceError on the FIRST document to ever use superseded_by, 2026-08-23 11:36 EDT, which is also the first time this branch had ever executed: nothing in the repo carried the field, so the check was written, wired, counted among the passing gates, and never once run. A check that cannot run is not coverage.
+        if (!existsSync(join(REPO, supersededBy))) {
           out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
         }
       }
