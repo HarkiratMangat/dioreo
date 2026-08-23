@@ -157,6 +157,16 @@ async function buildChangeExport({ filterPage = null, filterActor = null } = {})
     return lines.join('\n');
 }
 
+
+// Every LATER change against the same record. Reverting an edit writes old values back over whatever came after it, so a panel offering a revert has to be able to say "two other changes have touched this since" -- silently clobbering a later edit is the one genuinely destructive outcome this whole surface can cause. Lives here rather than being queried from commands/bot.js: a ChangeLog read belongs behind the store, and reaching around an exported surface for one query is how a second, drifting access path starts.
+async function getLaterChangesTo({ page, target, after, excludeChangeId }) {
+    if (!page || !target || !after) return [];
+    return ChangeLog.find({
+        page, target, createdAt: { $gt: after },
+        ...(excludeChangeId ? { changeId: { $ne: excludeChangeId } } : {}),
+    }).sort({ createdAt: 1 }).limit(10).lean();
+}
+
 module.exports = {
     RETENTION_DAYS,
     HARD_CAP,
@@ -167,6 +177,7 @@ module.exports = {
     pruneChanges,
     markUndone,
     getRecentChanges,
+    getLaterChangesTo,
     getChangeSummary,
     buildChangeExport,
 };

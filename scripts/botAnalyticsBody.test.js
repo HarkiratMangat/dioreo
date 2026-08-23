@@ -113,23 +113,43 @@ check('the ack verdict states the RULE and what it consumes -- never a percentil
     }
 });
 
-check('the detail panel diffs -- unchanged fields are dropped, not listed', () => {
-    const { sameValue, fmtFieldValue } = require('../commands/bot').__testables;
-    // The defect this guards shipped and was reported: an edit dumped the inverse's WHOLE payload (title, date, thumbnailUrl, items), so the one field that actually changed was hidden among three that did not, and "what was even edited?" was unanswerable from the panel.
-    const prev = { title: 'Deepstar Wraith Mythic Drop', date: '2026-08-14T00:00:00.000Z' };
-    const now = { title: 'Deepstar Wraith Mythic Drop', date: new Date('2026-08-22T00:00:00.000Z') };
-    const changed = Object.keys(prev).filter(k => !sameValue(now[k], prev[k]));
-    assert.deepStrictEqual(changed, ['date'], 'only the field that actually differs may be reported');
-    // A Mongo round-trip returns a Date on one side and an ISO string on the other; comparing those naively reports every date field as changed on every edit, which is the same wall of noise wearing a diff's clothes.
-    assert.ok(sameValue(new Date('2026-08-14T00:00:00.000Z'), '2026-08-14T00:00:00.000Z'), 'Date vs ISO string must compare equal');
-    assert.ok(!/https?:/.test(fmtFieldValue('https://res.cloudinary.com/x/image/upload/f_auto,q_auto/y.png')), 'a raw CDN url is not information to a reader');
+check('a list field NEVER renders as "2 items -> 2 items"', () => {
+    const { sameValue, describeListChange } = require('../commands/bot').__testables;
+    // The exact row that reached a screenshot: the diff ASSERTED a change and then displayed two identical values. Worse than omitting it -- it teaches the reader the diff cannot be trusted.
+    const before = [{ tier: 'mythic', name: 'Type 25 – Deepstar Piercer' }, { tier: 'legendary', name: 'Old Skin' }];
+    const withIds = before.map((i, n) => ({ ...i, _id: `id${n}` }));
+    assert.ok(sameValue(before, withIds), 'the same items must compare EQUAL when one side carries Mongo _ids');
+    const swapped = [{ tier: 'mythic', name: 'Type 25 – Deepstar Piercer' }, { tier: 'legendary', name: 'New Skin' }];
+    assert.ok(!sameValue(before, swapped));
+    const moved = describeListChange(before, swapped);
+    assert.ok(/− Old Skin/.test(moved) && /\+ New Skin/.test(moved), `must name what moved, got: ${moved}`);
+    assert.strictEqual(describeListChange(before, before.slice().reverse()), '_reordered_');
+});
+
+check('a date-ONLY field renders its UTC day, never a localised instant', () => {
+    const { fmtFieldValue, fmtUtcDay } = require('../commands/bot').__testables;
+    // A draw dated 14 Aug is stored at UTC midnight; rendered as a Discord instant it localises into the evening of the 13th, and the panel told Harkirat "August 13, 2026" for a draw he had dated the 14th.
+    assert.strictEqual(fmtUtcDay('2026-08-14T00:00:00.000Z'), 'Aug 14, 2026');
+    const out = fmtFieldValue('2026-08-14T00:00:00.000Z', 'date', ['date']);
+    assert.ok(/Aug 14, 2026/.test(out), `date-only must show the typed day, got: ${out}`);
+    assert.ok(!/<t:/.test(out), 'a date-only field must not use a localising Discord timestamp');
+    // A genuine INSTANT keeps <t:> -- for those the reader's own timezone is the right frame.
+    assert.ok(/<t:/.test(fmtFieldValue('2026-08-14T00:00:00.000Z', 'startsAt', ['date'])));
+});
+
+check('items are named, not counted -- and a raw CDN url is not information', () => {
+    const { fmtItems, fmtFieldValue } = require('../commands/bot').__testables;
+    assert.ok(/Type 25/.test(fmtItems([{ name: 'Type 25 – Deepstar Piercer' }])), 'a draw IS its items; "1 item" says nothing');
+    assert.ok(!/https?:/.test(fmtFieldValue('https://res.cloudinary.com/x/image/upload/f_auto/y.png', 'thumbnailUrl', [])));
 });
 
 check('revertSentence talks about the RECORD, never about an op type', () => {
     const { revertSentence } = require('../commands/bot').__testables;
     assert.ok(/deletes this draw/.test(revertSentence({ inverse: { type: 'draw.delete' } }, 'draw')));
     assert.ok(/puts this build back/.test(revertSentence({ inverse: { type: 'loadout.add' } }, 'build')));
-    assert.ok(/1 change/.test(revertSentence({ inverse: { type: 'draw.edit' } }, 'draw', 1)));
+    // Grammar is part of the job here: "undoes that 2 changes" shipped and Harkirat read it.
+    assert.ok(/undoes that change/.test(revertSentence({ inverse: { type: 'draw.edit' } }, 'draw', 1)));
+    assert.ok(/undoes those 2 changes/.test(revertSentence({ inverse: { type: 'draw.edit' } }, 'draw', 2)));
     for (const t of ['draw.delete', 'draw.edit', 'loadout.add']) {
         assert.ok(!new RegExp(t.replace('.', '\\.')).test(revertSentence({ inverse: { type: t } }, 'draw', 1)),
             `"${t}" leaked into a sentence a person has to read`);

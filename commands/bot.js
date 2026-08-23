@@ -224,7 +224,7 @@ function buildAlertsExplainBody() {
 const PAGE_LABEL = {
     draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
     patchnotes: 'Patch Notes', seasondraft: 'Next Season Draft', season: 'Season Titles/Wipe',
-    announcement: 'Announcement', access: 'Bot Access', manageadmins: 'Manage Admins (legacy)',
+    announcement: 'Announcements', access: 'Bot Access', manageadmins: 'Manage Admins (legacy)',
 };
 
 // One SECTION per change, with Revert as the row's own accessory -- rather than a Text Display followed by a full-width Action Row. Component cost is IDENTICAL (9+10+2 vs 10+1+2 = 3 either way; the first draft of the spec wrongly claimed a saving, see its audit log), so this is bought purely for identity: Changes becomes the only page whose rows carry a control, which is exactly what distinguishes it from Alerts' rows. Section+Button accessory confirmed via Discord's own API schema -- see Task 2's note in the plan.
@@ -248,30 +248,68 @@ function buildChangesRows(items) {
 // There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly.
 
 // 🔴 THIS PANEL ANSWERS "WHAT WAS EVEN EDITED?", AND NOTHING ELSE IS ITS JOB. Harkirat, 2026-08-23 10:28 EDT, on two earlier versions of it: "i genuinely have NO greater understanding ... before OR after clicking 'detail'. I gained nothing", and then, on an edit row, "WHAT WAS EVEN EDITED? what exactly will i revert? what's different?" Both versions failed the same way. The first printed Section/Action/Record/Affected -- the summary restated in schema vocabulary (he already knew it was an add, on Draws, called "Test Draw") plus `Record: SeasonalData`, an internal Mongoose model name that leaks implementation and means nothing to a reader. The second dumped the inverse's ENTIRE stored payload for an edit -- title, date, thumbnailUrl, items -- with no indication of which of those the edit actually touched, so the one field that changed was hidden among three that did not. The fix is the diff nobody had computed: the inverse's payload holds the values as they were BEFORE the edit, so pairing it field-by-field against the record as it stands NOW yields exactly what changed, and every field where the two agree is dropped rather than listed.
-function fmtFieldValue(v) {
+
+// ── The change-detail panel ── 🔴 ITS ONE JOB IS TO ANSWER "WHAT WAS EVEN EDITED, AND IS IT SAFE TO UNDO?" Three rounds of live review got it here, and each round's failure is worth keeping because they were all the same failure wearing different clothes -- showing the READER something about the AUDIT SYSTEM instead of something about the DATA. v1 printed Section/Action/Record/Affected (the summary restated in schema vocabulary, plus an internal Mongoose model name). v2 dumped the inverse's whole payload, hiding the one changed field among three unchanged ones. v3 -- this one -- fixes what the screenshots then showed:
+//   · a row reading "Items 2 items -> 2 items", i.e. the diff ASSERTING a change and displaying two
+//     identical values, which is worse than omitting it: it teaches the reader the diff cannot be trusted;
+//   · "August 13, 2026" for a date stored as 2026-08-14T00:00Z, because date-ONLY fields were rendered with
+//     Discord's <t:> and localised a day backwards;
+//   · a Deleted-an-announcement panel showing NOTHING, because the record is gone by definition and the
+//     payload holding it was only read for edits.
+
+// A draw's items ARE the draw -- "1 item" is a fact about an array, not about what a player would win.
+function fmtItems(arr) {
+    if (!Array.isArray(arr) || !arr.length) return '_(none)_';
+    const names = arr.map(i => (i && (i.name || i.title)) || '?');
+    const shown = names.slice(0, 3).map(n => truncate(String(n), 40)).join(', ');
+    return names.length > 3 ? `${shown} _(+${names.length - 3} more)_` : shown;
+}
+
+// 🔴 DATE-ONLY FIELDS ARE NOT INSTANTS. A draw's date is a DAY the admin typed, stored at UTC midnight (the repo's settled admin-date-UTC decision). Rendered with <t:...:D> it localises into the previous evening in EDT, so the panel told Harkirat "August 13" for a draw he had dated August 14. Genuine instants (startsAt/expiresAt/createdAt) keep <t:>, because for those the reader's own timezone IS the right frame. The resolver declares which is which; the formatter must never guess from the value's shape.
+const fmtUtcDay = (v) => new Date(v).toLocaleDateString('en-US', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
+function fmtFieldValue(v, key, dateOnly = []) {
     if (v == null || v === '') return '_(empty)_';
-    if (v instanceof Date || (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v))) return `<t:${unix(v)}:D>`;
+    if (key === 'items' || key === 'attachments') return Array.isArray(v) ? fmtItems(v) : String(v);
+    if (dateOnly.includes(key)) return `${fmtUtcDay(v)} _(UTC)_`;
+    if (v instanceof Date || (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v))) return `<t:${unix(v)}:f>`;
     if (typeof v === 'boolean') return v ? 'yes' : 'no';
-    if (Array.isArray(v)) return plural(v.length, 'item');
-    if (typeof v === 'object') return `\`${truncate(JSON.stringify(v), 50)}\``;
     if (typeof v === 'string' && /^https?:\/\//.test(v)) return '_(an image)_';
+    if (Array.isArray(v)) return plural(v.length, 'entry');
+    if (typeof v === 'object') return `\`${truncate(JSON.stringify(v), 50)}\``;
     return truncate(String(v), 70);
 }
-// Field-name -> the word a person would use. An admin edits a "Date", not a `date`; a "Picture", not a `thumbnailUrl`.
+
 const FIELD_LABEL = {
     title: 'Title', date: 'Date', endDate: 'Ends', startDate: 'Starts', startsAt: 'Starts', expiresAt: 'Expires',
     thumbnailUrl: 'Picture', imageKey: 'Picture', items: 'Items', category: 'Category', text: 'Text',
     weaponName: 'Weapon', buildName: 'Build', attachments: 'Attachments', shareCode: 'Share code', mode: 'Mode',
 };
 const fieldLabel = (k) => FIELD_LABEL[k] || k;
-// Value equality that survives a Mongo round-trip: dates come back as Date objects on one side and ISO strings on the other, and subdocument arrays carry _id keys the stored inverse may not.
+
+// Equality that survives a Mongo round-trip. Dates arrive as a Date on one side and an ISO string on the other; subdocument arrays carry _id keys the stored inverse may not. A naive JSON.stringify on either reports a change on every edit -- which is exactly how "Items 2 items -> 2 items" reached a screenshot.
 function sameValue(a, b) {
     if (a instanceof Date || b instanceof Date) return unix(a) === unix(b);
+    if (Array.isArray(a) && Array.isArray(b)) {
+        const names = (x) => x.map(i => (i && typeof i === 'object') ? String(i.name ?? i.title ?? JSON.stringify(i)) : String(i));
+        return JSON.stringify(names(a)) === JSON.stringify(names(b));
+    }
     if (typeof a === 'object' || typeof b === 'object') return JSON.stringify(a) === JSON.stringify(b);
     return String(a ?? '') === String(b ?? '');
 }
 
-// Reads the record a change touched, in the vocabulary of the DATA rather than of the audit log. Returns null when the page has no resolver or the record is gone -- the caller says so plainly rather than inventing something. Its caller wraps it in try/catch: a read-only glance panel must never be able to break the interaction, and core/changeset.js's own header records what one unawaited rejection cost here.
+// What actually moved inside a list field, by NAME. Returning the added/removed names is the difference between "the items changed" and a reader knowing a Mythic was swapped for a Legendary.
+function describeListChange(before, after) {
+    const names = (x) => (Array.isArray(x) ? x : []).map(i => (i && typeof i === 'object') ? String(i.name ?? i.title ?? '?') : String(i));
+    const b = names(before), a = names(after);
+    const added = a.filter(n => !b.includes(n));
+    const removed = b.filter(n => !a.includes(n));
+    if (!added.length && !removed.length) return b.length === a.length ? '_reordered_' : null;
+    return [
+        ...removed.slice(0, 3).map(n => `− ${truncate(n, 40)}`),
+        ...added.slice(0, 3).map(n => `+ ${truncate(n, 40)}`),
+    ].join('\n');
+}
+
 async function fetchRecord(row) {
     const target = (row.inverse && row.inverse.target) || {};
     const id = String(target.elementId || target.id || '');
@@ -280,50 +318,68 @@ async function fetchRecord(row) {
         const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
         const path = target.category === 'returning' ? 'returningDraws' : 'newDraws';
         const d = (doc?.[path] || []).find(x => String(x._id) === id);
-        return d ? { noun: 'draw', raw: d, show: ['title', 'date', 'items', 'thumbnailUrl'] } : null;
+        return d ? { noun: 'draw', raw: d, show: ['title', 'date', 'items', 'thumbnailUrl'], dateOnly: ['date'] } : null;
     }
     if (row.page === 'calendar') {
         const SeasonalData = require('../models/SeasonalData');
         const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
         const e = (doc?.calendar || []).find(x => String(x._id) === id);
-        return e ? { noun: 'event', raw: e, show: ['title', 'date', 'endDate', 'category'] } : null;
+        return e ? { noun: 'event', raw: e, show: ['title', 'date', 'endDate', 'category'], dateOnly: ['date', 'endDate'] } : null;
     }
     if (row.page === 'loadouts_mp' || row.page === 'loadouts_dmz') {
         const Loadout = require('../models/Loadout');
         const l = id ? await Loadout.findById(id).lean() : null;
-        return l ? { noun: 'build', raw: l, show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'] } : null;
+        return l ? { noun: 'build', raw: l, show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] } : null;
     }
     if (row.page === 'announcement') {
         const Announcement = require('../models/Announcement');
         const a = id ? await Announcement.findById(id).lean() : null;
-        return a ? { noun: 'announcement', raw: a, show: ['text', 'startsAt', 'expiresAt'] } : null;
+        return a ? { noun: 'announcement', raw: a, show: ['text', 'startsAt', 'expiresAt'], dateOnly: [] } : null;
     }
     return null;
 }
+// The noun and field set for a page whose record can no longer be FETCHED -- which is every delete, by definition. Without this the emptiest panel was the one whose payload held the most.
+const PAGE_SHAPE = {
+    draws: { noun: 'draw', show: ['title', 'date', 'items', 'thumbnailUrl'], dateOnly: ['date'] },
+    calendar: { noun: 'event', show: ['title', 'date', 'endDate', 'category'], dateOnly: ['date', 'endDate'] },
+    loadouts_mp: { noun: 'build', show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] },
+    loadouts_dmz: { noun: 'build', show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'], dateOnly: [] },
+    announcement: { noun: 'announcement', show: ['text', 'startsAt', 'expiresAt'], dateOnly: [] },
+};
 
-// One sentence about the DATA -- never "apply draw.delete".
 function revertSentence(row, noun, changedCount) {
     const verb = String(row.inverse?.type || '').split('.')[1];
     const thing = noun || 'record';
     if (verb === 'delete') return `↩️ **Reverting deletes this ${thing}.** Nothing else is touched.`;
     if (verb === 'add' || verb === 'post') return `↩️ **Reverting puts this ${thing} back**, exactly as it was.`;
-    if (verb === 'edit') return `↩️ **Reverting undoes ${changedCount ? `that ${plural(changedCount, 'change')}` : 'the edit'}**, putting the old values back.`;
+    if (verb === 'edit') return `↩️ **Reverting undoes ${changedCount === 1 ? 'that change' : changedCount ? `those ${changedCount} changes` : 'the edit'}**, putting the old values back.`;
     return `↩️ **Reverting applies the inverse** recorded when this change was made.`;
 }
 
+function fieldList(fields, raw, dateOnly) {
+    return fields.filter(k => raw[k] != null && raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(raw[k], k, dateOnly)}`).join('\n');
+}
+
 async function buildChangeDetailBody(changeId) {
-    const { getChange } = require('../utils/changeStore');
+    const { getChange, getLaterChangesTo } = require('../utils/changeStore');
     const { canRevert } = require('../core/revert');
     const row = await getChange(changeId);
     if (!row) return [{ type: 10, content: `**That change no longer exists.**\n-# \`${truncate(changeId, 40)}\` is not in the log — it may have aged out of the 180-day window.` }];
 
     const gate = canRevert(row);
-    let record = null;
+    let record = null, later = [];
     try { record = await fetchRecord(row); } catch (recordError) {
         console.error(`Change-detail record lookup failed for ${changeId}:`, recordError?.message || recordError);
     }
-    const isEdit = String(row.inverse?.type || '').endsWith('.edit');
-    const prev = isEdit && row.inverse.payload && typeof row.inverse.payload === 'object' ? row.inverse.payload : null;
+    try { later = await getLaterChangesTo({ page: row.page, target: row.target, after: row.createdAt, excludeChangeId: row.changeId }); } catch (laterError) {
+        console.error(`Change-detail later-changes lookup failed for ${changeId}:`, laterError?.message || laterError);
+    }
+
+    const verb = String(row.inverse?.type || '').split('.')[1];
+    const payload = row.inverse && typeof row.inverse.payload === 'object' ? row.inverse.payload : null;
+    const shape = record || PAGE_SHAPE[row.page] || null;
+    const noun = shape?.noun;
+    const dateOnly = shape?.dateOnly || [];
 
     const body = [
         { type: 10, content: `### ${truncate(row.summary || `${row.action} on ${row.page}`, 90)}${row.undone ? ' ↩️' : ''}` },
@@ -331,31 +387,50 @@ async function buildChangeDetailBody(changeId) {
         { type: 14, spacing: 1 },
     ];
 
-    if (prev && record) {
-        // THE DIFF. Only fields that actually differ; the rest are counted, not listed.
-        const keys = Object.keys(prev).filter(k => k !== '_id');
-        const changed = keys.filter(k => !sameValue(record.raw[k], prev[k]));
+    let changed = [];
+    if (verb === 'edit' && payload && record) {
+        const keys = Object.keys(payload).filter(k => k !== '_id');
+        changed = keys.filter(k => !sameValue(record.raw[k], payload[k]));
         const untouched = keys.length - changed.length;
         if (changed.length) {
-            const rows = changed.slice(0, 6).map(k => `**${fieldLabel(k)}** ${fmtFieldValue(prev[k])} → ${fmtFieldValue(record.raw[k])}`);
-            body.push({ type: 10, content: `✏️ **What changed** _(${plural(changed.length, 'field')})_\n${rows.join('\n')}${changed.length > 6 ? `\n-# …and ${changed.length - 6} more — see the portal.` : ''}` });
-            if (untouched) body.push({ type: 10, content: `-# ${plural(untouched, 'other field')} on this ${record.noun} ${untouched === 1 ? 'was' : 'were'} left exactly as ${untouched === 1 ? 'it was' : 'they were'}.` });
+            const rows = changed.slice(0, 6).map(k => {
+                // 🔴 A LIST FIELD MUST NEVER RENDER AS "2 items -> 2 items". Either say what moved, or do not claim the field changed at all -- an assertion the reader can see is false costs more trust than the row was ever worth.
+                if (Array.isArray(payload[k]) || Array.isArray(record.raw[k])) {
+                    const moved = describeListChange(payload[k], record.raw[k]);
+                    return moved ? `**${fieldLabel(k)}**\n${moved}` : null;
+                }
+                return `**${fieldLabel(k)}** ${fmtFieldValue(payload[k], k, dateOnly)} → ${fmtFieldValue(record.raw[k], k, dateOnly)}`;
+            }).filter(Boolean);
+            if (rows.length) body.push({ type: 10, content: `✏️ **What changed** _(${plural(rows.length, 'field')})_\n${rows.join('\n')}` });
+            else body.push({ type: 10, content: `✏️ **Nothing visible changed** — the saved values differ only in ordering or internal ids.` });
+            if (untouched) body.push({ type: 10, content: `-# ${plural(untouched, 'other field')} left as ${untouched === 1 ? 'it was' : 'they were'}.` });
         } else {
             body.push({ type: 10, content: `✏️ **Nothing actually changed.** Every field was saved with the value it already had — a no-op edit.` });
         }
-        body.push({ type: 14, spacing: 1 });
-        body.push({ type: 10, content: `**The ${record.noun} now**\n${record.show.filter(k => record.raw[k] != null && record.raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(record.raw[k])}`).join('\n')}` });
+        // Only the fields the diff did NOT already show. Repeating Title two inches under the diff that just highlighted it is precisely the noise this panel keeps being criticised for.
+        const rest = record.show.filter(k => !changed.includes(k));
+        if (rest.length) {
+            const listed = fieldList(rest, record.raw, dateOnly);
+            if (listed) { body.push({ type: 14, spacing: 1 }); body.push({ type: 10, content: `**Otherwise, the ${noun} reads**\n${listed}` }); }
+        }
     } else if (record) {
-        body.push({ type: 10, content: `**The ${record.noun}, as it stands right now**\n${record.show.filter(k => record.raw[k] != null && record.raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(record.raw[k])}`).join('\n')}` });
-    } else if (prev) {
-        // The record is gone (or this page has no resolver), so the stored previous values are all there is. Say which it is rather than presenting them as a diff they cannot be.
-        body.push({ type: 10, content: `**The values this change replaced**\n${Object.entries(prev).filter(([k]) => k !== '_id').slice(0, 6).map(([k, v]) => `**${fieldLabel(k)}** · ${fmtFieldValue(v)}`).join('\n')}` });
-        body.push({ type: 10, content: `-# The record itself could not be read back to compare against — it may have been deleted since.` });
+        body.push({ type: 10, content: `**The ${noun} it ${verb === 'delete' ? 'created' : 'affected'}**\n${fieldList(record.show, record.raw, dateOnly)}` });
+    } else if (payload && shape) {
+        // The record cannot be fetched -- which is EVERY delete, by definition, since the row is gone. The inverse's payload is the removed record in full, so this is the richest panel available, not the poorest.
+        body.push({ type: 10, content: `**The ${noun} it removed**\n${fieldList(shape.show, payload, dateOnly)}` });
     } else {
-        body.push({ type: 10, content: `-# This section has no quick view yet, so the contents aren't shown here. Open it in the portal for the full record.` });
+        body.push({ type: 10, content: `-# The contents weren't recorded for this kind of change. Open it in the portal for the full record.` });
     }
 
     if (row.detail) body.push({ type: 10, content: `-# ${truncate(row.detail, 400)}` });
+
+    // 🔴 THE ONE GENUINELY DANGEROUS CASE. Reverting an edit writes the old values back over whatever came AFTER it, so a later change to the same record is silently destroyed by a button that looks isolated.
+    if (later.length && !row.undone) {
+        body.push({ type: 14, spacing: 1 });
+        body.push({ type: 10, content: `⚠️ **${plural(later.length, 'later change')} touched this same ${noun || 'record'} after this one.**\n`
+            + later.slice(0, 3).map(c => `-# • ${truncate(c.summary || c.action, 60)} — <@${c.actorId}>, <t:${unix(c.createdAt)}:R>`).join('\n')
+            + `\n-# Reverting this one puts the old values back over ${later.length === 1 ? 'that' : 'those'} too.` });
+    }
     body.push({ type: 14, spacing: 1 });
 
     const reference = { type: 10, content: `-# Reference \`${row.changeId}\` — an internal id for this log entry, **not** a date.` };
@@ -364,8 +439,11 @@ async function buildChangeDetailBody(changeId) {
         body.push(reference);
         return body;
     }
-    const changedCount = prev && record ? Object.keys(prev).filter(k => k !== '_id' && !sameValue(record.raw[k], prev[k])).length : 0;
-    body.push({ type: 10, content: revertSentence(row, record?.noun, changedCount) });
+    // A revert of an edit/delete-inverse goes through commitSet, whose ops return {ok:false, reason:'missing'} when the element is gone. Saying so BEFORE the press beats discovering it after.
+    if (verb === 'edit' && !record) {
+        body.push({ type: 10, content: `⚠️ **This ${noun || 'record'} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
+    }
+    body.push({ type: 10, content: revertSentence(row, noun, changed.length) });
     body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
     body.push({ type: 14, spacing: 1 });
     const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
@@ -761,7 +839,7 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { revertSentence, fmtFieldValue, sameValue, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
+    __testables: { revertSentence, fmtFieldValue, sameValue, describeListChange, fmtItems, fmtUtcDay, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
     buildHotpatchPanel,
     buildChangeDetailBody,
     buildUsageExport,
