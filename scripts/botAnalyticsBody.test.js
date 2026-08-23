@@ -113,15 +113,27 @@ check('the ack verdict states the RULE and what it consumes -- never a percentil
     }
 });
 
-check('describeInverse says what Revert will actually DO, per op kind', () => {
-    const { describeInverse } = require('../commands/bot').__testables;
-    assert.ok(/Delete/.test(describeInverse({ type: 'draw.delete', target: 'Test Draw' }).line));
-    assert.ok(/Put back/.test(describeInverse({ type: 'draw.add', target: 'Test Draw', payload: { title: 'x' } }).line));
-    const edit = describeInverse({ type: 'calendar.edit', target: { id: '7' }, payload: { endDate: '2026-09-01' } });
-    assert.ok(/Restore the previous values/.test(edit.line));
-    // The inverse's payload IS the other half of a diff -- the values Revert writes back. Losing it would return the panel to the blind-revert state that prompted it.
-    assert.deepStrictEqual(edit.fields, [['endDate', '2026-09-01']]);
-    assert.strictEqual(describeInverse(null), null, 'a pre-core row has no inverse and must not fabricate one');
+check('the detail panel diffs -- unchanged fields are dropped, not listed', () => {
+    const { sameValue, fmtFieldValue } = require('../commands/bot').__testables;
+    // The defect this guards shipped and was reported: an edit dumped the inverse's WHOLE payload (title, date, thumbnailUrl, items), so the one field that actually changed was hidden among three that did not, and "what was even edited?" was unanswerable from the panel.
+    const prev = { title: 'Deepstar Wraith Mythic Drop', date: '2026-08-14T00:00:00.000Z' };
+    const now = { title: 'Deepstar Wraith Mythic Drop', date: new Date('2026-08-22T00:00:00.000Z') };
+    const changed = Object.keys(prev).filter(k => !sameValue(now[k], prev[k]));
+    assert.deepStrictEqual(changed, ['date'], 'only the field that actually differs may be reported');
+    // A Mongo round-trip returns a Date on one side and an ISO string on the other; comparing those naively reports every date field as changed on every edit, which is the same wall of noise wearing a diff's clothes.
+    assert.ok(sameValue(new Date('2026-08-14T00:00:00.000Z'), '2026-08-14T00:00:00.000Z'), 'Date vs ISO string must compare equal');
+    assert.ok(!/https?:/.test(fmtFieldValue('https://res.cloudinary.com/x/image/upload/f_auto,q_auto/y.png')), 'a raw CDN url is not information to a reader');
+});
+
+check('revertSentence talks about the RECORD, never about an op type', () => {
+    const { revertSentence } = require('../commands/bot').__testables;
+    assert.ok(/deletes this draw/.test(revertSentence({ inverse: { type: 'draw.delete' } }, 'draw')));
+    assert.ok(/puts this build back/.test(revertSentence({ inverse: { type: 'loadout.add' } }, 'build')));
+    assert.ok(/1 change/.test(revertSentence({ inverse: { type: 'draw.edit' } }, 'draw', 1)));
+    for (const t of ['draw.delete', 'draw.edit', 'loadout.add']) {
+        assert.ok(!new RegExp(t.replace('.', '\\.')).test(revertSentence({ inverse: { type: t } }, 'draw', 1)),
+            `"${t}" leaked into a sentence a person has to read`);
+    }
 });
 
 check('duration is banded by FELT SPEED, never against the ack deadline', () => {

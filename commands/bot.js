@@ -236,7 +236,8 @@ function buildChangesRows(items) {
         return {
             type: 9,
             components: [{ type: 10, content:
-                `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}`
+                // 🔴 NO changeId HERE. `Aug22-28` is an internal MMMDD-NN log id that LOOKS like a date, sitting inches from "19 hours ago" and disagreeing with it -- Harkirat: "your 'Aug22-28' timestamp or whatever is so confusing." It is a reference, not a fact about the change, so it lives in the detail panel labelled explicitly as not-a-date.
+                `**${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}`
                 + `\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reason}` }],
             // 🔴 THIS OPENS A DETAIL PANEL, IT DOES NOT REVERT. Harkirat, 2026-08-23 10:07 EDT, on the version where it fired immediately: "what am I even doing by tapping 'revert' or am i just blindly reverting?" -- he was, and a one-line summary is not enough to decide by. The revert itself now lives behind that panel, which states exactly which record is affected and what the stored inverse will do. Still one tap to reach, which is what the spec's time-critical argument actually protected: it objected to a BROWSER round-trip, not to a confirmation step. Disabled rows keep the panel reachable on purpose -- "why can't I revert this?" is a question the detail view answers, and greying out the only way to ask it is the worse failure.
             accessory: { type: 2, style: 2, label: gate.ok ? 'Details' : 'Why not?', custom_id: `bot_changedetail_${c.changeId}` },
@@ -244,18 +245,70 @@ function buildChangesRows(items) {
     });
 }
 
-// There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly. Turns a stored inverse op into a sentence about what pressing Revert will actually do. Reads only the op itself -- no DB call, so it cannot throw and cannot be stale relative to what revertChange() will run, because it is describing the very object that gets passed to commitSet().
-function describeInverse(inv) {
-    if (!inv || !inv.type) return null;
-    const [entity, verb] = String(inv.type).split('.');
-    const label = inv.target && typeof inv.target === 'object'
-        ? Object.entries(inv.target).map(([k, v]) => `${k} \`${v}\``).join(', ')
-        : (inv.target ? `\`${inv.target}\`` : `this ${entity || 'record'}`);
-    const fields = inv.payload && typeof inv.payload === 'object' ? Object.entries(inv.payload) : [];
-    if (verb === 'delete') return { line: `**Delete** the ${entity} it created (${label}).`, fields: [] };
-    if (verb === 'add' || verb === 'post') return { line: `**Put back** the ${entity} it removed (${label}).`, fields };
-    if (verb === 'edit') return { line: `**Restore the previous values** on ${label}.`, fields };
-    return { line: `Apply \`${inv.type}\` to ${label}.`, fields };
+// There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly.
+
+// 🔴 THIS PANEL ANSWERS "WHAT WAS EVEN EDITED?", AND NOTHING ELSE IS ITS JOB. Harkirat, 2026-08-23 10:28 EDT, on two earlier versions of it: "i genuinely have NO greater understanding ... before OR after clicking 'detail'. I gained nothing", and then, on an edit row, "WHAT WAS EVEN EDITED? what exactly will i revert? what's different?" Both versions failed the same way. The first printed Section/Action/Record/Affected -- the summary restated in schema vocabulary (he already knew it was an add, on Draws, called "Test Draw") plus `Record: SeasonalData`, an internal Mongoose model name that leaks implementation and means nothing to a reader. The second dumped the inverse's ENTIRE stored payload for an edit -- title, date, thumbnailUrl, items -- with no indication of which of those the edit actually touched, so the one field that changed was hidden among three that did not. The fix is the diff nobody had computed: the inverse's payload holds the values as they were BEFORE the edit, so pairing it field-by-field against the record as it stands NOW yields exactly what changed, and every field where the two agree is dropped rather than listed.
+function fmtFieldValue(v) {
+    if (v == null || v === '') return '_(empty)_';
+    if (v instanceof Date || (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v))) return `<t:${unix(v)}:D>`;
+    if (typeof v === 'boolean') return v ? 'yes' : 'no';
+    if (Array.isArray(v)) return plural(v.length, 'item');
+    if (typeof v === 'object') return `\`${truncate(JSON.stringify(v), 50)}\``;
+    if (typeof v === 'string' && /^https?:\/\//.test(v)) return '_(an image)_';
+    return truncate(String(v), 70);
+}
+// Field-name -> the word a person would use. An admin edits a "Date", not a `date`; a "Picture", not a `thumbnailUrl`.
+const FIELD_LABEL = {
+    title: 'Title', date: 'Date', endDate: 'Ends', startDate: 'Starts', startsAt: 'Starts', expiresAt: 'Expires',
+    thumbnailUrl: 'Picture', imageKey: 'Picture', items: 'Items', category: 'Category', text: 'Text',
+    weaponName: 'Weapon', buildName: 'Build', attachments: 'Attachments', shareCode: 'Share code', mode: 'Mode',
+};
+const fieldLabel = (k) => FIELD_LABEL[k] || k;
+// Value equality that survives a Mongo round-trip: dates come back as Date objects on one side and ISO strings on the other, and subdocument arrays carry _id keys the stored inverse may not.
+function sameValue(a, b) {
+    if (a instanceof Date || b instanceof Date) return unix(a) === unix(b);
+    if (typeof a === 'object' || typeof b === 'object') return JSON.stringify(a) === JSON.stringify(b);
+    return String(a ?? '') === String(b ?? '');
+}
+
+// Reads the record a change touched, in the vocabulary of the DATA rather than of the audit log. Returns null when the page has no resolver or the record is gone -- the caller says so plainly rather than inventing something. Its caller wraps it in try/catch: a read-only glance panel must never be able to break the interaction, and core/changeset.js's own header records what one unawaited rejection cost here.
+async function fetchRecord(row) {
+    const target = (row.inverse && row.inverse.target) || {};
+    const id = String(target.elementId || target.id || '');
+    if (row.page === 'draws') {
+        const SeasonalData = require('../models/SeasonalData');
+        const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        const path = target.category === 'returning' ? 'returningDraws' : 'newDraws';
+        const d = (doc?.[path] || []).find(x => String(x._id) === id);
+        return d ? { noun: 'draw', raw: d, show: ['title', 'date', 'items', 'thumbnailUrl'] } : null;
+    }
+    if (row.page === 'calendar') {
+        const SeasonalData = require('../models/SeasonalData');
+        const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        const e = (doc?.calendar || []).find(x => String(x._id) === id);
+        return e ? { noun: 'event', raw: e, show: ['title', 'date', 'endDate', 'category'] } : null;
+    }
+    if (row.page === 'loadouts_mp' || row.page === 'loadouts_dmz') {
+        const Loadout = require('../models/Loadout');
+        const l = id ? await Loadout.findById(id).lean() : null;
+        return l ? { noun: 'build', raw: l, show: ['weaponName', 'buildName', 'category', 'attachments', 'shareCode'] } : null;
+    }
+    if (row.page === 'announcement') {
+        const Announcement = require('../models/Announcement');
+        const a = id ? await Announcement.findById(id).lean() : null;
+        return a ? { noun: 'announcement', raw: a, show: ['text', 'startsAt', 'expiresAt'] } : null;
+    }
+    return null;
+}
+
+// One sentence about the DATA -- never "apply draw.delete".
+function revertSentence(row, noun, changedCount) {
+    const verb = String(row.inverse?.type || '').split('.')[1];
+    const thing = noun || 'record';
+    if (verb === 'delete') return `↩️ **Reverting deletes this ${thing}.** Nothing else is touched.`;
+    if (verb === 'add' || verb === 'post') return `↩️ **Reverting puts this ${thing} back**, exactly as it was.`;
+    if (verb === 'edit') return `↩️ **Reverting undoes ${changedCount ? `that ${plural(changedCount, 'change')}` : 'the edit'}**, putting the old values back.`;
+    return `↩️ **Reverting applies the inverse** recorded when this change was made.`;
 }
 
 async function buildChangeDetailBody(changeId) {
@@ -265,43 +318,63 @@ async function buildChangeDetailBody(changeId) {
     if (!row) return [{ type: 10, content: `**That change no longer exists.**\n-# \`${truncate(changeId, 40)}\` is not in the log — it may have aged out of the 180-day window.` }];
 
     const gate = canRevert(row);
-    const inv = describeInverse(row.inverse);
-    const facts = [
-        ['Section', PAGE_LABEL[row.page] || row.page || '?'],
-        ['Action', row.action || '?'],
-        ['Record', row.model || '?'],
-        ['Affected', truncate(row.target || '—', 40)],
-    ];
-    const pad = Math.max(...facts.map(([k]) => k.length)) + 2;
+    let record = null;
+    try { record = await fetchRecord(row); } catch (recordError) {
+        console.error(`Change-detail record lookup failed for ${changeId}:`, recordError?.message || recordError);
+    }
+    const isEdit = String(row.inverse?.type || '').endsWith('.edit');
+    const prev = isEdit && row.inverse.payload && typeof row.inverse.payload === 'object' ? row.inverse.payload : null;
+
     const body = [
-        { type: 10, content: `### \`${row.changeId}\` ${truncate(row.summary || `${row.action} on ${row.page}`, 80)}${row.undone ? ' ↩️' : ''}` },
-        { type: 10, content: `-# by <@${row.actorId}> · <t:${unix(row.createdAt)}:F> (<t:${unix(row.createdAt)}:R>)` },
-        { type: 14, spacing: 1 },
-        { type: 10, content: ansiBlock(facts.map(([k, v]) => `${(k + ':').padEnd(pad)}${ANSI.bold}${v}${ANSI.reset}`)) },
-        ...(row.detail ? [{ type: 10, content: truncate(row.detail, 500) }] : []),
+        { type: 10, content: `### ${truncate(row.summary || `${row.action} on ${row.page}`, 90)}${row.undone ? ' ↩️' : ''}` },
+        { type: 10, content: `-# by <@${row.actorId}> · <t:${unix(row.createdAt)}:f> (<t:${unix(row.createdAt)}:R>)` },
         { type: 14, spacing: 1 },
     ];
+
+    if (prev && record) {
+        // THE DIFF. Only fields that actually differ; the rest are counted, not listed.
+        const keys = Object.keys(prev).filter(k => k !== '_id');
+        const changed = keys.filter(k => !sameValue(record.raw[k], prev[k]));
+        const untouched = keys.length - changed.length;
+        if (changed.length) {
+            const rows = changed.slice(0, 6).map(k => `**${fieldLabel(k)}** ${fmtFieldValue(prev[k])} → ${fmtFieldValue(record.raw[k])}`);
+            body.push({ type: 10, content: `✏️ **What changed** _(${plural(changed.length, 'field')})_\n${rows.join('\n')}${changed.length > 6 ? `\n-# …and ${changed.length - 6} more — see the portal.` : ''}` });
+            if (untouched) body.push({ type: 10, content: `-# ${plural(untouched, 'other field')} on this ${record.noun} ${untouched === 1 ? 'was' : 'were'} left exactly as ${untouched === 1 ? 'it was' : 'they were'}.` });
+        } else {
+            body.push({ type: 10, content: `✏️ **Nothing actually changed.** Every field was saved with the value it already had — a no-op edit.` });
+        }
+        body.push({ type: 14, spacing: 1 });
+        body.push({ type: 10, content: `**The ${record.noun} now**\n${record.show.filter(k => record.raw[k] != null && record.raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(record.raw[k])}`).join('\n')}` });
+    } else if (record) {
+        body.push({ type: 10, content: `**The ${record.noun}, as it stands right now**\n${record.show.filter(k => record.raw[k] != null && record.raw[k] !== '').map(k => `**${fieldLabel(k)}** · ${fmtFieldValue(record.raw[k])}`).join('\n')}` });
+    } else if (prev) {
+        // The record is gone (or this page has no resolver), so the stored previous values are all there is. Say which it is rather than presenting them as a diff they cannot be.
+        body.push({ type: 10, content: `**The values this change replaced**\n${Object.entries(prev).filter(([k]) => k !== '_id').slice(0, 6).map(([k, v]) => `**${fieldLabel(k)}** · ${fmtFieldValue(v)}`).join('\n')}` });
+        body.push({ type: 10, content: `-# The record itself could not be read back to compare against — it may have been deleted since.` });
+    } else {
+        body.push({ type: 10, content: `-# This section has no quick view yet, so the contents aren't shown here. Open it in the portal for the full record.` });
+    }
+
+    if (row.detail) body.push({ type: 10, content: `-# ${truncate(row.detail, 400)}` });
+    body.push({ type: 14, spacing: 1 });
+
+    const reference = { type: 10, content: `-# Reference \`${row.changeId}\` — an internal id for this log entry, **not** a date.` };
     if (!gate.ok) {
         body.push({ type: 10, content: `⛔ **This one can't be reverted.**\n${gate.reason}` });
+        body.push(reference);
         return body;
     }
-    body.push({ type: 10, content: `↩️ **What Revert will do**\n${inv ? inv.line : 'Apply the inverse recorded when this change was made.'}` });
-    // The inverse's payload IS the other half of a diff for an edit -- the values it will write back. Capped at six so a bulk row cannot blow the message length; the portal carries the full record.
-    if (inv && inv.fields.length) {
-        const shown = inv.fields.slice(0, 6)
-            .map(([k, v]) => `${k}: ${truncate(typeof v === 'object' ? JSON.stringify(v) : String(v), 60)}`);
-        body.push({ type: 10, content: ansiBlock(shown.map(l => `${ANSI.cyan}${l}${ANSI.reset}`))
-            + (inv.fields.length > 6 ? `\n-# …and ${inv.fields.length - 6} more field(s) — see the portal.` : '') });
-    }
-    body.push({ type: 10, content: `-# Reverting applies the exact inverse recorded when the change was made. It does not re-run or recompute anything, and it writes its own entry to this log.` });
+    const changedCount = prev && record ? Object.keys(prev).filter(k => k !== '_id' && !sameValue(record.raw[k], prev[k])).length : 0;
+    body.push({ type: 10, content: revertSentence(row, record?.noun, changedCount) });
+    body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
     body.push({ type: 14, spacing: 1 });
-    // The panel is a place to ACT on the record, not only to read about it. Revert undoes THIS change; Edit opens the section's own edit flow for the record itself -- two genuinely different things that a row reading "Added new draw" cannot distinguish, which is half of why a bare Revert button was unreadable. 🔴 Edit dispatches through utils/manageActions.js's resolveAction(), the ONE choke point, which re-checks per-page permission itself -- never a hand-rolled second path into /manage's modals.
     const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
     body.push({ type: 1, components: [
         { type: 2, style: 4, label: 'Revert this change', custom_id: `bot_revert_${row.changeId}` },
         ...(canEditHere ? [{ type: 2, style: 1, label: `Edit in ${PAGE_LABEL[row.page] || row.page}`, custom_id: `bot_changeedit_${row.page}` }] : []),
         { type: 2, style: 5, label: 'Open in the portal', url: PORTAL_ANALYTICS_URL },
     ] });
+    body.push(reference);
     return body;
 }
 
@@ -688,7 +761,7 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { describeInverse, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
+    __testables: { revertSentence, fmtFieldValue, sameValue, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
     buildHotpatchPanel,
     buildChangeDetailBody,
     buildUsageExport,
