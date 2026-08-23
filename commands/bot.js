@@ -39,6 +39,26 @@ const ACCESS_ACCENT = 0xB33F40;
 // Every analytics page ends with this. Discord is the glance; the portal is the depth (see the spec's rule 0). Route matches portal/ui/app.js's hash-based router (`location.hash`, keyed by realm name in REALM_COMPONENTS).
 const PORTAL_ANALYTICS_URL = 'https://portal.dioreo.app/#/analytics';
 
+// ── ANSI inside code fences ── Discord renders a ```ansi fence with a SMALL subset of SGR: styles 0/1/4, foreground 30-37, background 40-47. No 256-colour, no truecolour, no hex -- anything outside that set renders as the literal escape text, so this map is the entire palette these panels may spend. ⚠️ It degrades UGLY, not gracefully: a client without ansi support shows `[0;32m` inline. Confirmed rendering on desktop + current mobile; `/bot analytics` is admin-only, so the blast radius is one viewer. 🔴 GRAY (fg 30) IS GENUINELY DARK on the dark code-block background -- never put information in it. It is used here only for the EMPTY cells of a bar, where receding is the point, and every such row still prints its literal number so colour is never the sole carrier.
+const ANSI = {
+    reset: '\u001b[0m',
+    gray: '\u001b[0;30m',
+    red: '\u001b[0;31m',
+    green: '\u001b[0;32m',
+    yellow: '\u001b[0;33m',
+    cyan: '\u001b[0;36m',
+    bold: '\u001b[1;37m',
+};
+const ansiBlock = (lines) => '```ansi\n' + lines.join('\n') + '\n```';
+// Strips every SGR sequence -- the only honest way to measure a rendered row against the ~40-column phone budget, since the escapes cost bytes and zero columns.
+const visibleWidth = (line) => line.replace(/\u001b\[[0-9;]*m/g, '').length;
+
+// A bar whose FILLED cells carry a colour and whose empty cells recede. `cells` is fixed so every bar in a block is the same length -- the comparison lives in the fill, and a variable-length bar compares nothing.
+function ansiBar(value, max, cells, colour) {
+    const filled = Math.max(1, Math.min(cells, Math.round((value / (max || 1)) * cells)));
+    return `${colour}${'█'.repeat(filled)}${ANSI.gray}${'░'.repeat(cells - filled)}${ANSI.reset}`;
+}
+
 function unix(d) { return Math.floor(new Date(d).getTime() / 1000); }
 function truncate(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 function fmtMs(ms) { return ms == null ? '—' : `${Math.round(ms)}ms`; }
@@ -113,9 +133,9 @@ function buildVitalsBlock({ gatewayStatus, uptimeSec, rssMb, boots24h, boots7d }
         ['Memory', `${rssMb}MB`],
         ['Restarts', `${boots24h} in 24h · ${boots7d} in 7d`],
     ];
-    // Pad the LABEL, then append the colon -- padding after the colon (as a first draft of this block did) leaves the colon itself at a different offset per row, since it sits right after each label's own length. Padding the label first pins every colon to the same column.
-    const pad = Math.max(...rows.map(([k]) => k.length));
-    return '```\n' + rows.map(([k, v]) => `${k.padEnd(pad)}: ${v}`).join('\n') + '\n```';
+    // Pad LABEL+COLON as ONE unit, so the VALUE column is what lines up. ⚠️ An earlier draft padded the bare label and appended ': ' after it, to satisfy a test asserting every colon sat at the same offset -- that pins the colons but leaves them floating off the short labels (`Gateway :` beside `Restarts:`), which is what shipped and what Harkirat saw. The colon belongs to its word; the values are what an eye actually scans down. The test now asserts the VALUE column instead.
+    const pad = Math.max(...rows.map(([k]) => k.length)) + 2;
+    return ansiBlock(rows.map(([k, v]) => `${(k + ':').padEnd(pad)}${ANSI.bold}${v}${ANSI.reset}`));
 }
 
 async function buildHealthBody(client) {
@@ -270,38 +290,49 @@ async function computeUsageStats() {
 }
 
 const BAR_CELLS = 10;
-// Proportional to the TOP command, not to the total: with 8 commands, share-of-total bars are all near-empty and compare nothing. Against the leader, the shape of the distribution is readable. The bar is fixed-width and the NAME truncates -- the bar is the only part carrying the comparison, so it is the one thing that must never be the part that gives way (spec audit finding 3).
+// Proportional to the TOP command, not to the total: with 8 commands, share-of-total bars are all near-empty and compare nothing. Against the leader, the shape of the distribution is readable. The bar is fixed-width and the NAME truncates -- the bar is the only part carrying the comparison, so it is the one thing that must never be the part that gives way (spec audit finding 3). ⚠️ nameWidth is measured from the ACTUAL names, capped. A fixed 18 (what first shipped) stranded every bar in a narrow right-hand strip, because real command names run 4-10 characters -- so ~9 columns of every row were pure padding and the result read as a staircase floating in whitespace rather than a chart anchored to a baseline.
 function buildUsageBars(byCommand) {
     if (!byCommand.length) return '';
     const top = byCommand[0].c || 1;
-    const nameWidth = 18;
-    return '```\n' + byCommand.map(c => {
-        const filled = Math.max(1, Math.round((c.c / top) * BAR_CELLS));
+    const nameWidth = Math.min(14, Math.max(...byCommand.map(c => `/${c._id || '?'}`.length)));
+    const countWidth = Math.max(...byCommand.map(c => String(c.c).length));
+    return ansiBlock(byCommand.map(c => {
         const name = `/${c._id || '?'}`.slice(0, nameWidth).padEnd(nameWidth);
-        return `${name}${'█'.repeat(filled)}${'░'.repeat(BAR_CELLS - filled)} ${c.c}`;
-    }).join('\n') + '\n```';
+        return `${ANSI.cyan}${name}${ANSI.reset} ${ansiBar(c.c, top, BAR_CELLS, ANSI.green)} ${ANSI.bold}${String(c.c).padStart(countWidth)}${ANSI.reset}`;
+    }));
 }
 
 const USAGE_EMPTY = '**No command usage in the last 7 days.**\n-# Only public commands count — your own `/manage` and `/bot` activity is deliberately excluded.';
 
+// The delta gets its OWN line carrying the absolute prior figure, not a parenthetical. A drop of this size is the single most important fact on the page, and "-87%" without "316 then" is unactionable -- the reader cannot tell a collapse from a quiet week off a small base.
+function usageDeltaLine(current, previous) {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return `🔺 **First traffic** in this window — nothing in the previous 7 days.`;
+    const pct = Math.round(((current - previous) / previous) * 100);
+    if (pct === 0) return `➖ **Flat** against the previous 7 days (${previous.toLocaleString()} then).`;
+    return `${pct > 0 ? '🔺' : '🔻'} **${Math.abs(pct)}% ${pct > 0 ? 'up' : 'down'}** on the previous 7 days — ${previous.toLocaleString()} then, ${current.toLocaleString()} now.`;
+}
+
 async function buildUsageBody() {
     const { current, previous, byCommand } = await computeUsageStats();
-    const pctChange = previous > 0 ? Math.round(((current - previous) / previous) * 100) : (current > 0 ? 100 : 0);
-    const changeStr = (previous === 0 && current === 0) ? '' : ` (${pctChange >= 0 ? '+' : ''}${pctChange}% vs previous 7d)`;
+    const deltaLine = usageDeltaLine(current, previous);
+    const head = [
+        { type: 10, content: `## ${current.toLocaleString()} interactions\n-# last 7 days` },
+        ...(deltaLine ? [{ type: 10, content: deltaLine }] : []),
+        { type: 14, spacing: 1 },
+    ];
     if (!byCommand.length) {
         return [
-            { type: 10, content: `**${current.toLocaleString()} interactions** · last 7 days${changeStr}` },
-            { type: 14, spacing: 1 },
+            ...head,
             { type: 10, content: USAGE_EMPTY },
             { type: 14, spacing: 1 },
             { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
         ];
     }
     return [
-        { type: 10, content: `**${current.toLocaleString()} interactions** · last 7 days${changeStr}` },
-        { type: 14, spacing: 1 },
-        { type: 10, content: `**Top commands**\n${buildUsageBars(byCommand.slice(0, 5))}` },
-        { type: 10, content: `-# Only public commands count — your own \`/manage\` and \`/bot\` activity is deliberately excluded.` },
+        ...head,
+        { type: 10, content: `**Most used**\n${buildUsageBars(byCommand.slice(0, 5))}` },
+        { type: 10, content: `-# Bars are relative to the busiest command. Only public commands count — your own \`/manage\` and \`/bot\` activity is deliberately excluded.` },
         { type: 14, spacing: 1 },
         { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
     ];
@@ -365,6 +396,21 @@ function headroom(ms, budgetMs) {
     return { pct, icon: pct >= 50 ? '🟢' : pct >= 25 ? '🟡' : pct >= 10 ? '🟠' : '🔴' };
 }
 
+// 🔴 HEADROOM APPLIES TO THE ACK AND NOTHING ELSE. Discord's 3,000ms limit is the deadline to ACKNOWLEDGE an interaction; once it is deferred the followup window is FIFTEEN MINUTES. Measuring total duration against 3,000ms is therefore not a harsh reading, it is a false one -- it shipped as "🔴 /colors -204% headroom" for a heavy image command that was working exactly as designed, i.e. the page asserted a production fault that did not exist. Duration gets a felt-speed band instead. The bands are Nielsen's published response-time thresholds (~0.1s instantaneous, ~1s uninterrupted flow, ~10s the limit of held attention), deliberately NOT a budget invented here -- inventing a second fake budget would repeat the very mistake above.
+const FELT_SPEED = [
+    { under: 1000, icon: '🟢', word: 'instant', colour: ANSI.green },
+    { under: 3000, icon: '🟡', word: 'brisk', colour: ANSI.yellow },
+    { under: 10000, icon: '🟠', word: 'slow', colour: ANSI.yellow },
+    { under: Infinity, icon: '🔴', word: 'a long wait', colour: ANSI.red },
+];
+function feltSpeed(ms) {
+    if (ms == null) return { icon: '⚪', word: 'no data', colour: ANSI.gray };
+    return FELT_SPEED.find(b => ms < b.under);
+}
+
+// Seconds above 1,000ms. "9119ms" makes a reader count digits to learn it is nine seconds.
+function fmtDur(ms) { return ms == null ? '—' : ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(1)}s`; }
+
 const TIMING_EMPTY = '**No timings recorded yet.**\n-# Every interaction records how long it took to acknowledge and to finish. This fills in on its own as the bot gets used.';
 
 async function buildTimingBody() {
@@ -379,16 +425,30 @@ async function buildTimingBody() {
         ];
     }
     const ackHead = headroom(ackP[1], 3000);
+    const durFelt = feltSpeed(durP[1]);
     // A threshold page ranks by RISK, not by frequency -- re-sort worst p95 first. computeTimingStats() already returns the rows; the aggregation's own $sort/$limit stays untouched for the portal.
     const worst = [...byCommand].sort((a, b) => (b.p?.[0] ?? 0) - (a.p?.[0] ?? 0)).slice(0, 3);
-    const cmdLines = worst.length
-        ? worst.map(c => { const h = headroom(c.p?.[0], 3000); return `${h.icon} **/${c._id || '?'}** — p95 ${fmtMs(c.p?.[0])} (${h.pct == null ? '—' : `${h.pct}%`} headroom, ${c.n} sample${c.n === 1 ? '' : 's'})`; }).join('\n')
-        : TIMING_EMPTY;
+    const slowestBlock = worst.length ? (() => {
+        const top = worst[0].p?.[0] || 1;
+        const nameWidth = Math.min(14, Math.max(...worst.map(c => `/${c._id || '?'}`.length)));
+        const durWidth = Math.max(...worst.map(c => fmtDur(c.p?.[0]).length));
+        return ansiBlock(worst.map(c => {
+            const f = feltSpeed(c.p?.[0]);
+            const name = `/${c._id || '?'}`.slice(0, nameWidth).padEnd(nameWidth);
+            return `${ANSI.cyan}${name}${ANSI.reset} ${ansiBar(c.p?.[0] ?? 0, top, BAR_CELLS, f.colour)} ${ANSI.bold}${fmtDur(c.p?.[0]).padStart(durWidth)}${ANSI.reset} ${ANSI.gray}×${c.n}${ANSI.reset}`;
+        }));
+    })() : null;
     return [
-        { type: 10, content: `${ackHead.icon} **Ack time (p50/p95):** ${fmtMs(ackP[0])} / ${fmtMs(ackP[1])} — ${ackHead.pct == null ? 'no data' : `${ackHead.pct}% headroom`} against Discord's 3,000ms deadline` },
-        { type: 10, content: `**Total duration (p50/p95):** ${fmtMs(durP[0])} / ${fmtMs(durP[1])}` },
+        { type: 10, content: `${ackHead.icon} **Acknowledged in ${fmtDur(ackP[0])}** _(p50)_ · ${fmtDur(ackP[1])} _(p95)_` },
+        { type: 10, content: `-# ${ackHead.pct == null ? 'No data yet.' : `**${ackHead.pct}% headroom** under Discord's 3,000ms ack deadline`} — the one hard limit on this page. Miss it and the interaction dies.` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Worst commands (p95 duration, last 7d)**\n${cmdLines}` },
+        { type: 10, content: `${durFelt.icon} **Finished in ${fmtDur(durP[0])}** _(p50)_ · ${fmtDur(durP[1])} _(p95)_ — ${durFelt.word}` },
+        { type: 10, content: `-# No platform deadline applies after the ack (the followup window is 15 minutes), so this is felt speed, not compliance.` },
+        { type: 14, spacing: 1 },
+        ...(slowestBlock
+            ? [{ type: 10, content: `**Slowest to finish** _(p95, last 7d)_\n${slowestBlock}` },
+               { type: 10, content: `-# Ranked by duration, not by traffic. **Admin commands are included here** — unlike Usage, they are real work the bot does.` }]
+            : [{ type: 10, content: TIMING_EMPTY }]),
         { type: 14, spacing: 1 },
         { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
     ];
@@ -548,7 +608,7 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom },
+    __testables: { buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
     buildHotpatchPanel,
     buildUsageExport,
     buildTimingExport,
