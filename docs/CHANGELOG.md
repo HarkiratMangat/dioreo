@@ -28,9 +28,9 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#174) — the change panel covers every entity, and a permission check that compared against nothing
+## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#173) — the change panel covers every entity, and a permission check that compared against nothing
 
-Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is.
+Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is. ⚠️ **This and v3.65.0-pre below ship in the SAME pull request** — phase 1 was never separately merged, so both entries cite `#173`. They stay two entries because they are two versions of the code and two distinct bodies of work, not because they were two merges.
 
 🔴 **A permission gate was comparing against a string no grant can hold.** `core/changeset.js`'s `pageForOp()` fell back to an op's own namespace for the six ops that have no `/manage` action by design, and that namespace is not the permission vocabulary. Four patch-note ops recorded **`patchnote`** (singular) — so `hasManagePageAccess(userId, 'patchnote')` could never match `manage.patchnotes`, and every scoped admin was silently denied on those rows. `season.restoreDraft` was wrong in **both** directions: it recorded `season` while reversing a *draft* discard, denying `manage.seasondraft` admins their own page and letting `manage.season`-only admins reach draft state. Ops now declare `page:` beside `action:`, registration throws if the two disagree, and a subset assertion that **failed before this change** guards it permanently. `scripts/fixChangeLogPageKeys.js` repairs existing rows.
 
