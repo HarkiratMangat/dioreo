@@ -1,30 +1,28 @@
 // utils/changeStore.js The persistence + query layer behind the /manage DB-change audit log (models/ChangeLog.js). Modelled directly on utils/alertStore.js -- recordChange() is fire-and-forget and NEVER throws, same contract as recordAlert(), so a logging failure can never break the admin action that triggered it. Read helpers back the admin-only /audit command. Stage 4 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md.
 const ChangeLog = require('../models/ChangeLog');
 const AlertCounter = require('../models/AlertCounter');
-const { MONTHS } = require('./alertStore');
+
 
 const RETENTION_DAYS = 180;  // delete changes older than this...
 const HARD_CAP = 5000;       // ...AND never keep more than this many (whichever bites first)
 const PRUNE_THROTTLE_MS = 60 * 60 * 1000; // prune at most once/hour, same reasoning as alertStore
 let lastPruneAt = 0;
 
-function pad2(n) { return String(n).padStart(2, '0'); }
 
-function dateKey(date) {
-    return `${MONTHS[date.getUTCMonth()]}${pad2(date.getUTCDate())}`;
-}
+
+// dateKey/pad2/MONTHS retired 2026-08-23 10:56 EDT with the MMMDD-NN change id -- nothing here builds a date-shaped identifier any more.
 
 // Namespaced under the SAME AlertCounter collection AlertLog already uses ("chg-" prefix on the _id), rather than a second counter model -- the two logs' daily sequences never collide because their keys never collide, and there's no second collection to create/maintain for one more counter.
 //
 // ⚠️ `session` is OPTIONAL and forwarded to the atomic $inc so a caller running inside a Mongo transaction (core/changeset.js's commitSet) doesn't mint an id outside it -- an id minted outside a transaction that then rolls back is an id that was never actually used, but the counter still moved, which is harmless (ids are just unique labels, not a dense sequence) but worth being deliberate about since core/'s whole contract is "nothing escapes the transaction".
 async function nextDailyChangeId(date = new Date(), session = undefined) {
-    const key = `chg-${dateKey(date)}`;
+    // 🔴 A GLOBAL SEQUENCE, NOT `MMMDD-NN`. Harkirat, 2026-08-23 10:56 EDT: "change your internal ID system to be less confusing and easier to distinguish as an internal id" -- because `Aug22-28` renders inches from a real relative timestamp ("19 hours ago") and reads as a second, contradicting date. The day inside it was pure redundancy: every surface that shows a change id also shows the actual timestamp beside it. `#284` cannot be mistaken for a date, stays short, and remains ordered. ⚠️ Rows written before this keep their `Aug22-28` ids and still resolve -- every lookup, and the bot_revert_<id>/bot_changedetail_<id> custom_ids, treat the id as an opaque string. The mixed history is deliberate and must not be "migrated": rewriting stored ids would break the custom_ids of any panel a user still has open, to correct nothing. AlertLog is UNAFFECTED and still uses MMMDD-NN -- /bot analytics' own alert explainer documents that format, and alerts are read in daily batches where the date prefix genuinely helps.
     const doc = await AlertCounter.findOneAndUpdate(
-        { _id: key },
+        { _id: 'chg-seq' },
         { $inc: { seq: 1 } },
         { upsert: true, returnDocument: 'after', session }
     );
-    return `${dateKey(date)}-${pad2(doc.seq)}`;
+    return `#${doc.seq}`;
 }
 
 // Fire-and-forget persist -- NEVER throws (an already-swallowed promise, so even a stray `await` at a call site can't surface a rejection). Called un-awaited from every /manage operation function right after its own .save()/DB call succeeds, so a Mongo hiccup here can never turn a successful admin action into a failed one.
@@ -157,6 +155,16 @@ async function buildChangeExport({ filterPage = null, filterActor = null } = {})
     return lines.join('\n');
 }
 
+
+// Every LATER change against the same record. Reverting an edit writes old values back over whatever came after it, so a panel offering a revert has to be able to say "two other changes have touched this since" -- silently clobbering a later edit is the one genuinely destructive outcome this whole surface can cause. Lives here rather than being queried from commands/bot.js: a ChangeLog read belongs behind the store, and reaching around an exported surface for one query is how a second, drifting access path starts.
+async function getLaterChangesTo({ page, target, after, excludeChangeId }) {
+    if (!page || !target || !after) return [];
+    return ChangeLog.find({
+        page, target, createdAt: { $gt: after },
+        ...(excludeChangeId ? { changeId: { $ne: excludeChangeId } } : {}),
+    }).sort({ createdAt: 1 }).limit(10).lean();
+}
+
 module.exports = {
     RETENTION_DAYS,
     HARD_CAP,
@@ -167,6 +175,7 @@ module.exports = {
     pruneChanges,
     markUndone,
     getRecentChanges,
+    getLaterChangesTo,
     getChangeSummary,
     buildChangeExport,
 };

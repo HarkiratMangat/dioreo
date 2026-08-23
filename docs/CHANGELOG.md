@@ -28,6 +28,40 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#173) — the change panel covers every entity, and a permission check that compared against nothing
+
+Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is. ⚠️ **This and v3.65.0-pre below ship in the SAME pull request** — phase 1 was never separately merged, so both entries cite `#173`. They stay two entries because they are two versions of the code and two distinct bodies of work, not because they were two merges.
+
+🔴 **A permission gate was comparing against a string no grant can hold.** `core/changeset.js`'s `pageForOp()` fell back to an op's own namespace for the six ops that have no `/manage` action by design, and that namespace is not the permission vocabulary. Four patch-note ops recorded **`patchnote`** (singular) — so `hasManagePageAccess(userId, 'patchnote')` could never match `manage.patchnotes`, and every scoped admin was silently denied on those rows. `season.restoreDraft` was wrong in **both** directions: it recorded `season` while reversing a *draft* discard, denying `manage.seasondraft` admins their own page and letting `manage.season`-only admins reach draft state. Ops now declare `page:` beside `action:`, registration throws if the two disagree, and a subset assertion that **failed before this change** guards it permanently. `scripts/fixChangeLogPageKeys.js` repairs existing rows.
+
+🔴 **A rule the last release recorded as "adopted verbatim" was applied to one branch out of two.** The stacked before/after notation — one value per line, each led by its own glyph — reached the *list* diff and never reached the *scalar* diff, which kept shipping the inline `A → B` the rule exists to forbid. On a 32-column phone that is the difference between reading `Drop` vs `Draw` and guessing. Fixed, with a test that reads the source and fails on an arrow. **A design spec cannot be validated by reading it — including the spec that says so.**
+
+**Loadouts and calendar events now draw themselves.** `utils/loadoutRender.js` splits into a content half and its chrome, so a build renders in the panel without dragging in pagination buttons whose ids resolve against a query only `/gunsmiths` has made. `/calendar` exports the entry line it already uses. Neither is a copy: a copied renderer drifts, and a panel that quietly stops matching the real card is worse than one that never tried.
+
+**"Is this live to players?" — asked, and answered honestly.** The planned line assumed a draw's date decides whether players see it. It does not: `/draws` lists every draw in the season document with no filter of any kind, so the date is a label it prints. The panel says that instead. `/calendar` genuinely does hide ended entries, and takes its answer from the same `isEventEnded()` the command uses rather than a second date rule that would drift.
+
+**The audit pass found a defect in its own fix.** `registerEntity()`'s new conflict check originally ran *after* the registry writes, so a rejected op stayed resolvable and its action stayed claimed. `assert.throws(..., /message/)` passed against exactly that — asserting an error fires proves nothing about what the failure left behind. The check now runs before any mutation, and the test asserts the rejection is clean rather than merely loud.
+
+**One crash that had been waiting for a partial record.** `buildImageUrl()` calls `.startsWith()` on `imageKey`; every stored build has one, so `/gunsmiths` never hit it — but a reconstructed before-state carries only the fields an edit touched. The panel's own try/catch would have swallowed it and fallen back silently, which is a budget guard firing for the wrong reason.
+
+## Pre-Release v3.65.0 — 2026-08-23 11:34 EDT (#173) — `/bot analytics` becomes five glances, and the change log becomes readable
+
+The plan and spec filed in v3.64.0, built — and then substantially rebuilt, five times, against a real Discord client on desktop and on a phone. The rebuild is the bigger half of this release and most of it came from looking at the rendered thing rather than re-reading the design.
+
+**The five pages.** Discord is a glance now; the portal carries the depth. Every page drops its pager, filters and Export button for one Link button into the matching portal view — the portal was confirmed to already carry all of it, including revert, before anything was cut, so nothing here is a removal. **Health** states a verdict then an aligned vitals block. **Alerts** keeps the severity ledger, cut to the 3 most recent. **Changes** is a ledger of the 3 most recent edits. **Usage** draws proportional bars against the leading command. **Timing** states every number against what actually constrains it.
+
+🔴 **Timing was asserting a production fault that did not exist.** It measured total duration against Discord's 3,000 ms limit — but that limit is the deadline to *acknowledge* an interaction; after a defer the window is fifteen minutes. A heavy image command working exactly as designed rendered as `🔴 /colors -204% headroom`. Headroom now applies to the ack alone; duration gets a felt-speed band on Nielsen's published thresholds.
+
+🔴 **And nobody could read it anyway.** `p50`, `p95` and "headroom" all failed on the page's only reader. They are "usually", "slowest 1 in 20", and the rule plus what it consumes — translations chosen to stay true, not merely simpler.
+
+🔴 **Revert used to fire blind.** A row read "Added new draw" and offered a button that immediately undid it. Tapping now opens a detail panel that renders **the actual record, using the record's own renderer** — a draw draws itself exactly as `/draws` shows it — with a real before/after for edits, reconstructed from the inverse's stored previous values. Revert lives in there behind a red button, beside an Edit that dispatches through the existing action registry. Crucially it also names **any later change that touched the same record**, because reverting writes old values back over whatever came after it.
+
+**Mobile changed several verdicts.** ANSI colour is stripped silently on iOS, so colour is decoration and never meaning — severity leads with a glyph instead. The VM-peaks block ran 46 columns and wrapped into four ragged lines; the real budget measures near 32, not the 40 the spec estimated, and that spec had cited the wrapping function itself as its own precedent.
+
+**Two defects the panel found in other people's code.** `pageForOp()` emits `patchnote` (singular) as well as `patchnotes` for four ops with no registered action — a key no scope list contains, which the revert permission gate is being called with. Filed, not patched; the owner is the action registry. And `docs-audit`'s `superseded_by` existence check had never once executed, because nothing in the repo used the field; it threw a `ReferenceError` on first use while its own self-test passed the entire time, because a crashed check reports under the same id as a real finding. Both the check and the self-test harness are fixed — a proof is now rejected if the check only "reported" by crashing.
+
+Change ids are `#284` now rather than `Aug22-28`, which read as a second, contradicting date beside the real timestamp. Old ids still resolve.
+
 ## Pre-Release v3.64.0 — 2026-08-23 00:09 EDT (#172) — a copy-pasteable retry for every failed `/manage` submit, loadout images by URL, and a bulk format that finally has a principle
 
 Four items off the deferred list, one deferred by name, and one turned into a spec instead of code.

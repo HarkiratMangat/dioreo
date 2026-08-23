@@ -1,7 +1,13 @@
 ---
 kind: plan
-status: frozen
+status: superseded
+superseded_by: docs/superpowers/plans/2026-08-23-bot-analytics-phase-2.md
 ---
+
+> ## ✅ EXECUTED 2026-08-23 — all 8 tasks built on `feat/bot-analytics-redesign`, then substantially rebuilt on live feedback
+> Tasks 1–8 shipped as written. Five rounds of review on desktop and iPhone then changed most of what they produced — see `docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md` for the findings, and `docs/superpowers/plans/2026-08-23-bot-analytics-phase-2.md` for the six gaps still open.
+>
+> ⚠️ **Two of this plan's own instructions were not followed, and neither was caught by a test until afterwards:** `CHANGES_PER_PAGE` shipped at 5 where the Global Constraints say 3, and Task 3's reference snippet for the vitals block contained a real alignment bug that its own test then locked in. Both are fixed; both are recorded in the successor spec's §1 table. **A plan constraint that nothing asserts is a suggestion.**
 
 # `/bot analytics` Redesign Implementation Plan
 
@@ -237,6 +243,8 @@ git commit -m "feat(bot): make Health a verdict page with an aligned vitals bloc
 ### Task 4: Changes becomes the ledger page
 
 **Read Task 2's recorded outcome before starting.** If the Section+Button probe failed, skip steps 3a–3b and take the fallback in step 3c instead.
+
+> **Task 2 outcome, recorded 2026-08-23 00:26 EDT:** "Section+Button accessory CONFIRMED" — but by documented API schema, not a live interactive click. This session has no interactive Discord client tool, and firing a live probe message requires an actual Discord recipient (the DM-to-owner path the plan's own step 2 sketches), which falls under this session's message-sending permission boundary — not fired without a chat-turn confirmation, and asking would have been a low-value interruption given the strength of the alternative evidence. Instead: `node_modules/discord-api-types/payloads/v10/message.d.ts:1578-1587`, `APISectionComponent.accessory: APISectionAccessoryComponent` is documented verbatim as *"A thumbnail or a button component, with a future possibility of adding more compatible components"* — this is Discord's own published API contract (discord-api-types mirrors https://discord.com/developers/docs/components/reference#section), the same source discord.js itself is generated against, not a community guess. Task 4 proceeds on the CONFIRMED path (3a/3b). ✅ **UPGRADED TO LIVE CONFIRMATION 2026-08-23 09:44 EDT** — Harkirat ran `/bot analytics` on the dev bot and screenshotted the Changes page: the type-9 Section renders with its type-2 Revert button as a right-hand accessory, five rows, exactly as designed. The schema reading was correct, and it is now observed rather than inferred.
 
 **Files:**
 - Modify: `commands/bot.js` — `buildChangesBody` (~line 193)

@@ -155,7 +155,7 @@ registerEntity('season', {
 
     // Not a registry action -- exists solely as promoteDraft's/startNew's inverse. Symmetric: its own apply() snapshots exactly the top-level fields it is about to overwrite (plus, optionally, one patch-notes title) and its invert() hands back another restoreSnapshot carrying that snapshot -- so reverting a revert stays correctly revertible without a second op type.
     'season.restoreSnapshot': {
-        tier: 3,
+        page: 'season', tier: 3,
         validate: (op) => (op.payload && typeof op.payload === 'object') ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
         preview: (op, live) => ({ before: {}, after: op.payload }),
         apply: async (op, { session }) => {
@@ -200,7 +200,7 @@ registerEntity('season', {
 
     // Not a registry action -- exists solely as discardDraft's inverse. Self-symmetric, same pattern as season.restoreSnapshot.
     'season.restoreDraft': {
-        tier: 2,
+        page: 'seasondraft', tier: 2,
         validate: (op) => op.payload?.draft ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['Nothing to restore.'] },
         preview: (op, live) => ({ before: { active: !!live.draft?.active }, after: { active: !!op.payload.draft.active } }),
         apply: async (op, { session }) => {

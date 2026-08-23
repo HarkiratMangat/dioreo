@@ -65,4 +65,33 @@ check('every op type maps back to a registry action, except the documented inter
     }
 });
 
+// 🔴 THE PERMISSION CHECK'S OWN PRECONDITION, and nothing asserted it until 2026-08-23. handlers/bot.js and portal/api/changesets.js both gate revert and change-detail on hasManagePageAccess(userId, row.page), where row.page is whatever core/changeset.js's pageForOp() emitted. If that produces a string MANAGE_PAGE_SCOPES does not contain, the check cannot match ANY grant -- it is not a stricter gate, it is a gate comparing against nothing. That is exactly what happened: the six action-less ops fell through to `op.type.split('.')[0]`, stamping `patchnote` (singular) on four patch-note rows and `season` on a DRAFT restore, so a scoped `manage.patchnotes` admin was silently denied and a `manage.season`-only admin was silently ALLOWED to revert draft state.
+//
+// This check FAILED before those ops declared `page:` and passes after -- it is not a vacuous pass. Keep it: it is what makes adding a new inverse-only op a test failure instead of a permission hole.
+check('every page pageForOp can emit is a real permission scope', () => {
+    const { pageForOp } = require('../core/changeset');
+    const { MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
+    const emitted = [...new Set(ops.listOpTypes().map(t => pageForOp({ type: t })))].sort();
+    const orphans = emitted.filter(p => !MANAGE_PAGE_SCOPES.includes(p));
+    assert.deepStrictEqual(orphans, [], `pageForOp emits ${orphans.join(', ')} — no MANAGE_PAGE_SCOPES entry contains it, so hasManagePageAccess can never match a grant for it`);
+    // Both directions of the season/draft split, named explicitly -- these two were wrong in OPPOSITE ways and a set-level check alone would not say which.
+    assert.strictEqual(pageForOp({ type: 'season.restoreDraft' }), 'seasondraft', 'restoreDraft reverses a DRAFT discard, so it is gated on manage.seasondraft');
+    assert.strictEqual(pageForOp({ type: 'season.restoreSnapshot' }), 'season', 'restoreSnapshot reverses a live-season wipe');
+    assert.strictEqual(pageForOp({ type: 'patchnote.editSeason' }), 'patchnotes', 'the singular namespace must never reach ChangeLog.page again');
+});
+
+// A declared page and a registered action are two spellings of one fact, so registration refuses them when they disagree -- a boot-time throw beats a permission check that silently compares against nothing.
+check('an op may not declare a page that contradicts its own action', () => {
+    assert.throws(
+        () => ops.registerEntity('conflict-probe', {
+            'probe.mismatch': { page: 'calendar', action: 'draws:probe', validate: () => ({ ok: true }), preview: async () => ({}), apply: async () => ({ ok: true }), invert: () => ({}) }
+        }),
+        /declares page "calendar" but its actions live on draws/
+    );
+    // 🔴 AND IT MUST LEAVE NOTHING BEHIND. A throw that fires after the registry writes is worse than no check: the rejected op stays resolvable, its action stays claimed, and every later lookup in the process sees a type that was never accepted. Asserting the message alone would have passed against exactly that bug.
+    assert.throws(() => ops.resolveOp('probe.mismatch'), /unknown op type/, 'a rejected registration must not leave the op resolvable');
+    assert.strictEqual(ops.opTypeForAction('draws', 'probe'), null, 'a rejected registration must not leave its action claimed');
+    assert.ok(!ops.listOpTypes().includes('probe.mismatch'), 'a rejected registration must not appear in the op list');
+});
+
 process.exit(failures ? 1 : 0);

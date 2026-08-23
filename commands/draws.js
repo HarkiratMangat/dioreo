@@ -132,6 +132,8 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer,
+    // Exported 2026-08-23 10:56 EDT so /bot analytics' change-detail panel can render a draw with the SAME code players see, instead of hand-describing its fields. Copying the body instead would let the two drift, and a panel that quietly stops matching the real card is worse than one that never tried.
+    buildDrawSections,
 
     async execute(interaction, pageOverride = null, subPageOverride = 0) {
         const userId = interaction.user.id;
