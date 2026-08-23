@@ -1,8 +1,6 @@
 // scripts/portSeasonalToLocal.mjs — copy the LIVE season document into local dev Mongo.
 //
-// Everything the portal's Season realm renders — draws, returning draws, the calendar, the season
-// titles and end dates, and the patch notes — lives in ONE document: `seasonaldatas`, `docType:
-// 'global'`. So "port the real data down" is a single-document copy, not a multi-collection sync.
+// Everything the portal's Season realm renders — draws, returning draws, the calendar, the season titles and end dates, and the patch notes — lives in ONE document: `seasonaldatas`, `docType: 'global'`. So "port the real data down" is a single-document copy, not a multi-collection sync.
 //
 // Usage:
 //   node scripts/portSeasonalToLocal.mjs                 # dry run — prints what WOULD change
@@ -10,17 +8,11 @@
 //   node scripts/portSeasonalToLocal.mjs --write --keep-draft   # preserve the local `draft` field
 //
 // 🔴 THREE GUARDS, AND THEY EXIST BECAUSE THIS SCRIPT HOLDS BOTH URIS AT ONCE.
-//   1. The SOURCE connection is opened read-only in practice and never written to — but more
-//      importantly, the script refuses to run if the source does not look like the remote cluster.
-//   2. The TARGET must be localhost. Not "should be" — it refuses. A copy that ran the wrong way
-//      round would overwrite the live season with dev test data, and this repo has already recorded
-//      what a wrong-database write costs (portal/server.js's own assertEnvironment guard exists for
-//      the same failure class).
-//   3. The local document is BACKED UP to local/db-backups/ before anything is written, so an
-//      unwanted port is one file-copy away from undone.
+//   1. The SOURCE connection is opened read-only in practice and never written to — but more importantly, the script refuses to run if the source does not look like the remote cluster.
+//   2. The TARGET must be localhost. Not "should be" — it refuses. A copy that ran the wrong way round would overwrite the live season with dev test data, and this repo has already recorded what a wrong-database write costs (portal/server.js's own assertEnvironment guard exists for the same failure class).
+//   3. The local document is BACKED UP to local/db-backups/ before anything is written, so an unwanted port is one file-copy away from undone.
 //
-// ⚠️ Reads BOTH env files: prod's `.env` for the source, `.env.dev` for the target. Node's
-// --env-file only takes one, so this parses them itself rather than being run twice.
+// ⚠️ Reads BOTH env files: prod's `.env` for the source, `.env.dev` for the target. Node's --env-file only takes one, so this parses them itself rather than being run twice.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,8 +25,7 @@ const KEEP_DRAFT = process.argv.includes('--keep-draft');
 function readEnvValue(file, key) {
     const full = path.join(ROOT, file);
     if (!fs.existsSync(full)) die(`${file} not found — cannot resolve ${key}`);
-    // grep rather than sourcing: sourcing an env file executes it and exports every other secret
-    // into the process for no reason (same reasoning as scripts/backupDb.sh).
+    // grep rather than sourcing: sourcing an env file executes it and exports every other secret into the process for no reason (same reasoning as scripts/backupDb.sh).
     const line = fs.readFileSync(full, 'utf8').split('\n').find((l) => l.trim().startsWith(`${key}=`));
     if (!line) die(`${key} not set in ${file}`);
     return line.slice(line.indexOf('=') + 1).trim().replace(/^["']|["']$/g, '');
@@ -50,8 +41,7 @@ const TARGET_URI = readEnvValue('.env.dev', 'MONGODB_URI');
 const targetIsLocal = /^mongodb:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(TARGET_URI);
 if (!targetIsLocal) die(`REFUSING TO RUN — the target is not a local database.\n  target: ${redact(TARGET_URI)}\n  This script only ever writes to mongodb://localhost. Fix .env.dev's MONGODB_URI.`);
 if (SOURCE_URI === TARGET_URI) die('REFUSING TO RUN — source and target are the same database.');
-// GUARD 1 — the source should be the remote cluster; a local-to-local copy is almost certainly a
-// mistake, and silently doing it would look like success.
+// GUARD 1 — the source should be the remote cluster; a local-to-local copy is almost certainly a mistake, and silently doing it would look like success.
 if (/^mongodb:\/\/(localhost|127\.0\.0\.1)/.test(SOURCE_URI)) die(`REFUSING TO RUN — the source looks local, not the Atlas cluster.\n  source: ${redact(SOURCE_URI)}`);
 
 const COUNTS = (doc) => ({
@@ -102,8 +92,7 @@ try {
         console.log('no existing local document — nothing to back up.');
     }
 
-    // `_id` is stripped so the local document keeps its own identity; `draft` is optionally kept,
-    // because a local draft is work in progress that the live document has no equivalent of.
+    // `_id` is stripped so the local document keeps its own identity; `draft` is optionally kept, because a local draft is work in progress that the live document has no equivalent of.
     const { _id, __v, ...payload } = live;
     if (KEEP_DRAFT && before?.draft) payload.draft = before.draft;
 
@@ -112,8 +101,7 @@ try {
     );
     const after = await dst.db.collection('seasonaldatas').findOne({ docType: 'global' });
 
-    // Verified by re-reading, not by trusting the write result — the same discipline the rest of
-    // this repo's migrations use.
+    // Verified by re-reading, not by trusting the write result — the same discipline the rest of this repo's migrations use.
     const check = COUNTS(after);
     const mismatched = Object.keys(next).filter((k) => k !== 'draft' && String(check[k]) !== String(next[k]));
     if (mismatched.length) die(`WROTE, BUT THE RE-READ DISAGREES on: ${mismatched.join(', ')}`);
