@@ -41,18 +41,21 @@ function buildDrawSections(drawsArray) {
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
 
-        sections.push({
-            type: 9,
-            components: [{
-                type: 10,
-                // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
-                content: `**__${draw.title}__**\n${itemsString}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`
-            }],
-            accessory: {
-                type: 11, // Attaches Thumbnail natively to the right side of the block
-                media: { url: draw.thumbnailUrl }
-            }
-        });
+        // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
+        const textContent = `**__${draw.title}__**\n${itemsString}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`;
+        if (draw.thumbnailUrl) {
+            sections.push({
+                type: 9,
+                components: [{ type: 10, content: textContent }],
+                accessory: {
+                    type: 11, // Attaches Thumbnail natively to the right side of the block
+                    media: { url: draw.thumbnailUrl }
+                }
+            });
+        } else {
+            // No image was provided/cached for this draw (relaxed 2026-08-22 19:40 EDT, click-test fix -- handlers/manage/draws.js no longer hard-rejects a no-image submission). A Components V2 Section (type 9) requires an accessory, so a bare Text Display is used instead of pointing a Thumbnail at a null/broken URL.
+            sections.push({ type: 10, content: `${textContent}\n-# *(no image provided)*` });
+        }
     });
     return sections;
 }

@@ -129,8 +129,8 @@ function parseBulkDrawList(bulkText) {
 /**
  * Parses bulk bullet-separated calendar event strings into Calendar Event objects. Expected format per entry: "M/D - M/D | Event Title" or "M/D - All Season | Event Title" Entries are bullet-separated ("• ") rather than newline-separated, since this is the format that survives when copy-pasting a bulleted list out of Notes/RTF documents (line breaks don't survive that copy, but the bullet characters do). Dates are assumed to be UTC-0, same as parseAdminDate.
  */
-// Optional single-letter category prefix directly touching the bullet ("d•"/"p•"/"e•" -- draw/ playlist/event), added for the 3-section calendar redesign (2026-07-31 12:10 EDT) to match Harkirat's own convention from his calendar_bulk.txt reference paste. Still the highest-priority signal -- it's how an admin overrides the keyword guess below for a genuinely ambiguous title (Harkirat's own bulk file explicitly prefixes bare map names like "Krai BR" for exactly this).
-const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event' };
+// Optional single-letter category prefix directly touching the bullet ("d•"/"p•"/"e•" -- draw/ playlist/event), added for the 3-section calendar redesign (2026-07-31 12:10 EDT) to match Harkirat's own convention from his calendar_bulk.txt reference paste. Still the highest-priority signal -- it's how an admin overrides the keyword guess below for a genuinely ambiguous title (Harkirat's own bulk file explicitly prefixes bare map names like "Krai BR" for exactly this). `g`/`m` added as input-only aliases for `p` (2026-08-22, click-test feedback) -- playlist/game-mode/mode all name the same section to an admin typing a bulk line, so all three are accepted on input. CALENDAR_CATEGORY_TO_PREFIX (below) is the OUTPUT map and deliberately keeps emitting the canonical `p` only -- aliases never change what Export writes.
+const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event', g: 'playlist', m: 'playlist' };
 const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 
 // Keyword-based fallback classification (added 2026-07-31 12:40/12:55 EDT, per Harkirat's explicit request to not have to prefix every line by hand -- then tightened the same session when he asked for real word-form handling: "draw" vs "draws", "gamemode" vs "game mode", etc). Only consulted when there's NO explicit prefix/typed category. Word-boundaried (`\b`) with optional plural suffixes rather than a plain .includes() -- a bare substring check would both MISS "Armories" against a literal "armory" keyword, and FALSE-POSITIVE on an unrelated word that merely contains one (e.g. "Roadmap Update" containing "map"). `gamemode` is the one deliberate exception: it's a single fused word with no natural boundary between "game" and "mode" to anchor `\bmodes?\b` on, so it needs its own unboundaried pattern. Checked in this order (draw, then playlist) because a title can plausibly contain both an event-ish and a draw-ish word; draw/playlist are the more specific signals, so they win, and "event" is never actually matched against -- it's just wherever nothing else hits, exactly as Harkirat asked ("otherwise just default unknown things to the event section").
@@ -168,39 +168,75 @@ function normalizeCalendarCategory(raw, title) {
     return guessCalendarCategory(title);
 }
 
+// Double-CP marker on a bulk-pasted calendar title (added 2026-08-22 19:47 EDT, Harkirat's direct syntax pick: "2x or (2x) or CP or 2xCP or 2X CP or basically anything along those lines at the end of a title. AND auto detect from title"). Two passes: strip a marker sitting at the very END of the title (pure metadata like a trailing "2x CP" that isn't part of the real event name); anything that doesn't strip cleanly (the marker is followed by more real title text, e.g. "...2x CP Sale") falls through to a same-wording ANYWHERE check that sets the flag WITHOUT touching the title, since "2x CP Sale" is plausibly the event's real name. "CP" is COD Points (CODM's premium currency) -- a spelled-out title ("2x COD Points Weekend") is accepted the same as the abbreviation. 🔴 BOTH a CP token AND a doubling indicator (2x/double/x2) are REQUIRED TOGETHER -- neither alone is enough, corrected twice live 2026-08-22 20:02-20:06 EDT after real CODM event names broke each looser version in turn: (1) bare "CP"/"COD Points" alone falsely matched real non-2x CP promotions ("CP Rebate Offer", "CP Cash Back Bonus", "CP Summer Sale" are real CP-related events that are NOT double-CP); (2) bare "2x" alone falsely matched CODM's OTHER 2x events that have nothing to do with CP ("2x XP", "2x Weapon XP", "Double Points" for a different point system entirely). A title needs BOTH tokens, adjacent to each other, to count -- see the test cases in scripts/calendarOps.test.js (or re-derive with parseBulkEvents) before loosening this again.
+const CP_TOKEN = '(?:cp|cod\\s*points?)';
+const DOUBLE_CP_TRAILING = new RegExp(`[\\s,]*[\\(\\[]?\\s*\\b(?:2\\s*x\\s*${CP_TOKEN}|${CP_TOKEN}\\s*x?\\s*2|double\\s*${CP_TOKEN})\\b\\s*[\\)\\]]?\\s*$`, 'i');
+const DOUBLE_CP_ANYWHERE = new RegExp(`\\b(?:2\\s*x\\s*${CP_TOKEN}|${CP_TOKEN}\\s*x?\\s*2|double\\s*${CP_TOKEN})\\b`, 'i');
+
+function extractDoubleCp(rawTitle) {
+    const trailingMatch = rawTitle.match(DOUBLE_CP_TRAILING);
+    if (trailingMatch) {
+        const stripped = rawTitle.slice(0, trailingMatch.index).trim();
+        // Guard against stripping a title down to nothing (a paste that's JUST "2x" with no real title) -- that's not a real marker on a real title, leave it alone and let it fail malformed-entry checks downstream the same way it would have before this feature existed.
+        if (stripped) return { title: stripped, isDoubleCP: true };
+    }
+    if (DOUBLE_CP_ANYWHERE.test(rawTitle)) return { title: rawTitle, isDoubleCP: true };
+    return { title: rawTitle, isDoubleCP: false };
+}
+
+// Shared by both bulk-entry grammars below (bulleted and bulletless) -- takes the already-isolated prefix letter (or undefined) and the entry's raw body text ("M/D - M/D | Title"), returns a finished event object or null for anything malformed. Pulled out 2026-08-22 19:47 EDT when the bulletless grammar was added, so there is exactly one place that knows how to turn "prefix + body" into an event, not two copies to keep in sync.
+function buildCalendarEventFromParts(prefixChar, rawEntry) {
+    const entry = (rawEntry || '').trim();
+    if (!entry) return null;
+
+    const pipeIndex = entry.indexOf('|');
+    if (pipeIndex === -1) return null; // Skip malformed entries missing the "| Title" portion
+
+    const dateRange = entry.slice(0, pipeIndex).trim();
+    // Title is preserved EXACTLY as typed (no toTitleCase) — event names routinely include acronyms like "MP"/"BR"/"DMZ" that title-casing would mangle into "Mp"/"Br"/"Dmz". extractDoubleCp() may still strip a trailing marker token off the end -- that's metadata, not part of the real title, same reasoning.
+    const { title, isDoubleCP } = extractDoubleCp(entry.slice(pipeIndex + 1).trim());
+    // Explicit prefix wins; no prefix falls through to the keyword guess against the title.
+    const category = CALENDAR_CATEGORY_PREFIX[prefixChar] || guessCalendarCategory(title);
+
+    const dashIndex = dateRange.indexOf('-');
+    if (dashIndex === -1) return null; // Skip malformed entries missing the "start - end" portion
+
+    const startStr = dateRange.slice(0, dashIndex).trim();
+    const endStr = dateRange.slice(dashIndex + 1).trim();
+
+    const startDate = parseAdminDate(startStr);
+    if (!startDate) return null; // Unparseable start date -- skip this entry rather than import a wrong one
+    // "All Season" means the event runs through the rest of the season with no fixed end date
+    const isOngoing = /all season/i.test(endStr);
+    const endDate = isOngoing ? null : parseAdminDate(endStr);
+    if (!isOngoing && !endDate) return null; // Unparseable end date -- same skip
+
+    return { title, startDate, endDate, isOngoing, category, isDoubleCP };
+}
+
+// Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of tagging the entry that follows. This regex's non-greedy content group stops as early as possible, which is always right at the next real "[dpe]?•" boundary -- verified against legacy unprefixed text too (no prefix character = zero-width match, same split points as the old bulkText.split('•') behavior).
+const BULLETED_ENTRY = /([depgm])?•\s*([\s\S]*?)(?=[depgm]?•|$)/g;
+// Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
+const BARE_LINE = /^\s*(?:([depgm])\s+)?(.*)$/;
+
 function parseBulkEvents(bulkText) {
-    // Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of tagging the entry that follows. This regex's non-greedy content group stops as early as possible, which is always right at the next real "[dpe]?•" boundary -- verified against legacy unprefixed text too (no prefix character = zero-width match, same split points as the old bulkText.split('•') behavior).
-    const entryRegex = /([dpe])?•\s*([\s\S]*?)(?=[dpe]?•|$)/g;
     const parsedEvents = [];
-    let match;
 
-    while ((match = entryRegex.exec(bulkText)) !== null) {
-        const entry = match[2].trim();
-        if (!entry) continue;
-
-        const pipeIndex = entry.indexOf('|');
-        if (pipeIndex === -1) continue; // Skip malformed entries missing the "| Title" portion
-
-        const dateRange = entry.slice(0, pipeIndex).trim();
-        // Title is preserved EXACTLY as typed (no toTitleCase) — event names routinely include acronyms like "MP"/"BR"/"DMZ" that title-casing would mangle into "Mp"/"Br"/"Dmz".
-        const title = entry.slice(pipeIndex + 1).trim();
-        // Explicit prefix wins; no prefix falls through to the keyword guess against the title.
-        const category = CALENDAR_CATEGORY_PREFIX[match[1]] || guessCalendarCategory(title);
-
-        const dashIndex = dateRange.indexOf('-');
-        if (dashIndex === -1) continue; // Skip malformed entries missing the "start - end" portion
-
-        const startStr = dateRange.slice(0, dashIndex).trim();
-        const endStr = dateRange.slice(dashIndex + 1).trim();
-
-        const startDate = parseAdminDate(startStr);
-        if (!startDate) continue; // Unparseable start date -- skip this entry rather than import a wrong one
-        // "All Season" means the event runs through the rest of the season with no fixed end date
-        const isOngoing = /all season/i.test(endStr);
-        const endDate = isOngoing ? null : parseAdminDate(endStr);
-        if (!isOngoing && !endDate) continue; // Unparseable end date -- same skip
-
-        parsedEvents.push({ title, startDate, endDate, isOngoing, category });
+    // Processed LINE BY LINE, deliberately -- a real bulleted paste out of Notes is always a single line (the whole reason entries are bullet-separated instead of newline-separated is that line breaks don't survive that copy), so scoping BULLETED_ENTRY to one line at a time reproduces the exact same result as the old whole-text scan for every real-world paste. What it FIXES: running the bulleted regex over the whole multi-line text let its own end-of-string fallback (`(?=[depgm]?•|$)`) swallow every bulletless line that happened to follow the last bulleted line on a LATER line into that last entry's title -- caught live testing a mixed paste (bulleted line, then several bare lines): "Anniversary Celebration" ate six trailing lines whole. Scoping per-line means each line's own `$` is that line's own end, never the rest of the document.
+    for (const line of bulkText.split('\n')) {
+        if (!line.trim()) continue;
+        if (line.includes('•')) {
+            let match;
+            BULLETED_ENTRY.lastIndex = 0; // stateful global regex reused across lines -- reset or later lines silently start mid-pattern
+            while ((match = BULLETED_ENTRY.exec(line)) !== null) {
+                const built = buildCalendarEventFromParts(match[1], match[2]);
+                if (built) parsedEvents.push(built);
+            }
+        } else {
+            const lineMatch = line.match(BARE_LINE);
+            const built = buildCalendarEventFromParts(lineMatch[1], lineMatch[2]);
+            if (built) parsedEvents.push(built);
+        }
     }
 
     return parsedEvents;

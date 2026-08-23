@@ -29,6 +29,20 @@
             "required": false
           }
         ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "starts_at",
+            "label": "Starts On (blank = show now)",
+            "style": 1,
+            "placeholder": "e.g. July 15",
+            "value": "",
+            "required": false
+          }
+        ]
       }
     ]
   },
@@ -58,7 +72,21 @@
             "label": "Expires In (days, or \"never\")",
             "style": 1,
             "placeholder": "Blank = 60 days",
-            "value": "11",
+            "value": "10",
+            "required": false
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "components": [
+          {
+            "type": 4,
+            "custom_id": "starts_at",
+            "label": "Starts On (blank = show now)",
+            "style": 1,
+            "placeholder": "e.g. July 15",
+            "value": "",
             "required": false
           }
         ]

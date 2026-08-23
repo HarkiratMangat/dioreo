@@ -74,7 +74,7 @@ registerEntity('announcements', {
             return {
                 ok: true,
                 change: { action: 'add', model: 'Announcement', target: truncate(op.payload.text), summary: 'Posted a new announcement' },
-                applied: { id: res.id, color, createdAt: doc.createdAt || new Date(), createdBy: doc.createdBy, expiresAt: doc.expiresAt }
+                applied: { id: res.id, color, createdAt: doc.createdAt || new Date(), createdBy: doc.createdBy, expiresAt: doc.expiresAt, startsAt: doc.startsAt }
             };
         },
         invert: (c) => ({ type: 'announcement.delete', target: { id: c.applied.id } })
@@ -93,7 +93,7 @@ registerEntity('announcements', {
             return {
                 ok: true,
                 change: { action: 'edit', model: 'Announcement', target: truncate(op.payload.text), summary: 'Edited an announcement' },
-                applied: { id: op.target.id, prior: { text: cur.text, expiresAt: cur.expiresAt, startsAt: cur.startsAt || null }, expiresAt: set.expiresAt }
+                applied: { id: op.target.id, prior: { text: cur.text, expiresAt: cur.expiresAt, startsAt: cur.startsAt || null }, expiresAt: set.expiresAt, startsAt: set.startsAt }
             };
         },
         invert: (c) => ({ type: 'announcement.edit', target: { id: c.applied.id }, payload: c.applied.prior })

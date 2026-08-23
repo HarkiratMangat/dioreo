@@ -31,11 +31,9 @@ async function addDraw(interaction) {
         if (!parsed) {
             return interaction.followUp({ content: '❌ Could not parse that line -- expected format: `Title, m Item 1, l Item 2, Date, URL` (URL optional).' });
         }
+        // No URL + no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
         const thumbResult = await resolveThumbnail(parsed.title, parsed.thumbnailUrl);
-        if (!thumbResult.url) {
-            return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${parsed.title}" -- provide a thumbnail URL.` });
-        }
-        cloudinaryWarning = thumbnailNote(thumbResult);
+        cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
         newDrawObj = { title: parsed.title, items: parsed.items, date: parsed.date, thumbnailUrl: thumbResult.url };
     } else {
         const title = toTitleCase(interaction.fields.getTextInputValue('title'));
@@ -51,12 +49,9 @@ async function addDraw(interaction) {
             return interaction.followUp({ content: `❌ Date "${dateStr}" wasn't understood -- nothing was saved.` });
         }
 
-        // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists; no URL AND no cache hit is a real validation error since the draw needs some thumbnail.
+        // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead -- see the combined-line branch above for the full reasoning.
         const thumbResult = await resolveThumbnail(title, rawUrl);
-        if (!thumbResult.url) {
-            return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
-        }
-        cloudinaryWarning = thumbnailNote(thumbResult);
+        cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
 
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
         newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url };
@@ -93,12 +88,9 @@ async function editDraw(interaction) {
         if (!parsedDrawDate) return interaction.followUp({ content: `❌ Date "${drawDateStr}" wasn't understood -- nothing was saved.` });
         const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
 
-        // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. A blank field with no cache hit at all is a real validation error -- the draw needs SOME thumbnail, so this rejects the edit rather than saving with a broken image field.
+        // URL field is optional -- blank reuses whatever's cached in Cloudinary for this draw's (possibly just-renamed) title. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead (matches addDraw's same-day fix) rather than blocking an otherwise-valid edit.
         const rawUrl = interaction.fields.getTextInputValue('url');
         const thumbResult = await resolveThumbnail(newTitle, rawUrl);
-        if (!thumbResult.url) {
-            return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${newTitle}" -- provide a thumbnail URL.` });
-        }
 
         const rawItems = interaction.fields.getTextInputValue('items');
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
@@ -114,7 +106,7 @@ async function editDraw(interaction) {
         }
 
         let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
-        const editThumbNote = thumbnailNote(thumbResult);
+        const editThumbNote = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
         if (editThumbNote) confirmation += `\n${editThumbNote}`;
         return interaction.followUp({ content: confirmation });
     }
