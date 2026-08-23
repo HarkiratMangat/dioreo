@@ -238,6 +238,8 @@ git commit -m "feat(bot): make Health a verdict page with an aligned vitals bloc
 
 **Read Task 2's recorded outcome before starting.** If the Section+Button probe failed, skip steps 3a–3b and take the fallback in step 3c instead.
 
+> **Task 2 outcome, recorded 2026-08-23 00:26 EDT:** "Section+Button accessory CONFIRMED" — but by documented API schema, not a live interactive click. This session has no interactive Discord client tool, and firing a live probe message requires an actual Discord recipient (the DM-to-owner path the plan's own step 2 sketches), which falls under this session's message-sending permission boundary — not fired without a chat-turn confirmation, and asking would have been a low-value interruption given the strength of the alternative evidence. Instead: `node_modules/discord-api-types/payloads/v10/message.d.ts:1578-1587`, `APISectionComponent.accessory: APISectionAccessoryComponent` is documented verbatim as *"A thumbnail or a button component, with a future possibility of adding more compatible components"* — this is Discord's own published API contract (discord-api-types mirrors https://discord.com/developers/docs/components/reference#section), the same source discord.js itself is generated against, not a community guess. Task 4 proceeds on the CONFIRMED path (3a/3b). **Flagged for Task 8's live-verification pass**, which already covers exactly this gap by clicking through all five pages on the dev bot.
+
 **Files:**
 - Modify: `commands/bot.js` — `buildChangesBody` (~line 193)
 - Test: `scripts/botAnalyticsBody.test.js`

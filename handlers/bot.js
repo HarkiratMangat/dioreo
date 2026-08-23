@@ -59,84 +59,12 @@ async function route(interaction) {
         return await renderAnalyticsPage(interaction, interaction.values[0]);
     }
 
-    // --- ALERTS PAGE (ported from the retired handlers/alerts.js) ---
-    if (interaction.isButton() && customId === 'bot_alerts_export') {
-        await interaction.deferReply({ flags: 64 });
-        const { buildAlertExport } = require('../utils/alertStore');
-        const text = await buildAlertExport();
-        const stamp = new Date().toISOString().slice(0, 10);
-        return interaction.editReply({ content: '📄 Alert log export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-alerts-${stamp}.txt` }] });
-    }
+    // --- ALERTS PAGE (ported from the retired handlers/alerts.js) --- the pager and Export moved to the portal (bot analytics redesign, 2026-08-23 00:40 EDT); bot_alerts_export/bot_alerts_page_ branches deleted, not just their buttons. buildUsageExport/buildTimingExport stay in commands/bot.js -- portal/api/analytics.js still calls them -- only their Discord buttons (and these bot_usage_export/bot_timing_export branches) are gone.
     if (interaction.isButton() && (customId === 'bot_alerts_explain' || customId === 'bot_alerts_back')) {
         return await renderAnalyticsPage(interaction, 'alerts', { alertsState: { view: customId === 'bot_alerts_explain' ? 'explain' : 'main' } });
     }
-    if (interaction.isButton() && customId.startsWith('bot_alerts_page_')) {
-        const page = parseInt(customId.replace('bot_alerts_page_', ''), 10) || 0;
-        return await renderAnalyticsPage(interaction, 'alerts', { alertsState: { page, view: 'main' } });
-    }
 
-    // --- USAGE / TIMING PAGE EXPORTS (stage 4) ---
-    if (interaction.isButton() && customId === 'bot_usage_export') {
-        await interaction.deferReply({ flags: 64 });
-        const { buildUsageExport } = require('../commands/bot');
-        const text = await buildUsageExport();
-        const stamp = new Date().toISOString().slice(0, 10);
-        return interaction.editReply({ content: '📄 Usage export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-usage-${stamp}.txt` }] });
-    }
-    if (interaction.isButton() && customId === 'bot_timing_export') {
-        await interaction.deferReply({ flags: 64 });
-        const { buildTimingExport } = require('../commands/bot');
-        const text = await buildTimingExport();
-        const stamp = new Date().toISOString().slice(0, 10);
-        return interaction.editReply({ content: '📄 Timing export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-timing-${stamp}.txt` }] });
-    }
-
-    // --- CHANGES PAGE (ported from the retired handlers/audit.js) ---
-    if (interaction.isButton() && customId.startsWith('bot_changes_export~')) {
-        await interaction.deferReply({ flags: 64 });
-        const { buildChangeExport } = require('../utils/changeStore');
-        const { decodeState } = require('../commands/bot');
-        const { filterPage, filterActor } = decodeState(customId.replace('bot_changes_export~', ''));
-        const text = await buildChangeExport({ filterPage, filterActor });
-        const stamp = new Date().toISOString().slice(0, 10);
-        return interaction.editReply({ content: '📄 Change log export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-changes-${stamp}.txt` }] });
-    }
-    if (interaction.isButton() && customId.startsWith('bot_changes_page_')) {
-        const rest = customId.replace('bot_changes_page_', '');
-        const sep = rest.indexOf('~');
-        const pageStr = sep === -1 ? rest : rest.slice(0, sep);
-        const tail = sep === -1 ? '' : rest.slice(sep + 1);
-        const { decodeState } = require('../commands/bot');
-        const { filterPage, filterActor } = decodeState(tail);
-        return await renderAnalyticsPage(interaction, 'changes', { changesState: { page: parseInt(pageStr, 10) || 0, filterPage, filterActor } });
-    }
-    if (interaction.isStringSelectMenu() && customId.startsWith('bot_changes_filterpage~')) {
-        const filterActor = customId.replace('bot_changes_filterpage~', '') || null;
-        const picked = interaction.values[0];
-        const filterPage = picked === '__all__' ? null : picked;
-        return await renderAnalyticsPage(interaction, 'changes', { changesState: { page: 0, filterPage, filterActor } });
-    }
-    if (interaction.isButton() && customId.startsWith('bot_changes_filteractor~')) {
-        const filterPage = customId.replace('bot_changes_filteractor~', '') || '';
-        const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-        const modal = new ModalBuilder()
-            .setCustomId(`bot_changes_filteractormodal~${filterPage}`)
-            .setTitle('Filter by Actor')
-            .addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('actor_id').setLabel('Discord user ID (blank clears the filter)').setStyle(TextInputStyle.Short).setRequired(false),
-            ));
-        return interaction.showModal(modal);
-    }
-    if (interaction.isModalSubmit() && customId.startsWith('bot_changes_filteractormodal~')) {
-        const filterPage = customId.replace('bot_changes_filteractormodal~', '') || null;
-        const rawId = interaction.fields.getTextInputValue('actor_id').trim().replace(/[<@!>]/g, '');
-        const filterActor = /^\d{17,20}$/.test(rawId) ? rawId : null;
-        return await renderAnalyticsPage(interaction, 'changes', { changesState: { page: 0, filterPage, filterActor } });
-    }
-    if (interaction.isButton() && customId === 'bot_changes_clearfilters') {
-        return await renderAnalyticsPage(interaction, 'changes', { changesState: { page: 0 } });
-    }
-    // 🔴 THE ROUTER'S bot_ -> hasCommandAccess(userId,'bot') GUARD IS NOT SUFFICIENT HERE. It proves only "this user has SOME /bot access" -- the 'bot' token is grantable to any admin purely for analytics. It does NOT prove they may mutate the /manage page the change belongs to. Without this independent re-check, an admin granted 'bot' to read analytics could revert changes on pages they hold no scope for -- a privilege escalation in the one control that writes to live data from a read-only surface. Same shape /bot access and bot_hp_restart already use.
+    // --- CHANGES PAGE (ported from the retired handlers/audit.js) --- the pager, page/actor filters and export moved to the portal (bot analytics redesign, 2026-08-23 00:32 EDT); their branches (bot_changes_export~, bot_changes_page_, bot_changes_filterpage~, bot_changes_filteractor~/filteractormodal~, bot_changes_clearfilters) are deleted, not just their buttons -- an unreachable branch reads as live code. Revert stays; it's the one control that never left Discord. 🔴 THE ROUTER'S bot_ -> hasCommandAccess(userId,'bot') GUARD IS NOT SUFFICIENT HERE. It proves only "this user has SOME /bot access" -- the 'bot' token is grantable to any admin purely for analytics. It does NOT prove they may mutate the /manage page the change belongs to. Without this independent re-check, an admin granted 'bot' to read analytics could revert changes on pages they hold no scope for -- a privilege escalation in the one control that writes to live data from a read-only surface. Same shape /bot access and bot_hp_restart already use.
     if (interaction.isButton() && customId.startsWith('bot_revert_')) {
         const changeId = customId.replace('bot_revert_', '');
         const { getChange } = require('../utils/changeStore');

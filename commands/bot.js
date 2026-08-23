@@ -12,12 +12,12 @@ const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
-const { hasCommandAccess, isOwner, MANAGE_PAGE_SCOPES, formatPermissions } = require('../utils/adminAccess');
+const { hasCommandAccess, isOwner, formatPermissions } = require('../utils/adminAccess');
 const { mentionCommand } = require('../utils/commandMentions');
 const emojis = require('../utils/emojiMap');
 
-const ALERTS_PER_PAGE = 8;
-// ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated.
+const ALERTS_PER_PAGE = 3;
+// REDUCED 8 -> 3 (bot analytics redesign, 2026-08-23 00:39 EDT): Alerts is a glance now -- the pager and full log moved to the portal. ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated.
 const CHANGES_PER_PAGE = 5;
 // Matches utils/alertWebhook.js's LEVEL_ICON — kept in sync by hand (both are tiny, stable maps).
 const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' };
@@ -113,9 +113,7 @@ function buildVitalsBlock({ gatewayStatus, uptimeSec, rssMb, boots24h, boots7d }
         ['Memory', `${rssMb}MB`],
         ['Restarts', `${boots24h} in 24h · ${boots7d} in 7d`],
     ];
-    // Pad the LABEL, then append the colon -- padding after the colon (as a first draft of this
-    // block did) leaves the colon itself at a different offset per row, since it sits right after
-    // each label's own length. Padding the label first pins every colon to the same column.
+    // Pad the LABEL, then append the colon -- padding after the colon (as a first draft of this block did) leaves the colon itself at a different offset per row, since it sits right after each label's own length. Padding the label first pins every colon to the same column.
     const pad = Math.max(...rows.map(([k]) => k.length));
     return '```\n' + rows.map(([k, v]) => `${k.padEnd(pad)}: ${v}`).join('\n') + '\n```';
 }
@@ -145,10 +143,12 @@ async function buildHealthBody(client) {
     ];
 }
 
-// ── Alerts page (ported from the retired commands/alerts.js — query logic unchanged) ──
-async function buildAlertsBody({ view = 'main', page = 0 } = {}) {
+// ── Alerts page (ported from the retired commands/alerts.js — query logic unchanged) ── Keeps the severity ledger line -- already this page's signature, no other page has one -- and the LEVEL_ICON-led row shape, which is the per-row colour coding that distinguishes Alerts from Changes (must NOT gain per-row buttons). Cut to the 3 most recent (ALERTS_PER_PAGE 8 -> 3); the pager and Export moved to the portal.
+const ALERTS_EMPTY = '**Nothing has gone wrong.**\n-# Alerts land here when the bot crashes, loses its gateway connection, or hits a database error. An empty list is the healthy state.';
+
+async function buildAlertsBody({ view = 'main' } = {}) {
     if (view === 'explain') return buildAlertsExplainBody();
-    const [summary, recent] = await Promise.all([getAlertSummary(), getRecentAlerts({ page, perPage: ALERTS_PER_PAGE })]);
+    const [summary, recent] = await Promise.all([getAlertSummary(), getRecentAlerts({ page: 0, perPage: ALERTS_PER_PAGE })]);
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = summary.lastError ? `\`${summary.lastError.alertId}\` · <t:${unix(summary.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
     const body = [
@@ -162,18 +162,13 @@ async function buildAlertsBody({ view = 'main', page = 0 } = {}) {
         ).join('\n');
         body.push({ type: 10, content: `**Recent alerts** (newest first)\n${rows}` });
     } else {
-        body.push({ type: 10, content: `**Recent alerts**\n_No alerts recorded yet — nothing has needed one._ 🟢` });
+        body.push({ type: 10, content: `**Recent alerts**\n${ALERTS_EMPTY}` });
     }
-    const pager = buildPaginationRow({
-        totalChunks: recent.totalPages, currentPage: recent.page,
-        makeCustomId: (p) => `bot_alerts_page_${p}`, indicatorCustomId: 'bot_alerts_pageind',
-    });
-    if (pager) { body.push({ type: 14, spacing: 1 }); body.push(pager); }
     body.push({ type: 14, spacing: 2 });
     body.push({
         type: 1, components: [
-            { type: 2, style: 1, label: '📄 Export Log', custom_id: 'bot_alerts_export' },
             { type: 2, style: 2, label: 'What do alerts mean?', custom_id: 'bot_alerts_explain' },
+            { type: 2, style: 5, label: 'Full history in the portal', url: PORTAL_ANALYTICS_URL },
         ],
     });
     return body;
@@ -199,67 +194,53 @@ function buildAlertsExplainBody() {
     ];
 }
 
-// ── Changes page (ported from the retired commands/audit.js — query logic unchanged; page tag for admin-access mutations renamed 'manageadmins' -> 'access' going forward, see handlers/bot.js) ──
-const FILTERABLE_PAGES = [...MANAGE_PAGE_SCOPES, 'access', 'announcement'];
+// ── Changes page (ported from the retired commands/audit.js — query logic unchanged; page tag for admin-access mutations renamed 'manageadmins' -> 'access' going forward, see handlers/bot.js) ── FILTERABLE_PAGES/encodeState/decodeState retired (bot analytics redesign, 2026-08-23 00:32 EDT) -- the page/actor filters they served moved to the portal; nothing in this file or handlers/bot.js calls them any more.
 const PAGE_LABEL = {
     draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
     patchnotes: 'Patch Notes', seasondraft: 'Next Season Draft', season: 'Season Titles/Wipe',
     announcement: 'Announcement', access: 'Bot Access', manageadmins: 'Manage Admins (legacy)',
 };
-function encodeState(pf, af) { return `${pf || ''}~${af || ''}`; }
-function decodeState(rest) { const [pf, af] = (rest || '~').split('~'); return { filterPage: pf || null, filterActor: af || null }; }
 
-async function buildChangesBody({ page = 0, filterPage = null, filterActor = null } = {}) {
+// One SECTION per change, with Revert as the row's own accessory -- rather than a Text Display followed by a full-width Action Row. Component cost is IDENTICAL (9+10+2 vs 10+1+2 = 3 either way; the first draft of the spec wrongly claimed a saving, see its audit log), so this is bought purely for identity: Changes becomes the only page whose rows carry a control, which is exactly what distinguishes it from Alerts' rows. Section+Button accessory confirmed via Discord's own API schema -- see Task 2's note in the plan.
+function buildChangesRows(items) {
+    const { canRevert } = require('../core/revert');
+    return items.map(c => {
+        const gate = canRevert(c);
+        const reason = c.undone ? '' : (gate.ok ? '' : `\n-# _${gate.reason}_`);
+        return {
+            type: 9,
+            components: [{ type: 10, content:
+                `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}`
+                + `\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reason}` }],
+            accessory: { type: 2, style: 2, label: 'Revert', custom_id: `bot_revert_${c.changeId}`, disabled: !gate.ok },
+        };
+    });
+}
+
+// There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly.
+const CHANGES_EMPTY = '**No edits in this window.**\n-# Every `/manage` save writes a row here with who made it and a one-click Revert. Make a change and it appears immediately.';
+
+async function buildChangesBody() {
     const [summary, recent] = await Promise.all([
         getChangeSummary(),
-        getRecentChanges({ page, perPage: CHANGES_PER_PAGE, filterPage, filterActor }),
+        getRecentChanges({ page: 0, perPage: CHANGES_PER_PAGE }),
     ]);
-    const state = encodeState(filterPage, filterActor);
-    const lastChg = summary.lastChange
-        ? `\`${summary.lastChange.changeId}\` · ${truncate(summary.lastChange.summary, 60)} · <t:${unix(summary.lastChange.createdAt)}:R>`
-        : '_none recorded_';
-    const filterLine = (filterPage || filterActor)
-        ? `-# Filtered: ${filterPage ? `page **${PAGE_LABEL[filterPage] || filterPage}**` : ''}${filterPage && filterActor ? ' · ' : ''}${filterActor ? `actor <@${filterActor}>` : ''}`
-        : null;
+    // Alerts and Changes both used to render "**Last 24h:** N" in the same position at the same weight, so the eye read two identical rows even though the nouns differed. A ledger states WHO and WHAT; a severity breakdown (Alerts) states HOW BAD. Different information, therefore different shapes. getChangeSummary() does not return an undoneCount today -- this plan touches no stores, so that clause is simply omitted rather than added.
+    const ledgerLine = `**${summary.last24h}** edit(s) today · **${summary.last7d}** this week`;
 
     const body = [
         { type: 10, content: `-# every DB-mutating \`/manage\` action (and admin-access change) is recorded here (${summary.total} total).` },
-        ...(filterLine ? [{ type: 10, content: filterLine }] : []),
-        { type: 10, content: `**Last 24h:** ${summary.last24h} change(s)\n**Last 7d:** ${summary.last7d} change(s)\n**Most recent:** ${lastChg}` },
+        { type: 10, content: ledgerLine },
         { type: 14, spacing: 2 },
     ];
     if (recent.items.length) {
-        // One Text Display + Action Row PER CHANGE (rather than the single joined block this used to be) so each row can carry its own Revert button (core/revert.js, portal core Task 7). canRevert() distinguishes "predates revert support" (a pre-core row) from "not yet supported" (an entity plan 2 hasn't converted yet) -- both currently read `inverse: null`, and conflating them would tell a reader something false about a change made seconds ago.
-        const { canRevert } = require('../core/revert');
         body.push({ type: 10, content: '**Recent changes** (newest first)' });
-        for (const c of recent.items) {
-            const gate = canRevert(c);
-            const reasonLine = c.undone ? '' : (gate.ok ? '' : `\n-# _${gate.reason}_`);
-            body.push({ type: 10, content: `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reasonLine}` });
-            body.push({ type: 1, components: [{ type: 2, style: 2, label: 'Revert', custom_id: `bot_revert_${c.changeId}`, disabled: !gate.ok }] });
-        }
+        body.push(...buildChangesRows(recent.items));
     } else {
-        body.push({ type: 10, content: `**Recent changes**\n_No changes recorded yet${(filterPage || filterActor) ? ' matching this filter' : ''}._` });
+        body.push({ type: 10, content: CHANGES_EMPTY });
     }
-    const pager = buildPaginationRow({
-        totalChunks: recent.totalPages, currentPage: recent.page,
-        makeCustomId: (p) => `bot_changes_page_${p}~${state}`, indicatorCustomId: `bot_changes_pageind~${state}`,
-    });
-    if (pager) { body.push({ type: 14, spacing: 1 }); body.push(pager); }
-
-    const pageOptions = [
-        { label: 'All pages', value: '__all__', default: !filterPage },
-        ...FILTERABLE_PAGES.map(p => ({ label: PAGE_LABEL[p] || p, value: p, default: filterPage === p })),
-    ];
     body.push({ type: 14, spacing: 2 });
-    body.push({ type: 1, components: [{ type: 3, custom_id: `bot_changes_filterpage~${filterActor || ''}`, placeholder: 'Filter by page…', options: pageOptions }] });
-
-    const actionButtons = [
-        { type: 2, style: 1, label: '👤 Filter by Actor', custom_id: `bot_changes_filteractor~${filterPage || ''}` },
-        { type: 2, style: 1, label: '📄 Export Log', custom_id: `bot_changes_export~${state}` },
-    ];
-    if (filterPage || filterActor) actionButtons.push({ type: 2, style: 2, label: 'Clear Filters', custom_id: 'bot_changes_clearfilters' });
-    body.push({ type: 1, components: actionButtons });
+    body.push({ type: 1, components: [{ type: 2, style: 5, label: 'Full history in the portal', url: PORTAL_ANALYTICS_URL }] });
     return body;
 }
 
@@ -288,24 +269,41 @@ async function computeUsageStats() {
     return { current, previous, byCommand, byEntry, byOutcome };
 }
 
+const BAR_CELLS = 10;
+// Proportional to the TOP command, not to the total: with 8 commands, share-of-total bars are all near-empty and compare nothing. Against the leader, the shape of the distribution is readable. The bar is fixed-width and the NAME truncates -- the bar is the only part carrying the comparison, so it is the one thing that must never be the part that gives way (spec audit finding 3).
+function buildUsageBars(byCommand) {
+    if (!byCommand.length) return '';
+    const top = byCommand[0].c || 1;
+    const nameWidth = 18;
+    return '```\n' + byCommand.map(c => {
+        const filled = Math.max(1, Math.round((c.c / top) * BAR_CELLS));
+        const name = `/${c._id || '?'}`.slice(0, nameWidth).padEnd(nameWidth);
+        return `${name}${'█'.repeat(filled)}${'░'.repeat(BAR_CELLS - filled)} ${c.c}`;
+    }).join('\n') + '\n```';
+}
+
+const USAGE_EMPTY = '**No command usage in the last 7 days.**\n-# Only public commands count — your own `/manage` and `/bot` activity is deliberately excluded.';
+
 async function buildUsageBody() {
-    const { current, previous, byCommand, byEntry, byOutcome } = await computeUsageStats();
+    const { current, previous, byCommand } = await computeUsageStats();
     const pctChange = previous > 0 ? Math.round(((current - previous) / previous) * 100) : (current > 0 ? 100 : 0);
     const changeStr = (previous === 0 && current === 0) ? '' : ` (${pctChange >= 0 ? '+' : ''}${pctChange}% vs previous 7d)`;
-    const cmdLines = byCommand.length ? byCommand.map((c, i) => `${i + 1}. **/${c._id || '?'}** — ${c.c}`).join('\n') : '_no data yet_';
-    const entryLine = byEntry.length ? byEntry.map(e => `${e._id || '?'}: ${e.c}`).join(' · ') : '_no data yet_';
-    const outcomeLine = byOutcome.length ? byOutcome.map(o => `${o._id || '?'}: ${o.c}`).join(' · ') : '_no data yet_';
+    if (!byCommand.length) {
+        return [
+            { type: 10, content: `**${current.toLocaleString()} interactions** · last 7 days${changeStr}` },
+            { type: 14, spacing: 1 },
+            { type: 10, content: USAGE_EMPTY },
+            { type: 14, spacing: 1 },
+            { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+        ];
+    }
     return [
         { type: 10, content: `**${current.toLocaleString()} interactions** · last 7 days${changeStr}` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Top commands**\n${cmdLines}` },
+        { type: 10, content: `**Top commands**\n${buildUsageBars(byCommand.slice(0, 5))}` },
+        { type: 10, content: `-# Only public commands count — your own \`/manage\` and \`/bot\` activity is deliberately excluded.` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Entry point:** ${entryLine}` },
-        { type: 10, content: `**Outcome:** ${outcomeLine}` },
-        { type: 14, spacing: 1 },
-        { type: 10, content: `-# Admin surfaces (/manage, /bot, /autobuild) are excluded from these figures.` },
-        { type: 14, spacing: 1 },
-        { type: 1, components: [{ type: 2, style: 1, label: '📄 Export', custom_id: 'bot_usage_export' }] },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
     ];
 }
 
@@ -360,25 +358,39 @@ async function computeTimingStats() {
     return { overall: overallRows[0] || null, byCommand, byDep };
 }
 
+// Discord closes the interaction window at 3,000ms. A bare "p95 2,400ms" makes a reader do that division in their head every time; stating the headroom is the page doing its own job. null is white circle, never green -- "no data" and "plenty of room" are different answers and must not share a colour.
+function headroom(ms, budgetMs) {
+    if (ms == null) return { pct: null, icon: '⚪' };
+    const pct = Math.round(((budgetMs - ms) / budgetMs) * 100);
+    return { pct, icon: pct >= 50 ? '🟢' : pct >= 25 ? '🟡' : pct >= 10 ? '🟠' : '🔴' };
+}
+
+const TIMING_EMPTY = '**No timings recorded yet.**\n-# Every interaction records how long it took to acknowledge and to finish. This fills in on its own as the bot gets used.';
+
 async function buildTimingBody() {
-    const { overall, byCommand, byDep } = await computeTimingStats();
+    const { overall, byCommand } = await computeTimingStats();
     const ackP = overall?.ackP || [null, null];
     const durP = overall?.durP || [null, null];
-    const cmdLines = byCommand.length
-        ? byCommand.map(c => `**/${c._id || '?'}** — p95 ${fmtMs(c.p?.[0])} (${c.n} sample${c.n === 1 ? '' : 's'})`).join('\n')
-        : '_no data yet_';
-    const depLines = byDep.length
-        ? byDep.map(d => `**${d._id}** — ${d.calls} call(s), ${Math.round(d.totalMs).toLocaleString()}ms total`).join('\n')
-        : '_no external dependency calls recorded yet_';
+    if (!overall && !byCommand.length) {
+        return [
+            { type: 10, content: TIMING_EMPTY },
+            { type: 14, spacing: 1 },
+            { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
+        ];
+    }
+    const ackHead = headroom(ackP[1], 3000);
+    // A threshold page ranks by RISK, not by frequency -- re-sort worst p95 first. computeTimingStats() already returns the rows; the aggregation's own $sort/$limit stays untouched for the portal.
+    const worst = [...byCommand].sort((a, b) => (b.p?.[0] ?? 0) - (a.p?.[0] ?? 0)).slice(0, 3);
+    const cmdLines = worst.length
+        ? worst.map(c => { const h = headroom(c.p?.[0], 3000); return `${h.icon} **/${c._id || '?'}** — p95 ${fmtMs(c.p?.[0])} (${h.pct == null ? '—' : `${h.pct}%`} headroom, ${c.n} sample${c.n === 1 ? '' : 's'})`; }).join('\n')
+        : TIMING_EMPTY;
     return [
-        { type: 10, content: `**Ack time (p50/p95):** ${fmtMs(ackP[0])} / ${fmtMs(ackP[1])} — against Discord's 3,000ms deadline` },
+        { type: 10, content: `${ackHead.icon} **Ack time (p50/p95):** ${fmtMs(ackP[0])} / ${fmtMs(ackP[1])} — ${ackHead.pct == null ? 'no data' : `${ackHead.pct}% headroom`} against Discord's 3,000ms deadline` },
         { type: 10, content: `**Total duration (p50/p95):** ${fmtMs(durP[0])} / ${fmtMs(durP[1])}` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Slowest commands (p95 duration, last 7d)**\n${cmdLines}` },
+        { type: 10, content: `**Worst commands (p95 duration, last 7d)**\n${cmdLines}` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Dependency time, last 7 days**\n${depLines}` },
-        { type: 14, spacing: 1 },
-        { type: 1, components: [{ type: 2, style: 1, label: '📄 Export', custom_id: 'bot_timing_export' }] },
+        { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
     ];
 }
 
@@ -404,11 +416,11 @@ async function buildTimingExport() {
 }
 
 // Shared render entry point — used by execute() (slash) AND handlers/bot.js's re-render branches, so there's one render path, not a drifting copy per page (same convention /alerts and /audit each already followed on their own).
-async function buildAnalyticsPanel({ page = 'health', client, alertsState = {}, changesState = {} } = {}) {
+async function buildAnalyticsPanel({ page = 'health', client, alertsState = {} } = {}) {
     const meta = PAGE_META[page] || PAGE_META.health;
     let body;
     if (page === 'alerts') body = await buildAlertsBody(alertsState);
-    else if (page === 'changes') body = await buildChangesBody(changesState);
+    else if (page === 'changes') body = await buildChangesBody();
     else if (page === 'usage') body = await buildUsageBody();
     else if (page === 'timing') body = await buildTimingBody();
     else body = await buildHealthBody(client);
@@ -536,15 +548,14 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { buildVitalsBlock },
+    __testables: { buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom },
     buildHotpatchPanel,
     buildUsageExport,
     buildTimingExport,
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,
-    // FILTERABLE_PAGES/PAGE_LABEL/encodeState stay OUT of exports (v3-pre-release review, finding #47) -- confirmed dead as CROSS-MODULE exports, this file uses every one of them itself. PAGE_META/pageSelectRow were re-added 2026-08-23 00:22 EDT (bot analytics redesign) so scripts/botAnalyticsBody.test.js can assert on the page-switcher descriptions without duplicating them; decodeState stays exported for the same reason it always was -- handlers/bot.js genuinely imports it.
-    decodeState,
+    // PAGE_LABEL stays OUT of exports (v3-pre-release review, finding #47) -- confirmed dead as a CROSS-MODULE export, this file uses it itself. PAGE_META/pageSelectRow were re-added 2026-08-23 00:22 EDT (bot analytics redesign) so scripts/botAnalyticsBody.test.js can assert on the page-switcher descriptions without duplicating them. decodeState (and FILTERABLE_PAGES/encodeState alongside it) was removed entirely in the same change -- the page/actor filter branches that were its only callers, in this file and handlers/bot.js, moved to the portal.
 
     data: new SlashCommandBuilder()
         .setName('bot')
