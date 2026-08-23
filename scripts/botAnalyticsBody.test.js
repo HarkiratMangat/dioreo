@@ -122,7 +122,8 @@ check('a list field NEVER renders as "2 items -> 2 items"', () => {
     const swapped = [{ tier: 'mythic', name: 'Type 25 – Deepstar Piercer' }, { tier: 'legendary', name: 'New Skin' }];
     assert.ok(!sameValue(before, swapped));
     const moved = describeListChange(before, swapped);
-    assert.ok(/− Old Skin/.test(moved) && /\+ New Skin/.test(moved), `must name what moved, got: ${moved}`);
+    // Asserts the NAMES and the diff GLYPHS, not the literal emoji ids -- refreshEmojiIds() re-points those by name at every boot, so pinning an id here would fail on the dev bot for a reason that is not a defect.
+    assert.ok(/DiffMinus.*Old Skin/.test(moved) && /DiffAdd.*New Skin/.test(moved), `must name what moved, got: ${moved}`);
     assert.strictEqual(describeListChange(before, before.slice().reverse()), '_reordered_');
 });
 
@@ -273,6 +274,27 @@ check('a change id is not date-shaped any more', () => {
     const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'utils', 'changeStore.js'), 'utf8');
     assert.ok(/return `#\$\{doc\.seq\}`;/.test(src), 'nextDailyChangeId must mint a #N sequence');
     assert.ok(!/MONTHS\[date\.getUTCMonth/.test(src), 'the MMMDD date-key builder must be gone, not just unused');
+});
+
+check('a diff STACKS its two values, one glyph each, never an inline arrow', () => {
+    const { fmtFieldValue } = require('../commands/bot').__testables;
+    const emojis = require('../utils/emojiMap');
+    // The inline `A → B` form put a long before and a long after on ONE line, which wraps into a ribbon on a phone -- the same failure mode as the vitals row and the peaks block. Stacked, each value owns a line.
+    const row = `**Title:**\n${emojis.diffMinus}${fmtFieldValue('Deepstar Wraith Mythic Drop', 'title', [])}\n${emojis.diffAdd}${fmtFieldValue('Deepstar Wraith Mythic Draw', 'title', [])}`;
+    const lines = row.split('\n');
+    assert.strictEqual(lines.length, 3, 'label, before, after -- three lines, never two');
+    assert.ok(!/→/.test(row), 'an inline arrow puts both values on one line');
+    assert.ok(lines[1].includes('DiffMinus') && lines[2].includes('DiffAdd'), 'each value line leads with its own glyph');
+    // Values are code-styled so whitespace and lookalike characters are visible -- on "Drop" vs "Draw" that is the difference between reading the change and guessing it.
+    assert.ok(/`Deepstar Wraith Mythic Drop`/.test(lines[1]));
+});
+
+check('a Discord timestamp is never wrapped in backticks', () => {
+    const { fmtFieldValue } = require('../commands/bot').__testables;
+    // Ticking a <t:...> tag prints the raw tag instead of a rendered time -- the one value that must stay bare.
+    const out = fmtFieldValue('2026-08-14T00:00:00.000Z', 'startsAt', []);
+    assert.ok(/^<t:\d+:f>$/.test(out), `a timestamp must render bare, got: ${out}`);
+    assert.strictEqual(fmtFieldValue(null, 'title', []), '_(empty)_', 'an absence is prose, not a value');
 });
 
 console.log(`  ✓ ${passed} /bot analytics checks passed`);

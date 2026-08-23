@@ -165,7 +165,7 @@ async function buildHealthBody(client) {
         { type: 10, content: `**Alerts, last 24h:** ${line(s.last24h)}\n**Alerts, last 7d:** ${line(s.last7d)}\n**Last error:** ${lastErr}` },
         { type: 10, content: tierLine },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**VM resource peaks**\n${peaksLine(stats.cloud)}` },
+        { type: 10, content: `### VM Resource Peaks\n${peaksLine(stats.cloud)}` },
     ];
 }
 
@@ -186,9 +186,9 @@ async function buildAlertsBody({ view = 'main' } = {}) {
         const rows = recent.items.map(a =>
             `\`${a.alertId || '??????'}\` ${LEVEL_ICON[a.level] || '⚪'} **${truncate(displayTitle(a.title), 60)}** · <t:${unix(a.createdAt)}:R>`
         ).join('\n');
-        body.push({ type: 10, content: `**Recent alerts** (newest first)\n${rows}` });
+        body.push({ type: 10, content: `### Recent Alerts\n-# newest first\n${rows}` });
     } else {
-        body.push({ type: 10, content: `**Recent alerts**\n${ALERTS_EMPTY}` });
+        body.push({ type: 10, content: `### Recent Alerts\n${ALERTS_EMPTY}` });
     }
     body.push({ type: 14, spacing: 2 });
     body.push({
@@ -264,21 +264,24 @@ function fmtItems(arr) {
     if (!Array.isArray(arr) || !arr.length) return '_(none)_';
     const names = arr.map(i => (i && (i.name || i.title)) || '?');
     const shown = names.slice(0, 3).map(n => truncate(String(n), 40)).join(', ');
-    return names.length > 3 ? `${shown} _(+${names.length - 3} more)_` : shown;
+    // Returns BARE text -- fmtFieldValue() applies the backticks, so ticking here would nest them.
+    return names.length > 3 ? `${shown}  (+${names.length - 3} more)` : shown;
 }
 
 // 🔴 DATE-ONLY FIELDS ARE NOT INSTANTS. A draw's date is a DAY the admin typed, stored at UTC midnight (the repo's settled admin-date-UTC decision). Rendered with <t:...:D> it localises into the previous evening in EDT, so the panel told Harkirat "August 13" for a draw he had dated August 14. Genuine instants (startsAt/expiresAt/createdAt) keep <t:>, because for those the reader's own timezone IS the right frame. The resolver declares which is which; the formatter must never guess from the value's shape.
 const fmtUtcDay = (v) => new Date(v).toLocaleDateString('en-US', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
+// 🔴 THE VALUE CARRIES ITS OWN CODE-STYLE. Harkirat's design, 2026-08-23 12:31 EDT: a value set in backticks is visibly DATA rather than prose, and it makes leading/trailing whitespace and lookalike characters visible -- which on a diff is the difference between "Drop -> Draw" being readable and being a guess. Applied here rather than at each call site so no surface can forget it. Two things are deliberately NOT backticked: a `<t:...>` timestamp (backticks would print the raw tag) and an italic placeholder like _(empty)_, which is prose about an absence, not a value.
+const tick = (text) => `\`${text}\``;
 function fmtFieldValue(v, key, dateOnly = []) {
     if (v == null || v === '') return '_(empty)_';
-    if (key === 'items' || key === 'attachments') return Array.isArray(v) ? fmtItems(v) : String(v);
-    if (dateOnly.includes(key)) return `${fmtUtcDay(v)} _(UTC)_`;
+    if (key === 'items' || key === 'attachments') return Array.isArray(v) ? tick(fmtItems(v)) : tick(String(v));
+    if (dateOnly.includes(key)) return `${tick(fmtUtcDay(v))} _(UTC)_`;
     if (v instanceof Date || (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v))) return `<t:${unix(v)}:f>`;
-    if (typeof v === 'boolean') return v ? 'yes' : 'no';
+    if (typeof v === 'boolean') return tick(v ? 'yes' : 'no');
     if (typeof v === 'string' && /^https?:\/\//.test(v)) return '_(an image)_';
-    if (Array.isArray(v)) return plural(v.length, 'entry');
-    if (typeof v === 'object') return `\`${truncate(JSON.stringify(v), 50)}\``;
-    return truncate(String(v), 70);
+    if (Array.isArray(v)) return tick(plural(v.length, 'entry'));
+    if (typeof v === 'object') return tick(truncate(JSON.stringify(v), 50));
+    return tick(truncate(String(v), 70));
 }
 
 const FIELD_LABEL = {
@@ -306,9 +309,10 @@ function describeListChange(before, after) {
     const added = a.filter(n => !b.includes(n));
     const removed = b.filter(n => !a.includes(n));
     if (!added.length && !removed.length) return b.length === a.length ? '_reordered_' : null;
+    // Same glyph vocabulary as a scalar diff -- one removed/added marker per line, so a list change and a field change read as the same kind of thing rather than two invented notations.
     return [
-        ...removed.slice(0, 3).map(n => `− ${truncate(n, 40)}`),
-        ...added.slice(0, 3).map(n => `+ ${truncate(n, 40)}`),
+        ...removed.slice(0, 3).map(n => `${emojis.diffMinus}\`${truncate(n, 40)}\``),
+        ...added.slice(0, 3).map(n => `${emojis.diffAdd}\`${truncate(n, 40)}\``),
     ].join('\n');
 }
 
@@ -380,7 +384,7 @@ function genericFields(obj, dateOnly, limit = 8) {
     return Object.entries(obj || {})
         .filter(([k, v]) => k !== '_id' && v != null && v !== '')
         .slice(0, limit)
-        .map(([k, v]) => `**${fieldLabel(k)}** · ${fmtFieldValue(v, k, dateOnly)}`)
+        .map(([k, v]) => `**${fieldLabel(k)}:** ${fmtFieldValue(v, k, dateOnly)}`)
         .join('\n');
 }
 
@@ -496,14 +500,14 @@ async function buildChangeDetailBody(changeId) {
         // add: the record it created. delete-inverse cannot reach here (the row is gone by definition).
         const blocks = renderRecord(row.page, record.raw, dateOnly, 22);
         if (blocks) {
-            body.push({ type: 10, content: `**The ${noun} it created**` });
+            body.push({ type: 10, content: `### The ${noun.replace(/^./, c => c.toUpperCase())} It Created` });
             body.push(...blocks);
         }
     } else if (payload) {
         // EVERY delete lands here -- the record is gone, and the inverse payload is that record in full. It is also the path every page without a fetcher takes, which is why it renders generically over the payload rather than from a hardcoded field list: patch notes, the season draft, season settings and bot access all work here without a bespoke branch each.
         const blocks = renderRecord(row.page, payload, dateOnly, 22);
         if (blocks) {
-            body.push({ type: 10, content: `**The ${noun} it ${verb === 'delete' ? 'affected' : 'removed'}**` });
+            body.push({ type: 10, content: `### The ${noun.replace(/^./, c => c.toUpperCase())} It ${verb === 'delete' ? 'Affected' : 'Removed'}` });
             body.push(...blocks);
         }
     } else {
@@ -530,9 +534,9 @@ async function buildChangeDetailBody(changeId) {
     if (verb === 'edit' && !record && view.fetch) {
         body.push({ type: 10, content: `⚠️ **This ${noun} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
     }
-    body.push({ type: 10, content: revertSentence(row, noun, changed.length) });
+    // 🔴 SUBTEXT, AND NO DIVIDER BEFORE THE BUTTONS (Harkirat, 2026-08-23 12:31 EDT). The hint explains the action; it is not the action, and at body weight above a divider it read as the panel's conclusion. As `-#` sitting directly on the button row it becomes a caption for those buttons, which is what it is -- and the buttons become the panel's visual anchor, which is what they are.
+    body.push({ type: 10, content: `-# ${revertSentence(row, noun, changed.length)}` });
     body.push({ type: 10, content: `-# It applies the exact inverse recorded at the time — nothing is recomputed — and writes its own entry to this log.` });
-    body.push({ type: 14, spacing: 1 });
     const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
     body.push({ type: 1, components: [
         { type: 2, style: 4, label: 'Revert this change', custom_id: `bot_revert_${row.changeId}` },
@@ -560,7 +564,7 @@ async function buildChangesBody() {
         { type: 14, spacing: 2 },
     ];
     if (recent.items.length) {
-        body.push({ type: 10, content: '**Recent changes** (newest first)' });
+        body.push({ type: 10, content: '### Recent Changes\n-# newest first' });
         body.push(...buildChangesRows(recent.items));
     } else {
         body.push({ type: 10, content: CHANGES_EMPTY });
@@ -637,7 +641,7 @@ async function buildUsageBody() {
     }
     return [
         ...head,
-        { type: 10, content: `**Most used**\n${buildUsageBars(byCommand.slice(0, 5))}` },
+        { type: 10, content: `### Most Used\n${buildUsageBars(byCommand.slice(0, 5))}` },
         { type: 10, content: `-# Bars are relative to the busiest command. Your own \`/manage\` and \`/bot\` use is deliberately left out.` },
         { type: 14, spacing: 1 },
         { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
@@ -765,7 +769,7 @@ async function buildTimingBody() {
         { type: 10, content: `-# Answering and finishing are different things. Once it has answered, the bot has 15 minutes to do the work — so nothing here is late, this is just how long you wait.` },
         { type: 14, spacing: 1 },
         ...(slowestBlock
-            ? [{ type: 10, content: `**Slowest to finish**\n${slowestBlock}` },
+            ? [{ type: 10, content: `### Slowest To Finish\n${slowestBlock}` },
                { type: 10, content: `-# **"Slowest 1 in 20"** means: run it twenty times and about one run will be roughly this slow. Ranked by that, not by how often each is used — and your own admin commands **are** counted here, unlike Usage.` }]
             : [{ type: 10, content: TIMING_EMPTY }]),
         { type: 14, spacing: 1 },

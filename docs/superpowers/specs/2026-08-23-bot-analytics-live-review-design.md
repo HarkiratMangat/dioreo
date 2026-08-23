@@ -1,6 +1,6 @@
 ---
 kind: spec
-status: live
+status: frozen
 ---
 
 # `/bot analytics` — what live review changed, and the rules that came out of it
@@ -48,6 +48,10 @@ The original spec was approved, built exactly as written, shipped — and was th
 > **Rule D — Render the record with the record's own renderer.** Never re-describe it. Export the canonical builder and reuse it; a copy drifts, and a panel that quietly stops matching the real card is worse than one that never tried. `scripts/botAnalyticsBody.test.js` asserts the draw view is byte-identical to `commands/draws.js`'s output.
 
 > **Rule E — A panel may never assert something a reader can see is false.** `Items 2 items → 2 items` cost more trust than the row was ever worth. Either say what actually moved, or do not claim the field changed.
+
+> **Rule G — Structure carries meaning; prose does not.** Harkirat's own redesign of the diff block, adopted verbatim 2026-08-23 12:31 EDT, and generalised across every panel. A section gets a real `###` heading rather than bold body text wearing an emoji. A label sits on its own line ending in a colon. A value is **code-styled**, so it reads as data and its whitespace and lookalike characters are visible — on `Drop` vs `Draw` that is the difference between reading a change and guessing it. And a before/after **stacks**, one value per line, each led by its own `DiffMinus`/`DiffAdd` glyph: an inline `A → B` puts two long values on one line, which is the same ribbon-wrap failure as the vitals row and the peaks block. The glyphs are the same at both scales — on the field rows and on the BEFORE/AFTER card headings — so they read as one notation rather than two.
+>
+> ⚠️ The hint under an action is `-#` **subtext sitting directly on the button row, with no divider between them.** At body weight above a divider it reads as the panel's conclusion; as a caption it is what it actually is, and the buttons become the anchor.
 
 > **Rule F — A destructive control states its blast radius first.** Revert writes old values back over anything that came after it, so the panel names later changes to the same record, with who and when, above the red button.
 
