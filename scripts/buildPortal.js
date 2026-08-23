@@ -90,6 +90,20 @@ function contrastRatio(hexA, hexB) {
     return (x + 0.05) / (y + 0.05);
 }
 
+// Resolve a CSS value that may be a var() chain with fallbacks down to a literal hex, using the :root token table. `var(--a, var(--b))` resolves to --a when --a is DEFINED IN :root, and to the fallback when it is not -- which is the whole mechanism behind the login-button bug: --topic-accent is set 0 times in CSS and 4 times inline from JS, so on any element JS did not stamp, all 14 of its fallback references resolve to the fallback. Returns null for anything not reducible to a hex (gradients, rgba(), currentColor) -- those are not this checker's business and a guess would be worse than a skip.
+function resolveColorValue(value, vars, depth = 0) {
+    if (!value || depth > 6) return null;
+    const v = value.trim();
+    if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v.length === 4
+        ? '#' + v.slice(1).split('').map(c => c + c).join('')
+        : v.slice(0, 7);
+    const m = v.match(/^var\(\s*(--[\w-]+)\s*(?:,([\s\S]+))?\)$/);
+    if (!m) return null;
+    const name = m[1].slice(2), fallback = m[2];
+    if (vars[name]) return resolveColorValue(vars[name], vars, depth + 1);
+    return fallback ? resolveColorValue(fallback, vars, depth + 1) : null;
+}
+
 function portalContrastAudit(css) {
     // Comments stripped first -- this file's OWN header comment about the site generator's past :root{} bug literally contains the substring ':root{}', which a comment-blind regex matches as the FIRST (empty, wrong) :root block. Found by actually running this against real input rather than assuming a hand-written comment could not itself trip the thing it warns about -- exactly the failure mode Task 4 Step 4 exists to catch.
     const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -118,12 +132,43 @@ function portalContrastAudit(css) {
             if (r < CONTRAST_MIN) bad.push(`--${fg} ${vars[fg]} used as TEXT on --${bg} ${vars[bg]} is ${r.toFixed(2)}:1, below ${CONTRAST_MIN}:1`);
         }
     }
+
+    // 🔴 PASS 2 -- REAL RULES, NOT JUST TOKEN PAIRS. Everything above checks the token table; this checks what the stylesheet actually declares, which is where the login button's ~1.3:1 lived (`.accent-fill{background:var(--topic-accent,var(--raised));color:var(--on-accent)}` -- both halves legitimate tokens, the PAIR unreadable, and no token-pair audit can see that).
+    //
+    // Two cases, and the split is what keeps this free of false positives:
+    //   A. the rule declares BOTH color and background -> that pair is self-contained, check it.
+    //   B. the rule declares color and NO background -> it inherits one, and CSS alone cannot say
+    //      which. Checked against --raised, the LIGHTEST portal surface, which is the worst case for
+    //      light-on-dark text and therefore a conservative bound rather than a guess.
+    // Values that do not reduce to a hex (gradients, rgba, currentColor) are skipped, not guessed.
+    const stripped2 = stripped.replace(/@media[^{]*\{/g, '').replace(/@keyframes[^{]*\{[\s\S]*?\}\s*\}/g, '');
+    const LIGHTEST_SURFACE = vars.raised;
+    for (const rule of stripped2.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        const selector = rule[1].trim().replace(/\s+/g, ' ');
+        const body = rule[2];
+        if (!selector || selector.startsWith('@') || selector.startsWith(':root')) continue;
+        const fgDecl = body.match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
+        if (!fgDecl) continue;
+        const fg = resolveColorValue(fgDecl[1], vars);
+        if (!fg) continue;
+        const bgDecl = body.match(/(?:^|;)\s*background(?:-color)?\s*:\s*([^;]+)/);
+        const bg = bgDecl ? resolveColorValue(bgDecl[1], vars) : LIGHTEST_SURFACE;
+        if (!bg) continue;
+        checked++;
+        const r = contrastRatio(fg, bg);
+        if (r < CONTRAST_MIN) {
+            bad.push(bgDecl
+                ? `${selector} declares ${fg} on ${bg} — ${r.toFixed(2)}:1, below ${CONTRAST_MIN}:1`
+                : `${selector} declares ${fg} and inherits its background — ${r.toFixed(2)}:1 on the lightest surface ${bg}, below ${CONTRAST_MIN}:1`);
+        }
+    }
+
     if (bad.length) {
         console.error('  FAIL contrast below WCAG AA:');
         bad.forEach(b => console.error(`      ${b}`));
         return false;
     }
-    console.log(`  PASS all ${checked} --token pairs in :root meet ${CONTRAST_MIN}:1`);
+    console.log(`  PASS all ${checked} colour pairs (tokens + declared rules) meet ${CONTRAST_MIN}:1`);
     return true;
 }
 

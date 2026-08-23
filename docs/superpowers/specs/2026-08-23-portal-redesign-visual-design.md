@@ -185,6 +185,16 @@ The falsification pass, run as `.claude/rules/plan-drafting.md` requires — the
 
 **Alternatives re-examined and still rejected.** Restricting overlap detection to the draw lanes would have cut the flag noise at the source, and was rejected: it asserts a CODM scheduling rule this session cannot verify, and a detector that silently drops a real finding is worse than one that ranks it last. Making in-table checkboxes 44px was rejected for the same class of reason — it clears WCAG 2.5.5 (AAA) at the cost of turning a 39-row manifest into six screens; 24px clears SC 2.5.8 (AA), which is the actual requirement.
 
+## Addendum — 2026-08-23 16:12 EDT: the three deferred items, closed
+
+Harkirat's call once the sizing was on the table: *"you could just do them right now since you have everything in context, and they're gonna touch the same files anyway."* All three are done and archived in `docs/archive/resolved-list.md`. One of them stopped being a deferral the moment it was measured, and that is the part worth carrying:
+
+**The contrast gate found a live bug on its first real run — the original one.** Extending `portalContrastAudit()` from token pairs to **every rule that declares a `color`**, resolving `var()` chains and fallbacks to a literal hex, took it from 12 pairs to **157** and immediately reported `.accent-fill` declaring `#000` on `--raised` at **1.39:1**. That is the login button's own bug, §2.3, *still latent* — Phase 2 fixed the door by giving it a separate rule and left `.accent-fill` itself intact, so every Stage button in Season, Armory and Broadcast (outside `.mtools`, so nothing overrode the background) was rendering black on dark grey the whole time. Two more: `.stt.sched` at 3.68:1, which is a Season **topic** accent borrowed as pill text — *the same mistake `--info` had been created to correct forty minutes earlier, made a second time in the same session* — and `.bar.live` in Airtime.
+
+The fix is structural rather than per-instance. Measured: `#000` ink clears AA on **every** real topic accent (`--ret` 4.52:1 floor, `--patch` 12.53:1 ceiling) and fails only on a **surface** (1.39:1 on `--raised`). So a rule pairing `--on-accent` with a topic fill now falls back to `--patch`, never to a surface — safe by construction instead of by every caller remembering.
+
+**What this says about §3's design system, honestly.** Three separate times this session a Season topic token was reached for as text — `--ret` for a kind chip, `--play` for a state pill, and `--raised` as a fill fallback. Each was caught by measurement, none by review. The `SHAPE carries state, COLOUR carries topic` rule tells you what colour *means*; it says nothing about which tokens are safe as *text*, and that distinction is where all three went wrong. The audit now enforces it, which is the only reason writing it down here is worth anything.
+
 ## Addendum — 2026-08-23 (Session B, Phase 3)
 
 Everything above was written after implementation and against real renders. Three things a reader should not have to infer:

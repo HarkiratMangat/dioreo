@@ -39,6 +39,12 @@
        it clears 4.5:1 on EVERY portal surface with margin rather than on the line -- 6.19 on --sunk,
        5.41 on --paper, 4.86 on --raised. The audit now checks this pair and the ones beside it. */
     --info: #409AD0;
+    /* SCHEDULED reads purple in 05-door-broadcast-ops.html, and --play (the Season PLAYLIST topic
+       accent) was the obvious token to reach for -- the same mistake --info exists to correct. As
+       pill TEXT --play measured 3.68:1 on --raised. Same derivation: the mockup's hue, scaled 1.20x
+       until it clears 4.5:1 on every portal surface (5.69 paper / 5.12 raised / 6.51 sunk). --play
+       keeps its own value and stays a FILL. */
+    --sched: #A680FB;
 
     /* Season topic-accent tokens (gap audit §2.2) -- track.js's TOPIC_VAR and manifest.js's
        row.topicVar both reference these by name; only --patch existed here before, so every
@@ -159,7 +165,10 @@ button[aria-busy="true"]::after {
     border: 1px solid var(--rule);
 }
 .bar.live {
-    background: var(--topic-accent, var(--raised));
+    /* Same reasoning as .accent-fill above -- track.css's .bar.live sets color:var(--on-accent), and
+       broadcast.js's Airtime only stamps --topic-accent when the announcement carries a stored
+       colour. Without one this fell to --raised under #000 ink. */
+    background: var(--topic-accent, var(--patch));
     border-style: solid;
 }
 .bar.stag {
@@ -174,7 +183,16 @@ button[aria-busy="true"]::after {
 /* The accent is a FILL, never a text colour (proven floor 4.58:1 with #000 ink — see the
    /commands page's own history of solving an embed hue into readable text and getting brown). */
 .accent-fill {
-    background: var(--topic-accent, var(--raised));
+    /* 🔴 THE FALLBACK IS --patch, NOT --raised, AND THAT IS THE LOGIN BUTTON'S BUG STILL LATENT.
+       This rule pairs a topic FILL with --on-accent (#000). Measured 2026-08-23 16:07 EDT: #000 ink
+       clears AA on every real topic accent (--ret 4.52:1 is the floor, --patch 12.53:1 the ceiling)
+       and fails only on a SURFACE -- 1.39:1 on --raised. So falling back to --raised produced black
+       text on dark grey on any element where nothing set --topic-accent, which is exactly what the
+       gap audit's §2.3 found on the door. Phase 2 fixed the door with its own rule and left this one
+       intact, so every Stage button in season.js/armory.js/broadcast.js (outside .mtools, so nothing
+       overrode the background) was still rendering at 1.39:1. Falling back to a real accent makes
+       the pairing safe by construction rather than by every caller remembering. */
+    background: var(--topic-accent, var(--patch));
     color: var(--on-accent);
 }
 

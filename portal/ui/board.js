@@ -139,7 +139,7 @@ function Review({ detail, onExport, onCommit, onClose, busy }) {
                 </div>
             </div>
             <div class="revfoot">
-                <span class="tally">${gate.ok ? 'Ready to commit' : gate.reason}</span>
+                <span class="tally">${gate.ok ? 'Ready to commit' : gate.reason}${detail.remaining ? ` · ${detail.remaining} more ready after this` : ''}</span>
                 <span class="sp"></span>
                 <button onClick=${onClose}>Keep staged</button>
                 <button class="commit" style="width:auto" disabled=${!gate.ok} aria-busy=${busy ? 'true' : null}
@@ -149,7 +149,9 @@ function Review({ detail, onExport, onCommit, onClose, busy }) {
     `;
 }
 
-// onCommit(readyChangesets, confirmText) fires on the Ready column's Commit button; onExport(changeset) satisfies a Blocked tier-3 card's export requirement. confirmText is typed at commit time — it is never known in advance (board.logic.js's columnFor cannot depend on it, see that file's own header), and the server is the actual arbiter of whether it matches; a mismatch surfaces as a 409 the caller reports.
+// onCommit(changesets, confirmText) applies a set; onExport(changeset) satisfies a Blocked tier-3 card's export requirement. confirmText is typed at commit time — it is never known in advance (board.logic.js's columnFor cannot depend on it, see that file's own header), and the server is the actual arbiter of whether it matches; a mismatch surfaces as a 409 the caller reports.
+//
+// 🔴 THERE IS ONE COMMIT SURFACE, AND IT IS THE REVIEW SCREEN. The Ready column's button used to commit the whole ready set directly — a control that applied changes you had not looked at, sitting beside a review screen built precisely so that you would. It now OPENS the review. Committing stays per-changeset, which is the scope 04-armory-and-commit.html's own header states ("3 operations · Season 7 · dior" — the "all 3" in its footer is three OPERATIONS of one changeset, not three changesets), and the footer reports how many remain so a set is still visibly a set.
 export function Board({ changesets, onCommit, onExport }) {
     const cols = groupByColumn(changesets);
     const readyCount = cols.ready.length;
@@ -160,7 +162,8 @@ export function Board({ changesets, onCommit, onExport }) {
     useEffect(() => {
         if (!openId) { setDetail(null); return; }
         // Re-fetched rather than read from the list, because the preview has to be computed against state as it is NOW — see the GET /api/changeset/:id/preview route's own header.
-        fetchJson(`/api/changeset/${openId}/preview`).then(setDetail);
+        fetchJson(`/api/changeset/${openId}/preview`)
+            .then((d) => setDetail({ ...d, remaining: Math.max(0, cols.ready.length - 1) }));
     }, [openId, changesets]);
 
     async function commitOne(d, confirmText) {
@@ -183,8 +186,8 @@ export function Board({ changesets, onCommit, onExport }) {
                             <h4>${COLUMN_LABEL[key]}<span class=${'ct' + (key === 'blocked' && cols[key].length ? ' bad' : '')}>${cols[key].length}</span></h4>
                             ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} onOpen=${(cs) => setOpenId(String(cs._id))} selected=${openId === String(c._id)} />`)}
                             ${key === 'ready' && readyCount ? html`
-                                <button class="commit" disabled=${readyCount === 0} onClick=${() => onCommit(cols.ready, '')}>
-                                    Commit ${readyCount} of ${changesets.length}
+                                <button class="commit" onClick=${() => setOpenId(String(cols.ready[0]._id))}>
+                                    Review ${readyCount} ready
                                 </button>
                             ` : null}
                             <p class="colnote">${COLUMN_NOTE[key]}</p>

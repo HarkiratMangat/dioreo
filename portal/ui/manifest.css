@@ -42,7 +42,7 @@ td.d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink3);w
 .stt{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.09em;padding:2px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
 .stt.live{background:var(--topic-accent,var(--ok));color:var(--on-accent)}
 .stt.stag{border:1.5px dashed var(--staged);color:var(--staged)}
-.stt.sched{border:1.5px dashed var(--play);color:var(--play)}
+.stt.sched{border:1.5px dashed var(--sched);color:var(--sched)}
 .stt.exp{border:1.5px solid var(--rule);color:var(--ink3)}
 .stt.conf{border:1.5px dashed var(--warn);color:var(--warn)}
 .bulk{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--raised);border-top:1px solid var(--rule);flex-wrap:wrap}
