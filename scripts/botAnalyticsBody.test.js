@@ -24,4 +24,15 @@ check('every page-switcher option carries the question its page answers', () => 
     assert.strictEqual(new Set(options.map(o => o.description)).size, 5);
 });
 
+check('Health renders no list and no pager -- a verdict, then vitals', () => {
+    const body = require('../commands/bot').__testables.buildVitalsBlock({
+        gatewayStatus: 0, uptimeSec: 3600, rssMb: 120, boots24h: 1, boots7d: 3,
+    });
+    const lines = body.split('\n').filter(l => l.includes('  '));
+    // Every label column must end at the same offset, or the block is not aligned on a phone.
+    const labelWidths = new Set(lines.map(l => l.indexOf(':')));
+    assert.strictEqual(labelWidths.size, 1, `vitals labels are ragged: ${[...labelWidths]}`);
+    assert.ok(body.startsWith('```') && body.trimEnd().endsWith('```'));
+});
+
 console.log(`  ✓ ${passed} /bot analytics checks passed`);

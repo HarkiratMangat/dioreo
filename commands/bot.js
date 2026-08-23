@@ -105,12 +105,26 @@ function peaksLine(cloud) {
         + '```';
 }
 
+// One aligned monospace block rather than four prose rows. Same ~40-column budget peaksLine() already works inside -- a phone wraps a long "**Gateway:** ... · **Uptime:** ... · **Memory:** ..." line into an unreadable ribbon, and padEnd is what stops that.
+function buildVitalsBlock({ gatewayStatus, uptimeSec, rssMb, boots24h, boots7d }) {
+    const rows = [
+        ['Gateway', GATEWAY_STATUS_LABEL[gatewayStatus] ?? `code ${gatewayStatus}`],
+        ['Uptime', formatUptime(uptimeSec)],
+        ['Memory', `${rssMb}MB`],
+        ['Restarts', `${boots24h} in 24h · ${boots7d} in 7d`],
+    ];
+    // Pad the LABEL, then append the colon -- padding after the colon (as a first draft of this
+    // block did) leaves the colon itself at a different offset per row, since it sits right after
+    // each label's own length. Padding the label first pins every colon to the same column.
+    const pad = Math.max(...rows.map(([k]) => k.length));
+    return '```\n' + rows.map(([k, v]) => `${k.padEnd(pad)}: ${v}`).join('\n') + '\n```';
+}
+
 async function buildHealthBody(client) {
     const stats = await computeHealthStats(client);
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
-    const gatewayLabel = GATEWAY_STATUS_LABEL[stats.gatewayStatus] ?? `code ${stats.gatewayStatus}`;
     const lastBootTs = stats.lastBoot ? unix(stats.lastBoot.createdAt) : null;
     const tiers = errorTiers(s, stats.cloud);
     const tierLine = tiers.logged == null
@@ -119,10 +133,10 @@ async function buildHealthBody(client) {
     return [
         { type: 10, content: healthVerdict(stats) },
         { type: 14, spacing: 1 },
-        { type: 10, content: `**Gateway:** ${gatewayLabel} · **Uptime:** ${formatUptime(stats.uptimeSec)} · **Memory:** ${stats.rssMb}MB` },
-        { type: 10, content: `**Restarts:** ${stats.boots24h} (24h) · ${stats.boots7d} (7d)${lastBootTs ? ` — last boot <t:${lastBootTs}:R>` : ''}` },
+        { type: 10, content: buildVitalsBlock(stats) },
         // Only rendered when there ARE any -- a permanent "0 hotpatches" row is noise on every panel view.
         ...(client.hotpatches?.length ? [{ type: 10, content: `🩹 **Hotpatched since boot:** ${client.hotpatches.length} · latest \`${client.hotpatches.at(-1).commit}\` <t:${Math.floor(client.hotpatches.at(-1).at.getTime() / 1000)}:R>` }] : []),
+        ...(lastBootTs ? [{ type: 10, content: `-# last boot <t:${lastBootTs}:R>` }] : []),
         { type: 14, spacing: 1 },
         { type: 10, content: `**Alerts, last 24h:** ${line(s.last24h)}\n**Alerts, last 7d:** ${line(s.last7d)}\n**Last error:** ${lastErr}` },
         { type: 10, content: tierLine },
@@ -522,6 +536,7 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
+    __testables: { buildVitalsBlock },
     buildHotpatchPanel,
     buildUsageExport,
     buildTimingExport,
