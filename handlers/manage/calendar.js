@@ -9,6 +9,7 @@
 
 const { commitSet } = require('../../core/changeset');
 const { loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle, extractCommitError } = require('./shared');
+const { failWithRetry } = require('./retry');
 
 // --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
@@ -17,11 +18,11 @@ async function addCalendarEvent(interaction) {
     const title = interaction.fields.getTextInputValue('title').trim();
     const startDateStr = interaction.fields.getTextInputValue('start_date');
     const startDate = parseAdminDate(startDateStr);
-    if (!startDate) return interaction.followUp({ content: `❌ Start date "${startDateStr}" wasn't understood -- nothing was saved.` });
+    if (!startDate) return await failWithRetry(interaction, `Start date "${startDateStr}" wasn't understood -- nothing was saved.`);
     const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
     const isOngoing = !endDateStr;
     const endDate = isOngoing ? null : parseAdminDate(endDateStr);
-    if (!isOngoing && !endDate) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
+    if (!isOngoing && !endDate) return await failWithRetry(interaction, `End date "${endDateStr}" wasn't understood -- nothing was saved.`);
     const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
     // Lenient Y/N parse (added for /draw calculator's 2X detection) -- blank or anything not starting with "y" is No, matching the modal's own "blank = No" placeholder.
     const isDoubleCP = /^y/i.test(interaction.fields.getTextInputValue('double_cp')?.trim() || '');
@@ -31,8 +32,7 @@ async function addCalendarEvent(interaction) {
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
 
     // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own local time/format instead of a fixed string.
@@ -52,11 +52,11 @@ async function editCalendarEvent(interaction) {
     if (targetEvent) {
         const startDateStr = interaction.fields.getTextInputValue('start_date');
         const parsedStart = parseAdminDate(startDateStr);
-        if (!parsedStart) return interaction.followUp({ content: `❌ Start date "${startDateStr}" wasn't understood -- nothing was saved.` });
+        if (!parsedStart) return await failWithRetry(interaction, `Start date "${startDateStr}" wasn't understood -- nothing was saved.`);
         const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
         const isOngoing = !endDateStr;
         const parsedEnd = isOngoing ? null : parseAdminDate(endDateStr);
-        if (!isOngoing && !parsedEnd) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
+        if (!isOngoing && !parsedEnd) return await failWithRetry(interaction, `End date "${endDateStr}" wasn't understood -- nothing was saved.`);
 
         const title = interaction.fields.getTextInputValue('title').trim();
         const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
@@ -68,8 +68,7 @@ async function editCalendarEvent(interaction) {
             { actorId: interaction.user.id }
         );
         if (!result.ok) {
-            const why = extractCommitError(result);
-            return await interaction.followUp({ content: `❌ ${why}` });
+            return await failWithRetry(interaction, extractCommitError(result));
         }
 
         return interaction.followUp({ content: `✅ **Event Updated:** "${title}" (<t:${Math.floor(parsedStart.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(parsedEnd.getTime() / 1000)}:D>`}).` });
@@ -171,8 +170,7 @@ async function setBanners(interaction) {
 
     const result = await commitSet([{ type: 'calendar.setBanners', payload }], { actorId: interaction.user.id });
     if (!result.ok) {
-        const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await failWithRetry(interaction, extractCommitError(result));
     }
 
     const labelFor = Object.fromEntries(fieldMap.map(f => [f.key, f.label]));

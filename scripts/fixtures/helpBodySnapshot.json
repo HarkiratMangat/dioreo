@@ -1697,7 +1697,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:Database:1524967327437815899> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1788,8 +1788,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -1914,8 +1914,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2031,8 +2031,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2148,8 +2148,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2265,8 +2265,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2400,8 +2400,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2417,7 +2417,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Database:1524967327437815899> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:BotAccess:1540915865506160660> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -2526,8 +2526,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": true
                 }
@@ -2608,8 +2608,8 @@
                   "description": "Posting/editing bot-wide announcements",
                   "emoji": {
                     "animated": true,
-                    "name": "Info",
-                    "id": "1525337539085340722"
+                    "name": "Announcements",
+                    "id": "1540916435914723490"
                   }
                 }
               ]
@@ -2663,7 +2663,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:Database:1524967327437815899> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -2754,8 +2754,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2880,8 +2880,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -2997,8 +2997,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -3114,8 +3114,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -3231,8 +3231,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -3348,8 +3348,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": false
                 }
@@ -3365,7 +3365,7 @@
       "components": [
         {
           "type": 10,
-          "content": "## <a:Database:1524967327437815899> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
+          "content": "## <a:BotAccess:1540915865506160660> **Bot Admin Commands**\n-# **Usage: `/cmd <required> [optional]`**"
         },
         {
           "type": 14,
@@ -3474,8 +3474,8 @@
                   "description": "Dioreo's data management & ops commands",
                   "emoji": {
                     "animated": true,
-                    "name": "Database",
-                    "id": "1524967327437815899"
+                    "name": "BotAccess",
+                    "id": "1540915865506160660"
                   },
                   "default": true
                 }

@@ -14,6 +14,7 @@ const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
 const { hasCommandAccess, isOwner, MANAGE_PAGE_SCOPES, formatPermissions } = require('../utils/adminAccess');
 const { mentionCommand } = require('../utils/commandMentions');
+const emojis = require('../utils/emojiMap');
 
 const ALERTS_PER_PAGE = 8;
 // ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated.
@@ -464,7 +465,8 @@ async function buildAccessPanel(client) {
         type: 17,
         accent_color: ACCESS_ACCENT,
         components: [
-            { type: 10, content: `## 🔑 Bot Access` },
+            // Emoji read INSIDE this builder, never at require() time -- refreshEmojiIds() rewrites emojiMap at boot, after this module is loaded, so a module-level capture would freeze the PROD id and render broken on the dev bot (.claude/rules/rendering-and-ui.md).
+            { type: 10, content: `## ${emojis.botAccess} Bot Access` },
             { type: 10, content: `-# Owner-only · the runtime-editable admin allowlist that supplements the hardcoded owner.` },
             { type: 14, spacing: 2 },
             ...adminListBlocks,

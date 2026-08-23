@@ -32,7 +32,7 @@ function topicDefs() {
         { key: 'patchnotes', label: 'Patch Notes', description: 'Release date, URLs, Additional Info', rawEmoji: emojis.patchNotes, emoji: emojis.parseEmoji(emojis.patchNotes) },
         { key: 'seasondraft', label: 'Next Season Draft', description: 'Same formats, staged instead of live', rawEmoji: emojis.calendar, emoji: emojis.parseEmoji(emojis.calendar) },
         // 'admins' topic REMOVED (v3-pre-release review, finding #62) -- it documented a /manage page that no longer exists (retired to the owner-only /bot access 2026-08-16, see utils/adminAccess.js's own 'manageadmins is RETIRED' comment). This guide is reachable by anyone with ANY manage access, so it was walking a scoped admin through a screen they can't actually reach and that isn't owner-gated here.
-        { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.mngInfo, emoji: emojis.parseEmoji(emojis.mngInfo) }
+        { key: 'announcements', label: 'Announcement', description: 'Posting/editing bot-wide announcements', rawEmoji: emojis.announcements, emoji: emojis.parseEmoji(emojis.announcements) }
     ];
 }
 
@@ -98,18 +98,20 @@ function calendarSections() {
 function loadoutsSections() {
     return [
         section('📋 Paste Skeleton',
-            '`Weapon | Category | MP or DMZ | Build Name | Cloudinary Image Key | Gunsmith Code | Badges`\n`Attachment 1`\n`Attachment 2`\n`...`\n' +
-            '-# One build per BLOCK (blank line between blocks). First line is the header, every line after it is one attachment.'),
+            '`Weapon | Category`\n`Build: Build Name`\n`Image: Cloudinary Key`\n`Code: Gunsmith Code`\n`Badges: meta, best`\n`- Attachment 1`\n`- Attachment 2`\n' +
+            '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
             '`meta` · `toxic` · `best` · `top5` (or any `topN`) · `bestclose` · `top3midlong` (rank + range combos for DMZ)'),
         section('✨ What Gets Auto-Formatted',
-            '• **Mode** is force-set to whichever page/button you clicked (MP or DMZ) regardless of what\'s typed in that field -- a stray mismatched value can\'t misfile a loadout onto the wrong page.\n' +
-            '• **Image Key** and **Gunsmith Code** are optional -- leave blank if not set yet.\n' +
-            '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely.'),
+            '• **Mode** is not a field at all -- the page/button you clicked (MP or DMZ) decides it. It used to be a required 3rd pipe segment that the save then overwrote anyway, which meant a `DMZ` block pasted on the MP page saved as MP with no warning; removing it removed the lie, not the behaviour.\n' +
+            '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`.\n' +
+            '• **Image** takes a Cloudinary key here; the single Add/Edit modals additionally accept a pasted image URL and upload it for you.\n' +
+            '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
-            '```\nBAL-27 | AR | MP | Aggro Build | BAL-27-1 | ABCD1234 | meta, top3\nMonolithic Suppressor\nFTAC Champion\n```'),
+            '```\nBAL-27 | AR\nBuild: Aggro Build\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
             '• Use one of the **Export** options above to grab this exact format pre-filled with your real current data.\n' +
+            '• The OLD one-line pipe format (`Weapon | Category | Mode | Build | ...`) is no longer accepted and will report an error naming this format -- re-export anything you saved in it.\n' +
             '• See the "How Images Work" info block on this page for the full Cloudinary Image Key workflow.')
     ];
 }

@@ -43,6 +43,10 @@ const emojis = {
     mngExport: '<a:Export:1525262952540934264>',
     mngPurge: '<a:Purge:1525327754013442129>',
     mngInfo: '<a:Info:1525337539085340722>',
+    // /manage's Announcement page + each announcement's own heading (2026-08-22, Harkirat-provided). Replaces the generic `mngInfo` this page borrowed when it was built -- the empty-state notice keeps mngInfo, since that one really is an info notice rather than an announcement.
+    announcements: '<a:Announcements:1540916435914723490>',
+    // /bot access's panel heading AND /help's "Bot Admin" category icon (2026-08-22, Harkirat-provided) -- one icon for the admin surface in both places, replacing a literal 🔑 in one and the borrowed `database` icon in the other.
+    botAccess: '<a:BotAccess:1540915865506160660>',
     mngUrls: '<a:URLs:1525337321568997449>',
     calendar: '<a:Calendar:1523762208050385107>',
     newDraws: '<a:NewDraws:1523837409211453613>',
@@ -52,7 +56,8 @@ const emojis = {
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',
     b1: '<:b1:1523852972835082371>',
-    // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next page row, not just one specific command's list.
+    // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next page row, not just one specific command's list. /invite's "Share Link" button (2026-08-22, Harkirat-provided). Distinct from `share` above, which is the "Show Everyone" button's icon -- two different actions, two different icons.
+    shareHeart: '<a:ShareHeart:1539021725784739891>',
     left: '<:Left:1523864238836154449>',
     right: '<:Right:1523864237972127775>',
     // Loadout "badges" (utils/loadoutRender.js) — Meta/Best-in-category/Top-N-in-category flags shown under the weapon name. `best` and `top` are two DISTINCT emojis (Best-in-category vs. Top-N-in-category are different tiers, see buildBadgesLine()) — don't reuse one for the other. `blank` is a zero-width spacer emoji used to separate two badges on one line without a visible bullet/divider character.

@@ -124,6 +124,28 @@ async function syncLoadoutMetadata(doc, attachmentSlots) {
     }
 }
 
+// True for a pasted http(s) image URL rather than a bare Cloudinary Public ID. Used by /manage's loadout Add/Edit modals, whose single "Cloudinary Image Key" field now accepts EITHER (2026-08-22 -- the deferred "no way to provide an image by URL" item). A real Public ID never contains a scheme, so the two are unambiguous with no extra modal field, which matters: Discord caps a modal at 5 inputs and the loadout modal already uses all 5.
+function isHttpImageSource(value) {
+    try {
+        const { protocol } = new URL(String(value || '').trim());
+        return protocol === 'http:' || protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+// Picks the next free `WEAPON-NAME-N` Public ID for a weapon, matching the convention already live in the account (`BAL-27-1`, `FSS-HURRICANE-1`) and the one computeWeaponKeyAndBuild() mints for /autobuild. Two differences from that helper, both deliberate:
+//   1. N is chosen against the Public IDs already TAKEN, not against the highest "Build N" build NAME -- /manage builds carry human names ("Aggressive Flex") that carry no number at all, so counting build names would return 1 forever and overwrite the weapon's existing image on every add.
+//   2. DMZ keys are prefixed `DMZ-`, matching the existing hand-named `DMZ-AK117-1` assets in the account. Cloudinary public_ids are global (asset_folder is NOT part of an asset's identity -- see uploadLoadoutImage below), so an unprefixed key would let a DMZ build's image overwrite the MP build of the same weapon.
+function deriveImageKey(weaponName, mode, takenKeys = []) {
+    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
+    const prefix = mode === 'DMZ' ? 'DMZ-' : '';
+    const taken = new Set(takenKeys.map(k => String(k || '').toUpperCase()));
+    let n = 1;
+    while (taken.has(`${prefix}${base}-${n}`)) n++;
+    return `${prefix}${base}-${n}`;
+}
+
 // Remote-URL-to-remote-URL upload (Cloudinary fetches the bytes server-side, same pattern as utils/cloudinaryCache.js's cacheThumbnail) -- overwrite: true so a retry (see the design spec's retry_token flow) safely re-uploads under the exact same key rather than erroring on a collision. IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc exists, so this never has to know anything about the loadout's data.
 async function uploadLoadoutImage(sourceUrl, imageKey) {
     // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey (see the comment below), so `overwrite: true` against a key that already exists in prod would silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not part of the asset's identity.
@@ -147,4 +169,4 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     }
 }
 
-module.exports = { uploadLoadoutImage, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
+module.exports = { uploadLoadoutImage, isHttpImageSource, deriveImageKey, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
