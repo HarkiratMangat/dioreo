@@ -225,6 +225,8 @@ const PAGE_LABEL = {
     draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
     patchnotes: 'Patch Notes', seasondraft: 'Next Season Draft', season: 'Season Titles/Wipe',
     announcement: 'Announcements', access: 'Bot Access', manageadmins: 'Manage Admins (legacy)',
+    // 🔴 `patchnote` SINGULAR IS A REAL, REACHABLE PAGE KEY, and it is not the same string as `patchnotes`. core/changeset.js's pageForOp() falls back to `op.type.split('.')[0]` for any op with no registered /manage action, and four patchnote ops (removeSeason/restoreSeason/editSeason/addSeason) have none -- verified by enumerating listOpTypes() through pageForOp, which yields BOTH keys. Without this row those rows render their raw key. See docs/db-deferred-list.md for the wider permission consequence, which is not this file's to fix.
+    patchnote: 'Patch Notes',
 };
 
 // One SECTION per change, with Revert as the row's own accessory -- rather than a Text Display followed by a full-width Action Row. Component cost is IDENTICAL (9+10+2 vs 10+1+2 = 3 either way; the first draft of the spec wrongly claimed a saving, see its audit log), so this is bought purely for identity: Changes becomes the only page whose rows carry a control, which is exactly what distinguishes it from Alerts' rows. Section+Button accessory confirmed via Discord's own API schema -- see Task 2's note in the plan.
@@ -339,14 +341,37 @@ const RECORD_VIEWS = {
         fetch: async (t) => { const L = require('../models/Loadout'); const id = t.id || t.elementId; return id ? L.findById(id).lean() : null; },
         render: null,
     },
-    announcement: { noun: 'announcement', dateOnly: [], fetch: async (t) => { const A = require('../models/Announcement'); const id = t.id || t.elementId; return id ? A.findById(id).lean() : null; }, render: null },
-    // Pages with no fetcher yet still get the generic payload view -- they are NOT unsupported.
-    patchnotes: { noun: 'patch note', dateOnly: [], fetch: null, render: null },
-    seasondraft: { noun: 'draft entry', dateOnly: ['date', 'endDate'], fetch: null, render: null },
+    announcement: {
+        noun: 'announcement', dateOnly: [],
+        fetch: async (t) => { const A = require('../models/Announcement'); const id = t.id || t.elementId; return id ? A.findById(id).lean() : null; },
+        // The same text a user is actually shown. buildAnnouncementEmbed returns an EMBED, which cannot go inside a Components V2 container -- its `description` is the canonical body, so that is what is reused rather than re-deriving the wording here.
+        render: (a) => [{ type: 10, content: truncate(require('../utils/announcement').buildAnnouncementEmbed(a).description, 900) }],
+    },
+    patchnotes: {
+        noun: 'patch note', dateOnly: [],
+        fetch: async (t) => {
+            const SeasonalData = require('../models/SeasonalData');
+            const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            return (doc?.patchNotes || []).find(x => String(x._id) === String(t.elementId || t.id)) || null;
+        },
+        render: null,
+    },
+    access: {
+        noun: 'admin', dateOnly: [],
+        // Reads row.target, not inverse.target: access changes never go through commitSet, so they carry no inverse at all (which is also why they are correctly un-revertible).
+        fetch: async (_t, row) => {
+            const AdminUser = require('../models/AdminUser');
+            return row?.target ? AdminUser.findOne({ discordId: String(row.target) }).lean() : null;
+        },
+        render: null,
+    },
+    // season/seasondraft deliberately have NO fetch. Their ops target human labels -- 'draft', 'season snapshot', a season title -- not element ids, because the "record" is the whole global document rather than a row in it. The generic payload view is the correct and complete answer for them, not a stopgap.
+    seasondraft: { noun: 'draft change', dateOnly: ['date', 'endDate', 'bpEnd'], fetch: null, render: null },
     season: { noun: 'season setting', dateOnly: ['bpEnd', 'seasonEnd'], fetch: null, render: null },
-    access: { noun: 'admin', dateOnly: [], fetch: null, render: null },
 };
 RECORD_VIEWS.loadouts_dmz = RECORD_VIEWS.loadouts_mp;
+// See PAGE_LABEL above: pageForOp() really does emit both spellings, so both must resolve to the same view.
+RECORD_VIEWS.patchnote = RECORD_VIEWS.patchnotes;
 
 const viewFor = (page) => RECORD_VIEWS[page] || { noun: 'record', dateOnly: [], fetch: null, render: null };
 
@@ -384,7 +409,8 @@ const countPanelComponents = (node) => Array.isArray(node)
 async function fetchRecord(row) {
     const view = viewFor(row.page);
     if (!view.fetch) return null;
-    const raw = await view.fetch((row.inverse && row.inverse.target) || {});
+    // `row` is passed too because not every change HAS an inverse: /bot access grants and revokes are written straight through recordChange(), never commitSet(), so inverse is null and the only identifier available is the row's own `target`. Reading solely from inverse.target left those panels blank.
+    const raw = await view.fetch((row.inverse && row.inverse.target) || {}, row);
     return raw ? { noun: view.noun, raw, dateOnly: view.dateOnly } : null;
 }
 

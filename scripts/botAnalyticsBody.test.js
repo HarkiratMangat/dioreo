@@ -219,6 +219,14 @@ check('a Changes row opens a DETAIL panel -- it never reverts on one tap', () =>
 check('EVERY page the change log can carry has a record view -- not just draws', () => {
     const { RECORD_VIEWS, viewFor } = require('../commands/bot').__testables;
     const { MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
+    // 🔴 DERIVED FROM THE OP REGISTRY, NOT FROM MANAGE_PAGE_SCOPES. Those two sets are NOT the same, and assuming they were is how `patchnote` (singular) went unnoticed: core/changeset.js's pageForOp() falls back to op.type.split('.')[0] for any op with no registered /manage action, so four patchnote ops emit a page key that appears in no scope list anywhere. A test that only walked MANAGE_PAGE_SCOPES passed while a real, reachable page had no view at all.
+    const { listOpTypes } = require('../core/ops');
+    const { pageForOp } = require('../core/changeset');
+    const emitted = [...new Set(listOpTypes().map(t => pageForOp({ type: t })))];
+    for (const page of emitted) {
+        assert.ok(RECORD_VIEWS[page], `pageForOp emits "${page}" but no record view handles it`);
+    }
+    assert.ok(emitted.includes('patchnote'), 'the singular key must stay covered by this check, not be quietly dropped');
     // 🔴 THE TEST THAT WOULD HAVE CAUGHT THE REAL COMPLAINT. Four rounds of fixes were all draws fixes wearing a general name, while the log carries nine pages -- "these changes need to be trickled into other edit/add/delete database changes as well, not just applying to draws". A page missing here silently falls back to "the contents weren't recorded", which is a lie: its inverse payload has named fields.
     for (const page of [...MANAGE_PAGE_SCOPES, 'access']) {
         assert.ok(RECORD_VIEWS[page], `page "${page}" has no record view — its change panel will say nothing`);
@@ -252,8 +260,8 @@ check('a before/after pair is BUDGETED, and the walker can see accessories', () 
 
 check('a page with no fetcher still shows its contents, generically', () => {
     const { genericFields, viewFor } = require('../commands/bot').__testables;
-    // patchnotes/seasondraft/season/access have no bespoke fetcher and must NOT therefore be blank -- the inverse payload carries real named fields for all of them.
-    assert.strictEqual(viewFor('patchnotes').fetch, null);
+    // patchnotes/seasondraft/season/access have no bespoke fetcher and must NOT therefore be blank -- the inverse payload carries real named fields for all of them. season/seasondraft target human labels ('draft', a season title), not element ids -- the generic view is the correct and complete answer for them, not a stopgap, so they are the honest example here.
+    assert.strictEqual(viewFor('season').fetch, null);
     const out = genericFields({ title: 'Season 6 notes', date: '2026-08-14T00:00:00.000Z', _id: 'zzz' }, ['date']);
     assert.ok(/Title/.test(out) && /Season 6 notes/.test(out));
     assert.ok(/Aug 14, 2026/.test(out), 'a date-only field keeps its UTC day here too');
