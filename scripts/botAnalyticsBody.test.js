@@ -77,11 +77,11 @@ check('usage bars have a FIXED width and truncate the name, never the bar', () =
         { _id: 'draws', c: 100 },
         { _id: 'a-very-long-command-name-that-would-wrap-on-a-phone', c: 25 },
     ]);
-    for (const line of out.split('\n').filter(l => l.includes('█') || l.includes('░'))) {
+    for (const line of out.split('\n').filter(l => l.includes('█') || l.includes('·'))) {
         // VISIBLE width -- ANSI escapes cost bytes and zero columns, so a raw .length here would pass a row that overflows a phone by 3x. This is the same class of mistake as the colon test above.
         assert.ok(visibleWidth(line) <= 40, `"${line}" is ${visibleWidth(line)} cols, over the phone budget`);
-        const cells = (line.match(/[█░]/g) || []).length;
-        assert.strictEqual(cells, 10, 'every bar is exactly 10 cells, or the comparison is meaningless');
+        const cells = (line.match(/[█·]/g) || []).length;
+        assert.strictEqual(cells, 10, 'every bar in a block is the same length, or the comparison is meaningless');
     }
 });
 
@@ -100,19 +100,34 @@ check('usage bars are proportional to the top command, not to the total', () => 
     assert.strictEqual((second.match(/█/g) || []).length, 5);
 });
 
-check('every timing number is stated against its budget, with a verdict icon', () => {
-    const { headroom } = require('../commands/bot').__testables;
-    assert.deepStrictEqual(headroom(300, 3000), { pct: 90, icon: '🟢' });
-    assert.strictEqual(headroom(2400, 3000).icon, '🟠', '20% headroom is not comfortable');
-    assert.strictEqual(headroom(2900, 3000).icon, '🔴', 'under 10% headroom is the ack deadline in sight');
-    // A missing measurement must not read as a perfect score.
-    assert.strictEqual(headroom(null, 3000).icon, '⚪');
+check('the ack verdict states the RULE and what it consumes -- never a percentile or "headroom"', () => {
+    const { ackVerdict } = require('../commands/bot').__testables;
+    const fast = ackVerdict(21);
+    assert.strictEqual(fast.icon, '🟢');
+    assert.strictEqual(fast.used, 'under 1%', '21ms of 3,000ms must not round to "1%" and must not read as a percentile');
+    assert.strictEqual(ackVerdict(2900).icon, '🔴', 'a 2.9s ack is one blip from the interaction dying');
+    assert.strictEqual(ackVerdict(null).used, null, 'no data must not read as a perfect score');
+    // 🔴 THE VOCABULARY IS THE POINT. Harkirat could not read p50/p95/headroom, so no reader-facing string may reintroduce them -- this asserts the words, not just the numbers, because a future edit that "clarifies" the headline back into percentile jargon would pass every numeric check above.
+    for (const v of [ackVerdict(21), ackVerdict(2900), ackVerdict(null)]) {
+        assert.ok(!/p50|p95|headroom|percentile/i.test(v.headline), `"${v.headline}" reintroduces the jargon`);
+    }
+});
+
+check('describeInverse says what Revert will actually DO, per op kind', () => {
+    const { describeInverse } = require('../commands/bot').__testables;
+    assert.ok(/Delete/.test(describeInverse({ type: 'draw.delete', target: 'Test Draw' }).line));
+    assert.ok(/Put back/.test(describeInverse({ type: 'draw.add', target: 'Test Draw', payload: { title: 'x' } }).line));
+    const edit = describeInverse({ type: 'calendar.edit', target: { id: '7' }, payload: { endDate: '2026-09-01' } });
+    assert.ok(/Restore the previous values/.test(edit.line));
+    // The inverse's payload IS the other half of a diff -- the values Revert writes back. Losing it would return the panel to the blind-revert state that prompted it.
+    assert.deepStrictEqual(edit.fields, [['endDate', '2026-09-01']]);
+    assert.strictEqual(describeInverse(null), null, 'a pre-core row has no inverse and must not fabricate one');
 });
 
 check('duration is banded by FELT SPEED, never against the ack deadline', () => {
     const { feltSpeed, headroom } = require('../commands/bot').__testables;
     assert.strictEqual(feltSpeed(300).word, 'instant');
-    assert.strictEqual(feltSpeed(2000).word, 'brisk');
+    assert.strictEqual(feltSpeed(2000).word, 'quick');
     assert.strictEqual(feltSpeed(9119).icon, '🟠', '9.1s is slow, but it is NOT a fault -- the ack already happened');
     assert.strictEqual(feltSpeed(null).icon, '⚪', 'no data must not read as a perfect score');
     // The regression this guards: applying headroom() to a DURATION produced "-204% headroom" and a red verdict for a heavy command working exactly as designed. Headroom is only meaningful for the ack.
@@ -134,6 +149,39 @@ check('fmtDur switches to seconds above 1s', () => {
     assert.strictEqual(fmtDur(345), '345ms');
     assert.strictEqual(fmtDur(9119), '9.1s');
     assert.strictEqual(fmtDur(null), '—');
+});
+
+check('every monospace block fits the MEASURED phone budget, not the estimated one', () => {
+    const { buildVitalsBlock, buildUsageBars, visibleWidth } = require('../commands/bot').__testables;
+    // 32, not 40 -- derived from a real wrap on Harkirat's iPhone (2026-08-23 09:56 EDT), where peaksLine at ~46 columns broke into four ragged lines while a 27-column row did not break at all.
+    const COLS = 32;
+    const blocks = [
+        buildVitalsBlock({ gatewayStatus: 0, uptimeSec: 3600, rssMb: 120, boots24h: 53, boots7d: 268 }),
+        buildUsageBars([{ _id: 'gunsmiths', c: 14 }, { _id: 'invite', c: 8 }]),
+    ];
+    for (const b of blocks) {
+        for (const l of b.split('\n')) {
+            assert.ok(visibleWidth(l) <= COLS, `"${l.replace(/\u001b\[[0-9;]*m/g, '')}" is ${visibleWidth(l)} cols, over the measured ${COLS}`);
+        }
+    }
+});
+
+check('the Changes glance is 3 rows, as the plan requires', () => {
+    // Shipped at 5 because nothing asserted it, and on iOS a Section accessory stacks BELOW its text rather than beside it -- so five rows became ten stacked blocks and the page needed scrolling.
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'commands', 'bot.js'), 'utf8');
+    assert.ok(/const CHANGES_PER_PAGE = 3;/.test(src), 'CHANGES_PER_PAGE must be 3');
+    assert.ok(/const ALERTS_PER_PAGE = 3;/.test(src), 'ALERTS_PER_PAGE must be 3');
+});
+
+check('a Changes row opens a DETAIL panel -- it never reverts on one tap', () => {
+    const rows = require('../commands/bot').__testables.buildChangesRows([{
+        changeId: 'Aug22-28', summary: 'Added new draw "Test Draw"', page: 'draws',
+        actorId: '1', createdAt: new Date(), undone: false, inverse: { type: 'draw.delete', target: 'Test Draw' },
+    }]);
+    const acc = rows[0].accessory;
+    assert.ok(acc.custom_id.startsWith('bot_changedetail_'), 'the row control must open the panel, not fire the revert');
+    assert.ok(!/^bot_revert_/.test(acc.custom_id), 'a one-tap revert from a one-line summary is the blind-revert bug');
+    assert.notStrictEqual(acc.disabled, true, 'an unrevertable row must still be able to say WHY');
 });
 
 console.log(`  ✓ ${passed} /bot analytics checks passed`);

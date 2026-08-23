@@ -12,13 +12,13 @@ const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
-const { hasCommandAccess, isOwner, formatPermissions } = require('../utils/adminAccess');
+const { hasCommandAccess, isOwner, formatPermissions, MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
 const { mentionCommand } = require('../utils/commandMentions');
 const emojis = require('../utils/emojiMap');
 
 const ALERTS_PER_PAGE = 3;
-// REDUCED 8 -> 3 (bot analytics redesign, 2026-08-23 00:39 EDT): Alerts is a glance now -- the pager and full log moved to the portal. ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated.
-const CHANGES_PER_PAGE = 5;
+// REDUCED 8 -> 3 (bot analytics redesign, 2026-08-23 00:39 EDT): Alerts is a glance now -- the pager and full log moved to the portal. ⚠️ REDUCED 8 -> 5 (portal core Task 7, 2026-08-21 00:04 EDT): each row now renders its own Revert button (core/revert.js) — a Text Display + Action Row + Button per change instead of one line in a shared block. Measured: 8 rows + filters + a mid-pagination pager totalled 45 recursive components, over Components V2's 40-per-message cap (root CLAUDE.md's platform cheat-sheet) — a real production crash risk, not a style concern. 5 rows measured 38 in the same worst case; verified before shipping, not estimated. 🔴 3, NOT 5 -- the redesign plan's Global Constraints say so ("CHANGES_PER_PAGE becomes 3 and there is no page 2"), and it shipped at 5 because nothing asserted it. Mobile is why that matters rather than being pedantry: a Section's accessory does NOT sit to the right on iOS as it does on desktop, it stacks BELOW its own text, so five rows become ten stacked blocks and the page needs scrolling -- failing "one question, one screenful" on the primary device. Measured on a real phone 2026-08-23 09:56 EDT.
+const CHANGES_PER_PAGE = 3;
 // Matches utils/alertWebhook.js's LEVEL_ICON — kept in sync by hand (both are tiny, stable maps).
 const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' };
 // discord.js's Status enum values, hardcoded rather than imported so a library rename can't silently blank this map — Health is meant to survive as "unknown code N" worst case, not throw.
@@ -39,7 +39,7 @@ const ACCESS_ACCENT = 0xB33F40;
 // Every analytics page ends with this. Discord is the glance; the portal is the depth (see the spec's rule 0). Route matches portal/ui/app.js's hash-based router (`location.hash`, keyed by realm name in REALM_COMPONENTS).
 const PORTAL_ANALYTICS_URL = 'https://portal.dioreo.app/#/analytics';
 
-// ── ANSI inside code fences ── Discord renders a ```ansi fence with a SMALL subset of SGR: styles 0/1/4, foreground 30-37, background 40-47. No 256-colour, no truecolour, no hex -- anything outside that set renders as the literal escape text, so this map is the entire palette these panels may spend. ⚠️ It degrades UGLY, not gracefully: a client without ansi support shows `[0;32m` inline. Confirmed rendering on desktop + current mobile; `/bot analytics` is admin-only, so the blast radius is one viewer. 🔴 GRAY (fg 30) IS GENUINELY DARK on the dark code-block background -- never put information in it. It is used here only for the EMPTY cells of a bar, where receding is the point, and every such row still prints its literal number so colour is never the sole carrier.
+// ── ANSI inside code fences ── Discord renders a ```ansi fence with a SMALL subset of SGR: styles 0/1/4, foreground 30-37, background 40-47. No 256-colour, no truecolour, no hex -- anything outside that set renders as the literal escape text, so this map is the entire palette these panels may spend. ⚠️ MEASURED 2026-08-23 09:56 EDT on real clients, and the answer is NOT what this comment first claimed: iOS Discord renders an ```ansi fence as PLAIN monospace -- it strips the codes silently rather than printing them, so there is no `[0;32m` garbage (the good failure) but also NO COLOUR AT ALL. Desktop colours correctly. 🔴 THEREFORE COLOUR IS DECORATION AND NEVER MEANING: anything a reader must tell apart needs a carrier that survives the strip -- a glyph, a word, or a number. Timing's per-row severity was colour-only when this was written and was simply invisible on the phone; it leads with an emoji now for exactly that reason. That is a WCAG 1.4.1 requirement too, not only a mobile one. Gray (fg 30) is used solely for the empty cells of a bar, where receding is the point.
 const ANSI = {
     reset: '\u001b[0m',
     gray: '\u001b[0;30m',
@@ -50,13 +50,17 @@ const ANSI = {
     bold: '\u001b[1;37m',
 };
 const ansiBlock = (lines) => '```ansi\n' + lines.join('\n') + '\n```';
+// 🔴 THE PHONE BUDGET IS 32 COLUMNS, NOT 40 -- DERIVED FROM AN OBSERVED WRAP, not from the spec's estimate. Measured off Harkirat's iPhone screenshots 2026-08-23 09:56 EDT: peaksLine() at ~46 columns broke into four ragged lines, while a 24-column Usage row and a 27-column Timing row did not break at all. The spec cited peaksLine ITSELF as "the working precedent for monospace alignment inside that budget" -- it never met the budget it was offered as evidence for, and nobody had measured it. Assume 32 and test for it.
+const PHONE_COLS = 32;
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // Strips every SGR sequence -- the only honest way to measure a rendered row against the ~40-column phone budget, since the escapes cost bytes and zero columns.
 const visibleWidth = (line) => line.replace(/\u001b\[[0-9;]*m/g, '').length;
 
 // A bar whose FILLED cells carry a colour and whose empty cells recede. `cells` is fixed so every bar in a block is the same length -- the comparison lives in the fill, and a variable-length bar compares nothing.
 function ansiBar(value, max, cells, colour) {
     const filled = Math.max(1, Math.min(cells, Math.round((value / (max || 1)) * cells)));
-    return `${colour}${'█'.repeat(filled)}${ANSI.gray}${'░'.repeat(cells - filled)}${ANSI.reset}`;
+    // 🔴 THE EMPTY TRACK IS `·`, NOT `░`. Gray-30 was the first attempt at making the empty half recede and it works on desktop -- but iOS strips the colour, leaving `░`'s dense dotted texture beside a solid white slab, i.e. the exact "gray blob" this bar was redrawn to fix, still shipping on the phone. A middle dot is quiet with or without colour, which is the only property that actually matters here.
+    return `${colour}${'█'.repeat(filled)}${ANSI.gray}${'·'.repeat(cells - filled)}${ANSI.reset}`;
 }
 
 function unix(d) { return Math.floor(new Date(d).getTime() / 1000); }
@@ -119,10 +123,13 @@ function fmtPct(v) { return v == null ? '—' : `${v}%`; }
 function peaksLine(cloud) {
     if (!cloud.available) return `-# Cloud Monitoring unavailable right now (${truncate(cloud.error || 'unknown error', 80)}) — retrying next open.`;
     const { cpu, ram } = cloud.peaks;
-    return '```\n'
-        + `CPU peak   24h ${fmtPct(cpu['24h']).padStart(6)}   7d ${fmtPct(cpu['7d']).padStart(6)}   30d ${fmtPct(cpu['30d']).padStart(6)}\n`
-        + `RAM peak   24h ${fmtPct(ram['24h']).padStart(6)}   7d ${fmtPct(ram['7d']).padStart(6)}   30d ${fmtPct(ram['30d']).padStart(6)}\n`
-        + '```';
+    // TRANSPOSED 2026-08-23 10:00 EDT. The old row-per-metric shape repeated the window label beside every figure ("CPU peak 24h 48.1% 7d 58.8% 30d 147.3%") and ran ~46 columns, so on a phone it broke into four ragged lines -- see PHONE_COLS. Naming each window ONCE in a header row costs nothing and lands at ~26.
+    const row = (label, m) => `${label.padEnd(5)}${fmtPct(m['24h']).padStart(7)}${fmtPct(m['7d']).padStart(7)}${fmtPct(m['30d']).padStart(7)}`;
+    return ansiBlock([
+        `${' '.repeat(5)}${'24h'.padStart(7)}${'7d'.padStart(7)}${'30d'.padStart(7)}`,
+        row('CPU', cpu),
+        row('RAM', ram),
+    ]);
 }
 
 // One aligned monospace block rather than four prose rows. Same ~40-column budget peaksLine() already works inside -- a phone wraps a long "**Gateway:** ... · **Uptime:** ... · **Memory:** ..." line into an unreadable ribbon, and padEnd is what stops that.
@@ -154,7 +161,6 @@ async function buildHealthBody(client) {
         { type: 10, content: buildVitalsBlock(stats) },
         // Only rendered when there ARE any -- a permanent "0 hotpatches" row is noise on every panel view.
         ...(client.hotpatches?.length ? [{ type: 10, content: `🩹 **Hotpatched since boot:** ${client.hotpatches.length} · latest \`${client.hotpatches.at(-1).commit}\` <t:${Math.floor(client.hotpatches.at(-1).at.getTime() / 1000)}:R>` }] : []),
-        ...(lastBootTs ? [{ type: 10, content: `-# last boot <t:${lastBootTs}:R>` }] : []),
         { type: 14, spacing: 1 },
         { type: 10, content: `**Alerts, last 24h:** ${line(s.last24h)}\n**Alerts, last 7d:** ${line(s.last7d)}\n**Last error:** ${lastErr}` },
         { type: 10, content: tierLine },
@@ -172,7 +178,7 @@ async function buildAlertsBody({ view = 'main' } = {}) {
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = summary.lastError ? `\`${summary.lastError.alertId}\` · <t:${unix(summary.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
     const body = [
-        { type: 10, content: `-# every alert the bot posts to Discord is logged here (${summary.total} total).` },
+        { type: 10, content: `-# Every alert the bot has posted — ${summary.total.toLocaleString()} recorded.` },
         { type: 10, content: `**Last 24h:** ${line(summary.last24h)}\n**Last 7d:** ${line(summary.last7d)}\n**Last error:** ${lastErr}` },
         { type: 14, spacing: 2 },
     ];
@@ -232,12 +238,73 @@ function buildChangesRows(items) {
             components: [{ type: 10, content:
                 `\`${c.changeId || '??????'}\` **${truncate(c.summary || `${c.action} on ${c.page}`, 70)}**${c.undone ? ' ↩️' : ''}`
                 + `\n-# ${PAGE_LABEL[c.page] || c.page || '?'} · <@${c.actorId}> · <t:${unix(c.createdAt)}:R>${reason}` }],
-            accessory: { type: 2, style: 2, label: 'Revert', custom_id: `bot_revert_${c.changeId}`, disabled: !gate.ok },
+            // 🔴 THIS OPENS A DETAIL PANEL, IT DOES NOT REVERT. Harkirat, 2026-08-23 10:07 EDT, on the version where it fired immediately: "what am I even doing by tapping 'revert' or am i just blindly reverting?" -- he was, and a one-line summary is not enough to decide by. The revert itself now lives behind that panel, which states exactly which record is affected and what the stored inverse will do. Still one tap to reach, which is what the spec's time-critical argument actually protected: it objected to a BROWSER round-trip, not to a confirmation step. Disabled rows keep the panel reachable on purpose -- "why can't I revert this?" is a question the detail view answers, and greying out the only way to ask it is the worse failure.
+            accessory: { type: 2, style: 2, label: gate.ok ? 'Details' : 'Why not?', custom_id: `bot_changedetail_${c.changeId}` },
         };
     });
 }
 
-// There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly.
+// There is no filtered variant any more -- filters move to the portal -- so this has exactly one cause and says it plainly. Turns a stored inverse op into a sentence about what pressing Revert will actually do. Reads only the op itself -- no DB call, so it cannot throw and cannot be stale relative to what revertChange() will run, because it is describing the very object that gets passed to commitSet().
+function describeInverse(inv) {
+    if (!inv || !inv.type) return null;
+    const [entity, verb] = String(inv.type).split('.');
+    const label = inv.target && typeof inv.target === 'object'
+        ? Object.entries(inv.target).map(([k, v]) => `${k} \`${v}\``).join(', ')
+        : (inv.target ? `\`${inv.target}\`` : `this ${entity || 'record'}`);
+    const fields = inv.payload && typeof inv.payload === 'object' ? Object.entries(inv.payload) : [];
+    if (verb === 'delete') return { line: `**Delete** the ${entity} it created (${label}).`, fields: [] };
+    if (verb === 'add' || verb === 'post') return { line: `**Put back** the ${entity} it removed (${label}).`, fields };
+    if (verb === 'edit') return { line: `**Restore the previous values** on ${label}.`, fields };
+    return { line: `Apply \`${inv.type}\` to ${label}.`, fields };
+}
+
+async function buildChangeDetailBody(changeId) {
+    const { getChange } = require('../utils/changeStore');
+    const { canRevert } = require('../core/revert');
+    const row = await getChange(changeId);
+    if (!row) return [{ type: 10, content: `**That change no longer exists.**\n-# \`${truncate(changeId, 40)}\` is not in the log — it may have aged out of the 180-day window.` }];
+
+    const gate = canRevert(row);
+    const inv = describeInverse(row.inverse);
+    const facts = [
+        ['Section', PAGE_LABEL[row.page] || row.page || '?'],
+        ['Action', row.action || '?'],
+        ['Record', row.model || '?'],
+        ['Affected', truncate(row.target || '—', 40)],
+    ];
+    const pad = Math.max(...facts.map(([k]) => k.length)) + 2;
+    const body = [
+        { type: 10, content: `### \`${row.changeId}\` ${truncate(row.summary || `${row.action} on ${row.page}`, 80)}${row.undone ? ' ↩️' : ''}` },
+        { type: 10, content: `-# by <@${row.actorId}> · <t:${unix(row.createdAt)}:F> (<t:${unix(row.createdAt)}:R>)` },
+        { type: 14, spacing: 1 },
+        { type: 10, content: ansiBlock(facts.map(([k, v]) => `${(k + ':').padEnd(pad)}${ANSI.bold}${v}${ANSI.reset}`)) },
+        ...(row.detail ? [{ type: 10, content: truncate(row.detail, 500) }] : []),
+        { type: 14, spacing: 1 },
+    ];
+    if (!gate.ok) {
+        body.push({ type: 10, content: `⛔ **This one can't be reverted.**\n${gate.reason}` });
+        return body;
+    }
+    body.push({ type: 10, content: `↩️ **What Revert will do**\n${inv ? inv.line : 'Apply the inverse recorded when this change was made.'}` });
+    // The inverse's payload IS the other half of a diff for an edit -- the values it will write back. Capped at six so a bulk row cannot blow the message length; the portal carries the full record.
+    if (inv && inv.fields.length) {
+        const shown = inv.fields.slice(0, 6)
+            .map(([k, v]) => `${k}: ${truncate(typeof v === 'object' ? JSON.stringify(v) : String(v), 60)}`);
+        body.push({ type: 10, content: ansiBlock(shown.map(l => `${ANSI.cyan}${l}${ANSI.reset}`))
+            + (inv.fields.length > 6 ? `\n-# …and ${inv.fields.length - 6} more field(s) — see the portal.` : '') });
+    }
+    body.push({ type: 10, content: `-# Reverting applies the exact inverse recorded when the change was made. It does not re-run or recompute anything, and it writes its own entry to this log.` });
+    body.push({ type: 14, spacing: 1 });
+    // The panel is a place to ACT on the record, not only to read about it. Revert undoes THIS change; Edit opens the section's own edit flow for the record itself -- two genuinely different things that a row reading "Added new draw" cannot distinguish, which is half of why a bare Revert button was unreadable. 🔴 Edit dispatches through utils/manageActions.js's resolveAction(), the ONE choke point, which re-checks per-page permission itself -- never a hand-rolled second path into /manage's modals.
+    const canEditHere = MANAGE_PAGE_SCOPES.includes(row.page);
+    body.push({ type: 1, components: [
+        { type: 2, style: 4, label: 'Revert this change', custom_id: `bot_revert_${row.changeId}` },
+        ...(canEditHere ? [{ type: 2, style: 1, label: `Edit in ${PAGE_LABEL[row.page] || row.page}`, custom_id: `bot_changeedit_${row.page}` }] : []),
+        { type: 2, style: 5, label: 'Open in the portal', url: PORTAL_ANALYTICS_URL },
+    ] });
+    return body;
+}
+
 const CHANGES_EMPTY = '**No edits in this window.**\n-# Every `/manage` save writes a row here with who made it and a one-click Revert. Make a change and it appears immediately.';
 
 async function buildChangesBody() {
@@ -246,10 +313,10 @@ async function buildChangesBody() {
         getRecentChanges({ page: 0, perPage: CHANGES_PER_PAGE }),
     ]);
     // Alerts and Changes both used to render "**Last 24h:** N" in the same position at the same weight, so the eye read two identical rows even though the nouns differed. A ledger states WHO and WHAT; a severity breakdown (Alerts) states HOW BAD. Different information, therefore different shapes. getChangeSummary() does not return an undoneCount today -- this plan touches no stores, so that clause is simply omitted rather than added.
-    const ledgerLine = `**${summary.last24h}** edit(s) today · **${summary.last7d}** this week`;
+    const ledgerLine = `**${plural(summary.last24h, 'edit')}** today · **${summary.last7d}** this week`;
 
     const body = [
-        { type: 10, content: `-# every DB-mutating \`/manage\` action (and admin-access change) is recorded here (${summary.total} total).` },
+        { type: 10, content: `-# Every \`/manage\` save and access change — ${summary.total.toLocaleString()} recorded.` },
         { type: 10, content: ledgerLine },
         { type: 14, spacing: 2 },
     ];
@@ -332,7 +399,7 @@ async function buildUsageBody() {
     return [
         ...head,
         { type: 10, content: `**Most used**\n${buildUsageBars(byCommand.slice(0, 5))}` },
-        { type: 10, content: `-# Bars are relative to the busiest command. Only public commands count — your own \`/manage\` and \`/bot\` activity is deliberately excluded.` },
+        { type: 10, content: `-# Bars are relative to the busiest command. Your own \`/manage\` and \`/bot\` use is deliberately left out.` },
         { type: 14, spacing: 1 },
         { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
     ];
@@ -389,7 +456,7 @@ async function computeTimingStats() {
     return { overall: overallRows[0] || null, byCommand, byDep };
 }
 
-// Discord closes the interaction window at 3,000ms. A bare "p95 2,400ms" makes a reader do that division in their head every time; stating the headroom is the page doing its own job. null is white circle, never green -- "no data" and "plenty of room" are different answers and must not share a colour.
+// Discord closes the interaction window at 3,000ms. A bare "p95 2,400ms" makes a reader do that division in their head every time; stating the headroom is the page doing its own job. null is white circle, never green -- "no data" and "plenty of room" are different answers and must not share a colour. ⚠️ RETAINED ONLY AS A REGRESSION WITNESS. Nothing a reader sees calls this any more -- ackVerdict() replaced it once "headroom" turned out to be jargon its only reader could not parse. The test keeps it to prove the old path really did emit a negative percentage; do not route a panel string back through it.
 function headroom(ms, budgetMs) {
     if (ms == null) return { pct: null, icon: '⚪' };
     const pct = Math.round(((budgetMs - ms) / budgetMs) * 100);
@@ -398,14 +465,26 @@ function headroom(ms, budgetMs) {
 
 // 🔴 HEADROOM APPLIES TO THE ACK AND NOTHING ELSE. Discord's 3,000ms limit is the deadline to ACKNOWLEDGE an interaction; once it is deferred the followup window is FIFTEEN MINUTES. Measuring total duration against 3,000ms is therefore not a harsh reading, it is a false one -- it shipped as "🔴 /colors -204% headroom" for a heavy image command that was working exactly as designed, i.e. the page asserted a production fault that did not exist. Duration gets a felt-speed band instead. The bands are Nielsen's published response-time thresholds (~0.1s instantaneous, ~1s uninterrupted flow, ~10s the limit of held attention), deliberately NOT a budget invented here -- inventing a second fake budget would repeat the very mistake above.
 const FELT_SPEED = [
-    { under: 1000, icon: '🟢', word: 'instant', colour: ANSI.green },
-    { under: 3000, icon: '🟡', word: 'brisk', colour: ANSI.yellow },
-    { under: 10000, icon: '🟠', word: 'slow', colour: ANSI.yellow },
-    { under: Infinity, icon: '🔴', word: 'a long wait', colour: ANSI.red },
+    { under: 1000, icon: '🟢', word: 'instant', headline: 'Finishes instantly', colour: ANSI.green },
+    { under: 3000, icon: '🟡', word: 'quick', headline: 'Finishes quickly', colour: ANSI.yellow },
+    { under: 10000, icon: '🟠', word: 'slow', headline: 'Takes a moment to finish', colour: ANSI.yellow },
+    { under: Infinity, icon: '🔴', word: 'a long wait', headline: 'Some runs take a long time', colour: ANSI.red },
 ];
 function feltSpeed(ms) {
-    if (ms == null) return { icon: '⚪', word: 'no data', colour: ANSI.gray };
+    if (ms == null) return { icon: '⚪', word: 'no data', headline: 'Nothing measured yet', colour: ANSI.gray };
     return FELT_SPEED.find(b => ms < b.under);
+}
+
+// 🔴 NO p50 / p95 / "HEADROOM" ANYWHERE A READER SEES. Harkirat, 2026-08-23 10:00 EDT, on the version that shipped an hour earlier: "literally no clue what p50, p95, 99% headroom even mean. they look like jargon to me. not intuitive." He is the ONLY user of this admin-only page, so that is not a nitpick -- the page was fluent in a dialect its sole reader does not speak, and every prior critique round (mine included) argued about WHICH threshold to compare against while taking the vocabulary itself for granted. The translations are chosen to stay TRUE, not merely simpler: p50 is the median -> "usually"; p95 is NOT the worst case (a tempting and wrong simplification) -> "slowest 1 in 20"; and a percentage of an unstated denominator becomes the rule plus what it consumes, which is something a person can actually picture.
+const ACK_LIMIT_MS = 3000;
+function ackVerdict(ms) {
+    if (ms == null) return { icon: '⚪', headline: 'Nothing measured yet', used: null };
+    const usedPct = (ms / ACK_LIMIT_MS) * 100;
+    const used = usedPct < 1 ? 'under 1%' : `${Math.round(usedPct)}%`;
+    if (usedPct < 10) return { icon: '🟢', headline: 'Answers instantly', used };
+    if (usedPct < 50) return { icon: '🟡', headline: 'Answers well within time', used };
+    if (usedPct < 90) return { icon: '🟠', headline: 'Answering later than it should', used };
+    return { icon: '🔴', headline: 'Close to missing the deadline', used };
 }
 
 // Seconds above 1,000ms. "9119ms" makes a reader count digits to learn it is nine seconds.
@@ -424,30 +503,31 @@ async function buildTimingBody() {
             { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
         ];
     }
-    const ackHead = headroom(ackP[1], 3000);
+    const ack = ackVerdict(ackP[1]);
     const durFelt = feltSpeed(durP[1]);
     // A threshold page ranks by RISK, not by frequency -- re-sort worst p95 first. computeTimingStats() already returns the rows; the aggregation's own $sort/$limit stays untouched for the portal.
     const worst = [...byCommand].sort((a, b) => (b.p?.[0] ?? 0) - (a.p?.[0] ?? 0)).slice(0, 3);
     const slowestBlock = worst.length ? (() => {
         const top = worst[0].p?.[0] || 1;
-        const nameWidth = Math.min(14, Math.max(...worst.map(c => `/${c._id || '?'}`.length)));
+        const nameWidth = Math.min(12, Math.max(...worst.map(c => `/${c._id || '?'}`.length)));
         const durWidth = Math.max(...worst.map(c => fmtDur(c.p?.[0]).length));
+        // 8 cells here, not BAR_CELLS' 10: every row now leads with a severity glyph, which costs ~2 columns, and the phone budget is 32. The glyph is NOT decoration -- it is the only carrier of the speed band that survives iOS stripping the ANSI colour. Every row carries exactly one, so they all shift by the same amount and the columns stay aligned.
         return ansiBlock(worst.map(c => {
             const f = feltSpeed(c.p?.[0]);
             const name = `/${c._id || '?'}`.slice(0, nameWidth).padEnd(nameWidth);
-            return `${ANSI.cyan}${name}${ANSI.reset} ${ansiBar(c.p?.[0] ?? 0, top, BAR_CELLS, f.colour)} ${ANSI.bold}${fmtDur(c.p?.[0]).padStart(durWidth)}${ANSI.reset} ${ANSI.gray}×${c.n}${ANSI.reset}`;
+            return `${f.icon} ${ANSI.cyan}${name}${ANSI.reset} ${ansiBar(c.p?.[0] ?? 0, top, 8, f.colour)} ${ANSI.bold}${fmtDur(c.p?.[0]).padStart(durWidth)}${ANSI.reset}`;
         }));
     })() : null;
     return [
-        { type: 10, content: `${ackHead.icon} **Acknowledged in ${fmtDur(ackP[0])}** _(p50)_ · ${fmtDur(ackP[1])} _(p95)_` },
-        { type: 10, content: `-# ${ackHead.pct == null ? 'No data yet.' : `**${ackHead.pct}% headroom** under Discord's 3,000ms ack deadline`} — the one hard limit on this page. Miss it and the interaction dies.` },
+        { type: 10, content: `${ack.icon} **${ack.headline}** — usually ${fmtDur(ackP[0])}, slowest 1 in 20: ${fmtDur(ackP[1])}` },
+        { type: 10, content: `-# Discord throws away any command the bot doesn't answer within **3 seconds**.${ack.used ? ` Even its slowest answers use ${ack.used} of that.` : ''}` },
         { type: 14, spacing: 1 },
-        { type: 10, content: `${durFelt.icon} **Finished in ${fmtDur(durP[0])}** _(p50)_ · ${fmtDur(durP[1])} _(p95)_ — ${durFelt.word}` },
-        { type: 10, content: `-# No platform deadline applies after the ack (the followup window is 15 minutes), so this is felt speed, not compliance.` },
+        { type: 10, content: `${durFelt.icon} **${durFelt.headline}** — usually ${fmtDur(durP[0])}, slowest 1 in 20: ${fmtDur(durP[1])}` },
+        { type: 10, content: `-# Answering and finishing are different things. Once it has answered, the bot has 15 minutes to do the work — so nothing here is late, this is just how long you wait.` },
         { type: 14, spacing: 1 },
         ...(slowestBlock
-            ? [{ type: 10, content: `**Slowest to finish** _(p95, last 7d)_\n${slowestBlock}` },
-               { type: 10, content: `-# Ranked by duration, not by traffic. **Admin commands are included here** — unlike Usage, they are real work the bot does.` }]
+            ? [{ type: 10, content: `**Slowest to finish**\n${slowestBlock}` },
+               { type: 10, content: `-# **"Slowest 1 in 20"** means: run it twenty times and about one run will be roughly this slow. Ranked by that, not by how often each is used — and your own admin commands **are** counted here, unlike Usage.` }]
             : [{ type: 10, content: TIMING_EMPTY }]),
         { type: 14, spacing: 1 },
         { type: 1, components: [{ type: 2, style: 5, label: 'Full breakdown in the portal', url: PORTAL_ANALYTICS_URL }] },
@@ -608,8 +688,9 @@ module.exports = {
     buildAccessPanel,
     pageSelectRow,
     PAGE_META,
-    __testables: { buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
+    __testables: { describeInverse, ackVerdict, buildVitalsBlock, buildChangesRows, CHANGES_EMPTY, ALERTS_EMPTY, buildUsageBars, headroom, feltSpeed, fmtDur, usageDeltaLine, visibleWidth },
     buildHotpatchPanel,
+    buildChangeDetailBody,
     buildUsageExport,
     buildTimingExport,
     buildAdminListBlocks,

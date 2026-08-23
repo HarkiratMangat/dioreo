@@ -64,6 +64,33 @@ async function route(interaction) {
         return await renderAnalyticsPage(interaction, 'alerts', { alertsState: { view: customId === 'bot_alerts_explain' ? 'explain' : 'main' } });
     }
 
+    // --- EDIT THE RECORD, from the change-detail panel --- Harkirat, 2026-08-23 10:12 EDT: the detail view should carry "a revert or edit or delete buttons", not just read-only facts. Revert undoes the CHANGE; this opens the section's own edit flow for the RECORD, which is a different action and worth being able to reach from the same place. 🔴 NO deferReply() ANYWHERE ON THIS PATH. Every `edit` entry in the registry is kind:'modal', and its run() calls showModal(), which Discord requires to be the interaction's FIRST response -- deferring first throws. This mirrors commands/manage.js's own slash `action:` dispatch exactly, including running BEFORE any acknowledgement, and resolveAction() re-checks the per-page permission itself so a 'bot'-token admin cannot reach a section they hold no scope for.
+    if (interaction.isButton() && customId.startsWith('bot_changeedit_')) {
+        const page = customId.replace('bot_changeedit_', '');
+        const { resolveAction, DENIAL_MESSAGE } = require('../utils/manageActions');
+        const resolved = await resolveAction(page, 'edit', interaction.user.id);
+        if (!resolved.ok || !resolved.entry.slash) {
+            return await interaction.reply({ content: DENIAL_MESSAGE[resolved.reason] || DENIAL_MESSAGE.denied, ephemeral: true });
+        }
+        return await resolved.entry.run({ interaction, page, manageCommand: interaction.client.commands.get('manage') });
+    }
+
+    // --- CHANGE DETAIL --- read-only, but gated with the SAME per-page check the revert itself uses: the panel states which record a change touched and what its inverse holds, which is exactly the information the 'bot' token alone does not entitle an admin to see about a /manage page they hold no scope for.
+    if (interaction.isButton() && customId.startsWith('bot_changedetail_')) {
+        const changeId = customId.replace('bot_changedetail_', '');
+        const { getChange } = require('../utils/changeStore');
+        const { hasManagePageAccess } = require('../utils/adminAccess');
+        const row = await getChange(changeId);
+        if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
+            return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+        }
+        // A SEPARATE ephemeral message, never a re-render of the panel -- the analytics page stays put behind it, so reading one row's detail does not cost you the glance you were looking at.
+        await interaction.deferReply({ flags: 64 });
+        const { buildChangeDetailBody } = require('../commands/bot');
+        const { sendV2Payload } = require('../utils/sendV2Payload');
+        return sendV2Payload(interaction, [{ type: 17, accent_color: 0x6C5DD3, components: await buildChangeDetailBody(changeId) }]);
+    }
+
     // --- CHANGES PAGE (ported from the retired handlers/audit.js) --- the pager, page/actor filters and export moved to the portal (bot analytics redesign, 2026-08-23 00:32 EDT); their branches (bot_changes_export~, bot_changes_page_, bot_changes_filterpage~, bot_changes_filteractor~/filteractormodal~, bot_changes_clearfilters) are deleted, not just their buttons -- an unreachable branch reads as live code. Revert stays; it's the one control that never left Discord. 🔴 THE ROUTER'S bot_ -> hasCommandAccess(userId,'bot') GUARD IS NOT SUFFICIENT HERE. It proves only "this user has SOME /bot access" -- the 'bot' token is grantable to any admin purely for analytics. It does NOT prove they may mutate the /manage page the change belongs to. Without this independent re-check, an admin granted 'bot' to read analytics could revert changes on pages they hold no scope for -- a privilege escalation in the one control that writes to live data from a read-only surface. Same shape /bot access and bot_hp_restart already use.
     if (interaction.isButton() && customId.startsWith('bot_revert_')) {
         const changeId = customId.replace('bot_revert_', '');
