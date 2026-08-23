@@ -18,7 +18,12 @@
   display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11.5px;font-weight:600;
   white-space:nowrap;overflow:hidden;z-index:2;border:1px solid var(--topic-accent,var(--rule))}
 .bar.live{background:var(--topic-accent,var(--patch));color:var(--on-accent)}
-.bar.stag{background:rgba(255,255,255,.02);color:var(--topic-accent,var(--ink2));border-style:dashed}
+/* 🔴 THE LABEL IS --ink, NOT THE TOPIC ACCENT. Measured 2026-08-23 16:52 EDT by the rendered
+   contrast probe: with --play the label read 4.09:1 on --paper, and --ev is worse. The BORDER
+   already carries the topic (colour carries topic, spec §9) -- repeating it in 10px text buys
+   nothing and costs readability. Third place this session a Season topic token was used as text;
+   the others were the Analytics kind-chip and the SCHEDULED pill. */
+.bar.stag{background:rgba(255,255,255,.02);color:var(--ink);border-style:dashed}
 .bar.conf{background:transparent;color:var(--warn);border-color:var(--warn);border-style:dashed;
   background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,122,69,.45) 4px 5px)}
 .ov{position:absolute;left:104px;right:0;top:0;bottom:0;pointer-events:none;z-index:1}

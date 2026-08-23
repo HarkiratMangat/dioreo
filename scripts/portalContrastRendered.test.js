@@ -67,6 +67,8 @@ function fixtureHtml(css) {
       <tr><td><input type="checkbox"></td><td class="n">Scheduled</td><td><span class="stt sched">SCHEDULED</span></td></tr>
       <tr><td><input type="checkbox"></td><td class="n">Expired</td><td><span class="stt exp">EXPIRED</span></td></tr>
       <tr><td><input type="checkbox"></td><td class="n">Conflict</td><td><span class="stt conf">CONFLICT</span></td></tr>
+      <tr class="sel"><td><input type="checkbox" checked></td><td class="n">Selected row</td><td><span class="stt live">LIVE</span></td></tr>
+      <tr class="preview-sel"><td><input type="checkbox"></td><td class="n">Preview-selected row</td><td class="d">Aug 12 → Aug 22</td></tr>
     </tbody></table></div>
     <div class="bulk"><span>2 selected</span><button>Export selection</button><button class="danger">Stage deletion</button>
       <span class="note">Destructive actions stage — they never fire from here.</span></div>
@@ -112,6 +114,25 @@ function fixtureHtml(css) {
     <div class="grantrow"><input placeholder="Discord ID"><button class="accent-fill">Grant</button>
       <span class="hint">A new admin starts with nothing granted.</span></div></div>
 
+  <div class="panel"><div class="air">
+    <div class="ruler"><span style="left:0%">2026-08-01</span><span data-end style="left:100%">2026-09-19</span></div>
+    <div class="lanes">
+      <div class="lane"><span class="nm">Season 7 is live</span><div class="tk">
+        <div class="bar live forever" style="--topic-accent:#F2C230;left:0;width:80%"><span class="bl">no expiry →</span></div></div></div>
+      <div class="lane"><span class="nm">Clan wars</span><div class="tk">
+        <div class="bar stag" style="--topic-accent:#8A6BD1;left:20%;width:30%"><span class="bl">scheduled</span></div></div></div>
+      <div class="lane"><span class="nm">Unaccented</span><div class="tk">
+        <div class="bar live" style="left:10%;width:20%"><span class="bl">no accent set</span></div></div></div>
+    </div></div></div>
+
+  <div class="panel"><div class="ph"><span class="t">Live preview</span></div><div class="pb">
+    <div class="v2-card" style="--v2-accent:#FF3430"><h1>FENNEC — Close Quarters</h1>
+      <p class="v2-small">SMG · Meta build</p><h3>Attachments</h3>
+      <p>MIP Light Flash Guard</p><blockquote>A quoted note about this build.</blockquote>
+      <hr class="v2-sep"><div class="v2-row"><button>Share</button><button>Copy code</button></div></div>
+    <div class="v2-card"><h1>Unaccented card</h1><p>No --v2-accent set on this one.</p></div>
+    <p class="v2-empty">Click a row to preview its Discord card.</p></div></div>
+
   <div class="panel"><div class="slots"><div class="slot" style="--topic-accent:#F2C230">
     <span class="sl">SLOT 1 — TOP</span><span class="tx">Season 7 is live</span>
     <span class="mt">up 19d · <span class="warn">no expiry</span></span></div>
@@ -154,16 +175,20 @@ function fixtureHtml(css) {
         const page = await browser.newPage();
         await page.setContent(fixtureHtml(css), { waitUntil: 'load' });
 
-        const findings = await page.evaluate((MIN) => {
+        const { out: findings, skipped } = await page.evaluate((MIN) => {
             const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
                 const p = m[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
             const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
                 return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
             const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
-            // The background a reader actually sees: the nearest ancestor painting a non-transparent colour. A transparent element shows its parent's, which is the whole reason a rule-level static check cannot answer this.
+            // The background a reader actually sees: the nearest ancestor painting a non-transparent colour. ⚠️ THE 0.85 THRESHOLD IS A DELIBERATE LIMIT, stated rather than silent: a row tint like `tr.sel td` (alpha .06) is walked PAST rather than composited, so the probe reports the panel's colour beneath it. At that alpha the effective luminance shift is under a percent, but a future tint heavy enough to matter would be measured against the wrong ground -- if one is ever added, composite here instead of skipping. A transparent element shows its parent's, which is the whole reason a rule-level static check cannot answer this.
             const paintedBg = (el) => { for (let n = el; n; n = n.parentElement) {
-                const c = parse(getComputedStyle(n).backgroundColor); if (c && c.a > 0.85) return c; } return { r: 15, g: 20, b: 24, a: 1 }; };
-            const out = [];
+                const cs = getComputedStyle(n);
+                // 🔴 A GRADIENT MAKES THE BACKGROUND UNKNOWABLE HERE, and reporting it anyway is a FALSE POSITIVE -- computed backgroundColor for a gradient is transparent, so the walk falls through to the panel and measures text against a colour it is not on. Caught live: `.air .bar.forever`'s black label reported 1.25:1 while actually sitting on the solid gold end of its own gradient. Skipped, and COUNTED, because a silent skip is how a gate quietly stops covering something.
+                if (cs.backgroundImage && cs.backgroundImage !== 'none') return null;
+                const c = parse(cs.backgroundColor); if (c && c.a > 0.85) return c; }
+                return { r: 15, g: 20, b: 24, a: 1 }; };
+            const out = []; let skipped = 0;
             for (const el of document.querySelectorAll('body *')) {
                 const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
                 if (!own) continue;                                   // only elements painting their OWN text
@@ -171,14 +196,16 @@ function fixtureHtml(css) {
                 if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue;
                 if (el.closest('.sr-only')) continue;
                 const fg = parse(cs.color); if (!fg || fg.a < 0.85) continue;
-                const r = ratio(fg, paintedBg(el));
+                const bg = paintedBg(el);
+                if (!bg) { skipped++; continue; }
+                const r = ratio(fg, bg);
                 if (r < MIN) out.push({
                     what: el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).replace(/\s+/g, '.') : ''),
-                    text: el.textContent.trim().slice(0, 30), color: cs.color, bg: `rgb(${Object.values(paintedBg(el)).slice(0, 3).join(',')})`,
+                    text: el.textContent.trim().slice(0, 30), color: cs.color, bg: `rgb(${Object.values(bg).slice(0, 3).join(',')})`,
                     ratio: Math.round(r * 100) / 100, size: cs.fontSize,
                 });
             }
-            return out;
+            return { out, skipped };
         }, CONTRAST_MIN);
 
         const measured = await page.evaluate(() => document.querySelectorAll('body *').length);
@@ -187,7 +214,7 @@ function fixtureHtml(css) {
             for (const f of findings) console.error(`      ${f.ratio}:1  ${f.what}  ${f.color} on ${f.bg}  ${f.size}  “${f.text}”`);
             failures = 1;
         } else {
-            console.log(`  ✓ every rendered element painting text meets ${CONTRAST_MIN}:1 (${measured} elements walked)`);
+            console.log(`  ✓ every rendered element painting text meets ${CONTRAST_MIN}:1 (${measured} elements walked, ${skipped} skipped over a gradient)`);
         }
 
         // 🔴 THE FALSIFIER. A gate that cannot fail manufactures confidence, and this one is easy to write vacuously — a selector typo, an over-eager `continue`, a transparent-background rule that swallows everything. Inject the original login button and require it to be caught.

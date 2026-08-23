@@ -185,6 +185,18 @@ The falsification pass, run as `.claude/rules/plan-drafting.md` requires — the
 
 **Alternatives re-examined and still rejected.** Restricting overlap detection to the draw lanes would have cut the flag noise at the source, and was rejected: it asserts a CODM scheduling rule this session cannot verify, and a detector that silently drops a real finding is worse than one that ranks it last. Making in-table checkboxes 44px was rejected for the same class of reason — it clears WCAG 2.5.5 (AAA) at the cost of turning a 39-row manifest into six screens; 24px clears SC 2.5.8 (AA), which is the actual requirement.
 
+## Addendum — 2026-08-23 16:55 EDT: the falsification pass on this session's own output
+
+Asked at Harkirat's request, and framed as `.claude/rules/plan-drafting.md` requires — *where is this wrong*, not *does it look done*. It found two real defects and one false-positive class, all in work this document had already called finished.
+
+**The probe's fixture was narrower than its claim.** "285 rendered elements, all pass" was true, and the fixture had never covered Airtime, the Live Preview panel (`preview.css`, an entire unchecked file), or a selected row's tint. Widening it to 335 elements immediately failed.
+
+**`.bar.stag`'s label was the topic accent, and most topic accents fail as text.** Measured on `--paper`: `--ret` 3.63:1, `--ev` 3.89:1, `--play` 4.09:1 — only `--draw` (4.64) and `--patch` (10.05) clear. So a staged bar's label was unreadable in three of five lanes. The border already carries the topic, so the label is now `--ink`. **This is the third time this session a Season topic token was used as text** — the Analytics kind-chip, the SCHEDULED pill, and now this. §3.6's rule tells you what a colour *means* and nothing about where it is *safe*, and each of the three was caught by measurement, never by review.
+
+**And one false positive, kept as a lesson.** A gradient's computed `backgroundColor` is transparent, so the ancestor walk fell through and measured Airtime's black label against the panel instead of the solid gold end of its own gradient — reported 1.25:1 for text that is actually fine. The probe now skips a gradient ancestor and **counts the skips**. A gate that cries wolf trains readers to ignore it as thoroughly as one that misses.
+
+**Also re-verified rather than re-asserted:** the port script's three guards were each made to fire (remote target → refuses; identical URIs → refuses; local source → refuses), having previously only ever been run on the happy path. And the 375px measurements were re-taken **after** the real season data landed, since the originals were taken against a collapsed-window dev database — still 0 overflow and 0 sub-24px controls on all five realms, with the masthead now reading a real "18 days left".
+
 ## Addendum — 2026-08-23 16:12 EDT: the three deferred items, closed
 
 Harkirat's call once the sizing was on the table: *"you could just do them right now since you have everything in context, and they're gonna touch the same files anyway."* All three are done and archived in `docs/archive/resolved-list.md`. One of them stopped being a deferral the moment it was measured, and that is the part worth carrying:
