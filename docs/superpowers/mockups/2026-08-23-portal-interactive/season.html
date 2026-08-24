@@ -1302,7 +1302,13 @@
        * does. Measured from the text node's own scrollWidth after layout, never guessed. */
       const fits = bl.scrollWidth ? (w / bl.scrollWidth) : 1;
       b.classList.remove('lbl-out', 'lbl-out-l');
-      if (w >= LABEL_MIN_PX && fits >= 0.55) return;
+      /* ⚠️ THE 55% THRESHOLD WAS RIGHT WHEN THE ONLY ALTERNATIVES WERE "truncate" AND "drop the
+       * label". Now that a label can move OUTSIDE the bar, accepting a 55%-cut name is accepting
+       * a worse outcome than one that is available: measured at a 620px viewport with every lane
+       * expanded, ten labels moved outside cleanly and three stayed clipped purely because they
+       * cleared this bar. Any overflow at all now looks for room beside the bar first. */
+      const clipped = bl.scrollWidth > bl.clientWidth + 1;
+      if (w >= LABEL_MIN_PX && fits >= 0.55 && !clipped) return;
       /* 🔴 OUTSIDE BEFORE TRUNCATED. "Attack of …", "Safeguar…", "Nuketown…" all had empty track
        * beside them. In a timeline the label leaves the bar when the bar is too small for it —
        * truncation is the LAST resort, not the first, and dropping the label entirely is worse
