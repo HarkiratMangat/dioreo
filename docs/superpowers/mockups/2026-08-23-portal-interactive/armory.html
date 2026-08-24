@@ -240,8 +240,8 @@
         <span class="bc-mode">${b.mode}</span>
         ${b.dmzRangeRank ? `<span class="bc-dmz">${b.dmzRangeRank}</span>` : ''}
         ${b.isToxic ? '<span class="bc-tox" title="Toxic">&#9763;</span>' : ''}
-        <span class="bc-att" title="${b.attachments.length} attachments">${b.attachments.length}&#215;</span>
-        ${def.length ? `<span class="bc-bad" title="${def.map(d => d.label).join(' · ')}">${def.length}</span>` : ''}
+        <span class="bc-att" data-tip="${b.attachments.length} attachments">${b.attachments.length}&#215;</span>
+        ${def.length ? `<span class="bc-bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}</span>` : ''}
       </span>
     </article>`;
   }
@@ -905,7 +905,7 @@
           ${b.categoryRank ? `<b class="bdg rank">${b.categoryRank.toUpperCase()}</b>` : ''}
           ${b.dmzRangeRank ? `<b class="bdg dmz">${b.dmzRangeRank}</b>` : ''}
           ${b.isToxic ? '<b class="bdg toxic">TOXIC</b>' : ''}
-          ${def.length ? `<b class="bdg bad" title="${def.map(d => d.label).join(' · ')}">${def.length}&#9888;</b>` : ''}
+          ${def.length ? `<b class="bdg bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}&#9888;</b>` : ''}
           ${!b.isMeta && !b.categoryRank && !b.dmzRangeRank && !b.isToxic && !def.length ? '<span class="none">—</span>' : ''}
         </span></td></tr>`;
     }).join('') : `<tr><td colspan="7"><div class="empty">

@@ -230,6 +230,7 @@
      * its own opening position once the first render is genuinely finished, and never again. It
      * stands down the instant a real user gesture arrives, so it can never fight someone scrolling. */
     holdTop(){
+      Shell.installTips();
       const m = document.querySelector('main'); if (!m) return;
       let touched = false;
       const release = () => { touched = true; off(); };
@@ -246,6 +247,75 @@
       setTimeout(off, 4000);
     },
 
+    /* ══════════ THE COMMAND BAR ══════════
+     * A realm calls this with its own command list. Without it the input still works as a
+     * launcher for whatever palette the page already has, so a page that has not been converted
+     * degrades to what it had rather than to nothing. */
+    commandBar({ items, run, placeholder }){
+      const wrap = document.getElementById('cmdBar'), inp = document.getElementById('cbIn');
+      if (!wrap || !inp) return;
+      if (placeholder) { inp.placeholder = placeholder; inp.setAttribute('aria-label', placeholder); }
+      const drop = document.getElementById('cbDrop'), list = document.getElementById('cbList');
+      let sel = 0, hits = [];
+      const close = () => { drop.hidden = true; inp.setAttribute('aria-expanded','false'); wrap.classList.remove('on'); };
+      const paint = () => {
+        const t = inp.value.toLowerCase().trim();
+        hits = items().filter(c => !t || c.k.toLowerCase().includes(t));
+        sel = Math.min(sel, Math.max(0, hits.length - 1));
+        list.innerHTML = hits.length
+          ? hits.map((c, i) => `<button class="pitem${i === sel ? ' sel' : ''}" role="option"
+              aria-selected="${i === sel}" data-i="${i}"><i style="--c:var(--${c.c || 'ink3'})"></i>${c.k}</button>`).join('')
+          : `<p class="pnone">Nothing matches “${inp.value.trim()}”. Try a realm name, or an action like “new draw”.</p>`;
+        list.querySelectorAll('.pitem').forEach(b => b.onclick = () => { const c = hits[+b.dataset.i]; close(); inp.value = ''; run(c); });
+        list.querySelector('.sel')?.scrollIntoView({ block:'nearest' });
+        drop.hidden = false; inp.setAttribute('aria-expanded','true'); wrap.classList.add('on');
+      };
+      inp.addEventListener('focus', paint);
+      inp.addEventListener('input', () => { sel = 0; paint(); });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { inp.value = ''; close(); inp.blur(); return; }
+        if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, hits.length - 1); e.preventDefault(); paint(); }
+        else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); e.preventDefault(); paint(); }
+        else if (e.key === 'Enter' && hits[sel]) { const c = hits[sel]; inp.value = ''; close(); inp.blur(); run(c); }
+      });
+      document.addEventListener('pointerdown', e => { if (!wrap.contains(e.target)) close(); });
+      document.addEventListener('keydown', e => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); inp.focus(); inp.select(); }
+      });
+      window.__openPalette = () => { inp.focus(); inp.select(); };
+    },
+
+    /* ══════════ ONE TOOLTIP, AND IT IS OURS ══════════
+     * A native `title` is OS chrome: grey, delayed, unstyled, and it renders UNDER the pointer,
+     * so it covers the very thing it describes. The cluster readout shipped as one while `.tip`
+     * sat defined and unused. Anything a person is meant to READ uses `data-tip`; `title` is
+     * reserved for supplementary hints an assistive user can already reach another way.
+     * Delegated from the document so it survives every innerHTML rebuild the Track performs. */
+    installTips(){
+      if (Shell._tipsOn) return; Shell._tipsOn = true;
+      let el = null;
+      const kill = () => { el && el.remove(); el = null; };
+      const show = (t, host) => {
+        kill();
+        el = document.createElement('div'); el.className = 'tip'; el.setAttribute('role','tooltip');
+        el.innerHTML = t.split('\n').map((l, i) => i ? `<span class="sub">${l}</span>` : l).join('');
+        document.body.appendChild(el);
+        const r = host.getBoundingClientRect(), b = el.getBoundingClientRect();
+        /* Beside the mark, never over it: prefer right, flip left at the edge, clamp vertically. */
+        let x = r.right + 10, y = r.top + r.height / 2 - b.height / 2;
+        if (x + b.width > innerWidth - 8) x = Math.max(8, r.left - b.width - 10);
+        el.style.left = Math.round(x) + 'px';
+        el.style.top = Math.round(Math.min(Math.max(8, y), innerHeight - b.height - 8)) + 'px';
+      };
+      const find = e => e.target.closest && e.target.closest('[data-tip]');
+      document.addEventListener('pointerover', e => { const h = find(e); if (h) show(h.dataset.tip, h); });
+      document.addEventListener('pointerout',  e => { if (find(e)) kill(); });
+      document.addEventListener('focusin',  e => { const h = find(e); if (h) show(h.dataset.tip, h); });
+      document.addEventListener('focusout', kill);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') kill(); });
+      window.addEventListener('scroll', kill, true);
+    },
+
     /* ══════════ THE COMPOSER — the portal's answer to `/manage`'s creation path ══════════
      * `/manage` creates by asking you to type a formatted string into a Discord modal, which is
      * why every one of its seven pages ships a "Guide" action: the format has to be documented
@@ -260,7 +330,12 @@
      * draws, which have exactly one field (`date`) and no end at all in models/SeasonalData.js.
      * A creation form that asks for data the record cannot hold is the same defect the Track
      * had when it painted a draw as a band, one layer up. */
-    compose({ title = 'New item', eyebrow = 'create', types, initial = {}, preview, onStage }){
+    /* 🔴 A MODAL WAS THE WRONG CONTAINER, and it took Harkirat asking "why is this buried in a
+     * pop-up" to see it. `/manage`'s creation flow IS a Discord modal — reproducing that shape is
+     * reproducing the thing the portal exists to beat. `host` renders the same composer INLINE,
+     * in the page, so creation is a place you already are rather than a room you travel to. The
+     * drawer path is kept for surfaces that genuinely have nowhere to put a bar. */
+    compose({ title = 'New item', eyebrow = 'create', types, initial = {}, preview, onStage, host, onClose }){
       const st = { type: initial.type || null, name: initial.name || '',
                    a: initial.a || '', b: initial.b || '' };
       const typeOf = k => types.find(t => t.key === k) || null;
@@ -278,10 +353,16 @@
         const t = typeOf(st.type);
         if (!t) return `<p class="nw-hint">Pick what you are adding. The form follows the record &mdash; a release asks for one date, a window asks for two.</p>`;
         const one = t.shape === 'point';
+        /* Each field is its own box so the inline bar can lay them out on ONE row. Before this
+         * the labels and inputs were bare siblings, which forced a stacked column — and a
+         * stacked composer pushed the Track (the preview) off the bottom of the screen, which
+         * defeats the entire reason it is inline. */
         return `
-          <label class="nw-l" for="nw-name">${t.nameLabel || 'Name'}</label>
-          <input class="nw-i" id="nw-name" type="text" autocomplete="off" spellcheck="false"
-                 placeholder="${t.placeholder || ''}" value="${st.name.replace(/"/g,'&quot;')}">
+          <div class="nw-f nw-f-name">
+            <label class="nw-l" for="nw-name">${t.nameLabel || 'Name'}</label>
+            <input class="nw-i" id="nw-name" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="${t.placeholder || ''}" value="${st.name.replace(/"/g,'&quot;')}">
+          </div>
           <div class="nw-dates${one ? ' one' : ''}">
             <div><label class="nw-l" for="nw-a">${one ? (t.dateLabel || 'Releases') : 'Opens'}</label>
               <input class="nw-i" id="nw-a" type="date" value="${st.a}"></div>
@@ -299,17 +380,26 @@
         return null;
       };
 
-      Shell.drawer({ eyebrow, title, wide: true,
-        body: `<div class="nw">
-                 <div class="nw-types" role="group" aria-label="What are you adding">${chips()}</div>
-                 <div class="nw-form" id="nw-form">${fields()}</div>
-                 <div class="nw-prev" id="nw-prev"></div>
-               </div>`,
-        actions: `<span class="nw-why" id="nw-why"></span>
-                  <button class="btn" id="nw-cancel">Cancel</button>
-                  <button class="btn go" id="nw-go">Stage it</button>` });
-
-      const d = document.querySelector('.drawer');
+      const shell = `<div class="nw">
+             <div class="nw-types" role="group" aria-label="What are you adding">${chips()}</div>
+             <div class="nw-form" id="nw-form">${fields()}</div>
+             <div class="nw-prev" id="nw-prev"></div>
+             <div class="nw-act"><span class="nw-why" id="nw-why"></span>
+               <button class="pill" id="nw-cancel">Cancel</button>
+               <button class="pill lead" id="nw-go">Stage it</button></div>
+           </div>`;
+      let d;
+      if (host) {
+        host.hidden = false; host.innerHTML = shell; host.classList.add('nw-host'); d = host;
+      } else {
+        Shell.drawer({ eyebrow, title, wide: true,
+          body: shell.replace(/<div class="nw-act">[\s\S]*?<\/div>\s*<\/div>$/, '</div>'),
+          actions: `<span class="nw-why" id="nw-why"></span>
+                    <button class="btn" id="nw-cancel">Cancel</button>
+                    <button class="btn go" id="nw-go">Stage it</button>` });
+        d = document.querySelector('.drawer');
+      }
+      const close = () => { if (host) { host.hidden = true; host.innerHTML = ''; } else Shell.closeDrawer(); onClose && onClose(); };
       const paint = () => {
         const t = typeOf(st.type), why = valid();
         d.querySelector('#nw-form').innerHTML = fields();
@@ -324,9 +414,10 @@
           ? preview({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null })
           : '';
         d.querySelector('#nw-why').textContent = why || '';
+        onStage && onStage.live && onStage.live({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null, valid: !why });
         const go = d.querySelector('#nw-go');
         go.disabled = !!why;
-        go.textContent = t ? `Stage ${t.label.toLowerCase().replace(/s$/, '')}` : 'Stage it';
+        go.textContent = t ? `Stage ${t.single || t.label.toLowerCase()}` : 'Stage it';
         wire();
       };
       const wire = () => {
@@ -347,16 +438,18 @@
        * on every keystroke is how a field loses focus and the caret jumps to the end. */
       const light = () => {
         const t = typeOf(st.type), why = valid();
+        /* The page may draw its own preview — on Season that is a real ghost in the real lane. */
+        onStage && onStage.live && onStage.live({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null, valid: !why });
         d.querySelector('#nw-prev').innerHTML = preview
           ? preview({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null }) : '';
         d.querySelector('#nw-why').textContent = why || '';
         d.querySelector('#nw-go').disabled = !!why;
       };
-      d.querySelector('#nw-cancel').onclick = () => Shell.closeDrawer();
+      d.querySelector('#nw-cancel').onclick = close;
       d.querySelector('#nw-go').onclick = () => {
         if (valid()) return;
         const t = typeOf(st.type);
-        Shell.closeDrawer();
+        close();
         onStage && onStage({ type: st.type, name: st.name.trim(), a: st.a,
                              b: t.shape === 'point' ? st.a : (st.b || st.a), shape: t.shape });
       };
@@ -459,6 +552,40 @@
       if (noFocus.length) problems.push(`${noFocus.length} focusable element(s) show no focus ring`);
       document.activeElement && document.activeElement.blur();
 
+      /* 5b. NOTHING A PERSON MUST READ MAY LIVE IN A NATIVE `title`. Twenty-three of them did,
+       *     including the cluster readout, which is content — it names the items and explains why
+       *     they are grouped. A native title is grey OS chrome, appears under the pointer, and
+       *     cannot be styled or positioned. The threshold is length: a short hint is a hint, a
+       *     sentence is content. */
+      document.querySelectorAll('[title]').forEach(el => {
+        const t = (el.getAttribute('title') || '').trim();
+        if (t.length > 24 && !el.hasAttribute('data-tip'))
+          problems.push(`native title carries ${t.length} chars of content: "${t.slice(0,40)}…" — use data-tip`);
+      });
+
+      /* 5c. A LABEL MAY NOT TRUNCATE WHILE THERE IS ROOM BESIDE IT. "Attack of …", "Safeguar…",
+       *     "Nuketown…" — all three had empty track to their right. Truncating inside the bar is
+       *     the LAST resort in a timeline, not the first. */
+      document.querySelectorAll('.bar .bl').forEach(l => {
+        if (l.scrollWidth <= l.clientWidth + 1) return;
+        const bar = l.closest('.bar'), tk = bar && bar.closest('.tk'); if (!tk) return;
+        const br = bar.getBoundingClientRect(), tr = tk.getBoundingClientRect();
+        const room = Math.max(tr.right - br.right, br.left - tr.left);
+        if (room > l.scrollWidth + 12 && !bar.classList.contains('lbl-out'))
+          problems.push(`"${l.textContent.trim()}" is truncated with ${Math.round(room)}px free beside it`);
+      });
+
+      /* 5d. NO TEXT ON AN IMAGE WITHOUT A PLATE. Legibility that depends on which photograph the
+       *     user happened to upload is not a design decision, it is a coin toss. */
+      document.querySelectorAll('[style*="url("],[style*="--banner"],[style*="--av-src"]').forEach(host => {
+        if (getComputedStyle(host).backgroundImage === 'none') return;
+        [...host.children].forEach(ch => {
+          if (!ch.textContent.trim()) return;
+          const ok = ch.closest('.plate') || getComputedStyle(ch).backgroundColor !== 'rgba(0, 0, 0, 0)';
+          if (!ok) problems.push(`"${ch.textContent.trim().slice(0,24)}" sits on an image with no plate`);
+        });
+      });
+
       // 6. A legend may only name states that are actually present.
       if (states) {
         const real = new Set(states());
@@ -560,10 +687,28 @@
       el.innerHTML = `    <button class="mk" id="home" title="Home"><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
     <span class="crumb">Season <b>›</b> <span id="crumbView">Track</span></span>
     <span class="sp"></span>
-    <button class="pal" id="palBtn" title="Command palette"><kbd>⌘K</kbd></button>
+    <!-- 🔴 THE COMMAND BAR IS THE BAR, NOT A LAUNCHER FOR ONE. It used to be a 44px cmd-K chip in
+         a header with ~700px of unused space, which is a keyboard shortcut wearing a button's
+         clothes: it advertised a feature instead of being one. Now it is the widest thing in the
+         header, it says what it does in words, and the results drop straight out of it. -->
+    <div class="cmdbar" id="cmdBar">
+      <span class="cb-mag" aria-hidden="true"></span>
+      <input id="cbIn" class="cb-in" autocomplete="off" spellcheck="false"
+             placeholder="Search this realm, or run a command" aria-label="Search this realm, or run a command"
+             role="combobox" aria-expanded="false" aria-controls="cbList" aria-autocomplete="list">
+      <kbd>⌘K</kbd>
+      <div class="cb-drop" id="cbDrop" hidden><div class="plist" id="cbList" role="listbox"></div></div>
+    </div>
+    <span class="sp"></span>
+    <!-- Sign out was three clicks deep in a menu, in a header with room to spare. It still
+         confirms — it is the one action that discards staged work — but finding it is not the
+         part that should be hard. -->
+    <button class="hdr-out" id="hdrOut" data-tip="Sign out of the portal">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
+      <span>Sign out</span></button>
     <span class="who">
       <button class="whobtn" id="whoBtn" aria-expanded="false" aria-haspopup="menu">
-        <span class="av" data-src style="--av-src:url('${USER.avatar}')"></span>${USER.displayName}<span class="cv">▾</span></button>
+        <span class="av" data-src style="--av-src:url('${USER.avatar}')"></span>${USER.displayName}<span class="cv" aria-hidden="true"></span></button>
       <div class="umenu" id="uMenu" role="menu" hidden>
         <div class="ubanner" style="--banner:url('${USER.banner}')" aria-hidden="true"></div>
         <div class="uhead">
@@ -614,15 +759,19 @@
       document.addEventListener('click', e => {
         if (!m.hidden && !m.contains(e.target)) { m.hidden = true; b.setAttribute('aria-expanded','false'); }
       });
+      /* One handler, two entry points — the header button and the menu item must never be able
+       * to disagree about what signing out does. */
+      const signOut = () => Shell.confirm({ title:'Sign out of the portal?', tier:1, op:'session.end',
+        body:`<p class="dw-p">You have <b>${Store.all().length}</b> staged change(s). Staged work
+               lives in this browser session and is <b>lost on sign out</b>.</p>`,
+        confirm:'Sign out', danger:true,
+        onConfirm(){ Store.clear(); location.href = 'door.html'; } });
+      const ho = document.getElementById('hdrOut'); if (ho) ho.onclick = signOut;
       m.querySelectorAll('.mi').forEach(mi => mi.onclick = () => {
         m.hidden = true; b.setAttribute('aria-expanded','false');
         const k = mi.dataset.m;
         if (k === 'out') {
-          Shell.confirm({ title:'Sign out of the portal?', tier:1, op:'session.end',
-            body:`<p class="dw-p">You have <b>${Store.all().length}</b> staged change(s). Staged work
-                   lives in this browser session and is <b>lost on sign out</b>.</p>`,
-            confirm:'Sign out', danger:true,
-            onConfirm(){ Store.clear(); location.href = 'door.html'; } });
+          signOut();
         } else if (k === 'copy') {
           navigator.clipboard?.writeText(USER.id); Shell.toast('Discord ID copied.');
         } else if (k === 'palette') { window.__openPalette && window.__openPalette(); }

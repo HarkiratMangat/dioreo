@@ -240,7 +240,7 @@
             const l = pct(start), r = forever ? 100 : pct(a.expiresAt);
             const cls = a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved';
             return `<div class="lane">
-              <span class="nm" style="width:110px" title="${esc(a.text)}">${esc(bare(a.text).slice(shared.length, shared.length + 16))}${bare(a.text).length > shared.length + 16 ? '&hellip;' : ''}</span>
+              <span class="nm" style="width:110px" data-tip="${esc(a.text)}">${esc(bare(a.text).slice(shared.length, shared.length + 16))}${bare(a.text).length > shared.length + 16 ? '&hellip;' : ''}</span>
               <div class="tk">
                 <div class="bar ${cls} ${forever ? 'forever' : ''}" data-id="${a._id}" tabindex="0"
                      style="--c:${F.annAccent(a)};left:${l}%;width:${Math.max(1.2, r - l)}%"

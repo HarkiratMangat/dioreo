@@ -143,7 +143,7 @@
             <tr>
               <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
               ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}"
-                    style="--c:${SM[s.key].hex}" title="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
+                    style="--c:${SM[s.key].hex}" data-tip="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
                   <i></i>${esc(s.label)}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
               <th><span class="mxs">&nbsp;</span></th>
             </tr>
@@ -156,7 +156,7 @@
               </span></td>
               ${F.accessScopes.map(s => `<td><span class="mxcell on locked" style="--c:${SM[s.key].hex}"
                   role="img" aria-label="${esc(s.label)}: held by the owner, not editable"
-                  title="The owner short-circuits every check"></span></td>`).join('')}
+                  data-tip="The owner short-circuits every check"></span></td>`).join('')}
               <td><span class="holder">locked</span></td>
             </tr>
             ${st.admins.map(a => `
@@ -171,7 +171,7 @@
                 const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from the bare manage token' : 'not granted';
                 return `<td><span class="mxcell ${cls}" style="--c:${SM[s.key].hex}" role="img"
                     aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}"
-                    title="${esc(s.label)} — ${what}"></span></td>`;
+                    data-tip="${esc(s.label)} — ${what}"></span></td>`;
               }).join('')}
               <td><button class="chip" data-edit="${esc(a.discordId)}">Edit</button></td>
             </tr>`).join('')}
@@ -207,7 +207,7 @@
           return `<div class="scope ${flag}" style="--c:${SM[s.key].hex}">
             <span class="nm"><i></i>${esc(s.label)}<em>${esc(s.key)}</em></span>
             <span class="hs">
-              <span class="holder owner" title="The owner holds every scope implicitly">owner</span>
+              <span class="holder owner" data-tip="The owner holds every scope implicitly">owner</span>
               ${hs.map(id => `<span class="holder">&hellip;${esc(id.slice(-6))}</span>`).join('')}
             </span>
             <span class="rl">${SM[s.key].realm === '—'

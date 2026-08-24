@@ -113,13 +113,18 @@ main{overflow:auto;padding-bottom:96px}
 /* ═══ TRACK ═══ */
 .tk-wrap{padding:8px 12px 0;overflow-x:auto}
 .tk-inner{min-width:640px}
-.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:96px}
+/* 🔴 96px WAS HARD-CODED IN THREE PLACES and the lane header now carries a caret, a colour
+   chip, a name and a count in it — at 96px the names truncated to "NEW…", "RE…", "DRA…", which
+   is a worse label than the one it replaced. One token, so the ruler, the rail and the lane
+   header can never disagree again. */
+:root{--gutter:138px}
+.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:var(--gutter)}
 .ruler span{position:absolute;top:0;line-height:26px;padding-left:6px;border-left:1px solid var(--rule);
   font-family:var(--data);font-size:10px;color:var(--ink3);white-space:nowrap}
 .lanes{position:relative;padding-bottom:4px}
 .lane{display:flex;align-items:center;height:38px;border-bottom:1px solid var(--rule3)}
 .lane:last-child{border-bottom:0}
-.lane .nm{width:96px;flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
+.lane .nm{width:var(--gutter);flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
   letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
 .tk{position:relative;flex:1;height:100%;overflow:hidden}
 .divider{padding:9px 0 5px 96px;font-family:var(--data);font-size:9.5px;letter-spacing:.16em;color:var(--ink3);
@@ -788,6 +793,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .chip.danger:hover{background:var(--danger-edge);color:var(--ink)}
 
 /* ── command-palette affordance in the header ── */
+/* `.pal` is retired — the header command bar replaced it. Kept only so any page not yet
+   converted still renders something sane rather than an unstyled button. */
 .pal{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:5px 8px;
   cursor:pointer;color:var(--ink3);display:flex;align-items:center;transition:color .13s,border-color .13s}
 .pal:hover{color:var(--ink2);border-color:var(--rule2)}
@@ -976,7 +983,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* ══════════ DEADLINE RAIL — everything that applies to EVERY lane ══════════
    A deadline is a point, a double-CP window is a span; both are global, so both live here
    on the shared axis rather than floating inside the first lane as afterthoughts. */
-.deadrail{position:relative;margin-left:96px;min-height:24px;margin-bottom:2px}
+.deadrail{position:relative;margin-left:var(--gutter);min-height:24px;margin-bottom:2px}
 .dflag,.dspan{position:absolute;top:0;transform:translateX(-1px);display:flex;align-items:center;gap:6px;
   background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:4px;
   padding:3px 7px;cursor:ew-resize;white-space:nowrap;color:var(--c,var(--ink3));
@@ -2371,15 +2378,26 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * name over the @handle. Reproducing that shape is not imitation for its own sake: this panel's
  * only job is to say WHOSE session you are in, and the fastest possible answer is the face the
  * person already recognises. A lettered disc says "an account"; this says "yours". */
-.ubanner{height:62px;margin:-1px -1px 0;border-radius:9px 9px 0 0;
-  background:var(--banner) center/cover no-repeat,var(--sunk);
-  box-shadow:inset 0 -34px 40px -22px var(--raised)}
-.umenu .uhead{position:relative;margin-top:-22px;padding:0 13px 11px;display:flex;align-items:flex-end;gap:10px}
+.ubanner{position:relative;height:74px;margin:-1px -1px 0;border-radius:9px 9px 0 0;
+  background:var(--banner) center/cover no-repeat,var(--sunk)}
+.ubanner::after{content:"";position:absolute;inset:auto 0 0;height:60%;border-radius:0 0 9px 9px;
+  background:linear-gradient(180deg,transparent,var(--raised))}
+/* 🔴 THE NAME USED TO SIT ON THE BANNER. `margin-top:-22px` pulled the WHOLE head — avatar and
+   name together — up over the banner's bottom third, with only an inset shadow standing in for a
+   scrim. On a light banner the entire block disappears. Discord's own popout, which this shape is
+   borrowed from, overlaps only the AVATAR and puts the name on solid ground below; that is the
+   half that makes it work and it was the half I dropped. Now: the avatar overlaps, the text does
+   not, and the banner carries a real gradient scrim regardless of what is in the image. */
+.umenu .uhead{position:relative;margin-top:0;padding:0 13px 12px;display:flex;align-items:flex-start;gap:11px;
+  background:var(--raised)}
+.umenu .uav{margin-top:-24px}
 .umenu .uav{width:46px;height:46px;border-radius:50%;flex:none;position:relative;
   background:var(--av-src) center/cover no-repeat,var(--sunk);
   border:3px solid var(--raised);box-shadow:0 2px 10px -3px rgba(0,0,0,.7)}
-.umenu .uav .pres{position:absolute;right:-1px;bottom:-1px;width:13px;height:13px;border-radius:50%;
-  background:var(--ok);border:3px solid var(--raised)}
+/* The dot used to hang half outside the ring at right:-1px/bottom:-1px. Placed on the circle
+   instead of beside it: 14.6% in from each edge is where a 46px ring's own curve puts it. */
+.umenu .uav .pres{position:absolute;right:6.5%;bottom:6.5%;width:13px;height:13px;border-radius:50%;
+  background:var(--ok);border:3px solid var(--raised);box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 .umenu .uinfo{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:2px}
 .umenu .uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
 .umenu .uinfo .nm{font:600 14px/1.15 var(--ui);color:var(--ink);
@@ -2441,7 +2459,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* A stemmed label dropped the words every sibling shares — the full name is on the tooltip and in
  * the Manifest. The leading mark says the name is abbreviated rather than mis-entered. */
-.bar.stemmed .bl::before{content:"·";opacity:.5;margin-right:3px}
+/* 🔴 IT USED TO BE A LITERAL "·" AND IT READ AS A STRAY BULLET — "· Week 1" looks like a typo,
+   not like a name that was shortened. A dotted left edge is the "continues from" convention and
+   carries the same fact without putting a glyph in the middle of the words. */
+.bar.stemmed{border-left-style:dotted;border-left-width:2px}
+.bar.stemmed.saved{border-left-color:color-mix(in srgb,var(--on-accent) 55%,transparent)}
 
 /* A check reporting zero is CLEAN, and must look it. It used to draw the same green stub a count
  * of 1 draws, so "0" and "1" were visually indistinguishable at a glance — which defeats the
@@ -2475,3 +2497,232 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .nw-why{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center}
 .nw-prev{min-height:76px}
 @media (max-width:560px){.nw-dates{grid-template-columns:1fr}}
+
+
+/* ══════════════════════════ COMPONENTS ══════════════════════════
+   🔴 THE PORTAL HAD TOKENS AND NO COMPONENTS, and that is not a tidiness complaint — it is the
+   mechanical cause of four separate defects Harkirat found in one sitting. The composer's type
+   chips did not match the masthead button he wanted them to match because there was no shared
+   chip to reach for. A native browser `title` shipped as a readable tooltip while `.tip` sat
+   defined and unused two hundred lines away. The account name sat on a photographic banner with
+   no contrast guarantee because no surface existed that promised one. Nobody was careless; there
+   was simply nothing to reuse. These four are that missing layer. Reach for them before writing
+   a new class — and if one of them is nearly right, extend it here rather than forking it there. */
+
+/* ── .pill — ONE interactive chip. Every filter, type selector and inline action. ── */
+.pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;
+  border:1px solid var(--rule);background:var(--sunk);color:var(--ink2);cursor:pointer;
+  font:500 12.5px/1 var(--ui);white-space:nowrap;
+  transition:border-color .14s,color .14s,background .14s,transform .14s}
+.pill:hover{border-color:var(--rule2);color:var(--ink);transform:translateY(-1px)}
+.pill:active{transform:none}
+.pill:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+.pill .dot{width:9px;height:9px;border-radius:2px;background:var(--c,var(--ink4));flex:none}
+.pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
+.pill kbd{font:500 10.5px/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
+  border:1px solid var(--rule2);border-radius:4px;padding:3px 6px}
+.pill.on{border-color:var(--c,var(--patch));background:color-mix(in srgb,var(--c,var(--patch)) 13%,transparent);color:var(--ink)}
+.pill.on .sub{color:var(--ink3)}
+.pill.lead{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
+  font-weight:600;font-size:13px;padding:10px 15px}
+.pill.lead:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
+.pill.ghost{border-style:dashed;border-color:var(--rule2);color:var(--ink3);background:none}
+.pill.ghost:hover{border-color:var(--patch);color:var(--patch)}
+.pill.sm{padding:5px 10px;font-size:11.5px;gap:5px}
+.pill[disabled]{opacity:.45;cursor:default;transform:none}
+
+/* ── .plate — a surface that GUARANTEES contrast over arbitrary imagery. ──
+   Text laid straight onto a user's banner is legible or not depending on which photograph they
+   happen to have uploaded, which is not a design, it is a coin toss. Anything a person must read
+   over an image sits on one of these. */
+.plate{position:relative;background:var(--raised);z-index:1}
+.scrim-b{position:relative}
+.scrim-b::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70%;pointer-events:none;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--raised) 92%,transparent))}
+
+/* ── .mark — the POINT vocabulary. One glyph family for every moment on a timeline. ──
+   A cluster used to be the count drawn ON TOP of the diamonds it replaced, so one bled out from
+   behind it and the mark read as a diamond with a blister. A mark REPLACES what it stands for,
+   and its SHAPE says how many before you read a number. */
+.mark{position:absolute;top:50%;width:13px;height:13px;margin-left:-6.5px;border-radius:2.5px;
+  background:var(--c,var(--ink3));transform:translateY(-50%) rotate(45deg);cursor:pointer;
+  transition:box-shadow .14s,transform .14s}
+.mark:hover,.mark:focus-visible{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 28%,transparent);outline:none}
+.mark.staged{background:none;box-shadow:inset 0 0 0 1.5px var(--c)}
+.mark.stack{width:15px;height:15px;margin-left:-7.5px}
+/* the second diamond, offset — "several" stated as a shape */
+.mark.stack::before{content:"";position:absolute;inset:0;border-radius:2.5px;background:var(--c);
+  opacity:.4;transform:translate(4px,-4px)}
+.mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
+  font:700 9px/1 var(--data);color:var(--on-accent,#08131A)}
+.mark.tier-mythic{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent),0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
+
+
+/* ═══════════════ THE TRACK AS INSTRUMENTS ═══════════════
+   Six identical rows of rectangles is a table drawn sideways. Each lane holds a different KIND
+   of fact and now gets a form tuned to it, a collapsed state that answers that lane's own
+   question, and a header that is a control rather than a caption. */
+
+/* ── the lane header: a control, not a caption ── */
+.lnh{width:var(--gutter);flex:none;display:flex;align-items:center;gap:7px;padding:0 12px 0 7px;
+  background:none;border:0;cursor:pointer;color:var(--ink3);text-align:left;
+  font:700 10px/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
+.lnh:hover{color:var(--ink2)}
+.lnh:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:5px}
+.lnh-cv{font-size:8px;opacity:.55;flex:none;width:8px}
+.lnh:hover .lnh-cv{opacity:1}
+.lnh-d{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
+/* Wrap rather than truncate. "DRAW WINDOWS" is two words and the lane is 38px tall — there was
+   never a reason to cut it, and a truncated lane name is the exact defect widening this gutter
+   was meant to fix. */
+.lnh-t{flex:1 1 auto;min-width:0;white-space:normal;line-height:1.2;word-break:break-word}
+.lnh-n{flex:none;font:500 9.5px/1 var(--data);letter-spacing:.04em;color:var(--ink4);
+  font-variant-numeric:tabular-nums}
+.lnh:hover .lnh-n{color:var(--ink3)}
+.lane.col .lnh{color:var(--ink4)}
+.lane.col .lnh-n{color:var(--ink3)}
+.lane.col{border-bottom-style:dashed}
+
+/* ── collapsed summaries: one line that still says something ── */
+.lsum{position:absolute;inset:0;display:block}
+.lpip{position:absolute;top:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:1.5px;
+  background:var(--c);transform:translateY(-50%) rotate(45deg);opacity:.85}
+.lpip.myth{width:9px;height:9px;margin-left:-4.5px;opacity:1;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+.lrun{position:absolute;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--c);opacity:.65}
+.lsum.load{display:flex;align-items:flex-end}
+.lsum.load i{position:absolute;bottom:5px;width:2px;background:var(--c);border-radius:1px}
+.lsum.load b{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  font:600 9.5px/1 var(--data);letter-spacing:.06em;color:var(--ink3)}
+
+/* ── marks carry the fact that matters for their lane ── */
+.pt.hid{display:none}                       /* a cluster REPLACES its members; it never sits on them */
+.pt[data-tier=mythic]{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 50%,transparent),
+  0 0 9px color-mix(in srgb,var(--c) 45%,transparent)}
+.pt[data-tier=legendary]{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 40%,transparent)}
+.pt[data-lanekind=returningDraws]::after{content:"";position:absolute;left:50%;top:50%;
+  width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:1px;
+  background:var(--paper);opacity:.55}                   /* a return reads as a ring, not a fill */
+.ptc.mark.stack{position:absolute;top:50%;width:15px;height:15px;margin-left:-7.5px;border:0;
+  background:var(--c);border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
+  cursor:pointer;padding:0;z-index:3}
+.ptc.mark.stack::before{content:"";position:absolute;inset:0;border-radius:2.5px;background:var(--c);
+  opacity:.42;transform:translate(4px,-4px);z-index:-1}
+.ptc.mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
+  font:700 9px/1 var(--data);color:var(--on-accent)}
+.ptc.mark.stack.same::after{content:"";position:absolute;inset:-3px;border-radius:4px;
+  box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 45%,transparent)}
+.ptc.mark.stack:hover,.ptc.mark.stack:focus-visible{
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 26%,transparent);outline:none}
+
+/* ── a label leaves the bar before it truncates, and only vanishes if neither side has room ── */
+.bar.lbl-out,.bar.lbl-out-l{overflow:visible}
+.bar.lbl-out .bl,.bar.lbl-out-l .bl{position:absolute;top:50%;transform:translateY(-50%);
+  color:var(--ink2);font-weight:600;white-space:nowrap;pointer-events:none;max-width:none}
+.bar.lbl-out .bl{left:calc(100% + 7px)}
+.bar.lbl-out-l .bl{right:calc(100% + 7px)}
+.bar.lbl-out.saved .bl,.bar.lbl-out-l.saved .bl{color:var(--ink2)}
+
+/* ── deadlines: one chip per DATE, and out-of-view ones weld to the edge they are beyond ── */
+.dflag .dfk{width:6px;height:6px;border-radius:1.5px;background:var(--c);flex:none;transform:rotate(45deg)}
+.dpin.edge{position:absolute}
+.dpin.edge.r{right:0;left:auto}
+.dpin.edge.l{left:0;right:auto}
+
+/* ── the composer, in the page ── */
+.nwhost{margin:14px 0 0;border:1px solid var(--rule2);border-radius:12px;background:var(--paper);
+  padding:15px 16px 14px;max-width:920px;align-self:stretch;
+  animation:nwIn .22s cubic-bezier(.2,.8,.3,1)}
+@keyframes nwIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.nwhost[hidden]{display:none}
+/* ONE ROW, because the preview is the Track and a tall composer pushes the Track off screen —
+   which turns the best idea in the design back into the mini-axis it replaced. */
+.nwhost .nw{display:grid;grid-template-columns:1fr auto;gap:12px 18px;align-items:end}
+.nwhost .nw-types{grid-column:1 / -1}
+.nwhost .nw-form{grid-column:1;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.nwhost .nw-f-name{flex:1 1 220px;min-width:0}
+.nwhost .nw-dates{margin-top:0;flex:0 0 auto}
+.nwhost .nw-dates input{width:150px}
+.nwhost .nw-note,.nwhost .nw-hint{flex:1 1 100%;margin:0}
+.nwhost .nw-act{grid-column:2;margin:0}
+.nwhost .nw-prev{grid-column:1 / -1;min-height:0}
+.nw-act{display:flex;align-items:center;gap:9px;margin-top:2px}
+.nw-act .nw-why{margin-right:auto}
+.nwhost .nw-prev:empty{display:none}
+/* the mini-axis is gone: the real Track is the preview */
+.nwhost .nw-axis{display:none}
+
+/* ── the ghost the composer draws on the REAL Track ── */
+.ghost.cmp{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 12%,transparent);
+  color:var(--patch);font:600 11px/1 var(--ui);padding:0 8px;z-index:5;
+  display:flex;align-items:center;overflow:hidden;white-space:nowrap}
+.ghost.cmp.pt{width:15px;height:15px;padding:0;border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
+  margin-left:-7.5px;color:transparent}
+.lane.aim{background:linear-gradient(180deg,color-mix(in srgb,var(--patch) 7%,transparent),transparent)}
+.lane.aim .lnh{color:var(--patch)}
+
+@media (max-width:820px){
+  :root{--gutter:96px}
+  .lnh{padding-left:5px;gap:5px}
+  .lnh-n{display:none}
+}
+
+
+/* ═══════════════ HEADER: THE COMMAND BAR IS THE BAR ═══════════════ */
+.cmdbar{position:relative;flex:1 1 460px;max-width:520px;min-width:0;display:flex;align-items:center;gap:9px;
+  height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--rule);background:var(--sunk);
+  transition:border-color .15s,background .15s}
+.cmdbar:hover{border-color:var(--rule2)}
+.cmdbar.on,.cmdbar:focus-within{border-color:var(--patch);background:var(--paper)}
+.cb-mag{flex:none;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ink4);position:relative}
+.cb-mag::after{content:"";position:absolute;right:-4px;bottom:-3px;width:5px;height:1.5px;
+  background:var(--ink4);transform:rotate(45deg)}
+.cmdbar:focus-within .cb-mag,.cmdbar:focus-within .cb-mag::after{border-color:var(--patch);background:var(--patch)}
+.cmdbar:focus-within .cb-mag{background:none}
+.cb-in{flex:1 1 auto;min-width:0;background:none;border:0;color:var(--ink);font:400 12.5px/1 var(--ui)}
+.cb-in::placeholder{color:var(--ink4)}
+.cb-in:focus{outline:none}
+/* ⌘ is not in JetBrains Mono, so `--data` rendered it as a tofu box that read as "MK". The
+   glyph belongs to the system UI stack, which has it. */
+.cmdbar kbd{flex:none;font:500 11px/1 var(--ui);letter-spacing:.04em;color:var(--ink4);
+  border:1px solid var(--rule2);border-radius:4px;padding:4px 6px}
+.cmdbar:focus-within kbd{opacity:0}
+.cb-drop{position:absolute;left:0;right:0;top:calc(100% + 7px);background:var(--raised);
+  border:1px solid var(--rule2);border-radius:10px;z-index:70;overflow:hidden;
+  box-shadow:0 22px 52px -16px rgba(0,0,0,.85)}
+.cb-drop[hidden]{display:none}
+.cb-drop .plist{max-height:min(56vh,440px)}
+.cb-drop .pitem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;
+  border-radius:7px;padding:9px 10px;color:var(--ink2);font:500 12.5px/1 var(--ui);cursor:pointer;text-align:left}
+.cb-drop .pitem i{width:7px;height:7px;border-radius:2px;background:var(--c,var(--ink3));flex:none;transform:rotate(45deg)}
+.cb-drop .pitem:hover,.cb-drop .pitem.sel{background:var(--hi);color:var(--ink)}
+.cb-drop .pnone{margin:0;padding:14px 12px;font-size:12.5px;color:var(--ink3)}
+
+/* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. */
+.hdr-out{flex:none;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 11px;
+  border-radius:8px;border:1px solid transparent;background:none;color:var(--ink3);cursor:pointer;
+  font:500 12px/1 var(--ui)}
+.hdr-out svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.hdr-out:hover{background:color-mix(in srgb,var(--del) 12%,transparent);border-color:color-mix(in srgb,var(--del) 40%,transparent);color:var(--del)}
+.hdr-out:focus-visible{outline:2px solid var(--del);outline-offset:2px}
+
+/* 🔴 THE DOT BESIDE THE NAME. It was a "▾" at 8px, which at that size is a smudge — it said
+   "something is here" without saying what, and Harkirat asked what its point was, which is the
+   only review a disclosure indicator can fail. A real chevron, drawn rather than typed, that
+   ROTATES when the menu opens so it reports state instead of merely existing. */
+.whobtn .cv{width:9px;height:9px;flex:none;position:relative;transition:transform .16s}
+.whobtn .cv::before{content:"";position:absolute;left:1px;top:1px;width:5px;height:5px;
+  border-right:1.5px solid var(--ink3);border-bottom:1.5px solid var(--ink3);transform:rotate(45deg)}
+.whobtn[aria-expanded=true] .cv{transform:rotate(180deg)}
+.whobtn:hover .cv::before{border-color:var(--ink2)}
+
+@media (max-width:1100px){
+  .hdr-out span{display:none}
+  .hdr-out{padding:0 8px}
+}
+@media (max-width:820px){
+  .cmdbar{flex:1 1 auto;max-width:none}
+  .cmdbar kbd{display:none}
+  .hdr-out{display:none}          /* the account menu still carries it */
+}
