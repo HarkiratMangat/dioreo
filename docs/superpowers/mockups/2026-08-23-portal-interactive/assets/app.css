@@ -269,6 +269,10 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
   color:var(--ink3);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:12px}
 .dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .dw-b{padding:18px 20px;overflow:auto;flex:1 1 auto}
+/* `.btn{flex:1}` above was written for a 420px drawer. On a `wide` one it produced two
+   400px-wide buttons — a button's width should follow its label, not the dialog. Scoped to
+   `.wide` so every existing confirm dialog is untouched. */
+.drawer.wide .dw-f .btn{flex:0 0 auto;min-width:132px}
 .dw-f{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;flex:none;
   border-top:1px solid var(--rule);background:var(--sunk)}
 .drawer h5{margin:0 0 10px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;
@@ -2444,3 +2448,30 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * only reason to put a meter beside a number. */
 .cmeter.clean{background:transparent;border:1px dashed var(--rule2)}
 .cmeter.clean i{display:none}
+
+
+/* ══════════ THE COMPOSER (Shell.compose) ══════════
+   Portal-wide creation. Quiet everywhere except the preview strip, which is the one thing
+   `/manage` cannot do and therefore the one thing worth spending contrast on. */
+.nw{display:flex;flex-direction:column;gap:16px}
+.nw-types{display:flex;flex-wrap:wrap;gap:7px}
+.nw-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;
+  border:1px solid var(--rule);background:var(--sunk);color:var(--ink2);cursor:pointer;
+  font:500 12.5px/1 var(--ui);transition:border-color .14s,color .14s,background .14s}
+.nw-chip em{font:400 10.5px/1 var(--data);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-style:normal}
+.nw-chip .nw-dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none}
+.nw-chip:hover{border-color:var(--rule2);color:var(--ink)}
+.nw-chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--ink)}
+.nw-chip.on em{color:var(--ink2)}
+.nw-l{display:block;font:600 10.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin:0 0 6px}
+.nw-i{width:100%;min-height:38px;padding:8px 11px;border-radius:7px;border:1px solid var(--rule);
+  background:var(--sunk);color:var(--ink);font:400 13.5px/1.3 var(--ui)}
+.nw-i:focus-visible{outline:2px solid var(--focus,#5FD4E8);outline-offset:1px;border-color:transparent}
+.nw-dates{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px}
+.nw-dates.one{grid-template-columns:1fr;max-width:260px}
+.nw-note,.nw-hint{margin:9px 0 0;font-size:12.5px;color:var(--ink3);line-height:1.45}
+.nw-hint{margin:2px 0 0}
+.nw-why{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center}
+.nw-prev{min-height:76px}
+@media (max-width:560px){.nw-dates{grid-template-columns:1fr}}

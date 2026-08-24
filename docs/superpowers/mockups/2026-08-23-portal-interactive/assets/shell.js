@@ -213,6 +213,158 @@
       ok.focus();
     },
 
+    /* ══════════ THE PAGE OWNS ITS OWN STARTING SCROLL POSITION ══════════
+     * 🔴 `main` IS THE SCROLL CONTAINER (app.css: `main{overflow:auto}` inside `.app{height:100vh}`),
+     * so `window.scrollY` is ALWAYS 0 here and `document.documentElement.scrollHeight` ALWAYS equals
+     * `innerHeight`. A previous investigation read exactly those two numbers, concluded "there was
+     * nothing to scroll", and closed a reproduced bug as non-reproducible. Both numbers were healthy
+     * and neither could ever have shown the fault — measure the element that scrolls.
+     *
+     * WHAT IS MEASURED: on a cold load, Season lands at exactly `scrollHeight - clientHeight` — the
+     * precise bottom — with ~39 manifest rows inserted after first paint. Five of five cold loads;
+     * zero of roughly fifty once the assets were warm. Width is NOT the variable: 900px is clean
+     * when warm, so an earlier "narrow viewports only" reading was wrong.
+     * WHAT IS NOT: which late mechanism moves it. Scroll anchoring, a restored offset and a stray
+     * focus all produce this signature and none has been isolated.
+     * So the fix is the one that holds for all three rather than a guess at which: the page ASSERTS
+     * its own opening position once the first render is genuinely finished, and never again. It
+     * stands down the instant a real user gesture arrives, so it can never fight someone scrolling. */
+    holdTop(){
+      const m = document.querySelector('main'); if (!m) return;
+      let touched = false;
+      const release = () => { touched = true; off(); };
+      const off = () => ['wheel','keydown','pointerdown','touchstart'].forEach(e =>
+        window.removeEventListener(e, release, true));
+      ['wheel','keydown','pointerdown','touchstart'].forEach(e =>
+        window.addEventListener(e, release, true));
+      const settle = () => { if (!touched && m.scrollTop !== 0) m.scrollTop = 0; };
+      requestAnimationFrame(() => requestAnimationFrame(settle));
+      /* Fonts change every row's height, so the reflow they cause is the last thing that can
+       * move the scroller before the page is really at rest. */
+      (document.fonts ? document.fonts.ready : Promise.resolve())
+        .then(() => requestAnimationFrame(settle)).then(off, off);
+      setTimeout(off, 4000);
+    },
+
+    /* ══════════ THE COMPOSER — the portal's answer to `/manage`'s creation path ══════════
+     * `/manage` creates by asking you to type a formatted string into a Discord modal, which is
+     * why every one of its seven pages ships a "Guide" action: the format has to be documented
+     * because the format is the interface. A patch note there takes FOUR modals (Date/Info,
+     * URLs 1, URLs 2, Add New Season) purely because a Discord modal caps at five inputs.
+     * A form needs no guide, and it has no cap. That is the whole opportunity, so it lives at
+     * Shell level and every realm gets the same one rather than growing its own.
+     *
+     * 🔴 TYPE FIRST, AND THE FORM IS THE SCHEMA. Picking the type picks the SHAPE, so nothing
+     * below it exists until it is chosen — and a type whose record has one date shows one date
+     * field. season.html's old add-row offered `start` AND `end` for every type, including
+     * draws, which have exactly one field (`date`) and no end at all in models/SeasonalData.js.
+     * A creation form that asks for data the record cannot hold is the same defect the Track
+     * had when it painted a draw as a band, one layer up. */
+    compose({ title = 'New item', eyebrow = 'create', types, initial = {}, preview, onStage }){
+      const st = { type: initial.type || null, name: initial.name || '',
+                   a: initial.a || '', b: initial.b || '' };
+      const typeOf = k => types.find(t => t.key === k) || null;
+
+      const chips = () => types.map(t => `
+        <button type="button" class="nw-chip${st.type === t.key ? ' on' : ''}" data-nwtype="${t.key}"
+                style="--c:${t.hex}" aria-pressed="${st.type === t.key}">
+          <span class="nw-dot"></span>${t.label}
+          <em>${t.shape === 'point' ? 'one date' : 'a window'}</em>
+        </button>`).join('');
+
+      /* The fields a type actually has — never a union of every type's fields with the
+       * irrelevant ones disabled, which is how a form starts lying about the record. */
+      const fields = () => {
+        const t = typeOf(st.type);
+        if (!t) return `<p class="nw-hint">Pick what you are adding. The form follows the record &mdash; a release asks for one date, a window asks for two.</p>`;
+        const one = t.shape === 'point';
+        return `
+          <label class="nw-l" for="nw-name">${t.nameLabel || 'Name'}</label>
+          <input class="nw-i" id="nw-name" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="${t.placeholder || ''}" value="${st.name.replace(/"/g,'&quot;')}">
+          <div class="nw-dates${one ? ' one' : ''}">
+            <div><label class="nw-l" for="nw-a">${one ? (t.dateLabel || 'Releases') : 'Opens'}</label>
+              <input class="nw-i" id="nw-a" type="date" value="${st.a}"></div>
+            ${one ? '' : `<div><label class="nw-l" for="nw-b">Closes</label>
+              <input class="nw-i" id="nw-b" type="date" value="${st.b}"></div>`}
+          </div>
+          ${one ? `<p class="nw-note">${t.pointNote || 'A release has no end date &mdash; the record stores one date.'}</p>` : ''}`;
+      };
+
+      const valid = () => {
+        const t = typeOf(st.type); if (!t) return 'Pick a type to continue.';
+        if (!st.name.trim()) return 'Give it a name.';
+        if (!st.a) return 'Set a date.';
+        if (t.shape === 'span' && st.b && st.b < st.a) return 'Closes is before Opens.';
+        return null;
+      };
+
+      Shell.drawer({ eyebrow, title, wide: true,
+        body: `<div class="nw">
+                 <div class="nw-types" role="group" aria-label="What are you adding">${chips()}</div>
+                 <div class="nw-form" id="nw-form">${fields()}</div>
+                 <div class="nw-prev" id="nw-prev"></div>
+               </div>`,
+        actions: `<span class="nw-why" id="nw-why"></span>
+                  <button class="btn" id="nw-cancel">Cancel</button>
+                  <button class="btn go" id="nw-go">Stage it</button>` });
+
+      const d = document.querySelector('.drawer');
+      const paint = () => {
+        const t = typeOf(st.type), why = valid();
+        d.querySelector('#nw-form').innerHTML = fields();
+        d.querySelectorAll('[data-nwtype]').forEach(b => {
+          const on = b.dataset.nwtype === st.type;
+          b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+        /* 🔴 THE SIGNATURE, and the one thing `/manage` structurally cannot do: it answers
+         * "when" with a line of text. Here the item is drawn where it will land, before it is
+         * staged. Dashed because it is STAGED — shape carries state, so a preview of a staged
+         * thing is dashed for the same reason the staged thing is. */
+        d.querySelector('#nw-prev').innerHTML = preview
+          ? preview({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null })
+          : '';
+        d.querySelector('#nw-why').textContent = why || '';
+        const go = d.querySelector('#nw-go');
+        go.disabled = !!why;
+        go.textContent = t ? `Stage ${t.label.toLowerCase().replace(/s$/, '')}` : 'Stage it';
+        wire();
+      };
+      const wire = () => {
+        d.querySelectorAll('[data-nwtype]').forEach(b => b.onclick = () => {
+          st.type = b.dataset.nwtype;
+          const t = typeOf(st.type);
+          if (t && t.shape === 'point') st.b = '';
+          paint();
+          d.querySelector('#nw-name')?.focus();
+        });
+        const n = d.querySelector('#nw-name'), a = d.querySelector('#nw-a'), b = d.querySelector('#nw-b');
+        if (n) n.oninput = () => { st.name = n.value; light(); };
+        if (a) a.oninput = () => { st.a = a.value; light(); };
+        if (b) b.oninput = () => { st.b = b.value; light(); };
+        if (n) n.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); a && a.focus(); } };
+      };
+      /* Repaint the preview and the gate WITHOUT rebuilding the inputs — re-rendering the form
+       * on every keystroke is how a field loses focus and the caret jumps to the end. */
+      const light = () => {
+        const t = typeOf(st.type), why = valid();
+        d.querySelector('#nw-prev').innerHTML = preview
+          ? preview({ ...st, shape: t ? t.shape : null, hex: t ? t.hex : null }) : '';
+        d.querySelector('#nw-why').textContent = why || '';
+        d.querySelector('#nw-go').disabled = !!why;
+      };
+      d.querySelector('#nw-cancel').onclick = () => Shell.closeDrawer();
+      d.querySelector('#nw-go').onclick = () => {
+        if (valid()) return;
+        const t = typeOf(st.type);
+        Shell.closeDrawer();
+        onStage && onStage({ type: st.type, name: st.name.trim(), a: st.a,
+                             b: t.shape === 'point' ? st.a : (st.b || st.a), shape: t.shape });
+      };
+      paint();
+      if (st.type) d.querySelector('#nw-name')?.focus();
+      return d;
+    },
+
     /* The preview is the bot's OWN render shape — a truthful preview, not an approximation. */
     discordCard({ accent, title, sub, rows, badges, code }){
       return `<div class="dcard" style="--c:${accent}">

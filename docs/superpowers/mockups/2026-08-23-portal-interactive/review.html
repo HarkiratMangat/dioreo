@@ -296,6 +296,7 @@
 
   S.onAfterRevert = render;
   render();
+  (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [{ name:'discard confirm', run: () => {
       const b = document.getElementById('dropAll'); if (b) b.click();

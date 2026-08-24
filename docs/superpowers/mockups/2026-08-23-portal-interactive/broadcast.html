@@ -506,6 +506,7 @@
   S.onAfterRevert = renderAll;
 
   renderAll();
+  (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [
       { name:'announcement record', run: () => openAnn(st.ann[0]._id) },

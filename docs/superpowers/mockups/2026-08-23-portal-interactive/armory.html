@@ -1047,6 +1047,7 @@
   function renderAll(){ renderCatChips(); renderRack(); renderCoverage(); if (st.mode === 'compare') renderCompare();
     if (st.mode === 'bulk') renderBulk(); renderRows(); renderBulkBar(); renderKey(); renderStats(); syncStaged(); }
   renderAll();
+  (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [
       { name:'build editor',  run: () => openBuild(st.builds[0].id) },

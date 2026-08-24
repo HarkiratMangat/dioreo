@@ -4,6 +4,71 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css?v=1787586710"><link rel="stylesheet" href="assets/app.css?v=1787586710">
+<style>
+/* creation, promoted out of the page's basement */
+.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:9px;
+  border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
+  font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
+.mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
+.mh-plus{font-size:16px;line-height:1;color:var(--patch)}
+.mh-new kbd{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
+  border-radius:4px;padding:3px 5px}
+
+/* `.masthead` stretches its children, so `display:inline-flex` alone still produced a
+   940px-wide banner where a button belonged. Measured, not guessed: the first render of it. */
+.masthead{display:flex;flex-direction:column;align-items:flex-start}
+.mh-stats{align-self:stretch}
+/* `no detail` was clipping to `no detai` with no ellipsis — the cell sets text-overflow but the
+   italic <em> inside it is the box that actually overflows, and it had none. */
+/* ⚠️ `display:block` on the CELL broke table layout — the td stopped filling its row and the
+   package's own audit caught it 39 times, once per row. Only the inner <em> needs the ellipsis;
+   `.mtable .det` already has one and must stay a table-cell. */
+.mtable .det{min-width:0}
+/* The real box is `.det > .detcell > .dsub`, not an <em> — an earlier guess styled an element
+   that does not exist here, which is why "no detail" still clipped to "no detai" with the rule
+   in place and the audit reporting nothing. `text-overflow` needs the ellipsis on the box that
+   actually overflows. */
+.mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtable .det .dsub{display:block}
+/* the composer's preview axis */
+.nw-axis{border:1px solid var(--rule);border-radius:9px;background:var(--sunk);padding:11px 13px 12px}
+.nw-axis.empty{color:var(--ink3);font-size:12.5px;display:flex;align-items:center;justify-content:center;min-height:74px}
+.nw-axhd{display:flex;justify-content:space-between;font:500 10px/1 var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:9px}
+.nw-ax{position:relative;height:20px;border-radius:4px;background:var(--paper);border:1px solid var(--rule)}
+.nw-now{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--ink4)}
+.nw-pt{position:absolute;top:50%;width:11px;height:11px;margin-left:-5px;border-radius:2px;background:var(--c);
+  transform:translateY(-50%) rotate(45deg);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.nw-bar{position:absolute;top:3px;bottom:3px;border-radius:3px;border:1.5px dashed var(--c);
+  background:color-mix(in srgb,var(--c) 22%,transparent)}
+.nw-axn{margin:9px 0 0;font-size:12px;color:var(--ink3)}
+/* a same-day cluster is a fact, not a zoom artefact — it reads solid, not hollow */
+.ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+
+.rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);padding:14px 16px 16px}
+.rec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.rec-t{font:600 10.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.rec-n{font-size:11.5px;color:var(--ink3)}
+.rec-film{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;align-items:flex-end}
+.rec-fr{flex:0 0 158px;margin:0;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+.rec-fr.cur{flex-basis:232px}
+.rec-img{display:block;height:82px;border-radius:8px;border:1px solid var(--rule2);background:var(--sunk) center/cover no-repeat;
+  position:relative;overflow:hidden}
+.rec-fr.cur .rec-img{height:118px;border-color:var(--patch)}
+.rec-cnt{position:absolute;right:6px;bottom:6px;background:rgba(6,9,11,.72);color:#fff;border-radius:4px;
+  padding:2px 7px;font:600 10px/1.4 var(--data);letter-spacing:.06em}
+.rec-fr figcaption{display:block;padding-top:8px}
+.rec-d{display:block;font:500 10.5px/1 var(--data);letter-spacing:.09em;color:var(--ink3);margin-bottom:4px}
+.rec-ttl{display:block;font:600 12.5px/1.3 var(--ui);color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-fr.cur .rec-ttl{color:var(--ink);font-size:13.5px;white-space:normal}
+.rec-fr:hover .rec-ttl,.rec-fr:focus-visible .rec-ttl{color:var(--ink)}
+.rec-tag{display:inline-block;margin-top:5px;font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 8px;border-radius:4px;background:color-mix(in srgb,var(--patch) 18%,transparent);color:var(--patch)}
+.rec-fr.add{flex:0 0 132px;height:82px;border:1px dashed var(--rule2);border-radius:8px;color:var(--ink3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11.5px/1.3 var(--ui);text-align:center}
+.rec-fr.add:hover{border-color:var(--patch);color:var(--patch)}
+.rec-plus{font-size:20px;line-height:1}
+</style>
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -20,6 +85,14 @@
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">flags</span></span>
       </div>
+      <!-- 🔴 CREATION AT THE TOP OF THE PAGE. Measured before this existed: Season's three
+           create controls sat at 1464px, 3548px and 3551px inside an 828px viewport — the
+           primary one 4.3 screens down. The portal's whole claim over `/manage` is that
+           creating is easier here, and the control was the hardest thing on the page to find. -->
+      <button class="mh-new" id="mhNew" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> New item
+        <kbd>N</kbd>
+      </button>
     </div>
 
     <!-- SEASON IDENTITY -->
@@ -166,9 +239,18 @@
       .filter(k => !st.season[k + 'TBD'] && st.season[k])
       .map(k => ({ key:k.replace('End',''), date: st.season[k] }));
   }
+  /* 🔴 A PUBLICATION IS NOT A SCHEDULE ENTRY, so it does not get to stretch the axis.
+   * Every other lane answers "when is this ON?" — a state with a duration. A patch note is a
+   * thing the bot SAID, once; models/PatchNote.js gives it a releaseDate and no end, and
+   * isEventEnded() therefore returns false for it forever. The live season publishes on Jul 6
+   * and Jul 22 while nothing is scheduled before Aug 6, so including them spent the left third
+   * of the canvas on empty time. This is the same rule the deadline REACH below already applies
+   * on the right — it was written for outliers ahead of the content and never applied to
+   * outliers behind it, which is the whole class rather than the one instance. */
+  const isPublication = it => it.type === 'patchNotes';
   function dataBounds() {
     const ds = [F.today];
-    st.items.forEach(i => { ds.push(i.start, i.end); });
+    st.items.filter(i => !isPublication(i)).forEach(i => { ds.push(i.start, i.end); });
     const sorted = ds.filter(Boolean).sort();
     let lo = sorted[0], hi = sorted[sorted.length - 1];
 
@@ -620,9 +702,9 @@
         <div class="ruler" id="ruler"></div>
         <div class="deadrail" id="deadrail" aria-label="Season deadlines"></div>
         <div class="lanes">
-          ${F.LANES.map(l => laneRow(l, live.filter(i => i.type === l.type), false)).join('')}
+          ${F.LANES.filter(l => l.key !== 'patchNotes').map(l => laneRow(l, live.filter(i => i.type === l.type), false)).join('')}
           ${draft.length ? `<div class="divider">Season 8 draft — staged, not live</div>` : ''}
-          ${F.LANES.filter(l => draft.some(i => i.type === l.type))
+          ${F.LANES.filter(l => l.key !== 'patchNotes' && draft.some(i => i.type === l.type))
                    .map(l => laneRow(l, draft.filter(i => i.type === l.type), true)).join('')}
           <div class="ov" id="ov"></div>
         </div>
@@ -630,9 +712,17 @@
       <div class="flags">${flags.length ? flags.map(f => `
         <span class="flag ${f.sev === 'info' ? 'info' : ''}">${f.text}
           <button data-fix="${f.id}">${f.fix}</button></span>`).join('')
-        : `<span class="flag info" style="border-left-color:var(--ok)">No conflicts, overlaps or gaps in the current window.</span>`}</div>`;
+        : `<span class="flag info" style="border-left-color:var(--ok)">No conflicts, overlaps or gaps in the current window.</span>`}</div>`
+      + renderRecord();
 
     renderRuler(); renderOverlay(); renderScrub(); wireTrack(); pinClippedLabels(); renderKey();
+    /* Wired here rather than once at boot: the Track's innerHTML is rebuilt on every zoom and
+     * pan, so a listener bound to the old node would silently stop working after the first
+     * interaction — the same self-destroying-selector class that broke `#lnsw .pip.draft`. */
+    document.getElementById('recAdd')?.addEventListener('click',
+      () => openComposer({ type:'patchNotes' }));
+    viewTrack.querySelectorAll('[data-recid]').forEach(el =>
+      el.addEventListener('click', () => openItem(el.dataset.recid)));
   };
 
   /* Pixels decide the spacing, not days — a rule that holds at any span. */
@@ -755,17 +845,27 @@
   /* Flags that would overlap step down a row. Real elements now, so the boxes are measured
    * rather than inferred from a pseudo-element's computed width. */
   function stackFlags(rail) {
-    const flags = [...rail.querySelectorAll('.dflag,.dspan')]
-      .sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+    /* 🔴 `.dpin` WAS NOT IN THIS QUERY, and it is appended to the same rail by
+     * pinFarDeadlines() AFTER this ran — so the pinned "DMZ Nov 11 · 49d beyond this view"
+     * chip took no row, sat at top:0, and painted straight over the Ranked flag, which
+     * disappeared entirely. Everything on the rail is on the same axis and must share the
+     * same packing; a marker that opts out of the layout is not a marker, it is a defect. */
+    const flags = [...rail.querySelectorAll('.dflag,.dspan,.dpin')]
+      .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
     const rows = [];
     flags.forEach(f => {
-      f.classList.remove('lvl1', 'lvl2');
+      f.classList.remove('lvl1', 'lvl2', 'lvl3');
       const b = f.getBoundingClientRect();
       let lvl = rows.findIndex(right => b.left > right + 8);
       if (lvl === -1) { lvl = rows.length; rows.push(b.right); } else rows[lvl] = b.right;
-      if (lvl) f.classList.add('lvl' + Math.min(lvl, 2));
+      if (lvl) f.classList.add('lvl' + Math.min(lvl, 3));
     });
-    rail.style.minHeight = (24 + Math.max(0, rows.length - 1) * 21) + 'px';
+    const h = 24 + Math.max(0, rows.length - 1) * 21;
+    rail.style.minHeight = h + 'px';
+    /* The crosshair readout used a HARD-CODED 60px offset, so the moment the rail grew a row
+     * the date bubble landed on top of the flags it was supposed to sit above. The rail knows
+     * its own height; the crosshair reads it. */
+    viewTrack.style.setProperty('--xtop', (h + 44) + 'px');
   }
 
   function captionBox(marker) {
@@ -1030,7 +1130,11 @@
         const s = st.view.dateAt(p);
         const lk = tk.closest('.lane').dataset.lane;
         const isPt = (F.LANE_BY_KEY[lk] || {}).kind === 'point';
-        addItem(lk, 'New ' + F.TYPE_LABEL[lk].toLowerCase().replace(/s$/, ''), s, isPt ? s : T.addDays(s, 5));
+        /* The gesture stops being a documented secret and becomes the FAST path: it opens
+         * the composer already knowing the lane and the date, so the only thing left is the
+         * name. It used to create an item called "New draw" outright, which staged a real op
+         * from a stray click. */
+        openComposer({ type: lk, a: s, b: isPt ? s : T.addDays(s, 5) });
       });
     });
 
@@ -1173,10 +1277,33 @@
         c.className = 'ptc';
         c.style.cssText = `--c:${getComputedStyle(g[0].el).getPropertyValue('--c')};left:${(mid / W) * 100}%`;
         c.textContent = g.length;
-        c.title = `${g.length} releases within ${Math.round(CLUSTER_PX)}px at this zoom — zoom in to separate them:\n${names.join('\n')}`;
-        c.setAttribute('aria-label', `${g.length} releases: ${names.join(', ')}. Activate to zoom in on them.`);
+        /* 🔴 SAME DAY IS NOT A ZOOM PROBLEM. This used to read "N releases within 17px at this
+         * zoom — zoom in to separate them" for two draws BOTH dated Aug 22, which is an
+         * instruction that cannot succeed: no zoom level separates two points at the same
+         * coordinate. It also leaked the pixel constant into a sentence a person reads. Branch
+         * on the FACT — how far apart the dates actually are — not on the pixel condition that
+         * happened to trigger the grouping. */
+        const sameDay = g.every(o => o.el.dataset.date === g[0].el.dataset.date);
+        const gapDays = T.days(g[0].el.dataset.date, g[g.length - 1].el.dataset.date);
+        c.classList.toggle('same', sameDay);
+        c.title = sameDay
+          ? `${g.length} releases on ${T.fmt(g[0].el.dataset.date)} — the same day, so zooming will not separate them:\n${names.join('\n')}`
+          : `${g.length} releases within ${gapDays} day${gapDays === 1 ? '' : 's'} of each other — zoom in to separate them:\n${names.join('\n')}`;
+        c.setAttribute('aria-label', sameDay
+          ? `${g.length} releases, all on ${T.fmt(g[0].el.dataset.date)}: ${names.join(', ')}. Activate to select them in the manifest.`
+          : `${g.length} releases: ${names.join(', ')}. Activate to zoom in on them.`);
         c.dataset.from = g[0].el.dataset.date; c.dataset.to = g[g.length - 1].el.dataset.date;
+        const ids = g.map(o => o.el.dataset.id);
         c.onclick = () => {
+          /* A same-day cluster gets the action that is actually available: put the rows in
+           * front of you. Zooming is offered only where zooming does something. */
+          if (sameDay) {
+            ids.forEach(id => st.selected.add(id));
+            renderRows();
+            document.querySelector('.mtable')?.scrollIntoView({ block:'nearest', behavior:'smooth' });
+            S.toast(`Selected ${ids.length} releases from ${T.fmt(c.dataset.from)} in the manifest.`);
+            return;
+          }
           const pad = Math.max(3, T.days(c.dataset.from, c.dataset.to));
           setView(T.addDays(c.dataset.from, -pad), T.addDays(c.dataset.to, pad)); afterZoom();
         };
@@ -1233,6 +1360,9 @@
     clusterPoints();
       fitFlags();
     pinFarDeadlines();
+    /* AFTER the pins are in the DOM — stacking a rail that is missing half its contents was
+     * the original bug, and running this first would reintroduce it exactly. */
+    { const r = viewTrack.querySelector('.deadrail'); if (r) stackFlags(r); }
   }
   function _reposition() {
     viewTrack.querySelectorAll('.bar').forEach(b => {
@@ -1403,6 +1533,85 @@
   }
 
   S.onAfterRevert = () => { refreshBounds(); renderAll(); };
+
+  /* ═══ THE COMPOSER — Season's schema, the Shell's form ═══
+   * Shell.compose() owns the interaction; the realm owns the vocabulary. Every type here is a
+   * real lane from fixtures' LANES, and its `shape` is that lane's own `kind`, so the form can
+   * never offer a field the record does not have. `/manage` needs a Guide on every page because
+   * there the format IS the interface; there is nothing here to document. */
+  const COMPOSE_TYPES = () => F.LANES.map(l => ({
+    key: l.key, label: l.label, hex: l.bar, shape: l.kind,
+    nameLabel: l.key === 'patchNotes' ? 'Patch note title' : 'Name',
+    dateLabel: l.key === 'patchNotes' ? 'Published' : 'Releases',
+    placeholder: { newDraws:'Undead Legion Series Armory', returningDraws:'Widow’s Bite Draw',
+                   drawWindow:'Judgment Day draw window', event:'Terminator 2 Themed Event',
+                   playlist:'Hardpoint Mayhem MP Mode', patchNotes:'Season 7 — Terminated' }[l.key] || '',
+    pointNote: l.key === 'patchNotes'
+      ? 'A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track.'
+      : 'A draw has one date in the schema and no end — the Track draws it as a marker, not a band.'
+  }));
+
+  /* The signature: the item drawn where it will land, before it is staged. `/manage` answers
+   * "when" with a line of text; this is the answer the axis can give. Dashed because it is
+   * STAGED — shape carries state here exactly as it does on the Track. */
+  function composePreview(c) {
+    if (!c.type || !c.a) return `<div class="nw-axis empty">Pick a date to see where it lands.</div>`;
+    const lo = FIT.min, hi = FIT.max, span = Math.max(1, T.days(lo, hi));
+    const at = d => Math.max(0, Math.min(100, (T.days(lo, d) / span) * 100));
+    const end = c.shape === 'point' ? c.a : (c.b || c.a);
+    const out = T.days(lo, c.a) < 0 || T.days(c.a, hi) < 0;
+    return `<div class="nw-axis">
+      <div class="nw-axhd"><span>${T.fmt(lo)}</span><span>lands here</span><span>${T.fmt(hi)}</span></div>
+      <div class="nw-ax">
+        <span class="nw-now" style="left:${at(F.today)}%"></span>
+        ${c.shape === 'point'
+          ? `<span class="nw-pt" style="--c:${c.hex};left:${at(c.a)}%"></span>`
+          : `<span class="nw-bar" style="--c:${c.hex};left:${at(c.a)}%;width:${Math.max(1.2, (Math.max(0, T.days(c.a, end)) / span) * 100)}%"></span>`}
+      </div>
+      <p class="nw-axn">${out
+        ? `${T.fmt(c.a)} sits outside the season window — it will still stage, and the Track will show it once you zoom out.`
+        : c.shape === 'point'
+          ? `Releases ${T.fmt(c.a)}, ${relDay(c.a)}.`
+          : `${T.fmt(c.a)} → ${T.fmt(end)} · ${Math.max(1, T.days(c.a, end))} days.`}</p>
+    </div>`;
+  }
+  const relDay = d => { const n = T.days(F.today, d);
+    return n === 0 ? 'today' : n > 0 ? `in ${n} day${n === 1 ? '' : 's'}` : `${-n} day${n === -1 ? '' : 's'} ago`; };
+
+  function openComposer(pre) {
+    S.compose({
+      eyebrow: 'season · create', title: 'Add to the season',
+      types: COMPOSE_TYPES(), initial: pre || {}, preview: composePreview,
+      onStage: ({ type, name, a, b }) => addItem(type, name, a, b)
+    });
+  }
+
+  /* ═══ THE SEASON RECORD — variant C, the filmstrip ═══
+   * Patch notes are the only lane that carries imagery, and the images are Cloudinary-hosted
+   * (`f_auto,q_auto` delivery URLs straight out of the real documents), not the expiring
+   * media.discordapp.net links the calendar banners use. A frame that fails to load falls back
+   * to its own count rather than a broken image. */
+  function renderRecord() {
+    const notes = st.items.filter(isPublication).sort((x, y) => x.start < y.start ? -1 : 1);
+    const cur = notes[notes.length - 1];
+    return `<section class="rec rec-c" aria-label="Season record">
+      <header class="rec-h"><span class="rec-t">Season record</span>
+        <span class="rec-n">${notes.length} published · newest is what /patchnotes shows</span></header>
+      <div class="rec-film">
+        ${notes.map(n => `<figure class="rec-fr${n === cur ? ' cur' : ''}" tabindex="0" role="button"
+              data-recid="${n.id}" aria-label="${n.name}, published ${T.fmt(n.start)}${n === cur ? ', current' : ''}">
+            <span class="rec-img" style="${(n.images && n.images[0]) ? `background-image:url('${n.images[0]}')` : ''}">
+              <span class="rec-cnt">${n.imageCount || 0}</span></span>
+            <figcaption><span class="rec-d">${T.fmt(n.start)}</span>
+              <span class="rec-ttl">${n.name}</span>
+              ${n === cur ? '<span class="rec-tag">current</span>' : ''}</figcaption>
+          </figure>`).join('')}
+        <button type="button" class="rec-fr add" id="recAdd"><span class="rec-plus">+</span>
+          <span>Publish a<br>patch note</span></button>
+      </div>
+    </section>`;
+  }
+
   function addItem(type, name, start, end) {
     /* A new item inherits its lane's own kind, so a staged draw is a marker exactly like a
      * saved one — an earlier version defaulted everything to a band and a freshly staged draw
@@ -1411,7 +1620,12 @@
     const it = { id:'new-'+Date.now(), name, title:name, type, lane:type, kind, start, end,
                  date:start, endDate: kind === 'span' ? end : null, state:'staged', detail:'—' };
     st.items.push(it);
-    S.Store.add({ id:it.id, op:(kind === 'point' ? 'draw.add' : 'calendar.add'), name, verb:'added', rows:[['Item','—',name],['Date','—',start]] });
+    /* 🔴 THE OP IS DECIDED BY THE LANE, NOT BY THE SHAPE. `kind === 'point'` is true for
+     * patch notes too, so staging one named `draw.add` — an op core/ops routes to a different
+     * collection entirely. Three lanes are points and they are not all draws. */
+    const OP_FOR = { newDraws:'draw.add', returningDraws:'draw.add', patchNotes:'patchnote.addSeason',
+                     drawWindow:'calendar.add', event:'calendar.add', playlist:'calendar.add' };
+    S.Store.add({ id:it.id, op:(OP_FOR[type] || (kind === 'point' ? 'draw.add' : 'calendar.add')), name, verb:'added', rows:[['Item','—',name],['Date','—',start]] });
     S.toast(`Staged ${name} · ${T.fmt(start)} → ${T.fmt(end)}.`, 'Undo', () => {
       st.items = st.items.filter(x => x.id !== it.id); S.Store.remove(it.id); renderAll();
     });
@@ -1764,6 +1978,15 @@
   q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
   /* Built from LANES so a chip cannot drift from the lane it filters — same label, same
    * colour, one source. */
+  document.getElementById('mhNew').onclick = () => openComposer({ a: F.today });
+  /* `N` for new, but never while you are typing into something. */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || document.querySelector('.pwrap')) return;
+    e.preventDefault(); openComposer({ a: F.today });
+  });
   typeChips.innerHTML = F.LANES.map(l =>
     `<button class="chip topic" data-filter="${l.type}" aria-pressed="false"
              style="--c:${l.bar}"><i></i>${l.label}</button>`).join('');
@@ -1882,8 +2105,11 @@
     { k:'Compare live vs next',  c:'staged',run:() => { st.sn='draft'; renderIdentity();
         const d=document.getElementById('dDiff'); d && d.click(); } },
     { k:'Promote draft to live', c:'del',   run:() => { const d=document.getElementById('dPromote'); d ? d.click() : S.toast('No draft staged.'); } },
-    { k:'Stage a new draw',      c:'draw',  run:() => addItem('draw','New draw',F.today,T.addDays(F.today,7)) },
-    { k:'Stage a new event',     c:'ev',    run:() => addItem('event','New event',F.today,T.addDays(F.today,5)) },
+    /* The palette names the TYPES, so the keyboard path never makes you find a dropdown
+     * to discover what can be created. Six entries, one per lane, straight off LANES. */
+    ...F.LANES.map(l => ({ k:'New ' + l.label.toLowerCase().replace(/s$/, ''),
+        c:(l.key === 'patchNotes' ? 'patch' : 'draw'),
+        run:() => openComposer({ type:l.key, a:F.today }) })),
     { k:'Search the manifest',   c:'ink3',  run:() => q.focus() },
     { k:'Show staged only',      c:'staged',run:() => { st.stagedOnly=true; renderRows();
         document.querySelector('[data-staged]')?.setAttribute('aria-pressed','true'); } },

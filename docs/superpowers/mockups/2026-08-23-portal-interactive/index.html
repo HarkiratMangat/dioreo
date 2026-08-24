@@ -167,6 +167,7 @@
 
   S.onAfterRevert = render;
   render();
+  (window.Shell||window.S).holdTop();
   S.audit();
 })();
 </script>

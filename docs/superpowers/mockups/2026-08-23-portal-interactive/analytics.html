@@ -544,6 +544,7 @@
   function renderAll(){ renderHealth(); renderUsage(); renderTiming(); renderReach(); renderSearch();
     renderRows(); renderStats(); S.mountRail('analytics'); }
   renderAll();
+  (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [
       { name:'river event',    run: () => rows.querySelector('tr[data-id]').click() },

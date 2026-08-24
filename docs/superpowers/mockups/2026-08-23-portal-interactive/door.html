@@ -60,7 +60,8 @@
     location.href = 'index.html';
   };
 
-  S.audit && S.audit();
+  S.audit && (window.Shell||window.S).holdTop();
+  S.audit();
 })();
 </script>
 </body></html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>scroll matrix</title>
+<style>body{margin:0;background:#111;color:#eee;font:12px monospace}iframe{border:1px solid #444;display:block}</style>
+</head><body>
+<div id="out">running…</div><div id="pen"></div>
+<script>
+const SIZES=[];
+for (const w of [900,960,1000,1024,1100,1200,1280,1366,1440]) for (const h of [700,780,828,900]) SIZES.push([w,h]);
+const pen=document.getElementById('pen');
+(async()=>{
+  const rows=[];
+  for (const [w,h] of SIZES){
+    const f=document.createElement('iframe');
+    f.width=w; f.height=h; f.style.cssText=`width:${w}px;height:${h}px;position:absolute;left:0;top:0;visibility:hidden`;
+    f.src='season.html?m='+Date.now()+Math.random();
+    pen.appendChild(f);
+    await new Promise(r=>{ f.onload=r; setTimeout(r,4000); });
+    await new Promise(r=>setTimeout(r,1200));            // let fonts.ready + entrance animations settle
+    let rec;
+    try{
+      const d=f.contentDocument, m=d.querySelector('main');
+      rec={w,h,top:Math.round(m.scrollTop),sh:m.scrollHeight,ch:m.clientHeight,
+           rows:d.querySelectorAll('.mtable tbody tr').length,
+           active:(d.activeElement&&(d.activeElement.tagName+(d.activeElement.id?'#'+d.activeElement.id:'')))||'none',
+           railLeft:getComputedStyle(d.querySelector('nav.rail')).position};
+    }catch(e){ rec={w,h,err:String(e)}; }
+    rows.push(rec); f.remove();
+    document.getElementById('out').textContent=JSON.stringify(rows,null,0);
+  }
+  window.__matrix=rows;
+  document.getElementById('out').textContent='DONE '+JSON.stringify(rows);
+})();
+</script></body></html>

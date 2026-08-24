@@ -465,6 +465,7 @@
   S.onAfterRevert = renderAll;
 
   renderAll();
+  (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [
       { name:'admin permissions', run: () => openAdmin(st.admins[0].discordId) },
