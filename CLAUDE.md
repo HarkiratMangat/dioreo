@@ -187,6 +187,7 @@ This codebase has inline comments explaining **why** something is written a cert
 | **`docs/reference/`** | **Lookup docs.** "Read this to do the thing correctly." A legend, not a notebook. | Present — kept true | Not narrative, not a list of open work, not a story |
 | **`docs/ideas/`** | **Forward-looking, MAINTAINED.** Proposals, parked ideas, the intake scratchpad. **Edited as thinking changes.** | Future / undecided | Not decided work (that's `db-deferred-list.md`), not published |
 | **`docs/superpowers/specs/`** | **Dated design SNAPSHOTS.** What was decided, and why, on that date. **Superseded, never edited.** | Frozen at its date | Not a live document — a stale spec is *correct*; don't "fix" it |
+| **`docs/superpowers/mockups/`** | **Interactive mockup packages** — the HTML a wiring session builds from, plus its `COMPANION.md`. `kind: reference`, because it is **maintained and kept true**, not frozen. | Present — kept true against the code | Not a spec. A stale COMPANION is a *defect*: it is the instruction a wiring session follows, so wiring it faithfully rolls back working design |
 | **`docs/archive/`** | **Dead.** Swept intake + closed deferred items. **Don't read by default.** | Past, closed | Not a search target; nothing here is live |
 | **`docs/` root records** | `CHANGELOG` · `CHANGELOG-SUMMARY` · `DEVLOG` · `ROADMAP` · `db-deferred-list` · `README` · `SESSION-START` | Append-only history / live trackers | Records are **never backdated** — an old entry keeps the old name |
 

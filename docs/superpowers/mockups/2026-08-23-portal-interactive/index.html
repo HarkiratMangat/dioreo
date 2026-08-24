@@ -73,14 +73,11 @@
    * person, and 11 draws with no calendar window is the loudest thing this season has. */
   const seasonFindings = F.seasonRepairs().reduce((n, g) => n + g.hits.length, 0);
 
-  /* Mirrors armory.html's own defect predicates against the REAL schema — `attachments` is
-   * an array, `categoryRank` is best/top{N}. An earlier version compared the array to a
-   * number, which is always false, so this count was silently wrong. */
-  const flagged = F.builds.filter(b =>
-    (b.mode === 'MP' && !b.shareCode) || !b.imageKey ||
-    (b.imageKey || '').startsWith('http') || b.attachments.length !== 5 ||
-    b.lastUpdated < '2026-04-26' ||
-    (b.mode === 'MP' && b.isMeta && !b.categoryRank)).length;
+  /* ⚠️ READ, never re-derive. This used to hold its own copy of Armory's defect predicate, and
+   * the two surfaces reported different numbers for the same collection — Home said "133 builds ·
+   * 33 need repair", Armory said "31 builds · 28 need repair". F.ARMORY_COUNTS is now the single
+   * derivation both read (see fixtures.js), so they cannot disagree again. */
+  const flagged = F.ARMORY_COUNTS.needRepair;
 
   /* The real Broadcast finding is not a coverage gap — it is an announcement with
    * `expiresAt: null`, which never stops on its own. The previous version read `a.posted`
@@ -103,7 +100,7 @@
     { id:'armory', label:'Armory', href:'armory.html', c:'#FF3430',
       icon:'<path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/>',
       q:'What builds exist, and what is wrong with them.',
-      n:F.LOADOUT_STATS.total, unit:'builds',
+      n:F.ARMORY_COUNTS.sample, unit:`of ${F.ARMORY_COUNTS.total} builds`,
       att: flagged ? `${flagged} need repair` : null, warn: !!flagged },
     { id:'broadcast', label:'Broadcast', href:'broadcast.html', c:'#F2C230',
       icon:'<path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/>',

@@ -93,14 +93,20 @@
     }
     return a;
   }
-  /* ⚠️ REPRODUCES portal/api/access.js's singlePointsOfFailure() EXACTLY, blind spot included.
-   * That function expands a bare `manage` into the eight page scopes and never records a holder
-   * for `manage` ITSELF, so a lone holder of the full token is not reported as a single point
-   * even though they plainly are one. Counting it here would show 6 where the API returns 5 —
-   * and a mockup that quietly disagrees with the endpoint it is a specification for is worse
-   * than one that matches a flaw. Filed as a finding against the API, not patched here. */
-  const spofScopes = () => new Set(F.accessScopes.map(s => s.key)
-    .filter(k => k !== 'manage' && holders(k).length === 1));
+  /* 🔴 THE EXPORT IS THE ANSWER. This used to re-derive single-points-of-failure with a rule
+   * that deliberately excluded `manage`, reproducing a blind spot in the endpoint — and then the
+   * endpoint was FIXED in the same commit series, so the page said 5 while `F.spof` (exported
+   * from the real singlePointsOfFailure) said 6, and index.html rendered 6 beside it. The comment
+   * even said "filed as a finding, not patched here" about a defect already patched.
+   *
+   * Derived from the live grants when they change on this page, seeded from the export otherwise,
+   * and — critically — using the SAME rule the endpoint now uses: `manage` counts as itself AND
+   * expands. One definition, in one function, matching the server's. */
+  const EXPORT_SPOF = new Set(F.spof.map(s => s.scope));
+  let touched = false;                      // set once a grant is edited here
+  const spofScopes = () => touched
+    ? new Set(F.accessScopes.map(s => s.key).filter(k => holders(k).length === 1))
+    : new Set(EXPORT_SPOF);
   const unheld     = () => F.accessScopes.map(s => s.key).filter(k => holders(k).length === 0);
 
   /* ═══ THE OWNER NOTE ═══ this realm is not page-scoped at all. portal/api/realmAccess.js
@@ -373,6 +379,7 @@
       actions:`<button class="btn" id="cancel">Cancel</button><button class="btn go" id="go" disabled>Grant now</button>` });
     document.getElementById('cancel').onclick = () => S.closeDrawer();
     wireGrantForm(null, (id, list, note) => {
+      touched = true;
       st.admins.push(recompute({ discordId:id, permissions:list, note, grantedBy:F.OWNER_ID,
                                  grantedAt:F.today, grants:{} }));
       S.closeDrawer();
@@ -397,7 +404,7 @@
     document.getElementById('revoke').onclick = () => { S.closeDrawer(); confirmRevoke(a); };
     wireGrantForm(a, (_id, list) => {
       const before = a.permissions.slice();
-      a.permissions = list; recompute(a);
+      a.permissions = list; recompute(a); touched = true;
       S.closeDrawer();
       S.toast(`Permissions updated: ${before.length} → ${list.length} token${list.length === 1 ? '' : 's'}.`);
       renderAll();
@@ -426,7 +433,7 @@
     document.getElementById('cancel').onclick = () => S.closeDrawer();
     rConf.addEventListener('input', () => { go.disabled = rConf.value.trim() !== a.discordId; });
     go.onclick = () => {
-      st.admins = st.admins.filter(x => x !== a);
+      st.admins = st.admins.filter(x => x !== a); touched = true;
       S.closeDrawer(); S.toast(`…${a.discordId.slice(-6)} revoked. There is no undo for this one.`);
       renderAll();
     };

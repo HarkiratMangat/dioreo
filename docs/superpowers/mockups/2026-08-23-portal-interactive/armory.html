@@ -15,7 +15,7 @@
         <span class="job">Every build the bot can show a player, ranked within its category, with whatever is wrong with it named.</span>
       </div>
       <div class="mh-stats">
-        <span class="stat"><span class="v" id="sBuilds"></span> <span class="k">builds</span></span>
+        <span class="stat"><span class="v" id="sBuilds"></span> <span class="k" id="kBuilds">builds</span></span>
         <span class="stat"><span class="v" id="sRanked"></span> <span class="k">ranked</span></span>
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
@@ -323,7 +323,7 @@
                     aria-pressed="${st.defect === d.key}">
               <span class="cn ${hits.length ? 'bad' : ''}">${hits.length}</span>
               <span class="cname">${d.label}${d.mech ? ' <i class="mechtag">mechanical</i>' : ''}</span>
-              <span class="cmeter"><i style="width:${(hits.length / Math.max(1, inMode().length)) * 100}%"></i></span>
+              <span class="cmeter${hits.length ? '' : ' clean'}"><i style="width:${hits.length ? Math.max(1.5, (hits.length / Math.max(1, inMode().length)) * 100) : 0}%"></i></span>
               <span class="why">${d.why}</span>
             </button>`).join('')}
         </div>
@@ -370,7 +370,7 @@
       const snap = plan.map(p => ({ b:p.b, field:p.field, was:p.b[p.field] }));
       S.Store.onInvert('arm-repair', () => { snap.forEach(x => { x.b[x.field] = x.was; }); renderAll(); });
       plan.forEach(p => { p.b[p.field] = p.now; });
-      S.Store.add({ id:'arm-repair', tier:2, name:`${plan.length} mechanical fixes`, verb:'repaired',
+      S.Store.add({ id:'arm-repair', name:`${plan.length} mechanical fixes`, verb:'repaired',
         realm:'armory', op:'loadout.edit',
         rows:plan.map(p => [`${p.b.weaponName} ${p.field}`, dash(p.was), p.now]) });
       S.closeDrawer(); renderAll();
@@ -793,13 +793,12 @@
                    “Build N of M” counter renumbers.`
                 : `<b>This is the only ${b.weaponName} build</b> — the weapon disappears from
                    <code>/gunsmiths</code> entirely.`}</p>
-            <p class="dw-p">Tier 3: the portal will require an export of what is about to be destroyed
-              before it will commit, and that export re-imports through the bulk parser.</p>`,
+            <p class="dw-p">Tier 1 in core/ops: apply() captures the whole document before removing it, so the inverse is exact and this is reversible after it commits. It is still a deletion, which is why it is drawn as one. </p>`,
       onConfirm(){
         const i = st.builds.indexOf(b);
         S.Store.onInvert('arm-del-' + b.id, () => { st.builds.splice(i, 0, b); renderAll(); });
         st.builds.splice(i, 1);
-        S.Store.add({ id:'arm-del-' + b.id, tier:3, name:`${b.weaponName} — ${b.buildName}`,
+        S.Store.add({ id:'arm-del-' + b.id, name:`${b.weaponName} — ${b.buildName}`,
           verb:'deleted', realm:'armory', op:'loadout.delete', destroys:true,
           rows:[['Build', `${b.weaponName} — ${b.buildName}`, 'removed'],
                 ['Attachments', b.attachments.join(', ') || '—', '—'],
@@ -944,7 +943,7 @@
             const snap = st.builds.slice();
             S.Store.onInvert('arm-bulkdel', () => { st.builds = snap; renderAll(); });
             st.builds = st.builds.filter(b => !st.selected.has(b.id));
-            S.Store.add({ id:'arm-bulkdel', tier:3, name:`${picked.length} builds`, verb:'deleted',
+            S.Store.add({ id:'arm-bulkdel', name:`${picked.length} builds`, verb:'deleted',
               realm:'armory', op:'loadout.bulkDelete', destroys:true,
               rows:picked.map(b => [`${b.weaponName} — ${b.buildName}`, `${b.attachments.length} attachments`, 'removed']) });
             st.selected.clear(); renderAll();
@@ -955,7 +954,7 @@
       const snap = picked.map(b => ({ b, was:b.isMeta }));
       S.Store.onInvert('arm-meta', () => { snap.forEach(s2 => { s2.b.isMeta = s2.was; }); renderAll(); });
       picked.forEach(b => { b.isMeta = want; siblings(b).forEach(x => { x.isMeta = want; }); });
-      S.Store.add({ id:'arm-meta', tier:2, name:`${picked.length} build(s)`,
+      S.Store.add({ id:'arm-meta', name:`${picked.length} build(s)`,
         verb:want ? 'flagged Meta' : 'Meta cleared', realm:'armory', op:'loadout.edit',
         rows:picked.map(b => [b.weaponName + ' — ' + b.buildName, String(!want), String(want)]) });
       st.selected.clear(); renderAll();
@@ -974,7 +973,14 @@
   }
   function renderStats() {
     const pool = inMode();
+    /* ⚠️ SAY WHICH POOL. This read "31 builds" while Home's card read "133 builds" for the same
+     * collection — Armory counts the builds in the ACTIVE MODE that were exported into this
+     * package; Home counts the real collection. Neither number was wrong and together they were
+     * incoherent, because both used the bare word "builds". The label now carries the scope, and
+     * Home says "36 of 133" rather than implying it is showing all of them. */
     sBuilds.textContent = pool.length;
+    const kb = document.getElementById('kBuilds');
+    if (kb) kb.textContent = `${st.armMode} builds shown`;
     sRanked.textContent = pool.filter(b => rankOf(b)).length;
     sFlags.textContent  = pool.filter(b => defectsFor(b).length).length;
     const failing = DEFECTS.filter(d => flagged(d).length).length;

@@ -17,7 +17,7 @@
       <div class="mh-stats">
         <span class="stat stg"><span class="v" id="sOps">0</span> <span class="k">changes</span></span>
         <span class="stat"><span class="v" id="sRealms">0</span> <span class="k">realms</span></span>
-        <span class="stat warn"><span class="v" id="sGates">0</span> <span class="k">gates open</span></span>
+        <span class="stat" id="statGates"><span class="v" id="sGates">0</span> <span class="k">gates open</span></span>
       </div>
     </div>
 
@@ -86,6 +86,7 @@
     sOps.textContent    = list.length;
     sRealms.textContent = new Set(list.map(o => o.realm || 'season')).size;
     sGates.textContent  = blockers().length;
+    document.getElementById('statGates')?.classList.toggle('warn', blockers().length > 0);
 
     if (!list.length) { renderEmpty(); renderFoot(); return; }
     if (!st.sel || !list.some(o => o.id === st.sel)) st.sel = list[0].id;
@@ -233,6 +234,7 @@
      * opened the gate in the footer while the stat above still read "1 gate open" —
      * two places telling the reader different things about one piece of state. */
     sGates.textContent = b.length;
+    document.getElementById('statGates')?.classList.toggle('warn', b.length > 0);
     if (!list.length) { rvfoot.innerHTML = ''; return; }
     const t3 = list.filter(o => o.tier === 3);
     rvfoot.innerHTML = `

@@ -48,7 +48,12 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;
 .crumb b{color:var(--ink2);font-weight:500}
 header .sp{margin-left:auto}
 .who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)}
-.who .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(140deg,#3A4C5A,#1C242C);border:1px solid var(--rule2)}
+.who .av{width:24px;height:24px;border-radius:50%;border:1px solid var(--rule2);flex:none;
+  background:linear-gradient(140deg,#3A4C5A,#1C242C) center/cover no-repeat}
+/* The real Discord avatar. It is not decoration: this is the one place the portal says WHOSE
+ * session you are in, and a grey disc says nobody's. The CDN URL is derived from the id and the
+ * avatar hash exactly the way discord.js builds it (`a_` prefix means animated -> .gif). */
+.who .av[data-src]{background-image:var(--av-src)}
 
 nav.rail{background:var(--sunk);border-right:1px solid var(--rule);display:flex;flex-direction:column;padding-top:8px;gap:2px;overflow:auto}
 .realm{background:none;border:0;color:var(--ink3);padding:11px 4px;display:grid;gap:5px;justify-items:center;
@@ -291,7 +296,14 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
  * chasing the widest ELEMENT was the wrong instinct: the widest element was clipped and
  * innocent, and the guilty one was narrower than it. Compare `scrollWidth` up the chain
  * instead — the first ancestor whose scrollWidth exceeds its width is the culprit. */
-header{min-width:0;overflow:hidden}
+/* 🔴 `overflow:hidden` USED TO LIVE HERE AND IT MADE THE ACCOUNT PANEL UNOPENABLE.
+ * The header is one row tall; .umenu is position:absolute at top:calc(100% + 8px), i.e. entirely
+ * BELOW that box, so the clip erased it. The menu still toggled `hidden` correctly, still
+ * computed display:block / visibility:visible / opacity:1, and still reported a real 274x292
+ * rect — every property a programmatic check would look at was healthy, and nothing was on
+ * screen. (COMPANION §14: a measurement can measure the wrong thing precisely.) The clip was
+ * only ever needed for the crumb's ellipsis, and .crumb carries its own on the next line. */
+header{min-width:0}
 header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:768px){
   /* The crumb is redundant on a phone: the masthead below states the realm in display type,
@@ -424,7 +436,7 @@ input.err,select.err{border-color:var(--del);background:rgba(255,107,107,.06)}
 .bar.saved,.stt.saved{color:var(--on-accent)} .commit,.addrow .go{color:var(--on-accent)}
 .bulk button.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
 td,.lane{border-bottom-color:var(--rule3)}
-.who .av{background:linear-gradient(140deg,var(--avatar-a),var(--raised))}
+.who .av:not([data-src]){background:linear-gradient(140deg,var(--avatar-a),var(--raised))}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ART DIRECTION — the Track is the signature; everything else stays quiet.
@@ -2348,3 +2360,87 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .rephits li b{font:600 12px/1.3 var(--ui);color:var(--ink)}
 .rephits li span{font-size:11px;color:var(--ink3)}
 .repclean{margin:8px 0 0;font-size:11.5px;color:var(--ink3)}
+
+
+/* ═══════════════ ACCOUNT PANEL — the real Discord profile, not an approximation ═══════════════
+ * Discord's own popout leads with the banner, overlaps the avatar onto it, and puts the display
+ * name over the @handle. Reproducing that shape is not imitation for its own sake: this panel's
+ * only job is to say WHOSE session you are in, and the fastest possible answer is the face the
+ * person already recognises. A lettered disc says "an account"; this says "yours". */
+.ubanner{height:62px;margin:-1px -1px 0;border-radius:9px 9px 0 0;
+  background:var(--banner) center/cover no-repeat,var(--sunk);
+  box-shadow:inset 0 -34px 40px -22px var(--raised)}
+.umenu .uhead{position:relative;margin-top:-22px;padding:0 13px 11px;display:flex;align-items:flex-end;gap:10px}
+.umenu .uav{width:46px;height:46px;border-radius:50%;flex:none;position:relative;
+  background:var(--av-src) center/cover no-repeat,var(--sunk);
+  border:3px solid var(--raised);box-shadow:0 2px 10px -3px rgba(0,0,0,.7)}
+.umenu .uav .pres{position:absolute;right:-1px;bottom:-1px;width:13px;height:13px;border-radius:50%;
+  background:var(--ok);border:3px solid var(--raised)}
+.umenu .uinfo{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:2px}
+.umenu .uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
+.umenu .uinfo .nm{font:600 14px/1.15 var(--ui);color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.umenu .uinfo .id{font:500 11px/1 var(--mono);color:var(--ink3)}
+/* prefers-reduced-motion cannot pause a GIF, so the banner is swapped for a flat wash instead of
+ * left animating under a preference that asks it not to. */
+@media (prefers-reduced-motion:reduce){
+  .ubanner{background:linear-gradient(120deg,var(--sunk),var(--raised))}
+}
+
+
+/* ═══════════════ TRACK — density, gutters and label thresholds ═══════════════
+ * Every rule here exists because the LIVE season broke the previous one. 14 playlists and 6
+ * events inside six weeks is the ordinary shape of a CODM season, not a stress test. */
+
+/* 🔴 THE GUTTER. Consecutive bars — COD Point Rush weeks 2, 3 and 4 — share a boundary exactly,
+ * so with no inset three separate events rendered as one continuous blue strip with three labels
+ * floating inside it. Two pixels of transparent inset is the entire difference between "one long
+ * thing" and "three things in a row", and it costs nothing at any zoom. */
+.lane .tk .bar{margin-left:1px;margin-right:1px}
+.lane .tk .bar::before{content:"";position:absolute;inset:0 -1px;border-radius:inherit;
+  box-shadow:0 0 0 1px var(--paper);pointer-events:none;opacity:.9}
+
+/* Below the label threshold the bar carries no text at all — see fitLabels(). It keeps its full
+ * height and colour, so it is still a target and still readable as an object. */
+.bar.nolabel .bl{display:none}
+.bar.nolabel{min-width:5px}
+
+/* A multi-row lane: bars are shorter and top-positioned rather than centred, so a lane holding
+ * three overlapping playlists is three legible rows instead of three overlaid ones. */
+.lane[data-rows="1"] .tk .bar{height:22px}
+.lane:not([data-rows="1"]) .tk .bar{border-radius:3px}
+.lane:not([data-rows="1"]) .tk .bar .bl{font-size:10.5px}
+
+/* The point cluster. Reads as a count, not as a marker — a diamond would claim to be one item. */
+.pt.hid{display:none}
+.ptc{position:absolute;top:50%;transform:translate(-50%,-50%);min-width:19px;height:19px;padding:0 4px;
+  border-radius:99px;border:1.5px solid var(--c);background:var(--paper);color:var(--c);
+  font:700 10px/1 var(--data);cursor:zoom-in;z-index:4;display:grid;place-items:center}
+.ptc:hover{background:var(--c);color:var(--on-accent)}
+.ptc:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+
+/* Deadline flags: same-date flags stack, and a flag near an edge flips rather than clipping. */
+.dend .dflag.flip{transform:translateX(-100%)}
+.dflag.flip::after{left:auto;right:0}
+/* Pinned markers for deadlines outside the window — the answer is the distance, not a missing label. */
+/* Pinned BELOW the flag row, never centred on it — the deadline flags for the same rail live at
+ * its top, and a centred pin landed on top of BATTLE PASS/RANKED whenever both were near the
+ * same edge, which is exactly when a pin is most likely to exist. */
+.dpin{position:absolute;bottom:1px;z-index:6;display:flex;align-items:center;gap:5px;padding:3px 7px;
+  border:1px dashed var(--c);border-radius:99px;background:var(--paper);
+  font:600 9.5px/1 var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap}
+.dpin.l{left:4px}.dpin.r{right:4px}
+.dpin em{font-style:normal;color:var(--ink3);letter-spacing:0;text-transform:none}
+
+/* ═══════════════ BOARD — the columns were touching the panel edge ═══════════════ */
+.bcols{padding:0 var(--gut,16px) 16px}
+
+/* A stemmed label dropped the words every sibling shares — the full name is on the tooltip and in
+ * the Manifest. The leading mark says the name is abbreviated rather than mis-entered. */
+.bar.stemmed .bl::before{content:"·";opacity:.5;margin-right:3px}
+
+/* A check reporting zero is CLEAN, and must look it. It used to draw the same green stub a count
+ * of 1 draws, so "0" and "1" were visually indistinguishable at a glance — which defeats the
+ * only reason to put a meter beside a number. */
+.cmeter.clean{background:transparent;border:1px dashed var(--rule2)}
+.cmeter.clean i{display:none}

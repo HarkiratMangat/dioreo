@@ -141,18 +141,59 @@
   /* The schema has no season-start field, so the Track's outer bounds come from the DATA:
    * the earliest item and the latest of (latest item, every deadline), padded. Nothing to
    * invent, and it cannot drift out of step with the items it has to contain. */
+  /* 🔴 FIT MEANS FIT THE CONTENT, NOT FIT EVERY MARKER — and the live document is what proved it.
+   * This used to include all three deadlines in the bounds. `dmzEnd` is 2026-11-11 while every
+   * scheduled item ends 2026-09-19, so FIT produced a Jul 1 → Nov 16 axis in which 100% of the
+   * content was crushed into 55% of the width and the right two months were empty. DMZ running
+   * two months past the battle pass is normal CODM, not an anomaly, so this is the ordinary case.
+   *
+   * The question this page asks is "does it still fit inside the season's own deadlines", and an
+   * item is late against the deadline it would FIRST violate — the earliest one still ahead — not
+   * the latest. A DMZ season ending in November does not make an August event late. So the window
+   * spans the content plus the nearest deadline ahead; anything further out is PINNED to the edge
+   * rail with its real distance, which states the relationship more precisely than two empty
+   * months of axis ever did.
+   *
+   * Edge cases, all real states of this schema:
+   *   · every deadline TBD  → no deadline to reach for; content bounds alone
+   *   · every deadline past → same, and the markers pin to the LEFT rail
+   *   · one item / no items → the 14-day floor keeps the axis from collapsing to a point
+   *   · an isOngoing row    → its end already resolved to bpEnd upstream, so it cannot drag the
+   *                           window past a deadline that the window is derived from */
+  const MIN_SPAN_DAYS = 14;
+  function liveDeadlines() {
+    return ['bpEnd','rankEnd','dmzEnd']
+      .filter(k => !st.season[k + 'TBD'] && st.season[k])
+      .map(k => ({ key:k.replace('End',''), date: st.season[k] }));
+  }
   function dataBounds() {
-    /* Exactly what is DRAWN: every item bar, today, and the LIVE deadline markers. Draft
-     * deadlines are excluded on purpose — no marker renders for them. */
     const ds = [F.today];
     st.items.forEach(i => { ds.push(i.start, i.end); });
-    ['bpEnd','rankEnd','dmzEnd'].forEach(k => {
-      if (!st.season[k + 'TBD'] && st.season[k]) ds.push(st.season[k]);
-    });
     const sorted = ds.filter(Boolean).sort();
-    const lo = sorted[0], hi = sorted[sorted.length - 1];
+    let lo = sorted[0], hi = sorted[sorted.length - 1];
+
+    /* ⚠️ PROPORTION, not "nearest ahead" — the first version of this reached to the nearest
+     * deadline PAST THE CONTENT, and on the live season bpEnd (Sep 10) falls INSIDE the content
+     * (which runs to Sep 19), so it was skipped and dmzEnd was still the nearest, leaving the
+     * axis exactly as wrong as before. A deadline earns space in the window by being CLOSE to the
+     * content; one far beyond it earns a pin. 53 days past a 75-day season is far. */
+    const span = Math.max(1, T.days(lo, hi));
+    const REACH = Math.max(7, Math.round(span * 0.25));
+    for (const d of liveDeadlines().map(x => x.date)) {
+      if (d > hi && T.days(hi, d) <= REACH) hi = d;
+      if (d < lo && T.days(d, lo) <= REACH) lo = d;
+    }
+
+    if (T.days(lo, hi) < MIN_SPAN_DAYS) hi = T.addDays(lo, MIN_SPAN_DAYS);
     const pad = Math.max(2, Math.round(T.days(lo, hi) * 0.04));
     return { min: T.addDays(lo, -pad), max: T.addDays(hi, pad) };
+  }
+  /* Deadlines that fall outside the visible window — rendered as pinned edge markers rather than
+   * dropped, because "62 days beyond this view" is the answer, not a missing label. */
+  function outOfViewDeadlines() {
+    return liveDeadlines()
+      .map(d => ({ ...d, side: d.date < st.view.from ? 'l' : d.date > st.view.to ? 'r' : null }))
+      .filter(d => d.side);
   }
   /* How far you may scrub — deliberately wider than the data, so the overview reads as a
    * map with context rather than a bar the window always fills edge to edge. */
@@ -203,6 +244,16 @@
      * instead (as this did) reported a draw as ENDED the instant its UTC-midnight release
      * passed, which for any US-timezone viewer is almost immediately. That exact bug shipped
      * in the bot and was fixed on 2026-08-07; reproducing it here would have re-taught it. */
+    /* ⚠️ isEventEnded() is a CALENDAR rule and patch notes are not calendar entries — the bot's
+     * own function never sees one. Applying it to the patch-note lane made a note released
+     * 2026-07-06 read LIVE NOW forever, which is how 23 of 39 items ended up in "Live now".
+     * A patch note is an announcement of a moment: the newest is current, the rest are history. */
+    if (it.lane === 'patchNotes') {
+      const newest = st.items.filter(x => x.lane === 'patchNotes')
+                             .reduce((a, b) => (a && a.start > b.start ? a : b), null);
+      if (T.days(it.start, F.today) < 0) return 'upcoming';
+      return newest && newest.id === it.id ? 'live' : 'ended';
+    }
     if (!F.isEventEnded(it, new Date(F.today).getTime())) {
       return T.days(it.start, F.today) >= 0 ? 'live' : 'upcoming';
     }
@@ -217,9 +268,12 @@
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
   /* ═══ IDENTITY ═══ */
+  /* ⚠️ NO TIER HERE ANY MORE. §4.4 makes the tier a property of the OP, so it is read from
+   * core/ops's registry at Store.add() and stating it beside the name was a second copy that
+   * could disagree — and did, at nine other staging sites on this page. */
   const OPS = {
-    live:  { name:'season.setTitlesDeadlines',      tier:1 },
-    draft: { name:'season.setDraftTitlesDeadlines', tier:2 }
+    live:  { name:'season.setTitlesDeadlines' },
+    draft: { name:'season.setDraftTitlesDeadlines' }
   };
   const fmtLeft = (o, L) => {
     if (o[L.tbdKey]) return { cls:'is-tbd', html:'TBD' };
@@ -306,7 +360,7 @@
       };
       el.onblur = () => {
         if (!st.dirty.has(st.sn + ':banners')) return;
-        S.Store.add({ id:'season-banners-' + st.sn, tier:1, name:'Calendar banners', verb:'banner changed' });
+        S.Store.add({ id:'season-banners-' + st.sn, op:'calendar.setBanners', name:'Calendar banners', verb:'banner changed' });
         syncStaged();
       };
     });
@@ -437,10 +491,12 @@
     });
     const dd = document.getElementById('dDiscard');
     if (dd) dd.onclick = () => S.confirm({
-      title:'Discard the staged draft?', tier:3,
+      title:'Discard the staged draft?',
       body:`<p class="dw-p">This erases everything staged for next season —
              titles, deadlines and ${st.items.filter(i=>i.draft).length} item(s).
-             What is currently live is untouched. <b>Cannot be undone.</b></p>`,
+             What is currently live is untouched. It is tier 2 in core/ops — a draft restore is an
+             exact inverse — but nothing in the portal offers that restore yet, so treat it as
+             final until it does.</p>`,
       confirm:'Yes, discard', danger:true, op:'season.discardDraft',
       onConfirm(){ st.draft = { active:false, currentSeasonTitle:'', bpTitle:'', rankTitle:'', dmzTitle:'',
                                 bpEnd:null, rankEnd:null, dmzEnd:null,
@@ -480,7 +536,7 @@
     const mine = [...st.dirty].filter(k => k.startsWith(st.sn + ':'));
     if (!mine.length) return;
     const op = OPS[st.sn];
-    S.Store.add({ id:'season-identity-' + st.sn, tier:op.tier,
+    S.Store.add({ id:'season-identity-' + st.sn, op:op.name,
       name: st.sn === 'draft' ? 'Next season identity' : 'Season identity',
       verb:`${mine.length} field${mine.length>1?'s':''} changed` });
     syncStaged();
@@ -495,13 +551,41 @@
 
   let renderTrack = function () {
     const v = st.view;
-    const laneRow = (lane, list, isDraft) => `
-      <div class="lane" data-lane="${lane.type}" data-draft="${isDraft?1:0}">
+    /* 🔴 A LANE IS NOT ONE ROW. The shipped portal's track.logic.js solved this and its own
+     * comment records the case: two same-lane events "painted on the same pixels". The mockup had
+     * every item at top:50%, so overlapping bars stacked invisibly. Greedy interval assignment —
+     * sort by start, place each item in the first row whose last item has already ended. Lanes
+     * then GROW to hold their rows, which is why every overlay below measures the lanes box
+     * instead of assuming lanes.length × a fixed height. */
+    function assignRows(list) {
+      const sorted = [...list].sort((a, b) => a.start.localeCompare(b.start));
+      const ends = [];
+      const row = new Map();
+      for (const it of sorted) {
+        /* One day of clearance: two bars that merely TOUCH are consecutive, not overlapping, and
+         * belong on the same row separated by a gutter (see .bar's inset below). */
+        let r = ends.findIndex(e => T.days(e, it.start) >= 0);
+        if (r === -1) { r = ends.length; ends.push(it.end); } else { ends[r] = it.end; }
+        row.set(it.id, r);
+      }
+      return { row, rows: Math.max(1, ends.length) };
+    }
+
+    const laneRow = (lane, list, isDraft) => {
+      const spans = list.filter(i => i.kind !== 'point');
+      const { row, rows } = assignRows(spans);
+      const H = 26, PAD = 10;
+      const laneH = Math.max(38, rows * H + PAD);
+      return `
+      <div class="lane" data-lane="${lane.type}" data-draft="${isDraft?1:0}" data-rows="${rows}"
+           style="height:${laneH}px">
         <span class="nm">${isDraft ? 'Draft ' + lane.label.toLowerCase() : lane.label}</span>
         <div class="tk">
           ${(() => { const off = list.filter(it => T.days(it.end, st.view.from) > 0 || T.days(st.view.to, it.start) > 0).length;
              return off ? `<span class="offwin" title="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : ''; })()}
           ${list.map(it => {
+            const r = row.has(it.id) ? row.get(it.id) : 0;
+            const top = rows === 1 ? null : `top:${PAD/2 + r * H}px;transform:none;height:${H - 5}px`;
             /* 🔴 `kind` DECIDES THE SHAPE, and three lanes now carry points. models/SeasonalData.js
              * gives a draw ONE field — `date` — and no end at all; only a `calendar` row has both.
              * This used to test `type === 'patchnote'`, which was the only point-like lane the
@@ -511,14 +595,16 @@
             return pt
               ? `<span class="pt ${s}" data-id="${it.id}" tabindex="0" role="button"
                    style="--c:${lane.bar};left:${v.pct(it.start)}%"
+                   data-name="${it.name.replace(/"/g,'&quot;')}" data-date="${it.start}"
                    aria-label="${it.name}, releases ${T.fmt(it.start)}${it.dateOnly ? ', no calendar window' : ''}"
                    title="${it.name} · releases ${T.fmt(it.start)}${it.detail && it.detail !== '—' ? ' · ' + it.detail : ''}${it.dateOnly ? ' · no window — /calendar synthesises one that never ends' : ''}"></span>`
               : `<div class="bar ${s}${it.openEnded ? ' forever' : ''}" data-id="${it.id}" tabindex="0" role="button"
-                   style="--c:${lane.bar};left:${v.pct(it.start)}%;width:${v.wpct(it.start,it.end)}%"
+                   style="--c:${lane.bar};left:${v.pct(it.start)}%;width:${v.wpct(it.start,it.end)}%${top ? ';' + top : ''}"
                    aria-label="${it.name}, ${T.fmt(it.start)} ${it.openEnded ? 'onward, with no end date' : 'to ' + T.fmt(it.end)}${it.isOngoing ? ', runs all season' : ''}, ${s}">
                    <span class="gr a" data-edge="start"></span><span class="bl">${it.name}</span><span class="gr b" data-edge="end"></span></div>`;
           }).join('')}
         </div></div>`;
+    };
 
     const live  = st.items.filter(i => !i.draft);
     const draft = st.items.filter(i =>  i.draft);
@@ -835,7 +921,7 @@
         showTip(ev, `<b>2XCP ${T.fmt(cp.start)} → ${T.fmt(cp.end)}</b><span class="sub">double-CP window</span>`);
       };
       const en = d => { hideTip(); if (!d) return; o.s = cp.start; o.e = cp.end;
-        S.Store.add({ id:'move-'+cp.id, tier:1, name:'Double CP', verb:'window changed' }); renderAll(); };
+        S.Store.add({ id:'move-'+cp.id, op:'calendar.edit', name:'Double CP', verb:'window changed' }); renderAll(); };
       T.drag(cw, { pxPerDay, onMove: mv(null), onEnd: en });
       cw.querySelectorAll('.wh').forEach(h => T.drag(h, { pxPerDay, onMove: mv(h.dataset.edge), onEnd: en }));
       cw.addEventListener('click', e => { if (!e.defaultPrevented) openItem(cp.id); });
@@ -907,7 +993,7 @@
         bar.classList.remove('dragging'); hideTip();
         if (!d) return;
         orig.s = it.start; orig.e = it.end;
-        S.Store.add({ id:'move-'+it.id, tier:1, name:it.name, verb:'dates changed' });
+        S.Store.add({ id:'move-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'dates changed' });
         S.toast(`${it.name} → ${T.fmt(it.start)} – ${T.fmt(it.end)}.`, 'Undo', () => {
           it.start = orig.s; it.end = orig.e; S.Store.remove('move-'+it.id); renderAll();
         });
@@ -980,9 +1066,173 @@
     viewTrack.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => applyFix(b.dataset.fix));
   }
 
+  /* 🔴 A 40px BAR SHOWING "Jud" IS WORSE THAN A 40px BAR SHOWING NOTHING — it reads as corrupt
+   * data rather than as a truncated name. Measured on the live season at FIT: the events lane
+   * rendered "Termina", "CO…", "COD…", "COD…" and the draw-windows lane rendered "Judg". Below
+   * ~56px a label cannot carry four characters plus an ellipsis at 11px, so it carries none: the
+   * bar's colour, position and width are the signal, and the name is one hover away and printed
+   * in full in the Manifest directly beneath. Above 56px it fits normally.
+   *
+   * Measured after layout rather than computed from percentages, because the same percentage is a
+   * different pixel count at every zoom level and viewport width. */
+  const LABEL_MIN_PX = 56;
+  function fitLabels() {
+    viewTrack.querySelectorAll('.bar').forEach(b => {
+      const bl = b.querySelector('.bl');
+      b.classList.remove('nolabel');
+      if (!bl) return;
+      const w = b.getBoundingClientRect().width;
+      /* Two conditions, and the second is the one that matters. A 62px bar clears the pixel
+       * floor and still renders "COD …" — the SAME fragment for five different events, which is
+       * worse than five unlabelled bars because it looks like five copies of one thing. So the
+       * real test is how much of the NAME survives: if less than half of it fits, none of it
+       * does. Measured from the text node's own scrollWidth after layout, never guessed. */
+      const fits = bl.scrollWidth ? (w / bl.scrollWidth) : 1;
+      if (w < LABEL_MIN_PX || fits < 0.55) b.classList.add('nolabel');
+    });
+    stripSharedPrefixes();
+  }
+
+  /* 🔴 FIVE BARS READING "COD Point R…" ARE FIVE IDENTICAL FRAGMENTS. Truncation cuts from the
+   * END, and CODM names its recurring content by a shared stem plus a distinguishing tail —
+   * "COD Point Rush Week 1…5", "Attack of the Undead MP Mode". So the half that survives
+   * truncation is the half every sibling shares, and the half that identifies the item is the
+   * half that gets cut. Exactly the defect already fixed on Broadcast's Airtime axis, where every
+   * announcement opened with the same seeded prefix.
+   *
+   * Strip the prefix shared by EVERY bar in the lane, back off to a word boundary, and keep the
+   * full name in the tooltip and the Manifest. Only applies at 3+ siblings — two bars sharing a
+   * stem are still told apart by position. */
+  function stripSharedPrefixes() {
+    viewTrack.querySelectorAll('.lane .tk').forEach(tk => {
+      const bars = [...tk.querySelectorAll('.bar:not(.nolabel) .bl')];
+      bars.forEach(bl => { if (bl.dataset.full) bl.textContent = bl.dataset.full; });
+      if (bars.length < 3) return;
+      /* ⚠️ PER GROUP, NOT PER LANE. The events lane is five "COD Point Rush Week N" bars plus one
+       * "Terminator 2 Themed Event" — requiring EVERY bar in the lane to share a stem meant none
+       * did, and the five identical fragments survived the first version of this untouched. Group
+       * by first-two-words, then strip inside any group of three or more. */
+      const groups = new Map();
+      for (const bl of bars) {
+        const full = bl.dataset.full || bl.textContent;
+        bl.dataset.full = full;
+        const k = full.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+        (groups.get(k) || groups.set(k, []).get(k)).push(bl);
+      }
+      for (const g of groups.values()) {
+        if (g.length < 3) continue;
+        const names = g.map(bl => bl.dataset.full);
+        let n = 0;
+        while (n < names[0].length && names.every(t => t[n] === names[0][n])) n++;
+        while (n > 0 && !/\s/.test(names[0][n - 1])) n--;
+        if (n < 4) continue;                   // nothing meaningful shared
+        /* ⚠️ AND DO NOT STRIP TO A BARE TOKEN. The first version cut "COD Point Rush Week 1" all
+         * the way to "1" — five bars reading 1..5 with nothing saying what they are, which trades
+         * one unreadable label for another. Back the cut off until at least two words survive, so
+         * these read "Week 1".."Week 5": short, distinct, and still self-describing. */
+        let cut = n;
+        const tailWords = (t) => t.slice(cut).trim().split(/\s+/).filter(Boolean).length;
+        while (cut > 0 && names.some(t => tailWords(t) < 2)) {
+          const prev = names[0].lastIndexOf(' ', cut - 2);
+          if (prev < 0) { cut = 0; break; }
+          cut = prev + 1;
+        }
+        if (cut < 4) continue;
+        g.forEach((bl, i) => {
+          bl.textContent = names[i].slice(cut);
+          bl.closest('.bar').classList.add('stemmed');
+          bl.closest('.bar').title = names[i];
+        });
+      }
+    });
+  }
+
+  /* 🔴 TWO DRAWS RELEASED A DAY APART ARE TWO DIAMONDS PAINTED ON EACH OTHER. The live season has
+   * returning draws on Aug 21, 22 and 22 — a 13px marker is ~0.1% of a 4.5-month axis, so
+   * anything inside four days collides and you cannot even count them. A cluster badge showing
+   * "3" is strictly MORE information than three overlapping diamonds, and it is zoom-dependent:
+   * the threshold is in PIXELS, so zooming in separates them back into individual markers with
+   * no special case. Clicking one zooms to its span, which is the gesture it is asking for. */
+  const CLUSTER_PX = 17;
+  function clusterPoints() {
+    viewTrack.querySelectorAll('.lane').forEach(lane => {
+      const tk = lane.querySelector('.tk'); if (!tk) return;
+      tk.querySelectorAll('.ptc').forEach(c => c.remove());
+      const pts = [...tk.querySelectorAll('.pt')];
+      pts.forEach(el => el.classList.remove('hid'));
+      if (pts.length < 2) return;
+      const W = tk.getBoundingClientRect().width; if (!W) return;
+      const xs = pts.map(el => ({ el, x: (parseFloat(el.style.left) || 0) / 100 * W }))
+                    .sort((a, b) => a.x - b.x);
+      const flush = (g) => {
+        if (g.length < 2) return;
+        g.forEach(o => o.el.classList.add('hid'));
+        const names = g.map(o => `${o.el.dataset.name} · ${T.fmt(o.el.dataset.date)}`);
+        const mid = (g[0].x + g[g.length - 1].x) / 2;
+        const c = document.createElement('button');
+        c.className = 'ptc';
+        c.style.cssText = `--c:${getComputedStyle(g[0].el).getPropertyValue('--c')};left:${(mid / W) * 100}%`;
+        c.textContent = g.length;
+        c.title = `${g.length} releases within ${Math.round(CLUSTER_PX)}px at this zoom — zoom in to separate them:\n${names.join('\n')}`;
+        c.setAttribute('aria-label', `${g.length} releases: ${names.join(', ')}. Activate to zoom in on them.`);
+        c.dataset.from = g[0].el.dataset.date; c.dataset.to = g[g.length - 1].el.dataset.date;
+        c.onclick = () => {
+          const pad = Math.max(3, T.days(c.dataset.from, c.dataset.to));
+          setView(T.addDays(c.dataset.from, -pad), T.addDays(c.dataset.to, pad)); afterZoom();
+        };
+        tk.appendChild(c);
+      };
+      let g = [xs[0]];
+      for (let i = 1; i < xs.length; i++) {
+        if (xs[i].x - g[g.length - 1].x < CLUSTER_PX) g.push(xs[i]);
+        else { flush(g); g = [xs[i]]; }
+      }
+      flush(g);
+    });
+  }
+
+  /* A flag whose box would run past the right edge anchors its RIGHT side to the line instead of
+   * its left — standard tooltip flip. Without it the DMZ deadline at 97% rendered as "DMZ Nov"
+   * with the year and half the box cut off by the panel. Same at the left edge. */
+  function fitFlags() {
+    const box = viewTrack.querySelector('.tk-inner'); if (!box) return;
+    const R = box.getBoundingClientRect();
+    viewTrack.querySelectorAll('.dend .dflag').forEach(f => {
+      f.classList.remove('flip');
+      const r = f.getBoundingClientRect();
+      if (r.right > R.right - 4) f.classList.add('flip');
+    });
+  }
+
+  /* A deadline outside the visible window is PINNED to the rail with its real distance rather
+   * than dropped. "DMZ Nov 11 · 53d beyond" states the relationship that two empty months of
+   * axis were trying to imply, and costs no width to say. */
+  const LINE_LABEL = { bp:'battle pass', rank:'ranked', dmz:'DMZ' };
+  function pinFarDeadlines() {
+    /* On the DEADLINE RAIL, not on .tk-inner — whose top edge is the overview scrubber, where the
+     * first version of this landed on top of the minimap. A pinned deadline is a continuation of
+     * the flag row, so it belongs in the flag row. */
+    const host = viewTrack.querySelector('.deadrail') || viewTrack.querySelector('.tk-inner');
+    if (!host) return;
+    host.querySelectorAll('.dpin').forEach(el => el.remove());
+    for (const d of outOfViewDeadlines()) {
+      const away = d.side === 'r' ? T.days(st.view.to, d.date) : T.days(d.date, st.view.from);
+      const el = document.createElement('span');
+      el.className = `dpin ${d.side}`;
+      el.style.setProperty('--c', lineHex(d.key));
+      el.innerHTML = `${LINE_LABEL[d.key] || d.key} ${T.fmt(d.date)} <em>${away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>`;
+      el.title = `Outside the current window. Press FIT or zoom out to bring it in.`;
+      host.appendChild(el);
+    }
+  }
+
   function repositionBars() {
     _reposition();
     pinClippedLabels();      // bars have their final geometry only after _reposition()
+      fitLabels();
+    clusterPoints();
+      fitFlags();
+    pinFarDeadlines();
   }
   function _reposition() {
     viewTrack.querySelectorAll('.bar').forEach(b => {
@@ -1142,7 +1392,7 @@
     if (id.startsWith('past-')) {
       const it = st.items.find(x => x.id === id.slice(5));
       it.end = seasonEnd(st.season);
-      S.Store.add({ id:'fix-'+it.id, tier:1, name:it.name, verb:'clamped to season end' });
+      S.Store.add({ id:'fix-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'clamped to season end' });
       S.toast(`${it.name} now ends ${T.fmt(it.end)}.`);
     } else if (id.startsWith('gap-')) {
       const it = st.items.find(x => x.id === id.slice(4));
@@ -1161,7 +1411,7 @@
     const it = { id:'new-'+Date.now(), name, title:name, type, lane:type, kind, start, end,
                  date:start, endDate: kind === 'span' ? end : null, state:'staged', detail:'—' };
     st.items.push(it);
-    S.Store.add({ id:it.id, tier:1, name, verb:'added' });
+    S.Store.add({ id:it.id, op:(kind === 'point' ? 'draw.add' : 'calendar.add'), name, verb:'added', rows:[['Item','—',name],['Date','—',start]] });
     S.toast(`Staged ${name} · ${T.fmt(start)} → ${T.fmt(end)}.`, 'Undo', () => {
       st.items = st.items.filter(x => x.id !== it.id); S.Store.remove(it.id); renderAll();
     });
@@ -1183,6 +1433,31 @@
     { k:'staged',   t:'Staged' },
     { k:'ended',    t:'Ended' }
   ];
+  /* 🔴 A POINT HAS NO PROGRESS. It happened, or it has not. The old line divided by
+   * `Math.max(1, T.days(start,end))` — a guard written to avoid a divide-by-zero that instead
+   * produced a confident nonsense number: for a draw released 17 days ago, start === end, so the
+   * denominator was 1 and the card read "ends in -17d · 1700% through". Both halves wrong, and
+   * the "-17d" was a second bug on top — "ends in" with a negative number should read "ended".
+   * This is the same class as everything else this pass fixed: a point fed to arithmetic that
+   * assumes a span. */
+  function boardMeta(i, col) {
+    const pt = i.kind === 'point';
+    if (col === 'staged') return 'not visible to players yet';
+    if (pt) {
+      const d = T.days(F.today, i.start);
+      return d > 0 ? `releases in <b>${d}d</b>`
+           : d === 0 ? 'releases <b>today</b>'
+           : `released <b>${-d}d</b> ago`;
+    }
+    if (col === 'upcoming') return `starts in <b>${T.days(F.today, i.start)}d</b>`;
+    if (col === 'ended')    return `ran <b>${T.days(i.start, i.end) + 1}d</b>`;
+    const left = T.days(F.today, i.end);
+    const span = Math.max(1, T.days(i.start, i.end));
+    const pct  = Math.min(100, Math.max(0, Math.round((T.days(i.start, F.today) / span) * 100)));
+    return left < 0 ? `ended <b>${-left}d</b> ago`
+         : `ends in <b>${left}d</b> <span class="dot2">·</span> ${pct}% through`;
+  }
+
   function renderBoard() {
     const g = { live:[], upcoming:[], staged:[], ended:[] };
     st.items.forEach(i => g[lifecycle(i)].push(i));
@@ -1199,7 +1474,13 @@
       </div>
       <div class="bcols">${BCOLS.map(c => {
       const col = g[c.k], off = st.collapsed.has(c.k);
-      const sum = c.k==='live'     ? (col.length ? 'next ends ' + T.fmt(col.map(x=>x.end).sort()[0]) : '')
+      /* ⚠️ ONLY A SPAN ENDS. Reading `.end` across the whole column pulled in points, whose end IS
+       * their release date, so "Live now" reported "next ends Jul 22" — the release of the patch
+       * note sitting at the top of the column, which does not end at all. If a column holds only
+       * points there is nothing to report, and reporting nothing is correct. */
+      const ending = col.filter(x => x.kind === 'span').map(x => x.end).filter(Boolean).sort();
+      const sum = c.k==='live'     ? (ending.length ? 'next ends ' + T.fmt(ending[0])
+                                    : col.length ? col.filter(x=>x.kind==='point').length + ' with no end date' : '')
                 : c.k==='upcoming' ? (col.length ? 'next ' + T.fmt(col.map(x=>x.start).sort()[0]) : '')
                 : c.k==='staged'   ? (col.length ? 'uncommitted' : '')
                 :                    (col.length ? col.length + ' archived' : '');
@@ -1219,12 +1500,8 @@
                style="--c:${accentOf(i.type)}">
             <span class="bn">${i.name}</span>
             <span class="bd">${F.TYPE_LABEL[i.type]} <span class="dot2">·</span> ${T.fmt(i.start)} &rarr; ${T.fmt(i.end)}</span>
-            <div class="bmeta">${
-              c.k === 'live'     ? `ends in <b>${T.days(F.today, i.end)}d</b> <span class="dot2">·</span> ${Math.round(((T.days(i.start,F.today))/Math.max(1,T.days(i.start,i.end)))*100)}% through`
-            : c.k === 'upcoming' ? `starts in <b>${T.days(F.today, i.start)}d</b>`
-            : c.k === 'staged'   ? 'not visible to players yet'
-            : `ran <b>${T.days(i.start,i.end)+1}d</b>`}</div>
-            <div class="sparkwrap">${spark(i)}</div>
+            <div class="bmeta">${boardMeta(i, c.k)}</div>
+            ${i.kind === 'point' ? '' : `<div class="sparkwrap">${spark(i)}</div>`}
             ${c.k === 'staged' ? `<div class="actions">
               <button data-discard="${i.id}">Discard</button>
               <button class="go" data-commit="${i.id}">Review</button></div>` : ''}
@@ -1393,7 +1670,7 @@
         const i = st.items.find(x => x.id === id);
         if (!ed.value.trim()) { ed.value = i.name; return; }
         i.name = ed.value.trim();
-        S.Store.add({ id:'rename-'+id, tier:1, name:i.name, verb:'renamed' });
+        S.Store.add({ id:'rename-'+id, op:(i.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:i.name, verb:'renamed' });
         S.toast(`Renamed to "${i.name}".`); renderAll();
       });
       ed.addEventListener('keydown', e => { if (e.key === 'Enter') ed.blur(); });
@@ -1411,14 +1688,14 @@
       <span class="sp">Destructive actions stage — they never fire from here.</span>`;
     bulk.querySelector('[data-b=delete]').onclick = () => {
       const n = st.selected.size;
-      S.Store.add({ id:'del-'+[...st.selected].join('-'), tier:2, name:`${n} item${n>1?'s':''}`, verb:'staged for deletion' });
+      S.Store.add({ id:'del-'+[...st.selected].join('-'), op:'calendar.bulkDelete', name:`${n} item${n>1?'s':''}`, verb:'staged for deletion' });
       S.toast(`Staged deletion of ${n} item${n>1?'s':''}. Nothing is gone yet.`, 'Review', () => location.href='review.html');
       st.selected.clear(); renderRows(); syncStaged();
     };
     bulk.querySelector('[data-b=shift]').onclick = () => {
       st.selected.forEach(id => { const i = st.items.find(x => x.id === id);
         i.start = T.addDays(i.start, 7); i.end = T.addDays(i.end, 7); });
-      S.Store.add({ id:'shift-'+Date.now(), tier:1, name:`${st.selected.size} items`, verb:'shifted +7 days' });
+      S.Store.add({ id:'shift-'+Date.now(), op:'calendar.bulkReplace', name:`${st.selected.size} items`, verb:'shifted +7 days' });
       S.toast('Shifted 7 days forward.'); st.selected.clear(); renderAll();
     };
     bulk.querySelector('[data-b=export]').onclick = function () {
@@ -1475,7 +1752,7 @@
       fieldError(pe, '');
       i.start = ps.value;
       i.end   = pe.value;
-      S.Store.add({ id:'move-'+i.id, tier:1, name:i.name, verb:'dates changed' });
+      S.Store.add({ id:'move-'+i.id, op:(i.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:i.name, verb:'dates changed' });
       S.toast(`${i.name} → ${T.fmt(i.start)} – ${T.fmt(i.end)}.`);
       S.closeDrawer(); renderAll();
     };
@@ -1543,7 +1820,7 @@
     sFlags.textContent = computeFlags().length;
   }
   function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
-  function renderAll(){ renderIdentity(); renderStats(); renderTrack(); renderRows(); syncStaged();
+  function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }
 
   /* ═══ VIEW 3 · REPAIRS ═══════════════════════════════════════════════════════════════

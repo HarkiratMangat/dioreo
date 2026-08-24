@@ -103,21 +103,42 @@ function checkFixtureShape(FIX) {
 }
 
 // ── 4. a tier stated anywhere matches the registry's own tier for that op ─────────────────────
-function checkTiers(file, src) {
-    for (const m of src.matchAll(/\bop\s*:\s*'([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)'[^}]*?\btier\s*:\s*(\d)/gs)) {
-        const [, name, tier] = m;
-        if (!OP_TYPES.has(name)) continue;
-        const real = ops.resolveOp(name)?.tier;
-        if (real !== undefined && Number(tier) !== real) {
-            fail('tier-matches', file, `"${name}" is tier ${real} in core/ops, stated as ${tier}`);
+// ⚠️ REWRITTEN AFTER A CODE REVIEW PROVED THE FIRST VERSION VACUOUS. It matched with `[^}]*?`
+// between the `tier:` and the `op:` keys — a character class that cannot cross a `}`. Every real
+// staging call has a template literal (`` `${b.weaponName} — ${b.buildName}` ``) between those two
+// keys, so the regex matched only the small confirm dialogs (which were already correct) and
+// missed every Store.add. The gate reported clean with six live disagreements in the tree.
+//
+// Brace-matching instead: find each call site, walk to its matching close brace, and read the two
+// keys out of the real object literal. A regex cannot balance braces; this is why it is a loop.
+function callSites(src) {
+    const out = [];
+    const re = /(?:S\.Store\.add|Store\.add|S\.confirm|Shell\.confirm)\(\{/g;
+    let m;
+    while ((m = re.exec(src))) {
+        let i = m.index + m[0].length - 1, depth = 0;
+        for (; i < src.length; i++) {
+            if (src[i] === '{') depth++;
+            else if (src[i] === '}') { depth--; if (!depth) break; }
         }
+        out.push({ body: src.slice(m.index, i + 1), line: src.slice(0, m.index).split('\n').length });
     }
-    for (const m of src.matchAll(/\btier\s*:\s*(\d)[^}]*?\bop\s*:\s*'([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)'/gs)) {
-        const [, tier, name] = m;
-        if (!OP_TYPES.has(name)) continue;
-        const real = ops.resolveOp(name)?.tier;
-        if (real !== undefined && Number(tier) !== real) {
-            fail('tier-matches', file, `"${name}" is tier ${real} in core/ops, stated as ${tier}`);
+    return out;
+}
+function checkTiers(file, src) {
+    for (const { body, line } of callSites(src)) {
+        const op = (body.match(/\bop\s*:\s*['"]([^'"]+)['"]/) || [])[1];
+        const tierRaw = (body.match(/\btier\s*:\s*(\d)\b/) || [])[1];
+        if (!op) {
+            // A staged op with no type cannot have its tier checked at all, and Review cannot say
+            // what it would run. That is a finding in itself, not a reason to skip the check.
+            if (tierRaw !== undefined) fail('tier-matches', file, `${file}:${line} states tier ${tierRaw} but names no op type — nothing can check it`);
+            continue;
+        }
+        if (!OP_TYPES.has(op) || tierRaw === undefined) continue;
+        const real = ops.resolveOp(op)?.tier;
+        if (real !== undefined && Number(tierRaw) !== real) {
+            fail('tier-matches', file, `${file}:${line} states tier ${tierRaw} for "${op}"; core/ops registers ${real}`);
         }
     }
 }
@@ -134,7 +155,13 @@ if (process.argv.includes('--self-test')) {
     const probes = [
         ['op-registered', () => checkOps('probe', `{ op:'loadouts.setRank' }`)],
         ['scope-real',    () => checkScopes('probe', `['manage.nosuchpage']`)],
-        ['tier-matches',  () => checkTiers('probe', `{ op:'draw.add', tier:3 }`)],
+        ['tier-matches',  () => checkTiers('probe',
+            // ⚠️ THE PROBE MUST MATCH THE REAL SHAPE. It used to be a bare object literal,
+            // which the brace-matching scanner correctly ignores — so the self-test went red
+            // the instant the check was rewritten, which is exactly what a self-test is for.
+            // Note the template literal between the keys: that is the case the old regex
+            // could not cross, and the reason it silently matched nothing.
+            "S.Store.add({ id:'x', name:`${a} - ${b}`, op:'draw.add', tier:3, rows:[] });")],
         ['field-on-model',() => checkFixtureShape({ announcements: [{ text: 'x', views: 1, pinned: true }] })],
     ];
     let ok = true;

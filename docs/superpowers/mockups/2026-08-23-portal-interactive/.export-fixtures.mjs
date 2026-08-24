@@ -116,6 +116,13 @@ P(`  const accessScopes = ${j(matrix.scopes)};`);
 P(`  const spof = ${j(spof)};`);
 P(`  const sessions = ${j(sessions)};`);
 P(`  const changeLogRows = ${j(changeLogRows)};`);
+// 🔴 THE /manage ACTION REGISTRY, exported whole. The deferred item this pass closed demanded
+// "enumerate the entity's actions from manageActions.js and confirm each is reachable in the
+// mockup or DELIBERATELY NAMED AS ABSENT" — the exact check the Armory rebuild was born from
+// (Loadouts had ten actions; the mockup implemented three and named none of the rest). It was not
+// run until a completeness sweep asked for it, and it found 24 of 37 unaccounted for. A surface
+// cannot answer "what can an admin do here" from a list it does not have, so here is the list.
+P(`  const MANAGE_ACTIONS = ${j(Object.fromEntries(Object.entries(require(`${REPO}/utils/manageActions`).ACTIONS_BY_PAGE).map(([page, list]) => [page, list.map((a) => ({ id: a.id, label: a.label, kind: a.kind, slash: !!a.slash }))])))};`);
 P(`  const OP_TYPES = ${j(ops.listOpTypes())};`);
 // 🔴 A TIER IS DERIVED, NEVER STATED. "Write directly when you can guarantee an exact inverse,
 // stage when you cannot" (2026-08-20 spec §5) is a rule about the OP, so the answer lives in the

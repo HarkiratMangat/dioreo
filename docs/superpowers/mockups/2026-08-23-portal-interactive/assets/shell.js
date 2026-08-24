@@ -2,6 +2,20 @@
  * Staged ops live in sessionStorage so the tray SURVIVES page navigation — that is what makes
  * clicking between realms feel like one app rather than six documents. */
 (function () {
+  /* ⚠️ THE SIGNED-IN USER, FROM DISCORD'S OWN API — not a placeholder and not a guess.
+   * Fetched once via GET /users/{id} with the bot token and recorded here as the public CDN
+   * URLs it yields; the token never appears in this package and never needs to. In the wired
+   * portal these come straight off the OAuth `identify` scope's user object, which returns the
+   * same `avatar` and `banner` hashes — so this is the real shape, pre-resolved.
+   * `a_` prefix on a hash means ANIMATED, which is why the banner is a .gif. */
+  const USER = {
+    id: '1139845545754632283',
+    username: 'diorswrld',          // the @handle
+    displayName: 'dior',            // global_name — what Discord shows
+    avatar: 'https://cdn.discordapp.com/avatars/1139845545754632283/de36d1994e834cd75ac0b7bc3b66a6db.png?size=160',
+    banner: 'https://cdn.discordapp.com/banners/1139845545754632283/a_27ab8a4882e601f3e742c54675ad2bf4.gif?size=480'
+  };
+  window.__USER = USER;
   /* Surfaced to the audit harness — a page can pass every geometric invariant while throwing.
    * Collected here rather than per page so no surface can forget to. */
   window.__errs = window.__errs || [];
@@ -44,6 +58,11 @@
        * a delete as tier 3 because deleting feels destructive; core/ops says tier 1, since
        * apply() captures the whole document before removing it and the inverse is exact. The
        * export gate is for changes that CANNOT be undone, and a reversible delete is not one. */
+      /* ⚠️ AND SAY SO WHEN THERE IS NOTHING TO DERIVE FROM. Ten staging sites passed a hand-typed
+       * tier and no `op` at all, so OP_TIERS[undefined] was undefined, the block below was skipped,
+       * and §3.9.2's "a page may still pass a tier; it is only ever checked" was false for nearly
+       * half the sites in the package — silently, which is the only way it could have survived. */
+      if (!op.op) console.warn(`[dioreo] staged op "${op.id}" names no op type — its tier cannot be checked against core/ops, and Review cannot say what it would run.`);
       const real = (window.FIX && window.FIX.OP_TIERS || {})[op.op];
       if (real !== undefined) {
         if (op.tier !== undefined && op.tier !== real)
@@ -172,6 +191,16 @@
      * plain words, label the button with the ACTION rather than "OK". One place, so the
      * wording cannot drift between the pages that raise them. */
     confirm({ title, body, confirm, danger, op, tier, onConfirm }){
+      /* The confirm dialog PRINTS a tier in its eyebrow, so it must be held to the same rule as
+       * Store.add — season.html rendered "season.discardDraft · tier 3" for an op core/ops
+       * registers as tier 2. A dialog that misstates the weight of what it is about to do is
+       * worse than one that says nothing. */
+      const realTier = (window.FIX && window.FIX.OP_TIERS || {})[op];
+      if (realTier !== undefined) {
+        if (tier !== undefined && tier !== realTier)
+          console.warn(`[dioreo] confirm for "${op}" states tier ${tier}; core/ops registers ${realTier}. Using ${realTier}.`);
+        tier = realTier;
+      }
       Shell.drawer({
         eyebrow: op ? `${op} · tier ${tier || 3}` : `tier ${tier || 3}`,
         title, body,
@@ -382,13 +411,14 @@
     <button class="pal" id="palBtn" title="Command palette"><kbd>⌘K</kbd></button>
     <span class="who">
       <button class="whobtn" id="whoBtn" aria-expanded="false" aria-haspopup="menu">
-        <span class="av"></span>dior<span class="cv">▾</span></button>
+        <span class="av" data-src style="--av-src:url('${USER.avatar}')"></span>${USER.displayName}<span class="cv">▾</span></button>
       <div class="umenu" id="uMenu" role="menu" hidden>
+        <div class="ubanner" style="--banner:url('${USER.banner}')" aria-hidden="true"></div>
         <div class="uhead">
-          <span class="uav"><b>D</b><i class="pres" title="Signed in"></i></span>
+          <span class="uav" style="--av-src:url('${USER.avatar}')"><i class="pres" title="Signed in"></i></span>
           <span class="uinfo">
-            <span class="l1"><span class="nm">dior</span><span class="rolebadge">OWNER</span></span>
-            <span class="id">1139845545754632283</span>
+            <span class="l1"><span class="nm">${USER.displayName}</span><span class="rolebadge">OWNER</span></span>
+            <span class="id">@${USER.username}</span>
           </span>
         </div>
         <div class="usec">
@@ -400,7 +430,7 @@
             Command palette<kbd>&#8984;K</kbd></button>
           <button class="mi" role="menuitem" data-m="copy">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z"/><path d="M3 11V3h8"/></svg>
-            Copy Discord ID<span class="mnote">1139…3283</span></button>
+            Copy Discord ID<span class="mnote">${USER.id.slice(0,4)}…${USER.id.slice(-4)}</span></button>
         </div>
         <div class="usec">
           <div class="ustat"><span>Staged changes</span><b id="uStaged">0</b></div>
@@ -442,7 +472,7 @@
             confirm:'Sign out', danger:true,
             onConfirm(){ Store.clear(); location.href = 'door.html'; } });
         } else if (k === 'copy') {
-          navigator.clipboard?.writeText('1139845545754632283'); Shell.toast('Discord ID copied.');
+          navigator.clipboard?.writeText(USER.id); Shell.toast('Discord ID copied.');
         } else if (k === 'palette') { window.__openPalette && window.__openPalette(); }
         else Shell.toast('The realm switcher is the rail on the left.');
       });

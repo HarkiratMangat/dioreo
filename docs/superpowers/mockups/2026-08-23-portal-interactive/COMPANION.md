@@ -231,7 +231,7 @@ node .export-fixtures.mjs > /tmp/block.js
 
 | Check | Asserts | Caught, first run |
 |---|---|---|
-| `op-registered` | every `op:'…'` / `type:'…'` is one of the **42** registered types, or one of the 8 documented non-op actions | **29 violations** — including **ten in `armory.html`**, a page declared finished the day before: `loadouts.setRank`, `loadouts.bulkEdit`, `loadouts.setBadges` do not exist at all, and the rest were pluralised (`loadouts.edit` for `loadout.edit`) |
+| `op-registered` | every `op:'…'` / `type:'…'` is one of the **42** registered types, or one of the 8 documented non-op actions | **31 violations** — including **ten in `armory.html`**, a page declared finished the day before: `loadouts.setRank`, `loadouts.bulkEdit`, `loadouts.setBadges` do not exist at all, and the rest were pluralised (`loadouts.edit` for `loadout.edit`) |
 | `scope-real` | every `manage.<page>` token is in `MANAGE_PAGE_SCOPES` | — |
 | `field-on-model` | every exported fixture key exists on that model's real Mongoose schema paths | structural, so a *newly* invented field is caught too, not only the four already found |
 | `tier-matches` | a stated tier equals `core/ops`'s tier for that op | **3 deletes typed as tier 3** that the registry registers as tier 1 |
@@ -663,42 +663,40 @@ Four corrections, all the same class — a name written confidently that exists 
 Every admin × all eleven tokens, commands and `/manage` pages in visually separated blocks. **This is the capability Discord physically cannot offer**: `/manage` shows one admin's permissions in one ephemeral reply, so answering *"who can touch draws?"* means opening it once per admin and holding the answers in your head.
 
 #### By scope (`#viewScope`) — the inverse
-Each token with its holders, derived from the *same* grants so the two views cannot disagree. Two findings live only here: a scope held by **exactly one** non-owner (a single point of failure — 5 on the live data), and a scope held by **nobody** but the owner (`autobuild`).
+Each token with its holders, derived from the *same* grants so the two views cannot disagree. Two findings live only here: a scope held by **exactly one** non-owner (a single point of failure — **6** on the live data, including the bare `manage` token itself), and a scope held by **nobody** but the owner (`autobuild`).
 
-⚠️ **The mockup reproduces `singlePointsOfFailure()`'s own blind spot on purpose.** That function expands a bare `manage` into the eight page scopes and never records a holder for `manage` *itself*, so a lone holder of the full token is not reported — arguably wrong, and reported below as a finding against the API. Counting it here would show **6** where the endpoint returns **5**, and a mockup that quietly disagrees with the endpoint it specifies is worse than one that matches a flaw.
+⚠️ **The page READS `F.spof`; it does not re-derive it.** An earlier build reproduced `singlePointsOfFailure()`'s blind spot deliberately — that function used to expand a bare `manage` into the eight page scopes without ever recording a holder for `manage` itself, so a lone holder of the full token went unreported. **That defect was then fixed** (§14.5), the export picked the fix up, and the page's hand-written copy of the old rule kept saying 5 while `F.spof` and `index.html` both said 6. Two surfaces of one package answering the same question differently is exactly what the fix existed to end. There is now one definition, in the export, and every surface reads it.
 
 | Element | What it is | Wires to |
 |---|---|---|
-| `.mx thead .mxs` | Scope column header. `i` is a 3px bar in **that scope's own topic colour** (`SCOPE_META[key].hex`) | — |
-| `.mxcell` | One permission. `role="checkbox"`, `aria-checked`. Filled = granted, **dashed = staged**, `.locked` = owner | `access.setScope`, **tier 1** |
-| `.mxcell.locked` | The owner row. Clicking explains rather than failing silently | — |
-| `.mxrole` | `owner` gold · `admin` info-blue · `editor` grey | `AdminUser.role` |
-| `.mxfoot` | Grant count, what a cell means, and why the owner row is locked | — |
+| `.mxgrp th` | Two group headers — **Commands** and **/manage pages** — over the eleven columns. The split is the model's, not a layout choice: three `ADMIN_COMMANDS` and eight `MANAGE_PAGE_SCOPES` | `utils/adminAccess.js` |
+| `.mx thead .mxs.mxcol` | Scope column header. `i` is a 3px bar in that scope's borrowed topic colour; `em.mxn2` carries the live holder count; `.spof` rings it when exactly one non-owner holds it | `F.SCOPE_META[key]` |
+| `.mxcell` | One grant, `role="img"` — **not interactive**. Filled square = **direct**, hollow ring = **inherited** from a bare `manage`, empty = not held | `F.accessAdmins[i].grants[key]` |
+| `.mxcell.locked` | The owner row. Every scope, permanently, by short-circuit before the allowlist is read | `utils/owner.js` |
+| `.ownerrow` | The owner, rendered as a row rather than described in prose, so the grid is complete | — |
+| `button.chip[data-edit]` | Opens the permissions drawer for that admin | `access.grant` — a **direct write** |
+| `.mxfoot` legend | What a filled square means versus a ring, and the `+ Grant access` entry point | — |
 
-> **Why a permission change is tier 1.** It has an exact inverse — put the scope back. What makes permissions dangerous is not reversibility, it is that the effect is live in the bot within 60 seconds; that belongs in the *copy*, not in the tier. The staged op's `rows` say so explicitly: `['Takes effect', 'on commit', 'within 60s of commit']`.
+> 🔴 **THE GRID IS READ-ONLY, AND THAT IS THE DESIGN.** An earlier build made every cell a toggle that STAGED into the tray. `portal/api/access.js` is explicit that admin grants and revokes are *"NOT part of the core operation algebra"* — they are direct `AdminUser` writes whose only gate is typing the target's own Discord ID, because the export half of the tier-3 model has no meaning for a permission change. So there is no cell op, no tier, no tray and no undo: **the typed confirmation is the gate**, and the grid's job is to show you what you are about to change, not to be the control that changes it.
 
-#### Bulk, and why the grid needed it
+#### Grant, edit and revoke
 
-The matrix shipped offering **one interaction repeated 28 times**, which is the same thinness that got Armory rejected once. Two bulk affordances close it, both **tier 2** because N writes that must land together are one changeset with one inverse:
+One drawer does all three, because they are one write: `findOneAndUpdate` with `upsert`. The form carries the token field, a chip grid that reflects it both ways, an optional label, and a confirm field that must equal the target id exactly.
 
 | Control | What it does |
 |---|---|
-| `button.mxs.mxcol` — the column header | Grants or revokes that scope for **every non-owner admin**. Its label carries a live `held/total` count, so the header states the situation before you touch it, and the verb flips: at `3/3` it offers *revoke*, otherwise *grant* |
-| `.mxrow` — `all`/`none` beside a name | The same for one admin's whole row. Appears on row hover or focus |
+| `#gPerm` + `.tokgrid` | The comma-separated token string and its chips stay in sync in both directions. A chip lights `.inh` when a bare `manage` would cover it, so you can see inheritance before you commit it |
+| `#gConf` | Must equal the Discord ID being granted or revoked. `portal/api/access.js`'s `confirmMatchesTarget` |
+| `#gHint` | Reads the token string back in words, or names the exact bad token |
 
-`bulkScope()` snapshots every affected admin's scope array **before** touching anything, so one inverse restores the entire prior shape. It refuses with a toast when nothing would change, rather than staging an empty op.
-
-#### The `editor` role had a semantic the grid could not show
-
-An editor holds a scope *minus every destructive action in it* — a real difference from an admin, invisible when both render the same filled check. Editor grants now draw a **hollow ring** instead: same colour (topic), different **shape** (state), which is the system's own rule rather than a new one. The legend in `.mxfoot` names it.
+> ⚠️ **ONE BAD TOKEN REJECTS THE WHOLE SUBMISSION**, reproduced rather than softened. `parsePermissionsInput` returns `null` on any unrecognised token, on the stated reasoning that *a partial grant from a typo is worse than an error*. `all` is input-only and expands to the three commands. A permissions array is never allowed to be empty.
 
 #### Signed in (`#viewSess`)
-Live **portal** sessions (12h TTL), not Discord ones. `.sess.stale` dims a non-current session; `.sesscur` marks this browser.
+Live **portal** sessions (12h TTL on a Mongo index), not Discord ones. `models/PortalSession.js` stores `sessionHash`, `discordId`, `lastSeenAt`, `userAgent`, `revokedAt` — **no IP**, and no "is this me" flag. `.sess.stale` dims a session not seen in 15 minutes, which is derived rather than stored because a browser session has no logout event unless somebody clicks one.
 
-> 🔴 **Revoking a session is NOT a data operation and has no tier.** It takes effect immediately and never stages, because a security action that waits in a tray is not a security action. It uses `Shell.confirm` at its lightest weight. See §4.4 on why "tier-N confirm" must not become a vocabulary.
+> 🔴 **Ending a session is NOT a data operation and has no tier.** It takes effect immediately and never stages, because a security action that waits in a tray is not a security action. See §4.4 on why "tier-N confirm" must not become a vocabulary.
 
-#### Manifest
-The admin roster — avatar, name, Discord ID, role, granted date, last-active (live sessions show a green dot instead of a date), and up to three scope chips in their own colours with a `+N` overflow. Row click opens the admin record. `+ Grant access` opens a **tier-2** drawer (ID + name + role + starting scopes land together as one changeset) which validates the Discord ID against `/^\d{17,19}$/` before it will stage.
+⚠️ **There is no Manifest on this page.** The grid *is* the roster — a second table listing the same admins would be the "one interaction repeated" thinness the grid was built to end. The one list that would have been a Manifest is the session list, and it is short enough to be a panel.
 
 ---
 
@@ -1175,7 +1173,7 @@ Rebuilding Access against the real permission model made the mockup and the endp
 
 **2. A bare `manage` held by one person could never be reported as a single point of failure.** `singlePointsOfFailure()` expanded `manage` into the eight page scopes inside an `else if`, so it never recorded a holder for `manage` **itself** — the token sat permanently at zero holders and therefore never qualified. That is the *most* consequential single point there is: lose that person and every page goes at once. Both effects now apply.
 
-⚠️ **The mockup deliberately reproduced defect 2 before it was fixed**, because a specification that quietly disagrees with the endpoint it specifies is worse than one that matches a flaw. Now that the endpoint is right, both report the same number.
+⚠️ **The mockup deliberately reproduced defect 2 before it was fixed**, because a specification that quietly disagrees with the endpoint it specifies is worse than one that matches a flaw. Once the endpoint was fixed, the mockup's hand-written copy of the old rule was left behind and the package reported **6** on Home and **5** on Access for one commit — caught by a code review, and closed by deleting the copy: Access now reads the exported `F.spof` instead of re-deriving it.
 
 ## 15. The contracts this mockup cannot express
 
