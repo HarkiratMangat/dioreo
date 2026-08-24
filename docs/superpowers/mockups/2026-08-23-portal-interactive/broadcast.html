@@ -291,7 +291,13 @@
 
   function openAnn(id) {
     const a = st.ann.find(x => x._id === id); if (!a) return;
-    const expIn = a.expiresAt ? String(Math.max(1, days(NOW, a.expiresAt))) : 'never';
+    /* ⚠️ CEIL, NOT ROUND. utils/announcement.js's expiryToInputValue uses Math.ceil, and the
+     * difference is not cosmetic: an expiry 1.4 days out prefills "1" under rounding, so
+     * re-opening this drawer to fix a typo and re-submitting SHORTENS the expiry — precisely the
+     * silent reset that function's own comment says it exists to prevent. */
+    const expIn = a.expiresAt
+      ? String(Math.max(1, Math.ceil((new Date(a.expiresAt) - new Date(NOW)) / 86400000)))
+      : 'never';
     S.drawer({
       eyebrow:`announcement.edit &middot; tier ${F.OP_TIERS['announcement.edit']}`, title:'Announcement', wide:true,
       body:`<div class="dwbody">

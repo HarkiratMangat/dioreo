@@ -26,7 +26,13 @@ const ops          = require(`${REPO}/core/ops`);
 const { MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require(`${REPO}/utils/adminAccess`);
 const { buildPermissionMatrix, singlePointsOfFailure } = require(`${REPO}/portal/api/access`);
 const { announcementState } = require(`${REPO}/portal/api/broadcast`);
-const { OWNER_ID } = (() => { try { return require(`${REPO}/utils/owner`); } catch { return {}; } })();
+// ⚠️ THE EXPORT NAME IS `ALLOWED_ADMIN_ID`. This destructured `OWNER_ID`, which utils/owner.js has
+// never exported, so it resolved to undefined and the `||` below silently emitted a retyped
+// literal — under a header that says "Nothing below is retyped." A fallback that hides a wrong
+// name is worse than a crash, because the output looks correct. No fallback now: if the module
+// stops exporting it, this fails loudly rather than freezing today's value into the fixtures.
+const { ALLOWED_ADMIN_ID: OWNER_ID } = require(`${REPO}/utils/owner`);
+if (!OWNER_ID) throw new Error('utils/owner.js no longer exports ALLOWED_ADMIN_ID — fix this import rather than hardcoding an id.');
 
 const day = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null);
 const j   = (v) => JSON.stringify(v);
@@ -132,6 +138,6 @@ P(`  const OP_TYPES = ${j(ops.listOpTypes())};`);
 // unnoticed until this map made disagreement checkable.
 P(`  const OP_TIERS = ${j(Object.fromEntries(ops.listOpTypes().map((t) => [t, ops.resolveOp(t).tier])))};`);
 P(`  const PERM_TOKENS = ${j([...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map((p) => `manage.${p}`)])};`);
-P(`  const OWNER_ID = ${j(OWNER_ID || '1139845545754632283')};`);
+P(`  const OWNER_ID = ${j(OWNER_ID)};`);
 console.log(out.join('\n'));
 await mongoose.disconnect();

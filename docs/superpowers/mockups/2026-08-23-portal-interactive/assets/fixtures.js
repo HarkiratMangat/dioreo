@@ -16,7 +16,7 @@ window.FIX = (function () {
   /* ══════════════════════ EXPORTED, NOT AUTHORED ══════════════════════
    * Everything from here to the end of this comment's block was written by
    * .export-fixtures.mjs reading mongodb://localhost:27017/diors-builds-dev and the
-   * bot's own registries. Do not hand-edit — re-run the script. Exported 2026-08-24 17:26Z.
+   * bot's own registries. Do not hand-edit — re-run the script. Exported 2026-08-24 19:43Z.
    * Counts at export: 3 new draws · 11 returning · 23 calendar rows
    * · 2 patch notes · 4 announcements · 3 granted admins · 0 live sessions.
    * ══════════════════════════════════════════════════════════════════ */
@@ -219,14 +219,22 @@ window.FIX = (function () {
     ];
   }
 
-  /* commands/calendar.js's isEventEnded, verbatim — the ONLY definition of "ended" on this
+  /* commands/calendar.js's isEventEnded, with two labelled divergences — the ONLY definition of "ended" on this
    * page. A dateOnly draw never ends; an isOngoing row ends when the battle pass does (and
    * never, while bpEndTBD). Anything else compares its own endDate. */
   function isEventEnded(it, nowMs) {
     if (it.dateOnly) return false;
     if (it.kind === 'point') return false;
     if (it.isOngoing) { if (season.bpEndTBD) return false; return Boolean(season.bpEnd) && new Date(season.bpEnd).getTime() <= nowMs; }
-    return it.endDate ? new Date(it.endDate).getTime() <= nowMs : false;
+    /* ⚠️ `new Date(null).getTime()` is 0, so the bot's own line returns TRUE (ended) for a
+     * non-ongoing row with no endDate. Nothing in the live document hits it — the only null
+     * endDate also carries isOngoing — but the schema permits it and the single add/edit modal
+     * can produce one, so the port matches rather than quietly improving. Two divergences ARE
+     * kept and both are deliberate: the `kind === 'point'` short-circuit above (the bot's
+     * function never sees a point, because patch notes and draws are not calendar rows), and the
+     * patchNotes branch in season.html's lifecycle(). Divergence is fine; unlabelled divergence
+     * under the word "verbatim" is not. */
+    return new Date(it.endDate).getTime() <= nowMs;
   }
 
   /* The Season banners, as a list, because two of the three real values are the finding.

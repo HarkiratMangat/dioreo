@@ -51,6 +51,18 @@ check('Access By-scope still flags every page a lone bare-"manage" holder inheri
     }
 });
 
+// 🔴 ONE PERSON, COUNTED TWICE. `parsePermissionsInput` accepts "manage, manage.draws", and the
+// holder map then received that admin TWICE for manage.draws — once from the bare-token expansion
+// and once from the explicit token — so ids.length === 2 and the scope they hold MOST explicitly
+// was the one scope not reported. Latent before the 2026-08-24 fix (the expansion was in an
+// `else if`, so the two paths were mutually exclusive); the if/if shape that fix needs makes it
+// reachable, which is exactly why it belongs in a test rather than in a comment.
+check('Access By-scope counts one admin once, even holding both "manage" and "manage.draws"', () => {
+    const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage', 'manage.draws'] }]);
+    assert.ok(spof.some(s => s.scope === 'manage.draws' && s.discordId === 'A'),
+        'a scope held both directly and by inheritance still has exactly ONE holder');
+});
+
 check('Access By-scope does NOT flag a bare "manage" held by two admins', () => {
     const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage'] }, { discordId: 'B', permissions: ['manage'] }]);
     assert.ok(!spof.some(s => s.scope === 'manage'), 'two holders is not a single point');

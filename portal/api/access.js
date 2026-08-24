@@ -20,9 +20,14 @@ function ownerOnly(handler) {
 
 // "By scope" \u2014 flags a scope held by exactly one non-owner (a single point of failure).
 function singlePointsOfFailure(admins) {
-    const holders = new Map(); // scope -> discordId[]
+    // ⚠️ A SET, NOT A LIST. `parsePermissionsInput` accepts "manage, manage.draws", and with the
+    // two effects below now both applying (they were mutually exclusive until 2026-08-24), that
+    // admin was pushed TWICE for manage.draws — so ids.length === 2 and the one scope they hold
+    // most explicitly was the one scope never reported as a single point. Deduping by id makes
+    // "how many people hold this" mean what it says.
+    const holders = new Map(); // scope -> Set<discordId>
     for (const scope of [...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map(p => `manage.${p}`)]) {
-        holders.set(scope, []);
+        holders.set(scope, new Set());
     }
     for (const admin of admins) {
         for (const perm of admin.permissions || []) {
@@ -32,14 +37,14 @@ function singlePointsOfFailure(admins) {
             // FULL token is the most consequential single point of failure there is: lose them and every
             // page goes at once. Found 2026-08-24 rebuilding the Access mockup on the real permission
             // model, where the page's own count disagreed with this endpoint's. Both effects now apply.
-            if (holders.has(perm)) holders.get(perm).push(admin.discordId);
+            if (holders.has(perm)) holders.get(perm).add(admin.discordId);
             if (perm === 'manage') {
-                for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.push(admin.discordId);
+                for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.add(admin.discordId);
             }
         }
     }
     const spof = [];
-    for (const [scope, ids] of holders) if (ids.length === 1) spof.push({ scope, discordId: ids[0] });
+    for (const [scope, ids] of holders) if (ids.size === 1) spof.push({ scope, discordId: [...ids][0] });
     return spof;
 }
 
