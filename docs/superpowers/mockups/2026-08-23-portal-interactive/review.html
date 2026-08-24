@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Review &amp; commit · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787586710"><link rel="stylesheet" href="assets/app.css?v=1787586710">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Review &amp; commit</h1>
+        <span class="job">Exactly what is about to change, and what it will overwrite, before any of it is written.</span>
+      </div>
+      <div class="mh-stats">
+        <span class="stat stg"><span class="v" id="sOps">0</span> <span class="k">changes</span></span>
+        <span class="stat"><span class="v" id="sRealms">0</span> <span class="k">realms</span></span>
+        <span class="stat warn"><span class="v" id="sGates">0</span> <span class="k">gates open</span></span>
+      </div>
+    </div>
+
+    <section class="panel" aria-label="Staged changeset">
+      <div class="ph">
+        <span class="t">Changeset</span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <div id="viewReview"></div>
+      <div id="rvfoot"></div>
+    </section>
+  </main>
+</div>
+<!-- No floating tray on this page. The tray exists to carry staged work ACROSS realms;
+     here the page IS the tray, expanded. Keeping it would put a "Review & commit" button on
+     the review screen that navigates to itself, and it physically covered the commit gate in
+     the footer — two controls for one action, with the redundant one obscuring the one that
+     matters. Caught by looking at a screenshot; no audit rule can see it. -->
+
+<script src="assets/fixtures.js?v=1787586710"></script>
+<script src="assets/shell.js?v=1787586710"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell;
+  S.init('');
+  S.mountHeader('Portal', 'Review');
+
+  const st = { sel:null, exported:{}, resolved:{}, confirmText:'' };
+  const ops = () => S.Store.all();
+  const dash = v => (v === null || v === undefined || v === '') ? '—' : String(v);
+
+  /* ── The staging conflict, and why it is NOT the Track's hatch ────────────
+   * A CONTENT conflict is "this item outlives its season" and wears a 45° hatch.
+   * A STAGING conflict is "the record moved underneath your staged op, so the
+   * inverse you captured no longer describes reality." Different cause, different
+   * remedy, so it gets its own treatment — see COMPANION §4.3 and §15.4.
+   *
+   * In the live portal this comes from re-reading live state at review time
+   * (design spec §6.1/H1). There is no server here, so it is simulated on one
+   * marked op — the SHAPE of the surface is the thing being specified. */
+  const isStale = o => o.stale === true && !st.resolved[o.id];
+  const needsExport = o => o.tier === 3 && !st.exported[o.id];
+
+  function blockers() {
+    const b = [];
+    const ex = ops().filter(needsExport);
+    const stale = ops().filter(isStale);
+    if (ex.length) b.push({ k:'export', n:ex.length,
+      msg:`${ex.length} tier-3 change${ex.length > 1 ? 's need' : ' needs'} an export before it will commit` });
+    if (stale.length) b.push({ k:'stale', n:stale.length,
+      msg:`${stale.length} change${stale.length > 1 ? 's were' : ' was'} staged against a record that has since moved` });
+    const t3 = ops().filter(o => o.tier === 3);
+    if (t3.length && st.confirmText !== confirmWord())
+      b.push({ k:'type', n:t3.length, msg:`type “${confirmWord()}” to confirm the destructive changes` });
+    return b;
+  }
+  /* Never the word DELETE — muscle memory carries you straight through that one.
+   * The word is the actual target, so typing it means you read it. */
+  function confirmWord() {
+    const first = ops().find(o => o.tier === 3);
+    return first ? first.name : '';
+  }
+
+  function render() {
+    const list = ops();
+    sOps.textContent    = list.length;
+    sRealms.textContent = new Set(list.map(o => o.realm || 'season')).size;
+    sGates.textContent  = blockers().length;
+
+    if (!list.length) { renderEmpty(); renderFoot(); return; }
+    if (!st.sel || !list.some(o => o.id === st.sel)) st.sel = list[0].id;
+    const sel = list.find(o => o.id === st.sel);
+
+    viewMeta.textContent = `${list.length} change${list.length > 1 ? 's' : ''} · commits as one transaction`;
+    viewReview.innerHTML = `
+      <div class="rvwrap">
+        <div class="rvlist" role="tablist" aria-label="Staged changes">
+          ${list.map(o => `
+            <div class="rvopwrap ${o.id === st.sel ? 'on' : ''}">
+              <button class="rvop ${o.tier === 3 ? 't3' : ''}" role="tab" data-id="${o.id}"
+                      aria-pressed="${o.id === st.sel}">
+                <span class="rvt">T${o.tier}</span>
+                <span class="rvn">
+                  <b>${o.name}</b>
+                  <span>${o.verb || 'changed'} · ${o.realm || 'season'}</span>
+                  ${isStale(o) ? `<span class="rvw">needs attention</span>`
+                    : needsExport(o) ? `<span class="rvw">export required</span>`
+                    : o.tier === 3 ? `<span class="rvw done">export saved</span>` : ''}
+                </span>
+              </button>
+              <button class="rvdrop" data-drop="${o.id}"
+                      title="Drop “${o.name}” from this changeset"
+                      aria-label="Drop ${o.name} from this changeset">&#10005;</button>
+            </div>`).join('')}
+        </div>
+        <div class="rvdet">${detail(sel)}</div>
+      </div>`;
+
+    viewReview.querySelectorAll('.rvop').forEach(b => b.onclick = () => { st.sel = b.dataset.id; render(); });
+    /* Dropping ONE op REVERTS it — it does not merely forget it (§4.5). Without this you
+     * could stage four things and only commit all four or none, which is not a review
+     * screen, it is a receipt. */
+    viewReview.querySelectorAll('[data-drop]').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const o = ops().find(x => x.id === b.dataset.drop);
+      S.Store.revert(o.id);
+      delete st.exported[o.id]; delete st.resolved[o.id];
+      if (st.sel === o.id) st.sel = null;
+      S.toast(`Dropped “${o.name}”. The value it would have overwritten is untouched.`);
+      render();
+    });
+    wireDetail(sel);
+    renderFoot();
+  }
+
+  function detail(o) {
+    if (!o) return '';
+    const rows = o.rows && o.rows.length ? o.rows : [['(no field-level preview captured)', '—', '—']];
+    return `
+      <h4>${o.name}</h4>
+      <span class="rvop-name">${o.op || 'unknown operation'} · tier ${o.tier} · ${o.realm || 'season'}</span>
+
+      ${isStale(o) ? `
+        <div class="rvcon">
+          <span style="font-size:17px;line-height:1">⚠</span>
+          <div>
+            <b>This record changed after you staged the change</b>
+            <p>Someone edited <b>${o.name}</b> in Discord while it sat in your tray, so the value
+               you are about to overwrite is not the value you saw. The inverse captured for this
+               op would restore the <em>old</em> old value, which is not what you want.</p>
+            <div class="rvcx">
+              <button class="chip go" data-res="keep">Keep mine, overwrite theirs</button>
+              <button class="chip" data-res="drop">Drop my change</button>
+            </div>
+          </div>
+        </div>` : ''}
+
+      <div class="rvgrid">
+        <div class="rvhead"><span>Field</span><span>Was</span><span>Becomes</span></div>
+        ${rows.map(r => `
+          <div class="rvr ${o.destroys ? 'del' : ''}">
+            <span class="rvk">${dash(r[0])}</span>
+            <span class="rvwas">${dash(r[1])}</span>
+            <span class="rvnow">${dash(r[2])}</span>
+          </div>`).join('')}
+      </div>
+
+      ${o.tier === 3 ? `
+        <div class="rvexp ${st.exported[o.id] ? 'done' : ''}">
+          ${st.exported[o.id]
+            ? `<b>✓ Export saved</b>
+               <p>You are holding a file that re-imports through the bot's own bulk parser. That is
+                  what converts this from irreversible to reversible-with-a-file.</p>`
+            : `<b>Export what this destroys, first</b>
+               <p>This change cannot be undone by an inverse. The bot can already serialize its own
+                  state into a format its bulk parsers re-ingest, so the export is nearly free — and
+                  it is the strongest safeguard available. The commit stays closed until you take it.</p>
+               <button class="chip go" data-exp="${o.id}">Download export</button>`}
+        </div>` : `
+        <p class="chint" style="margin-top:16px">Tier ${o.tier} — an exact inverse was captured when
+          this was staged, so it can be undone after it commits.</p>`}`;
+  }
+
+  function wireDetail(o) {
+    if (!o) return;
+    viewReview.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => {
+      st.exported[b.dataset.exp] = true;
+      S.toast(`Export saved for “${o.name}”. The commit gate for it is now open.`);
+      render();
+    });
+    viewReview.querySelectorAll('[data-res]').forEach(b => b.onclick = () => {
+      if (b.dataset.res === 'drop') {
+        S.Store.revert(o.id);
+        S.toast(`Dropped “${o.name}” — the record in Discord is untouched.`);
+      } else {
+        st.resolved[o.id] = true;
+        S.toast(`“${o.name}” will overwrite the newer value.`);
+      }
+      render();
+    });
+  }
+
+  function renderEmpty() {
+    viewMeta.textContent = '';
+    viewReview.innerHTML = `
+      <div class="rvnone">
+        <h4>Nothing is staged</h4>
+        <p>Everything in the portal matches what the bot is serving right now. Changes arrive here
+           when you stage them from a realm — this screen is the only place they become real.</p>
+        <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+          <a class="chip" href="season.html">Go to Season</a>
+          <a class="chip" href="armory.html">Go to Armory</a>
+          <button class="chip go" id="seed">Load a sample changeset</button>
+        </div>
+        <p style="font-size:var(--t-sm);color:var(--ink3);margin-top:16px">
+          The sample is loaded on request and never automatically — a mockup that invented staged
+          work would teach the wrong thing about what staging means.</p>
+      </div>`;
+    document.getElementById('seed').onclick = () => {
+      F.sampleOps.forEach((o, i) => {
+        const op = { ...o, stale: i === 1 };     // one stale op, to exercise the conflict surface
+        S.Store.onInvert(op.id, () => {});
+        S.Store.add(op);
+      });
+      st.sel = null; render();
+    };
+  }
+
+  function renderFoot() {
+    const list = ops(), b = blockers();
+    /* The masthead counter is derived from the SAME blockers() call the footer uses.
+     * It was previously only refreshed by render(), so typing the confirmation word
+     * opened the gate in the footer while the stat above still read "1 gate open" —
+     * two places telling the reader different things about one piece of state. */
+    sGates.textContent = b.length;
+    if (!list.length) { rvfoot.innerHTML = ''; return; }
+    const t3 = list.filter(o => o.tier === 3);
+    rvfoot.innerHTML = `
+      <div class="rvfoot">
+        ${t3.length ? `
+          <span class="rvconf">
+            <label for="cw">Type <b style="color:var(--ink);font-family:var(--data)">${confirmWord()}</b> to confirm</label>
+            <input id="cw" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="${confirmWord()}" value="${st.confirmText}">
+          </span>` : ''}
+        <span class="sp"></span>
+        ${b.length
+          ? `<span class="rvgate"><svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>${b[0].msg}</span>`
+          : `<span class="rvgate ok"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.5 3.5L13 5"/></svg>Ready — ${list.length} change${list.length > 1 ? 's' : ''} in one transaction</span>`}
+        <button class="btn no" id="dropAll">Discard all</button>
+        <button class="btn go" id="commit" ${b.length ? 'disabled' : ''}>Commit ${list.length} change${list.length > 1 ? 's' : ''}</button>
+      </div>`;
+    const cw = document.getElementById('cw');
+    if (cw) cw.oninput = e => { st.confirmText = e.target.value; renderFoot(); cw2focus(); };
+    function cw2focus() {
+      const n = document.getElementById('cw');
+      if (n && document.activeElement !== n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+    }
+    document.getElementById('dropAll').onclick = () => {
+      S.confirm({ op:'changeset.discard', tier:1, danger:true, confirm:'Discard everything',
+        title:`Discard all ${list.length} staged change${list.length > 1 ? 's' : ''}?`,
+        body:`<p class="dw-p">Each one is reverted, not merely forgotten — the portal puts the
+                previous value back. Nothing in Discord changes, because none of this ever
+                reached it.</p>`,
+        onConfirm(){ S.Store.revertAll(); st.exported = {}; st.resolved = {}; st.confirmText = '';
+                     S.toast('All staged changes discarded.'); render(); } });
+    };
+    document.getElementById('commit').onclick = commit;
+  }
+
+  /* One transaction, or nothing. The bot re-reads on every interaction, so a
+   * half-applied changeset reaches real players within seconds — which is why
+   * atomicity here is load-bearing rather than tidy. */
+  function commit() {
+    const list = ops();
+    S.confirm({
+      op:'changeset.commit', tier: list.some(o => o.tier === 3) ? 3 : 2,
+      confirm:`Commit ${list.length} change${list.length > 1 ? 's' : ''}`,
+      title:'Commit this changeset?',
+      body:`<p class="dw-p">All <b>${list.length}</b> changes are written in <b>one transaction</b> —
+              they all land or none of them do. The bot reads fresh on every interaction, so this is
+              live to players within seconds.</p>
+            <p class="dw-p">Every change is recorded with its inverse, so tier-1 and tier-2 changes
+              stay undoable afterwards${list.some(o => o.tier === 3)
+                ? ', and the tier-3 change is recoverable from the export you saved' : ''}.</p>`,
+      onConfirm(){
+        const n = list.length;
+        S.Store.clear(); st.exported = {}; st.resolved = {}; st.confirmText = ''; st.sel = null;
+        render();
+        S.toast(`${n} change${n > 1 ? 's' : ''} committed. Live to players now.`);
+      }
+    });
+  }
+
+  S.onAfterRevert = render;
+  render();
+  S.audit({
+    interactions: () => [{ name:'discard confirm', run: () => {
+      const b = document.getElementById('dropAll'); if (b) b.click();
+      else S.drawer({ eyebrow:'nothing staged', title:'No changeset',
+                      body:'<p class="dw-p">The review screen is empty, so there is nothing to confirm.</p>' });
+    } }]
+  });
+})();
+</script>
+</body></html>

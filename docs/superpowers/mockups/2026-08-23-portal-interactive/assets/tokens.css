@@ -1,0 +1,92 @@
+/* Dioreo portal — design tokens. Values are the approved palette, including the three
+ * WCAG corrections made against the original spec (--ink3, --info, --sched).
+ * ONE :root block, deliberately — a split block has previously defeated the contrast gate. */
+:root {
+  /* surfaces */
+  --desk:#0F1418; --paper:#171E24; --raised:#1F272E; --sunk:#0B0F12; --hi:#232C34;
+  --rule:#2A343D; --rule2:#3A4752;
+
+  /* ── ink ── never used as a fill, and only THREE of these may carry text.
+   * Measured 2026-08-24 against every surface token: `--ink4` at #5C6A75 scored
+   * 3.02:1 on --paper and 2.55:1 on --hi, failing WCAG AA (4.5) in all 89 places it
+   * coloured text — across every page, including the two already reviewed. Solving for
+   * four AA-passing steps collapses two of them into each other: at this floor, on these
+   * surfaces, the scale only has room for three text tones. So it has three, stated
+   * rather than pretended:
+   *   --ink   primary        14.28:1 on --paper, 12.03 on --hi
+   *   --ink2  secondary       7.09:1 on --paper,  5.97 on --hi
+   *   --ink3  dim             5.35:1 on --paper,  4.50 on --hi  ← the floor, lifted from #80909D
+   * 🔴 --ink4 IS NOT A TEXT COLOUR. It is kept dark on purpose for the 11 places it draws
+   *    a border, a stroke or a fill, where contrast rules do not apply. Never write
+   *    `color:var(--ink4)` — use --ink3. */
+  --ink:#E8EDF1; --ink2:#9DAAB4; --ink3:#85939F; --ink4:#5C6A75;
+
+  /* signal — state, readable regardless of topic accent */
+  --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
+
+  /* SEASON topic accents — colour carries TOPIC */
+  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --pn:#F2C230;
+  /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
+   * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
+   * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the
+   * fill, one lifted for ink, hue and saturation untouched because those ARE the identity.
+   * 🔴 Never write `color:var(--ev)`. Use --ev-ink. */
+  --ev-ink:#25A570;
+
+  /* ARMORY topic accents — the bot's real MP_CATEGORY_ACCENT values */
+  --ar:#FF3B5C; --smg:#FFD23F; --lmg:#845EC2; --mm:#3DDC97; --sn:#4361EE; --sg:#F6A93B; --sec:#3E6E8E;
+
+  /* staged-state accent — only ever tints a shape that is ALREADY dashed/hollow */
+  --staged:#5FD4E8;
+  /* the three season deadlines are distinct TOPICS, so each gets its own hue;
+     they read as vertical dashed markers, never as lane bars */
+  --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
+
+  --dsc:#5865F2;                     /* Discord brand, door only */
+
+  /* layout — the one place to override */
+  /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every
+     other size. These steps have real jumps and each has exactly one job. Tracking tightens
+     as size grows; every numeral is tabular. */
+  --t-display:44px; --t-figure:34px; --t-h1:22px;
+  --t-body:13.5px; --t-label:11px; --t-micro:9.5px;
+  --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;
+
+  /* MOTION — one easing, three durations. Motion earns its place by explaining where
+     something came from; anything that is not doing that stays a colour fade. */
+  --ease:cubic-bezier(.2,.8,.3,1);
+  --dur-1:130ms;   /* state    */
+  --dur-2:180ms;   /* transition */
+  --dur-3:320ms;   /* entrance */
+
+  --rail-w:76px; --hdr-h:52px; --rad:6px; --gap:14px;
+  --tap:44px;                        /* minimum touch target */
+
+
+  /* ── derived / semantic, added by the design-system audit ──────────────
+   * The audit found 5 uses of #07090A, 2 of #1C242A and a danger pair, all
+   * hardcoded. A hex repeated across components is a token that has not been
+   * named yet — naming it is what stops the sixth use drifting. */
+  --on-accent:#07090A;      /* ink ON a filled accent — never on a surface */
+  --rule3:#1C242A;          /* the faint row rule, one step under --rule */
+  --danger-ink:#FF8A85;     /* destructive TEXT — a fill would need solveOn() */
+  --danger-edge:#54322F;
+  --avatar-a:#3A4C5A;
+
+  /* ── Discord's OWN palette, deliberately foreign ───────────────────────
+   * The preview card must look like Discord, not like the portal, or it stops
+   * being a truthful preview. Namespaced --dc-* so a future reader can see
+   * these are intentionally outside the portal's system rather than leftovers. */
+  --dc-bg:#2B2D31; --dc-ink:#F2F3F5; --dc-body:#DBDEE1; --dc-mute:#B5BAC1;
+  --dc-dim:#949BA4; --dc-rule:#3A3C41; --dc-sunk:#1E1F22;
+
+  /* ── type scale ────────────────────────────────────────────────────────
+   * The audit found ELEVEN distinct px font-sizes and no scale. These are the
+   * same values, named, so a twelfth cannot be invented by accident. */
+  --t-micro:9px; --t-xs:10px; --t-sm:11.5px; --t-base:12.5px;
+  --t-md:13.5px; --t-lg:15px; --t-xl:19px; --t-hero:24px;
+
+  --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (max-width:768px){ :root{ --rail-w:0px; --hdr-h:48px; } }

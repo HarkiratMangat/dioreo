@@ -1,0 +1,2350 @@
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+/* 🔴 A <button> with no background declared falls through to the UA's `ButtonFace`, which
+ * in Chrome is near-white — that is the white slab that appeared in the drawer footer next
+ * to "Stage changes". Resetting the base means a button can only ever look like something
+ * this system chose, and a missing modifier degrades to the neutral secondary rather than
+ * to the browser's idea of a button. */
+button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ═══ FORM CONTROLS — styled as ELEMENTS, never as classes ═══ */
+/* 🔴 This used to be `input[type=text],input[type=search],input[type=date]` — ATTRIBUTE
+ * selectors, which do NOT match an <input> written without an explicit type, even though the
+ * DOM treats it as text. Every such input fell through to the UA default: white background,
+ * --ink text on it, effectively invisible. Measured 2026-08-24 on the Armory attachment
+ * editor, where five real attachment names were unreadable. Same family as the bare `.btn`
+ * that rendered as Chrome's white ButtonFace — a styling system that only covers the cases it
+ * happened to name will keep leaking the browser's defaults through the gaps.
+ * Now element-based, with the two types that must keep their native look excluded. */
+input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{
+  background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;padding:8px 10px;min-height:var(--tap)}
+input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
+input:focus,select:focus,textarea:focus{border-color:var(--patch);outline:none}
+input::placeholder{color:var(--ink3)}
+input:disabled,select:disabled{opacity:.45;cursor:not-allowed}
+label{font-size:12px;color:var(--ink2);font-weight:600;display:block;margin-bottom:5px}
+
+/* ═══ SHELL ═══ */
+.app{display:grid;grid-template-columns:var(--rail-w) 1fr;grid-template-rows:var(--hdr-h) 1fr;height:100vh}
+/* 🔴 A grid/flex child's default `min-width:auto` means it refuses to shrink below its
+ * content. `.mtable` carries `min-width:860px`, so on a 390px phone `main` grew to 860
+ * and the whole PAGE scrolled sideways — instead of the table scrolling inside `.mscroll`
+ * as designed. Measured 2026-08-24: documentElement.scrollWidth 435 against a 390 viewport
+ * on Broadcast, Access and Analytics alike. `min-width:0` is the fix and it belongs on
+ * every link in the chain, not just the last one. */
+.app > main, .app > header{min-width:0}
+main .panel, main section{min-width:0}
+.mscroll{max-width:100%}
+header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--paper);
+  border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
+.mk{font-family:var(--data);font-size:11.5px;letter-spacing:.16em;font-weight:600;white-space:nowrap}
+.mk b{color:var(--patch);font-weight:600}
+.crumb{font-size:13px;color:var(--ink3);letter-spacing:.02em}
+.crumb b{color:var(--ink2);font-weight:500}
+header .sp{margin-left:auto}
+.who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)}
+.who .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(140deg,#3A4C5A,#1C242C);border:1px solid var(--rule2)}
+
+nav.rail{background:var(--sunk);border-right:1px solid var(--rule);display:flex;flex-direction:column;padding-top:8px;gap:2px;overflow:auto}
+.realm{background:none;border:0;color:var(--ink3);padding:11px 4px;display:grid;gap:5px;justify-items:center;
+  position:relative;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;text-decoration:none;min-height:var(--tap)}
+.realm svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}
+.realm:hover{color:var(--ink2);background:rgba(255,255,255,.03)}
+.realm[aria-current]{color:var(--ink)}
+.realm[aria-current]::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--patch)}
+.realm .cnt{position:absolute;top:6px;right:12px;font-family:var(--data);font-size:9px;color:var(--staged)}
+main{overflow:auto;padding-bottom:96px}
+
+/* masthead — every realm states its own job */
+.masthead{padding:20px 22px 14px}
+.masthead h1{margin:0 0 3px;font-size:24px;font-weight:600;letter-spacing:-.015em}
+.masthead .job{font-family:var(--data);font-size:10.5px;letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
+.masthead p{margin:9px 0 0;font-size:13.5px;color:var(--ink3);max-width:78ch}
+.masthead p b{color:var(--ink2);font-weight:600}
+.mh-stats{display:flex;gap:22px;margin-top:12px;flex-wrap:wrap}
+.stat .v{font-family:var(--data);font-size:19px;font-weight:600}
+.stat .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.13em;color:var(--ink3);font-weight:700}
+.stat.warn .v{color:var(--warn)} .stat.stg .v{color:var(--staged)}
+
+/* ═══ PANEL + VIEW SWITCHER (the top layer) ═══ */
+.panel{margin:0 22px;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--raised);border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:3px;min-height:32px}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+.seg button:hover{color:var(--ink2)}
+.key{display:flex;gap:13px;font-family:var(--data);font-size:10px;color:var(--ink3);flex-wrap:wrap}
+.key i{display:inline-block;width:16px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+.key .l i{background:var(--ink3)}
+.key .s i{border:1.5px dashed var(--ink3)}
+.key .c i{border:1.5px dashed var(--warn);background-image:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px)}
+.layer-note{font-family:var(--data);font-size:9px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;padding:5px 12px;background:var(--sunk);border-bottom:1px solid var(--rule)}
+
+/* ═══ SHAPE CARRIES STATE — the one rule that must never invert ═══ */
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;display:flex;align-items:center;
+  padding:0 8px;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;cursor:pointer;z-index:2;
+  transition:filter .12s,box-shadow .12s}
+.bar:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(255,255,255,.16)}
+.bar.saved{background:var(--c);color:var(--on-accent);border:1px solid var(--c)}
+.bar.staged{background:rgba(255,255,255,.02);color:var(--c);border:1.5px dashed var(--c)}
+.bar.conflict{background:transparent;color:var(--warn);border:1.5px dashed var(--warn);
+  background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,122,69,.5) 4px 5px)}
+.bar.sel{box-shadow:0 0 0 2px var(--patch)}
+.bar .gr{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;opacity:0}
+.bar:hover .gr{opacity:1;background:rgba(255,255,255,.35)}
+.bar .gr.a{left:0}.bar .gr.b{right:0}
+.pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);border-radius:2px;
+  background:var(--c);cursor:pointer;z-index:2}
+.pt.staged{background:transparent;border:1.5px dashed var(--c)}
+.pt:hover{filter:brightness(1.2)}
+
+/* ═══ TRACK ═══ */
+.tk-wrap{padding:8px 12px 0;overflow-x:auto}
+.tk-inner{min-width:640px}
+.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:96px}
+.ruler span{position:absolute;top:0;line-height:26px;padding-left:6px;border-left:1px solid var(--rule);
+  font-family:var(--data);font-size:10px;color:var(--ink3);white-space:nowrap}
+.lanes{position:relative;padding-bottom:4px}
+.lane{display:flex;align-items:center;height:38px;border-bottom:1px solid var(--rule3)}
+.lane:last-child{border-bottom:0}
+.lane .nm{width:96px;flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.tk{position:relative;flex:1;height:100%;overflow:hidden}
+.divider{padding:9px 0 5px 96px;font-family:var(--data);font-size:9.5px;letter-spacing:.16em;color:var(--ink3);
+  text-transform:uppercase;border-top:1px solid var(--rule);margin-top:5px}
+.ov{position:absolute;left:96px;right:0;top:0;bottom:0;pointer-events:none;z-index:1}
+.now{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);opacity:.55}
+.now::after{content:"NOW";position:absolute;top:-21px;left:-12px;font-family:var(--data);font-size:9px;font-weight:600;
+  letter-spacing:.1em;color:var(--patch);white-space:nowrap}
+.win{position:absolute;top:0;bottom:0;background:rgba(31,138,94,.10);border-left:1px solid rgba(31,138,94,.45);
+  border-right:1px solid rgba(31,138,94,.45)}
+.win::after{content:attr(data-l);position:absolute;top:-21px;left:4px;font-family:var(--data);font-size:9px;
+  letter-spacing:.1em;color:var(--ev-ink);white-space:nowrap}
+
+/* defect flags — name the FIX, not just the problem */
+.flags{display:flex;gap:9px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--rule)}
+.flag{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--rule);border-left:2px solid var(--warn);
+  border-radius:4px;font-size:12.5px;color:var(--ink2);background:var(--sunk)}
+.flag.info{border-left-color:var(--ink4)}
+.flag b{color:var(--ink);font-weight:600}
+.flag button{background:none;border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;padding:5px 10px;
+  border-radius:4px;font-weight:600;min-height:32px;white-space:nowrap}
+.flag button:hover{color:var(--ink);border-color:var(--ink3)}
+
+/* ═══ BOARD — the changeset pipeline, not a third content view ═══ */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:10px;min-height:220px}
+.col.over{border-color:var(--patch);background:rgba(242,194,48,.05)}
+.col h4{margin:0 0 10px;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+  display:flex;align-items:center;gap:7px}
+.col h4 .ct{margin-left:auto;font-family:var(--data);color:var(--ink3)}
+.col h4 .bad{color:var(--warn)}
+.card{background:var(--raised);border:1px solid var(--rule2);border-radius:5px;padding:9px 10px;margin-bottom:8px;cursor:grab;
+  transition:transform .1s,box-shadow .1s}
+.card:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
+.card.drag{opacity:.4}
+.card .ch{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.card .tr{font-family:var(--data);font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:3px;
+  border:1px solid var(--rule2);color:var(--ink3);font-weight:600}
+.card.t3 .tr{color:var(--warn);border-color:var(--warn)}
+.card .cn{font-size:12.5px;color:var(--ink);font-weight:600}
+.card .cd{font-family:var(--data);font-size:10px;color:var(--ink3);display:block}
+.card .inv{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule2);font-size:10.5px;color:var(--ink3)}
+.card .inv b{color:var(--ink2);font-weight:600}
+.card.blocked{border-left:2px solid var(--warn)}
+.card .why{margin-top:6px;font-size:10.5px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card .why button{background:none;border:1px solid var(--warn);color:var(--warn);font-size:10px;padding:3px 8px;border-radius:3px;font-weight:600}
+.commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;font-weight:700;
+  padding:10px;min-height:var(--tap)}
+.commit:hover:not(:disabled){filter:brightness(1.08)}
+.commit:disabled{background:var(--raised);color:var(--ink3);border:1px solid var(--rule2);cursor:not-allowed}
+.colnote{font-size:10.5px;color:var(--ink3);margin-top:8px;line-height:1.45}
+
+/* ═══ MANIFEST — always present, never switches ═══ */
+.mtools{display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.srch{position:relative;flex:1 1 240px;max-width:300px}
+.srch input{width:100%;padding-left:32px}
+.srch svg{position:absolute;left:10px;top:50%;margin-top:-7px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
+.chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
+  padding:6px 11px;border-radius:20px;min-height:32px}
+.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
+.chip:hover{color:var(--ink)}
+.mtools .rt{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink3)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+  padding:9px 11px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap;position:sticky;top:0}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:10px}
+th.sorted-asc::after{content:"↑";color:var(--patch)} th.sorted-desc::after{content:"↓";color:var(--patch)}
+td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:#1A222A}
+tbody tr.sel td{background:rgba(242,194,48,.06)}
+tbody tr.on td{background:#20303B;box-shadow:inset 2px 0 0 var(--patch)}
+td.n{color:var(--ink);font-weight:500}
+td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.cb{width:16px;height:16px;border:1.5px solid var(--rule2);border-radius:3px;display:inline-block;vertical-align:-3px;position:relative;background:var(--sunk)}
+.cb.on{background:var(--patch);border-color:var(--patch)}
+.cb.on::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:9px;border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(42deg)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px;background:var(--c)}
+.stt{font-family:var(--data);font-size:9px;letter-spacing:.08em;padding:2px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
+.stt.saved{background:var(--c);color:var(--on-accent)}
+.stt.staged{border:1.5px dashed var(--c);color:var(--c)}
+.stt.conflict{border:1.5px dashed var(--warn);color:var(--warn);
+  background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,122,69,.5) 3px 4px)}
+.bulk{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--hi);border-top:1px solid var(--rule2);flex-wrap:wrap}
+.bulk .c{font-family:var(--data);font-size:11.5px;color:var(--patch)}
+.bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:12px;font-weight:600;
+  padding:7px 11px;border-radius:4px;min-height:36px}
+.bulk button:hover{color:var(--ink);border-color:var(--ink3)}
+.bulk button.danger{color:var(--danger-ink);border-color:#54322F}
+.bulk .sp{margin-left:auto;font-size:11.5px;color:var(--ink3)}
+.empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:13.5px}
+.empty b{display:block;color:var(--ink2);font-size:15px;margin-bottom:6px}
+
+/* ═══ TRAY — the magazine ═══ */
+.tray{position:fixed;right:20px;bottom:20px;width:320px;max-width:calc(100vw - 32px);background:var(--paper);
+  border:1px solid var(--rule2);border-radius:var(--rad);box-shadow:0 24px 60px -18px rgba(0,0,0,.9);z-index:50}
+.tray[hidden]{display:none}
+.tray-h{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--rule);cursor:pointer}
+.tray-h .t{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
+.tray-h .n{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--staged)}
+.rounds{display:flex;flex-direction:column-reverse;padding:6px 0;max-height:220px;overflow:auto}
+.round{display:flex;align-items:center;gap:9px;padding:7px 12px;font-size:12.5px;color:var(--ink2);
+  border-left:2px solid var(--staged);margin:1px 0}
+.round.t3{border-left-color:var(--warn)}
+.round b{color:var(--ink);font-weight:500}
+.round .tier{font-family:var(--data);font-size:9px;letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
+  padding:0 4px;border-radius:2px}
+.round.t3 .tier{color:var(--warn);border-color:var(--warn)}
+.tray-f{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule)}
+.btn{flex:1;border-radius:5px;font-size:12.5px;font-weight:700;padding:9px;min-height:var(--tap);
+  background:var(--raised);color:var(--ink2);border:1px solid var(--rule2);
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease)}
+.btn:hover{background:var(--hi);color:var(--ink);border-color:var(--ink3)}
+.btn.go{background:var(--staged);color:#00151A;border:1px solid var(--staged)}
+.btn.go:hover{filter:brightness(1.09)}
+.btn.no{background:none;color:var(--ink3);border:1px solid var(--rule2)}
+.btn.no:hover{color:var(--ink2)}
+.hint{padding:0 12px 10px;font-size:11px;color:var(--ink3);line-height:1.4}
+
+/* ═══ PREVIEW DRAWER (the real Discord render) ═══ */
+.scrim{position:fixed;inset:0;background:rgba(6,9,11,.66);backdrop-filter:blur(3px);z-index:44;
+  opacity:0;pointer-events:none;transition:opacity .16s}
+.scrim.on{opacity:1;pointer-events:auto}
+/* A CENTRED DIALOG, not a side rail. The first version squeezed a tier-3 decision into a
+   340px column at the edge of vision; a change that writes live data belongs in the middle
+   of the screen with the page held back behind it. `.side` remains for the rare case where
+   a sheet beside the content is genuinely the right shape. */
+.drawer{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);
+  width:min(560px,calc(100vw - 40px));max-height:min(84vh,860px);display:flex;flex-direction:column;
+  background:var(--raised);border:1px solid var(--rule2);border-radius:14px;z-index:45;overflow:hidden;
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1);
+  box-shadow:0 40px 90px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
+.drawer.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.drawer.wide{width:min(880px,calc(100vw - 40px))}
+.drawer.side{left:auto;right:0;top:var(--hdr-h);bottom:0;transform:translateX(100%);
+  width:min(420px,100vw);max-height:none;border-radius:0;border-right:0;border-top:0}
+.drawer.side.open{transform:none}
+.dw-h{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;flex:none;
+  border-bottom:1px solid var(--rule);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.dw-ttl{min-width:0;display:flex;flex-direction:column;gap:6px}
+.dw-eye{font-family:var(--data);font-size:9.5px;letter-spacing:.09em;color:var(--ink3);
+  text-transform:uppercase}
+.dw-h h2{margin:0;font:600 19px/1.25 var(--ui);color:var(--ink);letter-spacing:-.015em}
+.dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);
+  color:var(--ink3);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:12px}
+.dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
+.dw-b{padding:18px 20px;overflow:auto;flex:1 1 auto}
+.dw-f{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;flex:none;
+  border-top:1px solid var(--rule);background:var(--sunk)}
+.drawer h5{margin:0 0 10px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;
+  display:flex;align-items:center;gap:8px}
+.drawer h5 em{font-style:normal;font-family:var(--data);font-size:9px;color:var(--ink3);margin-left:auto}
+.drawer .x{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:4px;width:28px;height:28px}
+.dcard{background:#2B2D31;border-radius:8px;border-left:4px solid var(--c);padding:11px 13px;color:#DBDEE1;font-size:12.5px}
+.dcard h6{margin:0 0 3px;font-size:14px;color:#F2F3F5;font-weight:700}
+.dcard .sub{font-size:11px;color:#B5BAC1;margin-bottom:8px}
+.dcard .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #3A3C41;font-size:11.5px}
+.dcard .row:last-of-type{border:0}
+.dcard .row b{color:#F2F3F5;font-weight:500}
+.dcard .row span{color:#949BA4;font-family:var(--data);font-size:10.5px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--rule2);
+  border-radius:6px;padding:10px 16px;font-size:13px;z-index:80;box-shadow:0 12px 32px -12px #000;display:flex;align-items:center;gap:12px}
+.toast button{background:none;border:0;color:var(--patch);font-weight:700;font-size:12.5px}
+
+/* ═══ RESPONSIVE — two breakpoints, exactly ═══ */
+/* 🔴 The page-level horizontal overflow at 390px was the HEADER, not the table.
+ * `main` measured a contained 390 while `.app` measured 419 — the brand, breadcrumb,
+ * palette key and account button simply cannot compress below that. Measured 2026-08-24;
+ * the table inside `.mscroll` had been clipping correctly the whole time, which is why
+ * chasing the widest ELEMENT was the wrong instinct: the widest element was clipped and
+ * innocent, and the guilty one was narrower than it. Compare `scrollWidth` up the chain
+ * instead — the first ancestor whose scrollWidth exceeds its width is the culprit. */
+header{min-width:0;overflow:hidden}
+header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:768px){
+  /* The crumb is redundant on a phone: the masthead below states the realm in display type,
+     and the bottom tab bar shows which one is current. Dropping it is what lets the header
+     fit rather than forcing an ellipsis onto something already said twice. */
+  header .crumb{display:none}
+  header .mk{font-size:11px}
+}
+@media (max-width:768px){
+  .app{grid-template-columns:1fr}
+  nav.rail{position:fixed;bottom:0;left:0;right:0;top:auto;flex-direction:row;border-right:0;border-top:1px solid var(--rule);
+    padding:0;z-index:60;justify-content:space-around}
+  .realm{flex:1;padding:8px 2px;font-size:9px}
+  .realm[aria-current]::before{left:8px;right:8px;top:0;bottom:auto;width:auto;height:2px}
+  main{padding-bottom:150px}
+  .panel{margin:0 12px}
+  .masthead{padding:16px 14px 12px}
+  .cols{grid-template-columns:1fr}
+  .tray{right:10px;left:10px;bottom:72px;width:auto}
+  .drawer{width:100%}
+  /* 🔴 WAS `th:nth-child(4),td:nth-child(4){display:none}` — a POSITIONAL selector doing
+   * SEMANTIC work. It was written when Season and Armory were the only tables, where
+   * column 4 happened to be expendable. Once six more pages existed it was silently
+   * hiding *Window* on Broadcast (the dates — the entire point of the row), *Last active*
+   * on Access and *Who* on Analytics. A positional rule is a shared-layer rule wearing a
+   * local disguise. Each table now DECLARES which column it can afford to lose. */
+  .mtable .drop-sm{display:none}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v2 — the Track becomes a real timeline, and the season becomes editable
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* logo is a control, not a wordmark */
+.mk{background:none;border:1px solid transparent;border-radius:5px;padding:5px 8px;min-height:34px;display:flex;align-items:center;gap:7px}
+.mk:hover{border-color:var(--rule2);background:var(--sunk)}
+.mk .glyph{width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,var(--patch),var(--warn));flex:none}
+
+/* ═══ SEASON IDENTITY — the editor that was missing entirely ═══ */
+.identity{margin:0 22px 16px;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+/* The old single-grid identity editor (.id-grid/.fld/.tbd/.hintline) is gone — it modelled
+   fields the schema does not have. Its rules are deleted rather than left orphaned: the generic
+   .tbd pill was still matching the new `class="left tbd"` state span and painting it as a
+   bordered pill, which is exactly how a dead rule causes a live bug. */
+
+/* ═══ SCRUBBER — drag the ends to resize the window, the middle to pan ═══ */
+.scrub .mini{position:absolute;height:5px;border-radius:2px;background:var(--c);opacity:.55}
+.scrub .season-end{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.7}
+.scrub .winbox:active{cursor:grabbing}
+.scrub .wh{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;background:var(--patch);opacity:.55;touch-action:none}
+.scrub .wh:hover{opacity:1}
+.scrub .wh.l{left:-1px;border-radius:3px 0 0 3px} .scrub .wh.r{right:-1px;border-radius:0 3px 3px 0}
+
+/* ruler is draggable too — grab it to pan, wheel to zoom */
+.ruler{cursor:ew-resize;user-select:none;touch-action:none}
+.ruler.grabbing{cursor:grabbing}
+
+/* ═══ INTERACTIVE TRACK ELEMENTS ═══ */
+.bar{touch-action:none}
+.bar.dragging{opacity:.85;box-shadow:0 0 0 2px var(--patch);z-index:6}
+.bar .gr{opacity:0;transition:opacity .1s}
+.bar:hover .gr,.bar:focus-visible .gr{opacity:1}
+.lane .tk{cursor:crosshair}
+.lane .tk:hover{background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
+.ghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;border:1.5px dashed var(--patch);
+  background:rgba(242,194,48,.08);pointer-events:none;display:flex;align-items:center;padding:0 8px;
+  font-size:11px;color:var(--patch);white-space:nowrap;z-index:5}
+
+/* markers are draggable controls, not decoration */
+.now,.dend{touch-action:none}
+.win{cursor:grab;pointer-events:auto;touch-action:none}
+.win:hover{background:rgba(31,138,94,.18)}
+.win .wh{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
+.win .wh.l{left:-4px} .win .wh.r{right:-4px}
+.ov{pointer-events:none}
+.ov > *{pointer-events:auto}
+
+/* live readout while dragging */
+.tip{position:fixed;z-index:90;background:var(--raised);border:1px solid var(--rule2);border-radius:5px;
+  padding:6px 10px;font-family:var(--data);font-size:11px;color:var(--ink);pointer-events:none;white-space:nowrap;
+  box-shadow:0 8px 24px -10px #000}
+.tip b{color:var(--patch);font-weight:600}
+.tip .sub{display:block;color:var(--ink3);font-size:10px;margin-top:2px}
+
+/* ═══ BOARD v2 — content state, not pipeline state ═══ */
+.bcard{background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c);border-radius:5px;
+  padding:9px 10px;margin-bottom:8px;cursor:grab}
+.bcard.staged{background:transparent;border:1.5px dashed var(--c);border-left-width:3px}
+.bcard.ended{opacity:.6}
+.bcard:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
+.bcard .bn{font-size:12.5px;color:var(--ink);font-weight:600;display:block;margin-bottom:3px}
+.bcard .bd{font-family:var(--data);font-size:10px;color:var(--ink3);display:block}
+.bcard .bmeta{margin-top:6px;font-size:10.5px;color:var(--ink3)}
+.bcard .bmeta b{color:var(--warn);font-weight:600}
+
+/* inline add row */
+.addrow{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap;align-items:center}
+.addrow select,.addrow input{min-height:36px}
+.addrow .go{background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-weight:700;padding:8px 14px;min-height:36px}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Component states the design-system audit found MISSING.
+   It scored hover 22 / focus 2 (global, fine) / disabled 3 — with .chip, .btn
+   and .go having no disabled rule at all, and nothing anywhere having a loading
+   or error state. A component without its states is a component that will be
+   reinvented inconsistently the first time someone needs one.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chip:disabled,.btn:disabled,.go:disabled,.bulk button:disabled,.flag button:disabled{
+  opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+.chip:disabled:hover,.btn:disabled:hover,.go:disabled:hover{color:var(--ink2);border-color:var(--rule2)}
+
+/* loading — the control keeps its width so the row does not reflow */
+.is-loading{position:relative;color:transparent!important;pointer-events:none}
+.is-loading::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
+  border:2px solid var(--ink4);border-top-color:var(--patch);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.is-loading::after{animation:none;border-top-color:var(--ink2)}}
+
+/* error — say WHAT happened and HOW to fix, next to the field that caused it */
+input.err,select.err{border-color:var(--del);background:rgba(255,107,107,.06)}
+.errmsg{display:flex;align-items:flex-start;gap:6px;margin-top:6px;font-size:var(--t-sm);color:var(--del);line-height:1.4}
+.errmsg::before{content:"!";flex:none;width:14px;height:14px;border-radius:50%;border:1px solid var(--del);
+  font-family:var(--data);font-size:9px;display:grid;place-items:center;margin-top:1px}
+
+/* the Discord preview now reads from the namespaced foreign palette */
+.dcard{background:var(--dc-bg);color:var(--dc-body)}
+.dcard h6{color:var(--dc-ink)} .dcard .sub{color:var(--dc-mute)}
+.dcard .row{border-bottom-color:var(--dc-rule)} .dcard .row b{color:var(--dc-ink)} .dcard .row span{color:var(--dc-dim)}
+.bar.saved,.stt.saved{color:var(--on-accent)} .commit,.addrow .go{color:var(--on-accent)}
+.bulk button.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
+td,.lane{border-bottom-color:var(--rule3)}
+.who .av{background:linear-gradient(140deg,var(--avatar-a),var(--raised))}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ART DIRECTION — the Track is the signature; everything else stays quiet.
+   The one aesthetic risk: the Track reads as a physical INSTRUMENT (blueprint
+   grid, glowing now-line, bars with real elevation) rather than a chart. It is
+   justified because the Track is the only thing here Discord cannot do at all,
+   so it is the surface worth remembering. Every other panel stays flat on
+   purpose — Chanel's rule: take one accessory off before leaving.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ambient: one soft light source behind the masthead, nothing else glows */
+body::before{content:"";position:fixed;inset:0 0 auto;height:420px;pointer-events:none;z-index:0;
+  background:radial-gradient(900px 300px at 22% -8%,rgba(242,194,48,.07),transparent 62%),
+             radial-gradient(700px 260px at 78% -12%,rgba(95,212,232,.05),transparent 60%)}
+main{position:relative;z-index:1}
+
+/* masthead type carries the personality: tight, large, confident */
+.masthead h1{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;line-height:1.04;font-weight:700}
+.masthead .job{opacity:.9}
+.stat .v{font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mh-stats{gap:clamp(18px,3vw,34px)}
+
+/* panels gain considered elevation instead of sitting flat on the desk */
+.panel,.identity{box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px rgba(0,0,0,.9)}
+
+/* ── THE TRACK AS AN INSTRUMENT ─────────────────────────────────────────── */
+.tk-inner{position:relative}
+/* blueprint grid, aligned to nothing in particular — texture, not data */
+.lanes{position:relative;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:100% 38px,64px 100%;
+  background-position:0 0,96px 0}
+.lane{border-bottom-color:rgba(255,255,255,.045)}
+
+/* the NOW line is the instrument's needle — it glows and breathes */
+.now{width:2px;margin-left:-1px;background:linear-gradient(180deg,var(--patch),rgba(242,194,48,.25));
+  box-shadow:0 0 12px rgba(242,194,48,.55),0 0 3px rgba(242,194,48,.9)}
+.now::before{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3.5px;
+  border-radius:50%;background:var(--patch);box-shadow:0 0 10px var(--patch);animation:pulse 2.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
+
+/* bars become objects: elevation, a light top edge, and a real lift on hover */
+.bar{box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 6px 14px -8px rgba(0,0,0,.85);
+  transition:transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s}
+.bar:hover{transform:translateY(calc(-50% - 2px));
+  box-shadow:0 1px 0 rgba(255,255,255,.22) inset,0 12px 22px -10px rgba(0,0,0,.95),0 0 0 2px rgba(255,255,255,.14)}
+.bar.dragging{transform:translateY(calc(-50% - 3px)) scale(1.012);cursor:grabbing}
+.bar.staged{box-shadow:none}
+.bar.conflict{animation:conflictIn .34s cubic-bezier(.2,.8,.3,1)}
+@keyframes conflictIn{from{box-shadow:0 0 0 0 rgba(255,122,69,.55)}to{box-shadow:0 0 0 14px rgba(255,122,69,0)}}
+.pt{box-shadow:0 4px 10px -5px rgba(0,0,0,.9);transition:transform .14s}
+.pt:hover{transform:rotate(45deg) scale(1.22)}
+
+/* the 2XCP window reads as a lit region, not a grey box */
+.win{background:linear-gradient(180deg,rgba(31,138,94,.20),rgba(31,138,94,.06));
+  box-shadow:inset 0 0 24px rgba(31,138,94,.12)}
+
+/* ── ORCHESTRATED LOAD — one sequence, not scattered effects ───────────── */
+@media (prefers-reduced-motion:no-preference){
+  .rise{animation:rise .5s cubic-bezier(.2,.8,.3,1) backwards}
+  @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  .lane{animation:laneIn .42s cubic-bezier(.2,.8,.3,1) backwards}
+  @keyframes laneIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+  .tray{animation:trayIn .28s cubic-bezier(.2,.8,.3,1)}
+  @keyframes trayIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .toast{animation:trayIn .22s cubic-bezier(.2,.8,.3,1)}
+  .flag{animation:rise .34s cubic-bezier(.2,.8,.3,1) backwards}
+}
+
+/* rail items get a considered active treatment rather than a bare bar */
+.realm[aria-current]::before{background:linear-gradient(180deg,var(--patch),var(--warn));
+  box-shadow:0 0 10px rgba(242,194,48,.5)}
+.realm{transition:color .14s,background .14s}
+
+/* the scrubber reads as a filmstrip */
+
+/* focus ring that belongs to the design rather than the browser */
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px;box-shadow:0 0 0 5px rgba(242,194,48,.16)}
+
+/* ═══ MARKER LABELS — measured collision fix ═══════════════════════════════
+   At 1440px the NOW, BP END and 2XCP captions were rendering INTO the ruler
+   row and overlapping the date ticks ("Aug 10"/"2XCP", "Aug 19"/"NOW",
+   "Aug 31"/"BP END"). Two ownership problems: the captions were positioned in
+   a band the ruler already owned, and 2XCP labelled the window from outside it.
+   Fix: give the ruler a dedicated caption band above it, chip the captions so
+   they read over anything, and move 2XCP inside the region it names.        */
+.ruler{height:44px;margin-top:2px}
+.ruler span{top:18px;line-height:26px}
+
+.now::after,.dend::after{
+  top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:3px;
+  padding:1px 5px;line-height:14px;z-index:4;letter-spacing:.09em}
+.now::after{left:50%;transform:translateX(-50%);color:var(--patch)}
+/* the BP END chip would clip off the right edge when the marker sits near 100% */
+.now::before{top:14px}
+
+/* 2XCP labels the window from INSIDE it, where it cannot collide with a tick */
+.win::after{content:none}
+.win .lbl{position:absolute;top:3px;left:5px;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:.1em;color:var(--ev-ink);background:rgba(11,15,18,.72);border-radius:2px;padding:1px 4px;
+  pointer-events:none;white-space:nowrap}
+
+/* a tick sitting under a marker chip is hidden rather than overlapped */
+.ruler span.masked{opacity:0;pointer-events:none;cursor:default}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE SPARK — one component, three surfaces.
+   A 1-row mini-timeline showing where an item sits inside the season. It uses
+   the same date engine as the Track, so the Manifest row, the Board card and
+   the Track are literally the same measurement at three scales. That is what
+   makes them read as one instrument instead of three widgets.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.spark{position:relative;height:6px;border-radius:3px;background:var(--sunk);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);overflow:hidden;min-width:64px}
+.spark i{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--c)}
+.spark i.staged{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
+.spark i.conflict{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px);
+  box-shadow:inset 0 0 0 1.5px var(--warn)}
+.spark .nowdot{position:absolute;top:-2px;width:2px;height:10px;background:var(--patch);border-radius:1px;
+  box-shadow:0 0 6px var(--patch)}
+.spark .done{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.22);border-radius:3px 0 0 3px}
+
+td .wincell{display:flex;flex-direction:column;gap:5px;min-width:132px}
+td .wincell .txt{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space:nowrap}
+
+/* ═══ MANIFEST depth ═══ */
+tbody tr{transition:background .12s,box-shadow .12s}
+tbody tr td:first-child{position:relative}
+tbody tr.on td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--patch)}
+/* removed: display:flex on a <td> is what caused the black bar — .ncell carries it now */
+td.n .edit{background:none;border:1px solid transparent;border-radius:4px;padding:3px 6px;margin:-3px -6px;
+  font:inherit;color:inherit;width:100%;min-height:30px}
+td.n .edit:hover{border-color:var(--rule2);background:var(--sunk)}
+td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+.rowmeta{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.06em}
+
+/* ═══ BOARD depth ═══ */
+.col{display:flex;flex-direction:column}
+.col h4{padding-bottom:8px;border-bottom:1px solid var(--rule);margin-bottom:10px}
+.col h4 .sum{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);font-weight:400;
+  letter-spacing:.06em;text-transform:none;margin-left:auto}
+.bcard{position:relative;overflow:hidden}
+.bcard::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.035));opacity:0;transition:opacity .16s}
+.bcard:hover::after{opacity:1}
+.bcard .sparkwrap{margin-top:8px}
+.bcard .actions{display:flex;gap:6px;margin-top:9px}
+.bcard .actions button{flex:1;background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);
+  font-size:var(--t-sm);font-weight:600;padding:6px;border-radius:4px;min-height:32px}
+.bcard .actions button.go{background:transparent;border:1px solid var(--staged);color:var(--staged);font-weight:600}
+.bcard .actions button.go:hover{background:var(--staged);color:var(--on-accent)}
+.bcard .actions button:hover{filter:brightness(1.1)}
+.col .colnote{margin-top:auto;padding-top:10px;border-top:1px dashed var(--rule);color:var(--ink3)}
+
+/* 🔴 .spark is a <span>, and height/min-width do NOT apply to a non-replaced
+ * inline box — it measured 0×0 while its child bar carried perfectly correct
+ * percentages. Measured in Chrome, not inferred: the inline style read
+ * left:32.35%;width:29.41% while getComputedStyle reported 0px/0px. */
+.spark{display:block}
+
+/* Items whose dates fall outside the current window were simply absent, which
+ * reads as an empty lane rather than a scrolled-past one. */
+.offwin{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:var(--data);
+  font-size:var(--t-micro);letter-spacing:.08em;color:var(--ink3);background:var(--sunk);
+  border:1px dashed var(--rule2);border-radius:20px;padding:2px 8px;z-index:3;white-space:nowrap;pointer-events:none}
+
+/* ══════════════════════════════════════════════════════════════════
+   SEASON IDENTITY — rebuilt against the real SeasonalData schema.
+   setTitlesDeadlines takes THREE PARALLEL LINES (bpLine/rankLine/dmzLine),
+   each parsed by applyLine() into {title, end, endTBD}. An earlier draft
+   modelled one BP date and a Season-start field that the schema does not
+   have at all — so the shape here is three identical rows on purpose.
+   ══════════════════════════════════════════════════════════════════ */
+.idhead{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.idop{font-family:var(--data);font-size:9.5px;letter-spacing:.06em;color:var(--ink3);
+  border:1px solid var(--rule);border-radius:3px;padding:2px 7px;white-space:nowrap}
+.idop b{color:var(--ink3);font-weight:600}
+
+.f-main{margin:0 0 4px}
+.f-main label{display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:5px;font-weight:600}
+.f-main input{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);
+  color:var(--ink);font:600 17px/1.3 var(--ui);padding:10px 12px;letter-spacing:-.01em}
+.f-main input:focus{outline:none;border-color:var(--patch);box-shadow:0 0 0 3px rgba(242,194,48,.13)}
+
+.dlines{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.dline{display:grid;grid-template-columns:106px minmax(140px,1fr) 148px 84px 104px;gap:12px;align-items:center;
+  background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
+  border-radius:var(--rad);padding:9px 12px 9px 11px;transition:border-color .15s,background .15s}
+.dline:focus-within{border-color:var(--rule2);border-left-color:var(--c);background:var(--desk)}
+.dline.dirty{border-color:var(--staged)}
+.dline .trk{font-family:var(--data);font-size:9.5px;letter-spacing:.1em;color:var(--c);font-weight:600}
+.dline input[type=text]{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;
+  color:var(--ink);font:500 13.5px/1.4 var(--ui);padding:3px 0}
+.dline input[type=text]:hover{border-bottom-color:var(--rule2)}
+.dline input[type=text]:focus{outline:none;border-bottom-color:var(--c)}
+.dline input[type=date]{width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:4px;
+  color:var(--ink);font:500 12px/1 var(--data);padding:6px 8px;color-scheme:dark}
+.dline input[type=date]:focus{outline:none;border-color:var(--c)}
+.dline input[type=date]:disabled{opacity:.3}
+.dline .tbdsw{justify-self:start}
+
+/* TBD is per-line in the schema (bpEndTBD/rankEndTBD/dmzEndTBD) and means
+   "known to be undecided", NOT "not set yet" — so it reads as a two-option
+   segmented choice, not a stray button hanging off the date field. */
+.tbdsw{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;flex:none}
+.tbdsw button{background:transparent;border:none;color:var(--ink3);cursor:pointer;
+  font:600 9px/1 var(--data);letter-spacing:.07em;padding:6px 7px;transition:background .13s,color .13s}
+.tbdsw button[aria-pressed=true]{background:var(--c);color:var(--on-accent)}
+.tbdsw button:not([aria-pressed=true]):hover{color:var(--ink2);background:var(--hi)}
+.dline .dl-left{font-family:var(--data);font-size:10.5px;color:var(--ink3);text-align:right;white-space:nowrap}
+.dline .left b{color:var(--ink);font-weight:600}
+.dline .dl-left.is-tbd{color:var(--sched)}
+.dline .dl-left.is-over{color:var(--del)}
+
+/* ── LIVE ↔ NEXT switch. SeasonalData is ONE global document, so Discord can
+   only ever show one season; the draft subsystem exists because editing live
+   fields during an overlap overwrote what players could still see. Showing
+   both at once is the thing the portal can do that the bot cannot. ── */
+.lnsw{display:inline-flex;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px;gap:2px}
+.lnsw button{background:transparent;border:none;border-radius:3px;color:var(--ink3);cursor:pointer;
+  font:600 10.5px/1 var(--ui);letter-spacing:.04em;padding:6px 12px;display:flex;align-items:center;gap:6px}
+.lnsw button[aria-pressed=true]{background:var(--raised);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.lnsw button:not([aria-pressed=true]):hover{color:var(--ink2)}
+.lnsw .pip{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.lnsw .pip.draft{background:var(--staged)}
+.lnsw .pip.none{background:var(--rule2)}
+
+.draftbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:11px 13px;
+  background:var(--sunk);border:1.5px dashed var(--staged);border-radius:var(--rad)}
+.draftbar .dt{font:600 11.5px/1 var(--ui);color:var(--staged);letter-spacing:.02em}
+.draftbar .dsub{font-size:11.5px;color:var(--ink3)}
+.draftbar .sp{margin-left:auto}
+.draftbar>button{flex:none;white-space:nowrap}
+.draftbar .commit{width:auto;padding:8px 16px}
+.nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
+  border-radius:var(--rad);text-align:center}
+.nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
+
+/* Live→Next diff. Only CHANGED fields render, so an unchanged draft is visibly empty
+   rather than a wall of identical rows. */
+.diff{margin-top:12px;border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden}
+.diff-h{display:grid;grid-template-columns:112px 1fr 1fr;gap:0;background:var(--sunk);
+  border-bottom:1px solid var(--rule);font:600 9.5px/1 var(--data);letter-spacing:.08em;color:var(--ink3)}
+.diff-h span{padding:8px 12px}
+.diff-h span+span{border-left:1px solid var(--rule)}
+.diff-r{display:grid;grid-template-columns:112px 1fr 1fr;font-size:12.5px;border-top:1px solid var(--rule3)}
+.diff-r:first-child{border-top:none}
+.diff-r>span{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.diff-r>span+span{border-left:1px solid var(--rule3)}
+.diff-none{padding:18px 14px;text-align:center;font-size:12px;color:var(--ink3)}
+
+/* ══════════════════ TRACK ZOOM — explicit, bounded, always escapable ══════
+   The previous build zoomed on a bare wheel event, which on a trackpad IS
+   ordinary two-finger scrolling — so scrolling the page over the Track zoomed
+   it instead, with no visible control to undo that. Wheel-zoom now requires a
+   modifier and every zoom state is one click from Fit.
+   ═══════════════════════════════════════════════════════════════════════ */
+.zoomer{display:inline-flex;align-items:center;gap:1px;background:var(--sunk);
+  border:1px solid var(--rule);border-radius:5px;padding:2px}
+.zoomer button{background:transparent;border:none;color:var(--ink2);cursor:pointer;border-radius:3px;
+  font:600 11px/1 var(--ui);padding:0;width:26px;height:26px;display:grid;place-items:center;
+  transition:background .12s,color .12s}
+.zoomer button.wide{width:auto;padding:0 10px;font-size:10.5px;letter-spacing:.04em}
+.zoomer button:hover:not(:disabled){background:var(--hi);color:var(--ink)}
+.zoomer button:disabled{opacity:.3;cursor:not-allowed}
+.zoomer .rd{font-family:var(--data);font-size:10px;color:var(--ink3);padding:0 9px;
+  white-space:nowrap;border-left:1px solid var(--rule);margin-left:2px}
+.zoomer .rd b{color:var(--ink2);font-weight:600}
+.zhint{font-size:10.5px;color:var(--ink3);margin-left:8px}
+.zhint kbd{font-family:var(--data);font-size:9.5px;background:var(--sunk);border:1px solid var(--rule);
+  border-bottom-width:2px;border-radius:3px;padding:1px 4px;color:var(--ink3)}
+
+/* Ranked + DMZ end markers alongside BP END. Three deadlines exist in the
+   schema and only one was ever drawn. */
+.dend{position:absolute;top:0;bottom:0;width:0;border-left:1.5px dashed var(--c);z-index:4;
+  cursor:ew-resize;touch-action:none}
+.dend::after{content:attr(data-lbl);position:absolute;top:-2px;left:5px;
+  font:600 8.5px/1 var(--data);letter-spacing:.07em;color:var(--c);background:var(--sunk);
+  border:1px solid currentColor;border-radius:3px;padding:2px 4px;white-space:nowrap}
+.dend.at-edge::after{left:auto;right:5px}
+.dend:hover,.dend.dragging{border-left-style:solid;border-left-width:2px}
+
+/* ══════════════════ BOARD — collapsible columns ══════════════════ */
+.bbar{display:flex;align-items:center;gap:10px;padding:0 2px 11px}
+.bbar-t{font-family:var(--data);font-size:10.5px;color:var(--ink3);letter-spacing:.05em}
+.bbar .sp{margin-left:auto}
+.bcols{display:flex;gap:12px;align-items:flex-start}
+.bcol{flex:1 1 0;min-width:0;transition:flex .26s cubic-bezier(.2,.8,.3,1)}
+.bcol.collapsed{flex:0 0 52px;min-width:52px}
+
+/* The whole header is the control, not a 20px button inside it — a collapse target should
+   be the size of the thing it collapses, and the old chevron was easy to miss entirely. */
+.bcol-h{display:flex;align-items:center;gap:9px;width:100%;background:var(--sunk);
+  border:1px solid var(--rule);border-radius:var(--rad);padding:9px 11px;margin-bottom:9px;
+  cursor:pointer;text-align:left;color:inherit;transition:border-color .14s,background .14s}
+.bcol-h:hover{border-color:var(--rule2);background:var(--hi)}
+.bcol-h:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+.chev{width:0;height:0;flex:none;border:4px solid transparent;border-left-color:var(--ink4);
+  margin-left:1px;transition:transform .2s}
+.bcol-h[aria-expanded=true] .chev{transform:rotate(90deg) translateX(-1px)}
+.bcol-h:hover .chev{border-left-color:var(--ink2)}
+.bcol-t{font:600 10.5px/1 var(--data);letter-spacing:.09em;color:var(--ink2);white-space:nowrap}
+.bcol-n{font-family:var(--data);font-size:10px;color:var(--ink3);background:var(--raised);
+  border:1px solid var(--rule2);border-radius:9px;padding:1px 7px;flex:none;line-height:1.5}
+.bcol-sum{font-size:10.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;margin-left:auto;padding-left:6px}
+
+/* Collapsed: a readable rail, not just a thin one. Label rotates, count stays upright so it
+   is legible at a glance — the count is the reason you would look at a collapsed column. */
+.bcol.collapsed .bcol-h{flex-direction:column;gap:10px;padding:11px 6px;height:auto;min-height:150px}
+.bcol.collapsed .chev{transform:none}
+.bcol.collapsed .bcol-t{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.14em}
+.bcol.collapsed .bcol-n{margin:0}
+.bcol.collapsed .bcol-sum{display:none}
+.bcol.collapsed .bcol-body{display:none}
+
+.bcol-body{display:flex;flex-direction:column;gap:9px;min-height:56px}
+.bcol.drop .bcol-body{outline:1.5px dashed var(--staged);outline-offset:5px;border-radius:var(--rad)}
+.bempty{border:1px dashed var(--rule);border-radius:var(--rad);padding:18px 10px;text-align:center;
+  font-size:11px;color:var(--ink3);margin:0}
+.bcard .dot2{color:var(--ink3);padding:0 2px}
+
+/* ══════════════════ HEADER identity + sign out ══════════════════ */
+.who{position:relative}
+.whobtn{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid transparent;
+  border-radius:6px;padding:4px 8px 4px 5px;cursor:pointer;color:var(--ink2);
+  font:500 11.5px/1 var(--ui);transition:background .13s,border-color .13s}
+.whobtn:hover,.whobtn[aria-expanded=true]{background:var(--hi);border-color:var(--rule)}
+.whobtn .cv{font-size:8px;color:var(--ink3)}
+.umenu[hidden]{display:none}
+.umenu button.mi.danger{color:var(--danger-ink)}
+.umenu button.mi.danger:hover{background:var(--danger-edge)}
+
+/* ── confirm drawer (Shell.confirm) ── */
+.opline{font-family:var(--data);font-size:9.5px;letter-spacing:.06em;color:var(--ink3);
+  border:1px solid var(--rule);border-radius:3px;padding:3px 8px;display:inline-block;margin-bottom:12px}
+.opline b{color:var(--ink3);font-weight:600}
+.dwbody{font-size:13px;line-height:1.6;color:var(--ink2)}
+.dw-p{margin:0 0 10px}
+.dw-p b{color:var(--ink);font-weight:600}
+.dwact{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--rule)}
+.btn.dang{background:var(--del);border-color:var(--del);color:var(--on-accent);font-weight:600}
+.btn.dang:hover{filter:brightness(1.08)}
+.chip.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
+.chip.danger:hover{background:var(--danger-edge);color:var(--ink)}
+
+/* ── command-palette affordance in the header ── */
+.pal{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:5px 8px;
+  cursor:pointer;color:var(--ink3);display:flex;align-items:center;transition:color .13s,border-color .13s}
+.pal:hover{color:var(--ink2);border-color:var(--rule2)}
+.pal kbd{font-family:var(--data);font-size:10px;letter-spacing:.04em}
+.who .av.lg{width:34px;height:34px;flex:none}
+
+/* ── ⌘K palette ── */
+.pwrap{position:fixed;inset:0;background:rgba(6,9,11,.62);backdrop-filter:blur(3px);z-index:200;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
+.pwrap[hidden]{display:none}
+.pbox{width:min(560px,92vw);background:var(--raised);border:1px solid var(--rule2);border-radius:10px;
+  box-shadow:0 24px 60px -14px rgba(0,0,0,.85);overflow:hidden}
+.pbox input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--rule);
+  color:var(--ink);font:500 15px/1 var(--ui);padding:16px 18px}
+.pbox input:focus{outline:none}
+.plist{max-height:min(52vh,420px);overflow:auto;padding:6px}
+.pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;
+  font-size:13px;color:var(--ink2)}
+.pitem[aria-selected=true]{background:var(--hi);color:var(--ink)}
+.pitem .pk{font-family:var(--data);font-size:9px;letter-spacing:.07em;color:var(--ink3);
+  border:1px solid var(--rule);border-radius:3px;padding:2px 6px;margin-left:auto}
+.pitem .pi{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+.pnone{padding:22px;text-align:center;font-size:12.5px;color:var(--ink3)}
+
+/* ── the editor is collapsible: at full height it is 415px, which pushed the Track — the
+   reason this page exists — entirely below a 728px fold. Collapsed is the default; the
+   summary strip still answers "what are the dates" without expanding. ── */
+.idsum{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px;cursor:pointer}
+.idsum:hover{background:var(--sunk)}
+.idsum .st{font:600 15px/1.2 var(--ui);color:var(--ink);letter-spacing:-.01em}
+.idsum .seg2{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
+.idsum .seg2 i{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none}
+.idsum .seg2 b{color:var(--ink2);font-weight:600}
+.idsum .sp{margin-left:auto}
+.idsum .ed{font:600 10.5px/1 var(--data);letter-spacing:.07em;color:var(--ink3);
+  border:1px solid var(--rule2);border-radius:4px;padding:6px 10px;background:var(--sunk)}
+.idsum:hover .ed{color:var(--ink);border-color:var(--ink4)}
+.identity.collapsed .idbody{display:none}
+.identity:not(.collapsed) .idsum{display:none}
+.idbody{padding:0 16px 16px}
+.identity .ph{padding:12px 16px}
+/* Stacked deadline captions (see maskCollidingTicks): each level drops one chip-height so
+   two dates four days apart both stay readable at a season-wide zoom. */
+.dend.lvl1::after{top:16px}
+.dend.lvl2::after{top:34px}
+.dend.lvl3::after{top:52px}
+
+/* ── calendar banners: three independent images, one per /calendar page ── */
+.bansec{margin-top:14px;border-top:1px solid var(--rule);padding-top:13px}
+.bansec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:9px}
+.bansec-h span:first-child{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.bansec-n{font-family:var(--data);font-size:9.5px;color:var(--ink3)}
+.bans{display:flex;flex-direction:column;gap:6px}
+.ban{display:grid;grid-template-columns:78px 40px minmax(0,1fr) 118px;gap:11px;align-items:center;
+  background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
+  border-radius:var(--rad);padding:7px 12px 7px 11px}
+.ban:focus-within{border-color:var(--rule2);border-left-color:var(--c)}
+.ban .bl{font-family:var(--data);font-size:9.5px;letter-spacing:.09em;color:var(--c);font-weight:600}
+.ban .bthumb{height:24px;border-radius:3px;border:1px dashed var(--rule2);display:grid;place-items:center;
+  font-family:var(--data);font-size:8px;color:var(--ink3);letter-spacing:.05em}
+.ban .bthumb.has{border-style:solid;border-color:var(--c);
+  background:linear-gradient(120deg,var(--c),transparent 140%);opacity:.85}
+.ban input{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;
+  color:var(--ink2);font:400 11.5px/1.4 var(--data);padding:3px 0}
+.ban input:hover{border-bottom-color:var(--rule2)}
+.ban input:focus{outline:none;border-bottom-color:var(--c);color:var(--ink)}
+.ban input::placeholder{color:var(--ink3)}
+.ban .bst{font-family:var(--data);font-size:9.5px;color:var(--ink3);text-align:right;letter-spacing:.04em}
+
+/* Card actions sit INSIDE content — three full-width filled buttons stacked down a column
+   pulled the eye harder than the items they act on. Compact and right-aligned; the primary
+   still reads as primary, just at card scale. */
+.bcard .actions{display:flex;gap:6px;justify-content:flex-end;margin-top:9px}
+.bcard .actions button{flex:none;padding:5px 11px;font-size:10.5px;border-radius:4px}
+.bcard .actions button:not(.go){background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
+.bcard .actions button:not(.go):hover{color:var(--danger-ink);border-color:var(--danger-edge)}
+
+/* ══════════ IDENTITY: closable, and obviously in draft mode ══════════ */
+/* There was no way out once open — the summary strip IS the toggle and it is display:none
+   while expanded, so the editor was a one-way door that survived a reload. Every collapsible
+   thing on this page now has a control visible in BOTH states. */
+.idclose{display:flex;align-items:center;gap:6px;background:var(--sunk);border:1px solid var(--rule2);
+  border-radius:5px;color:var(--ink3);cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.09em;
+  padding:7px 11px;transition:color .13s,border-color .13s,background .13s}
+.idclose:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
+.idclose span{font-size:7px;opacity:.7}
+.identity.collapsed .idclose{display:none}
+
+/* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
+   reads the same way everywhere. The values always swapped correctly; nothing said so. */
+.draftnote{display:none;align-items:center;gap:8px;margin-bottom:12px;padding:9px 12px;
+  background:rgba(95,212,232,.06);border:1px dashed var(--staged);border-radius:var(--rad);
+  font-size:12px;color:var(--ink2)}
+.draftnote b{color:var(--staged);font-weight:600}
+.identity.editing-draft .draftnote{display:flex}
+.identity.editing-draft{border-color:var(--staged)}
+.identity.editing-draft .f-main input{border-color:var(--rule2)}
+.identity.editing-draft .f-main input:focus{border-color:var(--staged);box-shadow:0 0 0 3px rgba(95,212,232,.13)}
+
+/* ══════════ DIFF ══════════ */
+.diff-r .dk{font-family:var(--data);font-size:10px;color:var(--ink3);letter-spacing:.05em}
+.diff-r .dwas{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--rule2)}
+.diff-r .dnow{color:var(--ok);font-weight:500}
+.diff-r .dnow.add{color:var(--staged)}
+
+/* ══════════ MANIFEST — declared widths, not content-inferred ══════════ */
+/* table-layout:auto let the longest cell decide every column, so Window took 331px to hold
+   "Aug 1 -> Aug 10" and the row read lopsided. Fixed layout + a colgroup states the intent. */
+.mscroll{overflow-x:auto}
+.mtable{table-layout:fixed;min-width:860px}
+.mtable col.c-cb{width:38px}
+.mtable col.c-item{width:30%;min-width:210px}
+.mtable col.c-type{width:118px}
+.mtable col.c-win{width:170px}
+.mtable col.c-spark{width:18%;min-width:130px}
+.mtable col.c-detail{width:auto;min-width:190px}
+.mtable col.c-state{width:104px}
+.mtable th,.mtable td{padding:8px 12px}
+.mtable th:first-child,.mtable td:first-child{padding-right:0}
+.mtable td{vertical-align:middle;line-height:1.35}
+.mtable .nums{font-family:var(--data);font-size:11.5px;color:var(--ink2);white-space:nowrap}
+.mtable .nums .arw{color:var(--ink3);padding:0 1px}
+.mtable .det{color:var(--ink3);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtable .ta-r{text-align:right}
+/* `.rowmeta` is a SUBTITLE LINE, so it has to be block — inline it runs straight into the
+ * title it sits under and the two read as one mangled string. Caught 2026-08-24 on the
+ * Broadcast manifest; the rule lived without `display` because every earlier caller happened
+ * to wrap it in a flex child that forced a line of its own. Fixing the RULE rather than the
+ * one call site is the point: the next manifest would have hit it again. */
+.mtable .rowmeta{display:block;margin-top:2px}
+.mtable td .spark{width:100%}
+.mtable tbody tr{transition:background .12s}
+.mtable tbody tr:hover{background:var(--sunk)}
+
+/* A staged item that ALSO outlives the season needs both facts visible. The badge keeps
+   carrying staging state; the conflict gets its own mark rather than overloading a word. */
+.warnmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+  border:1.5px solid var(--warn);color:var(--warn);font:700 10px/1 var(--data);
+  margin-right:6px;vertical-align:1px;cursor:help}
+/* "NOT LIVE" had two causes — staged against the live season, or belonging to the staged
+   NEXT season — and the manifest showed both identically. */
+.nextmark{color:var(--staged);border:1px solid var(--staged);border-radius:3px;padding:1px 5px;
+  font-size:8.5px;letter-spacing:.07em}
+
+/* ══════════ SCRUBBER — figure/ground the right way round ══════════
+   Recorded failure: the SELECTION was tinted gold, so a wide window washed the entire bar
+   and nothing read as chosen. Dim the outside instead; the selection is simply the part
+   that is not dimmed, which is legible at every width. */
+.smask{position:absolute;top:0;bottom:0;background:rgba(8,11,14,.72);pointer-events:none;z-index:3}
+.smask.l{left:0}
+.winbox{position:absolute;top:0;bottom:0;z-index:4;cursor:grab;
+  border:1px solid var(--patch);border-radius:3px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.06);
+  background:rgba(242,194,48,.06);touch-action:none}
+.winbox:active{cursor:grabbing}
+/* Grips are attached to the window's own edges and are a real 11px target, not a 1px line. */
+.winbox .wh{position:absolute;top:0;bottom:0;width:11px;cursor:ew-resize;touch-action:none;
+  display:grid;place-items:center}
+.winbox .wh::before{content:"";width:3px;height:16px;border-radius:2px;background:var(--patch);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.winbox .wh:hover::before,.winbox .wh:active::before{height:22px;background:#FFDF6B}
+.winbox .wh.l{left:-6px}
+.winbox .wh.r{right:-6px}
+/* The decorations under the window are informative, never interactive — they used to
+   inherit the container's grab cursor and promise a drag that did not exist. */
+.scrub .mini,.scrub .season-end,.scrub .scrub-label{pointer-events:none}
+/* The lane-name column is a fixed gutter; give it a hard edge so nothing can appear to
+   bleed into it even at a partial pixel. */
+.lane .nm{position:relative;z-index:2;background:var(--paper)}
+.lanes{position:relative}
+/* Bar label sits in its own element so it can be nudged clear of a left-edge clip. */
+.bar .bl{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+/* A bar continuing in from off-window says so, rather than just ending at the bezel. */
+.bar.clipped-l{border-top-left-radius:0;border-bottom-left-radius:0;
+  border-left:2px dotted currentColor}
+
+/* The caption is a GUTTER label, outside the scrubbable strip — it used to sit inside it,
+   so the window box slid over the word and at full width hid it completely. */
+.scrub{display:flex;align-items:stretch;gap:10px;height:44px;margin-bottom:10px;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:5px 7px}
+.scrub-label{flex:none;align-self:center;font-family:var(--data);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3);padding-right:2px}
+.scrub-track{position:relative;flex:1;min-width:0;overflow:hidden;border-radius:3px;
+  background:rgba(0,0,0,.28);cursor:crosshair}
+
+/* ══════════ DEADLINE RAIL — everything that applies to EVERY lane ══════════
+   A deadline is a point, a double-CP window is a span; both are global, so both live here
+   on the shared axis rather than floating inside the first lane as afterthoughts. */
+.deadrail{position:relative;margin-left:96px;min-height:24px;margin-bottom:2px}
+.dflag,.dspan{position:absolute;top:0;transform:translateX(-1px);display:flex;align-items:center;gap:6px;
+  background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:4px;
+  padding:3px 7px;cursor:ew-resize;white-space:nowrap;color:var(--c,var(--ink3));
+  font-family:var(--data);font-size:9px;letter-spacing:.08em;line-height:1.4;touch-action:none;
+  box-shadow:0 2px 8px -4px rgba(0,0,0,.8)}
+.dflag:hover,.dflag:focus-visible{background:var(--hi);z-index:3}
+.dflag.dragging{background:var(--hi);z-index:4}
+.dflag .dfl{font-weight:700}
+.dflag .dfd{color:var(--ink3);font-weight:500}
+.dflag.lvl1,.dspan.lvl1{top:21px}
+.dflag.lvl2,.dspan.lvl2{top:42px}
+/* the span reads as a bracket over a range, not as a chip at a point */
+/* 2X CP is CP Emerald — the colour /draw prices already uses — because it IS a CP-pricing
+   condition. It was grey, which reads as disabled. Solid border: it is live, not staged. */
+.dspan{--c:var(--ok);justify-content:center;cursor:grab;
+  background:rgba(61,220,151,.09);border-style:solid;position:relative;color:var(--ok)}
+.dspan::before,.dspan::after{content:"";position:absolute;top:3px;bottom:3px;width:1.5px;background:var(--ok)}
+.dspan::before{left:3px} .dspan::after{right:3px}
+.dspan:hover{background:var(--hi)}
+/* the vertical line is now ONLY a line — it carries no label and needs no hit area */
+.dend{position:absolute;top:0;bottom:0;width:0;border-left:1.5px solid var(--c);
+  z-index:4;pointer-events:none;opacity:.5}
+.dend::after{content:none}
+/* the global-span band: neutral, never a lane's colour */
+.win{position:absolute;top:0;bottom:0;pointer-events:none;
+  background:rgba(61,220,151,.05);
+  border-left:1.5px solid rgba(61,220,151,.5);border-right:1.5px solid rgba(61,220,151,.5)}
+/* Bracket ends, so the span reads as bounded rather than as a column laid over the lanes. */
+.win::before,.win::after{content:"";position:absolute;left:-1.5px;right:-1.5px;height:4px;
+  border-left:1.5px solid rgba(61,220,151,.5);border-right:1.5px solid rgba(61,220,151,.5)}
+.win::before{top:0;border-top:1.5px solid rgba(61,220,151,.5)}
+.win::after{bottom:0;border-bottom:1.5px solid rgba(61,220,151,.5)}
+.win .wh{pointer-events:auto}
+
+/* The rail ties each flag to its line with a short stem, so the pairing is seen rather
+   than traced — at a wide zoom the chip and its line can be hundreds of pixels apart. */
+.dflag::after{content:"";position:absolute;left:-1px;top:100%;width:1.5px;
+  height:var(--stem,10px);background:var(--c)}
+.dflag.lvl1::after{--stem:31px}
+.dflag.lvl2::after{--stem:52px}
+.dspan::after{content:none}
+
+/* "Today" is context, not the subject — it was the single most dominant element on the
+   track and washed out the bar it crossed. A thin line and a chip, no column of glow. */
+.now{box-shadow:none !important}
+.tk-inner .now{background:var(--patch);opacity:.5;width:1px}
+
+/* ══════════ MANIFEST — the row is one line, and it carries what it knows ══════════
+   The wrapper added to keep the <td> a table-cell was left as display:block, so the colour
+   dot and the name landed on separate lines and every row cost 60px for ~36px of content. */
+.mtable .ncell{display:flex;align-items:center;gap:9px;min-width:0}
+.mtable .ncell .dot{flex:none}
+.mtable .ncell .edit{flex:1 1 auto;min-width:0}
+.mtable td{padding:6px 12px}
+.mtable tbody tr{border-bottom:1px solid var(--rule3)}
+
+/* Detail was an em-dash or a bare count. Tiers and thumbnail state are already in the data. */
+.mtable .det{white-space:normal}
+.detcell{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
+.tiers{display:inline-flex;gap:3px}
+.tiers b{font-family:var(--data);font-size:8.5px;letter-spacing:.06em;font-weight:700;
+  border-radius:2px;padding:2px 5px;line-height:1.3}
+.t-leg{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
+.t-myth{background:rgba(255,52,48,.15);color:#FF6B67;box-shadow:inset 0 0 0 1px rgba(255,52,48,.35)}
+.t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
+.mtable .det .dsub{font-size:12px;color:var(--ink3)}
+.mtable .det .none{color:var(--ink3);font-style:italic}
+.thumb{font-family:var(--data);font-size:8.5px;letter-spacing:.05em;padding:1px 5px;border-radius:2px;
+  margin-left:auto;white-space:nowrap}
+.thumb.ok{color:var(--ok);background:rgba(61,220,151,.1)}
+.thumb.no{color:var(--ink3);background:rgba(255,255,255,.04)}
+
+/* ══════════ FILTER CHIPS — a topic filter carries its topic's colour ══════════
+   These were all identical grey while every label named something that already has a
+   colour in the bot. Colour is familiarity: the chip and the bar it filters must match. */
+.chipset{display:contents}
+.chip.topic{display:inline-flex;align-items:center;gap:7px}
+.chip.topic i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;
+  box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.chip.topic:hover{border-color:var(--c);color:var(--ink)}
+.chip.topic[aria-pressed=true]{background:color-mix(in srgb,var(--c) 16%,transparent);
+  border-color:var(--c);color:var(--ink)}
+.chip.topic[aria-pressed=true] i{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 35%,transparent)}
+/* "Staged only" filters a STATE, so it wears the state's shape — dashed, not filled. */
+.chip.stagedchip[aria-pressed=true]{border:1.5px dashed var(--staged);color:var(--staged);
+  background:rgba(95,212,232,.08)}
+
+/* ══════════ CROSSHAIR — read an exact date anywhere on the track ══════════
+   Without this the only way to know when something started was to estimate against the
+   nearest ruler tick. It reports the date under the pointer, and the item's real window
+   when the pointer is over a bar. */
+.xhair{position:absolute;top:0;bottom:0;width:0;pointer-events:none;z-index:7;opacity:0;
+  transition:opacity .1s}
+.xhair.on{opacity:1}
+.xhair::before{content:"";position:absolute;top:var(--xtop,60px);bottom:0;left:0;width:1px;
+  background:linear-gradient(180deg,rgba(232,237,241,.5),rgba(232,237,241,.12))}
+.xd{position:absolute;top:calc(var(--xtop,60px) - 26px);left:0;white-space:nowrap;
+  background:var(--raised);border:1px solid var(--rule2);border-radius:5px;padding:3px 9px;
+  box-shadow:0 6px 18px -8px rgba(0,0,0,.9);display:flex;align-items:baseline;gap:8px}
+.xd b{font-family:var(--data);font-size:10.5px;color:var(--ink);font-weight:600;letter-spacing:.03em}
+.xd i{font-style:normal;font-size:10px;color:var(--ink3)}
+.xhair.on-item::before{background:linear-gradient(180deg,rgba(242,194,48,.6),rgba(242,194,48,.15))}
+.xhair.on-item .xd{border-color:var(--patch)}
+.tk-wrap{position:relative}
+
+/* ══════════════════ ACCOUNT MENU ══════════════════
+   The first pass was four unstyled text rows and an empty circle. A menu that carries the
+   session's identity should say WHO you are, WHAT you may do, and WHAT you would lose by
+   leaving — the staged-changes count is the one fact that makes Sign out a real decision. */
+.umenu{position:absolute;top:calc(100% + 8px);right:0;width:274px;background:var(--raised);
+  border:1px solid var(--rule2);border-radius:11px;z-index:60;overflow:hidden;
+  box-shadow:0 20px 48px -14px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03)}
+.umenu[hidden]{display:none}
+.uhead{display:flex;gap:11px;align-items:center;padding:14px 14px 13px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent)}
+.uav{position:relative;width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.uav b{font:700 15px/1 var(--ui);color:var(--ink);letter-spacing:-.02em}
+.uav .pres{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;
+  background:var(--ok);border:2.5px solid var(--raised)}
+.uinfo{min-width:0;display:flex;flex-direction:column;gap:3px}
+.uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
+.uinfo .nm{font:600 14px/1.2 var(--ui);color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.rolebadge{flex:none;font:700 8px/1 var(--data);letter-spacing:.1em;color:var(--patch);
+  border:1px solid rgba(242,194,48,.45);background:rgba(242,194,48,.1);border-radius:3px;padding:2.5px 5px}
+.uinfo .id{font-family:var(--data);font-size:10px;color:var(--ink3);letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.usec{padding:5px;border-top:1px solid var(--rule)}
+.usec.last{background:rgba(255,107,107,.03)}
+.umenu .mi{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;
+  border-radius:7px;color:var(--ink2);cursor:pointer;font:500 12.5px/1 var(--ui);padding:9px 9px;text-align:left}
+.umenu .mi svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.umenu .mi:hover{background:var(--hi);color:var(--ink)}
+.umenu .mi:hover svg{opacity:1}
+.umenu .mi kbd{margin-left:auto;font-family:var(--data);font-size:9px;color:var(--ink3);
+  border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:2px 5px}
+.umenu .mi .mnote{margin-left:auto;font-family:var(--data);font-size:9.5px;color:var(--ink3)}
+.umenu .mi.danger{color:var(--danger-ink)}
+.umenu .mi.danger:hover{background:rgba(255,107,107,.12)}
+.ustat{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;
+  font-size:11.5px;color:var(--ink3)}
+.ustat b{font-family:var(--data);font-size:10.5px;color:var(--ink2);font-weight:600;
+  font-variant-numeric:tabular-nums}
+
+/* ══════════════════ REFINEMENT PASS — classes never checked before ══════════════════ */
+
+/* 1. FOCUS. Every interactive element gets a visible ring. Not one had been checked all
+      session, which means the page was unusable by keyboard and nobody would have known. */
+:where(button,a,input,select,[tabindex]):focus-visible{
+  outline:2px solid var(--patch);outline-offset:2px;border-radius:4px}
+.bar:focus-visible,.pt:focus-visible{outline:2px solid var(--patch);outline-offset:3px}
+.dflag:focus-visible,.dspan:focus-visible{outline:2px solid var(--patch);outline-offset:3px;z-index:5}
+#ruler span:focus-visible{outline:2px solid var(--patch);outline-offset:1px}
+
+/* 2. NUMBERS. Dates and counts sit in columns, so they need tabular figures or the digits
+      shimmy from row to row and the column stops reading as a column. */
+.nums,.rowmeta,.bcol-n,.zoomer .rd,.dfd,.xd b,.mh-stats .v,.diff-r,.stt,.thumb,.tiers b,
+.ustat b,.uinfo .id,.bmeta,.dl-left{font-variant-numeric:tabular-nums}
+
+/* 3. MOTION. Transitions were added throughout and this was never honoured. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+
+/* 4. LINKED HOVER. The Track and the Manifest are two views of one dataset; hovering either
+      lights the other, which is what makes them read as one instrument rather than two lists. */
+.mtable tbody tr.lit{background:var(--hi)}
+.mtable tbody tr.lit td:first-child{box-shadow:inset 2px 0 0 var(--patch)}
+.bar.lit,.pt.lit{outline:2px solid var(--patch);outline-offset:2px;z-index:6}
+
+/* ══════════════════ ARMORY ══════════════════
+   No dates, so no Track. Rack answers "what exists" by category in the bot's own
+   MP_CATEGORY_ACCENT hues; Coverage answers "what is wrong with it". Every card is a
+   FILTER — naming a defect you cannot then list is not worth naming. */
+.rack{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px;padding:14px 16px}
+.rcard{display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;
+  background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
+  border-radius:var(--rad);padding:13px 14px;color:inherit;transition:border-color .14s,background .14s}
+.rcard:hover{background:var(--desk);border-color:var(--rule2);border-left-color:var(--c)}
+.rcard[aria-pressed=true]{background:color-mix(in srgb,var(--c) 12%,var(--sunk));border-color:var(--c)}
+.rcard.empty{opacity:.5}
+.rtop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.rname{font:600 13.5px/1.2 var(--ui);color:var(--ink)}
+.rn{font-family:var(--data);font-size:16px;font-weight:600;color:var(--c);font-variant-numeric:tabular-nums}
+/* What exists, said plainly. The abstract tick-per-build that lived here was never
+   labelled, so no reader could decode it — and at this scale a distribution says less than
+   the count already does. A weapon marked `bad` has at least one build with a defect. */
+.rlist{display:flex;flex-wrap:wrap;gap:5px;min-height:22px;align-content:flex-start}
+.rw{font-size:11px;color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
+  border-radius:3px;padding:2px 7px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.rw.bad{border-color:var(--danger-edge);color:var(--warn)}
+.rmore{font-family:var(--data);font-size:9.5px;color:var(--ink3);align-self:center;padding-left:2px}
+.rnone{font-size:11px;color:var(--ink3);font-style:italic}
+.rfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--data);font-size:9.5px;
+  color:var(--ink3);letter-spacing:.04em}
+.rfoot b{color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
+.rmeta{color:var(--patch)}
+.rbad{color:var(--warn)}
+.racknote{margin:0;padding:0 16px 14px;font-size:11.5px;color:var(--ink3)}
+
+.cov{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px;padding:14px 16px}
+.ccard{display:flex;flex-direction:column;gap:9px;text-align:left;cursor:pointer;color:inherit;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:13px 14px;
+  transition:border-color .14s,background .14s}
+.ccard:hover{background:var(--desk);border-color:var(--rule2)}
+.ccard[aria-pressed=true]{border-color:var(--warn);background:rgba(255,122,69,.07)}
+.ccard.clean{opacity:.72}
+.ctop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cname{font:600 12.5px/1.3 var(--ui);color:var(--ink)}
+.cn{font-family:var(--data);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.cn.bad{color:var(--warn)} .cn.ok{color:var(--ok)}
+.chint{font-size:11.5px;color:var(--ink3);line-height:1.45}
+.cmeter{height:4px;border-radius:2px;background:var(--rule);overflow:hidden}
+.cmeter i{display:block;height:100%;background:var(--ok);border-radius:2px}
+.ccard[aria-pressed=true] .cmeter i,.cn.bad ~ * .cmeter i{background:var(--warn)}
+.cfoot{font-family:var(--data);font-size:9.5px;color:var(--ink3);letter-spacing:.04em;
+  font-variant-numeric:tabular-nums}
+
+/* An active filter must name itself and offer the way out — a filtered list that looks like
+   the whole list is how someone concludes their data is missing. */
+.afbar{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--rule);
+  background:var(--sunk);flex-wrap:wrap}
+.aflab{font-family:var(--data);font-size:9.5px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase}
+.afchip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);
+  background:var(--raised);border:1px solid var(--rule2);border-radius:20px;padding:3px 10px}
+.afchip i{width:7px;height:7px;border-radius:2px;background:var(--c,var(--ink3))}
+.afchip.warn{color:var(--warn);border-color:var(--danger-edge)}
+.afchip.warn i{background:var(--warn)}
+.afn{font-family:var(--data);font-size:10px;color:var(--ink3);margin-left:auto;font-variant-numeric:tabular-nums}
+.afclear{background:transparent;border:1px solid var(--rule2);border-radius:4px;color:var(--ink3);
+  cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.08em;padding:5px 9px}
+.afclear:hover{color:var(--ink);border-color:var(--ink4)}
+
+.wname{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtable .code{font-size:11px;color:var(--ink3);letter-spacing:.03em}
+.mtable .none{color:var(--ink3);font-style:italic}
+.metatag{color:var(--patch);border:1px solid rgba(242,194,48,.4);border-radius:2px;padding:1px 4px;
+  font-size:8px;letter-spacing:.08em}
+.health{font-family:var(--data);font-size:10px;letter-spacing:.04em;padding:3px 8px;border-radius:3px;
+  white-space:nowrap}
+.health.ok{color:var(--ok);background:rgba(61,220,151,.1)}
+.health.bad{color:var(--warn);background:rgba(255,122,69,.12);cursor:help}
+.bdg{display:inline-block;font-family:var(--data);font-size:8.5px;font-weight:700;letter-spacing:.07em;
+  border-radius:2px;padding:2px 5px;margin-left:4px}
+.bdg.rank{color:var(--patch);box-shadow:inset 0 0 0 1px rgba(242,194,48,.45)}
+.bdg.dmz{color:#5FA8D8;box-shadow:inset 0 0 0 1px rgba(95,168,216,.45)}
+.bdg.toxic{color:var(--del);box-shadow:inset 0 0 0 1px rgba(255,107,107,.45)}
+.dwissues{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
+.dwissues h6{margin:0 0 9px;font:700 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--warn)}
+.dwissue{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:5px;
+  background:rgba(255,122,69,.07);border-left:2px solid var(--warn);margin-bottom:6px}
+.dwissue b{font-size:12px;color:var(--ink);font-weight:600}
+.dwissue span{font-size:11.5px;color:var(--ink3)}
+.dwfield{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+.dwfield label{font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.dwfield input{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;color:var(--ink);
+  font:500 13px/1 var(--ui);padding:9px 11px}
+.dwfield input:focus{outline:none;border-color:var(--patch)}
+.dwcheck{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--ink2);cursor:pointer}
+.bulkbar{display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid var(--rule);
+  background:var(--sunk);font-size:12.5px;color:var(--ink2)}
+.bulkbar b{color:var(--staged);font-family:var(--data)}
+.bulkbar button{background:transparent;border:1px solid var(--rule2);border-radius:5px;color:var(--ink2);
+  cursor:pointer;font:500 11.5px/1 var(--ui);padding:6px 11px}
+.bulkbar button:hover{color:var(--ink);border-color:var(--ink4)}
+.bulkbar .x{margin-left:auto;border:none;color:var(--ink3)}
+.srch{position:relative;display:flex;align-items:center}
+.srch svg{position:absolute;left:11px;width:14px;height:14px;fill:none;stroke:var(--ink4);stroke-width:1.6;
+  pointer-events:none}
+.srch input{padding-left:32px}
+
+/* ══════════════════ ARMORY · TIER BOARD ══════════════════
+   `categoryRank` is S/A/B and this audience thinks in tier lists, so the field gets a
+   spatial editor instead of a text input. Dragging stages loadouts.setRank. */
+.tbcats{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px 0}
+.tbcat{display:inline-flex;align-items:center;gap:7px;background:var(--sunk);cursor:pointer;
+  border:1px solid var(--rule);border-radius:20px;color:var(--ink3);font:500 11.5px/1 var(--ui);padding:7px 12px}
+.tbcat i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+.tbcat b{font-family:var(--data);font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.tbcat:hover{color:var(--ink);border-color:var(--rule2)}
+.tbcat.on{background:color-mix(in srgb,var(--c,var(--patch)) 15%,transparent);
+  border-color:var(--c,var(--patch));color:var(--ink)}
+.tbcat.on b{color:var(--ink2)}
+
+.trows{display:flex;flex-direction:column;gap:9px;padding:13px 16px}
+.trow{border:1px solid var(--rule);border-radius:var(--rad);background:var(--sunk);overflow:hidden}
+.trow-h{display:flex;align-items:center;gap:11px;padding:8px 12px;border-bottom:1px solid var(--rule3)}
+.trow-k{font:700 15px/1 var(--data);letter-spacing:.04em;width:26px;text-align:center;flex:none}
+.trow-n{font-family:var(--data);font-size:10px;color:var(--ink3);border:1px solid var(--rule);
+  border-radius:9px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.trow-note{font-size:11px;color:var(--ink3)}
+/* S reads as the top of a podium, not merely the first row of a list. */
+.t-S{background:linear-gradient(90deg,rgba(242,194,48,.09),transparent 42%)}
+.t-S .trow-k{color:var(--patch)}
+.t-A .trow-k{color:#9BE8C0} .t-B .trow-k{color:var(--ink3)}
+.t-none{opacity:.86} .t-none .trow-k{color:var(--ink3);font-size:11px;width:auto;letter-spacing:.1em}
+.trow-body{display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px;
+  transition:background .14s,box-shadow .14s}
+.trow-body.over{background:rgba(95,212,232,.07);box-shadow:inset 0 0 0 1.5px var(--staged)}
+.trow-empty{margin:0;align-self:center;font-size:11.5px;color:var(--ink3);font-style:italic}
+
+.bchip{display:flex;flex-direction:column;gap:4px;min-width:158px;cursor:grab;
+  background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c);
+  border-radius:6px;padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s}
+.bchip:hover{border-color:var(--c);transform:translateY(-2px);
+  box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
+.bchip.dragging{opacity:.6;transform:rotate(-1.5deg) scale(.98);cursor:grabbing}
+.bc-top{display:flex;align-items:center;gap:7px}
+.bc-w{font:600 12.5px/1.2 var(--ui);color:var(--ink)}
+.bc-meta{font:700 7.5px/1 var(--data);letter-spacing:.09em;color:var(--patch);
+  border:1px solid rgba(242,194,48,.45);border-radius:2px;padding:2px 4px}
+.bc-b{font-size:11px;color:var(--ink3)}
+.bc-foot{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:9px;
+  letter-spacing:.06em;color:var(--ink3)}
+.bc-dmz{color:#5FA8D8} .bc-tox{color:var(--del);font-size:11px}
+.bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:9px;
+  padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help}
+
+/* ══════════ REPAIR QUEUE ══════════ */
+.cact{display:flex;gap:7px;margin-top:4px}
+.cok{font-family:var(--data);font-size:9.5px;color:var(--ok);letter-spacing:.05em}
+.chip.go{border-color:var(--staged);color:var(--staged)}
+.chip.go:hover{background:var(--staged);color:var(--on-accent)}
+.rep{display:flex;flex-direction:column;gap:6px;margin-top:13px}
+.repr{display:flex;align-items:center;gap:12px;background:var(--sunk);border:1px solid var(--rule);
+  border-left:3px solid var(--c);border-radius:5px;padding:9px 12px}
+.repw{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);min-width:0;flex:1}
+.repw i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+.repw em{font-style:normal;font-size:11.5px;color:var(--ink3)}
+.repd{display:flex;align-items:center;gap:8px;font-family:var(--data);font-size:11px;flex:none}
+.repd .was{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--rule2)}
+.repd .now{color:var(--ok)}
+.repd .arw{color:var(--ink3)}
+.repf{color:var(--ink3);font-size:9.5px;letter-spacing:.05em}
+.repin{background:var(--paper);border:1px solid var(--rule2);border-radius:4px;color:var(--ink);
+  font:400 11.5px/1 var(--data);padding:6px 9px;min-width:210px}
+.repin:focus{outline:none;border-color:var(--staged)}
+
+/* ══════════ COMPARE ══════════ */
+.cmpbar{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px 0}
+.cmpbar .chip b{font-family:var(--data);font-size:10px;color:var(--ink3);margin-left:7px}
+.cmpbar .chip.on{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
+.cmp{padding:13px 16px}
+.cmpcards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.cmpcards .dcard{flex:1 1 260px;max-width:360px}
+.cmptab{width:100%;border-collapse:collapse;font-size:12.5px}
+.cmptab th{text-align:left;font:700 9.5px/1 var(--data);letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink3);padding:8px 12px;border-bottom:1px solid var(--rule)}
+.cmptab td{padding:8px 12px;border-bottom:1px solid var(--rule3);font-variant-numeric:tabular-nums}
+.cmpf{font-family:var(--data);font-size:10px;color:var(--ink3);letter-spacing:.05em}
+/* Only the differing rows are lit — matching fields dim so the difference is what you see. */
+.cmptab tr.same td{color:var(--ink3);opacity:.55}
+.cmptab tr.diff td{color:var(--ink)}
+.cmptab tr.diff{background:rgba(242,194,48,.05)}
+.cmptab tr.diff .cmpf{color:var(--patch)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ART DIRECTION — see COMPANION.md §10. All of it lives here, in the shared
+   layer, so the six unbuilt pages are born with it rather than retrofitted.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 10.4 COMPOSITION: the view layer is the hero ──
+   The failure this replaces: three panels of identical weight, where nothing said which
+   one mattered. The masthead is quiet and generous; the context strip is a STRIP, never a
+   panel; the view layer gets the strongest treatment; the Manifest is recessive because it
+   is the mechanism beneath the picture. */
+.masthead{padding:34px 24px 22px;max-width:none}
+.masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
+.masthead h1{margin:0 0 20px;font-size:var(--t-display);font-weight:600;
+  letter-spacing:var(--tr-display);line-height:1.02;color:var(--ink)}
+.mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
+.mh-stats .stat{display:flex;flex-direction:column-reverse;gap:2px;align-items:flex-start}
+.mh-stats .v{font-size:var(--t-figure);font-weight:600;line-height:1;
+  letter-spacing:var(--tr-figure);font-variant-numeric:tabular-nums;color:var(--ink)}
+.mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.mh-stats .stat.stg .v{color:var(--staged)}
+.mh-stats .stat.warn .v{color:var(--warn)}
+
+/* The view layer earns the strongest frame; the Manifest deliberately gives it up. */
+.panel{border:1px solid var(--rule2)}
+.panel + .panel{border-color:var(--rule);background:transparent}
+.panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}
+
+/* ── 10.2 TYPE: panel and dialog headings step up ── */
+.ph .t{font-size:var(--t-micro);letter-spacing:var(--tr-micro)}
+.dw-h h2{font-size:var(--t-h1);letter-spacing:var(--tr-h1)}
+
+/* ── 10.3 MOTION: three choreographed moments, everything else stays a fade ── */
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes stagePulse{0%{box-shadow:0 0 0 0 rgba(95,212,232,.55)}100%{box-shadow:0 0 0 14px rgba(95,212,232,0)}}
+@keyframes countBump{0%{transform:scale(1)}40%{transform:scale(1.32)}100%{transform:scale(1)}}
+@keyframes settle{0%{transform:scale(1.06)}60%{transform:scale(.985)}100%{transform:scale(1)}}
+
+/* The view switch reads as the same data REORGANISING, not two different screens —
+   which is why rows stagger in rather than all appearing at once. */
+#viewTrack:not([hidden]),#viewBoard:not([hidden]),
+#viewRack:not([hidden]),#viewCoverage:not([hidden]),#viewCompare:not([hidden]){
+  animation:viewIn var(--dur-2) var(--ease) backwards}
+#viewBoard:not([hidden]) .bcol{animation:viewIn var(--dur-2) var(--ease) backwards}
+#viewBoard:not([hidden]) .bcol:nth-child(2){animation-delay:20ms}
+#viewBoard:not([hidden]) .bcol:nth-child(3){animation-delay:40ms}
+#viewBoard:not([hidden]) .bcol:nth-child(4){animation-delay:60ms}
+#viewRack:not([hidden]) .trow{animation:viewIn var(--dur-2) var(--ease) backwards}
+#viewRack:not([hidden]) .trow:nth-child(2){animation-delay:20ms}
+#viewRack:not([hidden]) .trow:nth-child(3){animation-delay:40ms}
+#viewRack:not([hidden]) .trow:nth-child(4){animation-delay:60ms}
+
+/* A staged change has to visibly GO somewhere, or the tray is a list nobody notices. */
+.staged-pulse{animation:stagePulse var(--dur-3) var(--ease) 1}
+.count-bump{animation:countBump var(--dur-2) var(--ease) 1}
+.bchip.settled{animation:settle var(--dur-2) var(--ease) 1}
+.trow-body.flash{box-shadow:inset 0 0 0 1.5px var(--staged);transition:box-shadow var(--dur-3)}
+
+/* ── 10.6 EDGE STATES: name what is missing, why, and the one action that fixes it ── */
+.estate{display:flex;flex-direction:column;align-items:center;gap:11px;padding:38px 22px;text-align:center}
+.estate .eicon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:var(--sunk);border:1px dashed var(--rule2);color:var(--ink3);font-size:15px}
+.estate h4{margin:0;font:600 14px/1.3 var(--ui);color:var(--ink2)}
+.estate p{margin:0;font-size:12.5px;color:var(--ink3);max-width:44ch;line-height:1.5}
+.estate .chip{margin-top:3px}
+.estate.good .eicon{border-style:solid;border-color:rgba(61,220,151,.4);color:var(--ok)}
+.estate.good h4{color:var(--ok)}
+
+@media (prefers-reduced-motion: reduce){
+  #viewTrack,#viewBoard,#viewRack,#viewCoverage,#viewCompare,
+  .bcols .bcol,.trows .trow,.staged-pulse,.count-bump,.bchip.settled{animation:none !important}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BROADCAST · ACCESS · ANALYTICS · INDEX · REVIEW · DOOR
+   Added 2026-08-24. Every component here reuses the existing frame levels
+   (.panel > .ph > view) and the existing state encoding — SHAPE for state,
+   COLOUR for topic. Nothing below invents a second way to say "staged".
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── BROADCAST · Now showing ───────────────────────────────────────────────
+ * The stack IS the thing Discord cannot do: a player sees these in priority
+ * order, and priority is spatial. Dragging a card rewrites that order. */
+.nowwrap{display:grid;grid-template-columns:1fr 300px;gap:18px;padding:16px}
+@media (max-width:1080px){ .nowwrap{grid-template-columns:1fr} }
+.nstack{display:flex;flex-direction:column;gap:9px;min-height:120px}
+.nscard{display:grid;grid-template-columns:26px 1fr auto;gap:11px;align-items:center;
+  background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--c,var(--pn));
+  border-radius:var(--rad);padding:11px 13px;cursor:grab;transition:transform var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.nscard:hover{background:var(--hi);border-color:var(--rule2);transform:translateY(-1px)}
+.nscard:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.nscard.dragging{opacity:.55;cursor:grabbing;transform:scale(.99)}
+.nscard.over{border-color:var(--staged);box-shadow:0 0 0 1px var(--staged) inset}
+.nscard.staged{background:transparent;border-style:dashed;border-left-style:solid}
+.nscard.scheduled{opacity:.82}
+.nscard .np{font:600 var(--t-figure)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums;
+  letter-spacing:var(--tr-figure);text-align:center}
+.nscard.p0 .np{color:var(--c,var(--pn))}
+.nsb{min-width:0}
+.nsb .nt{display:block;font:600 var(--t-md)/1.3 var(--ui);color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nsb .nd{display:block;font:400 var(--t-sm)/1.4 var(--ui);color:var(--ink3);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nsmeta{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.nspin{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--on-accent);background:var(--c,var(--pn));border-radius:3px;padding:3px 6px}
+.nschan{font:500 var(--t-xs)/1 var(--data);color:var(--ink3);background:var(--sunk);
+  border:1px solid var(--rule);border-radius:3px;padding:4px 7px;white-space:nowrap}
+.nsgrip{color:var(--ink3);letter-spacing:1px;font-size:11px;line-height:1;user-select:none}
+.nsempty{border:1px dashed var(--rule2);border-radius:var(--rad);padding:26px;text-align:center;
+  color:var(--ink3);font-size:var(--t-sm)}
+
+/* The live preview beside the stack — this is what the player actually gets. */
+.nprev{position:sticky;top:14px;align-self:start}
+.nprev h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);margin:0 0 9px}
+.nprev .pnote{font-size:var(--t-xs);color:var(--ink3);margin-top:9px;line-height:1.5}
+
+/* ── BROADCAST · Airtime ───────────────────────────────────────────────────
+ * Windows on one axis. A gap in coverage is the finding this view exists for,
+ * and it is invisible in a chronological list. */
+.at{padding:16px}
+.atgrid{position:relative;border:1px solid var(--rule);border-radius:var(--rad);background:var(--sunk);
+  overflow:hidden}
+.atruler{display:flex;border-bottom:1px solid var(--rule);background:var(--paper)}
+.atruler span{flex:1;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);padding:7px 0 6px;
+  text-align:center;letter-spacing:.06em;border-left:1px solid var(--rule3)}
+.atruler span:first-child{border-left:0}
+.atrow{position:relative;height:38px;border-top:1px solid var(--rule3)}
+.atrow:first-of-type{border-top:0}
+.atrow:hover{background:var(--hi)}
+.atbar{position:absolute;top:7px;height:24px;border-radius:4px;display:flex;align-items:center;
+  padding:0 9px;font:600 var(--t-xs)/1 var(--ui);color:var(--on-accent);background:var(--c,var(--pn));
+  min-width:64px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;
+  transition:filter var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+.atbar:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.atbar:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.atbar.staged{background:transparent;border:1.5px dashed var(--c,var(--pn));color:var(--c,var(--pn))}
+.atbar.ended{background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
+.atgap{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(90deg,
+  transparent 0 5px,rgba(255,122,69,.10) 5px 10px);border-left:1px dashed var(--warn);
+  border-right:1px dashed var(--warn);pointer-events:none}
+.atgap b{position:absolute;top:4px;left:50%;transform:translateX(-50%);font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--warn);white-space:nowrap}
+.atnow{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);pointer-events:none;z-index:3}
+.atnow::after{content:"NOW";position:absolute;top:-1px;left:4px;font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:var(--tr-micro);color:var(--patch)}
+
+/* ── ACCESS · the scope matrix ─────────────────────────────────────────────
+ * Access is the one ACHROMATIC realm on purpose: its subject is the other
+ * realms, so every colour on the page is borrowed from the scope it governs
+ * rather than invented for the page itself. */
+.mxwrap{padding:16px;overflow-x:auto}
+.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:640px}
+.mx th,.mx td{border-bottom:1px solid var(--rule3);padding:0}
+.mx thead th{position:sticky;top:0;background:var(--paper);z-index:2;
+  border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
+.mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
+.mx .mxs i{display:block;width:100%;height:3px;border-radius:2px;background:var(--c);margin:0 0 6px}
+.mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
+.mx tbody td{height:46px;text-align:center;vertical-align:middle}
+.mx tbody tr:hover td{background:var(--hi)}
+.mxid{display:flex;align-items:center;gap:10px;padding:7px 0}
+.mxav{width:30px;height:30px;border-radius:50%;background:var(--avatar-a);flex-shrink:0;
+  display:grid;place-items:center;font:700 var(--t-sm)/1 var(--ui);color:var(--ink);text-transform:uppercase}
+.mxn{min-width:0}
+.mxn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink)}
+.mxn span{display:block;font:400 var(--t-micro)/1.3 var(--data);color:var(--ink3);margin-top:1px}
+.mxcell{width:26px;height:26px;border-radius:5px;border:1px solid var(--rule2);background:transparent;
+  display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
+.mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
+.mxcell:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.mxcell[aria-checked=true]{background:var(--c);border-color:var(--c)}
+.mxcell[aria-checked=true]::after{content:"";width:9px;height:5px;border-left:2px solid var(--on-accent);
+  border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
+.mxcell.staged{background:transparent;border:1.5px dashed var(--c)}
+.mxcell.staged::after{border-color:var(--c)}
+.mxcell.locked{cursor:not-allowed;opacity:.5}
+.mxcell.locked:hover{transform:none;border-color:var(--rule2)}
+.mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid var(--rule2);color:var(--ink2)}
+.mxrole.owner{border-color:var(--patch);color:var(--patch)}
+.mxrole.admin{border-color:var(--info);color:var(--info)}
+.mxrole.editor{border-color:var(--ink3);color:var(--ink3)}
+.mxfoot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--rule);
+  font-size:var(--t-sm);color:var(--ink3);flex-wrap:wrap}
+
+/* ── ACCESS · sessions ─────────────────────────────────────────────────────*/
+.sesslist{display:flex;flex-direction:column;gap:9px;padding:16px}
+.sess{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;
+  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:12px 14px}
+.sess:hover{background:var(--hi)}
+.sess .sdot{width:8px;height:8px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 0 3px rgba(61,220,151,.16)}
+.sess.stale .sdot{background:var(--ink4);box-shadow:none}
+.sessb b{display:block;font:600 var(--t-md)/1.3 var(--ui);color:var(--ink)}
+.sessb span{display:block;font:400 var(--t-sm)/1.4 var(--data);color:var(--ink3);margin-top:2px}
+.sesscur{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ok);border:1px solid var(--ok);border-radius:3px;padding:3px 7px}
+
+/* ── ANALYTICS · health tiles ──────────────────────────────────────────────*/
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:16px}
+.tile{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:15px 16px}
+.tile .tl-k{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.tile .tl-v{display:block;font:600 var(--t-figure)/1.05 var(--ui);letter-spacing:var(--tr-figure);
+  color:var(--ink);font-variant-numeric:tabular-nums;margin:9px 0 3px}
+.tile .tl-v i{font-style:normal;font-size:var(--t-lg);color:var(--ink3);margin-left:2px}
+.tile .tl-s{display:block;font:400 var(--t-sm)/1.3 var(--ui);color:var(--ink3)}
+.tile.ok .tl-v{color:var(--ok)} .tile.warn .tl-v{color:var(--warn)} .tile.err .tl-v{color:var(--del)}
+
+/* ── ANALYTICS · usage bars ────────────────────────────────────────────────*/
+.ubars{padding:16px;display:flex;flex-direction:column;gap:11px}
+.ub{display:grid;grid-template-columns:150px 1fr 96px;gap:13px;align-items:center}
+.ub .ubk{font:500 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.ub .ubt{height:22px;background:var(--sunk);border-radius:4px;overflow:hidden;position:relative}
+.ub .ubt i{position:absolute;inset:0 auto 0 0;background:var(--ev);border-radius:4px;
+  transition:width var(--dur-3) var(--ease)}
+.ub .ubv{text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.ub .ubv em{font-style:normal;font-size:var(--t-xs);margin-left:6px}
+.ub .ubv em.up{color:var(--ok)} .ub .ubv em.dn{color:var(--del)}
+.ub:hover .ubt i{filter:brightness(1.15)}
+
+/* ── ANALYTICS · timing distribution ───────────────────────────────────────*/
+.tim{padding:16px}
+.timchart{display:flex;align-items:flex-end;gap:3px;height:190px;padding:0 0 4px;
+  border-bottom:1px solid var(--rule)}
+.timb{flex:1;background:var(--ev);border-radius:3px 3px 0 0;min-height:3px;position:relative;
+  cursor:pointer;transition:filter var(--dur-1) var(--ease)}
+.timb:hover{filter:brightness(1.3)}
+.timb:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.timb.peak{background:var(--patch)}
+.timax{display:flex;gap:3px;margin-top:7px}
+.timax span{flex:1;text-align:center;font:500 var(--t-micro)/1 var(--data);color:var(--ink3)}
+.timleg{display:flex;gap:16px;align-items:center;margin-top:13px;font-size:var(--t-sm);color:var(--ink3)}
+.timleg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* ── ANALYTICS · the event river (Manifest) ────────────────────────────────*/
+.rivk{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid var(--rule2);color:var(--ink3)}
+.rivk.change{border-color:var(--info);color:var(--info)}
+.rivk.alert{border-color:var(--warn);color:var(--warn)}
+.rivk.boot{border-color:var(--sched);color:var(--sched)}
+.sev{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ink4);margin-right:8px}
+.sev.warn{background:var(--warn)} .sev.err{background:var(--del)} .sev.info{background:var(--info)}
+
+/* ── INDEX · realm chooser ─────────────────────────────────────────────────*/
+.home{max-width:1080px;margin:0 auto;padding:34px 24px 60px}
+.hmast{margin-bottom:28px}
+.hmast .job{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--patch);margin-bottom:12px}
+.hmast h1{font:700 var(--t-display)/1.02 var(--ui);letter-spacing:var(--tr-display);color:var(--ink);margin:0}
+.hmast p{font:400 var(--t-lg)/1.55 var(--ui);color:var(--ink3);margin:12px 0 0;max-width:56ch}
+/* Five cards into `auto-fit` leaves a hole at three-across. Six columns divide by both 2
+ * and 3, so every card spans two and the row always fills; the last card spans three at
+ * the 3-across breakpoint and becomes a wide "and everything else" tile rather than a gap. */
+.hgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:26px}
+.hgrid .hcard{grid-column:span 2}
+@media (max-width:1100px){ .hgrid{grid-template-columns:repeat(4,1fr)}
+  .hgrid .hcard{grid-column:span 2} .hgrid .hcard:last-child{grid-column:span 4} }
+@media (max-width:720px){ .hgrid{grid-template-columns:1fr}
+  .hgrid .hcard,.hgrid .hcard:last-child{grid-column:span 1} }
+.hcard{display:block;text-align:left;background:var(--paper);border:1px solid var(--rule);
+  border-radius:10px;padding:19px 20px 17px;text-decoration:none;position:relative;overflow:hidden;
+  transition:transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),
+  background var(--dur-2) var(--ease)}
+.hcard::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,var(--ink4));
+  opacity:.85}
+.hcard:hover{transform:translateY(-3px);border-color:var(--rule2);background:var(--raised)}
+.hcard:focus-visible{outline:2px solid var(--staged);outline-offset:3px}
+.hcard .hi{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.hcard .hi svg{width:19px;height:19px;fill:none;stroke:var(--c,var(--ink2));stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.hcard .hn{font:600 var(--t-xl)/1 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink)}
+.hcard .hq{display:block;font:400 var(--t-sm)/1.5 var(--ui);color:var(--ink3);min-height:2.9em}
+.hcard .hf{display:flex;align-items:baseline;gap:7px;margin-top:14px;padding-top:13px;
+  border-top:1px solid var(--rule3)}
+.hcard .hf b{font:600 var(--t-xl)/1 var(--ui);color:var(--ink);font-variant-numeric:tabular-nums;
+  letter-spacing:var(--tr-h1)}
+.hcard .hf span{font:400 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.hcard .hf .att{margin-left:auto;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:3px;padding:3px 6px}
+.hcard .hf .att.stg{color:var(--staged);border-color:var(--staged)}
+.hres{display:flex;align-items:center;gap:13px;background:var(--paper);border:1px solid var(--rule);
+  border-left:3px solid var(--staged);border-radius:var(--rad);padding:14px 17px;margin-top:22px;flex-wrap:wrap}
+.hres b{font:600 var(--t-md)/1 var(--ui);color:var(--ink)}
+.hres span{font-size:var(--t-sm);color:var(--ink3)}
+.hres .sp{flex:1}
+
+/* ── REVIEW · the commit screen ────────────────────────────────────────────
+ * Two columns: what is staged, and what the selected op actually does. The
+ * gate lives in the footer and states WHY it is closed, never just disables. */
+.rvwrap{display:grid;grid-template-columns:340px 1fr;gap:0;min-height:440px}
+@media (max-width:940px){ .rvwrap{grid-template-columns:1fr} }
+.rvlist{border-right:1px solid var(--rule);padding:12px;display:flex;flex-direction:column;gap:7px}
+@media (max-width:940px){ .rvlist{border-right:0;border-bottom:1px solid var(--rule)} }
+.rvop{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;text-align:left;
+  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:11px 12px;
+  cursor:pointer;transition:all var(--dur-1) var(--ease);width:100%}
+.rvop:hover{background:var(--hi);border-color:var(--rule2)}
+.rvop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.rvop[aria-pressed=true]{border-color:var(--staged);background:var(--hi);
+  box-shadow:inset 3px 0 0 var(--staged)}
+.rvop .rvt{font:600 var(--t-micro)/1 var(--data);letter-spacing:.04em;color:var(--ink3);
+  border:1px solid var(--rule2);border-radius:3px;padding:3px 5px}
+.rvop.t3 .rvt{color:var(--del);border-color:var(--danger-edge)}
+.rvop .rvn{min-width:0}
+.rvop .rvn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvop .rvn span{display:block;font:400 var(--t-sm)/1.35 var(--ui);color:var(--ink3);margin-top:2px}
+.rvop .rvw{display:inline-block;margin-top:6px;font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--warn)}
+.rvop .rvw.done{color:var(--ok)}
+.rvdet{padding:18px 20px;min-width:0}
+.rvdet h4{font:600 var(--t-xl)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
+.rvdet .rvop-name{font:500 var(--t-sm)/1 var(--data);color:var(--ink3);margin-top:5px;display:block}
+.rvgrid{margin-top:17px;border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden}
+.rvhead{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--sunk);
+  border-bottom:1px solid var(--rule)}
+.rvhead span{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);padding:9px 12px}
+.rvr{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--rule3)}
+.rvr:first-of-type{border-top:0}
+.rvr>span{padding:11px 12px;font-size:var(--t-md);color:var(--ink2);min-width:0;word-break:break-word}
+.rvr .rvk{color:var(--ink3)}
+.rvr .rvwas{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--ink4)}
+.rvr .rvnow{color:var(--ok);font-weight:600}
+.rvr.del .rvnow{color:var(--danger-ink)}
+.rvexp{display:flex;align-items:center;gap:12px;background:rgba(255,107,107,.07);
+  border:1px solid var(--danger-edge);border-radius:var(--rad);padding:13px 15px;margin-top:16px;flex-wrap:wrap}
+.rvexp b{font:600 var(--t-md)/1.35 var(--ui);color:var(--danger-ink)}
+.rvexp p{margin:3px 0 0;font-size:var(--t-sm);color:var(--ink3);line-height:1.5;flex-basis:100%}
+.rvexp.done{background:rgba(61,220,151,.07);border-color:#2E5C46}
+.rvexp.done b{color:var(--ok)}
+.rvfoot{display:flex;align-items:center;gap:13px;border-top:1px solid var(--rule);
+  padding:14px 18px;background:var(--sunk);flex-wrap:wrap}
+.rvfoot .sp{flex:1}
+.rvgate{font-size:var(--t-sm);color:var(--warn);display:flex;align-items:center;gap:7px}
+.rvgate.ok{color:var(--ok)}
+.rvgate svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.rvconf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rvconf input{width:210px;font-family:var(--data);font-size:var(--t-sm)}
+.rvconf label{font-size:var(--t-sm);color:var(--ink3)}
+/* A conflict found at review time — the record moved under a staged op. This is the
+ * STAGING conflict and it deliberately does NOT borrow the Track's 45° hatch, which is
+ * reserved for a content conflict (an item outliving its season). */
+.rvcon{display:flex;gap:11px;align-items:flex-start;background:rgba(255,122,69,.08);
+  border:1px solid #5C4030;border-left:3px solid var(--warn);border-radius:var(--rad);
+  padding:12px 14px;margin-top:16px}
+.rvcon b{display:block;font:600 var(--t-md)/1.35 var(--ui);color:var(--warn)}
+.rvcon p{margin:4px 0 0;font-size:var(--t-sm);color:var(--ink2);line-height:1.55}
+.rvcon .rvcx{margin-top:9px;display:flex;gap:8px}
+.rvnone{padding:56px 24px;text-align:center}
+.rvnone h4{font:600 var(--t-xl)/1.2 var(--ui);color:var(--ink);margin:0 0 9px}
+.rvnone p{font-size:var(--t-md);color:var(--ink3);margin:0 auto 18px;max-width:46ch;line-height:1.6}
+
+/* ── DOOR · sign-in ────────────────────────────────────────────────────────*/
+.door{min-height:100vh;display:grid;place-items:center;padding:30px}
+.doorcard{width:100%;max-width:430px;background:var(--paper);border:1px solid var(--rule);
+  border-radius:12px;padding:36px 34px 30px;text-align:center}
+.doormk{display:inline-flex;align-items:center;gap:9px;font:700 var(--t-md)/1 var(--ui);
+  letter-spacing:.13em;color:var(--ink2);text-transform:uppercase;margin-bottom:26px}
+.doormk .glyph{width:15px;height:15px;border-radius:4px;background:var(--patch);display:inline-block}
+.doormk b{color:var(--ink3);font-weight:400}
+.doorcard h1{font:700 var(--t-hero)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
+.doorcard p{font:400 var(--t-md)/1.6 var(--ui);color:var(--ink3);margin:11px 0 26px}
+.dbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  background:var(--dsc);color:#fff;border:0;border-radius:var(--rad);padding:0 18px;height:46px;
+  font:600 var(--t-md)/1 var(--ui);cursor:pointer;transition:filter var(--dur-1) var(--ease)}
+.dbtn:hover{filter:brightness(1.1)}
+.dbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.dbtn svg{width:20px;height:20px;fill:currentColor}
+.dnote{display:flex;gap:9px;text-align:left;margin-top:22px;padding-top:20px;
+  border-top:1px solid var(--rule3);font-size:var(--t-sm);color:var(--ink3);line-height:1.55}
+.dnote+.dnote{margin-top:13px;padding-top:0;border-top:0}
+.dnote svg{width:15px;height:15px;flex-shrink:0;margin-top:2px;fill:none;stroke:var(--ink4);
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dfail{display:flex;gap:9px;text-align:left;background:rgba(255,107,107,.08);
+  border:1px solid var(--danger-edge);border-radius:var(--rad);padding:12px 14px;margin-bottom:20px;
+  font-size:var(--t-sm);color:var(--danger-ink);line-height:1.5}
+
+/* Entrance for the new view layers, matching the existing three moments. */
+#viewNow:not([hidden]) .nscard,
+#viewAir:not([hidden]) .atrow,
+#viewMatrix:not([hidden]) .mx tbody tr,
+#viewHealth:not([hidden]) .tile{animation:viewIn var(--dur-2) var(--ease) backwards}
+#viewNow:not([hidden]) .nscard:nth-child(2),
+#viewHealth:not([hidden]) .tile:nth-child(2){animation-delay:30ms}
+#viewNow:not([hidden]) .nscard:nth-child(3),
+#viewHealth:not([hidden]) .tile:nth-child(3){animation-delay:60ms}
+#viewNow:not([hidden]) .nscard:nth-child(4),
+#viewHealth:not([hidden]) .tile:nth-child(4){animation-delay:90ms}
+@media (prefers-reduced-motion:reduce){
+  #viewNow:not([hidden]) .nscard,#viewAir:not([hidden]) .atrow,
+  #viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile,
+  .hcard,.nscard,.atbar,.mxcell,.timb{animation:none!important;transition:none!important}
+}
+
+/* The staging tray is `position:fixed` bottom-right and floats OVER the page. Without a
+ * gutter the last rows of a long Manifest sit permanently underneath it and cannot be
+ * reached by scrolling — the page has simply ended. `:has()` keeps the gutter off every
+ * page where nothing is staged, so an empty tray costs no whitespace. */
+body:has(.tray:not([hidden])) main{padding-bottom:250px}
+
+/* Collapsed tray — the header stays, everything else folds away. It keeps the count
+ * visible (that is the thing you must not lose) while freeing the page underneath. */
+.tray.collapsed .rounds,.tray.collapsed .tray-f,.tray.collapsed .hint{display:none}
+.tray.collapsed{padding-bottom:0}
+.tray-h{cursor:pointer;user-select:none;position:relative;padding-right:22px}
+.tray-h::after{content:"";position:absolute;right:6px;top:50%;width:6px;height:6px;
+  border-right:1.5px solid var(--ink3);border-bottom:1.5px solid var(--ink3);
+  transform:translateY(-70%) rotate(45deg);transition:transform var(--dur-1) var(--ease)}
+.tray.collapsed .tray-h::after{transform:translateY(-30%) rotate(-135deg)}
+.tray-h:hover::after{border-color:var(--ink)}
+.tray-h:focus-visible{outline:2px solid var(--staged);outline-offset:2px;border-radius:4px}
+body:has(.tray.collapsed) main{padding-bottom:90px}
+
+/* ── Analytics: tiles and usage rows are BUTTONS now ──────────────────────
+ * A metric you cannot interrogate is decoration. Both were `div`s reporting a
+ * number and nothing else; they now open the evidence behind it. */
+/* A <button>'s inner box vertically centres its content and lets the first in-flow child
+ * absorb the slack — measured: `.tk` rendered 72px tall for an 11px label, dumping ~50px of
+ * void above the number in every tile. Declaring the layout explicitly removes the guess. */
+button.tile{width:100%;text-align:left;cursor:pointer;font:inherit;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  transition:transform var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),
+  background var(--dur-1) var(--ease)}
+button.tile > *{flex:none;width:100%}
+button.tile:hover{transform:translateY(-2px);border-color:var(--rule2);background:var(--hi)}
+button.tile:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+button.tile::after{content:"";position:absolute;right:13px;top:15px;width:6px;height:6px;
+  border-top:1.5px solid var(--ink3);border-right:1.5px solid var(--ink3);
+  transform:rotate(45deg);opacity:0;transition:opacity var(--dur-1) var(--ease)}
+button.tile{position:relative}
+button.tile:hover::after,button.tile:focus-visible::after{opacity:1}
+button.ub{width:100%;text-align:left;background:none;border:0;padding:0;font:inherit;cursor:pointer;
+  border-radius:4px;transition:background var(--dur-1) var(--ease)}
+button.ub:hover{background:var(--hi)}
+button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.seg.rng button{min-width:42px}
+
+/* The evidence list inside a tile's panel — events that produced the number. */
+.evlist{display:flex;flex-direction:column;gap:7px}
+.evrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;
+  text-align:left;background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);
+  padding:10px 12px;cursor:pointer;transition:all var(--dur-1) var(--ease)}
+.evrow:hover{background:var(--hi);border-color:var(--rule2)}
+.evrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.evb b{display:block;font:500 var(--t-md)/1.3 var(--ui);color:var(--ink)}
+.evb span{display:block;font:400 var(--t-sm)/1.35 var(--data);color:var(--ink3);margin-top:2px}
+.evgo{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);white-space:nowrap}
+.evrow:hover .evgo{color:var(--staged)}
+
+/* ── Access: bulk affordances on the matrix ───────────────────────────────
+ * The grid used to offer exactly ONE interaction, repeated 28 times. A column
+ * header now grants/revokes a scope for everyone and each row has all/none —
+ * both tier 2, because N writes that must land together are one changeset. */
+button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;
+  color:var(--ink3);border-radius:4px;transition:color var(--dur-1) var(--ease),
+  background var(--dur-1) var(--ease)}
+button.mxs.mxcol:hover{color:var(--ink);background:var(--hi)}
+button.mxs.mxcol:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.mxn2{display:block;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);margin-top:3px;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
+.mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:3px;
+  color:var(--ink3);font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;padding:4px 7px;cursor:pointer;opacity:0;
+  transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease)}
+.mx tbody tr:hover .mxrow,.mxrow:focus-visible{opacity:1}
+.mxrow:hover{color:var(--ink);border-color:var(--ink3)}
+.mxrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+
+/* An EDITOR's grant is the scope minus its destructive actions — a different thing from
+ * an admin's, and the Role column alone could not say so about any individual cell.
+ * A hollow ring rather than a filled check: same colour (topic), different SHAPE. */
+.mx tbody tr[data-role=editor] .mxcell[aria-checked=true]{background:transparent;border-color:var(--c)}
+.mx tbody tr[data-role=editor] .mxcell[aria-checked=true]::after{
+  content:"";width:8px;height:8px;border:2px solid var(--c);border-radius:50%;transform:none}
+.mxlegend{display:inline-block;width:13px;height:13px;border-radius:4px;border:1px solid var(--ink3);
+  vertical-align:-2px;margin-right:5px;position:relative}
+.mxlegend.ed::after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;
+  border:1.5px solid var(--ink3);border-radius:50%}
+
+/* ── Review: one op can leave the changeset ───────────────────────────────
+ * Staging four things and being able to commit only all-four-or-none is a receipt,
+ * not a review screen. The × REVERTS the op rather than forgetting it. */
+.rvopwrap{position:relative}
+.rvopwrap .rvop{width:100%}
+.rvdrop{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:4px;
+  background:none;border:1px solid transparent;color:var(--ink3);font-size:11px;line-height:1;
+  cursor:pointer;opacity:0;transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.rvopwrap:hover .rvdrop,.rvdrop:focus-visible{opacity:1}
+.rvdrop:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
+.rvdrop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.chint kbd,.dw-p kbd{font-family:var(--data);font-size:var(--t-micro);background:var(--sunk);
+  border:1px solid var(--rule2);border-radius:3px;padding:1px 5px;color:var(--ink2)}
+
+
+/* ── A status banner is NOT an empty state ────────────────────────────────
+ * `.estate` is the empty-state component: centred, with an absolutely-positioned
+ * icon sized for a large void. Borrowing it for Analytics' "everything is up"
+ * line put that icon on top of the tiles row above it. Components carry layout
+ * assumptions; reusing one for a different job inherits them silently. */
+.hbanner{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;
+  background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--ok);
+  border-radius:var(--rad);padding:14px 16px}
+.hbanner.warn{border-left-color:var(--warn)}
+.hbanner .hbi{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(61,220,151,.14);color:var(--ok);font-size:12px;line-height:1;flex:none}
+.hbanner.warn .hbi{background:rgba(255,122,69,.14);color:var(--warn)}
+.hbanner h4{font:600 var(--t-md)/1.3 var(--ui);color:var(--ink);margin:0 0 3px}
+.hbanner p{font:400 var(--t-sm)/1.55 var(--ui);color:var(--ink2);margin:0}
+.hbanner p b{color:var(--ink)}
+
+/* Hints that name a pointer gesture must also name the keyboard one, so the inline <kbd>
+ * needs to read correctly wherever a hint lives. */
+.racknote kbd,.bbar-t kbd,.colnote kbd{font-family:var(--data);font-size:var(--t-micro);
+  background:var(--sunk);border:1px solid var(--rule2);border-radius:3px;padding:1px 5px;
+  color:var(--ink2);white-space:nowrap}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ARMORY — rebuilt 2026-08-24 against models/Loadout.js and the real
+   collection. The earlier version rendered `attachments` as a COUNT and
+   invented an S/A/B tier vocabulary; both are gone.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── The loadout card: a component-for-component mirror of the bot's own
+ * buildLoadoutCardBody(), so the preview cannot drift from what Discord sends. */
+.dcard.lc{max-width:none}
+.lc-badges{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0}
+.lc-badges span{font:700 var(--t-micro)/1 var(--data);letter-spacing:.08em;color:var(--dc-mute);
+  background:var(--dc-sunk);border-radius:3px;padding:3px 6px}
+.lc-rule{height:1px;background:var(--dc-rule);margin:10px 0}
+.lc-desc{margin:0 0 10px;padding:2px 0 2px 10px;border-left:3px solid var(--dc-rule);
+  color:var(--dc-body);font-size:var(--t-sm);line-height:1.5}
+.lc-h{font:700 var(--t-sm)/1 var(--ui);color:var(--dc-ink);margin:10px 0 6px}
+.lc-att{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.lc-att li{display:flex;align-items:baseline;gap:8px;font-size:var(--t-sm);color:var(--dc-body)}
+.lc-att li::before{content:"•";color:var(--dc-dim)}
+.lc-att code{font-family:var(--data);font-size:var(--t-xs);background:var(--dc-sunk);
+  border-radius:3px;padding:2px 6px;color:var(--dc-body)}
+.lc-att li em{font-style:normal;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.06em;
+  text-transform:uppercase}
+.lc-att li.none{color:var(--dc-dim);font-style:italic}
+.lc-code{font-family:var(--data);font-size:var(--t-sm);background:var(--dc-sunk);border-radius:4px;
+  padding:7px 9px;color:var(--dc-body);letter-spacing:.06em}
+.lc-img{margin:10px 0 0;border-radius:6px;overflow:hidden;background:var(--dc-sunk);position:relative}
+.lc-img img{display:block;width:100%;height:auto}
+.lc-imgfail{display:none;padding:14px;font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
+.lc-imgfail code{font-family:var(--data);color:var(--dc-body)}
+.lc-img.failed img{display:none}
+.lc-img.failed .lc-imgfail{display:block}
+.lc-noimg{margin:10px 0 0;padding:12px;border:1px dashed var(--dc-rule);border-radius:6px;
+  font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
+.lc-foot{margin-top:10px;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.04em}
+
+/* ── The build editor: two columns, the document on the left, the image and the
+ * live Discord render on the right. */
+.bed{display:grid;grid-template-columns:1fr 340px;gap:20px}
+@media (max-width:900px){ .bed{grid-template-columns:1fr} }
+.bed-sec{margin-bottom:20px}
+.bed-sec h5{display:flex;align-items:baseline;gap:9px;font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);margin:0 0 11px}
+.bed-sec h5 em{font-style:normal;font-family:var(--data);font-size:var(--t-xs);color:var(--ink2);
+  background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:2px 6px}
+.bed-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bed-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:640px){ .bed-g2,.bed-g3{grid-template-columns:1fr} }
+.dwfield span i{font-style:normal;color:var(--ink3);font-weight:400;text-transform:none;letter-spacing:0}
+.bed-code{display:flex;gap:7px}
+.bed-code input{flex:1;font-family:var(--data);letter-spacing:.08em}
+
+/* Attachments — the ARRAY, editable. This is the field the old page showed as "5". */
+.attlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.attrow{display:grid;grid-template-columns:24px 1fr 130px 30px;gap:8px;align-items:center}
+.attrow .attn{font:600 var(--t-xs)/1 var(--data);color:var(--ink3);text-align:center;
+  font-variant-numeric:tabular-nums}
+.attrow .atti{font-family:var(--ui)}
+.attrow .atts{font-family:var(--data);font-size:var(--t-xs)}
+.attx{width:26px;height:26px;border-radius:4px;border:1px solid transparent;color:var(--ink3);
+  font-size:11px;line-height:1;transition:all var(--dur-1) var(--ease)}
+.attx:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
+.attx:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.attfoot{display:flex;align-items:flex-start;gap:12px;margin-top:11px}
+.attnote{font-size:var(--t-xs);color:var(--ink3);line-height:1.5;flex:1}
+.attnote code{font-family:var(--data);color:var(--ink2)}
+
+/* Badges — and the propagation warning, which is a real consequence a person must see. */
+.badgerow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.bgt{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  padding:7px 11px;border-radius:4px;border:1px solid var(--rule2);color:var(--ink3);
+  background:var(--raised);transition:all var(--dur-1) var(--ease);min-height:32px}
+.bgt:hover{border-color:var(--ink3);color:var(--ink)}
+.bgt:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.bgt.on{background:var(--patch);border-color:var(--patch);color:var(--on-accent)}
+.bgt.tox.on{background:var(--del);border-color:var(--del)}
+.bgt.rank.on{background:var(--info);border-color:var(--info);color:var(--on-accent)}
+.bgnote{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;background:var(--sunk);
+  border:1px solid var(--rule);border-left:3px solid var(--warn);border-radius:var(--rad);
+  padding:11px 13px;margin:4px 0 0}
+.bgnote code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
+
+/* The image panel — preview, key, convention, direct asset link, remove. */
+.imgbox{border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden;background:var(--sunk);
+  margin-bottom:11px;min-height:96px;display:grid;place-items:center}
+.imgbox img{display:block;width:100%;height:auto}
+.imgbox .imgfail,.imgbox .imgnone{display:none;padding:20px 14px;text-align:center;
+  font-size:var(--t-sm);color:var(--ink3);line-height:1.5}
+.imgbox.failed img{display:none}
+.imgbox.failed .imgfail{display:block}
+.imgbox.none .imgnone{display:block}
+.imgact{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}
+.imgact a.chip{text-decoration:none;display:inline-flex;align-items:center}
+.imgact .chip[disabled]{opacity:.45;pointer-events:none}
+.imgnote{font-size:var(--t-xs);color:var(--ink3);line-height:1.55;margin:0}
+.imgnote code{font-family:var(--data);color:var(--ink2)}
+.dwissue.ok{border-left-color:var(--ok)}
+.dwissue.ok b{color:var(--ok)}
+.mechtag{font-style:normal;font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ok);border:1px solid var(--ok);border-radius:3px;
+  padding:2px 5px;margin-left:7px}
+
+/* Manifest additions — attachments peek and the real badge set. */
+.attpeek{display:flex;gap:4px;flex-wrap:wrap}
+.attpeek em{font-style:normal;font-size:var(--t-xs);color:var(--ink2);background:var(--sunk);
+  border:1px solid var(--rule);border-radius:3px;padding:2px 6px;white-space:nowrap;
+  max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.attpeek em.more{color:var(--ink3)}
+.bdg{font-family:var(--data);font-size:8.5px;letter-spacing:.06em;font-weight:700;border-radius:2px;
+  padding:2px 5px;line-height:1.3;background:rgba(242,194,48,.14);color:var(--patch);
+  border:1px solid rgba(242,194,48,.4)}
+.bdg.rank{background:rgba(64,154,208,.14);color:var(--info);border-color:rgba(64,154,208,.4)}
+.bdg.dmz{background:rgba(51,123,166,.16);color:#6FB6DD;border-color:rgba(51,123,166,.45)}
+.bdg.toxic{background:rgba(255,107,107,.14);color:var(--danger-ink);border-color:var(--danger-edge)}
+.bdg.bad{background:rgba(255,122,69,.14);color:var(--warn);border-color:rgba(255,122,69,.4)}
+.bc-att{font-family:var(--data);font-size:8.5px;color:var(--ink3);letter-spacing:.04em}
+
+/* Bulk & export view. */
+.bulkview{padding:16px}
+.bvgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){ .bvgrid{grid-template-columns:1fr} }
+.bvcard{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:16px 17px}
+.bvcard h4{font:600 var(--t-lg)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
+.bvcard p{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;margin:0 0 13px}
+.bvcard code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
+.bvcard textarea,.bvexpout{width:100%;background:var(--sunk);border:1px solid var(--rule2);
+  border-radius:var(--rad);padding:10px 12px;font-family:var(--data);font-size:var(--t-xs);
+  color:var(--ink2);line-height:1.6;resize:vertical}
+.bvcard textarea:focus,.bvexpout:focus{outline:2px solid var(--staged);outline-offset:1px}
+.bvact,.bvexp{display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap}
+.bvres{margin-top:13px}
+.bvsum{display:flex;gap:14px;font-size:var(--t-sm);color:var(--ink3);margin-bottom:9px}
+.bvsum b{color:var(--ink);font-variant-numeric:tabular-nums}
+.bvsum b.bad{color:var(--del)}
+.bvrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:7px 0;
+  border-top:1px solid var(--rule3);font-size:var(--t-sm);color:var(--ink2)}
+.bvtag{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  border:1px solid var(--rule2);border-radius:3px;padding:3px 5px;text-align:center;color:var(--ink3)}
+.bvrow.new .bvtag{color:var(--ok);border-color:var(--ok)}
+.bvrow.upd .bvtag{color:var(--info);border-color:var(--info)}
+.bvrow.bad .bvtag{color:var(--del);border-color:var(--danger-edge)}
+.bvrow em{font-style:normal;color:var(--ink3);margin-left:7px;font-size:var(--t-xs)}
+.bverr{display:block;font-style:normal;color:var(--danger-ink);font-size:var(--t-xs);margin-top:2px}
+.bvmsg{font-size:var(--t-sm);color:var(--ink3);padding:10px 0}
+.bvnote{margin-top:16px;padding:13px 15px;background:var(--sunk);border:1px solid var(--rule);
+  border-left:3px solid var(--rule2);border-radius:var(--rad);font-size:var(--t-sm);
+  color:var(--ink2);line-height:1.6}
+.bvnote code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
+.guide{background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad);padding:11px 13px;
+  font-family:var(--data);font-size:var(--t-sm);color:var(--ink);overflow-x:auto;margin:0 0 14px}
+.repbar{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--raised);
+  border:1px solid var(--rule);border-radius:var(--rad);margin-bottom:14px;flex-wrap:wrap}
+.repbar b{color:var(--ink);font-size:var(--t-md)}
+.repbar span{font-size:var(--t-sm);color:var(--ink3)}
+.repbar .sp{flex:1}
+.covfacts{margin-top:16px;padding:14px 16px;background:var(--sunk);border:1px solid var(--rule);
+  border-radius:var(--rad)}
+.covfacts h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);margin:0 0 10px}
+.covfact{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;padding:6px 0}
+.covfact b{font:600 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.covfact span{font-size:var(--t-sm);color:var(--ink3);line-height:1.55}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANALYTICS — rebuilt 2026-08-24 on the real observability layer. The previous
+   version showed six invented commands and one flat usage number; the schema
+   records outcome, entry, context, installType, isAdmin, two separate latency
+   clocks, per-dependency timings and zero-result searches.
+   ══════════════════════════════════════════════════════════════════════════ */
+.adminsw{display:flex;align-items:center;gap:7px;font-size:var(--t-sm);color:var(--ink3);cursor:pointer;
+  white-space:nowrap}
+.adminsw input{width:15px;height:15px;accent-color:var(--ok);cursor:pointer}
+.adminsw:hover{color:var(--ink2)}
+
+.hsplit,.tim2,.reach{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
+@media (max-width:1000px){ .hsplit,.tim2,.reach{grid-template-columns:1fr} }
+.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:16px 17px}
+.hpanel h4{font:600 var(--t-lg)/1.25 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
+.hpanel h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);margin:16px 0 9px}
+.hp{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;margin:0 0 13px}
+.hp code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
+.hp b{color:var(--ink)}
+
+/* Dependency bars — where the milliseconds actually go. */
+.depbars{display:flex;flex-direction:column;gap:11px}
+.depb{display:grid;grid-template-columns:132px 1fr 64px;grid-template-areas:"n t v" ". c c";
+  gap:4px 11px;align-items:center}
+.depb .dn{grid-area:n;font:500 var(--t-sm)/1.2 var(--data);color:var(--ink2);word-break:break-all}
+.depb .dt{grid-area:t;height:16px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.depb .dt i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.depb.slow .dt i{background:var(--warn)}
+.depb .dv{grid-area:v;text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.depb .dc{grid-area:c;font-size:var(--t-micro);color:var(--ink3);letter-spacing:.04em}
+
+/* Alert levels — the three-tier model, never collapsed into one number. */
+.lvlbars{display:flex;flex-direction:column;gap:9px}
+.lvlb{display:grid;grid-template-columns:76px 1fr 52px;grid-template-areas:"n t v" ". p p";
+  gap:3px 11px;align-items:center;width:100%;text-align:left;padding:5px 6px;border-radius:5px;
+  transition:background var(--dur-1) var(--ease)}
+.lvlb:hover{background:var(--hi)}
+.lvlb:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.lvlb .ln{grid-area:n;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.lvlb .lt{grid-area:t;height:16px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.lvlb .lt i{display:block;height:100%;border-radius:3px;background:var(--info)}
+.lvlb.lv-caution .lt i{background:var(--warn)}
+.lvlb.lv-error .lt i{background:var(--del)}
+.lvlb .lv2{grid-area:v;text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.lvlb .lp{grid-area:p;font-size:var(--t-micro);color:var(--ink3)}
+.lvtag{display:inline-block;margin-left:5px;font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;border:1px solid var(--rule2);
+  border-radius:3px;padding:2px 5px;color:var(--ink3)}
+.lvtag.lv-caution{color:var(--warn);border-color:var(--warn)}
+.lvtag.lv-error{color:var(--del);border-color:var(--danger-edge)}
+
+.bootcard{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule3)}
+.bootgrid{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:var(--t-sm);margin-bottom:12px}
+.bootgrid span{color:var(--ink3)}
+.bootgrid b{color:var(--ink2);font-family:var(--data);font-size:var(--t-xs)}
+.bootgrid b.ok{color:var(--ok)} .bootgrid b.bad{color:var(--del)}
+
+/* Usage — stacked ok/failed, and the two side panels. */
+.ub2{display:grid;grid-template-columns:170px 1fr 92px 62px;gap:12px;align-items:center;width:100%;
+  text-align:left;padding:5px 7px;border-radius:5px;transition:background var(--dur-1) var(--ease)}
+.ub2:hover{background:var(--hi)}
+.ub2:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.ub2 .ubk{font:500 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.ubt2{display:flex;height:20px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.ubt2 i{display:block;height:100%}
+.ubt2 i.ok{background:var(--ev)} .ubt2 i.bad{background:var(--del)}
+.ub2 .ubv{text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.ub2 .ubv em{display:block;font-style:normal;font-size:var(--t-micro);color:var(--del);margin-top:2px}
+.ub2 .ubt3{text-align:right;font:500 var(--t-xs)/1 var(--data);color:var(--ink3)}
+.usplit{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
+@media (max-width:1000px){ .usplit{grid-template-columns:1fr} }
+.uside{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:15px 16px}
+.uside h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  color:var(--ink3);margin:0 0 9px}
+.erow{display:grid;grid-template-columns:130px 1fr 44px;gap:11px;align-items:center;padding:4px 0}
+.erow .ek{font-size:var(--t-sm);color:var(--ink2)}
+.erow .et{height:12px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.erow .et i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.erow .ev{text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.erow.never .ek,.erow.never .ev{color:var(--ink3)}
+
+/* Timing — two clocks, one deadline drawn on the axis. */
+.ackscale,.durlist{display:flex;flex-direction:column;gap:7px}
+.ackrow,.durrow{display:grid;grid-template-columns:132px 1fr 46px;gap:11px;align-items:center}
+.ackrow .al,.durrow .dl{font-size:var(--t-sm);color:var(--ink2)}
+.ackrow.danger .al{color:var(--warn)}
+.ackrow.zero .al,.ackrow.zero .av{color:var(--ink3)}
+.ackrow .at,.durrow .dt2{height:15px;background:var(--sunk);border-radius:3px;overflow:hidden;position:relative}
+.ackrow .at i,.durrow .dt2 i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.ackrow.danger .at i{background:var(--del)}
+.durrow.slow .dt2 i{background:var(--warn)}
+.durrow .dt2 .deadline{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--patch);
+  border-radius:1px}
+.ackrow .av,.durrow .dv2{text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.dlkey{display:inline-block;width:2px;height:11px;background:var(--patch);vertical-align:-1px;
+  margin-right:5px;border-radius:1px}
+
+/* Reach — donuts and install-type bars. */
+.donutrow{display:flex;gap:24px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.dcell{text-align:center}
+.donut{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;margin:0 auto 9px;
+  background:conic-gradient(var(--c) calc(var(--p)*1%),var(--sunk) 0)}
+.donut b{width:74px;height:74px;border-radius:50%;background:var(--raised);display:grid;place-items:center;
+  font:600 var(--t-xl)/1 var(--ui);color:var(--ink);letter-spacing:var(--tr-h1)}
+.donut b i{font-style:normal;font-size:var(--t-sm);color:var(--ink3);margin-left:1px}
+.dlab{display:block;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.dsub{display:block;font-size:var(--t-xs);color:var(--ink3);margin-top:3px}
+.inrow{display:grid;grid-template-columns:106px 1fr 44px;grid-template-areas:"k t v" ". n n";
+  gap:4px 11px;align-items:center;padding:6px 0}
+.inrow .ik{grid-area:k;font-size:var(--t-sm);color:var(--ink2)}
+.inrow .it{grid-area:t;height:14px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.inrow .it i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.inrow .iv{grid-area:v;text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.inrow .inote{grid-area:n;font-size:var(--t-micro);color:var(--ink3);line-height:1.5}
+.inrow.muted .ik,.inrow.muted .iv{color:var(--ink3)}
+.inrow.muted .it i{background:var(--rule2)}
+
+/* Search — the only view that names what someone wanted and did not get. */
+.srchview{padding:0 16px 18px}
+.srchtab{margin-top:16px}
+.srchtab tr.zero td{background:rgba(255,122,69,.05)}
+.srchtab .bad{color:var(--warn)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LAYOUT CORRECTIONS — 2026-08-24, from Harkirat's screenshots.
+   Four separate breakages, one root cause each, all of them mine.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. THE MASTHEAD WAS HALF-EMPTY ON EVERY PAGE ─────────────────────────
+ * Eyebrow, title and stats were three stacked full-width blocks, so the title
+ * occupied ~14% of a 1164px band and the right 900px was dead. It is now one
+ * band: identity left, stats right, aligned on a shared baseline — which uses
+ * the width AND puts the numbers where the eye lands after reading the name.
+ *
+ * The `answers: …` line moves from a 9px uppercase whisper ABOVE the title —
+ * where it reads as a category tag and is easy to dismiss as decoration — to a
+ * proper DECK beneath it. Harkirat asked what the point of it was; the point is
+ * real (it is the one sentence saying what a realm is for) and the old form did
+ * not earn it. A sentence should be set like a sentence. */
+/* `auto` on the stats track lets it grow past the container — measured overflowing the
+ * masthead by 52px with four stats. `minmax(0,max-content)` gives it the same intent while
+ * keeping it shrinkable, and the gap tightens before anything is allowed to clip. */
+.masthead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content);
+  grid-template-areas:"id stats";align-items:end;column-gap:clamp(20px,3vw,44px);
+  padding:30px 24px 20px}
+.masthead .mh-id{grid-area:id;min-width:0}
+.masthead .job{grid-row:2;order:2;display:block;font-family:var(--ui);font-size:var(--t-md);
+  font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink2);margin:9px 0 0;
+  max-width:62ch;line-height:1.5;opacity:1}
+.masthead h1{margin:0;order:1}
+.masthead .mh-stats{grid-area:stats;margin:0;justify-content:flex-end;align-items:flex-end;
+  gap:clamp(16px,2.2vw,30px);flex-wrap:nowrap;min-width:0}
+.masthead .mh-stats .stat{min-width:0}
+.masthead .mh-stats .k{white-space:nowrap}
+.masthead .mh-stats .stat{align-items:flex-end;text-align:right}
+@media (max-width:900px){
+  .masthead{grid-template-columns:1fr;grid-template-areas:"id" "stats";row-gap:20px}
+  .masthead .mh-stats{justify-content:flex-start}
+  .masthead .mh-stats .stat{align-items:flex-start;text-align:left}
+}
+
+/* ── 2. REPAIRS: A GRID INSIDE A GRID ─────────────────────────────────────
+ * `.cov` is `repeat(auto-fill,minmax(252px,1fr))` and was written to hold the
+ * defect cards DIRECTLY. The rebuild wrapped them in `.repbar` + `.cols`, so
+ * those two became the grid items: the bar was stretched to 1058px of empty
+ * card and the cards were crushed into 100–139px columns with text clipping.
+ * `.cov` is a block; `.cols` is the grid. */
+.cov{display:block;padding:14px 16px}
+.cov .cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px;padding:0}
+.cov .repbar{height:auto;align-self:start}
+.ccard .why{font-size:var(--t-sm);color:var(--ink3);line-height:1.55}
+.ccard{min-height:0}
+
+/* ── 3. THE TIER BOARD WAS COLUMNS. A TIER LIST IS ROWS. ──────────────────
+ * `.rack` was `repeat(auto-fill,minmax(228px,1fr))`, which turned five tiers
+ * into five columns of EQUAL height — so Top 4 (2 builds) was forced to the
+ * same 822px as Unranked (11), five columns overflowed 1164px and Unranked
+ * wrapped onto its own row beside four empty cells. Tiers are rows: a tier with
+ * two builds is a SHORT row, and the cards flow across the full width. */
+.rack{display:flex;flex-direction:column;gap:10px;padding:14px 16px}
+.trow{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:stretch}
+.trow-h{flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;
+  border-bottom:0;border-right:1px solid var(--rule3);padding:12px 14px}
+.trow-h .trow-k{font-size:var(--t-xl)}
+.trow-note{display:block;font-size:var(--t-xs);color:var(--ink3);line-height:1.45;margin-top:3px}
+.trow-body{align-content:flex-start;padding:12px}
+@media (max-width:820px){
+  .trow{grid-template-columns:1fr}
+  .trow-h{flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--rule3)}
+  .trow-note{display:none}
+}
+
+/* ── 4. THE DETAIL CELL WRAPPED ITS OWN TAG ONTO A SECOND LINE ────────────
+ * `.detcell` was `flex-wrap:wrap` while `.thumb` carries `margin-left:auto`,
+ * so at any width below the natural total the "cached" tag broke to its own
+ * row and left the badges hanging. One line, and the middle segment truncates
+ * instead — the tag is the part you must not lose. */
+.detcell{flex-wrap:nowrap;gap:9px}
+.detcell .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.detcell .thumb{flex:none}
+.mtable .det{vertical-align:middle}
+
+/* ── 5. THE SEASON "EDIT" AFFORDANCE BECAME A 410px SLAB ──────────────────
+ * `.idsum` is `flex-wrap:wrap`, and the deadline summary is long enough to
+ * push the trailing chip onto its own line — where a flex item on a line of
+ * its own stretches to the full width. It never reads as a button after that.
+ * The meta row scrolls instead of wrapping, and the chip never grows. */
+.idsum{flex-wrap:nowrap;overflow:hidden}
+.idsum .idmeta{display:flex;align-items:center;gap:14px;min-width:0;overflow:hidden;
+  flex-wrap:nowrap}
+.idsum .seg2{flex:none}
+.idsum .ed{flex:none;white-space:nowrap}
+.idsum .st{flex:none}
+@media (max-width:900px){
+  .idsum{flex-wrap:wrap}
+  .idsum .idmeta{flex-wrap:wrap;overflow:visible}
+}
+
+/* ── MP and DMZ are SEPARATE, because the bot treats them as two pages ────
+ * `utils/manageActions.js` builds `loadouts_mp` and `loadouts_dmz` from one
+ * factory but registers them as distinct pages with distinct permission scopes,
+ * and every action — add, edit, delete, all three exports — is per-mode. Their
+ * rank vocabularies differ too (`categoryRank` vs `dmzRangeRank`). A filter chip
+ * made them one page with a lens over it; a mode switch makes them what they are. */
+.modesw{display:flex;gap:0;border:1px solid var(--rule2);border-radius:6px;overflow:hidden;flex:none}
+.modesw button{font:700 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink3);
+  padding:8px 15px;min-height:34px;transition:all var(--dur-1) var(--ease)}
+.modesw button+button{border-left:1px solid var(--rule2)}
+.modesw button:hover{color:var(--ink);background:var(--hi)}
+.modesw button[aria-pressed=true]{background:var(--draw);color:var(--on-accent)}
+.modesw button[data-arm=DMZ][aria-pressed=true]{background:var(--ret)}
+.modesw button:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
+.chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
+  margin-left:5px}
+.chip.topic[aria-pressed=true] em{color:var(--on-accent);opacity:.75}
+.modetag{font-style:normal;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.08em;
+  color:var(--ink3);border:1px solid var(--rule2);border-radius:3px;padding:2px 6px;margin-left:8px;
+  vertical-align:2px}
+
+
+/* ═══════════════ ACCESS — the permission grid + the by-scope inverse ═══════════════
+ * Access is the ACHROMATIC realm: every colour here is BORROWED from the realm the scope
+ * governs (--c, set per column/cell), never invented. The eighth accent an earlier build
+ * would have needed does not exist anywhere else in the product. */
+.mxgrp th{padding:0 0 5px;border:0}
+.mxgrp th span{display:block;font:600 9px/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);text-align:center;padding-bottom:5px;border-bottom:1px solid var(--rule2)}
+.mx .ownerrow td{background:rgba(255,255,255,.018)}
+.mx .ownerrow .mxav{background:var(--sunk);color:var(--ink2)}
+/* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
+ * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
+ * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
+.mxcell{width:16px;height:16px;border-radius:4px;border:1px solid var(--rule2);background:transparent;
+  display:block;margin:0 auto;padding:0;cursor:default}
+.mxcell.on{background:var(--c);border-color:var(--c)}
+.mxcell.inh{background:transparent;border:2px solid var(--c);opacity:.85}
+.mxcell.locked{opacity:.55}
+.mxs.mxcol.spof i{box-shadow:0 0 0 2px var(--warn)}
+.mxlegend{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.mxlegend.on{background:var(--ink2)}
+.mxlegend.inh{background:transparent;border:2px solid var(--ink2)}
+.scopes{display:flex;flex-direction:column;gap:1px;padding:12px 16px;background:var(--rule3)}
+.scope{display:grid;grid-template-columns:190px 1fr auto auto;gap:12px;align-items:center;
+  padding:9px 12px;background:var(--paper);border-left:3px solid var(--c)}
+.scope .nm{display:flex;flex-direction:column;gap:2px;font:600 12.5px/1.2 var(--ui);color:var(--ink)}
+.scope .nm i{display:none}
+.scope .nm em{font:500 10px/1 var(--mono);font-style:normal;color:var(--ink3);letter-spacing:.02em}
+.scope .hs{display:flex;flex-wrap:wrap;gap:5px}
+.scope .rl{font-size:11px;color:var(--ink3);white-space:nowrap}
+/* The flag sits INLINE at the end of the row, not on a full-width line of its own — a short
+ * string stretched across 1400px reads as an empty bar and takes more visual weight than the
+ * finding deserves. It wraps under only when the row itself collapses at narrow widths. */
+.scope .flag{justify-self:end;font:600 10.5px/1 var(--ui);letter-spacing:.03em;color:var(--warn);
+  border:1px solid rgba(242,153,74,.4);border-radius:99px;padding:4px 9px;white-space:nowrap}
+.scope .flag.quiet{color:var(--ink3);font-weight:500}
+.scope.spof{background:linear-gradient(90deg,rgba(242,153,74,.07),transparent 60%)}
+.holder{display:inline-block;padding:2px 7px;border-radius:99px;border:1px solid var(--rule2);
+  background:var(--sunk);font:500 10.5px/1.5 var(--mono);color:var(--ink2)}
+.holder.owner{border-color:var(--rule);color:var(--ink3)}
+.tokgrid{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.tokgrid .chip.inh{opacity:.72;border-style:dashed}
+
+/* ═══════════════ BROADCAST — the delivery queue + never-ending bars ═══════════════ */
+/* A bar with expiresAt:null has NO RIGHT EDGE. A bar that stops reads as an end date, and
+ * "this never stops" is exactly the misreading this view exists to prevent. */
+.bar.forever{border-top-right-radius:0;border-bottom-right-radius:0;
+  -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent);mask-image:linear-gradient(90deg,#000 78%,transparent)}
+.bar.ended{background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
+.nscard.over{opacity:.62}
+.nspin.warn{background:rgba(242,153,74,.14);border-color:rgba(242,153,74,.4);color:var(--warn)}
+.callout{margin:0;padding:12px 16px;font-size:12.5px;line-height:1.55;color:var(--ink2);
+  border-left:3px solid var(--warn);background:rgba(242,153,74,.05)}
+.callout b{color:var(--ink)}
+
+@media (max-width:860px){
+  .scope{grid-template-columns:1fr;gap:6px}
+  .scope .flag{justify-self:start}
+  .scope .rl{white-space:normal}
+}
+
+
+/* ═══════════════ SEASON — Repairs ═══════════════
+ * Same two-column density as Armory's own Repairs, and the same rule: a check that reports
+ * zero STAYS ON SCREEN with its reason. A panel that only shows problems cannot tell you
+ * what it is watching, so "clean" has to be a visible state rather than an absence. */
+.repwrap{padding:14px 16px}
+.rephead{font-size:12.5px;color:var(--ink2);line-height:1.55;padding-bottom:12px;border-bottom:1px solid var(--rule3)}
+.rephead b{color:var(--ink);font-size:15px}
+.reps{margin:16px 0 9px;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.repgrp{border:1px solid var(--rule2);border-radius:7px;padding:11px 13px;margin-bottom:9px;background:var(--sunk)}
+.repgrp.clean{border-style:dashed;opacity:.72}
+.reph{display:flex;align-items:baseline;gap:9px}
+.reph .rt-n{font:700 17px/1 var(--mono);color:var(--warn);min-width:20px}
+.repgrp.clean .reph .rt-n{color:var(--ink3)}
+.reph .rt-l{font:600 13px/1.2 var(--ui);color:var(--ink)}
+.reph .rt-k{margin-left:auto;font:600 9.5px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);border:1px solid var(--rule2);border-radius:99px;padding:3px 7px}
+.repnote{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--ink3);max-width:88ch}
+.rephits{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:1px}
+.rephits li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 9px;
+  background:var(--paper);border-left:2px solid var(--warn);cursor:pointer}
+.rephits li:hover{background:var(--hi)}
+.rephits li b{font:600 12px/1.3 var(--ui);color:var(--ink)}
+.rephits li span{font-size:11px;color:var(--ink3)}
+.repclean{margin:8px 0 0;font-size:11.5px;color:var(--ink3)}

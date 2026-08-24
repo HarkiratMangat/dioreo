@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787586710"><link rel="stylesheet" href="assets/app.css?v=1787586710">
+<style>
+  /* Home has no rail — the rail is the in-realm switcher, and repeating it on the
+   * page whose entire job IS choosing a realm would say the same thing twice. */
+  .app{grid-template-columns:1fr}
+  main{grid-column:1;padding:0}
+  header{grid-column:1}
+</style>
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <main>
+    <div class="home">
+      <div class="hmast">
+        <span class="job">Dioreo admin</span>
+        <h1>What needs you</h1>
+        <p>Discord answers one question in one screenful. This answers the ones that need
+           a whole picture — a timeline, a diff, a matrix, a bulk edit that has to land together.</p>
+      </div>
+
+      <div class="hgrid" id="grid"></div>
+      <div id="resume"></div>
+    </div>
+  </main>
+</div>
+<!-- No floating tray on Home either: the .hres resume bar under the realm grid carries the
+     same information with more of it (which realms, and both actions inline), so the tray
+     would be a second, worse copy sitting on top of the first. -->
+
+<script src="assets/fixtures.js?v=1787586710"></script>
+<script src="assets/shell.js?v=1787586710"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell;
+  S.init('');
+  S.mountHeader('Portal', 'Home');
+
+  const dash = v => (v === null || v === undefined || v === '') ? '—' : v;
+
+  /* Each card answers its realm's question and then states the ONE thing in that
+   * realm that currently wants a person. A dashboard that only counts rows makes
+   * you open all five to find out whether anything is wrong. */
+  const staged = () => S.Store.all();
+  const stagedIn = realm => staged().filter(o => o.realm === realm).length;
+
+  /* ⚠️ Only a SPAN can outlive the season. A draw carries one `date` and no end at all
+   * (models/SeasonalData.js), so asking whether it "ends after" anything compares a release
+   * to a deadline and counts every late-releasing draw as a conflict. Same class as the
+   * Armory predicate note directly below — a field read as something it is not.
+   *
+   * ⚠️ MEASURED, and the honest result is that THE TWO PREDICATES AGREE ON TODAY'S DOCUMENT —
+   * 0 against the latest deadline (dmzEnd, 2026-11-11, two months past everything here) and 2
+   * against bpEnd either way, because the last draw releases 2026-09-04 and no draw falls
+   * after any deadline at all. So this is a fix on REASONING with no failing input behind it,
+   * and saying so matters: a change justified by a number that never actually differed is the
+   * kind of claim that reads as verified and is not. The case that separates them is one
+   * draw released after the season ends — add one and the old predicate calls it a conflict
+   * while nothing about it has an end to compare. `it.kind === 'span'` is the guard that
+   * cannot be wrong; the count that would have proved it does not exist yet. */
+  const conflicts = F.items.filter(it => {
+    const ends = ['bpEnd','rankEnd','dmzEnd']
+      .filter(k => !F.season[k + 'TBD'] && F.season[k]).map(k => F.season[k]).sort();
+    const e = ends[ends.length - 1];
+    return e && it.kind === 'span' && it.endDate && it.endDate > e && !it.draft;
+  }).length;
+
+  /* Season's own Repairs panel, summarised — the home page's job is to say what wants a
+   * person, and 11 draws with no calendar window is the loudest thing this season has. */
+  const seasonFindings = F.seasonRepairs().reduce((n, g) => n + g.hits.length, 0);
+
+  /* Mirrors armory.html's own defect predicates against the REAL schema — `attachments` is
+   * an array, `categoryRank` is best/top{N}. An earlier version compared the array to a
+   * number, which is always false, so this count was silently wrong. */
+  const flagged = F.builds.filter(b =>
+    (b.mode === 'MP' && !b.shareCode) || !b.imageKey ||
+    (b.imageKey || '').startsWith('http') || b.attachments.length !== 5 ||
+    b.lastUpdated < '2026-04-26' ||
+    (b.mode === 'MP' && b.isMeta && !b.categoryRank)).length;
+
+  /* The real Broadcast finding is not a coverage gap — it is an announcement with
+   * `expiresAt: null`, which never stops on its own. The previous version read `a.posted`
+   * and `a.until`, neither of which is a field on models/Announcement.js, so the filter
+   * matched nothing and the count was permanently 0: a card that could never warn. */
+  const forever = F.announcements.filter(a => a.state === 'live' && !a.expiresAt);
+  const foreverDays = forever.length
+    ? Math.max(...forever.map(a => Math.round((new Date(F.today) - new Date(a.createdAt)) / 86400000)))
+    : 0;
+
+  const CARDS = [
+    { id:'season', label:'Season', href:'season.html', c:'#F2994A',
+      icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+      q:'When everything runs, and whether it fits inside the season.',
+      n:F.items.length, unit:'scheduled items',
+      att: conflicts ? `${conflicts} run past the season`
+         : seasonFindings ? `${seasonFindings} to repair`
+         : (F.draft.active ? 'next season staged' : null),
+      warn: !!(conflicts || seasonFindings) },
+    { id:'armory', label:'Armory', href:'armory.html', c:'#FF3430',
+      icon:'<path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/>',
+      q:'What builds exist, and what is wrong with them.',
+      n:F.LOADOUT_STATS.total, unit:'builds',
+      att: flagged ? `${flagged} need repair` : null, warn: !!flagged },
+    { id:'broadcast', label:'Broadcast', href:'broadcast.html', c:'#F2C230',
+      icon:'<path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/>',
+      q:'What is showing to players, in what order, until when.',
+      n:F.announcements.filter(a => a.state === 'live').length, unit:'showing now',
+      att: forever.length ? `${forever.length} never end${forever.length === 1 ? 's' : ''} · oldest up ${foreverDays}d` : null,
+      warn: !!forever.length },
+    { id:'access', label:'Access', href:'access.html', c:'#9DAAB4',
+      icon:'<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+      q:'Who can do what — and who is signed in right now.',
+      /* ⚠️ `F.admins` no longer exists — the fixture is `accessAdmins`, rows shaped by
+       * portal/api/access.js's own buildPermissionMatrix. And the attention line is the
+       * single-point-of-failure count, not a session count: zero sessions is the normal
+       * resting state and saying "0 signed in" every time trains you to ignore the card. */
+      n:F.accessAdmins.length, unit:'admins',
+      att: F.spof.length ? `${F.spof.length} scope${F.spof.length === 1 ? '' : 's'} held by one person`
+         : (F.sessions.length ? `${F.sessions.length} signed in` : null),
+      warn: !!F.spof.length },
+    { id:'analytics', label:'Analytics', href:'analytics.html', c:'#1F8A5E',
+      icon:'<path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/>',
+      q:'What happened — health, timing, reach, and what people searched for and did not find.',
+      n:F.OBS_TOTALS.events, unit:'interactions',
+      att:`${F.alertStats.find(a => a.level === 'error').n} errors pinged`, warn:true }
+  ];
+
+  function render() {
+    grid.innerHTML = CARDS.map(k => {
+      const s = stagedIn(k.id);
+      return `<a class="hcard" href="${k.href}" style="--c:${k.c}">
+        <span class="hi">
+          <svg viewBox="0 0 24 24" aria-hidden="true">${k.icon}</svg>
+          <span class="hn">${k.label}</span>
+        </span>
+        <span class="hq">${k.q}</span>
+        <span class="hf">
+          <b>${k.n}</b><span>${k.unit}</span>
+          ${s ? `<span class="att stg">${s} staged</span>`
+              : k.att ? `<span class="att" ${k.warn ? '' : 'style="color:var(--ink3);border-color:var(--rule2)"'}>${k.att}</span>` : ''}
+        </span>
+      </a>`;
+    }).join('');
+
+    const ops = staged();
+    resume.innerHTML = ops.length ? `
+      <div class="hres">
+        <b>${ops.length} staged change${ops.length > 1 ? 's' : ''}</b>
+        <span>across ${new Set(ops.map(o => o.realm || 'season')).size} realm${new Set(ops.map(o => o.realm || 'season')).size > 1 ? 's' : ''}
+          — nothing is live until you commit them.</span>
+        <span class="sp"></span>
+        <button class="chip" id="dropAll">Discard all</button>
+        <button class="chip go" id="goReview">Review &amp; commit</button>
+      </div>` : `
+      <div class="hres" style="border-left-color:var(--rule2)">
+        <b>Nothing staged</b>
+        <span>Everything in the portal matches what the bot is serving.</span>
+      </div>`;
+    if (ops.length) {
+      document.getElementById('goReview').onclick = () => location.href = 'review.html';
+      document.getElementById('dropAll').onclick = () => {
+        S.Store.revertAll(); S.toast('All staged changes discarded.'); render();
+      };
+    }
+  }
+
+  S.onAfterRevert = render;
+  render();
+  S.audit();
+})();
+</script>
+</body></html>

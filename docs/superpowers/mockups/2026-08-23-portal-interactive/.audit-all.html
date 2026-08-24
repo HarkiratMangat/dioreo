@@ -1,0 +1,43 @@
+<!DOCTYPE html><meta charset="utf-8"><title>audit harness</title>
+<style>body{margin:0;background:#111;color:#ddd;font:12px/1.4 monospace}
+iframe{border:0;display:block;height:900px}</style>
+<pre id="out">running…</pre><div id="stage"></div>
+<script>
+/* ⚠️ A HARNESS CAN MEASURE THE WRONG THING PRECISELY (COMPANION §14). An iframe whose element
+ * width is 0, or one that never finished loading, still yields well-formed numbers — so every
+ * result below carries the viewport it was actually measured at, and a run asserts that width
+ * matches what was asked for. A pass on a degenerate surface is worse than no pass. */
+const PAGES = ['index','season','armory','broadcast','access','analytics','review','door'];
+const W = Number(new URLSearchParams(location.search).get('w') || 1280);
+const results = [];
+window.addEventListener('error', e => { document.getElementById('out').textContent = 'HARNESS ERROR: ' + e.message; window.__done = true; });
+(async () => {
+  for (const p of PAGES) {
+    const f = document.createElement('iframe');
+    f.style.width = W + 'px';
+    f.src = p + '.html?audit=1&v=' + Date.now();
+    document.getElementById("stage").appendChild(f);
+    await new Promise(r => { f.onload = r; setTimeout(r, 9000); });
+    await new Promise(r => setTimeout(r, 1200));          // let fonts.ready re-run land
+    let res;
+    try {
+      const w = f.contentWindow, d = f.contentDocument;
+      const sc = w.__selfCheck || {};
+      res = { page:p, ok:sc.ok, fails:(sc.problems||[]).slice(0,4),
+              vw:w.innerWidth, docW:d.documentElement.scrollWidth,
+              overflow: d.documentElement.scrollWidth > w.innerWidth + 1,
+              errs:(w.__errs||[]).slice(0,3) };
+    } catch (e) { res = { page:p, ok:false, fails:['harness could not reach the frame: ' + e.message] }; }
+    results.push(res);
+    document.getElementById("out").textContent = results.map(r => `${r.ok ? 'PASS' : 'FAIL'} ${r.page.padEnd(10)} vw=${r.vw} docW=${r.docW}` +
+      (r.overflow ? ' OVERFLOW' : '') + (r.fails && r.fails.length ? '  ' + JSON.stringify(r.fails) : '') +
+      (r.errs && r.errs.length ? '  ERR ' + JSON.stringify(r.errs) : '')).join('\n');
+    f.remove();
+  }
+  window.__done = true; window.__results = results;
+  const bad = results.filter(r => !r.ok || r.overflow || (r.errs||[]).length);
+  const wrongVw = results.filter(r => r.vw !== W);
+  document.getElementById("out").textContent += `\n\n=== ${bad.length ? 'FAILURES: ' + bad.length : 'ALL ' + results.length + ' PASS'} at ${W}px ===` +
+    (wrongVw.length ? `\n!! ${wrongVw.length} frame(s) did not measure at ${W}px — the run is void` : '\n(every frame measured at the requested width)');
+})();
+</script>

@@ -1,0 +1,470 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Access · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787700000"><link rel="stylesheet" href="assets/app.css?v=1787700000">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Access</h1>
+        <span class="job">Eleven grantable tokens across two roles &mdash; and the two questions a permission string cannot answer: what did you actually hand over, and who is the only person holding it.</span>
+      </div>
+      <div class="mh-stats" id="mhStats"></div>
+    </div>
+
+    <div id="ownerNote"></div>
+
+    <section class="panel" aria-label="Access view">
+      <div class="ph">
+        <span class="t">Access</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="grid" aria-pressed="true">By admin</button>
+          <button role="tab" data-view="scope" aria-pressed="false">By scope</button>
+        </div>
+        <span class="key" id="key"></span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <div id="viewGrid"></div>
+      <div id="viewScope" hidden></div>
+    </section>
+
+    <section class="panel" style="margin-top:16px" aria-label="Live portal sessions">
+      <div class="ph">
+        <span class="t">Signed in right now</span>
+        <span class="rt" id="sessCount"></span>
+        <span class="sp">Revoking an admin in Discord does not end their browser session. This does.</span>
+      </div>
+      <div id="viewSess"></div>
+    </section>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+<script src="assets/fixtures.js?v=1787700000"></script>
+<script src="assets/timeline.js?v=1787700000"></script>
+<script src="assets/shell.js?v=1787700000"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell, T = window.TL;
+  S.init('access');
+  S.mountHeader('Access', 'By admin');
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+   * FOUR THINGS THE PREVIOUS BUILD OF THIS PAGE GOT WRONG, all of them the same
+   * class — a name written confidently that exists nowhere in this system:
+   *   · an `editor` role ("granted scopes, no destructive action"). There are TWO
+   *     roles: the hardcoded owner and a Mongo-granted admin. It was not
+   *     unenforced, it was fictional, and calling it a gap invited someone to
+   *     build it.
+   *   · seven page scopes. utils/adminAccess.js has EIGHT, and the missing one was
+   *     `season` — the pseudo-page that exists precisely because editing what is
+   *     LIVE and staging what is NEXT are different blast radii.
+   *   · no command tokens at all, so a real admin in the dev database holding
+   *     ["manage","bot"] could not be represented on the page meant to show them.
+   *   · every grant STAGED into the tray. portal/api/access.js: admin grants and
+   *     revokes are "NOT part of the core operation algebra" — direct AdminUser
+   *     writes, gated by typing the target's own Discord ID. They never stage, and
+   *     the page's own copy about session revokes ("a security action that waits
+   *     in a tray is not a security action") is the argument for why.
+   * ═══════════════════════════════════════════════════════════════════════════ */
+  const SM = F.SCOPE_META, RM = F.ROLE_META;
+  const st = { mode:'grid',
+               admins: F.accessAdmins.map(a => ({ ...a, grants: { ...a.grants } })),
+               sessions: F.sessions.map(s => ({ ...s })), notice:'' };
+  const COMMANDS = F.accessScopes.filter(s => s.kind === 'command');
+  const PAGES    = F.accessScopes.filter(s => s.kind === 'page');
+  const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const fmt = d => d ? T.fmt(String(d).slice(0, 10)) : '—';
+  const held = (a, k) => (a.grants[k] || {}).held;
+  const holders = k => st.admins.filter(a => held(a, k)).map(a => a.discordId);
+
+  /* Recomputed rather than read back from the fixture, so a grant made on this page
+   * updates inheritance and single-points-of-failure the same way the server would.
+   * utils/adminAccess.js: a bare `manage` covers every page; a `manage.<page>` covers one. */
+  function recompute(a) {
+    for (const s of F.accessScopes) {
+      const direct = a.permissions.includes(s.key);
+      const inherited = s.kind === 'page' && !direct && a.permissions.includes('manage');
+      a.grants[s.key] = { direct, inherited, held: direct || inherited };
+    }
+    return a;
+  }
+  /* ⚠️ REPRODUCES portal/api/access.js's singlePointsOfFailure() EXACTLY, blind spot included.
+   * That function expands a bare `manage` into the eight page scopes and never records a holder
+   * for `manage` ITSELF, so a lone holder of the full token is not reported as a single point
+   * even though they plainly are one. Counting it here would show 6 where the API returns 5 —
+   * and a mockup that quietly disagrees with the endpoint it is a specification for is worse
+   * than one that matches a flaw. Filed as a finding against the API, not patched here. */
+  const spofScopes = () => new Set(F.accessScopes.map(s => s.key)
+    .filter(k => k !== 'manage' && holders(k).length === 1));
+  const unheld     = () => F.accessScopes.map(s => s.key).filter(k => holders(k).length === 0);
+
+  /* ═══ THE OWNER NOTE ═══ this realm is not page-scoped at all. portal/api/realmAccess.js
+   * pushes 'access' onto the visible list only `if (owner)`, and portal/api/access.js wraps
+   * every route in ownerOnly(). It has no token, at any scope, ever. */
+  function renderOwnerNote() {
+    ownerNote.innerHTML = `
+      <div class="panel" style="margin-bottom:16px"><div class="callout">
+        <b>Owner-only, and not by policy.</b> Access has <b>no grantable token</b> &mdash; not one you
+        could hand out if you wanted to. Every route here is wrapped in <code>ownerOnly()</code> and the
+        rail hides the realm entirely for anyone else, exactly like <code>/bot access</code> in Discord.
+        The owner is <code>&hellip;${esc(F.OWNER_ID.slice(-6))}</code>, hardcoded in
+        <code>utils/owner.js</code>, and holds everything by short-circuit before this allowlist is even read.
+      </div></div>`;
+  }
+
+  /* ═══ VIEW 1 · BY ADMIN — THE GRID ═══
+   * ⚠️ DIRECT vs INHERITED IS THE ENTIRE REASON A GRID BEATS THE STRING IT REPLACES.
+   * A bare `manage` lights all eight page columns — but you did not hand those pages
+   * over one at a time, and revoking `manage` takes all eight back at once. Collapsing
+   * the two into one boolean loses the only thing you needed to see. */
+  function renderGrid() {
+    const spof = spofScopes();
+    viewGrid.innerHTML = `
+      <div class="mxwrap">
+        <table class="mx">
+          <thead>
+            <tr class="mxgrp">
+              <th class="mxwho"></th>
+              <th colspan="${COMMANDS.length}"><span>Commands</span></th>
+              <th colspan="${PAGES.length}"><span>/manage pages</span></th>
+              <th></th>
+            </tr>
+            <tr>
+              <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
+              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}"
+                    style="--c:${SM[s.key].hex}" title="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
+                  <i></i>${esc(s.label)}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
+              <th><span class="mxs">&nbsp;</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="ownerrow">
+              <td class="mxwho"><span class="mxid">
+                <span class="mxav">◆</span>
+                <span class="mxn"><b>Owner</b><span>&hellip;${esc(F.OWNER_ID.slice(-6))} &middot; utils/owner.js</span></span>
+              </span></td>
+              ${F.accessScopes.map(s => `<td><span class="mxcell on locked" style="--c:${SM[s.key].hex}"
+                  role="img" aria-label="${esc(s.label)}: held by the owner, not editable"
+                  title="The owner short-circuits every check"></span></td>`).join('')}
+              <td><span class="holder">locked</span></td>
+            </tr>
+            ${st.admins.map(a => `
+            <tr data-admin="${esc(a.discordId)}">
+              <td class="mxwho"><span class="mxid">
+                <span class="mxav">${esc(a.note ? a.note.replace(/^SESSIONB-SEED /,'')[0].toUpperCase() : a.discordId.slice(-1))}</span>
+                <span class="mxn"><b>&hellip;${esc(a.discordId.slice(-6))}</b><span>${esc(a.note || 'no label')} &middot; granted ${fmt(a.grantedAt)}</span></span>
+              </span></td>
+              ${F.accessScopes.map(s => {
+                const g = a.grants[s.key] || {};
+                const cls = g.direct ? 'on' : g.inherited ? 'inh' : '';
+                const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from the bare manage token' : 'not granted';
+                return `<td><span class="mxcell ${cls}" style="--c:${SM[s.key].hex}" role="img"
+                    aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}"
+                    title="${esc(s.label)} — ${what}"></span></td>`;
+              }).join('')}
+              <td><button class="chip" data-edit="${esc(a.discordId)}">Edit</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="mxfoot">
+        <span><span class="mxlegend on"></span>granted <b>directly</b> &mdash; revoking it removes exactly this.</span>
+        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; a bare <code>manage</code> covers every page at once.</span>
+        <span class="sp" style="flex:1"></span>
+        <button class="chip go" id="grantBtn">+ Grant access</button>
+      </div>
+      <p class="racknote">Eleven tokens: three commands (<code>manage</code>, <code>autobuild</code>,
+        <code>bot</code>) and eight <code>/manage</code> pages. <code>all</code> is an input-only
+        convenience that expands to the three commands. A permissions array is never allowed to be
+        empty &mdash; an admin with nothing granted should be revoked, not parked in limbo.</p>`;
+    viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
+    document.getElementById('grantBtn').onclick = openGrant;
+  }
+
+  /* ═══ VIEW 2 · BY SCOPE ═══
+   * The inverse of the grid, answering what a row structurally cannot: "who can touch
+   * the calendar?" without reading across. Derived from the SAME grants, so the two
+   * views can never disagree. Two findings live only here — a scope held by exactly
+   * ONE person, and a scope held by NOBODY but the owner. */
+  function renderScope() {
+    const spof = spofScopes(), none = new Set(unheld());
+    viewScope.innerHTML = `
+      <div class="scopes">
+        ${F.accessScopes.map(s => {
+          const hs = holders(s.key);
+          const flag = spof.has(s.key) ? 'spof' : none.has(s.key) ? 'lone' : '';
+          return `<div class="scope ${flag}" style="--c:${SM[s.key].hex}">
+            <span class="nm"><i></i>${esc(s.label)}<em>${esc(s.key)}</em></span>
+            <span class="hs">
+              <span class="holder owner" title="The owner holds every scope implicitly">owner</span>
+              ${hs.map(id => `<span class="holder">&hellip;${esc(id.slice(-6))}</span>`).join('')}
+            </span>
+            <span class="rl">${SM[s.key].realm === '—'
+              ? '<span class="none">Discord only</span>'
+              : `reaches <b>${esc(SM[s.key].realm)}</b>`}</span>
+            ${flag === 'spof' ? `<span class="flag">single point &mdash; only ${esc(hs[0].slice(-6))} besides you</span>` : ''}
+            ${flag === 'lone' ? `<span class="flag quiet">nobody but you</span>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="mxfoot">
+        <span><b style="color:var(--warn)">Single point</b> &mdash; exactly one non-owner holds it. If they
+          go, you are the only one left who can do it.</span>
+        <span><b>Nobody but you</b> &mdash; zero non-owner holders. Safe, and also the reason you are
+          still doing it yourself.</span>
+      </div>`;
+  }
+
+  /* ═══ SESSIONS ═══
+   * models/PortalSession.js: sessionHash (the cookie holds the raw value, the database
+   * holds only a hash), discordId, lastSeenAt, userAgent, revokedAt. NO IP is stored
+   * anywhere — an earlier build of this page had an `ip` column and a `current` flag,
+   * and neither field exists. "Signed in now" is DERIVED from lastSeenAt inside 15
+   * minutes, because a browser session has no logout event unless somebody clicks one. */
+  function renderSess() {
+    const liveN = st.sessions.filter(isLive).length;
+    sessCount.textContent = st.sessions.length
+      ? `${liveN} active &middot; ${st.sessions.length} total`
+      : 'none';
+    viewSess.innerHTML = st.sessions.length ? `
+      <div class="sesslist">
+        ${st.sessions.map(s => `
+          <div class="sess ${isLive(s) ? '' : 'stale'}">
+            <span class="sdot" aria-hidden="true"></span>
+            <span class="sessb">
+              <b>&hellip;${esc(s.discordId.slice(-6))}</b>
+              <span>${esc(s.userAgent || 'device not recorded')} &middot; ${rel(s.lastSeenAt)}</span>
+            </span>
+            <button class="chip danger" data-end="${esc(s.sessionHash)}">End session</button>
+          </div>`).join('')}
+      </div>
+      <div class="mxfoot">
+        <span>Sessions expire after <b>${F.SESSION_TTL_HOURS} hours</b> on a Mongo TTL index, so nothing has to run to clean them up.</span>
+        <span>Ending one is immediate and unstaged &mdash; a security action that waits in a tray is not one.</span>
+      </div>`
+    : `<div class="estate">
+        <span class="eicon">◍</span>
+        <h4>Nobody is signed in to the portal</h4>
+        <p>Your own session should always be in this list. An empty one means the fetch failed,
+          not that the room is empty.</p>
+        <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves
+          their tab working until it expires ${F.SESSION_TTL_HOURS} hours after sign-in &mdash; ending it
+          here is the only thing that closes that window.</p>
+      </div>`;
+    viewSess.querySelectorAll('[data-end]').forEach(b => b.onclick = () => endSession(b.dataset.end));
+  }
+  const isLive = s => Date.now() - new Date(s.lastSeenAt).getTime() < F.SESSION_LIVE_MS;
+  function rel(v) {
+    const secs = Math.max(0, Math.round((Date.now() - new Date(v).getTime()) / 1000));
+    if (secs < 90) return 'here now';
+    if (secs < 5400) return `${Math.round(secs / 60)}m ago`;
+    if (secs < 172800) return `${Math.round(secs / 3600)}h ago`;
+    return `${Math.round(secs / 86400)}d ago`;
+  }
+  function endSession(hash) {
+    const s = st.sessions.find(x => x.sessionHash === hash); if (!s) return;
+    S.confirm({ op:'session.end', danger:true, confirm:'End it now',
+      title:`End the session for …${s.discordId.slice(-6)}?`,
+      body:`<p class="dw-p">Immediate, and nothing to commit. Any work staged in that browser is
+              lost with it &mdash; staged changes live in the browser session and nowhere else.</p>`,
+      onConfirm(){ st.sessions = st.sessions.filter(x => x !== s);
+        S.toast('Session ended.'); renderAll(); } });
+  }
+
+  /* ═══ GRANT / EDIT / REVOKE ═══
+   * ⚠️ THESE DO NOT STAGE. portal/api/access.js writes AdminUser directly; the only
+   * safeguard is typing the target's own Discord ID, and that is deliberate — the
+   * export half of the tier-3 gate is meaningless for a permission change, because
+   * there is no data to export. So there is no tray, no review screen, and no undo:
+   * the confirmation IS the gate.
+   *
+   * ⚠️ AND ONE BAD TOKEN REJECTS THE WHOLE SUBMISSION. parsePermissionsInput returns
+   * null if any token is unrecognised, on the stated reasoning that a partial grant
+   * from a typo is worse than an error. Reproduced here rather than softened. */
+  function parseTokens(raw) {
+    const toks = (raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    if (!toks.length) return { ok:false, why:'A permissions array is never allowed to be empty.' };
+    if (toks.length === 1 && toks[0] === 'all') return { ok:true, list:['manage','autobuild','bot'], note:'“all” expanded to the three command tokens.' };
+    const bad = toks.filter(t => !F.PERM_TOKENS.includes(t));
+    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised token${bad.length === 1 ? '' : 's'}. One bad token rejects the whole grant — a partial grant from a typo is worse than an error.` };
+    return { ok:true, list:[...new Set(toks)] };
+  }
+
+  function grantForm(a) {
+    const editing = !!a;
+    const idField = editing
+      ? `<div class="dwfield"><label>Discord ID</label><input type="text" value="${esc(a.discordId)}" readonly></div>`
+      : `<div class="dwfield"><label for="gId">Discord ID</label>
+           <input id="gId" type="text" placeholder="17–19 digits" inputmode="numeric" autocomplete="off"></div>`;
+    return `<div class="dwbody">
+      ${idField}
+      <div class="dwfield"><label for="gPerm">Permissions &mdash; comma separated</label>
+        <input id="gPerm" type="text" value="${editing ? esc(a.permissions.join(',')) : ''}"
+               placeholder="e.g. manage.draws,manage.calendar,bot" autocomplete="off"></div>
+      <p class="dw-p" id="gHint">Eleven tokens are valid. <code>manage</code> alone means every page.</p>
+      <div class="tokgrid" id="tokGrid">
+        ${F.accessScopes.map(s => `<button class="chip topic" data-tok="${esc(s.key)}" aria-pressed="false"
+            style="--c:${SM[s.key].hex}" title="${esc(s.key)}"><i></i>${esc(s.label)}</button>`).join('')}
+      </div>
+      <div class="dwfield" style="margin-top:14px"><label for="gNote">Label (optional)</label>
+        <input id="gNote" type="text" value="${editing ? esc(a.note) : ''}" placeholder="How you will recognise them"></div>
+      <div class="dwfield"><label for="gConf">Type the Discord ID again to confirm</label>
+        <input id="gConf" type="text" placeholder="${editing ? esc(a.discordId) : 'the same 17–19 digits'}" autocomplete="off"></div>
+      <p class="dw-p"><b>This commits immediately.</b> A permission change is not staged and has no
+        review screen &mdash; typing the ID is the entire gate, because there is no data to export and
+        nothing meaningful to preview. It takes effect in the bot within
+        ${F.ADMIN_CACHE_TTL_MS / 1000}s at worst; the allowlist cache is invalidated on write, so in
+        practice on their very next click.</p>
+    </div>`;
+  }
+
+  function wireGrantForm(a, onCommit) {
+    const editing = !!a;
+    const idOf = () => editing ? a.discordId : (document.getElementById('gId').value.trim());
+    const hint = document.getElementById('gHint');
+    const sync = () => {
+      const p = parseTokens(gPerm.value);
+      const set = new Set(p.ok ? p.list : []);
+      document.querySelectorAll('[data-tok]').forEach(b => {
+        const k = b.dataset.tok;
+        const inh = !set.has(k) && set.has('manage') && k.startsWith('manage.');
+        b.setAttribute('aria-pressed', String(set.has(k)));
+        b.classList.toggle('inh', inh);
+      });
+      gPerm.classList.toggle('err', !p.ok);
+      hint.innerHTML = p.ok
+        ? `<b>${p.list.length} token${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; a bare <code>manage</code> lights every page by inheritance.' : ''}`
+        : `<b style="color:var(--warn)">${p.why}</b>`;
+    };
+    gPerm.addEventListener('input', sync);
+    document.querySelectorAll('[data-tok]').forEach(b => b.onclick = () => {
+      const k = b.dataset.tok;
+      const cur = new Set(gPerm.value.split(',').map(t => t.trim()).filter(Boolean));
+      cur.has(k) ? cur.delete(k) : cur.add(k);
+      gPerm.value = [...cur].join(','); sync();
+    });
+    const check = () => {
+      const p = parseTokens(gPerm.value);
+      go.disabled = !(p.ok && idOf() && gConf.value.trim() === idOf());
+    };
+    ['input','change'].forEach(ev => {
+      gPerm.addEventListener(ev, check); gConf.addEventListener(ev, check);
+      if (!editing) gId.addEventListener(ev, check);
+    });
+    document.querySelectorAll('[data-tok]').forEach(b => b.addEventListener('click', check));
+    sync(); check();
+    go.onclick = () => {
+      const id = idOf(), p = parseTokens(gPerm.value);
+      if (!editing && !/^\d{17,19}$/.test(id)) { gId.classList.add('err');
+        S.toast('A Discord ID is 17–19 digits. Right-click a user with developer mode on to copy it.'); return; }
+      if (!p.ok) { gPerm.classList.add('err'); S.toast(p.why); return; }
+      onCommit(id, p.list, document.getElementById('gNote').value.trim());
+    };
+  }
+
+  function openGrant() {
+    S.drawer({ eyebrow:'access.grant &middot; direct write, typed confirmation', title:'Grant portal access', wide:true,
+      body: grantForm(null),
+      actions:`<button class="btn" id="cancel">Cancel</button><button class="btn go" id="go" disabled>Grant now</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    wireGrantForm(null, (id, list, note) => {
+      st.admins.push(recompute({ discordId:id, permissions:list, note, grantedBy:F.OWNER_ID,
+                                 grantedAt:F.today, grants:{} }));
+      S.closeDrawer();
+      S.toast(`Granted ${list.length} token${list.length === 1 ? '' : 's'} to …${id.slice(-6)}. Live in the bot on their next click.`);
+      renderAll();
+    });
+  }
+
+  function openAdmin(id) {
+    const a = st.admins.find(x => x.discordId === id); if (!a) return;
+    S.drawer({ eyebrow:'access.grant &middot; direct write, typed confirmation', title:`…${a.discordId.slice(-6)}`, wide:true,
+      body: `<div class="idop"><b>${RM.admin.label}</b> &mdash; ${RM.admin.note}</div>
+             <div class="idop" style="margin-top:8px">Granted by
+               <code>&hellip;${esc((a.grantedBy || '').slice(-6))}</code> on <b>${fmt(a.grantedAt)}</b>.
+               <span style="color:var(--ink3)">Only the owner may grant, revoke or edit permissions &mdash;
+               so this is always you.</span></div>`
+             + grantForm(a),
+      actions:`<button class="btn" id="cancel">Cancel</button>
+               <button class="btn dang" id="revoke">Revoke everything&hellip;</button>
+               <button class="btn go" id="go" disabled>Save permissions</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    document.getElementById('revoke').onclick = () => { S.closeDrawer(); confirmRevoke(a); };
+    wireGrantForm(a, (_id, list) => {
+      const before = a.permissions.slice();
+      a.permissions = list; recompute(a);
+      S.closeDrawer();
+      S.toast(`Permissions updated: ${before.length} → ${list.length} token${list.length === 1 ? '' : 's'}.`);
+      renderAll();
+    });
+  }
+
+  function confirmRevoke(a) {
+    const lost = F.accessScopes.filter(s => held(a, s.key)).map(s => s.label);
+    const orphaned = F.accessScopes.filter(s => held(a, s.key) && holders(s.key).length === 1).map(s => s.label);
+    S.drawer({ eyebrow:'access.revoke &middot; direct write, typed confirmation', title:`Revoke …${a.discordId.slice(-6)}?`,
+      body:`<div class="dwbody">
+        <p class="dw-p">Deletes the whole <code>AdminUser</code> document &mdash; there is no partial
+          revoke here, and no undo. They keep their Discord account and every public command; they
+          simply stop being an admin.</p>
+        <p class="dw-p">They lose <b>${lost.length}</b> reachable scope${lost.length === 1 ? '' : 's'}:
+          ${esc(lost.join(', ')) || 'none'}.</p>
+        ${orphaned.length ? `<div class="callout"><b>You would be the only one left</b> holding
+          ${esc(orphaned.join(', '))}. That is not a reason not to &mdash; it is the thing you cannot see
+          from a permissions string.</div>` : ''}
+        <p class="dw-p">Their browser session, if any, keeps working until it is ended above or
+          expires ${F.SESSION_TTL_HOURS}h after sign-in. Revoking in the bot does not close a tab.</p>
+        <div class="dwfield" style="margin-top:12px"><label for="rConf">Type <code>${esc(a.discordId)}</code> to confirm</label>
+          <input id="rConf" type="text" autocomplete="off"></div>
+      </div>`,
+      actions:`<button class="btn" id="cancel">Cancel</button><button class="btn dang" id="go" disabled>Revoke now</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    rConf.addEventListener('input', () => { go.disabled = rConf.value.trim() !== a.discordId; });
+    go.onclick = () => {
+      st.admins = st.admins.filter(x => x !== a);
+      S.closeDrawer(); S.toast(`…${a.discordId.slice(-6)} revoked. There is no undo for this one.`);
+      renderAll();
+    };
+  }
+
+  function renderKey() {
+    key.innerHTML = `<span class="l"><i></i>direct</span><span class="s"><i></i>inherited</span>`;
+  }
+  function renderStats() {
+    const spofN = spofScopes().size, liveN = st.sessions.filter(isLive).length;
+    mhStats.innerHTML = `
+      <span class="stat"><span class="v">${st.admins.length}</span> <span class="k">granted</span></span>
+      <span class="stat"><span class="v">${st.admins.reduce((n, a) => n + a.permissions.length, 0)}</span> <span class="k">tokens</span></span>
+      <span class="stat"><span class="v">${liveN}</span> <span class="k">signed in</span></span>
+      <span class="stat ${spofN ? 'warn' : ''}"><span class="v">${spofN}</span> <span class="k">single points</span></span>`;
+    viewMeta.innerHTML = st.mode === 'grid'
+      ? `${st.admins.length} admin${st.admins.length === 1 ? '' : 's'} &times; ${F.accessScopes.length} tokens`
+      : `${spofScopes().size} single point${spofScopes().size === 1 ? '' : 's'} &middot; ${unheld().length} held by nobody but you`;
+  }
+  function renderAll(){ renderOwnerNote(); renderGrid(); renderScope(); renderSess(); renderKey(); renderStats(); S.mountRail('access'); }
+
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    st.mode = b.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    viewGrid.hidden = st.mode !== 'grid'; viewScope.hidden = st.mode !== 'scope';
+    document.getElementById('crumbView').textContent = { grid:'By admin', scope:'By scope' }[st.mode];
+    renderStats();
+  });
+  S.onAfterRevert = renderAll;
+
+  renderAll();
+  S.audit({
+    interactions: () => [
+      { name:'admin permissions', run: () => openAdmin(st.admins[0].discordId) },
+      { name:'grant access', run: openGrant }
+    ],
+    states: () => ['direct','inherited']
+  });
+})();
+</script>
+</body></html>

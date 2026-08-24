@@ -1,0 +1,1054 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Armory · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787586710"><link rel="stylesheet" href="assets/app.css?v=1787586710">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Armory</h1>
+        <span class="job">Every build the bot can show a player, ranked within its category, with whatever is wrong with it named.</span>
+      </div>
+      <div class="mh-stats">
+        <span class="stat"><span class="v" id="sBuilds"></span> <span class="k">builds</span></span>
+        <span class="stat"><span class="v" id="sRanked"></span> <span class="k">ranked</span></span>
+        <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
+        <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
+      </div>
+    </div>
+
+    <section class="panel" aria-label="Armory view">
+      <div class="ph">
+        <div class="modesw" role="tablist" aria-label="Loadout mode">
+          <button role="tab" data-arm="MP"  aria-pressed="true">MP</button>
+          <button role="tab" data-arm="DMZ" aria-pressed="false">DMZ</button>
+        </div>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="rack" aria-pressed="true">Tier board</button>
+          <button role="tab" data-view="coverage" aria-pressed="false">Repairs</button>
+          <button role="tab" data-view="compare" aria-pressed="false">Compare</button>
+          <button role="tab" data-view="bulk" aria-pressed="false">Bulk &amp; export</button>
+        </div>
+        <span class="key" id="key"></span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <div id="viewRack"></div>
+      <div id="viewCoverage" hidden></div>
+      <div id="viewCompare" hidden></div>
+      <div id="viewBulk" hidden></div>
+    </section>
+
+    <section class="panel" style="margin-top:16px" aria-label="Manifest">
+      <div class="mtools">
+        <span class="srch"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <label class="sr" for="q">Search builds</label>
+          <input id="q" type="search" placeholder="Weapon, build, attachment or Gunsmith code…" autocomplete="off">
+        </span>
+        <button class="chip" data-filter="all" aria-pressed="true">All</button>
+        <span class="chipset" id="catChips"></span>
+        <button class="chip go" id="addBtn">+ Add build</button>
+        <span class="rt" id="count"></span>
+      </div>
+      <div id="activeFilter" hidden></div>
+      <div class="mscroll"><table class="mtable">
+        <colgroup><col class="c-cb"><col class="c-item"><col class="c-type"><col class="c-win">
+                  <col class="c-spark"><col class="c-detail"><col class="c-state"></colgroup>
+        <thead><tr>
+          <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
+          <th class="sortable" data-sort="weaponName">Weapon</th>
+          <th class="sortable" data-sort="category">Category</th>
+          <th class="sortable" data-sort="buildName">Build</th>
+          <th class="drop-sm">Gunsmith code</th>
+          <th>Attachments</th>
+          <th class="ta-r">Badges</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <div id="bulk" hidden></div>
+    </section>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+
+<script src="assets/fixtures.js?v=1787586710"></script>
+<script src="assets/timeline.js?v=1787586710"></script>
+<script src="assets/shell.js?v=1787586710"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell;
+  S.init('armory');
+  S.mountHeader('Armory', 'Tier board');
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * ⚠️ EVERYTHING BELOW IS SHAPED BY models/Loadout.js, NOT BY A GUESS.
+   * An earlier version of this page invented its own fields and got three things
+   * wrong in ways that changed the design:
+   *   · `attachments` is an ARRAY OF NAMES ("Monolithic Suppressor", …) — it was
+   *     rendered as a COUNT ("5"), which tells an admin nothing they can act on.
+   *   · `categoryRank` is 'best' | 'top3' | 'top4' | 'top5' | null. The tier board
+   *     used S/A/B, a vocabulary that exists nowhere in the bot.
+   *   · `buildName` is a human variant label ("Build 1", "Aggressive Flex"), NOT a
+   *     code. The real Gunsmith code is `shareCode`, a separate field.
+   * The fixtures are 36 real documents exported from the dev collection.
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  const st = {
+    mode:'rack', q:'', cat:'all', armMode:'MP', defect:null, selected:new Set(),
+    sort:{ k:'weaponName', dir:1 },
+    builds: F.builds.map(b => ({ ...b, attachments:b.attachments.slice(), attachmentSlots:b.attachmentSlots.slice() })),
+    cmp:[]
+  };
+  const catOf   = k => F.CATS.find(c => c.key === k) || { key:k, label:k, hex:'#9DAAB4' };
+  const accent  = b => catOf(b.category).hex;
+  const dash    = v => (v === null || v === undefined || v === '') ? '—' : v;
+  const sentence= t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+  /* Builds of the same weapon+mode share their badges — see models/Loadout.js: badges
+   * describe the WEAPON, not one variant, and handlers/manage.js propagates them on edit. */
+  const siblings = b => st.builds.filter(x => x.weaponKey === b.weaponKey && x.mode === b.mode);
+
+  /* ═══ DEFECTS ═══ every one is a real property of the real schema, not a made-up
+   * health score. Mechanical ones can be fixed without a judgement call; the rest
+   * need a person, and the queue keeps that line visible. */
+  const STALE_DAYS = 120;
+  const daysOld = b => Math.round((new Date('2026-08-24') - new Date(b.lastUpdated)) / 86400000);
+  const DEFECTS = [
+    { key:'nocode',  label:'No Gunsmith code',   mech:false,
+      why:'MP builds are expected to carry a real 10-character code. 123 of 133 do.',
+      test:b => b.mode === 'MP' && !b.shareCode },
+    { key:'noimage', label:'No image',           mech:false,
+      why:'The card omits the gallery entirely — an honest render, but the build looks bare next to its siblings.',
+      test:b => !b.imageKey },
+    { key:'exturl',  label:'Image is an external URL', mech:true,
+      why:'imageKey should be a Cloudinary key so the delivery URL carries f_auto,q_auto. One row still points off-platform.',
+      test:b => (b.imageKey || '').startsWith('http') },
+    { key:'attcount',label:'Not 5 attachments',  mech:false,
+      why:'123 of 133 builds carry exactly 5. A different count is legal and sometimes right — CODM allows more with certain perks — so this is a prompt, not an error.',
+      test:b => b.attachments.length !== 5 },
+    /* 🔴 NOT a per-build defect. attachmentSlots is populated only by /autobuild's vision
+     * pass, and ZERO of the 133 stored builds carry it — so testing it per row flags the
+     * entire collection and the number stops meaning anything. It is surfaced as a
+     * collection-level observation in the Repairs view instead. `collection:true` keeps it
+     * out of defectsFor() while still letting the view state it. */
+    { key:'noslots', label:'No slot labels',     mech:false, collection:true,
+      why:'attachmentSlots is only ever filled by /autobuild vision extraction, and zero of the 133 stored builds carry it. That is the state of the whole collection, not a fault in any one row — so it does not count against a build.',
+      test:b => b.attachmentSlots.length === 0 },
+    { key:'stale',   label:'Not updated in ' + STALE_DAYS + ' days', mech:false,
+      why:'Attachment pools shift every season; a build untouched for a season is probably wrong.',
+      test:b => daysOld(b) > STALE_DAYS },
+    { key:'dupcode', label:'Duplicate Gunsmith code', mech:false,
+      why:'Two builds sharing a code means one was pasted from the other. The card copies it verbatim, so both are wrong for someone.',
+      test:b => !!b.shareCode && st.builds.filter(x => x.shareCode === b.shareCode).length > 1 },
+    /* MP-only checks are declared as such rather than silently passing on DMZ — a check that
+     * cannot fail in the current mode is hidden, not reported as clean. */
+    { key:'rankgap', label:'Meta but unranked',  mech:true,
+      why:'A build flagged Meta with no categoryRank renders a Meta badge and no tier. Meta implies it is at least Top 5 in its category.',
+      test:b => b.mode === 'MP' && b.isMeta && !b.categoryRank }
+  ];
+  const defectsFor = b => DEFECTS.filter(d => !d.collection && d.test(b));
+  const flagged    = d => inMode().filter(d.test);
+
+  /* ═══ THE DISCORD PREVIEW ═══ mirrors utils/loadoutRender.js's buildLoadoutCardBody()
+   * component for component, so what is shown here is what Discord will send:
+   *   # WEAPON · badges · divider · > description · ### Attachments · ### Gunsmith Code
+   *   · image · -# CATEGORY • Build N of M • Updated
+   * 🔴 DMZ builds never render a Gunsmith Code — the DMZ Gunsmith screen does not expose
+   * one, so showing buildName there as if it were a code would be a lie the bot does not
+   * tell. That rule lives in loadoutRender.js and is reproduced, not re-invented. */
+  function badgeLine(b) {
+    const out = [];
+    if (b.isMeta) out.push('META');
+    if (b.mode === 'MP' && b.categoryRank)
+      out.push(b.categoryRank === 'best' ? 'BEST ' + catOf(b.category).label.toUpperCase()
+                                         : b.categoryRank.toUpperCase() + ' ' + catOf(b.category).label.toUpperCase());
+    if (b.mode === 'DMZ' && b.dmzRangeRank) out.push(b.dmzRangeRank.replace('-', ' ').toUpperCase() + ' DMZ');
+    if (b.isToxic) out.push('TOXIC');
+    return out;
+  }
+  function loadoutCard(b, opts = {}) {
+    const sibs = siblings(b), idx = sibs.indexOf(b) + 1;
+    const code = b.mode !== 'DMZ' && (b.shareCode || b.buildName);
+    const badges = badgeLine(b);
+    return `<div class="dcard lc" style="--c:${accent(b)}">
+      <h6>${b.weaponName}</h6>
+      ${badges.length ? `<div class="lc-badges">${badges.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
+      <div class="lc-rule"></div>
+      ${b.description ? `<blockquote class="lc-desc">${sentence(b.description)}</blockquote>` : ''}
+      <div class="lc-h">Attachments</div>
+      <ul class="lc-att">${b.attachments.length
+        ? b.attachments.map((a, i) => `<li><code>${a}</code>${b.attachmentSlots[i]
+            ? `<em>${b.attachmentSlots[i]}</em>` : ''}</li>`).join('')
+        : '<li class="none">none recorded</li>'}</ul>
+      ${code ? `<div class="lc-h">Gunsmith Code</div><div class="lc-code">${code}</div>` : ''}
+      ${b.imageKey ? `<div class="lc-img"><img src="${F.imageUrl(b.imageKey)}" alt="${b.weaponName} ${b.buildName}"
+           loading="lazy" onerror="this.closest('.lc-img').classList.add('failed')"><span class="lc-imgfail">
+           Cloudinary did not return this image — <code>${b.imageKey}</code></span></div>`
+        : `<div class="lc-noimg">No image on this build, so the card omits the gallery entirely.</div>`}
+      <div class="lc-foot">${b.category} • Build ${idx} of ${sibs.length} • Updated ${b.lastUpdated}</div>
+    </div>`;
+  }
+
+  /* ═══ VIEW 1 · TIER BOARD ═══ keyed on the REAL rank vocabulary. */
+  const RANKS = F.RANK_ORDER;                         // best · top3 · top4 · top5 · null
+  const rankOf = b => b.mode === 'DMZ'
+    ? (b.dmzRangeRank ? (b.dmzRangeRank.split('-')[0]) : null)
+    : (b.categoryRank || null);
+  const rankKey = r => r === null ? 'unranked' : r;
+
+  function renderRack() {
+    const pool = visible();
+    const groups = RANKS.map(r => ({ r, list: pool.filter(b => rankOf(b) === r) }));
+    viewRack.innerHTML = `
+      <div class="rack">
+        ${groups.map(({ r, list }) => `
+          <div class="trow t-${rankKey(r)}">
+            <div class="trow-h">
+              <span class="trow-k">${r === null ? '—' : r === 'best' ? '★' : r.replace('top', 'T')}</span>
+              <span class="trow-n">${list.length}</span>
+              <span class="trow-t">${F.RANK_LABEL[String(r)]}</span>
+              <span class="trow-note">${r === 'best' ? 'one per category — the pick a player should copy'
+                : r === null ? 'no rank set; these render with no tier badge'
+                : 'ranked within its own category, not across the armory'}</span>
+            </div>
+            <div class="trow-body" data-drop="${r === null ? '' : r}">
+              ${list.length ? list.map(chip).join('')
+                : `<div class="trow-empty">Nothing at ${F.RANK_LABEL[String(r)]} — drag a build here, or focus one and press Alt plus an arrow key.</div>`}
+            </div>
+          </div>`).join('')}
+      </div>
+      <p class="racknote">Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on — the bot
+        renders it as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own
+        (<code>best</code> / <code>top3</code> / <code>top4</code> / <code>top5</code>), validated by
+        <code>adminParser.js</code>'s <code>parseLoadoutBadges()</code>.
+        <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a
+        combat range (<code>best-close</code>, <code>best-midlong</code>).</p>`;
+    wireRack();
+  }
+  function chip(b) {
+    const def = defectsFor(b), c = catOf(b.category);
+    return `<article class="bchip" draggable="true" data-id="${b.id}" style="--c:${c.hex}"
+              tabindex="0" role="button"
+              aria-label="${b.weaponName} ${b.buildName}, ${F.RANK_LABEL[String(rankOf(b))]}. Alt plus up or down re-ranks it.">
+      <span class="bc-top"><span class="bc-w">${b.weaponName}</span>
+        ${b.isMeta ? '<span class="bc-meta" title="Meta">META</span>' : ''}</span>
+      <span class="bc-b">${b.buildName}</span>
+      <span class="bc-foot">
+        <span class="bc-mode">${b.mode}</span>
+        ${b.dmzRangeRank ? `<span class="bc-dmz">${b.dmzRangeRank}</span>` : ''}
+        ${b.isToxic ? '<span class="bc-tox" title="Toxic">&#9763;</span>' : ''}
+        <span class="bc-att" title="${b.attachments.length} attachments">${b.attachments.length}&#215;</span>
+        ${def.length ? `<span class="bc-bad" title="${def.map(d => d.label).join(' · ')}">${def.length}</span>` : ''}
+      </span>
+    </article>`;
+  }
+
+  const TIER_SEQ = RANKS;
+  function moveToTier(id, to, focusAfter) {
+    const b = st.builds.find(x => x.id === id); if (!b) return false;
+    const isDmz = b.mode === 'DMZ';
+    const was = isDmz ? b.dmzRangeRank : b.categoryRank;
+    const next = isDmz && to ? (was && was.includes('-') ? to + '-' + was.split('-')[1] : to) : to;
+    if (was === next) return false;
+    /* Inverse FIRST, and it re-renders — a bare field reassignment leaves the chip in the
+     * wrong tier after an undo, which is the surface disagreeing with its own state. */
+    S.Store.onInvert('rank-' + b.id, () => {
+      if (isDmz) b.dmzRangeRank = was; else b.categoryRank = was; renderAll();
+    });
+    if (isDmz) b.dmzRangeRank = next; else b.categoryRank = next;
+    S.Store.add({ id:'rank-' + b.id, tier:1, name:`${b.weaponName} — ${b.buildName}`,
+      verb:`${F.RANK_LABEL[String(was)]} → ${F.RANK_LABEL[String(to)]}`, realm:'armory',
+      op:'loadout.edit',
+      rows:[[isDmz ? 'dmzRangeRank' : 'categoryRank', dash(was), dash(next)],
+            ['Applies to', `${siblings(b).length} build(s) of ${b.weaponName}`, 'badges describe the weapon']] });
+    renderAll();
+    const landed = viewRack.querySelector(`.bchip[data-id="${b.id}"]`);
+    if (landed) { landed.classList.add('settled');
+      landed.closest('.trow-body')?.classList.add('flash');
+      if (focusAfter) landed.focus();
+      setTimeout(() => { landed.classList.remove('settled');
+        landed.closest('.trow-body')?.classList.remove('flash'); }, 340); }
+    S.toast(`${b.weaponName} → ${F.RANK_LABEL[String(to)]}.`, 'Undo',
+      () => { S.Store.revert('rank-' + b.id); });
+    return true;
+  }
+
+  function wireRack() {
+    let dragId = null;
+    viewRack.querySelectorAll('.bchip').forEach(ch => {
+      ch.addEventListener('dragstart', e => { dragId = ch.dataset.id; ch.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move'; });
+      ch.addEventListener('dragend', () => { dragId = null; ch.classList.remove('dragging');
+        viewRack.querySelectorAll('.trow-body').forEach(t => t.classList.remove('over')); });
+      ch.addEventListener('click', () => openBuild(ch.dataset.id));
+      ch.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBuild(ch.dataset.id); return; }
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && (e.altKey || e.metaKey)) {
+          e.preventDefault();
+          const b = st.builds.find(x => x.id === ch.dataset.id); if (!b) return;
+          const i = TIER_SEQ.indexOf(rankOf(b));
+          const j = e.key === 'ArrowUp' ? i - 1 : i + 1;
+          if (j < 0 || j >= TIER_SEQ.length) { S.toast(j < 0 ? 'Already at Best.' : 'Already unranked.'); return; }
+          moveToTier(ch.dataset.id, TIER_SEQ[j], true);
+        }
+      });
+    });
+    viewRack.querySelectorAll('.trow-body').forEach(z => {
+      z.addEventListener('dragover', e => { if (!dragId) return; e.preventDefault(); z.classList.add('over'); });
+      z.addEventListener('dragleave', () => z.classList.remove('over'));
+      z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('over');
+        moveToTier(dragId, z.dataset.drop || null, false); });
+    });
+  }
+
+  /* ═══ VIEW 2 · REPAIRS ═══ */
+  function renderCoverage() {
+    const rows = DEFECTS.filter(d => !d.collection).map(d => ({ d, hits: flagged(d) }));
+    const facts = DEFECTS.filter(d => d.collection).map(d => ({ d, hits: flagged(d) }));
+    const mech = rows.filter(r => r.d.mech && r.hits.length);
+    viewCoverage.innerHTML = `
+      <div class="cov">
+        ${mech.length ? `<div class="repbar">
+          <b>${mech.reduce((a, r) => a + r.hits.length, 0)} mechanical fixes</b>
+          <span>need no judgement — the correct value is derivable from the row itself.</span>
+          <span class="sp"></span>
+          <button class="chip go" id="fixAll">Fix all mechanical</button>
+        </div>` : ''}
+        <div class="cols">
+          ${rows.map(({ d, hits }) => `
+            <button class="ccard ${hits.length ? '' : 'clean'}" data-defect="${d.key}"
+                    aria-pressed="${st.defect === d.key}">
+              <span class="cn ${hits.length ? 'bad' : ''}">${hits.length}</span>
+              <span class="cname">${d.label}${d.mech ? ' <i class="mechtag">mechanical</i>' : ''}</span>
+              <span class="cmeter"><i style="width:${(hits.length / Math.max(1, inMode().length)) * 100}%"></i></span>
+              <span class="why">${d.why}</span>
+            </button>`).join('')}
+        </div>
+        ${facts.length ? `<div class="covfacts">
+          <h5>True of the collection, not of any one build</h5>
+          ${facts.map(({ d, hits }) => `<div class="covfact">
+            <b>${hits.length} of ${inMode().length}</b><span>${d.label} — ${d.why}</span></div>`).join('')}
+        </div>` : ''}
+      </div>`;
+    viewCoverage.querySelectorAll('[data-defect]').forEach(c => c.onclick = () =>
+      setFilter({ cat: st.cat, defect: st.defect === c.dataset.defect ? null : c.dataset.defect }));
+    const fa = document.getElementById('fixAll');
+    if (fa) fa.onclick = fixMechanical;
+  }
+
+  /* A mechanical fix has ONE correct answer derivable from the row. Everything else needs a
+   * person, which is why the queue never offers to bulk-fix a judgement call. */
+  function fixMechanical() {
+    const plan = [];
+    st.builds.forEach(b => {
+      if ((b.imageKey || '').startsWith('http'))
+        plan.push({ b, field:'imageKey', was:b.imageKey,
+          now:(b.weaponName.toUpperCase().replace(/\s+/g, '-') + '-' + (siblings(b).indexOf(b) + 1)) });
+      if (b.mode === 'MP' && b.isMeta && !b.categoryRank)
+        plan.push({ b, field:'categoryRank', was:null, now:'top5' });
+    });
+    if (!plan.length) { S.toast('Nothing mechanical left to fix.'); return; }
+    S.drawer({
+      eyebrow:'loadouts.repair · tier 2', title:`Fix ${plan.length} mechanical defect${plan.length > 1 ? 's' : ''}`, wide:true,
+      body:`<div class="dwbody">
+        <p class="dw-p">Each of these has one correct value derivable from the row itself. Anything
+          needing a judgement call is deliberately absent — <b>Review each</b> on a specific defect
+          card is where those go.</p>
+        <div class="rvgrid"><div class="rvhead"><span>Build</span><span>Was</span><span>Becomes</span></div>
+        ${plan.map(p => `<div class="rvr">
+          <span class="rvk">${p.b.weaponName} — ${p.b.buildName}<br><em style="color:var(--ink3);font-size:var(--t-xs)">${p.field}</em></span>
+          <span class="rvwas">${dash(p.was)}</span><span class="rvnow">${p.now}</span></div>`).join('')}</div>
+      </div>`,
+      actions:`<button class="btn" id="fmCancel">Cancel</button>
+               <button class="btn go" id="fmGo">Stage ${plan.length} fix${plan.length > 1 ? 'es' : ''}</button>`
+    });
+    document.getElementById('fmCancel').onclick = () => S.closeDrawer();
+    document.getElementById('fmGo').onclick = () => {
+      const snap = plan.map(p => ({ b:p.b, field:p.field, was:p.b[p.field] }));
+      S.Store.onInvert('arm-repair', () => { snap.forEach(x => { x.b[x.field] = x.was; }); renderAll(); });
+      plan.forEach(p => { p.b[p.field] = p.now; });
+      S.Store.add({ id:'arm-repair', tier:2, name:`${plan.length} mechanical fixes`, verb:'repaired',
+        realm:'armory', op:'loadout.edit',
+        rows:plan.map(p => [`${p.b.weaponName} ${p.field}`, dash(p.was), p.now]) });
+      S.closeDrawer(); renderAll();
+      S.toast(`${plan.length} fixes staged.`, 'Undo', () => S.Store.revert('arm-repair'));
+    };
+  }
+
+  /* ═══ VIEW 3 · COMPARE ═══ real cards, side by side, differing rows lit. */
+  function renderCompare() {
+    const pool = visible();
+    if (!st.cmp.length) st.cmp = pool.slice(0, 2).map(b => b.id);
+    const picked = st.cmp.map(id => st.builds.find(b => b.id === id)).filter(Boolean);
+    viewCompare.innerHTML = `
+      <div class="cmp">
+        <div class="cmpbar">
+          ${pool.slice(0, 14).map(b => `<button class="chip ${st.cmp.includes(b.id) ? 'on' : ''}"
+             data-cmp="${b.id}"><b>${b.weaponName}</b> ${b.buildName}</button>`).join('')}
+        </div>
+        ${picked.length === 2 ? `
+          <table class="cmptab"><thead><tr><th>Field</th>
+            <th>${picked[0].weaponName} · ${picked[0].buildName}</th>
+            <th>${picked[1].weaponName} · ${picked[1].buildName}</th></tr></thead>
+            <tbody>${cmpRows(picked[0], picked[1])}</tbody></table>
+          <div class="cmpcards">${picked.map(b => loadoutCard(b)).join('')}</div>`
+        : `<div class="empty"><b>Pick two builds.</b> Comparing is the reason this view exists —
+             Discord can only ever show you one card at a time, so telling two variants of the same
+             weapon apart means paging back and forth and remembering.</div>`}
+      </div>`;
+    viewCompare.querySelectorAll('[data-cmp]').forEach(c => c.onclick = () => {
+      const id = c.dataset.cmp;
+      st.cmp = st.cmp.includes(id) ? st.cmp.filter(x => x !== id) : [...st.cmp, id].slice(-2);
+      renderCompare();
+    });
+  }
+  function cmpRows(a, b) {
+    const F2 = [
+      ['Category', x => x.category], ['Mode', x => x.mode],
+      ['Gunsmith code', x => x.mode === 'DMZ' ? '— (DMZ has no code)' : dash(x.shareCode)],
+      ['Attachments', x => x.attachments.length + ' — ' + (x.attachments.join(', ') || 'none')],
+      ['Meta', x => x.isMeta ? 'yes' : 'no'], ['Toxic', x => x.isToxic ? 'yes' : 'no'],
+      ['Category rank', x => dash(x.categoryRank)], ['DMZ range rank', x => dash(x.dmzRangeRank)],
+      ['Image', x => dash(x.imageKey)], ['Description', x => dash(x.description)],
+      ['Updated', x => x.lastUpdated]
+    ];
+    return F2.map(([k, get]) => {
+      const va = String(get(a)), vb = String(get(b));
+      return `<tr class="${va === vb ? 'same' : 'diff'}"><td class="cmpf">${k}</td>
+        <td class="dnow">${va}</td><td class="dnow">${vb}</td></tr>`;
+    }).join('');
+  }
+
+  /* ═══ VIEW 4 · BULK & EXPORT ═══
+   * The Loadouts page in /manage offers TEN actions: add · edit · delete · bulkadd ·
+   * bulkreplace · bulkdelete · exportupto5 · exportcategory · exportall · formatguide
+   * (utils/manageActions.js). An earlier version of this page implemented three of them
+   * and silently dropped the rest, which is what "a skeleton with makeup" means in
+   * practice: the surface looked complete because nothing on it named what was absent. */
+  const bulkLine = b => `${b.weaponName} | ${b.buildName} | ${b.category} | ${b.mode} | ` +
+    `${b.attachments.join(', ')} | ${b.shareCode || ''} | ${b.imageKey || ''}` +
+    (b.description ? ` | ${b.description}` : '');
+
+  function renderBulk() {
+    viewBulk.innerHTML = `
+      <div class="bulkview">
+        <div class="bvgrid">
+          <section class="bvcard">
+            <h4>Paste in <em class="modetag">${st.armMode}</em></h4>
+            <p>One build per line. Existing builds are matched by <b>weapon + build name</b> and updated
+              in place, so <b>Add</b> and <b>Replace</b> are the same upsert — which is exactly how the
+              bot behaves (<code>bulkreplace</code> reuses <code>bulkadd</code>'s modal).</p>
+            <textarea id="bvIn" rows="6" spellcheck="false"
+              placeholder="AK117 | Build 1 | AR | MP | Monolithic Suppressor, MIP Extended Light Barrel, No Stock, 48 Round Extended Mag, Granulated Grip Tape | 1C2B4A8B9A | AK117-1"></textarea>
+            <div class="bvact">
+              <button class="chip" id="bvGuide">Format guide</button>
+              <span class="sp"></span>
+              <button class="chip" id="bvPreview">Preview changes</button>
+            </div>
+            <div id="bvOut"></div>
+          </section>
+          <section class="bvcard">
+            <h4>Export out <em class="modetag">${st.armMode}</em></h4>
+            <p>Every export emits the same pipe format the paste box accepts, so a round trip is
+              lossless. This is what makes a tier-3 delete recoverable: the export you take before it
+              re-imports through the same parser.</p>
+            <div class="bvexp">
+              <button class="chip" data-exp="all">All ${inMode().length} ${st.armMode} builds</button>
+              <button class="chip" data-exp="cat">By category…</button>
+              <button class="chip" data-exp="five">Up to 5…</button>
+              <button class="chip" data-exp="sel" ${st.selected.size ? '' : 'disabled'}>
+                Selected (${st.selected.size})</button>
+            </div>
+            <div id="bvExpOut"></div>
+          </section>
+        </div>
+        <div class="bvnote">
+          <b>Not offered here, deliberately:</b> there is no purge on either Loadouts page — the bot
+          has none either (<code>commands/manage.js</code>'s <code>PURGE_LABELS</code> omits both), and
+          adding one to the portal would put a capability in reach that the system has decided against.
+        </div>
+      </div>`;
+    document.getElementById('bvPreview').onclick = previewPaste;
+    document.getElementById('bvGuide').onclick = openGuide;
+    viewBulk.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => doExport(b.dataset.exp));
+  }
+
+  function previewPaste() {
+    const lines = document.getElementById('bvIn').value.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { document.getElementById('bvOut').innerHTML =
+      `<div class="bvmsg">Nothing pasted yet.</div>`; return; }
+    const parsed = lines.map(l => {
+      const p = l.split('|').map(x => x.trim());
+      const [weaponName, buildName, category, mode, atts, shareCode, imageKey, description] = p;
+      const errs = [];
+      if (p.length < 5) errs.push('needs at least 5 fields');
+      if (category && !F.CATS.some(c => c.key === category)) errs.push(`unknown category "${category}"`);
+      if (mode && !['MP', 'DMZ'].includes(mode)) errs.push(`mode must be MP or DMZ`);
+      const existing = st.builds.find(b => b.weaponName === weaponName && b.buildName === buildName);
+      return { weaponName, buildName, category, mode, atts:(atts || '').split(',').map(x => x.trim()).filter(Boolean),
+               shareCode, imageKey, description, errs, existing:!!existing };
+    });
+    const bad = parsed.filter(p => p.errs.length);
+    document.getElementById('bvOut').innerHTML = `
+      <div class="bvres">
+        <div class="bvsum">
+          <b>${parsed.filter(p => p.existing && !p.errs.length).length}</b> update
+          <b>${parsed.filter(p => !p.existing && !p.errs.length).length}</b> new
+          ${bad.length ? `<b class="bad">${bad.length}</b> rejected` : ''}
+        </div>
+        ${parsed.map(p => `<div class="bvrow ${p.errs.length ? 'bad' : p.existing ? 'upd' : 'new'}">
+          <span class="bvtag">${p.errs.length ? 'reject' : p.existing ? 'update' : 'new'}</span>
+          <span><b>${p.weaponName || '(no weapon)'}</b> · ${p.buildName || '(no build name)'}
+            <em>${p.atts.length} attachment${p.atts.length === 1 ? '' : 's'}</em>
+            ${p.errs.length ? `<i class="bverr">${p.errs.join(' · ')}</i>` : ''}</span>
+        </div>`).join('')}
+        ${parsed.some(p => !p.errs.length) ? `<button class="chip go" id="bvStage">
+          Stage ${parsed.filter(p => !p.errs.length).length} change(s)</button>` : ''}
+      </div>`;
+    const bs = document.getElementById('bvStage');
+    if (bs) bs.onclick = () => {
+      const good = parsed.filter(p => !p.errs.length);
+      S.Store.onInvert('arm-bulk', () => {});
+      S.Store.add({ id:'arm-bulk', tier:2, name:`${good.length} builds`, verb:'bulk upsert',
+        realm:'armory', op:'loadout.bulkAdd',
+        rows:good.map(p => [`${p.weaponName} — ${p.buildName}`,
+          p.existing ? 'existing build' : '—', `${p.atts.length} attachments`]) });
+      S.toast(`${good.length} build(s) staged from paste.`, 'Undo', () => S.Store.revert('arm-bulk'));
+      renderAll();
+    };
+  }
+
+  function doExport(kind) {
+    let list = inMode(), label = `all ${st.armMode} builds`;
+    if (kind === 'sel') { list = inMode().filter(b => st.selected.has(b.id)); label = 'the selected builds'; }
+    if (kind === 'five') { list = visible().slice(0, 5); label = 'the first five in the current filter'; }
+    if (kind === 'cat') {
+      const c = st.cat === 'all' ? null : st.cat;
+      if (!c) { S.toast('Pick a category chip in the Manifest first, then export by category.'); return; }
+      list = inMode().filter(b => b.category === c); label = `every ${st.armMode} ${catOf(c).label} build`;
+    }
+    const text = list.map(bulkLine).join('\n');
+    document.getElementById('bvExpOut').innerHTML = `
+      <div class="bvres">
+        <div class="bvsum"><b>${list.length}</b> build(s) — ${label}</div>
+        <textarea class="bvexpout" rows="7" readonly spellcheck="false">${text || '(nothing matched)'}</textarea>
+        <button class="chip" id="bvCopy">Copy to clipboard</button>
+      </div>`;
+    document.getElementById('bvCopy').onclick = () => {
+      navigator.clipboard?.writeText(text);
+      S.toast(`${list.length} build(s) copied in Bulk Add format.`);
+    };
+  }
+
+  function openGuide() {
+    S.drawer({
+      eyebrow:'loadouts.formatguide · read only', title:'Bulk format', wide:true,
+      body:`<div class="dwbody">
+        <p class="dw-p">One build per line, pipe-separated. The first five fields are required;
+          the last two are optional.</p>
+        <pre class="guide">Weapon | Build name | Category | Mode | Attachments | Code | Image | Description</pre>
+        <div class="diff">
+          <div class="diff-r"><span class="dk">Weapon</span><span>As it should read on the card — <code>AK117</code>, <code>Holger 26</code>. <code>weaponKey</code> is derived from it (lowercased, spaces stripped).</span></div>
+          <div class="diff-r"><span class="dk">Build name</span><span>A human variant label — <code>Build 1</code>, <code>Aggressive Flex</code>. <b>Not a code</b>, despite /manage's field label.</span></div>
+          <div class="diff-r"><span class="dk">Category</span><span>${F.CATS.map(c => '<code>' + c.key + '</code>').join(' · ')}</span></div>
+          <div class="diff-r"><span class="dk">Mode</span><span><code>MP</code> or <code>DMZ</code>.</span></div>
+          <div class="diff-r"><span class="dk">Attachments</span><span>Comma-separated, in Gunsmith order. 123 of 133 builds carry exactly five.</span></div>
+          <div class="diff-r"><span class="dk">Code</span><span>The real 10-character Gunsmith code, alternating digit/letter — <code>1C2B4A8B9A</code>. Omit for DMZ; that screen has none.</span></div>
+          <div class="diff-r"><span class="dk">Image</span><span>A Cloudinary key such as <code>AK117-1</code>, or a full <code>https://</code> URL. Convention is <code>WEAPON-N</code>, all caps, spaces to hyphens.</span></div>
+          <div class="diff-r"><span class="dk">Description</span><span>Optional usage blurb, rendered as a blockquote above the attachments.</span></div>
+        </div>
+        <p class="dw-p" style="margin-top:14px"><b>Badges are not in this format.</b> They are set
+          per weapon in the build editor, because they describe the weapon rather than one variant —
+          the bot propagates them across every build sharing a <code>weaponKey</code> and <code>mode</code>.</p>
+      </div>`,
+      actions:`<button class="btn go" id="gOk">Close</button>`
+    });
+    document.getElementById('gOk').onclick = () => S.closeDrawer();
+  }
+
+  /* ═══ THE BUILD EDITOR ═══ the whole document, not a summary of it.
+   * Every field in models/Loadout.js is reachable here: the image (with its Cloudinary
+   * key, a live preview, replace/remove, and a direct link to the asset), the attachment
+   * ARRAY (add/remove/reorder, with optional slot labels), weaponName, weaponKey (derived,
+   * shown read-only so the convention is visible), category, mode, buildName, shareCode,
+   * description, and every badge — including the propagation rule, which is a real
+   * consequence a person has to see BEFORE they commit, not after. */
+  function openBuild(id) {
+    const b = st.builds.find(x => x.id === id); if (!b) return;
+    const before = JSON.parse(JSON.stringify(b));
+    const sibs = siblings(b);
+    const def = defectsFor(b);
+    const draft = JSON.parse(JSON.stringify(b));
+
+    const render = () => `
+      <div class="bed">
+        <div class="bed-main">
+          <div class="bed-sec">
+            <h5>Identity</h5>
+            <div class="bed-g2">
+              <label class="dwfield"><span>Weapon name</span><input id="eW" value="${draft.weaponName}"></label>
+              <label class="dwfield"><span>Build name <i>a variant label, not a code</i></span>
+                <input id="eB" value="${draft.buildName}"></label>
+            </div>
+            <div class="bed-g3">
+              <label class="dwfield"><span>Category</span><select id="eC">${F.CATS.map(c =>
+                `<option value="${c.key}" ${c.key === draft.category ? 'selected' : ''}>${c.key} — ${c.label}</option>`).join('')}</select></label>
+              <label class="dwfield"><span>Mode</span><select id="eM">
+                <option value="MP" ${draft.mode === 'MP' ? 'selected' : ''}>MP</option>
+                <option value="DMZ" ${draft.mode === 'DMZ' ? 'selected' : ''}>DMZ</option></select></label>
+              <label class="dwfield"><span>weaponKey <i>derived</i></span>
+                <input value="${draft.weaponName.toLowerCase().replace(/\s+/g, '')}" readonly></label>
+            </div>
+            <label class="dwfield"><span>Gunsmith code${draft.mode === 'DMZ'
+              ? ' <i>DMZ has no code — the card omits it</i>' : ' <i>10 chars, digit/letter alternating</i>'}</span>
+              <span class="bed-code"><input id="eS" value="${draft.shareCode}" ${draft.mode === 'DMZ' ? 'disabled' : ''}
+                placeholder="1C2B4A8B9A" spellcheck="false">
+                <button class="chip" id="eCopy" ${draft.shareCode ? '' : 'disabled'}>Copy</button></span></label>
+            <label class="dwfield"><span>Description <i>renders as a blockquote above the attachments</i></span>
+              <input id="eD" value="${draft.description}" placeholder="No suppressor build… FMJ allows 1 tap through walls."></label>
+          </div>
+
+          <div class="bed-sec">
+            <h5>Attachments <em>${draft.attachments.length}</em></h5>
+            <ul class="attlist" id="attList">
+              ${draft.attachments.map((a, i) => `
+                <li class="attrow" data-i="${i}">
+                  <span class="attn">${i + 1}</span>
+                  <input class="atti" value="${a.replace(/"/g, '&quot;')}" data-att="${i}">
+                  <input class="atts" value="${draft.attachmentSlots[i] || ''}" data-slot="${i}"
+                         placeholder="slot (optional)">
+                  <button class="attx" data-del="${i}" aria-label="Remove ${a}">&#10005;</button>
+                </li>`).join('')}
+            </ul>
+            <div class="attfoot">
+              <button class="chip" id="attAdd">+ Add attachment</button>
+              <span class="attnote">${draft.attachments.length === 5
+                ? 'Five, the usual count — 123 of 133 builds carry exactly this many.'
+                : draft.attachments.length + ' attachments. Legal, and sometimes right, but unusual — most builds carry 5.'}
+                Slot labels are only ever filled by <code>/autobuild</code>'s vision pass; zero stored builds have them.</span>
+            </div>
+          </div>
+
+          <div class="bed-sec">
+            <h5>Badges</h5>
+            <div class="badgerow">
+              <button class="bgt ${draft.isMeta ? 'on' : ''}" data-bg="meta">Meta</button>
+              <button class="bgt tox ${draft.isToxic ? 'on' : ''}" data-bg="toxic">Toxic</button>
+            </div>
+            ${draft.mode === 'MP' ? `
+              <div class="badgerow">
+                ${['best', 'top3', 'top4', 'top5'].map(r => `<button class="bgt rank ${draft.categoryRank === r ? 'on' : ''}"
+                   data-rank="${r}">${F.RANK_LABEL[r]}</button>`).join('')}
+                <button class="bgt rank ${!draft.categoryRank ? 'on' : ''}" data-rank="">Unranked</button>
+              </div>`
+            : `<div class="badgerow">
+                ${F.DMZ_RANGE_TOKENS.map(r => `<button class="bgt rank ${draft.dmzRangeRank === r ? 'on' : ''}"
+                   data-dmz="${r}">${r.replace('-', ' · ')}</button>`).join('')}
+                <button class="bgt rank ${!draft.dmzRangeRank ? 'on' : ''}" data-dmz="">None</button>
+              </div>`}
+            <p class="bgnote">🔴 <b>Badges describe the weapon, not this build.</b> Changing one here
+              propagates to <b>all ${sibs.length}</b> ${draft.weaponName} ${draft.mode} build${sibs.length === 1 ? '' : 's'},
+              exactly as <code>handlers/manage.js</code>'s edit handler does. <code>best</code> and
+              <code>top{N}</code> are one ranking, so picking either replaces the other; Meta and Toxic
+              are independent flags.</p>
+          </div>
+        </div>
+
+        <aside class="bed-side">
+          <div class="bed-sec">
+            <h5>Image</h5>
+            <div class="imgbox ${draft.imageKey ? '' : 'none'}">
+              ${draft.imageKey
+                ? `<img src="${F.imageUrl(draft.imageKey)}" alt="${draft.weaponName}"
+                     onerror="this.closest('.imgbox').classList.add('failed')">
+                   <span class="imgfail">Cloudinary returned nothing for this key.</span>`
+                : `<span class="imgnone">No image — the card omits the gallery entirely</span>`}
+            </div>
+            <label class="dwfield"><span>imageKey <i>Cloudinary key, or a full URL</i></span>
+              <input id="eI" value="${draft.imageKey}" placeholder="AK117-1" spellcheck="false"></label>
+            <div class="imgact">
+              <button class="chip" id="imgSuggest">Use convention</button>
+              <a class="chip" id="imgOpen" target="_blank" rel="noopener"
+                 href="${draft.imageKey ? F.imageUrl(draft.imageKey) : '#'}">Open asset &#8599;</a>
+              <button class="chip danger" id="imgClear" ${draft.imageKey ? '' : 'disabled'}>Remove</button>
+            </div>
+            <p class="imgnote">Convention is <code>WEAPON-N</code> — all caps, spaces to hyphens,
+              N being this build's position among its siblings. Delivery goes through
+              <code>f_auto,q_auto</code>, so the bot never serves an unoptimised original.</p>
+          </div>
+          <div class="bed-sec">
+            <h5>What Discord sends</h5>
+            <div id="edPrev"></div>
+          </div>
+        </aside>
+      </div>
+      ${def.length ? `<div class="dwissues"><h6>${def.length} issue${def.length > 1 ? 's' : ''} on this build</h6>
+        ${def.map(d => `<div class="dwissue"><b>${d.label}</b><span>${d.why}</span></div>`).join('')}</div>`
+        : `<div class="dwissue ok"><b>No issues on this build.</b><span>Every check in Repairs passes for this row.</span></div>`}`;
+
+    S.drawer({
+      eyebrow:`loadouts.edit · tier 1 · ${draft.category} · ${draft.mode}`,
+      title:`${draft.weaponName} — ${draft.buildName}`, wide:true, body:render(),
+      actions:`<button class="btn" id="eCancel">Cancel</button>
+               <button class="btn dang" id="eDel">Delete build…</button>
+               <button class="btn go" id="eSave">Stage changes</button>`
+    });
+    wireEditor();
+
+    function repaint() {
+      const d = document.querySelector('.drawer .dw-b');
+      const sc = d.scrollTop;
+      d.innerHTML = render(); wireEditor(); d.scrollTop = sc;
+    }
+    function preview() {
+      const el = document.getElementById('edPrev');
+      if (el) el.innerHTML = loadoutCard(draft);
+    }
+    function wireEditor() {
+      preview();
+      const on = (id, ev, fn) => { const e = document.getElementById(id); if (e) e.addEventListener(ev, fn); };
+      on('eW', 'input', e => { draft.weaponName = e.target.value; preview(); });
+      on('eB', 'input', e => { draft.buildName = e.target.value; preview(); });
+      on('eD', 'input', e => { draft.description = e.target.value; preview(); });
+      on('eS', 'input', e => { draft.shareCode = e.target.value.toUpperCase(); preview(); });
+      on('eI', 'input', e => { draft.imageKey = e.target.value; preview(); });
+      on('eC', 'change', e => { draft.category = e.target.value; repaint(); });
+      on('eM', 'change', e => { draft.mode = e.target.value;
+        if (draft.mode === 'DMZ') draft.categoryRank = null; else draft.dmzRangeRank = null; repaint(); });
+      on('eCopy', 'click', () => { navigator.clipboard?.writeText(draft.shareCode); S.toast('Gunsmith code copied.'); });
+      on('imgSuggest', 'click', () => {
+        draft.imageKey = draft.weaponName.toUpperCase().replace(/\s+/g, '-') + '-' + (sibs.indexOf(b) + 1);
+        repaint();
+      });
+      on('imgClear', 'click', () => { draft.imageKey = ''; repaint(); });
+      on('attAdd', 'click', () => { draft.attachments.push(''); draft.attachmentSlots.push(''); repaint(); });
+      document.querySelectorAll('[data-att]').forEach(i =>
+        i.addEventListener('input', e => { draft.attachments[+e.target.dataset.att] = e.target.value; preview(); }));
+      document.querySelectorAll('[data-slot]').forEach(i =>
+        i.addEventListener('input', e => { draft.attachmentSlots[+e.target.dataset.slot] = e.target.value; preview(); }));
+      document.querySelectorAll('[data-del]').forEach(x => x.onclick = () => {
+        const i = +x.dataset.del; draft.attachments.splice(i, 1); draft.attachmentSlots.splice(i, 1); repaint();
+      });
+      document.querySelectorAll('[data-bg]').forEach(t => t.onclick = () => {
+        if (t.dataset.bg === 'meta') draft.isMeta = !draft.isMeta; else draft.isToxic = !draft.isToxic;
+        repaint();
+      });
+      document.querySelectorAll('[data-rank]').forEach(t => t.onclick = () => {
+        draft.categoryRank = t.dataset.rank || null; repaint(); });
+      document.querySelectorAll('[data-dmz]').forEach(t => t.onclick = () => {
+        draft.dmzRangeRank = t.dataset.dmz || null; repaint(); });
+      document.getElementById('eCancel').onclick = () => S.closeDrawer();
+      document.getElementById('eDel').onclick = () => { S.closeDrawer(); confirmDelete(b); };
+      document.getElementById('eSave').onclick = save;
+    }
+
+    function save() {
+      const FIELDS = ['weaponName','buildName','category','mode','shareCode','description','imageKey',
+                      'isMeta','isToxic','categoryRank','dmzRangeRank'];
+      const rows = FIELDS.filter(k => String(before[k]) !== String(draft[k]))
+        .map(k => [k, dash(before[k]), dash(draft[k])]);
+      if (before.attachments.join('|') !== draft.attachments.join('|'))
+        rows.push(['attachments', before.attachments.join(', ') || '—', draft.attachments.join(', ') || '—']);
+      if (!rows.length) { S.toast('Nothing changed.'); S.closeDrawer(); return; }
+      const badgeChanged = ['isMeta','isToxic','categoryRank','dmzRangeRank'].some(k => before[k] !== draft[k]);
+      const sibSnap = sibs.map(x => ({ x, isMeta:x.isMeta, isToxic:x.isToxic,
+                                       categoryRank:x.categoryRank, dmzRangeRank:x.dmzRangeRank }));
+      const opId = 'arm-edit-' + b.id;
+      S.Store.onInvert(opId, () => {
+        Object.assign(b, before);
+        b.attachments = before.attachments.slice(); b.attachmentSlots = before.attachmentSlots.slice();
+        sibSnap.forEach(s2 => Object.assign(s2.x, { isMeta:s2.isMeta, isToxic:s2.isToxic,
+          categoryRank:s2.categoryRank, dmzRangeRank:s2.dmzRangeRank }));
+        renderAll();
+      });
+      Object.assign(b, draft);
+      b.attachments = draft.attachments.filter(Boolean);
+      b.attachmentSlots = draft.attachmentSlots.slice(0, b.attachments.length);
+      /* Badge propagation — the bot does this, so the portal must, or the two disagree
+       * the moment an admin edits from either side. */
+      if (badgeChanged) siblings(b).forEach(x => {
+        x.isMeta = b.isMeta; x.isToxic = b.isToxic;
+        x.categoryRank = b.categoryRank; x.dmzRangeRank = b.dmzRangeRank;
+      });
+      if (badgeChanged && sibs.length > 1)
+        rows.push(['badges propagated', `${sibs.length} build(s) of ${b.weaponName}`, 'all updated']);
+      S.Store.add({ id:opId, tier:1, name:`${b.weaponName} — ${b.buildName}`,
+        verb:`${rows.length} field${rows.length > 1 ? 's' : ''} changed`, realm:'armory',
+        op:'loadout.edit', rows });
+      S.closeDrawer(); renderAll();
+      S.toast(`${b.weaponName} — ${rows.length} change(s) staged.`, 'Undo', () => S.Store.revert(opId));
+    }
+  }
+
+  function confirmDelete(b) {
+    S.confirm({
+      op:'loadout.delete', tier:1, danger:true, confirm:'Stage deletion',
+      title:`Delete ${b.weaponName} — ${b.buildName}?`,
+      body:`<p class="dw-p">Removes this build, its <b>${b.attachments.length}</b> attachments and its
+              Gunsmith code. ${siblings(b).length > 1
+                ? `The other <b>${siblings(b).length - 1}</b> ${b.weaponName} build(s) stay, and the card's
+                   “Build N of M” counter renumbers.`
+                : `<b>This is the only ${b.weaponName} build</b> — the weapon disappears from
+                   <code>/gunsmiths</code> entirely.`}</p>
+            <p class="dw-p">Tier 3: the portal will require an export of what is about to be destroyed
+              before it will commit, and that export re-imports through the bulk parser.</p>`,
+      onConfirm(){
+        const i = st.builds.indexOf(b);
+        S.Store.onInvert('arm-del-' + b.id, () => { st.builds.splice(i, 0, b); renderAll(); });
+        st.builds.splice(i, 1);
+        S.Store.add({ id:'arm-del-' + b.id, tier:3, name:`${b.weaponName} — ${b.buildName}`,
+          verb:'deleted', realm:'armory', op:'loadout.delete', destroys:true,
+          rows:[['Build', `${b.weaponName} — ${b.buildName}`, 'removed'],
+                ['Attachments', b.attachments.join(', ') || '—', '—'],
+                ['Gunsmith code', dash(b.shareCode), '—'],
+                ['Image', dash(b.imageKey), '—']] });
+        renderAll();
+      }
+    });
+  }
+
+  function openAdd() {
+    S.drawer({
+      eyebrow:'loadouts.add · tier 1', title:'Add a build',
+      body:`<div class="dwbody">
+        <div class="bed-g2">
+          <label class="dwfield"><span>Weapon name</span><input id="nW" placeholder="AK117"></label>
+          <label class="dwfield"><span>Build name</span><input id="nB" placeholder="Build 1"></label>
+        </div>
+        <div class="bed-g2">
+          <label class="dwfield"><span>Category</span><select id="nC">${F.CATS.map(c =>
+            `<option value="${c.key}">${c.key} — ${c.label}</option>`).join('')}</select></label>
+          <label class="dwfield"><span>Mode</span><select id="nM"><option>MP</option><option>DMZ</option></select></label>
+        </div>
+        <label class="dwfield"><span>Attachments <i>comma separated, in Gunsmith order</i></span>
+          <input id="nA" placeholder="Monolithic Suppressor, MIP Extended Light Barrel, No Stock, 48 Round Extended Mag, Granulated Grip Tape"></label>
+        <p class="dw-p">It stages with no image and no code — both are added in the editor, where you
+          can see the card as you fill them in. Badges are set there too, because they apply to the
+          weapon rather than this one build.</p>
+      </div>`,
+      actions:`<button class="btn" id="nCancel">Cancel</button>
+               <button class="btn go" id="nAdd">Stage build</button>`
+    });
+    document.getElementById('nCancel').onclick = () => S.closeDrawer();
+    document.getElementById('nAdd').onclick = () => {
+      const name = document.getElementById('nW').value.trim();
+      if (!name) { S.toast('A weapon name is required — weaponKey is derived from it.'); return; }
+      const atts = document.getElementById('nA').value.split(',').map(x => x.trim()).filter(Boolean);
+      const nb = { id:'new-' + Date.now(), weaponKey:name.toLowerCase().replace(/\s+/g, ''),
+        weaponName:name, category:document.getElementById('nC').value,
+        mode:document.getElementById('nM').value,
+        buildName:document.getElementById('nB').value.trim() || 'Build 1',
+        attachments:atts, attachmentSlots:[], imageKey:'', description:'', shareCode:'',
+        isMeta:false, isToxic:false, categoryRank:null, dmzRangeRank:null, lastUpdated:'2026-08-24' };
+      S.Store.onInvert('arm-add-' + nb.id, () => { st.builds = st.builds.filter(x => x !== nb); renderAll(); });
+      st.builds.push(nb);
+      S.Store.add({ id:'arm-add-' + nb.id, tier:1, name:`${nb.weaponName} — ${nb.buildName}`,
+        verb:'added', realm:'armory', op:'loadout.add',
+        rows:[['Weapon','—',nb.weaponName],['Category','—',nb.category],['Mode','—',nb.mode],
+              ['Attachments','—',String(atts.length)],['Image','—','not set'],['Code','—','not set']] });
+      S.closeDrawer(); renderAll();
+      S.toast(`${nb.weaponName} staged.`, 'Open editor', () => openBuild(nb.id));
+    };
+  }
+
+  /* ═══ MANIFEST ═══ */
+  /* `inMode()` is the ONE place the partition lives. Every count, every view and every
+   * export reads through it, so nothing can accidentally show a DMZ build on the MP page. */
+  const inMode = () => st.builds.filter(b => b.mode === st.armMode);
+  function visible() {
+    let l = inMode();
+    if (st.cat !== 'all') l = l.filter(b => b.category === st.cat);
+    if (st.defect) { const d = DEFECTS.find(x => x.key === st.defect); if (d) l = l.filter(d.test); }
+    if (st.q) l = l.filter(b => (b.weaponName + ' ' + b.buildName + ' ' + b.shareCode + ' ' +
+      b.attachments.join(' ') + ' ' + b.description).toLowerCase().includes(st.q));
+    const k = st.sort.k, dir = st.sort.dir;
+    return l.sort((x, y) => ((x[k] > y[k]) ? 1 : (x[k] < y[k]) ? -1 : 0) * dir);
+  }
+  function setFilter({ cat, defect }) {
+    st.cat = cat; st.defect = defect;
+    document.querySelectorAll('[data-filter]').forEach(x =>
+      x.setAttribute('aria-pressed', String(x.dataset.filter === cat)));
+    renderAll();
+  }
+  function renderRows() {
+    const l = visible();
+    count.textContent = `${l.length} of ${st.builds.length}`;
+    activeFilter.hidden = !(st.defect || st.cat !== 'all');
+    if (!activeFilter.hidden) {
+      const d = DEFECTS.find(x => x.key === st.defect);
+      activeFilter.innerHTML = `<div class="afbar">
+        <span class="aflab">Showing</span>
+        ${st.cat !== 'all' ? `<span class="afchip" style="--c:${catOf(st.cat).hex}"><i></i>${catOf(st.cat).label}</span>` : ''}
+        ${d ? `<span class="afchip warn"><i></i>${d.label}</span>` : ''}
+        <span class="afn">${l.length} build${l.length === 1 ? '' : 's'}</span>
+        <button class="afclear" id="afClear">Clear</button></div>`;
+      document.getElementById('afClear').onclick = () => setFilter({ cat:'all', defect:null });
+    }
+    rows.innerHTML = l.length ? l.map(b => {
+      const def = defectsFor(b), c = catOf(b.category);
+      return `<tr data-id="${b.id}" class="${st.selected.has(b.id) ? 'sel' : ''}">
+        <td><span class="cb ${st.selected.has(b.id) ? 'on' : ''}" role="checkbox"
+              aria-checked="${st.selected.has(b.id)}" tabindex="0" data-cb="${b.id}"></span></td>
+        <td class="n"><span class="ncell"><span class="dot" style="background:${c.hex}"></span>
+          <span><b>${b.weaponName}</b><span class="rowmeta">${b.mode} · ${b.attachments.length} attachments</span></span></span></td>
+        <td>${c.label}</td>
+        <td>${b.buildName}</td>
+        <td class="code drop-sm">${b.mode === 'DMZ' ? '<span class="none">DMZ — no code</span>' : (b.shareCode || '<span class="none">not set</span>')}</td>
+        <td class="det"><span class="attpeek">${b.attachments.length
+          ? b.attachments.slice(0, 2).map(a => `<em>${a}</em>`).join('') +
+            (b.attachments.length > 2 ? `<em class="more">+${b.attachments.length - 2}</em>` : '')
+          : '<span class="none">none</span>'}</span></td>
+        <td class="ta-r"><span class="tiers">
+          ${b.isMeta ? '<b class="bdg">META</b>' : ''}
+          ${b.categoryRank ? `<b class="bdg rank">${b.categoryRank.toUpperCase()}</b>` : ''}
+          ${b.dmzRangeRank ? `<b class="bdg dmz">${b.dmzRangeRank}</b>` : ''}
+          ${b.isToxic ? '<b class="bdg toxic">TOXIC</b>' : ''}
+          ${def.length ? `<b class="bdg bad" title="${def.map(d => d.label).join(' · ')}">${def.length}&#9888;</b>` : ''}
+          ${!b.isMeta && !b.categoryRank && !b.dmzRangeRank && !b.isToxic && !def.length ? '<span class="none">—</span>' : ''}
+        </span></td></tr>`;
+    }).join('') : `<tr><td colspan="7"><div class="empty">
+        ${st.q || st.defect || st.cat !== 'all'
+          ? `<b>No build matches that.</b> ${st.builds.length} are loaded — clear the filter to see them.`
+          : `<b>The armory is empty.</b> <code>/gunsmiths</code> would return nothing at all, which is
+             not a state this bot has ever been in.`}</div></td></tr>`;
+    rows.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = e => {
+      if (!e.target.closest('[data-cb]')) openBuild(tr.dataset.id); });
+    rows.querySelectorAll('[data-cb]').forEach(cb => cb.onclick = e => {
+      e.stopPropagation();
+      st.selected.has(cb.dataset.cb) ? st.selected.delete(cb.dataset.cb) : st.selected.add(cb.dataset.cb);
+      renderRows(); renderBulkBar();
+    });
+  }
+  function renderBulkBar() {
+    const n = st.selected.size;
+    bulk.hidden = !n; if (!n) return;
+    bulk.innerHTML = `<div class="bulkbar"><b>${n}</b> selected
+      <button data-b="meta">Flag Meta</button><button data-b="unmeta">Clear Meta</button>
+      <button data-b="export">Export</button>
+      <button class="danger" data-b="del">Delete…</button>
+      <span class="sp"></span><button class="x" data-b="clear">Clear</button></div>`;
+    bulk.querySelectorAll('[data-b]').forEach(btn => btn.onclick = () => {
+      const act = btn.dataset.b, picked = inMode().filter(b => st.selected.has(b.id));
+      if (act === 'clear') { st.selected.clear(); renderRows(); renderBulkBar(); return; }
+      if (act === 'export') { st.mode = 'bulk'; showView('bulk'); doExport('sel'); return; }
+      if (act === 'del') {
+        S.confirm({ op:'loadout.bulkDelete', tier:2, danger:true,
+          confirm:`Stage ${picked.length} deletion${picked.length > 1 ? 's' : ''}`,
+          title:`Delete ${picked.length} build${picked.length > 1 ? 's' : ''}?`,
+          body:`<p class="dw-p">Removes ${picked.map(b => `<b>${b.weaponName} ${b.buildName}</b>`).join(', ')}.
+                  Weapons left with no builds vanish from <code>/gunsmiths</code> entirely.</p>`,
+          onConfirm(){
+            const snap = st.builds.slice();
+            S.Store.onInvert('arm-bulkdel', () => { st.builds = snap; renderAll(); });
+            st.builds = st.builds.filter(b => !st.selected.has(b.id));
+            S.Store.add({ id:'arm-bulkdel', tier:3, name:`${picked.length} builds`, verb:'deleted',
+              realm:'armory', op:'loadout.bulkDelete', destroys:true,
+              rows:picked.map(b => [`${b.weaponName} — ${b.buildName}`, `${b.attachments.length} attachments`, 'removed']) });
+            st.selected.clear(); renderAll();
+          } });
+        return;
+      }
+      const want = act === 'meta';
+      const snap = picked.map(b => ({ b, was:b.isMeta }));
+      S.Store.onInvert('arm-meta', () => { snap.forEach(s2 => { s2.b.isMeta = s2.was; }); renderAll(); });
+      picked.forEach(b => { b.isMeta = want; siblings(b).forEach(x => { x.isMeta = want; }); });
+      S.Store.add({ id:'arm-meta', tier:2, name:`${picked.length} build(s)`,
+        verb:want ? 'flagged Meta' : 'Meta cleared', realm:'armory', op:'loadout.edit',
+        rows:picked.map(b => [b.weaponName + ' — ' + b.buildName, String(!want), String(want)]) });
+      st.selected.clear(); renderAll();
+    });
+  }
+
+  /* ═══ CHROME ═══ */
+  /* The legend names only states PRESENT on screen (audit rule 7). Hardcoding both meant
+   * that when every build had a defect, the key advertised "clean" and sent the reader
+   * hunting for something that did not exist. */
+  function renderKey() {
+    const any = st.builds.some(b => !defectsFor(b).length);
+    const bad = st.builds.some(b => defectsFor(b).length);
+    key.innerHTML = (any ? `<span class="l"><i></i>clean</span>` : '') +
+                    (bad ? `<span class="c"><i></i>needs repair</span>` : '');
+  }
+  function renderStats() {
+    const pool = inMode();
+    sBuilds.textContent = pool.length;
+    sRanked.textContent = pool.filter(b => rankOf(b)).length;
+    sFlags.textContent  = pool.filter(b => defectsFor(b).length).length;
+    const failing = DEFECTS.filter(d => flagged(d).length).length;
+    viewMeta.textContent =
+      st.mode === 'rack'     ? `${pool.filter(b => rankOf(b)).length} of ${pool.length} ranked · ${F.LOADOUT_STATS[st.armMode]} ${st.armMode} builds live`
+    : st.mode === 'coverage' ? `${failing} of ${DEFECTS.length} checks failing`
+    : st.mode === 'compare'  ? `${st.cmp.length} of 2 picked`
+    : `${pool.length} ${st.armMode} builds · pipe format, lossless round trip`;
+  }
+  function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('armory'); }
+  function showView(v) {
+    st.mode = v;
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.view === v)));
+    viewRack.hidden = v !== 'rack'; viewCoverage.hidden = v !== 'coverage';
+    viewCompare.hidden = v !== 'compare'; viewBulk.hidden = v !== 'bulk';
+    document.getElementById('crumbView').textContent =
+      { rack:'Tier board', coverage:'Repairs', compare:'Compare', bulk:'Bulk & export' }[v];
+    if (v === 'compare') renderCompare();
+    if (v === 'bulk') renderBulk();
+    renderStats();
+  }
+
+  /* Only categories that EXIST in this mode get a chip — DMZ has 8 builds across 5
+   * categories, and offering the other two would advertise an empty result. */
+  function renderCatChips() {
+    const present = new Set(inMode().map(b => b.category));
+    catChips.innerHTML = F.CATS.filter(c => present.has(c.key)).map(c =>
+      `<button class="chip topic" data-filter="${c.key}" aria-pressed="${st.cat === c.key}"
+        style="--c:${c.hex}"><i></i>${c.label} <em>${inMode().filter(b => b.category === c.key).length}</em></button>`).join('');
+    catChips.querySelectorAll('[data-filter]').forEach(c => c.onclick = () =>
+      setFilter({ cat:c.dataset.filter, defect:null }));
+  }
+  renderCatChips();
+  document.querySelectorAll('[data-arm]').forEach(b => b.onclick = () => {
+    if (st.armMode === b.dataset.arm) return;
+    st.armMode = b.dataset.arm;
+    st.cat = 'all'; st.defect = null; st.cmp = []; st.selected.clear();
+    document.querySelectorAll('[data-arm]').forEach(x =>
+      x.setAttribute('aria-pressed', String(x.dataset.arm === st.armMode)));
+    document.getElementById('crumbView').textContent = st.armMode + ' · ' +
+      { rack:'Tier board', coverage:'Repairs', compare:'Compare', bulk:'Bulk & export' }[st.mode];
+    renderCatChips(); renderAll();
+  });
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => showView(b.dataset.view));
+  document.querySelectorAll('[data-filter]').forEach(c => c.onclick = () =>
+    setFilter({ cat:c.dataset.filter, defect:null }));
+  document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+    const k = th.dataset.sort;
+    st.sort = { k, dir: st.sort.k === k ? -st.sort.dir : 1 };
+    document.querySelectorAll('th.sortable').forEach(x => x.className = x.className.replace(/ sorted-\w+/, ''));
+    th.className += st.sort.dir === 1 ? ' sorted-asc' : ' sorted-desc';
+    renderRows();
+  });
+  q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
+  addBtn.onclick = openAdd;
+  cbAll.onclick = () => {
+    const l = visible(), all = l.every(b => st.selected.has(b.id));
+    l.forEach(b => all ? st.selected.delete(b.id) : st.selected.add(b.id));
+    cbAll.setAttribute('aria-checked', String(!all));
+    renderRows(); renderBulkBar();
+  };
+  S.onAfterRevert = renderAll;
+
+  function renderAll(){ renderCatChips(); renderRack(); renderCoverage(); if (st.mode === 'compare') renderCompare();
+    if (st.mode === 'bulk') renderBulk(); renderRows(); renderBulkBar(); renderKey(); renderStats(); syncStaged(); }
+  renderAll();
+  S.audit({
+    interactions: () => [
+      { name:'build editor',  run: () => openBuild(st.builds[0].id) },
+      { name:'add build',     run: openAdd },
+      { name:'format guide',  run: openGuide }
+    ],
+    states: () => st.builds.map(b => defectsFor(b).length ? 'needs repair' : 'clean')
+  });
+})();
+</script>
+</body></html>
