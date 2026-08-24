@@ -16,7 +16,7 @@ const COLUMN_NOTE = {
     ready: 'Committing applies the whole set in one transaction — all of it lands, or none of it does.',
 };
 
-function Card({ changeset, onExport, onOpen, selected }) {
+function Card({ changeset, onExport, onOpen, onDiscard, selected }) {
     const reason = blockedReason(changeset);
     const ops = changeset.ops || [];
     return html`
@@ -34,6 +34,10 @@ function Card({ changeset, onExport, onOpen, selected }) {
                                      onKeyDown=${(e) => { if (e.key === 'Enter') { e.stopPropagation(); onExport(changeset); } }}>Download</span>`
                         : null}
                 </div>
+            ` : null}
+            ${onDiscard ? html`
+                <button class="discard" style="margin-top:6px"
+                        onClick=${(e) => { e.stopPropagation(); if (confirm('Discard this staged change? This does not undo anything already live — it only abandons what has not committed yet.')) onDiscard(String(changeset._id)); }}>Discard</button>
             ` : null}
         </button>
     `;
@@ -154,7 +158,7 @@ function Review({ detail, onExport, onCommit, onClose, busy }) {
 // onCommit(changesets, confirmText) applies a set; onExport(changeset) satisfies a Blocked tier-3 card's export requirement. confirmText is typed at commit time — it is never known in advance (board.logic.js's columnFor cannot depend on it, see that file's own header), and the server is the actual arbiter of whether it matches; a mismatch surfaces as a 409 the caller reports.
 //
 // 🔴 THERE IS ONE COMMIT SURFACE, AND IT IS THE REVIEW SCREEN. The Ready column's button used to commit the whole ready set directly — a control that applied changes you had not looked at, sitting beside a review screen built precisely so that you would. It now OPENS the review. Committing stays per-changeset, which is the scope 04-armory-and-commit.html's own header states ("3 operations · Season 7 · dior" — the "all 3" in its footer is three OPERATIONS of one changeset, not three changesets), and the footer reports how many remain so a set is still visibly a set.
-export function Board({ changesets, onCommit, onExport }) {
+export function Board({ changesets, onCommit, onExport, onDiscard }) {
     const cols = groupByColumn(changesets);
     const readyCount = cols.ready.length;
     const [openId, setOpenId] = useState(null);
@@ -187,7 +191,7 @@ export function Board({ changesets, onCommit, onExport }) {
                     ${['draft', 'staged', 'blocked', 'ready'].map(key => html`
                         <div class=${'col' + (key === 'ready' ? ' gate' : '')}>
                             <h4>${COLUMN_LABEL[key]}<span class=${'ct' + (key === 'blocked' && cols[key].length ? ' bad' : '')}>${cols[key].length}</span></h4>
-                            ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} onOpen=${(cs) => setOpenId(String(cs._id))} selected=${openId === String(c._id)} />`)}
+                            ${cols[key].map(c => html`<${Card} changeset=${c} onExport=${onExport} onOpen=${(cs) => setOpenId(String(cs._id))} onDiscard=${key !== 'ready' ? onDiscard : null} selected=${openId === String(c._id)} />`)}
                             ${key === 'ready' && readyCount ? html`
                                 <button class="commit" onClick=${() => setOpenId(String(cols.ready[0]._id))}>
                                     Review ${readyCount} ready

@@ -79,6 +79,32 @@ function AddComposer({ onSubmit, onCancel }) {
     `;
 }
 
+// 01-season-spine.html's Staged panel -- the mockup keeps pending changes visible and actionable right beside the Track instead of buried in the flat Manifest table below. describeOp/blockedReason are board.logic.js globals (every *.logic.js file loads on every page -- see track.js's header), the same functions Board's own cards already use, so the two views can never describe a change differently. Reads changesets Season already fetches; asks for nothing new.
+function StagedPanel({ changesets, onDiscard, onReview }) {
+    const pending = (changesets || []).filter((c) => c.state === 'staged' || c.state === 'blocked');
+    if (!pending.length) return null;
+    return html`
+        <div class="panel staged" style="margin-bottom:14px">
+            <div class="ph"><span class="t">Staged</span><span class="rt">${pending.length} change${pending.length === 1 ? '' : 's'}</span></div>
+            <div class="stagedlist">
+                ${pending.map((c) => html`
+                    <div class="stagedrow">
+                        <span class="tr">T${c.tier}</span>
+                        <span class="cn">${describeOp((c.ops || [])[0])}</span>
+                        ${(c.ops || []).length > 1 ? html`<span class="cd">+${c.ops.length - 1} more</span>` : null}
+                        ${blockedReason(c) ? html`<span class="why">${blockedReason(c)}</span>` : null}
+                        <span class="sp"></span>
+                        <button class="discard" onClick=${() => { if (confirm('Discard this staged change? This does not undo anything already live — it only abandons what has not committed yet.')) onDiscard(String(c._id)); }}>Discard</button>
+                    </div>
+                `)}
+            </div>
+            <div class="stagedfoot">
+                <button class="accent-fill" onClick=${onReview}>Review &amp; commit</button>
+            </div>
+        </div>
+    `;
+}
+
 export async function fetchSeasonState() {
     return fetchJson('/api/season');
 }
@@ -109,6 +135,12 @@ export function SeasonRealm({ session }) {
 
     async function handleExport(changeset) {
         await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        fetchChangesets('season').then(setChangesets);
+    }
+
+    // Mockup's Staged panel (01-season-spine.html) shows Discard as a first-class action, but no route ever set state:'discarded' anywhere in the portal before this — the only way out of a staged/blocked change was to commit it. Ownership-scoped exactly like export/commit above.
+    async function handleDiscard(changesetId) {
+        await fetchJson(`/api/changeset/${changesetId}/discard`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
         fetchChangesets('season').then(setChangesets);
     }
 
@@ -200,9 +232,11 @@ export function SeasonRealm({ session }) {
 
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+               <${StagedPanel} changesets=${changesets} onDiscard=${handleDiscard} onReview=${() => setView('Board')} />
                <${Track} data=${trackData}
-                          draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit} />`
-        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} />`;
+                          draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
+                          onFillGap=${() => setShowAdd(true)} />`
+        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} onDiscard=${handleDiscard} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}

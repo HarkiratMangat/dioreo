@@ -100,6 +100,18 @@ function register(route) {
         sendJson(res, 200, { exportedAt: doc.exportedAt });
     }));
 
+    // POST /api/changeset/:id/discard — 🔴 state:'discarded' has been a recognized value in columnFor() (board.logic.js) since the Board pipeline was built — it just had no route that ever set it, so there was no way to abandon a staged or blocked change anywhere in the portal. Never a hard delete: the row stays for history/audit, columnFor already treats it as leaving the board, exactly like 'committed'.
+    route('POST', /^\/api\/changeset\/[^/]+\/discard$/, requireAdmin(async (req, res, url, session) => {
+        const id = segment(url, 2);
+        const doc = await Changeset.findOne({ _id: id, authorId: session.discordId });
+        if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
+        if (doc.state === 'committed') return sendJson(res, 409, { error: 'already committed, cannot discard' });
+        doc.state = 'discarded';
+        doc.discardedAt = new Date();
+        await doc.save();
+        sendJson(res, 200, { state: doc.state });
+    }));
+
     // POST /api/changeset/:id/commit  { confirmText? }
     route('POST', /^\/api\/changeset\/[^/]+\/commit$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);

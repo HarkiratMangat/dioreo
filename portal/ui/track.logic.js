@@ -95,7 +95,21 @@ function editOpFor(item, newEndDate) {
     return { type, target, payload };
 }
 
-// Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
+// Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work. 🔴 OVERLAPPING BARS IN ONE LANE RENDERED ON TOP OF EACH OTHER, TEXT AND ALL. findOverlaps() already DETECTS a same-lane overlap for the flags row, but nothing gave the Bar components themselves a second row to sit in -- two events sharing a week collided into unreadable overlaid text (measured live: "COD Point Rush Week 1" and "Terminator 2 Themed Event" painted on the same pixels). Simple greedy interval-graph row assignment: sort by start, place each item in the first row whose last-placed item ends before this one starts, else open a new row.
+function assignRows(items) {
+    const sorted = [...items].sort((a, b) => new Date(a.startDate || a.endDate) - new Date(b.startDate || b.endDate));
+    const rowEnds = []; // rowEnds[r] = end time of the last item placed in row r
+    const rows = new Map();
+    for (const item of sorted) {
+        const start = new Date(item.startDate || item.endDate).getTime();
+        const end = new Date(item.endDate || item.startDate).getTime();
+        let row = rowEnds.findIndex((rEnd) => rEnd <= start);
+        if (row === -1) { row = rowEnds.length; rowEnds.push(end); } else { rowEnds[row] = end; }
+        rows.set(item, row);
+    }
+    return items.map((item) => ({ ...item, row: rows.get(item) || 0 }));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, LANE_ORDER, dateFromOffset, editOpFor };
+    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, assignRows, LANE_ORDER, dateFromOffset, editOpFor };
 }

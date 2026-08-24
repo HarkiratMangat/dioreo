@@ -15,7 +15,8 @@ const ChangesetSchema = new mongoose.Schema({
     tier: { type: Number, default: 1 },
     exportedAt: { type: Date, default: null },   // tier 3 will not commit until this is set
     createdAt: { type: Date, default: Date.now },
-    committedAt: { type: Date, default: null }
+    committedAt: { type: Date, default: null },
+    discardedAt: { type: Date, default: null }
 });
 
 ChangesetSchema.index({ realm: 1, state: 1 });   // the /manage "someone has changes staged here" notice

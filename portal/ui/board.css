@@ -22,6 +22,8 @@
    undoing would do before you commit. That is the one thing a Discord modal can never show. */
 .card .inv{margin-top:6px;font-size:10.5px;color:var(--ink3);border-top:1px dashed var(--rule);padding-top:5px}
 .card .inv b{color:var(--ink2);font-weight:600}
+.card button.discard{font-size:10.5px;padding:3px 9px;min-height:0;color:var(--ink3);border-color:var(--rule)}
+.card button.discard:hover{color:var(--warn);border-color:var(--warn)}
 .commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;
   font-weight:700;padding:9px;margin-top:2px}
 .commit:hover:not(:disabled){background:#FFD24D}

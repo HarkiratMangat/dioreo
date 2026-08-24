@@ -19,7 +19,9 @@ function coverageFlags(build, mpBuilds) {
     if ((build.attachments || []).length !== expected) flags.push('wrong-attachment-count');
     if (build.lastUpdated && Date.now() - new Date(build.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
     if (build.mode === 'MP' && build.shareCode) {
-        const dupes = findDuplicateLoadouts({ gunsmithCode: build.shareCode, attachments: build.attachments }, mpBuilds);
+        // 🔴 EXCLUDE THE BUILD FROM ITS OWN COMPARISON SET. `mpBuilds` is every MP build including this one — findDuplicateLoadouts's exact-code check trivially matches a build against itself (same shareCode, 100% attachment overlap), so every build with a shareCode and >=4 attachments always found at least one "duplicate": itself. That is what flagged 131 of 133 builds — measured against the real ported catalogue, not a design number.
+        const others = mpBuilds.filter((b) => String(b._id) !== String(build._id));
+        const dupes = findDuplicateLoadouts({ gunsmithCode: build.shareCode, attachments: build.attachments }, others);
         if (dupes && dupes.length > 0) flags.push('near-duplicate');
     }
     return flags;

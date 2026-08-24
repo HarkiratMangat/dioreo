@@ -13,7 +13,9 @@ function Bar({ item, window, season, onDragCommit }) {
     const { left, width } = barGeometry(item, window);
     const state = item.state || (tierOf(item, season) === 'conflict' ? 'conflict' : 'live');
     const cls = bandClass({ state });
-    const style = `left:${left}%;width:${width}%;--topic-accent:var(${TOPIC_VAR[laneFor(item)] || '--ink2'})`;
+    // top offset stacks a bar into its assigned row (assignRows in track.logic.js) so two items overlapping in the same lane get their own row instead of painting on the same pixels. transform:none cancels .bar's CSS translateY(-50%) centering, which assumed a single row.
+    const top = (item.row || 0) * 26 + 2;
+    const style = `left:${left}%;width:${width}%;top:${top}px;transform:none;--topic-accent:var(${TOPIC_VAR[laneFor(item)] || '--ink2'})`;
     const [dragLabel, setDragLabel] = useState(null);
 
     function startDrag(e) {
@@ -47,27 +49,38 @@ function Bar({ item, window, season, onDragCommit }) {
 }
 
 function Lane({ name, items, window, season, onDragCommit }) {
+    const stacked = assignRows(items);
+    const rows = stacked.length ? Math.max(...stacked.map((i) => i.row)) + 1 : 1;
+    // Lane height grows with the row count an overlap actually needs, instead of a fixed height that only ever fit one bar per lane.
+    const laneStyle = rows > 1 ? `height:${rows * 26 + 4}px` : '';
     return html`
-        <div class="lane">
+        <div class="lane" style=${laneStyle}>
             <span class="nm">${name}</span>
-            <div class="tk">${items.map(item => html`<${Bar} item=${item} window=${window} season=${season} onDragCommit=${onDragCommit} />`)}</div>
+            <div class="tk">${stacked.map(item => html`<${Bar} item=${item} window=${window} season=${season} onDragCommit=${onDragCommit} />`)}</div>
         </div>
     `;
 }
 
 // `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the same contract `draft` already had. The Track's own defect flags. track.logic.js has carried findOverlaps/findGaps/tierOf since the first build, with dedicated tests -- and NOTHING has ever called them. The `flags` prop existed and every caller passed nothing, so the row never rendered. That row is the realm's entire reason for being: spec §8.2 says the Track exists so that three defects which "have no signal at all today" become impossible to miss. Each flag NAMES THE PROBLEM, and where the mockup gives one, offers the fix rather than only reporting (01-season-spine.html's "Clamp to BP end" / "Fill").
-function deriveFlags(data, window, season) {
+function deriveFlags(data, window, season, actions) {
     const items = Object.values(data || {}).flat();
     const out = [];
     for (const item of items) {
         if (tierOf(item, season) === 'conflict') {
             const over = Math.ceil((new Date(item.endDate) - new Date(season.bpEnd)) / 86400000);
-            out.push({ title: item.title, detail: `ends ${over} day${over === 1 ? '' : 's'} after the battle pass — it will outlive the season.` });
+            out.push({
+                title: item.title, detail: `ends ${over} day${over === 1 ? '' : 's'} after the battle pass — it will outlive the season.`,
+                // Mockup's own worked example (01-season-spine.html): a conflict is fixable in one click, not just a fact to go act on elsewhere. Reuses the exact edit path Track's own drag handle already commits through.
+                action: actions?.onClamp && season?.bpEnd ? { label: 'Clamp to BP end', onClick: () => actions.onClamp(item, new Date(season.bpEnd)) } : null,
+            });
         }
     }
     for (const gap of findGaps(items, window)) {
         const days = Math.round((gap.end - gap.start) / 86400000);
-        out.push({ title: `${gap.start.toDateString().slice(4, 10)}–${gap.end.toDateString().slice(4, 10)}`, detail: `has no draw and no event scheduled (${days} days).` });
+        out.push({
+            title: `${gap.start.toDateString().slice(4, 10)}–${gap.end.toDateString().slice(4, 10)}`, detail: `has no draw and no event scheduled (${days} days).`,
+            action: actions?.onFill ? { label: 'Fill', onClick: () => actions.onFill(gap) } : null,
+        });
     }
     for (const [a, b] of findOverlaps(items)) {
         out.push({ title: `${a.title} and ${b.title}`, detail: 'overlap in the same lane.' });
@@ -81,10 +94,10 @@ function deriveFlags(data, window, season) {
 const MAX_FLAGS = 3;
 
 // <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
-export function Track({ data, draft, window, season, flags, onDragCommit }) {
+export function Track({ data, draft, window, season, flags, onDragCommit, onFillGap }) {
     // A lane with nothing in it, live or draft, is not rendered. Five always-on lanes meant the patch-notes rail (which season.js has never supplied) plus any unused topic sat as empty 38px rows -- structure announcing content that is not there.
     const lanes = Object.keys(LANE_LABEL).filter(k => (data[k] || []).length || (draft && (draft[k] || []).length));
-    const shown = flags || deriveFlags(data, window, season);
+    const shown = flags || deriveFlags(data, window, season, { onClamp: onDragCommit, onFill: onFillGap });
     return html`
         <div class="panel" id="track">
             <div class="ph">
