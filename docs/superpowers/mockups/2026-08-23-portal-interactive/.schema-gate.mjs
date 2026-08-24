@@ -38,8 +38,16 @@ const NON_OP_ACTIONS = new Set([
     'changelog.revert',
 ]);
 
+// 🔴 COMPANION.md IS SCANNED TOO, AND ITS ABSENCE WAS THE MECHANISM. A cold reader found NINE op
+// names in the document that resolve to nothing — `loadouts.edit` in the canonical copy-this
+// template, plus `announcements.reorder`/`.setPinned`/`.edit` across two element tables describing
+// a page that had been rewritten out of existence. Every one of them was invisible here because
+// this list was `*.html` plus two assets, so the gate stayed green while the SPECIFICATION rotted.
+// That is §14's own thesis one level up: a green check on the wrong scope reads exactly like a
+// green check on the right one. The document is the instruction a wiring session follows, so it is
+// the last place an unresolvable op name should be allowed to sit.
 const pages = readdirSync(HERE).filter((f) => f.endsWith('.html'));
-const sources = Object.fromEntries([...pages, 'assets/fixtures.js', 'assets/shell.js']
+const sources = Object.fromEntries([...pages, 'assets/fixtures.js', 'assets/shell.js', 'COMPANION.md']
     .map((f) => [f, readFileSync(here(f), 'utf8')]));
 
 const failures = [];
@@ -48,6 +56,9 @@ const fail = (check, file, msg) => failures.push({ check, file, msg });
 // ── 1. every op name is registered ───────────────────────────────────────────────────────────
 // Matches `op:'x.y'` and `type:'x.y'` — the two keys a staged-op record and a raw op use.
 function checkOps(file, src, allow = NON_OP_ACTIONS) {
+    // COMPANION.md deliberately QUOTES wrong names when recording what the gate caught. Those sit
+    // inside backticks on a line that also says so; the pattern below only matches the `op:'…'`
+    // FORM, which is how the doc writes a name it is instructing you to use.
     for (const m of src.matchAll(/\b(?:op|type)\s*:\s*'([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)'/g)) {
         const name = m[1];
         if (!OP_TYPES.has(name) && !allow.has(name)) {
@@ -143,7 +154,53 @@ function checkTiers(file, src) {
     }
 }
 
+// In prose an op is written in backticks, never as `op:'…'` — so the code-shaped check above sees
+// none of them. This one reads every `entity.verb` inside backticks and holds it to the same
+// registry, EXCEPT where the surrounding line is explicitly recording a name as wrong.
+const RECORDING = /caught|violation|do not exist|does not exist|pluralised|nonexistent|invented|no longer|retired|was wrong|resolve to nothing|deleted/i;
+function checkDocOps(file, src) {
+    for (const line of src.split('\n')) {
+        if (RECORDING.test(line)) continue;
+        for (const m of line.matchAll(/`([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)`/g)) {
+            const name = m[1];
+            // ⚠️ TWO SHAPES COLLIDE WITH AN OP NAME and neither is one. `calendar.js` and
+            // `season.html` are FILENAMES; `calendar.isDoubleCP` is a FIELD PATH. Both share an op
+            // namespace, so the naive check flagged five of them on its first run. Discriminated
+            // structurally rather than by a blocklist: a file extension is a closed set, and a
+            // field name is derivable from the real Mongoose schemas — so a NEW field added to a
+            // model stops being a false positive without anyone editing this file.
+            const [ns, verb] = name.split('.');
+            if (!DOC_NAMESPACES.has(ns)) continue;
+            if (FILE_EXT.has(verb)) continue;
+            if (SCHEMA_FIELDS.has(verb)) continue;
+            if (!OP_TYPES.has(name) && !NON_OP_ACTIONS.has(name)) {
+                fail('op-registered', file, `"${name}" is written as an op in prose but is not one of core/ops's ${OP_TYPES.size} registered types`);
+            }
+        }
+    }
+}
+// 🔴 THE PLURAL IS THE ERROR MODE, so it has to be in the watch set or the check misses the exact
+// thing it exists for. Every registered namespace is singular (`draw`, `loadout`, `announcement`);
+// every invented name found so far pluralised it (`loadouts.edit`, `announcements.reorder`). A set
+// built only from the real namespaces skips `announcements.*` entirely — which it did on the first
+// run, catching one of the nine bad names instead of four.
+const DOC_NAMESPACES = new Set([...OP_TYPES].flatMap((t) => {
+    const ns = t.split('.')[0];
+    return [ns, ns + 's'];
+}));
+const FILE_EXT = new Set(['js', 'mjs', 'cjs', 'html', 'css', 'json', 'md', 'py', 'sh', 'txt', 'yml', 'yaml', 'test']);
+// Every field name on every model this package touches, so a field path never reads as an op.
+const SCHEMA_FIELDS = new Set(
+    ['SeasonalData', 'Announcement', 'AdminUser', 'PortalSession', 'Loadout', 'ChangeLog', 'Changeset']
+        .flatMap((m) => {
+            const M = require(`${REPO}/models/${m}`);
+            const walk = (schema) => Object.entries(schema.paths).flatMap(([k, v]) =>
+                [k.split('.').pop(), ...(v.schema ? walk(v.schema) : [])]);
+            return walk(M.schema);
+        }));
+
 for (const [file, src] of Object.entries(sources)) { checkOps(file, src); checkScopes(file, src); checkTiers(file, src); }
+checkDocOps('COMPANION.md', sources['COMPANION.md']);
 
 // Evaluate fixtures.js in a bare sandbox to inspect the real exported objects.
 const FIX = (() => { const window = {}; new Function('window', sources['assets/fixtures.js'])(window); return window.FIX; })();

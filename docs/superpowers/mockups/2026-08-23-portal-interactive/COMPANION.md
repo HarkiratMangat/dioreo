@@ -34,7 +34,7 @@ node .schema-gate.mjs --self-test
 | **5.99** | **Data contracts, predicates in code, done-criteria, symptom→cause** | While wiring. This is the part you can copy |
 | **6** | Wiring order | When you start |
 | **7** | Traps already paid for | When something behaves oddly |
-| **10 / 12** | Art direction as specified / as built | When judging whether it looks right |
+| **10 / 12** | Art direction as specified · what is still outstanding | When judging whether it looks right. §12's measurement half was cut 2026-08-24 — it governed nothing and said so |
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
@@ -62,7 +62,7 @@ Start at `season.html`. Classic (non-module) scripts and relative paths througho
 | What | Where | State |
 |---|---|---|
 | **The operation algebra** — `validate` / `preview` / `apply` / `invert` | `core/ops/*.js` — `season` · `draws` · `calendar` · `loadouts` · `patchnotes` · `announcements` · `index` | **Code on disk.** This is what every portal mutation calls |
-| **Changeset composition and commit** | The spec names `core/changeset.js`; on disk the composition and revert paths sit in `core/ops/index.js` and `core/revert.js` — **check which before importing** | Code on disk, path differs from the spec |
+| **Changeset composition and commit** | `core/changeset.js` — exports `validateSet`/`previewSet`/`commitSet`/`pageForOp`. `core/revert.js` replays a ChangeLog row's stored inverse. ⚠️ *This row used to hedge that the file might not exist and to "check which before importing" — it does exist, at that path, and §5.1/§5.8/§6 all cite it without a hedge, so the hedge handed the reader a contradiction plus homework.* | Code on disk |
 | **HTTP entry, sessions, static assets** | `portal/server.js`, `portal/auth.js` | Code on disk |
 | **The realm endpoints** | `portal/api/*.js` — `season` · `armory` · `broadcast` · `access` · `analytics` · `changesets` · `policy` · `realmAccess` · `httpUtil` | Code on disk |
 | **The live frontend** | `portal/ui/**` (source) → `portal/public/**` (built output, served by the VM) | Code on disk — **see the warning below** |
@@ -134,7 +134,7 @@ Shell.toast(msg, actionLabel, onAction)
 Shell.discordCard({accent, title, sub, rows, badges, code})
 Shell.Store                          // staged ops, sessionStorage-backed
 Shell.Store.onInvert(id, fn)         // how to undo a staged op
-Shell.audit({states, extra})         // the invariant audit — call once, last
+Shell.audit({ states, extra, interactions }) — ⚠️ **`interactions` is the field that matters most, and it was missing from this line until 2026-08-24.** It is an array of `{ name, run }`; each `run()` is driven and the drawer it opens is asserted for a title, a non-empty body and no garbage text. **A panel absent from that array is never opened and never checked** (§15.1) — the largest hole in what a green audit means.         // the invariant audit — call once, last
 ```
 
 **A realm page is therefore: markup + a state object + render functions + one `Shell.audit()` call.** Armory is ~340 lines including comments and was correct on its first run. That is the foundation working — and it only became true after Season had been rebuilt several times.
@@ -181,7 +181,7 @@ Rules 9 and 10 need the page driven, not just inspected, so **rule 9's panel swe
 
 | Surface | Keys | Moves along |
 |---|---|---|
-| Broadcast — priority stack | <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> | Priority order |
+| ~~Broadcast — priority stack~~ | — | **Retired.** The interaction it served was drag-to-reorder a `priority` field that exists on no model (§5.4). Broadcast has no drag surface, so it needs no keyboard path; the row is kept struck through because "Broadcast has one" was asserted in three places and is worth contradicting once, loudly. |
 | Season — Board | <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> | `MOVE_TARGETS` = live · upcoming · staged (**`ended` is derived from today and is never a target**) |
 | Armory — tier board | <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> | `TIERS` = S · A · B · unranked |
 
@@ -239,7 +239,13 @@ node .export-fixtures.mjs > /tmp/block.js
 ```bash
 npm run portal:gate                  # from the repo root — runs the gate WITH --self-test
 node .schema-gate.mjs --self-test    # from this directory, same thing
+python3 .serve.py                    # the server. NOT `python3 -m http.server`, see §7
+open  http://127.0.0.1:8899/.audit-all.html?w=1280     # all 8 pages' self-audit at one width
+open  http://127.0.0.1:8899/.audit-all.html?w=390      # …and at phone width
+open  http://127.0.0.1:8899/.mobile.html?p=season,armory,broadcast   # three pages side by side in real 390px frames
 ```
+
+⚠️ **`.audit-all.html` runs every page's `Shell.audit()` in a 390-or-1280px iframe and reports one line each** — an iframe's element width IS its viewport width, which is the only way to check the phone layout without resizing the browser. It reports the viewport it actually measured at, because a degenerate frame still returns well-formed numbers (§14). **`.mobile.html` is for your eyes, not the audit** — the audit cannot see that something is ugly, and §7 records four defects that passed every invariant while being visibly wrong.
 
 ⚠️ **It is a named script and NOT part of `npm test`, deliberately** (Harkirat's call, 2026-08-24). It reads `fixtures.js` plus `core/ops` and `utils/adminAccess` and needs no database, so it *could* run in CI — but a docs artifact blocking a code merge is the wrong coupling. **That trade has a cost and you are the one paying it:** this repo has already been burned by self-tests that nothing invoked, so **run it before you touch this package and again before you hand it back.**
 
@@ -426,7 +432,7 @@ Written per page, never a bare "No results" (§10.6):
 | Palette affordance | `#palBtn` | Shows `⌘K`; opens the command palette | — |
 | Account button | `#whoBtn` | Toggles the account menu; `aria-expanded` tracks state | Discord OAuth session |
 | Account avatar | `.uav` | Initial + presence dot. Presence dot is `--ok` when the session is live | — |
-| Role badge | `.rolebadge` | `OWNER` / `ADMIN` / `EDITOR` | `utils/adminAccess.js` |
+| Role badge | `.rolebadge` | **`OWNER` only.** There are exactly two roles — the hardcoded owner and a Mongo-granted admin — and `shell.js` renders the literal `OWNER` because the mockup signs you in as one. ⚠️ *This row read `OWNER / ADMIN / EDITOR` until 2026-08-24; there is no `editor` and there is no `role` field on `models/AdminUser.js` at all. See §5.5.* | `utils/owner.js` |
 | Discord ID | `.uinfo .id` | Full snowflake in tabular mono | — |
 | Staged count | `#uStaged` | **Live** count, recomputed each time the menu opens; turns cyan when non-zero | `Store.all().length` |
 | Sign out | `.mi.danger` | Tier-1 confirm that **names how many staged changes will be lost** | `session.revoke` |
@@ -515,7 +521,7 @@ Armory has had a Repairs view since it was rebuilt on real documents. Season did
 | `.dend` ×3 | The vertical line. **Solid** (live), `pointer-events:none` — the flag is the target | — |
 | `.dspan` | 2× CP on the same rail, in **CP Emerald** because it is a CP-pricing condition | `calendar.isDoubleCP` |
 | `.win` | The band marking the span across all lanes: bounded edges, quiet tint, **never hatched** | — |
-| `.lane` ×5 (+ draft lanes) | New draws · Returning · Events · Playlists · Patch notes | `overflow:hidden` — it is the viewport for its lane |
+| `.lane` ×6 (+ draft lanes) | New draws · Returning · **Draw windows** · Events · Playlists · Patch notes. Height is **computed from the rows the lane needs**, not fixed — see the row-assignment note above | `overflow:hidden` — it is the viewport for its lane. ⚠️ *This row said ×5 and omitted Draw windows until 2026-08-24, two screens below the heading that says six.* |
 | `.bar` | Drag to move, edges to resize, click to open, live date readout | date fields |
 | `.bar .bl` | Label; nudges into view when clipped, cut edge marked `.clipped-l` | — |
 | `.pt` | Patch notes render as diamonds — a point in time, not a span | — |
@@ -535,6 +541,15 @@ Columns are **content state**: `Live now · Upcoming · Staged · Ended`.
 `.mtable` with a `colgroup` — checkbox · Item · Type · Window · Span · Detail · State. Live search · topic chips **coloured by lane** · staged-only · sortable · select-all · bulk bar · inline rename. Hovering a row lights its bar and vice versa (`link()`), because the two are one instrument.
 
 ### 5.3 Armory — *answers: what exists, and what is wrong with it*
+
+| View | `data-view` | What it answers |
+|---|---|---|
+| Tier board | `rack` | Where every build sits in its category's ranking |
+| Repairs | `coverage` | What is wrong, split mechanical / judgement |
+| Compare | `compare` | Two builds side by side |
+| Bulk & export | `bulk` | The pipe format, round-tripped |
+
+⚠️ **The `data-view` values do not match the labels**, and §10.3 calls the first one "Rack" while the tab reads "Tier board". §5.0 exists *because* a coverage count found this section naming 2 of 24 ids; the table above is the correction. The MP/DMZ switch is `.modesw`, and one `inMode()` helper owns the partition — `manageActions.js` registers `loadouts_mp` and `loadouts_dmz` as distinct pages with distinct permission scopes, so this is never a filter.
 
 > 🔴 **REBUILT 2026-08-24, and the reason matters more than the result.** The first version of this page was designed from `fixtures.js` — a file this same session had invented — rather than from `models/Loadout.js`, `utils/manageActions.js`, `utils/adminParser.js`, `utils/loadoutRender.js` and the 133 real documents sitting in the dev database. Harkirat's description was exact: *"a skeleton with makeup, when it should be an entire embodiment of the system."* Three things were not merely thin, they were **wrong**, and each one changed the design:
 >
@@ -603,33 +618,41 @@ Two columns: the live set in delivery order on the left, the real per-announceme
 
 | Element | What it is | Wires to |
 |---|---|---|
-| `.nstack` | The announcements a player currently gets, **in priority order** — index 1 is what they see first | read of `announcements` sorted by `priority` |
-| `.nscard` | One announcement. Draggable by pointer. `.p0` tints its number in the accent (this is the one that actually shows). `.staged` = dashed. Carries `data-live="1"` when saved, so audit rule 5 can police it | — |
-| drag → drop | Reorders priority. Stages **`announcements.reorder`, tier 1**, with an inverse that restores the whole previous order — not just the moved card | `announcements.reorder` |
-| `.nscard` click / Enter | Opens the editor drawer | see below |
-| `.nspin` | "Pinned" badge, shown only when `pinned` | `announcements.setPinned` |
-| `.nschan` | Which surface it appears on — `On /start`, `Above output`, `Calendar top` | `channel` |
-| `.nprev` | `Shell.discordCard()` render of the top-priority announcement. **Sticky.** It is the bot's own card shape, so it is a preview and not an approximation | `buildAnnouncementCard()` |
+| `.nstack` | The live set **in delivery order** — `createdAt` ascending, oldest first, exactly what `utils/announcement.js` sends | `F.announcements` filtered to `state === 'live'` |
+| `.nscard` | One announcement. `--c` is its **own stored `color`**, so the dot matches the embed Discord actually renders. `.staged` = dashed, `.over` dims anything past the cap, `data-live="1"` when saved so audit rule 5 can police it | — |
+| `.np` | Delivery position. **A label, not a field** — the copy beneath the stack says so, because `models/Announcement.js` has no ordering column | index in the sorted array |
+| `.nscard` click / Enter | Opens the editor drawer | `announcement.edit` |
+| `.nspin.warn` | `never ends` when `expiresAt` is null; `waits` when the card falls past the 10-embed cap | — |
+| `.nschan` | `ends <date>` — the real expiry, not a surface name | `expiresAt` |
+| `.nprev` | `Shell.discordCard()` per live announcement, capped at `MAX_EMBEDS_PER_MESSAGE`. **No title when no markdown heading was typed**, because `buildAnnouncementEmbed` sets `description` and `color` and nothing else | `utils/announcement.js` |
 
-> **Why priority is the whole realm.** A Discord bot posts in time order and has no spatial arrangement — "this one first" is not expressible. Dragging a card is the capability, and everything else on the page exists to make that decision informed.
-
-> 🔴 **The reorder has a keyboard path and it is not optional.** Focus a card and press <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>. It shipped drag-only, which made the page's *primary* interaction unreachable without a pointer — the audit checks that focus rings exist and cannot check that a focused element can do anything. The handler re-focuses the card by id after the re-render, so repeated presses keep working; without that the element it was attached to is gone and focus falls to `<body>` after one press. **Season's Board and Armory's tier board have the same gap and it is still open** — see §15.11.
-
-**Airtime bars are draggable**, and that is a language decision rather than a feature: a horizontal bar on a date axis means *draggable* on Season's Track, so shipping the same shape as click-only here would make one mark mean two things in one product. Dragging moves the whole window (`posted` and `until` together) and stages `announcements.edit` with both dates in `rows`. ⚠️ `T.drag`'s `pxPerDay` is **called** inside the helper, so it must be passed as a *function* — passing `pxPerDay()` throws on the first pointermove, and nothing in the audit would have caught it.
+> 🔴 **THERE IS NO PRIORITY, NO PIN AND NO CHANNEL.** An earlier build of this page made drag-to-reorder its *primary* interaction, and the field it reordered exists on no model — `portal/ui/broadcast.js` states outright that adding an ordering column would be a schema change to file rather than assume. `pinned` and `channel` were invented the same way, and `views: 12840` was fabricated telemetry. **This table used to specify all four**, sitting fifteen lines below the callout that rules them out, because the prose was rewritten and the tables were not. If you are reading a table here that contradicts the callout above it, the table is the stale half — check `broadcast.html`.
 
 #### Airtime (`#viewAir`)
-Every announcement window on one horizontal axis, `2026-07-15 → 2026-09-15`, with `.atnow` marking today.
+Every announcement on one horizontal axis, windowed by `airtimeWindow()` (a 21-day floor so a single announcement is still a readable axis), with a `.now` line at today.
 
 | Element | What it is | Notes |
 |---|---|---|
-| `.atbar` | One announcement's window. Solid = live, dashed = staged, outlined = ended | Click opens the editor |
-| `.atgap` | **A stretch where a player sees nothing at all.** Hatched in warn, labelled `Nd dark` | Computed by `gaps()` — sort windows, walk a cursor, record every hole |
-| `.atruler` | Five month ticks | — |
+| `.lane` | One announcement, label + track. The label **strips the prefix every announcement shares** — four rows all opening `SESSIONB-SEED ` truncated to byte-identical strings, and four different names rendering as one is not a truncation problem, it is an identity problem | `commonPrefix()` |
+| `.bar` | Its window. Begins at `startsAt` when set, otherwise `createdAt`. `.saved` live · `.staged` scheduled · `.ended` expired | Click opens the editor |
+| `.bar.forever` | **No right edge** — masked out rather than stopped, because a bar that stops reads as an end date and `expiresAt: null` is precisely the thing that does not stop | `!a.expiresAt` |
+| `.ruler` | Window start and end | — |
 
-> **The gap is the finding this view exists for**, and it is *invisible* in a chronological list because an absence has no row. This is the clearest example in the whole portal of a view earning its place: the same data, sorted the same way, in a table tells you nothing about coverage.
+> **The finding this view exists for is the bar with no end**, and it is invisible in a chronological list because "still running" and "ran for three weeks" look identical there. The `.callout` beneath names the specific offender and its day count — *"has no expiry and has been showing for 19 days"* — because the general rule teaches nothing.
 
-#### Editor drawer (tier 1)
-Title · body · channel · shows-from · shows-until · pin, with a **live Discord preview that updates as you type** (`#ePrev`). Saving stages `announcements.edit` with `rows` naming only the fields that actually changed. `Delete…` escalates to the tier-3 confirm. **Bulk**: pin/unpin stage as one tier-2 changeset; delete is tier 3.
+⚠️ **Airtime bars are NOT draggable here.** Season's Track uses a horizontal bar on a date axis to mean *draggable*, and shipping the same shape as click-only does make one mark mean two things — that objection is real and is being accepted rather than answered, because the two edits Broadcast supports (`startsAt`, `expiresAt`) are a date and a **day count**, and a drag cannot express "60 days from now". The drawer's two fields can.
+
+#### Editor drawer
+One text field, a start date and an expiry, plus the stored accent shown read-only.
+
+| Control | What it does |
+|---|---|
+| `#aText` | **The only content field there is.** No title: a heading is markdown typed into the text, and the generic embed header was removed on 2026-08-13 |
+| `#aStart` | `startsAt`, an absolute admin date. Blank = immediately |
+| `#aExp` | ⚠️ **NOT A DATE.** `computeExpiresAt` understands blank (the 60-day default), `never`/`none`, or a whole number of **days** — and returns `undefined` for anything else, which a caller must treat as a validation error. `#expHint` reads the field back in words or names the bad input. The prefill **ceils**, matching `expiryToInputValue`; rounding it would let a re-submit silently shorten an expiry |
+| accent readout | The stored `color`, **generated once at creation and never regenerated on edit** — an edit is a correction to the same announcement, so its colour is part of its identity |
+
+Saving stages `announcement.edit` with `rows` naming only the fields that changed. `Stage deletion` stages `announcement.delete`. **Bulk delete is N × `announcement.delete` in one changeset** — no bulk op exists for announcements, unlike loadouts, and a multi-op changeset is exactly what that case is for.
 
 ---
 
@@ -738,7 +761,7 @@ Live **portal** sessions (12h TTL on a Mongo index), not Discord ones. `models/P
 |---|---|
 | `.hmast` | Display-size masthead stating the portal's thesis: Discord answers one question in one screenful; this answers the ones needing a whole picture |
 | `.hcard` ×5 | One per realm. Icon + name in the realm's colour, the question it answers, its live count, and **the one thing in it that currently wants a person** |
-| `.hcard .att` | The attention line — computed, never decorative: `N outlive the season` (Season), `N need repair` (Armory), `N gaps in coverage` (Broadcast), `N signed in` (Access), `N alerts` (Analytics). **Staged work outranks it**: a realm with staged changes shows `N staged` in `--staged` instead |
+| `.hcard .att` | The attention line — computed, never decorative: `N run past the season` or `N to repair` (Season), `N need repair` (Armory), `N never ends · oldest up Nd` (Broadcast), `N scopes held by one person` (Access), `N errors pinged` (Analytics). ⚠️ *Broadcast and Access used to read `N gaps in coverage` and `N signed in` here. The first counted a coverage gap the realm does not have; the second is rejected by name in `index.html`'s own comment — zero sessions is the resting state, so printing it every time trains you to ignore the card.*. **Staged work outranks it**: a realm with staged changes shows `N staged` in `--staged` instead |
 | `.hres` | The resume bar — staged count, which realms, and both actions (Discard all / Review & commit) inline |
 
 > **Why the attention line matters.** A home screen that only counts rows makes you open all five realms to find out whether anything is wrong. Every number here is derived from the same predicates the realm pages use, so Home cannot disagree with the page it links to.
@@ -791,7 +814,12 @@ const op = {
   name:    'LOCUS — Build 1',    // the subject, as a person would say it
   verb:    '3 fields changed',   // past tense, what happened to it
   realm:   'armory',             // rail id — Home attributes staged work by this
-  op:      'loadouts.edit',      // the core/ops/* operation, shown verbatim on the review screen
+  op:      'loadout.edit',       // ⚠️ SINGULAR. Every registry namespace is singular and every
+                                 // invented name found so far pluralised one. This template read
+                                 // the pluralised `loadouts.edit` until 2026-08-24 — the error §3.9.1
+                                 // records the gate catching in armory.html, reproduced inside the
+                                 // block labelled "the part you can copy". The gate now scans this
+                                 // document, in code form and in prose, so it cannot recur.
   rows: [                        // THE FIELD-LEVEL DIFF. Review renders exactly this.
     ['categoryRank', 'best', 'top3'],          // [field, was, becomes]
     ['attachments',  'A, B, C', 'A, B, D']     // stringify arrays; never pass the array itself
@@ -877,7 +905,7 @@ const rankOf = b => b.mode === 'DMZ'
 
 ## 6. Wiring guide — the order to do it in
 
-1. **`utils/owner.js` first.** `utils/adminAccess.js` is not reusable as it stands: measured 2026-08-20, it pulls **39 local files plus discord.js, jimp and child_process**, because `isOwner()` does `require('../commands/manage')` to read `ALLOWED_ADMIN_ID`. Extract that constant into a leaf module importing nothing, repoint `adminAccess.js`, `handlers/router.js` and `scripts/botAccessPermissions.test.js`. ⚠️ **`docs/legal/PRIVACY.md`'s verification table names `commands/manage.js` as where the admin guard lives — update it in the same change or the published policy becomes false.**
+1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.
 2. **Swap `fixtures.js` for real reads.** Field names already match the models verbatim: this is a swap, not a rename pass.
 3. **Route every mutation through `core/ops/*`.** Never write Mongo from the portal directly. The ops already carry `validate` / `preview` / `apply` / `invert`.
 4. **Wire the staging tray to `core/changeset.js`**, replacing `Store.onInvert` with the ops' real `invert()`.
@@ -919,30 +947,15 @@ const rankOf = b => b.mode === 'DMZ'
 
 ---
 
-## 8. The journey — what changed, and why, in order
+## 8. The journey — folded into the sections that use it
 
-Recorded because the *sequence* explains decisions that look arbitrary in isolation.
+*Fourteen numbered "what changed and why" items lived here until 2026-08-24. A cold reader found that every one restated something already made with more force at the place it applies — shape/colour → §4.1, the two vocabularies → §4.3, the bot's palette → §4.2, the audit rules → §3 — and that §0.0 routed nobody here. Its stated purpose was that "the **sequence** explains decisions that look arbitrary in isolation", and one line per item did not deliver that.*
 
-1. **Colour was used for state.** Corrected to shape-for-state, colour-for-topic. Shape survives greyscale and colourblindness.
-2. **Board columns were Draft/Staged/Blocked/Ready** — a pipeline this project does not have. Replaced with content state.
-3. **The Season page had no way to edit the season.** The identity editor was added, then rebuilt against the real schema when it turned out `setTitlesDeadlines` takes three parallel lines.
-4. **The Track was a picture of a timeline.** Rebuilt on a real date engine.
-5. **Prose lived inside the mockup.** Moved here.
-6. **The vocabulary collided** — a row read `ENDED` and `LIVE` at once. Split into two named axes.
-7. **The state class drifted between JS and CSS** and the whole Track went grey. Produced the first self-check.
-8. **The scrubber ran away** — found by coalescing a screen recording and measuring per-frame change.
-9. **FIT framed a month of empty space**, then the fix reintroduced the emptiness in the overview. Corrected by separating the FIT range from the pan range.
-10. **Deadline flags were afterthoughts.** Given their own rail.
-11. **Colours were invented.** Replaced with the bot's own palette, then spread across genuinely separate hues.
-12. **Armory was a filter and a table.** Rebuilt as a tier board, a repair queue, and a comparison view.
-13. **The audit was static-only** and reported clean while a panel rendered `undefined`. Extended to scan rendered text and drive interactions.
-14. **The dialog was a side rail.** Made a centred modal.
-
----
+**Where the lessons live now:** §3 (the invariants and the bug each one earned) · §4 (the design language and why each rule exists) · §7 (traps already paid for, grouped by what you would SEE) · §5.99.5 (symptom → cause) · §14 (what a green audit does not mean). If you want the chronology, `git log --follow COMPANION.md`.
 
 ## 9. The realm roster
 
-*Every surface below is built and audits clean as of 2026-08-24. This section was the not-built list; it is now the roster, and §5 carries each page's element-level contract.* **Five realms appear in the rail** — Season, Armory, Broadcast, Access, Analytics. `index.html` (home), `review.html` (commit) and `door.html` (sign-in) are deliberately **not** realms and must never be added to `REALMS`.
+*Every surface below is built and audits clean as of 2026-08-24. This section was the not-built list; it is now the roster.* ⚠️ **§5 CARRIES THE ELEMENT-LEVEL CONTRACT FOR ALL FIVE REALMS, including Broadcast, Access and Analytics.** §5's preamble used to delegate those three here, while §9's table held rows for them and §5 gave them fuller treatment anyway — so the stated precedence and the actual content pointed in opposite directions, which is the ambiguity the stale §5.4 tables lived inside. **§5 wins. This section is a roster, not a spec.** **Five realms appear in the rail** — Season, Armory, Broadcast, Access, Analytics. `index.html` (home), `review.html` (commit) and `door.html` (sign-in) are deliberately **not** realms and must never be added to `REALMS`.
 
 | Realm | View layer | Manifest | Answers |
 |---|---|---|---|
@@ -1031,76 +1044,17 @@ Every empty, loading and error state names **what is missing, why, and the one a
 
 ---
 
-## 11. Self-audit, 2026-08-24 — process findings
+## 11. The process lesson, in one line
 
-Recorded because the *pattern* is more useful to a future session than any single defect.
+*Four "process findings" lived here until 2026-08-24. Their content was already in §3's table, §7's Process block and §14 — and a third copy of the colliding-class-name roster had drifted here, naming `.tier` (which never collided) and omitting `.tk` (which did, with a worked example). A list kept in three places is a list that will disagree with itself.*
 
-| Failure mode | Measured occurrences |
-|---|---|
-| **Fixed the instance, not the class** | `display:flex` on a `<td>` shipped **3×**; generic class-name collisions caused **4** separate visual bugs (`.now`, `.left`, `.tbd`, `.tier`) |
-| **Claimed verification not performed** | "Audit clean" while a panel rendered `undefined`; "FIT fixed" when the write never reached disk; "colours fixed" while the browser ran a cached file |
-| **Answered the symptom, not the question** | Asked *why* 2×CP had a full-height overlay → restyled it instead of examining the reasoning. Asked about colours → changed hex values before reading what the bot uses |
-| **Regression inside the QA tool** | The interaction audit drove a tier-3 confirm on every page load — a checker that damaged the page it checked |
+🔴 **The lesson, and it is the only one this section had that the others do not:** *the check that catches a class of defect must live where the defect is INTRODUCED, not where it is noticed.* Every mechanism in this package follows from that — the tier derives at `Store.add()` rather than being reviewed later; the fixtures are exported rather than proofread; the gate scans the document as well as the pages, because the document is where the last nine bad names were found. **Class-collision roster: §7, one copy.**
 
-**The single transferable lesson:** every one of these came from verifying *the thing I changed* rather than *the property I claimed*. The audit exists to convert that instinct into code, and it only works if it is run on the live page after every shared-layer change — not at the end.
+## 12. Art direction — what is still outstanding
 
----
+*§12.1–12.4 measured the shipped result against §10 and confirmed it landed: type scale on the live page, composition, the three motion moments, the edge states. Its own preamble said "§12 is the measurement and **governs nothing**", and a cold reader agreed — so the measurements are gone and the part that changes behaviour is kept. If you need them back: `git log -p COMPANION.md`.*
 
-## 12. Art direction — as built, verified 2026-08-24
-
-§10 was the specification, written before the work. This section records what shipped and how it was checked, so a future session can tell intent from outcome.
-
-### 12.1 Type — measured on the live page
-
-> **§10 is the specification and governs new work; §12 is the measurement and governs nothing.** Where they differ, build to §10 and treat the delta as a defect to close, not as a licence. The two known deltas: `--t-micro` is specified at 9.5px and renders at 9px, and `--t-label` (11px, control labels and column headers) is absent from the as-built table below because it was never separately measured, not because it was dropped.
-
-
-| Token | Spec | Built | Where |
-|---|---|---|---|
-| `--t-display` | 44px | **44px**, tracking `-1.23px` | `.masthead h1` |
-| `--t-figure` | 34px | **34px**, tabular | `.mh-stats .v` |
-| `--t-h1` | 22px | 22px | `.ph .t`, `.dw-h h2` |
-| `--t-body` | 13.5px | 13.5px | table + prose |
-| `--t-micro` | 9.5px | 9px rendered | eyebrows, labels |
-
-**Display-to-body ratio is now 3.26×**, up from roughly 1.8×. That single number is the difference between "a dashboard where everything is the same size" and a page with a subject.
-
-The masthead stat is set **`column-reverse`**: the label sits above the number, so the eye lands on the figure. `19` and `DAYS LEFT` are no longer competing at similar weights.
-
-### 12.2 Composition — the view layer is the hero
-
-Three levels of frame, and the audit checks they stay distinct:
-
-| Level | Treatment | Verified |
-|---|---|---|
-| Masthead | No border, 34px top padding | — |
-| Context strip | Slim bar, never a panel | — |
-| **View layer** | `--rule2` border — the strongest | `rgb(58,71,82)` |
-| Manifest | `--rule` border, transparent header — recessive | `rgb(42,52,61)` |
-
-The rule that makes it survive: `.panel + .panel` is *automatically* recessive. A new page cannot get this wrong by forgetting, because the second panel on any page inherits the quieter treatment by position.
-
-### 12.3 Motion — three moments, and nothing else
-
-| Moment | Implementation | Lives in |
-|---|---|---|
-| **View switch** | `viewIn` — fade + 6px rise, `--dur-2`, staggered 20ms per column/row | `app.css`, keyed on `[hidden]` |
-| **Staging** | `Shell.pulseTray()` — tray pulses, count bumps | **`Store.add()`**, the one choke point every staging path already passes through |
-| **Tier drop** | `settle` spring on the chip + `flash` on the row it landed in | `armory.html` drop handler |
-
-Putting the staging acknowledgement inside `Store.add` rather than at each call site is the same principle as the audit: **one place, so it cannot be forgotten by a caller.** Every future page gets it for free.
-
-All three are disabled under `prefers-reduced-motion`.
-
-### 12.4 Edge states — as built
-
-The Armory manifest now distinguishes three empty cases, and says which one it is:
-
-- **Empty by filter** — *"No builds match this combination. `Assault + missing image` returns nothing. Every other build is still there."* + `Clear filters`. The reassurance matters: a filtered empty list is how someone concludes their data is gone.
-- **Empty by data** — *"The Armory is empty. Add the first build and it will appear here and in `/gunsmiths` immediately."* + `Add the first build`.
-- **Empty by design** — *"Every build in view carries a rank."* This is a **success**, and it is styled as one (`.estate.good`, green).
-
-### 12.5 What is still outstanding from §10
+### What is still outstanding from §10
 
 Stated plainly rather than quietly dropped:
 
@@ -1213,7 +1167,7 @@ A fixture-driven mockup has no server, no clock, no second user and no failure. 
 
 ### 15.5 Authorization — the client is never trusted
 
-**Closed, spec §6.2 H7/H8/H10.** Permissions resolve **server-side on every request** through `resolveAction()`'s existing choke point; the client is not trusted for anything, *including which realm it may see*. The `.rolebadge` (`OWNER` / `ADMIN` / `EDITOR`) and the rail's realm list are display conveniences and enforce nothing.
+**Closed, spec §6.2 H7/H8/H10.** Permissions resolve **server-side on every request** through `resolveAction()`'s existing choke point; the client is not trusted for anything, *including which realm it may see*. The `.rolebadge` and the rail's realm list are display conveniences and enforce nothing. *(This sentence used to enumerate `OWNER / ADMIN / EDITOR`; there is no editor role — §5.5.)*
 
 Two consequences the mockup cannot show. **A staging tray in `sessionStorage` is a client-trust surface** — every op must be re-validated and re-authorized server-side at commit, never accepted because it arrived in a changeset. And **revocation is not instant**: `hasCommandAccess` serves a 60-second cache, so re-checking per request bounds exposure at 60 seconds rather than the 12-hour session, and only the explicit `invalidateAdminCache()` on revoke collapses it to ~0. Call it.
 
@@ -1253,6 +1207,6 @@ If you build one thing beyond the pages themselves, build that comparison. Until
 3. **Whether `portal/ui/**` is brought to match these mockups in place, or reimplemented from them.** §0.5 says diff first; which way that goes is a real decision with real cost either way.
 4. **Whether `--ink4` should exist at all.** It is now a non-text token with 15 uses. If those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote.
 
-*Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **all three** drag surfaces.*
+*Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **both** drag surfaces — Season's Board and Armory's tier board. *(This read "all three" until 2026-08-24, counting a Broadcast reorder that had been removed.)**
 
 > ⚠️ **`prefers-reduced-motion` is still UNVERIFIED and should not be called done.** Six blocks exist in `app.css` and the syntax is right, but no tool in this session could emulate the preference, so nothing has ever observed those rules taking effect. **Do not read "the CSS is there" as "it works"** — that is the shape of assumption this document exists to stop.
