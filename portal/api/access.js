@@ -26,10 +26,15 @@ function singlePointsOfFailure(admins) {
     }
     for (const admin of admins) {
         for (const perm of admin.permissions || []) {
+            // 🔴 `manage` COUNTS AS ITSELF, not only as its expansion. This was an `else if`, so a bare
+            // `manage` recorded holders for the eight page scopes and never for `manage` -- leaving the
+            // token permanently at 0 holders and therefore never reportable, when a lone holder of the
+            // FULL token is the most consequential single point of failure there is: lose them and every
+            // page goes at once. Found 2026-08-24 rebuilding the Access mockup on the real permission
+            // model, where the page's own count disagreed with this endpoint's. Both effects now apply.
+            if (holders.has(perm)) holders.get(perm).push(admin.discordId);
             if (perm === 'manage') {
                 for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.push(admin.discordId);
-            } else if (holders.has(perm)) {
-                holders.get(perm).push(admin.discordId);
             }
         }
     }
@@ -60,8 +65,11 @@ function buildPermissionMatrix(admins) {
             const inherited = scope.kind === 'page' && !direct && perms.includes('manage');
             grants[scope.key] = { direct, inherited, held: direct || inherited };
         }
-        // ⚠️ `grantedAt` is DERIVED, not stored. models/AdminUser.js has discordId/permissions/ grantedBy/note and no timestamp at all, so the mockup's "granted 2026-08-13" sub-line has no field behind it. An ObjectId's first four bytes ARE a Unix timestamp, which is a real creation time rather than a guess -- but it is the DOCUMENT's creation, so it does not move when permissions are later edited. Named `grantedAt` and derived here rather than adding a schema field, because a stored one would need a migration for every existing admin.
-        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', grantedAt: admin._id ? new Date(parseInt(String(admin._id).slice(0, 8), 16) * 1000) : null };
+        // ⚠️ `grantedAt` IS STORED. models/AdminUser.js has declared `grantedAt: { type: Date, default: Date.now }` since 566b3ca (2026-08-13) and every live document carries one -- this comment previously asserted the model "has no timestamp at all", which was already ten days stale when it was written, and the derivation below silently discarded the real value. The ObjectId fallback is kept for a document written before the field existed, but it is a FALLBACK: an ObjectId's embedded timestamp is the DOCUMENT's creation and never moves when permissions are later edited, so it answers a different question than "when was this granted".
+        const grantedAt = admin.grantedAt
+            ? new Date(admin.grantedAt)
+            : (admin._id ? new Date(parseInt(String(admin._id).slice(0, 8), 16) * 1000) : null);
+        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', grantedAt };
     });
     return { admins: rows, scopes };
 }

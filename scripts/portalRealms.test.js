@@ -35,6 +35,44 @@ check('Access By-scope flags a scope held by exactly one non-owner admin', () =>
     assert.ok(spof.some(s => s.scope === 'manage.draws' && s.discordId === 'B'));
 });
 
+// 🔴 A BARE `manage` HELD BY ONE PERSON IS THE MOST CONSEQUENTIAL SINGLE POINT THERE IS -- lose them and you lose every /manage page at once -- and it was the one case singlePointsOfFailure() structurally could not report. Its loop expanded `manage` into the eight page scopes inside an `else if`, so it never recorded a holder for `manage` ITSELF: the token always showed 0 holders and therefore never qualified. Found 2026-08-24 while rebuilding the Access mockup on the real permission model, when the page's own count (6) disagreed with the endpoint's (5).
+check('Access By-scope flags a bare "manage" held by exactly one admin', () => {
+    const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage'] }]);
+    assert.ok(spof.some(s => s.scope === 'manage' && s.discordId === 'A'),
+        'a lone holder of the full manage token is a single point of failure for every page at once');
+});
+
+check('Access By-scope still flags every page a lone bare-"manage" holder inherits', () => {
+    // The expansion must SURVIVE the fix above -- reporting `manage` while dropping the pages
+    // would trade one blind spot for eight.
+    const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage'] }]);
+    for (const page of ['manage.draws', 'manage.calendar', 'manage.season', 'manage.announcement']) {
+        assert.ok(spof.some(s => s.scope === page && s.discordId === 'A'), `${page} should still be reported`);
+    }
+});
+
+check('Access By-scope does NOT flag a bare "manage" held by two admins', () => {
+    const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage'] }, { discordId: 'B', permissions: ['manage'] }]);
+    assert.ok(!spof.some(s => s.scope === 'manage'), 'two holders is not a single point');
+});
+
+// 🔴 `grantedAt` IS A REAL STORED FIELD. models/AdminUser.js has declared it since 566b3ca (2026-08-13), ten days before portal/api/access.js was last touched with a comment asserting the model "has no timestamp at all" -- and every live document carries one. Deriving it from the ObjectId discards that value AND answers a different question: an ObjectId timestamp is the DOCUMENT'S creation and never moves when permissions are later edited, which is exactly what a "granted" date should reflect.
+check('buildPermissionMatrix reports the STORED grantedAt, not one derived from the ObjectId', () => {
+    const stored = new Date('2026-08-13T09:00:00.000Z');
+    const { admins } = buildPermissionMatrix([{
+        _id: '6a8b3ed58c812c59751d92e6',   // its own embedded timestamp is 2026-08-23, ten days later
+        discordId: 'D', permissions: ['bot'], grantedAt: stored,
+    }]);
+    assert.strictEqual(new Date(admins[0].grantedAt).toISOString(), stored.toISOString());
+});
+
+check('buildPermissionMatrix falls back to the ObjectId timestamp when grantedAt is absent', () => {
+    // A document written before the field existed still has to report something rather than null.
+    const { admins } = buildPermissionMatrix([{ _id: '6a8b3ed58c812c59751d92e6', discordId: 'E', permissions: ['bot'] }]);
+    assert.ok(admins[0].grantedAt instanceof Date, 'a pre-field document still gets a derived date');
+    assert.strictEqual(new Date(admins[0].grantedAt).toISOString().slice(0, 10), '2026-08-23');
+});
+
 check('Access By-scope does NOT flag a scope held by two or more admins', () => {
     const admins = [{ discordId: 'A', permissions: ['bot'] }, { discordId: 'B', permissions: ['bot'] }];
     const spof = singlePointsOfFailure(admins);
