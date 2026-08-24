@@ -793,9 +793,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .chip.danger:hover{background:var(--danger-edge);color:var(--ink)}
 
 /* ── command-palette affordance in the header ── */
-/* `.pal` is retired — the header command bar replaced it. Kept only so any page not yet
-   converted still renders something sane rather than an unstyled button. */
-.pal{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:5px 8px;
+/* ⚠️ RETIRED: `.pal`, `.pwrap` and `.pbox` were the cmd-K chip and its full-screen overlay.
+   Both are gone — every realm now has the header command bar, and nothing renders these. The
+   rules are deleted rather than kept "just in case": dead CSS is the one kind of rot no audit
+   in this package can see, because it never appears on screen to be measured. */
+.pal-retired{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:5px 8px;
   cursor:pointer;color:var(--ink3);display:flex;align-items:center;transition:color .13s,border-color .13s}
 .pal:hover{color:var(--ink2);border-color:var(--rule2)}
 .pal kbd{font-family:var(--data);font-size:10px;letter-spacing:.04em}
@@ -2435,10 +2437,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* The point cluster. Reads as a count, not as a marker — a diamond would claim to be one item. */
 .pt.hid{display:none}
-.ptc{position:absolute;top:50%;transform:translate(-50%,-50%);min-width:19px;height:19px;padding:0 4px;
-  border-radius:99px;border:1.5px solid var(--c);background:var(--paper);color:var(--c);
-  font:700 10px/1 var(--data);cursor:zoom-in;z-index:4;display:grid;place-items:center}
-.ptc:hover{background:var(--c);color:var(--on-accent)}
+/* ⚠️ THE OLD PILL-SHAPED CLUSTER BADGE IS RETIRED — `.mark.stack` replaced it. `min-width:19px`
+   survived long enough to fight the new rule's `width:15px` and render a 19×15 lozenge where a
+   square diamond belonged: higher-specificity rules only win the properties they SET. Deleted
+   rather than left to lose that argument again. */
+.ptc{cursor:zoom-in;z-index:4}
 .ptc:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 
 /* Deadline flags: same-date flags stack, and a flag near an edge flips rather than clipping. */
@@ -2649,8 +2652,6 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .nw-act{display:flex;align-items:center;gap:9px;margin-top:2px}
 .nw-act .nw-why{margin-right:auto}
 .nwhost .nw-prev:empty{display:none}
-/* the mini-axis is gone: the real Track is the preview */
-.nwhost .nw-axis{display:none}
 
 /* ── the ghost the composer draws on the REAL Track ── */
 .ghost.cmp{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 12%,transparent);

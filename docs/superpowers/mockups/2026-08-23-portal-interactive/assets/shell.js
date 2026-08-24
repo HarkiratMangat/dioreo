@@ -255,6 +255,17 @@
       const wrap = document.getElementById('cmdBar'), inp = document.getElementById('cbIn');
       if (!wrap || !inp) return;
       if (placeholder) { inp.placeholder = placeholder; inp.setAttribute('aria-label', placeholder); }
+      /* 🔴 IDEMPOTENT ON PURPOSE. mountHeader installs a default bar so that EVERY realm has a
+       * working one — a page that shows a command input which does nothing is worse than a page
+       * with no input at all, and that is exactly what the first version shipped on the seven
+       * realms that had no palette of their own. A realm then calls this again with its own
+       * richer list; without this guard that second call would stack a duplicate set of
+       * listeners and every keystroke would paint twice. */
+      Shell._cb = { items, run };
+      if (Shell._cbBound) return;
+      Shell._cbBound = true;
+      items = () => Shell._cb.items();
+      run = c => Shell._cb.run(c);
       const drop = document.getElementById('cbDrop'), list = document.getElementById('cbList');
       let sel = 0, hits = [];
       const close = () => { drop.hidden = true; inp.setAttribute('aria-expanded','false'); wrap.classList.remove('on'); };
@@ -283,6 +294,16 @@
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); inp.focus(); inp.select(); }
       });
       window.__openPalette = () => { inp.focus(); inp.select(); };
+    },
+
+    /* The floor every realm gets for free: move between realms, review what is staged, sign out.
+     * A realm with more to offer calls commandBar again and replaces this list. */
+    defaultCommands(){
+      return [
+        ...REALMS.map(r => ({ k: 'Go to ' + r.label, c: 'ink3', run: () => location.href = r.href })),
+        { k: 'Review staged changes', c: 'ok',  run: () => location.href = 'review.html' },
+        { k: 'Sign out',              c: 'del', run: () => document.getElementById('hdrOut')?.click() }
+      ];
     },
 
     /* ══════════ ONE TOOLTIP, AND IT IS OURS ══════════
@@ -586,6 +607,18 @@
         });
       });
 
+      /* 5e. A COMMAND BAR THAT THROWS IS INVISIBLE. `defaultCommands()` referenced `RAILS`; the
+       *     array is called `REALMS`. It threw inside a focus handler, so seven realms shipped a
+       *     search box that silently did nothing while every other check passed. Anything whose
+       *     only failure mode is "produces nothing when touched" has to be TOUCHED by the audit,
+       *     not looked at. */
+      if (document.getElementById('cbIn')) {
+        try {
+          const n = ((Shell._cb && Shell._cb.items()) || []).length;
+          if (!n) problems.push('the command bar has no commands — its input does nothing');
+        } catch (e) { problems.push(`the command bar throws on use: ${e.message}`); }
+      }
+
       // 6. A legend may only name states that are actually present.
       if (states) {
         const real = new Set(states());
@@ -767,6 +800,8 @@
         confirm:'Sign out', danger:true,
         onConfirm(){ Store.clear(); location.href = 'door.html'; } });
       const ho = document.getElementById('hdrOut'); if (ho) ho.onclick = signOut;
+      /* Installed here, after the header exists, so no realm can ship a dead command input. */
+      Shell.commandBar({ items: Shell.defaultCommands, run: c => c.run() });
       m.querySelectorAll('.mi').forEach(mi => mi.onclick = () => {
         m.hidden = true; b.setAttribute('aria-expanded','false');
         const k = mi.dataset.m;
