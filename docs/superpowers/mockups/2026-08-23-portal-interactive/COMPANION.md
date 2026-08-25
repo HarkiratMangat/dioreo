@@ -2063,7 +2063,13 @@ One row per **lane**, in the Track's own lane order, makes the overview a **mini
 
 **A number that is red on almost every row is not a signal, it is the wallpaper**, and the rows worth acting on were invisible inside it. The `stale` defect now carries `age:true`: it stays a defect and the Repairs queue still lists it — a stale build *is* probably wrong, and that is the realm's whole argument — but it does not get to be the alarm. The masthead reads **NEED REPAIR 11 · STALE 106**, and the legend names clean / needs repair / stale as three separate states.
 
-### 5.9p.7 One regression, and what caught it
+### 5.9p.7 Our own tooling was the first word on three surfaces
+
+Every seeded announcement and every grant note carried a **`SESSIONB-SEED ` prefix** — a marker a seeding script writes so its rows can be deleted from the dev database again. Not content. It rendered at the head of every row in the delivery queue, inside the "what one player gets" preview (which exists specifically to show what Discord will send), and on every note in Access.
+
+Stripped at the fixture, which is the one place it can be stripped once. The note in `fixtures.js` says to strip it again on the next export rather than teaching the pages to hide it — **a page that hides a data problem is how the data problem survives.**
+
+### 5.9p.8 One regression, and what caught it
 
 The legend edit referenced `b` outside its scope, and the page died on render. **`portal:refs` passed** — it parses every inline script and checks declared identifiers, but it does not do scope analysis, so a free variable inside a template literal is invisible to it. The states sweep would have caught it (a page that throws never calls `S.audit`, so it reports "no `__selfCheck`"), and the browser console caught it in one call. Worth knowing precisely where each gate's edge is: **`portal:refs` proves a page PARSES, never that it RUNS.**
 
