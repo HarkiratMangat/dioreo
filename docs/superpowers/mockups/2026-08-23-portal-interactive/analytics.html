@@ -20,6 +20,10 @@
         <span class="stat warn"><span class="v" id="sErr"></span> <span class="k">errors</span></span>
         <span class="stat"><span class="v" id="sAck"></span> <span class="k">worst ack</span></span>
       </div>
+      <!-- Analytics is the one realm with nothing to create, so there is no create control to
+           hang the "take out" line off. It gets its own anchor in the same grid slot the other
+           realms put their create button in, so the line lands in the same place on every realm. -->
+      <div class="mh-anchor" id="mhAnchor" aria-hidden="true"></div>
     </div>
 
     <section class="panel" aria-label="Analytics view">
@@ -541,7 +545,57 @@
   q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
   S.onAfterRevert = renderAll;
 
+  /* ══════════════════════════════════════════════════════════════════════════
+   * EXPORT. Analytics had none — and it is the realm where taking data out is the
+   * PRIMARY act rather than a safeguard. Nothing here is destructive (core/ops registers
+   * no analytics operation at all, and AnalyticsEvent expires on its own TTL), so this
+   * realm gets export and no delete, which is the honest shape rather than a symmetric one.
+   *
+   * 🔴 THESE DO NOT ROUND-TRIP, AND SAY SO. Every other export in the portal is checked
+   * byte for byte against utils/adminParser.js because something re-ingests it. Nothing
+   * re-ingests analytics: the destination is a spreadsheet, so the format is CSV and the
+   * panel states that rather than implying a symmetry that does not exist.
+   *
+   * RFC-4180 quoting, and not by reflex — a search term is arbitrary user text that people
+   * really do type commas and quotes into, and the change log's summary field is a sentence
+   * with quoted titles in it ('Added new draw "Test Draw"'). Naive joining would corrupt
+   * exactly the two columns worth exporting. */
+  const csvCell = v => {
+    const t = v === null || v === undefined ? '' : String(v);
+    return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  };
+  const csv = (head, rows) => [head, ...rows].map(r => r.map(csvCell).join(',')).join('\n');
+  const stamp = () => new Date().toISOString().slice(0, 10);
+
+  function analyticsScopes(){
+    return [
+      { id:'analytics.usage', label:'Command usage', note:'Calls, successes, deferred acks and total ms per command.',
+        count:F.cmdStats.length, unit:'commands', file:'dioreo-command-usage-' + stamp() + '.csv',
+        build:() => csv(['command','subcommand','calls','succeeded','deferred','total_ms','avg_ms'],
+          F.cmdStats.map(c => [c.command, c.subcommand || '', c.n, c.ok, c.ack, c.dur,
+                               c.n ? Math.round(c.dur / c.n) : 0])) },
+      { id:'analytics.timing', label:'Timing by subsystem', note:'Where the milliseconds go — per call, not per interaction.',
+        count:F.depStats.length, unit:'subsystems', file:'dioreo-timing-' + stamp() + '.csv',
+        build:() => csv(['subsystem','events','calls','total_ms','ms_per_call'],
+          F.depStats.map(d => [d.name, d.events, d.calls, d.ms, d.calls ? Math.round(d.ms / d.calls) : 0])) },
+      { id:'analytics.search', label:'What people searched for', note:'Including the terms that returned nothing — the only record of what the bot does not have.',
+        count:F.searchTerms.length, unit:'terms', file:'dioreo-search-terms-' + stamp() + '.csv',
+        build:() => csv(['term','command','field','searches','zero_results','picked','first_seen','last_seen'],
+          F.searchTerms.map(t => [t.term, t.command, t.field, t.searches, t.zeroResults, t.picked, t.firstSeen, t.lastSeen])) },
+      { id:'analytics.changes', label:'Change log', note:'Who changed what, and whether it was undone. The audit record.',
+        count:F.changeLog.length, unit:'changes', file:'dioreo-change-log-' + stamp() + '.csv',
+        build:() => csv(['at','page','action','model','target','summary','undone'],
+          F.changeLog.map(c => [c.at, c.page, c.action, c.model, c.target, c.summary, c.undone ? 'yes' : 'no'])) },
+      { id:'analytics.alerts', label:'Alerts', note:'Every alert the bot raised, with the level and whether it pinged.',
+        count:F.alertSample.length, unit:'alerts', file:'dioreo-alerts-' + stamp() + '.csv',
+        build:() => csv(['at','level','title','detail','pinged','rss_mb','uptime_sec'],
+          F.alertSample.map(a => [a.at, a.level, a.title, a.detail, a.pinged ? 'yes' : 'no', a.rssMb, a.uptimeSec])) }
+    ];
+  }
+
   function renderAll(){ renderHealth(); renderUsage(); renderTiming(); renderReach(); renderSearch();
+    S.mastheadExport({ host:'#mhAnchor', scopes:analyticsScopes, label:'Take out',
+      summary:() => 'CSV for a spreadsheet · 5 tables' });
     renderRows(); renderStats(); S.mountRail('analytics'); }
   renderAll();
   (window.Shell||window.S).holdTop();

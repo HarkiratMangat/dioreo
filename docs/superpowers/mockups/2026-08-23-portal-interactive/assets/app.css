@@ -3177,7 +3177,12 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 .mxcell.pend.off::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
   background:var(--danger-ink);transform:translate(-50%,-50%)}
 .mx tbody tr:hover .mxcell:not(.locked){border-color:var(--ink4)}
-.mxact{white-space:nowrap;display:flex;gap:4px;align-items:center;justify-content:flex-end}
+/* 🔴 THE FLEX GOES ON AN INNER SPAN, NOT ON THE <td>. `display:flex` on a table cell takes
+   it out of the table's own layout — it stops participating in column sizing, which is the
+   one job a cell has. Caught by the audit's own rule the first time this rendered; the same
+   rule exists because a previous cell had done it and shifted a whole column. */
+.mxact{white-space:nowrap;text-align:right}
+.mxact .mxacts{display:inline-flex;gap:4px;align-items:center;justify-content:flex-end}
 /* The batched confirm groups its two halves rather than running one list of mixed signs —
    reading "granting 3 / revoking 1" is the thing that makes a batch safer than four clicks. */
 .acg{margin-top:14px}
@@ -3197,3 +3202,59 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 .realm.out.has{color:var(--ink2)}
 .realm.out.has svg{color:var(--staged)}
 @media (max-width:768px){ .rail-rule{width:1px;height:auto;margin:8px 0} }
+
+/* Analytics creates nothing, so it has no create control for the take-out line to sit under.
+   This is a zero-height stand-in occupying the same grid cell .mh-new does elsewhere, so the
+   line lands in the same place on every realm instead of wherever the grid happens to flow. */
+.mh-anchor{grid-column:2;grid-row:2;height:0;justify-self:end}
+@media (max-width:820px){.mh-anchor{grid-column:1;grid-row:auto}}
+
+/* ══ MOTION ═══════════════════════════════════════════════════════════════════
+   See the long note above withMotion() in season.html for why this is opt-in per change
+   rather than a standing transition, and why it can work at all (zoom repositions the same
+   nodes rather than rebuilding them). */
+/* 🔴 THE CLASS GOES ON `.tk-inner`, NOT `.tk`. `.tk` is PER-LANE — five of them — so scoping
+   to `.tk` animated whichever lane happened to be first and teleported the other four.
+   🔴 AND THE `transform` TRANSITION IS RESTATED, NOT DROPPED. `.bar` already carries
+   `transition:transform .14s, box-shadow .14s, filter .12s` for its hover lift, and the
+   `transition` SHORTHAND replaces the whole list — writing only left/width here would kill
+   the hover lift for the 380ms the class is on. Visible only if you happened to hover during
+   a zoom, which is to say never, until it shipped. */
+.tk-inner.animate .bar{
+  transition:left var(--dur-3) var(--ease),width var(--dur-3) var(--ease),
+             transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s}
+.tk-inner.animate .pt{transition:left var(--dur-3) var(--ease),transform .14s}
+.tk-inner.animate .dend,.tk-inner.animate .now,.tk-inner.animate .win{
+  transition:left var(--dur-3) var(--ease),width var(--dur-3) var(--ease)}
+/* A bar being dragged must never interpolate — it would trail the pointer by a third of a
+   second, which reads as the page being broken rather than as animation. */
+.tk-inner.animate .bar.dragging{transition:none}
+@media (prefers-reduced-motion:reduce){
+  .tk-inner.animate .bar,.tk-inner.animate .pt,.tk-inner.animate .dend,
+  .tk-inner.animate .now,.tk-inner.animate .win{transition:none}
+}
+
+/* NOW's live readout. It sits UNDER the marker rather than beside the NOW label above it, so
+   the two facts (what this line is, what time it is) stack instead of colliding with the
+   ruler's own dates. Tabular figures, or the minute changing shifts the whole string. */
+.nowt{position:absolute;top:-9px;left:6px;font:500 9px/1 var(--data);letter-spacing:.06em;
+  color:var(--patch);opacity:.85;white-space:nowrap;font-variant-numeric:tabular-nums;
+  pointer-events:none}
+
+/* A staged item ARRIVES. Without this it simply exists on the next frame, which is the one
+   thing an interface should never do with something the reader just created — they lose the
+   object they were looking at. Scale from the bar's own centre so it grows out of its lane
+   rather than flying in from nowhere. */
+@keyframes arrive{
+  from{opacity:0;transform:translateY(-50%) scaleX(.72)}
+  to{opacity:1;transform:translateY(-50%) scaleX(1)}
+}
+@keyframes arrive-pt{
+  from{opacity:0;transform:rotate(45deg) scale(.4)}
+  to{opacity:1;transform:rotate(45deg) scale(1)}
+}
+.bar.arriving{animation:arrive var(--dur-3) var(--ease) both}
+.pt.arriving{animation:arrive-pt var(--dur-3) var(--ease) both}
+@media (prefers-reduced-motion:reduce){
+  .bar.arriving,.pt.arriving{animation:none}
+}

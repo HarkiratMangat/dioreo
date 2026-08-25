@@ -25,10 +25,21 @@
   const REALMS = [
     { id:'season',    label:'Season',    href:'season.html',
       icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
+    /* 🔴 BOTH OF THESE WERE REPLACED 2026-08-24 because neither said what its realm is.
+     * The old Armory glyph was an abstract stroke assembly that resolved to nothing at 20px,
+     * and the old Broadcast glyph was a VOLUME icon — a speaker with one arc, which reads as
+     * "sound settings" in every other interface a person has used. An icon in a five-item
+     * rail is read at a glance, beside its own label, so it has one job: be unmistakable for
+     * the other four. */
     { id:'armory',    label:'Armory',    href:'armory.html',
-      icon:'<path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/>' },
+      /* A weapon RETICLE: ring, centre dot, four ticks. The realm is loadouts and attachments,
+       * and a rifle silhouette is unreadable at this size in stroke — the reticle is the one
+       * shooter-game motif that survives 20px, and nothing else in the rail is round. */
+      icon:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>' },
     { id:'broadcast', label:'Broadcast', href:'broadcast.html',
-      icon:'<path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/>' },
+      /* A MEGAPHONE: cone, handle, two emission arcs. Announcements are pushed OUT to players,
+       * and a megaphone is the one glyph that says "said to everyone" rather than "audio". */
+      icon:'<path d="M3 10v4a1 1 0 0 0 1 1h2l6 4V5L6 9H4a1 1 0 0 0-1 1z"/><path d="M7 15v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-3"/><path d="M16 9.5a4 4 0 0 1 0 5M18.5 7a7.5 7.5 0 0 1 0 10"/>' },
     { id:'access',    label:'Access',    href:'access.html',
       icon:'<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>' },
     { id:'analytics', label:'Analytics', href:'analytics.html',
@@ -1113,6 +1124,11 @@
      * makes /manage trivial by making the irreversible thing safe, not by adding buttons.
      * ══════════════════════════════════════════════════════════════════════════════ */
 
+    /* "1 terms" shipped in the first Analytics export panel, because every call site writes
+     * its own unit string and none of them looks at the number printed beside it. Units are
+     * written plural at the call site (the common case) and lose the 's' here at one. */
+    plural(n, unit){ return n === 1 && /s$/.test(unit) ? unit.replace(/s$/, '') : unit; },
+
     /* ─────────────────────────── EXPORT ─────────────────────────── */
     Export: {
       /* Scope ids that have produced a REAL FILE this session. Session-scoped on purpose:
@@ -1158,7 +1174,7 @@
           const done = Shell.Export.has(sc.id);
           return '<li class="exs-i ' + (done ? 'done' : '') + (focus === sc.id ? ' focus' : '') + '" data-x="' + sc.id + '">' +
             '<div class="exs-t"><b>' + sc.label + '</b><span>' + (sc.note || '') + '</span></div>' +
-            '<div class="exs-c">' + sc.count + ' <em>' + (sc.unit || 'records') + '</em></div>' +
+            '<div class="exs-c">' + sc.count + ' <em>' + Shell.plural(sc.count, sc.unit || 'records') + '</em></div>' +
             '<button class="pill sm ' + (done ? '' : 'lead') + '" data-x="' + sc.id + '">' +
               (done ? 'Download again' : 'Download') + '</button></li>';
         }).join('');
@@ -1180,7 +1196,7 @@
           let text; try { text = sc.build(); } catch (e) { Shell.toast('Export failed: ' + e.message); return; }
           Shell.Export.file(sc.file || (sc.id + '.txt'), text);
           Shell.Export.mark(sc.id, { rows: sc.count });
-          Shell.toast(sc.count + ' ' + (sc.unit || 'records') + ' exported. One-way operations on this data are now unlocked.');
+          Shell.toast(sc.count + ' ' + Shell.plural(sc.count, sc.unit || 'records') + ' exported. One-way operations on this data are now unlocked.');
           Shell.closeDrawer();
         });
         return d;
@@ -1196,7 +1212,14 @@
      *   host      a selector for the element to mount AFTER (usually the create button)
      *   scopes    () => [scope]  — a function, so counts stay live across re-renders
      *   summary   () => string   — what the line says when nothing has been exported yet */
-    mastheadExport({ host, scopes, summary, label = 'Take out' }){
+    mastheadExport({ host, scopes, summary, label = 'Take out', note }){
+      /* A scope that names a .csv file is going to a spreadsheet, not back into the bot, and
+       * the panel's default sentence promises a round trip that would be false for it. The
+       * note is derived from what the scopes actually are rather than passed by each realm,
+       * so a realm that later adds a CSV scope cannot forget to change its own copy. */
+      const noteFor = list => note || (list.every(x => /\.csv$/.test(x.file || ''))
+        ? 'Nothing re-ingests these — the destination is a spreadsheet, not the bot. RFC-4180 CSV, so a term containing a comma or a quote survives the trip.'
+        : undefined);
       const anchor = typeof host === 'string' ? document.querySelector(host) : host;
       if (!anchor) return;
       let el = document.querySelector('.mh-take');
@@ -1215,7 +1238,7 @@
         '<span class="mh-take-n">' + (done
           ? done + ' of ' + scopes().length + ' exported this session'
           : (summary ? summary() : scopes().length + ' formats')) + '</span>';
-      el.querySelector('[data-mhx]').onclick = () => Shell.Export.panel({ title:'Export', scopes:scopes() });
+      el.querySelector('[data-mhx]').onclick = () => Shell.Export.panel({ title:'Export', scopes:scopes(), note:noteFor(scopes()) });
       /* Honour Review's deep link (#export=season.calendar). Once only, and the hash is cleared
        * afterwards, or every later re-render would reopen the drawer on top of the reader. */
       if (!Shell._mhxLinked && /^#export/.test(location.hash)) {
@@ -1300,7 +1323,7 @@
             '<ul class="ow-l">' + items.map((it, i) => {
               const ready = Shell.Export.has(it.scope);
               return '<li class="ow-i"><div class="ow-t"><b>' + it.title + '</b><span>' + (it.note || '') + '</span></div>' +
-                '<div class="ow-c">' + it.count + ' <em>' + (it.unit || 'records') + '</em></div>' +
+                '<div class="ow-c">' + it.count + ' <em>' + Shell.plural(it.count, it.unit || 'records') + '</em></div>' +
                 '<button class="pill sm ' + (ready ? 'dang' : 'ghost') + '" data-o="' + i + '">' +
                   (ready ? it.title.replace(/…$/, '') + '…' : 'Export first →') + '</button></li>';
             }).join('') + '</ul>' +
@@ -1314,7 +1337,7 @@
           }
           Shell.typedConfirm({
             title: it.title + '?', op: it.op, tier: 3, word: it.confirmWord || 'PURGE',
-            body: '<p class="dw-p">This removes <b>' + it.count + ' ' + (it.unit || 'records') + '</b> and <b>cannot be undone</b> from inside the portal. ' +
+            body: '<p class="dw-p">This removes <b>' + it.count + ' ' + Shell.plural(it.count, it.unit || 'records') + '</b> and <b>cannot be undone</b> from inside the portal. ' +
                   'Your export from ' + new Date(Shell.Export.at(it.scope)).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) +
                   ' is the only way back.</p>',
             onConfirm: () => it.onRun()

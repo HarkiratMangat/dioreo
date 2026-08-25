@@ -86,6 +86,65 @@ for (const [name, mineFn, botFn] of cases) {
   }
 }
 
+/* ── ANALYTICS CSV ESCAPING ──────────────────────────────────────────────────
+ * Analytics exports do NOT round-trip into the bot — nothing re-ingests them — so the
+ * property worth checking is different: does a value survive being written and read back?
+ * It matters here specifically because the two columns most worth exporting are the two
+ * most likely to contain a comma or a quote: a search TERM is arbitrary text a player typed,
+ * and a change-log SUMMARY is a sentence with a quoted title inside it.
+ * The parser below is a minimal RFC-4180 reader written for this test alone, so a bug in the
+ * writer cannot hide behind a matching bug in the reader. */
+const analytics = readFileSync(join(HERE, 'analytics.html'), 'utf8');
+const C = new Function(
+  slice(analytics, '  const csvCell =', '  const stamp =', 'analytics csv') +
+  '\nreturn { csvCell, csv };')();
+
+function parseCsv(text) {
+  const rows = [[]]; let cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') q = false;
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { rows[rows.length - 1].push(cell); cell = ''; }
+    else if (c === '\n') { rows[rows.length - 1].push(cell); cell = ''; rows.push([]); }
+    else cell += c;
+  }
+  rows[rows.length - 1].push(cell);
+  return rows;
+}
+
+const nasty = [
+  ['plain', 1],
+  ['ak117, holger', 2],
+  ['he said "meta"', 3],
+  ['line\nbreak', 4],
+  ['"leading quote', 5],
+  ['trailing comma,', 6],
+  ['', 7]
+];
+const written = C.csv(['term', 'n'], nasty);
+const readBack = parseCsv(written).slice(1);
+const escOk = readBack.length === nasty.length &&
+  nasty.every((r, i) => readBack[i][0] === r[0] && readBack[i][1] === String(r[1]));
+console.log('MATCH   analytics · csv escaping   ' + nasty.length + ' adversarial cells');
+if (!escOk) {
+  failed++;
+  console.log('DIFFERS analytics · csv escaping');
+  nasty.forEach((r, i) => {
+    const got = readBack[i] || [];
+    if (got[0] !== r[0]) console.log('   row ' + i + '\n     wrote: ' + JSON.stringify(r[0]) + '\n     read : ' + JSON.stringify(got[0]));
+  });
+}
+/* And the escaping check must itself be able to fail: a writer that simply joined on commas
+ * would break the second row. */
+const naive = ['term,n', ...nasty.map(r => r.join(','))].join('\n');
+const naiveSurvives = parseCsv(naive).slice(1).every((row, i) => row[0] === nasty[i][0]);
+if (naiveSurvives) { console.log('falsifier · a naive comma-join is rejected: NO — the escaping test is vacuous'); process.exit(1); }
+console.log('falsifier · a naive comma-join is rejected: YES');
+
 /* The falsifier. A check that cannot fail is not evidence — three probes shipped clean and
  * structurally incapable of failing in this package on 2026-08-24 alone. */
 const bent = newDraws.map((d, i) => (i ? d : { ...d, title: d.title + '!' }));

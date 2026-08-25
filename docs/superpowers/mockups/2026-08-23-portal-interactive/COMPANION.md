@@ -1353,6 +1353,256 @@ A previous investigation read exactly those two numbers, concluded *"there was n
 
 ---
 
+## 5.9j DELETE AND EXPORT — the two verbs the portal exists for
+
+> Harkirat, 2026-08-24: *"THE ENTIRE PORTAL SHOULD BE THE BETTER DATA MANAGEMENT, CREATION, EDIT, DELETE, EXPORT, ETC METHOD FOR MANAGING THE CONTENT INSIDE THE BOT. i want it to make /manage trivial."*
+
+### 5.9j.0 The measurement, and the correction to it
+
+`.verbs.html` (in the package; a probe that plants the words `DELETE EXPORT PURGE` into every page and re-reads, so its silence is only trusted after it has proved it can report presence) across all eight pages at 1280×860:
+
+| page | delete | export | checkboxes | selection bar in DOM |
+|---|---|---|---|---|
+| index | 0 | 0 | 0 | 0 |
+| season | 0 | 0 | **40** | 0 |
+| armory | 0 | **1** | **32** | 0 |
+| broadcast | 0 | 0 | 0 | 0 |
+| access | 0 | 0 | 0 | 0 |
+| review | 0 | 0 | 0 | 0 |
+| analytics | 2 | 0 | 1 | 0 |
+| door | 0 | 0 | 0 | 0 |
+
+Against `core/ops`, which registers **thirteen destructive op types** — `draw.delete` `draw.bulkDelete` `draw.purge` `calendar.delete` `calendar.bulkDelete` `calendar.purge` `loadout.delete` `loadout.bulkDelete` `patchnote.removeSeason` `patchnote.purge` `season.startNew` `season.discardDraft` `announcement.delete` — and `utils/manageActions.js`, which registers **nine export actions**.
+
+🔴 **THE DEFECT WAS NOT ABSENCE. IT WAS DISTANCE — and that is why every check missed it.** Season and Armory both *built* a selection bar containing "Export selection" and "Stage deletion". Each rendered into a `<div id="bulk">` sitting in normal document flow **after a 39-row table**. Measured: selecting the first row put every verb it unlocked **1,682px below the fold**. The word "delete" was missing from the page text only because that container is `[hidden]` at rest, so a census counting markup would have reported the feature covered.
+
+**The user selected two rows, saw two checkmarks and no consequence, and reported delete and export as missing. He was right.** An affordance nobody can see does not exist. Anything built on top of the opposite reading — "it's there, it just needs surfacing" — would have been polish on a feature that functionally was not present.
+
+**The rule this encodes, and it generalises past this bug:** *an action unlocked by a selection is shown where the selection happened.* Docked to the viewport, never in document flow.
+
+### 5.9j.1 The spine: reversibility, which `core/ops` already graded
+
+`core/ops` grades every operation by whether it can be taken back, and the grades are not decoration — they are the interaction:
+
+| tier | meaning | examples | how the portal treats it |
+|---|---|---|---|
+| **1** | an exact inverse was captured at apply time | `draw.delete` `calendar.delete` `loadout.delete` `announcement.delete` | one confirm, plain words, **not red-alarm**. Undo lives in the tray |
+| **2** | same, but wide | `*.bulkDelete` `season.discardDraft` | one confirm that **lists what goes** |
+| **3** | one-way | `draw.purge` `calendar.purge` `patchnote.purge` `season.startNew` | its own strip at the foot of the realm, behind an **export gate**, then a **typed** confirm |
+
+🔴 **A DELETE IS TIER 1, AND THE DIALOG MUST SAY SO.** `core/ops` captures the whole document before removing it, so the inverse is exact. Three surfaces had previously typed a delete as tier 3 because deleting *feels* destructive. A portal that treats a reversible delete as a crisis trains its operator to click through the one that is not — which is precisely the click you need them to read.
+
+🔴 **THEREFORE EXPORT IS NOT A SIDE FEATURE. IT IS THE SAFETY INTERLOCK FOR PURGE.** `Store.blocked()` already refused to commit a tier-3 op that did not carry `exported`, and `review.html` already rendered that gate. Everything downstream of a delete existed — the op, the tier, the staging, the inverse, the Review diff, the interlock. **The only missing piece was the affordance**, which is why building this was wiring rather than invention.
+
+### 5.9j.2 `Shell.selection()` — the docked bar
+
+```js
+Shell.selection({
+  count,          // 0 dismisses it; any other value is one full repaint
+  summary,        // the realm speaking in its own terms, never "2 rows"
+  tier,           // the HIGHEST tier in the selection — it sets the badge
+  badge,          // OPTIONAL per-realm sentence; see the warning below
+  noun = 'selected',
+  clearLabel = 'Clear',
+  actions,        // [{ label, kind:'danger'|'normal', on() }]
+  onClear
+});
+```
+
+| element | value | why |
+|---|---|---|
+| `.selbar` | `position:fixed; left:var(--rail-w); right:0; bottom:0; z-index:42` | above content (1) and the sticky header (40), **below the scrim (44)** so a drawer covers it rather than a bar floating over a modal |
+| entrance | `transform:translateY(130%)` → `none`, `var(--dur-3)` `var(--ease)` | it arrives from where it lives, so its position is learned once |
+| `.selbar-in` | `max-width:1060px`, `border-radius:11px`, `background:var(--raised)`, `box-shadow:0 20px 46px -18px #000` | a raised object over the page, not a band welded to the bottom |
+| `.selbar-n` | `19px var(--data)`, `color:var(--staged)`, `min-width:30px` | the count reads as a **figure**, because it is the one number the bar is about |
+| `.selbar-rev` | pill, `--ok` when reversible, `--danger-ink` + `--danger-edge` when gated | answers *"can I take this back?"* **at the moment of deciding**, the only moment the answer is worth anything |
+| `body.has-selbar .tray` | `translateY(-78px)` | the tray steps up rather than either surface hiding the other |
+| mobile ≤768px | `left:0; bottom:58px`, summary and badge hidden, actions go full-width | the bottom tab bar owns the bottom edge |
+
+🔴 **THE BADGE IS PER-REALM AND A DEFAULT SENTENCE CAN BE A WRONG ONE.** The first version always printed *"reversible · undo stays in the tray"*. Access uses this bar for permission edits, which do **not** go through the tray — `portal/api/access.js` writes them directly, a documented decision (§5.9j.5). So the shared component printed a false statement on a realm that used it. A shared component may carry a default; it may not carry one that is false where it is used. Access passes `badge:'written directly · not staged'`, or `'deletes N admin records · no undo'` when a revoke would empty someone.
+
+**Escape now means one thing at a time:** a drawer is modal and wins; otherwise Escape clears the selection.
+
+### 5.9j.3 `Shell.Export` — the panel, the ledger, and the real file
+
+```js
+Shell.Export.has(scope)        // has a real file been produced for this scope THIS session
+Shell.Export.at(scope)         // when — the typed confirm quotes the time back at you
+Shell.Export.mark(scope, meta) // record it, and unblock staged tier-3 ops naming this scope
+Shell.Export.file(name, text)  // Blob + <a download>, revoked after 4s
+Shell.Export.panel({ title, note, scopes, focus })
+```
+
+A scope is `{ id, label, note, count, unit, file, build() → string }`. `Shell.mastheadExport({ host, scopes, summary, label, note })` mounts the "take out" line **after** the realm's create control, as ONE implementation — Season wrote it inline first, and the moment Access and Broadcast needed the same line that inline copy became the first of five that could drift.
+
+🔴 **`mark()` IS DELIBERATELY STRICT.** An earlier draft also unblocked ops carrying **no** scope, reasoning that a scopeless op could not be matched anyway. That is the shape of a silent wrong result: it would have opened the one-way gate on the strength of an unrelated download. An op that cannot name what would restore it is a hole, so it is `console.warn`ed, never papered over.
+
+🔴 **THE INTERLOCK HAS TWO HALVES AND ONLY ONE EXISTED.** `mark()` stamps ops **already staged**. The one-way strip literally instructs the opposite order — *"Export first →"*, then the verb unlocks — so exporting first and staging second produced an op `Store.blocked()` counted as blocked **with no way left to satisfy it short of exporting the same file twice**. Measured end to end before the fix: export the calendar, purge the calendar, and Review still said *"1 tier-3 change needs an export"*. `Store.add` now answers the same question at staging time. The gate is *"does a copy of this data exist in this session"*, so both entry points must answer it.
+
+**Export placement is three surfaces, one component:** the masthead line (realm-wide scopes) · the selection bar (`Export N`, exactly what is selected) · the one-way gate (`Export first →`, opening the panel **focused** on the scope that gate needs, via `focus:` → `.exs-i.focus`, a `--patch` ring).
+
+**Review deep-links rather than exporting.** A tier-3 op on the commit screen offers `Export in Season →` pointing at `season.html#export=season.calendar`; `mastheadExport` honours that hash **once** and `history.replaceState`s it away, or every later re-render would reopen the drawer on top of the reader. Review holding its own copy of five export builders is how the package got two disagreeing answers to *"has this been exported?"* in the first place.
+
+### 5.9j.4 `Shell.oneWay()` — the strip, and the hazard rail
+
+At the **foot** of the realm, deliberately: the end of the page is where a reader has already seen everything the operation would destroy.
+
+```js
+Shell.oneWay({ host:'#oneway', exportScopes, items:[
+  { id, title, note, count, unit, scope, op, confirmWord, onRun }
+]});
+```
+
+The button **is** the interlock: `Export first →` (`.pill.ghost`) until `Export.has(scope)`, then the verb itself (`.pill.dang`). It repaints on the `dioreo:export` event, so the gate opens the instant the file lands.
+
+| element | value | why |
+|---|---|---|
+| `.ow` | `border:1px solid var(--danger-edge)`, gradient `--del` 9% → transparent at 58% | a boundary being crossed, not a red box someone drew |
+| `.ow::before` | `width:9px`, `repeating-linear-gradient(135deg, --del 62% 0 5px, transparent 5px 10px)`, `opacity:.85` | **the hazard hatch rail is the whole visual argument.** A real-world convention for a boundary, one pseudo-element, and it lets the panel itself stay quiet enough to read. This is the strip's one accessory; everything inside it is ordinary type |
+| `.ow-k` | `--danger-ink` on `--del` 15%, bordered chip | the eyebrow was a bare 9.5px word and disappeared |
+| `.ow-c` | `min-width:88px; text-align:right` | the count sits **next to** its button rather than floating mid-row |
+| `.ow-i .pill` | `min-width:126px` | the gate button does not change width when its label changes from "Export first →" to the verb |
+
+**Season's five**, all from `core/ops`: purge new draws · purge returning draws · purge calendar · purge patch notes · start a new season. `season.discardDraft` is **tier 2** and deliberately NOT here — it lives with the draft it discards. Armory has no tier 3 at all (`loadout.bulkDelete` is tier 2); Broadcast and Access have none.
+
+**Even a one-way op STAGES rather than firing.** Review is the only place anything is written, and a purge that skipped it would make the commit screen a partial record of what the portal did.
+
+### 5.9j.5 `Shell.typedConfirm()` — and where it is NOT used
+
+Disabled until the typed word matches (case-insensitive, trimmed). Used **only for tier 3**: asking someone to type a word for a reversible change teaches them to type it without reading, which is worse than not asking.
+
+The one exception outside tier 3 is Access, and it earns it: a batch of revokes that would leave an `AdminUser` holding **nothing** is not a permission change — the matrix's own note states *"A permissions array is never allowed to be empty — an admin with nothing granted should be revoked, not parked in limbo."* So that save **deletes the record**, the confirm says so in those words, and it asks for the id.
+
+🔴 **The invariant is enforced at save, not at click.** Refusing the click would leave the operator holding a change they meant and no way to express it. Emptying someone is a real intention; it just means something bigger than a permission edit.
+
+### 5.9j.6 `Shell.removeCell()` — the per-row control
+
+```html
+<td class="ra"><button class="rmv" data-rmv aria-label="Remove …"><svg …/></button></td>
+```
+
+A **real column with a real header** (`<th class="ra"><span class="sr">Remove</span></th>`), on Season, Armory and Broadcast.
+
+- **Not a hover reveal.** It does not exist on touch and cannot be scanned.
+- **Not a `⋯` menu.** Harkirat, on exactly this pattern elsewhere: *"why are these buttons still buried in a 2 click step? WHY NOT JUST SHOW THEM ALL OUTRIGHT?"*
+- `color:var(--ink3)` at rest — **5.35:1, over the 3:1 non-text floor**, so it is findable — taking `--danger-ink` + `--danger-edge` + a `--del` 13% wash on hover and focus. `--ink4` would be 3.02:1: legal for a graphic, but this one has to be *found*, not merely perceived.
+- Every wiring site calls `e.stopPropagation()`, or the row click behind it opens the detail drawer underneath the confirm.
+- **The `colspan` on each table's empty row moves with the column.** Season 6→8, Armory 7→8, Broadcast 5→6. A stale colspan is invisible until the table is empty, which is the state nobody looks at.
+
+### 5.9j.7 Access — click-to-toggle
+
+> Harkirat: *"why can't i just directly click these boxes to give/revoke access and then just click an overall 'save' at the end somewhere"*
+
+Before this, the matrix was 8 scopes × N admins of `role="img"` spans: it **displayed the answer to the question the realm exists to answer and could not change it.** Every edit went through a drawer, one admin at a time.
+
+| decision | shape | why |
+|---|---|---|
+| clicking | free, no dialog per click | the tray is for work that crosses realms and commits together; permissions are one write to one collection |
+| pending | `.mxcell.pend` — `box-shadow:0 0 0 2px var(--desk), 0 0 0 3.5px var(--staged)`; `.pend.off` adds a `--danger-ink` bar | the fill shows **what it will be**; the dashed `--staged` ring marks it unsaved — the same language the Track uses for staged bars, learned once |
+| saving | ONE Save → ONE confirm, grouped `Granting N` / `Revoking N` (`.acg-k.on` / `.acg-k.off`) | reading the whole diff once is what makes a batch **safer** than eight separate yes-clicks |
+| typed id | only when a revoke empties someone | §5.9j.5 |
+
+🔴 **AN INHERITED CELL IS NOT TOGGLEABLE, AND SAYING SO IS THE POINT.** It is filled by a bare `manage` token covering every page at once, so "revoking" it here would silently mean revoking `manage` — a far wider act than the cell describes. Clicking one explains where the grant comes from and offers the editor, `cursor:help`.
+
+Access also gains a **row-level revoke** (`.mxact` beside Edit) and an **audit export** — three scopes, and note that `utils/manageActions` registers no permissions export at all. The portal is not limited to what the Discord panel can do, and *"who could do what, on this date"* is the single most useful thing to be able to hand someone later.
+
+### 5.9j.8 Analytics — export only, and it says so
+
+Nothing in Analytics is destructive: `core/ops` registers no analytics operation, and `AnalyticsEvent` expires on its own TTL. So this realm gets export and **no delete** — the honest shape rather than a symmetric one. It has no create control either, so `#mhAnchor` is a zero-height stand-in occupying the same grid cell `.mh-new` uses elsewhere, and the take-out line lands in the same place on every realm.
+
+🔴 **THESE DO NOT ROUND-TRIP, AND THE PANEL SAYS SO.** Every other export is checked byte for byte against `utils/adminParser.js` because something re-ingests it. Nothing re-ingests analytics: the destination is a spreadsheet, so the format is **RFC-4180 CSV** and the note states that rather than implying a symmetry that does not exist. `mastheadExport` derives that note from the scopes themselves (`every(x => /\.csv$/.test(x.file))`), so a realm that later adds a CSV scope cannot forget to change its own copy.
+
+Quoting is not reflex: a search **term** is arbitrary text a player typed, and a change-log **summary** is a sentence with a quoted title inside it (`Added new draw "Test Draw"`). Those are the two columns most worth exporting and the two most likely to break a naive join.
+
+### 5.9j.9 `npm run portal:roundtrip` — the gate that found two wrong formats
+
+Every export claims, in its own copy, that pasting it back restores the data exactly. **Nothing checked that, and nothing could:** an export's output is written to a file and never read again by anything in the package, so a wrong format looks correct by construction and stays wrong indefinitely.
+
+The gate lifts the **shipped source** out of the `.html` files between literal markers and runs *that* — never a retyped copy, which would prove only that the copy matches — then runs the bot's own `utils/adminParser.js` over the same fixture documents and compares byte for byte.
+
+**What it found on its first run:**
+
+1. 🔴 **Armory was emitting the RETIRED seven-segment pipe line.** `parseBulkLoadoutList` was rewritten to a labelled block on 2026-08-22 and **explicitly does not re-read the old shape** (Harkirat's no-back-compat call — under the old positional reading `AK117 | ar` half-parses into a weapon literally named "Weapon"). The mockup's format-guide drawer taught the retired shape to the reader as well. **Mode is also gone from that format, and removing it was itself a bug fix:** the parser demanded a segment `upsertBulkBlocks` overwrote with the page's own mode, so exporting DMZ builds and pasting them on the MP page silently reassigned every one.
+2. 🔴 **Season's patch notes joined entries with a blank line;** the bot joins with `\n\n---\n\n`. And it read `titleOverride` where the bot reads `title`.
+
+Two of four formats would have failed on paste-back — at the exact moment an export matters, and the only moment nobody is watching.
+
+**The gate carries two falsifiers and FAILS the run if either stops working:** a one-character change to an input must be detected, and a naive comma-join must be rejected by the CSV reader. A check that cannot fail is not evidence — three probes shipped clean and structurally incapable of failing in this package on 2026-08-24 alone.
+
+Current: **5 formats byte-identical + 7 adversarial CSV cells, both falsifiers passing.**
+
+### 5.9j.10 Five more defects the same pass surfaced
+
+1. 🔴 **`.ghost` was the ninth generic class collision.** `.ghost{position:absolute;top:50%;transform:translateY(-50%);height:22px}` is the **Track's drag preview** and it held the most generic name in the package. `.pill.ghost` sets only border and colour, so all four of those properties leaked straight through it — **a higher-specificity rule wins only the properties it SETS.** The variant had been unusable since the day it was written and nothing had used it, so nothing reported it; the first real use stacked five one-way buttons on top of each other at (93,445), over the Track, ~2,900px from the strip they belong to. Renamed to **`.tghost`**. Roster now: `.now .left .tbd .k .tk .ed .col` `window.frames` `.ghost`.
+2. 🔴 **Review kept a second export ledger.** `st.exported = {}` page-local, while `Store.blocked()` read `o.exported`. Measured: `blocked() === 0` while the commit screen said an export was still required and refused the commit. **Two answers to one question, and the screen that decides was reading the wrong one.**
+3. 🔴 **Two row shapes in one store.** Season and Broadcast staged `{field, was, becomes}`; Armory staged `[field, was, becomes]`; Review read `r[0] r[1] r[2]`. Every object-shaped op rendered its whole diff as em-dashes — **a commit screen showing an empty table for a change it was about to make**, the one thing that screen exists not to do. Neither shape was wrong; having two was. Normalised in `Store.add`, the choke point every staging path already passes through, so no page had to be migrated to be correct.
+4. 🔴 **Review was not in the rail.** The only surface that writes anything was reachable only through the tray — which requires staged work to exist, so the commit screen was unreachable from a page with nothing staged, exactly when you would want to check that nothing is staged. It now sits **below a `.rail-rule`**: five realms are places to work, Review is the way out, and a divider says that without a heading nobody would read at 9px. **And the staged count sat on Season** whatever realm staged the work — it is a property of the changeset, so it moved to Review.
+5. 🔴 **The tray covered controls, and collapsing hid its verbs.** `position:fixed` bottom-right, **320×269 expanded**, it sat on the one-way strip's last button and on Access's last three scope columns. Three changes: it **defaults to its summary** (a status object states the summary and keeps its verbs; the detail folds away), `.tray.collapsed` no longer hides `.tray-f` (you used to have to expand before you could discard), and it **reserves its own space** through `Shell.reserveForTray()` driven by a **`ResizeObserver`** — a one-shot `rAF` after `renderTray` measured before webfont metrics settled and left the overlap live often enough to matter.
+
+**And one lie:** Season's old export ran a 700ms `setTimeout` and toasted *"Exported N items in Bulk Add format"* while producing no file at all. A mockup may simplify; it may not claim an outcome that did not happen. That is the same defect class as a probe reporting clean without being able to fail.
+
+### 5.9j.11 Tiers are DERIVED, never typed, where the op is dynamic
+
+The schema gate flagged three new staging sites stating `tier:` beside an `op` held in a **variable** (`removeOne` picks `draw.delete` or `calendar.delete` per row; `stageOneWay` takes the op as a parameter). The gate cannot resolve a variable statically and correctly refuses to accept a tier it has no way to check.
+
+**The fix is not to teach the gate the shorthand — that would stop the report while leaving the tier unverified, which is a vacuous pass.** `Store.add` and `Shell.confirm` both derive the real tier from `FIX.OP_TIERS`, so the sites simply stop stating one. `Store.blocked()` still finds tier 3 because it reads the derived value.
+
+---
+
+## 5.9k MOTION — three moments, and the rail icons
+
+### 5.9k.0 The standard, which was already written down
+
+`tokens.css`: *"Motion earns its place by explaining where something came from; anything that is not doing that stays a colour fade."* One easing (`--ease`), three durations (`--dur-1` 130ms state · `--dur-2` 180ms transition · `--dur-3` 320ms entrance).
+
+**The premise of Season is a TIMELINE and it never animated time.** Zoom teleported, NOW was a static gold hairline, and an item you had just staged simply *existed* on the next frame. Three moments were added; anything that could not answer *"what does this explain?"* is deliberately not here.
+
+### 5.9k.1 Zoom interpolates — and why a CSS transition works at all
+
+🔴 **Zoom and pan do NOT rebuild the Track.** They call `repositionBars()`, which rewrites `left` and `width` on the **same nodes**. So the browser can interpolate them, and **object identity survives the view change** — which is the textbook justification for animating a view change, and the reason this is worth doing rather than decorative. *If a later change ever makes zoom rebuild `innerHTML`, this silently stops animating and would need FLIP.*
+
+🔴 **It is opt-in per change, not a standing transition on `.bar`.** A trackpad pinch fires **tens** of wheel events; a 320ms interpolation restarted on each lags the gesture by a third of a second — the pointer stops and the bars keep sliding. So `withMotion(fn)` adds the class only around a **discrete** change and removes it after 380ms:
+
+| animated | not animated |
+|---|---|
+| `−` / `+` / `FIT` buttons · `+` `-` keys · command-bar Zoom in/out · zoom-to-cluster | ruler drag-to-pan · ⌘-wheel pinch · horizontal-wheel pan · dragging a bar |
+
+**Two defects this shipped with, both found by measuring rather than by looking:**
+
+1. 🔴 **`.tk` IS PER-LANE — there are five of them.** `viewTrack.querySelector('.tk')` returns the first, so the first version animated **one lane while the other four teleported**, which reads as a rendering fault rather than as a missing feature. The class goes on **`.tk-inner`**, the one node containing every lane. *Same defect class as `fitFlags()` querying `.dend .dflag`: a selector that reads as "the Track" and reaches part of it.* Verified after the fix: `.tk-inner.animate .bar` matches **9 of 9**.
+2. 🔴 **The `transition` shorthand REPLACES the whole list.** `.bar` already carries `transition:transform .14s, box-shadow .14s, filter .12s` for its hover lift. Writing only `left`/`width` killed that lift for the 380ms the class is on — visible only if you happened to hover *during* a zoom, which is to say never, until it shipped. The rule restates all five properties. Verified: `left, width, transform, box-shadow, filter | 0.32s, 0.32s, 0.14s, 0.14s, 0.12s`.
+
+`.dragging` gets `transition:none` inside the animate scope, and the whole block is disabled under `prefers-reduced-motion` **and** short-circuited in `withMotion` itself, so reduced motion costs nothing rather than animating invisibly.
+
+### 5.9k.2 NOW carries the real clock
+
+🔴 **A literal creeping marker would have been theatre.** At a 48-day window one day is ~14px, so an hour is **0.6px** — a marker that crept would move imperceptibly and say nothing. So the marker states the *fact* instead: `.nowt`, a 9px `--data` readout in `--patch`, tabular figures (or the minute changing shifts the whole string), `pointer-events:none`.
+
+`startClock()` **aligns to the next minute boundary** rather than firing every 60s from load — otherwise the readout can sit up to 59 seconds stale against the wall clock it claims to be.
+
+**The fixture date stays frozen at `F.today` and the clock is real.** Every screenshot of this package must be reproducible, so the *date* is pinned; the *time of day* is not part of what the fixture pins, and a stopped clock beside a live-looking marker is worse than no clock at all.
+
+### 5.9k.3 A staged item ARRIVES
+
+`@keyframes arrive` — `opacity 0→1`, `scaleX(.72)→1` from the bar's own centre, so it grows out of its lane rather than flying in from nowhere. Points get `arrive-pt` (`rotate(45deg) scale(.4)→1`), because a `.pt` is a rotated square and reusing the bar keyframe would un-rotate it mid-flight.
+
+Applied in `addItem()` **after** `renderAll()` (the node does not exist until the Track is rebuilt) inside one `requestAnimationFrame`, and removed on `animationend` with `{ once:true }` so a later re-render cannot replay it.
+
+**Why it earns its place:** without it a staged item is indistinguishable from one that was already there, and the reader loses the object they were looking at — the single most common reason a person re-reads a whole list after adding one row to it.
+
+### 5.9k.4 The rail icons — Armory and Broadcast
+
+> Harkirat, 2026-08-24: *"can you use better, more relevant, icons for 'armory' and 'broadcast'."*
+
+| realm | was | is | why |
+|---|---|---|---|
+| **Armory** | an abstract stroke assembly (`M3 13h11l3-3h4…` plus a stray circle) | a **weapon reticle** — ring, centre dot, four ticks | the old glyph resolved to nothing at 20px. A rifle silhouette is unreadable at this size in stroke; the reticle is the one shooter-game motif that survives it, and **nothing else in the rail is round** |
+| **Broadcast** | a **volume speaker** with one arc | a **megaphone** — cone, handle, two emission arcs | the old glyph reads as *"sound settings"* in every other interface a person has used. Announcements are pushed **out to players**, and a megaphone is the glyph that says "said to everyone" rather than "audio" |
+
+**The test an icon in a five-item rail has to pass** is not "is it pretty" — it is read at a glance, beside its own label, so it has exactly one job: **be unmistakable for the other four.** Checked by rendering all six at 56px side by side (`Season` calendar · `Armory` reticle · `Broadcast` megaphone · `Access` padlock · `Analytics` bars · `Review` lines-and-check) — six distinct silhouettes, no two sharing a dominant shape.
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

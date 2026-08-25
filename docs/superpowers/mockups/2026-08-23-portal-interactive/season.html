@@ -915,7 +915,12 @@
       ${cp ? `<div class="win" id="cpwin" style="left:${v.pct(cp.start)}%;width:${v.wpct(cp.start,cp.end)}%"
                 data-tip="Double CP — every draw in this window is priced differently">
                 <span class="wh l" data-edge="start"></span><span class="wh r" data-edge="end"></span></div>` : ''}
-      <div class="now" style="left:${v.pct(F.today)}%"></div>
+      <!-- 🔴 NOW STATES THE ACTUAL TIME. It was a 1px gold hairline labelled NOW, which is
+           a position and not a fact — on a 48-day window one day is ~14px, so a marker that
+           literally crept would move 0.6px an hour and say nothing. A live readout says the
+           true thing instead: this is where the line is, and this is when that is. It ticks
+           on the minute (see startClock), which is the only rate at which the text changes. -->
+      <div class="now" style="left:${v.pct(F.today)}%"><span class="nowt" id="nowT">${clockText()}</span></div>
       ${F.LINES.map(L => {
           const o = st.season;
           if (o[L.tbdKey] || !o[L.endKey]) return '';
@@ -1463,7 +1468,7 @@
             return;
           }
           const pad = Math.max(3, T.days(c.dataset.from, c.dataset.to));
-          setView(T.addDays(c.dataset.from, -pad), T.addDays(c.dataset.to, pad)); afterZoom();
+          withMotion(() => { setView(T.addDays(c.dataset.from, -pad), T.addDays(c.dataset.to, pad)); afterZoom(); });
         };
         tk.appendChild(c);
       };
@@ -1577,6 +1582,62 @@
     renderRuler(); renderOverlay(); repositionBars(); renderScrub(); syncZoomUI();
     wireOverlay();          // renderOverlay() replaced the nodes; the handlers must follow
   }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * MOTION — three moments, and no more.
+   *
+   * The premise of this realm is a TIMELINE and it never animated time: zoom teleported,
+   * NOW was a static hairline, and a staged item appeared rather than arrived. The tokens
+   * already state the standard — "motion earns its place by explaining where something came
+   * from; anything that is not doing that stays a colour fade" — so each of these has to be
+   * able to answer that, and anything that could not is not here.
+   *
+   * 🔴 WHY A CSS TRANSITION WORKS AT ALL, which is not obvious and is the whole design:
+   * zoom and pan do NOT rebuild the Track. They call repositionBars(), which rewrites
+   * `left` and `width` on the SAME nodes — so the browser can interpolate them, and object
+   * identity survives the view change. That is the textbook justification for animating a
+   * view change and the reason this is worth doing rather than decorative. If a later change
+   * ever makes zoom rebuild innerHTML, this silently stops animating and would need FLIP.
+   *
+   * 🔴 AND WHY IT IS OPT-IN PER CHANGE, not a permanent transition on .bar: a trackpad pinch
+   * fires tens of wheel events, and a 320ms interpolation restarted on each one lags the
+   * gesture by a third of a second — the pointer stops and the bars keep sliding. So the
+   * class is added only around a DISCRETE change (the +/-/FIT buttons, a keyboard step, a
+   * command-bar zoom, zoom-to-cluster) and removed after. Continuous drag and pinch paths
+   * call the same functions without it and stay pinned to the finger. */
+  let _motionOff;
+  /* The fixture date is frozen at F.today so every screenshot of this package is
+   * reproducible; the CLOCK is real, because the time of day is not part of what the fixture
+   * pins and a stopped clock beside a live-looking marker is worse than no clock. */
+  function clockText(){
+    return new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+  }
+  function startClock(){
+    if (window.__nowClock) clearInterval(window.__nowClock);
+    const tick = () => { const el = document.getElementById('nowT'); if (el) el.textContent = clockText(); };
+    /* Align to the next minute boundary rather than firing every 60s from load — otherwise
+     * the readout can sit up to 59s stale against the wall clock it claims to be. */
+    setTimeout(() => { tick(); window.__nowClock = setInterval(tick, 60000); },
+      (60 - new Date().getSeconds()) * 1000);
+  }
+
+  function withMotion(fn){
+    /* 🔴 `.tk` IS PER-LANE — there are FIVE of them, one inside each `.lane`, and
+     * `viewTrack.querySelector('.tk')` returns only the first. The first version of this
+     * animated exactly one lane while the other four teleported, which reads as a rendering
+     * fault rather than a missing feature. Same defect class as fitFlags() querying
+     * `.dend .dflag`: a selector that reads as "the Track" and reaches part of it.
+     * `.tk-inner` is the one node that contains every lane. */
+    const tk = viewTrack.querySelector('.tk-inner');
+    if (!tk || matchMedia('(prefers-reduced-motion: reduce)').matches) { fn(); return; }
+    tk.classList.add('animate');
+    fn();
+    clearTimeout(_motionOff);
+    /* Time-based rather than transitionend: several properties animate on several nodes, so
+     * the last transitionend is not knowable in advance, and a missed one would leave the
+     * class on and make the next pinch lag. --dur-3 is 320ms; 380 covers the tail. */
+    _motionOff = setTimeout(() => tk.classList.remove('animate'), 380);
+  }
   /* The key lists only the states actually on screen. */
   function renderKey() {
     const el = document.getElementById('key'); if (!el) return;
@@ -1595,14 +1656,14 @@
     zFit.disabled = st.view.from === FIT.min && st.view.to === FIT.max;
     viewMeta.textContent = `${T.fmt(st.view.from)} → ${T.fmt(st.view.to)}`;
   }
-  zIn.onclick  = () => zoom(0.62);
-  zOut.onclick = () => zoom(1.6);
+  zIn.onclick  = () => withMotion(() => zoom(0.62));
+  zOut.onclick = () => withMotion(() => zoom(1.6));
   zFit.onclick = fitAll;
   /* Keyboard is the guaranteed escape hatch: 0 always fits, whatever state the view is in. */
   addEventListener('keydown', e => {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.metaKey || e.ctrlKey) return;
-    if (e.key === '+' || e.key === '=') { zoom(0.62); e.preventDefault(); }
-    else if (e.key === '-' || e.key === '_') { zoom(1.6); e.preventDefault(); }
+    if (e.key === '+' || e.key === '=') { withMotion(() => zoom(0.62)); e.preventDefault(); }
+    else if (e.key === '-' || e.key === '_') { withMotion(() => zoom(1.6)); e.preventDefault(); }
     else if (e.key === '0') { fitAll(); e.preventDefault(); }
     else if (e.key === 'ArrowLeft'  && st.mode === 'track') { panDays(-Math.max(1, Math.round(st.view.span()*.2))); e.preventDefault(); }
     else if (e.key === 'ArrowRight' && st.mode === 'track') { panDays( Math.max(1, Math.round(st.view.span()*.2))); e.preventDefault(); }
@@ -1810,6 +1871,18 @@
       st.items = st.items.filter(x => x.id !== it.id); S.Store.remove(it.id); renderAll();
     });
     renderAll();
+    /* The thing you just created ARRIVES rather than simply existing on the next frame.
+     * Without it a staged item is indistinguishable from one that was already there, and the
+     * reader loses track of the object they were looking at — the single most common reason
+     * a person re-reads a whole list after adding one row to it. After renderAll(), because
+     * the node does not exist until the Track is rebuilt; the class is removed on animation
+     * end so a later re-render cannot replay it. */
+    requestAnimationFrame(() => {
+      const el = viewTrack.querySelector(`.bar[data-id="${it.id}"], .pt[data-id="${it.id}"]`);
+      if (!el) return;
+      el.classList.add('arriving');
+      el.addEventListener('animationend', () => el.classList.remove('arriving'), { once:true });
+    });
   }
 
   /* ═══ BOARD — content state, the useful axis ═══ */
@@ -2433,7 +2506,7 @@
   }
   function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
   function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
-    renderOneWay(); renderTakeOut();
+    renderOneWay(); renderTakeOut(); startClock();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }
 
   /* The masthead states what an export would carry, so "Export…" is never a blind click —
@@ -2496,8 +2569,8 @@
     { k:'Track view',            c:'patch', run:() => setMode('track') },
     { k:'Board view',            c:'patch', run:() => setMode('board') },
     { k:'Fit the whole season',  c:'info',  run:() => { setMode('track'); fitAll(); } },
-    { k:'Zoom in',               c:'info',  run:() => { setMode('track'); zoom(0.62); } },
-    { k:'Zoom out',              c:'info',  run:() => { setMode('track'); zoom(1.6); } },
+    { k:'Zoom in',               c:'info',  run:() => { setMode('track'); withMotion(() => zoom(0.62)); } },
+    { k:'Zoom out',              c:'info',  run:() => { setMode('track'); withMotion(() => zoom(1.6)); } },
     { k:'Edit live season',      c:'ok',    run:() => { st.sn='live';  renderIdentity(); document.getElementById('f-title').focus(); } },
     { k:'Edit next season',      c:'staged',run:() => { st.sn='draft'; renderIdentity(); document.getElementById('f-title').focus(); } },
     { k:'Compare live vs next',  c:'staged',run:() => { st.sn='draft'; renderIdentity();

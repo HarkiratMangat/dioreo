@@ -191,12 +191,12 @@
                     aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}${willBe}"
                     data-tip="${esc(s.label)} — ${what}${willBe}"></button></td>`;
               }).join('')}
-              <td class="mxact">
+              <td class="mxact"><span class="mxacts">
                 <button class="chip" data-edit="${esc(a.discordId)}">Edit</button>
                 <button class="rmv" data-drop="${esc(a.discordId)}" aria-label="Revoke …${esc(a.discordId.slice(-6))} entirely">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>
                 </button>
-              </td>
+              </span></td>
             </tr>`).join('')}
           </tbody>
         </table>
