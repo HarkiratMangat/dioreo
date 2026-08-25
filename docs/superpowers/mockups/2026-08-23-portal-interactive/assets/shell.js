@@ -824,7 +824,22 @@
           problems.push(`.${el.className} is dashed but is live`);
       });
 
-      // 5. Every visible interactive element must show a focus ring.
+      /* 5. Every visible interactive element must show a focus ring.
+       * 🔴 `preventScroll:true` IS NOT HONOURED HERE, AND THIS IS WHY THE SEASON PAGE OPENED AT
+       * THE BOTTOM. Measured 2026-08-25 with the option explicitly set: ONE `.focus()` on an
+       * input moved `main.scrollTop` from 0 to 2785 in a single jump. Disabling the sweep, or
+       * stubbing `focus`, put the page at 0 — so this sweep was the cause, and the option that
+       * exists to prevent exactly this did nothing.
+       * The bug was reported, "fixed" with `Shell.holdTop()`, and came back — because holdTop
+       * treats the symptom and releases before the SETTLED audit pass runs the sweep a second
+       * time. **A diagnostic must not damage the thing it is diagnosing.** So the sweep saves and
+       * restores the scroller itself.
+       * ⚠️ AND IT MUST BE `main`, NOT `window`. `main` is the scroll container on every portal
+       * page (`.app{height:100vh}` + `main{overflow:auto}`), so `window.scrollY` is permanently 0
+       * and `window.scrollTo` is a no-op — which is why rule 9's own restore, written to do this
+       * job, had never once worked. */
+      const scroller = document.querySelector('main') || document.scrollingElement || document.body;
+      const keepTop = scroller.scrollTop, keepLeft = scroller.scrollLeft;
       const noFocus = [...document.querySelectorAll('button,input,select,[tabindex]:not([tabindex="-1"])')]
         .filter(el => el.offsetParent !== null)
         .filter(el => { try { el.focus({ preventScroll:true }); } catch(e){ return false; }
@@ -832,6 +847,7 @@
           return px(o.outlineWidth) === 0 && o.boxShadow === 'none'; });
       if (noFocus.length) problems.push(`${noFocus.length} focusable element(s) show no focus ring`);
       document.activeElement && document.activeElement.blur();
+      scroller.scrollTop = keepTop; scroller.scrollLeft = keepLeft;
 
       /* 5b. NOTHING A PERSON MUST READ MAY LIVE IN A NATIVE `title`. Twenty-three of them did,
        *     including the cluster readout, which is content — it names the items and explains why
@@ -1158,7 +1174,6 @@
        * page, every other rule MEASURES it. Only one of them may run twice. */
       const iMark = problems.length;
       if (interactions && wantsInteractive) {
-        const scrollY = window.scrollY;
         interactions().forEach(({ name, run, when }) => {
           try {
             /* 🔴 SKIPPING IS REPORTED, NEVER SILENT. Analytics' interactions index
@@ -1182,7 +1197,9 @@
           } catch (e) { problems.push(`${name} threw: ${e.message}`); }
         });
         Shell.closeDrawer();
-        window.scrollTo(0, scrollY);          // leave the page exactly as it was found
+        /* `main` is the scroller — `window.scrollTo` here was a no-op from the day it was
+         * written, for the same reason `window.scrollY` reads 0 on every portal page. */
+        scroller.scrollTop = keepTop; scroller.scrollLeft = keepLeft;
       }
 
       /* 10. VISIBILITY. Every check above passes happily on an element that is present,

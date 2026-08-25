@@ -451,7 +451,10 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
    bordered pill, which is exactly how a dead rule causes a live bug. */
 
 /* ═══ SCRUBBER — drag the ends to resize the window, the middle to pan ═══ */
-.scrub .mini{position:absolute;height:5px;border-radius:2px;background:var(--c);opacity:.55}
+/* A minimum width, because a single-day draw at season scale computes to under a pixel and
+   simply vanished — eleven of the fourteen real draws are single-day. An overview that silently
+   omits most of what it is overviewing is worse than no overview. */
+.scrub .mini{position:absolute;height:4px;min-width:3px;border-radius:2px;background:var(--c);opacity:.72}
 .scrub .season-end{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.7}
 .scrub .winbox:active{cursor:grabbing}
 .scrub .wh{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;background:var(--patch);opacity:.55;touch-action:none}
@@ -1503,8 +1506,16 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   letter-spacing:var(--tr-figure);font-variant-numeric:tabular-nums;color:var(--ink)}
 .mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
+/* 🔴 A ZERO IS GOOD NEWS AND MUST NOT BE PAINTED AS AN ALERT. "STAGED 0" rendered in the
+   staged cyan and "FLAGS 0" in the warning amber, so a page with nothing wrong still showed two
+   coloured numbers in the masthead — and a colour that is on whether or not it means anything
+   stops meaning anything. `.zero` is set by the same code that writes the number, so the two
+   can never disagree. */
 .mh-stats .stat.stg .v{color:var(--staged)}
 .mh-stats .stat.warn .v{color:var(--warn)}
+.mh-stats .stat .v.zero{color:var(--ink4)}
+/* Age is context, not an alarm — it reads at the weight of the neutral stats beside it. */
+.mh-stats .stat .k{white-space:nowrap}
 
 /* The view layer earns the strongest frame; the Manifest deliberately gives it up. */
 .panel{border:1px solid var(--rule2)}
@@ -3174,12 +3185,20 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    filter chips, the export scopes, the selection bar's actions. A create control is a
    different object from a filter, and this is what makes it read as one at a glance. */
 .pill.lead,.pill.mh-t{border-radius:9px}
+/* 🔴 THE COMMENT BELOW USED TO SAY "the diamond is the only per-type mark left now that every
+   button carries the same border weight" — and the rule directly under it set `border-color:
+   var(--c)` AND a per-type ground. Six buttons, six border colours, six tints, side by side in
+   the masthead: a colour chart, not a toolbar, and louder than the season title it sits under.
+   The instruction was explicit — "i mainly want the pill, spacing, border, etc to feel like the
+   original button's style … however, i do like those colored diamonds, please keep those."
+   The original button had ONE neutral border. So the border and the ground are neutral for all
+   six and the diamond carries the whole per-type job, which is what the comment claimed all
+   along. Colour arrives on HOVER, where it confirms the choice you are about to make instead of
+   competing for attention with five others you are not. */
 .pill.mh-t{padding:10px 15px;font-weight:600;font-size:13px;color:var(--ink);
-  border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
-.pill.mh-t:hover{background:color-mix(in srgb,var(--c) 24%,transparent)}
-/* The diamond is the one thing he asked to keep, and it is the only per-type mark left now
-   that every button carries the same border weight — so it does the whole job of saying
-   which lane you are adding to. */
+  border-color:var(--rule2);background:var(--sunk)}
+.pill.mh-t:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.pill.mh-t:focus-visible{border-color:var(--c)}
 .pill.mh-t .dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
 .mh-k{font:500 10px/1 var(--ui);color:var(--ink3);border:1px solid var(--rule2);border-radius:4px;
   padding:4px 6px;margin-left:2px}

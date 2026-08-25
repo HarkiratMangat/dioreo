@@ -2001,6 +2001,74 @@ The last one is the important one. It is the difference between a harness that m
 
 ---
 
+## 5.9p WHAT LOOKING FOUND — the design pass the checks cannot do
+
+*Written 2026-08-25, opening each realm at 1440×960 and judging the composition rather than the diff. Every item here passed every gate.*
+
+### 5.9p.1 The audit was scrolling the page it audits — and the earlier fix treated the symptom
+
+**Season opened at `main.scrollTop` 2862 of a 3102 maximum.** The bug had been reported, filed, "fixed" with `Shell.holdTop()`, closed to the archive on 2026-08-24 — and it was still there, at 1440×960, on the first load of the design pass.
+
+Instrumenting `scrollTop`, `scrollIntoView` and `focus` gave the answer in one run:
+
+```
+{"el":".INPUT","from":0,"to":2785,"opt":"{\"preventScroll\":true}"}
+```
+
+**One `.focus()` call — with `preventScroll:true` explicitly set — moved the scroller 2785px.** Chrome does not honour the option here. The falsifiers were decisive: stubbing `HTMLElement.prototype.focus` gave scrollTop 0, and stubbing `Shell._audit` gave scrollTop 0, so the audit's own focus-ring sweep (rule 5) was the whole cause.
+
+Two fixes, and the second is the one that generalises:
+
+1. The sweep **saves and restores the scroller** around itself. A diagnostic must not damage the thing it is diagnosing.
+2. It restores **`main`**, not `window`. Rule 9 already had a restore line — `window.scrollTo(0, scrollY)` — and it had **never once worked**, because `main` is the scroll container on every portal page and `window.scrollY` is permanently 0. That trap is written down in three places in this repo and still produced a dead line of code in the very function meant to prevent this.
+
+**Why `holdTop()` could not have fixed it:** it releases as soon as fonts settle, and the *settled* audit pass — which runs the sweep a second time — comes later. Verified after: all eight pages open at 0, at 1280, 1440 and 1600.
+
+### 5.9p.2 Season's ADD row was a colour chart, and the comment above it said otherwise
+
+Six create buttons sat under the season title, each with its own border colour and its own tinted ground. They were the loudest object on the page — louder than the 46px H1 — and they made a toolbar read as a palette.
+
+The instruction had been explicit: *"i mainly want the pill, spacing, border, etc to feel like the original button's style … however, i do like those colored diamonds in the buttons, please keep those."* The original button had **one neutral border**.
+
+What makes this worth recording is that **the comment directly above the rule already stated the correct design**: *"the diamond … is the only per-type mark left now that every button carries the same border weight."* The rule underneath it set `border-color: var(--c)` and a per-type background. The prose was right and the code was wrong, and a comment that describes an intention rather than the code is worse than no comment — it stops the next reader from looking.
+
+Now: one neutral border and ground for all six, the diamond carrying the whole per-type job, and the colour arriving on **hover**, where it confirms the choice you are about to make instead of competing with five you are not.
+
+### 5.9p.3 A zero painted as an alert
+
+`STAGED 0` rendered in staged-cyan and `FLAGS 0` in warning-amber, so a page with nothing wrong still showed coloured numbers in its masthead. **A colour that is on whether or not it means anything stops meaning anything.** `.zero` is now written by the same line that writes the number, so the two cannot disagree.
+
+### 5.9p.4 The identity strip repeated the H1 verbatim
+
+"Season 7 — Terminated" in 46px, and then "Season 7 — Terminated" again 280px below it. The strip's job is the **deadlines**; it now says *which record you are editing* — "Live season" or "Next season · staged" — which is the one thing there that the H1 does not already tell you.
+
+### 5.9p.5 The overview strip placed items by their array index
+
+`top: 8 + (i % 4) * 6`. **Vertical position in the season overview carried no meaning at all** — two draws a day apart landed on different rows, a draw and a playlist landed on the same one, and the strip rendered as a smear of colour with a box drawn around part of it. It looked like data and was texture. It is the same failure Harkirat named on the Track itself: *"why is the entire track like an open blended canvas?"*
+
+One row per **lane**, in the Track's own lane order, makes the overview a **miniature of the Track directly below it** — so the eye can carry structure from one to the other, which is the entire job of an overview strip. A `min-width:3px` came with it, because a single-day draw at season scale computes to under a pixel and simply vanished, and **eleven of the fourteen real draws are single-day**.
+
+### 5.9p.6 Armory's headline alarm was 89% "this record is a few months old"
+
+**NEED REPAIR 109**, in alarm orange, out of 125 builds shown. Measured over the real collection of 133:
+
+| what | count |
+|---|---|
+| no Gunsmith code | 2 |
+| image is an external URL | 1 |
+| not 5 attachments | 10 |
+| Meta but unranked | 2 |
+| **actual faults** | **13** |
+| **stale — not updated in 120 days** | **104** |
+
+**A number that is red on almost every row is not a signal, it is the wallpaper**, and the rows worth acting on were invisible inside it. The `stale` defect now carries `age:true`: it stays a defect and the Repairs queue still lists it — a stale build *is* probably wrong, and that is the realm's whole argument — but it does not get to be the alarm. The masthead reads **NEED REPAIR 11 · STALE 106**, and the legend names clean / needs repair / stale as three separate states.
+
+### 5.9p.7 One regression, and what caught it
+
+The legend edit referenced `b` outside its scope, and the page died on render. **`portal:refs` passed** — it parses every inline script and checks declared identifiers, but it does not do scope analysis, so a free variable inside a template literal is invisible to it. The states sweep would have caught it (a page that throws never calls `S.audit`, so it reports "no `__selfCheck`"), and the browser console caught it in one call. Worth knowing precisely where each gate's edge is: **`portal:refs` proves a page PARSES, never that it RUNS.**
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

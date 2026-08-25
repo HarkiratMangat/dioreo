@@ -542,7 +542,11 @@
      * EDIT chip onto a line of its own — where, as a lone flex item, it stretched to 410px
      * and stopped reading as a control at all. */
     idSum.innerHTML = `<span class="idmeta">
-      <span class="st">${o.currentSeasonTitle || 'Untitled season'}</span>
+      <!-- 🔴 NOT THE SEASON NAME AGAIN. The masthead's H1 says "Season 7 — Terminated" in 46px
+           and this strip repeated it verbatim 280px below, so the first thing the eye met twice
+           was the one thing it already knew. The strip's job is the DEADLINES; it now says which
+           record it is editing, which is the only thing here the H1 does not already tell you. -->
+      <span class="st">${st.sn === 'draft' ? 'Next season &middot; staged' : 'Live season'}</span>
       ${F.LINES.map(L => {
         const f = fmtLeft(o, L);
         const when = o[L.tbdKey] ? 'TBD' : (o[L.endKey] ? T.fmt(o[L.endKey]) : 'not set');
@@ -1099,10 +1103,20 @@
     const full = T.make(FIT.min, FIT.max);
     const box = document.getElementById('scrub');
     box.querySelectorAll('.mini,.winbox,.season-end,.smask').forEach(n => n.remove());
-    st.items.forEach((it, i) => {
+    /* 🔴 THE ROW WAS `i % 4` — THE ITEM'S POSITION IN AN ARRAY. So vertical position in the
+     * overview carried no meaning at all: two draws a day apart landed on different rows, a draw
+     * and a playlist landed on the same one, and the whole strip read as a smear of colour with
+     * a box drawn round part of it. It looked like data and was texture.
+     * One row per LANE, in the Track's own lane order, makes this a MINIATURE OF THE TRACK — the
+     * thing directly below it — so the eye can carry structure from one to the other. That is the
+     * entire job of an overview strip, and it is why an arbitrary row can never do it. */
+    const laneRow = t => Math.max(0, F.LANES.findIndex(l => l.type === t));
+    st.items.forEach(it => {
       const d = document.createElement('span');
       d.className = 'mini';
-      d.style.cssText = `--c:${accentOf(it.type)};left:${full.pct(it.start)}%;width:${full.wpct(it.start,it.end)}%;top:${8 + (i % 4) * 6}px`;
+      d.style.cssText = `--c:${accentOf(it.type)};left:${full.pct(it.start)}%;` +
+        `width:${full.wpct(it.start, it.end)}%;top:${5 + laneRow(it.type) * 6}px`;
+      d.dataset.tip = `${F.TYPE_LABEL[it.type]} — ${it.name}`;
       box.appendChild(d);
     });
     F.LINES.forEach(L => {
@@ -2515,7 +2529,10 @@
   document.getElementById('mhAdd').insertAdjacentHTML('beforeend',
     COMPOSE_TYPES().map(t => `<button class="pill mh-t" data-addtype="${t.key}" style="--c:${t.hex}">
       <span class="dot"></span>${t.single ? t.single[0].toUpperCase() + t.single.slice(1) : t.label}
-    </button>`).join('') + '<kbd class="mh-k">N</kbd>');
+    </button>`).join('') +
+      /* A bare "N" in a box is not a hint, it is a label nobody can read. It says what it does
+         on hover and to a screen reader, like every other control here. */
+      '<kbd class="mh-k" data-tip="Press N to open the composer" aria-label="Keyboard shortcut: N">N</kbd>');
   document.querySelectorAll('[data-addtype]').forEach(b => b.onclick = () =>
     openComposer({ type: b.dataset.addtype, a: F.today }));
   /* `N` for new, but never while you are typing into something. */
@@ -2582,8 +2599,12 @@
     sDays.textContent  = e ? Math.max(0, T.days(F.today, e)) : 'TBD';
     sLive.textContent  = st.items.filter(i => lifecycle(i) === 'live').length;
     sFlags.textContent = computeFlags().length;
+    /* Written where the number is written, so a stat can never be coloured as an alert while
+       reading zero — see `.mh-stats .stat .v.zero`. */
+    [sLive, sFlags, sStaged].forEach(el => el.classList.toggle('zero', el.textContent === '0'));
   }
-  function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
+  function syncStaged(){ sStaged.textContent = S.Store.all().length;
+    sStaged.classList.toggle('zero', sStaged.textContent === '0'); S.mountRail('season'); }
   function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
     renderOneWay(); renderTakeOut(); startClock();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }

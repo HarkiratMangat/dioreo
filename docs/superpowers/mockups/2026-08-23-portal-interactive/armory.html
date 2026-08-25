@@ -19,6 +19,8 @@
         <span class="stat"><span class="v" id="sRanked"></span> <span class="k">ranked</span></span>
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
+        <!-- Age sits beside the alarm rather than inside it: same information, honest weight. -->
+        <span class="stat"><span class="v" id="sStale"></span> <span class="k">stale</span></span>
       </div>
       <!-- 🔴 TWO BUTTONS, NOT ONE WITH A MODE DROPDOWN INSIDE. Which button you press decides
            the mode, because that is what the write path actually does: core/ops/loadouts.js
@@ -164,7 +166,14 @@
     { key:'noslots', label:'No slot labels',     mech:false, collection:true,
       why:'attachmentSlots is only ever filled by /autobuild vision extraction, and zero of the 133 stored builds carry it. That is the state of the whole collection, not a fault in any one row — so it does not count against a build.',
       test:b => b.attachmentSlots.length === 0 },
-    { key:'stale',   label:'Not updated in ' + STALE_DAYS + ' days', mech:false,
+    /* 🔴 `age:true` — TIME PASSING IS NOT A FAULT, AND COUNTING IT AS ONE BROKE THE HEADLINE.
+     * Measured over the real collection: 104 of 133 builds are stale and 13 have an actual
+     * defect, so "NEED REPAIR" read 109 in alarm orange — 89% of it "this record is a few months
+     * old". A number that is red on almost every row is not a signal, it is the wallpaper, and
+     * the 13 rows worth acting on were invisible inside it.
+     * It stays a defect: the Repairs queue must still list it, because a stale build IS probably
+     * wrong and that is the realm's whole argument. It just does not get to be the alarm. */
+    { key:'stale',   label:'Not updated in ' + STALE_DAYS + ' days', mech:false, age:true,
       why:'Attachment pools shift every season; a build untouched for a season is probably wrong.',
       test:b => daysOld(b) > STALE_DAYS },
     { key:'dupcode', label:'Duplicate Gunsmith code', mech:false,
@@ -1322,10 +1331,16 @@ Badges: meta, top3
    * that when every build had a defect, the key advertised "clean" and sent the reader
    * hunting for something that did not exist. */
   function renderKey() {
-    const any = st.builds.some(b => !defectsFor(b).length);
-    const bad = st.builds.some(b => defectsFor(b).length);
+    /* Same split as the masthead — a build whose ONLY mark is its age is stale, not broken, and
+       104 of 133 carry it. The legend names the states actually on screen, so it can now name
+       both, either, or neither. */
+    const marks = st.builds.map(defectsFor);
+    const any   = marks.some(d => !d.length);
+    const bad   = marks.some(d => d.some(x => !x.age));
+    const old   = marks.some(d => d.length && !d.some(x => !x.age));
     key.innerHTML = (any ? `<span class="l"><i></i>clean</span>` : '') +
-                    (bad ? `<span class="c"><i></i>needs repair</span>` : '');
+                    (bad ? `<span class="c"><i></i>needs repair</span>` : '') +
+                    (old ? `<span class="l"><i></i>stale</span>` : '');
   }
   function renderStats() {
     const pool = inMode();
@@ -1338,7 +1353,12 @@ Badges: meta, top3
     const kb = document.getElementById('kBuilds');
     if (kb) kb.textContent = `${st.armMode} builds shown`;
     sRanked.textContent = pool.filter(b => rankOf(b)).length;
-    sFlags.textContent  = pool.filter(b => defectsFor(b).length).length;
+    /* The alarm counts FAULTS. Age is reported next to it, never folded into it — see the
+       `age:true` note on the stale defect. */
+    sFlags.textContent  = pool.filter(b => defectsFor(b).some(d => !d.age)).length;
+    sFlags.classList.toggle('zero', sFlags.textContent === '0');
+    const sStale = document.getElementById('sStale');
+    if (sStale) sStale.textContent = pool.filter(b => defectsFor(b).some(d => d.age)).length;
     const failing = DEFECTS.filter(d => flagged(d).length).length;
     viewMeta.textContent =
       st.mode === 'rack'     ? `${pool.filter(b => rankOf(b)).length} of ${pool.length} ranked · ${F.LOADOUT_STATS[st.armMode]} ${st.armMode} builds live`
@@ -1427,7 +1447,12 @@ Badges: meta, top3
       { name:'add build',     run: openAdd },
       { name:'format guide',  run: openGuide }
     ],
-    states: () => st.builds.map(b => defectsFor(b).length ? 'needs repair' : 'clean')
+    /* Three states now, not two — and audit rule 7 is what forced it: splitting age out of the
+       alarm made the legend advertise "stale" while every row still declared itself either
+       "needs repair" or "clean", so the key sent a reader hunting for a state nothing showed.
+       The legend and this list must describe the same world. */
+    states: () => st.builds.map(b => { const d = defectsFor(b);
+      return !d.length ? 'clean' : d.some(x => !x.age) ? 'needs repair' : 'stale'; })
   });
 })();
 </script>
