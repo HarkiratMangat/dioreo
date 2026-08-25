@@ -3377,3 +3377,51 @@ Season **Board** and **Repairs**, and Armory **Repairs**, **Compare** and **Bulk
 - **Repairs renders a zero-count card at full weight.** "0 · No image" occupies exactly as much space, and reads with exactly as much urgency, as "106 · Not updated in 120 days". Good news should not cost a card. This is §16.4's `.zero` problem in a surface that predates the fix.
 
 Neither is a defect the harness could ever report, because both are statements about *composition* and the harness measures *elements*.
+
+
+### 16.28 A fine grid over every page — and one property declared four times
+
+Harkirat: *"draw a temporary fine grid over each page, and then truly check if you think each element is properly aligned and sized. This is no mechanical check, I want you to genuinely think about it."*
+
+**The instrument** is `.grid.js` — injected, linked from nothing, `__grid()` / `__grid.off()` / `__grid.report()`. Two decisions in it are load-bearing:
+
+- 🔴 **It draws inside `main`, not the viewport.** `main` is this portal's scroll container (`window.scrollY` reads 0 on every page). A viewport-fixed grid holds still while content scrolls beneath it, so every judgement below the fold compares content at scroll 900 against lines drawn for scroll 0 — well-formed, and about nothing.
+- 🔴 **It reports numbers beside the picture.** A 3px misalignment is under one pixel in a downscaled screenshot. The picture answers *does this look wrong*; the numbers answer *is this wrong*. Neither alone can settle it, and the question asked for a judgement, which needs both.
+
+Edge guides are drawn from live bounding boxes and coloured by agreement — green where three or more blocks share an x, red where a block's edge is shared by nothing. **A lone edge is what misalignment actually looks like.**
+
+**What it found.** `main` has zero padding and is 1204 wide.
+
+| | left | right |
+|---|---|---|
+| `.masthead` content | **24** | 1180 |
+| `.panel` box (`margin:22 + border:1`) | 22 | 1182 |
+| `.panel` content (`.ph`, `.idsum`, `.mtable`) | **23** | 1181 |
+
+Three left edges and three right edges, one pixel apart, on **all six realm pages**. The realm title sat 1px right of every panel heading below it for the page's whole height — the amount that reads as *not quite tight* without being nameable.
+
+🔴 **The cause is worth more than the defect.** `.masthead`'s padding is set **four times** in `app.css`: `:83`, `:456` (a breakpoint), `:1565`, and `:2557` — the last buried inside a `display:grid` rule 2,500 lines from the base. **The value was not knowable by reading any one of them.** The base said 22, which was 1px wrong in the *other* direction because the panel's 1px border was never counted; the winner said 24. Both had been tried and neither was measured. **23 is the number that lines up**, and it is now in all of them.
+
+Verified after: `mh-id`, `.panel .ph` and `.idsum` all read **23.00** left; masthead right and panel right both **1181.00**; on Season, Armory and Broadcast.
+
+**What the grid did NOT find, which matters too.** Heights are systematic where they should be — `.mh-stats` is 60, `.mh-take` is 26 and `.ph` is 59 on *every* page. The interior spacing system is consistent. It is only the boundary between the masthead and the panels that had drifted, which is exactly what you would predict from one property being redefined four times and nothing else being.
+
+⚠️ **Nothing here is on an 8px rhythm** — left edges land on 0, 22, 23, 39, 62, 173; widths on 1204, 1160, 1158, 1126, 1080, 995. That is not a defect on its own; a grid is not a religion. It matters because **without a snap there is no mechanism that would have caught 22-vs-23-vs-24**, which is how one pixel survived six pages and a full design pass.
+
+### 16.29 🟡 OPEN — Home and the realms are on two different horizontal systems
+
+Not a defect, a decision, and it is Harkirat's.
+
+| | content column | left edge | width |
+|---|---|---|---|
+| **Home** (`.home`: `max-width:1080; margin:0 auto; padding:34px 24px`) | 86 → 1118 | **86** | **1032** |
+| **Every realm** | 23 → 1181 | **23** | **1158** |
+
+Navigating from Home into any realm shifts the content **63px left** and widens it by **126px**. Home's inset is deliberate in its own terms — a centred measure is easier to read on an overview page — but there is no intermediate step, so the jump happens on every single navigation.
+
+Three ways out, and they are genuinely different products:
+1. **Keep it.** Home is a different kind of page and is allowed to say so. The jump is the cost of that statement.
+2. **Realms adopt Home's measure.** Calmer, and costs the Track 126px of timeline it currently uses.
+3. **Home adopts the realms'.** One system everywhere; Home's overview gets wider than it wants to be.
+
+Filed rather than chosen, because it is a composition decision and nothing about it is broken.

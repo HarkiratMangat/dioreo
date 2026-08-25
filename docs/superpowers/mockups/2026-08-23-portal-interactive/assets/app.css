@@ -76,7 +76,11 @@ nav.rail{background:var(--sunk);border-right:1px solid var(--rule);display:flex;
 main{overflow:auto;padding-bottom:96px}
 
 /* masthead — every realm states its own job */
-.masthead{padding:20px 22px 14px}
+/* 23, not 22 and not 24: .panel is margin 22 + border 1, so panel CONTENT starts at 23.
+   The masthead has no border, so its padding has to carry the whole distance itself or the
+   realm title and every panel heading below it sit on two different left edges. Measured on
+   2026-08-25 with a grid overlay: masthead content 24->1180, panel content 23->1181. */
+.masthead{padding:20px 23px 14px}
 .masthead h1{margin:0 0 3px;font-size:24px;font-weight:600;letter-spacing:-.015em}
 .masthead .job{font-family:var(--data);font-size:10.5px;letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
 .masthead p{margin:9px 0 0;font-size:13.5px;color:var(--ink3);max-width:78ch}
@@ -1558,7 +1562,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    one mattered. The masthead is quiet and generous; the context strip is a STRIP, never a
    panel; the view layer gets the strongest treatment; the Manifest is recessive because it
    is the mechanism beneath the picture. */
-.masthead{padding:34px 24px 22px;max-width:none}
+.masthead{padding:34px 23px 22px;max-width:none}
 .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
 /* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
@@ -2548,9 +2552,15 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* `auto` on the stats track lets it grow past the container — measured overflowing the
  * masthead by 52px with four stats. `minmax(0,max-content)` gives it the same intent while
  * keeping it shrinkable, and the gap tightens before anything is allowed to clip. */
+/* 🔴 THE FOURTH PLACE THIS PROPERTY IS SET, AND THE ONE THAT WINS. .masthead's padding is
+   declared at :83, :456 (a breakpoint), :1565 and here — 2,500 lines apart — so its actual
+   value was not knowable by reading any one of them. It measured 24, which put every realm
+   title exactly 1px right of the panel headings beneath it, on all six realm pages, because
+   .panel is margin 22 + border 1 and its CONTENT edge is 23. Both 22 and 24 have been tried;
+   the number that lines up is 23, and it needs to be the same in all four places. */
 .masthead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content);
   grid-template-areas:"id stats";align-items:end;column-gap:clamp(20px,3vw,44px);
-  padding:30px 24px 20px}
+  padding:30px 23px 20px}
 .masthead .mh-id{grid-area:id;min-width:0}
 .masthead .job{grid-row:2;order:2;display:block;font-family:var(--ui);font-size:var(--t-md);
   font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink2);margin:9px 0 0;
