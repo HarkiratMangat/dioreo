@@ -231,6 +231,12 @@
      * stands down the instant a real user gesture arrives, so it can never fight someone scrolling. */
     holdTop(){
       Shell.installTips();
+      /* After layout, and again whenever the layout changes — a placeholder fits or does not fit
+       * only relative to a rendered field. */
+      const fit = () => Shell.fitPlaceholders();
+      requestAnimationFrame(() => requestAnimationFrame(fit));
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(fit);
+      let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
       const m = document.querySelector('main'); if (!m) return;
       let touched = false;
       const release = () => { touched = true; off(); };
@@ -247,6 +253,39 @@
       setTimeout(off, 4000);
     },
 
+    /* ══════════ A PLACEHOLDER THAT DOES NOT FIT IS A RENDERING FAULT ══════════
+     * 🔴 The surface sweep measured every placeholder against its own field and found them cut on
+     * SIX OF EIGHT REALMS — "…attachment or Gunsm", "Search this realm, or run ", "Paste an image
+     * URL — blank". Harkirat called the first one "that text error in the placeholder", which is
+     * exactly right: a sentence chopped mid-word reads as a bug, not as brevity. Fixing them one
+     * input at a time is how the category comes back, so this measures and shortens ALL of them,
+     * on load and on resize. The full sentence survives on `aria-label`, so nothing is lost to a
+     * reader who hears it rather than sees it. */
+    fitPlaceholders(root = document){
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:-9999px';
+      document.body.appendChild(probe);
+      root.querySelectorAll('input[placeholder],input[data-ph-full]').forEach(inp => {
+        const full = inp.dataset.phFull || inp.dataset.phOrig || inp.placeholder;
+        if (!full) return;
+        inp.dataset.phOrig = full;
+        inp.setAttribute('aria-label', inp.getAttribute('aria-label') || full);
+        const cs = getComputedStyle(inp);
+        const room = inp.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+        probe.style.font = cs.font;
+        /* Progressively shorter candidates, longest first — the first that fits wins, and an
+         * empty string is a legitimate answer when the field is genuinely tiny. */
+        const cands = [full, inp.dataset.phShort, full.split(/\s+[—–-]\s+/)[0],
+                       full.split(/,| or /)[0], full.split(/\s+/).slice(0, 2).join(' '), ''];
+        for (const c of cands) {
+          if (c === undefined) continue;
+          probe.textContent = c;
+          if (!c || probe.getBoundingClientRect().width <= room) { inp.placeholder = c; break; }
+        }
+      });
+      probe.remove();
+    },
+
     /* ══════════ THE COMMAND BAR ══════════
      * A realm calls this with its own command list. Without it the input still works as a
      * launcher for whatever palette the page already has, so a page that has not been converted
@@ -254,7 +293,12 @@
     commandBar({ items, run, placeholder }){
       const wrap = document.getElementById('cmdBar'), inp = document.getElementById('cbIn');
       if (!wrap || !inp) return;
-      if (placeholder) { inp.placeholder = placeholder; inp.setAttribute('aria-label', placeholder); }
+      /* 🔴 THE PLACEHOLDER DID NOT FIT ITS OWN INPUT below ~900px — the surface sweep measured the
+       * string against the field and found it clipped on six of eight realms. A placeholder that
+       * is cut mid-word is worse than a short one: it reads as a rendering fault, which is exactly
+       * what Harkirat called it when he saw "…attachment or Gunsm". The aria-label keeps the full
+       * sentence, so nothing is lost to anyone reading it aloud. */
+      if (placeholder) { inp.dataset.phFull = placeholder; inp.setAttribute('aria-label', placeholder); }
       /* 🔴 IDEMPOTENT ON PURPOSE. mountHeader installs a default bar so that EVERY realm has a
        * working one — a page that shows a command input which does nothing is worse than a page
        * with no input at all, and that is exactly what the first version shipped on the seven

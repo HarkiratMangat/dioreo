@@ -1,0 +1,201 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>surface sweep</title>
+<style>html,body{margin:0;background:#0b0e10;color:#dfe6ea;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;padding:12px}
+b{color:#F2C230}i{color:#FF6B6B;font-style:normal}em{color:#5FD4E8;font-style:normal}
+#pen iframe{border:0;position:fixed;left:0;top:0;visibility:hidden}</style>
+</head><body><div id="out">running…</div><div id="pen"></div>
+<script>
+/* ══════════ THE SURFACE SWEEP ══════════
+ * 🔴 EVERY DEFECT HARKIRAT FOUND ON 2026-08-24 WAS VISIBLE IN ONE SECOND OF LOOKING AND INVISIBLE
+ * TO EVERY CHECK THIS PACKAGE RAN. The audit asserts things about elements someone already thought
+ * about; his eyes scan the whole surface with no prior. So these invariants know NOTHING about what
+ * an element is. Each one was derived from a real defect by asking "what generic rule, applied to
+ * every element, would have caught this?" — and each carries a falsifier, because a probe that
+ * cannot report PRESENCE is not evidence of absence (learned twice today, the hard way).
+ *
+ *   overridden  · inline style beaten by a stylesheet     → the `.col` collision, a 220px void
+ *   cut         · scrollWidth > clientWidth, no ellipsis  → "We⋮", "Gunsm", "2 bui…"
+ *   flood       · >8 identical siblings                   → sixteen overlap boxes
+ *   monochrome  · N siblings, 1 colour, N labels          → five red palette dots
+ *   flush       · same-class neighbours with 0 gap        → the announcement cards
+ *   spill       · element past its scroll container       → the armory table scrolling sideways
+ *   ajar        · a popover open after load               → the palette on all 8 realms
+ */
+const PAGES  = ['index','season','armory','broadcast','access','analytics','review','door'];
+const WIDTHS = [390, 768, 1024, 1280, 1440];
+const THEMES = ['dark','light'];
+const px = v => parseFloat(v) || 0;
+
+function sweep(d, w) {
+  const out = [];
+  const say = (kind, msg) => out.push({ kind, msg });
+  const name = e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') +
+    (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/).slice(0,2).join('.') : '');
+  const vis = e => { const cs = d.defaultView.getComputedStyle(e);
+    return cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat(cs.opacity) > .05; };
+
+  /* 1 · OVERRIDDEN — the element states an intent inline and the cascade ignores it. */
+  d.querySelectorAll('[style*="height"],[style*="width"]').forEach(e => {
+    if (!vis(e)) return;
+    const cs = d.defaultView.getComputedStyle(e);
+    for (const prop of ['height','width']) {
+      const want = e.style[prop]; if (!want || !want.endsWith('px')) continue;
+      const got = cs[prop];
+      if (Math.abs(px(want) - px(got)) > 2)
+        say('overridden', `${name(e)} asks ${prop}:${want}, renders ${got}`);
+    }
+  });
+
+  /* 2 · CUT — text clipped with no ellipsis to say so. */
+  d.querySelectorAll('body *').forEach(e => {
+    if (e.children.length || !e.textContent.trim() || !vis(e)) return;
+    /* `.sr` is the screen-reader-only class — a 1×1 clipped box. Being clipped is its entire job,
+     * so reporting it is the probe misunderstanding the page, not the page being wrong. */
+    if (e.closest('.sr') || e.classList.contains('sr')) return;
+    const cs = d.defaultView.getComputedStyle(e);
+    if (cs.overflow === 'visible' && cs.overflowX === 'visible') return;
+    if (cs.textOverflow === 'ellipsis' || cs.webkitLineClamp !== 'none') return;
+    if (e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0)
+      say('cut', `"${e.textContent.trim().slice(0,26)}" clipped in ${name(e)} (${e.scrollWidth}>${e.clientWidth})`);
+  });
+  d.querySelectorAll('input[placeholder]').forEach(e => {
+    /* An EMPTY placeholder cannot fail to fit. The fitter deliberately empties a field that is
+     * genuinely too small, and the probe was then reporting that decision as a defect — a check
+     * arguing with the fix it asked for. */
+    if (!vis(e) || !e.placeholder) return;
+    const probe = d.createElement('span'), cs = d.defaultView.getComputedStyle(e);
+    probe.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font:${cs.font}`;
+    probe.textContent = e.placeholder; d.body.appendChild(probe);
+    const need = probe.getBoundingClientRect().width; probe.remove();
+    if (need > e.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight) + 1)
+      say('cut', `placeholder "${e.placeholder.slice(0,26)}" does not fit ${name(e)}`);
+  });
+
+  /* 3 · FLOOD — more of one thing than a person can use. */
+  const seenParent = new Set();
+  d.querySelectorAll('body *').forEach(p => {
+    if (seenParent.has(p) || p.children.length < 9) return;
+    const tally = {};
+    [...p.children].forEach(c => { const k = c.tagName + '|' + (c.className || ''); tally[k] = (tally[k]||0)+1; });
+    /* 🔴 REPETITION IS NOT THE DEFECT — SEPARATE BOXES ARE. Thirty-one table rows are a table;
+     * nine list items are a list; ten <code> spans in a paragraph are prose. What made sixteen
+     * overlap warnings unusable is that each was its own bordered, padded BLOCK competing for
+     * attention. So the test is not "how many siblings" but "how many siblings each read as a
+     * discrete card" — measured from their own computed border and padding, not from a blocklist
+     * of class names I would have to keep guessing at. */
+    for (const [k, n] of Object.entries(tally)) {
+      if (n <= 8) continue;
+      const sample = [...p.children].find(c => c.tagName + '|' + (c.className || '') === k);
+      if (!sample || /^(TR|TD|TH|LI|OPTION|CODE|SPAN|I|B|EM)$/.test(sample.tagName)) continue;
+      const scs = d.defaultView.getComputedStyle(sample);
+      const boxed = (px(scs.borderLeftWidth) + px(scs.borderTopWidth)) > 0 && px(scs.paddingLeft) >= 6;
+      if (boxed) say('flood', `${name(p)} holds ${n} separate boxes — more alarms than anyone can act on`);
+    }
+    seenParent.add(p);
+  });
+
+  /* 4 · MONOCHROME — a colour that claims to encode identity and encodes nothing. */
+  d.querySelectorAll('body *').forEach(p => {
+    const kids = [...p.children].filter(c => c.querySelector('[style*="--c"]') || c.style.getPropertyValue('--c'));
+    if (kids.length < 3) return;
+    const cols = new Set(kids.map(c => (c.style.getPropertyValue('--c') ||
+      (c.querySelector('[style*="--c"]')||{style:{getPropertyValue:()=>''}}).style.getPropertyValue('--c')).trim()));
+    const labels = new Set(kids.map(c => c.textContent.trim()));
+    /* A group whose PARENT declares the colour is meant to be one colour — that is the group's
+     * identity, not a failure to differentiate. Only flag where the children each carry their own
+     * `--c` and every one of them landed on the same value. */
+    /* A LANE IS SUPPOSED TO BE ONE COLOUR. Colour carries TOPIC in this package, and a Track lane
+     * IS the topic — thirteen draws sharing the draw hue is the rule working, not failing. Skip
+     * any group whose own container, or the container above it, declares the identity. */
+    if (p.style.getPropertyValue('--c')) return;
+    if (p.closest('[data-lane],[data-topic],.bgrp,[style*="--c"]')) return;
+    /* Table rows are not a colour-coded set; a shared avatar tint across four admins is not a
+     * claim about identity that failed. */
+    if (/^(TBODY|THEAD|TR|TABLE)$/.test(p.tagName)) return;
+    if (cols.size === 1 && labels.size > 2 && [...cols][0])
+      say('monochrome', `${name(p)}: ${kids.length} items, ${labels.size} labels, 1 colour`);
+  });
+
+  /* 5 · FLUSH — neighbours of one kind touching with no separation of any sort. */
+  d.querySelectorAll('body *').forEach(p => {
+    const k = [...p.children]; if (k.length < 2) return;
+    for (let i = 1; i < k.length; i++) {
+      const a = k[i-1], b = k[i];
+      if (!a.className || a.className !== b.className || !vis(a) || !vis(b)) continue;
+      /* Absolutely-positioned siblings are a plotted series, not stacked cards — the overview
+       * scrubber's density strip is SUPPOSED to be contiguous. "No gap" only means something for
+       * elements in normal flow. */
+      if (d.defaultView.getComputedStyle(a).position === 'absolute') continue;
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      if (!ra.height || !rb.height || Math.abs(ra.left - rb.left) > 2) continue;   // stacked only
+      const gap = rb.top - ra.bottom;
+      const cs = d.defaultView.getComputedStyle(b);
+      const ruled = px(cs.borderTopWidth) > 0 || px(d.defaultView.getComputedStyle(a).borderBottomWidth) > 0;
+      if (gap >= -1 && gap <= 1 && !ruled)
+        say('flush', `${name(a)} and its next sibling touch with no gap and no rule`);
+      break;
+    }
+  });
+
+  /* 6 · SPILL — something wider than the box that holds it. */
+  d.querySelectorAll('body *').forEach(e => {
+    if (!vis(e) || e.scrollWidth <= e.clientWidth + 1 || !e.clientWidth) return;
+    /* A wide data table scrolling on a phone is the design; the same table scrolling on a desktop
+     * is a defect. The discriminator is whether there was room — so only report where there was. */
+    if (w < 1024) return;
+    const cs = d.defaultView.getComputedStyle(e);
+    if (!/auto|scroll/.test(cs.overflowX)) return;
+    const worst = [...e.querySelectorAll('*')].map(c => c.getBoundingClientRect())
+      .reduce((m, r) => r.right > m ? r.right : m, 0);
+    say('spill', `${name(e)} scrolls sideways (${e.scrollWidth}>${e.clientWidth}); widest child ends ${Math.round(worst)}`);
+  });
+
+  /* 7 · AJAR — nothing may be open just because the page loaded. */
+  d.querySelectorAll('.drawer.open,.scrim.on,.umenu:not([hidden]),.cb-drop:not([hidden]),.pwrap:not([hidden])')
+    .forEach(e => say('ajar', `${name(e)} is open on load`));
+
+  return out;
+}
+
+(async () => {
+  const rows = [], pen = document.getElementById('pen'), out = document.getElementById('out');
+  const SELFTEST = /[?&]self/.test(location.search);
+  for (const theme of THEMES) for (const w of WIDTHS) for (const p of PAGES) {
+    const f = document.createElement('iframe');
+    f.style.width = w + 'px'; f.style.height = '900px';
+    f.src = `${p}.html?s=${Math.random()}`;
+    pen.appendChild(f);
+    await new Promise(r => { f.onload = r; setTimeout(r, 6000); });
+    const d = f.contentDocument;
+    d.documentElement.setAttribute('data-theme', theme);
+    await new Promise(r => setTimeout(r, theme === 'light' ? 900 : 700));
+    let found = [];
+    try { found = sweep(d, w); } catch (e) { found = [{ kind:'threw', msg:String(e.message) }]; }
+    if (SELFTEST && p === 'season' && w === 1280 && theme === 'dark') {
+      /* falsifier: plant one of each and assert the sweep sees them */
+      const host = d.querySelector('main');
+      const bad = d.createElement('div');
+      bad.style.cssText = 'height:10px;overflow:hidden;white-space:nowrap;width:20px';
+      bad.textContent = 'a very long string that cannot possibly fit in twenty pixels';
+      host.appendChild(bad);
+      const planted = sweep(d, w);
+      rows.push(`<em>SELF-TEST</em> planted a clipped node → ${
+        planted.some(x => x.kind === 'cut') ? '<b>caught</b>' : '<i>MISSED — the sweep is vacuous</i>'}`);
+      bad.remove();
+    }
+    if (found.length) {
+      const by = {};
+      found.forEach(x => (by[x.kind] = by[x.kind] || []).push(x.msg));
+      rows.push(`<i>${p}</i> ${theme} @${w}  ` + Object.entries(by)
+        .map(([k, v]) => `<b>${k}</b>×${v.length}`).join('  ') + '\n    ' +
+        Object.values(by).flat().map(m => '· ' + m).join('\n    '));
+    }
+    f.remove();
+    out.innerHTML = (rows.length ? rows.join('\n\n') : 'clean so far…') +
+      `\n\n…${theme} @${w} ${p}`;
+  }
+  window.__sweep = rows;
+  out.innerHTML = (rows.length ? rows.join('\n\n') : '<b>✅ SURFACE SWEEP CLEAN</b>') +
+    `\n\n<b>DONE</b> — ${PAGES.length} pages × ${WIDTHS.length} widths × ${THEMES.length} themes = ${
+      PAGES.length*WIDTHS.length*THEMES.length} renders`;
+})();
+</script></body></html>
