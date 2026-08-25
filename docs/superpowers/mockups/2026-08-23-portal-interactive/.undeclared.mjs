@@ -76,6 +76,15 @@ const dir = fileURLToPath(new URL('.', import.meta.url));
 const SHARED = ['assets/fixtures.js', 'assets/timeline.js', 'assets/shell.js']
   .map(f => strip(readFileSync(dir + f, 'utf8'))).join('\n');
 const files = readdirSync(dir).filter(f => f.endsWith('.html') && !f.startsWith('.'));
+/* 🔴 THE HARNESSES WERE EXEMPT FROM THE TWO CHECKS THAT PROTECT THEM MOST. `.states.html` and
+ * `.audit-all.html` are dot-files, excluded above so the undeclared-identifier pass does not trip
+ * over the globals they reach into across an iframe boundary — a correct exclusion for THAT check
+ * and wrong for the parse and backtick checks, which care only about syntax.
+ * `.states.html` is 400+ lines of template literals; a backtick inside an HTML comment there kills
+ * the sweep, and a dead sweep reports "no __selfCheck" for every page — which reads like eight
+ * broken realms rather than one broken harness. Found by asking whether the new lint fires on its
+ * own artifacts, which it could not, because it never looked at them. */
+const syntaxFiles = readdirSync(dir).filter(f => f.endsWith('.html'));
 
 if (process.argv.includes('--self-test')) {
   const js = inlineJs(readFileSync(dir + 'season.html', 'utf8'), 'season.html');
@@ -113,7 +122,7 @@ const KNOWN_FALSE = {
  * it reports the SyntaxError and never runs a line of realm code in Node.
  * ══════════════════════════════════════════════════════════════════════════════ */
 let syntaxBad = 0;
-for (const f of files) {
+for (const f of syntaxFiles) {
   const js = inlineJs(readFileSync(dir + f, 'utf8'), f);
   if (!js.trim()) continue;
   try { new Function(js); }
@@ -141,7 +150,7 @@ for (const f of files) {
  * comments are untouched and the check has nothing to argue with.
  * ══════════════════════════════════════════════════════════════════════════════ */
 let tickBad = 0;
-for (const f of files) {
+for (const f of syntaxFiles) {
   const js = inlineJs(readFileSync(dir + f, 'utf8'), f);
   for (const m of js.matchAll(/<!--[\s\S]*?-->/g)) {
     if (!m[0].includes('`')) continue;
