@@ -2,6 +2,15 @@
 <style>body{margin:0;background:#111;color:#eee;font:12px/1.55 monospace;white-space:pre;padding:10px}
 iframe{border:0;width:1280px;height:880px;position:fixed;left:0;top:0;visibility:hidden}</style></head><body>
 <div id="out">…</div>
+<!-- ⚠️ READ THE NUMBERS THE RIGHT WAY AFTER 2026-08-24. This harness counts `.pill` against
+     hand-rolled chips, and it produced the finding that started the component work: ONE `.pill`
+     across eight realms against 93 chips. The layer was then adopted by REDEFINING `.chip`,
+     `.seg button` and `.tbdsw button` in terms of `.pill` rather than renaming 93 markup sites —
+     because `.chip` is queried by name in six pages of JS and a mass rename trades a styling
+     inconsistency for a functional break. So a LOW `.pill` count no longer means low adoption; it
+     means the adoption was done by redefinition. To check adoption now, compare the COMPUTED
+     border-radius / transition / focus ring of a `.chip` against a `.pill`, not the class census.
+     Left in place because the historical measurement is what justified the work. -->
 <script>
 const P=['index','season','armory','broadcast','access','analytics','review','door'];
 (async()=>{ const rows=[];

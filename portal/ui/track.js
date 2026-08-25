@@ -96,6 +96,16 @@ const MAX_FLAGS = 3;
 // <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
 export function Track({ data, draft, window, season, flags, onDragCommit, onFillGap }) {
     // A lane with nothing in it, live or draft, is not rendered. Five always-on lanes meant the patch-notes rail (which season.js has never supplied) plus any unused topic sat as empty 38px rows -- structure announcing content that is not there.
+    // 🔴 AND `patchnote` MUST STAY UNFILLED — that is now a DESIGN DECISION, not an oversight.
+    // `docs/db-deferred-list.md` carried a [P2 · XS] entry prescribing `patchnote: toTrackItems(...)`
+    // to "fix" the missing fifth lane; it was closed 2026-08-24 as superseded. A patch note is a
+    // PUBLICATION, not a state with a duration -- models/PatchNote.js gives it a releaseDate and no
+    // end, and isEventEnded() returns false for it forever -- so it does not belong on an axis whose
+    // every other lane answers "when is this ON?". It also stretched the axis for nothing: the live
+    // season publishes Jul 6 and Jul 22 while nothing is scheduled before Aug 6. The mockup renders
+    // it as the Season Record, a vertical rail beneath the Track. See COMPANION.md §5.9d.
+    // The KEY stays in LANE_LABEL/TOPIC_VAR because historical rows and the Manifest still use it;
+    // filling it here is what must not happen.
     const lanes = Object.keys(LANE_LABEL).filter(k => (data[k] || []).length || (draft && (draft[k] || []).length));
     const shown = flags || deriveFlags(data, window, season, { onClamp: onDragCommit, onFill: onFillGap });
     return html`
