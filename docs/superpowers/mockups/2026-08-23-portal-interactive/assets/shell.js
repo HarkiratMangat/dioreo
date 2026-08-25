@@ -124,6 +124,14 @@
         : r);
       /* Stamped at the ONE choke point every staging path already passes through, for the same
        * reason the tier is derived here — a per-page stamp would be forgotten by the next page. */
+      /* 🔴 TEN STAGING SITES ALREADY PASSED `realm:'season'` AS A STRING, and fixtures.js's
+       * sample changeset does too — so the tray's per-row undo, which reads `realm.href`, got
+       * undefined on every one of them and drew a disabled button. Normalised here for the same
+       * reason the tier is derived here: ten call sites is ten chances to forget. */
+      if (typeof op.realm === 'string') {
+        const r = REALMS.find(x => x.id === op.realm);
+        op.realm = r ? { href:r.href, label:r.label } : null;
+      }
       if (!op.realm) { const r = hereRealm(); if (r) op.realm = { href:r.href, label:r.label }; }
       a.push(op); Store.save(a); Shell.pulseTray(); return true; },
     remove(id){ Store.save(Store.all().filter(o => o.id !== id)); },
@@ -227,7 +235,7 @@
            * not cost the other four. */
           const back = Store.inverses[o.id]
             ? `<button type="button" class="round-u" data-undo="${o.id}" aria-label="Undo ${o.name} ${o.verb||'added'}">Undo</button>`
-            : (o.realm && (!here || o.realm.href !== here.href))
+            : (o.realm && o.realm.href && (!here || o.realm.href !== here.href))
               /* Not a refusal — a route. The inverse lives on the page that staged it. */
               ? `<a class="round-u" href="${o.realm.href}" aria-label="Undo ${o.name} ${o.verb||'added'} on ${o.realm.label}">Undo on ${o.realm.label}</a>`
               : `<button type="button" class="round-u" disabled aria-label="Cannot undo ${o.name} ${o.verb||'added'}" title="This change was staged before the page reloaded, so the portal no longer holds the step that puts it back. Discard clears the whole changeset.">Undo</button>`;
@@ -277,7 +285,7 @@
         b.onclick = () => {
           const o = Store.all().find(x => x.id === b.dataset.undo);
           Store.revert(b.dataset.undo);
-          Shell.toast(`Took back "${o ? o.name : 'that change'}". It is no longer staged.`);
+          Shell.toast(`Undone — "${o ? o.name : 'that change'}" is no longer staged.`);
           Shell.onAfterRevert && Shell.onAfterRevert();
         };
       });
@@ -472,7 +480,14 @@
           expired: { k:'SIGNED OUT', what:'This session expired.',
                      means:'Portal sessions last 12 hours. Your staged work is still here; signing in again returns you to it.',
                      action:'Sign in again' }
-        }[kind] || { k:'PROBLEM', what: detail || 'Something is wrong.', means:'', action:'Reload' };
+        }[kind] || { k:'PROBLEM',
+                     /* This is the fallback for every banner kind that is not offline or expired,
+                      * and it used to read "Something is wrong." with an EMPTY `means` — the one
+                      * pattern §10.6 names as not good enough, sitting as the default, two lines
+                      * below the two cases that do it properly. */
+                     what: detail || 'The portal hit an error it does not recognise.',
+                     means:'Nothing has been written, and anything you have staged is still here.',
+                     action:'Reload' };
         b.className = 'netbar ' + kind;
         b.setAttribute('role', 'alert');
         b.innerHTML = '<span class="net-k">' + copy.k + '</span><b>' + copy.what + '</b>' +
@@ -788,6 +803,11 @@
         else if (e.key === 'Enter' && hits[sel]) { const c = hits[sel]; inp.value = ''; close(); inp.blur(); run(c); }
       });
       document.addEventListener('pointerdown', e => { if (!wrap.contains(e.target)) close(); });
+      /* Exposed so the account menu's "Find a page or an action" can reach the same input the
+       * ⌘K handler below focuses. Its predecessor claimed to switch realms and only toasted a
+       * sentence about where the rail is — a control has to DO the thing its label names. */
+      Shell._cmdInput = inp;
+      Shell.commandBarFocus = () => { const i = Shell._cmdInput; if (i) { i.focus(); i.select(); } };
       document.addEventListener('keydown', e => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); inp.focus(); inp.select(); }
       });
@@ -1712,7 +1732,10 @@
         <div class="usec">
           <button class="mi" role="menuitem" data-m="realm">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-            Switch realm<kbd>G</kbd></button>
+            <!-- Was "Switch realm ⌨ G": it switched nothing (it toasted "the rail is on the
+                 left") and G was bound nowhere. A label that promises an action it does not have
+                 is the same defect as the tray header that carried role="button" with no listener. -->
+            Find a page or an action<kbd>&#8984;K</kbd></button>
           <button class="mi" role="menuitem" data-m="palette">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h10v10H3z"/><path d="M6 6h4M6 9h4"/></svg>
             Command palette<kbd>&#8984;K</kbd></button>
@@ -1722,7 +1745,7 @@
         </div>
         <div class="usec">
           <div class="ustat"><span>Staged changes</span><b id="uStaged">0</b></div>
-          <div class="ustat"><span>Session</span><b>this browser only</b></div>
+          <div class="ustat"><span>Session</span><b>12 hours</b></div>
         </div>
         <div class="usec last">
           <button class="mi danger" role="menuitem" data-m="out">
@@ -1752,11 +1775,20 @@
       });
       /* One handler, two entry points — the header button and the menu item must never be able
        * to disagree about what signing out does. */
-      const signOut = () => Shell.confirm({ title:'Sign out of the portal?', tier:1, op:'session.end',
-        body:`<p class="dw-p">You have <b>${Store.all().length}</b> staged change(s). Staged work
-               lives in this browser session and is <b>lost on sign out</b>.</p>`,
-        confirm:'Sign out', danger:true,
-        onConfirm(){ Store.clear(); location.href = 'door.html'; } });
+      /* 🔴 THIS DIALOG AND THE SIGN-IN DOOR SAID OPPOSITE THINGS, ONE CLICK APART. The door
+       * promises staged work is held against your account and returns when you sign back in;
+       * this said it "lives in this browser session and is lost on sign out" — and then CLEARED
+       * THE STORE, so the copy was wrong and the behaviour was wrong with it. §15.11 settled it:
+       * staging is server-side. The store survives, and with nothing staged this stops being a
+       * data-loss warning about zero items. */
+      const signOut = () => { const n = Store.all().length; Shell.confirm({
+        title:'Sign out of the portal?', tier:1, op:'session.end',
+        body: n
+          ? `<p class="dw-p">You have <b>${n} staged change${n === 1 ? '' : 's'}</b>. They stay staged
+               against your account and will be here when you sign back in.</p>`
+          : `<p class="dw-p">Nothing is staged. Signing out just ends this browser session.</p>`,
+        confirm:'Sign out',
+        onConfirm(){ location.href = 'door.html'; } }); };
       const ho = document.getElementById('hdrOut'); if (ho) ho.onclick = signOut;
       /* Installed here, after the header exists, so no realm can ship a dead command input. */
       Shell.commandBar({ items: Shell.defaultCommands, run: c => c.run() });
@@ -1768,7 +1800,7 @@
         } else if (k === 'copy') {
           navigator.clipboard?.writeText(USER.id); Shell.toast('Discord ID copied.');
         } else if (k === 'palette') { window.__openPalette && window.__openPalette(); }
-        else Shell.toast('The realm switcher is the rail on the left.');
+        else Shell.commandBarFocus && Shell.commandBarFocus();
       });
     },
 
@@ -1910,7 +1942,7 @@
            * bullet lines, patch notes have no bulk-add flow at all, and the manifest is TSV.
            * Each scope states its own shape in its own note; this line states only what is
            * true of all of them. */
-          body: '<p class="dw-p">' + (note || 'Each of these is the format that entity really takes back — the round trip is checked against the bot\'s own exporter on every build, so what comes out here is what /manage would emit. This is what makes a one-way operation survivable: the copy you take before it is the copy you restore from.') + '</p>' +
+          body: '<p class="dw-p">' + (note || 'Each of these is the exact format the bot reads back. Take one before a one-way change — the copy you take is the copy you restore from.') + '</p>' +
                 '<ul class="exs">' + rows + '</ul>' +
                 /* 🔴 THE KEPT COPIES BELONG WHERE EXPORT LIVES, NOT ON ONE REALM. This surface was
                  * added to Armory's Bulk view first, which would have made retention — the thing

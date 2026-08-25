@@ -56,7 +56,7 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **5.9j–5.9v** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **5.9j–5.9w** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice, the copy audit** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 
@@ -2148,6 +2148,53 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 ⚠️ **No privacy amendment is needed, and that was checked rather than assumed.** `docs/legal/PRIVACY.md` §2.1b and Appendix A already describe `AdminUser` as holding "which pages/commands they can use" — the `permissions` array is disclosed generically, so a new token in it is neither a new field nor a new kind of data.
 
 ---
+
+## 5.9w THE COPY AUDIT — the portal promised opposite things one click apart
+
+*2026-08-25 13:4x EDT. A read-only pass over every user-facing string in the eight pages and `shell.js` returned ~45 findings, five blocking. Full report: `local/handoff/2026-08-25-portal-ux-copy-audit.md` (gitignored — state that path).*
+
+### 5.9w.1 The one that could have cost real work
+
+**The portal made flatly opposite promises about whether staged work survives sign-out, in five places, and the two loudest were one click apart.** `door.html` and the expired banner said it is held against your account and returns when you sign back in. The sign-out confirmation said it *"lives in this browser session and is lost on sign out"* — **and then called `Store.clear()`**, so the copy was wrong and the behaviour was wrong with it. §15.11 settled this in the portal's favour: staging is server-side. The store now survives, the dialog says so, and with nothing staged it stops being a data-loss warning about zero items.
+
+⚠️ **This is the shape to watch for, not the instance.** A decision recorded in one document does not propagate to five strings written before it. Nothing in the gate roster can compare two sentences for agreement — which is the prose version of the same relational blind spot every audit rule has.
+
+### 5.9w.2 The other four blockers
+
+| | |
+|---|---|
+| `season.html` | a **tier-3** op said *"Undo is available afterwards"* while every other tier-3 surface says the opposite, and it is not export-gated. The tier number is the whole safety contract; one op that says 3 and reads 1 teaches you to stop reading it |
+| `broadcast.html` · `armory.html` | **Delete and Remove were the same op at two tiers**, chosen by which control you clicked. One verb now: *Remove* |
+| `review.html` | the masthead read **"1 GATES OPEN"** — warn-coloured, plural on a count of one, and *"gates open"* means the reverse of what it says. Now *"1 blocker"*, with the noun agreeing |
+| `shell.js` | the fallback banner was **`"Something is wrong."` with an EMPTY `means`** — the pattern §10.6 explicitly bans, as the default for every unclassified failure, two lines below the two cases that do it right |
+
+### 5.9w.3 A live logic bug the copy pass found
+
+`broadcast.html` guarded on `lifecycle(a) === 'live'`, and `lifecycle()` returns **`'LIVE NOW'`** — it never returns `'live'`. So the "this one is live right now" callout had never rendered once, and **the "What is live now" export permanently counted 0 announcements and built an empty file.** `a.state` is the field it meant, and `queue()` two lines away already used it. A copy audit found a data bug, because reading a string in context means reading what produces it.
+
+### 5.9w.4 A defect the new tray undo had introduced
+
+Ten staging sites already passed **`realm:'season'` as a string**, and `fixtures.js`'s sample changeset does too. §5.9u's per-row undo reads `realm.href`, so every one of those got `undefined` and drew a **disabled** button. Normalised at `Store.add()` — the same choke-point argument as the tier and the row shape, and the same lesson: **a new field added at one call site is a field nine other call sites already have their own idea about.**
+
+### 5.9w.5 What was cut, and the rule behind it
+
+**Engineering leaked into the UI in nine places** — `core/ops`, `apply()`, `ownerOnly()`, `utils/owner.js`, `ADMIN_COMMANDS`, `NOT_IN_ALL`, `models/Announcement.js`, `UserPreference.seenAnnouncementIds`, `ChangeLog`, "on every build", "a Mongo TTL index". The reader is an admin deciding whether to destroy data, not a maintainer reading the repo: a file path costs them a beat and buys nothing.
+
+**Copy that justified its own existence** — *"Why the Best row holds 18 cards and not 7"*, *"Why this view exists at all"*, *"Comparing is the reason this view exists"*, *"is deliberate and must never collapse into one number"*. A UI explaining why it was built this way is arguing with a reviewer who is not there.
+
+**One rhetorical template used three times** — *[terse fact] — and the two [things] [X] cannot [show]: [a], [b]*. Once it is a voice; three times the reader hears the pattern instead of the content. Broadcast's kept, Access's flattened.
+
+**Dates and "now"** — *"removed on 2026-08-13"*, *"as of 2026-08-25"*, *"the old in-memory undo Map"*. A "now" only means something to a reader who saw the before; a date in UI copy is a changelog entry.
+
+⚠️ **`review.html`'s "Load a sample changeset" button and its note are DEMO ONLY and must not ship.** Both address a reader of the mockup rather than a user of the portal. Marked `data-demo-only` with a 🔴 comment naming the removal, because a thing that must be deleted later needs to be findable later.
+
+### 5.9w.6 What the audit said is already strong — do not "improve" it
+
+The empty states as a set (`season.html`'s `EMPTY` map names what each column *is*, why it is empty, and what to do, in one line each) · the offline and expired banners, which are the proof that the fallback was a miss and not a limitation · **consequence-first framing that names what a *player* experiences** · headings that carry an idea ("What one player gets", "Ack — the clock Discord is holding") · the confirmation chain, where `Shell.confirm` derives the button from the title · the typed-confirmation and one-way copy · validation microcopy · **and the domain vocabulary, used correctly and consistently throughout — none of it should be simplified.**
+
+### 5.9w.7 The vocabulary table is the part that has to be settled BEFORE the rebuild
+
+The report's highest-leverage section is not a finding, it is a table: **twelve concepts the portal names more than one way.** Undo / drop / take back / discard. Remove / delete / purge. Token / scope / permission / capability. Export / take out / record / audit / download. Realm / section / the page's own name. Gate / blocker. This pass standardised the ones inside the blockers; **the rest must be settled before the wiring rebuild copies the strings forward**, because a rebuild is where a vocabulary hardens.
 
 ## 5.9v THE DISPLAY VOICE — two faces, four declarations
 

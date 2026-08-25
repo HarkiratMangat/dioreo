@@ -3,7 +3,7 @@
 <title>Review &amp; commit · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787677578"><link rel="stylesheet" href="assets/app.css?v=1787677578">
+<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -17,7 +17,7 @@
       <div class="mh-stats">
         <span class="stat stg"><span class="v" id="sOps">0</span> <span class="k">changes</span></span>
         <span class="stat"><span class="v" id="sRealms">0</span> <span class="k">realms</span></span>
-        <span class="stat" id="statGates"><span class="v" id="sGates">0</span> <span class="k">gates open</span></span>
+        <span class="stat" id="statGates"><span class="v" id="sGates">0</span> <span class="k" id="kGates">blockers</span></span>
       </div>
     </div>
 
@@ -41,8 +41,8 @@
      the footer — two controls for one action, with the redundant one obscuring the one that
      matters. Caught by looking at a screenshot; no audit rule can see it. -->
 
-<script src="assets/fixtures.js?v=1787677578"></script>
-<script src="assets/shell.js?v=1787677578"></script>
+<script src="assets/fixtures.js?v=1787679479"></script>
+<script src="assets/shell.js?v=1787679479"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -95,7 +95,11 @@
     const list = ops();
     sOps.textContent    = list.length;
     sRealms.textContent = new Set(list.map(o => o.realm || 'season')).size;
-    sGates.textContent  = blockers().length;
+    /* 🔴 "1 GATES OPEN" — warn-coloured, plural on a count of one, and it means the REVERSE of
+     * what it says: "gates open" reads as cleared, you may pass. On the masthead of the screen
+     * where everything is written. The noun now agrees with the number. */
+    { const n = blockers().length; sGates.textContent = n;
+      const kg = document.getElementById('kGates'); if (kg) kg.textContent = n === 1 ? 'blocker' : 'blockers'; }
     document.getElementById('statGates')?.classList.toggle('warn', blockers().length > 0);
 
     if (!list.length) { renderEmpty(); renderFoot(); return; }
@@ -234,11 +238,14 @@
         <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
           <a class="chip" href="season.html">Go to Season</a>
           <a class="chip" href="armory.html">Go to Armory</a>
-          <button class="chip go" id="seed">Load a sample changeset</button>
+          <button class="chip go" id="seed" data-demo-only>Load a sample changeset</button>
         </div>
-        <p style="font-size:var(--t-sm);color:var(--ink3);margin-top:16px">
-          The sample is loaded on request and never automatically — a mockup that invented staged
-          work would teach the wrong thing about what staging means.</p>
+        <!-- 🔴 DEMO ONLY — NEITHER THIS BUTTON NOR ITS NOTE MAY SHIP. Both address a reader of the
+             MOCKUP rather than a user of the portal; in a real build the note is nonsense and the
+             button invents work that was never staged. The wiring session removes the button and
+             this comment together, or gates it behind ?demo=1 with no visible copy. -->
+        <p style="font-size:var(--t-sm);color:var(--ink3);margin-top:16px" data-demo-only>
+          Demo only &mdash; this button does not exist in the real portal.</p>
       </div>`;
     document.getElementById('seed').onclick = () => {
       F.sampleOps.forEach((o, i) => {
@@ -256,6 +263,7 @@
      * It was previously only refreshed by render(), so typing the confirmation word
      * opened the gate in the footer while the stat above still read "1 gate open" —
      * two places telling the reader different things about one piece of state. */
+    { const kg = document.getElementById('kGates'); if (kg) kg.textContent = b.length === 1 ? 'blocker' : 'blockers'; }
     sGates.textContent = b.length;
     document.getElementById('statGates')?.classList.toggle('warn', b.length > 0);
     if (!list.length) { rvfoot.innerHTML = ''; return; }
@@ -284,9 +292,12 @@
     document.getElementById('dropAll').onclick = () => {
       S.confirm({ op:'changeset.discard', tier:1, danger:true, confirm:'Discard everything',
         title:`Discard all ${list.length} staged change${list.length > 1 ? 's' : ''}?`,
-        body:`<p class="dw-p">Each one is reverted, not merely forgotten — the portal puts the
-                previous value back. Nothing in Discord changes, because none of this ever
-                reached it.</p>`,
+        /* The old copy said each change is "reverted — the portal puts the previous value back"
+       * AND that none of it ever reached Discord, which are two different mechanics: if it never
+       * reached Discord there is no previous value out there to restore. Both halves are true of
+       * different things, so say which is which. */
+      body:`<p class="dw-p">None of this ever reached Discord, so nothing changes for players.
+                Every row on the page goes back to the value it had before you touched it.</p>`,
         onConfirm(){ S.Store.revertAll(); st.resolved = {}; st.confirmText = '';
                      S.toast('All staged changes discarded.'); render(); } });
     };

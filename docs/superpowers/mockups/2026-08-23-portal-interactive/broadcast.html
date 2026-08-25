@@ -3,7 +3,7 @@
 <title>Broadcast · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787677578"><link rel="stylesheet" href="assets/app.css?v=1787677578">
+<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -74,9 +74,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787677578"></script>
-<script src="assets/timeline.js?v=1787677578"></script>
-<script src="assets/shell.js?v=1787677578"></script>
+<script src="assets/fixtures.js?v=1787679479"></script>
+<script src="assets/timeline.js?v=1787679479"></script>
+<script src="assets/shell.js?v=1787679479"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -140,9 +140,8 @@
                 a valid state, not a broken one. Anything scheduled is in Airtime.</div>`}
           </div>
           <p class="chint" style="margin-top:12px">
-            Position is <b>delivery order</b>, not a stored field &mdash; models/Announcement.js has no
-            ordering column, so this is <code>createdAt</code> ascending and nothing else. Reordering
-            would be a schema change; it is filed, not faked.
+            Position is <b>delivery order</b> &mdash; oldest first, and nothing else. There is no way
+            to reorder announcements.
             ${list.length > cap ? ` <b style="color:var(--warn)">${list.length - cap} of these will not
               arrive in the same message</b> &mdash; Discord caps one message at ${cap} embeds, so the
               overflow waits for that player's next command.` : ''}
@@ -340,9 +339,7 @@
           <b>never regenerated on edit</b>. An edit is a correction to the same announcement, so its
           colour is part of its identity.</div>
         ${a.reach ? `<p class="dw-p">Seen by <b>${a.reach}</b> player${a.reach === 1 ? '' : 's'}.</p>`
-          : `<p class="dw-p">No delivery recorded yet. Reach is counted from
-             <code>UserPreference.seenAnnouncementIds</code> &mdash; the only record that exists &mdash; and is
-             shown only when it is real.</p>`}
+          : `<p class="dw-p">No deliveries recorded yet. Reach appears once players start seeing it.</p>`}
       </div>`,
       actions:`<button class="btn" id="aCancel">Cancel</button>
                <button class="btn dang" id="aDel">Stage deletion</button>
@@ -384,8 +381,12 @@
   /* No bulk-delete op exists for announcements, unlike loadouts. N deletes go into ONE
    * changeset as N ops — which is exactly what a multi-op changeset is for. */
   function stageDelete(a) {
-    S.confirm({ op:'announcement.delete', tier:F.OP_TIERS['announcement.delete'], danger:true, confirm:'Stage deletion',
-      title:'Delete this announcement?',
+    /* 🔴 ONE OP, TWO IDENTITIES. This path said "Delete this announcement?" / "Stage deletion"
+     * / verb `deleted`; the table's trash path said "Remove this announcement?" / "Remove" /
+     * verb `removed`, for the SAME `announcement.delete`. A reader who learns "Remove is safe"
+     * from the table would read Delete here as something worse. One verb: Remove. */
+    S.confirm({ op:'announcement.delete', tier:F.OP_TIERS['announcement.delete'], danger:true, confirm:'Remove',
+      title:'Remove this announcement?',
       body:`<p class="dw-p">Players who already saw it keep having seen it &mdash; the seen-list is per
               player and is not rewound. Players who never saw it never will.</p>
             <p class="dw-p">Tier ${F.OP_TIERS['announcement.delete']}: the inverse re-posts the whole record, colour and
@@ -394,12 +395,12 @@
         const i = st.ann.indexOf(a); st.ann.splice(i, 1);
         const opId = 'bc-del-' + a._id;
         S.Store.onInvert(opId, () => { st.ann.splice(i, 0, a); renderAll(); });
-        S.Store.add({ id:opId, name:a.text.slice(0, 34), verb:'deleted', realm:'broadcast',
+        S.Store.add({ id:opId, name:a.text.slice(0, 34), verb:'removed', realm:'broadcast',
                       op:'announcement.delete', destroys:true,
                       rows:[['Text', a.text.slice(0,40), 'removed'],
                             ['Posted', fmt(a.createdAt), '—'],
                             ['Ends', a.expiresAt ? fmt(a.expiresAt) : 'never', '—']] });
-        S.toast('Deletion staged.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
+        S.toast('Removed — staged, not deleted.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
         renderAll();
       } });
   }
@@ -482,8 +483,9 @@
           <span class="rowmeta" style="margin-left:6px">${lifecycle(a)}</span></td>
         ${S.removeCell(a.text.replace(/^#{1,3}\s+/,'').slice(0, 46))}
       </tr>`).join('') : `<tr><td colspan="6"><div class="empty">
-        ${st.q || st.filter !== 'all' ? `<b>Nothing matches.</b> ${st.ann.length} exist in total.`
-          : `<b>Nothing has ever been announced.</b> Players simply get no announcement message.`}
+        ${st.q || st.filter !== 'all'
+          ? `<b>Nothing matches${st.q ? ' &ldquo;' + esc(st.q) + '&rdquo;' : ''}.</b> Clear the search or the filter &mdash; ${st.ann.length} announcements exist in total.`
+          : `<b>Nothing has ever been announced.</b> Players get no announcement message at all. Post one to change that.`}
       </div></td></tr>`;
     rows.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.querySelector('[data-rmv]').onclick = e => { e.stopPropagation(); removeAnn(tr.dataset.id); };
@@ -500,10 +502,15 @@
     const a = st.ann.find(x => x._id === id); if (!a) return;
     const title = a.text.replace(/^#{1,3}\s+/, '').slice(0, 60);
     S.confirm({
-      title:'Remove this announcement?', op:'announcement.delete', tier:1, danger:true, confirm:'Remove',
+      /* The tier is DERIVED at Store.add() from core/ops; stating 1 here only made the two
+       * delete paths show different tiers in their confirmations for the same operation. */
+      title:'Remove this announcement?', op:'announcement.delete', tier:F.OP_TIERS['announcement.delete'], danger:true, confirm:'Remove',
       body:'<p class="dw-p"><b>' + esc(title) + '</b></p><p class="dw-p">Players stop seeing it on their next command. ' +
            'It is <b>staged, not deleted</b> — nothing is written until you commit on Review.</p>' +
-           (lifecycle(a) === 'live' ? '<div class="callout">This one is <b>live right now</b>. Removing it is the only way to take it down early; there is no pause.</div>' : ''),
+           /* 🔴 `lifecycle()` returns 'LIVE NOW', never 'live', so this callout had NEVER
+            * rendered once. `a.state` is the field it meant — the same one renderStats and
+            * queue() already read. */
+           (a.state === 'live' ? '<div class="callout">This one is <b>live right now</b>. Removing it is the only way to take it down early; there is no pause.</div>' : ''),
       onConfirm(){
         const at = st.ann.indexOf(a);
         st.ann.splice(at, 1);
@@ -528,9 +535,11 @@
                        a.text.replace(/\n/g, ' \\n ')].join(' | ');
     return [
       { id:'broadcast.live', label:'What is live now', note:'Only the announcements a player would see on their next command.',
-        count:st.ann.filter(a => lifecycle(a) === 'live').length, unit:'announcements',
+        /* Same defect, and this one built an EMPTY FILE: the "what is live now" export
+         * permanently counted 0 because no announcement's lifecycle() is ever the string 'live'. */
+        count:st.ann.filter(a => a.state === 'live').length, unit:'announcements',
         file:'dioreo-announcements-live-' + stamp + '.txt',
-        build:() => st.ann.filter(a => lifecycle(a) === 'live').map(line).join('\n') },
+        build:() => st.ann.filter(a => a.state === 'live').map(line).join('\n') },
       { id:'broadcast.all', label:'Every announcement', note:'The full record — created, starts, expires, state, text.',
         count:st.ann.length, unit:'announcements', file:'dioreo-announcements-' + stamp + '.txt',
         build:() => st.ann.map(line).join('\n') }
@@ -549,7 +558,10 @@
     mhStats.innerHTML = `
       <span class="stat"><span class="v">${live}</span> <span class="k">live</span></span>
       <span class="stat"><span class="v">${sched}</span> <span class="k">scheduled</span></span>
-      <span class="stat stg"><span class="v" id="sStaged">${S.Store.all().length}</span> <span class="k">staged</span></span>
+      <!-- A number in a page's own masthead is read as being about that page: this showed the
+           GLOBAL staged count, so four Season edits read as "4 staged" on Broadcast. index.html
+           already scopes its own. -->
+      <span class="stat stg"><span class="v" id="sStaged">${S.Store.all().filter(o => o.realm && o.realm.href === 'broadcast.html').length}</span> <span class="k">staged</span></span>
       <span class="stat ${forever ? 'warn' : ''}"><span class="v">${forever}</span> <span class="k">never ends</span></span>`;
     /* innerHTML, not textContent — an entity assigned to textContent renders as the literal
      * characters "&middot;". Visible on screen and invisible to every geometric audit rule,

@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787677578"><link rel="stylesheet" href="assets/app.css?v=1787677578">
+<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -213,9 +213,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787677578"></script>
-<script src="assets/timeline.js?v=1787677578"></script>
-<script src="assets/shell.js?v=1787677578"></script>
+<script src="assets/fixtures.js?v=1787679479"></script>
+<script src="assets/timeline.js?v=1787679479"></script>
+<script src="assets/shell.js?v=1787679479"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -659,21 +659,24 @@
     if (dp) dp.onclick = () => S.confirm({
       title:'Promote the staged draft to live?', tier:3,
       body:`<p class="dw-p">This swaps the draft's title and deadlines in as what is live <b>right now</b>,
-             moves ${st.items.filter(i=>i.draft).length} staged item(s) into the live season, and clears the draft.</p>
+             moves ${(n => n + ' staged item' + (n === 1 ? '' : 's'))(st.items.filter(i=>i.draft).length)} into the live season, and clears the draft.</p>
             ${renderDiff()}
-            <p class="dw-p" style="margin-top:12px">Undo is available afterwards.</p>`,
-      confirm:'Yes, promote', op:'season.promoteDraft',
+            <p class="dw-p" style="margin-top:12px"><b>This cannot be undone from the portal.</b>
+             Export the season first if you want a way back.</p>`,
+      confirm:'Promote to live', op:'season.promoteDraft',
       onConfirm(){ promoteDraft(); }
     });
     const dd = document.getElementById('dDiscard');
     if (dd) dd.onclick = () => S.confirm({
       title:'Discard the staged draft?',
-      body:`<p class="dw-p">This erases everything staged for next season —
-             titles, deadlines and ${st.items.filter(i=>i.draft).length} item(s).
-             What is currently live is untouched. It is tier 2 in core/ops — a draft restore is an
-             exact inverse — but nothing in the portal offers that restore yet, so treat it as
-             final until it does.</p>`,
-      confirm:'Yes, discard', danger:true, op:'season.discardDraft',
+      /* Was: "It is tier 2 in core/ops — a draft restore is an exact inverse — but nothing in
+       * the portal offers that restore yet, so treat it as final until it does." That asks the
+       * reader to hold a caveat about the product's own unfinished roadmap, in a confirmation. */
+      body:`<p class="dw-p">This erases everything staged for next season — titles, deadlines and
+             ${(n => n + ' item' + (n === 1 ? '' : 's'))(st.items.filter(i=>i.draft).length)}.
+             What is currently live is untouched. <b>There is no way to restore a discarded draft
+             from the portal.</b></p>`,
+      confirm:'Discard the draft', danger:true, op:'season.discardDraft',
       onConfirm(){ st.draft = { active:false, currentSeasonTitle:'', bpTitle:'', rankTitle:'', dmzTitle:'',
                                 bpEnd:null, rankEnd:null, dmzEnd:null,
                                 bpEndTBD:false, rankEndTBD:false, dmzEndTBD:false };

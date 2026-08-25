@@ -3,7 +3,7 @@
 <title>Access · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787677578"><link rel="stylesheet" href="assets/app.css?v=1787677578">
+<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -12,7 +12,7 @@
     <div class="masthead">
       <div class="mh-id">
         <h1>Access</h1>
-        <span class="job">Twelve grantable tokens across two roles &mdash; and the two questions a permission string cannot answer: what did you actually hand over, and who is the only person holding it.</span>
+        <span class="job">Who can do what &mdash; and where you are the only one who can do it.</span>
       </div>
       <div class="mh-stats" id="mhStats"></div>
       <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
@@ -57,9 +57,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787677578"></script>
-<script src="assets/timeline.js?v=1787677578"></script>
-<script src="assets/shell.js?v=1787677578"></script>
+<script src="assets/fixtures.js?v=1787679479"></script>
+<script src="assets/timeline.js?v=1787679479"></script>
+<script src="assets/shell.js?v=1787679479"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -128,11 +128,11 @@
   function renderOwnerNote() {
     ownerNote.innerHTML = `
       <div class="panel" style="margin-bottom:16px"><div class="callout">
-        <b>Owner-only, and not by policy.</b> Access has <b>no grantable token</b> &mdash; not one you
-        could hand out if you wanted to. Every route here is wrapped in <code>ownerOnly()</code> and the
-        rail hides the realm entirely for anyone else, exactly like <code>/bot access</code> in Discord.
-        The owner is <code>&hellip;${esc(F.OWNER_ID.slice(-6))}</code>, hardcoded in
-        <code>utils/owner.js</code>, and holds everything by short-circuit before this allowlist is even read.
+        <b>Owner-only, and not by choice.</b> Access has <b>no grantable permission</b> &mdash; there is
+        nothing here you could hand out if you wanted to, and the rail hides the realm entirely for
+        anyone else, exactly like <code>/bot access</code> in Discord.
+        The owner is <code>&hellip;${esc(F.OWNER_ID.slice(-6))}</code> and holds everything regardless
+        of this list.
       </div></div>`;
   }
 
@@ -216,7 +216,7 @@
       </div>
       <div class="mxfoot">
         <span><span class="mxlegend on"></span>granted <b>directly</b> &mdash; revoking it removes exactly this.</span>
-        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; a bare <code>manage</code> covers every page at once.
+        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; holding <code>manage</code> covers every page at once.
         <!-- 🔴 THE ORANGE RING WAS THE MOST LOADED MARK ON THE PAGE AND THE ONLY ONE NOT IN THE KEY.
              It flags a scope exactly one person besides the owner holds — the thing Home ranks
              SECOND out of everything in the portal — and a reader had no way to learn that. -->
@@ -231,10 +231,9 @@
         <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
         irreversibility is the opposite of one. A permissions array is never allowed to be empty
         &mdash; an admin with nothing granted should be revoked, not parked in limbo.
-        <b>&#128274; <code>destructive</code> is a real token in the bot</b> as of 2026-08-25 &mdash;
-        <code>utils/adminAccess.js</code>'s <code>ADMIN_COMMANDS</code> and <code>AdminUser</code>.
-        <code>all</code> is excluded from it by <code>NOT_IN_ALL</code>, so it can only ever arrive
-        by being typed.</p>`;
+        <b>&#128274; <code>destructive</code> is a real permission in the bot</b>, and the only one
+        the <code>all</code> shorthand never includes &mdash; it can arrive only by being typed
+        deliberately, because a convenience that quietly hands out irreversibility is not one.</p>`;
     viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
     viewGrid.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => {
       const a = st.admins.find(x => x.discordId === b.dataset.drop); if (a) confirmRevoke(a); });
@@ -306,8 +305,8 @@
     : `<div class="estate">
         <span class="eicon">◍</span>
         <h4>Nobody is signed in to the portal</h4>
-        <p>Your own session should always be in this list. An empty one means the fetch failed,
-          not that the room is empty.</p>
+        <p>Your own session should always be in this list, so an empty list means it failed to
+          load rather than that nobody is here. Reload the page.</p>
         <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves
           their tab working until it expires ${F.SESSION_TTL_HOURS} hours after sign-in &mdash; ending it
           here is the only thing that closes that window.</p>
@@ -326,8 +325,10 @@
     const s = st.sessions.find(x => x.sessionHash === hash); if (!s) return;
     S.confirm({ op:'session.end', danger:true, confirm:'End it now',
       title:`End the session for …${s.discordId.slice(-6)}?`,
-      body:`<p class="dw-p">Immediate, and nothing to commit. Any work staged in that browser is
-              lost with it &mdash; staged changes live in the browser session and nowhere else.</p>`,
+      /* Staging is server-side (§15.11), so ending a session does not touch it. This used to say
+       * the opposite, which made three screens disagree about the one fact worth being sure of. */
+      body:`<p class="dw-p">Immediate, and nothing to commit. Anything they have staged is kept
+              against their account and will be there when they sign in again.</p>`,
       onConfirm(){ st.sessions = st.sessions.filter(x => x !== s);
         S.toast('Session ended.'); renderAll(); } });
   }
@@ -394,7 +395,7 @@
       });
       gPerm.classList.toggle('err', !p.ok);
       hint.innerHTML = p.ok
-        ? `<b>${p.list.length} token${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; a bare <code>manage</code> lights every page by inheritance.' : ''}`
+        ? `<b>${p.list.length} token${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; <code>manage</code> lights every page by inheritance.' : ''}`
         : `<b style="color:var(--warn)">${p.why}</b>`;
     };
     gPerm.addEventListener('input', sync);
@@ -508,7 +509,7 @@
                   '# The owner holds every scope implicitly and is not a row here.',
                   head.join('\t')].concat(rows.map(r => r.join('\t'))).join('\n');
         } },
-      { id:'access.grants', label:'One line per grant', note:'Long form — greppable, and diffable against an older export.',
+      { id:'access.grants', label:'One line per grant', note:'Long form — one line per grant, easy to search or compare against an older export.',
         count:st.admins.reduce((n, a) => n + F.accessScopes.filter(x => held(a, x.key)).length, 0),
         unit:'grants', file:'dioreo-access-grants-' + stamp + '.txt',
         build(){
@@ -659,7 +660,7 @@
         'the season rollover and draft promotion — on <b>every realm</b>, not just the pages they hold. ' +
         'The portal will still make them export first, and it now keeps a copy of that export with the ' +
         'record so you hold the data afterwards rather than a note saying they downloaded it. ' +
-        '<b>Only you can grant or revoke this; a bare <code>manage</code> token does not cover it, ' +
+        '<b>Only you can grant or revoke this; holding <code>manage</code> does not cover it, ' +
         'and they cannot pass it on.</b></div>' : '');
 
     const apply = () => {

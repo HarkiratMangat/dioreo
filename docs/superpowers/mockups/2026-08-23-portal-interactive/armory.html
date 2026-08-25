@@ -3,7 +3,7 @@
 <title>Armory · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787677578"><link rel="stylesheet" href="assets/app.css?v=1787677578">
+<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -103,9 +103,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787677578"></script>
-<script src="assets/timeline.js?v=1787677578"></script>
-<script src="assets/shell.js?v=1787677578"></script>
+<script src="assets/fixtures.js?v=1787679479"></script>
+<script src="assets/timeline.js?v=1787679479"></script>
+<script src="assets/shell.js?v=1787679479"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -521,7 +521,7 @@
             <th>${picked[1].weaponName} · ${picked[1].buildName}</th></tr></thead>
             <tbody>${cmpRows(picked[0], picked[1])}</tbody></table>
           <div class="cmpcards">${picked.map(b => loadoutCard(b)).join('')}</div>`
-        : `<div class="empty"><b>Pick two builds.</b> Comparing is the reason this view exists —
+        : `<div class="empty"><b>Pick two builds to compare.</b> —
              Discord can only ever show you one card at a time, so telling two variants of the same
              weapon apart means paging back and forth and remembering.</div>`}
       </div>`;
@@ -962,7 +962,7 @@ Badges: meta, top3
                    “Build N of M” counter renumbers.`
                 : `<b>This is the only ${b.weaponName} build</b> — the weapon disappears from
                    <code>/gunsmiths</code> entirely.`}</p>
-            <p class="dw-p">Tier 1 in core/ops: apply() captures the whole document before removing it, so the inverse is exact and this is reversible after it commits. It is still a deletion, which is why it is drawn as one. </p>`,
+            <p class="dw-p">Tier 1 &mdash; the whole build is captured before it goes, so this can be put back even after it commits. It is still a deletion, which is why it is drawn as one.</p>`,
       onConfirm(){
         const i = st.builds.indexOf(b);
         S.Store.onInvert('arm-del-' + b.id, () => { st.builds.splice(i, 0, b); renderAll(); });
