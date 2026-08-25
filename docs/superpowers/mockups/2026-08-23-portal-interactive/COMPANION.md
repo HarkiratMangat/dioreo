@@ -1861,6 +1861,50 @@ And **"same row" was a string comparison on `style.top`**, which silently groupe
 
 The **OVERVIEW strip is excluded from rule 13**, and the exclusion is a real distinction rather than a convenience: it plots the **whole season** while the lanes plot the **current window**, so its percentages mean something different and unifying them would be wrong.
 
+### 5.9n.5b THE AUDIT HAD BEEN MEASURING A HALF-LAID-OUT PAGE
+
+Chasing the one origin report rule 13 kept making turned up something larger than the report itself, and it is the most consequential finding in this whole section.
+
+🔴 **`Shell.audit()`'s settled re-run was gated on fonts being PENDING.**
+
+```js
+if (document.fonts && document.fonts.status !== 'loaded') {   // ← the bug
+  document.fonts.ready.then(() => Shell._audit(opts));
+}
+```
+
+On a **warm** load `status` is already `'loaded'`, so **no second pass was scheduled at all** — and the only pass that ran was the synchronous one, which fires *before* the Track's own measuring passes (`repositionBars`, `fitLabels`, `clusterPoints`, `stackFlags`) run inside their `requestAnimationFrame`.
+
+**Measured:** rule 13 reported `.tk at 239` while the very same element, queried moments later in the same frame tree, was at **249**. The geometry was correct; the audit was looking at it too early.
+
+**Every geometric rule in that file has been doing this** — which means some of the audit's silence has been silence about the *wrong pixels*. It re-runs unconditionally now, two frames after fonts settle. The pass is idempotent, so the extra run costs nothing but honesty.
+
+> **"Fonts loaded" is not "the page has finished measuring itself."** The `inkFills()` note at the top of `_audit` had already learned half of this lesson ("an audit must measure the page as it settles, so it settles the derived parts first") and stopped one step short.
+
+### 5.9n.5c Two more in the same thread
+
+**`.scrim` PERSISTS IN THE DOM.** `closeDrawer()` only removes its `.on` class. So a rule testing for the *element* rather than the open *state* stood down on every page after a single interaction, permanently and invisibly. Rule 13 tests `.drawer.open, .scrim.on`.
+
+**And geometry really is only measurable at rest.** While a dialog is up the suppressed scrollbar widens the layout and moves every percentage-positioned element with it — a disagreement between two **moments**, not two containers. The rule reports a visible `note:` in that case rather than passing silently.
+
+🔴 **A `note:` WAS BEING COUNTED AS A FAILURE**, which turned eight clean pages red. Notes exist so a skip is *visible* instead of silent; counting them as failures teaches the reader to ignore the colour, which is the exact opposite of what the note is for. `PASS`/`FAIL` is decided from the failures that survive the filter, and the note count prints beside the row.
+
+### 5.9n.5d The plot origin is a padding, not a sum
+
+Three separate times the lane header's rendered width drifted from `--gutter`: a compensating `calc(var(--gutter) - 2px)`, a border that shifted the content box, and a residual the harness reported. **Each time the plot area moved with it and every bar left the axis the ruler draws.**
+
+`.lnh` is `position:absolute` inside a reserved `padding-left:var(--gutter)` now, so `.tk` begins at exactly `--gutter` no matter what the header does to itself — a different font, a wrapped label, a media query, a future padding change.
+
+> **The compensation is deleted rather than corrected. A second expression for one number is the bug, not its value.**
+
+The lane's accent edge is an `inset` box-shadow for the same reason: it paints in the same place and occupies **no layout**.
+
+### 5.9n.5e A check must report an address, not a symptom
+
+Rule 13's first version printed only the boxes — `"249x995 · 239x995"` — which told a reader that something was wrong and **nothing about where**. Acting on it meant re-deriving the entire measurement by hand.
+
+It names the offending container now: `.ruler at 249x995 (11) vs .tk at 239x995 (36)`. **A check that reports a symptom without an address is a check somebody skips**, and a skipped check is indistinguishable from one that never ran.
+
 ### 5.9n.6 The limit, stated rather than papered over
 
 **None of these can catch "the entire track is an open blended canvas."** No assertion reports that a composition fails to read as intended. That one needed looking at the whole picture the way a reader does — asking what it *says* — rather than the way I had been looking, at a diff, asking whether my change landed.

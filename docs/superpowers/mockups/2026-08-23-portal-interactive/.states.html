@@ -24,7 +24,15 @@ const paint = () => { out.innerHTML = lines.join('\n'); };
 function load(url){
   return new Promise(res => {
     const f = document.createElement('iframe');
-    f.src = url; document.body.appendChild(f);
+    /* 🔴 CACHE-BUST EVERY LOAD. `.serve.py` sends `no-store`, but Chrome's MEMORY cache still
+     * reuses an identical URL inside one document — and this harness loads the same page many
+     * times per run. Measured 2026-08-24: this sweep reported `.tk at 239` (an origin gap fixed
+     * two commits earlier) while `.audit-all.html`, which appends `&v=Date.now()`, reported the
+     * same pages clean on the same code. One harness was measuring the old stylesheet.
+     * That is the exact failure `.serve.py`'s own header comment was written about, reappearing
+     * one level up: a stale asset producing a confident wrong result. */
+    f.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+    document.body.appendChild(f);
     f.onload = () => setTimeout(() => res(f), 1400);
   });
 }
