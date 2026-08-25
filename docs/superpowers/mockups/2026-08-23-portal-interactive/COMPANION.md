@@ -2514,6 +2514,8 @@ Fixed, and **audit rule 14 now holds the line**: the first rule in this file tha
 
 ### 15.8 Constants named elsewhere in this document
 
+**The three view-flags, because a state nobody can render is a state nobody designs:** `?audit=1` drives the declared interactions, `?as=admin|plain` renders the portal as somebody who is not the owner, and `?net=loading|refresh|slow|fail|commit|commitfail|offline|expired|rollback` puts each async state on screen. `?empty=1` blanks every record array and `?today=YYYY-MM-DD` moves the pinned date. All six are swept.
+
 `MIN_SPAN = 7` days — the Track never zooms past a readable week. `Store` persists under the `sessionStorage` key `dioreo-portal-staged`. `.serve.py` binds `127.0.0.1:8899`. The `?v=` cache-buster on asset URLs is **bumped by hand when an asset changes** — it is an unenforced step guarding against the exact staleness failure §0 describes, so if you edit an asset and your change appears not to take, check that first. None of this transfers to the real portal, which serves its own assets and needs its own cache policy.
 
 ### 15.9 Surfaces that were undesigned, and now are not
