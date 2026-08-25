@@ -63,7 +63,7 @@ node .schema-gate.mjs --self-test
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 | **16** | **BUILT 2026-08-25** — the eight micro-interactions · the masthead figure grammar · Home rebuilt around the rail · the account panel · **the light model, falsified and dropped with numbers** · the parser behind paste/dates/⌘K · the chart aesthetic · **the Track's deadline markers** · and three defects this session created and caught | 🔴 **After §5.9z, always.** §5.9z is what was decided; this is what was built, and it records the three places the decision turned out to be wrong once the page was open |
 
-⚠️ **This table is the only navigation this document has, and it is 280KB long.** A section that is not in it is a section a wiring session will not find. Three whole families — §5.9j–5.9r, §15.7 and §15.7b — were missing from it for a day after being written, which made them exhaustive and unreachable at the same time. **If you add a section, add its row.**
+⚠️ **This table is the only navigation this document has, and the document is very long.** *(No byte count here on purpose — the previous one said 280KB and was stale within a day of being written, which is `feedback_no_duplicated_state_in_prose` applied to this file's own index. `wc -c` it if you need the number.)* A section that is not in it is a section a wiring session will not find. Three whole families — §5.9j–5.9r, §15.7 and §15.7b — were missing from it for a day after being written, which made them exhaustive and unreachable at the same time. **If you add a section, add its row.**
 
 ---
 
