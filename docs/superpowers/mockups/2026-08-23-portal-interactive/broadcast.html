@@ -61,6 +61,8 @@
           <th class="sortable" data-sort="startsAt">Starts</th>
           <th class="sortable" data-sort="expiresAt">Ends</th>
           <th class="ta-r">State</th>
+        
+          <th class="ra"><span class="sr">Remove</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -472,14 +474,66 @@
              comment inside a TEMPLATE LITERAL terminate the literal. Second time today. -->
           <span class="stt ${a.staged ? 'staged' : 'saved'}">${stateOf(a)}</span>
           <span class="rowmeta" style="margin-left:6px">${lifecycle(a)}</span></td>
-      </tr>`).join('') : `<tr><td colspan="5"><div class="empty">
+        ${S.removeCell(a.text.replace(/^#{1,3}\s+/,'').slice(0, 46))}
+      </tr>`).join('') : `<tr><td colspan="6"><div class="empty">
         ${st.q || st.filter !== 'all' ? `<b>Nothing matches.</b> ${st.ann.length} exist in total.`
           : `<b>Nothing has ever been announced.</b> Players simply get no announcement message.`}
       </div></td></tr>`;
-    rows.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => openAnn(tr.dataset.id));
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      tr.querySelector('[data-rmv]').onclick = e => { e.stopPropagation(); removeAnn(tr.dataset.id); };
+      tr.onclick = e => { if (!e.target.closest('[data-rmv]')) openAnn(tr.dataset.id); };
+    });
+  }
+
+  /* core/ops registers announcement.delete as TIER 1 — apply() captures the document before
+   * removing it. Note that /manage has NO delete at all for announcements: utils/manageActions
+   * lists exactly `post` and `formatguide` for the announcement page, while core/ops carries
+   * post, edit AND delete. The op existed and no surface could reach it, which is the clearest
+   * single case for why this portal exists. */
+  function removeAnn(id) {
+    const a = st.ann.find(x => x._id === id); if (!a) return;
+    const title = a.text.replace(/^#{1,3}\s+/, '').slice(0, 60);
+    S.confirm({
+      title:'Remove this announcement?', op:'announcement.delete', tier:1, danger:true, confirm:'Remove',
+      body:'<p class="dw-p"><b>' + esc(title) + '</b></p><p class="dw-p">Players stop seeing it on their next command. ' +
+           'It is <b>staged, not deleted</b> — nothing is written until you commit on Review.</p>' +
+           (lifecycle(a) === 'live' ? '<div class="callout">This one is <b>live right now</b>. Removing it is the only way to take it down early; there is no pause.</div>' : ''),
+      onConfirm(){
+        const at = st.ann.indexOf(a);
+        st.ann.splice(at, 1);
+        const sid = 'rm-ann-' + id;
+        S.Store.add({ id:sid, op:'announcement.delete', name:title, verb:'removed', tier:1, scope:'broadcast.all',
+          rows:[{ field:'Announcement', was:title, becomes:'(removed)' },
+                { field:'State', was:lifecycle(a), becomes:'—' }] });
+        S.Store.onInvert(sid, () => { st.ann.splice(at, 0, a); renderAll(); });
+        S.toast('Removed. Staged, not gone.', 'Undo', () => S.Store.revert(sid));
+        renderAll();
+      }
+    });
+  }
+
+  /* Broadcast has no /manage export either. The value here is not a paste format — there is
+   * no bulk-add flow to paste back into — it is the RECORD: what was said, when, and for how
+   * long. Two shapes, because "what is up now" and "everything ever" are different questions. */
+  function broadcastScopes() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const line = a => [fmt(a.createdAt), a.startsAt ? fmt(a.startsAt) : 'immediately',
+                       a.expiresAt ? fmt(a.expiresAt) : 'never', lifecycle(a),
+                       a.text.replace(/\n/g, ' \\n ')].join(' | ');
+    return [
+      { id:'broadcast.live', label:'What is live now', note:'Only the announcements a player would see on their next command.',
+        count:st.ann.filter(a => lifecycle(a) === 'live').length, unit:'announcements',
+        file:'dioreo-announcements-live-' + stamp + '.txt',
+        build:() => st.ann.filter(a => lifecycle(a) === 'live').map(line).join('\n') },
+      { id:'broadcast.all', label:'Every announcement', note:'The full record — created, starts, expires, state, text.',
+        count:st.ann.length, unit:'announcements', file:'dioreo-announcements-' + stamp + '.txt',
+        build:() => st.ann.map(line).join('\n') }
+    ];
   }
 
   function renderKey() {
+    S.mastheadExport({ host:'#mhPost', scopes:broadcastScopes, label:'Record',
+      summary:() => st.ann.length + ' announcements · 2 formats' });
     key.innerHTML = `<span class="l"><i></i>saved</span><span class="s"><i></i>staged</span>`;
   }
   function renderStats() {

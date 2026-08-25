@@ -69,6 +69,25 @@
           console.warn(`[dioreo] staged op "${op.id}" states tier ${op.tier}; core/ops registers "${op.op}" as tier ${real}. Using ${real}.`);
         op.tier = real;
       }
+      /* 🔴 THE INTERLOCK HAS TWO HALVES AND ONLY ONE OF THEM EXISTED. Export.mark() stamps
+       * `exported` on tier-3 ops that are ALREADY staged — so exporting first and staging
+       * second, which is the order the one-way strip literally instructs ("Export first →",
+       * then the verb unlocks), produced an op that Store.blocked() counted as blocked with
+       * no way left to satisfy it short of exporting the same file twice. Measured end to
+       * end: export, purge, and Review still reported "1 tier-3 change needs an export".
+       * The gate is "does a copy of this data exist in this session", so it is answered here
+       * as well, at staging time, from the same record. */
+      if (op.tier === 3 && op.scope && Shell.Export.has(op.scope)) op.exported = true;
+      /* 🔴 TWO ROW SHAPES WERE IN THE SAME STORE. Season and Broadcast stage
+       * `{ field, was, becomes }`; Armory stages `[field, was, becomes]`. Review reads
+       * `r[0] r[1] r[2]`, so every object-shaped op rendered its whole diff as "— — —" —
+       * a commit screen showing an empty table for a change it was about to make, which is
+       * the one thing that screen exists not to do. Neither shape was wrong; having two was.
+       * Normalised HERE, at the one choke point every staging path already passes through,
+       * so Review reads exactly one shape and no page has to be migrated to be correct. */
+      if (op.rows) op.rows = op.rows.map(r => Array.isArray(r)
+        ? { field:r[0], was:r[1], becomes:r[2] }
+        : r);
       a.push(op); Store.save(a); Shell.pulseTray(); return true; },
     remove(id){ Store.save(Store.all().filter(o => o.id !== id)); },
     clear(){ Store.save([]); },
@@ -90,11 +109,56 @@
       const nav = document.querySelector('nav.rail');
       if (!nav) return;
       const n = Store.all().length;
+      /* 🔴 REVIEW WAS NOT IN THE RAIL AT ALL. It is the surface every change in the portal
+       * lands on — the only place anything is written — and the only ways to reach it were
+       * the tray (which requires staged work to exist) and typing the URL. So the commit
+       * screen was unreachable from a page with nothing staged, which is exactly when you
+       * would want to check that nothing is staged.
+       * It sits BELOW A RULE rather than as a sixth realm, because it is not one: five realms
+       * are places to work, Review is the way out. The rule says that without a label.
+       * 🔴 AND THE STAGED COUNT WAS ON THE WRONG ITEM. It rendered on Season (`r.id ===
+       * 'season' && n`) whatever realm staged the work, so an Armory edit put a badge on
+       * Season. The count is a property of the CHANGESET, so it belongs on Review. */
       nav.innerHTML = REALMS.map(r => `
         <a class="realm" href="${r.href}" ${r.id === active ? 'aria-current="page"' : ''}>
           <svg viewBox="0 0 24 24" aria-hidden="true">${r.icon}</svg>${r.label}
-          ${r.id === 'season' && n ? `<span class="cnt" aria-label="${n} staged">${n}</span>` : ''}
-        </a>`).join('');
+        </a>`).join('') + `
+        <span class="rail-rule" aria-hidden="true"></span>
+        <a class="realm out ${n ? 'has' : ''}" href="review.html" ${active === 'review' ? 'aria-current="page"' : ''}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15 17l2.5 2.5L22 15"/></svg>Review
+          ${n ? `<span class="cnt" aria-label="${n} staged">${n}</span>` : ''}
+        </a>`;
+    },
+
+    /* 🔴 The tray is position:fixed bottom-right, so it covers whatever the page ends with —
+     * measured: it sat on top of the one-way strip's last row and hid that row's button
+     * entirely. A fixed panel that can hide a control is the same defect as an action bar
+     * 1,682px below the fold, so it takes the same fix: reserve the space it occupies.
+     * Written on `main` rather than `body` because `main` IS the scroll container here. */
+    reserveForTray(){
+      const m = document.querySelector('main'), t = document.querySelector('.tray');
+      if (!m) return;
+      const bar = document.getElementById('selbar');
+      const need = Math.max(
+        t && !t.hidden ? t.getBoundingClientRect().height + 34 : 0,
+        bar ? bar.firstChild.getBoundingClientRect().height + 40 : 0);
+      if (need > 0) m.style.paddingBottom = need + 'px'; else m.style.removeProperty('padding-bottom');
+      /* Observed once, not per render. A one-shot call after renderTray was NOT reliable —
+       * the tray's height depends on webfont metrics and on its own collapsed state, both of
+       * which settle after the frame that renders it, so a single rAF measured the wrong box
+       * often enough to leave the overlap live. An observer measures whenever the truth
+       * changes, which is the only schedule that cannot be raced. */
+      if (t && !Shell._trayRO && window.ResizeObserver) {
+        Shell._trayRO = new ResizeObserver(() => {
+          const mm = document.querySelector('main'); if (!mm) return;
+          const tt = document.querySelector('.tray'), bb = document.getElementById('selbar');
+          const n = Math.max(
+            tt && !tt.hidden ? tt.getBoundingClientRect().height + 34 : 0,
+            bb ? bb.firstChild.getBoundingClientRect().height + 40 : 0);
+          if (n > 0) mm.style.paddingBottom = n + 'px'; else mm.style.removeProperty('padding-bottom');
+        });
+        Shell._trayRO.observe(t);
+      }
     },
 
     renderTray(){
@@ -130,7 +194,12 @@
         th.setAttribute('aria-expanded', String(open));
         try { sessionStorage.setItem(KEY + '-open', open ? '1' : '0'); } catch (e) {}
       };
-      setOpen(sessionStorage.getItem(KEY + '-open') !== '0');
+      /* Default CLOSED, not open. The tray is a status object: its job is to say that staged
+       * work exists and offer the two verbs, and it does both collapsed. Defaulting to the
+       * full list put a 269px floating panel over page content on every realm from the first
+       * paint — the reader had to dismiss the portal's own chrome before reading the realm. */
+      setOpen(sessionStorage.getItem(KEY + '-open') === '1');
+      requestAnimationFrame(() => Shell.reserveForTray());
       th.onclick = () => setOpen(t.classList.contains('collapsed'));
       th.onkeydown = e => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); th.click(); }
@@ -233,7 +302,7 @@
       Shell.installTips();
       /* After layout, and again whenever the layout changes — a placeholder fits or does not fit
        * only relative to a rendered field. */
-      const fit = () => { Shell.fitPlaceholders(); Shell.inkFills(); };
+      const fit = () => { Shell.fitPlaceholders(); Shell.inkFills(); Shell.reserveForTray(); };
       requestAnimationFrame(() => requestAnimationFrame(fit));
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(fit);
       let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
@@ -1004,10 +1073,298 @@
       });
     },
 
+    /* ══════════════════════════════════════════════════════════════════════════════
+     * DELETE AND EXPORT — the two verbs the portal exists for, and did not have.
+     *
+     * MEASURED 2026-08-24 21:4x EDT, across all eight pages, by .verbs.html (which proves
+     * it can report PRESENCE on every page before its silence is trusted):
+     *   season    delete=0 export=0  checkboxes=40  selection-bar-in-DOM=0
+     *   armory    delete=0 export=1  checkboxes=32  selection-bar-in-DOM=0
+     *   broadcast/access/review/index/door/analytics — nothing at all
+     * against core/ops, which registers THIRTEEN destructive op types (draw.delete,
+     * draw.bulkDelete, draw.purge, calendar.delete, calendar.bulkDelete, calendar.purge,
+     * loadout.delete, loadout.bulkDelete, patchnote.removeSeason, patchnote.purge,
+     * season.startNew, season.discardDraft, announcement.delete) and utils/manageActions,
+     * which registers NINE export actions.
+     *
+     * 🔴 THE ACTUAL DEFECT WAS NOT ABSENCE — IT WAS DISTANCE, and that is why every check
+     * missed it. Season DOES build a selection bar with "Export selection" and "Stage
+     * deletion" in it. It is rendered into a div that sits in normal flow after a 39-row
+     * table, so selecting the FIRST row put every verb it unlocked 1,682px BELOW THE FOLD
+     * (measured at 1280x860). The word "delete" was absent from the page text only because
+     * the container is [hidden] at rest. A census that counted markup would have called
+     * this covered. The user selected two rows, saw two checkmarks and no consequence, and
+     * was right to call it missing: an affordance nobody can see does not exist.
+     *
+     * SO THE RULE THIS LAYER ENCODES: an action unlocked by a selection is shown WHERE THE
+     * SELECTION HAPPENED — docked to the viewport, never in document flow.
+     *
+     * THE SPINE. core/ops grades every op by whether it can be taken back, and the grades
+     * are not decorative — they are the interaction:
+     *   tier 1  an exact inverse was captured. Undo is real. Deleting one draw is tier 1.
+     *   tier 2  same, but wide. Bulk delete is tier 2.
+     *   tier 3  ONE-WAY. purge / startNew. Store.blocked() already refuses to let one commit
+     *           until it carries `exported`, and review.html already renders that gate.
+     * Everything downstream of a delete already existed — the op, the tier, the staging, the
+     * inverse, the Review diff, the export interlock. The ONLY missing piece was the
+     * affordance, which is why building it is wiring rather than invention.
+     *
+     * 🔴 SO: EXPORT IS NOT A SIDE FEATURE, IT IS THE SAFETY INTERLOCK FOR PURGE. The portal
+     * makes /manage trivial by making the irreversible thing safe, not by adding buttons.
+     * ══════════════════════════════════════════════════════════════════════════════ */
+
+    /* ─────────────────────────── EXPORT ─────────────────────────── */
+    Export: {
+      /* Scope ids that have produced a REAL FILE this session. Session-scoped on purpose:
+       * an export taken last week is not evidence that THIS operator has a copy. */
+      _done: {},
+      has(scope){ return !!Shell.Export._done[scope]; },
+      at(scope){ const d = Shell.Export._done[scope]; return d ? d.at : 0; },
+
+      /* Recording an export unblocks staged tier-3 ops that name THIS scope — and only this
+       * scope. An earlier draft unblocked ops with no scope too, on the reasoning that a
+       * scopeless op could not be matched anyway. That is the shape of a silent wrong result:
+       * it would have opened the one-way gate on the strength of an unrelated download. An op
+       * that cannot name what would restore it is a hole, so it is REPORTED, never papered over. */
+      mark(scope, meta){
+        Shell.Export._done[scope] = Object.assign({ at: Date.now() }, meta || {});
+        const a = Store.all(); let touched = false;
+        a.forEach(o => {
+          if (o.tier !== 3) return;
+          if (!o.scope) { console.warn('[dioreo] staged tier-3 op "' + o.id + '" names no export scope — no export can ever unblock it.'); return; }
+          if (o.scope === scope) { o.exported = true; touched = true; }
+        });
+        if (touched) Store.save(a);
+        document.dispatchEvent(new CustomEvent('dioreo:export', { detail:{ scope } }));
+      },
+
+      /* A real file, because a mockup that fakes the download cannot show the one thing that
+       * matters about export here: that what comes out is the same pipe format the paste box
+       * takes back in. A round trip that is not lossless is not a backup. */
+      file(name, text, mime){
+        const blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = name; a.style.display = 'none';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      },
+
+      /* scopes: [{ id, label, note, count, unit, file, build() -> string }]
+       * `focus` opens with one scope pre-highlighted (the one-way strip passes the scope its
+       * gate needs, so "Export first" lands on the right row rather than on a menu). */
+      panel({ title = 'Export', note, scopes, focus }){
+        const rows = scopes.map(sc => {
+          const done = Shell.Export.has(sc.id);
+          return '<li class="exs-i ' + (done ? 'done' : '') + (focus === sc.id ? ' focus' : '') + '" data-x="' + sc.id + '">' +
+            '<div class="exs-t"><b>' + sc.label + '</b><span>' + (sc.note || '') + '</span></div>' +
+            '<div class="exs-c">' + sc.count + ' <em>' + (sc.unit || 'records') + '</em></div>' +
+            '<button class="pill sm ' + (done ? '' : 'lead') + '" data-x="' + sc.id + '">' +
+              (done ? 'Download again' : 'Download') + '</button></li>';
+        }).join('');
+        const d = Shell.drawer({
+          eyebrow: 'export · reversible', title,
+          /* The default note used to claim "the same pipe format the paste box accepts" for
+           * every scope, which is false for three of Season's five: the calendar is prefixed
+           * bullet lines, patch notes have no bulk-add flow at all, and the manifest is TSV.
+           * Each scope states its own shape in its own note; this line states only what is
+           * true of all of them. */
+          body: '<p class="dw-p">' + (note || 'Each of these is the format that entity really takes back — the round trip is checked against the bot\'s own exporter on every build, so what comes out here is what /manage would emit. This is what makes a one-way operation survivable: the copy you take before it is the copy you restore from.') + '</p>' +
+                '<ul class="exs">' + rows + '</ul>',
+          actions: '<button class="btn" id="dw-cancel">Close</button>'
+        });
+        d.querySelector('#dw-cancel').onclick = () => Shell.closeDrawer();
+        d.querySelectorAll('button[data-x]').forEach(b => b.onclick = () => {
+          const sc = scopes.find(x => x.id === b.dataset.x);
+          if (!sc) return;
+          let text; try { text = sc.build(); } catch (e) { Shell.toast('Export failed: ' + e.message); return; }
+          Shell.Export.file(sc.file || (sc.id + '.txt'), text);
+          Shell.Export.mark(sc.id, { rows: sc.count });
+          Shell.toast(sc.count + ' ' + (sc.unit || 'records') + ' exported. One-way operations on this data are now unlocked.');
+          Shell.closeDrawer();
+        });
+        return d;
+      }
+    },
+
+    /* The masthead's "take out" line, as ONE implementation rather than a block of markup
+     * copied into five pages. Season built it inline first; the moment Access and Broadcast
+     * needed the same thing that inline version became the first of five copies that could
+     * drift, which is the same mistake as five hand-written selection bars. Mounts next to
+     * the create control, states what an export would carry, and reports what has already
+     * been taken out this session — the same fact the one-way gate reads.
+     *   host      a selector for the element to mount AFTER (usually the create button)
+     *   scopes    () => [scope]  — a function, so counts stay live across re-renders
+     *   summary   () => string   — what the line says when nothing has been exported yet */
+    mastheadExport({ host, scopes, summary, label = 'Take out' }){
+      const anchor = typeof host === 'string' ? document.querySelector(host) : host;
+      if (!anchor) return;
+      let el = document.querySelector('.mh-take');
+      if (!el) {
+        el = document.createElement('div');
+        el.className = 'mh-take'; el.setAttribute('role', 'group');
+        el.setAttribute('aria-label', 'Take data out of this realm');
+        anchor.insertAdjacentElement('afterend', el);
+      }
+      const done = scopes().filter(x => Shell.Export.has(x.id)).length;
+      el.innerHTML =
+        '<span class="mh-add-k">' + label + '</span>' +
+        '<button class="pill sm" data-mhx>' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true" class="mh-i"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>' +
+          'Export&hellip;</button>' +
+        '<span class="mh-take-n">' + (done
+          ? done + ' of ' + scopes().length + ' exported this session'
+          : (summary ? summary() : scopes().length + ' formats')) + '</span>';
+      el.querySelector('[data-mhx]').onclick = () => Shell.Export.panel({ title:'Export', scopes:scopes() });
+      /* Honour Review's deep link (#export=season.calendar). Once only, and the hash is cleared
+       * afterwards, or every later re-render would reopen the drawer on top of the reader. */
+      if (!Shell._mhxLinked && /^#export/.test(location.hash)) {
+        Shell._mhxLinked = true;
+        const want = decodeURIComponent(location.hash.split('=')[1] || '');
+        history.replaceState(null, '', location.pathname + location.search);
+        requestAnimationFrame(() => Shell.Export.panel({
+          title: want ? 'Export before you commit' : 'Export', scopes: scopes(), focus: want || undefined }));
+      }
+      return el;
+    },
+
+    /* ────────────────────── THE DOCKED SELECTION BAR ──────────────────────
+     * count 0 dismisses it. Everything else is one repaint, so a realm can call this from
+     * inside its own render without tracking whether the bar already exists.
+     *   summary  what is selected, in the realm's own words ("Jul 6 → Aug 19 · 2 types")
+     *   tier     the HIGHEST tier in the selection; it sets the reversibility badge
+     *   actions  [{ label, kind:'danger'|'normal', on() }]
+     * The badge is the point: it answers "can I take this back?" at the moment of deciding,
+     * which is the only moment the answer is worth anything. */
+    selection({ count, summary, tier, actions, onClear, noun = 'selected', clearLabel = 'Clear', badge }){
+      const main = document.querySelector('main');
+      let el = document.getElementById('selbar');
+      if (!count) {
+        document.body.classList.remove('has-selbar');
+        if (el) { el.classList.remove('on'); const dead = el;
+          setTimeout(() => { if (dead.isConnected && !dead.classList.contains('on')) dead.remove(); }, 260); }
+        requestAnimationFrame(() => Shell.reserveForTray());
+        return;
+      }
+      if (!el) {
+        el = document.createElement('div'); el.id = 'selbar'; el.className = 'selbar';
+        el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Actions for the current selection');
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('on'));
+      } else { el.classList.add('on'); }
+      document.body.classList.add('has-selbar');
+      const t = tier || 1;
+      /* 🔴 THE BADGE IS PER-REALM, and defaulting it was a wrong statement waiting to happen.
+       * Access reported "reversible — undo stays in the tray" for permission edits, which do
+       * NOT go through the tray at all: portal/api/access.js writes them directly, and that
+       * is a documented decision, not an omission. A shared component may carry a default
+       * sentence; it may not carry one that is false on a realm that uses it. */
+      const badgeHtml = badge
+        ? '<span class="selbar-rev ' + (t >= 3 ? 'gate' : 'ok') + '">' + badge + '</span>'
+        : t >= 3
+          ? '<span class="selbar-rev gate">one-way · export first</span>'
+          : '<span class="selbar-rev ok">reversible · undo stays in the tray</span>';
+      el.innerHTML =
+        '<div class="selbar-in">' +
+          '<span class="selbar-n">' + count + '</span>' +
+          '<div class="selbar-t"><b>' + count + ' ' + noun + '</b>' +
+            (summary ? '<span>' + summary + '</span>' : '') + '</div>' +
+          badgeHtml +
+          '<div class="selbar-a">' +
+            actions.map((a, i) => '<button class="pill sm ' + (a.kind === 'danger' ? 'dang' : '') + '" data-a="' + i + '">' + a.label + '</button>').join('') +
+          '</div>' +
+          '<button class="selbar-x" data-clear aria-label="' + clearLabel + '">' + clearLabel + '</button>' +
+        '</div>';
+      el.querySelectorAll('[data-a]').forEach(b => b.onclick = () => actions[+b.dataset.a].on());
+      el.querySelector('[data-clear]').onclick = () => onClear && onClear();
+      Shell._selClear = onClear;
+      /* The bar is fixed, so without this it sits ON TOP of the last rows of the very table
+       * the selection was made in — the previous design's failure, moved rather than fixed. */
+      Shell.reserveForTray();
+    },
+
+    /* ───────────────────────── THE ONE-WAY STRIP ─────────────────────────
+     * Where tier-3 lives. It is at the FOOT of a realm on purpose: the end of the page is
+     * where a reader has already seen everything the operation would destroy.
+     * The button is the interlock made literal — it reads "Export first" and opens the
+     * export panel at the scope it needs, and only becomes the verb once a file exists.
+     * items: [{ id, title, note, count, unit, scope, op, confirmWord, onRun }] */
+    oneWay({ host, title = 'One-way operations', note, items, exportScopes }){
+      const el = typeof host === 'string' ? document.querySelector(host) : host;
+      if (!el) return;
+      const paint = () => {
+        el.innerHTML =
+          '<section class="ow">' +
+            '<div class="ow-h"><span class="ow-k">ONE-WAY</span><h3>' + title + '</h3>' +
+              '<p>' + (note || 'These cannot be undone, and the portal will not run one until an export of the same data exists in this browser session. Everything above this line can be taken back from the tray.') + '</p></div>' +
+            '<ul class="ow-l">' + items.map((it, i) => {
+              const ready = Shell.Export.has(it.scope);
+              return '<li class="ow-i"><div class="ow-t"><b>' + it.title + '</b><span>' + (it.note || '') + '</span></div>' +
+                '<div class="ow-c">' + it.count + ' <em>' + (it.unit || 'records') + '</em></div>' +
+                '<button class="pill sm ' + (ready ? 'dang' : 'ghost') + '" data-o="' + i + '">' +
+                  (ready ? it.title.replace(/…$/, '') + '…' : 'Export first →') + '</button></li>';
+            }).join('') + '</ul>' +
+          '</section>';
+        el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => {
+          const it = items[+b.dataset.o];
+          if (!Shell.Export.has(it.scope)) {
+            if (exportScopes) Shell.Export.panel({ title: 'Export first, then ' + it.title.toLowerCase(), scopes: exportScopes(), focus: it.scope });
+            else Shell.toast('Export ' + it.title.toLowerCase() + ' first.');
+            return;
+          }
+          Shell.typedConfirm({
+            title: it.title + '?', op: it.op, tier: 3, word: it.confirmWord || 'PURGE',
+            body: '<p class="dw-p">This removes <b>' + it.count + ' ' + (it.unit || 'records') + '</b> and <b>cannot be undone</b> from inside the portal. ' +
+                  'Your export from ' + new Date(Shell.Export.at(it.scope)).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) +
+                  ' is the only way back.</p>',
+            onConfirm: () => it.onRun()
+          });
+        });
+      };
+      paint();
+      document.addEventListener('dioreo:export', paint);
+    },
+
+    /* A confirm that will not arm until the operator types the word. Used ONLY for tier 3 —
+     * asking someone to type a word for a reversible change teaches them to type it without
+     * reading, which is worse than not asking. */
+    typedConfirm({ title, body, word, op, tier, onConfirm }){
+      const d = Shell.drawer({
+        eyebrow: (op ? op + ' · ' : '') + 'tier ' + (tier || 3) + ' · one-way',
+        title, body: body + '<label class="tc-l" for="tc-in">Type <b>' + word + '</b> to confirm</label>' +
+          '<input class="tc-in" id="tc-in" autocomplete="off" spellcheck="false" placeholder="' + word + '">',
+        actions: '<button class="btn" id="dw-cancel">Cancel</button>' +
+                 '<button class="btn dang" id="dw-ok" disabled>' + title.replace(/\?$/, '') + '</button>'
+      });
+      const ok = d.querySelector('#dw-ok'), inp = d.querySelector('#tc-in');
+      d.querySelector('#dw-cancel').onclick = () => Shell.closeDrawer();
+      inp.addEventListener('input', () => { ok.disabled = inp.value.trim().toUpperCase() !== word.toUpperCase(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !ok.disabled) ok.click(); });
+      ok.onclick = () => { Shell.closeDrawer(); onConfirm && onConfirm(); };
+      inp.focus();
+    },
+
+    /* The per-row control. It is a VISIBLE column, not a hover reveal and not a "..." menu:
+     * a hover reveal does not exist on touch and cannot be scanned, and a menu buries the
+     * verb behind a click for no gain. Rendered at --ink3 rather than --ink4 because at rest
+     * it is a graphical control a reader must be able to find (5.35:1, over the 3:1 floor
+     * for non-text), and it takes the destructive colour only on hover and focus. */
+    removeCell(label){
+      return '<td class="ra"><button class="rmv" data-rmv aria-label="Remove ' + label.replace(/"/g, '&quot;') + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></button></td>';
+    },
+
     init(active){
       Shell.mountRail(active);
       Shell.renderTray();
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') Shell.closeDrawer(); });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        /* Escape has to mean one thing at a time. A drawer is modal, so it wins; otherwise
+         * the selection is the thing on screen asking to be dismissed. */
+        if (document.querySelector('.drawer.open')) { Shell.closeDrawer(); return; }
+        if (document.getElementById('selbar') && Shell._selClear) { Shell._selClear(); return; }
+        Shell.closeDrawer();
+      });
     }
   };
   window.Shell = Shell;

@@ -89,6 +89,11 @@
       <div class="mh-add" id="mhAdd" role="group" aria-label="Add to this season">
         <span class="mh-add-k">Add</span>
       </div>
+      <!-- The "take out" line is mounted by Shell.mastheadExport, not written here: it is
+           the same line on five realms and a hand-written copy per page is five things that
+           can drift. Export sits on its own row rather than inside the Add group because it
+           is not a thing you are adding — in the group, the row read as seven creation
+           buttons one of which did the opposite. -->
       <!-- The composer renders HERE, in the page. Not a modal: `/manage` creates through a
            Discord modal, and reproducing that shape reproduces the thing this is meant to beat. -->
       <section class="nwhost" id="nwHost" hidden aria-label="Add to the season"></section>
@@ -158,7 +163,7 @@
       </div>
       <div class="mscroll"><table class="mtable">
         <colgroup><col class="c-cb"><col class="c-item"><col class="c-type"><col class="c-win">
-                  <col class="c-spark"><col class="c-detail"><col class="c-state"></colgroup>
+                  <col class="c-spark"><col class="c-detail"><col class="c-state"><col class="c-ra"></colgroup>
         <thead><tr>
           <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
           <th class="sortable" data-sort="name">Item</th>
@@ -166,6 +171,8 @@
           <th class="sortable sorted-asc" data-sort="start">Window</th>
           <th class="drop-sm">Span</th>
           <th>Detail</th><th class="ta-r">State</th>
+          <!-- A real column with a real header, not a hover reveal. See Shell.removeCell. -->
+          <th class="ra"><span class="sr">Remove</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -185,6 +192,9 @@
         <span style="font-size:11.5px;color:var(--ink3)">or click any empty lane on the Track</span>
       </div>
     </section>
+    <!-- The one-way strip. Last thing on the page on purpose: by the time a reader reaches
+         it they have already seen every record the operation would destroy. -->
+    <div id="oneway"></div>
   </main>
 </div>
 <aside class="tray" hidden></aside>
@@ -1237,7 +1247,7 @@
         /* Only offer to create on genuinely empty track — never over an existing item. */
         if (e.target !== tk || e.target.closest('.bar, .pt')) { ghost && ghost.remove(); ghost = null; return; }
         const r = tk.getBoundingClientRect(), p = ((e.clientX - r.left) / r.width) * 100;
-        if (!ghost) { ghost = document.createElement('div'); ghost.className = 'ghost'; tk.appendChild(ghost); }
+        if (!ghost) { ghost = document.createElement('div'); ghost.className = 'tghost'; tk.appendChild(ghost); }
         ghost.style.left = p + '%';
         ghost.style.width = st.view.wpct(st.view.dateAt(p), T.addDays(st.view.dateAt(p), 5)) + '%';
         ghost.textContent = '+ ' + T.fmt(st.view.dateAt(p));
@@ -1728,7 +1738,7 @@
    * guard pointing at the renamed class. */
   let ghostPreview = null;
   function drawComposeGhost(c) {
-    viewTrack.querySelectorAll('.ghost.cmp').forEach(g => g.remove());
+    viewTrack.querySelectorAll('.tghost.cmp').forEach(g => g.remove());
     ghostPreview = null;
     if (!c || !c.type || !c.a) { viewTrack.querySelectorAll('.lane.aim').forEach(l => l.classList.remove('aim')); return; }
     const lane = viewTrack.querySelector(`.lane[data-lane="${c.type}"][data-draft="0"]`);
@@ -1738,7 +1748,7 @@
     const tk = lane.querySelector('.tk'); if (!tk) return;
     const end = c.shape === 'point' ? c.a : (c.b || c.a);
     const g = document.createElement('div');
-    g.className = 'ghost cmp' + (c.shape === 'point' ? ' pt' : '');
+    g.className = 'tghost cmp' + (c.shape === 'point' ? ' pt' : '');
     g.style.left = st.view.pct(c.a) + '%';
     if (c.shape !== 'point') g.style.width = st.view.wpct(c.a, end) + '%';
     g.textContent = c.name ? c.name : '+ ' + T.fmt(c.a);
@@ -2040,8 +2050,9 @@
         }${i.thumb ? `<span class="thumb ${i.thumb === 'cached' ? 'ok' : 'no'}">${i.thumb}</span>` : ''}</div></td>
         <td class="ta-r">${conflicts(i) && s !== 'conflict'
             ? `<span class="warnmark" data-tip="Ends after the season does">!</span>` : ''}
-          <span class="stt ${s}" style="--c:${accentOf(i.type)};--ci:${S.inkOn(accentOf(i.type))}">${STATE_LABEL[s]}</span></td></tr>`;
-    }).join('') : `<tr><td colspan="6"><div class="empty"><b>Nothing matches</b>Clear the search or a filter chip.</div></td></tr>`;
+          <span class="stt ${s}" style="--c:${accentOf(i.type)};--ci:${S.inkOn(accentOf(i.type))}">${STATE_LABEL[s]}</span></td>
+        ${S.removeCell(i.name)}</tr>`;
+    }).join('') : `<tr><td colspan="8"><div class="empty"><b>Nothing matches</b>Clear the search or a filter chip.</div></td></tr>`;
     cbAll.classList.toggle('on', v.length > 0 && v.every(i => st.selected.has(i.id)));
     renderBulk();
     rows.querySelectorAll('tr[data-id]').forEach(tr => {
@@ -2058,38 +2069,238 @@
         S.toast(`Renamed to "${i.name}".`); renderAll();
       });
       ed.addEventListener('keydown', e => { if (e.key === 'Enter') ed.blur(); });
-      tr.addEventListener('click', e => { if (e.target !== ed) openItem(id); });
+      /* stopPropagation, or the row click behind it opens the detail drawer under the confirm. */
+      tr.querySelector('[data-rmv]').addEventListener('click', e => { e.stopPropagation(); removeOne(id); });
+      tr.addEventListener('click', e => { if (e.target !== ed && !e.target.closest('[data-rmv]')) openItem(id); });
       tr.addEventListener('mouseenter', () => highlightBar(id, true));
       tr.addEventListener('mouseleave', () => highlightBar(id, false));
     });
   }
+  /* ══════════════════════════════════════════════════════════════════════════
+   * DELETE AND EXPORT — see the long note above Shell.Export in assets/shell.js.
+   *
+   * 🔴 WHAT THIS REPLACED, AND WHY IT COUNTED AS MISSING. The previous renderBulk()
+   * built a real bar with "Export selection" and "Stage deletion" in it, into
+   * `<div id="bulk">` — which sits in normal flow AFTER a 39-row table. Measured at
+   * 1280x860: selecting the first row put that bar 1,682px BELOW THE FOLD. The user
+   * selected two rows, saw two checkmarks and no consequence, and reported delete and
+   * export as absent. He was right. `#bulk` is now a fallback host that stays hidden;
+   * the bar docks to the viewport through Shell.selection().
+   *
+   * 🔴 AND THE OLD EXPORT WAS A LIE. It ran a 700ms setTimeout and then toasted
+   * "Exported N items in Bulk Add format" while producing no file at all. A mockup may
+   * simplify; it may not claim an outcome that did not happen — that is the same defect
+   * class as a probe that reports clean without being able to fail. Every export below
+   * emits the REAL text utils/adminParser.js emits, and downloads it.
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  /* The bot's own formats, ported verbatim from utils/adminParser.js so a round trip is
+   * genuinely lossless rather than lossless-looking. Three DIFFERENT shapes, because the
+   * three entities really do have three: draws are comma-separated with a shorthand tier
+   * per item, calendar rows are a prefixed bullet line, and patch notes have no bulk-add
+   * flow at all so their export is a readable dump rather than a paste format. */
+  const TIER_SHORTHAND = { mythic:'m', legendary:'l', legacy:'lg', epic:'e', comment:'-#' };
+  const CAL_PREFIX = { draw:'d', playlist:'p', event:'e' };
+  const longDate = iso => { const d = new Date(iso + 'T00:00:00Z');
+    return d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric', timeZone:'UTC' }); };
+  const shortDate = iso => { const d = new Date(iso + 'T00:00:00Z');
+    return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); };
+
+  function drawsBulkText(list){
+    return list.map(d => {
+      const items = (d.items || []).map(it => (TIER_SHORTHAND[it.tier] || it.tier) + ' ' + it.name).join(', ');
+      return [d.title, items, longDate(d.date), d.thumbnailUrl || ''].join(', ');
+    }).join('\n');
+  }
+  function calendarBulkText(list){
+    return list.map(e => (CAL_PREFIX[e.category] || 'e') + '• ' + shortDate(e.date) + ' - ' +
+      (e.isOngoing ? 'All Season' : shortDate(e.endDate)) + ' | ' + e.title).join('\n');
+  }
+  /* 🔴 THE SEPARATOR IS `---`, NOT A BLANK LINE, and the title is `title` — never
+   * `titleOverride`. Both were caught by diffing this function's output against the bot's
+   * real formatPatchNotesAsText over the same 2 fixture documents, which is the only check
+   * that could have caught either: an export nothing re-reads looks correct by construction.
+   * Armory's export failed the same test harder — it was still emitting the seven-segment
+   * pipe format the parser was rewritten to REJECT on 2026-08-22. */
+  function patchNotesText(list){
+    return list.map(n => ['Title: ' + n.title,
+      'Release Date: ' + longDate(String(n.releaseDate).slice(0,10)),
+      'Description: ' + (n.description && n.description.trim() ? n.description : '(none)'),
+      'URLs:', ...(n.images || [])].join('\n')).join('\n\n---\n\n');
+  }
+  /* A selection spans every entity, so its export cannot use any one bulk format. It gets
+   * the manifest's own columns instead, and SAYS SO — an export that silently reshapes what
+   * you asked for is worse than one that names its shape. */
+  function manifestText(list){
+    return ['# Dioreo — season manifest export',
+            '# ' + list.length + ' item(s) · ' + new Date().toISOString(),
+            '# Tab-separated. This is the manifest view, not a bulk-add format —',
+            '# use Export by type below for text that pastes back into /manage.',
+            ['NAME','TYPE','START','END','DETAIL','STATE'].join('\t')]
+      .concat(list.map(i => [i.name, F.TYPE_LABEL[i.type] || i.type, i.start, i.end,
+                             i.detail, stateOf(i)].join('\t'))).join('\n');
+  }
+
+  const SEASON_TAG = () => (F.season.title || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  function exportScopes(){
+    return [
+      { id:'season.newDraws', label:'New draws', note:'Bulk Add format — pastes straight back.',
+        count:F.newDraws.length, unit:'draws', file:'dioreo-new-draws-' + SEASON_TAG() + '.txt',
+        build:() => drawsBulkText(F.newDraws) },
+      { id:'season.returningDraws', label:'Returning draws', note:'Bulk Add format — pastes straight back.',
+        count:F.returningDraws.length, unit:'draws', file:'dioreo-returning-draws-' + SEASON_TAG() + '.txt',
+        build:() => drawsBulkText(F.returningDraws) },
+      { id:'season.calendar', label:'Calendar', note:'Prefixed bullet lines, the format Bulk Add takes.',
+        count:F.calendar.length, unit:'events', file:'dioreo-calendar-' + SEASON_TAG() + '.txt',
+        build:() => calendarBulkText(F.calendar) },
+      { id:'season.patchNotes', label:'Patch notes', note:'A readable dump — patch notes have no bulk-add flow to paste into.',
+        count:F.patchNotes.length, unit:'entries', file:'dioreo-patch-notes-' + SEASON_TAG() + '.txt',
+        build:() => patchNotesText(F.patchNotes) },
+      { id:'season.all', label:'Everything on this Track', note:'The manifest as tab-separated columns, every type in one file.',
+        count:st.items.length, unit:'items', file:'dioreo-season-manifest-' + SEASON_TAG() + '.tsv',
+        build:() => manifestText(st.items) }
+    ];
+  }
+  function openExport(focus){
+    S.Export.panel({ title:'Export this season', scopes:exportScopes(), focus });
+  }
+
+  /* Single remove. core/ops registers calendar.delete and draw.delete as TIER 1 — apply()
+   * captures the whole document before removing it, so the inverse is exact. The dialog says
+   * so rather than performing alarm: a portal that treats a reversible delete as a crisis
+   * trains people to click through the one that is not. */
+  function removeOne(id){
+    const i = st.items.find(x => x.id === id); if (!i) return;
+    const op = i.kind === 'point' ? 'draw.delete' : 'calendar.delete';
+    S.confirm({
+      /* No hand-typed `tier:`. The op here is a VARIABLE (draw.delete or calendar.delete
+       * depending on the row), so the schema gate cannot resolve it statically and correctly
+       * refuses to accept a tier it has no way to check — a tier that nothing verifies is
+       * exactly the "states one, is never checked against it" hole Store.add warns about.
+       * Both Shell.confirm and Store.add derive the real tier from FIX.OP_TIERS anyway, so
+       * dropping it loses nothing and removes the chance of stating it wrong. */
+      title:'Remove ' + i.name + '?', op, danger:true, confirm:'Remove',
+      body:'<p class="dw-p">It leaves the Track and the manifest and is <b>staged, not deleted</b> — ' +
+           'nothing is written until you commit on Review, and the tray can put it back until then.</p>',
+      onConfirm(){
+        const at = st.items.indexOf(i);
+        st.items.splice(at, 1);
+        st.selected.delete(id);
+        const sid = 'rm-' + id;
+        S.Store.add({ id:sid, op, name:i.name, verb:'removed', scope:'season.' + (i.kind === 'point' ? 'newDraws' : 'calendar'),
+          rows:[{ field:'Item', was:i.name, becomes:'(removed)' },
+                { field:'Window', was:T.fmt(i.start) + ' → ' + T.fmt(i.end), becomes:'—' }] });
+        S.Store.onInvert(sid, () => { st.items.splice(at, 0, i); renderAll(); });
+        S.toast('Removed "' + i.name + '". Staged, not gone.', 'Undo', () => { S.Store.revert(sid); });
+        renderAll();
+      }
+    });
+  }
+
+  /* The selection summary is the realm speaking in its own terms — a span and a type count,
+   * not "2 rows". It is the sentence that tells you whether you selected what you meant to. */
+  function selectionSummary(list){
+    if (!list.length) return '';
+    const starts = list.map(i => i.start).sort(), ends = list.map(i => i.end).sort();
+    const types = new Set(list.map(i => i.type));
+    return T.fmt(starts[0]) + ' → ' + T.fmt(ends[ends.length - 1]) + ' · ' +
+      types.size + ' type' + (types.size > 1 ? 's' : '');
+  }
+
   function renderBulk() {
-    if (!st.selected.size) { bulk.hidden = true; return; }
-    bulk.hidden = false; bulk.className = 'bulk';
-    bulk.innerHTML = `<span class="c">${st.selected.size} selected</span>
-      <button data-b="shift">Shift dates…</button><button data-b="export">Export selection</button>
-      <button class="danger" data-b="delete">Stage deletion</button>
-      <span class="sp">Destructive actions stage — they never fire from here.</span>`;
-    bulk.querySelector('[data-b=delete]').onclick = () => {
-      const n = st.selected.size;
-      S.Store.add({ id:'del-'+[...st.selected].join('-'), op:'calendar.bulkDelete', name:`${n} item${n>1?'s':''}`, verb:'staged for deletion' });
-      S.toast(`Staged deletion of ${n} item${n>1?'s':''}. Nothing is gone yet.`, 'Review', () => location.href='review.html');
-      st.selected.clear(); renderRows(); syncStaged();
-    };
-    bulk.querySelector('[data-b=shift]').onclick = () => {
-      st.selected.forEach(id => { const i = st.items.find(x => x.id === id);
-        i.start = T.addDays(i.start, 7); i.end = T.addDays(i.end, 7); });
-      S.Store.add({ id:'shift-'+Date.now(), op:'calendar.bulkReplace', name:`${st.selected.size} items`, verb:'shifted +7 days' });
-      S.toast('Shifted 7 days forward.'); st.selected.clear(); renderAll();
-    };
-    bulk.querySelector('[data-b=export]').onclick = function () {
-      const n = st.selected.size;
-      this.classList.add('is-loading'); this.disabled = true;
-      setTimeout(() => {
-        this.classList.remove('is-loading'); this.disabled = false;
-        S.toast(`Exported ${n} item${n>1?'s':''} in Bulk Add format. Pasting it back restores them exactly.`);
-      }, 700);
-    };
+    bulk.hidden = true;                       /* kept as a host only — see the note above */
+    const list = st.items.filter(i => st.selected.has(i.id));
+    if (!list.length) { S.selection({ count:0 }); return; }
+    const n = list.length, plural = n > 1 ? 's' : '';
+    S.selection({
+      count:n, summary:selectionSummary(list), tier:2,
+      onClear(){ st.selected.clear(); renderRows(); },
+      actions:[
+        { label:'Shift +7 days', on(){
+            const before = list.map(i => ({ i, start:i.start, end:i.end }));
+            list.forEach(i => { i.start = T.addDays(i.start, 7); i.end = T.addDays(i.end, 7); });
+            const sid = 'shift-' + Date.now();
+            S.Store.add({ id:sid, op:'calendar.bulkReplace', name:n + ' item' + plural, verb:'shifted +7 days', tier:2,
+              rows:list.slice(0, 4).map(i => ({ field:i.name, was:T.fmt(before.find(b => b.i === i).start), becomes:T.fmt(i.start) })) });
+            S.Store.onInvert(sid, () => { before.forEach(b => { b.i.start = b.start; b.i.end = b.end; }); renderAll(); });
+            S.toast('Shifted ' + n + ' item' + plural + ' 7 days forward.', 'Undo', () => S.Store.revert(sid));
+            st.selected.clear(); renderAll();
+          } },
+        { label:'Export ' + n, on(){
+            S.Export.file('dioreo-selection-' + SEASON_TAG() + '.tsv', manifestText(list));
+            S.toast(n + ' item' + plural + ' exported as the manifest view.');
+          } },
+        { label:'Remove ' + n, kind:'danger', on(){
+            S.confirm({
+              title:'Remove ' + n + ' item' + plural + '?', op:'calendar.bulkDelete', tier:2, danger:true,
+              confirm:'Remove ' + n,
+              body:'<p class="dw-p">These leave the Track and the manifest and are <b>staged, not deleted</b>:</p>' +
+                   '<ul class="dw-l">' + list.slice(0, 8).map(i => '<li>' + i.name + '</li>').join('') +
+                   (n > 8 ? '<li>and ' + (n - 8) + ' more</li>' : '') + '</ul>',
+              onConfirm(){
+                const removed = list.map(i => ({ i, at:st.items.indexOf(i) })).sort((a, b) => b.at - a.at);
+                removed.forEach(r => st.items.splice(r.at, 1));
+                const sid = 'del-' + [...st.selected].join('-');
+                S.Store.add({ id:sid, op:'calendar.bulkDelete', name:n + ' item' + plural, verb:'removed', tier:2,
+                  scope:'season.all',
+                  rows:list.slice(0, 6).map(i => ({ field:i.name, was:'on the Track', becomes:'(removed)' })) });
+                S.Store.onInvert(sid, () => {
+                  removed.slice().reverse().forEach(r => st.items.splice(r.at, 0, r.i)); renderAll(); });
+                S.toast('Removed ' + n + ' item' + plural + '. Staged, not gone.', 'Undo', () => S.Store.revert(sid));
+                st.selected.clear(); renderAll();
+              }
+            });
+          } }
+      ]
+    });
+  }
+
+  /* ── THE ONE-WAY STRIP ──────────────────────────────────────────────────────
+   * Season owns FIVE tier-3 operations and had nowhere to put any of them, which is why
+   * /manage stayed the only place they could be run at all. core/ops: draw.purge,
+   * calendar.purge, patchnote.purge, season.startNew (all tier 3) and season.discardDraft
+   * (tier 2, so it is NOT here — it lives with the draft it discards). */
+  function renderOneWay(){
+    S.oneWay({
+      host:'#oneway', exportScopes,
+      items:[
+        { id:'purge-new', title:'Purge new draws', op:'draw.purge', scope:'season.newDraws',
+          confirmWord:'PURGE', count:F.newDraws.length, unit:'draws',
+          note:'Empties the New Draws list. Returning draws are untouched.',
+          onRun(){ stageOneWay('draw.purge', 'season.newDraws', 'New draws purged', F.newDraws.length + ' draws'); } },
+        { id:'purge-ret', title:'Purge returning draws', op:'draw.purge', scope:'season.returningDraws',
+          confirmWord:'PURGE', count:F.returningDraws.length, unit:'draws',
+          note:'Empties the Returning Draws list. New draws are untouched.',
+          onRun(){ stageOneWay('draw.purge', 'season.returningDraws', 'Returning draws purged', F.returningDraws.length + ' draws'); } },
+        { id:'purge-cal', title:'Purge calendar', op:'calendar.purge', scope:'season.calendar',
+          confirmWord:'PURGE', count:F.calendar.length, unit:'events',
+          note:'Removes every event, playlist and calendar draw row for this season.',
+          onRun(){ stageOneWay('calendar.purge', 'season.calendar', 'Calendar purged', F.calendar.length + ' events'); } },
+        { id:'purge-pn', title:'Purge patch notes', op:'patchnote.purge', scope:'season.patchNotes',
+          confirmWord:'PURGE', count:F.patchNotes.length, unit:'entries',
+          note:'Clears the whole patch-note history, published entries included.',
+          onRun(){ stageOneWay('patchnote.purge', 'season.patchNotes', 'Patch notes purged', F.patchNotes.length + ' entries'); } },
+        { id:'start-new', title:'Start a new season', op:'season.startNew', scope:'season.all',
+          confirmWord:'NEW SEASON', count:st.items.length, unit:'items',
+          note:'Clears draws, calendar and titles together and opens an empty season. The single widest thing the portal can do.',
+          onRun(){ stageOneWay('season.startNew', 'season.all', 'New season started', 'everything on the Track'); } }
+      ]
+    });
+  }
+  /* Even a one-way op STAGES rather than firing — Review is the only place anything is
+   * written, and a purge that skipped it would make the commit screen a partial record of
+   * what the portal did. Store.blocked() keeps it from committing without its export. */
+  function stageOneWay(op, scope, label, what){
+    const sid = op + '-' + Date.now();
+    /* Same reason: `op` is a parameter. Store.add reads the real tier out of FIX.OP_TIERS,
+     * which is what Store.blocked() then tests for tier 3 — so the export gate still works,
+     * it just works from the registry instead of from a number typed here. */
+    S.Store.add({ id:sid, op, name:label, verb:'staged', scope,
+      rows:[{ field:'Scope', was:what, becomes:'(empty)' },
+            { field:'Recoverable from', was:'—', becomes:'your export of ' + scope }] });
+    S.Store.onInvert(sid, () => {});
+    S.toast(label + ' staged. It commits only from Review, and only because you exported first.',
+      'Review', () => location.href = 'review.html');
   }
 
   /* One measurement, three surfaces. Same engine as the Track. */
@@ -2222,7 +2433,16 @@
   }
   function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
   function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
+    renderOneWay(); renderTakeOut();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }
+
+  /* The masthead states what an export would carry, so "Export…" is never a blind click —
+   * and once something has been taken out this session it says that instead, which is the
+   * same fact the one-way strip's gate reads. */
+  function renderTakeOut(){
+    S.mastheadExport({ host:'#mhAdd', scopes:exportScopes,
+      summary:() => st.items.length + ' items · ' + exportScopes().length + ' formats' });
+  }
 
   /* ═══ VIEW 3 · REPAIRS ═══════════════════════════════════════════════════════════════
    * Armory has had this since it was rebuilt on real documents; Season did not, and the

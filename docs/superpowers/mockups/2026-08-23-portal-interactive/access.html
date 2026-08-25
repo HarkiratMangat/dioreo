@@ -81,7 +81,7 @@
    *     in a tray is not a security action") is the argument for why.
    * ═══════════════════════════════════════════════════════════════════════════ */
   const SM = F.SCOPE_META, RM = F.ROLE_META;
-  const st = { mode:'grid',
+  const st = { mode:'grid', pending:{},
                admins: F.accessAdmins.map(a => ({ ...a, grants: { ...a.grants } })),
                sessions: F.sessions.map(s => ({ ...s })), notice:'' };
   const COMMANDS = F.accessScopes.filter(s => s.kind === 'command');
@@ -176,13 +176,27 @@
               </span></td>
               ${F.accessScopes.map(s => {
                 const g = a.grants[s.key] || {};
-                const cls = g.direct ? 'on' : g.inherited ? 'inh' : '';
+                const pk = a.discordId + '|' + s.key;
+                const pend = st.pending[pk];
+                const base = g.direct ? 'on' : g.inherited ? 'inh' : '';
+                /* A pending cell shows what it WILL be, ringed, so the matrix reads as the
+                 * state you are about to save rather than the one you are leaving. */
+                const cls = pend === true ? 'on pend' : pend === false ? 'pend off' : base;
                 const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from the bare manage token' : 'not granted';
-                return `<td><span class="mxcell ${cls}" style="--c:${SM[s.key].hex}" role="img"
-                    aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}"
-                    data-tip="${esc(s.label)} — ${what}"></span></td>`;
+                const willBe = pend === true ? ' — pending: will be granted'
+                             : pend === false ? ' — pending: will be revoked' : '';
+                return `<td><button class="mxcell ${cls}${g.inherited && pend === undefined ? ' inherited' : ''}"
+                    style="--c:${SM[s.key].hex}" data-cell="${esc(a.discordId)}" data-scope="${esc(s.key)}"
+                    aria-pressed="${pend === undefined ? !!(g.direct || g.inherited) : pend}"
+                    aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}${willBe}"
+                    data-tip="${esc(s.label)} — ${what}${willBe}"></button></td>`;
               }).join('')}
-              <td><button class="chip" data-edit="${esc(a.discordId)}">Edit</button></td>
+              <td class="mxact">
+                <button class="chip" data-edit="${esc(a.discordId)}">Edit</button>
+                <button class="rmv" data-drop="${esc(a.discordId)}" aria-label="Revoke …${esc(a.discordId.slice(-6))} entirely">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>
+                </button>
+              </td>
             </tr>`).join('')}
           </tbody>
         </table>
@@ -203,6 +217,9 @@
         convenience that expands to the three commands. A permissions array is never allowed to be
         empty &mdash; an admin with nothing granted should be revoked, not parked in limbo.</p>`;
     viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
+    viewGrid.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => {
+      const a = st.admins.find(x => x.discordId === b.dataset.drop); if (a) confirmRevoke(a); });
+    viewGrid.querySelectorAll('[data-cell]').forEach(b => b.onclick = () => cellClick(b.dataset.cell, b.dataset.scope));
     document.getElementById('grantBtn').onclick = openGrant;
   }
 
@@ -453,6 +470,40 @@
     };
   }
 
+  /* Access has no /manage export at all — utils/manageActions registers nine export
+   * actions and none of them is permissions. It gets one anyway, because the portal is not
+   * limited to what the Discord panel can do and "who could do what, on this date" is the
+   * single most useful thing to be able to hand to someone later. Two shapes: the matrix as
+   * a grid (readable), and one row per grant (greppable, diffable against last month's). */
+  function accessScopes() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    return [
+      { id:'access.matrix', label:'The matrix', note:'One row per admin, one column per scope — the grid as you see it.',
+        count:st.admins.length, unit:'admins', file:'dioreo-access-matrix-' + stamp + '.tsv',
+        build(){
+          const head = ['ADMIN','LABEL','GRANTED'].concat(F.accessScopes.map(x => x.key.toUpperCase()));
+          const rows = st.admins.map(a => [a.discordId, a.note || '', fmt(a.grantedAt)]
+            .concat(F.accessScopes.map(x => { const g = a.grants[x.key] || {};
+              return g.direct ? 'direct' : g.inherited ? 'inherited' : ''; })));
+          return ['# Dioreo — access matrix · ' + new Date().toISOString(),
+                  '# The owner holds every scope implicitly and is not a row here.',
+                  head.join('\t')].concat(rows.map(r => r.join('\t'))).join('\n');
+        } },
+      { id:'access.grants', label:'One line per grant', note:'Long form — greppable, and diffable against an older export.',
+        count:st.admins.reduce((n, a) => n + F.accessScopes.filter(x => held(a, x.key)).length, 0),
+        unit:'grants', file:'dioreo-access-grants-' + stamp + '.txt',
+        build(){
+          const out = [];
+          st.admins.forEach(a => F.accessScopes.forEach(x => { const g = a.grants[x.key] || {};
+            if (g.direct || g.inherited) out.push(a.discordId + ' | ' + x.key + ' | ' + (g.direct ? 'direct' : 'inherited') + ' | ' + (a.note || '')); }));
+          return out.join('\n');
+        } },
+      { id:'access.sessions', label:'Browser sessions', note:'Who is signed into the portal right now, and until when.',
+        count:st.sessions.length, unit:'sessions', file:'dioreo-access-sessions-' + stamp + '.txt',
+        build(){ return st.sessions.map(x => [x.discordId, x.signedInAt, isLive(x) ? 'LIVE' : 'expired'].join(' | ')).join('\n'); } }
+    ];
+  }
+
   function renderKey() {
     key.innerHTML = `<span class="l"><i></i>direct</span><span class="s"><i></i>inherited</span>`;
   }
@@ -467,7 +518,134 @@
       ? `${st.admins.length} admin${st.admins.length === 1 ? '' : 's'} &times; ${F.accessScopes.length} tokens`
       : `${spofScopes().size} single point${spofScopes().size === 1 ? '' : 's'} &middot; ${unheld().length} held by nobody but you`;
   }
-  function renderAll(){ renderOwnerNote(); renderGrid(); renderScope(); renderSess(); renderKey(); renderStats(); S.mountRail('access'); }
+  /* ══════════════════════════════════════════════════════════════════════════
+   * CLICK-TO-TOGGLE — Harkirat, 2026-08-24: "why can't i just directly click these
+   * boxes to give/revoke access and then just click an overall 'save' at the end
+   * somewhere". Before this the matrix was 8 scopes x N admins of `role="img"` spans:
+   * it DISPLAYED the answer to the question the page exists to answer and could not
+   * change it. Every edit went through a drawer, one admin at a time.
+   *
+   * The decided shape, and why each half is deliberate:
+   *   · click any cell freely — no dialog per click, no staging tray. The tray is for
+   *     work that crosses realms and commits together; permissions are one write to one
+   *     collection and portal/api/access.js writes them DIRECTLY, so routing them through
+   *     the changeset would state a transaction the API does not have.
+   *   · ONE Save, ONE confirm listing every grant and every revoke. Reading the whole
+   *     diff once is what makes a batch safer than eight separate yes-clicks, not less safe.
+   *   · a typed id is required only when a revoke would leave someone with NO scope at
+   *     all — the one outcome that is not a permission change but an admin ceasing to exist.
+   *
+   * 🔴 AN INHERITED CELL IS NOT TOGGLEABLE, and saying so is the point. It is filled by a
+   * bare `manage` token covering every page at once, so "revoking" it here would silently
+   * mean revoking `manage` — a far wider act than the cell describes. Clicking one explains
+   * where the grant comes from instead of quietly doing something bigger than it looks. */
+  function cellClick(id, scope) {
+    const a = st.admins.find(x => x.discordId === id); if (!a) return;
+    const g = a.grants[scope] || {};
+    if (g.inherited && !g.direct) {
+      S.toast('That one is inherited from the bare manage token, which covers every page. Edit the manage token to change it.', 'Edit', () => openAdmin(id));
+      return;
+    }
+    const pk = id + '|' + scope;
+    const now = st.pending[pk] === undefined ? !!g.direct : st.pending[pk];
+    const next = !now;
+    if (next === !!g.direct) delete st.pending[pk]; else st.pending[pk] = next;
+    renderGrid(); renderSaveBar();
+  }
+
+  function pendingList() {
+    return Object.entries(st.pending).map(([pk, v]) => {
+      const [id, scope] = pk.split('|');
+      const a = st.admins.find(x => x.discordId === id);
+      const sc = F.accessScopes.find(x => x.key === scope);
+      return { id, scope, grant: v, who: '…' + id.slice(-6), label: sc ? sc.label : scope, admin: a };
+    });
+  }
+  /* Who would be left with nothing. This is the ONLY case that asks for a typed id, and it
+   * is computed from the pending set rather than from the click, because it is only true
+   * once every pending revoke for that person is counted together. */
+  function wouldEmpty(list) {
+    const out = [];
+    st.admins.forEach(a => {
+      const after = F.accessScopes.filter(s => {
+        const pk = a.discordId + '|' + s.key;
+        return st.pending[pk] === undefined ? held(a, s.key) : st.pending[pk];
+      });
+      if (!after.length && F.accessScopes.some(s => held(a, s.key))) out.push(a);
+    });
+    return out;
+  }
+
+  function renderSaveBar() {
+    const list = pendingList();
+    if (!list.length) { S.selection({ count:0 }); return; }
+    const grants = list.filter(x => x.grant).length, revokes = list.length - grants;
+    const empties = wouldEmpty(list);
+    S.selection({
+      count:list.length, noun:'pending', clearLabel:'Discard',
+      tier: empties.length ? 3 : 1,
+      badge: empties.length
+        ? 'deletes ' + empties.length + ' admin record' + (empties.length > 1 ? 's' : '') + ' · no undo'
+        : 'written directly · not staged',
+      summary:[grants ? grants + ' grant' + (grants > 1 ? 's' : '') : null,
+               revokes ? revokes + ' revoke' + (revokes > 1 ? 's' : '') : null,
+               empties.length ? empties.length + ' admin' + (empties.length > 1 ? 's' : '') + ' left with nothing' : null]
+              .filter(Boolean).join(' · '),
+      onClear(){ st.pending = {}; renderGrid(); renderSaveBar(); },
+      actions:[{ label:'Save ' + list.length + ' change' + (list.length > 1 ? 's' : ''), kind: empties.length ? 'danger' : 'normal', on: saveAccess }]
+    });
+  }
+
+  function saveAccess() {
+    const list = pendingList(); if (!list.length) return;
+    const grants = list.filter(x => x.grant), revokes = list.filter(x => !x.grant);
+    const empties = wouldEmpty(list);
+    const rows = who => who.map(x => '<li><code>' + esc(x.who) + '</code> &middot; ' + esc(x.label) + '</li>').join('');
+    const body =
+      '<p class="dw-p">This writes straight to <code>AdminUser</code> — there is no staging tray for permissions, ' +
+      'and it takes effect on their next click in the bot.</p>' +
+      (grants.length ? '<div class="acg"><b class="acg-k on">Granting ' + grants.length + '</b><ul class="dw-l">' + rows(grants) + '</ul></div>' : '') +
+      (revokes.length ? '<div class="acg"><b class="acg-k off">Revoking ' + revokes.length + '</b><ul class="dw-l">' + rows(revokes) + '</ul></div>' : '') +
+      (empties.length ? '<div class="callout"><b>' + empties.length + ' admin' + (empties.length > 1 ? 's' : '') +
+        ' would be left holding nothing, so their <code>AdminUser</code> record is deleted outright.</b> ' +
+        'A permissions array is never allowed to be empty (see the note under the matrix) — an admin with ' +
+        'nothing granted is not an admin with reduced access, it is a row that no longer means anything. ' +
+        'They keep their Discord account and every public command. <b>There is no undo for that half.</b></div>' : '');
+
+    const apply = () => {
+      list.forEach(x => {
+        const a = x.admin; if (!a) return;
+        if (x.grant) { if (!a.permissions.includes(x.scope)) a.permissions.push(x.scope); }
+        else a.permissions = a.permissions.filter(p => p !== x.scope);
+        recompute(a);
+      });
+      /* The invariant the matrix note states — a permissions array is never empty — is
+       * enforced HERE rather than by refusing the click, because refusing would leave the
+       * operator holding a change they meant and no way to express it. Emptying someone is
+       * a real intention; it just means something bigger than a permission edit. */
+      if (empties.length) st.admins = st.admins.filter(a => !empties.includes(a));
+      touched = true; st.pending = {};
+      S.toast(grants.length + ' granted, ' + revokes.length + ' revoked' +
+        (empties.length ? ', ' + empties.length + ' record' + (empties.length > 1 ? 's' : '') + ' deleted' : '') +
+        '. Live on their next click.');
+      renderAll(); renderSaveBar();
+    };
+
+    if (empties.length) {
+      S.typedConfirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : ''),
+        op:'access.grant', tier:3, word:empties[0].discordId,
+        body: body + '<p class="dw-p">Type the id of the first admin whose record would be deleted.</p>',
+        onConfirm: apply });
+    } else {
+      S.confirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : '') + '?',
+        op:'access.grant', tier:1, confirm:'Save changes', body, onConfirm: apply });
+    }
+  }
+
+  function renderAll(){ renderOwnerNote(); renderGrid(); renderScope(); renderSess(); renderKey(); renderStats();
+    S.mountRail('access'); renderSaveBar();
+    S.mastheadExport({ host:'#mhGrant', scopes:accessScopes, label:'Audit',
+      summary:() => st.admins.length + ' admins · 3 formats' }); }
 
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
     st.mode = b.dataset.view;

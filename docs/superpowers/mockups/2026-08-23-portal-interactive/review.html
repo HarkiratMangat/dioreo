@@ -45,7 +45,13 @@
   S.init('');
   S.mountHeader('Portal', 'Review');
 
-  const st = { sel:null, exported:{}, resolved:{}, confirmText:'' };
+  /* 🔴 `exported:{}` USED TO LIVE HERE, and it was a SECOND, INDEPENDENT LEDGER. Export.mark()
+   * and Store.add both record an export on the op itself (`o.exported`), and Store.blocked()
+   * reads that; Review read its own map. Measured end to end 2026-08-24: exporting the calendar,
+   * then staging calendar.purge through the one-way gate, gave Store.blocked() === 0 while this
+   * screen still said "1 tier-3 change needs an export before it will commit" and refused the
+   * commit. Two answers to one question, and the screen that decides was reading the wrong one. */
+  const st = { sel:null, resolved:{}, confirmText:'' };
   const ops = () => S.Store.all();
   const dash = v => (v === null || v === undefined || v === '') ? '—' : String(v);
 
@@ -59,7 +65,7 @@
    * (design spec §6.1/H1). There is no server here, so it is simulated on one
    * marked op — the SHAPE of the surface is the thing being specified. */
   const isStale = o => o.stale === true && !st.resolved[o.id];
-  const needsExport = o => o.tier === 3 && !st.exported[o.id];
+  const needsExport = o => o.tier === 3 && !o.exported;
 
   function blockers() {
     const b = [];
@@ -125,7 +131,7 @@
       e.stopPropagation();
       const o = ops().find(x => x.id === b.dataset.drop);
       S.Store.revert(o.id);
-      delete st.exported[o.id]; delete st.resolved[o.id];
+      delete st.resolved[o.id];   /* the export record lives on the op, and dies with it */
       if (st.sel === o.id) st.sel = null;
       S.toast(`Dropped “${o.name}”. The value it would have overwritten is untouched.`);
       render();
@@ -136,7 +142,8 @@
 
   function detail(o) {
     if (!o) return '';
-    const rows = o.rows && o.rows.length ? o.rows : [['(no field-level preview captured)', '—', '—']];
+    const rows = o.rows && o.rows.length ? o.rows
+      : [{ field:'(no field-level preview captured)', was:'—', becomes:'—' }];
     return `
       <h4>${o.name}</h4>
       <span class="rvop-name">${o.op || 'unknown operation'} · tier ${o.tier} · ${o.realm || 'season'}</span>
@@ -160,35 +167,47 @@
         <div class="rvhead"><span>Field</span><span>Was</span><span>Becomes</span></div>
         ${rows.map(r => `
           <div class="rvr ${o.destroys ? 'del' : ''}">
-            <span class="rvk">${dash(r[0])}</span>
-            <span class="rvwas">${dash(r[1])}</span>
-            <span class="rvnow">${dash(r[2])}</span>
+            <span class="rvk">${dash(r.field)}</span>
+            <span class="rvwas">${dash(r.was)}</span>
+            <span class="rvnow">${dash(r.becomes)}</span>
           </div>`).join('')}
       </div>
 
       ${o.tier === 3 ? `
-        <div class="rvexp ${st.exported[o.id] ? 'done' : ''}">
-          ${st.exported[o.id]
+        <div class="rvexp ${o.exported ? 'done' : ''}">
+          ${o.exported
             ? `<b>✓ Export saved</b>
-               <p>You are holding a file that re-imports through the bot's own bulk parser. That is
-                  what converts this from irreversible to reversible-with-a-file.</p>`
+               <p>You are holding a file that re-imports through the bot's own bulk parser — the
+                  round trip is checked byte for byte against <code>utils/adminParser.js</code> on
+                  every build. That is what converts this from irreversible to reversible-with-a-file.</p>`
             : `<b>Export what this destroys, first</b>
                <p>This change cannot be undone by an inverse. The bot can already serialize its own
                   state into a format its bulk parsers re-ingest, so the export is nearly free — and
                   it is the strongest safeguard available. The commit stays closed until you take it.</p>
-               <button class="chip go" data-exp="${o.id}">Download export</button>`}
+               <!-- 🔴 This does NOT export from here. The data and the format both live in the
+                    realm, and Review holding its own copy of five export builders is how the
+                    package ended up with two disagreeing answers to "has this been exported?"
+                    in the first place. It sends you to the one implementation. -->
+               <a class="chip go" href="${realmHref(o)}">Export in ${realmOf(o)} &rarr;</a>`}
         </div>` : `
         <p class="chint" style="margin-top:16px">Tier ${o.tier} — an exact inverse was captured when
           this was staged, so it can be undone after it commits.</p>`}`;
   }
 
+  /* Which realm owns the data an op would destroy, and the deep link that opens that realm's
+   * export panel on the right scope. `scope` is the id the one-way gate already keys on, so the
+   * link and the gate can never disagree about which file satisfies which op. */
+  function realmOf(o){
+    const r = o.realm || (o.scope || '').split('.')[0] || 'season';
+    return r.charAt(0).toUpperCase() + r.slice(1);
+  }
+  function realmHref(o){
+    const r = (o.realm || (o.scope || '').split('.')[0] || 'season');
+    return r + '.html' + (o.scope ? '#export=' + encodeURIComponent(o.scope) : '#export');
+  }
+
   function wireDetail(o) {
     if (!o) return;
-    viewReview.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => {
-      st.exported[b.dataset.exp] = true;
-      S.toast(`Export saved for “${o.name}”. The commit gate for it is now open.`);
-      render();
-    });
     viewReview.querySelectorAll('[data-res]').forEach(b => b.onclick = () => {
       if (b.dataset.res === 'drop') {
         S.Store.revert(o.id);
@@ -264,7 +283,7 @@
         body:`<p class="dw-p">Each one is reverted, not merely forgotten — the portal puts the
                 previous value back. Nothing in Discord changes, because none of this ever
                 reached it.</p>`,
-        onConfirm(){ S.Store.revertAll(); st.exported = {}; st.resolved = {}; st.confirmText = '';
+        onConfirm(){ S.Store.revertAll(); st.resolved = {}; st.confirmText = '';
                      S.toast('All staged changes discarded.'); render(); } });
     };
     document.getElementById('commit').onclick = commit;
@@ -287,7 +306,7 @@
                 ? ', and the tier-3 change is recoverable from the export you saved' : ''}.</p>`,
       onConfirm(){
         const n = list.length;
-        S.Store.clear(); st.exported = {}; st.resolved = {}; st.confirmText = ''; st.sel = null;
+        S.Store.clear(); st.resolved = {}; st.confirmText = ''; st.sel = null;
         render();
         S.toast(`${n} change${n > 1 ? 's' : ''} committed. Live to players now.`);
       }

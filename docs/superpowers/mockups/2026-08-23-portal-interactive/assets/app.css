@@ -383,7 +383,17 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 .bar:hover .gr,.bar:focus-visible .gr{opacity:1}
 .lane .tk{cursor:crosshair}
 .lane .tk:hover{background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
-.ghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;border:1.5px dashed var(--patch);
+/* 🔴 RENAMED .ghost -> .tghost 2026-08-24. This is the TRACK's drag preview — absolutely
+   positioned on a timeline — and it held the most generic name in the package. `.pill.ghost`
+   (line ~2542) is a legitimate component variant that sets only border and colour, so every
+   one of THESE four properties leaked straight through it: a higher-specificity rule wins only
+   the properties it SETS. Result, measured the first time the variant was ever used: five
+   one-way buttons rendered `position:absolute` and stacked on top of each other at (93,445),
+   over the Track, ~2,900px from the strip they belong to. `.pill.ghost` had been unusable
+   since the day it was written and nothing had used it, so nothing reported it.
+   The 9th generic-class collision in this package — .now .left .tbd .k .tk .ed .col
+   window.frames, and now .ghost. */
+.tghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;border:1.5px dashed var(--patch);
   background:rgba(242,194,48,.08);pointer-events:none;display:flex;align-items:center;padding:0 8px;
   font-size:11px;color:var(--patch);white-space:nowrap;z-index:5}
 
@@ -1766,8 +1776,18 @@ body:has(.tray:not([hidden])) main{padding-bottom:250px}
 
 /* Collapsed tray — the header stays, everything else folds away. It keeps the count
  * visible (that is the thing you must not lose) while freeing the page underneath. */
-.tray.collapsed .rounds,.tray.collapsed .tray-f,.tray.collapsed .hint{display:none}
+/* 🔴 COLLAPSING HIDES THE LIST, NOT THE ACTIONS. It used to hide `.tray-f` too, which made
+   the collapsed tray a label with no way out of it — you had to expand before you could
+   discard or review. Measured on Access at 1280x860: the EXPANDED tray is 320x269 and sat
+   on top of the matrix's last three scope columns and both row controls, so the realm's own
+   data was unreachable behind a status panel. A persistent status object should state the
+   summary and keep its verbs; the detail is what folds away. */
+.tray.collapsed .rounds,.tray.collapsed .hint{display:none}
 .tray.collapsed{padding-bottom:0}
+/* Two docked surfaces at once is the portal shouting. While a selection bar is up, the tray
+   folds to its summary — the bar is the thing being acted on, and the tray still says how
+   much is staged and still offers both of its verbs. */
+body.has-selbar .tray .rounds,body.has-selbar .tray .hint{display:none}
 .tray-h{cursor:pointer;user-select:none;position:relative;padding-right:22px}
 .tray-h::after{content:"";position:absolute;right:6px;top:50%;width:6px;height:6px;
   border-right:1.5px solid var(--ink3);border-bottom:1.5px solid var(--ink3);
@@ -2664,10 +2684,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .nwhost .nw-prev:empty{display:none}
 
 /* ── the ghost the composer draws on the REAL Track ── */
-.ghost.cmp{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 12%,transparent);
+.tghost.cmp{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 12%,transparent);
   color:var(--patch);font:600 11px/1 var(--ui);padding:0 8px;z-index:5;
   display:flex;align-items:center;overflow:hidden;white-space:nowrap}
-.ghost.cmp.pt{width:15px;height:15px;padding:0;border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
+.tghost.cmp.pt{width:15px;height:15px;padding:0;border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
   margin-left:-7.5px;color:transparent}
 .lane.aim{background:linear-gradient(180deg,color-mix(in srgb,var(--patch) 7%,transparent),transparent)}
 .lane.aim .lnh{color:var(--patch)}
@@ -2890,7 +2910,9 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .masthead .mh-id{grid-column:1;grid-row:1}
 .masthead .mh-stats{grid-column:2;grid-row:1;justify-content:flex-end;margin-top:6px}
 .masthead .mh-new{grid-column:2;grid-row:2;justify-self:end;margin-top:16px}
-.masthead .nwhost{grid-column:1 / -1;grid-row:3;max-width:none}
+/* row 4, not 3 — row 3 is the masthead's "take out" line (.mh-take). Two elements silently
+   sharing an explicit grid row is a stacking bug that renders as one covering the other. */
+.masthead .nwhost{grid-column:1 / -1;grid-row:4;max-width:none}
 @media (max-width:820px){
   .masthead{grid-template-columns:1fr}
   .masthead .mh-stats,.masthead .mh-new{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}
@@ -2999,3 +3021,179 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .stt.saved{color:var(--ci,var(--ink2))}
 /* a filled state badge (Season passes --c) still takes the ink its fill can carry */
 .stt.saved[style*="--c"]{color:var(--ci,var(--on-accent))}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DELETE + EXPORT — the docked selection bar, the one-way strip, the export panel
+   and the per-row remove control. See the long note above Shell.Export in shell.js
+   for why these exist and what was measured; the CSS notes below cover only what is
+   decided HERE, in the geometry.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── THE DOCKED SELECTION BAR ──
+   🔴 `position:fixed`, NOT in flow. The bar this replaces was a div after the table:
+   selecting row 1 of 39 put it 1,682px below the fold at 1280x860, so the page showed
+   a checkmark and no consequence. Fixed to the viewport is the whole fix.
+   z-index 42 sits ABOVE content (1) and the sticky header (40) but BELOW the scrim (44),
+   so opening a drawer covers it rather than letting a bar float over a modal. */
+.selbar{position:fixed;left:var(--rail-w);right:0;bottom:0;z-index:42;
+  display:flex;justify-content:center;padding:0 18px 18px;pointer-events:none;
+  transform:translateY(130%);transition:transform var(--dur-3) var(--ease)}
+.selbar.on{transform:none}
+.selbar-in{pointer-events:auto;display:flex;align-items:center;gap:14px;width:100%;max-width:1060px;
+  padding:11px 12px 11px 14px;border-radius:11px;background:var(--raised);
+  border:1px solid var(--rule2);box-shadow:0 20px 46px -18px #000,0 1px 0 0 #ffffff08 inset}
+/* The count reads as a figure, not a label — it is the one number the bar is about. */
+.selbar-n{font:600 19px/1 var(--data);color:var(--staged);letter-spacing:-.02em;
+  min-width:30px;text-align:center;flex:none}
+.selbar-t{min-width:0;display:flex;flex-direction:column;gap:2px}
+.selbar-t b{font:600 13px/1 var(--ui);color:var(--ink)}
+.selbar-t span{font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The badge answers "can I take this back?" at the moment of deciding. */
+.selbar-rev{font:600 9.5px/1 var(--data);letter-spacing:.13em;text-transform:uppercase;
+  padding:6px 10px;border-radius:999px;border:1px solid var(--rule2);color:var(--ink3);white-space:nowrap;flex:none}
+.selbar-rev.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent);
+  background:color-mix(in srgb,var(--ok) 8%,transparent)}
+.selbar-rev.gate{color:var(--danger-ink);border-color:var(--danger-edge);
+  background:color-mix(in srgb,var(--del) 11%,transparent)}
+.selbar-a{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.selbar-x{background:none;border:none;color:var(--ink3);font:600 11.5px/1 var(--ui);
+  padding:8px 6px;cursor:pointer;min-height:var(--tap);flex:none}
+.selbar-x:hover{color:var(--ink)}
+.selbar-x:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:4px}
+/* The tray is a persistent status object and the bar is a momentary action object; they
+   share the bottom edge, so the tray steps up rather than either one hiding the other. */
+body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur-2) var(--ease)}
+
+/* ── THE PER-ROW REMOVE CONTROL ──
+   Its own column with a header, never a hover reveal: a reveal does not exist on touch and
+   cannot be scanned, and "..." buries the verb behind a click for nothing. --ink3 at rest
+   (5.35:1, over the 3:1 non-text floor) so it is findable; destructive colour on hover/focus. */
+.mtable td.ra,.mtable th.ra{width:40px;padding-right:8px;text-align:right}
+.rmv{width:28px;height:28px;border-radius:6px;border:1px solid transparent;background:none;
+  color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;
+  transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.rmv svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.rmv:hover{color:var(--danger-ink);border-color:var(--danger-edge);
+  background:color-mix(in srgb,var(--del) 13%,transparent)}
+.rmv:focus-visible{outline:2px solid var(--danger-ink);outline-offset:1px;color:var(--danger-ink)}
+
+/* ── THE ONE-WAY STRIP ──
+   At the foot of a realm on purpose: the end of the page is where a reader has already seen
+   everything the operation would destroy. The tint is a gradient that fades out downward, so
+   the band reads as a boundary being crossed rather than a red box someone drew. */
+/* The hatch rail is the whole visual argument. A red box is the template answer and reads as
+   decoration; a hazard hatch is a real-world convention for a boundary you are about to cross,
+   it costs one pseudo-element, and it lets the panel itself stay quiet enough to read. This is
+   the strip's one accessory — everything else inside it is ordinary type. */
+.ow{position:relative;margin-top:26px;border:1px solid var(--danger-edge);border-radius:9px;
+  overflow:hidden;padding-left:9px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--del) 9%,transparent),transparent 58%),var(--paper)}
+.ow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
+  background:repeating-linear-gradient(135deg,
+    color-mix(in srgb,var(--del) 62%,transparent) 0 5px,
+    transparent 5px 10px);
+  opacity:.85}
+@media (prefers-reduced-motion:no-preference){
+  .ow::before{transition:opacity var(--dur-2) var(--ease)}
+}
+.ow-h{padding:14px 16px 12px;border-bottom:1px solid var(--rule)}
+.ow-k{font:700 9.5px/1 var(--data);letter-spacing:.17em;color:var(--danger-ink);
+  display:inline-block;padding:5px 8px;border-radius:4px;
+  background:color-mix(in srgb,var(--del) 15%,transparent);
+  border:1px solid var(--danger-edge)}
+.ow-h h3{font:600 15px/1.2 var(--ui);margin:8px 0 5px;color:var(--ink)}
+.ow-h p{font-size:12px;line-height:1.5;color:var(--ink3);max-width:64ch;margin:0}
+.ow-l{list-style:none;margin:0;padding:0}
+.ow-i{display:flex;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid var(--rule3);flex-wrap:wrap}
+.ow-i:first-child{border-top:none}
+.ow-t{flex:1 1 220px;min-width:0}
+.ow-t b{font:600 13px/1.35 var(--ui);color:var(--ink);display:block}
+.ow-t span{font-size:11.5px;color:var(--ink3)}
+.ow-c{font:500 12px/1 var(--data);color:var(--ink2);white-space:nowrap;
+  text-align:right;min-width:88px}
+.ow-c em{font-style:normal;color:var(--ink3);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.ow-i .pill{min-width:126px;justify-content:center}
+.pill.dang{border-color:var(--danger-edge);color:var(--danger-ink);
+  background:color-mix(in srgb,var(--del) 12%,transparent)}
+.pill.dang:hover{border-color:var(--del);background:color-mix(in srgb,var(--del) 20%,transparent);color:var(--ink)}
+
+/* ── THE EXPORT PANEL ── */
+.exs{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.exs-i{display:flex;align-items:center;gap:13px;padding:12px 13px;border:1px solid var(--rule);
+  border-radius:7px;background:var(--sunk);flex-wrap:wrap}
+.exs-i.focus{border-color:var(--patch);box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 16%,transparent)}
+.exs-i.done{border-color:color-mix(in srgb,var(--ok) 42%,transparent)}
+.exs-i.done .exs-t b::after{content:" ✓";color:var(--ok)}
+.exs-t{flex:1 1 200px;min-width:0}
+.exs-t b{font:600 13px/1.35 var(--ui);color:var(--ink);display:block}
+.exs-t span{font-size:11.5px;color:var(--ink3)}
+.exs-c{font:500 12px/1 var(--data);color:var(--ink2);white-space:nowrap}
+.exs-c em{font-style:normal;color:var(--ink3);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── THE TYPED CONFIRM ── tier 3 only. Asking for a typed word on a reversible change
+   teaches people to type it without reading, which is worse than not asking. */
+.tc-l{display:block;margin:16px 0 6px;font-size:11.5px;color:var(--ink2)}
+.tc-l b{font-family:var(--data);color:var(--danger-ink);letter-spacing:.06em}
+.tc-in{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:6px;
+  color:var(--ink);font:500 14px/1 var(--data);letter-spacing:.1em;padding:11px 12px;min-height:var(--tap)}
+.tc-in:focus{outline:2px solid var(--danger-ink);outline-offset:1px;border-color:var(--danger-edge)}
+.btn.dang[disabled]{opacity:.4;cursor:default;filter:none}
+
+@media (max-width:768px){
+  /* The bottom tab bar owns the bottom edge on mobile, so the bar docks above it and the
+     tray steps up by the bar's full height plus the nav's. */
+  .selbar{left:0;bottom:58px;padding:0 10px 10px}
+  .selbar-in{gap:10px;padding:10px}
+  .selbar-t span,.selbar-rev{display:none}
+  .selbar-a{width:100%;justify-content:stretch;margin-left:0}
+  .selbar-a .pill{flex:1;justify-content:center}
+  body.has-selbar .tray{transform:translateY(-96px)}
+}
+
+/* The masthead's "take out" line. Deliberately NOT inside .mh-add: an export is not a thing
+   you are adding, and folding it into that group made the row read as seven creation buttons
+   one of which does the opposite. Same label geometry, own line, quieter weight. */
+.mh-take{grid-column:2;grid-row:3;justify-self:end;display:flex;align-items:center;
+  gap:10px;margin-top:10px;flex-wrap:wrap}
+@media (max-width:820px){.mh-take{grid-column:1;grid-row:auto;justify-self:start}}
+.mh-take .mh-i{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.mh-take-n{font:400 11px/1 var(--data);letter-spacing:.05em;color:var(--ink3)}
+
+/* ══ ACCESS: click-to-toggle ══════════════════════════════════════════════════
+   The matrix cell was a role="img" span for the life of the package — it displayed the
+   answer to the question the realm exists to answer and could not change it. It is a
+   <button> now, so everything below is about making a PENDING state legible against a
+   saved one at 16px. */
+.mxcell{cursor:pointer;padding:0}
+.mxcell.inherited{cursor:help}
+/* Pending reads as "what it WILL be, not yet written": the fill or the emptiness is the
+   future state, and the dashed --staged ring is what marks it unsaved. Same dashed-and-
+   hollow language the Track already uses for staged bars, so it is learned once. */
+.mxcell.pend{position:relative;box-shadow:0 0 0 2px var(--desk),0 0 0 3.5px var(--staged)}
+.mxcell.pend.off{background:transparent;border-color:var(--danger-edge)}
+.mxcell.pend.off::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
+  background:var(--danger-ink);transform:translate(-50%,-50%)}
+.mx tbody tr:hover .mxcell:not(.locked){border-color:var(--ink4)}
+.mxact{white-space:nowrap;display:flex;gap:4px;align-items:center;justify-content:flex-end}
+/* The batched confirm groups its two halves rather than running one list of mixed signs —
+   reading "granting 3 / revoking 1" is the thing that makes a batch safer than four clicks. */
+.acg{margin-top:14px}
+.acg-k{display:inline-block;font:700 9.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;
+  padding:5px 8px;border-radius:4px;margin-bottom:7px}
+.acg-k.on{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--ok) 38%,transparent)}
+.acg-k.off{color:var(--danger-ink);background:color-mix(in srgb,var(--del) 12%,transparent);
+  border:1px solid var(--danger-edge)}
+.acg .dw-l{margin:0}
+.acg .dw-l code{font-family:var(--data);color:var(--ink2)}
+
+/* The rail's one rule. Five realms are places to work; Review is the way out, and a divider
+   says that without needing a heading nobody would read at 9px. */
+.rail-rule{display:block;height:1px;background:var(--rule);margin:10px 14px}
+.realm.out{color:var(--ink3)}
+.realm.out.has{color:var(--ink2)}
+.realm.out.has svg{color:var(--staged)}
+@media (max-width:768px){ .rail-rule{width:1px;height:auto;margin:8px 0} }

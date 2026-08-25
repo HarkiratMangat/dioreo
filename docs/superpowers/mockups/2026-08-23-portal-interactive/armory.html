@@ -67,7 +67,7 @@
       <div id="activeFilter" hidden></div>
       <div class="mscroll"><table class="mtable">
         <colgroup><col class="c-cb"><col class="c-item"><col class="c-type"><col class="c-win">
-                  <col class="c-spark"><col class="c-detail"><col class="c-state"></colgroup>
+                  <col class="c-spark"><col class="c-detail"><col class="c-state"><col class="c-ra"></colgroup>
         <thead><tr>
           <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
           <th class="sortable" data-sort="weaponName">Weapon</th>
@@ -76,6 +76,7 @@
           <th class="drop-sm">Gunsmith code</th>
           <th>Attachments</th>
           <th class="ta-r">Badges</th>
+          <th class="ra"><span class="sr">Remove</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -460,9 +461,36 @@
    * (utils/manageActions.js). An earlier version of this page implemented three of them
    * and silently dropped the rest, which is what "a skeleton with makeup" means in
    * practice: the surface looked complete because nothing on it named what was absent. */
-  const bulkLine = b => `${b.weaponName} | ${b.buildName} | ${b.category} | ${b.mode} | ` +
-    `${b.attachments.join(', ')} | ${b.shareCode || ''} | ${b.imageKey || ''}` +
-    (b.description ? ` | ${b.description}` : '');
+  /* 🔴 THIS WAS THE RETIRED SEVEN-SEGMENT PIPE LINE, and the bot REJECTS it outright.
+   * `utils/adminParser.js`'s parseBulkLoadoutList was rewritten 2026-08-22 to a labelled
+   * block, and it does not silently re-read the old shape — under the old positional reading
+   * `Weapon | Category` half-parses into a weapon literally named "Weapon", so it fails loudly
+   * on purpose (Harkirat's explicit no-back-compat call). The mockup was emitting text that
+   * cannot be pasted back into the bot it is a mockup OF, and its own format guide documented
+   * the retired shape. Nothing caught it because an export's OUTPUT is never re-read by anything
+   * here — the round trip was assumed, never closed.
+   * 🔴 AND MODE IS GONE, which was itself a bug fix: the parser demanded a segment whose value
+   * upsertBulkBlocks overwrote with the page's own mode, so exporting DMZ builds and pasting
+   * them on the MP page silently reassigned every one of them. Ported verbatim from
+   * formatLoadoutsAsBulkText — identity on line one, every optional field on its own line,
+   * everything else is an attachment. */
+  const bulkLine = b => {
+    const badges = [b.isMeta ? 'meta' : null, b.categoryRank,
+                    b.dmzRangeRank ? String(b.dmzRangeRank).replace('-', '') : null,
+                    b.isToxic ? 'toxic' : null].filter(Boolean).join(', ');
+    const lines = [b.weaponName + ' | ' + b.category];
+    if (b.buildName) lines.push('Build: ' + b.buildName);
+    /* A raw-URL imageKey is legitimate stored state but re-importing one would only re-save
+     * the same external URL, so only a real Cloudinary key round-trips. */
+    if (b.imageKey && !String(b.imageKey).startsWith('http')) lines.push('Image: ' + b.imageKey);
+    if (b.shareCode) lines.push('Code: ' + b.shareCode);
+    if (badges) lines.push('Badges: ' + badges);
+    (b.attachments || []).forEach(a => lines.push('- ' + a));
+    return lines.join('\n');
+  };
+  /* Blocks are separated by a BLANK line, not a newline — parseBulkLoadoutList splits on
+   * /\n\s*\n/. Joining with a single newline would emit one enormous unparseable block. */
+  const bulkText = list => list.map(bulkLine).join('\n\n');
 
   function renderBulk() {
     viewBulk.innerHTML = `
@@ -562,7 +590,7 @@
       if (!c) { S.toast('Pick a category chip in the Manifest first, then export by category.'); return; }
       list = inMode().filter(b => b.category === c); label = `every ${st.armMode} ${catOf(c).label} build`;
     }
-    const text = list.map(bulkLine).join('\n');
+    const text = bulkText(list);
     document.getElementById('bvExpOut').innerHTML = `
       <div class="bvres">
         <div class="bvsum"><b>${list.length}</b> build(s) — ${label}</div>
@@ -579,9 +607,22 @@
     S.drawer({
       eyebrow:'loadouts.formatguide · read only', title:'Bulk format', wide:true,
       body:`<div class="dwbody">
-        <p class="dw-p">One build per line, pipe-separated. The first five fields are required;
-          the last two are optional.</p>
-        <pre class="guide">Weapon | Build name | Category | Mode | Attachments | Code | Image | Description</pre>
+        <p class="dw-p">One <b>block</b> per build, blocks separated by a blank line. Identity on
+          line one; every optional field on its own line, in any order; everything else is an
+          attachment. A leading <code>-</code> on an attachment is optional.</p>
+        <pre class="guide">AK117 | ar
+Build: Aggressive Flex
+Image: AK117-1
+Code: 1C2B4A8B9A
+Badges: meta, top3
+- Agile Stock
+- MIP Light Barrel (Short)</pre>
+        <p class="dw-p"><b>The old seven-segment pipe line is rejected, not re-read.</b> Under the
+          old positional reading <code>AK117 | ar</code> would half-parse into a weapon named
+          &ldquo;Weapon&rdquo;, so it fails loudly instead. And <b>Mode is not a field</b>: which page
+          you opened the modal from is the only thing that has ever decided it. It used to be
+          required as segment three while the importer overwrote it with the page's own mode, so
+          exporting DMZ builds and pasting them on the MP page silently reassigned all of them.</p>
         <div class="diff">
           <div class="diff-r"><span class="dk">Weapon</span><span>As it should read on the card — <code>AK117</code>, <code>Holger 26</code>. <code>weaponKey</code> is derived from it (lowercased, spaces stripped).</span></div>
           <div class="diff-r"><span class="dk">Build name</span><span>A human variant label — <code>Build 1</code>, <code>Aggressive Flex</code>. <b>Not a code</b>, despite /manage's field label.</span></div>
@@ -939,58 +980,138 @@
           ${b.isToxic ? '<b class="bdg toxic">TOXIC</b>' : ''}
           ${def.length ? `<b class="bdg bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}&#9888;</b>` : ''}
           ${!b.isMeta && !b.categoryRank && !b.dmzRangeRank && !b.isToxic && !def.length ? '<span class="none">—</span>' : ''}
-        </span></td></tr>`;
-    }).join('') : `<tr><td colspan="7"><div class="empty">
+        </span></td>${S.removeCell(b.weaponName + ' ' + b.buildName)}</tr>`;
+    }).join('') : `<tr><td colspan="8"><div class="empty">
         ${st.q || st.defect || st.cat !== 'all'
           ? `<b>No build matches that.</b> ${st.builds.length} are loaded — clear the filter to see them.`
           : `<b>The armory is empty.</b> <code>/gunsmiths</code> would return nothing at all, which is
              not a state this bot has ever been in.`}</div></td></tr>`;
-    rows.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = e => {
-      if (!e.target.closest('[data-cb]')) openBuild(tr.dataset.id); });
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      tr.querySelector('[data-rmv]').onclick = e => { e.stopPropagation(); removeBuild(tr.dataset.id); };
+      tr.onclick = e => { if (!e.target.closest('[data-cb]') && !e.target.closest('[data-rmv]')) openBuild(tr.dataset.id); };
+    });
     rows.querySelectorAll('[data-cb]').forEach(cb => cb.onclick = e => {
       e.stopPropagation();
       st.selected.has(cb.dataset.cb) ? st.selected.delete(cb.dataset.cb) : st.selected.add(cb.dataset.cb);
       renderRows(); renderBulkBar();
     });
   }
+  /* 🔴 THE SAME DEFECT SEASON HAD. This bar was rendered into `<div id="bulk">`, which sits
+   * in normal flow AFTER a 31-row table, so selecting a build near the top put every verb it
+   * unlocked most of a screen below the fold. It docks now, through Shell.selection — one
+   * implementation, so a fix to the bar is a fix on every realm rather than on whichever page
+   * someone happened to be looking at. `#bulk` stays as a hidden host. */
   function renderBulkBar() {
-    const n = st.selected.size;
-    bulk.hidden = !n; if (!n) return;
-    bulk.innerHTML = `<div class="bulkbar"><b>${n}</b> selected
-      <button data-b="meta">Flag Meta</button><button data-b="unmeta">Clear Meta</button>
-      <button data-b="export">Export</button>
-      <button class="danger" data-b="del">Delete…</button>
-      <span class="sp"></span><button class="x" data-b="clear">Clear</button></div>`;
-    bulk.querySelectorAll('[data-b]').forEach(btn => btn.onclick = () => {
-      const act = btn.dataset.b, picked = inMode().filter(b => st.selected.has(b.id));
-      if (act === 'clear') { st.selected.clear(); renderRows(); renderBulkBar(); return; }
-      if (act === 'export') { st.mode = 'bulk'; showView('bulk'); doExport('sel'); return; }
-      if (act === 'del') {
-        S.confirm({ op:'loadout.bulkDelete', tier:2, danger:true,
-          confirm:`Stage ${picked.length} deletion${picked.length > 1 ? 's' : ''}`,
-          title:`Delete ${picked.length} build${picked.length > 1 ? 's' : ''}?`,
-          body:`<p class="dw-p">Removes ${picked.map(b => `<b>${b.weaponName} ${b.buildName}</b>`).join(', ')}.
-                  Weapons left with no builds vanish from <code>/gunsmiths</code> entirely.</p>`,
-          onConfirm(){
-            const snap = st.builds.slice();
-            S.Store.onInvert('arm-bulkdel', () => { st.builds = snap; renderAll(); });
-            st.builds = st.builds.filter(b => !st.selected.has(b.id));
-            S.Store.add({ id:'arm-bulkdel', name:`${picked.length} builds`, verb:'deleted',
-              realm:'armory', op:'loadout.bulkDelete', destroys:true,
-              rows:picked.map(b => [`${b.weaponName} — ${b.buildName}`, `${b.attachments.length} attachments`, 'removed']) });
-            st.selected.clear(); renderAll();
-          } });
-        return;
-      }
-      const want = act === 'meta';
+    bulk.hidden = true;
+    const picked = inMode().filter(b => st.selected.has(b.id));
+    if (!picked.length) { S.selection({ count:0 }); return; }
+    const n = picked.length, many = n > 1 ? 's' : '';
+    const cats = new Set(picked.map(b => b.category));
+    const weapons = new Set(picked.map(b => b.weaponName));
+    const metas = picked.filter(b => b.isMeta).length;
+
+    const flag = want => {
       const snap = picked.map(b => ({ b, was:b.isMeta }));
       S.Store.onInvert('arm-meta', () => { snap.forEach(s2 => { s2.b.isMeta = s2.was; }); renderAll(); });
       picked.forEach(b => { b.isMeta = want; siblings(b).forEach(x => { x.isMeta = want; }); });
-      S.Store.add({ id:'arm-meta', name:`${picked.length} build(s)`,
-        verb:want ? 'flagged Meta' : 'Meta cleared', realm:'armory', op:'loadout.edit',
-        rows:picked.map(b => [b.weaponName + ' — ' + b.buildName, String(!want), String(want)]) });
+      S.Store.add({ id:'arm-meta', name:n + ' build' + many,
+        verb:want ? 'flagged Meta' : 'Meta cleared', realm:'armory', op:'loadout.edit', tier:1,
+        scope:'armory.' + st.armMode,
+        rows:picked.map(b => ({ field:b.weaponName + ' — ' + b.buildName, was:String(!want), becomes:String(want) })) });
       st.selected.clear(); renderAll();
+    };
+
+    S.selection({
+      count:n, tier:2,
+      summary:weapons.size + ' weapon' + (weapons.size > 1 ? 's' : '') + ' · ' +
+              cats.size + ' categor' + (cats.size > 1 ? 'ies' : 'y') + ' · ' +
+              (metas ? metas + ' already Meta' : 'none flagged Meta'),
+      onClear(){ st.selected.clear(); renderRows(); renderBulkBar(); },
+      actions:[
+        { label:metas === n ? 'Clear Meta' : 'Flag Meta', on(){ flag(metas !== n); } },
+        { label:'Export ' + n, on(){
+            S.Export.file('dioreo-builds-selection.txt', bulkText(picked));
+            S.toast(n + ' build' + many + ' exported in the block format. Pasting it back restores them exactly.');
+          } },
+        { label:'Remove ' + n, kind:'danger', on(){
+            S.confirm({ op:'loadout.bulkDelete', tier:2, danger:true,
+              confirm:'Remove ' + n, title:'Remove ' + n + ' build' + many + '?',
+              body:'<p class="dw-p">These are <b>staged, not deleted</b> — nothing is written until you commit on Review.</p>' +
+                   '<ul class="dw-l">' + picked.slice(0, 8).map(b => '<li>' + b.weaponName + ' &mdash; ' + b.buildName + '</li>').join('') +
+                   (n > 8 ? '<li>and ' + (n - 8) + ' more</li>' : '') + '</ul>' +
+                   (orphanWeapons(picked).length
+                     ? '<div class="callout"><b>' + orphanWeapons(picked).join(', ') + '</b> would be left with no builds at all, ' +
+                       'and a weapon with no builds vanishes from <code>/gunsmiths</code> entirely — it stops being searchable, ' +
+                       'not just empty.</div>' : ''),
+              onConfirm(){
+                const snap = st.builds.slice();
+                S.Store.onInvert('arm-bulkdel', () => { st.builds = snap; renderAll(); });
+                st.builds = st.builds.filter(b => !st.selected.has(b.id));
+                S.Store.add({ id:'arm-bulkdel', name:n + ' build' + many, verb:'removed',
+                  realm:'armory', op:'loadout.bulkDelete', tier:2, destroys:true, scope:'armory.' + st.armMode,
+                  rows:picked.slice(0, 6).map(b => ({ field:b.weaponName + ' — ' + b.buildName,
+                    was:b.attachments.length + ' attachments', becomes:'(removed)' })) });
+                st.selected.clear(); renderAll();
+              } });
+          } }
+      ]
     });
+  }
+
+  /* Which weapons would stop existing. This is the only consequence of an Armory delete that
+   * is not visible in the rows being deleted, so it is the only one the dialog spells out. */
+  function orphanWeapons(picked){
+    const going = new Set(picked.map(b => b.id));
+    const left = {};
+    inMode().forEach(b => { if (!going.has(b.id)) left[b.weaponName] = true; });
+    return [...new Set(picked.map(b => b.weaponName))].filter(w => !left[w]);
+  }
+
+  /* Single remove. core/ops registers loadout.delete as tier 1 — the inverse is exact. */
+  function removeBuild(id){
+    const b = st.builds.find(x => x.id === id); if (!b) return;
+    const orphan = orphanWeapons([b]);
+    S.confirm({
+      title:'Remove ' + b.weaponName + ' — ' + b.buildName + '?', op:'loadout.delete', tier:1,
+      danger:true, confirm:'Remove',
+      body:'<p class="dw-p">It is <b>staged, not deleted</b> — nothing is written until you commit on Review, ' +
+           'and the tray can put it back until then.</p>' +
+           (orphan.length ? '<div class="callout"><b>' + b.weaponName + '</b> has no other build in ' + st.armMode +
+             '. Removing this one takes the weapon out of <code>/gunsmiths</code> entirely.</div>' : ''),
+      onConfirm(){
+        const at = st.builds.indexOf(b);
+        st.builds.splice(at, 1); st.selected.delete(id);
+        const sid = 'rm-build-' + id;
+        S.Store.add({ id:sid, op:'loadout.delete', name:b.weaponName + ' — ' + b.buildName,
+          verb:'removed', tier:1, realm:'armory', scope:'armory.' + st.armMode,
+          rows:[{ field:'Build', was:b.weaponName + ' — ' + b.buildName, becomes:'(removed)' },
+                { field:'Attachments', was:String(b.attachments.length), becomes:'—' }] });
+        S.Store.onInvert(sid, () => { st.builds.splice(at, 0, b); renderAll(); });
+        S.toast('Removed. Staged, not gone.', 'Undo', () => S.Store.revert(sid));
+        renderAll();
+      }
+    });
+  }
+
+  /* The four scopes /manage's loadout pages actually offer (exportupto5, exportcategory,
+   * exportall per mode), plus the one only a portal can: what you are currently looking at. */
+  function armoryScopes(){
+    const m = st.armMode, tag = m.toLowerCase();
+    const cat = st.cat === 'all' ? null : st.cat;
+    return [
+      { id:'armory.' + tag, label:'Every ' + m + ' build', note:'The whole mode, in the block format the paste box accepts.',
+        count:inMode().length, unit:'builds', file:'dioreo-' + tag + '-builds.txt', build:() => bulkText(inMode()) },
+      { id:'armory.' + tag + '.view', label:'This view', note:'Exactly the rows the current search and filters leave standing.',
+        count:visible().length, unit:'builds', file:'dioreo-' + tag + '-view.txt', build:() => bulkText(visible()) },
+      { id:'armory.' + tag + '.cat', label:cat ? 'Category — ' + catOf(cat).label : 'Category — pick one first',
+        note:cat ? 'Matches /manage loadouts export by category.' : 'Pick a category chip in the Manifest, then export.',
+        count:cat ? inMode().filter(b => b.category === cat).length : 0, unit:'builds',
+        file:'dioreo-' + tag + '-' + (cat || 'category') + '.txt',
+        build:() => cat ? bulkText(inMode().filter(b => b.category === cat)) : '' },
+      { id:'armory.' + tag + '.five', label:'First five in this filter', note:'Matches /manage loadouts "Up To 5".',
+        count:Math.min(5, visible().length), unit:'builds', file:'dioreo-' + tag + '-five.txt',
+        build:() => bulkText(visible().slice(0, 5)) }
+    ];
   }
 
   /* ═══ CHROME ═══ */
@@ -1088,6 +1209,8 @@
   S.onAfterRevert = renderAll;
 
   function renderAll(){ renderCatChips(); renderRack(); renderCoverage(); if (st.mode === 'compare') renderCompare();
+    S.mastheadExport({ host:'#mhNew', scopes:armoryScopes,
+      summary:() => inMode().length + ' ' + st.armMode + ' builds · 4 scopes' });
     if (st.mode === 'bulk') renderBulk(); renderRows(); renderBulkBar(); renderKey(); renderStats(); syncStaged(); }
   renderAll();
   (window.Shell||window.S).holdTop();
