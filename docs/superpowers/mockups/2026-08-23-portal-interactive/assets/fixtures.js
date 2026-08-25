@@ -1006,17 +1006,32 @@ window.FIX = (function () {
    *
    * `sample` is what this mockup can actually see and reason about; `total` is what the collection
    * holds. A surface may show either — but it must SAY which, and both must come from here. */
-  const armoryDefect = (b) =>
+  /* 🔴 TIME PASSING IS NOT A FAULT, AND ONE PREDICATE FOR BOTH PUT 117 ON HOME. Measured over
+   * the real collection: 13 builds carry an actual defect and 104 are merely stale, so a single
+   * combined predicate made the headline 89% "this record is a few months old" — and Home read
+   * that number while Armory, which had already split them, showed 11. Two surfaces disagreeing
+   * about one collection is exactly what `ARMORY_COUNTS` exists to prevent (see the note at its
+   * call site in index.html, which describes this failure from the other direction).
+   * So the SPLIT lives here, with the derivation, rather than on the page that noticed it. */
+  const armoryFault = (b) =>
     (b.mode === 'MP' && !b.shareCode) || !b.imageKey || (b.imageKey || '').startsWith('http') ||
-    (b.attachments || []).length !== 5 || b.lastUpdated < '2026-04-26' ||
+    (b.attachments || []).length !== 5 ||
     (b.mode === 'MP' && b.isMeta && !b.categoryRank);
+  const armoryStale = (b) => b.lastUpdated < '2026-04-26';
+  /* Kept as the union, because "has anything at all against it" is still a real question — the
+   * Repairs queue asks it. It is simply not the ALARM. */
+  const armoryDefect = (b) => armoryFault(b) || armoryStale(b);
   const ARMORY_COUNTS = {
     total: LOADOUT_STATS.total,                       // the real collection
     sample: builds.length,                            // what was exported into this package
     MP: builds.filter(b => b.mode === 'MP').length,
     DMZ: builds.filter(b => b.mode === 'DMZ').length,
     ranked: builds.filter(b => b.categoryRank || b.dmzRangeRank).length,
-    needRepair: builds.filter(armoryDefect).length
+    /* `needRepair` is FAULTS. Anything reading this number puts it in front of somebody as a
+       thing to act on, and 104 stale records are not that. `stale` is reported beside it. */
+    needRepair: builds.filter(armoryFault).length,
+    stale: builds.filter(b => armoryStale(b) && !armoryFault(b)).length,
+    flagged: builds.filter(armoryDefect).length
   };
 
   /* ═══════════════════ BROADCAST — derived ═══════════════════
@@ -1517,7 +1532,7 @@ window.FIX = (function () {
 
     /* REVIEW */            sampleOps,
 
-    /* ARMORY */            CATS, builds, ARMORY_COUNTS, armoryDefect,
+    /* ARMORY */            CATS, builds, ARMORY_COUNTS, armoryDefect, armoryFault, armoryStale,
                             LOADOUT_STATS, CLOUD_BASE, imageUrl, BADGE_TOKENS, DMZ_RANGE_TOKENS,
                             RANK_ORDER, RANK_LABEL,
 

@@ -458,6 +458,19 @@
      * server re-checks, and a portal that only hides the button has no security at all. */
     actor(){ return (window.FIX && FIX.VIEWER) || { isOwner: true, destructive: true, label: 'owner' }; },
     canDestroy(){ const a = Shell.actor(); return !!(a.isOwner || a.destructive); },
+
+    /* 🔴 A ZERO IS GOOD NEWS AND MUST NOT BE PAINTED AS AN ALERT — CENTRALLY, because fixing it
+     * per realm is how it came back. Season and Armory were corrected by hand on 2026-08-25 and
+     * Review still showed "CHANGES 0" in staged-cyan the same morning: the third instance of one
+     * defect, and the second time a per-call-site fix left the others wrong.
+     * Same shape as `inkFills()` — a fact about every filled surface, computed once, so a new
+     * realm inherits it instead of remembering it. A colour that is on whether or not it means
+     * anything stops meaning anything. */
+    zeroStats(){
+      document.querySelectorAll('.mh-stats .stat .v').forEach(v => {
+        v.classList.toggle('zero', (v.textContent || '').trim() === '0');
+      });
+    },
     /* The REASON, not just the verdict. A disabled control with no explanation is a dead end —
      * the reader cannot tell whether they lack a grant, hold the wrong one, or hit a bug. */
     whyNoDestroy(){
@@ -515,6 +528,15 @@
        * surface, so they have to land AFTER that surface exists. holdTop() is the one hook every
        * realm already calls at the end of its first render. */
       Shell.async.applyFlag();
+      /* Stats are rewritten on every stage, every filter and every save, so a one-shot pass at
+       * boot would be correct exactly once. Observed rather than called from each render site —
+       * the render sites are the thing that keeps forgetting. */
+      const sb = document.querySelector('.mh-stats');
+      if (sb && !sb.__zeroObs) {
+        sb.__zeroObs = true;
+        new MutationObserver(() => Shell.zeroStats()).observe(sb, { childList:true, subtree:true, characterData:true });
+      }
+      Shell.zeroStats();
       /* After layout, and again whenever the layout changes — a placeholder fits or does not fit
        * only relative to a rendered field. */
       const fit = () => { Shell.fitPlaceholders(); Shell.inkFills(); Shell.reserveForTray(); };
@@ -990,6 +1012,7 @@
        * page as it settles, so it settles the derived parts first. Idempotent, so calling it here
        * costs nothing. */
       Shell.inkFills();
+      Shell.zeroStats();
       const problems = [];
       const px = v => parseFloat(v) || 0;
       const clear = 'rgba(0, 0, 0, 0)';

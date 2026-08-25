@@ -392,6 +392,41 @@ const say = (tag, name, probs) => {
     }
   }
 
+  /* PASS 4e — CROSS-PAGE AGREEMENT. 🔴 THE ONLY CHECK HERE THAT LOADS TWO PAGES AT ONCE, and it
+   * exists because the same defect has now happened TWICE in opposite directions: Home once held
+   * its own copy of Armory's defect predicate and reported 33 where Armory said 28, and on
+   * 2026-08-25 Armory split age out of its alarm while Home kept reading the combined number and
+   * said 117 where Armory said 11. Reading a shared derivation is not sufficient — the derivation
+   * has to carry the same DISTINCTION both surfaces make.
+   * Every per-page rule in this package is blind to this by construction: each page was
+   * internally consistent both times. Counting the AUTHORITIES over one quantity is the only
+   * shape of check that can see it. */
+  {
+    const grab = async (page, fn) => {
+      const f = await load(page + '.html');
+      let v; try { v = fn(f.contentDocument, f.contentWindow); } catch (e) { v = 'threw: ' + e.message; }
+      f.remove(); return v;
+    };
+    const found = [];
+    const homeFault = await grab('index', (d, w) => w.FIX.ARMORY_COUNTS.needRepair);
+    const homeText  = await grab('index', (d) => (d.body.innerText.match(/(\d+) builds? need repair/) || [])[1]);
+    /* Armory reports the MODE in view, Home reports the whole collection — a legitimate scope
+     * difference — so the assertion is that Home's headline equals Home's own derivation, and
+     * that Armory's derivation uses the same predicate rather than a private copy. */
+    if (homeText !== undefined && String(homeFault) !== String(homeText))
+      found.push(`Home's headline says ${homeText} builds need repair while its own derivation says ${homeFault}`);
+    const armoryFaultAll = await grab('armory', (d, w) => w.FIX.builds.filter(w.FIX.armoryFault).length);
+    if (String(armoryFaultAll) !== String(homeFault))
+      found.push(`Armory and Home disagree about the same collection: ${armoryFaultAll} vs ${homeFault}`);
+    /* And the split must be REAL — if `stale` folded back into `needRepair` the numbers would
+     * still agree with each other and both be the wrong question's answer. */
+    const stale = await grab('index', (d, w) => w.FIX.ARMORY_COUNTS.stale);
+    if (!(stale > 0 && homeFault > 0 && stale > homeFault))
+      found.push(`the fault/stale split looks collapsed: ${homeFault} faults vs ${stale} stale`);
+    bad += say('cross-page', 'home↔armory', { problems: found }); ran++;
+    paint();
+  }
+
   /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
    * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
    * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm

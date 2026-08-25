@@ -1360,7 +1360,6 @@ Badges: meta, top3
     /* The alarm counts FAULTS. Age is reported next to it, never folded into it — see the
        `age:true` note on the stale defect. */
     sFlags.textContent  = pool.filter(b => defectsFor(b).some(d => !d.age)).length;
-    sFlags.classList.toggle('zero', sFlags.textContent === '0');
     const sStale = document.getElementById('sStale');
     if (sStale) sStale.textContent = pool.filter(b => defectsFor(b).some(d => d.age)).length;
     const failing = DEFECTS.filter(d => flagged(d).length).length;

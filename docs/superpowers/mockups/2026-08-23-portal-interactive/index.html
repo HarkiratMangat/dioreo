@@ -84,7 +84,13 @@
    * the two surfaces reported different numbers for the same collection — Home said "133 builds ·
    * 33 need repair", Armory said "31 builds · 28 need repair". F.ARMORY_COUNTS is now the single
    * derivation both read (see fixtures.js), so they cannot disagree again. */
+  /* ⚠️ AND IT HAPPENED AGAIN FROM THE OTHER SIDE, 2026-08-25. Armory split age out of its alarm
+   * — 13 real faults, 104 merely stale — and this line still read the COMBINED number, so Home
+   * said "117 builds need repair" while Armory said 11. Reading the shared derivation is not
+   * enough on its own: the derivation has to carry the same DISTINCTION the surfaces make, or
+   * one of them silently reports a different question's answer. */
   const flagged = F.ARMORY_COUNTS.needRepair;
+  const staleBuilds = F.ARMORY_COUNTS.stale;
 
   /* The real Broadcast finding is not a coverage gap — it is an announcement with
    * `expiresAt: null`, which never stops on its own. The previous version read `a.posted`
@@ -108,7 +114,10 @@
       icon:'<path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/>',
       q:'What builds exist, and what is wrong with them.',
       n:F.ARMORY_COUNTS.sample, unit:`of ${F.ARMORY_COUNTS.total} builds`,
-      att: flagged ? `${flagged} need repair` : null, warn: !!flagged },
+      /* Both numbers, because the card is the only place a reader sees the collection's shape:
+         a realm with 11 faults and 106 stale records is in a different condition from one with
+         11 faults and none, and a single figure cannot say which. */
+      att: flagged ? `${flagged} need repair` + (staleBuilds ? ` &middot; ${staleBuilds} stale` : '') : null, warn: !!flagged },
     { id:'broadcast', label:'Broadcast', href:'broadcast.html', c:'#F2C230',
       icon:'<path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/>',
       q:'What is showing to players, in what order, until when.',
@@ -147,10 +156,12 @@
     const errs = (F.alertStats.find(a => a.level === 'error') || {}).n || 0;
     if (errs)               push('error','Analytics','analytics.html',
                                  `${errs} error${errs===1?'':'s'} pinged`, errs, 'Open health');
+    /* 🔴 TWO ROWS BOTH READ "Open repairs" — one goes to Armory, one to Season, and a reader
+       scanning the column cannot tell them apart. The action names the realm now. */
     if (flagged)            push('repair','Armory','armory.html',
-                                 `${flagged} build${flagged===1?'':'s'} need repair`, flagged, 'Open repairs');
+                                 `${flagged} build${flagged===1?'':'s'} need repair`, flagged, 'Armory repairs');
     if (seasonFindings)     push('repair','Season','season.html',
-                                 `${seasonFindings} season item${seasonFindings===1?'':'s'} to repair`, seasonFindings, 'Open repairs');
+                                 `${seasonFindings} season item${seasonFindings===1?'':'s'} to repair`, seasonFindings, 'Season repairs');
     if (forever.length)     push('forever','Broadcast','broadcast.html',
                                  `${forever.length} announcement${forever.length===1?'':'s'} never end — oldest up ${foreverDays}d`, forever.length, 'Open airtime');
     return out.sort((a, b) => b.sev - a.sev || b.n - a.n);

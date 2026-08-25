@@ -123,10 +123,21 @@
       <div class="tiles">
         ${[
           { k:'Interactions', v:F.OBS_TOTALS.events, u:'', s:'all time in this database', t:'' },
+          /* 🔴 A THRESHOLD ON THE RATE, NOT A TEST FOR "ANY ERROR AT ALL". `errN ? 'warn' : 'ok'`
+             painted 99.0% in alarm orange because five events out of 496 failed — and in
+             production there is always at least one, so the tile would have been orange forever.
+             That is the same defect as Armory's headline reading 109 when 104 of them were
+             merely stale: a colour that is on regardless stops carrying information.
+             Green is reserved for a rate with NOTHING against it, because "good" that is
+             awarded to 99% and to 100% alike says nothing about the difference. */
           { k:'Success rate', v:(100 - pct(errN, F.OBS_TOTALS.events)).toFixed(1), u:'%',
-            s:`${errN} error${errN === 1 ? '' : 's'} across ${F.OBS_TOTALS.events} events`, t:errN ? 'warn' : 'ok' },
+            s:`${errN} error${errN === 1 ? '' : 's'} across ${F.OBS_TOTALS.events} events`,
+            t: !errN ? 'ok' : (100 - pct(errN, F.OBS_TOTALS.events)) < 99 ? 'warn' : '' },
           { k:'Restarts', v:F.OBS_TOTALS.boots, u:'', s:`last ${F.bootStats.lastVersion} · ${F.bootStats.lastCommit}`, t:'' },
-          { k:'Memory', v:F.memStats.avgMb, u:'MB', s:`${F.memStats.minMb}–${F.memStats.maxMb} MB observed`, t:F.memStats.maxMb > 400 ? 'warn' : 'ok' }
+          /* Memory is CONTEXT, not an achievement. Painting 132 MB green said "good" about a
+             number nobody set a goal for, next to a success rate painted orange — the two tiles
+             had their semantics inverted. Neutral unless it is actually high. */
+          { k:'Memory', v:F.memStats.avgMb, u:'MB', s:`${F.memStats.minMb}–${F.memStats.maxMb} MB observed`, t:F.memStats.maxMb > 400 ? 'warn' : '' }
         ].map(t => `<button class="tile ${t.t}" data-tile="${t.k}">
             <span class="tl-k">${t.k}</span><span class="tl-v">${t.v}<i>${t.u}</i></span>
             <span class="tl-s">${t.s}</span></button>`).join('')}

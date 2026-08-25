@@ -2603,12 +2603,11 @@
     sDays.textContent  = e ? Math.max(0, T.days(F.today, e)) : 'TBD';
     sLive.textContent  = st.items.filter(i => lifecycle(i) === 'live').length;
     sFlags.textContent = computeFlags().length;
-    /* Written where the number is written, so a stat can never be coloured as an alert while
-       reading zero — see `.mh-stats .stat .v.zero`. */
-    [sLive, sFlags, sStaged].forEach(el => el.classList.toggle('zero', el.textContent === '0'));
+    /* The `.zero` class is Shell.zeroStats()'s job now — it observes the stat block, so every
+       realm gets it and none has to remember. Three realms had hand-written copies of this line
+       and Review still shipped without one. */
   }
-  function syncStaged(){ sStaged.textContent = S.Store.all().length;
-    sStaged.classList.toggle('zero', sStaged.textContent === '0'); S.mountRail('season'); }
+  function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
   function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
     renderOneWay(); renderTakeOut(); startClock();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }

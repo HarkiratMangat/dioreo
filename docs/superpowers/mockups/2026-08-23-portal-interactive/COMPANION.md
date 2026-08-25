@@ -1912,6 +1912,56 @@ It names the offending container now: `.ruler at 249x995 (11) vs .tk at 239x995 
 
 ---
 
+## 5.9r THE FOUR REALMS NOTHING HAD LOOKED AT — Home, Review, Analytics, the Door
+
+*Written 2026-08-25. Season, Armory, Broadcast and Access got a design pass on 2026-08-24; these four had only ever been audited. Every finding below passed every gate, and three of them are **one quantity with two authorities** — the shape no per-element rule can see.*
+
+### 5.9r.1 Home said 117 need repair; Armory said 11
+
+Splitting age out of Armory's alarm (§5.9p.6) fixed one surface and **broke the agreement between two.** `F.ARMORY_COUNTS.needRepair` still ran the combined predicate, so Home's most prominent row read **117 builds need repair** while Armory's masthead read 11.
+
+The comment at Home's own call site already described this exact failure **from the other direction** — *"This used to hold its own copy of Armory's defect predicate, and the two surfaces reported different numbers for the same collection"* — and the fix that comment records (one shared derivation) was in place and did not prevent it.
+
+> 🔴 **Reading a shared derivation is not sufficient. The derivation has to carry the same DISTINCTION its readers make** — otherwise one of them silently answers a different question.
+
+So the split lives in `fixtures.js` now: `armoryFault`, `armoryStale`, and `ARMORY_COUNTS.{needRepair, stale, flagged}`. Home's card shows both figures, because a realm with 11 faults and 106 stale records is in a different condition from one with 11 and none, and one number cannot say which.
+
+**And it is now asserted.** `.states.html` PASS 4e is the only check in the package that loads two pages at once and compares them — Home's headline against Home's own derivation, Armory's derivation against Home's, and a guard that the split has not collapsed back (`stale > faults`). Both times this defect happened, **each page was internally consistent**; counting the authorities over one quantity is the only shape of check that could have seen it.
+
+### 5.9r.2 Two rows, one label
+
+Home's list had two rows reading **`Open repairs →`** — one to Armory, one to Season. A reader scanning a column of five actions cannot tell them apart. They name their realm now.
+
+### 5.9r.3 The zero-in-an-alert-colour, third instance
+
+Season and Armory were fixed by hand on 2026-08-24. **Review still showed `CHANGES 0` in staged-cyan the next morning**, with `REALMS 0` and `GATES OPEN 0` beside it.
+
+That is the second time a per-call-site fix left the other sites wrong, so it moved to the Shell: **`Shell.zeroStats()`**, computed once for every realm, and **observed** — the stat block is rewritten on every stage, filter and save, so a one-shot pass at boot would have been correct exactly once. The render sites are the thing that keeps forgetting, so nothing is asked of them.
+
+Verified across all six realms: every `0` renders at `--ink4`, none at an accent.
+
+### 5.9r.4 Analytics had two tiles with inverted semantics
+
+**`SUCCESS RATE 99.0%` in alarm orange, `MEMORY 132 MB` in success green**, side by side.
+
+The rule was `t: errN ? 'warn' : 'ok'` — a **binary test on a continuous quantity**. In production there is always at least one error, so the tile would have been orange forever; and 132 MB was being congratulated for a number nobody set a goal for.
+
+Same family as Armory's 109: a colour that is on regardless carries no information. Now the rate takes a **threshold** (green only with nothing against it, orange under 99%, neutral between), and memory is neutral unless it is actually high.
+
+### 5.9r.5 The Door contradicted a decision made hours earlier
+
+*"A session lasts 12 hours and lives in this browser only. Staged changes live with it, so signing out discards them."*
+
+Harkirat decided on 2026-08-25 that **staging moves server-side** (§15.11), and the async layer's own `expired` banner already said the opposite of the Door: *"Your staged work is still here; signing in again returns you to it."* **Two surfaces, one fact, and the first thing an admin reads was the wrong one.**
+
+A decision changes the sentences that were true before it. The Door now says staged work is held against the account and survives the session — which is also the reader's actual fear at that screen, and the thing worth answering there.
+
+### 5.9r.6 What was already right, and is worth not breaking
+
+Review's empty state is the best edge state in the package: it names what is missing, why, and **three** ways forward, then explains why the sample changeset is loaded on request and never automatically — *"a mockup that invented staged work would teach the wrong thing about what staging means."* Analytics' "Alerts by level" panel states the three-tier model and why it must never collapse into one number. The Door's three notes answer being-signed-in vs being-allowed, session lifetime, and exactly what scope is requested.
+
+---
+
 ## 5.9q THE DESTRUCTIVE CAPABILITY — the twelfth token, and the first whose *granting* is restricted
 
 *Built 2026-08-25 to Harkirat's specification (§15.11 decision 3). His words: "owner only by default, with explicit permission capability to allow scope to an admin, authorizable only by the owner with explicit warnings (and possibly safeguards like caching/storing the export) so the owner is fully aware."*
