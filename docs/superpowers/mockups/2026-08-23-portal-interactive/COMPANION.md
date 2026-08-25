@@ -3240,3 +3240,68 @@ A one-off script removed seven dead CSS rules by finding each selector and scann
 **The rewrite scans real brace DEPTH and asserts a bound** (`end - i < 600`), so a runaway is a loud failure instead of a silent duplication. ⚠️ **The only reason this was caught is that the script printed its byte delta** and the number was negative. A helper that reports "✓ removed 7 rules" and nothing else would have committed 11.9MB.
 
 ⚠️ **And a second lesson inside it:** `wc -c` reports BYTES and Python `len()` counts CHARACTERS. This file is full of `═`, `🔴` and `—`, so the two differ by ~4%. The recovery briefly looked wrong because a 285,115-character result was compared against a 285,207-byte measurement.
+
+### 16.17 🔴 THE SERIF WAS A MAGAZINE VOICE IN AN INSTRUMENT — the type system, restated as a rule
+
+Instrument Serif carried every realm page title from 2026-08-25 13:1x until 17:4x the same day. Harkirat: *"i was under the impression this font was just for the season titles and similar stuff… it's an accessory/accent font only, not the main typeface."*
+
+**He is right, and the reason is worth keeping:** a high-contrast display serif is a **magazine** voice, and this portal is an **instrument** — a mono data grid, condensed gauge figures, a time axis, a permission matrix. The serif was a headline pretending to be a console, which is exactly why it read as borrowed rather than chosen.
+
+🔴 **THE RULE, AND IT IS SAYABLE IN ONE LINE:**
+
+> **The serif names things the BOT HOLDS. The condensed face names things the PORTAL IS.**
+
+A season is a thing with a name someone chose (`BP Season 7: Terminated`). "Access" is a page. The serif gets the first and never the second, so its presence now *means* something instead of being decoration.
+
+| role | face | where |
+|---|---|---|
+| **Realm titles** | Big Shoulders Display 700, **uppercase**, `--t-figure`, +.055em | `.masthead h1` · `.hmast h1` |
+| **Masthead figures** | Big Shoulders Display 700, `--t-display`, in the realm accent | `.mh-stats .v` |
+| **Content names** | Instrument Serif 400 | season names, Season Record rows — never chrome |
+| **Everything else** | Space Grotesk · JetBrains Mono | prose · data, labels, eyebrows |
+
+⚠️ **The title sits one step BELOW the lead figure on purpose.** The figure is the realm's defining number and is bigger *and* coloured; the title labels it. That is §16.3's masthead grammar applied to type instead of to colour, and it is why two 44px condensed elements do not compete.
+
+✅ **This REMOVES a family from the chrome rather than adding one** — chrome now has one display voice in two registers. Chanel's rule, applied to a typeface.
+
+⚠️ **AND A PROBE LIED AGAIN, IN THE OTHER DIRECTION.** `document.fonts.check('16px "Big Shoulders Display"')` returned **NO**, which read exactly like the figures silently falling back to Space Grotesk — a bug I was one message from reporting. It is a **false negative**: only weights 600/700 are requested, so a 400-weight query at 16px is legitimately absent. Measured properly against a fallback control at the real weight and size: **459.43px vs 679.72px**, so it is loading. §5.9v.4 recorded this same API returning **true** for a font that does not exist. **It is unreliable in BOTH directions; the width comparison is the only probe that has ever been right.**
+
+### 16.18 Access had no colour identity, and it was the one realm whose lead figure could not lead
+
+Every realm accent is a hue except Access, which was `--ink2` — a grey. Consequence, visible on screen: the warn-orange `7 SINGLE POINTS` was **louder than the `3 GRANTED`** that defines the page, and the rail item filled with grey on hover while every other realm filled with its own colour. **Grey is the absence of a topic colour, not a choice.**
+
+`--r-access` is now `--info` #409AD0 — already a declared signal, already AA-corrected, unused by any realm, and the right register for identity and locks. Six realms, six distinct hues.
+
+### 16.19 🔴 A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR — and it won
+
+Harkirat, on the Access matrix's column headers: *"the orange ring is just bad. it hides and swallows the color it's surrounding."*
+
+**Measured:** a 22×7px pill with a 2px ring loses roughly **half its visible area** to the ring, so `manage` grey and `bot` green both read as *orange objects with a coloured filling*. That inverts §4.1 — **colour carries topic, shape carries state** — and it is the same defect class as a zero painted in an alert colour: a mark that overrides the thing it is meant to annotate.
+
+**The fix is the same correction the Track's deadline notch got the same day:** a mark may point at content it does not cross. The state moved **beside** the swatch — a warn rule directly beneath it (`box-shadow:0 3px 0 -1px`) — and the holder count turned warn too, so the fact has **two carriers and neither is destructive**.
+
+### 16.20 🔴 THE MOST LOADED MARK ON THE PAGE WAS EXPLAINED 600px BELOW ITSELF
+
+Harkirat asked what the orange rings meant **two sessions ago**, and asked again on 2026-08-25. The answer was on the page the whole time — `ringed — a single point of failure: one person besides the owner holds it` — in a legend at the **foot of the panel**, while the key for the *other* two marks (direct, inherited) sat **60px above the matrix**.
+
+⚠️ **An earlier pass noticed the ring was unexplained and "fixed" it by adding a line to the far legend.** That treated absence when the defect was **distance** — the same failure as the selection bar 1,682px below the fold. A comment in the source even says *"a reader had no way to learn that"*, directly above the fix that did not work.
+
+The key now sits with the other two marks, and its swatch **is** the mark rather than a description of it. ⚠️ **And the wording had to change with it** — the key still read "ringed" for three minutes after the ring was removed. A legend naming a mark the page no longer draws is worse than no legend: it sends a reader hunting for something that is not there.
+
+### 16.21 A real countdown — and the constraint I misread to avoid building one
+
+`DAYS LEFT 17` was a frozen integer while the account panel counts a session down to the minute and NOW carries a live clock — **three approaches to time in one product**.
+
+🔴 **The reason it was frozen was a misreading of Harkirat's own constraint.** §5.9z.2 killed **ambient** time — draining windows, a creeping NOW — because *"a quantity that moves slower than a session cannot be shown as MOTION."* **That is an argument about animation. It says nothing about PRECISION**, and filing a countdown under it was my error.
+
+`Shell.countdown(iso)` + `Shell.tick(fn)`: one shared 60s timer so a page cannot end up with two clocks disagreeing, and a page with nothing to count starts no interval at all. **The unit follows what the record HOLDS** — `bpEnd` is a *date*, so hours are invented precision for most of a season; it switches at **3 days**, the only point where an hour changes a decision.
+
+⚠️ **And the label was the actual visual fault, not the font sizes.** Harkirat: *"whats with the some large, some small numbers in this area?"* Measured: the lead's label `days left · battle pass` was **145px against a 26px value**, so its cell ran **three times wider** than every other stat and the figure floated at the far right of its own box. The unit moved onto the value (`17d`) and the label carries only which deadline it is. ⚠️ My first fix for that was `max-width:11ch` on every stat label — which **clipped 2 of the 4 labels on Access** ("permissions" 69px into 59, "single points" 82px into 59) and with `overflow:visible` overlapped their neighbours instead of cutting. **A width cap on a label that is already too long is a worse failure than the long label.** Removed; short labels are the fix.
+
+### 16.22 The playlist load ribbon — the peak was asserted, not shown
+
+⚠️ **CORRECTION TO WHAT WAS PUT TO HARKIRAT.** This was presented to him as *"a new derivation, not a restyle"* and that is why it was raised as a separate decision. **It is not.** `loadCurve()` has computed per-day concurrency since the lane kit was written and already drove the bars. He decided on a wrong cost basis, and it was cheaper than stated.
+
+Two faults, both about the same thing — the ribbon painted a curve and let a **label** carry the reading:
+- **Linear heights.** On a curve whose peak is 7 and whose typical value is 1–2, six bars of seven rendered as a 14% stub and only the text `7 at peak` said otherwise. Gamma-compressed at **0.6**, the shape carries it and the label confirms.
+- 🔴 **`opacity:0` erased every empty day.** A gap in the rotation — the one thing a person scanning this lane would act on — was indistinguishable from the lane ending. An empty day is now a warn tick on the baseline: the same idea the ack panel uses, and the half of the density glyph worth keeping.
