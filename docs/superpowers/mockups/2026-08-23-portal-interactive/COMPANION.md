@@ -127,7 +127,15 @@ Five shared files. A new page should add **no** infrastructure; if you are writi
 
 ```js
 Shell.init(realmId)                  // rail + staging tray
-Shell.mountHeader(crumb, subCrumb)   // brand, breadcrumb, ⌘K, account menu
+Shell.mountHeader(crumb, subCrumb)   // brand, breadcrumb, COMMAND BAR, sign out, account menu
+Shell.commandBar({items, run, placeholder})   // a realm's own commands; a default set is
+                                              // installed by mountHeader so no realm ships a dead input
+Shell.defaultCommands()              // realms + review + sign out — the floor every page gets
+Shell.compose({types, initial, preview, onStage, host, onClose})  // pass `host` to render INLINE
+Shell.inkOn(hex)                     // the text colour a filled surface can actually carry
+Shell.fitPlaceholders(root)          // no placeholder may be cut; measured, not guessed
+Shell.installTips()                  // delegated `data-tip` tooltips — never a native `title`
+Shell.holdTop()                      // the page owns its opening scroll position
 Shell.drawer({eyebrow, title, body, actions, wide})
 Shell.confirm({title, body, confirm, danger, op, tier, onConfirm})
 Shell.toast(msg, actionLabel, onAction)
@@ -429,7 +437,9 @@ Written per page, never a bare "No results" (§10.6):
 |---|---|---|---|
 | Brand button | `#home` `.mk` | Navigates to `index.html`. It is a **button**, not decoration | — |
 | Breadcrumb | `.crumb` | `Realm › View`. The second half updates live when the view switches | — |
-| Palette affordance | `#palBtn` | Shows `⌘K`; opens the command palette | — |
+| **Command bar** | `#cmdBar` `#cbIn` `#cbDrop` | 🔴 **NOT a launcher.** It was a 44px `⌘K` chip in a header with ~700px of unused space — a keyboard shortcut wearing a button's clothes, whose palette then covered the realm you were searching. It is now the widest element in the header, says what it does in words, and drops results beneath itself with the page still visible. Opens on INTENT (`pointerdown`, typing, `⌘K`) and **never on focus**: the audit's own focus-ring sweep fired the old `focus` handler and every realm loaded with the palette already open. | `Shell.commandBar` |
+| **Sign out** | `#hdrOut` | In the bar, not three clicks deep in a menu. Still confirms — it discards staged work — and shares ONE handler with the menu item so they cannot disagree | `session.end` |
+| Account chevron | `.whobtn .cv` | A drawn chevron that **rotates** when the menu opens. It was an 8px `▾` — at that size a smudge that says "something is here" without saying what, which is the only review a disclosure indicator can fail | — |
 | Account button | `#whoBtn` | Toggles the account menu; `aria-expanded` tracks state | Discord OAuth session |
 | Account avatar | `.uav` | Initial + presence dot. Presence dot is `--ok` when the session is live | — |
 | Role badge | `.rolebadge` | **`OWNER` only.** There are exactly two roles — the hardcoded owner and a Mongo-granted admin — and `shell.js` renders the literal `OWNER` because the mockup signs you in as one. ⚠️ *This row read `OWNER / ADMIN / EDITOR` until 2026-08-24; there is no `editor` and there is no `role` field on `models/AdminUser.js` at all. See §5.5.* | `utils/owner.js` |
@@ -447,7 +457,10 @@ Written per page, never a bare "No results" (§10.6):
 
 Track, Board and **Repairs** are switchable views of the same data. The Manifest is always present beneath them, because the views are the picture and the Manifest is the mechanism.
 
-#### 🔴 SIX LANES, AND THREE OF THEM HOLD POINTS — the correction that changed the design
+#### 🔴 FIVE LANES ON THE TRACK, AND A SIXTH KIND THAT IS NOT A LANE AT ALL
+*(Updated 2026-08-24. This section read **SIX LANES** until patch notes were split out — see §5.2b. Three of the five still hold POINTS, which is the correction the rest of this section describes and which still stands.)*
+
+#### 🔴 SIX KINDS OF THING, AND THREE OF THEM HOLD POINTS — the correction that changed the design
 
 `models/SeasonalData.js` gives a draw **one** field, `date`, and no end at all. Only a `calendar` row has both `date` and `endDate`. So there are six kinds of thing here, not five, and half of them have no duration:
 
@@ -900,6 +913,92 @@ const rankOf = b => b.mode === 'DMZ'
 | A panel stretched to a tall empty box | A block nested inside a container that is itself a grid — `.repbar` inside `.cov` became a grid item and stretched to 1058px |
 | The audit reporting geometry failures that are not real | A **degenerate viewport** (`innerWidth === 0`), a **backgrounded tab** (`document.timeline` frozen), **pre-webfont** measurement, or a **cached asset**. All four are documented in §14 — check before believing any of them |
 | A count that disagrees with the list beneath it | A numerator scoped one way and a denominator scoped another. Armory's repair meters read `27/36` where `27/31` was true |
+
+---
+
+## 5.9 THE COMPONENT LAYER, AND WHY IT DID NOT EXIST UNTIL 2026-08-24
+
+🔴 **This package had TOKENS AND NO COMPONENTS, and that is not a tidiness complaint — it is the mechanical cause of four separate defects found in one sitting.** `tokens.css` is disciplined: hues, the 31° gap rule, the three-tone ink scale. Nothing sat above it. So every surface hand-rolled its own chip, tooltip, card and plate — and the composer's type chips could not match the masthead button they were asked to match, because **there was no shared chip to reach for**. Nobody was careless. There was nothing to reuse.
+
+Measured before the fix: **one `.pill` on the whole portal against 93 hand-rolled chips.** Building a component and then not adopting it is the same defect as not building one.
+
+| Component | Use it for | Adopted by |
+|---|---|---|
+| `.pill` | every chip, filter, type selector and inline action. `.lead` is the primary action; `.ghost` is an add affordance; `.sm` is dense | `.chip` and `.seg button` are **redefined in terms of it** rather than renamed — `.chip` is queried by name in six pages of JS, and a mass rename trades a styling inconsistency for a functional break |
+| `.tip` + `data-tip` | anything a person is meant to READ. **A native `title` is OS chrome** — grey, delayed, unstyled, and rendered UNDER the pointer, so it covers the very thing it describes | delegated from the document, so it survives every `innerHTML` rebuild the Track performs |
+| `.plate` / `.scrim-b` | any text laid over arbitrary imagery. Legibility that depends on which photograph the user uploaded is a coin toss, not a design decision | the account popout — the name left the banner and landed on solid ground |
+| `.mark` | the POINT vocabulary: single, `.stack` (several), tier-accented. **A cluster REPLACES what it stands for** — it used to be a count drawn ON TOP of the diamonds, so one bled out behind it and the mark read as a diamond with a blister | Track markers, cluster badges, record-rail nodes |
+
+**`Shell.inkOn(hex)` decides what colour a filled surface can carry.** Not a luminance threshold — a threshold is a guess, and the first version put white on Events' blue at 3.08:1 when black on the same blue measures 5.97:1. There are only two candidates, so compute BOTH ratios and take the winner. Bars, badges and state chips pass their own `--ci`.
+
+---
+
+## 5.9b THE HEADER, THE COMPOSER, AND WHERE CREATION LIVES
+
+**Measured before any of this:** every create control on every realm sat below its own fold or under a filter row. Season's three were at **1464px, 3548px and 3551px in an 828px viewport** — the primary one 4.3 screens down. Armory's single control sat at 1208px, on the realm that manages 133 builds. There were **zero visible DELETE affordances anywhere**, against 12 delete/purge actions in `utils/manageActions.js`, and **one EXPORT** against 8.
+
+Harkirat named the class, not the instance: *"the page is just the visualization of what they trigger."*
+
+- **Every realm's primary action is at masthead level**, beside the numbers, so a reader learns ONE place to look. `N` means the same thing on every page.
+- **Season shows the six TYPES, not a wrapper.** 🔴 `+ New item` was a beautiful button whose only job was to reveal six more buttons — two clicks to begin, with the realm's vocabulary hidden behind the first one. The types ARE the action.
+- **The composer renders INLINE (`Shell.compose({host})`), not in a modal.** `/manage`'s creation flow *is* a Discord modal; putting the portal's in one reproduces the shape of the thing it exists to beat.
+- 🔴 **THE TRACK IS THE PREVIEW.** Not a miniature axis inside a dialog — the real one, at real scale, beside real neighbours. Pick a type and a date and a dashed ghost lands in its lane; you watch it collide with Ranked or fall outside the season, and *then* commit. That is the answer `/manage` structurally cannot give: it replies to "when" with a line of text. The old `composePreview()` mini-axis is deleted — it was a lower-fidelity copy of the thing sitting directly behind the scrim.
+- **The form is the schema.** Picking the type picks the SHAPE: a draw, a returning draw and a patch note show ONE date; a draw window, an event and a playlist show two. The old add-row offered `start` AND `end` for every type including draws, which have exactly one field and no end — a creation form asking for data the record cannot hold.
+
+---
+
+## 5.9c THE TRACK IS INSTRUMENTS, NOT SIX ROWS OF RECTANGLES
+
+Six identical rows of rectangles is a table drawn sideways. Each lane holds a different KIND of fact and gets a form tuned to it, plus a collapsed state that answers **that lane's own question** rather than saying "5 hidden".
+
+| Lane | Collapsed form | Because |
+|---|---|---|
+| New draws · Returning | pips at their true dates, tier-accented | a release is a moment; rarity is the fact that matters |
+| Draw windows · Events | merged runs | overlapping bands read as one span |
+| Playlists | a **load ribbon** with its peak | the question there is never "which one" but "how many are live at once" |
+
+- **A lane needing more than three rows opens collapsed.** Playlists alone needs five — ~130px before anything else is drawn, so you land on a wall with the lane you came for off-screen. Per lane, persisted, **alt-click to solo**. No global "dense mode": a mode is what you build when you cannot decide.
+- ⚠️ **The collapsed class is `.lnc`, never `.col`.** `.col` is a BOARD COLUMN with `min-height:220px` defined 2,400 lines earlier; a collapsed 30px lane inherited it and rendered as a black void with its header floating in the middle. Eighth collision on this package's roster after `.now .left .tbd .k .tk .ed` and `window.frames`.
+- **Labels leave the bar before they truncate**, right by default, flipped left at the edge, dropped only when neither side has room — and **room means room before the NEXT BAR**, not before the lane ends. Five weekly events sit end to end; measuring to the lane edge put every label on top of its neighbour.
+- **One deadline chip per DATE.** Battle Pass and Ranked are both Sep 10; two labels for one moment is a modelling error, and modelling it fixes the alignment by construction — one date, one chip, one stem. Out-of-view deadlines weld to the edge they are beyond.
+- 🔴 **CONCURRENCY IS NOT A DEFECT.** Sixteen "X and Y overlap" boxes rendered below the Track, taller than the Track itself, and nine were playlists overlapping playlists — while the same page drew a ribbon celebrating exactly that. Overlap is a finding only where the lane's semantics make it one (`LANE_KIT[key].overlapMatters`): two draw WINDOWS open at once is a real conflict; two playlists is Tuesday.
+- **A same-day cluster says so.** It used to read "N releases within 17px at this zoom — zoom in to separate them" for two draws on the same date: an instruction that cannot succeed, leaking a pixel constant into a sentence a person reads.
+
+---
+
+## 5.9d PATCH NOTES ARE NOT A LANE — the Season Record
+
+A patch note is a **publication**, not a state with a duration. `models/PatchNote.js` gives it a `releaseDate` and no end, and `isEventEnded()` returns false for it forever. Every other lane answers "when is this ON?"; this one answers "what was said, and when".
+
+- **It does not stretch the axis.** The live season publishes Jul 6 and Jul 22 while nothing is scheduled before Aug 6 — including them spent the left third of the canvas on empty time. This is the same rule the deadline REACH already applied to outliers *ahead* of the content and never to outliers *behind* it.
+- **It renders as a vertical rail under the Track** (Harkirat's pick from three variants: a horizontal release ledger, this rail, and an image filmstrip). Newest first, `CURRENT` vs `HISTORY`, image counts, and its own `+ Publish` affordance — creation lives where the thing lives.
+- Patch notes **keep their place in the Manifest and the legend**. Only the Track lane went.
+
+---
+
+## 5.9e THE CHECKS — and why the audit could not see any of this
+
+**Every defect found on 2026-08-24 was visible in one second of looking and invisible to every check this package ran.** The audit asserts things about elements someone already thought about; a person's eyes scan the whole surface with no prior. The verification was component-scoped; the defects were surface-scoped.
+
+| Command | What it does |
+|---|---|
+| `npm run portal:gate` | schema conformance — op names, permission scopes, model fields, tiers |
+| `npm run portal:refs` | identifiers **called but never declared**. `drawComposeGhost` was called from three places and defined nowhere for most of a session; it never threw, because it is only reached when the composer opens |
+| `.sweep.html?self=1` | the **surface sweep** — seven invariants that know nothing about what an element is, across 8 pages × 5 widths |
+| `.audit-all.html?w=` | the per-page `__selfCheck`, now including real computed contrast |
+
+**The seven surface invariants**, each derived from a real defect by asking *what generic rule, applied to every element, would have caught this?*
+
+`overridden` (inline style beaten by the cascade → the `.col` void) · `cut` (clipped text with no ellipsis → "We⋮", "Gunsm") · `flood` (>8 siblings that each read as a BOX → sixteen alarms) · `monochrome` (N siblings, N labels, one colour → five red palette dots) · `flush` (flow neighbours touching with no rule → the announcement cards) · `spill` (past its scroller **where there was room** → the armory table) · `ajar` (anything open just because the page loaded → the palette on all eight realms).
+
+⚠️ **THREE PROBES WRITTEN THAT DAY REPORTED CLEAN WHILE BEING INCAPABLE OF FAILING**, and each was caught only by deliberately trying to falsify it:
+1. the reference probe counted every **call site** as a declaration, so nothing could ever be missing;
+2. the contrast probe measured a **semi-transparent** background as opaque, inventing a 1.59:1 that is not physically possible, then failed to premultiply the first layer;
+3. the sweep ran a **light-mode pass that was really a second dark pass** — `data-theme` does nothing here, and the body background measured identical under both.
+
+**So every probe in this package carries a falsifier that runs on every invocation.** `--self-test` on the gate and the reference probe; `?self=1` plants a clipped node in the sweep and asserts it is caught. A probe that cannot report PRESENCE is not evidence of absence.
+
+✅ **THE PORTAL IS DARK-ONLY. That is a decision, not a gap** — Harkirat, 2026-08-24: *"we don't need a light mode inside of the portal… the light mode is only a real thing to check for the other parts of the dioreo.app website, such as the legal pages."* Do not re-add a theme axis to the sweep.
 
 ---
 
