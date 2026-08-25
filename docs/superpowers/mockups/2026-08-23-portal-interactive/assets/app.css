@@ -2814,7 +2814,12 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * same edge, which is exactly when a pin is most likely to exist. */
 .dpin{position:absolute;bottom:1px;z-index:6;display:flex;align-items:center;gap:5px;padding:3px 7px;
   border:1px dashed var(--c);border-radius:var(--rad-pill);background:var(--paper);
-  font:600 9.5px/1 var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap}
+  /* 🔴 TEXT WAS var(--c) AND MEASURED 3.63:1 for DMZ (#337BA6 at 9.5px/600 on --paper),
+     below AA. The dashed border already carries the topic colour and the chip's own text
+     reads "DMZ", so the colour on the glyphs was a redundant second copy of the identity —
+     and it was the redundant copy that failed. Same move as the ring→rule correction in
+     §16.19: a mark may point at content without colouring it. Now 14.3:1. */
+  font:600 9.5px/1 var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap}
 .dpin.l{left:4px}.dpin.r{right:4px}
 .dpin em{font-style:normal;color:var(--ink3);letter-spacing:0;text-transform:none}
 

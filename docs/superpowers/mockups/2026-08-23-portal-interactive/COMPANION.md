@@ -3349,3 +3349,31 @@ The season-deadline problem has been raised **nine times**. §16.14 records why 
 That is also where the memorable idea is: every generic admin tool renders three rows because the schema has three fields. Rendering two is the design doing something the data model did not do for it.
 
 **Also verified while building it:** the page has no start date of any kind, so any "progress through the cycle" reading is dead on arrival — an option was designed and cut for exactly this. And whatever wins must **replace**: the "Live season" strip goes, the masthead `days left` figure goes, the Track chips shrink to dot + date. Four weak sayings into one. That is the test the previous nine failed.
+
+
+### 16.26 The audit was wrong before the page was — compositing alpha, and a redundant colour that failed
+
+Auditing the Track produced **12 contrast failures**. Eleven were false.
+
+`.t-epic` reported **1.96:1**. Its computed `backgroundColor` is `rgba(142,107,166,0.18)` — a tint, not a surface. Reading it straight off computed style treats 18% alpha as if it were solid paint. Composited over `--paper` the real background is `rgb(44,44,59)` and the tag renders at **~6.2:1**. 🔴 **A contrast probe that does not composite alpha will report a false failure for every tinted chip in the product** — and this product is built out of tinted chips.
+
+The rewritten `bgOf()` walks up collecting every layer until it reaches an opaque one, then composites downward. Twelve findings became one.
+
+**The one was real.** `.dpin` — the chip carrying a deadline that sits outside the visible window ("DMZ · NOV 11 · 51d beyond this view") — set `color:var(--c)`, the DMZ topic blue, at 9.5px/600 on `--paper`: **3.63:1**.
+
+A `--ret-ink` token was computed (`#649BBB`, 5.57:1) and **reverted unused**, because looking at the chip gave a better answer than lightening a colour: the **dashed border already carries the topic**, and the chip's own text literally reads "DMZ". The colour on the glyphs was a third statement of an identity already made twice, and it was the redundant statement that failed the check. Text moved to `--ink` — **14.28:1**, border untouched.
+
+This is the same correction as §16.19: **a mark may point at content without colouring it.** The difference worth noting is the order — there the redundant colour won a fight it should not have been in; here it simply failed, and deleting it was cheaper than propping it up.
+
+⚠️ **Note on where this was found:** `.dpin` renders **only when a deadline falls outside the visible window**, which at the fixture date is DMZ alone. §16.23's `?today=` note applies in reverse — a check cannot fail on an element that never renders, and this element renders in exactly one configuration.
+
+### 16.27 The six sub-views that had only ever been measured
+
+Season **Board** and **Repairs**, and Armory **Repairs**, **Compare** and **Bulk & export**, had been driven by the audit harness and never opened. They were opened.
+
+**They audit clean** — no contrast failure, no sub-24px target, no horizontal overflow at 1280, across all six. Two things a green audit could not say:
+
+- 🔴 **Armory's four views are each a panel below the same masthead and the same tab bar.** That is the per-realm composition gap already filed, seen directly rather than inferred: the tier board, the repair grid, the comparison table and the paste/export pair are four different *datasets* wearing one *page*.
+- **Repairs renders a zero-count card at full weight.** "0 · No image" occupies exactly as much space, and reads with exactly as much urgency, as "106 · Not updated in 120 days". Good news should not cost a card. This is §16.4's `.zero` problem in a surface that predates the fix.
+
+Neither is a defect the harness could ever report, because both are statements about *composition* and the harness measures *elements*.
