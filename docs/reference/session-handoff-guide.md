@@ -26,13 +26,26 @@ Four steps, nothing else:
 1. **Commit.** Clean tree.
 2. **`sequentialthinking`: what is still OPEN?** Approved-but-unbuilt first, stale verifications second.
 3. 🔴 **File the approved-but-unbuilt in `docs/db-deferred-list.md`** with a verify condition.
-4. **Write the post-compact prompt** with the FIRST ACTION at the top.
+4. 🔴 **Run `/remember`.** It writes `.remember/remember.md`, which the `SessionStart` hook **injects automatically** — the only carrier that arrives without anyone knowing to look for it. Cheapest high-value step in the list.
+5. **Write the post-compact prompt** with the FIRST ACTION at the top.
 
 **Step 3 is the one that survives if everything else is lost** — and `.claude/hooks/outstanding-not-filed.sh` will block the Stop if you skip it, so it is the one step you do not have to remember. The rest of this file is the expansion; read on only if there is time.
 
 ⚠️ **Skipping the test suites is NOT skipping the completeness sweep.** Those are different things and only the first is optional — see the last section.
 
 ---
+
+## The three carriers — and they are not equally reliable
+
+A handoff is not one artifact. It is three, and **the most detailed one is the least reliable**, which is the opposite of the intuition:
+
+| Carrier | Reach | Job |
+|---|---|---|
+| **`.remember/remember.md`** — write it with **`/remember`** | 🟢 **Auto-injected at every session start**, including after a compact. Arrives without anyone knowing it exists | ≤20 lines. The **pointer and the first action** — never the record |
+| **`local/handoff/<date>-<topic>.md`** | 🔴 **Gitignored. No `rg` reaches it**, `-uu --hidden` included. Only found if something *tells* the reader the path | The exhaustive record: reasoning, rejected options, traps |
+| **`docs/db-deferred-list.md`** | 🟢 **Tracked.** Survives compaction, a new session, a fresh clone, and being forgotten | Anything **approved but unbuilt**, with a verify condition |
+
+🔴 **The rule that falls out:** the exhaustive file must be *pointed at* from at least one carrier that reaches on its own — `/remember`'s note, or a deferred-list item that cites its path. **A handoff nobody is told about is a handoff nobody reads.**
 
 ## ✅ How to know the handoff is DONE
 
@@ -95,7 +108,7 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 
 ### 5 · Write the file — and file the OPEN work somewhere TRACKED
 
-The handoff goes to `local/handoff/<YYYY-MM-DD>-<topic>.md` (see `reference_handoff_file_location`).
+The handoff goes to `local/handoff/<YYYY-MM-DD>-<topic>.md` (see `reference_handoff_file_location`), and **`/remember` writes the short auto-loaded note that points at it** — see the three carriers above. Write the long file first, then `/remember`, so the note can name it.
 
 🔴 **`local/` IS GITIGNORED. No `rg` reaches it, `-uu --hidden` included.** Therefore:
 
