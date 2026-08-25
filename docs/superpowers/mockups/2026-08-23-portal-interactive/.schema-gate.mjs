@@ -33,6 +33,12 @@ const pages = readdirSync(HERE).filter((f) => f.endsWith('.html'));
 const sources = Object.fromEntries([...pages, 'assets/fixtures.js', 'assets/shell.js', 'COMPANION.md']
     .map((f) => [f, readFileSync(here(f), 'utf8')]));
 
+/* The stylesheets are read SEPARATELY from `sources`: the checks above look for op names and
+ * permission tokens, which do not appear in CSS, and folding two different scopes into one list
+ * is how a check ends up running somewhere it cannot mean anything. */
+const styleSources = Object.fromEntries(['assets/tokens.css', 'assets/app.css', ...pages]
+    .map((f) => [f, readFileSync(here(f), 'utf8')]));
+
 const failures = [];
 const fail = (check, file, msg) => failures.push({ check, file, msg });
 
@@ -51,6 +57,28 @@ function checkOps(file, src, allow = NON_OP_ACTIONS) {
 function checkScopes(file, src) {
     for (const m of src.matchAll(/'(manage\.[a-z_]+)'/g)) {
         if (!PERM_TOKENS.has(m[1])) fail('scope-real', file, `"${m[1]}" is not in MANAGE_PAGE_SCOPES`);
+    }
+}
+
+// ── 2b. every corner comes from the shape scale ───────────────────────────────────────────── Measured 2026-08-25: 308 declarations, 29 distinct values, `--rad` carrying 44 of them. No BROWSER rule could ever have seen this — every audit rule asks "for each element, is P true?", and 29 answers disagreeing is not a property of any one element. It is a source-level invariant, so it is checked at the source, in CI, rather than in a harness a human has to remember to open.
+function checkRadius(file, src) {
+    for (const m of src.matchAll(/border-radius:\s*([^;}!]+)/g)) {
+        /* ⚠️ COMMENTS ARE STRIPPED IN JS, NOT IN THE REGEX. The first version matched the trailing
+         * comment with `\/\*[^*]*\*\/`, which cannot cross an internal `*` — and the one real
+         * exemption in this package contains `--dc-*`, so the comment was never recognised and
+         * fourteen ENGLISH WORDS were reported as illegal corner values. A pattern that cannot
+         * parse the one case it was written for is the same defect as a probe that cannot report
+         * presence, and it took planting nothing at all to find: the gate simply went red. */
+        const raw = m[1];
+        const exempt = /\/\*[\s\S]*?foreign-radius[\s\S]*?\*\//.test(raw);
+        if (exempt) continue;
+        const value = raw.replace(/\/\*[\s\S]*?\*\//g, ' ').trim();
+        for (const part of value.split(/\s+/)) {
+            // `/` is the elliptical-radius separator (`border-radius: 10px / 20px`) — a shape of its own, not a value, so it is skipped rather than rejected.
+            if (!part || part === '/' || part === '0' || part === 'inherit') continue;
+            if (/^var\(--rad(-[a-z0-9]+)?\)$/.test(part)) continue;
+            fail('radius-scale', file, `"${part}" is not a shape token — use --rad-1/-2/-3/-round/-pill, or mark the declaration /* foreign-radius: why */`);
+        }
     }
 }
 
@@ -159,6 +187,7 @@ const SCHEMA_FIELDS = new Set(
         }));
 
 for (const [file, src] of Object.entries(sources)) { checkOps(file, src); checkScopes(file, src); checkTiers(file, src); }
+for (const [file, src] of Object.entries(styleSources)) checkRadius(file, src);
 checkDocOps('COMPANION.md', sources['COMPANION.md']);
 
 // Evaluate fixtures.js in a bare sandbox to inspect the real exported objects.
@@ -171,6 +200,11 @@ if (process.argv.includes('--self-test')) {
     const probes = [
         ['op-registered', () => checkOps('probe', `{ op:'loadouts.setRank' }`)],
         ['scope-real',    () => checkScopes('probe', `['manage.nosuchpage']`)],
+        /* TWO probes, because a check that fires on everything is as useless as one that fires on
+         * nothing — and the second is the half that is normally left out. The first plants an
+         * off-scale value; the second plants a LEGAL one and the harness would report the check
+         * as "can fail" either way, so it is asserted separately below. */
+        ['radius-scale',  () => checkRadius('probe', `.x{border-radius:7px}`)],
         ['tier-matches',  () => checkTiers('probe',
             // ⚠️ THE PROBE MUST MATCH THE REAL SHAPE. It used to be a bare object literal, which the brace-matching scanner correctly ignores — so the self-test went red the instant the check was rewritten, which is exactly what a self-test is for. Note the template literal between the keys: that is the case the old regex could not cross, and the reason it silently matched nothing.
             "S.Store.add({ id:'x', name:`${a} - ${b}`, op:'draw.add', tier:3, rows:[] });")],
@@ -182,6 +216,17 @@ if (process.argv.includes('--self-test')) {
         const caught = failures.slice(n).some((f) => f.check === name);
         console.log(`${caught ? '  ✅' : '  ❌'} self-test: ${name} ${caught ? 'can fail' : 'DID NOT FIRE — the check is vacuous'}`);
         if (!caught) ok = false;
+    }
+    {
+        /* The other half, and the half normally left out: a LEGAL corner must PASS. Every probe
+         * above proves a check can fire; none proves it can stay quiet, so `checkRadius` could be
+         * rewritten to fail unconditionally and the whole self-test would still go green. */
+        const n = failures.length;
+        checkRadius('probe', `.x{border-radius:var(--rad-2)} .y{border-radius:0} .z{border-radius:var(--rad-pill) var(--rad-1)} .w{border-radius:8px/* foreign-radius: --dc-* keeps its own corner */} .v{border-radius:var(--rad-3) / var(--rad-1)}`);
+        const quiet = failures.length === n;
+        console.log(quiet ? '  ✅ self-test: a legal corner does NOT fire radius-scale'
+                          : '  ❌ self-test: radius-scale fires on legal values — it is a wall, not a check');
+        if (!quiet) ok = false;
     }
     failures.length = before;                       // discard probe failures
     if (!ok) { console.error('\n❌ a check could not be made to fail. A vacuous gate is worse than none.'); process.exit(2); }

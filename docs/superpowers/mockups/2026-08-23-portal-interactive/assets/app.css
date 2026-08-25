@@ -8,7 +8,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
  * this system chose, and a missing modifier degrades to the neutral secondary rather than
  * to the browser's idea of a button. */
 button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
-:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:3px}
+:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-1)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
@@ -32,7 +32,7 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
  * so no future rule ordering can revive the box. Audit rule 12 asserts it stays that way. */
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]),
 select:not([data-bare]),textarea:not([data-bare]){
-  background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;padding:8px 10px;min-height:var(--tap)}
+  background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:8px 10px;min-height:var(--tap)}
 input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
 input:focus,select:focus,textarea:focus{border-color:var(--patch);outline:none}
 input::placeholder{color:var(--ink3)}
@@ -58,7 +58,7 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;
 .crumb b{color:var(--ink2);font-weight:500}
 header .sp{margin-left:auto}
 .who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)}
-.who .av{width:24px;height:24px;border-radius:50%;border:1px solid var(--rule2);flex:none;
+.who .av{width:24px;height:24px;border-radius:var(--rad-round);border:1px solid var(--rule2);flex:none;
   background:linear-gradient(140deg,#3A4C5A,#1C242C) center/cover no-repeat}
 /* The real Discord avatar. It is not decoration: this is the one place the portal says WHOSE
  * session you are in, and a grey disc says nobody's. The CDN URL is derived from the id and the
@@ -87,23 +87,23 @@ main{overflow:auto;padding-bottom:96px}
 .stat.warn .v{color:var(--warn)} .stat.stg .v{color:var(--staged)}
 
 /* ═══ PANEL + VIEW SWITCHER (the top layer) ═══ */
-.panel{margin:0 22px;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.panel{margin:0 22px;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);overflow:hidden}
 .ph{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--raised);border-bottom:1px solid var(--rule);flex-wrap:wrap}
 .ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
 .ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
-.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px}
-.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:3px;min-height:32px}
+.seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px}
+.seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--rad-1);min-height:32px}
 .seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
 .seg button:hover{color:var(--ink2)}
 .key{display:flex;gap:13px;font-family:var(--data);font-size:10px;color:var(--ink3);flex-wrap:wrap}
-.key i{display:inline-block;width:16px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+.key i{display:inline-block;width:16px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:var(--rad-1)}
 .key .l i{background:var(--ink3)}
 .key .s i{border:1.5px dashed var(--ink3)}
 .key .c i{border:1.5px dashed var(--warn);background-image:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px)}
 .layer-note{font-family:var(--data);font-size:9px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;padding:5px 12px;background:var(--sunk);border-bottom:1px solid var(--rule)}
 
 /* ═══ SHAPE CARRIES STATE — the one rule that must never invert ═══ */
-.bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;display:flex;align-items:center;
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:var(--rad-2);display:flex;align-items:center;
   padding:0 8px;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;cursor:pointer;z-index:2;
   transition:filter .12s,box-shadow .12s}
 .bar:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(255,255,255,.16)}
@@ -115,7 +115,7 @@ main{overflow:auto;padding-bottom:96px}
 .bar .gr{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;opacity:0}
 .bar:hover .gr{opacity:1;background:rgba(255,255,255,.35)}
 .bar .gr.a{left:0}.bar .gr.b{right:0}
-.pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);border-radius:2px;
+.pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);border-radius:var(--rad-1);
   background:var(--c);cursor:pointer;z-index:2}
 .pt.staged{background:transparent;border:1.5px dashed var(--c)}
 .pt:hover{filter:brightness(1.2)}
@@ -161,7 +161,7 @@ main{overflow:auto;padding-bottom:96px}
    label, a media query, a future padding change. There is nothing left to keep in sync. */
 .lane{position:relative;display:flex;align-items:stretch;min-height:38px;
   padding-left:var(--gutter);border:1px solid var(--rule);border-left:0;
-  border-radius:7px;background:var(--sunk);overflow:hidden;
+  border-radius:var(--rad-2);background:var(--sunk);overflow:hidden;
   box-shadow:inset 2px 0 0 var(--c,var(--rule2));
   transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
 .lane:hover{border-color:var(--rule2)}
@@ -227,27 +227,27 @@ main{overflow:auto;padding-bottom:96px}
 /* defect flags — name the FIX, not just the problem */
 .flags{display:flex;gap:9px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--rule)}
 .flag{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--rule);border-left:2px solid var(--warn);
-  border-radius:4px;font-size:12.5px;color:var(--ink2);background:var(--sunk)}
+  border-radius:var(--rad-2);font-size:12.5px;color:var(--ink2);background:var(--sunk)}
 .flag.info{border-left-color:var(--ink4)}
 .flag b{color:var(--ink);font-weight:600}
 .flag button{background:none;border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;padding:5px 10px;
-  border-radius:4px;font-weight:600;min-height:32px;white-space:nowrap}
+  border-radius:var(--rad-2);font-weight:600;min-height:32px;white-space:nowrap}
 .flag button:hover{color:var(--ink);border-color:var(--ink3)}
 
 /* ═══ BOARD — the changeset pipeline, not a third content view ═══ */
 .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
-.col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:10px;min-height:220px}
+.col{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:10px;min-height:220px}
 .col.over{border-color:var(--patch);background:rgba(242,194,48,.05)}
 .col h4{margin:0 0 10px;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:700;
   display:flex;align-items:center;gap:7px}
 .col h4 .ct{margin-left:auto;font-family:var(--data);color:var(--ink3)}
 .col h4 .bad{color:var(--warn)}
-.card{background:var(--raised);border:1px solid var(--rule2);border-radius:5px;padding:9px 10px;margin-bottom:8px;cursor:grab;
+.card{background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:9px 10px;margin-bottom:8px;cursor:grab;
   transition:transform .1s,box-shadow .1s}
 .card:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
 .card.drag{opacity:.4}
 .card .ch{display:flex;align-items:center;gap:7px;margin-bottom:4px}
-.card .tr{font-family:var(--data);font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:3px;
+.card .tr{font-family:var(--data);font-size:8.5px;letter-spacing:.08em;padding:1px 5px;border-radius:var(--rad-1);
   border:1px solid var(--rule2);color:var(--ink3);font-weight:600}
 .card.t3 .tr{color:var(--warn);border-color:var(--warn)}
 .card .cn{font-size:12.5px;color:var(--ink);font-weight:600}
@@ -256,8 +256,8 @@ main{overflow:auto;padding-bottom:96px}
 .card .inv b{color:var(--ink2);font-weight:600}
 .card.blocked{border-left:2px solid var(--warn)}
 .card .why{margin-top:6px;font-size:10.5px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.card .why button{background:none;border:1px solid var(--warn);color:var(--warn);font-size:10px;padding:3px 8px;border-radius:3px;font-weight:600}
-.commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-size:13px;font-weight:700;
+.card .why button{background:none;border:1px solid var(--warn);color:var(--warn);font-size:10px;padding:3px 8px;border-radius:var(--rad-1);font-weight:600}
+.commit{width:100%;background:var(--patch);color:var(--on-accent);border:0;border-radius:var(--rad-2);font-size:13px;font-weight:700;
   padding:10px;min-height:var(--tap)}
 .commit:hover:not(:disabled){filter:brightness(1.08)}
 .commit:disabled{background:var(--raised);color:var(--ink3);border:1px solid var(--rule2);cursor:not-allowed}
@@ -275,7 +275,7 @@ main{overflow:auto;padding-bottom:96px}
    would have traded a styling inconsistency for a functional break. Same rules, same radius,
    same hover lift, same focus ring — one language, and every existing call site inherits it. */
 .chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
-  padding:6px 11px;border-radius:20px;min-height:32px}
+  padding:6px 11px;border-radius:var(--rad-pill);min-height:32px}
 .chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
 .chip:hover{color:var(--ink)}
 .mtools .rt{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink3)}
@@ -287,7 +287,7 @@ th{text-align:left;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase
 th.sortable{user-select:none;padding:0}
 th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
   padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
-th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:3px}
+th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-1)}
 th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:10px}
 th.sorted-asc::after{content:"↑";color:var(--patch)} th.sorted-desc::after{content:"↓";color:var(--patch)}
 td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);vertical-align:middle}
@@ -297,11 +297,11 @@ tbody tr.sel td{background:rgba(242,194,48,.06)}
 tbody tr.on td{background:#20303B;box-shadow:inset 2px 0 0 var(--patch)}
 td.n{color:var(--ink);font-weight:500}
 td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowrap}
-.cb{width:16px;height:16px;border:1.5px solid var(--rule2);border-radius:3px;display:inline-block;vertical-align:-3px;position:relative;background:var(--sunk)}
+.cb{width:16px;height:16px;border:1.5px solid var(--rule2);border-radius:var(--rad-1);display:inline-block;vertical-align:-3px;position:relative;background:var(--sunk)}
 .cb.on{background:var(--patch);border-color:var(--patch)}
 .cb.on::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:9px;border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(42deg)}
-.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px;background:var(--c)}
-.stt{font-family:var(--data);font-size:9px;letter-spacing:.08em;padding:2px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:var(--rad-1);margin-right:8px;vertical-align:-1px;background:var(--c)}
+.stt{font-family:var(--data);font-size:9px;letter-spacing:.08em;padding:2px 7px;border-radius:var(--rad-1);font-weight:600;white-space:nowrap}
 .stt.saved{background:var(--c);color:var(--on-accent)}
 .stt.staged{border:1.5px dashed var(--c);color:var(--c)}
 .stt.conflict{border:1.5px dashed var(--warn);color:var(--warn);
@@ -309,7 +309,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 .bulk{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--hi);border-top:1px solid var(--rule2);flex-wrap:wrap}
 .bulk .c{font-family:var(--data);font-size:11.5px;color:var(--patch)}
 .bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:12px;font-weight:600;
-  padding:7px 11px;border-radius:4px;min-height:36px}
+  padding:7px 11px;border-radius:var(--rad-2);min-height:36px}
 .bulk button:hover{color:var(--ink);border-color:var(--ink3)}
 .bulk button.danger{color:var(--danger-ink);border-color:#54322F}
 .bulk .sp{margin-left:auto;font-size:11.5px;color:var(--ink3)}
@@ -318,7 +318,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 
 /* ═══ TRAY — the magazine ═══ */
 .tray{position:fixed;right:20px;bottom:20px;width:320px;max-width:calc(100vw - 32px);background:var(--paper);
-  border:1px solid var(--rule2);border-radius:var(--rad);box-shadow:0 24px 60px -18px rgba(0,0,0,.9);z-index:50}
+  border:1px solid var(--rule2);border-radius:var(--rad-2);box-shadow:0 24px 60px -18px rgba(0,0,0,.9);z-index:50}
 .tray[hidden]{display:none}
 .tray-h{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--rule);cursor:pointer}
 .tray-h .t{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
@@ -329,10 +329,23 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 .round.t3{border-left-color:var(--warn)}
 .round b{color:var(--ink);font-weight:500}
 .round .tier{font-family:var(--data);font-size:9px;letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
-  padding:0 4px;border-radius:2px}
+  padding:0 4px;border-radius:var(--rad-1)}
 .round.t3 .tier{color:var(--warn);border-color:var(--warn)}
+/* Per-row undo. Quiet by default — it is an escape hatch, not a call to action — and it takes
+ * the row's own alarm colour on hover so a tier-3 row cannot look casually undoable. `flex:none`
+ * because `.round` is a flex row and the button would otherwise be squeezed by a long name. */
+.round-u{margin-left:auto;flex:none;font-family:var(--ui);font-size:var(--t-micro);font-weight:600;
+  line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:none;
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:4px 6px;cursor:pointer;text-decoration:none;
+  transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.round-u:hover:not([disabled]){color:var(--staged);border-color:var(--staged)}
+.round.t3 .round-u:hover:not([disabled]){color:var(--warn);border-color:var(--warn)}
+.round-u:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.round-u[disabled]{opacity:.45;cursor:not-allowed}
+/* Touch gets the real target; the desktop tray has no room for a 44px control in a 7px row. */
+@media (max-width:768px){ .round-u{min-height:var(--tap);padding:0 12px} }
 .tray-f{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule)}
-.btn{flex:1;border-radius:5px;font-size:12.5px;font-weight:700;padding:9px;min-height:var(--tap);
+.btn{flex:1;border-radius:var(--rad-2);font-size:12.5px;font-weight:700;padding:9px;min-height:var(--tap);
   background:var(--raised);color:var(--ink2);border:1px solid var(--rule2);
   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease)}
@@ -353,7 +366,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
    a sheet beside the content is genuinely the right shape. */
 .drawer{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);
   width:min(560px,calc(100vw - 40px));max-height:min(84vh,860px);display:flex;flex-direction:column;
-  background:var(--raised);border:1px solid var(--rule2);border-radius:14px;z-index:45;overflow:hidden;
+  background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:45;overflow:hidden;
   opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1);
   box-shadow:0 40px 90px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
 .drawer.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
@@ -368,7 +381,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
   text-transform:uppercase}
 .dw-h h2{margin:0;font:600 19px/1.25 var(--ui);color:var(--ink);letter-spacing:-.015em}
 .dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);
-  color:var(--ink3);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:12px}
+  color:var(--ink3);border-radius:var(--rad-2);width:30px;height:30px;cursor:pointer;font-size:12px}
 .dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .dw-b{padding:18px 20px;overflow:auto;flex:1 1 auto}
 /* `.btn{flex:1}` above was written for a 420px drawer. On a `wide` one it produced two
@@ -380,8 +393,8 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 .drawer h5{margin:0 0 10px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;
   display:flex;align-items:center;gap:8px}
 .drawer h5 em{font-style:normal;font-family:var(--data);font-size:9px;color:var(--ink3);margin-left:auto}
-.drawer .x{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:4px;width:28px;height:28px}
-.dcard{background:#2B2D31;border-radius:8px;border-left:4px solid var(--c);padding:11px 13px;color:#DBDEE1;font-size:12.5px}
+.drawer .x{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:var(--rad-2);width:28px;height:28px}
+.dcard{background:#2B2D31;border-radius:8px/* foreign-radius: Discord's own corner, like --dc-*. The preview must look like Discord, not like the portal. */;border-left:4px solid var(--c);padding:11px 13px;color:#DBDEE1;font-size:12.5px}
 .dcard h6{margin:0 0 3px;font-size:14px;color:#F2F3F5;font-weight:700}
 .dcard .sub{font-size:11px;color:#B5BAC1;margin-bottom:8px}
 .dcard .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #3A3C41;font-size:11.5px}
@@ -391,7 +404,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--rule2);
-  border-radius:6px;padding:10px 16px;font-size:13px;z-index:80;box-shadow:0 12px 32px -12px #000;display:flex;align-items:center;gap:12px}
+  border-radius:var(--rad-2);padding:10px 16px;font-size:13px;z-index:80;box-shadow:0 12px 32px -12px #000;display:flex;align-items:center;gap:12px}
 .toast button{background:none;border:0;color:var(--patch);font-weight:700;font-size:12.5px}
 
 /* ═══ RESPONSIVE — two breakpoints, exactly ═══ */
@@ -444,12 +457,12 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* logo is a control, not a wordmark */
-.mk{background:none;border:1px solid transparent;border-radius:5px;padding:5px 8px;min-height:34px;display:flex;align-items:center;gap:7px}
+.mk{background:none;border:1px solid transparent;border-radius:var(--rad-2);padding:5px 8px;min-height:34px;display:flex;align-items:center;gap:7px}
 .mk:hover{border-color:var(--rule2);background:var(--sunk)}
-.mk .glyph{width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,var(--patch),var(--warn));flex:none}
+.mk .glyph{width:16px;height:16px;border-radius:var(--rad-1);background:linear-gradient(135deg,var(--patch),var(--warn));flex:none}
 
 /* ═══ SEASON IDENTITY — the editor that was missing entirely ═══ */
-.identity{margin:0 22px 16px;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);overflow:hidden}
+.identity{margin:0 22px 16px;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);overflow:hidden}
 /* The old single-grid identity editor (.id-grid/.fld/.tbd/.hintline) is gone — it modelled
    fields the schema does not have. Its rules are deleted rather than left orphaned: the generic
    .tbd pill was still matching the new `class="left tbd"` state span and painting it as a
@@ -459,12 +472,12 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 /* A minimum width, because a single-day draw at season scale computes to under a pixel and
    simply vanished — eleven of the fourteen real draws are single-day. An overview that silently
    omits most of what it is overviewing is worse than no overview. */
-.scrub .mini{position:absolute;height:4px;min-width:3px;border-radius:2px;background:var(--c);opacity:.72}
+.scrub .mini{position:absolute;height:4px;min-width:3px;border-radius:var(--rad-1);background:var(--c);opacity:.72}
 .scrub .season-end{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.7}
 .scrub .winbox:active{cursor:grabbing}
 .scrub .wh{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;background:var(--patch);opacity:.55;touch-action:none}
 .scrub .wh:hover{opacity:1}
-.scrub .wh.l{left:-1px;border-radius:3px 0 0 3px} .scrub .wh.r{right:-1px;border-radius:0 3px 3px 0}
+.scrub .wh.l{left:-1px;border-radius:var(--rad-1) 0 0 var(--rad-1)} .scrub .wh.r{right:-1px;border-radius:0 var(--rad-1) var(--rad-1) 0}
 
 /* ruler is draggable too — grab it to pan, wheel to zoom */
 .ruler{cursor:ew-resize;user-select:none;touch-action:none}
@@ -487,7 +500,7 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
    since the day it was written and nothing had used it, so nothing reported it.
    The 9th generic-class collision in this package — .now .left .tbd .k .tk .ed .col
    window.frames, and now .ghost. */
-.tghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:4px;border:1.5px dashed var(--patch);
+.tghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:var(--rad-2);border:1.5px dashed var(--patch);
   background:rgba(242,194,48,.08);pointer-events:none;display:flex;align-items:center;padding:0 8px;
   font-size:11px;color:var(--patch);white-space:nowrap;z-index:5}
 
@@ -501,14 +514,14 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 .ov > *{pointer-events:auto}
 
 /* live readout while dragging */
-.tip{position:fixed;z-index:90;background:var(--raised);border:1px solid var(--rule2);border-radius:5px;
+.tip{position:fixed;z-index:90;background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);
   padding:6px 10px;font-family:var(--data);font-size:11px;color:var(--ink);pointer-events:none;white-space:nowrap;
   box-shadow:0 8px 24px -10px #000}
 .tip b{color:var(--patch);font-weight:600}
 .tip .sub{display:block;color:var(--ink3);font-size:10px;margin-top:2px}
 
 /* ═══ BOARD v2 — content state, not pipeline state ═══ */
-.bcard{background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c);border-radius:5px;
+.bcard{background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c);border-radius:var(--rad-2);
   padding:9px 10px;margin-bottom:8px;cursor:grab}
 .bcard.staged{background:transparent;border:1.5px dashed var(--c);border-left-width:3px}
 .bcard.ended{opacity:.6}
@@ -531,12 +544,12 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
    The element that handles a click is the element that must take focus. */
 .rephits button{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
   background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
-.rephits button:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:4px}
+.rephits button:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-2)}
 
 /* inline add row */
 .addrow{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap;align-items:center}
 .addrow select,.addrow input{min-height:36px}
-.addrow .go{background:var(--patch);color:var(--on-accent);border:0;border-radius:5px;font-weight:700;padding:8px 14px;min-height:36px}
+.addrow .go{background:var(--patch);color:var(--on-accent);border:0;border-radius:var(--rad-2);font-weight:700;padding:8px 14px;min-height:36px}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -553,14 +566,14 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 /* loading — the control keeps its width so the row does not reflow */
 .is-loading{position:relative;color:transparent!important;pointer-events:none}
 .is-loading::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
-  border:2px solid var(--ink4);border-top-color:var(--patch);border-radius:50%;animation:spin .6s linear infinite}
+  border:2px solid var(--ink4);border-top-color:var(--patch);border-radius:var(--rad-round);animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.is-loading::after{animation:none;border-top-color:var(--ink2)}}
 
 /* error — say WHAT happened and HOW to fix, next to the field that caused it */
 input.err,select.err{border-color:var(--del);background:rgba(255,107,107,.06)}
 .errmsg{display:flex;align-items:flex-start;gap:6px;margin-top:6px;font-size:var(--t-sm);color:var(--del);line-height:1.4}
-.errmsg::before{content:"!";flex:none;width:14px;height:14px;border-radius:50%;border:1px solid var(--del);
+.errmsg::before{content:"!";flex:none;width:14px;height:14px;border-radius:var(--rad-round);border:1px solid var(--del);
   font-family:var(--data);font-size:9px;display:grid;place-items:center;margin-top:1px}
 
 /* the Discord preview now reads from the namespaced foreign palette */
@@ -620,7 +633,7 @@ main{position:relative;z-index:1}
 .now{width:2px;margin-left:-1px;background:linear-gradient(180deg,var(--patch),rgba(242,194,48,.25));
   box-shadow:0 0 12px rgba(242,194,48,.55),0 0 3px rgba(242,194,48,.9)}
 .now::before{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3.5px;
-  border-radius:50%;background:var(--patch);box-shadow:0 0 10px var(--patch);animation:pulse 2.8s ease-in-out infinite}
+  border-radius:var(--rad-round);background:var(--patch);box-shadow:0 0 10px var(--patch);animation:pulse 2.8s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
 
 /* bars become objects: elevation, a light top edge, and a real lift on hover */
@@ -672,7 +685,7 @@ main{position:relative;z-index:1}
 .ruler span{top:18px;line-height:26px}
 
 .now::after,.dend::after{
-  top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:3px;
+  top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:var(--rad-1);
   padding:1px 5px;line-height:14px;z-index:4;letter-spacing:.09em}
 .now::after{left:50%;transform:translateX(-50%);color:var(--patch)}
 /* the BP END chip would clip off the right edge when the marker sits near 100% */
@@ -681,7 +694,7 @@ main{position:relative;z-index:1}
 /* 2XCP labels the window from INSIDE it, where it cannot collide with a tick */
 .win::after{content:none}
 .win .lbl{position:absolute;top:3px;left:5px;font-family:var(--data);font-size:var(--t-micro);
-  letter-spacing:.1em;color:var(--ev-ink);background:rgba(11,15,18,.72);border-radius:2px;padding:1px 4px;
+  letter-spacing:.1em;color:var(--ev-ink);background:rgba(11,15,18,.72);border-radius:var(--rad-1);padding:1px 4px;
   pointer-events:none;white-space:nowrap}
 
 /* a tick sitting under a marker chip is hidden rather than overlapped */
@@ -694,15 +707,15 @@ main{position:relative;z-index:1}
    the Track are literally the same measurement at three scales. That is what
    makes them read as one instrument instead of three widgets.
    ═══════════════════════════════════════════════════════════════════════════ */
-.spark{position:relative;height:6px;border-radius:3px;background:var(--sunk);
+.spark{position:relative;height:6px;border-radius:var(--rad-1);background:var(--sunk);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);overflow:hidden;min-width:64px}
-.spark i{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--c)}
+.spark i{position:absolute;top:0;bottom:0;border-radius:var(--rad-1);background:var(--c)}
 .spark i.staged{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
 .spark i.conflict{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px);
   box-shadow:inset 0 0 0 1.5px var(--warn)}
-.spark .nowdot{position:absolute;top:-2px;width:2px;height:10px;background:var(--patch);border-radius:1px;
+.spark .nowdot{position:absolute;top:-2px;width:2px;height:10px;background:var(--patch);border-radius:var(--rad-1);
   box-shadow:0 0 6px var(--patch)}
-.spark .done{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.22);border-radius:3px 0 0 3px}
+.spark .done{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
 
 td .wincell{display:flex;flex-direction:column;gap:5px;min-width:132px}
 td .wincell .txt{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space:nowrap}
@@ -712,7 +725,7 @@ tbody tr{transition:background .12s,box-shadow .12s}
 tbody tr td:first-child{position:relative}
 tbody tr.on td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--patch)}
 /* removed: display:flex on a <td> is what caused the black bar — .ncell carries it now */
-td.n .edit{background:none;border:1px solid transparent;border-radius:4px;padding:3px 6px;margin:-3px -6px;
+td.n .edit{background:none;border:1px solid transparent;border-radius:var(--rad-2);padding:3px 6px;margin:-3px -6px;
   font:inherit;color:inherit;width:100%;min-height:30px}
 td.n .edit:hover{border-color:var(--rule2);background:var(--sunk)}
 td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
@@ -730,7 +743,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bcard .sparkwrap{margin-top:8px}
 .bcard .actions{display:flex;gap:6px;margin-top:9px}
 .bcard .actions button{flex:1;background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);
-  font-size:var(--t-sm);font-weight:600;padding:6px;border-radius:4px;min-height:32px}
+  font-size:var(--t-sm);font-weight:600;padding:6px;border-radius:var(--rad-2);min-height:32px}
 .bcard .actions button.go{background:transparent;border:1px solid var(--staged);color:var(--staged);font-weight:600}
 .bcard .actions button.go:hover{background:var(--staged);color:var(--on-accent)}
 .bcard .actions button:hover{filter:brightness(1.1)}
@@ -746,7 +759,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  * reads as an empty lane rather than a scrolled-past one. */
 .offwin{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:var(--data);
   font-size:var(--t-micro);letter-spacing:.08em;color:var(--ink3);background:var(--sunk);
-  border:1px dashed var(--rule2);border-radius:20px;padding:2px 8px;z-index:3;white-space:nowrap;pointer-events:none}
+  border:1px dashed var(--rule2);border-radius:var(--rad-pill);padding:2px 8px;z-index:3;white-space:nowrap;pointer-events:none}
 
 /* ══════════════════════════════════════════════════════════════════
    SEASON IDENTITY — rebuilt against the real SeasonalData schema.
@@ -757,20 +770,20 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    ══════════════════════════════════════════════════════════════════ */
 .idhead{display:flex;align-items:center;gap:10px;margin-bottom:2px}
 .idop{font-family:var(--data);font-size:9.5px;letter-spacing:.06em;color:var(--ink3);
-  border:1px solid var(--rule);border-radius:3px;padding:2px 7px;white-space:nowrap}
+  border:1px solid var(--rule);border-radius:var(--rad-1);padding:2px 7px;white-space:nowrap}
 .idop b{color:var(--ink3);font-weight:600}
 
 .f-main{margin:0 0 4px}
 .f-main label{display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink3);margin-bottom:5px;font-weight:600}
-.f-main input{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);
+.f-main input{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
   color:var(--ink);font:600 17px/1.3 var(--ui);padding:10px 12px;letter-spacing:-.01em}
 .f-main input:focus{outline:none;border-color:var(--patch);box-shadow:0 0 0 3px rgba(242,194,48,.13)}
 
 .dlines{display:flex;flex-direction:column;gap:7px;margin-top:12px}
 .dline{display:grid;grid-template-columns:106px minmax(140px,1fr) 148px 84px 104px;gap:12px;align-items:center;
   background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
-  border-radius:var(--rad);padding:9px 12px 9px 11px;transition:border-color .15s,background .15s}
+  border-radius:var(--rad-2);padding:9px 12px 9px 11px;transition:border-color .15s,background .15s}
 .dline:focus-within{border-color:var(--rule2);border-left-color:var(--c);background:var(--desk)}
 .dline.dirty{border-color:var(--staged)}
 .dline .trk{font-family:var(--data);font-size:9.5px;letter-spacing:.1em;color:var(--c);font-weight:600}
@@ -778,7 +791,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   color:var(--ink);font:500 13.5px/1.4 var(--ui);padding:3px 0}
 .dline input[type=text]:hover{border-bottom-color:var(--rule2)}
 .dline input[type=text]:focus{outline:none;border-bottom-color:var(--c)}
-.dline input[type=date]{width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:4px;
+.dline input[type=date]{width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:var(--rad-2);
   color:var(--ink);font:500 12px/1 var(--data);padding:6px 8px;color-scheme:dark}
 .dline input[type=date]:focus{outline:none;border-color:var(--c)}
 .dline input[type=date]:disabled{opacity:.3}
@@ -787,7 +800,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* TBD is per-line in the schema (bpEndTBD/rankEndTBD/dmzEndTBD) and means
    "known to be undecided", NOT "not set yet" — so it reads as a two-option
    segmented choice, not a stray button hanging off the date field. */
-.tbdsw{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;flex:none}
+.tbdsw{display:inline-flex;border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden;flex:none}
 .tbdsw button{background:transparent;border:none;color:var(--ink3);cursor:pointer;
   font:600 9px/1 var(--data);letter-spacing:.07em;padding:6px 7px;transition:background .13s,color .13s}
 .tbdsw button[aria-pressed=true]{background:var(--c);color:var(--on-accent)}
@@ -801,29 +814,29 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    only ever show one season; the draft subsystem exists because editing live
    fields during an overlap overwrote what players could still see. Showing
    both at once is the thing the portal can do that the bot cannot. ── */
-.lnsw{display:inline-flex;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:2px;gap:2px}
-.lnsw button{background:transparent;border:none;border-radius:3px;color:var(--ink3);cursor:pointer;
+.lnsw{display:inline-flex;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px;gap:2px}
+.lnsw button{background:transparent;border:none;border-radius:var(--rad-1);color:var(--ink3);cursor:pointer;
   font:600 10.5px/1 var(--ui);letter-spacing:.04em;padding:6px 12px;display:flex;align-items:center;gap:6px}
 .lnsw button[aria-pressed=true]{background:var(--raised);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .lnsw button:not([aria-pressed=true]):hover{color:var(--ink2)}
-.lnsw .pip{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.lnsw .pip{width:6px;height:6px;border-radius:var(--rad-round);background:var(--ok)}
 .lnsw .pip.draft{background:var(--staged)}
 .lnsw .pip.none{background:var(--rule2)}
 
 .draftbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:11px 13px;
-  background:var(--sunk);border:1.5px dashed var(--staged);border-radius:var(--rad)}
+  background:var(--sunk);border:1.5px dashed var(--staged);border-radius:var(--rad-2)}
 .draftbar .dt{font:600 11.5px/1 var(--ui);color:var(--staged);letter-spacing:.02em}
 .draftbar .dsub{font-size:11.5px;color:var(--ink3)}
 .draftbar .sp{margin-left:auto}
 .draftbar>button{flex:none;white-space:nowrap}
 .draftbar .commit{width:auto;padding:8px 16px}
 .nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
-  border-radius:var(--rad);text-align:center}
+  border-radius:var(--rad-2);text-align:center}
 .nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
 
 /* Live→Next diff. Only CHANGED fields render, so an unchanged draft is visibly empty
    rather than a wall of identical rows. */
-.diff{margin-top:12px;border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden}
+.diff{margin-top:12px;border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden}
 .diff-h{display:grid;grid-template-columns:112px 1fr 1fr;gap:0;background:var(--sunk);
   border-bottom:1px solid var(--rule);font:600 9.5px/1 var(--data);letter-spacing:.08em;color:var(--ink3)}
 .diff-h span{padding:8px 12px}
@@ -841,8 +854,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    modifier and every zoom state is one click from Fit.
    ═══════════════════════════════════════════════════════════════════════ */
 .zoomer{display:inline-flex;align-items:center;gap:1px;background:var(--sunk);
-  border:1px solid var(--rule);border-radius:5px;padding:2px}
-.zoomer button{background:transparent;border:none;color:var(--ink2);cursor:pointer;border-radius:3px;
+  border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px}
+.zoomer button{background:transparent;border:none;color:var(--ink2);cursor:pointer;border-radius:var(--rad-1);
   font:600 11px/1 var(--ui);padding:0;width:26px;height:26px;display:grid;place-items:center;
   transition:background .12s,color .12s}
 .zoomer button.wide{width:auto;padding:0 10px;font-size:10.5px;letter-spacing:.04em}
@@ -853,7 +866,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .zoomer .rd b{color:var(--ink2);font-weight:600}
 .zhint{font-size:10.5px;color:var(--ink3);margin-left:8px}
 .zhint kbd{font-family:var(--data);font-size:9.5px;background:var(--sunk);border:1px solid var(--rule);
-  border-bottom-width:2px;border-radius:3px;padding:1px 4px;color:var(--ink3)}
+  border-bottom-width:2px;border-radius:var(--rad-1);padding:1px 4px;color:var(--ink3)}
 
 /* Ranked + DMZ end markers alongside BP END. Three deadlines exist in the
    schema and only one was ever drawn. */
@@ -861,7 +874,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   cursor:ew-resize;touch-action:none}
 .dend::after{content:attr(data-lbl);position:absolute;top:-2px;left:5px;
   font:600 8.5px/1 var(--data);letter-spacing:.07em;color:var(--c);background:var(--sunk);
-  border:1px solid currentColor;border-radius:3px;padding:2px 4px;white-space:nowrap}
+  border:1px solid currentColor;border-radius:var(--rad-1);padding:2px 4px;white-space:nowrap}
 .dend.at-edge::after{left:auto;right:5px}
 .dend:hover,.dend.dragging{border-left-style:solid;border-left-width:2px}
 
@@ -876,7 +889,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* The whole header is the control, not a 20px button inside it — a collapse target should
    be the size of the thing it collapses, and the old chevron was easy to miss entirely. */
 .bcol-h{display:flex;align-items:center;gap:9px;width:100%;background:var(--sunk);
-  border:1px solid var(--rule);border-radius:var(--rad);padding:9px 11px;margin-bottom:9px;
+  border:1px solid var(--rule);border-radius:var(--rad-2);padding:9px 11px;margin-bottom:9px;
   cursor:pointer;text-align:left;color:inherit;transition:border-color .14s,background .14s}
 .bcol-h:hover{border-color:var(--rule2);background:var(--hi)}
 .bcol-h:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
@@ -886,7 +899,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bcol-h:hover .chev{border-left-color:var(--ink2)}
 .bcol-t{font:600 10.5px/1 var(--data);letter-spacing:.09em;color:var(--ink2);white-space:nowrap}
 .bcol-n{font-family:var(--data);font-size:10px;color:var(--ink3);background:var(--raised);
-  border:1px solid var(--rule2);border-radius:9px;padding:1px 7px;flex:none;line-height:1.5}
+  border:1px solid var(--rule2);border-radius:var(--rad-3);padding:1px 7px;flex:none;line-height:1.5}
 .bcol-sum{font-size:10.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;margin-left:auto;padding-left:6px}
 
@@ -900,15 +913,15 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bcol.collapsed .bcol-body{display:none}
 
 .bcol-body{display:flex;flex-direction:column;gap:9px;min-height:56px}
-.bcol.drop .bcol-body{outline:1.5px dashed var(--staged);outline-offset:5px;border-radius:var(--rad)}
-.bempty{border:1px dashed var(--rule);border-radius:var(--rad);padding:18px 10px;text-align:center;
+.bcol.drop .bcol-body{outline:1.5px dashed var(--staged);outline-offset:5px;border-radius:var(--rad-2)}
+.bempty{border:1px dashed var(--rule);border-radius:var(--rad-2);padding:18px 10px;text-align:center;
   font-size:11px;color:var(--ink3);margin:0}
 .bcard .dot2{color:var(--ink3);padding:0 2px}
 
 /* ══════════════════ HEADER identity + sign out ══════════════════ */
 .who{position:relative}
 .whobtn{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid transparent;
-  border-radius:6px;padding:4px 8px 4px 5px;cursor:pointer;color:var(--ink2);
+  border-radius:var(--rad-2);padding:4px 8px 4px 5px;cursor:pointer;color:var(--ink2);
   font:500 11.5px/1 var(--ui);transition:background .13s,border-color .13s}
 .whobtn:hover,.whobtn[aria-expanded=true]{background:var(--hi);border-color:var(--rule)}
 .whobtn .cv{font-size:8px;color:var(--ink3)}
@@ -918,7 +931,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 
 /* ── confirm drawer (Shell.confirm) ── */
 .opline{font-family:var(--data);font-size:9.5px;letter-spacing:.06em;color:var(--ink3);
-  border:1px solid var(--rule);border-radius:3px;padding:3px 8px;display:inline-block;margin-bottom:12px}
+  border:1px solid var(--rule);border-radius:var(--rad-1);padding:3px 8px;display:inline-block;margin-bottom:12px}
 .opline b{color:var(--ink3);font-weight:600}
 .dwbody{font-size:13px;line-height:1.6;color:var(--ink2)}
 .dw-p{margin:0 0 10px}
@@ -934,7 +947,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    Both are gone — every realm now has the header command bar, and nothing renders these. The
    rules are deleted rather than kept "just in case": dead CSS is the one kind of rot no audit
    in this package can see, because it never appears on screen to be measured. */
-.pal-retired{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:5px 8px;
+.pal-retired{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:5px 8px;
   cursor:pointer;color:var(--ink3);display:flex;align-items:center;transition:color .13s,border-color .13s}
 .pal:hover{color:var(--ink2);border-color:var(--rule2)}
 .pal kbd{font-family:var(--data);font-size:10px;letter-spacing:.04em}
@@ -944,18 +957,18 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .pwrap{position:fixed;inset:0;background:rgba(6,9,11,.62);backdrop-filter:blur(3px);z-index:200;
   display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
 .pwrap[hidden]{display:none}
-.pbox{width:min(560px,92vw);background:var(--raised);border:1px solid var(--rule2);border-radius:10px;
+.pbox{width:min(560px,92vw);background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-3);
   box-shadow:0 24px 60px -14px rgba(0,0,0,.85);overflow:hidden}
 .pbox input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--rule);
   color:var(--ink);font:500 15px/1 var(--ui);padding:16px 18px}
 .pbox input:focus{outline:none}
 .plist{max-height:min(52vh,420px);overflow:auto;padding:6px}
-.pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;
+.pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rad-2);cursor:pointer;
   font-size:13px;color:var(--ink2)}
 .pitem[aria-selected=true]{background:var(--hi);color:var(--ink)}
 .pitem .pk{font-family:var(--data);font-size:9px;letter-spacing:.07em;color:var(--ink3);
-  border:1px solid var(--rule);border-radius:3px;padding:2px 6px;margin-left:auto}
-.pitem .pi{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+  border:1px solid var(--rule);border-radius:var(--rad-1);padding:2px 6px;margin-left:auto}
+.pitem .pi{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .pnone{padding:22px;text-align:center;font-size:12.5px;color:var(--ink3)}
 
 /* ── the editor is collapsible: at full height it is 415px, which pushed the Track — the
@@ -965,11 +978,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .idsum:hover{background:var(--sunk)}
 .idsum .st{font:600 15px/1.2 var(--ui);color:var(--ink);letter-spacing:-.01em}
 .idsum .seg2{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
-.idsum .seg2 i{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none}
+.idsum .seg2 i{width:7px;height:7px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .idsum .seg2 b{color:var(--ink2);font-weight:600}
 .idsum .sp{margin-left:auto}
 .idsum .ed{font:600 10.5px/1 var(--data);letter-spacing:.07em;color:var(--ink3);
-  border:1px solid var(--rule2);border-radius:4px;padding:6px 10px;background:var(--sunk)}
+  border:1px solid var(--rule2);border-radius:var(--rad-2);padding:6px 10px;background:var(--sunk)}
 .idsum:hover .ed{color:var(--ink);border-color:var(--ink4)}
 .identity.collapsed .idbody{display:none}
 .identity:not(.collapsed) .idsum{display:none}
@@ -989,10 +1002,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bans{display:flex;flex-direction:column;gap:6px}
 .ban{display:grid;grid-template-columns:78px 40px minmax(0,1fr) 118px;gap:11px;align-items:center;
   background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
-  border-radius:var(--rad);padding:7px 12px 7px 11px}
+  border-radius:var(--rad-2);padding:7px 12px 7px 11px}
 .ban:focus-within{border-color:var(--rule2);border-left-color:var(--c)}
 .ban .bl{font-family:var(--data);font-size:9.5px;letter-spacing:.09em;color:var(--c);font-weight:600}
-.ban .bthumb{height:24px;border-radius:3px;border:1px dashed var(--rule2);display:grid;place-items:center;
+.ban .bthumb{height:24px;border-radius:var(--rad-1);border:1px dashed var(--rule2);display:grid;place-items:center;
   font-family:var(--data);font-size:8px;color:var(--ink3);letter-spacing:.05em}
 .ban .bthumb.has{border-style:solid;border-color:var(--c);
   background:linear-gradient(120deg,var(--c),transparent 140%);opacity:.85}
@@ -1007,7 +1020,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    pulled the eye harder than the items they act on. Compact and right-aligned; the primary
    still reads as primary, just at card scale. */
 .bcard .actions{display:flex;gap:6px;justify-content:flex-end;margin-top:9px}
-.bcard .actions button{flex:none;padding:5px 11px;font-size:10.5px;border-radius:4px}
+.bcard .actions button{flex:none;padding:5px 11px;font-size:10.5px;border-radius:var(--rad-2)}
 .bcard .actions button:not(.go){background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
 .bcard .actions button:not(.go):hover{color:var(--danger-ink);border-color:var(--danger-edge)}
 
@@ -1016,7 +1029,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    while expanded, so the editor was a one-way door that survived a reload. Every collapsible
    thing on this page now has a control visible in BOTH states. */
 .idclose{display:flex;align-items:center;gap:6px;background:var(--sunk);border:1px solid var(--rule2);
-  border-radius:5px;color:var(--ink3);cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.09em;
+  border-radius:var(--rad-2);color:var(--ink3);cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.09em;
   padding:7px 11px;transition:color .13s,border-color .13s,background .13s}
 .idclose:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .idclose span{font-size:7px;opacity:.7}
@@ -1025,7 +1038,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
    reads the same way everywhere. The values always swapped correctly; nothing said so. */
 .draftnote{display:none;align-items:center;gap:8px;margin-bottom:12px;padding:9px 12px;
-  background:rgba(95,212,232,.06);border:1px dashed var(--staged);border-radius:var(--rad);
+  background:rgba(95,212,232,.06);border:1px dashed var(--staged);border-radius:var(--rad-2);
   font-size:12px;color:var(--ink2)}
 .draftnote b{color:var(--staged);font-weight:600}
 .identity.editing-draft .draftnote{display:flex}
@@ -1074,12 +1087,12 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 
 /* A staged item that ALSO outlives the season needs both facts visible. The badge keeps
    carrying staging state; the conflict gets its own mark rather than overloading a word. */
-.warnmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+.warnmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:var(--rad-round);
   border:1.5px solid var(--warn);color:var(--warn);font:700 10px/1 var(--data);
   margin-right:6px;vertical-align:1px;cursor:help}
 /* "NOT LIVE" had two causes — staged against the live season, or belonging to the staged
    NEXT season — and the manifest showed both identically. */
-.nextmark{color:var(--staged);border:1px solid var(--staged);border-radius:3px;padding:1px 5px;
+.nextmark{color:var(--staged);border:1px solid var(--staged);border-radius:var(--rad-1);padding:1px 5px;
   font-size:8.5px;letter-spacing:.07em}
 
 /* ══════════ SCRUBBER — figure/ground the right way round ══════════
@@ -1089,14 +1102,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .smask{position:absolute;top:0;bottom:0;background:rgba(8,11,14,.72);pointer-events:none;z-index:3}
 .smask.l{left:0}
 .winbox{position:absolute;top:0;bottom:0;z-index:4;cursor:grab;
-  border:1px solid var(--patch);border-radius:3px;
+  border:1px solid var(--patch);border-radius:var(--rad-1);
   box-shadow:0 0 0 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.06);
   background:rgba(242,194,48,.06);touch-action:none}
 .winbox:active{cursor:grabbing}
 /* Grips are attached to the window's own edges and are a real 11px target, not a 1px line. */
 .winbox .wh{position:absolute;top:0;bottom:0;width:11px;cursor:ew-resize;touch-action:none;
   display:grid;place-items:center}
-.winbox .wh::before{content:"";width:3px;height:16px;border-radius:2px;background:var(--patch);
+.winbox .wh::before{content:"";width:3px;height:16px;border-radius:var(--rad-1);background:var(--patch);
   box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 .winbox .wh:hover::before,.winbox .wh:active::before{height:22px;background:#FFDF6B}
 .winbox .wh.l{left:-6px}
@@ -1119,10 +1132,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* The caption is a GUTTER label, outside the scrubbable strip — it used to sit inside it,
    so the window box slid over the word and at full width hid it completely. */
 .scrub{display:flex;align-items:stretch;gap:10px;height:44px;margin-bottom:10px;
-  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:5px 7px}
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:5px 7px}
 .scrub-label{flex:none;align-self:center;font-family:var(--data);font-size:9px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--ink3);padding-right:2px}
-.scrub-track{position:relative;flex:1;min-width:0;overflow:hidden;border-radius:3px;
+.scrub-track{position:relative;flex:1;min-width:0;overflow:hidden;border-radius:var(--rad-1);
   background:rgba(0,0,0,.28);cursor:crosshair}
 
 /* ══════════ DEADLINE RAIL — everything that applies to EVERY lane ══════════
@@ -1147,7 +1160,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   margin-left:var(--plot-l);margin-right:1px;
   min-height:52px;margin-bottom:6px;padding-top:4px}
 .dflag,.dspan{position:absolute;top:0;transform:translateX(-1px);display:flex;align-items:center;gap:6px;
-  background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:4px;
+  background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:var(--rad-2);
   padding:3px 7px;cursor:ew-resize;white-space:nowrap;color:var(--c,var(--ink3));
   font-family:var(--data);font-size:9px;letter-spacing:.08em;line-height:1.4;touch-action:none;
   box-shadow:0 2px 8px -4px rgba(0,0,0,.8)}
@@ -1207,13 +1220,13 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .detcell{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
 .tiers{display:inline-flex;gap:3px}
 .tiers b{font-family:var(--data);font-size:8.5px;letter-spacing:.06em;font-weight:700;
-  border-radius:2px;padding:2px 5px;line-height:1.3}
+  border-radius:var(--rad-1);padding:2px 5px;line-height:1.3}
 .t-leg{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
 .t-myth{background:rgba(255,52,48,.15);color:#FF6B67;box-shadow:inset 0 0 0 1px rgba(255,52,48,.35)}
 .t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
 .mtable .det .dsub{font-size:12px;color:var(--ink3)}
 .mtable .det .none{color:var(--ink3);font-style:italic}
-.thumb{font-family:var(--data);font-size:8.5px;letter-spacing:.05em;padding:1px 5px;border-radius:2px;
+.thumb{font-family:var(--data);font-size:8.5px;letter-spacing:.05em;padding:1px 5px;border-radius:var(--rad-1);
   margin-left:auto;white-space:nowrap}
 .thumb.ok{color:var(--ok);background:rgba(61,220,151,.1)}
 .thumb.no{color:var(--ink3);background:rgba(255,255,255,.04)}
@@ -1223,7 +1236,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    colour in the bot. Colour is familiarity: the chip and the bar it filters must match. */
 .chipset{display:contents}
 .chip.topic{display:inline-flex;align-items:center;gap:7px}
-.chip.topic i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;
+.chip.topic i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none;
   box-shadow:0 0 0 1px rgba(0,0,0,.4)}
 .chip.topic:hover{border-color:var(--c);color:var(--ink)}
 .chip.topic[aria-pressed=true]{background:color-mix(in srgb,var(--c) 16%,transparent);
@@ -1243,7 +1256,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .xhair::before{content:"";position:absolute;top:var(--xtop,60px);bottom:0;left:0;width:1px;
   background:linear-gradient(180deg,rgba(232,237,241,.5),rgba(232,237,241,.12))}
 .xd{position:absolute;top:calc(var(--xtop,60px) - 26px);left:0;white-space:nowrap;
-  background:var(--raised);border:1px solid var(--rule2);border-radius:5px;padding:3px 9px;
+  background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 9px;
   box-shadow:0 6px 18px -8px rgba(0,0,0,.9);display:flex;align-items:baseline;gap:8px}
 .xd b{font-family:var(--data);font-size:10.5px;color:var(--ink);font-weight:600;letter-spacing:.03em}
 .xd i{font-style:normal;font-size:10px;color:var(--ink3)}
@@ -1256,34 +1269,34 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    session's identity should say WHO you are, WHAT you may do, and WHAT you would lose by
    leaving — the staged-changes count is the one fact that makes Sign out a real decision. */
 .umenu{position:absolute;top:calc(100% + 8px);right:0;width:274px;background:var(--raised);
-  border:1px solid var(--rule2);border-radius:11px;z-index:60;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:60;overflow:hidden;
   box-shadow:0 20px 48px -14px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03)}
 .umenu[hidden]{display:none}
 .uhead{display:flex;gap:11px;align-items:center;padding:14px 14px 13px;
   background:linear-gradient(180deg,rgba(255,255,255,.035),transparent)}
-.uav{position:relative;width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;
+.uav{position:relative;width:38px;height:38px;border-radius:var(--rad-round);flex:none;display:grid;place-items:center;
   background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
 .uav b{font:700 15px/1 var(--ui);color:var(--ink);letter-spacing:-.02em}
-.uav .pres{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;
+.uav .pres{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:var(--rad-round);
   background:var(--ok);border:2.5px solid var(--raised)}
 .uinfo{min-width:0;display:flex;flex-direction:column;gap:3px}
 .uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
 .uinfo .nm{font:600 14px/1.2 var(--ui);color:var(--ink);overflow:hidden;text-overflow:ellipsis}
 .rolebadge{flex:none;font:700 8px/1 var(--data);letter-spacing:.1em;color:var(--patch);
-  border:1px solid rgba(242,194,48,.45);background:rgba(242,194,48,.1);border-radius:3px;padding:2.5px 5px}
+  border:1px solid rgba(242,194,48,.45);background:rgba(242,194,48,.1);border-radius:var(--rad-1);padding:2.5px 5px}
 .uinfo .id{font-family:var(--data);font-size:10px;color:var(--ink3);letter-spacing:.02em;
   overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .usec{padding:5px;border-top:1px solid var(--rule)}
 .usec.last{background:rgba(255,107,107,.03)}
 .umenu .mi{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;
-  border-radius:7px;color:var(--ink2);cursor:pointer;font:500 12.5px/1 var(--ui);padding:9px 9px;text-align:left}
+  border-radius:var(--rad-2);color:var(--ink2);cursor:pointer;font:500 12.5px/1 var(--ui);padding:9px 9px;text-align:left}
 .umenu .mi svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;
   stroke-linecap:round;stroke-linejoin:round;opacity:.75}
 .umenu .mi:hover{background:var(--hi);color:var(--ink)}
 .umenu .mi:hover svg{opacity:1}
 .umenu .mi kbd{margin-left:auto;font-family:var(--data);font-size:9px;color:var(--ink3);
-  border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:2px 5px}
+  border:1px solid var(--rule);border-bottom-width:2px;border-radius:var(--rad-1);padding:2px 5px}
 .umenu .mi .mnote{margin-left:auto;font-family:var(--data);font-size:9.5px;color:var(--ink3)}
 .umenu .mi.danger{color:var(--danger-ink)}
 .umenu .mi.danger:hover{background:rgba(255,107,107,.12)}
@@ -1297,7 +1310,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* 1. FOCUS. Every interactive element gets a visible ring. Not one had been checked all
       session, which means the page was unusable by keyboard and nobody would have known. */
 :where(button,a,input,select,[tabindex]):focus-visible{
-  outline:2px solid var(--patch);outline-offset:2px;border-radius:4px}
+  outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-2)}
 .bar:focus-visible,.pt:focus-visible{outline:2px solid var(--patch);outline-offset:3px}
 .dflag:focus-visible,.dspan:focus-visible{outline:2px solid var(--patch);outline-offset:3px;z-index:5}
 #ruler span:focus-visible{outline:2px solid var(--patch);outline-offset:1px}
@@ -1326,7 +1339,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .rack{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px;padding:14px 16px}
 .rcard{display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;
   background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--c);
-  border-radius:var(--rad);padding:13px 14px;color:inherit;transition:border-color .14s,background .14s}
+  border-radius:var(--rad-2);padding:13px 14px;color:inherit;transition:border-color .14s,background .14s}
 .rcard:hover{background:var(--desk);border-color:var(--rule2);border-left-color:var(--c)}
 .rcard[aria-pressed=true]{background:color-mix(in srgb,var(--c) 12%,var(--sunk));border-color:var(--c)}
 .rcard.empty{opacity:.5}
@@ -1338,7 +1351,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    the count already does. A weapon marked `bad` has at least one build with a defect. */
 .rlist{display:flex;flex-wrap:wrap;gap:5px;min-height:22px;align-content:flex-start}
 .rw{font-size:11px;color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
-  border-radius:3px;padding:2px 7px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  border-radius:var(--rad-1);padding:2px 7px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .rw.bad{border-color:var(--danger-edge);color:var(--warn)}
 .rmore{font-family:var(--data);font-size:9.5px;color:var(--ink3);align-self:center;padding-left:2px}
 .rnone{font-size:11px;color:var(--ink3);font-style:italic}
@@ -1351,7 +1364,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 
 .cov{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px;padding:14px 16px}
 .ccard{display:flex;flex-direction:column;gap:9px;text-align:left;cursor:pointer;color:inherit;
-  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad);padding:13px 14px;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:13px 14px;
   transition:border-color .14s,background .14s}
 .ccard:hover{background:var(--desk);border-color:var(--rule2)}
 .ccard[aria-pressed=true]{border-color:var(--warn);background:rgba(255,122,69,.07)}
@@ -1361,7 +1374,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .cn{font-family:var(--data);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 .cn.bad{color:var(--warn)} .cn.ok{color:var(--ok)}
 .chint{font-size:11.5px;color:var(--ink3);line-height:1.45}
-.cmeter{height:4px;border-radius:2px;background:var(--rule);overflow:hidden}
+.cmeter{height:4px;border-radius:var(--rad-1);background:var(--rule);overflow:hidden}
 /* 🔴 GREEN WAS THE DEFAULT AND THE OVERRIDE NEVER MATCHED. `.cn.bad ~ * .cmeter i` asks for a
    `.cmeter` DESCENDANT of a later sibling; `.cmeter` IS the sibling, so the rule fired on nothing
    and every meter on the Repairs view painted success-green — including the one whose bar means
@@ -1369,7 +1382,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    The card writes the state as a class now (opt in, never out-specify), and the three states are
    real distinctions: a FAULT is orange, AGE is neutral because time passing is not a fault, and
    an empty meter has no colour to argue about. */
-.cmeter i{display:block;height:100%;background:var(--rule2);border-radius:2px}
+.cmeter i{display:block;height:100%;background:var(--rule2);border-radius:var(--rad-1)}
 .cmeter.bad i{background:var(--warn)}
 .cmeter.age i{background:var(--ink4)}
 
@@ -1380,7 +1393,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .expnone{margin:0;font-size:11.5px;color:var(--ink3);line-height:1.5}
 .explist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
 .explist li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:8px 10px;background:var(--sunk);border:1px solid var(--rule);border-radius:6px}
+  padding:8px 10px;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2)}
 .exp-s{font:600 11.5px/1 var(--data);color:var(--ink)}
 .exp-m{flex:1 1 auto;font:11px/1.3 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
 
@@ -1403,45 +1416,45 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   background:var(--sunk);flex-wrap:wrap}
 .aflab{font-family:var(--data);font-size:9.5px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase}
 .afchip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);
-  background:var(--raised);border:1px solid var(--rule2);border-radius:20px;padding:3px 10px}
-.afchip i{width:7px;height:7px;border-radius:2px;background:var(--c,var(--ink3))}
+  background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-pill);padding:3px 10px}
+.afchip i{width:7px;height:7px;border-radius:var(--rad-1);background:var(--c,var(--ink3))}
 .afchip.warn{color:var(--warn);border-color:var(--danger-edge)}
 .afchip.warn i{background:var(--warn)}
 .afn{font-family:var(--data);font-size:10px;color:var(--ink3);margin-left:auto;font-variant-numeric:tabular-nums}
-.afclear{background:transparent;border:1px solid var(--rule2);border-radius:4px;color:var(--ink3);
+.afclear{background:transparent;border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink3);
   cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.08em;padding:5px 9px}
 .afclear:hover{color:var(--ink);border-color:var(--ink4)}
 
 .wname{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtable .code{font-size:11px;color:var(--ink3);letter-spacing:.03em}
 .mtable .none{color:var(--ink3);font-style:italic}
-.metatag{color:var(--patch);border:1px solid rgba(242,194,48,.4);border-radius:2px;padding:1px 4px;
+.metatag{color:var(--patch);border:1px solid rgba(242,194,48,.4);border-radius:var(--rad-1);padding:1px 4px;
   font-size:8px;letter-spacing:.08em}
-.health{font-family:var(--data);font-size:10px;letter-spacing:.04em;padding:3px 8px;border-radius:3px;
+.health{font-family:var(--data);font-size:10px;letter-spacing:.04em;padding:3px 8px;border-radius:var(--rad-1);
   white-space:nowrap}
 .health.ok{color:var(--ok);background:rgba(61,220,151,.1)}
 .health.bad{color:var(--warn);background:rgba(255,122,69,.12);cursor:help}
 .bdg{display:inline-block;font-family:var(--data);font-size:8.5px;font-weight:700;letter-spacing:.07em;
-  border-radius:2px;padding:2px 5px;margin-left:4px}
+  border-radius:var(--rad-1);padding:2px 5px;margin-left:4px}
 .bdg.rank{color:var(--patch);box-shadow:inset 0 0 0 1px rgba(242,194,48,.45)}
 .bdg.dmz{color:#5FA8D8;box-shadow:inset 0 0 0 1px rgba(95,168,216,.45)}
 .bdg.toxic{color:var(--del);box-shadow:inset 0 0 0 1px rgba(255,107,107,.45)}
 .dwissues{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
 .dwissues h6{margin:0 0 9px;font:700 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--warn)}
-.dwissue{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:5px;
+.dwissue{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:var(--rad-2);
   background:rgba(255,122,69,.07);border-left:2px solid var(--warn);margin-bottom:6px}
 .dwissue b{font-size:12px;color:var(--ink);font-weight:600}
 .dwissue span{font-size:11.5px;color:var(--ink3)}
 .dwfield{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
 .dwfield label{font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
-.dwfield input{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;color:var(--ink);
+.dwfield input{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);color:var(--ink);
   font:500 13px/1 var(--ui);padding:9px 11px}
 .dwfield input:focus{outline:none;border-color:var(--patch)}
 .dwcheck{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--ink2);cursor:pointer}
 .bulkbar{display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid var(--rule);
   background:var(--sunk);font-size:12.5px;color:var(--ink2)}
 .bulkbar b{color:var(--staged);font-family:var(--data)}
-.bulkbar button{background:transparent;border:1px solid var(--rule2);border-radius:5px;color:var(--ink2);
+.bulkbar button{background:transparent;border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink2);
   cursor:pointer;font:500 11.5px/1 var(--ui);padding:6px 11px}
 .bulkbar button:hover{color:var(--ink);border-color:var(--ink4)}
 .bulkbar .x{margin-left:auto;border:none;color:var(--ink3)}
@@ -1455,8 +1468,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    spatial editor instead of a text input. Dragging stages loadouts.setRank. */
 .tbcats{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px 0}
 .tbcat{display:inline-flex;align-items:center;gap:7px;background:var(--sunk);cursor:pointer;
-  border:1px solid var(--rule);border-radius:20px;color:var(--ink3);font:500 11.5px/1 var(--ui);padding:7px 12px}
-.tbcat i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+  border:1px solid var(--rule);border-radius:var(--rad-pill);color:var(--ink3);font:500 11.5px/1 var(--ui);padding:7px 12px}
+.tbcat i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .tbcat b{font-family:var(--data);font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .tbcat:hover{color:var(--ink);border-color:var(--rule2)}
 .tbcat.on{background:color-mix(in srgb,var(--c,var(--patch)) 15%,transparent);
@@ -1464,11 +1477,11 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .tbcat.on b{color:var(--ink2)}
 
 .trows{display:flex;flex-direction:column;gap:9px;padding:13px 16px}
-.trow{border:1px solid var(--rule);border-radius:var(--rad);background:var(--sunk);overflow:hidden}
+.trow{border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk);overflow:hidden}
 .trow-h{display:flex;align-items:center;gap:11px;padding:8px 12px;border-bottom:1px solid var(--rule3)}
 .trow-k{font:700 15px/1 var(--data);letter-spacing:.04em;width:26px;text-align:center;flex:none}
 .trow-n{font-family:var(--data);font-size:10px;color:var(--ink3);border:1px solid var(--rule);
-  border-radius:9px;padding:1px 7px;font-variant-numeric:tabular-nums}
+  border-radius:var(--rad-3);padding:1px 7px;font-variant-numeric:tabular-nums}
 .trow-note{font-size:11px;color:var(--ink3)}
 /* S reads as the top of a podium, not merely the first row of a list. */
 .t-S{background:linear-gradient(90deg,rgba(242,194,48,.09),transparent 42%)}
@@ -1482,19 +1495,19 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 .bchip{display:flex;flex-direction:column;gap:4px;min-width:158px;cursor:grab;
   background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c);
-  border-radius:6px;padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s}
+  border-radius:var(--rad-2);padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s}
 .bchip:hover{border-color:var(--c);transform:translateY(-2px);
   box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
 .bchip.dragging{opacity:.6;transform:rotate(-1.5deg) scale(.98);cursor:grabbing}
 .bc-top{display:flex;align-items:center;gap:7px}
 .bc-w{font:600 12.5px/1.2 var(--ui);color:var(--ink)}
 .bc-meta{font:700 7.5px/1 var(--data);letter-spacing:.09em;color:var(--patch);
-  border:1px solid rgba(242,194,48,.45);border-radius:2px;padding:2px 4px}
+  border:1px solid rgba(242,194,48,.45);border-radius:var(--rad-1);padding:2px 4px}
 .bc-b{font-size:11px;color:var(--ink3)}
 .bc-foot{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:9px;
   letter-spacing:.06em;color:var(--ink3)}
 .bc-dmz{color:#5FA8D8} .bc-tox{color:var(--del);font-size:11px}
-.bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:9px;
+.bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:var(--rad-3);
   padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help}
 
 /* ══════════ REPAIR QUEUE ══════════ */
@@ -1504,16 +1517,16 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .chip.go:hover{background:var(--staged);color:var(--on-accent)}
 .rep{display:flex;flex-direction:column;gap:6px;margin-top:13px}
 .repr{display:flex;align-items:center;gap:12px;background:var(--sunk);border:1px solid var(--rule);
-  border-left:3px solid var(--c);border-radius:5px;padding:9px 12px}
+  border-left:3px solid var(--c);border-radius:var(--rad-2);padding:9px 12px}
 .repw{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);min-width:0;flex:1}
-.repw i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none}
+.repw i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .repw em{font-style:normal;font-size:11.5px;color:var(--ink3)}
 .repd{display:flex;align-items:center;gap:8px;font-family:var(--data);font-size:11px;flex:none}
 .repd .was{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--rule2)}
 .repd .now{color:var(--ok)}
 .repd .arw{color:var(--ink3)}
 .repf{color:var(--ink3);font-size:9.5px;letter-spacing:.05em}
-.repin{background:var(--paper);border:1px solid var(--rule2);border-radius:4px;color:var(--ink);
+.repin{background:var(--paper);border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink);
   font:400 11.5px/1 var(--data);padding:6px 9px;min-width:210px}
 .repin:focus{outline:none;border-color:var(--staged)}
 
@@ -1597,7 +1610,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 .skel{display:flex;flex-direction:column;gap:9px;padding:14px 12px}
 .skel-r{display:flex;gap:14px;align-items:center;min-height:22px}
-.skel-r i{height:11px;border-radius:3px;display:block;
+.skel-r i{height:11px;border-radius:var(--rad-1);display:block;
   background:linear-gradient(90deg,var(--sunk) 0%,var(--raised) 50%,var(--sunk) 100%);
   background-size:220% 100%;animation:skel 1.4s var(--ease) infinite;animation-delay:var(--d,0ms)}
 @keyframes skel{to{background-position:-220% 0}}
@@ -1615,19 +1628,19 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    normal, because a reader who thinks it is broken reloads MID-WRITE. */
 .is-slow::before{content:attr(data-slow);position:absolute;left:50%;top:12px;transform:translateX(-50%);
   z-index:7;font:500 11px/1 var(--ui);color:var(--ink2);background:var(--raised);
-  border:1px solid var(--rule2);border-radius:999px;padding:7px 12px;white-space:nowrap;
+  border:1px solid var(--rule2);border-radius:var(--rad-pill);padding:7px 12px;white-space:nowrap;
   box-shadow:0 6px 20px -10px rgba(0,0,0,.9)}
 
 /* Rule 4 — an error names WHAT failed, WHAT it means, and the ONE action. Three parts, all
    required: an error missing any of them is the one that gets screenshotted and forwarded. */
 .failbox{margin:14px 12px;border:1px solid var(--danger-edge);border-left:3px solid var(--danger-ink);
-  border-radius:var(--rad);background:color-mix(in srgb,var(--danger-ink) 6%,transparent);padding:14px 16px}
+  border-radius:var(--rad-2);background:color-mix(in srgb,var(--danger-ink) 6%,transparent);padding:14px 16px}
 .fail-h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .fail-k{font:700 9.5px/1 var(--data);letter-spacing:.16em;color:var(--danger-ink);
-  border:1px solid var(--danger-edge);border-radius:3px;padding:4px 6px}
+  border:1px solid var(--danger-edge);border-radius:var(--rad-1);padding:4px 6px}
 .fail-h b{font:600 14px/1.2 var(--ui);color:var(--ink)}
 .failbox p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink2);max-width:70ch}
-.fail-d{margin:9px 0 0;padding:8px 10px;background:var(--sunk);border-radius:5px;
+.fail-d{margin:9px 0 0;padding:8px 10px;background:var(--sunk);border-radius:var(--rad-2);
   font:11px/1.5 var(--mono);color:var(--ink3);overflow-x:auto;white-space:pre-wrap}
 .fail-a{margin-top:11px}
 
@@ -1635,8 +1648,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    and the failure NAMES the op. A percentage alone cannot say which one broke, and at that
    moment "which one" is the only question worth answering. */
 .prog{padding:12px 14px}
-.prog-b{height:4px;border-radius:999px;background:var(--sunk);overflow:hidden}
-.prog-b i{display:block;height:100%;background:var(--patch);border-radius:999px;
+.prog-b{height:4px;border-radius:var(--rad-pill);background:var(--sunk);overflow:hidden}
+.prog-b i{display:block;height:100%;background:var(--patch);border-radius:var(--rad-pill);
   transition:width var(--dur-2) var(--ease)}
 .prog.bad .prog-b i{background:var(--danger-ink)}
 .prog-t{margin-top:8px;font:500 11.5px/1.4 var(--data);color:var(--ink2)}
@@ -1650,7 +1663,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .netbar.offline{background:color-mix(in srgb,var(--warn) 9%,var(--raised))}
 .netbar.expired{background:color-mix(in srgb,var(--patch) 9%,var(--raised))}
 .net-k{font:700 9.5px/1 var(--data);letter-spacing:.16em;color:var(--ink2);
-  border:1px solid var(--rule2);border-radius:3px;padding:4px 6px}
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:4px 6px}
 .netbar b{color:var(--ink)}
 .net-m{color:var(--ink2);flex:1 1 320px;min-width:0}
 
@@ -1738,7 +1751,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* ── 10.6 EDGE STATES: name what is missing, why, and the one action that fixes it ── */
 .estate{display:flex;flex-direction:column;align-items:center;gap:11px;padding:38px 22px;text-align:center}
-.estate .eicon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+.estate .eicon{width:34px;height:34px;border-radius:var(--rad-3);display:grid;place-items:center;
   background:var(--sunk);border:1px dashed var(--rule2);color:var(--ink3);font-size:15px}
 .estate h4{margin:0;font:600 14px/1.3 var(--ui);color:var(--ink2)}
 .estate p{margin:0;font-size:12.5px;color:var(--ink3);max-width:44ch;line-height:1.5}
@@ -1766,7 +1779,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .nstack{display:flex;flex-direction:column;gap:9px;min-height:120px}
 .nscard{display:grid;grid-template-columns:26px 1fr auto;gap:11px;align-items:center;
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--c,var(--pn));
-  border-radius:var(--rad);padding:11px 13px;cursor:grab;transition:transform var(--dur-1) var(--ease),
+  border-radius:var(--rad-2);padding:11px 13px;cursor:grab;transition:transform var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
 .nscard:hover{background:var(--hi);border-color:var(--rule2);transform:translateY(-1px)}
 .nscard:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
@@ -1784,11 +1797,11 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nsmeta{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .nspin{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
-  color:var(--on-accent);background:var(--c,var(--pn));border-radius:3px;padding:3px 6px}
+  color:var(--on-accent);background:var(--c,var(--pn));border-radius:var(--rad-1);padding:3px 6px}
 .nschan{font:500 var(--t-xs)/1 var(--data);color:var(--ink3);background:var(--sunk);
-  border:1px solid var(--rule);border-radius:3px;padding:4px 7px;white-space:nowrap}
+  border:1px solid var(--rule);border-radius:var(--rad-1);padding:4px 7px;white-space:nowrap}
 .nsgrip{color:var(--ink3);letter-spacing:1px;font-size:11px;line-height:1;user-select:none}
-.nsempty{border:1px dashed var(--rule2);border-radius:var(--rad);padding:26px;text-align:center;
+.nsempty{border:1px dashed var(--rule2);border-radius:var(--rad-2);padding:26px;text-align:center;
   color:var(--ink3);font-size:var(--t-sm)}
 
 /* The live preview beside the stack — this is what the player actually gets. */
@@ -1801,7 +1814,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * Windows on one axis. A gap in coverage is the finding this view exists for,
  * and it is invisible in a chronological list. */
 .at{padding:16px}
-.atgrid{position:relative;border:1px solid var(--rule);border-radius:var(--rad);background:var(--sunk);
+.atgrid{position:relative;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk);
   overflow:hidden}
 .atruler{display:flex;border-bottom:1px solid var(--rule);background:var(--paper)}
 .atruler span{flex:1;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);padding:7px 0 6px;
@@ -1810,7 +1823,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .atrow{position:relative;height:38px;border-top:1px solid var(--rule3)}
 .atrow:first-of-type{border-top:0}
 .atrow:hover{background:var(--hi)}
-.atbar{position:absolute;top:7px;height:24px;border-radius:4px;display:flex;align-items:center;
+.atbar{position:absolute;top:7px;height:24px;border-radius:var(--rad-2);display:flex;align-items:center;
   padding:0 9px;font:600 var(--t-xs)/1 var(--ui);color:var(--on-accent);background:var(--c,var(--pn));
   min-width:64px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;
   transition:filter var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
@@ -1838,17 +1851,17 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-.mx .mxs i{display:block;width:100%;height:3px;border-radius:2px;background:var(--c);margin:0 0 6px}
+.mx .mxs i{display:block;width:100%;height:3px;border-radius:var(--rad-1);background:var(--c);margin:0 0 6px}
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
 .mxid{display:flex;align-items:center;gap:10px;padding:7px 0}
-.mxav{width:30px;height:30px;border-radius:50%;background:var(--avatar-a);flex-shrink:0;
+.mxav{width:30px;height:30px;border-radius:var(--rad-round);background:var(--avatar-a);flex-shrink:0;
   display:grid;place-items:center;font:700 var(--t-sm)/1 var(--ui);color:var(--ink);text-transform:uppercase}
 .mxn{min-width:0}
 .mxn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink)}
 .mxn span{display:block;font:400 var(--t-micro)/1.3 var(--data);color:var(--ink3);margin-top:1px}
-.mxcell{width:26px;height:26px;border-radius:5px;border:1px solid var(--rule2);background:transparent;
+.mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
 .mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
 .mxcell:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
@@ -1860,7 +1873,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxcell.locked{cursor:not-allowed;opacity:.5}
 .mxcell.locked:hover{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid var(--rule2);color:var(--ink2)}
+  text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
 .mxrole.owner{border-color:var(--patch);color:var(--patch)}
 .mxrole.admin{border-color:var(--info);color:var(--info)}
 .mxrole.editor{border-color:var(--ink3);color:var(--ink3)}
@@ -1870,19 +1883,19 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* ── ACCESS · sessions ─────────────────────────────────────────────────────*/
 .sesslist{display:flex;flex-direction:column;gap:9px;padding:16px}
 .sess{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;
-  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:12px 14px}
+  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:12px 14px}
 .sess:hover{background:var(--hi)}
-.sess .sdot{width:8px;height:8px;border-radius:50%;background:var(--ok);
+.sess .sdot{width:8px;height:8px;border-radius:var(--rad-round);background:var(--ok);
   box-shadow:0 0 0 3px rgba(61,220,151,.16)}
 .sess.stale .sdot{background:var(--ink4);box-shadow:none}
 .sessb b{display:block;font:600 var(--t-md)/1.3 var(--ui);color:var(--ink)}
 .sessb span{display:block;font:400 var(--t-sm)/1.4 var(--data);color:var(--ink3);margin-top:2px}
 .sesscur{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
-  color:var(--ok);border:1px solid var(--ok);border-radius:3px;padding:3px 7px}
+  color:var(--ok);border:1px solid var(--ok);border-radius:var(--rad-1);padding:3px 7px}
 
 /* ── ANALYTICS · health tiles ──────────────────────────────────────────────*/
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:16px}
-.tile{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:15px 16px}
+.tile{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:15px 16px}
 .tile .tl-k{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
 .tile .tl-v{display:block;font:600 var(--t-figure)/1.05 var(--ui);letter-spacing:var(--tr-figure);
@@ -1896,8 +1909,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .ub{display:grid;grid-template-columns:150px 1fr 96px;gap:13px;align-items:center}
 .ub .ubk{font:500 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
-.ub .ubt{height:22px;background:var(--sunk);border-radius:4px;overflow:hidden;position:relative}
-.ub .ubt i{position:absolute;inset:0 auto 0 0;background:var(--ev);border-radius:4px;
+.ub .ubt{height:22px;background:var(--sunk);border-radius:var(--rad-2);overflow:hidden;position:relative}
+.ub .ubt i{position:absolute;inset:0 auto 0 0;background:var(--ev);border-radius:var(--rad-2);
   transition:width var(--dur-3) var(--ease)}
 .ub .ubv{text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
   font-variant-numeric:tabular-nums}
@@ -1909,7 +1922,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .tim{padding:16px}
 .timchart{display:flex;align-items:flex-end;gap:3px;height:190px;padding:0 0 4px;
   border-bottom:1px solid var(--rule)}
-.timb{flex:1;background:var(--ev);border-radius:3px 3px 0 0;min-height:3px;position:relative;
+.timb{flex:1;background:var(--ev);border-radius:var(--rad-1) var(--rad-1) 0 0;min-height:3px;position:relative;
   cursor:pointer;transition:filter var(--dur-1) var(--ease)}
 .timb:hover{filter:brightness(1.3)}
 .timb:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
@@ -1917,15 +1930,15 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .timax{display:flex;gap:3px;margin-top:7px}
 .timax span{flex:1;text-align:center;font:500 var(--t-micro)/1 var(--data);color:var(--ink3)}
 .timleg{display:flex;gap:16px;align-items:center;margin-top:13px;font-size:var(--t-sm);color:var(--ink3)}
-.timleg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.timleg i{display:inline-block;width:9px;height:9px;border-radius:var(--rad-1);margin-right:6px;vertical-align:-1px}
 
 /* ── ANALYTICS · the event river (Manifest) ────────────────────────────────*/
 .rivk{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid var(--rule2);color:var(--ink3)}
+  text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink3)}
 .rivk.change{border-color:var(--info);color:var(--info)}
 .rivk.alert{border-color:var(--warn);color:var(--warn)}
 .rivk.boot{border-color:var(--sched);color:var(--sched)}
-.sev{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ink4);margin-right:8px}
+.sev{display:inline-block;width:7px;height:7px;border-radius:var(--rad-round);background:var(--ink4);margin-right:8px}
 .sev.warn{background:var(--warn)} .sev.err{background:var(--del)} .sev.info{background:var(--info)}
 
 /* ── INDEX · realm chooser ─────────────────────────────────────────────────*/
@@ -1945,7 +1958,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 @media (max-width:720px){ .hgrid{grid-template-columns:1fr}
   .hgrid .hcard,.hgrid .hcard:last-child{grid-column:span 1} }
 .hcard{display:block;text-align:left;background:var(--paper);border:1px solid var(--rule);
-  border-radius:10px;padding:19px 20px 17px;text-decoration:none;position:relative;overflow:hidden;
+  border-radius:var(--rad-3);padding:19px 20px 17px;text-decoration:none;position:relative;overflow:hidden;
   transition:transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),
   background var(--dur-2) var(--ease)}
 .hcard::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,var(--ink4));
@@ -1963,10 +1976,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   letter-spacing:var(--tr-h1)}
 .hcard .hf span{font:400 var(--t-sm)/1 var(--ui);color:var(--ink3)}
 .hcard .hf .att{margin-left:auto;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:3px;padding:3px 6px}
+  text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:var(--rad-1);padding:3px 6px}
 .hcard .hf .att.stg{color:var(--staged);border-color:var(--staged)}
 .hres{display:flex;align-items:center;gap:13px;background:var(--paper);border:1px solid var(--rule);
-  border-left:3px solid var(--staged);border-radius:var(--rad);padding:14px 17px;margin-top:22px;flex-wrap:wrap}
+  border-left:3px solid var(--staged);border-radius:var(--rad-2);padding:14px 17px;margin-top:22px;flex-wrap:wrap}
 .hres b{font:600 var(--t-md)/1 var(--ui);color:var(--ink)}
 .hres span{font-size:var(--t-sm);color:var(--ink3)}
 .hres .sp{flex:1}
@@ -1979,14 +1992,14 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvlist{border-right:1px solid var(--rule);padding:12px;display:flex;flex-direction:column;gap:7px}
 @media (max-width:940px){ .rvlist{border-right:0;border-bottom:1px solid var(--rule)} }
 .rvop{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;text-align:left;
-  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:11px 12px;
+  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:11px 12px;
   cursor:pointer;transition:all var(--dur-1) var(--ease);width:100%}
 .rvop:hover{background:var(--hi);border-color:var(--rule2)}
 .rvop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .rvop[aria-pressed=true]{border-color:var(--staged);background:var(--hi);
   box-shadow:inset 3px 0 0 var(--staged)}
 .rvop .rvt{font:600 var(--t-micro)/1 var(--data);letter-spacing:.04em;color:var(--ink3);
-  border:1px solid var(--rule2);border-radius:3px;padding:3px 5px}
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:3px 5px}
 .rvop.t3 .rvt{color:var(--del);border-color:var(--danger-edge)}
 .rvop .rvn{min-width:0}
 .rvop .rvn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink);
@@ -1998,7 +2011,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvdet{padding:18px 20px;min-width:0}
 .rvdet h4{font:600 var(--t-xl)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
 .rvdet .rvop-name{font:500 var(--t-sm)/1 var(--data);color:var(--ink3);margin-top:5px;display:block}
-.rvgrid{margin-top:17px;border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden}
+.rvgrid{margin-top:17px;border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden}
 .rvhead{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--sunk);
   border-bottom:1px solid var(--rule)}
 .rvhead span{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
@@ -2011,7 +2024,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvr .rvnow{color:var(--ok);font-weight:600}
 .rvr.del .rvnow{color:var(--danger-ink)}
 .rvexp{display:flex;align-items:center;gap:12px;background:rgba(255,107,107,.07);
-  border:1px solid var(--danger-edge);border-radius:var(--rad);padding:13px 15px;margin-top:16px;flex-wrap:wrap}
+  border:1px solid var(--danger-edge);border-radius:var(--rad-2);padding:13px 15px;margin-top:16px;flex-wrap:wrap}
 .rvexp b{font:600 var(--t-md)/1.35 var(--ui);color:var(--danger-ink)}
 .rvexp p{margin:3px 0 0;font-size:var(--t-sm);color:var(--ink3);line-height:1.5;flex-basis:100%}
 .rvexp.done{background:rgba(61,220,151,.07);border-color:#2E5C46}
@@ -2029,7 +2042,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * STAGING conflict and it deliberately does NOT borrow the Track's 45° hatch, which is
  * reserved for a content conflict (an item outliving its season). */
 .rvcon{display:flex;gap:11px;align-items:flex-start;background:rgba(255,122,69,.08);
-  border:1px solid #5C4030;border-left:3px solid var(--warn);border-radius:var(--rad);
+  border:1px solid #5C4030;border-left:3px solid var(--warn);border-radius:var(--rad-2);
   padding:12px 14px;margin-top:16px}
 .rvcon b{display:block;font:600 var(--t-md)/1.35 var(--ui);color:var(--warn)}
 .rvcon p{margin:4px 0 0;font-size:var(--t-sm);color:var(--ink2);line-height:1.55}
@@ -2041,15 +2054,15 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* ── DOOR · sign-in ────────────────────────────────────────────────────────*/
 .door{min-height:100vh;display:grid;place-items:center;padding:30px}
 .doorcard{width:100%;max-width:430px;background:var(--paper);border:1px solid var(--rule);
-  border-radius:12px;padding:36px 34px 30px;text-align:center}
+  border-radius:var(--rad-3);padding:36px 34px 30px;text-align:center}
 .doormk{display:inline-flex;align-items:center;gap:9px;font:700 var(--t-md)/1 var(--ui);
   letter-spacing:.13em;color:var(--ink2);text-transform:uppercase;margin-bottom:26px}
-.doormk .glyph{width:15px;height:15px;border-radius:4px;background:var(--patch);display:inline-block}
+.doormk .glyph{width:15px;height:15px;border-radius:var(--rad-2);background:var(--patch);display:inline-block}
 .doormk b{color:var(--ink3);font-weight:400}
 .doorcard h1{font:700 var(--t-hero)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
 .doorcard p{font:400 var(--t-md)/1.6 var(--ui);color:var(--ink3);margin:11px 0 26px}
 .dbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
-  background:var(--dsc);color:#fff;border:0;border-radius:var(--rad);padding:0 18px;height:46px;
+  background:var(--dsc);color:#fff;border:0;border-radius:var(--rad-2);padding:0 18px;height:46px;
   font:600 var(--t-md)/1 var(--ui);cursor:pointer;transition:filter var(--dur-1) var(--ease)}
 .dbtn:hover{filter:brightness(1.1)}
 .dbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
@@ -2060,7 +2073,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .dnote svg{width:15px;height:15px;flex-shrink:0;margin-top:2px;fill:none;stroke:var(--ink4);
   stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .dfail{display:flex;gap:9px;text-align:left;background:rgba(255,107,107,.08);
-  border:1px solid var(--danger-edge);border-radius:var(--rad);padding:12px 14px;margin-bottom:20px;
+  border:1px solid var(--danger-edge);border-radius:var(--rad-2);padding:12px 14px;margin-bottom:20px;
   font-size:var(--t-sm);color:var(--danger-ink);line-height:1.5}
 
 /* Entrance for the new view layers, matching the existing three moments. */
@@ -2106,7 +2119,7 @@ body.has-selbar .tray .rounds,body.has-selbar .tray .hint{display:none}
   transform:translateY(-70%) rotate(45deg);transition:transform var(--dur-1) var(--ease)}
 .tray.collapsed .tray-h::after{transform:translateY(-30%) rotate(-135deg)}
 .tray-h:hover::after{border-color:var(--ink)}
-.tray-h:focus-visible{outline:2px solid var(--staged);outline-offset:2px;border-radius:4px}
+.tray-h:focus-visible{outline:2px solid var(--staged);outline-offset:2px;border-radius:var(--rad-2)}
 body:has(.tray.collapsed) main{padding-bottom:90px}
 
 /* ── Analytics: tiles and usage rows are BUTTONS now ──────────────────────
@@ -2128,7 +2141,7 @@ button.tile::after{content:"";position:absolute;right:13px;top:15px;width:6px;he
 button.tile{position:relative}
 button.tile:hover::after,button.tile:focus-visible::after{opacity:1}
 button.ub{width:100%;text-align:left;background:none;border:0;padding:0;font:inherit;cursor:pointer;
-  border-radius:4px;transition:background var(--dur-1) var(--ease)}
+  border-radius:var(--rad-2);transition:background var(--dur-1) var(--ease)}
 button.ub:hover{background:var(--hi)}
 button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .seg.rng button{min-width:42px}
@@ -2136,7 +2149,7 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 /* The evidence list inside a tile's panel — events that produced the number. */
 .evlist{display:flex;flex-direction:column;gap:7px}
 .evrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;width:100%;
-  text-align:left;background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);
+  text-align:left;background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);
   padding:10px 12px;cursor:pointer;transition:all var(--dur-1) var(--ease)}
 .evrow:hover{background:var(--hi);border-color:var(--rule2)}
 .evrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
@@ -2151,14 +2164,14 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
  * header now grants/revokes a scope for everyone and each row has all/none —
  * both tier 2, because N writes that must land together are one changeset. */
 button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;
-  color:var(--ink3);border-radius:4px;transition:color var(--dur-1) var(--ease),
+  color:var(--ink3);border-radius:var(--rad-2);transition:color var(--dur-1) var(--ease),
   background var(--dur-1) var(--ease)}
 button.mxs.mxcol:hover{color:var(--ink);background:var(--hi)}
 button.mxs.mxcol:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .mxn2{display:block;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);margin-top:3px;
   letter-spacing:.04em;font-variant-numeric:tabular-nums}
 button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
-.mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:3px;
+.mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:var(--rad-1);
   color:var(--ink3);font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:4px 7px;cursor:pointer;opacity:0;
   transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
@@ -2172,18 +2185,18 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * A hollow ring rather than a filled check: same colour (topic), different SHAPE. */
 .mx tbody tr[data-role=editor] .mxcell[aria-checked=true]{background:transparent;border-color:var(--c)}
 .mx tbody tr[data-role=editor] .mxcell[aria-checked=true]::after{
-  content:"";width:8px;height:8px;border:2px solid var(--c);border-radius:50%;transform:none}
-.mxlegend{display:inline-block;width:13px;height:13px;border-radius:4px;border:1px solid var(--ink3);
+  content:"";width:8px;height:8px;border:2px solid var(--c);border-radius:var(--rad-round);transform:none}
+.mxlegend{display:inline-block;width:13px;height:13px;border-radius:var(--rad-2);border:1px solid var(--ink3);
   vertical-align:-2px;margin-right:5px;position:relative}
 .mxlegend.ed::after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;
-  border:1.5px solid var(--ink3);border-radius:50%}
+  border:1.5px solid var(--ink3);border-radius:var(--rad-round)}
 
 /* ── Review: one op can leave the changeset ───────────────────────────────
  * Staging four things and being able to commit only all-four-or-none is a receipt,
  * not a review screen. The × REVERTS the op rather than forgetting it. */
 .rvopwrap{position:relative}
 .rvopwrap .rvop{width:100%}
-.rvdrop{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:4px;
+.rvdrop{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:var(--rad-2);
   background:none;border:1px solid transparent;color:var(--ink3);font-size:11px;line-height:1;
   cursor:pointer;opacity:0;transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
@@ -2191,7 +2204,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .rvdrop:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
 .rvdrop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .chint kbd,.dw-p kbd{font-family:var(--data);font-size:var(--t-micro);background:var(--sunk);
-  border:1px solid var(--rule2);border-radius:3px;padding:1px 5px;color:var(--ink2)}
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:1px 5px;color:var(--ink2)}
 
 
 /* ── A status banner is NOT an empty state ────────────────────────────────
@@ -2201,9 +2214,9 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * assumptions; reusing one for a different job inherits them silently. */
 .hbanner{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--ok);
-  border-radius:var(--rad);padding:14px 16px}
+  border-radius:var(--rad-2);padding:14px 16px}
 .hbanner.warn{border-left-color:var(--warn)}
-.hbanner .hbi{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+.hbanner .hbi{width:22px;height:22px;border-radius:var(--rad-round);display:grid;place-items:center;
   background:rgba(61,220,151,.14);color:var(--ok);font-size:12px;line-height:1;flex:none}
 .hbanner.warn .hbi{background:rgba(255,122,69,.14);color:var(--warn)}
 .hbanner h4{font:600 var(--t-md)/1.3 var(--ui);color:var(--ink);margin:0 0 3px}
@@ -2213,7 +2226,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* Hints that name a pointer gesture must also name the keyboard one, so the inline <kbd>
  * needs to read correctly wherever a hint lives. */
 .racknote kbd,.bbar-t kbd,.colnote kbd{font-family:var(--data);font-size:var(--t-micro);
-  background:var(--sunk);border:1px solid var(--rule2);border-radius:3px;padding:1px 5px;
+  background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:1px 5px;
   color:var(--ink2);white-space:nowrap}
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2227,7 +2240,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .dcard.lc{max-width:none}
 .lc-badges{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0}
 .lc-badges span{font:700 var(--t-micro)/1 var(--data);letter-spacing:.08em;color:var(--dc-mute);
-  background:var(--dc-sunk);border-radius:3px;padding:3px 6px}
+  background:var(--dc-sunk);border-radius:var(--rad-1);padding:3px 6px}
 .lc-rule{height:1px;background:var(--dc-rule);margin:10px 0}
 .lc-desc{margin:0 0 10px;padding:2px 0 2px 10px;border-left:3px solid var(--dc-rule);
   color:var(--dc-body);font-size:var(--t-sm);line-height:1.5}
@@ -2236,19 +2249,19 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .lc-att li{display:flex;align-items:baseline;gap:8px;font-size:var(--t-sm);color:var(--dc-body)}
 .lc-att li::before{content:"•";color:var(--dc-dim)}
 .lc-att code{font-family:var(--data);font-size:var(--t-xs);background:var(--dc-sunk);
-  border-radius:3px;padding:2px 6px;color:var(--dc-body)}
+  border-radius:var(--rad-1);padding:2px 6px;color:var(--dc-body)}
 .lc-att li em{font-style:normal;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.06em;
   text-transform:uppercase}
 .lc-att li.none{color:var(--dc-dim);font-style:italic}
-.lc-code{font-family:var(--data);font-size:var(--t-sm);background:var(--dc-sunk);border-radius:4px;
+.lc-code{font-family:var(--data);font-size:var(--t-sm);background:var(--dc-sunk);border-radius:var(--rad-2);
   padding:7px 9px;color:var(--dc-body);letter-spacing:.06em}
-.lc-img{margin:10px 0 0;border-radius:6px;overflow:hidden;background:var(--dc-sunk);position:relative}
+.lc-img{margin:10px 0 0;border-radius:var(--rad-2);overflow:hidden;background:var(--dc-sunk);position:relative}
 .lc-img img{display:block;width:100%;height:auto}
 .lc-imgfail{display:none;padding:14px;font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
 .lc-imgfail code{font-family:var(--data);color:var(--dc-body)}
 .lc-img.failed img{display:none}
 .lc-img.failed .lc-imgfail{display:block}
-.lc-noimg{margin:10px 0 0;padding:12px;border:1px dashed var(--dc-rule);border-radius:6px;
+.lc-noimg{margin:10px 0 0;padding:12px;border:1px dashed var(--dc-rule);border-radius:var(--rad-2);
   font-size:var(--t-sm);color:var(--dc-dim);text-align:center}
 .lc-foot{margin-top:10px;font-size:var(--t-micro);color:var(--dc-dim);letter-spacing:.04em}
 
@@ -2260,7 +2273,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bed-sec h5{display:flex;align-items:baseline;gap:9px;font:600 var(--t-micro)/1 var(--ui);
   letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);margin:0 0 11px}
 .bed-sec h5 em{font-style:normal;font-family:var(--data);font-size:var(--t-xs);color:var(--ink2);
-  background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:2px 6px}
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-1);padding:2px 6px}
 .bed-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .bed-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 @media (max-width:640px){ .bed-g2,.bed-g3{grid-template-columns:1fr} }
@@ -2275,7 +2288,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   font-variant-numeric:tabular-nums}
 .attrow .atti{font-family:var(--ui)}
 .attrow .atts{font-family:var(--data);font-size:var(--t-xs)}
-.attx{width:26px;height:26px;border-radius:4px;border:1px solid transparent;color:var(--ink3);
+.attx{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid transparent;color:var(--ink3);
   font-size:11px;line-height:1;transition:all var(--dur-1) var(--ease)}
 .attx:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
 .attx:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
@@ -2286,7 +2299,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* Badges — and the propagation warning, which is a real consequence a person must see. */
 .badgerow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
 .bgt{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
-  padding:7px 11px;border-radius:4px;border:1px solid var(--rule2);color:var(--ink3);
+  padding:7px 11px;border-radius:var(--rad-2);border:1px solid var(--rule2);color:var(--ink3);
   background:var(--raised);transition:all var(--dur-1) var(--ease);min-height:32px}
 .bgt:hover{border-color:var(--ink3);color:var(--ink)}
 .bgt:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
@@ -2294,12 +2307,12 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bgt.tox.on{background:var(--del);border-color:var(--del)}
 .bgt.rank.on{background:var(--info);border-color:var(--info);color:var(--on-accent)}
 .bgnote{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;background:var(--sunk);
-  border:1px solid var(--rule);border-left:3px solid var(--warn);border-radius:var(--rad);
+  border:1px solid var(--rule);border-left:3px solid var(--warn);border-radius:var(--rad-2);
   padding:11px 13px;margin:4px 0 0}
 .bgnote code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
 
 /* The image panel — preview, key, convention, direct asset link, remove. */
-.imgbox{border:1px solid var(--rule);border-radius:var(--rad);overflow:hidden;background:var(--sunk);
+.imgbox{border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden;background:var(--sunk);
   margin-bottom:11px;min-height:96px;display:grid;place-items:center}
 .imgbox img{display:block;width:100%;height:auto}
 .imgbox .imgfail,.imgbox .imgnone{display:none;padding:20px 14px;text-align:center;
@@ -2315,16 +2328,16 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .dwissue.ok{border-left-color:var(--ok)}
 .dwissue.ok b{color:var(--ok)}
 .mechtag{font-style:normal;font-size:var(--t-micro);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;color:var(--ok);border:1px solid var(--ok);border-radius:3px;
+  text-transform:uppercase;color:var(--ok);border:1px solid var(--ok);border-radius:var(--rad-1);
   padding:2px 5px;margin-left:7px}
 
 /* Manifest additions — attachments peek and the real badge set. */
 .attpeek{display:flex;gap:4px;flex-wrap:wrap}
 .attpeek em{font-style:normal;font-size:var(--t-xs);color:var(--ink2);background:var(--sunk);
-  border:1px solid var(--rule);border-radius:3px;padding:2px 6px;white-space:nowrap;
+  border:1px solid var(--rule);border-radius:var(--rad-1);padding:2px 6px;white-space:nowrap;
   max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .attpeek em.more{color:var(--ink3)}
-.bdg{font-family:var(--data);font-size:8.5px;letter-spacing:.06em;font-weight:700;border-radius:2px;
+.bdg{font-family:var(--data);font-size:8.5px;letter-spacing:.06em;font-weight:700;border-radius:var(--rad-1);
   padding:2px 5px;line-height:1.3;background:rgba(242,194,48,.14);color:var(--patch);
   border:1px solid rgba(242,194,48,.4)}
 .bdg.rank{background:rgba(64,154,208,.14);color:var(--info);border-color:rgba(64,154,208,.4)}
@@ -2337,12 +2350,12 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bulkview{padding:16px}
 .bvgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:900px){ .bvgrid{grid-template-columns:1fr} }
-.bvcard{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:16px 17px}
+.bvcard{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px}
 .bvcard h4{font:600 var(--t-lg)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
 .bvcard p{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;margin:0 0 13px}
 .bvcard code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
 .bvcard textarea,.bvexpout{width:100%;background:var(--sunk);border:1px solid var(--rule2);
-  border-radius:var(--rad);padding:10px 12px;font-family:var(--data);font-size:var(--t-xs);
+  border-radius:var(--rad-2);padding:10px 12px;font-family:var(--data);font-size:var(--t-xs);
   color:var(--ink2);line-height:1.6;resize:vertical}
 .bvcard textarea:focus,.bvexpout:focus{outline:2px solid var(--staged);outline-offset:1px}
 .bvact,.bvexp{display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap}
@@ -2353,7 +2366,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bvrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:7px 0;
   border-top:1px solid var(--rule3);font-size:var(--t-sm);color:var(--ink2)}
 .bvtag{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
-  border:1px solid var(--rule2);border-radius:3px;padding:3px 5px;text-align:center;color:var(--ink3)}
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:3px 5px;text-align:center;color:var(--ink3)}
 .bvrow.new .bvtag{color:var(--ok);border-color:var(--ok)}
 .bvrow.upd .bvtag{color:var(--info);border-color:var(--info)}
 .bvrow.bad .bvtag{color:var(--del);border-color:var(--danger-edge)}
@@ -2361,18 +2374,18 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bverr{display:block;font-style:normal;color:var(--danger-ink);font-size:var(--t-xs);margin-top:2px}
 .bvmsg{font-size:var(--t-sm);color:var(--ink3);padding:10px 0}
 .bvnote{margin-top:16px;padding:13px 15px;background:var(--sunk);border:1px solid var(--rule);
-  border-left:3px solid var(--rule2);border-radius:var(--rad);font-size:var(--t-sm);
+  border-left:3px solid var(--rule2);border-radius:var(--rad-2);font-size:var(--t-sm);
   color:var(--ink2);line-height:1.6}
 .bvnote code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink)}
-.guide{background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad);padding:11px 13px;
+.guide{background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:11px 13px;
   font-family:var(--data);font-size:var(--t-sm);color:var(--ink);overflow-x:auto;margin:0 0 14px}
 .repbar{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--raised);
-  border:1px solid var(--rule);border-radius:var(--rad);margin-bottom:14px;flex-wrap:wrap}
+  border:1px solid var(--rule);border-radius:var(--rad-2);margin-bottom:14px;flex-wrap:wrap}
 .repbar b{color:var(--ink);font-size:var(--t-md)}
 .repbar span{font-size:var(--t-sm);color:var(--ink3)}
 .repbar .sp{flex:1}
 .covfacts{margin-top:16px;padding:14px 16px;background:var(--sunk);border:1px solid var(--rule);
-  border-radius:var(--rad)}
+  border-radius:var(--rad-2)}
 .covfacts h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ink3);margin:0 0 10px}
 .covfact{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;padding:6px 0}
@@ -2393,7 +2406,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 .hsplit,.tim2,.reach{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
 @media (max-width:1000px){ .hsplit,.tim2,.reach{grid-template-columns:1fr} }
-.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:16px 17px}
+.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px}
 .hpanel h4{font:600 var(--t-lg)/1.25 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
 .hpanel h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ink3);margin:16px 0 9px}
@@ -2406,8 +2419,8 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .depb{display:grid;grid-template-columns:132px 1fr 64px;grid-template-areas:"n t v" ". c c";
   gap:4px 11px;align-items:center}
 .depb .dn{grid-area:n;font:500 var(--t-sm)/1.2 var(--data);color:var(--ink2);word-break:break-all}
-.depb .dt{grid-area:t;height:16px;background:var(--sunk);border-radius:3px;overflow:hidden}
-.depb .dt i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.depb .dt{grid-area:t;height:16px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden}
+.depb .dt i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
 .depb.slow .dt i{background:var(--warn)}
 .depb .dv{grid-area:v;text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
   font-variant-numeric:tabular-nums}
@@ -2416,14 +2429,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* Alert levels — the three-tier model, never collapsed into one number. */
 .lvlbars{display:flex;flex-direction:column;gap:9px}
 .lvlb{display:grid;grid-template-columns:76px 1fr 52px;grid-template-areas:"n t v" ". p p";
-  gap:3px 11px;align-items:center;width:100%;text-align:left;padding:5px 6px;border-radius:5px;
+  gap:3px 11px;align-items:center;width:100%;text-align:left;padding:5px 6px;border-radius:var(--rad-2);
   transition:background var(--dur-1) var(--ease)}
 .lvlb:hover{background:var(--hi)}
 .lvlb:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .lvlb .ln{grid-area:n;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
-.lvlb .lt{grid-area:t;height:16px;background:var(--sunk);border-radius:3px;overflow:hidden}
-.lvlb .lt i{display:block;height:100%;border-radius:3px;background:var(--info)}
+.lvlb .lt{grid-area:t;height:16px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden}
+.lvlb .lt i{display:block;height:100%;border-radius:var(--rad-1);background:var(--info)}
 .lvlb.lv-caution .lt i{background:var(--warn)}
 .lvlb.lv-error .lt i{background:var(--del)}
 .lvlb .lv2{grid-area:v;text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
@@ -2431,7 +2444,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .lvlb .lp{grid-area:p;font-size:var(--t-micro);color:var(--ink3)}
 .lvtag{display:inline-block;margin-left:5px;font:600 var(--t-micro)/1 var(--ui);
   letter-spacing:var(--tr-micro);text-transform:uppercase;border:1px solid var(--rule2);
-  border-radius:3px;padding:2px 5px;color:var(--ink3)}
+  border-radius:var(--rad-1);padding:2px 5px;color:var(--ink3)}
 .lvtag.lv-caution{color:var(--warn);border-color:var(--warn)}
 .lvtag.lv-error{color:var(--del);border-color:var(--danger-edge)}
 
@@ -2443,12 +2456,12 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* Usage — stacked ok/failed, and the two side panels. */
 .ub2{display:grid;grid-template-columns:170px 1fr 92px 62px;gap:12px;align-items:center;width:100%;
-  text-align:left;padding:5px 7px;border-radius:5px;transition:background var(--dur-1) var(--ease)}
+  text-align:left;padding:5px 7px;border-radius:var(--rad-2);transition:background var(--dur-1) var(--ease)}
 .ub2:hover{background:var(--hi)}
 .ub2:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .ub2 .ubk{font:500 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
-.ubt2{display:flex;height:20px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.ubt2{display:flex;height:20px;background:var(--sunk);border-radius:var(--rad-2);overflow:hidden}
 .ubt2 i{display:block;height:100%}
 .ubt2 i.ok{background:var(--ev)} .ubt2 i.bad{background:var(--del)}
 .ub2 .ubv{text-align:right;font:600 var(--t-md)/1 var(--data);color:var(--ink);
@@ -2457,13 +2470,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .ub2 .ubt3{text-align:right;font:500 var(--t-xs)/1 var(--data);color:var(--ink3)}
 .usplit{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
 @media (max-width:1000px){ .usplit{grid-template-columns:1fr} }
-.uside{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad);padding:15px 16px}
+.uside{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:15px 16px}
 .uside h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ink3);margin:0 0 9px}
 .erow{display:grid;grid-template-columns:130px 1fr 44px;gap:11px;align-items:center;padding:4px 0}
 .erow .ek{font-size:var(--t-sm);color:var(--ink2)}
-.erow .et{height:12px;background:var(--sunk);border-radius:3px;overflow:hidden}
-.erow .et i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.erow .et{height:12px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden}
+.erow .et i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
 .erow .ev{text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
   font-variant-numeric:tabular-nums}
 .erow.never .ek,.erow.never .ev{color:var(--ink3)}
@@ -2474,23 +2487,23 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .ackrow .al,.durrow .dl{font-size:var(--t-sm);color:var(--ink2)}
 .ackrow.danger .al{color:var(--warn)}
 .ackrow.zero .al,.ackrow.zero .av{color:var(--ink3)}
-.ackrow .at,.durrow .dt2{height:15px;background:var(--sunk);border-radius:3px;overflow:hidden;position:relative}
-.ackrow .at i,.durrow .dt2 i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.ackrow .at,.durrow .dt2{height:15px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden;position:relative}
+.ackrow .at i,.durrow .dt2 i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
 .ackrow.danger .at i{background:var(--del)}
 .durrow.slow .dt2 i{background:var(--warn)}
 .durrow .dt2 .deadline{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--patch);
-  border-radius:1px}
+  border-radius:var(--rad-1)}
 .ackrow .av,.durrow .dv2{text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
   font-variant-numeric:tabular-nums}
 .dlkey{display:inline-block;width:2px;height:11px;background:var(--patch);vertical-align:-1px;
-  margin-right:5px;border-radius:1px}
+  margin-right:5px;border-radius:var(--rad-1)}
 
 /* Reach — donuts and install-type bars. */
 .donutrow{display:flex;gap:24px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
 .dcell{text-align:center}
-.donut{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;margin:0 auto 9px;
+.donut{width:104px;height:104px;border-radius:var(--rad-round);display:grid;place-items:center;margin:0 auto 9px;
   background:conic-gradient(var(--c) calc(var(--p)*1%),var(--sunk) 0)}
-.donut b{width:74px;height:74px;border-radius:50%;background:var(--raised);display:grid;place-items:center;
+.donut b{width:74px;height:74px;border-radius:var(--rad-round);background:var(--raised);display:grid;place-items:center;
   font:600 var(--t-xl)/1 var(--ui);color:var(--ink);letter-spacing:var(--tr-h1)}
 .donut b i{font-style:normal;font-size:var(--t-sm);color:var(--ink3);margin-left:1px}
 .dlab{display:block;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
@@ -2498,8 +2511,8 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .inrow{display:grid;grid-template-columns:106px 1fr 44px;grid-template-areas:"k t v" ". n n";
   gap:4px 11px;align-items:center;padding:6px 0}
 .inrow .ik{grid-area:k;font-size:var(--t-sm);color:var(--ink2)}
-.inrow .it{grid-area:t;height:14px;background:var(--sunk);border-radius:3px;overflow:hidden}
-.inrow .it i{display:block;height:100%;background:var(--ev);border-radius:3px}
+.inrow .it{grid-area:t;height:14px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden}
+.inrow .it i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
 .inrow .iv{grid-area:v;text-align:right;font:600 var(--t-sm)/1 var(--data);color:var(--ink);
   font-variant-numeric:tabular-nums}
 .inrow .inote{grid-area:n;font-size:var(--t-micro);color:var(--ink3);line-height:1.5}
@@ -2613,7 +2626,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * and every action — add, edit, delete, all three exports — is per-mode. Their
  * rank vocabularies differ too (`categoryRank` vs `dmzRangeRank`). A filter chip
  * made them one page with a lens over it; a mode switch makes them what they are. */
-.modesw{display:flex;gap:0;border:1px solid var(--rule2);border-radius:6px;overflow:hidden;flex:none}
+.modesw{display:flex;gap:0;border:1px solid var(--rule2);border-radius:var(--rad-2);overflow:hidden;flex:none}
 .modesw button{font:700 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink3);
   padding:8px 15px;min-height:34px;transition:all var(--dur-1) var(--ease)}
 .modesw button+button{border-left:1px solid var(--rule2)}
@@ -2625,7 +2638,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   margin-left:5px}
 .chip.topic[aria-pressed=true] em{color:var(--on-accent);opacity:.75}
 .modetag{font-style:normal;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.08em;
-  color:var(--ink3);border:1px solid var(--rule2);border-radius:3px;padding:2px 6px;margin-left:8px;
+  color:var(--ink3);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px;margin-left:8px;
   vertical-align:2px}
 
 
@@ -2641,13 +2654,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
  * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
  * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
-.mxcell{width:16px;height:16px;border-radius:4px;border:1px solid var(--rule2);background:transparent;
+.mxcell{width:16px;height:16px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:block;margin:0 auto;padding:0;cursor:default}
 .mxcell.on{background:var(--c);border-color:var(--c)}
 .mxcell.inh{background:transparent;border:2px solid var(--c);opacity:.85}
 .mxcell.locked{opacity:.55}
 .mxs.mxcol.spof i{box-shadow:0 0 0 2px var(--warn)}
-.mxlegend{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.mxlegend{display:inline-block;width:12px;height:12px;border-radius:var(--rad-1);vertical-align:-2px;margin-right:5px}
 .mxlegend.on{background:var(--ink2)}
 .mxlegend.inh{background:transparent;border:2px solid var(--ink2)}
 .scopes{display:flex;flex-direction:column;gap:1px;padding:12px 16px;background:var(--rule3)}
@@ -2662,10 +2675,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * string stretched across 1400px reads as an empty bar and takes more visual weight than the
  * finding deserves. It wraps under only when the row itself collapses at narrow widths. */
 .scope .flag{justify-self:end;font:600 10.5px/1 var(--ui);letter-spacing:.03em;color:var(--warn);
-  border:1px solid rgba(242,153,74,.4);border-radius:99px;padding:4px 9px;white-space:nowrap}
+  border:1px solid rgba(242,153,74,.4);border-radius:var(--rad-pill);padding:4px 9px;white-space:nowrap}
 .scope .flag.quiet{color:var(--ink3);font-weight:500}
 .scope.spof{background:linear-gradient(90deg,rgba(242,153,74,.07),transparent 60%)}
-.holder{display:inline-block;padding:2px 7px;border-radius:99px;border:1px solid var(--rule2);
+.holder{display:inline-block;padding:2px 7px;border-radius:var(--rad-pill);border:1px solid var(--rule2);
   background:var(--sunk);font:500 10.5px/1.5 var(--mono);color:var(--ink2)}
 .holder.owner{border-color:var(--rule);color:var(--ink3)}
 .tokgrid{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
@@ -2699,14 +2712,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .rephead b{color:var(--ink);font-size:15px}
 .reps{margin:16px 0 9px;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
-.repgrp{border:1px solid var(--rule2);border-radius:7px;padding:11px 13px;margin-bottom:9px;background:var(--sunk)}
+.repgrp{border:1px solid var(--rule2);border-radius:var(--rad-2);padding:11px 13px;margin-bottom:9px;background:var(--sunk)}
 .repgrp.clean{border-style:dashed;opacity:.72}
 .reph{display:flex;align-items:baseline;gap:9px}
 .reph .rt-n{font:700 17px/1 var(--mono);color:var(--warn);min-width:20px}
 .repgrp.clean .reph .rt-n{color:var(--ink3)}
 .reph .rt-l{font:600 13px/1.2 var(--ui);color:var(--ink)}
 .reph .rt-k{margin-left:auto;font:600 9.5px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;
-  color:var(--ink3);border:1px solid var(--rule2);border-radius:99px;padding:3px 7px}
+  color:var(--ink3);border:1px solid var(--rule2);border-radius:var(--rad-pill);padding:3px 7px}
 .repnote{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--ink3);max-width:88ch}
 .rephits{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:1px}
 .rephits li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 9px;
@@ -2722,9 +2735,9 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * name over the @handle. Reproducing that shape is not imitation for its own sake: this panel's
  * only job is to say WHOSE session you are in, and the fastest possible answer is the face the
  * person already recognises. A lettered disc says "an account"; this says "yours". */
-.ubanner{position:relative;height:74px;margin:-1px -1px 0;border-radius:9px 9px 0 0;
+.ubanner{position:relative;height:74px;margin:-1px -1px 0;border-radius:var(--rad-3) var(--rad-3) 0 0;
   background:var(--banner) center/cover no-repeat,var(--sunk)}
-.ubanner::after{content:"";position:absolute;inset:auto 0 0;height:60%;border-radius:0 0 9px 9px;
+.ubanner::after{content:"";position:absolute;inset:auto 0 0;height:60%;border-radius:0 0 var(--rad-3) var(--rad-3);
   background:linear-gradient(180deg,transparent,var(--raised))}
 /* 🔴 THE NAME USED TO SIT ON THE BANNER. `margin-top:-22px` pulled the WHOLE head — avatar and
    name together — up over the banner's bottom third, with only an inset shadow standing in for a
@@ -2735,12 +2748,12 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .umenu .uhead{position:relative;margin-top:0;padding:0 13px 12px;display:flex;align-items:flex-start;gap:11px;
   background:var(--raised)}
 .umenu .uav{margin-top:-24px}
-.umenu .uav{width:46px;height:46px;border-radius:50%;flex:none;position:relative;
+.umenu .uav{width:46px;height:46px;border-radius:var(--rad-round);flex:none;position:relative;
   background:var(--av-src) center/cover no-repeat,var(--sunk);
   border:3px solid var(--raised);box-shadow:0 2px 10px -3px rgba(0,0,0,.7)}
 /* The dot used to hang half outside the ring at right:-1px/bottom:-1px. Placed on the circle
    instead of beside it: 14.6% in from each edge is where a 46px ring's own curve puts it. */
-.umenu .uav .pres{position:absolute;right:6.5%;bottom:6.5%;width:13px;height:13px;border-radius:50%;
+.umenu .uav .pres{position:absolute;right:6.5%;bottom:6.5%;width:13px;height:13px;border-radius:var(--rad-round);
   background:var(--ok);border:3px solid var(--raised);box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 .umenu .uinfo{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:2px}
 .umenu .uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
@@ -2774,7 +2787,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* A multi-row lane: bars are shorter and top-positioned rather than centred, so a lane holding
  * three overlapping playlists is three legible rows instead of three overlaid ones. */
 .lane[data-rows="1"] .tk .bar{height:22px}
-.lane:not([data-rows="1"]) .tk .bar{border-radius:3px}
+.lane:not([data-rows="1"]) .tk .bar{border-radius:var(--rad-1)}
 .lane:not([data-rows="1"]) .tk .bar .bl{font-size:10.5px}
 
 /* The point cluster. Reads as a count, not as a marker — a diamond would claim to be one item. */
@@ -2794,7 +2807,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
  * its top, and a centred pin landed on top of BATTLE PASS/RANKED whenever both were near the
  * same edge, which is exactly when a pin is most likely to exist. */
 .dpin{position:absolute;bottom:1px;z-index:6;display:flex;align-items:center;gap:5px;padding:3px 7px;
-  border:1px dashed var(--c);border-radius:99px;background:var(--paper);
+  border:1px dashed var(--c);border-radius:var(--rad-pill);background:var(--paper);
   font:600 9.5px/1 var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap}
 .dpin.l{left:4px}.dpin.r{right:4px}
 .dpin em{font-style:normal;color:var(--ink3);letter-spacing:0;text-transform:none}
@@ -2822,17 +2835,17 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    `/manage` cannot do and therefore the one thing worth spending contrast on. */
 .nw{display:flex;flex-direction:column;gap:16px}
 .nw-types{display:flex;flex-wrap:wrap;gap:7px}
-.nw-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;
+.nw-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:var(--rad-pill);
   border:1px solid var(--rule);background:var(--sunk);color:var(--ink2);cursor:pointer;
   font:500 12.5px/1 var(--ui);transition:border-color .14s,color .14s,background .14s}
 .nw-chip em{font:400 10.5px/1 var(--data);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-style:normal}
-.nw-chip .nw-dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none}
+.nw-chip .nw-dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .nw-chip:hover{border-color:var(--rule2);color:var(--ink)}
 .nw-chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--ink)}
 .nw-chip.on em{color:var(--ink2)}
 .nw-l{display:block;font:600 10.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;
   color:var(--ink3);margin:0 0 6px}
-.nw-i{width:100%;min-height:38px;padding:8px 11px;border-radius:7px;border:1px solid var(--rule);
+.nw-i{width:100%;min-height:38px;padding:8px 11px;border-radius:var(--rad-2);border:1px solid var(--rule);
   background:var(--sunk);color:var(--ink);font:400 13.5px/1.3 var(--ui)}
 .nw-i:focus-visible{outline:2px solid var(--focus,#5FD4E8);outline-offset:1px;border-color:transparent}
 .nw-dates{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px}
@@ -2855,17 +2868,17 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    a new class — and if one of them is nearly right, extend it here rather than forking it there. */
 
 /* ── .pill — ONE interactive chip. Every filter, type selector and inline action. ── */
-.pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;
+.pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--rad-pill);
   border:1px solid var(--rule);background:var(--sunk);color:var(--ink2);cursor:pointer;
   font:500 12.5px/1 var(--ui);white-space:nowrap;
   transition:border-color .14s,color .14s,background .14s,transform .14s}
 .pill:hover{border-color:var(--rule2);color:var(--ink);transform:translateY(-1px)}
 .pill:active{transform:none}
 .pill:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
-.pill .dot{width:9px;height:9px;border-radius:2px;background:var(--c,var(--ink4));flex:none}
+.pill .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c,var(--ink4));flex:none}
 .pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
 .pill kbd{font:500 10.5px/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
-  border:1px solid var(--rule2);border-radius:4px;padding:3px 6px}
+  border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px}
 .pill.on{border-color:var(--c,var(--patch));background:color-mix(in srgb,var(--c,var(--patch)) 13%,transparent);color:var(--ink)}
 .pill.on .sub{color:var(--ink3)}
 .pill.lead{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
@@ -2900,14 +2913,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    A cluster used to be the count drawn ON TOP of the diamonds it replaced, so one bled out from
    behind it and the mark read as a diamond with a blister. A mark REPLACES what it stands for,
    and its SHAPE says how many before you read a number. */
-.mark{position:absolute;top:50%;width:13px;height:13px;margin-left:-6.5px;border-radius:2.5px;
+.mark{position:absolute;top:50%;width:13px;height:13px;margin-left:-6.5px;border-radius:var(--rad-1);
   background:var(--c,var(--ink3));transform:translateY(-50%) rotate(45deg);cursor:pointer;
   transition:box-shadow .14s,transform .14s}
 .mark:hover,.mark:focus-visible{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 28%,transparent);outline:none}
 .mark.staged{background:none;box-shadow:inset 0 0 0 1.5px var(--c)}
 .mark.stack{width:15px;height:15px;margin-left:-7.5px}
 /* the second diamond, offset — "several" stated as a shape */
-.mark.stack::before{content:"";position:absolute;inset:0;border-radius:2.5px;background:var(--c);
+.mark.stack::before{content:"";position:absolute;inset:0;border-radius:var(--rad-1);background:var(--c);
   opacity:.4;transform:translate(4px,-4px)}
 .mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
   font:700 9px/1 var(--data);color:var(--on-accent,#08131A)}
@@ -2931,10 +2944,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   background:none;border:0;cursor:pointer;color:var(--ink3);text-align:left;
   font:700 10px/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
 .lnh:hover{color:var(--ink2)}
-.lnh:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:5px}
+.lnh:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-2)}
 .lnh-cv{font-size:8px;opacity:.55;flex:none;width:8px}
 .lnh:hover .lnh-cv{opacity:1}
-.lnh-d{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
+.lnh-d{width:7px;height:7px;border-radius:var(--rad-1);background:var(--c);flex:none;transform:rotate(45deg)}
 /* Wrap rather than truncate. "DRAW WINDOWS" is two words and the lane is 38px tall — there was
    never a reason to cut it, and a truncated lane name is the exact defect widening this gutter
    was meant to fix. */
@@ -2948,13 +2961,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* ── collapsed summaries: one line that still says something ── */
 .lsum{position:absolute;inset:0;display:block}
-.lpip{position:absolute;top:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:1.5px;
+.lpip{position:absolute;top:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:var(--rad-1);
   background:var(--c);transform:translateY(-50%) rotate(45deg);opacity:.85}
 .lpip.myth{width:9px;height:9px;margin-left:-4.5px;opacity:1;
   box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
-.lrun{position:absolute;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--c);opacity:.65}
+.lrun{position:absolute;top:50%;height:6px;margin-top:-3px;border-radius:var(--rad-1);background:var(--c);opacity:.65}
 .lsum.load{display:flex;align-items:flex-end}
-.lsum.load i{position:absolute;bottom:5px;width:2px;background:var(--c);border-radius:1px}
+.lsum.load i{position:absolute;bottom:5px;width:2px;background:var(--c);border-radius:var(--rad-1)}
 .lsum.load b{position:absolute;right:6px;top:50%;transform:translateY(-50%);
   font:600 9.5px/1 var(--data);letter-spacing:.06em;color:var(--ink3)}
 
@@ -2964,16 +2977,16 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   0 0 9px color-mix(in srgb,var(--c) 45%,transparent)}
 .pt[data-tier=legendary]{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 40%,transparent)}
 .pt[data-lanekind=returningDraws]::after{content:"";position:absolute;left:50%;top:50%;
-  width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:1px;
+  width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:var(--rad-1);
   background:var(--paper);opacity:.55}                   /* a return reads as a ring, not a fill */
 .ptc.mark.stack{position:absolute;top:50%;width:15px;height:15px;margin-left:-7.5px;border:0;
-  background:var(--c);border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
+  background:var(--c);border-radius:var(--rad-1);transform:translateY(-50%) rotate(45deg);
   cursor:pointer;padding:0;z-index:3}
-.ptc.mark.stack::before{content:"";position:absolute;inset:0;border-radius:2.5px;background:var(--c);
+.ptc.mark.stack::before{content:"";position:absolute;inset:0;border-radius:var(--rad-1);background:var(--c);
   opacity:.42;transform:translate(4px,-4px);z-index:-1}
 .ptc.mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
   font:700 9px/1 var(--data);color:var(--on-accent)}
-.ptc.mark.stack.same::after{content:"";position:absolute;inset:-3px;border-radius:4px;
+.ptc.mark.stack.same::after{content:"";position:absolute;inset:-3px;border-radius:var(--rad-2);
   box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 45%,transparent)}
 .ptc.mark.stack:hover,.ptc.mark.stack:focus-visible{
   box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 26%,transparent);outline:none}
@@ -2987,13 +3000,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bar.lbl-out.saved .bl,.bar.lbl-out-l.saved .bl{color:var(--ink2)}
 
 /* ── deadlines: one chip per DATE, and out-of-view ones weld to the edge they are beyond ── */
-.dflag .dfk{width:6px;height:6px;border-radius:1.5px;background:var(--c);flex:none;transform:rotate(45deg)}
+.dflag .dfk{width:6px;height:6px;border-radius:var(--rad-1);background:var(--c);flex:none;transform:rotate(45deg)}
 .dpin.edge{position:absolute}
 .dpin.edge.r{right:0;left:auto}
 .dpin.edge.l{left:0;right:auto}
 
 /* ── the composer, in the page ── */
-.nwhost{margin:14px 0 0;border:1px solid var(--rule2);border-radius:12px;background:var(--paper);
+.nwhost{margin:14px 0 0;border:1px solid var(--rule2);border-radius:var(--rad-3);background:var(--paper);
   padding:15px 16px 14px;max-width:920px;align-self:stretch;
   animation:nwIn .22s cubic-bezier(.2,.8,.3,1)}
 @keyframes nwIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -3017,7 +3030,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .tghost.cmp{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 12%,transparent);
   color:var(--patch);font:600 11px/1 var(--ui);padding:0 8px;z-index:5;
   display:flex;align-items:center;overflow:hidden;white-space:nowrap}
-.tghost.cmp.pt{width:15px;height:15px;padding:0;border-radius:2.5px;transform:translateY(-50%) rotate(45deg);
+.tghost.cmp.pt{width:15px;height:15px;padding:0;border-radius:var(--rad-1);transform:translateY(-50%) rotate(45deg);
   margin-left:-7.5px;color:transparent}
 .lane.aim{background:linear-gradient(180deg,color-mix(in srgb,var(--patch) 7%,transparent),transparent)}
 .lane.aim .lnh{color:var(--patch)}
@@ -3031,11 +3044,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* ═══════════════ HEADER: THE COMMAND BAR IS THE BAR ═══════════════ */
 .cmdbar{position:relative;flex:1 1 460px;max-width:520px;min-width:0;display:flex;align-items:center;gap:9px;
-  height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--rule);background:var(--sunk);
+  height:34px;padding:0 11px;border-radius:var(--rad-3);border:1px solid var(--rule);background:var(--sunk);
   transition:border-color .15s,background .15s}
 .cmdbar:hover{border-color:var(--rule2)}
 .cmdbar.on,.cmdbar:focus-within{border-color:var(--patch);background:var(--paper)}
-.cb-mag{flex:none;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ink4);position:relative}
+.cb-mag{flex:none;width:13px;height:13px;border-radius:var(--rad-round);border:1.5px solid var(--ink4);position:relative}
 .cb-mag::after{content:"";position:absolute;right:-4px;bottom:-3px;width:5px;height:1.5px;
   background:var(--ink4);transform:rotate(45deg)}
 .cmdbar:focus-within .cb-mag,.cmdbar:focus-within .cb-mag::after{border-color:var(--patch);background:var(--patch)}
@@ -3046,22 +3059,22 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* ⌘ is not in JetBrains Mono, so `--data` rendered it as a tofu box that read as "MK". The
    glyph belongs to the system UI stack, which has it. */
 .cmdbar kbd{flex:none;font:500 11px/1 var(--ui);letter-spacing:.04em;color:var(--ink4);
-  border:1px solid var(--rule2);border-radius:4px;padding:4px 6px}
+  border:1px solid var(--rule2);border-radius:var(--rad-2);padding:4px 6px}
 .cmdbar:focus-within kbd{opacity:0}
 .cb-drop{position:absolute;left:0;right:0;top:calc(100% + 7px);background:var(--raised);
-  border:1px solid var(--rule2);border-radius:10px;z-index:70;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:70;overflow:hidden;
   box-shadow:0 22px 52px -16px rgba(0,0,0,.85)}
 .cb-drop[hidden]{display:none}
 .cb-drop .plist{max-height:min(56vh,440px)}
 .cb-drop .pitem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;
-  border-radius:7px;padding:9px 10px;color:var(--ink2);font:500 12.5px/1 var(--ui);cursor:pointer;text-align:left}
-.cb-drop .pitem i{width:7px;height:7px;border-radius:2px;background:var(--c,var(--ink3));flex:none;transform:rotate(45deg)}
+  border-radius:var(--rad-2);padding:9px 10px;color:var(--ink2);font:500 12.5px/1 var(--ui);cursor:pointer;text-align:left}
+.cb-drop .pitem i{width:7px;height:7px;border-radius:var(--rad-1);background:var(--c,var(--ink3));flex:none;transform:rotate(45deg)}
 .cb-drop .pitem:hover,.cb-drop .pitem.sel{background:var(--hi);color:var(--ink)}
 .cb-drop .pnone{margin:0;padding:14px 12px;font-size:12.5px;color:var(--ink3)}
 
 /* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. */
 .hdr-out{flex:none;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 11px;
-  border-radius:8px;border:1px solid transparent;background:none;color:var(--ink3);cursor:pointer;
+  border-radius:var(--rad-2);border:1px solid transparent;background:none;color:var(--ink3);cursor:pointer;
   font:500 12px/1 var(--ui)}
 .hdr-out svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round}
@@ -3090,16 +3103,16 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 
 /* ══════════ COMPONENT ADOPTION — the existing names, the .pill language ══════════ */
-.chip,.seg button,.tbdsw button{border-radius:999px;
+.chip,.seg button,.tbdsw button{border-radius:var(--rad-pill);
   transition:border-color .14s,color .14s,background .14s,transform .14s}
 .chip:hover,.seg button:hover{transform:translateY(-1px)}
 .chip:active,.seg button:active{transform:none}
 .chip:focus-visible,.seg button:focus-visible,.tbdsw button:focus-visible{
   outline:2px solid var(--patch);outline-offset:2px}
-.seg{border-radius:999px;padding:3px}
-.seg button{border-radius:999px;padding:6px 13px}
-.tbdsw{border-radius:999px}
-.tbdsw button{border-radius:999px}
+.seg{border-radius:var(--rad-pill);padding:3px}
+.seg button{border-radius:var(--rad-pill);padding:6px 13px}
+.tbdsw{border-radius:var(--rad-pill)}
+.tbdsw button{border-radius:var(--rad-pill)}
 
 
 /* ══════════ HOME — a ranked answer, not a directory ══════════
@@ -3107,15 +3120,15 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .att-list{list-style:none;margin:22px 0 26px;padding:0;display:flex;flex-direction:column;gap:1px}
 .att-row{display:grid;grid-template-columns:34px 3px 1fr auto;align-items:center;gap:14px;
   padding:15px 18px 15px 4px;background:var(--paper);border:1px solid var(--rule);
-  border-radius:2px;transition:background .14s}
-.att-row:first-child{border-radius:11px 11px 2px 2px}
-.att-row:last-child{border-radius:2px 2px 11px 11px}
-.att-row:only-child{border-radius:11px}
+  border-radius:var(--rad-1);transition:background .14s}
+.att-row:first-child{border-radius:var(--rad-3) var(--rad-3) var(--rad-1) var(--rad-1)}
+.att-row:last-child{border-radius:var(--rad-1) var(--rad-1) var(--rad-3) var(--rad-3)}
+.att-row:only-child{border-radius:var(--rad-3)}
 .att-row + .att-row{border-top:0}
 .att-row:hover{background:var(--hi)}
 .att-i{font:600 12px/1 var(--data);letter-spacing:.06em;color:var(--ink4);text-align:right;
   font-variant-numeric:tabular-nums}
-.att-b{align-self:stretch;border-radius:2px;background:var(--sev,var(--ink4))}
+.att-b{align-self:stretch;border-radius:var(--rad-1);background:var(--sev,var(--ink4))}
 .att-x{min-width:0;display:flex;flex-direction:column;gap:3px}
 .att-x b{font:600 14.5px/1.35 var(--ui);color:var(--ink);font-weight:600}
 .att-x em{font:500 10px/1 var(--data);letter-spacing:.13em;text-transform:uppercase;
@@ -3165,7 +3178,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    group's --sunk-with-no-edge, because the single was the better-looking of the two and it is
    the one a reader sees most often. */
 .bgrp{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule2);
-  border-left:3px solid var(--c);border-radius:6px;overflow:hidden;background:var(--raised);
+  border-left:3px solid var(--c);border-radius:var(--rad-2);overflow:hidden;background:var(--raised);
   transition:transform .13s,box-shadow .13s,border-color .13s}
 .bgrp:hover{border-color:var(--c);border-left-color:var(--c);transform:translateY(-2px);
   box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
@@ -3185,7 +3198,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bgrp-w b{font:600 12.5px/1.25 var(--ui);color:var(--ink);min-width:0;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   overflow-wrap:anywhere;min-height:calc(2 * 1.25em)}
-.bgrp-w i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;
+.bgrp-w i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none;
   transform:rotate(45deg);margin-top:4px}
 .bgrp-m{display:flex;align-items:center;gap:7px;padding-left:15px}
 .bgrp-m .bgrp-n{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);white-space:nowrap}
@@ -3246,7 +3259,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .t-best .trow-k{color:var(--patch)}
 .trow-t{grid-area:t;margin-top:0;font:600 13px/1.2 var(--ui);color:var(--ink)}
 .trow-n{grid-area:n;justify-self:end;align-self:center;font-family:var(--data);font-size:10px;
-  color:var(--ink3);border:1px solid var(--rule);border-radius:99px;padding:3px 8px;line-height:1}
+  color:var(--ink3);border:1px solid var(--rule);border-radius:var(--rad-pill);padding:3px 8px;line-height:1}
 .trow-note{grid-area:note;margin-top:0;font-size:11.5px;line-height:1.45;color:var(--ink3)}
 /* 🔴 MASONRY, NOT A WRAPPING FLEX ROW. At the real 133-build scale the cards are wildly
    different heights — BAL-27 carries five builds and renders ~590px tall, MACHINE PISTOL
@@ -3320,7 +3333,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .mx thead .grp + .grp,.mxgrp + .mxgrp{padding-left:14px}
 
 .klg.spofk{display:inline-flex;align-items:center;gap:7px;margin-left:16px;color:var(--ink3);font-size:12.5px}
-.klg.spofk i{width:22px;height:7px;border-radius:99px;background:var(--ink4);
+.klg.spofk i{width:22px;height:7px;border-radius:var(--rad-pill);background:var(--ink4);
   box-shadow:0 0 0 2px var(--warn);flex:none}
 .klg.spofk b{color:var(--warn);font-weight:600}
 
@@ -3368,7 +3381,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    package's general component and its stadium shape is doing real work everywhere else —
    filter chips, the export scopes, the selection bar's actions. A create control is a
    different object from a filter, and this is what makes it read as one at a glance. */
-.pill.lead,.pill.mh-t{border-radius:9px}
+.pill.lead,.pill.mh-t{border-radius:var(--rad-3)}
 /* 🔴 THE COMMENT BELOW USED TO SAY "the diamond is the only per-type mark left now that every
    button carries the same border weight" — and the rule directly under it set `border-color:
    var(--c)` AND a per-type ground. Six buttons, six border colours, six tints, side by side in
@@ -3383,8 +3396,8 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   border-color:var(--rule2);background:var(--sunk)}
 .pill.mh-t:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
 .pill.mh-t:focus-visible{border-color:var(--c)}
-.pill.mh-t .dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
-.mh-k{font:500 10px/1 var(--ui);color:var(--ink3);border:1px solid var(--rule2);border-radius:4px;
+.pill.mh-t .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c);flex:none;transform:rotate(45deg)}
+.mh-k{font:500 10px/1 var(--ui);color:var(--ink3);border:1px solid var(--rule2);border-radius:var(--rad-2);
   padding:4px 6px;margin-left:2px}
 @media (max-width:820px){.mh-add{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}}
 
@@ -3452,7 +3465,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   transform:translateY(130%);transition:transform var(--dur-3) var(--ease)}
 .selbar.on{transform:none}
 .selbar-in{pointer-events:auto;display:flex;align-items:center;gap:14px;width:100%;max-width:1060px;
-  padding:11px 12px 11px 14px;border-radius:11px;background:var(--raised);
+  padding:11px 12px 11px 14px;border-radius:var(--rad-3);background:var(--raised);
   border:1px solid var(--rule2);box-shadow:0 20px 46px -18px #000,0 1px 0 0 #ffffff08 inset}
 /* The count reads as a figure, not a label — it is the one number the bar is about. */
 .selbar-n{font:600 19px/1 var(--data);color:var(--staged);letter-spacing:-.02em;
@@ -3462,7 +3475,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .selbar-t span{font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The badge answers "can I take this back?" at the moment of deciding. */
 .selbar-rev{font:600 9.5px/1 var(--data);letter-spacing:.13em;text-transform:uppercase;
-  padding:6px 10px;border-radius:999px;border:1px solid var(--rule2);color:var(--ink3);white-space:nowrap;flex:none}
+  padding:6px 10px;border-radius:var(--rad-pill);border:1px solid var(--rule2);color:var(--ink3);white-space:nowrap;flex:none}
 .selbar-rev.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent);
   background:color-mix(in srgb,var(--ok) 8%,transparent)}
 .selbar-rev.gate{color:var(--danger-ink);border-color:var(--danger-edge);
@@ -3471,7 +3484,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .selbar-x{background:none;border:none;color:var(--ink3);font:600 11.5px/1 var(--ui);
   padding:8px 6px;cursor:pointer;min-height:var(--tap);flex:none}
 .selbar-x:hover{color:var(--ink)}
-.selbar-x:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:4px}
+.selbar-x:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-2)}
 /* The tray is a persistent status object and the bar is a momentary action object; they
    share the bottom edge, so the tray steps up rather than either one hiding the other. */
 body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur-2) var(--ease)}
@@ -3481,7 +3494,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    cannot be scanned, and "..." buries the verb behind a click for nothing. --ink3 at rest
    (5.35:1, over the 3:1 non-text floor) so it is findable; destructive colour on hover/focus. */
 .mtable td.ra,.mtable th.ra{width:40px;padding-right:8px;text-align:right}
-.rmv{width:28px;height:28px;border-radius:6px;border:1px solid transparent;background:none;
+.rmv{width:28px;height:28px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
   color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;
   transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
 .rmv svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;
@@ -3498,7 +3511,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    decoration; a hazard hatch is a real-world convention for a boundary you are about to cross,
    it costs one pseudo-element, and it lets the panel itself stay quiet enough to read. This is
    the strip's one accessory — everything else inside it is ordinary type. */
-.ow{position:relative;margin-top:26px;border:1px solid var(--danger-edge);border-radius:9px;
+.ow{position:relative;margin-top:26px;border:1px solid var(--danger-edge);border-radius:var(--rad-3);
   overflow:hidden;padding-left:9px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--del) 9%,transparent),transparent 58%),var(--paper)}
 .ow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
@@ -3511,7 +3524,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 }
 .ow-h{padding:14px 16px 12px;border-bottom:1px solid var(--rule)}
 .ow-k{font:700 9.5px/1 var(--data);letter-spacing:.17em;color:var(--danger-ink);
-  display:inline-block;padding:5px 8px;border-radius:4px;
+  display:inline-block;padding:5px 8px;border-radius:var(--rad-2);
   background:color-mix(in srgb,var(--del) 15%,transparent);
   border:1px solid var(--danger-edge)}
 .ow-h h3{font:600 15px/1.2 var(--ui);margin:8px 0 5px;color:var(--ink)}
@@ -3533,7 +3546,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* ── THE EXPORT PANEL ── */
 .exs{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
 .exs-i{display:flex;align-items:center;gap:13px;padding:12px 13px;border:1px solid var(--rule);
-  border-radius:7px;background:var(--sunk);flex-wrap:wrap}
+  border-radius:var(--rad-2);background:var(--sunk);flex-wrap:wrap}
 .exs-i.focus{border-color:var(--patch);box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 16%,transparent)}
 .exs-i.done{border-color:color-mix(in srgb,var(--ok) 42%,transparent)}
 .exs-i.done .exs-t b::after{content:" ✓";color:var(--ok)}
@@ -3547,7 +3560,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    teaches people to type it without reading, which is worse than not asking. */
 .tc-l{display:block;margin:16px 0 6px;font-size:11.5px;color:var(--ink2)}
 .tc-l b{font-family:var(--data);color:var(--danger-ink);letter-spacing:.06em}
-.tc-in{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:6px;
+.tc-in{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);
   color:var(--ink);font:500 14px/1 var(--data);letter-spacing:.1em;padding:11px 12px;min-height:var(--tap)}
 .tc-in:focus{outline:2px solid var(--danger-ink);outline-offset:1px;border-color:var(--danger-edge)}
 .btn.dang[disabled]{opacity:.4;cursor:default;filter:none}
@@ -3598,7 +3611,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    reading "granting 3 / revoking 1" is the thing that makes a batch safer than four clicks. */
 .acg{margin-top:14px}
 .acg-k{display:inline-block;font:700 9.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;
-  padding:5px 8px;border-radius:4px;margin-bottom:7px}
+  padding:5px 8px;border-radius:var(--rad-2);margin-bottom:7px}
 .acg-k.on{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);
   border:1px solid color-mix(in srgb,var(--ok) 38%,transparent)}
 .acg-k.off{color:var(--danger-ink);background:color-mix(in srgb,var(--del) 12%,transparent);
@@ -3698,7 +3711,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
 .bf-sec:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
 .bf-h{font:600 12px/1 var(--ui);color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:9px}
 .bf-n{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);
-  border:1px solid var(--rule2);border-radius:99px;padding:4px 8px}
+  border:1px solid var(--rule2);border-radius:var(--rad-pill);padding:4px 8px}
 .bf-p{font-size:12px;line-height:1.5;color:var(--ink3);margin:0 0 11px;max-width:70ch}
 .bf-p code{font-family:var(--data);color:var(--ink2)}
 .bf-na{border-left:2px solid var(--rule2);padding-left:11px}
@@ -3722,17 +3735,17 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
 .atlist{display:flex;flex-direction:column;gap:7px}
 .atr{display:flex;align-items:center;gap:9px}
 .atn{font:600 10.5px/1 var(--data);color:var(--ink3);width:16px;text-align:right;flex:none}
-.ati{flex:1;min-width:0;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;
+.ati{flex:1;min-width:0;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
   color:var(--ink);font:500 13px/1 var(--ui);padding:10px 11px;min-height:var(--tap)}
 .ati:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
-.atx{flex:none;width:28px;height:28px;border-radius:5px;border:1px solid transparent;background:none;
+.atx{flex:none;width:28px;height:28px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
   color:var(--ink4);cursor:pointer;font-size:11px}
 .atr:hover .atx,.atx:focus-visible{color:var(--ink3);border-color:var(--rule2)}
 .atx:hover{color:var(--danger-ink);border-color:var(--danger-edge)}
 
 .bf-badges{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .bf-tog{display:inline-flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--rule);
-  border-radius:9px;background:var(--sunk);cursor:pointer;font:600 12.5px/1 var(--ui);color:var(--ink2);
+  border-radius:var(--rad-3);background:var(--sunk);cursor:pointer;font:600 12.5px/1 var(--ui);color:var(--ink2);
   min-height:var(--tap)}
 .bf-tog:hover{border-color:var(--rule2);color:var(--ink)}
 .bf-tog:has(input:checked){border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--ink)}
@@ -3745,7 +3758,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
    header keeps its count while closed, so collapsing hides the cards and never the fact. */
 .trow-h{cursor:pointer;user-select:none}
 .trow-h:hover .trow-t{color:var(--ink)}
-.trow-h:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:6px}
+.trow-h:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-2)}
 .trow-cv{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3);
   font-size:10px;transition:transform var(--dur-1) var(--ease)}
 .trow-h{grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto}

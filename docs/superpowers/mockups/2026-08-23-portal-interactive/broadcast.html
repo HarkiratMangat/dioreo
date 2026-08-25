@@ -3,7 +3,7 @@
 <title>Broadcast · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787666185"><link rel="stylesheet" href="assets/app.css?v=1787666185">
+<link rel="stylesheet" href="assets/tokens.css?v=1787675340"><link rel="stylesheet" href="assets/app.css?v=1787675340">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -74,9 +74,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787666185"></script>
-<script src="assets/timeline.js?v=1787666185"></script>
-<script src="assets/shell.js?v=1787666185"></script>
+<script src="assets/fixtures.js?v=1787675340"></script>
+<script src="assets/timeline.js?v=1787675340"></script>
+<script src="assets/shell.js?v=1787675340"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -335,7 +335,7 @@
         <p class="dw-p" id="expHint">Blank means the ${F.DEFAULT_EXPIRY_DAYS}-day default. A whole number of
           days, or <code>never</code>. Not a date &mdash; the field the bot reads is a duration.</p>
         <div class="idop" style="margin-top:14px">Accent <span style="display:inline-block;width:11px;height:11px;
-          border-radius:3px;background:${F.annAccent(a)};vertical-align:-1px"></span>
+          border-radius:var(--rad-1);background:${F.annAccent(a)};vertical-align:-1px"></span>
           <code>#${a.color.toString(16).padStart(6,'0')}</code> &mdash; generated once at creation and
           <b>never regenerated on edit</b>. An edit is a correction to the same announcement, so its
           colour is part of its identity.</div>

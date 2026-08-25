@@ -3,16 +3,16 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787666185"><link rel="stylesheet" href="assets/app.css?v=1787666185">
+<link rel="stylesheet" href="assets/tokens.css?v=1787675340"><link rel="stylesheet" href="assets/app.css?v=1787675340">
 <style>
 /* creation, promoted out of the page's basement */
-.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:9px;
+.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
   border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
   font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
 .mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
 .mh-plus{font-size:16px;line-height:1;color:var(--patch)}
 .mh-new kbd{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
-  border-radius:4px;padding:3px 5px}
+  border-radius:var(--rad-2);padding:3px 5px}
 
 /* `.masthead` stretches its children, so `display:inline-flex` alone still produced a
    940px-wide banner where a button belonged. Measured, not guessed: the first render of it. */
@@ -35,11 +35,11 @@
 /* a same-day cluster is a fact, not a zoom artefact — it reads solid, not hollow */
 .ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
 
-.rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad);background:var(--paper);padding:14px 16px 16px}
+.rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:14px 16px 16px}
 .rec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
 .rec-t{font:600 10.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
 .rec-n{font-size:11.5px;color:var(--ink3)}
-.rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:7px;
+.rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
   padding:6px 11px;font:500 12px/1 var(--ui);cursor:pointer}
 .rec-cta:hover{border-color:var(--patch);color:var(--patch)}
 .rec-list{list-style:none;margin:0;padding:0;position:relative}
@@ -58,13 +58,13 @@
   padding:9px 4px;border-bottom:1px solid var(--rule);cursor:pointer}
 .rec-row:last-child{border-bottom:0}
 .rec-row:hover,.rec-row:focus-visible{background:var(--hi)}
-.rec-mk{width:11px;height:11px;border-radius:2px;transform:rotate(45deg) scale(.82);
+.rec-mk{width:11px;height:11px;border-radius:var(--rad-1);transform:rotate(45deg) scale(.82);
   background:var(--sunk);box-shadow:inset 0 0 0 1.5px var(--patch);position:relative;z-index:1}
 .rec-row.cur .rec-mk{background:var(--patch);box-shadow:0 0 0 4px color-mix(in srgb,var(--patch) 22%,transparent)}
 .rec-ttl{font:600 13.5px/1.3 var(--ui);color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec-row.cur .rec-ttl{color:var(--ink)}
 .rec-d,.rec-meta{font:500 11px/1 var(--data);letter-spacing:.07em;color:var(--ink3);white-space:nowrap}
-.rec-tag{font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:4px;
+.rec-tag{font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:var(--rad-2);
   background:var(--sunk);color:var(--ink3);white-space:nowrap}
 .rec-row.cur .rec-tag{background:color-mix(in srgb,var(--patch) 18%,transparent);color:var(--patch)}
 .rec-empty{list-style:none;font-size:13px;color:var(--ink3);padding:8px 0}
@@ -213,9 +213,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787666185"></script>
-<script src="assets/timeline.js?v=1787666185"></script>
-<script src="assets/shell.js?v=1787666185"></script>
+<script src="assets/fixtures.js?v=1787675340"></script>
+<script src="assets/timeline.js?v=1787675340"></script>
+<script src="assets/shell.js?v=1787675340"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;

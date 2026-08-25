@@ -210,6 +210,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-25 00:52 EDT — The four filed bugs, and the audit that was scrolling the page it audits (v3.68.0-pre)
 - 2026-08-25 09:02 EDT — Thirty instances, five shapes: the pass that stopped fixing instances (v3.68.0-pre)
 - 2026-08-25 09:52 EDT — The gates nobody was running, and two type scales in one :root (v3.68.0-pre)
+- 2026-08-25 12:29 EDT — the corner nobody could see, and an undo the copy kept promising (v3.68.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3641,6 +3642,32 @@ The brief was to attack everything — the portal, its code, this document, the 
 **Is it ready to wire?** Yes. Every surface designed and looked at, every async state a backend introduces designed, the data contracts proven byte-identical against the real parser over 133 real builds, the three gating decisions answered, and the twelfth permission token now real in the bot with the schema gate validating it.
 
 **Is it Awwwards-worthy? No, and that should be said plainly rather than left for a green audit to imply.** It is excellently engineered and conventionally designed. There is a real conceptual spine — shape is state, colour is topic, tier is a reversibility ladder made visible — and the writing is the strongest single element in the package. But the visual language is a hundred per cent rectangles on the standard dark-admin ground with accents borrowed from the bot, and **there is no signature moment**: nothing on any screen that anybody would screenshot. That is a design fork rather than a defect, and it is not mine to take. What must not happen is "ALL CLEAN — 73 passes" being read as "the design is finished". It is *correct*, which is the floor.
+
+## 2026-08-25 12:29 EDT — the corner nobody could see, and an undo the copy kept promising (v3.68.0)
+
+Harkirat answered four questions about the portal. Two became code, two became judgement, and one of his answers corrected the way I had framed the whole thing.
+
+I had asked which single surface should be pushed until it was memorable. He answered with a question: *"why push one surface? does an awwwards worthy website compromise on one thing? or does it push every aspect of the website to it's upper echelon?"*
+
+He is right, and the error is worth naming precisely rather than just conceding. I had been reasoning from a real design principle — spend your boldness in one place, keep everything around it quiet — but that principle is about **loudness**, not **level**. I collapsed the two. An award-level interface is not one hero screen surrounded by defaults; the test is whether you can identify the product from any 200×200 crop, and seven forgettable crops plus one memorable one still fails it.
+
+Applying that test gives a far more useful answer than "pick a surface". A crop is identifiable when it carries a type voice, a material, a shape language and a colour of its own. The portal has a considered two-family type pairing and topic accents borrowed wholesale from the bot — and **no shape language at all**, which turned out not to be an aesthetic opinion.
+
+`border-radius` appeared **308 times across 29 distinct values**: 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 20px, plus 50%, 99px and 999px. `--rad` existed the whole time and carried 44 of them. Eight steps inside a 1–9px band is not a scale, and `tokens.css` says so in its own words about type — *"a dashboard fails typographically when every size is within 4px of every other size"* — in the very file where the corners disagree.
+
+**No rule in the audit could ever have found this, and that is the part worth carrying.** Every audit rule asks *for each element, is P true?* Twenty-nine answers disagreeing is not a property of any one element, so there is no element to ask about. It is the same shape as the two type scales colliding in one `:root`, and the same shape as a ruler and its lanes computing from two different origins. The fix is not a fortieth per-element rule; it is a source-level check, in CI, where the whole population is visible at once.
+
+The scale is three steps at the population centroids, so most declarations moved by 0 or 1px — plus two values that are deliberately **not** steps. A pill and a circle are shapes, not sizes, and folding them into a numeric scale is exactly how a pill becomes a rounded rectangle: the four `20px` declarations were all pill-shaped chips at 32px tall, and nearest-number would have squared them.
+
+The new gate then failed in a way I could not have planted. Its exemption comment was matched with a pattern that cannot cross an internal asterisk — and the one real exemption in the package is the Discord preview card, whose comment contains `--dc-*`. The comment was never recognised, its prose was parsed as the value, and the gate reported **fourteen English words as illegal corner values**. A pattern that cannot parse the single case it was written for is the same defect as a probe that cannot report presence. It cost nothing to find, because the gate simply went red — which is the argument for writing the check before trusting the sweep.
+
+It also ships with **two** falsifiers rather than one. An off-scale value must fail, and a legal corner must stay quiet. The second is the half normally left out, and without it the check could be rewritten to fail unconditionally while every existing probe still reported green.
+
+The other change was smaller and older. `shell.js` has rendered `reversible · undo stays in the tray` on the selection bar for days, and the remove drawer says *"the tray can put it back until then"* — while the tray offered exactly two verbs, **Discard everything** and Review. The one thing the copy named was the one thing missing, the same class as the tray header that carried `role="button"` with nothing listening. Harkirat settled the mechanic: ⌘Z stays native, for undoing typed edits in a field, and taking back a staged change is a button.
+
+Building it produced a defect that only opening the page could show. Every staging site calls `Store.add()` — which renders the tray — and *then* `Store.onInvert()`. So a row's undo is drawn before its own inverse exists: staging two removals live gave me `Store.inverses` holding both ids and the second button still disabled. A state read one call too early, which is the same mistake as an audit measuring a half-laid-out page, in a different costume.
+
+And a warning outlived the thing it warned about. §15.11 still closed with *"`prefers-reduced-motion` is still UNVERIFIED — nothing has ever observed those rules taking effect"*, which stopped being true earlier the same day **in the same document**. A caution left standing after its cause is fixed is the same defect it was written to prevent, pointing the other way.
 
 # Part B — Lessons Ledger (thematic)
 

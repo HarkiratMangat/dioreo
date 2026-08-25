@@ -56,7 +56,7 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **5.9j–5.9s** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **5.9j–5.9u** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale and the tray’s per-row undo** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 
@@ -2149,6 +2149,72 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 
 ---
 
+## 5.9u THE SHAPE SCALE, AND AN UNDO THE COPY HAD BEEN PROMISING FOR WEEKS
+
+*2026-08-25 12:29 EDT. Two of Harkirat's four answers landed as code; the other two landed as judgement and are recorded here so they are not re-litigated.*
+
+### 5.9u.1 ⌘Z stays NATIVE — the undo is a button, and the tray never had one
+
+**His words:** *"i dont want cmd z to revert a fully staged item, i'd rather have a mechanic button for that action. i want cmd z to remain as a native undo, such as undoing typed edits in a text field, etc"*
+
+Measured before changing anything, because the question was whether ⌘Z was already taken: **nothing in the package binds it.** `shell.js` binds ⌘K for the palette and checks `metaKey` explicitly; the three bare-key `n` shortcuts on Broadcast, Armory and Access all return early on `metaKey || ctrlKey || altKey` **and** on `INPUT|TEXTAREA|SELECT`. So native undo inside a field has always worked and no code was needed for that half.
+
+The other half was a defect. `shell.js` has rendered the copy **`reversible · undo stays in the tray`** on the selection bar since the delete/export work, and the tray offered exactly two verbs — **Discard everything**, and Review. The one thing the copy named was the one thing missing. That is the same class as the tray header that carried `role="button" aria-expanded` with nothing listening, and as the remove-confirmation drawer whose body reads *"the tray can put it back until then"* — written for a mechanic that did not exist.
+
+**Now:** every row in the tray carries its own `Undo`. Per row, because `Discard` is all-or-nothing and one mistake in a five-op changeset should not cost the other four.
+
+### 5.9u.2 The undo is honest about where it can run — a route, not a refusal
+
+`Store.inverses` is an **in-memory** map; `Store.all()` reads `sessionStorage`, which survives navigation. So an op staged on Season has no inverse the moment you walk to Armory, and a naive button would be dead on every other realm.
+
+`Store.add()` now stamps `op.realm` at the one choke point every staging path already passes through — the same place the tier is derived, and for the same reason: a per-page stamp is a per-page thing to forget. The tray then renders one of three states:
+
+| state | control |
+|---|---|
+| the inverse is registered here | **`Undo`** — reverts the change and drops the record |
+| staged on another realm | **`Undo on Season`**, a link to that realm — *the answer is a route, not a no* |
+| no inverse and no realm known | disabled, with the reason in the title |
+
+🔴 **A DEFECT THIS FOUND, AND ONLY LOOKING FOUND IT.** Every staging site calls `Store.add()` — which renders the tray — and *then* `Store.onInvert()`. So at the moment a row is first drawn, its own inverse does not exist yet: staging two removals on Season live produced `Store.inverses` holding **both** ids and the **second button still disabled**. A state read one call too early, which is the same shape as an audit measuring a half-laid-out page. `onInvert()` re-renders the tray now.
+
+### 5.9u.3 The shape scale — 308 declarations, 29 values, and no rule could ever have seen it
+
+**Measured:** `border-radius` appeared **308 times across 29 distinct values** — `1px 1.5px 2px 2.5px 3px 4px 5px 6px 7px 8px 9px 10px 11px 12px 14px 20px 50% 99px 999px` and multi-value forms — while `--rad` existed and carried **44** of them. Eight steps inside a 1–9px band is not a scale; it is noise. It is `tokens.css`'s own type warning — *"a dashboard fails typographically when every size is within 4px of every other size"* — applied to corners instead of text, and sitting in the file that states it.
+
+**No browser rule could have caught this, and that is the general lesson rather than a detail.** Every audit rule asks *for each element, is P true?* — and 29 answers disagreeing is not a property of any one element. It is a source-level invariant, so it is checked at the source, in CI, by `portal:gate`'s **`radius-scale`**, rather than in a harness a human has to remember to open.
+
+**The scale, with steps at the population centroids so the collapse moves most declarations by 0–1px:**
+
+| token | value | for |
+|---|---|---|
+| `--rad-1` | 3px | chips, ticks, tags — boxes under ~24px |
+| `--rad-2` | 6px | the default: buttons, inputs, cards, panels |
+| `--rad-3` | 10px | large containers: drawers, modals, the ⌘K palette |
+| `--rad-round` | 50% | circles — avatars, dots, status beads |
+| `--rad-pill` | 999px | pills — a radius that always exceeds half the height |
+
+⚠️ **The last two are NOT steps.** A pill and a circle are *shapes*, not sizes, and folding them into a numeric scale is exactly how a pill becomes a rounded rectangle. The four `20px` declarations were all pill-shaped chips at 32px tall, so they became `--rad-pill`, not `--rad-3` — nearest-number would have been wrong.
+
+**One exemption, declared at the site rather than in an allowlist:** `.dcard`'s 8px is *Discord's own* corner, namespaced-foreign in the same spirit as the `--dc-*` colours, because the preview must look like Discord or it stops being a truthful preview. It carries `/* foreign-radius: … */` where a reader will see it.
+
+### 5.9u.4 This REVERSES a decision made two days ago, and says so
+
+v3.68.0's changelog entry recorded this same measurement and concluded: *"left alone deliberately, since most are intentional at their sites."* That is now reversed, on Harkirat's answer of 2026-08-25 — asked whether one surface should be pushed to be memorable, he replied: *"why push one surface? does an awwwards worthy website compromise on one thing? or does it push every aspect of the website to it's upper echelon?"* A shape language is an aspect. ⚠️ **The earlier entry also undercounted** — it said *"256 hardcoded literals across nine values"*, which was `app.css` simple-`px` declarations only; the full figure across every file and form is 308 / 29.
+
+### 5.9u.5 The gate's own falsifier was blind before it was vacuous
+
+`radius-scale` shipped with **two** probes, because a check that fires on everything is as useless as one that fires on nothing and the second half is the one normally left out: an off-scale value must fail, **and a legal corner must stay quiet**. Without the second, the function could be rewritten to fail unconditionally and every existing falsifier would still go green.
+
+It also failed a way no plant would have found. The first version matched the exemption comment with `/\*[^*]*\*/`, which **cannot cross an internal `*`** — and the one real exemption in this package contains `--dc-*`. The comment was never recognised, so its prose was parsed as the value and the gate reported **fourteen English words as illegal corner values**. A pattern that cannot parse the single case it was written for is the same defect as a probe that cannot report presence; it cost nothing to find because the gate simply went red.
+
+### 5.9u.6 `season.html` stays one file — the reason, since the question will come back
+
+Harkirat delegated this one: *"i'll leave it in your judgement based on agentic workflow because realistically claude code will be touching it, not really me or another human dev."*
+
+**Measured rather than felt:** 2,847 lines, of which **2,630 are one `<script>`** holding **one IIFE and 78 top-level functions** — but also **twelve `═══` section banners** spread evenly (442, 721, 1663, 1856, 1921, 1973, 2200, 2276, 2553, 2653, 2700, 2752) and 82 top-level rationale comments. ⚠️ **My first probe said there were none**, because its pattern also returned zero on `shell.js`, which is full of them — a blind probe, caught by falsifying it against a file whose answer was known. A second wrong reading followed: "two 1,100-line unsectioned regions" was an artifact of `head -50` truncating the banner list.
+
+So the file is **navigable**: `rg '═══' season.html` derives its map live and can never go stale, which is strictly better than any index written into the file. Against that, splitting would touch the most-verified file in the package, teach the refs gate about external page scripts, add cache-buster stamps, and produce structure that Harkirat's decision #2 (§15.11 — the wiring **rebuilds** from these mockups) throws away for a different runtime. **It stays.**
+
 ## 5.9o THE FOUR FILED BUGS — two were the product, two were the checks
 
 *Written 2026-08-25. Four items were filed in `docs/db-deferred-list.md` at the end of the previous session, each with a repro and a verification step. Working them turned out to be the most instructive hour of the whole project, because **two of the four were defects in the checking apparatus, and one of those had a diagnosis that was confidently wrong**. What follows is what each one actually was.*
@@ -2686,4 +2752,4 @@ What that means concretely, and each line is a design obligation rather than a s
 
 *Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **both** drag surfaces — Season's Board and Armory's tier board. *(This read "all three" until 2026-08-24, counting a Broadcast reorder that had been removed.)**
 
-> ⚠️ **`prefers-reduced-motion` is still UNVERIFIED and should not be called done.** Six blocks exist in `app.css` and the syntax is right, but no tool in this session could emulate the preference, so nothing has ever observed those rules taking effect. **Do not read "the CSS is there" as "it works"** — that is the shape of assumption this document exists to stop.
+> ⚠️ **`prefers-reduced-motion` is TWO-THIRDS proven — and this paragraph was the stale third.** It read *"still UNVERIFIED… six blocks exist… nothing has ever observed those rules taking effect"* until 2026-08-25 11:4x EDT, which stopped being true earlier the same day and in the same document: **§15.7b** measured 93 animating selectors, found **10 with no override** (including an infinite 2.8s pulse), covered them, and put **audit rule 14** on the relationship; `.states.html` **PASS 4f** then lifted every reduced-motion rule and observed `getAnimations()` reporting zero *running* animations on all eight pages. What is still unproven is only the **gating** — that the media query switches them on — because nothing here can emulate the feature (filed in `docs/db-deferred-list.md` with the CDP one-liner). **The lesson survives its own correction:** three claims — coverage, effect, gating — do not collapse into one green, and a warning left standing after the thing it warns about is fixed is the same defect it was written to prevent, pointing the other way.

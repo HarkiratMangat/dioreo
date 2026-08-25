@@ -67,7 +67,25 @@
   --dur-2:180ms;   /* transition */
   --dur-3:320ms;   /* entrance */
 
-  --rail-w:76px; --hdr-h:52px; --rad:6px; --gap:14px;
+  --rail-w:76px; --hdr-h:52px; --gap:14px;
+
+  /* SHAPE SCALE — the same defect as the type scale above, one level out and never checked.
+     Measured 2026-08-25: **308 `border-radius` declarations across 29 DISTINCT values** — 1px,
+     1.5px, 2px, 2.5px, 3px, 4px, 5px, 6px, 7px, 8px, 9px, 10px, 11px, 12px, 14px, 20px … — while
+     `--rad` existed and carried only 44 of them. Eight steps inside a 1–9px band is not a scale;
+     it is noise, and it is exactly what tokens.css's own type comment warns about ("a dashboard
+     fails typographically when every size is within 4px of every other size") applied to corners
+     instead of text. Nothing could see it: every audit rule asks `for each element, is P true?`,
+     and no per-element question can notice that 29 answers disagree.
+     Three steps, plus two SEMANTIC values that are not steps at all — a pill and a circle are
+     shapes, not sizes, and folding them into a scale is how a pill becomes a rounded rectangle.
+     Steps sit at the population centroids so the collapse moves most declarations by 0–1px.
+     🔴 Enforced by `.schema-gate.mjs`'s `radius-scale`, so a 30th value cannot appear. */
+  --rad-1:3px;        /* chips, ticks, tags, tiny controls — boxes under ~24px */
+  --rad-2:6px;        /* the DEFAULT: buttons, inputs, cards, panels */
+  --rad-3:10px;       /* large containers: drawers, modals, the ⌘K palette */
+  --rad-round:50%;    /* circles — avatars, dots, status beads */
+  --rad-pill:999px;   /* pills — a radius that always exceeds half the height */
   --tap:44px;                        /* minimum touch target */
 
 

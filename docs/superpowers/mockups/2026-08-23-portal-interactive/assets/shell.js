@@ -59,6 +59,17 @@
   ];
 
   const KEY = 'dioreo-portal-staged';
+
+  /* Which realm is on screen. Used to stamp a staged op with where it was made, so the tray
+   * can offer a per-row undo that is HONEST: `Store.inverses` is an in-memory map rebuilt on
+   * every page load, so an op staged on Season has no inverse once you walk to Armory. Without
+   * the stamp the tray could only say "no", which is the shape of answer this package keeps
+   * having to fix — it says "undo it on Season" and links there instead. */
+  const hereRealm = () => {
+    const f = location.pathname.split('/').pop() || 'index.html';
+    return REALMS.find(r => r.href === f) || null;
+  };
+
   const Store = {
     all(){ try { return JSON.parse(sessionStorage.getItem(KEY)) || []; } catch { return []; } },
     save(v){ sessionStorage.setItem(KEY, JSON.stringify(v)); Shell.renderTray(); },
@@ -111,13 +122,22 @@
       if (op.rows) op.rows = op.rows.map(r => Array.isArray(r)
         ? { field:r[0], was:r[1], becomes:r[2] }
         : r);
+      /* Stamped at the ONE choke point every staging path already passes through, for the same
+       * reason the tier is derived here — a per-page stamp would be forgotten by the next page. */
+      if (!op.realm) { const r = hereRealm(); if (r) op.realm = { href:r.href, label:r.label }; }
       a.push(op); Store.save(a); Shell.pulseTray(); return true; },
     remove(id){ Store.save(Store.all().filter(o => o.id !== id)); },
     clear(){ Store.save([]); },
     /* Inverses, keyed by op id. Store holds a RECORD of a change; reverting the record does
      * not by itself undo the change — that gap let a discarded item stay on the Track. */
     inverses: {},
-    onInvert(id, fn){ Store.inverses[id] = fn; },
+    /* 🔴 RE-RENDER. Every staging site calls `Store.add()` (which renders the tray) and THEN
+     * `onInvert()`, so at the moment a row is first drawn its own inverse does not exist yet —
+     * the newest row rendered its undo DISABLED while the ones above it were fine. Measured
+     * live on Season: two removals staged, `Store.inverses` held both ids, and the second
+     * button still said disabled. A state read one call too early, which is the same defect
+     * shape as an audit that measures a half-laid-out page. */
+    onInvert(id, fn){ Store.inverses[id] = fn; Shell.renderTray && Shell.renderTray(); },
     revertAll(){ const ops = Store.all();
       ops.slice().reverse().forEach(o => { const f = Store.inverses[o.id]; if (f) { try { f(); } catch (e) {} } });
       Store.inverses = {}; Store.save([]); return ops; },
@@ -191,14 +211,30 @@
       t.hidden = ops.length === 0;
       if (!ops.length) return;
       const blocked = Store.blocked();
+      const here = hereRealm();
       t.innerHTML = `
         <div class="tray-h" role="button" tabindex="0" aria-expanded="true">
           <span class="t">Staged</span><span class="n">${ops.length} change${ops.length>1?'s':''}</span>
         </div>
-        <div class="rounds">${ops.map(o => `
+        <div class="rounds">${ops.map(o => {
+          /* 🔴 THE TRAY PROMISED AN UNDO IT DID NOT HAVE. `selbar-rev` has always read
+           * "reversible · undo stays in the tray" while the tray offered exactly two verbs,
+           * Discard-everything and Review — so the one thing the copy named was the one thing
+           * missing, the same class as the tray header that carried role="button" with nothing
+           * listening. Harkirat settled the mechanic on 2026-08-25: ⌘Z stays NATIVE (undoing
+           * typed edits in a field), and taking back a staged change is a button. Per ROW,
+           * because Discard is all-or-nothing and one mistake in a five-op changeset should
+           * not cost the other four. */
+          const back = Store.inverses[o.id]
+            ? `<button type="button" class="round-u" data-undo="${o.id}" aria-label="Undo ${o.name} ${o.verb||'added'}">Undo</button>`
+            : (o.realm && (!here || o.realm.href !== here.href))
+              /* Not a refusal — a route. The inverse lives on the page that staged it. */
+              ? `<a class="round-u" href="${o.realm.href}" aria-label="Undo ${o.name} ${o.verb||'added'} on ${o.realm.label}">Undo on ${o.realm.label}</a>`
+              : `<button type="button" class="round-u" disabled aria-label="Cannot undo ${o.name} ${o.verb||'added'}" title="This change was staged before the page reloaded, so the portal no longer holds the step that puts it back. Discard clears the whole changeset.">Undo</button>`;
+          return `
           <div class="round ${o.tier===3?'t3':''}">
-            <span class="tier">T${o.tier}</span><b>${o.name}</b> ${o.verb||'added'}
-          </div>`).join('')}</div>
+            <span class="tier">T${o.tier}</span><b>${o.name}</b> ${o.verb||'added'}${back}
+          </div>`; }).join('')}</div>
         <div class="tray-f">
           <button class="btn no" data-act="discard">Discard</button>
           <button class="btn go" data-act="review">Review &amp; commit</button>
@@ -234,6 +270,17 @@
         Shell.onAfterRevert && Shell.onAfterRevert();
       };
       t.querySelector('[data-act=review]').onclick = () => { location.href = 'review.html'; };
+
+      /* Read the op BEFORE reverting: Store.revert -> remove -> save -> renderTray, so this
+       * very button is detached by the time the handler returns. */
+      t.querySelectorAll('button.round-u[data-undo]').forEach(b => {
+        b.onclick = () => {
+          const o = Store.all().find(x => x.id === b.dataset.undo);
+          Store.revert(b.dataset.undo);
+          Shell.toast(`Took back "${o ? o.name : 'that change'}". It is no longer staged.`);
+          Shell.onAfterRevert && Shell.onAfterRevert();
+        };
+      });
     },
 
     toast(msg, actionLabel, onAction){
