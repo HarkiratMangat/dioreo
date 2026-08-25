@@ -3,7 +3,7 @@
 <title>Analytics · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
+<link rel="stylesheet" href="assets/tokens.css?v=1787681449"><link rel="stylesheet" href="assets/app.css?v=1787681449">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -50,8 +50,13 @@
       <div id="viewSearch" hidden></div>
     </section>
 
-    <section class="panel" style="margin-top:16px" aria-label="Manifest">
+    <!-- 04 · The Manifest existed only as an aria-label and in two toasts, so a toast saying
+           "Pick a category chip in the Manifest" pointed at a word that was nowhere on the
+           screen it was pointing at. It is one component with one spec across four pages, so
+           it gets the same eyebrow treatment every other labelled row here uses. -->
+    <section class="panel" style="margin-top:16px" aria-labelledby="mfLabel">
       <div class="mtools">
+        <span class="mlabel"><span id="mfLabel">Manifest</span></span>
         <span class="srch"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
           <label class="sr" for="q">Search alerts and changes</label>
           <input id="q" type="search" placeholder="Search alerts and changes…" autocomplete="off">
@@ -75,8 +80,8 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787679479"></script>
-<script src="assets/shell.js?v=1787679479"></script>
+<script src="assets/fixtures.js?v=1787681449"></script>
+<script src="assets/shell.js?v=1787681449"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -537,7 +542,7 @@
           : 'Deploy records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that tells you what is actually running.'}</p>
       </div>`,
       actions:`<button class="btn" id="eOk">Close</button>` +
-        (r.kind === 'change' && !r.undone ? `<button class="btn dang" id="eUndo">Undo this change</button>` : '')
+        (r.kind === 'change' && !r.undone ? `<button class="btn dang" id="eUndo">Reverse this change</button>` : '')
     });
     document.getElementById('eOk').onclick = () => S.closeDrawer();
     const u = document.getElementById('eUndo');
@@ -645,7 +650,7 @@
   }
 
   function renderAll(){ renderHealth(); renderUsage(); renderTiming(); renderReach(); renderSearch();
-    S.mastheadExport({ host:'#mhAnchor', scopes:analyticsScopes, label:'Take out',
+    S.mastheadExport({ host:'#mhAnchor', scopes:analyticsScopes, label:'Export',
       summary:() => 'CSV for a spreadsheet · 5 tables' });
     renderRows(); renderStats(); S.mountRail('analytics'); }
   renderAll();

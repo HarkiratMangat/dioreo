@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
+<link rel="stylesheet" href="assets/tokens.css?v=1787681449"><link rel="stylesheet" href="assets/app.css?v=1787681449">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -163,8 +163,13 @@
       <div id="viewRepairs" hidden></div>
     </section>
 
-    <section class="panel" style="margin-top:16px" aria-label="Manifest">
+    <!-- 04 · The Manifest existed only as an aria-label and in two toasts, so a toast saying
+           "Pick a category chip in the Manifest" pointed at a word that was nowhere on the
+           screen it was pointing at. It is one component with one spec across four pages, so
+           it gets the same eyebrow treatment every other labelled row here uses. -->
+    <section class="panel" style="margin-top:16px" aria-labelledby="mfLabel">
       <div class="mtools">
+        <span class="mlabel"><span id="mfLabel">Manifest</span></span>
         <span class="srch">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
           <label class="sr" for="q">Search this season</label>
@@ -213,9 +218,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787679479"></script>
-<script src="assets/timeline.js?v=1787679479"></script>
-<script src="assets/shell.js?v=1787679479"></script>
+<script src="assets/fixtures.js?v=1787681449"></script>
+<script src="assets/timeline.js?v=1787681449"></script>
+<script src="assets/shell.js?v=1787681449"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -613,7 +618,7 @@
         <span class="dsub">${st.draft.currentSeasonTitle || 'untitled'} · ${n} item${n===1?'':'s'} · not visible to players</span>
         <span class="sp"></span>
         <button class="chip" id="dDiff" aria-pressed="false">Compare</button>
-        <button class="chip danger" id="dDiscard">Discard</button>
+        <button class="chip danger" id="dDiscard">Discard draft</button>
         <button class="commit" id="dPromote">Promote to live</button>
       </div>
       <div id="diffBox" hidden>${renderDiff()}</div>`;
@@ -2085,7 +2090,7 @@
             <div class="bmeta${boardSoon(i, c.k) ? ' soon' : ''}">${boardMeta(i, c.k)}</div>
             ${i.kind === 'point' ? '' : `<div class="sparkwrap">${spark(i)}</div>`}
             ${c.k === 'staged' ? `<div class="actions">
-              <button data-discard="${i.id}">Discard</button>
+              <button data-discard="${i.id}">Undo</button>
               <button class="go" data-commit="${i.id}">Review</button></div>` : ''}
           </div>`).join('') : `<p class="bempty">${EMPTY[c.k]}</p>`}
         </div>

@@ -238,13 +238,13 @@
             : (o.realm && o.realm.href && (!here || o.realm.href !== here.href))
               /* Not a refusal — a route. The inverse lives on the page that staged it. */
               ? `<a class="round-u" href="${o.realm.href}" aria-label="Undo ${o.name} ${o.verb||'added'} on ${o.realm.label}">Undo on ${o.realm.label}</a>`
-              : `<button type="button" class="round-u" disabled aria-label="Cannot undo ${o.name} ${o.verb||'added'}" title="This change was staged before the page reloaded, so the portal no longer holds the step that puts it back. Discard clears the whole changeset.">Undo</button>`;
+              : `<button type="button" class="round-u" disabled aria-label="Cannot undo ${o.name} ${o.verb||'added'}" title="This change was staged before the page reloaded, so the portal no longer holds the step that puts it back. Discard all clears every staged change.">Undo</button>`;
           return `
           <div class="round ${o.tier===3?'t3':''}">
             <span class="tier">T${o.tier}</span><b>${o.name}</b> ${o.verb||'added'}${back}
           </div>`; }).join('')}</div>
         <div class="tray-f">
-          <button class="btn no" data-act="discard">Discard</button>
+          <button class="btn no" data-act="discard">Discard all</button>
           <button class="btn go" data-act="review">Review &amp; commit</button>
         </div>
         ${blocked ? `<p class="hint">${blocked} tier-3 change${blocked>1?'s':''} need${blocked>1?'':'s'} an export before it will commit.</p>` : ''}`;
@@ -273,7 +273,7 @@
       };
 
       t.querySelector('[data-act=discard]').onclick = () => {
-        const undone = Store.revertAll();
+        const undone = Store.revertAll();  /* 06 · "Discard all" is the only all-or-nothing verb */
         Shell.toast(`Discarded ${undone.length} staged change${undone.length>1?'s':''}.`);
         Shell.onAfterRevert && Shell.onAfterRevert();
       };
@@ -527,7 +527,10 @@
         if (kind === 'slow') { host.dataset.slow = 'Still waiting on the server\u2026';
                                host.classList.add('is-slow'); host.style.position = 'relative'; return; }
         if (kind === 'fail') return A.failure(host, {
-          what: 'Could not load this realm',
+          /* 01 · "realm" is the code's word for one of the eight and stays there; anything a
+           * person reads names the page. "Could not load this realm" made the reader translate
+           * a word the portal never defines on screen. */
+          what: 'Could not load ' + ((hereRealm() || {}).label || 'this page'),
           means: 'The portal reached the server and the server could not read the season document. '
                + 'Nothing has been written, and anything you had staged is still here.',
           detail: 'GET /api/season → 500\nMongoServerError: connection <monitor> to 10.0.0.4:27017 timed out',
@@ -594,7 +597,7 @@
       const a = Shell.actor();
       if (a.isOwner || a.destructive) return '';
       return 'One-way operations are owner-only. The owner can grant the Destructive capability '
-           + 'in Access; nothing else unlocks this, including a bare manage token.';
+           + 'in Access; nothing else unlocks this, and holding manage does not.';
     },
 
     /* Tier-3 actions all need the same shape: name the operation, say what it does in
@@ -749,6 +752,15 @@
      * degrades to what it had rather than to nothing. */
     commandBar({ items, run, placeholder }){
       const wrap = document.getElementById('cmdBar'), inp = document.getElementById('cbIn');
+      /* Named here rather than in the markup because the markup does not know which page it is
+       * on. `phFull` is what the shrink logic reads as the longest candidate, so it has to be
+       * set before the first measurement rather than after. */
+      if (inp && !placeholder) {
+        const here = hereRealm();
+        const ph = here ? 'Search ' + here.label + ', or run a command' : 'Search, or run a command';
+        inp.placeholder = ph; inp.dataset.phFull = ph; inp.setAttribute('aria-label', ph);
+        if (here) inp.dataset.phShort = 'Search ' + here.label;
+      }
       if (!wrap || !inp) return;
       /* The input opts OUT of the global form reset rather than trying to out-specify it —
        * see the long note on that rule in app.css. Set here rather than in the markup so a
@@ -1705,7 +1717,7 @@
     <div class="cmdbar" id="cmdBar">
       <span class="cb-mag" aria-hidden="true"></span>
       <input id="cbIn" class="cb-in" autocomplete="off" spellcheck="false"
-             placeholder="Search this realm, or run a command" aria-label="Search this realm, or run a command"
+             placeholder="Search, or run a command" aria-label="Search, or run a command"
              role="combobox" aria-expanded="false" aria-controls="cbList" aria-autocomplete="list">
       <kbd>⌘K</kbd>
       <div class="cb-drop" id="cbDrop" hidden><div class="plist" id="cbList" role="listbox"></div></div>
@@ -1980,7 +1992,7 @@
      *   host      a selector for the element to mount AFTER (usually the create button)
      *   scopes    () => [scope]  — a function, so counts stay live across re-renders
      *   summary   () => string   — what the line says when nothing has been exported yet */
-    mastheadExport({ host, scopes, summary, label = 'Take out', note }){
+    mastheadExport({ host, scopes, summary, label = 'Export', note }){
       /* A scope that names a .csv file is going to a spreadsheet, not back into the bot, and
        * the panel's default sentence promises a round trip that would be false for it. The
        * note is derived from what the scopes actually are rather than passed by each realm,
@@ -1994,7 +2006,7 @@
       if (!el) {
         el = document.createElement('div');
         el.className = 'mh-take'; el.setAttribute('role', 'group');
-        el.setAttribute('aria-label', 'Take data out of this realm');
+        el.setAttribute('aria-label', 'Export data from ' + ((hereRealm() || {}).label || 'this page'));
         anchor.insertAdjacentElement('afterend', el);
       }
       const done = scopes().filter(x => Shell.Export.has(x.id)).length;

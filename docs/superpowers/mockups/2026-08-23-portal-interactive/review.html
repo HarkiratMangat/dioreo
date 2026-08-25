@@ -3,7 +3,7 @@
 <title>Review &amp; commit · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
+<link rel="stylesheet" href="assets/tokens.css?v=1787681449"><link rel="stylesheet" href="assets/app.css?v=1787681449">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <section class="panel" aria-label="Staged changeset">
+    <section class="panel" aria-label="Staged changes">
       <div class="ph">
         <span class="t">Changeset</span>
         <span class="sp" id="viewMeta"></span>
@@ -41,8 +41,8 @@
      the footer — two controls for one action, with the redundant one obscuring the one that
      matters. Caught by looking at a screenshot; no audit rule can see it. -->
 
-<script src="assets/fixtures.js?v=1787679479"></script>
-<script src="assets/shell.js?v=1787679479"></script>
+<script src="assets/fixtures.js?v=1787681449"></script>
+<script src="assets/shell.js?v=1787681449"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -124,8 +124,8 @@
                 </span>
               </button>
               <button class="rvdrop" data-drop="${o.id}"
-                      data-tip="Drop “${o.name}” from this changeset"
-                      aria-label="Drop ${o.name} from this changeset">&#10005;</button>
+                      data-tip="Undo “${o.name}”"
+                      aria-label="Undo ${o.name}">&#10005;</button>
             </div>`).join('')}
         </div>
         <div class="rvdet">${detail(sel)}</div>
@@ -234,7 +234,7 @@
       <div class="rvnone">
         <h4>Nothing is staged</h4>
         <p>Everything in the portal matches what the bot is serving right now. Changes arrive here
-           when you stage them from a realm — this screen is the only place they become real.</p>
+           when you stage them from any page — this screen is the only place they become real.</p>
         <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
           <a class="chip" href="season.html">Go to Season</a>
           <a class="chip" href="armory.html">Go to Armory</a>
@@ -290,7 +290,7 @@
       if (n && document.activeElement !== n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
     }
     document.getElementById('dropAll').onclick = () => {
-      S.confirm({ op:'changeset.discard', tier:1, danger:true, confirm:'Discard everything',
+      S.confirm({ op:'changeset.discard', tier:1, danger:true, confirm:'Discard all',
         title:`Discard all ${list.length} staged change${list.length > 1 ? 's' : ''}?`,
         /* The old copy said each change is "reverted — the portal puts the previous value back"
        * AND that none of it ever reached Discord, which are two different mechanics: if it never
@@ -312,7 +312,7 @@
     S.confirm({
       op:'changeset.commit', tier: list.some(o => o.tier === 3) ? 3 : 2,
       confirm:`Commit ${list.length} change${list.length > 1 ? 's' : ''}`,
-      title:'Commit this changeset?',
+      title:'Commit these staged changes?',
       body:`<p class="dw-p">All <b>${list.length}</b> changes are written in <b>one transaction</b> —
               they all land or none of them do. The bot reads fresh on every interaction, so this is
               live to players within seconds.</p>
@@ -334,7 +334,7 @@
   S.audit({
     interactions: () => [{ name:'discard confirm', run: () => {
       const b = document.getElementById('dropAll'); if (b) b.click();
-      else S.drawer({ eyebrow:'nothing staged', title:'No changeset',
+      else S.drawer({ eyebrow:'nothing staged', title:'Nothing staged',
                       body:'<p class="dw-p">The review screen is empty, so there is nothing to confirm.</p>' });
     } }]
   });

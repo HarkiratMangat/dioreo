@@ -56,7 +56,7 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **5.9j–5.9w** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice, the copy audit** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **5.9j–5.9x** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice, the copy audit, the vocabulary** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 
@@ -2148,6 +2148,35 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 ⚠️ **No privacy amendment is needed, and that was checked rather than assumed.** `docs/legal/PRIVACY.md` §2.1b and Appendix A already describe `AdminUser` as holding "which pages/commands they can use" — the `permissions` array is disclosed generically, so a new token in it is neither a new field nor a new kind of data.
 
 ---
+
+## 5.9x THE TWELVE WORDS — the vocabulary, settled before the rebuild
+
+*Decided 2026-08-25 14:0x EDT by Harkirat, from a rendered decision document rather than a list in prose. Settling it now is not tidiness: **the wiring rebuild copies these strings forward**, and a rebuild is where a vocabulary stops being a choice and becomes the product.*
+
+### 5.9x.1 The four that were real forks
+
+| concept | decided | what it means in practice |
+|---|---|---|
+| **a section of the portal** | `realm` **stays in the code, leaves the copy** | `Shell.REALMS` and the rail's grouping keep the word — it is a good developer word for "one of the eight". Anything a person reads names the page: *"Could not load Season"*, *"Search Access, or run a command"* |
+| **a grantable unit of access** | **`permission`** | Four words for one thing — token (38), scope (69), permission (30), capability (10) — on the screen where you hand someone the ability to purge data. "Permission" is the only one a non-author would reach for, and the form field already used it |
+| **taking a record out** | **`Remove`** (reversible) + **`Purge`** (one-way), `Delete` retired | The two words map onto reversibility, so the word itself tells you whether you can take it back. `Delete` meant the same as `Remove` but *sounded* worse, which made the safe act feel dangerous and the dangerous one feel ordinary |
+| **the big table** | **give it a visible heading** | "Manifest" existed only in an `aria-label` and two toasts, so a toast saying *"Pick a category chip in the Manifest"* pointed at a word nowhere on the screen it pointed at. It now carries the same eyebrow every other labelled row uses, inside the tools row so it costs no vertical space |
+
+⚠️ **The `permission` decision creates a deliberate split and it must not be "fixed" later.** The bot's model is `MANAGE_PAGE_SCOPES`, so **scope is the right word in the source and permission is the right word in the UI.** They differ on purpose.
+
+### 5.9x.2 The eight with no real fork
+
+**Undo** for taking one staged change back (retiring *Drop*, *take back*, item-level *Discard*) · **Discard all** as the single all-or-nothing label, which is what lets *Undo* always mean "this one" · **staged changes**, not *changeset*, a git word that appeared only on Review · **Export** for the control and the verb with **Download** reserved for the button that produces a file, retiring *Take out*, *Record*, *Audit*, *Export out* · **blocker**, not *gate* · **format** for an export's shape, because *scope* already means a permission on an adjacent screen · **Reverse** for undoing something already **committed**, because that is a new write and not an un-happening · and **one past-tense verb per op** in the tray, which is where every realm's language ends up side by side.
+
+🔴 **The `Undo` / `Reverse` split is the one with teeth.** Analytics offered *"Undo this change"* on a row that had already reached players. Keeping one word for both senses teaches that committing is reversible — the single belief the whole tier system exists to prevent.
+
+### 5.9x.3 A defect in my own tooling, recorded because it repeated
+
+The scripted multi-edit helper used all session **wrote the file once, after its loop**. So when a later assertion failed, **five edits that had already printed a tick were silently discarded** — `reachable scope`, the TTL-index line and three drawer eyebrows were still in the tree hours after being "applied".
+
+⚠️ **This exact failure was recorded earlier the same day and repeated anyway.** A per-edit print says the replacement **matched**; only the write says it **landed**. The helper now writes after **every** edit and reports a miss without aborting, so one bad anchor can never take the successful edits with it.
+
+**The general form, which is the part worth keeping:** an operation that batches N changes and commits once has a failure mode that looks exactly like success right up until you check the artifact — the same shape as a cached green, and the same answer: **verify the thing, not the log.**
 
 ## 5.9w THE COPY AUDIT — the portal promised opposite things one click apart
 

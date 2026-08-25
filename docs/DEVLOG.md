@@ -213,6 +213,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-25 12:29 EDT — the corner nobody could see, and an undo the copy kept promising (v3.68.0)
 - 2026-08-25 13:15 EDT — the probe that said a font existed when it did not (v3.68.0)
 - 2026-08-25 13:41 EDT — the portal promised opposite things one click apart (v3.68.0)
+- 2026-08-25 14:14 EDT — a helper that printed a tick and wrote nothing (v3.68.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3712,6 +3713,24 @@ Most of the rest was engineering leaking into the UI. `core/ops`, `apply()`, `ow
 Two of the findings are about honesty rather than clarity. An account-menu item read **"Switch realm ⌨ G"** — it switched nothing, it toasted a sentence telling you where the rail is, and `G` was bound nowhere. And `review.html` carries a "Load a sample changeset" button explained by a paragraph addressed to a reader of the *mockup*. Both are the same defect as a tray header marked `role="button"` with nothing listening: a control that promises what it does not do. The menu item now opens the command bar it always should have; the sample button is marked `data-demo-only` with a comment naming its removal, because a thing that must be deleted later has to be findable later.
 
 The report's most valuable section is not a finding at all. It is a table of **twelve concepts the portal names more than one way** — undo / drop / take back / discard; remove / delete / purge; token / scope / permission / capability; export / take out / record / audit / download. The blockers forced a few of those to be settled. The rest has to be settled before the wiring rebuild copies the strings forward, because a rebuild is where a vocabulary stops being a choice and becomes the product.
+
+## 2026-08-25 14:14 EDT — a helper that printed a tick and wrote nothing (v3.68.0)
+
+Twelve concepts, each named more than one way, all settled in one pass. The interesting part is not which words won — it is that the deadline was real. The wiring rebuild copies these strings forward, and a rebuild is where a vocabulary stops being a choice and becomes the product. Deciding *undo* versus *drop* costs nothing today and is nearly unpayable once forty files quote it.
+
+Two of the four forks resolved the way they did for the same reason. **`realm`** stays in the code and leaves the copy: it is a good developer word for "one of the eight" and a bad one for a reader, because the portal never defines it on screen while every page is already titled something else. **`permission`** replaces token, scope and capability in the UI while the bot's model stays `MANAGE_PAGE_SCOPES` — a deliberate split between what the source calls a thing and what a person calls it, which only survives if it is written down, because otherwise it reads as drift and someone helpfully unifies it.
+
+The one with teeth was smaller. Analytics offered **"Undo this change"** on a row that had already reached players. That is not an undo — it is a new write that puts the old value back, and calling both things *undo* quietly teaches that committing is reversible, which is the single belief the entire tier system exists to prevent. It says **Reverse** now.
+
+Then the tooling failed in a way worth more than the vocabulary.
+
+Every scripted edit this session went through the same small helper: take a list of `(old, new)` pairs, assert each anchor exists, replace, print a tick, and write the file **once, after the loop**. Halfway through the copy work an anchor missed — an em-dash where I had typed `&mdash;` — and the assertion threw. Five edits above it had already printed their ticks. None of them had been written.
+
+I found it two hours later, by accident, greping for something else and seeing `reachable scope` still in the file. The ticks were not lying about anything except the thing that mattered: they confirmed the replacement **matched**, and I had read them as confirming it **landed**.
+
+What makes this worth a DEVLOG entry rather than a one-line fix is that **I had already recorded this exact failure earlier the same day.** A heredoc printed its per-edit lines and threw on a later assert, and the note I wrote about it said, in as many words, that a per-edit print does not mean the file changed. Then I kept using the same helper.
+
+The fix is trivial — write after every edit, report a miss without aborting — and the general form is not. **An operation that batches N changes and commits once has a failure mode that looks exactly like success right up until you inspect the artifact.** That is the same shape as a cached test result, as an audit that measures a half-laid-out page, and as `document.fonts.check()` returning true for a font that does not exist. Every one of them answers a question adjacent to the one being asked, in a well-formed voice, and the only defence is the same in all four cases: check the thing, not the log about the thing.
 
 # Part B — Lessons Ledger (thematic)
 

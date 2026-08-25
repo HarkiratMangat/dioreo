@@ -3,7 +3,7 @@
 <title>Access · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787679479"><link rel="stylesheet" href="assets/app.css?v=1787679479">
+<link rel="stylesheet" href="assets/tokens.css?v=1787681449"><link rel="stylesheet" href="assets/app.css?v=1787681449">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -33,7 +33,7 @@
         <span class="t">Access</span>
         <div class="seg" role="tablist" aria-label="View">
           <button role="tab" data-view="grid" aria-pressed="true">By admin</button>
-          <button role="tab" data-view="scope" aria-pressed="false">By scope</button>
+          <button role="tab" data-view="scope" aria-pressed="false">By permission</button>
         </div>
         <span class="key" id="key"></span>
         <span class="sp" id="viewMeta"></span>
@@ -57,9 +57,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787679479"></script>
-<script src="assets/timeline.js?v=1787679479"></script>
-<script src="assets/shell.js?v=1787679479"></script>
+<script src="assets/fixtures.js?v=1787681449"></script>
+<script src="assets/timeline.js?v=1787681449"></script>
+<script src="assets/shell.js?v=1787681449"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -129,7 +129,7 @@
     ownerNote.innerHTML = `
       <div class="panel" style="margin-bottom:16px"><div class="callout">
         <b>Owner-only, and not by choice.</b> Access has <b>no grantable permission</b> &mdash; there is
-        nothing here you could hand out if you wanted to, and the rail hides the realm entirely for
+        nothing here you could hand out if you wanted to, and the rail hides this page entirely for
         anyone else, exactly like <code>/bot access</code> in Discord.
         The owner is <code>&hellip;${esc(F.OWNER_ID.slice(-6))}</code> and holds everything regardless
         of this list.
@@ -195,7 +195,7 @@
                 /* A pending cell shows what it WILL be, ringed, so the matrix reads as the
                  * state you are about to save rather than the one you are leaving. */
                 const cls = pend === true ? 'on pend' : pend === false ? 'pend off' : base;
-                const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from the bare manage token' : 'not granted';
+                const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
                 const willBe = pend === true ? ' — pending: will be granted'
                              : pend === false ? ' — pending: will be revoked' : '';
                 return `<td><button class="mxcell ${cls}${g.inherited && pend === undefined ? ' inherited' : ''}"
@@ -225,11 +225,11 @@
         <span class="sp" style="flex:1"></span>
         <button class="chip go" id="grantBtn">+ Grant access</button>
       </div>
-      <p class="racknote">Twelve tokens: four commands (<code>manage</code>, <code>autobuild</code>,
+      <p class="racknote">Twelve permissions: four commands (<code>manage</code>, <code>autobuild</code>,
         <code>bot</code>, <code>destructive</code>) and eight <code>/manage</code> pages.
         <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and
         <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
-        irreversibility is the opposite of one. A permissions array is never allowed to be empty
+        irreversibility is the opposite of one. An admin must always hold at least one permission
         &mdash; an admin with nothing granted should be revoked, not parked in limbo.
         <b>&#128274; <code>destructive</code> is a real permission in the bot</b>, and the only one
         the <code>all</code> shorthand never includes &mdash; it can arrive only by being typed
@@ -256,7 +256,7 @@
           return `<div class="scope ${flag}" style="--c:${SM[s.key].hex}">
             <span class="nm"><i></i>${esc(s.label)}<em>${esc(s.key)}</em></span>
             <span class="hs">
-              <span class="holder owner" data-tip="The owner holds every scope implicitly">owner</span>
+              <span class="holder owner" data-tip="The owner holds every permission implicitly">owner</span>
               ${hs.map(id => `<span class="holder">&hellip;${esc(id.slice(-6))}</span>`).join('')}
             </span>
             <span class="rl">${SM[s.key].realm === '—'
@@ -299,7 +299,7 @@
           </div>`).join('')}
       </div>
       <div class="mxfoot">
-        <span>Sessions expire after <b>${F.SESSION_TTL_HOURS} hours</b> on a Mongo TTL index, so nothing has to run to clean them up.</span>
+        <span>Sessions expire after <b>${F.SESSION_TTL_HOURS} hours</b> on their own &mdash; nothing has to be cleaned up.</span>
         <span>Ending one is immediate and unstaged &mdash; a security action that waits in a tray is not one.</span>
       </div>`
     : `<div class="estate">
@@ -345,10 +345,10 @@
    * from a typo is worse than an error. Reproduced here rather than softened. */
   function parseTokens(raw) {
     const toks = (raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-    if (!toks.length) return { ok:false, why:'A permissions array is never allowed to be empty.' };
-    if (toks.length === 1 && toks[0] === 'all') return { ok:true, list:['manage','autobuild','bot'], note:'“all” expanded to the three command tokens.' };
+    if (!toks.length) return { ok:false, why:'An admin must always hold at least one permission.' };
+    if (toks.length === 1 && toks[0] === 'all') return { ok:true, list:['manage','autobuild','bot'], note:'“all” expanded to the three command permissions.' };
     const bad = toks.filter(t => !F.PERM_TOKENS.includes(t));
-    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised token${bad.length === 1 ? '' : 's'}. One bad token rejects the whole grant — a partial grant from a typo is worse than an error.` };
+    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised permission${bad.length === 1 ? '' : 's'}. One bad token rejects the whole grant — a partial grant from a typo is worse than an error.` };
     return { ok:true, list:[...new Set(toks)] };
   }
 
@@ -363,7 +363,7 @@
       <div class="dwfield"><label for="gPerm">Permissions &mdash; comma separated</label>
         <input id="gPerm" type="text" value="${editing ? esc(a.permissions.join(',')) : ''}"
                placeholder="e.g. manage.draws,manage.calendar,bot" autocomplete="off"></div>
-      <p class="dw-p" id="gHint">Twelve tokens are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
+      <p class="dw-p" id="gHint">Twelve permissions are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
       <div class="tokgrid" id="tokGrid">
         ${F.accessScopes.map(s => `<button class="chip topic" data-tok="${esc(s.key)}" aria-pressed="false"
             style="--c:${SM[s.key].hex}" title="${esc(s.key)}"><i></i>${esc(s.label)}</button>`).join('')}
@@ -395,7 +395,7 @@
       });
       gPerm.classList.toggle('err', !p.ok);
       hint.innerHTML = p.ok
-        ? `<b>${p.list.length} token${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; <code>manage</code> lights every page by inheritance.' : ''}`
+        ? `<b>${p.list.length} permission${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; <code>manage</code> lights every page by inheritance.' : ''}`
         : `<b style="color:var(--warn)">${p.why}</b>`;
     };
     gPerm.addEventListener('input', sync);
@@ -425,7 +425,7 @@
   }
 
   function openGrant() {
-    S.drawer({ eyebrow:'access.grant &middot; direct write, typed confirmation', title:'Grant portal access', wide:true,
+    S.drawer({ eyebrow:'Grant access &middot; commits immediately, typed confirmation', title:'Grant portal access', wide:true,
       body: grantForm(null),
       actions:`<button class="btn" id="cancel">Cancel</button><button class="btn go" id="go" disabled>Grant now</button>` });
     document.getElementById('cancel').onclick = () => S.closeDrawer();
@@ -434,14 +434,14 @@
       st.admins.push(recompute({ discordId:id, permissions:list, note, grantedBy:F.OWNER_ID,
                                  grantedAt:F.today, grants:{} }));
       S.closeDrawer();
-      S.toast(`Granted ${list.length} token${list.length === 1 ? '' : 's'} to …${id.slice(-6)}. Live in the bot on their next click.`);
+      S.toast(`Granted ${list.length} permission${list.length === 1 ? '' : 's'} to …${id.slice(-6)}. Live in the bot on their next click.`);
       renderAll();
     });
   }
 
   function openAdmin(id) {
     const a = st.admins.find(x => x.discordId === id); if (!a) return;
-    S.drawer({ eyebrow:'access.grant &middot; direct write, typed confirmation', title:`…${a.discordId.slice(-6)}`, wide:true,
+    S.drawer({ eyebrow:'Edit access &middot; commits immediately, typed confirmation', title:`…${a.discordId.slice(-6)}`, wide:true,
       body: `<div class="idop"><b>${RM.admin.label}</b> &mdash; ${RM.admin.note}</div>
              <div class="idop" style="margin-top:8px">Granted by
                <code>&hellip;${esc((a.grantedBy || '').slice(-6))}</code> on <b>${fmt(a.grantedAt)}</b>.
@@ -457,7 +457,7 @@
       const before = a.permissions.slice();
       a.permissions = list; recompute(a); touched = true;
       S.closeDrawer();
-      S.toast(`Permissions updated: ${before.length} → ${list.length} token${list.length === 1 ? '' : 's'}.`);
+      S.toast(`Permissions updated: ${before.length} → ${list.length} permission${list.length === 1 ? '' : 's'}.`);
       renderAll();
     });
   }
@@ -465,12 +465,12 @@
   function confirmRevoke(a) {
     const lost = F.accessScopes.filter(s => held(a, s.key)).map(s => s.label);
     const orphaned = F.accessScopes.filter(s => held(a, s.key) && holders(s.key).length === 1).map(s => s.label);
-    S.drawer({ eyebrow:'access.revoke &middot; direct write, typed confirmation', title:`Revoke …${a.discordId.slice(-6)}?`,
+    S.drawer({ eyebrow:'Revoke access &middot; commits immediately, typed confirmation', title:`Revoke …${a.discordId.slice(-6)}?`,
       body:`<div class="dwbody">
         <p class="dw-p">Deletes the whole <code>AdminUser</code> document &mdash; there is no partial
           revoke here, and no undo. They keep their Discord account and every public command; they
           simply stop being an admin.</p>
-        <p class="dw-p">They lose <b>${lost.length}</b> reachable scope${lost.length === 1 ? '' : 's'}:
+        <p class="dw-p">They lose <b>${lost.length}</b> permission${lost.length === 1 ? '' : 's'}:
           ${esc(lost.join(', ')) || 'none'}.</p>
         ${orphaned.length ? `<div class="callout"><b>You would be the only one left</b> holding
           ${esc(orphaned.join(', '))}. That is not a reason not to &mdash; it is the thing you cannot see
@@ -498,7 +498,7 @@
   function accessScopes() {
     const stamp = new Date().toISOString().slice(0, 10);
     return [
-      { id:'access.matrix', label:'The matrix', note:'One row per admin, one column per scope — the grid as you see it.',
+      { id:'access.matrix', label:'The matrix', note:'One row per admin, one column per permission — the grid as you see it.',
         count:st.admins.length, unit:'admins', file:'dioreo-access-matrix-' + stamp + '.tsv',
         build(){
           const head = ['ADMIN','LABEL','GRANTED'].concat(F.accessScopes.map(x => x.key.toUpperCase()));
@@ -506,7 +506,7 @@
             .concat(F.accessScopes.map(x => { const g = a.grants[x.key] || {};
               return g.direct ? 'direct' : g.inherited ? 'inherited' : ''; })));
           return ['# Dioreo — access matrix · ' + new Date().toISOString(),
-                  '# The owner holds every scope implicitly and is not a row here.',
+                  '# The owner holds every permission implicitly and is not a row here.',
                   head.join('\t')].concat(rows.map(r => r.join('\t'))).join('\n');
         } },
       { id:'access.grants', label:'One line per grant', note:'Long form — one line per grant, easy to search or compare against an older export.',
@@ -535,11 +535,11 @@
     const spofN = spofScopes().size, liveN = st.sessions.filter(isLive).length;
     mhStats.innerHTML = `
       <span class="stat"><span class="v">${st.admins.length}</span> <span class="k">granted</span></span>
-      <span class="stat"><span class="v">${st.admins.reduce((n, a) => n + a.permissions.length, 0)}</span> <span class="k">tokens</span></span>
+      <span class="stat"><span class="v">${st.admins.reduce((n, a) => n + a.permissions.length, 0)}</span> <span class="k">permissions</span></span>
       <span class="stat"><span class="v">${liveN}</span> <span class="k">signed in</span></span>
       <span class="stat ${spofN ? 'warn' : ''}"><span class="v">${spofN}</span> <span class="k">single points</span></span>`;
     viewMeta.innerHTML = st.mode === 'grid'
-      ? `${st.admins.length} admin${st.admins.length === 1 ? '' : 's'} &times; ${F.accessScopes.length} tokens`
+      ? `${st.admins.length} admin${st.admins.length === 1 ? '' : 's'} &times; ${F.accessScopes.length} permissions`
       : `${spofScopes().size} single point${spofScopes().size === 1 ? '' : 's'} &middot; ${unheld().length} held by nobody but you`;
   }
   /* ══════════════════════════════════════════════════════════════════════════
@@ -573,11 +573,11 @@
      * and says nothing reads as a bug. */
     const sc = F.accessScopes.find(x => x.key === scope) || {};
     if (sc.ownerOnly && !S.actor().isOwner) {
-      S.toast('Only the owner can grant or revoke ' + sc.label + '. It is the one token a bare manage does not cover.');
+      S.toast('Only the owner can grant or revoke ' + sc.label + '. It is the one permission that holding manage does not cover.');
       return;
     }
     if (g.inherited && !g.direct) {
-      S.toast('That one is inherited from the bare manage token, which covers every page. Edit the manage token to change it.', 'Edit', () => openAdmin(id));
+      S.toast('That one is inherited from manage, which covers every page. Edit manage to change it.', 'Edit', () => openAdmin(id));
       return;
     }
     const pk = id + '|' + scope;
@@ -645,7 +645,7 @@
       (revokes.length ? '<div class="acg"><b class="acg-k off">Revoking ' + revokes.length + '</b><ul class="dw-l">' + rows(revokes) + '</ul></div>' : '') +
       (empties.length ? '<div class="callout"><b>' + empties.length + ' admin' + (empties.length > 1 ? 's' : '') +
         ' would be left holding nothing, so their <code>AdminUser</code> record is deleted outright.</b> ' +
-        'A permissions array is never allowed to be empty (see the note under the matrix) — an admin with ' +
+        'An admin must always hold at least one permission (see the note under the matrix) — an admin with ' +
         'nothing granted is not an admin with reduced access, it is a row that no longer means anything. ' +
         'They keep their Discord account and every public command. <b>There is no undo for that half.</b></div>' : '') +
       /* 🔴 HANDING OVER IRREVERSIBILITY GETS ITS OWN WARNING, IN THE OWNER'S OWN WORDS. Every
@@ -694,7 +694,7 @@
        * because the thing being confirmed is the capability, not a particular person. */
       S.typedConfirm({ title:'Grant the Destructive capability',
         op:'access.grant', tier:3, word:'DESTRUCTIVE',
-        body: body + '<p class="dw-p">This is the only token you cannot delegate the granting of. ' +
+        body: body + '<p class="dw-p">This is the only permission you cannot delegate the granting of. ' +
               'Type <b>DESTRUCTIVE</b> to confirm you have read what it allows.</p>',
         onConfirm: apply });
     } else {
@@ -705,7 +705,7 @@
 
   function renderAll(){ renderOwnerNote(); renderGrid(); renderScope(); renderSess(); renderKey(); renderStats();
     S.mountRail('access'); renderSaveBar();
-    S.mastheadExport({ host:'#mhGrant', scopes:accessScopes, label:'Audit',
+    S.mastheadExport({ host:'#mhGrant', scopes:accessScopes, label:'Export',
       summary:() => st.admins.length + ' admins · 3 formats' }); }
 
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
