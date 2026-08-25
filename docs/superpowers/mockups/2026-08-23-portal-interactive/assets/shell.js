@@ -275,16 +275,24 @@
         sel = Math.min(sel, Math.max(0, hits.length - 1));
         list.innerHTML = hits.length
           ? hits.map((c, i) => `<button class="pitem${i === sel ? ' sel' : ''}" role="option"
-              aria-selected="${i === sel}" data-i="${i}"><i style="--c:var(--${c.c || 'ink3'})"></i>${c.k}</button>`).join('')
+              aria-selected="${i === sel}" data-i="${i}"><i style="--c:${c.hex || `var(--${c.c || 'ink3'})`}"></i>${c.k}</button>`).join('')
           : `<p class="pnone">Nothing matches “${inp.value.trim()}”. Try a realm name, or an action like “new draw”.</p>`;
         list.querySelectorAll('.pitem').forEach(b => b.onclick = () => { const c = hits[+b.dataset.i]; close(); inp.value = ''; run(c); });
         list.querySelector('.sel')?.scrollIntoView({ block:'nearest' });
         drop.hidden = false; inp.setAttribute('aria-expanded','true'); wrap.classList.add('on');
       };
-      inp.addEventListener('focus', paint);
+      /* 🔴 EVERY PAGE LOADED WITH THE PALETTE ALREADY OPEN, and the cause is one line: the
+       * audit's own focus-ring sweep calls `el.focus()` on every input on the page, which fired
+       * this `focus` handler and painted the dropdown. The page opened, the audit ran, and the
+       * command bar unrolled itself on all eight realms. A dropdown must open on INTENT, not on
+       * focus — programmatic focus is not intent, and `preventScroll` does not make it so. */
+      inp.addEventListener('pointerdown', paint);
       inp.addEventListener('input', () => { sel = 0; paint(); });
+      /* Leaving the field closes it, after a beat so a click on a result still lands. */
+      inp.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== inp) close(); }, 130));
       inp.addEventListener('keydown', e => {
         if (e.key === 'Escape') { inp.value = ''; close(); inp.blur(); return; }
+        if (drop.hidden && (e.key === 'ArrowDown' || e.key.length === 1)) paint();
         if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, hits.length - 1); e.preventDefault(); paint(); }
         else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); e.preventDefault(); paint(); }
         else if (e.key === 'Enter' && hits[sel]) { const c = hits[sel]; inp.value = ''; close(); inp.blur(); run(c); }
@@ -293,7 +301,7 @@
       document.addEventListener('keydown', e => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); inp.focus(); inp.select(); }
       });
-      window.__openPalette = () => { inp.focus(); inp.select(); };
+      window.__openPalette = () => { inp.focus(); inp.select(); paint(); };
     },
 
     /* The floor every realm gets for free: move between realms, review what is staged, sign out.
@@ -304,6 +312,21 @@
         { k: 'Review staged changes', c: 'ok',  run: () => location.href = 'review.html' },
         { k: 'Sign out',              c: 'del', run: () => document.getElementById('hdrOut')?.click() }
       ];
+    },
+
+    /* ══════════ THE INK A COLOURED SURFACE CAN CARRY ══════════
+     * 🔴 A THRESHOLD IS A GUESS; THE RATIO IS A FACT. The first version picked dark-or-light by
+     * comparing the surface's luminance to 0.34, which put white text on Events' blue at 3.08:1
+     * when black on the same blue measures 5.97:1. Compute BOTH candidates and take the winner —
+     * there are only two, so there is no reason to estimate. Shared here because bars, badges and
+     * chips all have the same problem and were each solving it differently, or not at all. */
+    inkOn(hex){
+      const lum = h => { const v = [1,3,5].map(i => parseInt(h.slice(i, i+2), 16) / 255)
+          .map(x => x <= 0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4));
+        return 0.2126*v[0] + 0.7152*v[1] + 0.0722*v[2]; };
+      const L = lum(hex.length === 4 ? '#' + hex.slice(1).replace(/./g, c => c + c) : hex);
+      const dark = (L + 0.05) / 0.05, light = 1.05 / (L + 0.05);
+      return dark >= light ? '#07090A' : '#FFFFFF';
     },
 
     /* ══════════ ONE TOOLTIP, AND IT IS OURS ══════════
@@ -617,6 +640,67 @@
           const n = ((Shell._cb && Shell._cb.items()) || []).length;
           if (!n) problems.push('the command bar has no commands — its input does nothing');
         } catch (e) { problems.push(`the command bar throws on use: ${e.message}`); }
+      }
+
+      /* 5f. ACTUAL COMPUTED CONTRAST, on every text node that renders. Harkirat asked how a
+       *     "SAVED" he could barely read passed the accessibility review, and the honest answer
+       *     is that the review never measured it: the package checked TOKEN pairs by hand and
+       *     assumed the elements using them inherited a matching background. An element gets its
+       *     colour from one rule and its background from an ancestor three levels up; only the
+       *     rendered pair is the truth. WCAG AA is 4.5:1, or 3:1 for text at 18.66px+ or bold
+       *     14px+. Reported, never silently rounded. */
+      {
+        const lum = c => { const p = (c.match(/[\d.]+/g) || []).slice(0,3).map(Number)
+            .map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+          return p.length === 3 ? 0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2] : null; };
+        /* ⚠️ A SEMI-TRANSPARENT BACKGROUND IS NOT THE COLOUR BEHIND THE TEXT. The first version
+         * returned the first non-zero background it met, so `rgba(142,107,166,.18)` — an 18% wash
+         * over a dark row — was measured as if it were solid mauve, and a tier chip that actually
+         * renders at ~7:1 was reported at 1.96:1. A check that invents failures gets ignored, and
+         * an ignored check is worse than none. Composite the stack instead. */
+        const parse = c => (c.match(/[\d.]+/g) || []).map(Number);
+        const bgOf = el => {
+          let n = el, acc = null;
+          while (n && n !== document.documentElement) {
+            const p = parse(getComputedStyle(n).backgroundColor);
+            if (p.length) {
+              const a = p.length > 3 ? p[3] : 1;
+              if (a > 0) {
+                /* ⚠️ THE FIRST LAYER MUST BE PREMULTIPLIED TOO. Taking it at full strength made an
+                 * 18%-alpha wash read as solid, which reported a lavender chip on a dark row at
+                 * 1.59:1 — a number that is not physically possible for that pair, and the tell
+                 * that the probe rather than the page was wrong. */
+                if (!acc) acc = { r:p[0]*a, g:p[1]*a, b:p[2]*a, a };
+                else { const ia = 1 - acc.a;
+                  acc = { r:acc.r + p[0]*a*ia, g:acc.g + p[1]*a*ia, b:acc.b + p[2]*a*ia, a:acc.a + a*ia }; }
+                if (acc.a >= 0.995) break;
+              }
+            }
+            n = n.parentElement;
+          }
+          if (!acc) return getComputedStyle(document.body).backgroundColor;
+          if (acc.a < 0.995) { const p = parse(getComputedStyle(document.body).backgroundColor), ia = 1 - acc.a;
+            acc = { r:acc.r + p[0]*ia, g:acc.g + p[1]*ia, b:acc.b + p[2]*ia }; }
+          return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
+        };
+        const ratio = (a, b) => { const x = lum(a), y = lum(b); if (x === null || y === null) return 21;
+          const [hi, lo] = x > y ? [x, y] : [y, x]; return (hi + 0.05) / (lo + 0.05); };
+        const seen = new Set(); let worst = null;
+        document.querySelectorAll('main *, header *').forEach(el => {
+          if (el.children.length) return;                       // leaf text only
+          const t = (el.textContent || '').trim(); if (!t) return;
+          const cs = getComputedStyle(el);
+          if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) < 0.1) return;
+          const r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+          const px = parseFloat(cs.fontSize), bold = parseInt(cs.fontWeight, 10) >= 700;
+          const need = (px >= 18.66 || (bold && px >= 14)) ? 3 : 4.5;
+          const got = ratio(cs.color, bgOf(el));
+          if (got >= need) return;
+          const key = cs.color + '|' + bgOf(el) + '|' + Math.round(px);
+          if (seen.has(key)) return; seen.add(key);
+          if (!worst || got < worst.got) worst = { got, need, t, px };
+          problems.push(`"${t.slice(0,18)}" is ${got.toFixed(2)}:1 at ${px}px — needs ${need}:1`);
+        });
       }
 
       // 6. A legend may only name states that are actually present.

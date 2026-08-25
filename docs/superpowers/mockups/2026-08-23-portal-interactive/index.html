@@ -23,7 +23,13 @@
            a whole picture — a timeline, a diff, a matrix, a bulk edit that has to land together.</p>
       </div>
 
-      <div class="hgrid" id="grid"></div>
+      <!-- 🔴 IT WAS FIVE EQUAL CARDS AND FIVE EQUAL ORANGE ALARMS on a page titled "What needs
+           you", with no ranking, no verbs, and ~40% of the viewport empty below them. When five
+           things are all alarms, none is. The page now answers its own headline: what needs you
+           FIRST, in order, each with the way in — and the realms that are fine step back into a
+           quiet strip instead of competing for the same attention. -->
+      <ol class="att-list" id="attList"></ol>
+      <div class="hgrid quiet" id="grid"></div>
       <div id="resume"></div>
     </div>
   </main>
@@ -37,6 +43,7 @@
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
+  const attList = document.getElementById('attList');
   S.init('');
   S.mountHeader('Portal', 'Home');
 
@@ -126,9 +133,48 @@
       att:`${F.alertStats.find(a => a.level === 'error').n} errors pinged`, warn:true }
   ];
 
+  /* Severity is a PROPERTY OF THE KIND, not of the count — 33 builds needing a caption is not
+   * more urgent than one scope only one person can use. The count only breaks ties. */
+  const SEV = { conflict:95, spof:90, error:80, repair:60, forever:50, staged:40 };
+  function attention() {
+    const out = [];
+    const push = (kind, realm, href, text, n, act) =>
+      out.push({ sev:SEV[kind], kind, realm, href, text, n, act });
+    if (conflicts)          push('conflict','Season','season.html',
+                                 `${conflicts} item${conflicts===1?'':'s'} run past the season's own deadlines`, conflicts, 'Open the Track');
+    if (F.spof.length)      push('spof','Access','access.html',
+                                 `${F.spof.length} scope${F.spof.length===1?'':'s'} held by exactly one person`, F.spof.length, 'Open the matrix');
+    const errs = (F.alertStats.find(a => a.level === 'error') || {}).n || 0;
+    if (errs)               push('error','Analytics','analytics.html',
+                                 `${errs} error${errs===1?'':'s'} pinged`, errs, 'Open health');
+    if (flagged)            push('repair','Armory','armory.html',
+                                 `${flagged} build${flagged===1?'':'s'} need repair`, flagged, 'Open repairs');
+    if (seasonFindings)     push('repair','Season','season.html',
+                                 `${seasonFindings} season item${seasonFindings===1?'':'s'} to repair`, seasonFindings, 'Open repairs');
+    if (forever.length)     push('forever','Broadcast','broadcast.html',
+                                 `${forever.length} announcement${forever.length===1?'':'s'} never end — oldest up ${foreverDays}d`, forever.length, 'Open airtime');
+    return out.sort((a, b) => b.sev - a.sev || b.n - a.n);
+  }
+
   function render() {
+    const att = attention();
+    /* An empty state that names what it means, not "nothing here". */
+    attList.innerHTML = att.length
+      ? att.map((a, i) => `<li class="att-row s-${a.kind}">
+          <span class="att-i">${String(i + 1).padStart(2, '0')}</span>
+          <span class="att-b" aria-hidden="true"></span>
+          <span class="att-x"><b>${a.text}</b><em>${a.realm}</em></span>
+          <a class="pill sm att-go" href="${a.href}">${a.act} &rarr;</a>
+        </li>`).join('')
+      : `<li class="att-row clear"><span class="att-i">&#10003;</span><span class="att-b"></span>
+           <span class="att-x"><b>Nothing needs you right now.</b>
+           <em>Every realm matches what the bot is serving.</em></span></li>`;
     grid.innerHTML = CARDS.map(k => {
       const s = stagedIn(k.id);
+      /* The realm strip is now a WAY IN, not a second alarm surface — the findings moved up
+       * into the ranked list, so a card that repeated them would be the same fact twice at two
+       * different weights. Only a STAGED count survives here, because that is the one thing the
+       * attention list deliberately does not rank: it is your own unfinished work, not a fault. */
       return `<a class="hcard" href="${k.href}" style="--c:${k.c}">
         <span class="hi">
           <svg viewBox="0 0 24 24" aria-hidden="true">${k.icon}</svg>
@@ -137,8 +183,7 @@
         <span class="hq">${k.q}</span>
         <span class="hf">
           <b>${k.n}</b><span>${k.unit}</span>
-          ${s ? `<span class="att stg">${s} staged</span>`
-              : k.att ? `<span class="att" ${k.warn ? '' : 'style="color:var(--ink3);border-color:var(--rule2)"'}>${k.att}</span>` : ''}
+          ${s ? `<span class="att stg">${s} staged</span>` : ''}
         </span>
       </a>`;
     }).join('');

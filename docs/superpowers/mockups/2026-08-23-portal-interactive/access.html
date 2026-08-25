@@ -15,6 +15,15 @@
         <span class="job">Eleven grantable tokens across two roles &mdash; and the two questions a permission string cannot answer: what did you actually hand over, and who is the only person holding it.</span>
       </div>
       <div class="mh-stats" id="mhStats"></div>
+      <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
+           Harkirat named the class, not the instance: "the page is just the visualization of what
+           they trigger." Measured across the portal earlier, every create control on every realm
+           sat below its own fold or under a filter row. Season and Armory were fixed one at a
+           time; this is the same fix applied everywhere, so a reader learns ONE place to look. -->
+      <button class="pill lead mh-new" id="mhGrant" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> Grant access
+        <kbd>N</kbd>
+      </button>
     </div>
 
     <div id="ownerNote"></div>
@@ -142,7 +151,7 @@
             </tr>
             <tr>
               <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
-              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}"
+              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}" data-tip="${spof.has(s.key) ? s.label + ' — single point of failure: exactly one person besides the owner holds it' : s.label}"
                     style="--c:${SM[s.key].hex}" data-tip="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
                   <i></i>${esc(s.label)}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
               <th><span class="mxs">&nbsp;</span></th>
@@ -180,7 +189,12 @@
       </div>
       <div class="mxfoot">
         <span><span class="mxlegend on"></span>granted <b>directly</b> &mdash; revoking it removes exactly this.</span>
-        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; a bare <code>manage</code> covers every page at once.</span>
+        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; a bare <code>manage</code> covers every page at once.
+        <!-- 🔴 THE ORANGE RING WAS THE MOST LOADED MARK ON THE PAGE AND THE ONLY ONE NOT IN THE KEY.
+             It flags a scope exactly one person besides the owner holds — the thing Home ranks
+             SECOND out of everything in the portal — and a reader had no way to learn that. -->
+        <span class="klg spofk"><i></i> ringed &mdash; a <b>single point of failure</b>: one person
+          besides the owner holds it.</span></span>
         <span class="sp" style="flex:1"></span>
         <button class="chip go" id="grantBtn">+ Grant access</button>
       </div>
@@ -472,6 +486,22 @@
       { name:'grant access', run: openGrant }
     ],
     states: () => ['direct','inherited']
+  });
+})();
+</script>
+<script>
+/* One handler, two entry points — the masthead action and the in-context shortcut must never be
+   able to disagree. Delegated rather than re-bound, so it works no matter when the page wires
+   its own button. `N` means the same thing in every realm. */
+(function () {
+  const go = () => document.getElementById('grantBtn')?.click();
+  document.getElementById('mhGrant').addEventListener('click', go);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || !document.getElementById('cbDrop').hidden) return;
+    e.preventDefault(); go();
   });
 })();
 </script>

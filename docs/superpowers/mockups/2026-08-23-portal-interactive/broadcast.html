@@ -15,6 +15,15 @@
         <span class="job">One text field, delivered once per player, in the order it was written &mdash; and the two things Discord never shows you: what has not started yet, and what will never stop.</span>
       </div>
       <div class="mh-stats" id="mhStats"></div>
+      <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
+           Harkirat named the class, not the instance: "the page is just the visualization of what
+           they trigger." Measured across the portal earlier, every create control on every realm
+           sat below its own fold or under a filter row. Season and Armory were fixed one at a
+           time; this is the same fix applied everywhere, so a reader learns ONE place to look. -->
+      <button class="pill lead mh-new" id="mhPost" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> Post announcement
+        <kbd>N</kbd>
+      </button>
     </div>
 
     <section class="panel" aria-label="Broadcast view">
@@ -513,6 +522,21 @@
       { name:'post announcement', run: openPost }
     ],
     states: () => ['saved','staged']
+  });
+})();
+</script>
+<script>
+/* One handler, two entry points — the masthead action and the in-context shortcut must never be
+   able to disagree. Delegated, so it works no matter when the page wires its own button. */
+(function () {
+  const go = () => document.getElementById('addBtn')?.click();
+  document.getElementById('mhPost').addEventListener('click', go);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || !document.getElementById('cbDrop').hidden) return;
+    e.preventDefault(); go();
   });
 })();
 </script>

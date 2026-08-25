@@ -16,17 +16,7 @@
 
 /* `.masthead` stretches its children, so `display:inline-flex` alone still produced a
    940px-wide banner where a button belonged. Measured, not guessed: the first render of it. */
-/* The action was stranded on its own line with ~700px of empty space beside it while the stats
-   sat far right. One grid: identity left, numbers and the action right — which is also the
-   reading order (what season is this · how is it doing · what can I add). */
-.masthead{display:grid;grid-template-columns:1fr auto;align-items:start;column-gap:28px}
-.masthead .mh-id{grid-column:1;grid-row:1}
-.masthead .mh-stats{grid-column:2;grid-row:1;justify-content:flex-end;margin-top:6px}
-.masthead .mh-new{grid-column:2;grid-row:2;justify-self:end;margin-top:16px}
-.masthead .nwhost{grid-column:1 / -1;grid-row:3;max-width:none}
-@media (max-width:820px){
-  .masthead{grid-template-columns:1fr}
-  .masthead .mh-stats,.masthead .mh-new{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}
+/* the masthead grid moved to app.css — every realm's masthead is the same shape */
 }
 /* `no detail` was clipping to `no detai` with no ellipsis — the cell sets text-overflow but the
    italic <em> inside it is the box that actually overflows, and it had none. */
@@ -90,10 +80,15 @@
            create controls sat at 1464px, 3548px and 3551px inside an 828px viewport — the
            primary one 4.3 screens down. The portal's whole claim over `/manage` is that
            creating is easier here, and the control was the hardest thing on the page to find. -->
-      <button class="pill lead mh-new" id="mhNew" accesskey="n">
-        <span class="mh-plus" aria-hidden="true">+</span> New item
-        <kbd>N</kbd>
-      </button>
+      <!-- 🔴 A BEAUTIFUL BUTTON WHOSE ONLY JOB WAS TO REVEAL SIX MORE BUTTONS. Two clicks to
+           begin, and the realm's vocabulary hidden behind the first one. The six types ARE the
+           action; there is nothing for a wrapper to add. One click starts the thing you actually
+           wanted, and what this realm can hold is legible without touching anything. Season is
+           the only realm with more than one kind of thing to add — the others keep a single
+           button, because a single button has nothing to reveal. -->
+      <div class="mh-add" id="mhAdd" role="group" aria-label="Add to this season">
+        <span class="mh-add-k">Add</span>
+      </div>
       <!-- The composer renders HERE, in the page. Not a modal: `/manage` creates through a
            Discord modal, and reproducing that shape reproduces the thing this is meant to beat. -->
       <section class="nwhost" id="nwHost" hidden aria-label="Add to the season"></section>
@@ -251,6 +246,12 @@
    * of the canvas on empty time. This is the same rule the deadline REACH below already applies
    * on the right — it was written for outliers ahead of the content and never applied to
    * outliers behind it, which is the whole class rather than the one instance. */
+  /* 🔴 A FILLED BAR'S TEXT COLOUR IS A PROPERTY OF THAT BAR, not one global value. `--on-accent`
+   * is near-black, which is right on Playlists' bright teal and 2.86:1 on Draw windows' plum —
+   * measured, by the contrast rule added today. COMPANION already says the stored `bar` value is
+   * lifted "so it can carry --ink text at 4.5:1"; the code was painting the opposite. Derive the
+   * ink from the lane's own luminance, once, and hand it to the bar as `--ci`. */
+  const barInk = hex => S.inkOn(hex);   // Shell owns the choice; bars, badges and chips share it
   const isPublication = it => it.type === 'patchNotes';
 
   /* 🔴 SIX IDENTICAL ROWS OF RECTANGLES IS NOT A TIMELINE, IT IS A TABLE DRAWN SIDEWAYS.
@@ -271,7 +272,9 @@
   const LANE_KIT = {
     newDraws:       { sum:'pips', single:'draw',           ask:'what released, and how rare' },
     returningDraws: { sum:'pips', single:'returning draw', ask:'what came back' },
-    drawWindow:     { sum:'runs', single:'draw window',    ask:'when you could buy' },
+    /* Two purchase windows open at once is a real conflict — a player cannot tell which draw they
+     * are buying into. No other lane has that property: two events, or two playlists, is Tuesday. */
+    drawWindow:     { sum:'runs', single:'draw window',    ask:'when you could buy', overlapMatters:true },
     event:          { sum:'runs', single:'event',          ask:'what was running' },
     playlist:       { sum:'load', single:'playlist',       ask:'how many modes at once' },
     patchNotes:     { sum:'pips', single:'patch note',     ask:'what was published' }
@@ -737,7 +740,7 @@
       const ckey = (isDraft ? 'd:' : '') + lane.type;
       const col = ckey in st.laneCol ? st.laneCol[ckey] : rows > 3;
       return `
-      <div class="lane${col ? ' col' : ''}" data-lane="${lane.type}" data-draft="${isDraft?1:0}" data-rows="${rows}"
+      <div class="lane${col ? ' lnc' : ''}" data-lane="${lane.type}" data-draft="${isDraft?1:0}" data-rows="${rows}"
            style="height:${col ? 30 : laneH}px">
         <button class="lnh" data-lanebtn="${lane.type}" data-draft="${isDraft?1:0}"
                 aria-expanded="${!col}" data-tip="${col ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.">
@@ -767,7 +770,7 @@
                    aria-label="${it.name}, releases ${T.fmt(it.start)}${it.dateOnly ? ', no calendar window' : ''}"
                    data-tip="${it.name} · releases ${T.fmt(it.start)}${it.detail && it.detail !== '—' ? ' · ' + it.detail : ''}${it.dateOnly ? ' · no window — /calendar synthesises one that never ends' : ''}"></span>`
               : `<div class="bar ${s}${it.openEnded ? ' forever' : ''}" data-id="${it.id}" tabindex="0" role="button"
-                   style="--c:${lane.bar};left:${v.pct(it.start)}%;width:${v.wpct(it.start,it.end)}%${top ? ';' + top : ''}"
+                   style="--c:${lane.bar};--ci:${barInk(lane.bar)};left:${v.pct(it.start)}%;width:${v.wpct(it.start,it.end)}%${top ? ';' + top : ''}"
                    aria-label="${it.name}, ${T.fmt(it.start)} ${it.openEnded ? 'onward, with no end date' : 'to ' + T.fmt(it.end)}${it.isOngoing ? ', runs all season' : ''}, ${s}">
                    <span class="gr a" data-edge="start"></span><span class="bl">${it.name}</span><span class="gr b" data-edge="end"></span></div>`;
           }).join('')}
@@ -802,6 +805,13 @@
       + renderRecord();
 
     renderRuler(); renderOverlay(); renderScrub(); wireTrack(); pinClippedLabels(); renderKey();
+    /* 🔴 EVERY MEASURING PASS LIVED IN repositionBars(), WHICH DOES NOT RUN ON FIRST PAINT — so a
+     * freshly loaded Track showed "We⋮ We⋮ We⋮ We⋮" where five event labels belong, and only a
+     * zoom or a drag ever corrected it. I had "verified" the label fix by clicking zoom FIRST,
+     * which is the one action that makes the pass run: a check designed after knowing the fix is
+     * not a check. Bars have geometry only after layout, hence the frame. */
+    requestAnimationFrame(() => { fitLabels(); clusterPoints(); fitFlags(); pinFarDeadlines();
+      const r = viewTrack.querySelector('.deadrail'); if (r) stackFlags(r); });
     /* Wired here rather than once at boot: the Track's innerHTML is rebuilt on every zoom and
      * pan, so a listener bound to the old node would silently stop working after the first
      * interaction — the same self-destroying-selector class that broke `#lnsw .pip.draft`. */
@@ -1316,8 +1326,17 @@
       const tk = b.closest('.tk'); if (!tk) { b.classList.add('nolabel'); return; }
       const br = b.getBoundingClientRect(), tr = tk.getBoundingClientRect();
       const need = bl.scrollWidth + 10;
-      if (tr.right - br.right > need)      b.classList.add('lbl-out');
-      else if (br.left - tr.left > need)   b.classList.add('lbl-out-l');
+      /* 🔴 ROOM MEANS ROOM BEFORE THE NEXT BAR, not before the lane ends. Five weekly events sit
+       * end to end; measuring to the lane's right edge put every label on top of its neighbour —
+       * worse than the truncation it replaced. Only siblings on the SAME row can collide, since
+       * row assignment already guarantees no vertical overlap. */
+      const row = b.style.top || '';
+      const sibs = [...tk.querySelectorAll('.bar')].filter(o => o !== b && (o.style.top || '') === row)
+                     .map(o => o.getBoundingClientRect());
+      const rightWall = Math.min(tr.right, ...sibs.filter(r => r.left >= br.right - 1).map(r => r.left));
+      const leftWall  = Math.max(tr.left,  ...sibs.filter(r => r.right <= br.left + 1).map(r => r.right));
+      if (rightWall - br.right > need)     b.classList.add('lbl-out');
+      else if (br.left - leftWall > need)  b.classList.add('lbl-out-l');
       else                                 b.classList.add('nolabel');
     });
     stripSharedPrefixes();
@@ -1629,7 +1648,14 @@
           text:`<b>${it.name}</b> ends ${-T.days(it.end, e)} days after the season does.` });
       }
     });
-    F.LANES.forEach(l => {
+    /* 🔴 SIXTEEN "X AND Y OVERLAP" BOXES rendered below the Track, taller than the Track itself,
+     * and NINE were playlists overlapping playlists. Concurrent playlists are not a defect — they
+     * are how the game works, and this same page draws a load ribbon whose entire purpose is to
+     * show that several run at once. Two features on one screen disagreeing about whether the
+     * same fact is a problem. Capping the list would have hidden the symptom and kept the
+     * contradiction, so the RULE changed: overlap is a finding only where the lane's own
+     * semantics make it one. */
+    F.LANES.filter(l => (LANE_KIT[l.key] || {}).overlapMatters).forEach(l => {
       const xs = st.items.filter(i => i.type === l.type && !i.draft && i.kind === 'span')
                          .sort((a,b) => a.start.localeCompare(b.start));
       for (let i = 1; i < xs.length; i++)
@@ -1688,10 +1714,36 @@
    * miniature was a second, lower-fidelity answer to a question already answered better.
    * Recover it from git if a surface ever needs a preview with no timeline of its own. */
 
+  /* 🔴 THE TRACK IS THE PREVIEW — and this function, which is the whole idea, was DELETED by my
+   * own dead-code sweep an hour after I wrote it. The sweep cut from a comment to
+   * `function openComposer`, and this sat in between. Three call sites kept referring to it; the
+   * page never threw, because it is only reached when the composer opens, and I did not reopen
+   * the composer after the sweep. `probs=0` the whole time. Restored, with the collapsed-lane
+   * guard pointing at the renamed class. */
+  let ghostPreview = null;
+  function drawComposeGhost(c) {
+    viewTrack.querySelectorAll('.ghost.cmp').forEach(g => g.remove());
+    ghostPreview = null;
+    if (!c || !c.type || !c.a) { viewTrack.querySelectorAll('.lane.aim').forEach(l => l.classList.remove('aim')); return; }
+    const lane = viewTrack.querySelector(`.lane[data-lane="${c.type}"][data-draft="0"]`);
+    if (!lane) return;
+    /* Aiming at a folded lane unfolds it — you cannot preview into something you cannot see. */
+    if (lane.classList.contains('lnc')) { st.laneCol[c.type] = false; saveLaneCol(); renderTrack(); return drawComposeGhost(c); }
+    const tk = lane.querySelector('.tk'); if (!tk) return;
+    const end = c.shape === 'point' ? c.a : (c.b || c.a);
+    const g = document.createElement('div');
+    g.className = 'ghost cmp' + (c.shape === 'point' ? ' pt' : '');
+    g.style.left = st.view.pct(c.a) + '%';
+    if (c.shape !== 'point') g.style.width = st.view.wpct(c.a, end) + '%';
+    g.textContent = c.name ? c.name : '+ ' + T.fmt(c.a);
+    tk.appendChild(g); ghostPreview = g;
+    viewTrack.querySelectorAll('.lane').forEach(l => l.classList.toggle('aim', l === lane));
+    lane.scrollIntoView({ block:'nearest' });
+  }
+
   function openComposer(pre) {
     const stage = ({ type, name, a, b }) => { drawComposeGhost(null); addItem(type, name, a, b); };
     stage.live = drawComposeGhost;
-    document.getElementById('mhNew').setAttribute('aria-expanded', 'true');
     S.compose({
       eyebrow: 'season · create', title: 'Add to the season',
       types: COMPOSE_TYPES(), initial: pre || {},
@@ -1699,8 +1751,7 @@
       onStage: stage,
       onClose: () => { drawComposeGhost(null);
         viewTrack.querySelectorAll('.lane.aim').forEach(l => l.classList.remove('aim'));
-        document.getElementById('mhNew').setAttribute('aria-expanded', 'false');
-        document.getElementById('mhNew').focus(); }
+        document.querySelector(`[data-addtype="${(pre && pre.type) || ''}"]`)?.focus(); }
     });
     document.getElementById('nwHost').scrollIntoView({ block:'nearest', behavior:'smooth' });
   }
@@ -1983,7 +2034,7 @@
         }${i.thumb ? `<span class="thumb ${i.thumb === 'cached' ? 'ok' : 'no'}">${i.thumb}</span>` : ''}</div></td>
         <td class="ta-r">${conflicts(i) && s !== 'conflict'
             ? `<span class="warnmark" data-tip="Ends after the season does">!</span>` : ''}
-          <span class="stt ${s}" style="--c:${accentOf(i.type)}">${STATE_LABEL[s]}</span></td></tr>`;
+          <span class="stt ${s}" style="--c:${accentOf(i.type)};--ci:${S.inkOn(accentOf(i.type))}">${STATE_LABEL[s]}</span></td></tr>`;
     }).join('') : `<tr><td colspan="6"><div class="empty"><b>Nothing matches</b>Clear the search or a filter chip.</div></td></tr>`;
     cbAll.classList.toggle('on', v.length > 0 && v.every(i => st.selected.has(i.id)));
     renderBulk();
@@ -2091,14 +2142,22 @@
   q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
   /* Built from LANES so a chip cannot drift from the lane it filters — same label, same
    * colour, one source. */
-  document.getElementById('mhNew').onclick = () => openComposer({ a: F.today });
+  /* Built from LANES, so a type cannot go missing from here while existing on the Track. */
+  document.getElementById('mhAdd').insertAdjacentHTML('beforeend',
+    COMPOSE_TYPES().map(t => `<button class="pill mh-t" data-addtype="${t.key}" style="--c:${t.hex}">
+      <span class="dot"></span>${t.single ? t.single[0].toUpperCase() + t.single.slice(1) : t.label}
+    </button>`).join('') + '<kbd class="mh-k">N</kbd>');
+  document.querySelectorAll('[data-addtype]').forEach(b => b.onclick = () =>
+    openComposer({ type: b.dataset.addtype, a: F.today }));
   /* `N` for new, but never while you are typing into something. */
   document.addEventListener('keydown', e => {
     if (e.key !== 'n' && e.key !== 'N') return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
     if (document.querySelector('.drawer.open') || document.querySelector('.cb-drop:not([hidden])')) return;
-    e.preventDefault(); openComposer({ a: F.today });
+    e.preventDefault();
+    /* No wrapper button to press any more — N puts you on the first type, arrows do the rest. */
+    document.querySelector('[data-addtype]')?.focus();
   });
   typeChips.innerHTML = F.LANES.map(l =>
     `<button class="chip topic" data-filter="${l.type}" aria-pressed="false"
@@ -2220,9 +2279,11 @@
     { k:'Promote draft to live', c:'del',   run:() => { const d=document.getElementById('dPromote'); d ? d.click() : S.toast('No draft staged.'); } },
     /* The palette names the TYPES, so the keyboard path never makes you find a dropdown
      * to discover what can be created. Six entries, one per lane, straight off LANES. */
+    /* 🔴 ALL SIX RENDERED THE SAME RED DOT — `c` was hard-coded to 'draw' for five different
+     * lanes, and `--draw` does not resolve, so the fallback painted them identically. On a page
+     * whose whole discipline is COLOUR CARRIES TOPIC. The lane's own hex IS the topic. */
     ...F.LANES.map(l => ({ k:'New ' + ((LANE_KIT[l.key] || {}).single || l.label.toLowerCase()),
-        c:(l.key === 'patchNotes' ? 'patch' : 'draw'),
-        run:() => openComposer({ type:l.key, a:F.today }) })),
+        hex:l.bar, run:() => openComposer({ type:l.key, a:F.today }) })),
     { k:'Search the manifest',   c:'ink3',  run:() => q.focus() },
     { k:'Show staged only',      c:'staged',run:() => { st.stagedOnly=true; renderRows();
         document.querySelector('[data-staged]')?.setAttribute('aria-pressed','true'); } },

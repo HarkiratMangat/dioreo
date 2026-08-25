@@ -182,6 +182,12 @@ main{overflow:auto;padding-bottom:96px}
 .srch{position:relative;flex:1 1 240px;max-width:300px}
 .srch input{width:100%;padding-left:32px}
 .srch svg{position:absolute;left:10px;top:50%;margin-top:-7px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
+/* 🔴 `.chip` AND `.seg button` ARE `.pill` NOW — measured before this: one `.pill` on the whole
+   portal against 93 hand-rolled chips, because building a component and then not adopting it is
+   the same defect as not building one. Adopted by REDEFINING these selectors rather than
+   rewriting 93 markup sites: `.chip` is queried by name in six pages of JS, and a mass rename
+   would have traded a styling inconsistency for a functional break. Same rules, same radius,
+   same hover lift, same focus ring — one language, and every existing call site inherits it. */
 .chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
   padding:6px 11px;border-radius:20px;min-height:32px}
 .chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
@@ -2582,9 +2588,9 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .lnh-n{flex:none;font:500 9.5px/1 var(--data);letter-spacing:.04em;color:var(--ink4);
   font-variant-numeric:tabular-nums}
 .lnh:hover .lnh-n{color:var(--ink3)}
-.lane.col .lnh{color:var(--ink4)}
-.lane.col .lnh-n{color:var(--ink3)}
-.lane.col{border-bottom-style:dashed}
+.lane.lnc .lnh{color:var(--ink4)}
+.lane.lnc .lnh-n{color:var(--ink3)}
+.lane.lnc{border-bottom-style:dashed}
 
 /* ── collapsed summaries: one line that still says something ── */
 .lsum{position:absolute;inset:0;display:block}
@@ -2727,3 +2733,220 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   .cmdbar kbd{display:none}
   .hdr-out{display:none}          /* the account menu still carries it */
 }
+
+
+/* ══════════ COMPONENT ADOPTION — the existing names, the .pill language ══════════ */
+.chip,.seg button,.tbdsw button{border-radius:999px;
+  transition:border-color .14s,color .14s,background .14s,transform .14s}
+.chip:hover,.seg button:hover{transform:translateY(-1px)}
+.chip:active,.seg button:active{transform:none}
+.chip:focus-visible,.seg button:focus-visible,.tbdsw button:focus-visible{
+  outline:2px solid var(--patch);outline-offset:2px}
+.seg{border-radius:999px;padding:3px}
+.seg button{border-radius:999px;padding:6px 13px}
+.tbdsw{border-radius:999px}
+.tbdsw button{border-radius:999px}
+
+
+/* ══════════ HOME — a ranked answer, not a directory ══════════
+   The numbering is real: these are in priority order and the order is the information. */
+.att-list{list-style:none;margin:22px 0 26px;padding:0;display:flex;flex-direction:column;gap:1px}
+.att-row{display:grid;grid-template-columns:34px 3px 1fr auto;align-items:center;gap:14px;
+  padding:15px 18px 15px 4px;background:var(--paper);border:1px solid var(--rule);
+  border-radius:2px;transition:background .14s}
+.att-row:first-child{border-radius:11px 11px 2px 2px}
+.att-row:last-child{border-radius:2px 2px 11px 11px}
+.att-row:only-child{border-radius:11px}
+.att-row + .att-row{border-top:0}
+.att-row:hover{background:var(--hi)}
+.att-i{font:600 12px/1 var(--data);letter-spacing:.06em;color:var(--ink4);text-align:right;
+  font-variant-numeric:tabular-nums}
+.att-b{align-self:stretch;border-radius:2px;background:var(--sev,var(--ink4))}
+.att-x{min-width:0;display:flex;flex-direction:column;gap:3px}
+.att-x b{font:600 14.5px/1.35 var(--ui);color:var(--ink);font-weight:600}
+.att-x em{font:500 10px/1 var(--data);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);font-style:normal}
+/* The severity ladder is a COLOUR RAMP, not five identical alarms. */
+.att-row.s-conflict{--sev:var(--warn)}
+.att-row.s-spof    {--sev:var(--del)}
+.att-row.s-error   {--sev:var(--del)}
+.att-row.s-repair  {--sev:var(--patch)}
+.att-row.s-forever {--sev:var(--ink4)}
+.att-row.s-conflict .att-i,.att-row.s-spof .att-i,.att-row.s-error .att-i{color:var(--ink3)}
+.att-row.clear{grid-template-columns:34px 3px 1fr}
+.att-row.clear{--sev:var(--ok)}
+.att-row.clear .att-i{color:var(--ok)}
+.att-go{flex:none}
+/* Once the findings moved up, the realm strip is a way IN — quieter, denser, no second alarm. */
+.hgrid.quiet .hcard{padding:14px 15px}
+.hgrid.quiet .hq{opacity:.72}
+@media (max-width:720px){
+  .att-row{grid-template-columns:26px 3px 1fr;row-gap:10px;padding:13px 14px 13px 2px}
+  .att-go{grid-column:3;justify-self:start}
+}
+
+/* ══════════ ARMORY — a tier board that reads as tiered ══════════
+   Best · T3 · T4 · T5 · unranked had identical visual weight, so the one thing the board exists
+   to express — the ranking — was the one thing it did not show. */
+.trow.t-best{background:linear-gradient(90deg,color-mix(in srgb,var(--patch) 8%,transparent),transparent)}
+.trow.t-best .trow-k{font-size:20px;color:var(--patch)}
+.trow.t-top3 .trow-k{font-size:17px;color:var(--ink)}
+.trow.t-top4 .trow-k{font-size:15px;color:var(--ink2)}
+.trow.t-top5 .trow-k{font-size:14px;color:var(--ink3)}
+.trow.t-unranked{opacity:.72}
+.trow.t-unranked .trow-k{font-size:13px;color:var(--ink4)}
+/* the card class is `.bchip`, not `.bcard` — checked against the markup rather than assumed */
+.trow.t-top4,.trow.t-top5{--bc-dim:.94}
+.trow.t-unranked{--bc-dim:.86}
+.trow .bchip{opacity:var(--bc-dim,1)}
+.trow:hover .bchip{opacity:1}
+
+/* 🔴 SIX PAIRS OF ADJACENT CARDS READ AS DUPLICATES — LOCUS/LOCUS, DR-H/DR-H, LK24/LK24 —
+   because two builds of one weapon are two cards with the same title, told apart only by a
+   stored name that is an INDEX ("Build 1", "Build 2"). The data is right; the presentation was
+   asking the reader to spot a one-character difference. Siblings in the same tier now render as
+   ONE group with the weapon named once and the builds inside it, which is also what they are. */
+.bgrp{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule2);border-radius:9px;
+  overflow:hidden;background:var(--sunk)}
+.bgrp-h{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--rule);
+  font:600 12.5px/1 var(--ui);color:var(--ink)}
+.bgrp-h .bgrp-n{margin-left:auto;font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink4)}
+.bgrp .bchip{border:0;border-radius:0;background:transparent;min-width:0}
+.bgrp .bchip + .bchip{border-top:1px solid var(--rule)}
+.bgrp-h i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
+.bgrp .bc-w{display:none}          /* the weapon is named once, on the group */
+
+/* The realm strip lost its reason to be a 3-up card grid the moment the findings moved into the
+   ranked list above it — a 3+2 layout left a hole in the second row for no gain. Five across,
+   one row, equal weight, because that is now exactly what they are: five ways in. */
+.hgrid.quiet{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.hgrid.quiet .hcard{padding:13px 14px;gap:7px}
+.hgrid.quiet .hq{font-size:11.5px;line-height:1.4}
+.hgrid.quiet .hf b{font-size:19px}
+@media (max-width:1180px){.hgrid.quiet{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){.hgrid.quiet{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.hgrid.quiet{grid-template-columns:1fr}}
+
+
+/* 🔴 `.col` WAS A COLLISION — `.col{…min-height:220px}` is a BOARD COLUMN, defined 2,400 lines
+   earlier. A collapsed 30px lane inherited it and computed to 220px, rendering as a black void
+   with its header floating in the middle. Eighth on this package's collision roster after
+   `.now .left .tbd .k .tk .ed` and `window.frames`. Generic class names are not a style
+   preference here; they are a recurring, measured defect. */
+.lane.lnc{height:30px;min-height:0;align-items:center;border-bottom-style:dashed}
+.lane.lnc .lnh{color:var(--ink4)}
+.lane.lnc .lnh-n{color:var(--ink3)}
+.lane.lnc .tk{height:100%}
+
+
+/* 🔴 TWO SEARCH BARS STACKED INSIDE ONE. The global form reset
+   `input:not([type="checkbox"]):not([type="radio"]):not([type="range"])` scores 0,3,1 — three
+   `:not()` arguments each contribute an attribute selector — so it outranked `.cb-in` at 0,1,0
+   and painted the command input as its own bordered box INSIDE the command bar. Specificity is
+   not a matter of which rule was written last. */
+.cmdbar input.cb-in{background:none;border:0;border-radius:0;padding:0;min-height:0;box-shadow:none}
+.cmdbar input.cb-in:focus{outline:none}
+
+
+/* ══════════ ARMORY TIER HEADERS — four stacked things, none aligned to each other ══════════
+   The key (★ / T3), a circled count, the label and a note sat in a 190px column as four separate
+   blocks with ~110px of dead space between them, and the key was optically centred while
+   everything under it was left-aligned. The tier key and the count are ONE fact — "eight builds
+   at T3" — so they share a line, the block hangs from the top of its row instead of floating in
+   the middle of it, and the row's height follows its contents. */
+.trow{align-items:stretch}
+.trow-h{align-self:start;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"k n" "t t" "note note";
+  gap:3px 9px;align-content:start;padding-top:13px}
+.trow-k{grid-area:k;line-height:1;align-self:center}
+.trow-n{grid-area:n;justify-self:start;align-self:center}
+.trow-t{grid-area:t;margin-top:5px}
+.trow-note{grid-area:note;margin-top:2px}
+.trow-body{align-content:flex-start}
+/* The group is a card among cards — it must not stretch the row it sits in. */
+.bgrp{flex:0 0 auto;align-self:flex-start;width:182px}
+
+
+/* 🔴 THE ARMORY TABLE SCROLLED SIDEWAYS, and the cause was one cell refusing to wrap. The BADGES
+   column holds a `.tiers` group of `META / TOP3 / 1×` chips laid out `nowrap`; at 122px of content
+   in a 104px cell it forced the table 65px wider than `.mscroll`, which then scrolled — so the
+   WEAPON column slid under the panel edge and the first thing you read became "APON". A table
+   whose last column cannot wrap makes the whole table horizontal. Badges wrap now, right-aligned,
+   and the attachment chips wrap with them. */
+.mtable td.ta-r{white-space:normal}
+.tiers{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;row-gap:4px}
+.mtable .atts,.mtable td .chipline{display:flex;flex-wrap:wrap;gap:4px}
+
+
+/* ══════════ THE MASTHEAD IS ONE SHAPE IN EVERY REALM ══════════
+   It lived in season.html's own <style>, so Armory's primary action had nowhere to go and stayed
+   parked under a filter row inside the manifest — measured at 1208px in an 828px viewport, below
+   the fold, on the realm that manages 133 builds. Identity left, numbers and the action right,
+   which is also the reading order: what is this · how is it doing · what can I add. */
+.masthead{display:grid;grid-template-columns:1fr auto;align-items:start;column-gap:28px}
+.masthead .mh-id{grid-column:1;grid-row:1}
+.masthead .mh-stats{grid-column:2;grid-row:1;justify-content:flex-end;margin-top:6px}
+.masthead .mh-new{grid-column:2;grid-row:2;justify-self:end;margin-top:16px}
+.masthead .nwhost{grid-column:1 / -1;grid-row:3;max-width:none}
+@media (max-width:820px){
+  .masthead{grid-template-columns:1fr}
+  .masthead .mh-stats,.masthead .mh-new{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}
+}
+
+
+/* 🔴 THE ANNOUNCEMENT PREVIEWS WERE FLUSH AGAINST EACH OTHER — zero gap between two `.dcard`s
+   stacked in the same column, so two separate messages read as one block with a colour change in
+   the middle. And the text was cut mid-word ("…and the battle pas", "Use /draw calculator to") on
+   a card whose stated job is to be "the bot's OWN render shape — a truthful preview". A preview
+   that silently drops the end of the sentence is not truthful; Discord shows the whole thing. */
+.dcard + .dcard{margin-top:12px}
+.dcard h6{overflow:visible;display:block;-webkit-line-clamp:none;max-height:none;
+  white-space:normal;overflow-wrap:anywhere}
+
+
+/* 🔴 THE NEW CONTRAST RULE FOUND FOUR ON ITS FIRST RUN, and every one is `--ink4` used as TEXT.
+   COMPANION says plainly that the ink scale is THREE text tones and `--ink4` is non-text — it is
+   for rules, dots and edges. Three surfaces I built today reached for it anyway because it looked
+   right, which is exactly what a measured check is for. Measured before: ⌘K 3.46:1, the attention
+   index 3.02:1, the lane count 3.02:1 — all against a 4.5:1 requirement at those sizes. */
+.cmdbar kbd{color:var(--ink3)}
+.att-i{color:var(--ink3)}
+.lnh-n{color:var(--ink3)}
+/* 🔴 AND ONE REAL DEFECT, NOT A TOKEN SLIP: an outside label measured 1.41:1. `.bar.saved .bl`
+   paints near-black text designed for a FILLED bar — but an outside label renders on the dark
+   lane, not on the bar, so it was black-on-black. The label leaving the bar has to leave the
+   bar's text colour behind with it. */
+.bar.lbl-out .bl,.bar.lbl-out-l .bl,
+.bar.saved.lbl-out .bl,.bar.saved.lbl-out-l .bl{color:var(--ink)}
+/* the two column groups ran into each other; a group needs a gutter, not just a caption */
+.mx thead .grp + .grp,.mxgrp + .mxgrp{padding-left:14px}
+
+.klg.spofk{display:inline-flex;align-items:center;gap:7px;margin-left:16px;color:var(--ink3);font-size:12.5px}
+.klg.spofk i{width:22px;height:7px;border-radius:99px;background:var(--ink4);
+  box-shadow:0 0 0 2px var(--warn);flex:none}
+.klg.spofk b{color:var(--warn);font-weight:600}
+
+/* the bar carries its own text colour; the global fallback stays for anything not yet converted */
+.bar.saved,.bar.saved .bl{color:var(--ci,var(--on-accent))}
+.bar.lbl-out .bl,.bar.lbl-out-l .bl,
+.bar.saved.lbl-out .bl,.bar.saved.lbl-out-l .bl{color:var(--ink)}
+/* two more `--ink4`-as-text slips the rule caught: the lane caret and a collapsed lane's name */
+.lnh-cv{opacity:.8;color:var(--ink3)}
+.lane.lnc .lnh{color:var(--ink3)}
+
+/* Any filled surface that declares `--ci` uses it; the old single global stays as the fallback
+   for surfaces not yet converted, so nothing regresses to unstyled while the sweep finishes. */
+.bar.saved,.bar.saved .bl,.stt.saved,.pt .lbl,.bdg.filled{color:var(--ci,var(--on-accent))}
+
+
+/* ══════════ THE TYPES ARE THE ACTION ══════════ */
+.mh-add{grid-column:2;grid-row:2;justify-self:end;margin-top:16px;
+  display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:flex-end}
+.mh-add-k{font:600 10px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
+  margin-right:3px}
+.pill.mh-t{padding:9px 14px;font-weight:600;border-color:color-mix(in srgb,var(--c) 38%,var(--rule));
+  background:color-mix(in srgb,var(--c) 9%,transparent);color:var(--ink)}
+.pill.mh-t:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 20%,transparent)}
+.pill.mh-t .dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
+.mh-k{font:500 10px/1 var(--ui);color:var(--ink3);border:1px solid var(--rule2);border-radius:4px;
+  padding:4px 6px;margin-left:2px}
+@media (max-width:820px){.mh-add{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}}

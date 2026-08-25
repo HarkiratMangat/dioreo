@@ -20,6 +20,10 @@
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
       </div>
+      <button class="pill lead mh-new" id="mhNew" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> New build
+        <kbd>N</kbd>
+      </button>
     </div>
 
     <section class="panel" aria-label="Armory view">
@@ -47,10 +51,16 @@
       <div class="mtools">
         <span class="srch"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
           <label class="sr" for="q">Search builds</label>
-          <input id="q" type="search" placeholder="Weapon, build, attachment or Gunsmith code…" autocomplete="off">
+          <input id="q" type="search" placeholder="Search weapon, attachment or code" autocomplete="off">
         </span>
         <button class="chip" data-filter="all" aria-pressed="true">All</button>
         <span class="chipset" id="catChips"></span>
+        <!-- 🔴 THIS WAS THE PRIMARY ACTION ON THE PAGE, parked under a filter row inside the
+             manifest — measured earlier at 1208px in an 828px viewport, i.e. below the fold, on
+             the realm that manages 133 builds. It moved to the masthead beside the numbers, the
+             same place Season's `+ New item` lives, so the two realms answer "how do I add one"
+             the same way. This one stays as the in-context shortcut for when you are already
+             scrolled to the table. -->
         <button class="chip go" id="addBtn">+ Add build</button>
         <span class="rt" id="count"></span>
       </div>
@@ -210,12 +220,16 @@
               <span class="trow-k">${r === null ? '—' : r === 'best' ? '★' : r.replace('top', 'T')}</span>
               <span class="trow-n">${list.length}</span>
               <span class="trow-t">${F.RANK_LABEL[String(r)]}</span>
-              <span class="trow-note">${r === 'best' ? 'one per category — the pick a player should copy'
-                : r === null ? 'no rank set; these render with no tier badge'
-                : 'ranked within its own category, not across the armory'}</span>
+              <!-- 🔴 THE SAME SENTENCE RENDERED THREE TIMES. "ranked within its own category,
+                   not across the armory" appeared on T3, T4 AND T5 — and again, in full, in the
+                   note under the whole rack. Four copies of one fact, each taking a third of its
+                   row's header height. A note earns its place by saying something the row above
+                   it does not; only 'best' and 'unranked' do. -->
+              ${r === 'best' ? '<span class="trow-note">one per category — the pick a player should copy</span>'
+                : r === null ? '<span class="trow-note">no rank set; these render with no tier badge</span>' : ''}
             </div>
             <div class="trow-body" data-drop="${r === null ? '' : r}">
-              ${list.length ? list.map(chip).join('')
+              ${list.length ? groupChips(list)
                 : `<div class="trow-empty">Nothing at ${F.RANK_LABEL[String(r)]} — drag a build here, or focus one and press Alt plus an arrow key.</div>`}
             </div>
           </div>`).join('')}
@@ -227,6 +241,24 @@
         <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a
         combat range (<code>best-close</code>, <code>best-midlong</code>).</p>`;
     wireRack();
+  }
+  /* 🔴 SIX PAIRS OF ADJACENT CARDS READ AS DUPLICATES. LOCUS/LOCUS, DR-H/DR-H, HS0405/HS0405,
+   * LK24/LK24, HVK-30/HVK-30, SWITCHBLADE X9 ×2 — two builds of one weapon, told apart only by
+   * a stored `buildName` that is an INDEX ("Build 1", "Build 2"). The DATA is right; the
+   * presentation was asking a reader to spot a one-character difference between two otherwise
+   * identical rectangles, which reads as a duplicate-render bug. Siblings in the same tier now
+   * render as ONE group, weapon named once at the top, builds inside it — which is also what
+   * they actually are. The inner elements stay `.bchip`, so drag-to-rerank is untouched. */
+  function groupChips(list) {
+    const by = new Map();
+    list.forEach(b => { const k = b.weaponName; if (!by.has(k)) by.set(k, []); by.get(k).push(b); });
+    return [...by.values()].map(g => g.length < 2 ? chip(g[0]) : `
+      <div class="bgrp" style="--c:${catOf(g[0].category).hex}">
+        <div class="bgrp-h"><i aria-hidden="true"></i>${g[0].weaponName}
+          ${g.some(b => b.isMeta) ? '<span class="bc-meta">META</span>' : ''}
+          <span class="bgrp-n">${g.length} builds</span></div>
+        ${g.map(chip).join('')}
+      </div>`).join('');
   }
   function chip(b) {
     const def = defectsFor(b), c = catOf(b.category);
@@ -1036,6 +1068,17 @@
   });
   q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
   addBtn.onclick = openAdd;
+  /* Both entry points, one handler — the masthead action and the in-table shortcut must never be
+   * able to disagree about what "add a build" does. `N` matches Season, so the shortcut means the
+   * same thing in every realm rather than something different per page. */
+  document.getElementById('mhNew').onclick = openAdd;
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open')) return;
+    e.preventDefault(); openAdd();
+  });
   cbAll.onclick = () => {
     const l = visible(), all = l.every(b => st.selected.has(b.id));
     l.forEach(b => all ? st.selected.delete(b.id) : st.selected.add(b.id));
