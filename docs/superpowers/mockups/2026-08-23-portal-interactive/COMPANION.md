@@ -712,7 +712,7 @@ Four corrections, all the same class — a name written confidently that exists 
 `models/PortalSession.js` stores `sessionHash` (the cookie holds the raw value; a database leak must not hand anyone a working session), `discordId`, `lastSeenAt`, `userAgent`, `revokedAt`. **No IP is stored anywhere** — an earlier build had an `ip` column and a `current` flag, and neither field exists. "Signed in now" is *derived* from `lastSeenAt` inside 15 minutes, because a browser session has no logout event unless somebody clicks one. **Live export: zero rows** — so the empty state is the real state and had to be designed, not assumed away.
 
 #### By admin (`#viewGrid`) — the grid
-Every admin × all eleven tokens, commands and `/manage` pages in visually separated blocks. **This is the capability Discord physically cannot offer**: `/manage` shows one admin's permissions in one ephemeral reply, so answering *"who can touch draws?"* means opening it once per admin and holding the answers in your head.
+Every admin × all twelve tokens, commands and `/manage` pages in visually separated blocks. **This is the capability Discord physically cannot offer**: `/manage` shows one admin's permissions in one ephemeral reply, so answering *"who can touch draws?"* means opening it once per admin and holding the answers in your head.
 
 #### By scope (`#viewScope`) — the inverse
 Each token with its holders, derived from the *same* grants so the two views cannot disagree. Two findings live only here: a scope held by **exactly one** non-owner (a single point of failure — **6** on the live data, including the bare `manage` token itself), and a scope held by **nobody** but the owner (`autobuild`).
@@ -2440,7 +2440,27 @@ So: dragging a bar produces a day, and the day must be mapped back onto the exis
 
 🔴 **`?net=loading|refresh|slow|fail|commit|commitfail|offline|expired|rollback` makes every one of these renderable, and that is not a convenience.** This package keeps re-learning that a state nothing can put on screen is a state nobody designs and no check can open — `?audit=1` went unrun for weeks, every `[hidden]` view was audited by nothing, and the owner-only refusal was undesignable until `?as=` existed.
 
-⏳ **Not yet swept.** The `?net=` states render and were spot-checked, but `.states.html` has no pass over them yet — so nothing guards them against a future edit. That is the next thing this section owes.
+✅ **Swept 2026-08-25.** `.states.html` PASS 4d drives all nine and asserts the **rules**, not pixels — because the rules are what a future edit breaks: the skeleton must be shaped like the content and announce itself exactly once, a refresh must not blank its data or render a skeleton, a failure must carry all three of what/means/action, a commit failure must NAME the op, and both banners must say whether staged work survived. Six falsifiers prove each of those can fail (a slab skeleton, a silent live region, a refresh that blanked, a failure with no action, a commit failure that names no op, a banner silent about staged work).
+
+### 15.7b `prefers-reduced-motion` — measured, and it was a third broken
+
+*This document said for weeks that six blocks existed, the syntax was right, and nothing had ever observed them take effect — with the standing warning **"do not read 'the CSS is there' as 'it works'"**. Measured 2026-08-25 by enumerating every rule in every sheet:*
+
+| | |
+|---|---|
+| selectors declaring motion | **93** |
+| selectors with a reduced-motion override | **44** |
+| carrying a real `animation` and **not** covered | **10** |
+
+The ten included **`.now::before`, an infinite 2.8s pulse on the NOW marker** — the single most literal case the preference exists for — plus `viewIn` on every view switch, the Board and Rack stagger, `.bar.conflict`, and the composer opening.
+
+**None of that is visible in a diff and none of it is visible by reading a block.** Coverage is a relationship between two sets of selectors, and no amount of looking at one block reveals what the other set contains — the same shape as a ruler and its lanes on two origins.
+
+Fixed, and **audit rule 14 now holds the line**: the first rule in this file that reads the *stylesheet* rather than the page, failing when any selector declares a non-`none` `animation` with no override.
+
+⚠️ **Scope is `animation`, not every transition.** A colour or opacity transition is not movement, and neutralising all 57 of them would flatten the interface for no accessibility gain — a check that demands the wrong thing gets switched off.
+
+⚠️ **It asserts COVERAGE, not that the preference works.** Nothing available here can emulate the media feature. What is proven is that every animating selector has an override — a necessary condition, and the one that was actually false.
 
 ### 15.8 Constants named elsewhere in this document
 
@@ -2481,7 +2501,9 @@ What that means concretely, and each line is a design obligation rather than a s
 - **The grant flow carries explicit warnings**, in the same voice as the one-way strip: it names what the admin will be able to do that cannot be undone, and it is a typed confirmation, not a checkbox.
 - **The safeguard is export retention.** The interlock today only asks whether an export *happened*; the tier-3 record should keep the export itself, so a purge run by a delegated admin leaves the owner holding the data that was purged rather than a note saying somebody downloaded it.
 
-⏳ **Not yet built in the mockups.** The matrix still shows eleven tokens and the one-way strip still states only the export gate. Doing it touches `fixtures.js`'s grant objects, the Access columns, `portal:gate`'s token count, and the one-way copy on five realms — it is the next unit, and it is named here so the gap is visible rather than assumed away.
+✅ **BUILT 2026-08-25 — see §5.9q.** The matrix carries twelve tokens with the owner-only one marked, the one-way strip states the rule and disables with the reason, the grant is typed, and the export is retained rather than witnessed.
+
+⚠️ **Two claims in the original note were wrong, and they are corrected rather than deleted.** It said the work would touch **`portal:gate`'s token count** — it does not and cannot: the gate builds `PERM_TOKENS` from the real `utils/adminAccess.js`, so it still reports **eleven**, and will until the bot itself gains the token. And it said **"the one-way copy on five realms"** — there is one `Shell.oneWay` strip, on Season, because Season holds every tier-3 *entity* op (`draw.purge`, `calendar.purge`, `patchnote.purge`, `season.startNew`); Review's commit gate and Access's typed revoke are the other two tier-3 surfaces and they are not strips. A scope written from memory rather than from the tree overstates in exactly this direction.
 
 **4. Still genuinely open:** whether `--ink4` should exist at all. It is a non-text token with 15 uses; if those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote. Cosmetic, and it does not gate wiring.
 4. **Whether `--ink4` should exist at all.** It is now a non-text token with 15 uses. If those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote.

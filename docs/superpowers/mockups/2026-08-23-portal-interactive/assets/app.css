@@ -1616,6 +1616,32 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* The three moments still govern (§10.3): everything here respects a reduced-motion preference
    by holding its final frame rather than by disappearing. A skeleton that does not shimmer is
    still a skeleton; a progress bar that jumps rather than eases still reports progress. */
+/* 🔴 TEN REAL ANIMATIONS HAD NO REDUCED-MOTION OVERRIDE, AND ONE OF THEM LOOPED FOREVER.
+   MEASURED 2026-08-25 by enumerating every rule in every sheet: 93 selectors declare motion, 44
+   were covered, and the 10 carrying a real `animation` (as opposed to a colour transition) were
+   NOT among them — including `.now::before`, an infinite 2.8s pulse on the NOW marker, which is
+   the single most literal case the preference exists for.
+   ⚠️ This was found by MEASURING, not by reading the CSS. Six blocks existed, the syntax was
+   right, and this document had said for weeks that "the CSS is there" must not be read as "it
+   works". It was not working for a third of the motion on the page.
+   The rule is `animation`, not every transition: a colour or opacity transition is not movement,
+   and neutralising all of them would flatten the interface for no accessibility gain. Audit rule
+   14 now holds this line so the next animation cannot quietly escape it. */
+@media (prefers-reduced-motion: reduce){
+  /* An infinite pulse is the clearest case of all. Held at its resting frame, not hidden — the
+     NOW marker still has to be findable. */
+  .now::before{animation:none}
+  /* A conflict must still ANNOUNCE itself; it just does not shake to do it. The flash becomes a
+     held state, so the information survives and the movement does not. */
+  .bar.conflict{animation:none;outline:2px solid var(--danger-ink);outline-offset:1px}
+  /* View switches and their staggered children. `viewIn` is a slide; without it the view simply
+     is there, which is what somebody who asked for less motion wants. */
+  #viewTrack:not([hidden]),#viewBoard:not([hidden]),#viewRack:not([hidden]),
+  #viewCoverage:not([hidden]),#viewCompare:not([hidden]),
+  #viewBoard:not([hidden]) .bcol,#viewRack:not([hidden]) .trow{animation:none}
+  /* The composer opening. */
+  .nwhost{animation:none}
+}
 @media (prefers-reduced-motion: reduce){
   .skel-r i{animation:none;background:var(--sunk)}
   .is-refreshing::after{animation:none;transform:none;opacity:.6}

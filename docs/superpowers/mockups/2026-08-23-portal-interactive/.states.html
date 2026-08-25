@@ -306,6 +306,92 @@ const say = (tag, name, probs) => {
     }
   }
 
+  /* PASS 4d — ASYNC (§15.7). 🔴 THESE NINE STATES RENDERED AND NOTHING GUARDED THEM. They were
+   * built and spot-checked once, which is exactly the condition every other gap in this package
+   * started from — `?audit=1` rendered too, and went unrun for weeks.
+   * The assertions are about the RULES, not about pixels, because the rules are what a future
+   * edit breaks: a skeleton must be shaped like the content and must announce itself once; a
+   * refresh must NOT blank the data; a failure must carry all three of what/means/action; a
+   * commit failure must NAME the op; a banner must state that staged work is safe. */
+  {
+    const NET = [
+      ['loading',    'season',    (d) => {
+        const rows = d.querySelectorAll('.skel-r');
+        const out = [];
+        if (!rows.length) return ['?net=loading rendered no skeleton'];
+        /* Shaped like the CONTENT, not a slab: the realm declares widths and they must reach the
+         * bars. A skeleton whose rows are all one width is a spinner with square corners. */
+        const widths = [...rows[0].querySelectorAll('i')].map(i => i.style.width);
+        if (widths.length < 2) out.push('the skeleton row has ' + widths.length + ' bar(s) — it is a slab, not a shape');
+        if (new Set(widths).size < 2) out.push('every bar in the skeleton row is the same width');
+        /* Announced ONCE. The bars are aria-hidden, so without a text node the live region says
+         * nothing at all — which is how an accessible-looking skeleton announces silence. */
+        const live = d.querySelector('.skel[role=status], .skel [role=status]');
+        if (!live) out.push('the skeleton has no live region');
+        else if (!(live.textContent || '').trim()) out.push('the skeleton live region announces nothing');
+        if (d.querySelectorAll('[role=status]').length > 1) out.push('the skeleton announces itself more than once');
+        return out;
+      }],
+      ['refresh',    'armory',    (d) => {
+        const out = [];
+        if (!d.querySelector('.is-refreshing')) out.push('?net=refresh left no refreshing mark');
+        /* RULE 2 — the data must still be there. Blanking correct content to announce a re-fetch
+         * is a regression dressed as feedback, and it is the easiest of these to regress into. */
+        const host = d.querySelector('[data-async-host]');
+        if (host && host.querySelectorAll('*').length < 20) out.push('a refresh blanked the data it was re-reading');
+        if (host && host.querySelector('.skel')) out.push('a refresh rendered a SKELETON — rule 2 says it must not');
+        return out;
+      }],
+      ['slow',       'broadcast', (d) => (d.querySelector('.is-slow') ? [] : ['?net=slow left no slow state'])],
+      ['fail',       'access',    (d) => {
+        const b = d.querySelector('.failbox'); if (!b) return ['?net=fail rendered no failure'];
+        const out = [];
+        /* All THREE parts, because an error missing one is the one that gets forwarded to
+         * somebody else to interpret. */
+        if (!(d.querySelector('.fail-h b') || {}).textContent) out.push('the failure does not say WHAT failed');
+        if (!(b.querySelector('p') || {}).textContent) out.push('the failure does not say what it MEANS');
+        if (!(b.querySelector('.fail-a button') || {}).textContent) out.push('the failure offers no ACTION');
+        if (b.getAttribute('role') !== 'alert') out.push('the failure is not announced (no role=alert)');
+        return out;
+      }],
+      ['commit',     'review',    (d) => {
+        const t = (d.querySelector('.prog-t') || {}).textContent || '';
+        return /\d+ of \d+/.test(t) ? [] : ['commit progress does not report N of M — got "' + t.trim() + '"'];
+      }],
+      ['commitfail', 'review',    (d) => {
+        const out = []; const p = d.querySelector('.prog.bad');
+        if (!p) return ['?net=commitfail did not render a failed commit'];
+        const t = (d.querySelector('.prog-t') || {}).textContent || '';
+        /* NAME THE OP. A percentage cannot say which of forty broke, and that is the only
+         * question worth answering at that moment. */
+        if (!/\./.test(t)) out.push('a failed commit does not name the op that failed — got "' + t.trim() + '"');
+        return out;
+      }],
+      ['offline',    'season',    (d) => netbar(d, 'offline')],
+      ['expired',    'season',    (d) => netbar(d, 'expired')],
+      ['rollback',   'season',    (d) => (d.querySelector('[data-tip^="Rolled back"]') ? []
+                                          : ['?net=rollback left no visible rollback'])]
+    ];
+    /* Both banners must name an action AND say staged work is safe — the reader's actual fear.
+     * An "offline" notice that ignores it is a notification, not a design. */
+    function netbar(d, kind) {
+      const b = d.querySelector('.netbar.' + kind);
+      if (!b) return ['?net=' + kind + ' rendered no banner'];
+      const out = [];
+      if (!b.querySelector('button')) out.push('the ' + kind + ' banner offers no action');
+      if (!/staged|still here|not lost|is held/i.test(b.textContent)) 
+        out.push('the ' + kind + ' banner does not say whether staged work survived');
+      return out;
+    }
+    for (const [kind, page, probe] of NET) {
+      const f = await load(page + '.html?net=' + kind);
+      let found = [];
+      try { found = probe(f.contentDocument) || []; } catch (e) { found = ['probe threw: ' + e.message]; }
+      bad += say('net:' + kind, page, { problems: found }); ran++;
+      f.remove(); paint();
+    }
+  }
+
   /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
    * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
    * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm
@@ -415,6 +501,38 @@ const say = (tag, name, probs) => {
     lines.push(sOk ? '<span class="ok">SELF-TEST</span> an audit that never settles IS reported as a timeout, not read'
                    : '<span class="bad">SELF-TEST FAILED — settle() hands back an unsettled measurement as though it were the answer</span>');
     if (!sOk) bad++;
+
+    /* 🔴 AND THE ASYNC PASS MUST BE ABLE TO FAIL. Nine new checks went green on their first run,
+     * which is the condition under which a vacuous check is indistinguishable from a correct
+     * one — and three probes shipped structurally incapable of failing in this package on
+     * 2026-08-24 alone. Each rule is violated on purpose here and must be reported. */
+    const frag = (html) => { const d = document.implementation.createHTMLDocument(''); d.body.innerHTML = html; return d; };
+    const asyncFalsifiers = [
+      ['a slab skeleton IS caught',
+       frag('<div data-async-host><div class="skel" role="status">x<div class="skel-r"><i style="width:40%"></i><i style="width:40%"></i></div></div></div>'),
+       d => { const w = [...d.querySelectorAll('.skel-r i')].map(i => i.style.width); return new Set(w).size < 2; }],
+      ['a silent live region IS caught',
+       frag('<div class="skel" role="status"><div class="skel-r"><i style="width:10%"></i><i style="width:50%"></i></div></div>'),
+       d => !((d.querySelector('[role=status]').textContent || '').trim())],
+      ['a refresh that BLANKED its data IS caught',
+       frag('<div data-async-host class="is-refreshing"></div>'),
+       d => d.querySelector('[data-async-host]').querySelectorAll('*').length < 20],
+      ['a failure missing its ACTION IS caught',
+       frag('<div class="failbox" role="alert"><div class="fail-h"><b>Broke</b></div><p>why</p><div class="fail-a"></div></div>'),
+       d => !((d.querySelector('.fail-a button') || {}).textContent)],
+      ['a commit failure that does not NAME the op IS caught',
+       frag('<div class="prog bad"><div class="prog-t"><b>Stopped at 24 of 40</b></div></div>'),
+       d => !/\./.test(d.querySelector('.prog-t').textContent)],
+      ['a banner silent about staged work IS caught',
+       frag('<div class="netbar offline"><b>Offline.</b><button>Retry</button></div>'),
+       d => !/staged|still here|not lost|is held/i.test(d.querySelector('.netbar').textContent)]
+    ];
+    asyncFalsifiers.forEach(([name, doc, test]) => {
+      let caught = false; try { caught = !!test(doc); } catch (e) {}
+      lines.push(caught ? '<span class="ok">SELF-TEST</span> ' + name
+                        : '<span class="bad">SELF-TEST FAILED — ' + name.replace(' IS caught', ' is NOT caught') + '</span>');
+      if (!caught) bad++;
+    });
 
     /* And the liveness probe must be able to say NO. A frame that never runs rAF is the state
      * this whole harness change exists for; a probe that cannot report it is decoration. */

@@ -1338,6 +1338,40 @@
         });
       })();
 
+      /* 14. NO ANIMATION MAY ESCAPE `prefers-reduced-motion`.
+       *     🔴 THE FIRST RULE HERE THAT READS THE STYLESHEET RATHER THAN THE PAGE, and it exists
+       *     because reading the CSS by eye said this was fine for weeks. MEASURED 2026-08-25:
+       *     93 selectors declared motion, 44 had an override, and TEN carrying a real `animation`
+       *     did not — one of them an infinite 2.8s pulse, which is the most literal case the
+       *     preference exists for. Six reduced-motion blocks existed and the syntax was right;
+       *     what was missing was coverage, and nothing could see coverage by looking at a block.
+       *     ⚠️ SCOPE IS `animation`, NOT EVERY TRANSITION. A colour or opacity transition is not
+       *     movement, and neutralising all of them would flatten the interface for no
+       *     accessibility gain — a check that demands the wrong thing gets switched off.
+       *     ⚠️ This asserts COVERAGE, not that the preference works. Nothing in this session could
+       *     emulate the media feature, so what is proven is that every animating selector has an
+       *     override — a necessary condition, and the one that was actually false. */
+      (() => {
+        const moving = [], covered = new Set();
+        const walk = (rules, inRM) => {
+          for (const r of rules) {
+            if (r.type === CSSRule.MEDIA_RULE) {
+              walk(r.cssRules, inRM || /prefers-reduced-motion/.test(r.conditionText || r.media.mediaText));
+              continue;
+            }
+            if (!r.selectorText || !r.style) continue;
+            const a = r.style.getPropertyValue('animation') || r.style.getPropertyValue('animation-name');
+            if (inRM) { r.selectorText.split(',').forEach(x => covered.add(x.trim())); continue; }
+            if (a && !/^\s*none/.test(a)) r.selectorText.split(',').forEach(x => moving.push(x.trim()));
+          }
+        };
+        for (const sh of document.styleSheets) { try { walk(sh.cssRules, false); } catch (e) { /* cross-origin */ } }
+        const gap = [...new Set(moving)].filter(m => !covered.has(m));
+        if (gap.length)
+          problems.push(`${gap.length} selector(s) animate with no prefers-reduced-motion override: ` +
+            gap.slice(0, 6).join(', ') + (gap.length > 6 ? ` (+${gap.length - 6} more)` : ''));
+      })();
+
       /* 12. A CONTROL INSIDE A COMPOSITE MUST NOT PAINT ITS OWN BOX, AND MUST FIT INSIDE IT.
        *     The command bar is a wrapper with an icon, an input and a kbd hint; if the input
        *     paints its own border and background it renders as a second bar inside the first,
