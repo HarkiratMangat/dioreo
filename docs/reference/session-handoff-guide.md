@@ -19,6 +19,30 @@ Corollary: **the most dangerous thing you can carry across a boundary is a stale
 
 ---
 
+## ⏱️ START HERE IF A COMPACT IS ALREADY IMMINENT
+
+Four steps, nothing else:
+
+1. **Commit.** Clean tree.
+2. **`sequentialthinking`: what is still OPEN?** Approved-but-unbuilt first, stale verifications second.
+3. 🔴 **File the approved-but-unbuilt in `docs/db-deferred-list.md`** with a verify condition.
+4. **Write the post-compact prompt** with the FIRST ACTION at the top.
+
+**Step 3 is the one that survives if everything else is lost** — and `.claude/hooks/outstanding-not-filed.sh` will block the Stop if you skip it, so it is the one step you do not have to remember. The rest of this file is the expansion; read on only if there is time.
+
+⚠️ **Skipping the test suites is NOT skipping the completeness sweep.** Those are different things and only the first is optional — see the last section.
+
+---
+
+## ✅ How to know the handoff is DONE
+
+Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
+
+- 🔴 **Could a session that read ONLY this handoff produce the next commit without asking Harkirat a question?** It fails for exactly the right reasons: no stated first action, an unstated approval status, a dangling "we discussed X" with no resolution.
+- 🔴 **Is every OPEN item marked approved-or-not AND built-or-not?** Two booleans per item. Miss either and the next session redoes approved work or builds something unapproved — **both have happened on this branch.**
+
+---
+
 ## The six steps, in order
 
 ### 1 · Checkpoint FIRST, before writing a word
@@ -77,7 +101,7 @@ The handoff goes to `local/handoff/<YYYY-MM-DD>-<topic>.md` (see `reference_hand
 
 > **Anything Harkirat APPROVED but that is not yet built must ALSO be filed in `docs/db-deferred-list.md`** — with a priority/effort tag, what to do, and **how to verify it is done**. A handoff is a letter to one reader; the deferred list is the project's memory.
 
-This is not optional bookkeeping. Work recorded only in a gitignored file is indistinguishable from work nobody noticed — the 2026-08-02 failure, repeated at the last compact and caught only by a hook.
+✅ **This one is ENFORCED, so you do not have to remember it:** `.claude/hooks/outstanding-not-filed.sh` blocks the Stop when a message names something as outstanding and the turn touched no tracking list. ⚠️ **A gate proves a list was opened, never that the right thing was written in it** — the judgement is still yours. This is not optional bookkeeping. Work recorded only in a gitignored file is indistinguishable from work nobody noticed — the 2026-08-02 failure, repeated at the last compact and caught only by a hook.
 
 ### 6 · The post-compact prompt
 
@@ -103,19 +127,6 @@ Paste-ready, in **one fenced block**, containing:
 | One tool call per check | One batched command per pass. Independent checks share a call |
 | Write a chronological narrative | Threads, OPEN/CLOSED, with attributes |
 | Quote a count or a HEAD as fact | Write the command that derives it |
-
----
-
-## The last-minute version
-
-No time, compact imminent — do these four and nothing else:
-
-1. **Commit.** Clean tree.
-2. **`sequentialthinking`: what is still OPEN?** Approved-but-unbuilt first, stale verifications second.
-3. **File the approved-but-unbuilt in `docs/db-deferred-list.md`** with a verify condition.
-4. **Write the post-compact prompt** with the first action at the top.
-
-The handoff file is worth writing when there is time. **Steps 1–4 are worth doing when there is not** — and step 3 is the one that survives if everything else is lost.
 
 ---
 
