@@ -154,6 +154,9 @@
   };
 
   const Shell = {
+    /* The session origin. In the wired portal this is the cookie's issued-at; here it is
+     * pinned once per page load so the countdown moves and never resets mid-session. */
+    _signedInAt: Date.now() - (4 * 3600e3 + 40 * 60e3),
     Store, REALMS,
 
     mountRail(active){
@@ -171,11 +174,11 @@
        * 'season' && n`) whatever realm staged the work, so an Armory edit put a badge on
        * Season. The count is a property of the CHANGESET, so it belongs on Review. */
       nav.innerHTML = REALMS.map(r => `
-        <a class="realm" href="${r.href}" ${r.id === active ? 'aria-current="page"' : ''}>
+        <a class="realm" href="${r.href}" style="--c:var(--r-${r.id})" ${r.id === active ? 'aria-current="page"' : ''}>
           <svg viewBox="0 0 24 24" aria-hidden="true">${r.icon}</svg>${r.label}
         </a>`).join('') + `
         <span class="rail-rule" aria-hidden="true"></span>
-        <a class="realm out ${n ? 'has' : ''}" href="review.html" ${active === 'review' ? 'aria-current="page"' : ''}>
+        <a class="realm out ${n ? 'has' : ''}" href="review.html" style="--c:var(--r-review)" ${active === 'review' ? 'aria-current="page"' : ''}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15 17l2.5 2.5L22 15"/></svg>Review
           ${n ? `<span class="cnt" aria-label="${n} staged">${n}</span>` : ''}
         </a>`;
@@ -213,6 +216,10 @@
     },
 
     renderTray(){
+      /* Every mutation funnels through Store.save → renderTray, so the header chip is
+       * refreshed HERE rather than at each call site: a chip wired per-mutation is the
+       * one-quantity-two-authorities shape waiting to happen. */
+      Shell.syncCommitChip();
       const t = document.querySelector('.tray');
       if (!t) return;
       const ops = Store.all();
@@ -294,14 +301,76 @@
       });
     },
 
+    /* ⚠️ "toasts settle needs a MUCH smoother animation." The old one played `trayIn .22s`
+     * on arrival and then VANISHED — `el.remove()` deleted the node mid-frame, so half of every
+     * toast's life had no motion in it at all, and a thing that appears smoothly and disappears
+     * instantly reads as broken rather than as fast. Three changes, all in CSS (see the
+     * LIVELINESS block): a longer arrival on a curve with no overshoot spike, opacity finishing
+     * before the travel does, and a separate faster exit that drifts down instead of reversing.
+     * This function's only job is to give the exit somewhere to happen. */
     toast(msg, actionLabel, onAction){
-      document.querySelector('.toast')?.remove();
+      const old = document.querySelector('.toast');
+      if (old) Shell._dismissToast(old);
       const el = document.createElement('div');
       el.className = 'toast'; el.setAttribute('role','status');
       el.innerHTML = `<span>${msg}</span>` + (actionLabel ? `<button type="button">${actionLabel}</button>` : '');
       document.body.appendChild(el);
-      if (actionLabel) el.querySelector('button').onclick = () => { onAction && onAction(); el.remove(); };
-      setTimeout(() => el.remove(), 6000);
+      if (actionLabel) el.querySelector('button').onclick = () => { onAction && onAction(); Shell._dismissToast(el); };
+      el._t = setTimeout(() => Shell._dismissToast(el), 6000);
+      return el;
+    },
+
+    /* Removal is a state, not a deletion: the node stays for the length of the exit and is
+     * dropped on animationend. `transitionend`/`animationend` never fires under
+     * prefers-reduced-motion (the global kill sets animation:none), so the timeout is the
+     * mechanism there and the listener is the optimisation — not the other way round, which
+     * is how an animated dismissal becomes a permanently stuck element for the one group of
+     * users who asked for less motion. */
+    _dismissToast(el){
+      if (!el || el.classList.contains('leaving')) return;
+      clearTimeout(el._t);
+      el.classList.add('leaving');
+      const gone = () => el.remove();
+      el.addEventListener('animationend', gone, { once:true });
+      setTimeout(gone, 400);
+    },
+
+    /* ── 5 · FIGURES ROLL AND SHOW THE DELTA ──────────────────────────────
+     * A masthead figure that silently reads 40 instead of 39 tells you the new value and
+     * hides the event — which is the one thing you were watching for after staging a change.
+     * The delta ghost is therefore the point, and the roll is what makes it legible.
+     * Reads the OLD text from the DOM rather than a cached value, so two callers can never
+     * disagree about what the previous number was. */
+    setFigure(el, n, opts = {}){
+      if (!el) return;
+      const prev = parseInt(String(el.textContent).replace(/[^\d-]/g, ''), 10);
+      const next = Number(n);
+      el.textContent = opts.text !== undefined ? opts.text : String(n);
+      Shell.markZero(el, next, opts.staged);
+      if (!Number.isFinite(prev) || prev === next) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      el.classList.remove('rolling'); void el.offsetWidth; el.classList.add('rolling');
+      el.addEventListener('animationend', () => el.classList.remove('rolling'), { once:true });
+      const d = next - prev, host = el.closest('.stat') || el.parentElement;
+      if (!host) return;
+      host.querySelector('.fdelta')?.remove();
+      const g = document.createElement('span');
+      g.className = 'fdelta ' + (d > 0 ? 'up' : 'down');
+      g.setAttribute('aria-hidden', 'true');
+      g.textContent = (d > 0 ? '+' : '−') + Math.abs(d);
+      host.appendChild(g);
+      setTimeout(() => g.remove(), 1400);
+    },
+
+    /* 🔴 ONE CLASS, ONE MEANING. `.zero` dims a zero to say "nothing here" — correct on
+     * NEED REPAIR 0 and exactly backwards on STAGED 0, where a clean slate is the GOOD state
+     * and dimming makes it read as absence rather than as "you are up to date". So the staged
+     * figure never takes it: it takes the cyan when there is something to act on and plain
+     * secondary ink when there is not. `figure-zero` in the audit fails if `.zero` ever lands
+     * on a `.stg` stat again. */
+    markZero(el, n, isStaged){
+      el.classList.toggle('zero', !isStaged && !n);
+      el.classList.toggle('stg-clear', !!isStaged && !n);
     },
 
     /* A panel with a real structure — eyebrow + title + close, a scrolling body, and a
@@ -534,7 +603,7 @@
            * person reads names the page. "Could not load this realm" made the reader translate
            * a word the portal never defines on screen. */
           what: 'Could not load ' + ((hereRealm() || {}).label || 'this page'),
-          means: 'The portal reached the server and the server could not read the season document. '
+          means: 'The portal reached the server and the server could not read this season. '
                + 'Nothing has been written, and anything you had staged is still here.',
           detail: 'GET /api/season → 500\nMongoServerError: connection <monitor> to 10.0.0.4:27017 timed out',
           action: 'Try again' });
@@ -591,7 +660,20 @@
      * anything stops meaning anything. */
     zeroStats(){
       document.querySelectorAll('.mh-stats .stat .v').forEach(v => {
-        v.classList.toggle('zero', (v.textContent || '').trim() === '0');
+        const z = (v.textContent || '').trim() === '0';
+        /* 🔴 `.zero` MEANT TWO OPPOSITE THINGS, and this observer is where both were applied.
+         * Dimming a zero to say "nothing here" is right on NEED REPAIR 0 and exactly backwards
+         * on STAGED 0, where a clean slate is the GOOD state and dimming reads as absence
+         * rather than as "you are up to date". Staged is also the one figure you can act on,
+         * so it is the one whose appearance should change when there is something to act on —
+         * cyan when it matters, plain secondary ink when it does not, never dimmed.
+         * The LEAD keeps its size at zero and drops only its colour: size carries hierarchy,
+         * colour carries meaning, and "0 live now" in Broadcast yellow is an alert about
+         * nothing. Both rules are in one place so a new realm inherits them. */
+        const stat = v.closest('.stat');
+        const staged = stat && stat.classList.contains('stg');
+        v.classList.toggle('zero', z && !staged);
+        v.classList.toggle('stg-clear', z && !!staged);
       });
     },
     /* The REASON, not just the verdict. A disabled control with no explanation is a dead end —
@@ -749,6 +831,253 @@
       probe.remove();
     },
 
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+     * MAGIC — one parser, four capabilities
+     *
+     * Harkirat's test for magic is not "is it clever", it is: does it make you say
+     * "the portal can do that?" or "that made it so easy". Three of the four below are the
+     * same engine pointed at three surfaces — paste, a date field, and ⌘K — which is what
+     * makes four capabilities affordable at once rather than four features.
+     *
+     * 🔴 THIS IS A MOCKUP OF THE SURFACE, NOT OF THE PARSING. The bot already ships
+     * utils/adminParser.js for the line formats and already depends on chrono-node for the
+     * dates — /manage parses admin dates with it today. The portal is the surface that does
+     * not use either. What is written here is a deliberately small subset with the same
+     * SHAPE, so a wiring session replaces the body and keeps every call site.
+     * ⚠️ So do not "improve" this grammar. The real one inherits everything the bot already
+     * understands, and a richer mockup grammar would only teach a wiring session to keep it.
+     * ══════════════════════════════════════════════════════════════════════════════ */
+    Parse: {
+      MONTHS: ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'],
+      _today(){ return (window.FIX && window.FIX.today) || new Date().toISOString().slice(0,10); },
+      _iso(d){ return d.toISOString().slice(0,10); },
+      _add(iso, days){ const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + days); return Shell.Parse._iso(d); },
+
+      /* ── 3 · TYPE THE DATE LIKE A PERSON ───────────────────────────────────
+       * The bot has understood "in 3 weeks" for a year. The portal made you use a date
+       * picker — which is not a smaller feature, it is the SAME feature with the
+       * understanding removed. Returns an ISO date, or null, and never guesses silently:
+       * every caller shows what it resolved to before anything is stored. */
+      date(str, base){
+        if (!str) return null;
+        const t = String(str).toLowerCase().trim().replace(/[,.]/g, ' ').replace(/\s+/g, ' ');
+        const today = base || Shell.Parse._today();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+        if (/^today$|^now$/.test(t)) return today;
+        if (/^tomorrow/.test(t)) return Shell.Parse._add(today, 1);
+        if (/^yesterday/.test(t)) return Shell.Parse._add(today, -1);
+        let m = /^in (\d+) (day|week|month)s?/.exec(t);
+        if (m) return Shell.Parse._add(today, +m[1] * (m[2] === 'day' ? 1 : m[2] === 'week' ? 7 : 30));
+        m = /^(\d+) (day|week|month)s? (from now|later)/.exec(t);
+        if (m) return Shell.Parse._add(today, +m[1] * (m[2] === 'day' ? 1 : m[2] === 'week' ? 7 : 30));
+        if (/end of (the )?month/.test(t)) {
+          const d = new Date(today + 'T12:00:00Z');
+          return Shell.Parse._iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)));
+        }
+        if (/end of (the )?week/.test(t)) {
+          const d = new Date(today + 'T12:00:00Z');
+          return Shell.Parse._add(today, (7 - d.getUTCDay()) % 7 || 7);
+        }
+        const DOW = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+        m = /^(next )?(sun|mon|tues|wednes|thurs|fri|satur)day/.exec(t);
+        if (m) {
+          const want = DOW.findIndex(d => d.startsWith(m[2]));
+          const d = new Date(today + 'T12:00:00Z');
+          let delta = (want - d.getUTCDay() + 7) % 7;
+          if (delta === 0 || m[1]) delta = delta || 7;
+          return Shell.Parse._add(today, delta);
+        }
+        /* "sep 21", "21 sep", "september 21st" — the year is inferred as the NEXT occurrence,
+         * because an admin typing a bare month/day always means the one that has not happened. */
+        m = /(^|\s)([a-z]{3,9})\s+(\d{1,2})(st|nd|rd|th)?(\s|$)/.exec(t)
+         || /(^|\s)(\d{1,2})(st|nd|rd|th)?\s+([a-z]{3,9})(\s|$)/.exec(t);
+        if (m) {
+          const word = /^\d/.test(m[2]) ? m[4] : m[2];
+          const day  = +(/^\d/.test(m[2]) ? m[2] : m[3]);
+          const mi = Shell.Parse.MONTHS.indexOf(word.slice(0,3));
+          if (mi >= 0 && day >= 1 && day <= 31) {
+            const y = +today.slice(0,4);
+            let iso = Shell.Parse._iso(new Date(Date.UTC(y, mi, day)));
+            if (iso < today) iso = Shell.Parse._iso(new Date(Date.UTC(y + 1, mi, day)));
+            return iso;
+          }
+        }
+        return null;
+      },
+
+      /* A range in any of the shapes an admin actually types:
+       *   "Sep 8 - Sep 22"  ·  "Sep 13-15"  ·  "Sep 20 through Oct 4"  ·  "Sep 8 to Sep 22" */
+      range(str, base){
+        const t = String(str || '').replace(/–|—/g, '-');
+        const m = /(.+?)\s*(?:-|–|to|through|until|till)\s*(.+)/i.exec(t);
+        if (!m) { const d = Shell.Parse.date(t, base); return d ? { start:d, end:null } : null; }
+        const a = Shell.Parse.date(m[1], base);
+        if (!a) return null;
+        /* "Sep 13-15" — the right half has no month, so it borrows the left half's. */
+        let b = Shell.Parse.date(m[2], base);
+        if (!b && /^\s*\d{1,2}\s*$/.test(m[2])) {
+          b = Shell.Parse.date(a.slice(0,7) + '-' + String(+m[2]).padStart(2,'0'), base);
+        }
+        return { start:a, end: b && b >= a ? b : null };
+      },
+
+      /* Which kind of thing a line describes. The vocabulary is the bot's, not invented:
+       * these are the six lanes in LANES, and the words are the ones the source lines use. */
+      KIND: [
+        { key:'patchNotes',     re:/patch\s*(notes?)?\b|^#\s|update\s+notes/i,        label:'Patch notes' },
+        /* `ranked` is tested before `series`, because "Ranked Series 12" is a ranked window and
+         * "Undead Legion Series Armory" is a draw window, and only one word separates them. */
+        { key:'playlist',       re:/\branked\b/i,                                      label:'Ranked' },
+        { key:'returningDraws', re:/\breturn(ing)?\b|\bback\b|\brerun\b/i,            label:'Returning draw' },
+        { key:'drawWindow',     re:/\barmory\b|\bseries\b|\bwindow\b/i,               label:'Draw window' },
+        { key:'newDraws',       re:/\bdraw\b|\blucky\b|\bcrate\b/i,                   label:'New draw' },
+        { key:'event',          re:/\bevent\b|\bsiege\b|\bzombies\b|\bweekend\b|\bxp\b|\b2x\b/i, label:'Event' },
+        { key:'playlist',       re:/\bplaylist\b|\bmode\b|\branked\b|\bmp\b|\bbr\b/i, label:'Playlist' }
+      ],
+
+      /* ── 2 · PASTE ANYTHING. GET ROWS. ─────────────────────────────────────
+       * One line in, one row out: kind, name and dates worked out separately so a line that
+       * gives up on one still yields the others. A row with `start === null` is reported as
+       * needing a date rather than dropped — a parser that silently discards what it could
+       * not read is the worst possible version of this feature. */
+      /* A date EXPRESSION, written once and reused three ways. Built from the month names
+       * rather than from `[a-z]{3,9}`, which is the whole reason this is a constant and not an
+       * inline regex: the loose version matched "Series 12" in "Ranked Series 12 ends Sep 10"
+       * and dated the row to nothing. A parser that finds a date in a serial number is worse
+       * than one that finds none, because the wrong answer is the one you act on. */
+      _D: '(?:\\d{4}-\\d{2}-\\d{2}'
+        + '|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?'
+        + '|\\d{1,2}(?:st|nd|rd|th)?\\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*'
+        + '|today|tomorrow|yesterday'
+        + '|in\\s+\\d+\\s+(?:day|week|month)s?'
+        + '|end\\s+of\\s+(?:the\\s+)?(?:month|week)'
+        + '|(?:next\\s+)?(?:sun|mon|tues|wednes|thurs|fri|satur)day)',
+
+      /* ── 2 · PASTE ANYTHING. GET ROWS. ─────────────────────────────────────
+       * One line in, one row out: kind, name and dates worked out SEPARATELY, so a line that
+       * gives up on one still yields the others. A row with `start === null` is reported as
+       * needing a date rather than dropped — a parser that silently discards what it could not
+       * read is the worst possible version of this feature, because "it read six lines" and
+       * "it read four and threw two away" look identical.
+       * 🔴 THE DATE IS EXTRACTED BY MATCHING, NOT BY SPLITTING. The first version split each
+       * line on `|` `,` `—` and then rejoined the pieces with spaces, which cut "Sep 8 - Sep 22"
+       * in half at the pipe before it and destroyed the hyphen after it: three of the six
+       * reference lines came back wrong, and two of those still LOOKED like successes because
+       * they carried a plausible single date. Measured against the six known lines before it was
+       * pointed at anything unknown. */
+      line(raw){
+        const src = String(raw || '').trim();
+        if (!src) return null;
+        const kind = Shell.Parse.KIND.find(k => k.re.test(src))
+                  || Shell.Parse.KIND.find(k => k.key === 'newDraws');
+        const D = Shell.Parse._D;
+        const RANGE = new RegExp('(' + D + ')\\s*(?:-|–|—|to|through|until|till)\\s*(' + D + '|\\d{1,2}(?:st|nd|rd|th)?)', 'i');
+        const SINGLE = new RegExp(D, 'i');
+        let start = null, end = null, hit = '';
+        let m = RANGE.exec(src);
+        if (m) {
+          hit = m[0];
+          start = Shell.Parse.date(m[1]);
+          /* "Sep 13-15" — the right half has no month, so it borrows the left half's. */
+          end = Shell.Parse.date(m[2])
+             || (start && /^\d{1,2}(st|nd|rd|th)?$/.test(m[2].trim())
+                  ? start.slice(0, 8) + String(parseInt(m[2], 10)).padStart(2, '0') : null);
+          if (end && start && end < start) end = null;
+        } else {
+          m = SINGLE.exec(src);
+          if (m) { hit = m[0]; start = Shell.Parse.date(m[0]); }
+        }
+        let name = hit ? src.replace(hit, ' ') : src;
+        name = name.replace(/^[\s#>*\-–—•]+/, '')
+                   /* the connective the date hung off — "…returns Sep 20", "…ends Sep 10" */
+                   .replace(/\s*\b(ends?|starts?|opens?|closes?|runs?|returns?|drops?|through|until|till|on|from|is|are)\b\s*$/i, '')
+                   .replace(/[\s—–|,;:.\-]+$/, '')
+                   .replace(/\s{2,}/g, ' ').trim();
+        return { kind: kind.key, kindLabel: kind.label, name,
+                 start, end, source: src };
+      },
+      rows(text){
+        return String(text || '').split(/\r?\n/).map(l => Shell.Parse.line(l)).filter(Boolean);
+      }
+    },
+
+    /* ── THE PASTE PANEL ───────────────────────────────────────────────────
+     * ⚠️ "paste-anything needs to be more intuitive." The first shape was a button that
+     * opened a drawer that held a textarea — three steps before you could paste, and the
+     * feature's whole claim is that there are no steps. It is now a field IN the composer,
+     * beside the form it replaces, and it parses AS YOU TYPE with the rows visible: the
+     * demonstration and the control are the same object, so nothing has to be explained. */
+    pasteRows({ host, types, onStage, sample, collapsed }){
+      if (!host) return;
+      const id = 'pz' + Math.random().toString(36).slice(2, 7);
+      host.innerHTML = `
+        <div class="pz${collapsed ? ' shut' : ''}">
+          <button type="button" class="pz-open" id="${id}b">Or paste a list instead</button>
+          <label class="nw-l" for="${id}">Paste anything &mdash; patch notes, a Discord message, a list</label>
+          <textarea class="pz-in" id="${id}" rows="4" spellcheck="false"
+                    placeholder="${(sample || '').replace(/"/g,'&quot;')}"></textarea>
+          <div class="pz-out" id="${id}o"></div>
+        </div>`;
+      const ta = document.getElementById(id), out = document.getElementById(id + 'o');
+      const paint = () => {
+        const rows = Shell.Parse.rows(ta.value);
+        const ok = rows.filter(r => r.start);
+        if (!ta.value.trim()) { out.innerHTML = ''; return; }
+        out.innerHTML = `
+          <div class="pz-rows">${rows.map((r, i) => {
+            const t = (types || []).find(x => x.key === r.kind);
+            return `<div class="pz-r${r.start ? '' : ' bad'}" style="--c:${t ? t.hex : 'var(--ink4)'}">
+              <i class="pz-d"></i>
+              <span class="pz-k">${r.kindLabel}</span>
+              <span class="pz-n">${r.name || '<em>unnamed</em>'}</span>
+              <span class="pz-w">${r.start ? (r.end ? r.start + ' → ' + r.end : r.start) : 'no date found'}</span>
+            </div>`; }).join('')}</div>
+          <div class="pz-act">
+            <span class="pz-sum">${ok.length} of ${rows.length} line${rows.length === 1 ? '' : 's'} understood${
+              rows.length - ok.length ? ' &middot; the rest need a date' : ''}</span>
+            <button type="button" class="chip go" id="${id}s"${ok.length ? '' : ' disabled'}>Stage ${ok.length}</button>
+          </div>`;
+        const b = document.getElementById(id + 's');
+        if (b) b.onclick = () => { onStage(ok); ta.value = ''; paint(); };
+      };
+      ta.addEventListener('input', paint);
+      ta.addEventListener('paste', () => setTimeout(paint, 0));
+      const opener = document.getElementById(id + 'b');
+      if (opener) opener.onclick = () => {
+        opener.closest('.pz').classList.remove('shut'); ta.focus();
+      };
+    },
+
+    /* ── A DATE FIELD THAT UNDERSTANDS ─────────────────────────────────────
+     * Upgrades one text input in place: it accepts anything Parse.date does and shows what
+     * it resolved to underneath, in words, before anything is stored. The resolved value is
+     * written to a hidden ISO field, so every consumer downstream still reads an ISO date and
+     * nothing has to know this exists. Never silently corrects — an unparsed value shows as
+     * unparsed rather than falling back to today, which is how a date feature loses trust. */
+    dateField(input, onResolve){
+      if (!input || input.dataset.smart) return;
+      input.dataset.smart = '1';
+      const note = document.createElement('span');
+      note.className = 'nw-date-echo';
+      input.insertAdjacentElement('afterend', note);
+      const FMT = { weekday:'short', month:'short', day:'numeric', timeZone:'UTC' };
+      const sync = () => {
+        const raw = input.value.trim();
+        const iso = Shell.Parse.date(raw);
+        input.dataset.iso = iso || '';
+        input.classList.toggle('unparsed', !!raw && !iso);
+        note.textContent = !raw ? ''
+          : iso ? new Date(iso + 'T12:00:00Z').toLocaleDateString(undefined, FMT) + '  ·  ' + iso
+                : 'not a date yet';
+        note.className = 'nw-date-echo' + (raw && !iso ? ' bad' : iso ? ' ok' : '');
+        onResolve && onResolve(iso);
+      };
+      input.addEventListener('input', sync);
+      input.addEventListener('blur', sync);
+      sync();
+    },
+
     /* ══════════ THE COMMAND BAR ══════════
      * A realm calls this with its own command list. Without it the input still works as a
      * launcher for whatever palette the page already has, so a page that has not been converted
@@ -789,14 +1118,33 @@
       const drop = document.getElementById('cbDrop'), list = document.getElementById('cbList');
       let sel = 0, hits = [];
       const close = () => { drop.hidden = true; inp.setAttribute('aria-expanded','false'); wrap.classList.remove('on'); };
+      /* ── 5 · ⌘K THAT ACTS, NOT JUST GOES PLACES ─────────────────────────
+       * The bar existed and only navigated: it could find a page and could not do anything
+       * on one. It runs the SAME parser as the paste box, so "Undead Legion Series Armory
+       * Sep 8 - Sep 22" stages a draw window from one line without opening a drawer. Every
+       * verb in the portal is already a registered op with a tier, which is what makes this
+       * checkable rather than clever — the action carries the tier into Store.add exactly as
+       * a form would, so Review, the export interlock and the inverse all still apply.
+       * ⚠️ It is offered, never auto-run: the top row is a suggestion you press Enter on, and
+       * the row SAYS what it will stage. A command bar that acts on a guess is the blind
+       * execute this whole staging model exists to prevent. */
+      const acted = t => {
+        if (!Shell._cbStage || t.trim().length < 6) return [];
+        const r = Shell.Parse.line(t);
+        if (!r || !r.start || !r.name) return [];
+        return [{ k: 'Stage ' + r.kindLabel.toLowerCase() + ' &middot; ' + r.name + '  ' +
+                     (r.end ? r.start + ' → ' + r.end : r.start),
+                  act: true, c: 'staged', run: () => Shell._cbStage(r) }];
+      };
       const paint = () => {
         const t = inp.value.toLowerCase().trim();
-        hits = items().filter(c => !t || c.k.toLowerCase().includes(t));
+        hits = acted(inp.value).concat(items().filter(c => !t || c.k.toLowerCase().includes(t)));
         sel = Math.min(sel, Math.max(0, hits.length - 1));
         list.innerHTML = hits.length
-          ? hits.map((c, i) => `<button class="pitem${i === sel ? ' sel' : ''}" role="option"
+          ? hits.map((c, i) => `<button class="pitem${i === sel ? ' sel' : ''}${c.act ? ' act' : ''}" role="option"
               aria-selected="${i === sel}" data-i="${i}"><i style="--c:${c.hex || `var(--${c.c || 'ink3'})`}"></i>${c.k}</button>`).join('')
-          : `<p class="pnone">Nothing matches “${inp.value.trim()}”. Try a realm name, or an action like “new draw”.</p>`;
+          : `<p class="pnone">Nothing matches “${inp.value.trim()}”. Try a page name, or paste a line like
+               “Crimson Moonlight Draw &mdash; Sep 3”.</p>`;
         list.querySelectorAll('.pitem').forEach(b => b.onclick = () => { const c = hits[+b.dataset.i]; close(); inp.value = ''; run(c); });
         list.querySelector('.sel')?.scrollIntoView({ block:'nearest' });
         drop.hidden = false; inp.setAttribute('aria-expanded','true'); wrap.classList.add('on');
@@ -829,13 +1177,42 @@
       window.__openPalette = () => { inp.focus(); inp.select(); paint(); };
     },
 
+    /* ── HOW LONG IS LEFT IN THIS SEASON — one derivation, two surfaces ──────
+     * 🔴 Season's masthead read 79 while its own "Live season" strip three lines below read
+     * "battle pass Sep 10 · 17 days left", and Home's new figure row made it a third reading.
+     * The cause is that `seasonEnd()` in season.html takes the LAST of the three deadlines —
+     * which is CORRECT for the conflict predicate it was written for ("an item running past BP
+     * but inside Ranked is not a conflict") and wrong for "how long is left", because what a
+     * player calls the season ends at the FIRST deadline. Two different questions wearing one
+     * function, which is the shape this branch keeps paying for.
+     * So: the conflict predicate keeps the last deadline and says why, this returns the first,
+     * and it NAMES which deadline it used — an unlabelled "17" beside a strip listing three
+     * different dates is the ambiguity that let the two drift in the first place. */
+    seasonDaysLeft(season, today){
+      const LINES = [['bpEnd','battle pass'], ['rankEnd','ranked'], ['dmzEnd','dmz']];
+      const live = LINES.filter(([k]) => !season[k + 'TBD'] && season[k])
+                        .map(([k, label]) => ({ iso: season[k], label }))
+                        .sort((a, b) => a.iso < b.iso ? -1 : 1);
+      if (!live.length) return { days:null, label:'no deadline set', iso:null };
+      const d = Math.max(0, Math.round((new Date(live[0].iso) - new Date(today)) / 86400000));
+      return { days:d, label:live[0].label, iso:live[0].iso };
+    },
+
+    /* A realm declares what ⌘K may STAGE on it. Absent, the bar only navigates — which is
+     * what it did everywhere before this, and is still the correct behaviour on a realm with
+     * nothing to create (Analytics, Review, the Door). */
+    registerCommandStage(fn){ Shell._cbStage = fn; },
+
     /* The floor every realm gets for free: move between realms, review what is staged, sign out.
      * A realm with more to offer calls commandBar again and replaces this list. */
     defaultCommands(){
       return [
         ...REALMS.map(r => ({ k: 'Go to ' + r.label, c: 'ink3', run: () => location.href = r.href })),
         { k: 'Review staged changes', c: 'ok',  run: () => location.href = 'review.html' },
-        { k: 'Sign out',              c: 'del', run: () => document.getElementById('hdrOut')?.click() }
+        /* ⚠️ This used to click `#hdrOut`, the header sign-out button — which moved into the
+         * account panel in the same change that wrote this comment. A command that clicks an
+         * element by id is a reference nothing type-checks; it calls the handler now. */
+        { k: 'Sign out',              c: 'del', run: () => Shell._signOut && Shell._signOut() }
       ];
     },
 
@@ -906,7 +1283,8 @@
      * drawer path is kept for surfaces that genuinely have nowhere to put a bar. */
     compose({ title = 'New item', eyebrow = 'create', types, initial = {}, preview, onStage, host, onClose }){
       const st = { type: initial.type || null, name: initial.name || '',
-                   a: initial.a || '', b: initial.b || '' };
+                   a: initial.a || '', b: initial.b || '',
+                   aText: initial.a || '', bText: initial.b || '' };
       const typeOf = k => types.find(t => t.key === k) || null;
 
       const chips = () => types.map(t => `
@@ -932,11 +1310,19 @@
             <input class="nw-i" id="nw-name" type="text" autocomplete="off" spellcheck="false"
                    placeholder="${t.placeholder || ''}" value="${st.name.replace(/"/g,'&quot;')}">
           </div>
+          <!-- 🔴 A DATE PICKER, IN A PORTAL FOR A BOT THAT HAS UNDERSTOOD "in 3 weeks" FOR A
+               YEAR. chrono-node is already a dependency — it is how /manage parses admin dates
+               today — and the portal was the one surface that made you click through a calendar
+               instead. These take anything a person would type and show what they resolved to,
+               in words, underneath. Nothing is stored until it has resolved, and an unparsed
+               value stays unparsed rather than silently becoming today. -->
           <div class="nw-dates${one ? ' one' : ''}">
             <div><label class="nw-l" for="nw-a">${one ? (t.dateLabel || 'Releases') : 'Opens'}</label>
-              <input class="nw-i" id="nw-a" type="date" value="${st.a}"></div>
+              <input class="nw-i nw-smart" id="nw-a" type="text" autocomplete="off" spellcheck="false"
+                     placeholder="sep 21, in 3 weeks, tomorrow" value="${st.aText || st.a}"></div>
             ${one ? '' : `<div><label class="nw-l" for="nw-b">Closes</label>
-              <input class="nw-i" id="nw-b" type="date" value="${st.b}"></div>`}
+              <input class="nw-i nw-smart" id="nw-b" type="text" autocomplete="off" spellcheck="false"
+                     placeholder="end of the month" value="${st.bText || st.b}"></div>`}
           </div>
           ${one ? `<p class="nw-note">${t.pointNote || 'A release has no end date &mdash; the record stores one date.'}</p>` : ''}`;
       };
@@ -949,8 +1335,13 @@
         return null;
       };
 
+      /* ⚠️ "paste anything needs to be more intuitive." The intuitive version is not a better
+       * drawer — it is not being a drawer. The field sits inside the composer, beside the form
+       * it replaces, and parses as you type: one thing to look at, and the demonstration and
+       * the control are the same object. */
       const shell = `<div class="nw">
              <div class="nw-types" role="group" aria-label="What are you adding">${chips()}</div>
+             ${onStage && onStage.bulk ? `<div class="nw-paste" id="nw-paste"></div>` : ''}
              <div class="nw-form" id="nw-form">${fields()}</div>
              <div class="nw-prev" id="nw-prev"></div>
              <div class="nw-act"><span class="nw-why" id="nw-why"></span>
@@ -969,6 +1360,10 @@
         d = document.querySelector('.drawer');
       }
       const close = () => { if (host) { host.hidden = true; host.innerHTML = ''; } else Shell.closeDrawer(); onClose && onClose(); };
+      if (onStage && onStage.bulk) Shell.pasteRows({
+        host: d.querySelector('#nw-paste'), types, collapsed: !!initial.type,
+        sample: 'Crimson Moonlight Draw - Sep 3\nUndead Legion Series Armory | Sep 8 - Sep 22\n2x Weapon XP Weekend, Sep 13-15',
+        onStage: rows => onStage.bulk(rows) });
       const paint = () => {
         const t = typeOf(st.type), why = valid();
         d.querySelector('#nw-form').innerHTML = fields();
@@ -999,8 +1394,11 @@
         });
         const n = d.querySelector('#nw-name'), a = d.querySelector('#nw-a'), b = d.querySelector('#nw-b');
         if (n) n.oninput = () => { st.name = n.value; light(); };
-        if (a) a.oninput = () => { st.a = a.value; light(); };
-        if (b) b.oninput = () => { st.b = b.value; light(); };
+        /* The typed TEXT and the resolved ISO are kept apart on purpose: `st.a` is what every
+         * consumer downstream reads and is always an ISO date or empty, `st.aText` is only what
+         * the field shows so a repaint does not throw away half-typed words. */
+        if (a) Shell.dateField(a, iso => { st.a = iso || ''; st.aText = a.value; light(); });
+        if (b) Shell.dateField(b, iso => { st.b = iso || ''; st.bText = b.value; light(); });
         if (n) n.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); a && a.focus(); } };
       };
       /* Repaint the preview and the gate WITHOUT rebuilding the inputs — re-rendering the form
@@ -1726,39 +2124,62 @@
       <div class="cb-drop" id="cbDrop" hidden><div class="plist" id="cbList" role="listbox"></div></div>
     </div>
     <span class="sp"></span>
-    <!-- Sign out was three clicks deep in a menu, in a header with room to spare. It still
-         confirms — it is the one action that discards staged work — but finding it is not the
-         part that should be hard. -->
-    <button class="hdr-out" id="hdrOut" data-tip="Sign out of the portal">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
-      <span>Sign out</span></button>
+    <!-- 🔴 THIS SLOT HELD A PERMANENT SIGN-OUT BUTTON, AND THE ALLOCATION WAS BACKWARDS.
+         Who signs out of a single-user admin console kept open in a tab? Almost nobody — so
+         the header spent permanent, always-visible space on one of the rarest acts in the
+         product, and gave none to the most frequent one: committing staged work, which is
+         what the entire portal is built around. Sign-out moved into the account panel, alone,
+         in one style (two buttons in two colours is what taught they were two different acts).
+         ⚠️ It is ABSENT at zero rather than showing "0 staged" — a chip that is always there
+         is a permanent third copy of the tray and the rail badge; one that appears only when
+         there is something to act on is the same fact at the moment it becomes actionable. -->
+    <a class="hdr-commit" id="hdrCommit" href="review.html" hidden>
+      <b id="hdrCommitN">0</b><span>staged &middot; review</span></a>
     <span class="who">
       <button class="whobtn" id="whoBtn" aria-expanded="false" aria-haspopup="menu">
         <span class="av" data-src style="--av-src:url('${USER.avatar}')"></span>${USER.displayName}<span class="cv" aria-hidden="true"></span></button>
+      <!-- 🔴 THE PANEL DUPLICATED THE BUTTON THAT OPENS IT. Its header was an avatar, a name
+           and a handle — and the trigger you just clicked IS the avatar and the name. That was
+           the top third of the panel, and a bigger redundancy than the two ⌘K rows that were
+           the visible complaint. The identity block now sits ON the banner, which dissolves the
+           duplicated avatar and earns the banner its space: it is the one personal thing in the
+           portal, and a Discord bot's console looking like Discord's own account panel is an
+           affinity that is true here rather than borrowed.
+           🔴 AND THE ONE THING ONLY THIS PANEL CAN SAY, WHICH IT DID NOT: what YOU are allowed
+           to do. Twelve permissions, an owner-only tier, and a "destructive" capability only
+           the owner may grant — and nowhere in the portal told you which you hold. A delegated
+           admin found out by clicking something and being refused.
+           ⚠️ The presence dot is gone. "Signed in" is trivially true of anyone looking at it,
+           so it was decoration wearing status.
+           ⚠️ An earlier pass left a dead data-m="realm" row here as an UNCLOSED button holding only a
+           hamburger glyph — the browser auto-closed it at the next <button>, so the panel
+           shipped a dead, empty, focusable row that fell through to "focus the command bar".
+           A per-call-site fix that leaves its own siblings broken, one more time. -->
       <div class="umenu" id="uMenu" role="menu" hidden>
         <div class="ubanner" style="--banner:url('${USER.banner}')" aria-hidden="true"></div>
-        <div class="uhead">
-          <span class="uav" style="--av-src:url('${USER.avatar}')"><i class="pres" title="Signed in"></i></span>
-          <span class="uinfo">
-            <span class="l1"><span class="nm">${USER.displayName}</span><span class="rolebadge">${Shell.actor().role || 'OWNER'}</span></span>
-            <span class="id">@${USER.username}</span>
-          </span>
+        <div class="uid">
+          <span class="uav" style="--av-src:url('${USER.avatar}')" aria-hidden="true"></span>
+          <span class="un"><b>${USER.displayName}</b><span>@${USER.username}</span></span>
+          <span class="rolebadge">${Shell.actor().role || 'OWNER'}</span>
         </div>
         <div class="usec">
-          <button class="mi" role="menuitem" data-m="realm">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-          <!-- 🔴 TWO ROWS HERE BOTH SAID ⌘K AND BOTH OPENED THE SAME THING. One was "Switch
-               realm ⌨ G", which switched nothing and advertised a key bound nowhere; renaming it
-               to "Find a page or an action" fixed the lie and created a duplicate of the row
-               below it. Both are gone: ⌘K is a permanently visible control in the header, with
-               its own hint, so a menu row pointing at it is redundancy on top of duplication. -->
+          <button class="mi" role="menuitem" data-m="perms">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6 13.4 4v3.8c0 3-2.2 5.4-5.4 6.6-3.2-1.2-5.4-3.6-5.4-6.6V4z"/></svg>
+            What you can do<span class="mnote" id="uPerms">&mdash;</span></button>
+          <!-- 🔴 THE ID IS WHOLE. The old 1139…2283 elided the MIDDLE, which is the only part that
+               separates it from any other snowflake — so the preview could not confirm it was
+               the right id, which is the entire reason anyone looks before pasting it into a
+               grant. Nineteen digits fit, and a preview that cannot be checked is worse than
+               no preview at all. -->
           <button class="mi" role="menuitem" data-m="copy">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z"/><path d="M3 11V3h8"/></svg>
-            Copy Discord ID<span class="mnote">${USER.id.slice(0,4)}…${USER.id.slice(-4)}</span></button>
+            Copy ID<span class="mid">${USER.id}</span></button>
         </div>
+        <!-- ⚠️ "Session · 12 hours" stated the POLICY. What a person wants is a fact about
+             themselves — how long THIS session has left. The difference is not wording: one is
+             documentation about the system, the other is the reason to look. -->
         <div class="usec">
-          <div class="ustat"><span>Staged changes</span><b id="uStaged">0</b></div>
-          <div class="ustat"><span>Session</span><b>12 hours</b></div>
+          <div class="ustat"><span>Session</span><b class="live" id="uSess">&mdash;</b></div>
         </div>
         <div class="usec last">
           <button class="mi danger" role="menuitem" data-m="out">
@@ -1779,8 +2200,7 @@
       if (!m || !b) return;
       b.onclick = e => {
         e.stopPropagation();
-        const n = Store.all().length, us = document.getElementById('uStaged');
-        if (us) { us.textContent = n; us.style.color = n ? 'var(--staged)' : ''; }
+        Shell.refreshAccount();
         const open = m.hidden; m.hidden = !open; b.setAttribute('aria-expanded', String(open));
       };
       document.addEventListener('click', e => {
@@ -1802,7 +2222,12 @@
           : `<p class="dw-p">Nothing is staged. Signing out just ends this browser session.</p>`,
         confirm:'Sign out',
         onConfirm(){ location.href = 'door.html'; } }); };
-      const ho = document.getElementById('hdrOut'); if (ho) ho.onclick = signOut;
+      Shell._signOut = signOut;
+      Shell.refreshAccount();
+      Shell.syncCommitChip();
+      /* One minute is the right cadence for a 12-hour clock: shorter is a spinning number
+       * nobody reads, longer and the last minute of a session is a lie. */
+      if (!Shell._sessTick) Shell._sessTick = setInterval(() => Shell.refreshAccount(), 60000);
       /* Installed here, after the header exists, so no realm can ship a dead command input. */
       Shell.commandBar({ items: Shell.defaultCommands, run: c => c.run() });
       m.querySelectorAll('.mi').forEach(mi => mi.onclick = () => {
@@ -1812,9 +2237,48 @@
           signOut();
         } else if (k === 'copy') {
           navigator.clipboard?.writeText(USER.id); Shell.toast('Discord ID copied.');
-        } else if (k === 'palette') { window.__openPalette && window.__openPalette(); }
-        else Shell.commandBarFocus && Shell.commandBarFocus();
+        } else if (k === 'perms') {
+          /* The row DOES something — it opens the matrix on your own row. A panel that is
+           * five-sixths label is a card wearing a menu's clothes, and the fix is not fewer
+           * labels, it is rows that go somewhere. */
+          location.href = 'access.html#me';
+        }
       });
+    },
+
+    /* ── WHAT YOU CAN DO, AND HOW LONG YOU HAVE ────────────────────────────
+     * Both lines are facts about the reader. The permissions line is the only statement of
+     * its kind anywhere in the portal; the session line replaces a sentence that stated the
+     * POLICY ("Session · 12 hours") with one that states a fact ("expires in 7h 20m"). */
+    refreshAccount(){
+      const F = window.FIX, a = Shell.actor();
+      const pe = document.getElementById('uPerms');
+      if (pe && F) {
+        const all = (F.PERM_TOKENS || []).length;
+        if (a.isOwner) { pe.textContent = 'everything · ' + all; }
+        else {
+          const row = (F.accessAdmins || []).find(r => r.discordId === a.id);
+          const held = row ? Object.values(row.grants).filter(g => g.held).length : 0;
+          pe.textContent = held + ' of ' + all + (a.destructive ? ' · destructive' : '');
+        }
+      }
+      const se = document.getElementById('uSess');
+      if (se && F) {
+        const ttl = (F.SESSION_TTL_HOURS || 12) * 3600e3;
+        const left = Math.max(0, (Shell._signedInAt + ttl) - Date.now());
+        const h = Math.floor(left / 3600e3), mn = Math.floor((left % 3600e3) / 60000);
+        se.textContent = left <= 0 ? 'expired'
+          : h ? `expires in ${h}h ${String(mn).padStart(2,'0')}m` : `expires in ${mn}m`;
+      }
+    },
+
+    /* The header chip is ABSENT at zero — see the markup comment. `hidden` rather than a
+     * zero state, so nothing has to decide what "0 staged · review" would mean. */
+    syncCommitChip(){
+      const c = document.getElementById('hdrCommit'); if (!c) return;
+      const n = Store.all().length, b = document.getElementById('hdrCommitN');
+      c.hidden = !n;
+      if (n && b) Shell.setFigure(b, n, { staged:true });
     },
 
     /* ══════════════════════════════════════════════════════════════════════════════
@@ -2194,8 +2658,13 @@
       requestAnimationFrame(() => {
         const el = root.querySelector(sel);
         if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        el.classList.add('rowin');
+        /* Two things happen to a row that just arrived: it slides in (where it came FROM) and
+         * it tints its own topic colour once (WHAT it was). The tint is the half that answers
+         * "which one did I just change?", which the toast at the bottom of the screen cannot —
+         * it is 600px from the row you were looking at. */
+        el.classList.add('rowin', 'landed');
         el.addEventListener('animationend', () => el.classList.remove('rowin'), { once:true });
+        setTimeout(() => el.classList.remove('landed'), 1600);
       });
     },
 

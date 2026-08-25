@@ -3,7 +3,7 @@
 <title>Analytics · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -15,7 +15,7 @@
         <span class="job">What the bot did, what it cost, and what somebody looked for and did not find.</span>
       </div>
       <div class="mh-stats">
-        <span class="stat"><span class="v" id="sEvents"></span> <span class="k">interactions</span></span>
+        <span class="stat lead" style="--c:var(--r-analytics)"><span class="v" id="sEvents"></span> <span class="k">interactions</span></span>
         <span class="stat"><span class="v" id="sOk"></span> <span class="k">succeeded</span></span>
         <span class="stat warn"><span class="v" id="sErr"></span> <span class="k">errors</span></span>
         <span class="stat"><span class="v" id="sAck"></span> <span class="k">worst ack</span></span>
@@ -80,8 +80,8 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -262,7 +262,7 @@
         </div>
         <div class="uside">
           <h5>Outcomes</h5>
-          <p class="hp">The schema defines <b>six</b>. Only two have ever occurred here — and the four that
+          <p class="hp">There are <b>six</b> possible outcomes. Only two have ever occurred here — and the four that
             have not are the interesting ones: no interaction has been blocked by policy, swallowed by a
             cooldown, expired, or rejected for lack of admin.</p>
           ${F.OUTCOMES.map(o => {
@@ -317,6 +317,18 @@
   /* ═══ TIMING ═══ two clocks, one hard deadline. This is the view that has an ANSWER in it:
    * ack is what Discord judges you on, duration is what the user feels, and they are not
    * the same measurement — a page that shows one "latency" number hides which one is at risk. */
+  /* The reading of the ack panel, in one sentence, computed rather than written — an
+   * observation that has to be re-typed when the data moves is a comment about a snapshot. */
+  function ackReading() {
+    const el = document.getElementById('ackGlyphRead'); if (!el) return;
+    const BUCKETS = [0, 100, 250, 500, 1000, 2000, 3000];
+    const counts = BUCKETS.map(b => (F.ackBuckets.find(x => x.from === b) || { n:0 }).n);
+    const total = counts.reduce((a, n) => a + n, 0), empty = counts.filter(n => !n).length;
+    el.innerHTML = empty
+      ? `<b>${counts[0]} of ${total}</b> acks land in the first bucket, and <em>${empty} of ${counts.length} buckets are empty</em> — including the one past the deadline.`
+      : `Spread across all ${counts.length} buckets.`;
+  }
+
   function renderTiming() {
     const measured = F.ackBuckets.reduce((a, b) => a + b.n, 0);
     const LABELS = { 0:'under 100ms', 100:'100–250ms', 250:'250–500ms', 500:'500ms–1s',
@@ -329,6 +341,23 @@
           <p class="hp">Every interaction must be acknowledged within <b>${F.ACK_DEADLINE_MS / 1000} seconds</b>
             or Discord discards it and the user sees a failure the bot never gets to explain. This axis is
             that deadline, not an invented target.</p>
+          <!-- 🔴 THE CHART AESTHETIC HARKIRAT KEPT — AND WHERE IT ACTUALLY LANDED.
+               He rejected the season-shape glyph as INFORMATION ("so useless and tells me
+               nothing") and kept its LOOK: "i like the chart design and want it's aesthetic
+               implemented to some areas of the Analytics realm, based on your decision of
+               wherever it would look nice." My first call was a canvas density glyph on this
+               ack distribution, and it was built, rendered, and thrown away after looking at
+               it: the reference glyph reads as a shape because it is TWENTY-EIGHT narrow bars,
+               and seven buckets drawn the same way is one green block beside six invisible
+               slivers. The data does not have the cardinality the picture needs, and forcing it
+               produces a chart that is technically the same code and visually nothing like it.
+               So the aesthetic went onto the bars Analytics ALREADY has — five groups of them,
+               not one canvas: the gradient fill that fades along the bar, the hairline
+               baseline, and the one idea worth more than the look, which is that AN EMPTY SLOT
+               IS DRAWN rather than left blank. "5 of 7 buckets are empty, including the one
+               past the deadline" is the reading of this panel, and an em-dash in a table cell
+               was not saying it. -->
+          <p class="gread" id="ackGlyphRead"></p>
           <div class="ackscale">
             ${[0, 100, 250, 500, 1000, 2000, 3000].map(b => {
               const hit = F.ackBuckets.find(x => x.from === b);
@@ -363,6 +392,10 @@
             which never had an interaction to answer in the first place.</p>
         </section>
       </div>`;
+    /* Chained onto the render that CREATES the canvas, not called from renderAll — a canvas
+     * drawn before its element exists is a silent no-op that leaves a blank box and no error,
+     * which is the exact defect shape this branch keeps paying for. */
+    ackReading();
   }
 
   /* ═══ REACH ═══ the dimension the earlier page did not have at all. Who is using this,
@@ -377,7 +410,7 @@
       { k:'user',  label:'User install',  n:F.reachStats.filter(r => r.installType === 'user').reduce((a, r) => a + r.n, 0),
         note:'the app travels with one person, into any server and any DM' },
       { k:null,    label:'Not reported',  n:F.reachStats.filter(r => !r.installType).reduce((a, r) => a + r.n, 0),
-        note:'Discord omitted authorizingIntegrationOwners on these events' }
+        note:'Discord did not say how the app was installed for these' }
     ];
     viewReach.innerHTML = `
       <div class="reach">
@@ -391,13 +424,12 @@
               <span class="dsub">${x.n} interaction${x.n === 1 ? '' : 's'}</span>
             </div>`).join('')}
           </div>
-          <p class="hp">More than half of all use is in <b>DMs</b>. That is the single strongest argument for
-            the portal existing: a bot answering privately, one screenful at a time, cannot also be the
-            place you audit a season or bulk-edit an armory.</p>
+          <p class="hp">More than half of all use is in <b>DMs</b> — a bot answering privately, one screenful
+            at a time, which is not the place to audit a season or bulk-edit an armory.</p>
         </section>
         <section class="hpanel">
           <h4>How the app was installed</h4>
-          <p class="hp">Adoption tracking, from <code>interaction.authorizingIntegrationOwners</code>. The
+          <p class="hp">Whether each interaction came from a server that added the app or from a person who did. The
             v3 line made every public command guild-installable while the admin commands stayed user-only —
             this is the measurement that tells you whether that landed.</p>
           ${byInstall.map(x => `<div class="inrow ${x.k ? '' : 'muted'}">

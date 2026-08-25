@@ -3,57 +3,70 @@
 <title>Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
-<style>
-  /* Home has no rail — the rail is the in-realm switcher, and repeating it on the
-   * page whose entire job IS choosing a realm would say the same thing twice. */
-  .app{grid-template-columns:1fr}
-  main{grid-column:1;padding:0}
-  header{grid-column:1}
-</style>
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
+<!-- 🔴 HOME USED TO OVERRIDE THE GRID TO ONE COLUMN AND CARRY NO RAIL, under a comment that
+     read: "the rail is the in-realm switcher, and repeating it on the page whose entire job IS
+     choosing a realm would say the same thing twice." The reasoning is sound and its PREMISE is
+     what was wrong — this page's own H1 is "What needs you", not "Choose a realm". Harkirat:
+     "its all over the place… i feel like i'd never utilize it." The five cards existed because
+     Home was believed to be a directory, and they were a SECOND AUTHORITY over the question the
+     attention list already answers: the list ranks what needs you, then the cards listed every
+     realm again, undifferentiated, so Armory was card #2 whether it had 13 broken builds or none.
+     With the rail here, navigation is one mechanism in one place on all eight pages, and this
+     page holds only its two real questions: what is wrong, and what is live. The way back to
+     Home is the DIOREO/PORTAL mark, which is already a Home button in every header. -->
 <div class="app">
   <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
   <main>
     <div class="home">
-      <div class="hmast">
-        <span class="job">Dioreo admin</span>
-        <h1>What needs you</h1>
-        <p>Discord answers one question in one screenful. This answers the ones that need
-           a whole picture — a timeline, a diff, a matrix, a bulk edit that has to land together.</p>
+      <div class="masthead">
+        <div class="mh-id">
+          <span class="job">Dioreo admin</span>
+          <h1>What needs you</h1>
+        </div>
+        <!-- 🔴 HOME WAS THE ONLY REALM WITH NO MASTHEAD FIGURES — the one page whose job is
+             "what is the state of things" opened with a title and a three-line paragraph of
+             design rationale addressed to a reviewer, costing ~180px above the fold on the page
+             opened first. The lede is gone (the §F2 defect, fixed on four other pages and left
+             on this one) and these four figures answer the portal's state across all five realms.
+             ⚠️ THEY DO NOT REPEAT THE RAIL. The plan said "demote the cards to a compact rail
+             with one figure and a state dot" — a figure there would have rebuilt the
+             cards-versus-list defect one level up. The masthead answers WHAT IS THE STATE; the
+             rail answers WHERE DO I GO, and carries no counts at all. -->
+        <div class="mh-stats" id="mhStats"></div>
       </div>
 
-      <!-- 🔴 IT WAS FIVE EQUAL CARDS AND FIVE EQUAL ORANGE ALARMS on a page titled "What needs
-           you", with no ranking, no verbs, and ~40% of the viewport empty below them. When five
-           things are all alarms, none is. The page now answers its own headline: what needs you
-           FIRST, in order, each with the way in — and the realms that are fine step back into a
-           quiet strip instead of competing for the same attention. -->
-      <ol class="att-list" id="attList"></ol>
-      <div class="hgrid quiet" id="grid"></div>
+      <!-- ⚠️ "Nothing staged" used to sit at the BOTTOM, ~1500px down, under five cards — the
+           most actionable fact on the page, reached last. It is now the STAGED figure above,
+           and this bar renders ONLY when there is something in it. A permanent bar that says
+           "nothing staged" is a third copy of a fact the masthead already carries. -->
       <div id="resume"></div>
+      <ol class="att-list" id="attList"></ol>
+      <div class="hlive" id="hlive"></div>
     </div>
   </main>
 </div>
-<!-- No floating tray on Home either: the .hres resume bar under the realm grid carries the
-     same information with more of it (which realms, and both actions inline), so the tray
-     would be a second, worse copy sitting on top of the first. -->
+<!-- No floating tray on Home: the resume bar above carries the same information with more of
+     it (which realms, and both actions inline), so the tray would be a second, worse copy. -->
 
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
   const attList = document.getElementById('attList');
-  S.init('');
+  const mhStats = document.getElementById('mhStats');
+  const hlive   = document.getElementById('hlive');
+  const resume  = document.getElementById('resume');
+  S.init('home');
   S.mountHeader('Portal', 'Home');
-
-  const dash = v => (v === null || v === undefined || v === '') ? '—' : v;
 
   /* Each card answers its realm's question and then states the ONE thing in that
    * realm that currently wants a person. A dashboard that only counts rows makes
    * you open all five to find out whether anything is wrong. */
   const staged = () => S.Store.all();
-  const stagedIn = realm => staged().filter(o => o.realm === realm).length;
 
   /* ⚠️ Only a SPAN can outlive the season. A draw carries one `date` and no end at all
    * (models/SeasonalData.js), so asking whether it "ends after" anything compares a release
@@ -101,105 +114,131 @@
     ? Math.max(...forever.map(a => Math.round((new Date(F.today) - new Date(a.createdAt)) / 86400000)))
     : 0;
 
-  const CARDS = [
-    { id:'season', label:'Season', href:'season.html', c:'#F2994A',
-      icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-      q:'When everything runs, and whether it fits inside the season.',
-      n:F.items.length, unit:'scheduled items',
-      att: conflicts ? `${conflicts} run past the season`
-         : seasonFindings ? `${seasonFindings} to repair`
-         : (F.draft.active ? 'next season staged' : null),
-      warn: !!(conflicts || seasonFindings) },
-    { id:'armory', label:'Armory', href:'armory.html', c:'#FF3430',
-      icon:'<path d="M3 13h11l3-3h4M6 13v4M10 13v3"/><circle cx="19" cy="10" r="1.4"/>',
-      q:'What builds exist, and what is wrong with them.',
-      n:F.ARMORY_COUNTS.sample, unit:`of ${F.ARMORY_COUNTS.total} builds`,
-      /* Both numbers, because the card is the only place a reader sees the collection's shape:
-         a realm with 11 faults and 106 stale records is in a different condition from one with
-         11 faults and none, and a single figure cannot say which. */
-      att: flagged ? `${flagged} need repair` + (staleBuilds ? ` &middot; ${staleBuilds} stale` : '') : null, warn: !!flagged },
-    { id:'broadcast', label:'Broadcast', href:'broadcast.html', c:'#F2C230',
-      icon:'<path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 8.5a5 5 0 0 1 0 7"/>',
-      q:'What is showing to players, in what order, until when.',
-      n:F.announcements.filter(a => a.state === 'live').length, unit:'showing now',
-      att: forever.length ? `${forever.length} never end${forever.length === 1 ? 's' : ''} · oldest up ${foreverDays}d` : null,
-      warn: !!forever.length },
-    { id:'access', label:'Access', href:'access.html', c:'#9DAAB4',
-      icon:'<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-      q:'Who can do what — and who is signed in right now.',
-      /* ⚠️ `F.admins` no longer exists — the fixture is `accessAdmins`, rows shaped by
-       * portal/api/access.js's own buildPermissionMatrix. And the attention line is the
-       * single-point-of-failure count, not a session count: zero sessions is the normal
-       * resting state and saying "0 signed in" every time trains you to ignore the card. */
-      n:F.accessAdmins.length, unit:'admins',
-      att: F.spof.length ? `${F.spof.length} permission${F.spof.length === 1 ? '' : 's'} held by one person`
-         : (F.sessions.length ? `${F.sessions.length} signed in` : null),
-      warn: !!F.spof.length },
-    { id:'analytics', label:'Analytics', href:'analytics.html', c:'#1F8A5E',
-      icon:'<path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/>',
-      q:'What happened — health, timing, reach, and what people searched for and did not find.',
-      n:F.OBS_TOTALS.events, unit:'interactions',
-      att:`${F.alertStats.find(a => a.level === 'error').n} errors pinged`, warn:true }
-  ];
+  /* ── WHAT IS LIVE RIGHT NOW ──────────────────────────────────────────────
+   * 🔴 The portal's actual subject, and Home did not answer it at all. Five cards said how
+   * many rows each realm holds; not one said what a player would see this second. It is not
+   * a second authority over the attention list — that list is EXCEPTIONS, this is the
+   * CURRENT STATE, and they are different questions. */
+  const runningToday = () => F.items
+    .filter(it => !it.draft && it.start <= F.today && (it.end || it.start) >= F.today)
+    .sort((a, b) => (a.end || a.start).localeCompare(b.end || b.start));
+  const liveAnns = () => F.announcements.filter(a => a.state === 'live');
+  /* ⚠️ READ, never re-derive — the rule this file already learned twice, for the repair count
+   * and for the Armory predicate. Home had its own copy of this for about an hour and it
+   * disagreed with Season's masthead by 62 days. */
+  const season = () => S.seasonDaysLeft(F.season, F.today);
+  const endsIn = iso => {
+    const d = Math.round((new Date(iso) - new Date(F.today)) / 86400000);
+    return d <= 0 ? 'ends today' : d === 1 ? 'ends tomorrow' : d + ' days left';
+  };
 
   /* Severity is a PROPERTY OF THE KIND, not of the count — 33 builds needing a caption is not
    * more urgent than one scope only one person can use. The count only breaks ties. */
   const SEV = { conflict:95, spof:90, error:80, repair:60, forever:50, staged:40 };
   function attention() {
     const out = [];
-    const push = (kind, realm, href, text, n, act) =>
-      out.push({ sev:SEV[kind], kind, realm, href, text, n, act });
+    /* `of` is the population the count is against — "13 of 133 builds" rather than "13".
+     * A number with no comparison is homework, not a glance; this is the width the five
+     * near-identical buttons used to occupy. */
+    const push = (kind, realm, href, text, n, act, of) =>
+      out.push({ sev:SEV[kind], kind, realm, href, text, n, act, of });
     if (conflicts)          push('conflict','Season','season.html',
-                                 `${conflicts} item${conflicts===1?'':'s'} run past the season's own deadlines`, conflicts, 'Open the Track');
+                                 `${conflicts} item${conflicts===1?'':'s'} run past the season's own deadlines`, conflicts, 'the Track', F.items.length);
     if (F.spof.length)      push('spof','Access','access.html',
-                                 `${F.spof.length} permission${F.spof.length===1?'':'s'} held by exactly one person`, F.spof.length, 'Open the matrix');
+                                 `${F.spof.length} permission${F.spof.length===1?'':'s'} held by exactly one person`, F.spof.length, 'the matrix', (F.PERM_TOKENS||[]).length);
     const errs = (F.alertStats.find(a => a.level === 'error') || {}).n || 0;
     if (errs)               push('error','Analytics','analytics.html',
-                                 `${errs} error${errs===1?'':'s'} pinged`, errs, 'Open health');
+                                 `${errs} error${errs===1?'':'s'} pinged`, errs, 'Health', F.OBS_TOTALS.events);
     /* 🔴 TWO ROWS BOTH READ "Open repairs" — one goes to Armory, one to Season, and a reader
-       scanning the column cannot tell them apart. The action names the realm now. */
+       scanning the column could not tell them apart. The destination is now rendered as
+       "<realm> · <view>" inside the row itself, so the realm disambiguates it and the verb
+       ("Open") is gone: the row IS the control, so it does not also need to say "open". */
     if (flagged)            push('repair','Armory','armory.html',
-                                 `${flagged} build${flagged===1?'':'s'} need repair`, flagged, 'Armory repairs');
+                                 `${flagged} build${flagged===1?'':'s'} need repair`, flagged, 'Repairs', F.ARMORY_COUNTS.total);
     if (seasonFindings)     push('repair','Season','season.html',
-                                 `${seasonFindings} season item${seasonFindings===1?'':'s'} to repair`, seasonFindings, 'Season repairs');
+                                 `${seasonFindings} season item${seasonFindings===1?'':'s'} to repair`, seasonFindings, 'Repairs', F.items.length);
     if (forever.length)     push('forever','Broadcast','broadcast.html',
-                                 `${forever.length} announcement${forever.length===1?'':'s'} never end — oldest up ${foreverDays}d`, forever.length, 'Open airtime');
+                                 `${forever.length} announcement${forever.length===1?'':'s'} never end — oldest up ${foreverDays}d`, forever.length, 'Airtime',
+                                 F.announcements.filter(a => a.state === 'live').length);
     return out.sort((a, b) => b.sev - a.sev || b.n - a.n);
   }
 
+  /* ── THE ATTENTION ROW IS THE TARGET ──────────────────────────────────────
+   * ⚠️ The comfortable reading of "those underlined buttons look bad" is "remove the
+   * underline", and it hid the real question. Three affordances were stacked on one control:
+   * a border said BUTTON, an underline said LINK, an arrow said NAVIGATION. Deleting the
+   * text-decoration fixes a third of it. Each row already names ONE destination and ONE thing
+   * wrong with it — so the row IS the target, the arrow is the only affordance left, and the
+   * right column stops being a wall of five near-identical controls.
+   * ⚠️ THE COST, PAID RATHER THAN AVOIDED: a whole-row target is worse for keyboard and
+   * screen-reader users if it is a click handler on a div. This is a real <a>. The rank and
+   * the severity bar are decorative and aria-hidden, so the accessible name is the finding
+   * plus its destination — better than the old link's name ("Armory repairs") standing alone.
+   * The reclaimed width says HOW BAD, which is what a rank without a denominator cannot. */
   function render() {
     const att = attention();
-    /* An empty state that names what it means, not "nothing here". */
     attList.innerHTML = att.length
-      ? att.map((a, i) => `<li class="att-row s-${a.kind}">
-          <span class="att-i">${String(i + 1).padStart(2, '0')}</span>
+      ? att.map((a, i) => `<a class="att-row s-${a.kind}" href="${a.href}" style="--c:var(--r-${a.realm.toLowerCase()})">
+          <span class="att-i" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
           <span class="att-b" aria-hidden="true"></span>
-          <span class="att-x"><b>${a.text}</b><em>${a.realm}</em></span>
-          <a class="pill sm att-go" href="${a.href}">${a.act} &rarr;</a>
-        </li>`).join('')
+          <span class="att-x"><b>${a.text}</b><em>${a.realm} &middot; ${a.act}</em></span>
+          <span class="att-go">${a.of ? `<span class="att-sev">${a.n} of ${a.of}</span>` : ''}
+            <span class="arw" aria-hidden="true">&rarr;</span></span>
+        </a>`).join('')
+      /* An empty state that names what it means, not "nothing here". */
       : `<li class="att-row clear"><span class="att-i">&#10003;</span><span class="att-b"></span>
            <span class="att-x"><b>Nothing needs you right now.</b>
            <em>Every page matches what the bot is serving.</em></span></li>`;
-    grid.innerHTML = CARDS.map(k => {
-      const s = stagedIn(k.id);
-      /* The realm strip is now a WAY IN, not a second alarm surface — the findings moved up
-       * into the ranked list, so a card that repeated them would be the same fact twice at two
-       * different weights. Only a STAGED count survives here, because that is the one thing the
-       * attention list deliberately does not rank: it is your own unfinished work, not a fault. */
-      return `<a class="hcard" href="${k.href}" style="--c:${k.c}">
-        <span class="hi">
-          <svg viewBox="0 0 24 24" aria-hidden="true">${k.icon}</svg>
-          <span class="hn">${k.label}</span>
-        </span>
-        <span class="hq">${k.q}</span>
-        <span class="hf">
-          <b>${k.n}</b><span>${k.unit}</span>
-          ${s ? `<span class="att stg">${s} staged</span>` : ''}
-        </span>
-      </a>`;
-    }).join('');
 
-    const ops = staged();
+    /* ── THE FIGURES ─────────────────────────────────────────────────────────
+     * The LEAD is "needs you", because that is what this page is. Its colour is the state
+     * it reports — warn when there is something, plain ink at zero — which is the same rule
+     * every other masthead follows: the lead takes its realm's own accent, and Home's
+     * defining number IS a state. A zero lead keeps its SIZE and drops its COLOUR. */
+    const needs = att.length, live = liveAnns().length, sn = season(), ops = staged();
+    mhStats.innerHTML = `
+      <span class="stat lead" style="--c:${needs ? 'var(--warn)' : 'var(--ink)'}">
+        <span class="v" id="fNeeds">${needs}</span> <span class="k">needs you</span></span>
+      <span class="stat"><span class="v" id="fDays">${sn.days === null ? '—' : sn.days}</span>
+        <span class="k">days left${sn.days === null ? '' : ' &middot; ' + sn.label}</span></span>
+      <span class="stat"><span class="v" id="fLive">${live}</span> <span class="k">live now</span></span>
+      <span class="stat stg"><span class="v" id="fStaged">${ops.length}</span> <span class="k">staged</span></span>`;
+    S.markZero(document.getElementById('fNeeds'), needs);
+    S.markZero(document.getElementById('fLive'), live);
+    S.markZero(document.getElementById('fStaged'), ops.length, true);
+
+    /* ── WHAT IS LIVE ────────────────────────────────────────────────────── */
+    const today = runningToday(), anns = liveAnns();
+    const SHOW = 5;
+    hlive.innerHTML = `
+      <div class="lp">
+        <h2>Running right now</h2>
+        <div class="hseason"><b>${F.season.currentSeasonTitle}</b>
+          <span>${sn.days === null ? 'no deadline set' : sn.days + ' days left &middot; ' + sn.label}</span></div>
+        <p class="lsub">What a player opening the bot this second would be shown.</p>
+        ${today.slice(0, SHOW).map(it => `<div class="lrow" style="--c:${(F.LANE_BY_KEY[it.lane] || {}).hex || 'var(--ink4)'}">
+          <i class="ld"></i>
+          <span class="lt">${it.title}</span>
+          <span class="lw${it.end && (new Date(it.end) - new Date(F.today)) / 86400000 <= 2 ? ' hot' : ''}">${
+            it.kind === 'span' && it.end ? endsIn(it.end) : 'today'}</span>
+        </div>`).join('')}
+        ${today.length > SHOW ? `<p class="lmore">${today.length - SHOW} more running &middot;
+          <a href="season.html">open the Track</a></p>` : ''}
+        ${!today.length ? `<p class="lmore">Nothing is scheduled for today. The season runs, but no
+          draw, event or playlist opens or closes.</p>` : ''}
+      </div>
+      <div class="lp">
+        <h2>Showing to players</h2>
+        <p class="lsub">Announcements the bot is attaching to its replies.</p>
+        ${anns.length ? anns.map(a => `<div class="lrow" style="--c:${(F.LANE_BY_KEY.patchNotes || {}).hex || 'var(--patch)'}">
+          <i class="ld"></i>
+          <span class="lt">${a.text}</span>
+          <span class="lw${a.expiresAt ? '' : ' hot'}">${a.expiresAt ? endsIn(a.expiresAt) : 'never ends'}</span>
+        </div>`).join('')
+        : `<p class="lmore">No announcement is showing. Replies go out with nothing attached.</p>`}
+        <p class="lmore"><a href="broadcast.html">Open Broadcast</a></p>
+      </div>`;
+
     resume.innerHTML = ops.length ? `
       <div class="hres">
         <b>${ops.length} staged change${ops.length > 1 ? 's' : ''}</b>
@@ -208,11 +247,7 @@
         <span class="sp"></span>
         <button class="chip" id="dropAll">Discard all</button>
         <button class="chip go" id="goReview">Review &amp; commit</button>
-      </div>` : `
-      <div class="hres" style="border-left-color:var(--rule2)">
-        <b>Nothing staged</b>
-        <span>Everything in the portal matches what the bot is serving.</span>
-      </div>`;
+      </div>` : '';
     if (ops.length) {
       document.getElementById('goReview').onclick = () => location.href = 'review.html';
       document.getElementById('dropAll').onclick = () => {

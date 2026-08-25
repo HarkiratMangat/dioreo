@@ -32,6 +32,15 @@
    * fill, one lifted for ink, hue and saturation untouched because those ARE the identity.
    * 🔴 Never write `color:var(--ev)`. Use --ev-ink. */
   --ev-ink:#25A570;
+  /* 🔴 AND `--warn` HAS THE SAME PROBLEM ONE STEP LATER, closed 2026-08-25 16:3x EDT by
+   * measuring rather than by noticing it had stopped reporting. Broadcast's "never ends" chip
+   * painted `--warn` #FF7A45 at 9px on its own warn-tinted ground; the shipped audit reported
+   * 4.28:1 twice, stable, and then would not reproduce — because the audit's ground-walk does
+   * NOT composite a translucent background over what is beneath it, so the number it got
+   * depended on which ancestor the walk happened to land on. Composited correctly the true
+   * value is 4.53:1 — it PASSES, by 0.03, which is not a margin. Same fix as --ev-ink: one
+   * value for the fill, one lifted for ink, hue and saturation untouched. */
+  --warn-ink:#FF9E72;
 
   /* ARMORY topic accents — the bot's real MP_CATEGORY_ACCENT values */
   --ar:#FF3B5C; --smg:#FFD23F; --lmg:#845EC2; --mm:#3DDC97; --sn:#4361EE; --sg:#F6A93B; --sec:#3E6E8E;
@@ -43,6 +52,17 @@
   --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
 
   --dsc:#5865F2;                     /* Discord brand, door only */
+  /* ── REALM ACCENTS — one hue per realm, and the ONLY place they are written ──
+   * These existed as five hardcoded hexes inside index.html's CARDS array while four
+   * of the five were already tokens under other names (--draw, --patch, --ink2, --ev).
+   * A hex repeated across components is a token that has not been named yet — the
+   * design-system audit's own line, applied to the last place it had not reached.
+   * Three consumers now read them: the rail's hover wash, the masthead's LEAD figure,
+   * and Home's attention rows. Season is the bot's own Season End orange; Review's
+   * "topic" is the staged cyan, because the realm IS the staging area. */
+  --r-season:#F2994A; --r-armory:var(--draw); --r-broadcast:var(--patch);
+  --r-access:var(--ink2); --r-analytics:var(--ev); --r-review:var(--staged);
+
 
   /* layout — the one place to override */
   /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every
@@ -80,6 +100,19 @@
   --dur-1:130ms;   /* state    */
   --dur-2:180ms;   /* transition */
   --dur-3:320ms;   /* entrance */
+  /* ── LIVELINESS — feel, expressed as four numbers rather than per-component taste ──
+   * Harkirat's definition: "breathing life into elements — subtle glows, tints,
+   * animations upon clicking, elements dynamically changing on behaviour."
+   * 🔴 The lifted card and the hover tint are ONE mechanism at two strengths, not two
+   * effects. Kept as tokens because the alternative is what the shape scale turned into:
+   * 29 values, each individually reasonable. */
+  --tint-hover:9%;    /* topic colour mixed into a surface on hover        */
+  --tint-lift:14%;    /* …and on a lifted card, where the edge also lights */
+  --lift:2px;         /* how far a card rises. Any further reads as a modal */
+  --press:1px;        /* how far a control sinks under a finger            */
+  --dur-toast-in:460ms;  /* a toast ARRIVES slowly enough to be read as motion */
+  --dur-toast-out:260ms; /* …and leaves faster than it came, or it reads as stuck */
+  --ease-soft:cubic-bezier(.22,1,.36,1);  /* long travel, no overshoot spike */
 
   --rail-w:76px; --hdr-h:52px; --gap:14px;
 

@@ -1068,8 +1068,8 @@ window.FIX = (function () {
    * database who holds ["manage","bot"] — and it dropped `season`, the pseudo-page whose whole
    * purpose is that editing what is LIVE and staging what is NEXT are different blast radii. */
   const ROLE_META = {
-    owner: { label:'Owner', note:'Hardcoded in utils/owner.js. Every scope implicitly, forever. Not a row you can edit — isOwner() short-circuits every check before the allowlist is even read.' },
-    admin: { label:'Admin', note:'One AdminUser document. Holds exactly the tokens on its permissions array, which must never be empty — an admin with nothing granted should be revoked, not parked in limbo.' }
+    owner: { label:'Owner', note:'Built in, and not a row you can edit. Holds every permission implicitly and permanently — the owner check runs before any grant is consulted.' },
+    admin: { label:'Admin', note:'Holds exactly the permissions granted to them, and never none — an admin with nothing granted should be revoked, not parked in limbo.' }
   };
 
   /* Colour is BORROWED, never invented: Access is the achromatic realm, so each scope wears

@@ -3,7 +3,7 @@
 <title>Review &amp; commit · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -15,7 +15,10 @@
         <span class="job">Exactly what is about to change, and what it will overwrite, before any of it is written.</span>
       </div>
       <div class="mh-stats">
-        <span class="stat stg"><span class="v" id="sOps">0</span> <span class="k">changes</span></span>
+        <!-- Review's LEAD and its staged colour are the same thing, and that is correct rather
+             than an exception: the realm's own accent IS the staged cyan, because the realm is
+             the staging area. -->
+        <span class="stat stg lead" style="--c:var(--r-review)"><span class="v" id="sOps">0</span> <span class="k">changes</span></span>
         <span class="stat"><span class="v" id="sRealms">0</span> <span class="k">realms</span></span>
         <span class="stat" id="statGates"><span class="v" id="sGates">0</span> <span class="k" id="kGates">blockers</span></span>
       </div>
@@ -41,8 +44,8 @@
      the footer — two controls for one action, with the redundant one obscuring the one that
      matters. Caught by looking at a screenshot; no audit rule can see it. -->
 
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;

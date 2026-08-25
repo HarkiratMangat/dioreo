@@ -3,7 +3,7 @@
 <title>Broadcast · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -79,9 +79,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/timeline.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/timeline.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -329,7 +329,7 @@
         <div class="dwfield" style="margin-top:14px"><label for="aText">Text &mdash; the only content field there is</label>
           <textarea id="aText" rows="4">${esc(a.text)}</textarea></div>
         <p class="dw-p">There is no title field, deliberately. A heading is markdown typed into the
-          text (<code># Like this</code>) &mdash; the generic embed header was removed on 2026-08-13.</p>
+          text (<code># Like this</code>). There is no separate title field.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
           <div class="dwfield"><label for="aStart">Starts (blank = immediately)</label>
             <input id="aStart" type="date" value="${a.startsAt ? a.startsAt.slice(0,10) : ''}"></div>
@@ -356,7 +356,7 @@
       aExp.classList.toggle('err', !p.ok);
       hint.innerHTML = p.ok ? `Reads as: <b>${p.how}</b>.`
         : `<b style="color:var(--warn)">&ldquo;${esc(aExp.value)}&rdquo; is not understood.</b>
-           Blank, a whole number of days, or <code>never</code>. A typo must never silently mean the default.`;
+           Blank, a whole number of days, or <code>never</code>.`;
     });
     document.getElementById('aCancel').onclick = () => S.closeDrawer();
     document.getElementById('aDel').onclick = () => { S.closeDrawer(); stageDelete(a); };
@@ -561,7 +561,7 @@
     const sched = st.ann.filter(a => a.state === 'scheduled').length;
     const forever = st.ann.filter(a => a.state === 'live' && !a.expiresAt).length;
     mhStats.innerHTML = `
-      <span class="stat"><span class="v">${live}</span> <span class="k">live</span></span>
+      <span class="stat lead" style="--c:var(--r-broadcast)"><span class="v">${live}</span> <span class="k">live</span></span>
       <span class="stat"><span class="v">${sched}</span> <span class="k">scheduled</span></span>
       <!-- A number in a page's own masthead is read as being about that page: this showed the
            GLOBAL staged count, so four Season edits read as "4 staged" on Broadcast. index.html

@@ -3,7 +3,7 @@
 <title>Armory · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -15,7 +15,7 @@
         <span class="job">Every build the bot can show a player, ranked within its category, with whatever is wrong with it named.</span>
       </div>
       <div class="mh-stats">
-        <span class="stat"><span class="v" id="sBuilds"></span> <span class="k" id="kBuilds">builds</span></span>
+        <span class="stat lead" style="--c:var(--r-armory)"><span class="v" id="sBuilds"></span> <span class="k" id="kBuilds">builds</span></span>
         <span class="stat"><span class="v" id="sRanked"></span> <span class="k">ranked</span></span>
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
@@ -108,9 +108,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/timeline.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/timeline.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -293,7 +293,7 @@
             </div>
           </div>`).join('')}
       </div>
-      <p class="racknote"><b>Why the Best row holds 18 cards and not 7.</b> A badge describes the
+      <p class="racknote"><b>The Best row holds 18 cards, not 7.</b> A badge describes the
         <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a
         <code>weaponKey</code> and mode, so BAL-27's five builds each carry it. Measured against the
         full 133-document catalogue: every category has exactly one best weapon, and none has zero.
@@ -388,7 +388,7 @@
       verb:`${F.RANK_LABEL[String(was)]} → ${F.RANK_LABEL[String(to)]}`, realm:'armory',
       op:'loadout.edit',
       rows:[[isDmz ? 'dmzRangeRank' : 'categoryRank', dash(was), dash(next)],
-            ['Applies to', `${siblings(b).length} build(s) of ${b.weaponName}`, 'badges describe the weapon']] });
+            ['Applies to', `${siblings(b).length} ${S.plural(siblings(b).length, 'builds')} of ${b.weaponName}`, 'badges describe the weapon']] });
     renderAll();
     const landed = viewRack.querySelector(`.bchip[data-id="${b.id}"]`);
     if (landed) { landed.classList.add('settled');
@@ -470,6 +470,10 @@
     if (fa) fa.onclick = fixMechanical;
   }
 
+  /* The field's name in the reader's words. A before → after that says "imageKey" is a diff
+   * about a schema; one that says "Image reference" is a diff about the build. */
+  const FIELD_WORDS = { imageKey:'Image reference', categoryRank:'Category rank' };
+
   /* A mechanical fix has ONE correct answer derivable from the row. Everything else needs a
    * person, which is why the queue never offers to bulk-fix a judgement call. */
   function fixMechanical() {
@@ -484,28 +488,55 @@
     if (!plan.length) { S.toast('Nothing mechanical left to fix.'); return; }
     S.drawer({
       eyebrow:'loadouts.repair · tier 2', title:`Fix ${plan.length} mechanical defect${plan.length > 1 ? 's' : ''}`, wide:true,
+      /* 🔴 HARKIRAT'S NOTE IS THE FEATURE: "it needs some sort of companion element which
+       * actually visualizes the proposed change, rather than it being blind trust and execute."
+       * A one-click fix you cannot inspect is precisely what the staging model exists to
+       * prevent, so the panel is not a receipt — it is the decision. Three things make it one:
+       *   · every fix shows its OWN before → after, in the field's own words, not a column of
+       *     raw values whose meaning you have to reconstruct;
+       *   · every fix has a CHECKBOX, so "fix all" is a starting selection rather than a
+       *     take-it-or-leave-it. All-or-nothing on six fixes means one doubtful fix costs the
+       *     other five, and that is what makes people not press the button at all;
+       *   · the count on the button tracks the selection, so what you are about to stage is
+       *     stated in the control that stages it.
+       * ⚠️ The line it does not cross, unchanged: it STAGES, it never commits, and it never
+       * touches the Judgement column. */
       body:`<div class="dwbody">
         <p class="dw-p">Each of these has one correct value derivable from the row itself. Anything
           needing a judgement call is deliberately absent — <b>Review each</b> on a specific defect
-          card is where those go.</p>
-        <div class="rvgrid"><div class="rvhead"><span>Build</span><span>Was</span><span>Becomes</span></div>
-        ${plan.map(p => `<div class="rvr">
-          <span class="rvk">${p.b.weaponName} — ${p.b.buildName}<br><em style="color:var(--ink3);font-size:var(--t-xs)">${p.field}</em></span>
-          <span class="rvwas">${dash(p.was)}</span><span class="rvnow">${p.now}</span></div>`).join('')}</div>
+          card is where those go. Untick anything you would rather look at yourself.</p>
+        <div class="fxlist">
+        ${plan.map((p, i) => `<label class="fxr" for="fx${i}">
+          <input type="checkbox" class="fxc" id="fx${i}" data-fx="${i}" checked>
+          <span class="fxb">${p.b.weaponName} <em>${p.b.buildName}</em></span>
+          <span class="fxf">${FIELD_WORDS[p.field] || p.field}</span>
+          <span class="fxd">
+            <span class="fxwas">${dash(p.was)}</span>
+            <span class="fxar" aria-label="becomes">&rarr;</span>
+            <span class="fxnow">${p.now}</span>
+          </span>
+        </label>`).join('')}</div>
       </div>`,
       actions:`<button class="btn" id="fmCancel">Cancel</button>
                <button class="btn go" id="fmGo">Stage ${plan.length} fix${plan.length > 1 ? 'es' : ''}</button>`
     });
+    const drw = document.querySelector('.drawer');
+    const picked = () => [...drw.querySelectorAll('.fxc')].filter(c => c.checked).map(c => plan[+c.dataset.fx]);
+    const syncBtn = () => { const n = picked().length; const g = document.getElementById('fmGo');
+      g.disabled = !n; g.textContent = n ? `Stage ${n} fix${n > 1 ? 'es' : ''}` : 'Nothing selected'; };
+    drw.querySelectorAll('.fxc').forEach(c => c.onchange = syncBtn);
+    syncBtn();
     document.getElementById('fmCancel').onclick = () => S.closeDrawer();
     document.getElementById('fmGo').onclick = () => {
-      const snap = plan.map(p => ({ b:p.b, field:p.field, was:p.b[p.field] }));
+      const take = picked(); if (!take.length) return;
+      const snap = take.map(p => ({ b:p.b, field:p.field, was:p.b[p.field] }));
       S.Store.onInvert('arm-repair', () => { snap.forEach(x => { x.b[x.field] = x.was; }); renderAll(); });
-      plan.forEach(p => { p.b[p.field] = p.now; });
-      S.Store.add({ id:'arm-repair', name:`${plan.length} mechanical fixes`, verb:'repaired',
+      take.forEach(p => { p.b[p.field] = p.now; });
+      S.Store.add({ id:'arm-repair', name:`${take.length} mechanical fixes`, verb:'repaired',
         realm:'armory', op:'loadout.edit',
-        rows:plan.map(p => [`${p.b.weaponName} ${p.field}`, dash(p.was), p.now]) });
+        rows:take.map(p => [`${p.b.weaponName} ${p.field}`, dash(p.was), p.now]) });
       S.closeDrawer(); renderAll();
-      S.toast(`${plan.length} fixes staged.`, 'Undo', () => S.Store.revert('arm-repair'));
+      S.toast(`${take.length} fixes staged.`, 'Undo', () => S.Store.revert('arm-repair'));
     };
   }
 
@@ -667,17 +698,17 @@
             ${p.errs.length ? `<i class="bverr">${p.errs.join(' · ')}</i>` : ''}</span>
         </div>`).join('')}
         ${parsed.some(p => !p.errs.length) ? `<button class="chip go" id="bvStage">
-          Stage ${parsed.filter(p => !p.errs.length).length} change(s)</button>` : ''}
+          Stage ${parsed.filter(p => !p.errs.length).length} ${S.plural(parsed.filter(p => !p.errs.length).length, 'changes')}</button>` : ''}
       </div>`;
     const bs = document.getElementById('bvStage');
     if (bs) bs.onclick = () => {
       const good = parsed.filter(p => !p.errs.length);
       S.Store.onInvert('arm-bulk', () => {});
-      S.Store.add({ id:'arm-bulk', tier:2, name:`${good.length} builds`, verb:'bulk upsert',
+      S.Store.add({ id:'arm-bulk', tier:2, name:`${good.length} builds`, verb:'bulk edited',
         realm:'armory', op:'loadout.bulkAdd',
         rows:good.map(p => [`${p.weaponName} — ${p.buildName}`,
           p.existing ? 'existing build' : '—', `${p.atts.length} attachments`]) });
-      S.toast(`${good.length} build(s) staged from paste.`, 'Undo', () => S.Store.revert('arm-bulk'));
+      S.toast(`${good.length} ${S.plural(good.length, 'builds')} staged from paste.`, 'Undo', () => S.Store.revert('arm-bulk'));
       renderAll();
     };
   }
@@ -694,13 +725,13 @@
     const text = bulkText(list);
     document.getElementById('bvExpOut').innerHTML = `
       <div class="bvres">
-        <div class="bvsum"><b>${list.length}</b> build(s) — ${label}</div>
+        <div class="bvsum"><b>${list.length}</b> ${S.plural(list.length, 'builds')} — ${label}</div>
         <textarea class="bvexpout" rows="7" readonly spellcheck="false">${text || '(nothing matched)'}</textarea>
         <button class="chip" id="bvCopy">Copy to clipboard</button>
       </div>`;
     document.getElementById('bvCopy').onclick = () => {
       navigator.clipboard?.writeText(text);
-      S.toast(`${list.length} build(s) copied in Bulk Add format.`);
+      S.toast(`${list.length} ${S.plural(list.length, 'builds')} copied in Bulk Add format.`);
     };
   }
 
@@ -718,7 +749,7 @@ Code: 1C2B4A8B9A
 Badges: meta, top3
 - Agile Stock
 - MIP Light Barrel (Short)</pre>
-        <p class="dw-p"><b>The old seven-segment pipe line is rejected, not re-read.</b> Under the
+        <p class="dw-p"><b>A seven-segment pipe line is rejected, not re-read.</b> Under the
           old positional reading <code>AK117 | ar</code> would half-parse into a weapon named
           &ldquo;Weapon&rdquo;, so it fails loudly instead. And <b>Mode is not a field</b>: which page
           you opened the modal from is the only thing that has ever decided it. It used to be
@@ -948,12 +979,12 @@ Badges: meta, top3
         x.categoryRank = b.categoryRank; x.dmzRangeRank = b.dmzRangeRank;
       });
       if (badgeChanged && sibs.length > 1)
-        rows.push(['badges propagated', `${sibs.length} build(s) of ${b.weaponName}`, 'all updated']);
+        rows.push(['badges propagated', `${sibs.length} ${S.plural(sibs.length, 'builds')} of ${b.weaponName}`, 'all updated']);
       S.Store.add({ id:opId, tier:1, name:`${b.weaponName} — ${b.buildName}`,
         verb:`${rows.length} field${rows.length > 1 ? 's' : ''} changed`, realm:'armory',
         op:'loadout.edit', rows });
       S.closeDrawer(); renderAll();
-      S.toast(`${b.weaponName} — ${rows.length} change(s) staged.`, 'Undo', () => S.Store.revert(opId));
+      S.toast(`${b.weaponName} — ${rows.length} ${S.plural(rows.length, 'changes')} staged.`, 'Undo', () => S.Store.revert(opId));
     }
   }
 
@@ -963,7 +994,7 @@ Badges: meta, top3
       title:`Delete ${b.weaponName} — ${b.buildName}?`,
       body:`<p class="dw-p">Removes this build, its <b>${b.attachments.length}</b> attachments and its
               Gunsmith code. ${siblings(b).length > 1
-                ? `The other <b>${siblings(b).length - 1}</b> ${b.weaponName} build(s) stay, and the card's
+                ? `The other <b>${siblings(b).length - 1}</b> ${b.weaponName} ${S.plural(siblings(b).length - 1, 'builds')} stay, and the card's
                    “Build N of M” counter renumbers.`
                 : `<b>This is the only ${b.weaponName} build</b> — the weapon disappears from
                    <code>/gunsmiths</code> entirely.`}</p>

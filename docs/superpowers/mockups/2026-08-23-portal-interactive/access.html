@@ -3,7 +3,7 @@
 <title>Access · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -57,9 +57,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/timeline.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/timeline.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -174,7 +174,7 @@
             <tr class="ownerrow">
               <td class="mxwho"><span class="mxid">
                 <span class="mxav">◆</span>
-                <span class="mxn"><b>Owner</b><span>&hellip;${esc(F.OWNER_ID.slice(-6))} &middot; utils/owner.js</span></span>
+                <span class="mxn"><b>Owner</b><span>&hellip;${esc(F.OWNER_ID.slice(-6))} &middot; built in</span></span>
               </span></td>
               ${F.accessScopes.map(s => `<td><span class="mxcell on locked" style="--c:${SM[s.key].hex}"
                   role="img" aria-label="${esc(s.label)}: held by the owner, not editable"
@@ -225,7 +225,7 @@
         <span class="sp" style="flex:1"></span>
         <button class="chip go" id="grantBtn">+ Grant access</button>
       </div>
-      <p class="racknote">Twelve permissions: four commands (<code>manage</code>, <code>autobuild</code>,
+      <p class="racknote">${F.PERM_TOKENS.length} permissions: four commands (<code>manage</code>, <code>autobuild</code>,
         <code>bot</code>, <code>destructive</code>) and eight <code>/manage</code> pages.
         <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and
         <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
@@ -348,7 +348,7 @@
     if (!toks.length) return { ok:false, why:'An admin must always hold at least one permission.' };
     if (toks.length === 1 && toks[0] === 'all') return { ok:true, list:['manage','autobuild','bot'], note:'“all” expanded to the three command permissions.' };
     const bad = toks.filter(t => !F.PERM_TOKENS.includes(t));
-    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised permission${bad.length === 1 ? '' : 's'}. One bad token rejects the whole grant — a partial grant from a typo is worse than an error.` };
+    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised permission${bad.length === 1 ? '' : 's'}. Nothing is granted until every name is valid.` };
     return { ok:true, list:[...new Set(toks)] };
   }
 
@@ -363,7 +363,7 @@
       <div class="dwfield"><label for="gPerm">Permissions &mdash; comma separated</label>
         <input id="gPerm" type="text" value="${editing ? esc(a.permissions.join(',')) : ''}"
                placeholder="e.g. manage.draws,manage.calendar,bot" autocomplete="off"></div>
-      <p class="dw-p" id="gHint">Twelve permissions are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
+      <p class="dw-p" id="gHint">${F.PERM_TOKENS.length} permissions are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
       <div class="tokgrid" id="tokGrid">
         ${F.accessScopes.map(s => `<button class="chip topic" data-tok="${esc(s.key)}" aria-pressed="false"
             style="--c:${SM[s.key].hex}" title="${esc(s.key)}"><i></i>${esc(s.label)}</button>`).join('')}
@@ -469,7 +469,7 @@
       body:`<div class="dwbody">
         <p class="dw-p">Deletes the whole <code>AdminUser</code> document &mdash; there is no partial
           revoke here, and no undo. They keep their Discord account and every public command; they
-          simply stop being an admin.</p>
+          stop being an admin.</p>
         <p class="dw-p">They lose <b>${lost.length}</b> permission${lost.length === 1 ? '' : 's'}:
           ${esc(lost.join(', ')) || 'none'}.</p>
         ${orphaned.length ? `<div class="callout"><b>You would be the only one left</b> holding
@@ -534,7 +534,7 @@
   function renderStats() {
     const spofN = spofScopes().size, liveN = st.sessions.filter(isLive).length;
     mhStats.innerHTML = `
-      <span class="stat"><span class="v">${st.admins.length}</span> <span class="k">granted</span></span>
+      <span class="stat lead" style="--c:var(--r-access)"><span class="v">${st.admins.length}</span> <span class="k">granted</span></span>
       <span class="stat"><span class="v">${st.admins.reduce((n, a) => n + a.permissions.length, 0)}</span> <span class="k">permissions</span></span>
       <span class="stat"><span class="v">${liveN}</span> <span class="k">signed in</span></span>
       <span class="stat ${spofN ? 'warn' : ''}"><span class="v">${spofN}</span> <span class="k">single points</span></span>`;

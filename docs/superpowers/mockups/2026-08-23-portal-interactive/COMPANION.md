@@ -61,6 +61,7 @@ node .schema-gate.mjs --self-test
 | **5.9y / 5.9z** | **The falsification pass** — a gate that could not fail, and the four-instance defect family · **liveliness, magic, the three rejections, and the account panel** | 🔴 **Before believing any green in 5.9u–5.9x, and before proposing anything as “lively”** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
+| **16** | **BUILT 2026-08-25** — the eight micro-interactions · the masthead figure grammar · Home rebuilt around the rail · the account panel · **the light model, falsified and dropped with numbers** · the parser behind paste/dates/⌘K · the chart aesthetic · **the Track's deadline markers** · and three defects this session created and caught | 🔴 **After §5.9z, always.** §5.9z is what was decided; this is what was built, and it records the three places the decision turned out to be wrong once the page was open |
 
 ⚠️ **This table is the only navigation this document has, and it is 280KB long.** A section that is not in it is a section a wiring session will not find. Three whole families — §5.9j–5.9r, §15.7 and §15.7b — were missing from it for a day after being written, which made them exhaustive and unreachable at the same time. **If you add a section, add its row.**
 
@@ -3014,3 +3015,228 @@ What that means concretely, and each line is a design obligation rather than a s
 *Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **both** drag surfaces — Season's Board and Armory's tier board. *(This read "all three" until 2026-08-24, counting a Broadcast reorder that had been removed.)**
 
 > ⚠️ **`prefers-reduced-motion` is TWO-THIRDS proven — and this paragraph was the stale third.** It read *"still UNVERIFIED… six blocks exist… nothing has ever observed those rules taking effect"* until 2026-08-25 11:4x EDT, which stopped being true earlier the same day and in the same document: **§15.7b** measured 93 animating selectors, found **10 with no override** (including an infinite 2.8s pulse), covered them, and put **audit rule 14** on the relationship; `.states.html` **PASS 4f** then lifted every reduced-motion rule and observed `getAnimations()` reporting zero *running* animations on all eight pages. What is still unproven is only the **gating** — that the media query switches them on — because nothing here can emulate the feature (filed in `docs/db-deferred-list.md` with the CDP one-liner). **The lesson survives its own correction:** three claims — coverage, effect, gating — do not collapse into one green, and a warning left standing after the thing it warns about is fixed is the same defect it was written to prevent, pointing the other way.
+
+## 16 LIVELINESS, MAGIC, AND THE FOUR SURFACES HARKIRAT OPENED — built 2026-08-25
+
+*Everything in §5.9z was a decision. This is what was built from it, plus the four findings that only appeared once the pages were open. Read §5.9z first — it carries the reasoning; this carries the result and the places the reasoning turned out to be wrong.*
+
+### 16.1 The eight micro-interactions, applied BY SELECTOR
+
+**Liveliness is FEEL** (§5.9z.1). Eight items, all of them transforms, tints and opacity on markup that already exists — so no audit rule and no gate can be broken by them, which is also why the whole set was affordable at once.
+
+| # | what it is | where it lives | the reason it is not decoration |
+|---|---|---|---|
+| **1** | **Press has weight** — every control compresses ~1px and springs back | `button,.pill,.chip,.btn,.mi:active` | The portal stages constantly and a staged op answers with a toast ~300ms later. In that window the button was dead, which is exactly when a person is still asking "did that land?" |
+| **2** | **The change that just landed** — the row tints its own topic colour once | `.landed`, hooked into `Shell.arrive()` | The only acknowledgement was a toast at the bottom of the screen, 600px from the row you were looking at. "Which one did I just change?" was answered nowhere near the change |
+| **3** | **Topic tint on touch** | `.pill[style*="--c"]:hover` and friends | A grey hover says *this is a control*. A topic hover says *this is a control FOR THAT* |
+| **4** | **Cards lift — and the lifted card carries COLOUR** | `.wcard,.ccard,.tile,.dcard,.hlive .lp` | ⚠️ His note: *"cards lift needs some kind of colour even on the lifted card."* A coloured SHADOW would not have answered it — a shadow is still under the card. The colour goes on the PLANE: a topic tint in the surface plus a hairline top edge in the topic colour |
+| **5** | **Figures roll and show the delta** | `Shell.setFigure()` | A figure that silently reads 40 instead of 39 tells you the new value and hides the event — and the event is the thing you were watching for |
+| **6** | **The rail fills** | `.realm:hover`, `--c` from the new realm tokens | The rail previews where you are about to be |
+| **7** | **Toasts settle** | `@keyframes toastIn/toastOut` | See §16.2 |
+| **8** | **Selection moves** — a chosen row steps 3px out of the stack | `tbody tr:has(.cb.on)` | A checkbox answers "is this ticked" one row at a time. The eye wants the SHAPE of a selection down a 39-row table without reading any of it |
+
+🔴 **THEY ARE APPLIED BY SELECTOR, NOT BY ADDING A CLASS AT EVERY CALL SITE.** Half of these elements are built inside template literals across six files. A `.tint`/`.lift` class hand-added to each is ~40 edits that a new surface then forgets — the same per-call-site failure that produced 29 corner radii and a `.zero` class with two meanings. Anything that already declares its own `--c` gets the topic hover for free, and the card shapes are enumerated once in `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/app.css`.
+
+**Four tokens, so "lifted" and "hovered" cannot drift into two hand-tuned alphas:** `--tint-hover` 9% · `--tint-lift` 14% · `--lift` 2px · `--press` 1px.
+
+### 16.2 The toast, and why "smoother" is three changes and not one
+
+⚠️ His note: *"toasts settle needs a MUCH smoother animation."*
+
+The old one played `trayIn .22s` on arrival and **did not leave at all** — `el.remove()` deleted the node mid-frame. Half of every toast's life had no motion in it, and a thing that appears smoothly and vanishes instantly reads as broken rather than as fast. The instinct — reach for a springier curve — would have made it worse: a `cubic-bezier` overshoot on 220ms reads as a *snap*, which is the opposite of smooth.
+
+Three changes, all of them in CSS:
+1. **Longer travel** (460ms) on `cubic-bezier(.22,1,.36,1)`, which has no overshoot spike, so the eye tracks it rather than catching it.
+2. **Opacity finishes EARLY** (at 35%), so the shape is solid while it is still moving. A toast that fades and travels together reads as a smear.
+3. **A separate, FASTER exit** (260ms, `ease-in`) that drifts *down* rather than reversing the entrance.
+
+Only `transform` and `opacity` animate, so it stays on the compositor and never repaints. `Shell._dismissToast()` exists to give the exit somewhere to happen. ⚠️ **`animationend` never fires under `prefers-reduced-motion`** (the global kill sets `animation:none`), so the timeout is the mechanism there and the listener is the optimisation — the other way round is how an animated dismissal becomes a permanently stuck element for the one group of users who asked for less motion.
+
+### 16.3 The masthead figure grammar — and the rule in §5.9z.4 fails on its own example
+
+§5.9z.4 sorted the numbers into three kinds and derived: *a SIZE takes its realm's topic colour · a STATE takes a state colour only when non-neutral · STAGED takes `--staged` when non-zero.*
+
+🔴 **Applied literally to the row it was derived from, that grammar reproduces the defect it was written to prevent.** Armory's masthead holds **two** sizes — `MP BUILDS SHOWN 125` and `RANKED 64`. Colouring every size paints three of five figures, two of them the same red, and the topic colour becomes the row's most common ink. "If every figure is coloured, colour stops carrying information" — the section's own opening line, defeated by the section's own rule.
+
+**The rule that ships:** the topic colour marks the **LEAD** figure, and it marks it **because it leads**, not because it is a size.
+
+| | treatment |
+|---|---|
+| **LEAD** | `--t-display` (44px), in the realm's own accent. **Exactly one per masthead** |
+| **REST** | `--t-h1` (22px), neutral ink. A supporting figure states its value, not its importance |
+| **STATE** | a state colour only when non-neutral. `NEED REPAIR 11` is warn; `NEED REPAIR 0` is `.zero` and dims |
+| **STAGED** | `--staged` when non-zero, plain secondary ink at zero, and **never `.zero`** |
+
+This fuses the two halves of his ask — *"can they all have relevant colours, or improve their design in some way"* — into one decision: hierarchy and colour are the same move. It is also checkable, which the original was not.
+
+**The leads, and the test each was chosen by** (*"if I only saw this number, would I know the state of this realm?"*): Season → **days left** · Armory → **builds** · Broadcast → **live** · Access → **granted** · Analytics → **interactions** · Review → **changes** · Home → **needs you**.
+
+⚠️ **Review's lead is the staged cyan, and that is the rule rather than an exception:** the lead takes its realm's own accent, and Review's accent IS `--staged`, because the realm is the staging area. **A ZERO LEAD keeps its SIZE and drops its COLOUR** — size carries hierarchy, colour carries meaning, and "0 live now" in Broadcast yellow is an alert about nothing.
+
+### 16.4 🔴 `.zero` meant two opposite things, and the fix is at the observer
+
+Dimming a zero to mean *nothing here* is correct on `NEED REPAIR 0` and **exactly backwards on `STAGED 0`**, where a clean slate is the *good* state and dimming makes it read as absence rather than as *you are up to date*. One class, two contracts — the one-quantity-two-authorities shape, in CSS.
+
+`Shell.zeroStats()` is where **both** were applied, so that is where it is fixed: `.zero` is never written to a `.stg` stat, which takes `.stg-clear` (plain secondary ink) instead. **The staged figure is the one number in the row whose appearance should change when it becomes actionable** — which is also why micro-interaction #5 lands on it first. `Shell.markZero(el, n, isStaged)` is the single writer.
+
+### 16.5 The attention rows — the answer was not "remove the underline"
+
+⚠️ **The comfortable reading of "those underlined buttons look bad" is "remove the underline", and it hid the real question.** Three affordances were stacked on one control: a **border** said BUTTON, an **underline** said LINK, an **arrow** said NAVIGATION. Deleting the `text-decoration` fixes a third of it.
+
+🔴 **The row is the target.** Each row already names one destination and one thing wrong with it, so the whole row is now a real `<a>`. The arrow is the only affordance left, the right column stops being a wall of five near-identical controls, and the reclaimed width says **how bad** — `13 of 133` — because a count with no comparison is homework, not a glance.
+
+⚠️ **The cost, paid rather than avoided:** a whole-row target is worse for keyboard and screen-reader users if it is a click handler on a `div`. It is a real anchor; the rank number and the severity bar are decorative and `aria-hidden`, so the accessible name is the finding plus its destination ("13 builds need repair, Armory · Repairs") — better than the old link's name ("Armory repairs") standing alone.
+
+🔴 **And the first version of it painted a GREEN bar next to "23 errors pinged".** The row's `--c` is the realm accent (Analytics is `--ev`), and the severity bar was switched to `var(--c)` in the same edit. Two colours, two jobs, and §4.1's split is what keeps them apart: **the hover tint is the TOPIC** (where this goes), **the bar is the STATE** (how bad it is). Making one carry both is how a colour stops meaning anything.
+
+### 16.6 Home — the cards were a second authority, and the rail was the missing half
+
+His words: *"its all over the place… i feel like i'd never utilize it."* The five ranked reasons are in §5.9z.5. What was built:
+
+🔴 **HOME NOW CARRIES THE RAIL AND THE FIVE CARDS ARE GONE.** `index.html` overrode the grid to one column under a comment that read: *"the rail is the in-realm switcher, and repeating it on the page whose entire job IS choosing a realm would say the same thing twice."* **The reasoning is sound and its PREMISE is what was wrong** — the page's own H1 is "What needs you", not "Choose a realm". The cards existed because Home was believed to be a directory, and they were a second authority over the question the attention list already answers: the list ranks what needs you, then the cards listed every realm again, undifferentiated, so Armory was card #2 whether it had 13 broken builds or none.
+
+With the rail present, navigation is one mechanism in one place on all eight pages. The way back to Home is the `DIOREO/PORTAL` mark, which was already a Home button in every header.
+
+⚠️ **THE FIGURES DELIBERATELY DO NOT REPEAT THE RAIL.** §5.9z.5's plan said *"demote the cards to a compact navigation rail with one figure and a state dot"* — **a figure there would have rebuilt the cards-versus-list defect one level up.** The masthead answers WHAT IS THE STATE (`needs you · days left · live now · staged`); the rail answers WHERE DO I GO and carries no counts at all.
+
+**What is live right now** is the new panel and the portal's actual subject — five cards said how many rows each realm holds and not one said what a player would see this second. It is not a second authority over the attention list: **that list is EXCEPTIONS, this is the CURRENT STATE.**
+
+**The staged bar renders only when something is staged.** At zero the masthead's `STAGED 0` carries it. A permanent bar reading "Nothing staged" was a third copy of a fact stated above it.
+
+**The three-line lede is gone** — the §F2 defect, fixed on four other pages and left on this one, costing ~180px above the fold on the page opened first.
+
+### 16.7 🔴 One quantity, two authorities — and this time the second one was mine
+
+Season's masthead read **79 days left** while its own *Live season* strip three lines below read **"battle pass Sep 10 · 17 days left"**, and Home's new figure row made it a third reading.
+
+The cause: `seasonEnd()` in `docs/superpowers/mockups/2026-08-23-portal-interactive/season.html` takes the **LAST** of the three deadlines — which is **correct** for the conflict predicate it was written for (*"an item running past BP but inside Ranked is not a conflict"*) and **wrong** for "how long is left", because what a player calls the season ends at the **first** deadline. Two different questions wearing one function.
+
+`Shell.seasonDaysLeft(season, today)` is now the single derivation both surfaces read. It takes the first deadline, and it **names which one**, because an unlabelled "17" beside a strip listing three different dates is the ambiguity that let them drift. The conflict predicate keeps the last deadline and now says why in its own comment.
+
+### 16.8 The account panel — start from what the panel is FOR
+
+His words: *"theres so much redundancy and uselessness. Why are the signout buttons 2 different styles? why is the discord id cut off? what's even the point of 'Find a page or an action / Command palette'?"* The full brainstorm is §5.9z.6. What shipped:
+
+- 🔴 **The panel duplicated the button that opens it.** Its header was an avatar, a name and a handle — and the trigger you just clicked IS the avatar and the name. That was the top third of the panel, and a bigger redundancy than the two ⌘K rows that were the visible complaint. The identity block now sits **on** the banner, which dissolves the duplicated avatar and earns the banner its ~74px: it is the one personal thing in the portal, and a Discord bot's console looking like Discord's own account panel is an affinity that is **true here** rather than borrowed.
+- 🔮 **"What you can do" is the one thing only this panel could say, and it did not.** Twelve permissions, an owner-only tier, and a `destructive` capability only the owner may grant — and nowhere in the portal told you which you hold. A delegated admin found out by clicking something and being refused. It is a row that **does** something (it opens Access on your own row), which is also the fix for the panel being five-sixths label.
+- 🔴 **The header's allocation was backwards.** Who signs out of a single-user admin console kept open in a tab? Almost nobody — so the header spent permanent, always-visible space on one of the rarest acts in the product and none on the most frequent, committing staged work. Sign-out moved into the panel, alone, in one style. ⚠️ **The fair counter** — a sign-out you cannot see is one a delegated admin cannot find in a hurry — is answered by making the panel obviously the account panel, not by a second button in a different colour, which is exactly what taught that they were two different acts.
+- **The freed slot carries a commit chip that is ABSENT at zero.** A chip that is always there is a permanent third copy of the tray and the rail badge; one that appears only when there is something to act on is the same fact at the moment it becomes actionable.
+- **The ID is shown WHOLE.** `1139…2283` elided **the middle**, which is the only part that distinguishes it from any other snowflake — so the preview could not confirm it was the right id, which is the entire reason anyone looks before pasting it into a grant.
+- **`Session · 12 hours` stated the POLICY.** It now reads `expires in 7h 20m` and ticks on the minute. One is documentation about the system; the other is a fact about you, and that difference is what separates five label rows from a panel worth opening.
+- **The presence dot is gone** — "Signed in" is trivially true of anyone looking at it, so it was decoration wearing status.
+
+⚠️ **AND THE PANEL SHIPPED A DEAD, EMPTY, FOCUSABLE ROW.** The earlier removal of the duplicate ⌘K rows deleted a label and left its `<button class="mi" data-m="realm">` **unclosed**, holding only a hamburger glyph. The browser auto-closed it at the next `<button>`, so the panel rendered an icon-only row that fell through to "focus the command bar". Visible in one second, invisible to every check — and it was created by the fix for a sibling defect, which is failure mode #5 for the third time on this branch.
+
+### 16.9 🔴 THE LIGHT MODEL — FALSIFIED AND DROPPED, with numbers
+
+The proposal was *"one elevation scale + a hairline top edge"*. The instruction was to falsify it before spending a session: rasterise a panel edge, read the pixel delta, and if it is under ~2 RGB steps say so and drop it rather than shipping decoration.
+
+**Measured 2026-08-25 15:2x EDT on `analytics.html` at 1280×806, dpr 2:**
+
+| what | measured |
+|---|---|
+| distinct opaque backgrounds painted on the page | **5**, and all five are exactly the five declared surface tokens — **zero drift** |
+| adjacent-surface deltas actually painted (max channel) | **6 · 10 · 12 · 18 · 28 · 34** RGB steps |
+| the panel's top edge, rasterised | ground `(15,20,24)` → border `(58,71,82)` → surface `(31,39,46)` |
+| ground → border | **58 steps** |
+| ground → surface | **22 steps** |
+
+**Verdict: DROP.** The elevation scale already exists, is exactly five steps, and every painted surface uses one of them — there is nothing for "one elevation scale" to unify. Every adjacent delta is at least **3× the 2-step floor**. And the hairline already exists: the panel's top border is **58 steps** brighter than the ground it sits on. The light model would have been a second authority over a quantity that already has one — the branch's own theme, in a proposal about lighting.
+
+⚠️ **THE PROBE WAS GIVEN BOTH DIRECTIONS BEFORE ITS ANSWER WAS TRUSTED.** The same measurement returned **0** on a sample where nothing changes and **58** at the border, so it can report presence and absence. A falsifier that can only say one of those proves nothing.
+
+**One piece survives, and for the opposite reason:** the hairline top edge is now the **hover** treatment on a lifted card (§16.1 #4). As a permanent global treatment it measured redundant; as a hover-only cue it is the thing that says WHICH card is lifted, which nothing else in the frame says.
+
+### 16.10 MAGIC — one parser, four capabilities
+
+**Magic is CAPABILITY** (§5.9z.1) — *"the portal can do that?"* / *"that made it so easy"*. Three of the four are the same engine pointed at three surfaces, which is what made four affordable at once.
+
+`Shell.Parse` — `date()` · `range()` · `line()` · `rows()` · `KIND`.
+
+🔴 **THIS IS A MOCKUP OF THE SURFACE, NOT OF THE PARSING.** The bot already ships `utils/adminParser.js` for the line formats and already depends on `chrono-node` for the dates — `/manage` parses admin dates with it today. The portal is the surface that does not use either. What is in `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` is a deliberately small subset with the same SHAPE, so a wiring session replaces the body and keeps every call site. ⚠️ **Do not "improve" this grammar** — the real one inherits everything the bot already understands, and a richer mockup grammar teaches a wiring session to keep it.
+
+| # | capability | where it lives | his note, and what it forced |
+|---|---|---|---|
+| **2** | **Paste anything. Get rows.** | a field **inside the composer**, `Shell.pasteRows()` | ⚠️ *"needs to be more intuitive."* The intuitive version is not a better drawer — it is **not being a drawer**. Three steps before you could paste, and the feature's whole claim is that there are no steps. It now parses as you type, beside the form it replaces, so the demonstration and the control are the same object |
+| **3** | **Type the date like a person** | `Shell.dateField()`, on both composer date inputs | The bot has understood "in 3 weeks" for a year; the portal made you use a date picker. That is not a smaller feature, it is the same feature with the understanding removed. The typed TEXT and the resolved ISO are kept apart (`st.a` vs `st.aText`), and the resolved date is **echoed in words** before anything is stored |
+| **4** | **Fix everything a machine is sure about** | `fixMechanical()` in `docs/superpowers/mockups/2026-08-23-portal-interactive/armory.html` | 🔴 *"it needs some sort of companion element which actually visualizes the proposed change, rather than it being blind trust and execute."* **That note is the feature** — see §16.11 |
+| **5** | **⌘K that acts, not just navigates** | `Shell.registerCommandStage()` | The bar existed and only navigated: it could find a page and could not do anything on one. It runs the same parser, so one typed line stages a draw window without opening a drawer. **Offered, never auto-run** — the top row is a suggestion you press Enter on, and it says what it will stage |
+
+**Not built, and it is still the best of the four:** *diff against live* — one button answering "what is different between this portal and what players are seeing right now?". It needs the real bot on the other end.
+
+### 16.11 Fix-all is a DECISION, not a receipt
+
+The panel already showed a Build/Was/Becomes table. That is a receipt. Three changes make it the decision:
+
+1. **Every fix shows its own before → after in the field's own words.** A diff that says `imageKey` is about a schema; one that says **Image reference** is about the build. `FIELD_WORDS` does that mapping.
+2. **Every fix has a checkbox.** All-or-nothing on six fixes means one doubtful fix costs the other five — and that is what makes people not press the button at all. "Fix all" is now a *starting selection*.
+3. **The count on the button tracks the selection**, so what you are about to stage is stated in the control that stages it.
+
+⚠️ **The line it does not cross, unchanged:** it STAGES, it never commits, and it never touches the Judgement column.
+
+### 16.12 🔴 THE PARSER'S FIRST VERSION WAS WRONG ON HALF THE REFERENCE LINES, AND TWO OF THE FAILURES LOOKED LIKE SUCCESSES
+
+The first `line()` split each line on `|`, `,`, `—` and rejoined the pieces with spaces. Measured against the six known reference lines **before it was pointed at anything unknown**:
+
+| line | first version |
+|---|---|
+| `Undead Legion Series Armory \| Sep 8 - Sep 22` | name kept `"\| Sep 8"`, start **Sep 22**, no end — the split cut the range in half at the pipe and the rejoin destroyed the hyphen |
+| `Ranked Series 12 ends Sep 10` | **no date at all** |
+| `Zombies: Undead Siege returns Sep 20 through Oct 4` | name **empty** |
+
+Two of those three carry a plausible single date and would have read as successes in a table. The rewrite **matches a date expression instead of splitting**, and the expression is built from the month NAMES rather than `[a-z]{3,9}` — the loose version matched `"Series 12"` in `"Ranked Series 12 ends Sep 10"` and dated the row to nothing. **A parser that finds a date in a serial number is worse than one that finds none, because the wrong answer is the one you act on.**
+
+**Falsifiers it must answer NO to, and does:** an empty line · a line with no date · `"Ranked Series 12"` alone · `"purple monkey dishwasher"` · a reversed range (`Sep 22 - Sep 8`). All five return `null`.
+
+🔴 **AND THE FALLBACK WAS AN ARRAY INDEX.** `KIND[3]` meant "a new draw" until a `ranked` entry was inserted above it, at which point every unrecognised line silently became a **draw window** — no error, plausible output, wrong answer. It looks up by key now. An index into a list that is expected to grow is a reference nothing checks.
+
+### 16.13 The chart aesthetic — and the canvas glyph that was built and deleted
+
+He rejected the season-shape glyph as INFORMATION (*"so useless and tells me nothing"*) and kept its LOOK: *"i like the chart design and want it's aesthetic implemented to some areas of the Analytics realm, based on your decision of wherever it would look nice."*
+
+⚠️ **My first call was a canvas density glyph on the ack distribution, and it was wrong.** It was built, rendered, and deleted after looking at it: **the reference reads as a shape because it is twenty-eight narrow bars**, and seven buckets drawn the same way is one green block beside six invisible slivers. Same code, nothing like the picture. The aesthetic is portable; the cardinality is not, and only opening the page said so.
+
+**Where it landed instead — all five bar groups in Analytics, not one canvas:**
+- the fill **fades along the bar** instead of ending flat, so length reads as a quantity rather than as a block;
+- a hairline sits under each track, which is what makes a row read as an axis;
+- 🔴 **an empty slot is DRAWN** — a warn sliver at the baseline. That is the one idea in the reference worth more than its look: **the gap is the information.** *"5 of 7 buckets are empty, including the one past the deadline"* is the reading of the ack panel, and an em-dash in a table cell was not saying it.
+
+🔮 **Offered and NOT built, because it is a new derivation rather than a restyle:** the collapsed Playlists strip is 14 bare ticks and a stated "7 at peak". Computing per-day concurrency and drawing it with this treatment would make the peak visible instead of asserted. It needs its own yes.
+
+### 16.14 🔴 THE TRACK'S DEADLINE MARKERS — the line was drawing the wrong boundary
+
+His words: *"why do they even have a line going down into the track? How is that helpful to anyone?"*
+
+**The comfortable defence is the textbook one** — a vertical rule lets you see which bars cross the deadline — and it is the one to attack hardest. It fails three ways here:
+
+1. **The page already answers it.** `FLAGS` in the masthead, the Repairs view and the Manifest's WINDOW column all state which items run past the season. A visual affordance whose output is a worse copy of a computed answer is a ritual, not information.
+2. 🔴 **It drew the WRONG boundary.** `seasonEnd()` deliberately takes the **last** of the three deadlines. The line was drawn at the **first**. So the full-height rule invited you to eyeball a boundary the page's own conflict rule does not use.
+3. 🔴 **Measured 2026-08-25 16:1x EDT: `.dend` returned TWO elements at the SAME x (1016)** — `rgb(242,153,74)` and `rgb(255,52,48)`, both at `opacity:.5` — so one date rendered as two overlapping half-transparent lines whose visible colour is whichever painted last, plus a **third** rendering, the chip's amber stem. §5.9c.6 fixed "two chips for one date" by grouping and **left the LINE ungrouped: the identical modelling error survived one layer down and was on screen for days.**
+
+**What replaces it:**
+
+| element | rule |
+|---|---|
+| `.dnotch` | **ONE notch per DATE**, at the top of the plot, with one stop per deadline sharing that date. A deadline marks its own coordinate on the axis it belongs to and does not cross content it makes no claim about |
+| `.oos` | 🔴 **THE BOUNDARY IS A REGION, NOT AN EDGE.** Past `seasonEnd()` the plot is OUT OF SEASON and now looks it — hatched, not flat-grey, because a plain wash reads as *disabled* and this area is not switched off. ⚠️ It renders from the **LAST** deadline, so it agrees with the flag count on the same screen |
+| `.dpin` | On today's data the boundary is Nov 11, 51 days beyond the view, so **`.oos` does not render at all** — and that is the point. The picture stops asserting a boundary that is not there, and the pin ("DMZ NOV 11 · 51d beyond this view") is promoted from a footnote to the boundary's stand-in |
+| `markFlagged()` | Every finding marks the BAR it is about. Two large cards under the plot named two bars and pointed at neither — affordance-distance at reading distance instead of scroll distance. 🔴 **The count is reported, not assumed**: a flag whose bar cannot be found warns in the console, because a selector that matches nothing fails silently forever and this file has already paid for that twice |
+| `.ruler span.masked` | ⚠️ **The mask used to hide the whole tick.** Measured: `Aug 25` was in the DOM and invisible on screen, so the ruler ran Aug 18 → [gap] → Sep 1 under the NOW pill. **A ruler's regularity IS its legibility.** The LABEL is the redundant half (NOW's own chip already states that date); the tick mark is the axis. Only the text is hidden — and via `display:none` on a child element, because `color:transparent` failed the contrast rule at 1.25:1 and was right to: **invisible text is still text.** |
+
+⬇️ **DROPPED AFTER MEASURING:** *"bars run off the right edge with no indication they continue."* `clipped: []` — no bar touches either plot edge, at this zoom, on this data. I was one edit from shipping a fix for a defect that does not reproduce.
+
+### 16.15 The backtick trap, occurrences seven through nine
+
+**A backtick inside an HTML comment inside a template literal ends the literal and kills the page.** It fired three more times today — twice inside the comment documenting the account-panel redesign, and once inside the comment explaining why the deadline line was removed. `portal:refs` lints for it and cannot catch an edit that has not been run yet.
+
+**The sweep that ends it:** every HTML comment in `docs/superpowers/mockups/2026-08-23-portal-interactive/season.html` was passed through a regex that replaces backticks with quotes inside `<!-- … -->` only. Do the same before committing any comment written inside a template literal.
+
+### 16.16 🔴 A HELPER PRINTED A TICK FOR EVERY EDIT WHILE GROWING THE FILE TO 11.9MB
+
+A one-off script removed seven dead CSS rules by finding each selector and scanning for its closing brace with `while s.count('}', i, j) < s.count('{', i, j)`. **Python's slice excludes `j`**, so the condition was always one short and the scan ran off the end of the file. `find` returned `-1`, `end` became `0`, and the write was `s[:i] + s[0:]` — **prepending a copy of the entire file.** Seven times, doubling each pass: 128 copies, **11,876,600 characters**, and a tick printed for every one.
+
+**Recovered losslessly** because each pass only ever *prepended*, so the final string still ended with the original in full: `dmg[dmg.rfind(head[:120]):]` returned exactly the pre-edit content plus this session's three appends, verified by `git diff --stat` reading `359 insertions(+), 0 deletions`.
+
+**The rewrite scans real brace DEPTH and asserts a bound** (`end - i < 600`), so a runaway is a loud failure instead of a silent duplication. ⚠️ **The only reason this was caught is that the script printed its byte delta** and the number was negative. A helper that reports "✓ removed 7 rules" and nothing else would have committed 11.9MB.
+
+⚠️ **And a second lesson inside it:** `wc -c` reports BYTES and Python `len()` counts CHARACTERS. This file is full of `═`, `🔴` and `—`, so the two differ by ~4%. The recovery briefly looked wrong because a 285,115-character result was compared against a 285,207-byte measurement.

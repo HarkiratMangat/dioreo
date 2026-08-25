@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
+<link rel="stylesheet" href="assets/tokens.css?v=1787690278"><link rel="stylesheet" href="assets/app.css?v=1787690278">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -81,14 +81,14 @@
         <span class="job">Everything scheduled this season on one axis &mdash; and whether it still fits inside the season&rsquo;s own deadlines.</span>
       </div>
       <div class="mh-stats">
-        <span class="stat"><span class="v" id="sDays"></span> <span class="k">days left</span></span>
+        <span class="stat lead" style="--c:var(--r-season)"><span class="v" id="sDays"></span> <span class="k">days left</span></span>
         <span class="stat"><span class="v" id="sLive"></span> <span class="k">live now</span></span>
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">flags</span></span>
       </div>
       <!-- 🔴 CREATION AT THE TOP OF THE PAGE. Measured before this existed: Season's three
            create controls sat at 1464px, 3548px and 3551px inside an 828px viewport — the
-           primary one 4.3 screens down. The portal's whole claim over `/manage` is that
+           primary one 4.3 screens down. The portal's whole claim over "/manage" is that
            creating is easier here, and the control was the hardest thing on the page to find. -->
       <!-- 🔴 A BEAUTIFUL BUTTON WHOSE ONLY JOB WAS TO REVEAL SIX MORE BUTTONS. Two clicks to
            begin, and the realm's vocabulary hidden behind the first one. The six types ARE the
@@ -104,7 +104,7 @@
            can drift. Export sits on its own row rather than inside the Add group because it
            is not a thing you are adding — in the group, the row read as seven creation
            buttons one of which did the opposite. -->
-      <!-- The composer renders HERE, in the page. Not a modal: `/manage` creates through a
+      <!-- The composer renders HERE, in the page. Not a modal: "/manage" creates through a
            Discord modal, and reproducing that shape reproduces the thing this is meant to beat. -->
       <section class="nwhost" id="nwHost" hidden aria-label="Add to the season"></section>
     </div>
@@ -218,9 +218,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787682722"></script>
-<script src="assets/timeline.js?v=1787682722"></script>
-<script src="assets/shell.js?v=1787682722"></script>
+<script src="assets/fixtures.js?v=1787690278"></script>
+<script src="assets/timeline.js?v=1787690278"></script>
+<script src="assets/shell.js?v=1787690278"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -849,13 +849,18 @@
           <div class="ov" id="ov"></div>
         </div>
       </div></div>
-      <div class="flags">${flags.length ? flags.map(f => `
-        <span class="flag ${f.sev === 'info' ? 'info' : ''}">${f.text}
+      <!-- ⚠️ TWO LARGE CARDS UNDER THE PLOT, DESCRIBING THE PAIR OF BARS DIRECTLY ABOVE THEM AND
+           POINTING AT NEITHER — the affordance-distance shape again, at reading distance instead
+           of scroll distance. The finding now marks the BAR it is about (see markFlagged below)
+           and the strip collapses to one line per finding. -->
+      <div class="flags tight">${flags.length ? flags.map(f => `
+        <span class="flag ${f.sev === 'info' ? 'info' : ''}" data-flagid="${f.id}">${f.text}
           <button data-fix="${f.id}">${f.fix}</button></span>`).join('')
         : `<span class="flag info" style="border-left-color:var(--ok)">No conflicts, overlaps or gaps in the current window.</span>`}</div>`
       + renderRecord();
 
     renderRuler(); renderOverlay(); renderScrub(); wireTrack(); pinClippedLabels(); renderKey();
+    markFlagged(flags);
     /* 🔴 EVERY MEASURING PASS LIVED IN repositionBars(), WHICH DOES NOT RUN ON FIRST PAINT — so a
      * freshly loaded Track showed "We⋮ We⋮ We⋮ We⋮" where five event labels belong, and only a
      * zoom or a drag ever corrected it. I had "verified" the label fix by clicking zoom FIRST,
@@ -897,7 +902,7 @@
     const w = ruler.getBoundingClientRect().width || 1100;
     ruler.innerHTML = T.ticks(st.view, tickStep(st.view.span(), w)).map(t =>
       `<span style="left:${t.x}%" data-date="${t.iso || st.view.dateAt(t.x)}"
-             role="button" tabindex="0" title="What runs on this day">${t.label}</span>`).join('');
+             role="button" tabindex="0" title="What runs on this day"><b>${t.label}</b></span>`).join('');
     ruler.querySelectorAll('span').forEach(sp => {
       sp.addEventListener('click', e => { e.stopPropagation(); openDay(sp.dataset.date); });
       sp.addEventListener('keydown', e => {
@@ -933,7 +938,7 @@
                <span>End date is <b>TBD</b> — known to be undecided, not merely unset</span></label>
              <p class="dw-p" style="margin-top:14px;color:var(--ink3)">
                ${o[L.tbdKey] ? 'Nothing is bounded by a TBD deadline.'
-                 : `${st.items.filter(i => o[L.endKey] && T.days(i.end, o[L.endKey]) < 0).length} item(s) currently run past this date.`}</p>`,
+                 : (n => `${n} ${S.plural(n, 'items')} currently run past this date.`)(st.items.filter(i => o[L.endKey] && T.days(i.end, o[L.endKey]) < 0).length)}</p>`,
       actions: `<button class="btn" onclick="Shell.closeDrawer()">Cancel</button>
                 <button class="btn go" id="dwsave">Stage this change</button>`
     });
@@ -968,13 +973,53 @@
            It was homeless: an element whose position was whatever its own CSS said, in a band
            nothing owned. NOW is one object now — the line, the pill and the time. -->
       <div class="now" style="left:${v.pct(F.today)}%" data-now="NOW ${clockText()}"></div>
-      ${F.LINES.map(L => {
-          const o = st.season;
-          if (o[L.tbdKey] || !o[L.endKey]) return '';
-          const x = v.pct(o[L.endKey]);
-          if (x < -2 || x > 102) return '';
-          return `<div class="dend" data-line="${L.key}" style="--c:${L.hex};left:${x}%"></div>`;
-        }).join('')}`;
+      <!-- 🔴 THE FULL-HEIGHT DEADLINE LINE IS GONE, AND NOT BECAUSE IT LOOKED BUSY.
+           Harkirat: "why do they even have a line going down into the track? How is that helpful
+           to anyone?" The comfortable defence is the textbook one — a vertical rule lets you see
+           which bars cross the deadline — and it fails three ways here:
+             · THE PAGE ALREADY ANSWERS IT. FLAGS in the masthead, the Repairs view and the
+               Manifest's WINDOW column all state which items run past the season. A visual
+               affordance whose output is a worse copy of a computed answer is a ritual.
+             · IT DREW THE WRONG BOUNDARY. "seasonEnd()" deliberately takes the LAST of the three
+               deadlines ("an item running past BP but inside Ranked is not a conflict") — so the
+               line at Sep 10, the FIRST deadline, invited you to eyeball a boundary the page's
+               own conflict rule does not use.
+             · MEASURED 2026-08-25 16:1x EDT: ".dend" returned TWO elements at the SAME x (1016),
+               "rgb(242,153,74)" and "rgb(255,52,48)", both at opacity .5, so one date rendered as
+               two overlapping half-transparent lines whose visible colour is whichever painted
+               last — plus a THIRD rendering, the chip's amber stem. §5.9c.6 fixed "two chips for
+               one date" by grouping and left the LINE ungrouped: the identical modelling error
+               survived one layer down and was on screen for days.
+           What replaces it: ONE notch per DATE at the top of the plot. A deadline marks its own
+           coordinate on the axis it belongs to; it does not cross content it makes no claim about. -->
+      ${(() => {
+          const o = st.season, byDate = {};
+          F.LINES.forEach(L => { if (o[L.tbdKey] || !o[L.endKey]) return;
+            (byDate[o[L.endKey]] = byDate[o[L.endKey]] || []).push(L); });
+          return Object.entries(byDate).map(([date, Ls]) => {
+            const x = v.pct(date);
+            if (x < -2 || x > 102) return '';
+            /* One moment, one mark. Two deadlines on one date share the notch and it carries a
+             * stop for each, so the pair is visible without drawing the date twice. */
+            return `<div class="dnotch" data-date="${date}" data-line="${Ls[0].key}"
+                        style="--c:${Ls[0].hex};left:${x}%">${
+                      Ls.map(L => `<i style="--c:${L.hex}"></i>`).join('')}</div>`;
+          }).join('');
+        })()}
+      <!-- 🔴 THE BOUNDARY IS A REGION, NOT AN EDGE. A boundary separates two territories, and
+           drawing only the edge makes the reader infer them — the modelling error one level up
+           from the one above. Past "seasonEnd()" the plot is OUT OF SEASON and now looks it.
+           ⚠️ It renders from the LAST deadline, so it agrees with the flag count on the same
+           screen. On today's data that is Nov 11, 51 days beyond the view, so NOTHING DRAWS —
+           and that is the point: the picture stops asserting a boundary that is not there, and
+           the ".dpin" chip ("DMZ NOV 11 · 51d beyond this view") is promoted from a footnote to
+           the boundary's stand-in. -->
+      ${(() => {
+          const e = seasonEnd(st.season); if (!e) return '';
+          const x = v.pct(e);
+          if (x >= 100) return '';
+          return `<div class="oos${100 - x >= 14 ? ' wide' : ''}" style="left:${Math.max(0, x)}%" aria-hidden="true"></div>`;
+        })()}`;
 
     /* Labels live on the rail; the line is only the line. */
     const rail = document.getElementById('deadrail');
@@ -1084,15 +1129,32 @@
     });
   }
 
+  /* Put every finding ON the thing it is about. A notice 40px below the plot that names two
+   * bars and points at neither is the same defect as an action bar 1,682px below the fold.
+   * 🔴 THE COUNT IS REPORTED, NOT ASSUMED. A selector that matches nothing fails silently
+   * forever — this file has already paid for that twice (`.dend .dflag`, and the `.cn.bad ~ *`
+   * meter rule) — so a flag whose bar cannot be found says so in the console instead of
+   * quietly marking nothing. */
+  function markFlagged(flags) {
+    viewTrack.querySelectorAll('.bar.flagged,.pt.flagged').forEach(b => b.classList.remove('flagged'));
+    let hit = 0, miss = 0;
+    (flags || []).filter(f => f.sev !== 'info').forEach(f => {
+      const id = String(f.id).replace(/^(ovl|past|gap)-/, '');
+      const el = viewTrack.querySelector(`.bar[data-id="${id}"], .pt[data-id="${id}"]`);
+      if (el) { el.classList.add('flagged'); el.dataset.flagid = f.id; hit++; } else miss++;
+    });
+    if (miss && !hit) console.warn(`[dioreo] markFlagged matched 0 of ${miss} findings — the bar selector is wrong, not the data.`);
+  }
+
   function maskCollidingTicks() {
-    viewTrack.querySelectorAll('.dend').forEach(m =>
+    viewTrack.querySelectorAll('.dnotch').forEach(m =>
       m.classList.toggle('at-edge', parseFloat(m.style.left) > 88));
 
     /* Two DEADLINES can also collide with each other — Battle Pass Sep 4 and Ranked Sep 8 sit
      * four days apart, so at a season-wide zoom their chips overlapped and neither was readable.
      * Masking cannot help here: unlike a ruler tick, neither caption is redundant. So stack
      * them instead, left-to-right, dropping each one that would overlap the row above. */
-    const marks = [...viewTrack.querySelectorAll('.dend')]
+    const marks = [...viewTrack.querySelectorAll('.dnotch')]
       .sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
     const rows = [];                                   // rows[i] = right edge occupied on that row
     marks.forEach(m => {
@@ -1103,6 +1165,11 @@
       if (lvl) m.classList.add('lvl' + Math.min(lvl, 3));
     });
 
+    /* ⚠️ THE MASK USED TO HIDE THE WHOLE TICK, AND A RULER WITH A MISSING GRADATION READS AS A
+     * RENDERING FAULT. Measured: `Aug 25` was present in the DOM and invisible on screen, so the
+     * ruler ran Aug 18 → [gap] → Sep 1 under the NOW pill. A ruler's regularity IS its
+     * legibility. The LABEL is the redundant half (NOW's own chip already states the date); the
+     * tick mark is the axis. `.masked` now hides only the text. */
     const boxes = [...viewTrack.querySelectorAll('.now')].map(captionBox);
     viewTrack.querySelectorAll('#ruler span').forEach(t => {
       const r = t.getBoundingClientRect();
@@ -1177,7 +1244,9 @@
      * independently editable, so each is independently draggable. */
     viewTrack.querySelectorAll('.dflag').forEach(m => {
       const L = F.LINES.find(l => l.key === m.dataset.line);
-      const line = viewTrack.querySelector(`.dend[data-line="${L.key}"]`);
+      /* Keyed by DATE, because the notch is grouped by date — two deadlines that share a day
+       * share one notch, so looking it up by line key would miss it for the second of the pair. */
+      const line = viewTrack.querySelector(`.dnotch[data-date="${st.season[L.endKey]}"]`);
       const orig = st.season[L.endKey];
       T.drag(m, { pxPerDay,
         onMove: (d, ev) => {
@@ -1849,7 +1918,7 @@
     if (id.startsWith('past-')) {
       const it = st.items.find(x => x.id === id.slice(5));
       it.end = seasonEnd(st.season);
-      S.Store.add({ id:'fix-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'clamped to season end' });
+      S.Store.add({ id:'fix-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'shortened to the season end' });
       S.toast(`${it.name} now ends ${T.fmt(it.end)}.`);
     } else if (id.startsWith('gap-')) {
       const it = st.items.find(x => x.id === id.slice(4));
@@ -1911,9 +1980,25 @@
     lane.scrollIntoView({ block:'nearest' });
   }
 
+  /* ⌘K stages straight from one typed line, using the same parser as the paste field. It is
+   * registered per realm because the OP is per realm — the command bar itself knows nothing
+   * about draws, which is what keeps it a shell control rather than a Season feature. */
+  S.registerCommandStage(r => { addItem(r.kind, r.name, r.start, r.end || r.start);
+    S.toast('Staged ' + r.kindLabel.toLowerCase() + ' · ' + r.name + '.'); });
+
   function openComposer(pre) {
     const stage = ({ type, name, a, b }) => { drawComposeGhost(null); addItem(type, name, a, b); };
     stage.live = drawComposeGhost;
+    /* 🔴 THE ONE THAT CHANGES HOW THE JOB FEELS — "I pasted the patch notes and it filled in
+     * the season." Six lines in six different shapes become six staged items, each with its
+     * own op and tier, none of them live until Review. It reuses `addItem` rather than writing
+     * its own path, so a pasted draw and a typed draw are the same record by construction and
+     * cannot drift into two shapes of the same thing. */
+    stage.bulk = rows => {
+      drawComposeGhost(null);
+      rows.forEach(r => addItem(r.kind, r.name, r.start, r.end || r.start));
+      S.toast(rows.length + ' item' + (rows.length === 1 ? '' : 's') + ' staged from what you pasted.');
+    };
     S.compose({
       eyebrow: 'season · create', title: 'Add to the season',
       types: COMPOSE_TYPES(), initial: pre || {},
@@ -2257,7 +2342,7 @@
             ? `<span class="warnmark" data-tip="Ends after the season does">!</span>` : ''}
           <span class="stt ${s}" style="--c:${accentOf(i.type)};--ci:${S.inkOn(accentOf(i.type))}">${STATE_LABEL[s]}</span></td>
         ${S.removeCell(i.name)}</tr>`;
-    }).join('') : `<tr><td colspan="8"><div class="empty"><b>Nothing matches</b>Clear the search or a filter chip.</div></td></tr>`;
+    }).join('') : `<tr><td colspan="8"><div class="empty"><b>Nothing matches${st.q ? ' \u201c' + st.q + '\u201d' : ' this filter'}.</b>Clear the search or a filter chip &mdash; ${st.items.length} items exist in this season.</div></td></tr>`;
     cbAll.classList.toggle('on', v.length > 0 && v.every(i => st.selected.has(i.id)));
     renderBulk();
     rows.querySelectorAll('tr[data-id]').forEach(tr => {
@@ -2338,7 +2423,7 @@
    * you asked for is worse than one that names its shape. */
   function manifestText(list){
     return ['# Dioreo — season manifest export',
-            '# ' + list.length + ' item(s) · ' + new Date().toISOString(),
+            '# ' + list.length + ' ' + S.plural(list.length, 'items') + ' · ' + new Date().toISOString(),
             '# Tab-separated. This is the manifest view, not a bulk-add format —',
             '# use Export by type below for text that pastes back into /manage.',
             ['NAME','TYPE','START','END','DETAIL','STATE'].join('\t')]
@@ -2487,7 +2572,7 @@
           onRun(){ stageOneWay('patchnote.purge', 'season.patchNotes', 'Patch notes purged', F.patchNotes.length + ' entries'); } },
         { id:'start-new', title:'Start a new season', op:'season.startNew', scope:'season.all',
           confirmWord:'NEW SEASON', count:st.items.length, unit:'items',
-          note:'Clears draws, calendar and titles together and opens an empty season. The single widest thing the portal can do.',
+          note:'Clears draws, calendar and titles together and opens an empty season.',
           onRun(){ stageOneWay('season.startNew', 'season.all', 'New season started', 'everything on the Track'); } }
       ]
     });
@@ -2637,8 +2722,15 @@
   };
 
   function renderStats() {
-    const e = seasonEnd(st.season);
-    sDays.textContent  = e ? Math.max(0, T.days(F.today, e)) : 'TBD';
+    /* ⚠️ NOT `seasonEnd()`. That takes the LAST deadline, which is right for the conflict
+     * predicate it exists for and wrong here: this masthead read 79 (dmz, Nov 11) while the
+     * Live-season strip directly beneath it read "battle pass Sep 10 · 17 days left". One
+     * quantity, two authorities, three lines apart. The shared helper answers "how long is
+     * left" from the FIRST deadline and names which one, so the figure and the strip agree. */
+    const dl = S.seasonDaysLeft(st.season, F.today);
+    sDays.textContent  = dl.days === null ? 'TBD' : dl.days;
+    const kDays = sDays.parentElement.querySelector('.k');
+    if (kDays) kDays.textContent = dl.days === null ? 'days left' : 'days left · ' + dl.label;
     sLive.textContent  = st.items.filter(i => lifecycle(i) === 'live').length;
     sFlags.textContent = computeFlags().length;
     /* The `.zero` class is Shell.zeroStats()'s job now — it observes the stat block, so every
@@ -2701,7 +2793,7 @@
     viewRepairs.querySelectorAll('[data-hit]').forEach(li => li.onclick = () => {
       const it = st.items.find(x => x.id === li.dataset.hit);
       if (it) { setMode('track'); openItem(it.id); }
-      else S.toast('That finding is on the season document itself, not on a single item — the banners live in Identity, above.');
+      else S.toast('That finding is on the season itself, not on a single item — its dates and titles are in Season identity, above.');
     });
   }
 

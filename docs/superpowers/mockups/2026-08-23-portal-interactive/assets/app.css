@@ -1176,8 +1176,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   box-shadow:0 2px 8px -4px rgba(0,0,0,.8)}
 .dflag:hover,.dflag:focus-visible{background:var(--hi);z-index:3}
 .dflag.dragging{background:var(--hi);z-index:4}
-.dflag .dfl{font-weight:700}
-.dflag .dfd{color:var(--ink3);font-weight:500}
+.dflag .dfl{font-weight:700;color:var(--ink)}
+.dflag .dfd{color:var(--ink2);font-weight:500}
 .dflag.lvl1,.dspan.lvl1{top:21px}
 .dflag.lvl2,.dspan.lvl2{top:42px}
 /* the span reads as a bracket over a range, not as a chip at a point */
@@ -1282,21 +1282,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:60;overflow:hidden;
   box-shadow:0 20px 48px -14px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03)}
 .umenu[hidden]{display:none}
-.uhead{display:flex;gap:11px;align-items:center;padding:14px 14px 13px;
-  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent)}
 .uav{position:relative;width:38px;height:38px;border-radius:var(--rad-round);flex:none;display:grid;place-items:center;
   background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
-.uav b{font:700 15px/1 var(--ui);color:var(--ink);letter-spacing:-.02em}
-.uav .pres{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:var(--rad-round);
-  background:var(--ok);border:2.5px solid var(--raised)}
-.uinfo{min-width:0;display:flex;flex-direction:column;gap:3px}
-.uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
-.uinfo .nm{font:600 14px/1.2 var(--ui);color:var(--ink);overflow:hidden;text-overflow:ellipsis}
 .rolebadge{flex:none;font:700 8px/1 var(--data);letter-spacing:.1em;color:var(--patch);
   border:1px solid rgba(242,194,48,.45);background:rgba(242,194,48,.1);border-radius:var(--rad-1);padding:2.5px 5px}
-.uinfo .id{font-family:var(--data);font-size:10px;color:var(--ink3);letter-spacing:.02em;
-  overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .usec{padding:5px;border-top:1px solid var(--rule)}
 .usec.last{background:rgba(255,107,107,.03)}
 .umenu .mi{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;
@@ -2701,7 +2691,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent);mask-image:linear-gradient(90deg,#000 78%,transparent)}
 .bar.ended{background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
 .nscard.over{opacity:.62}
-.nspin.warn{background:rgba(242,153,74,.14);border-color:rgba(242,153,74,.4);color:var(--warn)}
+.nspin.warn{background:rgba(242,153,74,.14);border-color:rgba(242,153,74,.4);color:var(--warn-ink)}
 .callout{margin:0;padding:12px 16px;font-size:12.5px;line-height:1.55;color:var(--ink2);
   border-left:3px solid var(--warn);background:rgba(242,153,74,.05)}
 .callout b{color:var(--ink)}
@@ -2755,22 +2745,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    borrowed from, overlaps only the AVATAR and puts the name on solid ground below; that is the
    half that makes it work and it was the half I dropped. Now: the avatar overlaps, the text does
    not, and the banner carries a real gradient scrim regardless of what is in the image. */
-.umenu .uhead{position:relative;margin-top:0;padding:0 13px 12px;display:flex;align-items:flex-start;gap:11px;
-  background:var(--raised)}
-.umenu .uav{margin-top:-24px}
+.umenu .umenu .uav{margin-top:-24px}
 .umenu .uav{width:46px;height:46px;border-radius:var(--rad-round);flex:none;position:relative;
   background:var(--av-src) center/cover no-repeat,var(--sunk);
   border:3px solid var(--raised);box-shadow:0 2px 10px -3px rgba(0,0,0,.7)}
 /* The dot used to hang half outside the ring at right:-1px/bottom:-1px. Placed on the circle
    instead of beside it: 14.6% in from each edge is where a 46px ring's own curve puts it. */
-.umenu .uav .pres{position:absolute;right:6.5%;bottom:6.5%;width:13px;height:13px;border-radius:var(--rad-round);
-  background:var(--ok);border:3px solid var(--raised);box-shadow:0 0 0 1px rgba(0,0,0,.35)}
-.umenu .uinfo{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:2px}
-.umenu .uinfo .l1{display:flex;align-items:center;gap:7px;min-width:0}
-.umenu .uinfo .nm{font:600 14px/1.15 var(--ui);color:var(--ink);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.umenu .uinfo .id{font:500 11px/1 var(--mono);color:var(--ink3)}
-/* prefers-reduced-motion cannot pause a GIF, so the banner is swapped for a flat wash instead of
+.umenu .umenu .umenu .umenu .umenu /* prefers-reduced-motion cannot pause a GIF, so the banner is swapped for a flat wash instead of
  * left animating under a preference that asks it not to. */
 @media (prefers-reduced-motion:reduce){
   .ubanner{background:linear-gradient(120deg,var(--sunk),var(--raised))}
@@ -3777,3 +3758,542 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
 .trow.tclosed .trow-body{display:none}
 .trow.tclosed .trow-note{display:none}
 @media (prefers-reduced-motion:reduce){ .trow-cv{transition:none} }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * LIVELINESS — eight micro-interactions, on markup that already exists
+ *
+ * Harkirat's definition, which is not the one I first reached for: liveliness is FEEL —
+ * "subtle glows, tints, animations upon clicking, elements dynamically changing on
+ * behaviour" — and magic is CAPABILITY. My first pass proposed cursor glow, count-up
+ * figures and film grain and was called "lame and boring", correctly: not one of the four
+ * could only exist in THIS product. These eight can, because every one of them is the
+ * portal's own vocabulary moving — topic colour, staged cyan, the realm rail, a row that
+ * was just staged.
+ *
+ * 🔴 NOTHING HERE CHANGES A LAYOUT, A VALUE OR A DATA PATH. They are transforms, tints and
+ * opacity on existing elements, so no audit rule and no gate can be broken by them — which
+ * is also why the whole set is affordable at once.
+ * 🔴 EVERY ANIMATION IS COVERED BY THE GLOBAL prefers-reduced-motion KILL at the top of this
+ * file (`*{transition:none!important;animation:none!important}`). Audit rule 14 checks the
+ * relationship; do not add a bare `animation:` outside that reach.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · PRESS HAS WEIGHT ──────────────────────────────────────────────────
+ * Every control in the portal answered a click with nothing at all until the result
+ * arrived — which on a staged op is a toast 300ms later, so the button felt dead in the
+ * only window where a person is still asking "did that land?". One transform, no colour
+ * change, so it costs nothing on a control that already carries a state colour. */
+button,.pill,.chip,.btn,.mi,.realm,.hcard,.att-row{transition:transform var(--dur-1) var(--ease),
+  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
+button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+  transform:translateY(var(--press)) scale(.985)}
+/* A card is a bigger surface, so the same 1px reads as less — it takes the scale only. */
+.hcard:active,.att-row:active{transform:scale(.994)}
+
+/* ── 2 · THE CHANGE THAT JUST LANDED ───────────────────────────────────────
+ * A row that has just been staged tints its own TOPIC colour once and lets go. The portal
+ * stages constantly and the only acknowledgement was a toast at the bottom of the screen,
+ * 600px from the row you were looking at — so the answer to "which one did I just change?"
+ * lived nowhere near the change. `--c` is already set per-row on every topic surface. */
+@keyframes landed{
+  0%  {background:color-mix(in srgb,var(--c,var(--staged)) 26%,transparent)}
+  55% {background:color-mix(in srgb,var(--c,var(--staged)) 16%,transparent)}
+  100%{background:transparent}
+}
+.landed{animation:landed 1.5s var(--ease-soft)}
+
+/* ── 3 · TOPIC TINT ON TOUCH ───────────────────────────────────────────────
+ * Hover carries the lane's colour, not a grey wash. Grey hover says "this is a control";
+ * topic hover says "this is a control FOR THAT". One rule, because every filter, lane and
+ * category chip in the portal already declares --c. */
+.tint{transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.tint:hover{background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-hover),transparent)}
+.tint:focus-visible{background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-hover),transparent)}
+
+/* ── 4 · CARDS LIFT — AND THE LIFTED STATE CARRIES COLOUR ──────────────────
+ * ⚠️ Harkirat: "cards lift needs some kind of colour even on the lifted card." A coloured
+ * SHADOW would not have answered that — a shadow is still under the card. The colour goes
+ * on the PLANE: a topic tint in the surface, and a hairline top edge in the topic colour.
+ * 🔴 That hairline is the one piece of the rejected "light model" that survives, and it
+ * survives for the opposite reason: as a permanent global treatment it measured redundant
+ * (the portal's five surfaces already separate by 6–34 RGB steps and every panel already
+ * carries a 58-step border), but as a hover-only cue it is the thing that says WHICH card
+ * is lifted, which nothing else in the frame says. */
+.lift{transition:transform var(--dur-2) var(--ease),background var(--dur-2) var(--ease),
+  box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)}
+.lift:hover,.lift:focus-visible{
+  transform:translateY(calc(var(--lift) * -1));
+  background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-lift),var(--paper));
+  border-color:color-mix(in srgb,var(--c,var(--patch)) 42%,var(--rule2));
+  box-shadow:0 10px 26px -14px #000,inset 0 1px 0 0 color-mix(in srgb,var(--c,var(--patch)) 55%,transparent)}
+
+/* ── 5 · FIGURES ROLL, AND SHOW THE DELTA ──────────────────────────────────
+ * You see the number CHANGE rather than a re-render. The delta ghost is the half that
+ * matters: a figure that silently reads 40 instead of 39 tells you the new value and
+ * hides the event. Driven by Shell.setFigure. */
+@keyframes figRoll{0%{transform:translateY(0);opacity:1}
+  45%{transform:translateY(-42%);opacity:0}
+  55%{transform:translateY(42%);opacity:0}
+  100%{transform:translateY(0);opacity:1}}
+.mh-stats .v.rolling{animation:figRoll .42s var(--ease)}
+.mh-stats .stat{position:relative}
+.fdelta{position:absolute;left:0;bottom:calc(100% - 4px);font:600 var(--t-micro)/1 var(--data);
+  letter-spacing:var(--tr-micro);pointer-events:none;white-space:nowrap}
+.fdelta.up{color:var(--staged)} .fdelta.down{color:var(--ink3)}
+@keyframes fdrift{from{opacity:0;transform:translateY(6px)}
+  25%{opacity:1;transform:translateY(0)}
+  to{opacity:0;transform:translateY(-9px)}}
+.fdelta{animation:fdrift 1.3s var(--ease-soft) forwards}
+.masthead .mh-stats .stat{align-items:flex-end}
+.masthead .fdelta{left:auto;right:0}
+
+/* ── 6 · THE RAIL FILLS ────────────────────────────────────────────────────
+ * The realm's own colour washes in behind the item, so the rail previews where you are
+ * about to be. --c is set per item by Shell.mountRail from the realm accent tokens. */
+.realm{transition:color var(--dur-1) var(--ease),background var(--dur-2) var(--ease)}
+.realm:hover{color:var(--ink);background:linear-gradient(90deg,
+  color-mix(in srgb,var(--c,var(--patch)) 20%,transparent),
+  color-mix(in srgb,var(--c,var(--patch)) 4%,transparent))}
+.realm:hover svg{color:var(--c,var(--patch))}
+.realm[aria-current]::before{background:var(--c,var(--patch))}
+
+/* ── 7 · TOASTS SETTLE ─────────────────────────────────────────────────────
+ * ⚠️ Harkirat: "toasts settle needs a MUCH smoother animation." The old one was
+ * `trayIn .22s` — 220ms of translate+scale on a snappy curve — and it did not leave at
+ * all: `el.remove()` deleted it mid-frame. Three things make it smooth rather than snappy:
+ *   · LONGER travel time (460ms) on a curve with no overshoot spike, so the eye tracks it;
+ *   · opacity finishing EARLY (35%) so the shape is solid while it is still moving —
+ *     a toast that fades and travels together reads as a smear;
+ *   · a separate, FASTER exit that drifts down rather than reversing the entrance.
+ * Only transform and opacity animate, so it stays on the compositor and never repaints. */
+@keyframes toastIn{
+  from{opacity:0;transform:translateX(-50%) translateY(26px) scale(.97)}
+  35% {opacity:1}
+  to  {opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes toastOut{
+  from{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+  to  {opacity:0;transform:translateX(-50%) translateY(10px) scale(.985)}}
+.toast{animation:toastIn var(--dur-toast-in) var(--ease-soft) both;will-change:transform,opacity}
+.toast.leaving{animation:toastOut var(--dur-toast-out) cubic-bezier(.4,0,1,1) both}
+
+/* ── 8 · SELECTION MOVES ───────────────────────────────────────────────────
+ * A chosen row steps out of the stack. Checkbox columns answer "is this ticked" one row at
+ * a time; the eye wants to see the SHAPE of a selection down a 39-row table without reading
+ * any of it. The step is 3px and the edge is the topic colour, so it survives a scroll. */
+.mrow.sel,tr[aria-selected="true"],.selrow{transition:transform var(--dur-1) var(--ease),
+  box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.mrow.sel,tr[aria-selected="true"]{transform:translateX(3px);
+  box-shadow:-3px 0 0 0 var(--c,var(--staged));
+  background:color-mix(in srgb,var(--c,var(--staged)) 7%,transparent)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE MASTHEAD FIGURE GRAMMAR — three kinds of number, one costume each
+ *
+ * Harkirat: "can they all have relevant colours, or improve their design in some way."
+ * ⚠️ Taken literally the first half destroys what it is trying to improve — colour every
+ * figure and colour stops carrying information. Three kinds of number were wearing one
+ * costume: a SIZE (125 builds), a STATE (11 need repair), and YOUR OWN WORK (staged).
+ *
+ * 🔴 AND THE GRAMMAR AS FIRST WRITTEN ("a size takes its realm's topic colour") FAILS ON
+ * ITS OWN EXAMPLE. Armory's row holds TWO sizes — 125 shown and 64 ranked — so colouring
+ * every size paints three of five figures, two of them the same red, and the topic colour
+ * becomes the row's most common ink. The rule is therefore: the topic colour marks the
+ * LEAD figure, and it marks it BECAUSE it leads, not because it is a size.
+ *
+ *   LEAD   the one number that defines the realm. --t-display, in the realm's own accent.
+ *          Exactly one per masthead — checkable, and checked (audit rule `mh-lead`).
+ *   REST   --t-h1, neutral ink. A supporting figure says its value, not its importance.
+ *   STATE  a state colour ONLY when non-neutral. `NEED REPAIR 11` is warn; `NEED REPAIR 0`
+ *          is `.zero` and dims, because there is nothing there.
+ *   STAGED --staged when non-zero, plain ink at zero, and NEVER `.zero`.
+ *
+ * 🔴 `.zero` MEANT TWO OPPOSITE THINGS and that is the most instructive fault in the row:
+ * dimming is right on `NEED REPAIR 0` (nothing here) and backwards on `STAGED 0`, where a
+ * clean slate is the GOOD state and dimming makes it read as absence rather than as "you
+ * are up to date". One class, two contracts — the same shape as Broadcast's ruler and
+ * Home's repair count, in CSS. The class keeps its single meaning and stops being applied
+ * to the staged figure; `figure-zero` in the audit fails if it comes back.
+ *
+ * A ZERO LEAD keeps its SIZE and drops its COLOUR: size carries the hierarchy, colour
+ * carries the meaning, and "0 live now" in Broadcast yellow is an alert about nothing.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+.mh-stats .stat.lead .v{font-size:var(--t-display);letter-spacing:var(--tr-display);
+  color:var(--c,var(--ink))}
+.mh-stats .stat.lead .k{color:var(--ink2)}
+.mh-stats .stat.lead .v.zero{color:var(--ink);font-size:var(--t-display)}
+.mh-stats .stat:not(.lead) .v{font-size:var(--t-h1);letter-spacing:var(--tr-h1)}
+/* The staged figure is the only one whose APPEARANCE changes when it becomes actionable —
+ * which is the whole reason figure #5 (roll + delta) lands on it first. */
+.mh-stats .stat.stg .v{color:var(--staged)}
+.mh-stats .stat.stg .v.stg-clear{color:var(--ink2)}
+.mh-stats{align-items:baseline;gap:clamp(18px,2.4vw,30px)}
+.mh-stats .stat{align-items:flex-start}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE ATTENTION ROW IS THE TARGET — not a link inside a row
+ *
+ * ⚠️ The comfortable reading of "the underlined buttons look bad" is "remove the
+ * underline", and it hides the real question. THREE affordances were stacked on one
+ * control: a border said BUTTON, an underline said LINK, an arrow said NAVIGATION. Any one
+ * would do. Deleting the text-decoration fixes a third of it.
+ *
+ * 🔴 The larger question is whether that row needs a button at all. Each row already names
+ * one destination and one thing wrong with it — so the ROW is the target. Then the arrow is
+ * the only affordance left, the right column stops being a wall of five near-identical
+ * controls, and the reclaimed width says WHERE it goes instead of pretending to be a verb.
+ *
+ * ⚠️ The cost, stated rather than skipped: a whole-row target is WORSE for keyboard and
+ * screen-reader users if it is a click handler on a div. It is a real <a> wrapping the row,
+ * which puts the rank number and the severity bar inside a link — so both are aria-hidden
+ * and the accessible name is the finding plus its destination ("13 builds need repair,
+ * Armory, Repairs"), which is better than the old link's name ("Armory repairs") on its own.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+a.att-row{display:grid;grid-template-columns:34px 3px 1fr auto;align-items:center;gap:14px;
+  padding:16px 20px;text-decoration:none;color:inherit;border:1px solid var(--rule);
+  border-radius:var(--rad-2);background:var(--paper);margin-bottom:8px}
+a.att-row:hover{background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-hover),var(--paper));
+  border-color:color-mix(in srgb,var(--c,var(--patch)) 40%,var(--rule2))}
+a.att-row:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
+a.att-row .att-b{background:var(--sev,var(--ink4));border-radius:var(--rad-1);align-self:stretch;margin:2px 0}
+a.att-row .att-go{display:inline-flex;align-items:center;gap:7px;font-family:var(--data);
+  font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
+a.att-row:hover .att-go{color:var(--ink2)}
+a.att-row .att-go .arw{transition:transform var(--dur-1) var(--ease)}
+a.att-row:hover .att-go .arw{transform:translateX(3px)}
+/* HOW BAD, in the width the five buttons used to occupy. A count with no comparison is
+ * homework; a count against its own population is a glance. */
+a.att-row .att-sev{font-family:var(--data);font-size:var(--t-sm);color:var(--ink2);
+  font-variant-numeric:tabular-nums}
+a.att-row .att-x b{display:block;font-size:15px;color:var(--ink);font-weight:600}
+a.att-row .att-x em{display:block;font-style:normal;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);margin-top:4px}
+a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);text-align:center}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * HOME — three questions in one screenful
+ *
+ * Harkirat: "its all over the place… i feel like i'd never utilize it." Five ranked
+ * reasons are in COMPANION §5.9z.5; the two structural ones are that the cards and the
+ * attention list were TWO AUTHORITIES OVER ONE QUESTION, and that the page whose whole job
+ * is "what is the state of things" opened with a title and a paragraph and no figures.
+ *
+ * 🔴 THE CARDS ARE GONE AND HOME NOW CARRIES THE RAIL. index.html used to override the
+ * grid to one column under a comment that read: "the rail is the in-realm switcher, and
+ * repeating it on the page whose entire job IS choosing a realm would say the same thing
+ * twice." That reasoning is sound and its PREMISE is what is wrong — Home's own H1 is
+ * "What needs you", not "Choose a realm". The cards existed because Home was believed to be
+ * a directory. With the rail present, navigation is one mechanism in one place on all eight
+ * pages, and Home's body holds only its two real questions. The way back to Home is the
+ * DIOREO/PORTAL mark, which is already a Home button on every page.
+ *
+ * ⚠️ AND THE FIGURES DO NOT REPEAT THE RAIL. The plan said "a compact navigation rail with
+ * one figure and a state dot" — a figure there would have rebuilt the cards-versus-list
+ * defect one level up. The masthead answers THE PORTAL'S STATE (needs you · days left ·
+ * live now · staged); the rail answers WHERE DO I GO, and carries no counts at all.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+.home{padding:0}
+.home .masthead{padding:30px 24px 18px}
+.home h1{margin:0 0 18px}
+/* WHAT IS LIVE — the portal's actual subject, and Home did not answer it at all.
+ * "Is anything wrong" and "what are players seeing" are different questions, so these two
+ * panels are not two authorities: one is exceptions, the other is the current state. */
+.hlive{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--gap);margin:22px 24px 0}
+@media (max-width:900px){.hlive{grid-template-columns:1fr}}
+.hlive .lp{background:var(--paper);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 18px}
+.hlive h2{margin:0 0 3px;font-size:var(--t-sm);font-family:var(--data);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3);font-weight:600}
+.hlive .lsub{margin:0 0 13px;font-size:12px;color:var(--ink3)}
+.lrow{display:grid;grid-template-columns:8px 1fr auto;align-items:baseline;gap:11px;
+  padding:8px 0;border-top:1px solid var(--rule3)}
+.lrow:first-of-type{border-top:0}
+.lrow .ld{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c,var(--ink4));
+  transform:rotate(45deg);align-self:center}
+.lrow .lt{color:var(--ink);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .lw{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  color:var(--ink3);white-space:nowrap;text-transform:uppercase}
+.lrow .lw.hot{color:var(--warn)}
+.hlive .lmore{margin:11px 0 0;font-size:12px;color:var(--ink3)}
+.hlive .lmore a{color:var(--ink2)}
+/* The season frame, stated as a fact rather than a table of three dates. */
+.hseason{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+.hseason b{font-family:var(--title);font-weight:400;font-size:var(--t-h1);color:var(--ink);letter-spacing:var(--tr-title)}
+.hseason span{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.att-list{list-style:none;margin:22px 24px 0;padding:0}
+.home .hres{margin:16px 24px 0}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE ACCOUNT PANEL — who you are · WHAT YOU CAN DO · how long you have · the way out
+ *
+ * Harkirat: "theres so much redundancy and uselessness. Why are the signout buttons 2
+ * different styles? why is the discord id cut off? what's even the point of 'Find a page or
+ * an action / Command palette'?"
+ *
+ * ⚠️ The tidy answers to those four — keep one sign-out, show the id whole, delete the rows,
+ * make the session line live — may all be right and NOT ONE is a design decision. Starting
+ * from what the panel is FOR: in ordinary software an account menu carries switching,
+ * settings, billing, identity and exit. This product has one owner and a handful of admins,
+ * and preferences live in the bot's /settings. Strip those and identity, session and exit
+ * are all that remain.
+ *
+ * 🔴 AND IDENTITY IS ALREADY ANSWERED BEFORE THE PANEL OPENS — the button you clicked IS the
+ * avatar and the name. The old header (avatar again, name, handle) duplicated its own
+ * trigger, and that was the top third of the panel. The identity block now sits ON the
+ * banner, which dissolves the duplication and earns the banner its ~90px: it is the one
+ * personal thing in the portal, and a Discord bot's console looking like Discord's own
+ * account panel is an affinity that is TRUE here rather than borrowed.
+ *
+ * 🔮 WHAT ONLY THIS PANEL CAN SAY, AND DID NOT: what YOU are allowed to do. Twelve
+ * permissions, an owner-only tier, a `destructive` capability only the owner may grant —
+ * and nothing anywhere in the portal tells you which you hold. A delegated admin found out
+ * by clicking something and being refused. It is a row that DOES something (it opens Access
+ * filtered to you), which is also the fix for the panel being five-sixths label.
+ *
+ * 🔴 THE HEADER'S ALLOCATION WAS BACKWARDS: permanent, always-visible space for one of the
+ * rarest acts in the product (who signs out of a single-user admin console kept open in a
+ * tab?) and none for the most frequent (committing staged work). Sign-out moves into the
+ * panel, alone, in one style. ⚠️ The fair counter — a sign-out you cannot see is one a
+ * delegated admin cannot find in a hurry — is answered by making the panel obviously the
+ * account panel, not by a second button in a different colour, which is exactly what taught
+ * that they were two different acts.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+.umenu{width:288px}
+.ubanner{height:74px}
+/* identity ON the banner, not above it */
+.uid{position:relative;margin-top:-30px;padding:0 14px 12px;display:flex;align-items:flex-end;gap:11px}
+.uid .uav{width:46px;height:46px;border-radius:var(--rad-round);border:2px solid var(--paper);
+  background:var(--avatar-a) var(--av-src) center/cover;flex:none}
+.uid .un{min-width:0}
+.uid .un b{display:block;font-size:15px;color:var(--ink);line-height:1.15}
+.uid .un span{display:block;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
+  letter-spacing:var(--tr-micro)}
+.uid .rolebadge{margin-left:auto;align-self:center}
+/* rows that DO something */
+.umenu .mi{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:none;border:0;color:var(--ink2);font-size:13px;text-align:left}
+.umenu .mi:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.umenu .mi .mnote{margin-left:auto;font-family:var(--data);font-size:var(--t-micro);
+  color:var(--ink3);letter-spacing:var(--tr-micro)}
+/* 🔴 THE ID IS SHOWN WHOLE. `1139…2283` elided THE MIDDLE, which is the only part that
+ * distinguishes it from any other snowflake — so the preview could not confirm it was the
+ * right id, which is the entire reason a person looks at it before pasting it into a grant. */
+.umenu .mi .mid{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--ink3);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.umenu .mi svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex:none}
+.ustat{display:flex;align-items:baseline;justify-content:space-between;padding:8px 14px;
+  font-size:12.5px;color:var(--ink3)}
+.ustat b{font-family:var(--data);color:var(--ink2);font-weight:500}
+.ustat b.live{color:var(--ink)}
+.umenu .mi.danger{color:var(--danger-ink)}
+.umenu .mi.danger:hover{background:rgba(255,107,107,.10)}
+/* The header slot the sign-out button used to hold, spent on the most frequent act instead
+ * of the rarest — and ABSENT at zero, so it is never a permanent duplicate of the tray. */
+.hdr-commit{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;
+  border:1px solid color-mix(in srgb,var(--staged) 45%,var(--rule2));border-radius:var(--rad-pill);
+  background:color-mix(in srgb,var(--staged) 12%,transparent);color:var(--ink);font-size:12.5px}
+.hdr-commit b{font-family:var(--display);font-size:15px;color:var(--staged);letter-spacing:var(--tr-fig)}
+.hdr-commit:hover{background:color-mix(in srgb,var(--staged) 20%,transparent)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE CHART AESTHETIC — on the bars Analytics already has
+ *
+ * Harkirat kept the LOOK of the density glyph and rejected its information ("so useless and
+ * tells me nothing"): "i like the chart design and want it's aesthetic implemented to some
+ * areas of the Analytics realm, based on your decision of wherever it would look nice."
+ *
+ * ⚠️ MY FIRST CALL WAS A CANVAS GLYPH ON THE ACK DISTRIBUTION, AND IT WAS WRONG. It was
+ * built, rendered and deleted after looking at it: the reference reads as a SHAPE because it
+ * is twenty-eight narrow bars, and seven buckets drawn the same way is one green block beside
+ * six invisible slivers. Same code, nothing like the picture. The aesthetic is portable; the
+ * cardinality is not, and only opening the page said so.
+ *
+ * Three parts, applied to all five bar groups rather than one canvas:
+ *   · the fill FADES along the bar instead of ending flat, so length reads as a quantity
+ *     rather than as a block;
+ *   · a hairline sits under the track, which is what makes a row read as an axis;
+ *   · 🔴 AN EMPTY SLOT IS DRAWN. That is the one idea in the reference worth more than its
+ *     look — the gap is the information. "5 of 7 buckets are empty, including the one past
+ *     the deadline" is the reading of the ack panel, and an em-dash in a table cell was not
+ *     saying it.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+.ackrow .at i,.durrow .dt2 i,.erow .et i,.inrow .it i{
+  background:linear-gradient(90deg,var(--fill,var(--ev)) 0%,
+    color-mix(in srgb,var(--fill,var(--ev)) 26%,transparent) 100%)}
+.ackrow.danger .at i{--fill:var(--del)}
+.durrow.slow .dt2 i{--fill:var(--warn)}
+.ackrow .at,.durrow .dt2,.erow .et,.inrow .it{box-shadow:inset 0 -1px 0 0 rgba(133,147,159,.22)}
+/* An empty bucket is a mark, not an absence. Painted in the warn colour at the baseline so a
+ * gap is visible at a glance — on this panel the gaps ARE the finding. */
+.ackrow.zero .at::after,.erow.never .et::after{content:"";position:absolute;left:0;right:0;
+  bottom:0;height:3px;background:rgba(255,122,69,.35)}
+.ackrow .at,.erow .et{position:relative}
+.gread{font-size:12.5px;color:var(--ink3);margin:2px 0 14px}
+.gread b{color:var(--ok);font-weight:600}
+.gread em{font-style:normal;color:var(--warn);font-weight:600}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * MAGIC — the surfaces the parser drives
+ * ══════════════════════════════════════════════════════════════════════════════ */
+
+/* PASTE ANYTHING — a field in the composer, not a drawer behind a button. */
+.nw-paste{margin:0 0 12px}
+.pz-in{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
+  color:var(--ink);font:400 12.5px/1.55 var(--data);padding:10px 12px;resize:vertical}
+.pz-in::placeholder{color:var(--ink3);opacity:.65}
+.pz-in:focus{border-color:var(--rule2);outline:none}
+.pz-out{margin-top:10px}
+.pz-rows{border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden}
+.pz-r{display:grid;grid-template-columns:8px 108px 1fr auto;align-items:center;gap:10px;
+  padding:8px 12px;border-top:1px solid var(--rule3);background:var(--sunk)}
+.pz-r:first-child{border-top:0}
+.pz-r .pz-d{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);transform:rotate(45deg)}
+.pz-r .pz-k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.pz-r .pz-n{color:var(--ink);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pz-r .pz-n em{color:var(--ink3);font-style:italic}
+.pz-r .pz-w{font-family:var(--data);font-size:11px;color:var(--ok);white-space:nowrap}
+/* A line the parser could not date is SHOWN, never dropped. A parser that silently discards
+ * what it did not understand is the worst possible version of this feature: you cannot tell
+ * the difference between "it read six lines" and "it read four and threw two away". */
+.pz-r.bad{background:rgba(255,122,69,.06)}
+.pz-r.bad .pz-w{color:var(--warn)}
+.pz-act{display:flex;align-items:center;gap:12px;margin-top:9px}
+.pz-sum{font-size:12px;color:var(--ink3)}
+.pz-act .chip{margin-left:auto}
+
+/* A DATE FIELD THAT UNDERSTANDS — the echo is the trust. Nothing is stored until you can
+ * see what it resolved to, so the feature never has to be believed. */
+.nw-i.nw-smart{font-family:var(--data)}
+.nw-i.unparsed{border-color:color-mix(in srgb,var(--warn) 55%,var(--rule))}
+.nw-date-echo{display:block;margin-top:5px;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:var(--tr-micro);color:var(--ink3);min-height:12px}
+.nw-date-echo.ok{color:var(--ok)}
+.nw-date-echo.bad{color:var(--warn)}
+
+/* ⌘K THAT ACTS — the action row is visibly not a navigation row. */
+.pitem.act{color:var(--ink);font-weight:500}
+.pitem.act i{background:var(--staged)}
+.pitem.act::after{content:"stage";margin-left:auto;font-family:var(--data);font-size:9px;
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--staged)}
+
+/* FIX ALL MECHANICAL — every fix shows its own before → after, and can be unticked.
+ * All-or-nothing on six fixes means one doubtful fix costs the other five, which is what
+ * makes people not press the button at all. */
+.fxlist{border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden;margin-top:6px}
+.fxr{display:grid;grid-template-columns:18px minmax(0,1.1fr) 108px minmax(0,1.4fr);gap:12px;
+  align-items:center;padding:10px 13px;border-top:1px solid var(--rule3);background:var(--sunk);cursor:pointer}
+.fxr:first-child{border-top:0}
+.fxr:hover{background:var(--paper)}
+.fxr .fxb{color:var(--ink);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fxr .fxb em{color:var(--ink3);font-style:normal}
+.fxr .fxf{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.fxd{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);gap:8px;align-items:center;min-width:0}
+.fxwas,.fxnow{font-family:var(--data);font-size:11px;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;padding:3px 7px;border-radius:var(--rad-1)}
+.fxwas{color:var(--ink3);background:rgba(255,107,107,.10);text-decoration:line-through}
+.fxnow{color:var(--ok);background:rgba(61,220,151,.10)}
+.fxar{color:var(--ink3);text-align:center}
+.fxr:has(.fxc:not(:checked)){opacity:.45}
+.fxr:has(.fxc:not(:checked)) .fxnow{background:none;color:var(--ink3)}
+
+/* ── LIVELINESS, APPLIED ────────────────────────────────────────────────────
+ * 🔴 BY SELECTOR, NOT BY ADDING A CLASS AT EVERY CALL SITE. Half of these elements are
+ * built inside template literals across six files; a `.tint`/`.lift` class hand-added to
+ * each one is 40 edits that a new surface then forgets, which is the same per-call-site
+ * failure that produced 29 corner radii and a `.zero` class with two meanings. Anything
+ * that already declares its own `--c` gets the topic hover for free, and the card shapes
+ * are enumerated once here. */
+.pill[style*="--c"]:not(.on):hover,.chip[style*="--c"]:not(.on):hover,
+.nw-chip:not(.on):hover,.lane .nm:hover,button[data-lane]:not(.on):hover{
+  background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-hover),transparent)}
+/* The card shapes, named once. Each already carries a topic colour or falls back to the
+ * signal yellow, and the lifted state gets COLOUR — a tint in the plane and a hairline top
+ * edge — not just a shadow underneath it. */
+.wcard,.ccard,.tile,.hlive .lp,.dcard{transition:transform var(--dur-2) var(--ease),
+  background var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)}
+.wcard:hover,.ccard:hover,.tile:hover,.dcard:hover,
+.wcard:focus-visible,.ccard:focus-visible{
+  transform:translateY(calc(var(--lift) * -1));
+  background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-lift),var(--paper));
+  border-color:color-mix(in srgb,var(--c,var(--patch)) 42%,var(--rule2));
+  box-shadow:0 10px 26px -14px #000,inset 0 1px 0 0 color-mix(in srgb,var(--c,var(--patch)) 55%,transparent)}
+/* 8 · SELECTION MOVES — the checkbox says "is this one ticked" one row at a time; the eye
+ * wants the SHAPE of a selection down a 39-row table without reading any of it. */
+tbody tr:has(.cb.on){transform:translateX(3px);
+  box-shadow:-3px 0 0 0 var(--staged);background:color-mix(in srgb,var(--staged) 7%,transparent)}
+tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),
+  background var(--dur-1) var(--ease)}
+/* The native checkbox arrives in the browser's own blue, which is the one colour in the
+ * portal that belongs to nobody. `accent-color` recolours it without replacing it, so it
+ * keeps every keyboard and assistive behaviour a real checkbox has. */
+.fxc{accent-color:var(--staged);width:15px;height:15px}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE TRACK'S DEADLINE MARKERS — a notch, and a territory
+ *
+ * Harkirat: "why do they even have a line going down into the track? How is that helpful to
+ * anyone?" The full-height `.dend` rule is gone. See the long note in season.html's
+ * renderOverlay for the three reasons; the shortest is that it drew the WRONG boundary — the
+ * first deadline, while the page's own conflict rule uses the last.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+/* The notch marks the deadline's coordinate on the axis and stops. It reaches far enough into
+ * the plot to be unmistakably ON it, and not so far that it reads as a claim about the lanes. */
+.dnotch{position:absolute;top:0;height:15px;width:0;z-index:4;pointer-events:none;
+  border-left:1.5px solid var(--c)}
+/* One stop per deadline sharing the date. Two deadlines on one day are ONE moment — the chip
+ * has said so since §5.9c.6 and the line did not until now. */
+.dnotch i{position:absolute;left:-2.5px;width:5px;height:5px;border-radius:var(--rad-1);
+  background:var(--c);transform:rotate(45deg)}
+.dnotch i:nth-child(1){top:-3px}
+.dnotch i:nth-child(2){top:13px}
+/* OUT OF SEASON. Past the LAST deadline nothing is inside the season any more, and that is a
+ * region rather than an edge. Hatched rather than flat-grey: a plain wash reads as "disabled",
+ * and this area is not switched off — it is beyond the boundary. The edge keeps the deadline's
+ * own colour so the region and its cause are one object. */
+.oos{position:absolute;top:0;bottom:0;right:0;pointer-events:none;z-index:1;
+  border-left:1.5px solid color-mix(in srgb,var(--warn) 60%,transparent);
+  background:repeating-linear-gradient(135deg,
+    rgba(255,122,69,.055) 0 6px, transparent 6px 12px), rgba(11,15,18,.34)}
+.oos{overflow:hidden}
+/* The caption appears only where it FITS — at a wide zoom the region can be 38px and the label
+ * clipped to "OUT OF SEASO", which is worse than no label at all. The hatch already carries the
+ * meaning; the words are the bonus. `.wide` is set from the region's own measured share of the
+ * plot, never from a breakpoint. */
+.oos.wide::after{content:"OUT OF SEASON";position:absolute;top:5px;left:9px;
+  font:600 9px/1 var(--data);letter-spacing:var(--tr-micro);color:var(--warn-ink);opacity:.85}
+/* 🔴 THE LABEL IS THE REDUNDANT HALF, NOT THE TICK. Masking the whole span left the ruler
+ * running Aug 18 → [gap] → Sep 1 under the NOW pill, which reads as a rendering fault; a
+ * ruler's regularity is its legibility, and NOW's own chip already states that date. */
+.ruler span.masked{pointer-events:none;cursor:default}
+.ruler span.masked b{display:none}
+.ruler span b{font-weight:inherit}
+/* The findings strip: one line per finding, not a wall of cards under the plot. */
+.flags.tight{gap:6px;padding:9px 12px}
+.flags.tight .flag{padding:5px 9px;font-size:12px;border-radius:var(--rad-1)}
+.flags.tight .flag button{padding:3px 8px;min-height:26px;font-size:11px}
+/* …and the finding marks the bar it is about, so the notice and its subject are one object. */
+.bar.flagged,.pt.flagged{outline:1.5px solid color-mix(in srgb,var(--warn) 70%,transparent);
+  outline-offset:1px}
+.flag:hover ~ * .bar.flagged{outline-color:var(--warn)}
+/* 🔴 RULE 14 — every animating selector declares its own reduced-motion override. The file
+ * opens with a global `*{animation:none!important}` kill and the audit still reports these,
+ * correctly: a blanket rule proves COVERAGE and not that any given selector was considered.
+ * Four new animations shipped in the liveliness layer; all four are named here. */
+@media (prefers-reduced-motion:reduce){
+  .landed{animation:none}
+  .mh-stats .v.rolling{animation:none}
+  /* The delta ghost still APPEARS — it is information, not decoration — it simply does not
+   * drift. Removing it under reduced motion would withhold the number instead of the motion. */
+  .fdelta{animation:none;opacity:1}
+  .toast.leaving{animation:none;opacity:0}
+}
+/* The paste field starts collapsed when the composer was opened with a type already chosen —
+ * you have said what you are adding, so a 118px field for the other path is a third of the
+ * composer spent on a road not taken. Open cold, it stays expanded: that is the case where
+ * pasting IS the point. */
+.pz-open{display:none;background:none;border:0;padding:0;color:var(--ink3);font-size:12px;
+  text-align:left;border-bottom:1px dashed var(--rule2)}
+.pz-open:hover{color:var(--ink2)}
+.pz.shut .pz-open{display:inline-block}
+.pz.shut .nw-l,.pz.shut .pz-in,.pz.shut .pz-out{display:none}
