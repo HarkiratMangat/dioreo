@@ -238,7 +238,7 @@
     const pct = d => (T.days(B.lo, String(d).slice(0,10)) / span) * 100;
     viewAir.innerHTML = `
       <div class="tk-wrap"><div class="tk-inner">
-        <div class="ruler" style="margin-left:110px">
+        <div class="ruler">
           <span style="left:0%">${T.fmt(B.lo)}</span><span style="left:100%;transform:translateX(-100%)">${T.fmt(B.hi)}</span>
         </div>
         <div class="lanes">
@@ -250,8 +250,8 @@
             const forever = !a.expiresAt;
             const l = pct(start), r = forever ? 100 : pct(a.expiresAt);
             const cls = a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved';
-            return `<div class="lane">
-              <span class="nm" style="width:110px" data-tip="${esc(a.text)}">${esc(bare(a.text).slice(shared.length, shared.length + 16))}${bare(a.text).length > shared.length + 16 ? '&hellip;' : ''}</span>
+            return `<div class="lane" style="--c:${F.annAccent(a)}">
+              <span class="nm" data-tip="${esc(a.text)}">${esc(bare(a.text).slice(shared.length, shared.length + 16))}${bare(a.text).length > shared.length + 16 ? '&hellip;' : ''}</span>
               <div class="tk">
                 <div class="bar ${cls} ${forever ? 'forever' : ''}" data-id="${a._id}" tabindex="0"
                      style="--c:${F.annAccent(a)};left:${l}%;width:${Math.max(1.2, r - l)}%"
@@ -260,7 +260,7 @@
                 </div>
               </div></div>`;
           }).join(''); })()}
-          <div class="ov" style="left:110px"><div class="now" style="left:${pct(NOW)}%"></div></div>
+          <div class="ov"><div class="now" style="left:${pct(NOW)}%"></div></div>
         </div>
       </div></div>
       <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at

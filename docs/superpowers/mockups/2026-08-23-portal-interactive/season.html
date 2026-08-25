@@ -411,6 +411,17 @@
       if (T.days(it.start, F.today) < 0) return 'upcoming';
       return newest && newest.id === it.id ? 'live' : 'ended';
     }
+    /* 🔴 A RELEASE IS A MOMENT, AND A MOMENT CANNOT BE "LIVE NOW" FOR A MONTH. isEventEnded
+     * short-circuits `kind === 'point'` to false because the bot's own function never sees one —
+     * so the port fell through to "started and not ended" and labelled every past draw release
+     * LIVE NOW forever. Invisible on the pinned date because the season was young; at
+     * ?today=2026-09-10 three rows claimed to be live weeks after they happened, found by the
+     * time pass comparing each row's label against that row's own dates.
+     * The distinction is `dateOnly`. A draw with NO calendar window genuinely never ends — that
+     * is deliberate bot behaviour and the single most useful thing this page tells an admin, and
+     * 11 of the 14 real draws are like that. A draw WITH a window has its liveness carried by
+     * that window row; its release marker is history the day after it fires. */
+    if (it.kind === 'point' && !it.dateOnly && T.days(it.start, F.today) > 0) return 'ended';
     if (!F.isEventEnded(it, new Date(F.today).getTime())) {
       return T.days(it.start, F.today) >= 0 ? 'live' : 'upcoming';
     }
@@ -2162,11 +2173,23 @@
     count.textContent = `${v.length} of ${st.items.length} shown`;
     rows.innerHTML = v.length ? v.map(i => {
       const s = stateOf(i);
-      return `<tr data-id="${i.id}" class="${st.selected.has(i.id)?'sel':''}">
+      /* 🔴 THE ROW STATES ITS OWN DATES AND ITS OWN VERDICT. A lifecycle label is a CLAIM about
+       * dates, so the only check worth having compares the two — and that is impossible from the
+       * outside while the dates exist solely as "Jul 6 -> Jul 6" formatted text. The states sweep
+       * used to assert instead that no row may read ENDED on 2026-08-04, an invariant nobody
+       * verified: the one row that did was a patch note published on Jul 6, correctly history a
+       * month later. A hard-coded date in a check is a guess about the fixture; a relational
+       * assertion is true on every date and cannot be wrong about one.
+       * `data-open` marks the two documented cases with no meaningful end — a `dateOnly` draw
+       * (isEventEnded returns false for it forever) and an open-ended span — so a checker knows
+       * not to hold them to an end date rather than discovering it as a false positive. */
+      return `<tr data-id="${i.id}" data-lane="${i.lane}" data-life="${i.draft ? 'draft' : lifecycle(i)}"
+                  data-start="${i.start}" data-end="${i.end}" data-open="${i.dateOnly || i.openEnded ? 1 : 0}"
+                  class="${st.selected.has(i.id)?'sel':''}">
         <td><span class="cb ${st.selected.has(i.id)?'on':''}" role="checkbox" aria-checked="${st.selected.has(i.id)}" tabindex="0"></span></td>
         <td class="n"><div class="ncell"><span class="dot" style="--c:${accentOf(i.type)}"></span>
             <input class="edit" value="${i.name.replace(/"/g,'&quot;')}" aria-label="Rename ${i.name}"></div></td>
-        <td>${F.TYPE_LABEL[i.type]}<div class="rowmeta">${
+        <td>${F.TYPE_LABEL[i.type]}<div class="rowmeta rowlife">${
             i.draft ? '<span class="nextmark">NEXT SEASON</span>' : LIFE_LABEL[lifecycle(i)]}</div></td>
         <td class="nums">${T.fmt(i.start)} <span class="arw">&rarr;</span> ${T.fmt(i.end)}
             <div class="rowmeta">${plural(T.days(i.start,i.end)+1,'day')}</div></td>
@@ -2693,7 +2716,25 @@
        * so #dPromote does not exist and this check asserted against a panel that cannot open —
        * a green run on an authored fixture that happened to have a draft, and a red one the
        * moment real data arrived. Whichever path exists is the one that gets driven. */
-      { name:'draft zone',     run: () => { const b = document.getElementById('dPromote') || document.getElementById('mkDraft'); b && b.click(); } }
+      /* 🔴 IT HAS TO REACH THE PANEL, NOT JUST PRESS SOMETHING. This used to fall back to
+       * #mkDraft when no draft was staged — and "Start a draft" opens no drawer, it raises a
+       * toast, so rule 9 correctly reported `draft zone opened no panel` on every default run.
+       * The interesting control here is PROMOTE: it is the page's only tier-3 op and the one
+       * whose confirmation copy is worth asserting. So the path is driven end to end — stage a
+       * draft, then promote it — and the state it changed is put back, because later passes
+       * re-audit this same document and an active draft silently changes what they see. */
+      { name:'draft zone', run: () => {
+          const before = { draft: JSON.parse(JSON.stringify(st.draft)), sn: st.sn };
+          if (!document.getElementById('dPromote')) {
+            const m = document.getElementById('mkDraft');
+            /* renderDraftZone() only rebuilds the markup — wireIdentity() is what attaches the
+             * handlers, so without it #dPromote exists and does nothing when clicked. */
+            if (m) { m.click(); renderDraftZone(); wireIdentity(); }
+          }
+          const b = document.getElementById('dPromote');
+          if (b) b.click();
+          st.draft = before.draft; st.sn = before.sn; renderDraftZone(); wireIdentity();
+        } }
       /* Repairs is NOT in this list, and the reason is a real distinction rather than an
        * exemption: `interactions` asserts that a click opens a DRAWER, and Repairs is a view
        * switch. Putting it here made it fail for being what it is. It is asserted in `extra`

@@ -166,8 +166,18 @@ main{overflow:auto;padding-bottom:96px}
   transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
 .lane:hover{border-color:var(--rule2)}
 .lane:last-child{border-bottom:1px solid var(--rule)}
-.lane .nm{width:var(--gutter);flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
-  letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+/* 🔴 ONE LANE, ONE CONTRACT. `.lane` reserves `--gutter` as PADDING and the header is laid
+   into it out of flow — that is the whole reason `.tk` begins at exactly `--gutter`. Broadcast's
+   Airtime kept the OLD contract: a `.nm` still in the flex flow, on top of a padding it did not
+   know about. MEASURED 2026-08-24 23:5x at w=1280: the ruler ran 221→1244 and the lane's `.tk`
+   ran 349→1234, so a date at 0% rendered 128px apart and a date at 100% 10px apart — the axis
+   was wrong in BOTH origin and scale, on the one realm whose chart IS a time axis.
+   Two consumers of one class disagreeing is not something any per-element rule can see; audit
+   rule 13 reported it the first time a view pass made the Airtime track visible. The fix is to
+   delete the second contract, not to compensate for it. */
+.lane .nm{position:absolute;left:0;top:0;bottom:0;width:var(--gutter);display:flex;align-items:center;
+  padding:0 11px 0 9px;font:700 10px/1.2 var(--data);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);white-space:normal;word-break:break-word;overflow:hidden}
 /* The plot area carries its own grid, at the same scale in every lane, so the columns align
    across the cards while the surfaces stay separate. `--tk-pad` keeps a bar off the card's edge;
    every measuring pass reads getBoundingClientRect(), so padding is absorbed automatically and
@@ -1071,9 +1081,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* The decorations under the window are informative, never interactive — they used to
    inherit the container's grab cursor and promise a drag that did not exist. */
 .scrub .mini,.scrub .season-end,.scrub .scrub-label{pointer-events:none}
-/* The lane-name column is a fixed gutter; give it a hard edge so nothing can appear to
-   bleed into it even at a partial pixel. */
-.lane .nm{position:relative;z-index:2;background:var(--paper)}
+/* ⚠️ A LATER `.lane .nm{position:relative}` USED TO SIT HERE AND SILENTLY BEAT THE RULE ABOVE.
+   Same selector, same specificity, later in the file — so whatever the header rule declared,
+   this one put the element back in flow. It also painted `var(--paper)`, the DESK colour, inside
+   a card whose ground is `var(--sunk)`, which is why the gutter read as a strip beside the lane
+   rather than as part of it. Both are deleted; the header takes its ground from the card. */
 .lanes{position:relative}
 /* Bar label sits in its own element so it can be nudged clear of a left-edge clip. */
 .bar .bl{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

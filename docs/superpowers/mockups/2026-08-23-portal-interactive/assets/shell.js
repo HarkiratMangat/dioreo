@@ -713,12 +713,69 @@
      * of this file's silence has been silence about the wrong pixels.
      * "Fonts loaded" is not "the page has finished measuring itself". Two frames after fonts
      * settle is, and the pass is idempotent, so the extra run costs nothing but honesty. */
+    /* 🔴 requestAnimationFrame DOES NOT FIRE IN A PAGE THAT IS NOT BEING RENDERED — a
+     * backgrounded tab, a hidden pane, or an iframe parked off-screen. The settled pass was
+     * gated on rAF ALONE, so in exactly those situations it never ran and `__selfCheck` kept
+     * the FIRST, unsettled measurement forever, with `pending` stuck true and nothing saying so.
+     * MEASURED 2026-08-25: the same Broadcast page reported `.ruler at 249 vs .tk at 239` in a
+     * hidden pane and one origin at 249 in a visible tab — same bytes, same width, same frame
+     * tree. That is where the states sweep's geometry "false positives" came from, and it is
+     * why they never reproduced by hand: the reproduction step was "look at it", which makes
+     * the tab visible. `.states.html` parks its frames at `left:-4000px`; `.audit-all.html`
+     * renders them in flow — the entire difference between the two harnesses' results.
+     * A wall-clock fallback guarantees a settled pass whatever the compositor is doing; rAF
+     * still wins when it fires, because two frames is the more accurate settle. */
     audit(opts = {}){
       const first = Shell._audit(opts);
+      const carried = first.interactionProblems || [];
       first.pending = true;
-      const settle = () => requestAnimationFrame(() =>
-        requestAnimationFrame(() => { const r = Shell._audit(opts); r.pending = false; }));
-      (document.fonts ? document.fonts.ready : Promise.resolve()).then(settle, settle);
+      let settled = false;
+      /* The re-measure runs WITHOUT interactions — see rule 9 — and carries that pass's findings
+       * forward, so nothing is lost and nothing is measured while a drawer is on its way out. */
+      const run = () => { if (settled) return; settled = true;
+        const r = Shell._audit(Object.assign({}, opts, { interactions: null }));
+        if (carried.length) { r.problems.push(...carried); r.ok = r.problems.length === 0; }
+        r.pending = false; };
+      /* 🔴 "SETTLED" MEANS THE LAYOUT STOPPED MOVING — never "some milliseconds passed". Two
+       * fixed waits were tried and both were wrong on Season, whose Track measures itself after
+       * paint (fitLabels, stripSharedPrefixes) and can gain or lose the page scrollbar doing it;
+       * every percentage-positioned element shifts by that scrollbar's 10px, and the audit read
+       * the middle of the move. `.audit-all.html` waited ~7s and passed, `.states.html` waited
+       * 1400ms and failed, on identical bytes — a race dressed up as a product defect, twice.
+       * So watch the geometry the geometry rules care about and go when it repeats. The frame
+       * cap and the wall-clock backstop both exist because a page that never stops moving, or
+       * one that is never painted at all, must still produce a result rather than hang. */
+      let last = '', same = 0, frames = 0;
+      const tick = () => {
+        if (settled) return;
+        const probe = document.querySelector('.tk') || document.querySelector('main') || document.body;
+        const r = probe.getBoundingClientRect();
+        const k = Math.round(r.left) + 'x' + Math.round(r.width) + 'x' + Math.round(document.body.scrollHeight);
+        if (k === last) same++; else { same = 0; last = k; }
+        if (same >= 2 || ++frames > 90) { run(); return; }
+        requestAnimationFrame(tick);
+      };
+      /* 🔴 AND "AT REST" INCLUDES "NOTHING IS ANIMATING". MEASURED 2026-08-25, frame by frame:
+       * Season's `.tk` sits at 239 on the first frame, 246 at 120ms and 249 from 240ms on, while
+       * `.ruler` and `.lanes` never move — the lanes have an entry transition and the plot area
+       * slides the last 10px into place. Every "two different origins" report that reproduced in
+       * a harness and never in a live tab was that transition, caught mid-flight, and the layout
+       * was genuinely STABLE for the first frames because the animation had not started yet —
+       * which is why watching for stability alone still went too early.
+       * Only animations that actually END are awaited; a looping accent pulse or the NOW dot
+       * would otherwise hold this open forever, and the wall-clock backstop below is the net. */
+      const finite = () => {
+        try {
+          return document.getAnimations()
+            .filter(a => { const t = a.effect && a.effect.getComputedTiming();
+                           return t && Number.isFinite(t.iterations) && Number.isFinite(t.endTime); })
+            .map(a => a.finished.catch(() => {}));
+        } catch (e) { return []; }
+      };
+      const start = () => Promise.all(finite()).then(() => requestAnimationFrame(tick),
+                                                     () => requestAnimationFrame(tick));
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(start, start);
+      setTimeout(run, 2500);
       return first;
     },
 
@@ -991,32 +1048,67 @@
           problems.push('note: the one-origin check is skipped while a dialog is open — geometry is only measurable at rest');
           return;
         }
-        const host = [...document.querySelectorAll('.tk-inner')]
-          .find(h => h.getBoundingClientRect().width > 0 && !h.closest('[hidden]'));
-        if (!host) return;
-        /* The OVERVIEW strip is excluded, and the exclusion is a real distinction rather than a
-         * convenience: it plots the WHOLE season while the lanes plot the current window, so its
-         * percentages mean something different and unifying them would be wrong. Anything else
-         * that positions by date must share the lanes' origin. */
-        const layers = [...host.querySelectorAll('*')]
-          .filter(e => /left:\s*[\d.]+%/.test(e.getAttribute('style') || ''))
-          .filter(e => !e.closest('.mini,.ovw,.scrub,.overview,.spark'))
-          .map(e => e.offsetParent).filter(Boolean);
-        /* NAME THE OFFENDER. The first version printed only the boxes ("249x995 · 239x995"),
-         * which told a reader that something was wrong and nothing about where — so acting on
-         * it meant re-deriving the whole measurement by hand. A check that reports a symptom
-         * without an address is a check somebody skips. */
-        const boxes = new Map();
-        layers.forEach(p => {
-          const r = p.getBoundingClientRect();
-          const k = Math.round(r.left) + 'x' + Math.round(r.width);
-          if (!boxes.has(k)) boxes.set(k, { n: 0, who: '.' + String(p.className || p.tagName).split(' ')[0] });
-          boxes.get(k).n++;
+        /* 🔴 AND ONLY MEASURABLE WHILE THE PAGE IS BEING RENDERED. A document whose tab is
+         * hidden still answers getBoundingClientRect() with well-formed numbers — they are just
+         * the numbers from before whatever it stopped painting. This rule produced its own most
+         * expensive false positive that way (see Shell.audit above). Reporting the skip is the
+         * point: silence here would read as a pass on an axis nobody looked at. */
+        if (document.visibilityState !== 'visible') {
+          problems.push('note: the one-origin check is skipped — this document is not being rendered ' +
+            '(visibilityState=' + document.visibilityState + '), so every pixel it reports is stale');
+          return;
+        }
+        /* 🔴 A PROBE MUST SAY WHAT IT COULD NOT SEE. This used to be `.find(...)` with a bare
+         * `if (!host) return;` — so on a page whose Track lives behind a view tab, the rule found
+         * no visible host at load and passed in silence. MEASURED 2026-08-24 23:5x: Broadcast's
+         * Airtime ran its ruler and its lanes on origins 128px apart while `.audit-all.html`
+         * reported that page ALL 8 PASS, because Airtime is not the default view. Only the states
+         * sweep, which switches views, ever made it visible. Reporting the unmeasured hosts as a
+         * NOTE turns "nothing to check" back into "here is what this pass did not cover", which is
+         * the difference between a clean result and an uninspected one.
+         * It also checks EVERY visible host rather than the first: a page may hold two tracks, and
+         * `.find()` silently made the second one unaudited forever. */
+        const allHosts = [...document.querySelectorAll('.tk-inner')];
+        const hosts = allHosts.filter(h => h.getBoundingClientRect().width > 0 && !h.closest('[hidden]'));
+        if (hosts.length < allHosts.length)
+          problems.push(`note: ${allHosts.length - hosts.length} of ${allHosts.length} track host(s) ` +
+            'are in a hidden view and were NOT measured for a shared origin — switch the view and re-run');
+        if (!hosts.length) return;
+        hosts.forEach(host => {
+          /* The OVERVIEW strip is excluded, and the exclusion is a real distinction rather than a
+           * convenience: it plots the WHOLE season while the lanes plot the current window, so its
+           * percentages mean something different and unifying them would be wrong. Anything else
+           * that positions by date must share the lanes' origin. */
+          const layers = [...host.querySelectorAll('*')]
+            .filter(e => /left:\s*[\d.]+%/.test(e.getAttribute('style') || ''))
+            .filter(e => !e.closest('.mini,.ovw,.scrub,.overview,.spark'))
+            .map(e => e.offsetParent).filter(Boolean);
+          /* NAME THE OFFENDER. The first version printed only the boxes ("249x995 · 239x995"),
+           * which told a reader that something was wrong and nothing about where — so acting on
+           * it meant re-deriving the whole measurement by hand. A check that reports a symptom
+           * without an address is a check somebody skips. */
+          const boxes = new Map();
+          layers.forEach(p => {
+            const r = p.getBoundingClientRect();
+            const k = Math.round(r.left) + 'x' + Math.round(r.width);
+            if (!boxes.has(k)) boxes.set(k, { n: 0, who: '.' + String(p.className || p.tagName).split(' ')[0] });
+            boxes.get(k).n++;
         });
-        if (boxes.size > 1)
+        /* 🔴 THE REPORT CARRIES ITS OWN CONTEXT. This gap kept reappearing in one harness and
+         * never in a live tab, and each investigation re-derived the same three numbers by hand.
+         * A scrollbar arriving or leaving moves every percentage-positioned element by its
+         * width, so the line states the scrollbar, the page height and the viewport width beside
+         * the boxes: if two runs differ in those, the disagreement was between two MOMENTS
+         * rather than two containers, and that is now readable from the line itself. */
+        if (boxes.size > 1) {
+          const m = document.querySelector('main');
+          const ctx = `[w=${window.innerWidth} sbar=${m ? m.offsetWidth - m.clientWidth : '?'} ` +
+                      `h=${document.body.scrollHeight} vis=${document.visibilityState}]`;
           problems.push(`the Track positions dates against ${boxes.size} different origins — ` +
             [...boxes.entries()].map(([k, v]) => `${v.who} at ${k} (${v.n})`).join(' vs ') +
-            ` — one date will render at ${boxes.size} different x`);
+            ` — one date will render at ${boxes.size} different x ${ctx}`);
+        }
+        });
       })();
 
       /* 12. A CONTROL INSIDE A COMPOSITE MUST NOT PAINT ITS OWN BOX, AND MUST FIT INSIDE IT.
@@ -1058,6 +1150,13 @@
        *    produced a real title and body. This is the check that would have caught the
        *    drawer break on the turn it was introduced. */
       const wantsInteractive = /[?&]audit=1\b/.test(location.search);
+      /* 🔴 THE INTERACTION FINDINGS ARE TAGGED so the settled re-run can CARRY them instead of
+       * re-driving them. Opening and closing a drawer toggles the page's scrollbar, every
+       * percentage-positioned element moves with it, and the settled pass then measured a Track
+       * mid-transition — which is where `.ruler at 249 vs .tk at 239` came from on eight pages
+       * that measure one origin at rest. Two jobs were sharing one moment: this pass CHANGES the
+       * page, every other rule MEASURES it. Only one of them may run twice. */
+      const iMark = problems.length;
       if (interactions && wantsInteractive) {
         const scrollY = window.scrollY;
         interactions().forEach(({ name, run, when }) => {
@@ -1114,7 +1213,8 @@
 
       if (extra) problems.push(...extra());
 
-      window.__selfCheck = { ok: problems.length === 0, problems };
+      window.__selfCheck = { ok: problems.length === 0, problems,
+                             interactionProblems: problems.slice(iMark) };
       if (problems.length) console.error(`[dioreo audit] ${problems.length} problem(s):`, problems);
       else console.info('[dioreo audit] clean');
       return window.__selfCheck;

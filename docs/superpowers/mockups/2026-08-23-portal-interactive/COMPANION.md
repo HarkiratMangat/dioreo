@@ -1913,6 +1913,94 @@ It names the offending container now: `.ruler at 249x995 (11) vs .tk at 239x995 
 
 ---
 
+## 5.9o THE FOUR FILED BUGS — two were the product, two were the checks
+
+*Written 2026-08-25. Four items were filed in `docs/db-deferred-list.md` at the end of the previous session, each with a repro and a verification step. Working them turned out to be the most instructive hour of the whole project, because **two of the four were defects in the checking apparatus, and one of those had a diagnosis that was confidently wrong**. What follows is what each one actually was.*
+
+### 5.9o.1 Broadcast's Airtime: one class, two contracts — REAL, 128px
+
+Measured at w=1280 before the fix: the Airtime ruler ran `221 → 1244` and the lane's plot area ran `349 → 1234`. A date at 0% therefore rendered **128px apart** on the ruler and in the lanes, and a date at 100% rendered 10px apart — **the axis was wrong in both origin and scale, on the one realm whose entire chart is a time axis.**
+
+The cause is not a styling slip and it is worth naming precisely, because it is a shape that recurs:
+
+> **`.lane` had two contracts.** Season's redesign made the lane reserve `--gutter` as `padding-left` and lay the header into it out of flow — that is the whole reason `.tk` begins at exactly `--gutter` with no arithmetic to get wrong (§5.9n.5d). Broadcast's Airtime still used the OLD contract: a `.nm` header **in the flex flow**, sitting on top of a padding it knew nothing about. So its plot area began at `--gutter + 110px`, while its ruler carried an inline `margin-left:110px` that overrode the shared token, and its `.ov` carried an inline `left:110px` that overrode the shared origin.
+
+Three inline overrides, each individually reasonable when written, collectively describing a second coordinate system. **Two consumers of one class disagreeing is invisible to every per-element rule** — each element was internally consistent. Audit rule 13 reported it the first time a view pass made the Airtime track visible.
+
+**The fix deletes the second contract rather than compensating for it:** the three inline overrides are gone, and `.lane .nm` is now absolutely positioned into the reserved gutter, exactly as `.lnh` is. A later `.lane .nm{position:relative;…}` rule was deleted in the same change — same selector, same specificity, later in the file, so it had been silently putting the header back into flow whatever the header rule declared, and painting `var(--paper)` (the desk colour) inside a card whose ground is `var(--sunk)`. That is why the Airtime gutter read as a strip *beside* the lanes rather than as part of them.
+
+**And one thing that was simply missing:** Broadcast's Airtime lanes carried no topic colour at all. `.lane`'s spine is `inset 2px 0 0 var(--c, var(--rule2))` and nothing set `--c`, so all four lanes had the same grey edge while their own bars were coloured — in a realm whose vocabulary is *shape = state, colour = topic*. The lane now takes `--c` from the same `F.annAccent(a)` its bar uses.
+
+After: `.ruler`, `.ov` and `.tk` all measure **249×995**. One origin.
+
+### 5.9o.2 The states sweep's "false positive" — REAL, and the filed diagnosis was WRONG
+
+The filed entry blamed two things: a flat 1400ms wait, and calling `Shell._audit()` (the raw inner pass) instead of `Shell.audit()` (the wrapper that schedules the settled re-run). Both are real faults and both are fixed. **Neither was the cause.** Fixing only those left the sweep reporting the identical gap.
+
+The actual chain took four measurements to find, and every step of it is a trap worth keeping:
+
+1. **`requestAnimationFrame` does not fire in a document that is not being rendered.** The settled pass was gated on rAF alone, so in a backgrounded tab, a hidden pane, or an iframe parked off-screen it **never ran at all** — `pending` stayed `true` forever and nothing said so. `.states.html` positioned its frames at `left:-4000px`; `.audit-all.html` renders its frames in flow. That difference alone is why the two harnesses disagreed about identical bytes, and why the disagreement never reproduced by hand — the reproduction step is "look at it", which makes the tab visible.
+2. **The settled re-run was re-driving the interaction pass.** `Shell.audit()` re-invoked `_audit` with the same options, including `interactions`, so the re-measure opened and closed a drawer first. A drawer suppresses the page scrollbar; every percentage-positioned element moves by its width; the geometry rules then measured a page mid-transition. **Two jobs were sharing one moment: the interaction pass CHANGES the page and every other rule MEASURES it.** Only one of them may run twice.
+3. **"Settled" was defined as elapsed time, and elapsed time is not the thing.** Two fixed waits were tried and both were wrong on Season.
+4. **And the actual last 10px was an ANIMATION.** Frame-by-frame at 120ms intervals: `.tk` sits at **239 on the first frame, 246 at 120ms, 249 from 240ms on**, while `.ruler` and `.lanes` never move. The lanes have an entry transition and the plot area slides its last 10px into place. Crucially the layout is genuinely **stable for the first few frames** — the animation has not started yet — so watching for stability alone still went too early.
+
+**The audit now defines "at rest" as all four things at once:** fonts loaded, every *finite* animation finished (a looping accent pulse is excluded, or it would hold the gate open forever), the layout repeating for two consecutive frames, and a 2.5s wall-clock backstop so a page that never stops moving still produces a result rather than hanging.
+
+**And rule 13 now reports the context that would have short-circuited all of this:** every two-origin line carries `[w=… sbar=… h=… vis=…]`. If two runs disagree in the scrollbar, the page height or the visibility state, the disagreement was between two **moments** rather than two containers — readable from the line instead of re-derived by hand for the third time.
+
+> **The general lesson, and it is the same one as §5.9n.5b: a probe must prove it can report PRESENCE before its silence is worth anything — and it must refuse to hand back a verdict about something it could not measure.** Rule 13 used to `.find()` the first visible track host and `return` silently when there was none, so a page whose Track lives behind a view tab passed in silence. Broadcast's 128px defect sat one tab away from an `ALL 8 PASS`. It now checks *every* visible host and reports the hidden ones as a note.
+
+### 5.9o.3 Season's `draft zone` opened no panel — REAL, and the interaction was mis-declared
+
+The declared interaction clicked `#dPromote` if it existed and fell back to `#mkDraft` otherwise. On the default fixture no draft is staged, so it always took the fallback — and **"Start a draft" raises a toast; it opens no drawer.** Rule 9, which asserts that a declared interaction produces a real panel with a real title and a non-empty body, was correct every time it complained.
+
+The interaction now drives the path end to end: stage a draft, re-render, **re-wire the handlers** (`renderDraftZone()` only rebuilds markup; `wireIdentity()` is what attaches `onclick`, and without it `#dPromote` exists and does nothing), then promote — which is the page's only tier-3 op and the one whose confirmation copy is actually worth asserting. It then puts the state back, because later passes re-audit the same document and an active draft silently changes what they see.
+
+### 5.9o.4 A row read ENDED "before the season starts" — the CHECK was false, and it hid a real bug behind it
+
+The assertion was: on `?today=2026-08-04`, no row may read `ENDED`. The row that tripped it was a patch note **published 2026-07-06**, which on 2026-08-04 is correctly history. **A hard-coded date in a check is a guess about the fixture**, and this one was simply wrong. It also read *every* `.rowmeta` — and a row has two, the lifecycle and the duration — so it was scanning the strings "1 DAY" and "14 DAYS" for the word ENDED.
+
+The replacement is relational and holds at every date: each row now carries `data-life`, `data-start`, `data-end`, `data-lane` and `data-open`, and the sweep checks **each row's label against that row's own dates**. Two documented divergences are exempted *by name* rather than discovered as noise — a patch note is a publication with no duration, and a `dateOnly` draw never ends at all.
+
+**And that rewritten check immediately found something the hand-picked dates never could.** At `?today=2026-09-10`, three rows read **LIVE NOW weeks after they happened**:
+
+| row | its own dates | it claimed |
+|---|---|---|
+| Judgment Day - It Goes Two | 2026-08-07 → 2026-08-07 | LIVE NOW |
+| Undead Legion Series Armory | 2026-08-11 → 2026-08-11 | LIVE NOW |
+| The Widow's Bite Draw | 2026-09-01 → 2026-09-01 | LIVE NOW |
+
+All three are `kind: 'point'` — a release, a single date. `isEventEnded()` short-circuits `kind === 'point'` to `false` because **the bot's own function never sees one** (draws and patch notes are not calendar rows), so the port fell through to "started and not ended" and labelled every past release LIVE NOW **permanently**. Invisible on the pinned date because the season was young.
+
+The distinction that fixes it is `dateOnly`, and it is a real product distinction rather than a patch:
+
+- A draw with **no** calendar window genuinely never ends. That is deliberate bot behaviour, it is the single most useful thing this page tells an admin, and **11 of the 14 real draws are like that**.
+- A draw **with** a window has its liveness carried by that window row. Its release marker is history the day after it fires.
+
+**A release is a moment, and a moment cannot be "live now" for a month.**
+
+One further finding from the same pass was *not* a bug and is recorded so it does not get "fixed" later: a row whose window closes **today** reads ENDED from midnight, because `commands/calendar.js` ends an event when `endDate <= now`. The port mirrors that deliberately; the assertion was relaxed from `>=` to `>` so that faithfulness is not flagged as a defect.
+
+### 5.9o.5 A note is not a failure — the second time this regressed
+
+Rules that decline to judge report as `note:` — a geometry check skipped because a dialog is up, an interaction skipped for want of data, a track host that was never visible. `say()` counted them, so **twenty of thirty-two "findings" in one run were not defects**, and eight clean pages read red. This is the second occurrence of exactly that regression; it came back because two new note types were added.
+
+Notes are now split from failures: both are printed, only failures count. **A report where most of the red lines are not defects is a report nobody reads to the end**, which costs more than a check that never ran.
+
+### 5.9o.6 The falsifiers added with these fixes
+
+Every new mechanism here can fail silently, so each got a falsifier that proves it can report the bad case:
+
+| mechanism | its falsifier |
+|---|---|
+| `rafAlive()` | a stub frame whose `requestAnimationFrame` never calls back **must** report dead |
+| `settle()` | a stub whose `__selfCheck.pending` never clears **must** come back marked `timedOut`, not read |
+| the sweep as a whole | a **render-liveness gate runs before any pass** and aborts loudly rather than printing 45 confident lines about a page Chrome is not painting |
+
+The last one is the important one. It is the difference between a harness that measures and a harness that recites.
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

@@ -4,7 +4,16 @@ body{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0B0
 h1{font:600 15px system-ui;margin:0 0 4px}p.n{color:#85939F;margin:0 0 14px;max-width:88ch}
 pre{white-space:pre-wrap;margin:0}
 .ok{color:#3DDC97}.bad{color:#FF6B6B}.warn{color:#F2C230}.dim{color:#85939F}
-iframe{position:fixed;left:-4000px;top:0;width:1280px;height:900px;border:0}
+/* 🔴 THE FRAME MUST ACTUALLY BE RENDERED. Parked at `left:-4000px` it had real dimensions and
+   answered every measurement with well-formed numbers — and Chrome does not run
+   requestAnimationFrame for a frame that is nowhere on screen, so the audit's settled pass never
+   ran and this sweep read the FIRST, unsettled measurement every time. That is the whole source
+   of its geometry disagreements with `.audit-all.html`, which renders its frames in flow.
+   In the viewport, underneath the report, which paints over it opaquely. `rafAlive()` below
+   asserts the frame really is being rendered rather than trusting this rule. */
+iframe{position:fixed;left:0;top:0;width:1280px;height:900px;border:0;z-index:0}
+h1,p.n,pre{position:relative;z-index:1}
+body::before{content:"";position:fixed;inset:0;background:#0B0D0E;z-index:0}
 </style>
 <h1>States sweep — the surfaces nobody had opened</h1>
 <p class="n">Three passes per page, at 1280&times;900. <b>1 · interactions</b> — <code>?audit=1</code> drives every
@@ -33,27 +42,102 @@ function load(url){
      * one level up: a stale asset producing a confident wrong result. */
     f.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
     document.body.appendChild(f);
-    f.onload = () => setTimeout(() => res(f), 1400);
+    f.onload = () => res(f);
   });
+}
+
+/* 🔴 PROVE THE FRAME IS BEING RENDERED BEFORE BELIEVING A PIXEL IT REPORTS. rAF is the honest
+ * test because it is the exact facility the audit's settled pass depends on: if this comes back
+ * false, every geometric line below is a measurement of a page that stopped painting, and the
+ * sweep says so instead of printing numbers. */
+const rafAlive = f => new Promise(res => {
+  let ok = false;
+  try { f.contentWindow.requestAnimationFrame(() => { ok = true; }); } catch (e) {}
+  setTimeout(() => res(ok), 320);
+});
+
+/* 🔴 AWAIT THE SETTLED PASS — NEVER A TIMER. This used to wait a flat 1400ms and read whatever
+ * `__selfCheck` happened to hold, while `.audit-all.html` waited ~7s; the two harnesses then
+ * disagreed about the same bytes and the disagreement was read as a product bug for a day.
+ * `Shell.audit()` marks its first pass `pending:true` and clears it when the re-measure lands,
+ * so that flag is the real signal. A timeout is reported, never silently accepted. */
+async function settle(f, ms = 5000) {
+  const t0 = Date.now();
+  for (;;) {
+    let c = null;
+    try { c = f.contentWindow.__selfCheck; } catch (e) { return { gone: e.message }; }
+    if (c && c.pending === false) return c;
+    if (Date.now() - t0 > ms) return c ? Object.assign({}, c, { timedOut: true }) : { timedOut: true };
+    await new Promise(r => setTimeout(r, 60));
+  }
+}
+
+/* Re-run the audit inside a frame and wait for ITS settled pass. `Shell._audit` is the raw inner
+ * pass; calling it directly — which every view pass here used to do — skips the settling entirely
+ * and is precisely how this sweep reported an origin gap the page did not have. */
+async function reaudit(f) {
+  /* Measure AT REST. A drawer left over from an earlier pass suppresses the page scrollbar, and
+   * every percentage-positioned element moves with it — so close anything open and give the
+   * layout a frame to come back before asking it where things are. */
+  try {
+    f.contentWindow.Shell.closeDrawer();
+    await new Promise(r => setTimeout(r, 120));
+  } catch (e) { return { gone: e.message }; }
+  try { f.contentWindow.Shell.audit({}); } catch (e) { return { gone: e.message }; }
+  return settle(f);
 }
 const readCheck = f => { try { return f.contentWindow.__selfCheck || null; } catch (e) { return { error:e.message }; } };
 const say = (tag, name, probs) => {
   if (!probs) { lines.push(`<span class="warn">?    </span> ${name.padEnd(26)} ${tag} — no __selfCheck (the page never called S.audit)`); return 1; }
-  if (probs.error) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — ${probs.error}`); return 1; }
-  const n = (probs.problems || []).length;
-  if (!n) { lines.push(`<span class="ok">PASS </span> ${name.padEnd(26)} ${tag}`); return 0; }
-  lines.push(`<span class="bad">FAIL </span> ${name.padEnd(26)} ${tag} — ${n}`);
-  (probs.problems || []).slice(0, 8).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
-  return n;
+  if (probs.error || probs.gone) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — ${probs.error || probs.gone}`); return 1; }
+  /* A pass that never settled is NOT a pass. Printing its problem count would report the first,
+   * unsettled measurement as though it were the answer — the exact failure this sweep shipped. */
+  if (probs.timedOut) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — the audit never settled (pending stayed true); its numbers are unusable`); return 1; }
+  /* 🔴 A NOTE IS NOT A FAILURE. Rules that decline to judge — a geometry check skipped because
+   * the page is not at rest, an interaction skipped for want of data — report as `note:` so the
+   * gap is visible; counting them turned eight clean pages red twice, and a report where most
+   * red lines are not defects is a report nobody reads to the end. Split, both shown. */
+  const all = probs.problems || [];
+  const notes = all.filter(p => /^note:/.test(p));
+  const fails = all.filter(p => !/^note:/.test(p));
+  if (!fails.length) {
+    lines.push(`<span class="ok">PASS </span> ${name.padEnd(26)} ${tag}${notes.length ? ` <span class="dim">(${notes.length} note${notes.length===1?'':'s'})</span>` : ''}`);
+    notes.slice(0, 3).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+    return 0;
+  }
+  lines.push(`<span class="bad">FAIL </span> ${name.padEnd(26)} ${tag} — ${fails.length}`);
+  fails.slice(0, 8).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+  notes.slice(0, 3).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+  return fails.length;
 };
 
 (async () => {
   let bad = 0, ran = 0;
 
+  /* 🔴 FALSIFIER FIRST. Every geometric result in this file is a lie if the frames are not being
+   * painted, and an off-screen frame reports well-formed numbers either way. Assert rAF runs
+   * inside a real frame BEFORE any pass, and abort loudly rather than printing 45 confident
+   * lines about a page Chrome stopped rendering. */
+  {
+    const probe = await load('index.html');
+    const alive = await rafAlive(probe);
+    lines.push(alive
+      ? `<span class="ok">PASS </span> ${'render liveness'.padEnd(26)} rAF fires inside the frame — geometry is measurable`
+      : `<span class="bad">ERR  </span> ${'render liveness'.padEnd(26)} rAF NEVER FIRED — every geometric line below would be stale; fix the harness, not the product`);
+    ran++; if (!alive) bad += 99;
+    probe.remove(); paint();
+    if (!alive) { lines.push(`<span class="bad">ABORTED</span>`); paint(); return; }
+  }
+
   /* PASS 1 + 2 — interactions, then every view tab. */
   for (const p of PAGES) {
     const f = await load(p + '.html?audit=1');
-    bad += say('interactions', p, readCheck(f)); ran++;
+    /* 🔴 AWAIT THE SETTLED PASS HERE TOO. This read `__selfCheck` the moment the frame fired
+     * `load`, which is before the Track has run its own measuring passes — so it reported an
+     * origin gap on a page that measures one origin at rest, on every run, for a day. The two
+     * remaining timer-reads were this one and the TIME pass below; both are now gated on the
+     * same flag as everything else. */
+    bad += say('interactions', p, await settle(f)); ran++;
     let tabs = [];
     try { tabs = [...f.contentDocument.querySelectorAll('[role=tab][data-view]')]; } catch (e) {}
     for (let i = 0; i < tabs.length; i++) {
@@ -64,8 +148,7 @@ const say = (tag, name, probs) => {
         /* Re-run the audit against the view that is now on screen. A view that is [hidden]
          * at load contributes nothing to the load-time pass, which is how Board shipped with
          * four columns resting at opacity 0. */
-        f.contentWindow.Shell && f.contentWindow.Shell._audit && f.contentWindow.Shell._audit({});
-        bad += say('view:' + v, p, readCheck(f)); ran++;
+        bad += say('view:' + v, p, await reaudit(f)); ran++;
       } catch (e) { lines.push(`<span class="bad">ERR  </span> ${p.padEnd(26)} view:${v} — ${e.message}`); bad++; ran++; }
     }
     f.remove(); paint();
@@ -180,9 +263,8 @@ const say = (tag, name, probs) => {
       const d = f.contentDocument;
       d.querySelectorAll('.lane.lnc .lnh, .trow.tclosed .trow-h').forEach(h => h.click());
       await new Promise(r => setTimeout(r, 900));
-      f.contentWindow.Shell._audit({});
     } catch (e) {}
-    bad += say('expanded', p, readCheck(f)); ran++;
+    bad += say('expanded', p, await reaudit(f)); ran++;
     f.remove(); paint();
   }
 
@@ -205,17 +287,41 @@ const say = (tag, name, probs) => {
         if (!isFinite(l)) found.push('NOW marker has no computed position');
         else if (l < -5 || l > 105) found.push(`NOW marker at ${Math.round(l)}% — outside the Track`);
       }
-      /* Every row states a lifecycle. On a day before the season nothing may read ENDED, and
-       * after it nothing may read UPCOMING — the two claims that are flatly impossible. */
-      const life = [...d.querySelectorAll('.rowmeta')].map(e => (e.textContent || '').trim().toUpperCase());
-      if (day === '2026-08-04' && life.some(t => t === 'ENDED'))
-        found.push('a row reads ENDED before the season starts');
-      if (day === '2026-09-21' && life.some(t => t === 'UPCOMING'))
-        found.push('a row reads UPCOMING after the season ends');
+      /* 🔴 EVERY ROW'S LABEL IS CHECKED AGAINST THAT ROW'S OWN DATES. The previous version
+       * asserted that nothing may read ENDED on 2026-08-04 and nothing UPCOMING on 2026-09-21 —
+       * two dates picked by hand, and the first was simply wrong: the row it flagged was a patch
+       * note published 2026-07-06, which a month later is history. It cost a filed bug and an
+       * investigation to discover that the CHECK was the false thing.
+       * A hard-coded date encodes a belief about the fixture; comparing a label to the dates
+       * printed on the same row encodes the rule itself, and holds at every date forever.
+       * It also used to read EVERY `.rowmeta`, and a row has two — the lifecycle and the
+       * duration — so it was scanning "1 DAY" and "14 DAYS" for the word ENDED. A check must
+       * select the thing it protects. */
+      const iso = t => new Date(t + 'T00:00:00Z').getTime();
+      [...d.querySelectorAll('tr[data-life]')].forEach(tr => {
+        const life = tr.dataset.life, start = tr.dataset.start, end = tr.dataset.end;
+        const open = tr.dataset.open === '1', lane = tr.dataset.lane;
+        const name = ((tr.querySelector('.edit') || {}).value) || tr.dataset.id;
+        if (!start || !end || life === 'draft' || life === 'staged') return;
+        /* `>` not `>=`: commands/calendar.js ends an event when `endDate <= now`, so a row whose
+         * window closes TODAY reads ENDED from midnight. That is the bot's rule and the port
+         * mirrors it deliberately; asserting otherwise would flag faithfulness as a defect. */
+        if (life === 'ended' && iso(end) > iso(day))
+          found.push(`"${name}" reads ENDED but its own end date is ${end}, still ahead of ${day}`);
+        if (life === 'upcoming' && iso(start) <= iso(day))
+          found.push(`"${name}" reads UPCOMING but it started ${start}, on or before ${day}`);
+        if (life === 'live' && iso(start) > iso(day))
+          found.push(`"${name}" reads LIVE NOW but it does not start until ${start}`);
+        /* Two documented divergences, exempted BY NAME rather than discovered as noise: a patch
+         * note is a publication with no duration (the newest is current, the rest history), and
+         * a `dateOnly` draw never ends at all. Both are ported deliberately from the bot. */
+        if (life === 'live' && !open && lane !== 'patchNotes' && iso(end) < iso(day))
+          found.push(`"${name}" reads LIVE NOW but it ended ${end}`);
+      });
       const stats = (d.querySelector('.mh-stats') || {}).innerText || '';
       if (/NaN|undefined|Infinity/.test(stats)) found.push(`masthead stats read "${stats.replace(/\n/g, ' ').slice(0, 40)}"`);
     } catch (e) { found.push('probe threw: ' + e.message); }
-    const chk = readCheck(f);
+    const chk = await settle(f);
     bad += say('time:' + day, 'season', { problems:[...((chk && chk.problems) || []), ...found] }); ran++;
     f.remove(); paint();
   }
@@ -260,6 +366,25 @@ const say = (tag, name, probs) => {
                    : '<span class="bad">SELF-TEST FAILED — the visibility test is blind (' +
                      (zeroStillSeen ? '' : 'misses a real 0x0 control') + (hiddenSkipped ? '' : ' / still flags hidden descendants') + ')</span>');
     if (!vOk) bad++;
+
+    /* 🔴 AND THE SETTLE GATE MUST BE ABLE TO REPORT A TIMEOUT. `settle()` exists because reading
+     * `__selfCheck` on a timer reported an unsettled measurement as an answer for a day. A
+     * settle that silently returns the stale object on timeout would reinstate exactly that, so
+     * assert it MARKS the timeout — against a frame whose audit is deliberately never settled. */
+    const fake = { contentWindow: { __selfCheck: { problems: ['planted'], pending: true } } };
+    const t = await settle(fake, 200);
+    const sOk = !!(t && t.timedOut);
+    lines.push(sOk ? '<span class="ok">SELF-TEST</span> an audit that never settles IS reported as a timeout, not read'
+                   : '<span class="bad">SELF-TEST FAILED — settle() hands back an unsettled measurement as though it were the answer</span>');
+    if (!sOk) bad++;
+
+    /* And the liveness probe must be able to say NO. A frame that never runs rAF is the state
+     * this whole harness change exists for; a probe that cannot report it is decoration. */
+    const dead = { contentWindow: { requestAnimationFrame(){ /* never calls back */ } } };
+    const rOk = (await rafAlive(dead)) === false;
+    lines.push(rOk ? '<span class="ok">SELF-TEST</span> a frame that never paints IS detected'
+                   : '<span class="bad">SELF-TEST FAILED — rafAlive() cannot report a dead frame</span>');
+    if (!rOk) bad++;
   }
 
   lines.push('');
