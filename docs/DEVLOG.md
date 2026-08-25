@@ -214,6 +214,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-25 13:15 EDT — the probe that said a font existed when it did not (v3.68.0)
 - 2026-08-25 13:41 EDT — the portal promised opposite things one click apart (v3.68.0)
 - 2026-08-25 14:14 EDT — a helper that printed a tick and wrote nothing (v3.68.0)
+- 2026-08-25 14:36 EDT — the harness could not report a failure, and I had quoted it all day (v3.68.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3731,6 +3732,34 @@ I found it two hours later, by accident, greping for something else and seeing `
 What makes this worth a DEVLOG entry rather than a one-line fix is that **I had already recorded this exact failure earlier the same day.** A heredoc printed its per-edit lines and threw on a later assert, and the note I wrote about it said, in as many words, that a per-edit print does not mean the file changed. Then I kept using the same helper.
 
 The fix is trivial — write after every edit, report a miss without aborting — and the general form is not. **An operation that batches N changes and commits once has a failure mode that looks exactly like success right up until you inspect the artifact.** That is the same shape as a cached test result, as an audit that measures a half-laid-out page, and as `document.fonts.check()` returning true for a font that does not exist. Every one of them answers a question adjacent to the one being asked, in a well-formed voice, and the only defence is the same in all four cases: check the thing, not the log about the thing.
+
+## 2026-08-25 14:36 EDT — the harness could not report a failure, and I had quoted it all day (v3.68.0)
+
+Harkirat asked for a thorough falsification pass. It found the thing I had been leaning on all session.
+
+`.audit-all.html` loads every page and reports PASS or FAIL from the page's own self-check. I have quoted its verdict — **ALL 8 PASS at 1280 and 390** — in three commit messages and every summary today. It loads each page as `p + '.html?audit=1&v=' + Date.now()`.
+
+`?audit=1` is the mode that drives the page's declared interaction paths. Driving them **mutates the page's data**. On Broadcast I watched the element carrying a real contrast failure exist, be visible, and carry `rgb(255,122,69)` at 9px — and then, 3.4 seconds later, no longer match any selector at all, because the driven interactions had changed the count that gave it its class. A fresh audit on that mutated page returned clean.
+
+So the harness has never once audited a page in the state a person opens. "ALL 8 PASS" was true, and it was about eight pages that had already been poked.
+
+The fix is four characters of conditional — audit each page twice, plain first — and the line now reads ALL 16 PASS, which is also green, so nothing was hiding behind it. That is almost the least interesting part.
+
+What is interesting is that this is the **fifth** instance on this branch of one shape, and until today nothing had named it.
+
+A cached test result answers *did this pass last time*. An audit measuring a half-laid-out page answers *is it correct before layout finishes*. `document.fonts.check()` answers *can text be rendered* — and returns true for a font that does not exist. A write-once batch heredoc answers *did the replacement match* — and threw away five edits that had each printed a tick. And this harness answers *is the poked page clean*.
+
+Every one is a **well-formed answer to a question adjacent to the one being asked.** None of them errors. None looks suspicious. All five read as a pass, in a confident voice, at exactly the moment you want to believe them. Each was found by accident, and each was treated as a novelty, because there was no name for the class.
+
+There is one now, and it is written into the COMPANION rather than into a commit message, because the next session needs it before it trusts a green.
+
+Chasing the contrast failure produced two more things worth keeping. One is a confirmed defect: a native `title` holding 146 characters of explanation on a **disabled** button — which does not reliably fire hover or take focus, so the explanation was unreachable. **Two independent authorities had already flagged it** — an audit rule and the copy audit's E5 — and neither fix landed, because the rule only fires when the tray holds an op with no inverse, and no harness ever stages work, reloads, and comes back. It lives in a state nothing visits, which is the same reason the harness gap survived.
+
+The other is a finding I could not reproduce. Broadcast reported `"never ends" is 4.28:1 at 9px` twice, stable across a settle, and then refused to do it again on a fresh load at 1280 or 1440, scrolled, or with the tray open. The tempting move was to let it go. I filed it instead, with what is known — `--warn` at 9px genuinely is 4.28:1 against a 4.5:1 floor, so any state that paints one is a real failure — and what is not, which is which state. A finding seen twice, stable, is not noise for being inconvenient.
+
+Then Harkirat opened four surfaces and was right about all of them, and one was mine. The account menu had two rows that both said ⌘K and both did the same thing. I made that this morning: the menu carried a dead "Switch realm ⌨ G" that switched nothing and advertised a key bound nowhere, I renamed it to something honest, and in doing so turned it into an exact copy of the row directly beneath it. A per-call-site fix that never looked at its sibling — which is failure mode number five on my own list — committed inside the fix for a sibling defect.
+
+His better question was why either row existed. ⌘K is a permanently visible control in the header with its own hint. A menu row pointing at it is redundancy stacked on duplication. Both are gone.
 
 # Part B — Lessons Ledger (thematic)
 

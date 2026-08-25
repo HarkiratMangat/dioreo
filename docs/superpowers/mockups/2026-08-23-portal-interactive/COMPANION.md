@@ -56,7 +56,9 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **5.9j–5.9x** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice, the copy audit, the vocabulary** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **5.9j–5.9t** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the four filed bugs, what *looking* found, the destructive capability |
+| **5.9u–5.9x** | The shape scale · the tray’s per-row undo · the display voice · the copy audit · the twelve words | Before touching type, corners, the tray, or any user-facing string |
+| **5.9y / 5.9z** | **The falsification pass** — a gate that could not fail, and the four-instance defect family · **liveliness, magic, the three rejections, and the account panel** | 🔴 **Before believing any green in 5.9u–5.9x, and before proposing anything as “lively”** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 
@@ -2148,6 +2150,150 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 ⚠️ **No privacy amendment is needed, and that was checked rather than assumed.** `docs/legal/PRIVACY.md` §2.1b and Appendix A already describe `AdminUser` as holding "which pages/commands they can use" — the `permissions` array is disclosed generically, so a new token in it is neither a new field nor a new kind of data.
 
 ---
+
+## 5.9y THE FALSIFICATION PASS — a gate that could not fail, and a family of defects with one shape
+
+*2026-08-25 15:0x EDT. Run at Harkirat's request over the portal, its code, this document and my own work.*
+
+### 5.9y.1 🔴 `.audit-all` could not see a resting-state failure, and I quoted it all day
+
+The harness loaded every page as `p + '.html?audit=1&v=' + Date.now()`. **`?audit=1` DRIVES the page's declared interactions, which MUTATES its data.** Measured on Broadcast: the element carrying a contrast failure existed and was visible at first read, and **3.4 seconds later `span.nspin.warn` no longer matched any element**, because the driven interactions had changed `renderStats`'s `forever` count. A fresh `Shell.audit({})` then returned `ok:true, problems:[]`.
+
+So the harness audited eight pages **that had already been poked**, and reported PASS. **"ALL 8 PASS at 1280 and 390" was a true statement about a page nobody opens**, and it appears in three commit messages and every summary written today.
+
+**Fixed:** every page is now audited **twice — plain first, then `?audit=1`** — and either half can fail. Verified: **ALL 16 PASS at 1280**, so nothing regressed and the resting half is genuinely clean.
+
+⚠️ **Read every green in §5.9u–§5.9x with this attached.** Those sections cite `.audit-all` as evidence and were written before it was known to be half-blind. The claims survive — the two-mode run confirms them — but the *reasoning* that produced them did not, and a green quoted after its instrument was found unreliable is the stale-warning defect running the other way.
+
+### 5.9y.2 The defect the hunt found, flagged twice and fixed by neither
+
+Chasing the contrast finding surfaced one that IS confirmed: `native title carries 146 chars of content` — on the disabled Undo shipped that morning. **Two independent authorities had already said so** — audit rule *"native title carries N chars"* and the copy audit's **E5** — and neither fix landed, because **the rule only fires when the tray holds an op with no registered inverse**, a state no harness reaches: nothing stages work, reloads, and comes back.
+
+Fixed by putting the reason **on the row** (`staged earlier`, with the full sentence in `aria-label`) rather than behind a hover a **disabled** control cannot receive.
+
+### 5.9y.3 A finding recorded WITHOUT a reproduction, deliberately
+
+Broadcast reported `"never ends" is 4.28:1 at 9px — needs 4.5:1` twice, stable across a 3.2-second settle, in a tab that had been driven through many interactions. It does **not** reproduce on a fresh load at 1280 or 1440, scrolled to 600, or with the tray on screen. All eight pages pass a purpose-built **resting-state** audit.
+
+**So it is filed as unreproduced rather than dropped.** ⚠️ **The dishonest move available here was to quietly let it go because it resisted a third look** — a finding observed twice, stable, is not noise for being inconvenient. What is known: `--warn` `#FF7A45` at `--t-micro` (9px) sits at **4.28:1**, genuinely under the 4.5:1 floor, so **any state that paints a 9px `--warn` figure on the masthead ground is a real AA failure**; what is unknown is which state produced it.
+
+### 5.9y.4 🔴 THE FAMILY — four instances, one shape, and this document had no name for it
+
+Every one of these was found on this branch, and each was rediscovered as a novelty because nothing named the class:
+
+| instance | what it answered instead |
+|---|---|
+| a **cached** test result | "did this pass **last time**" |
+| the audit measuring a **half-laid-out** page | "is it correct **before layout finishes**" |
+| `document.fonts.check()` returning **true for a font that does not exist** | "**can** text be rendered" |
+| the write-once **batch heredoc** | "did the replacement **match**" |
+| `.audit-all` loading only **`?audit=1`** | "is the **poked** page clean" |
+
+**The shape: a well-formed answer to a question ADJACENT to the one being asked.** None of them errors, none looks suspicious, and every one reads as a pass. **The only defence that has ever worked is the same in all five — check the artifact, not the log about the artifact**, and give every probe a case it must answer NO to before trusting a yes.
+
+### 5.9z.6 The account panel — brainstormed, after the first pass was reaction rather than design
+
+> *"theres so much redundancy and uselessness. Why are the signout buttons 2 different styles? why is the discord id cut off? what's even the point of 'Find a page or an action / Command palette', whats it even for and is it helpful/useful being there?"*
+
+⚠️ **This section was first written as tidying and is replaced.** It listed his four problems and proposed the inverse of each — keep one sign-out, show the id whole, delete the rows, make the session line live. Every one may be right and **not one is a design decision.** Tidying a panel that should not exist in its current form yields a tidy panel that still should not exist.
+
+**Start from what the panel is FOR.** In ordinary software an account menu carries switching, settings, billing, identity, exit. This product has **one owner and a handful of admins** — no switching, no billing, and preferences live in the bot's `/settings`. Strip those and only identity, session and exit remain.
+
+🔴 **And identity is already answered before the panel opens: the button you clicked IS the avatar and the name.** So the panel's whole header — avatar again, name, handle — duplicates its own trigger. **That is the real redundancy, and it is the top third of the panel**, not the two ⌘K rows.
+
+🔮 **What only the panel can say, and currently does not:** *what you are allowed to do.* Twelve permissions, an owner-only tier, and a `destructive` capability only the owner may grant — and **nothing anywhere in the portal tells you what YOU hold.** A delegated admin discovers it by clicking something and being refused. **The panel becomes: who you are · what you can do · how long you have · the way out.** Three of those four are answered nowhere else.
+
+**The two sign-outs, and the question underneath them.** The shell defends the header button — *"finding it is not the part that should be hard"*. Attack that: **how often does anyone sign out of a single-user admin portal kept open in a tab?** Rarely. So the header spends **permanent, always-visible space on one of the rarest acts in the product.** Now invert it — what is the **most frequent** thing the header does *not* surface? **Committing staged work**, which is what the whole portal is built around, and which lives on a rail badge and a floating tray.
+
+🔴 **The header's allocation is backwards: permanent space to the rarest act, none to the most frequent.** Sign-out moves into the panel, alone, in one style; the freed slot goes to a commit affordance that appears when there is something to commit. ⚠️ **The fair counter:** a sign-out you cannot see is one a delegated admin cannot find in a hurry at a shared machine. Real — and answered by making the panel *obviously* the account panel, not by a second button in a different colour, which is what teaches that they are two different acts.
+
+**The panel is five-sixths label.** Rows that SAY something: name, handle, role badge, staged count, session policy. Rows that DO something: copy-id, sign-out. **A panel that is mostly labels is a card wearing a menu's clothes.**
+
+**The ID, taken seriously.** It exists to be pasted into `/bot access` or a grant — real, but rare. `1139…2283` elides **the middle, which is the only part distinguishing it from any other snowflake**, so the preview cannot confirm it is the right id. Two coherent answers: show it **whole** (19 digits fit and are verifiable), or show **nothing** and let the toast confirm. The elided middle is the one option that serves neither.
+
+**The decoration, and where I disagree with the cheap call.** The presence dot says *"Signed in"* — trivially true of anyone looking at it, so it is decoration wearing status. **It goes.** The banner is ~90px of Discord's own image, and cutting it as waste would be wrong: it is the one place the portal shows something personal, and it makes this feel like Discord's own account panel — **an affinity that is true here, because the product is a Discord bot's console.** It earns its place by shrinking and by carrying the identity block **on** it rather than above it, which also dissolves the duplicated-avatar problem.
+
+**`Session · 12 hours` is the sharpest small example of the whole critique.** It states the **policy**. What a person wants is *"expires in 7h 20m"*. The difference is not wording: **one is documentation about the system, the other is a fact about you** — and that is exactly what separates five label rows from a panel worth opening.
+
+✅ **Already done:** both duplicate ⌘K rows removed. 🔴 **That duplicate was created in this session** — renaming a dead `Switch realm ⌨ G` row into an exact copy of the `Command palette` row beneath it. Failure mode #5, *a per-call-site fix that leaves its siblings wrong*, committed inside the fix for a sibling defect. And his better question stands: **neither row should have existed**, because ⌘K is a permanently visible header control with its own hint.
+
+
+## 5.9z LIVELINESS, MAGIC, AND THE THREE THINGS HARKIRAT REJECTED
+
+*Decided 2026-08-25. **Recorded here because it existed only in chat**, and a wiring session starting from this document would not have known any of it.*
+
+### 5.9z.1 His definitions, which are not the ones I reached for
+
+> **Liveliness** — *"aesthetically pleasing, breathing life into elements, such as subtle glows, tints, animations upon clicking or doing something, elements dynamically changing on behavior."* **Magic** — *"'wow that was awesome', 'omg the portal can do that?', 'woah that made it so easy' — aspects/features into the portal and its features/design elements."*
+
+**Liveliness is FEEL. Magic is CAPABILITY.** My first pass answered neither: I proposed cursor glow, count-up figures, film grain and a login redesign, and he called them *"such lame and boring ideas"* — correctly, because **not one of the four could only exist in this product.** My second pass over-corrected into metaphor (time as the live material, the season's shape) and he rejected three of four for a better reason than taste.
+
+### 5.9z.2 The three rejections ARE design constraints — do not re-propose them
+
+| rejected | his reason, which is the constraint |
+|---|---|
+| **time as the live material** (draining windows, a creeping NOW) | *"useless for majority of the seasonal info since it spans days and I'm not going to be staring at my screen for days"* — **a quantity that moves slower than a session cannot be shown as motion.** That kills every ambient-time idea, not just this one |
+| **the player's phone** (a live Discord render) | *"a confusing mechanism that doesn't help me at all when drafting things"* — a second surface to read while editing is a cost, not a preview |
+| **the season's shape** (a density glyph) | *"so useless and tells me nothing"* — but ✅ **"i like the chart design and want its aesthetic implemented to some areas of the Analytics realm"**, my choice where |
+
+### 5.9z.3 Approved, with his refinement notes attached
+
+**All eight liveliness items**, plus a refinement pass. Two named: ⚠️ **the toast needs a much smoother animation**, and ⚠️ **the lifted card needs colour on the lifted state**, not just a shadow.
+
+**All four capabilities.** Two named: ⚠️ **paste-anything must be more intuitive**, and 🔴 **fix-all-mechanical needs a companion element that VISUALISES the proposed change** — *"rather than it being blind trust and execute."* That note is the whole feature: a one-click fix you cannot inspect is precisely what the staging model exists to prevent, so each fix shows its **before → after** before anything stages.
+
+**Filed, not built:** motion as a system across all realms. ⚠️ **That is NOT the liveliness work** — conflating the two is how the deferred entry gets wrongly closed.
+
+### 5.9z.4 The masthead figures — and the trap inside "can they all have relevant colours"
+
+⚠️ **Taken literally, the ask destroys what it is trying to improve.** If every figure is coloured, colour stops carrying information and becomes texture. The current row at least means *this one is a problem*, even if it says it badly. So the question is not which colour each number gets — it is **what a masthead figure is for.**
+
+**Three kinds of number are wearing one costume.** From `MP BUILDS SHOWN 125 · RANKED 64 · STAGED 0 · NEED REPAIR 11 · STALE 106`:
+
+| kind | example | valence |
+|---|---|---|
+| **a SIZE** — how much there is | 125 builds · 2 live | never good or bad |
+| **a STATE** — how much needs you | 11 need repair · 1 never ends · 106 stale | has a valence |
+| **YOUR OWN WORK** | staged | neither — but it is the only one you can act on directly |
+
+🔴 **The grammar that falls out, and it is §4's own rule finally applied:** a **size** takes its realm's **topic** colour (MP builds in Armory red, live announcements in Broadcast yellow), because a size names a topic. A **state** takes a state colour **only when it is non-neutral** — `NEED REPAIR 11` is warn, `NEED REPAIR 0` is not. **Staged takes `--staged` cyan when non-zero**, so the one figure you can act on is the one that changes appearance when there is something to act on.
+
+🔴 **`0 STAGED` rendering grey-dimmed is the most wrong thing in the row, and it is wrong in an instructive way.** The `.zero` class dims a zero to mean *nothing here* — correct for `NEED REPAIR 0`, and **exactly backwards for `STAGED 0`**, where a clean slate is the *good* state and dimming makes it read as absence rather than as *you are up to date*. **One class, two opposite meanings** — the one-quantity-two-authorities shape, in CSS.
+
+**And "improve their design in some way" has an answer bigger than colour: the row has no hierarchy.** Five figures at one size, one weight, evenly spaced, so the eye has nowhere to land. The realm's **defining** number should lead at full size and the rest should be secondary — which is a larger improvement than any palette, and neither of us reached it until the numbers were sorted into kinds.
+
+### 5.9z.4b The underlined controls — the answer is not "remove the underline"
+
+**Three affordances are stacked on one control:** a border says *button*, an underline says *link*, an arrow says *navigation*. Any one would do; all three at once is why they read badly, and deleting the `text-decoration` fixes a third of it.
+
+🔴 **The larger question nobody asked: does that row need a button at all?** Each Home attention row already names one destination and one thing wrong with it. **The whole row could be the target.** Then the arrow is the only affordance, the underline problem disappears, the right column stops being a wall of five near-identical controls, and the reclaimed width can say **how bad** instead of **where to go**.
+
+⚠️ **The cost, stated fairly:** a whole-row target is worse for keyboard and screen-reader users if built as a click handler on a `div`. It has to be a real anchor wrapping the row, which puts the rank number and the severity bar inside a link — legitimate, but deliberate. That is a real cost, not a reason to avoid it.
+
+### 5.9z.4c 🔴 THE THREAD THROUGH ALL FOUR OF HIS NOTES
+
+The account panel duplicates the button that opens it · Home's cards duplicate its attention list · the masthead's `.zero` class serves two opposite meanings · the attention rows carry three affordances for one act.
+
+**Every one is a REDUNDANCY THAT LOOKS LIKE COMPLETENESS.** Nothing is missing anywhere. Things are said twice, in ways where the second saying weakens the first. **That is the portal's actual design problem**, and no per-surface tidy would have surfaced it — which is precisely why he insisted these get a thinking pass rather than a quick read.
+
+### 5.9z.5 Home — why it goes unused, and the plan
+
+His words: *"its all over the place… looking at it, i feel like i'd never utilize it."* Five reasons, ranked by cost:
+
+1. 🔴 **The cards and the attention list are two authorities over one question.** The list ranks what needs you; the cards then list every realm again, undifferentiated, one stat each — so Armory is card #2 whether it has 13 broken builds or none. **The same defect class as Home saying 117 need repair while Armory said 11, one level up: not two numbers disagreeing, two layouts disagreeing about what matters.**
+2. 🔴 **Home is the only realm with no masthead figures.** The one page whose job is *"what is the state of things"* opens with a title and a paragraph.
+3. 🔴 **No card stat says whether it is GOOD.** *39 scheduled items · 133 of 133 builds · 2 showing now · 3 admins · 496 interactions* — only one carries a judgement, and only by accident of its denominator. A number with no comparison is homework, not a glance.
+4. 🟡 **"Nothing staged" sits at the BOTTOM**, ~1500px down, under five cards — the most actionable fact on the page, reached last.
+5. 🟡 **The three-line lede is design rationale addressed to a reviewer**, costing ~180px above the fold on the page he opens first. The §F2 defect, fixed on four other pages and left on this one.
+
+**Plus the mechanics:** five cards in a 2-up grid **orphans Analytics** on its own row, which is the literal source of "all over the place".
+
+**THE PLAN — Home answers three questions in one screenful, in this order:**
+1. **Is anything wrong?** → the attention list, which already works and is the best thing on the page.
+2. **What is live right now?** → 🔴 **the portal's actual subject, and Home does not answer it at all.** What a player would see this second — the live season and its days left, what announcements are showing, what runs today.
+3. **What is uncommitted?** → the staged bar, moved to the top.
+
+**Concretely:** cut the philosophy lede · give Home a masthead figure row that summarises **all five realms** (days left · live now · staged · needs you) · demote the five realm cards to a **compact navigation rail** with one figure and a state dot, so they stop competing with the attention list · spend the reclaimed space on **what is live** · move the staged bar directly under the figures.
 
 ## 5.9x THE TWELVE WORDS — the vocabulary, settled before the rebuild
 

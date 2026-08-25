@@ -238,7 +238,10 @@
             : (o.realm && o.realm.href && (!here || o.realm.href !== here.href))
               /* Not a refusal — a route. The inverse lives on the page that staged it. */
               ? `<a class="round-u" href="${o.realm.href}" aria-label="Undo ${o.name} ${o.verb||'added'} on ${o.realm.label}">Undo on ${o.realm.label}</a>`
-              : `<button type="button" class="round-u" disabled aria-label="Cannot undo ${o.name} ${o.verb||'added'}" title="This change was staged before the page reloaded, so the portal no longer holds the step that puts it back. Discard all clears every staged change.">Undo</button>`;
+              /* Inline, not a native title: a DISABLED button does not reliably fire hover or take
+             * focus, so its title is an explanation the reader cannot reach. Audit rule "native
+             * title carries N chars of content" and the copy audit's E5 both said so. */
+            : `<span class="round-u none" aria-label="Cannot undo ${o.name} ${o.verb||'added'} — it was staged before the last reload">staged earlier</span>`;
           return `
           <div class="round ${o.tier===3?'t3':''}">
             <span class="tier">T${o.tier}</span><b>${o.name}</b> ${o.verb||'added'}${back}
@@ -1744,13 +1747,11 @@
         <div class="usec">
           <button class="mi" role="menuitem" data-m="realm">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-            <!-- Was "Switch realm ⌨ G": it switched nothing (it toasted "the rail is on the
-                 left") and G was bound nowhere. A label that promises an action it does not have
-                 is the same defect as the tray header that carried role="button" with no listener. -->
-            Find a page or an action<kbd>&#8984;K</kbd></button>
-          <button class="mi" role="menuitem" data-m="palette">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h10v10H3z"/><path d="M6 6h4M6 9h4"/></svg>
-            Command palette<kbd>&#8984;K</kbd></button>
+          <!-- 🔴 TWO ROWS HERE BOTH SAID ⌘K AND BOTH OPENED THE SAME THING. One was "Switch
+               realm ⌨ G", which switched nothing and advertised a key bound nowhere; renaming it
+               to "Find a page or an action" fixed the lie and created a duplicate of the row
+               below it. Both are gone: ⌘K is a permanently visible control in the header, with
+               its own hint, so a menu row pointing at it is redundancy on top of duplication. -->
           <button class="mi" role="menuitem" data-m="copy">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z"/><path d="M3 11V3h8"/></svg>
             Copy Discord ID<span class="mnote">${USER.id.slice(0,4)}…${USER.id.slice(-4)}</span></button>

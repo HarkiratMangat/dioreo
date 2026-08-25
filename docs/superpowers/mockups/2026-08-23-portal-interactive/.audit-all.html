@@ -12,10 +12,15 @@ const W = Number(new URLSearchParams(location.search).get('w') || 1280);
 const results = [];
 window.addEventListener('error', e => { document.getElementById('out').textContent = 'HARNESS ERROR: ' + e.message; window.__done = true; });
 (async () => {
-  for (const p of PAGES) {
+  for (const p of PAGES) for (const mode of [0, 1]) {
     const f = document.createElement('iframe');
     f.style.width = W + 'px';
-    f.src = p + '.html?audit=1&v=' + Date.now();
+    /* 🔴 THIS LOADED ONLY `?audit=1`, WHICH DRIVES THE PAGE'S INTERACTIONS AND MUTATES ITS DATA
+       — measured 2026-08-25 on Broadcast, where the element carrying a real contrast failure
+       ceased to exist once the interactions had run, and the harness reported PASS. A gate that
+       only ever sees the poked page cannot report a failure in the page a person opens. Each page
+       is now audited TWICE, plain first, and either half can fail. */
+    f.src = p + '.html' + (mode ? '?audit=1&v=' : '?v=') + Date.now();
     document.getElementById("stage").appendChild(f);
     await new Promise(r => { f.onload = r; setTimeout(r, 9000); });
     await new Promise(r => setTimeout(r, 1200));          // let fonts.ready re-run land
@@ -26,7 +31,7 @@ window.addEventListener('error', e => { document.getElementById('out').textConte
       /* A `note:` is informational by design — a check saying WHY it stood down, which exists so
          a skip is visible instead of silent. Counting it as a failure makes every run red and
          teaches the reader to ignore the colour, which is the opposite of what the note is for. */
-      res = { page:p, ok:sc.ok, fails:(sc.problems||[]).filter(x => !/^note:/.test(x)).slice(0,4),
+      res = { page:p + (mode ? ' ?audit=1' : ' at rest'), ok:sc.ok, fails:(sc.problems||[]).filter(x => !/^note:/.test(x)).slice(0,4),
               notes:(sc.problems||[]).filter(x => /^note:/.test(x)).length,
               vw:w.innerWidth, docW:d.documentElement.scrollWidth,
               overflow: d.documentElement.scrollWidth > w.innerWidth + 1,
@@ -36,7 +41,7 @@ window.addEventListener('error', e => { document.getElementById('out').textConte
     /* `ok` comes from the page's own selfCheck, which counts notes; PASS/FAIL is decided here
        from the failures that survive the note filter, so an informational skip cannot turn a
        clean run red. */
-    document.getElementById("out").textContent = results.map(r => `${(r.fails && r.fails.length) ? 'FAIL' : 'PASS'} ${r.page.padEnd(10)} vw=${r.vw} docW=${r.docW}` +
+    document.getElementById("out").textContent = results.map(r => `${(r.fails && r.fails.length) ? 'FAIL' : 'PASS'} ${r.page.padEnd(20)} vw=${r.vw} docW=${r.docW}` +
       (r.notes ? ` (${r.notes} note${r.notes > 1 ? 's' : ''})` : '') +
       (r.overflow ? ' OVERFLOW' : '') + (r.fails && r.fails.length ? '  ' + JSON.stringify(r.fails) : '') +
       (r.errs && r.errs.length ? '  ERR ' + JSON.stringify(r.errs) : '')).join('\n');

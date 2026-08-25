@@ -3,7 +3,7 @@
 <title>Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787681449"><link rel="stylesheet" href="assets/app.css?v=1787681449">
+<link rel="stylesheet" href="assets/tokens.css?v=1787682722"><link rel="stylesheet" href="assets/app.css?v=1787682722">
 <style>
   /* Home has no rail — the rail is the in-realm switcher, and repeating it on the
    * page whose entire job IS choosing a realm would say the same thing twice. */
@@ -38,8 +38,8 @@
      same information with more of it (which realms, and both actions inline), so the tray
      would be a second, worse copy sitting on top of the first. -->
 
-<script src="assets/fixtures.js?v=1787681449"></script>
-<script src="assets/shell.js?v=1787681449"></script>
+<script src="assets/fixtures.js?v=1787682722"></script>
+<script src="assets/shell.js?v=1787682722"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -132,7 +132,7 @@
        * single-point-of-failure count, not a session count: zero sessions is the normal
        * resting state and saying "0 signed in" every time trains you to ignore the card. */
       n:F.accessAdmins.length, unit:'admins',
-      att: F.spof.length ? `${F.spof.length} scope${F.spof.length === 1 ? '' : 's'} held by one person`
+      att: F.spof.length ? `${F.spof.length} permission${F.spof.length === 1 ? '' : 's'} held by one person`
          : (F.sessions.length ? `${F.sessions.length} signed in` : null),
       warn: !!F.spof.length },
     { id:'analytics', label:'Analytics', href:'analytics.html', c:'#1F8A5E',
@@ -152,7 +152,7 @@
     if (conflicts)          push('conflict','Season','season.html',
                                  `${conflicts} item${conflicts===1?'':'s'} run past the season's own deadlines`, conflicts, 'Open the Track');
     if (F.spof.length)      push('spof','Access','access.html',
-                                 `${F.spof.length} scope${F.spof.length===1?'':'s'} held by exactly one person`, F.spof.length, 'Open the matrix');
+                                 `${F.spof.length} permission${F.spof.length===1?'':'s'} held by exactly one person`, F.spof.length, 'Open the matrix');
     const errs = (F.alertStats.find(a => a.level === 'error') || {}).n || 0;
     if (errs)               push('error','Analytics','analytics.html',
                                  `${errs} error${errs===1?'':'s'} pinged`, errs, 'Open health');

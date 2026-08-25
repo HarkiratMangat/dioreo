@@ -342,6 +342,10 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 .round.t3 .round-u:hover:not([disabled]){color:var(--warn);border-color:var(--warn)}
 .round-u:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .round-u[disabled]{opacity:.45;cursor:not-allowed}
+/* The un-undoable row states its reason on the row rather than behind a hover a disabled
+ * control cannot receive. It is not a button, because nothing happens when you press it. */
+.round-u.none{border-style:dashed;border-color:var(--rule);color:var(--ink4);cursor:default;
+  text-transform:none;letter-spacing:.02em}
 /* Touch gets the real target; the desktop tray has no room for a 44px control in a 7px row. */
 @media (max-width:768px){ .round-u{min-height:var(--tap);padding:0 12px} }
 /* The Manifest's own name. Same eyebrow treatment as every other section label, and it sits
