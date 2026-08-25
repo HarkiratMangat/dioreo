@@ -224,7 +224,7 @@ window.FIX = (function () {
       { id:'past-bp', kind:'mechanical', label:'Runs past the battle pass',
         note:`Ends after ${bpEnd || 'the battle-pass end, which is not set'}. Not automatically wrong — a DMZ or ranked-tail event legitimately can — but it is the one thing a season calendar cannot show you.`,
         hits: !bpEnd ? [] : spans.filter(i => i.endDate && i.endDate > bpEnd)
-                     .map(i => ({ id:i.id, label:i.title, why:`ends ${i.endDate}, ${Math.round((new Date(i.endDate) - new Date(bpEnd)) / 86400000)} days past` })) },
+                     .map(i => ({ id:i.id, label:i.title, why:(n => `ends ${i.endDate}, ${n} day${n === 1 ? '' : 's'} past`)(Math.round((new Date(i.endDate) - new Date(bpEnd)) / 86400000)) })) },
       { id:'orphan-window', kind:'mechanical', label:'Draw window with no draw',
         note:"An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Reports zero here, and CAN fire: rename any draw and its window orphans immediately.",
         hits: items.filter(i => i.lane === 'drawWindow' && i.orphan)

@@ -1202,7 +1202,17 @@
     countdown(iso, today){
       if (!iso) return null;
       const end = new Date(iso + 'T23:59:59Z').getTime();
-      const ms = end - Date.now();
+      /* 🔴 `today` WAS DECLARED AND NEVER READ — this used Date.now(). The call site in
+       * season.html passes F.today and looked correct, so nothing about it read as wrong;
+       * the masthead simply counted from the real wall clock while every other figure on
+       * the page counted from the fixture date. Found 2026-08-25 by looking at the Board
+       * view: the masthead said "16d BATTLE PASS" 120px above a strip saying "battle pass
+       * Sep 10 · 17 days left". One quantity, two authorities, disagreeing on screen.
+       * The second, worse half: `?today=YYYY-MM-DD` is how this package renders states the
+       * fixtures never produce, and this was the one element that ignored it — so no
+       * ?today= check could ever fail here. A check cannot fail on an element it cannot reach. */
+      const now = today ? new Date(today + 'T00:00:00Z').getTime() : Date.now();
+      const ms = end - now;
       if (ms <= 0) return { text:'ended', hot:true, done:true };
       const days = Math.floor(ms / 86400000), hrs = Math.floor(ms / 3600000);
       if (days >= 3)  return { text: days + 'd', hot:false };

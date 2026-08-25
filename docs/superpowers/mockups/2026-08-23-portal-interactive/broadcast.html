@@ -3,7 +3,7 @@
 <title>Broadcast · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787695831"><link rel="stylesheet" href="assets/app.css?v=1787695831">
+<link rel="stylesheet" href="assets/tokens.css?v=1787699724"><link rel="stylesheet" href="assets/app.css?v=1787699724">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -79,9 +79,9 @@
   </main>
 </div>
 <aside class="tray" hidden></aside>
-<script src="assets/fixtures.js?v=1787695831"></script>
-<script src="assets/timeline.js?v=1787695831"></script>
-<script src="assets/shell.js?v=1787695831"></script>
+<script src="assets/fixtures.js?v=1787699724"></script>
+<script src="assets/timeline.js?v=1787699724"></script>
+<script src="assets/shell.js?v=1787699724"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -204,7 +204,7 @@
         accent: F.annAccent(a),
         title: h || bodyOf(a.text),
         sub: h ? bodyOf(a.text) : '',
-        rows: [['Posted', `${days(a.createdAt, NOW)} days ago`],
+        rows: [['Posted', `${days(a.createdAt, NOW)} ${S.plural(days(a.createdAt, NOW), 'days')} ago`],
                ['Ends', a.expiresAt ? fmt(a.expiresAt) : 'never']]
       });
     }).join('') : `<div class="nsempty">No message is sent.</div>`;
@@ -285,7 +285,7 @@
     headsup.innerHTML = !forever.length ? '' : `
       <div class="panel" style="margin-top:16px"><div class="callout">
         <b>Heads up:</b> &ldquo;${esc(forever[0].text.slice(0, 62))}${forever[0].text.length > 62 ? '&hellip;' : ''}&rdquo;
-        has no expiry and has been showing for <b>${forever[0].d} days</b>.
+        has no expiry and has been showing for <b>${forever[0].d} ${S.plural(forever[0].d, 'days')}</b>.
         ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}
         A blank expiry field means the ${F.DEFAULT_EXPIRY_DAYS}-day default; <code>never</code> means this.
       </div></div>`;
@@ -305,7 +305,7 @@
     if (t === 'never' || t === 'none') return { ok:true, at: null, how:'never expires' };
     const n = Number(t);
     if (!Number.isInteger(n) || n <= 0) return { ok:false };
-    return { ok:true, at: T.addDays(NOW, n), how:`${n} days from now` };
+    return { ok:true, at: T.addDays(NOW, n), how:`${n} ${S.plural(n, 'days')} from now` };
   }
 
   function openAnn(id) {

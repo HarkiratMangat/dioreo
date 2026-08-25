@@ -3,7 +3,7 @@
 <title>Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787695831"><link rel="stylesheet" href="assets/app.css?v=1787695831">
+<link rel="stylesheet" href="assets/tokens.css?v=1787699724"><link rel="stylesheet" href="assets/app.css?v=1787699724">
 </head><body>
 <!-- 🔴 HOME USED TO OVERRIDE THE GRID TO ONE COLUMN AND CARRY NO RAIL, under a comment that
      read: "the rail is the in-realm switcher, and repeating it on the page whose entire job IS
@@ -51,8 +51,8 @@
 <!-- No floating tray on Home: the resume bar above carries the same information with more of
      it (which realms, and both actions inline), so the tray would be a second, worse copy. -->
 
-<script src="assets/fixtures.js?v=1787695831"></script>
-<script src="assets/shell.js?v=1787695831"></script>
+<script src="assets/fixtures.js?v=1787699724"></script>
+<script src="assets/shell.js?v=1787699724"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -200,7 +200,7 @@
       <span class="stat lead" style="--c:${needs ? 'var(--warn)' : 'var(--ink)'}">
         <span class="v" id="fNeeds">${needs}</span> <span class="k">needs you</span></span>
       <span class="stat"><span class="v" id="fDays">${sn.days === null ? '—' : sn.days}</span>
-        <span class="k">days left${sn.days === null ? '' : ' &middot; ' + sn.label}</span></span>
+        <span class="k">${S.plural(sn.days === null ? 0 : sn.days, 'days')} left${sn.days === null ? '' : ' &middot; ' + sn.label}</span></span>
       <span class="stat"><span class="v" id="fLive">${live}</span> <span class="k">live now</span></span>
       <span class="stat stg"><span class="v" id="fStaged">${ops.length}</span> <span class="k">staged</span></span>`;
     S.markZero(document.getElementById('fNeeds'), needs);
@@ -214,7 +214,7 @@
       <div class="lp">
         <h2>Running right now</h2>
         <div class="hseason"><b>${F.season.currentSeasonTitle}</b>
-          <span>${sn.days === null ? 'no deadline set' : sn.days + ' days left &middot; ' + sn.label}</span></div>
+          <span>${sn.days === null ? 'no deadline set' : sn.days + ' ' + S.plural(sn.days, 'days') + ' left &middot; ' + sn.label}</span></div>
         <p class="lsub">What a player opening the bot this second would be shown.</p>
         ${today.slice(0, SHOW).map(it => `<div class="lrow" style="--c:${(F.LANE_BY_KEY[it.lane] || {}).hex || 'var(--ink4)'}">
           <i class="ld"></i>

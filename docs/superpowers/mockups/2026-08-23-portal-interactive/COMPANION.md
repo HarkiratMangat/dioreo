@@ -3305,3 +3305,47 @@ The key now sits with the other two marks, and its swatch **is** the mark rather
 Two faults, both about the same thing — the ribbon painted a curve and let a **label** carry the reading:
 - **Linear heights.** On a curve whose peak is 7 and whose typical value is 1–2, six bars of seven rendered as a 14% stub and only the text `7 at peak` said otherwise. Gamma-compressed at **0.6**, the shape carries it and the label confirms.
 - 🔴 **`opacity:0` erased every empty day.** A gap in the rotation — the one thing a person scanning this lane would act on — was indistinguishable from the lane ending. An empty day is now a warn tick on the baseline: the same idea the ack panel uses, and the half of the density glyph worth keeping.
+
+
+### 16.23 🔴 A PARAMETER THAT WAS DECLARED, PASSED, AND NEVER READ
+
+`Shell.countdown(iso, today)` computed `end - Date.now()`. `today` was in the signature, named for exactly what it was for, and dead.
+
+**How it surfaced:** the Board view was opened — one of the four sub-views nobody had ever looked at — and the masthead read **`16d BATTLE PASS`** about 120px above a strip reading **`battle pass · Sep 10 · 17 days left`**. Same quantity, same fold, two numbers. `seasonDaysLeft()` was correct; `countdown()` was counting from the real wall clock (2026-08-25) while the rest of the page counted from `F.today` (2026-08-24).
+
+🔴 **The call site looked right, and that is the whole lesson.** `season.html` calls `S.countdown(dl.iso, F.today)`. Reading the call tells you nothing is wrong. Only reading the callee does, and nothing routes you there.
+
+🔴 **The worse half is not the off-by-one.** `?today=YYYY-MM-DD` is this package's mechanism for rendering states the fixtures never produce — it is how the out-of-season region was verified and how the DMZ contrast failure was found. This element **ignored it**. Every `?today=` sweep that has ever run passed over this figure without being able to touch it. **A check cannot fail on an element it cannot reach**, which is the same shape as §5.9y.4's gate that could not fail, arriving from the opposite direction: there the check was vacuous, here the *subject* was unreachable.
+
+Fixed by reading `today` when given and falling back to `Date.now()` only when it is not. Verified at three dates: `?today=2026-08-24` → `17d`, agreeing with the strip; `?today=2026-09-09` → `47h`, hot; `?today=2026-09-10` → `23h`.
+
+### 16.24 "1 days left" — the fourth occurrence, directly below the pluraliser written for it
+
+`season.html`'s `fmtLeft` returned `` `<b>${d}</b> days left` ``. Fourteen lines above it sits `const plural = (n, word) => ...` under the comment *"One pluraliser, because '1 days' turned up in three different templates independently."*
+
+Found by driving `?today=2026-09-09` after fixing §16.23 — the fix for one defect is what made the next one visible, because until the countdown honoured `?today=` there was no way to render the `d === 1` state at all.
+
+A sweep for the same shape across the package found **nine more**: the span-length tooltip, the past-season-end repair text, the draw-gap repair text, three `broadcast.html` strings (posted-ago, the no-expiry warning, the expiry parse echo), Home's masthead figure label, Home's attention row, and one in `fixtures.js`.
+
+**And zero is not "0 days left."** That is a number where a word belongs; the sentence is **"ends today"**.
+
+⚠️ **Two pluralisers, same name, opposite contracts.** `S.plural(n, unit)` returns the **unit** — the caller supplies the number, and a written-plural unit loses its `s` at one. `season.html`'s local `plural(n, word)` returns the **whole phrase**, number included. Both are used correctly at every site, so nothing is broken; the collision is recorded here because the next person to reach for "the pluraliser" has a 50% chance of picking the one that does not fit their template.
+
+### 16.25 Four KINDS of deadline element — and the season has two walls, not three deadlines
+
+The season-deadline problem has been raised **nine times**. §16.14 records why the first eight failed: every one was an **annotation on something else**. The ninth replacement — a row of three equal cards — was rejected as *"boring"*, and the honest diagnosis is that three data points were allowed to choose a three-column layout. **That is arithmetic, not design**, and the row asserts something false: that the three deadlines are peers. There is a next wall, and then there is later.
+
+**The artifact** (`local/design/season-deadline-options.html`, published) presents four options that differ in *what they claim a deadline IS*, which is the only axis on which "different in kind" means anything:
+
+| | Kind | The claim | Where it is wrong |
+|---|---|---|---|
+| **A** | The Horizon | a deadline is a **duration** — depleting measures, length ∝ days remaining | at true scale **the least urgent thing draws the longest bar**; and two 17-day bars cannot express that they are the same day |
+| **B** | The Moments | a deadline is a **moment**, and moments merge | degrades to an ordered list of three when no dates coincide; TBD has no date to merge on |
+| **C** | The Board | a deadline is a **position in a queue** — rank words, not size | quiet, and restraint is the method that has already failed nine times here |
+| **D** | The Sentence | a deadline is a **consequence**, and a consequence is a sentence | must stay true in every state; and it is read once, not scanned repeatedly |
+
+🔴 **The finding that came out of building it.** `bpEnd` and `rankEnd` are **both `2026-09-10`**. This season does not have three deadlines — it has **two walls**, one of which two lines hit together. The Track's `.dnotch` layer already knows this (*"two deadlines on one date share the notch"*, §16.14) while the identity strip 200px above it still counts three. **The page states both at once, right now.**
+
+That is also where the memorable idea is: every generic admin tool renders three rows because the schema has three fields. Rendering two is the design doing something the data model did not do for it.
+
+**Also verified while building it:** the page has no start date of any kind, so any "progress through the cycle" reading is dead on arrival — an option was designed and cut for exactly this. And whatever wins must **replace**: the "Live season" strip goes, the masthead `days left` figure goes, the Track chips shrink to dot + date. Four weak sayings into one. That is the test the previous nine failed.

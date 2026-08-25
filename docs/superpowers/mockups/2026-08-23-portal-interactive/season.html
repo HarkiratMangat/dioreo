@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787695831"><link rel="stylesheet" href="assets/app.css?v=1787695831">
+<link rel="stylesheet" href="assets/tokens.css?v=1787699724"><link rel="stylesheet" href="assets/app.css?v=1787699724">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -218,9 +218,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787695831"></script>
-<script src="assets/timeline.js?v=1787695831"></script>
-<script src="assets/shell.js?v=1787695831"></script>
+<script src="assets/fixtures.js?v=1787699724"></script>
+<script src="assets/timeline.js?v=1787699724"></script>
+<script src="assets/shell.js?v=1787699724"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -457,7 +457,11 @@
     if (!o[L.endKey]) return { cls:'', html:'<span style="color:var(--ink3)">not set</span>' };
     const d = T.days(F.today, o[L.endKey]);
     if (d < 0) return { cls:'is-over', html:`ended <b>${-d}d</b> ago` };
-    return { cls:'', html:`<b>${d}</b> days left` };
+    /* Seen live at ?today=2026-09-09: "1 days left". Fourth occurrence of the bug the
+     * pluraliser above was written for, in the function immediately below it. And zero
+     * days left is not "0 days left" - it is today, which is a different sentence. */
+    if (d === 0) return { cls:'', html:`ends <b>today</b>` };
+    return { cls:'', html:`<b>${d}</b> ${S.plural(d, 'days')} left` };
   };
 
   function renderIdentity() {
@@ -1362,7 +1366,7 @@
         bar.style.left  = st.view.pct(it.start) + '%';
         bar.style.width = st.view.wpct(it.start, it.end) + '%';
         bar.className = 'bar ' + stateOf(it) + ' dragging';
-        showTip(ev, `<b>${T.fmt(it.start)} → ${T.fmt(it.end)}</b><span class="sub">${T.days(it.start,it.end)+1} days · ${it.name}</span>`);
+        showTip(ev, `<b>${T.fmt(it.start)} → ${T.fmt(it.end)}</b><span class="sub">${T.days(it.start,it.end)+1} ${S.plural(T.days(it.start,it.end)+1, 'days')} · ${it.name}</span>`);
       };
       const endDrag = d => {
         bar.classList.remove('dragging'); hideTip();
@@ -1899,7 +1903,7 @@
       if (e && T.days(it.end, e) < 0) {
         const L = F.LINES.find(l => st.season[l.endKey] === e);
         out.push({ id:'past-'+it.id, sev:'warn', fix:`Clamp to ${L ? L.label.toLowerCase() : 'season end'}`,
-          text:`<b>${it.name}</b> ends ${-T.days(it.end, e)} days after the season does.` });
+          text:`<b>${it.name}</b> ends ${-T.days(it.end, e)} ${S.plural(-T.days(it.end, e), 'days')} after the season does.` });
       }
     });
     /* 🔴 SIXTEEN "X AND Y OVERLAP" BOXES rendered below the Track, taller than the Track itself,
@@ -1924,7 +1928,7 @@
     for (let i = 1; i < draws.length; i++) {
       const gap = T.days(draws[i-1].start, draws[i].start);
       if (gap > 7) out.push({ id:'gap-'+draws[i].id, sev:'info', fix:'Fill',
-        text:`<b>${T.fmt(draws[i-1].start)} – ${T.fmt(draws[i].start)}</b> — ${gap} days with no draw releasing.` });
+        text:`<b>${T.fmt(draws[i-1].start)} – ${T.fmt(draws[i].start)}</b> — ${gap} ${S.plural(gap, 'days')} with no draw releasing.` });
     }
     return out;
   }
