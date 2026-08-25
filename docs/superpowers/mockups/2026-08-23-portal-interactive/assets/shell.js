@@ -925,6 +925,15 @@
       };
       scanText(document.body, 'page');
 
+      /* 11. `[hidden]` MUST ACTUALLY HIDE. The attribute is a UA rule at specificity 0,0,1 and
+       *     any class that sets `display` beats it — measured on Armory, where a hidden create
+       *     button and its two replacements rendered into the same grid cell and overprinted
+       *     each other. Silent, because nothing throws and the markup reads as correct. */
+      document.querySelectorAll('[hidden]').forEach(el => {
+        if (getComputedStyle(el).display !== 'none')
+          problems.push(`[hidden] but display:${getComputedStyle(el).display} — .${el.className || el.tagName}`);
+      });
+
       /* 9. INTERACTION SMOKE TEST. Drive every path that opens a panel and assert it
        *    produced a real title and body. This is the check that would have caught the
        *    drawer break on the turn it was introduced. */
@@ -1353,7 +1362,20 @@
         });
       };
       paint();
-      document.addEventListener('dioreo:export', paint);
+      /* 🔴 ONE LISTENER, NOT ONE PER RENDER. renderOneWay() is called from renderAll(), which
+       * runs on every stage, every remove, every zoom — so an unguarded addEventListener here
+       * accumulated a repaint per render, and a single export fired all of them. Idempotent, so
+       * it produced no wrong pixels; it is a leak that grows with session length, which is the
+       * kind that is never noticed and never goes away. The guard is on the HOST element rather
+       * than a Shell flag, because two realms could legitimately mount two strips. */
+      if (!el.__owBound) {
+        el.__owBound = true;
+        document.addEventListener('dioreo:export', () => {
+          /* Re-read the host each time: the strip's innerHTML is replaced by paint(), so a
+           * closure over its children would go stale, and a detached host must stop painting. */
+          if (el.isConnected) paint();
+        });
+      }
     },
 
     /* A confirm that will not arm until the operator types the word. Used ONLY for tier 3 —
@@ -1373,6 +1395,20 @@
       inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !ok.disabled) ok.click(); });
       ok.onclick = () => { Shell.closeDrawer(); onConfirm && onConfirm(); };
       inp.focus();
+    },
+
+    /* A row you just created ARRIVES. Season animates a bar on the Track; a table row carries
+     * exactly the same meaning and had none — without it a staged row is indistinguishable from
+     * one that was already there, and the reader re-reads the whole list to find what they just
+     * added. Called after the render that creates the node, and self-removes on animationend so
+     * a later re-render cannot replay it. */
+    arrive(sel, root = document){
+      requestAnimationFrame(() => {
+        const el = root.querySelector(sel);
+        if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        el.classList.add('rowin');
+        el.addEventListener('animationend', () => el.classList.remove('rowin'), { once:true });
+      });
     },
 
     /* The per-row control. It is a VISIBLE column, not a hover reveal and not a "..." menu:

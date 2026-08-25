@@ -20,7 +20,18 @@
         <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
         <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">need repair</span></span>
       </div>
-      <button class="pill lead mh-new" id="mhNew" accesskey="n">
+      <!-- 🔴 TWO BUTTONS, NOT ONE WITH A MODE DROPDOWN INSIDE. Which button you press decides
+           the mode, because that is what the write path actually does: core/ops/loadouts.js
+           overwrites mode with the page's own, so a dropdown offered a choice nothing honoured.
+           Harkirat: "MP and DMZ *do not* and should not share the same modal". -->
+      <div class="mh-add" id="mhAdd" role="group" aria-label="Add a build">
+        <span class="mh-add-k">Add</span>
+        <button class="pill mh-t" id="mhNewMP" style="--c:var(--draw)" accesskey="n">
+          <span class="dot"></span>New MP build<kbd class="mh-k">N</kbd></button>
+        <button class="pill mh-t" id="mhNewDMZ" style="--c:var(--ret)">
+          <span class="dot"></span>New DMZ build</button>
+      </div>
+      <button class="pill lead mh-new" id="mhNew" hidden accesskey="b">
         <span class="mh-plus" aria-hidden="true">+</span> New build
         <kbd>N</kbd>
       </button>
@@ -108,7 +119,12 @@
    * The fixtures are 36 real documents exported from the dev collection.
    * ══════════════════════════════════════════════════════════════════════════ */
 
-  const st = {
+  /* 🔴 THE UNRANKED TIER HOLDS 61 OF 133 BUILDS — 46% of the catalogue in one row, and it is
+   * the row with the least to say. At the 36-document sample this was invisible; at real scale
+   * the Tier board is 11,490px, fourteen screens, and the useful part is the top three rows.
+   * So a tier collapses, and the one that carries almost half the catalogue starts collapsed.
+   * Remembered per session, like the Season lanes it borrows the idea from. */
+  const st = { tclosed:new Set((() => { try { return JSON.parse(sessionStorage.getItem('dioreo-armory-tclosed')) || ['null']; } catch (e) { return ['null']; } })()),
     mode:'rack', q:'', cat:'all', armMode:'MP', defect:null, selected:new Set(),
     sort:{ k:'weaponName', dir:1 },
     builds: F.builds.map(b => ({ ...b, attachments:b.attachments.slice(), attachmentSlots:b.attachmentSlots.slice() })),
@@ -216,18 +232,42 @@
     viewRack.innerHTML = `
       <div class="rack">
         ${groups.map(({ r, list }) => `
-          <div class="trow t-${rankKey(r)}">
-            <div class="trow-h">
-              <span class="trow-k">${r === null ? '—' : r === 'best' ? '★' : r.replace('top', 'T')}</span>
-              <span class="trow-n">${list.length}</span>
+          <div class="trow t-${rankKey(r)} ${st.tclosed.has(String(r)) ? 'tclosed' : ''}" data-tier="${r === null ? 'null' : r}">
+            <div class="trow-h" role="button" tabindex="0" aria-expanded="${!st.tclosed.has(String(r))}"
+                 data-tt="${r === null ? 'null' : r}"
+                 aria-label="${F.RANK_LABEL[String(r)]}, ${list.length} weapon group(s) — click to collapse">
+              <!-- 🔴 "T3" AND "Top 3" ARE THE SAME FACT. The header rendered a token, a count and
+                   a label as three separate lines, so every tier restated itself — Harkirat:
+                   "whats with the redundant titles? t3 and top 3 mean the same thing." And the
+                   shapes differed between rows: the best tier got a star and a note, T3/T4/T5
+                   got a bold token and nothing, so five headers in one rail read as three
+                   designs. One shape now: [mark] [label] [count], then a note ONLY where there
+                   is something to add. The mark is a star for best and an em dash for unranked
+                   — the two rows whose meaning is not already in their label; the numbered
+                   tiers need no glyph, because "Top 3" is not improved by also saying "T3".
+                   ⚠️ NO BACKTICKS IN THIS COMMENT. It sits inside a template literal, and the
+                   first draft wrote a token in backticks and killed the whole page. FOURTH time
+                   in this package — and the first time a gate caught it instead of a person:
+                   portal:refs now parses every inline script, and it reported this within a
+                   minute of the edit. -->
+              <span class="trow-k" aria-hidden="true">${r === null ? '—' : r === 'best' ? '★' : ''}</span>
               <span class="trow-t">${F.RANK_LABEL[String(r)]}</span>
+              <span class="trow-n">${list.length}</span>
               <!-- 🔴 THE SAME SENTENCE RENDERED THREE TIMES. "ranked within its own category,
                    not across the armory" appeared on T3, T4 AND T5 — and again, in full, in the
                    note under the whole rack. Four copies of one fact, each taking a third of its
                    row's header height. A note earns its place by saying something the row above
                    it does not; only 'best' and 'unranked' do. -->
-              ${r === 'best' ? '<span class="trow-note">one per category — the pick a player should copy</span>'
+              <!-- 🔴 "one per category" WAS WRONG, and only the full 133-document catalogue
+                   could show it. At 36 documents the Best row held 6 cards and the sentence
+                   looked true. At 133 it holds 18 BUILDS across 7 categories — because a badge
+                   describes the WEAPON and the bot propagates it across every build sharing a
+                   weaponKey and mode. AR has five: BAL-27 Build 1, 2 and 3 among them. So the
+                   count was never wrong; the sentence was. Measured, every category has exactly
+                   one best WEAPON and none has zero. -->
+              ${r === 'best' ? `<span class="trow-note">one <b>weapon</b> per category</span>`
                 : r === null ? '<span class="trow-note">no rank set; these render with no tier badge</span>' : ''}
+              <span class="trow-cv" aria-hidden="true">&#9662;</span>
             </div>
             <div class="trow-body" data-drop="${r === null ? '' : r}">
               ${list.length ? groupChips(list)
@@ -235,12 +275,26 @@
             </div>
           </div>`).join('')}
       </div>
-      <p class="racknote">Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on — the bot
+      <p class="racknote"><b>Why the Best row holds 18 cards and not 7.</b> A badge describes the
+        <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a
+        <code>weaponKey</code> and mode, so BAL-27's five builds each carry it. Measured against the
+        full 133-document catalogue: every category has exactly one best weapon, and none has zero.
+        Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on — the bot
         renders it as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own
         (<code>best</code> / <code>top3</code> / <code>top4</code> / <code>top5</code>), validated by
         <code>adminParser.js</code>'s <code>parseLoadoutBadges()</code>.
         <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a
         combat range (<code>best-close</code>, <code>best-midlong</code>).</p>`;
+    viewRack.querySelectorAll('[data-tt]').forEach(h => {
+      const toggle = () => {
+        const k = h.dataset.tt;
+        st.tclosed.has(k) ? st.tclosed.delete(k) : st.tclosed.add(k);
+        try { sessionStorage.setItem('dioreo-armory-tclosed', JSON.stringify([...st.tclosed])); } catch (e) {}
+        renderRack();
+      };
+      h.onclick = toggle;
+      h.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
+    });
     wireRack();
   }
   /* 🔴 SIX PAIRS OF ADJACENT CARDS READ AS DUPLICATES. LOCUS/LOCUS, DR-H/DR-H, HS0405/HS0405,
@@ -253,11 +307,22 @@
   function groupChips(list) {
     const by = new Map();
     list.forEach(b => { const k = b.weaponName; if (!by.has(k)) by.set(k, []); by.get(k).push(b); });
-    return [...by.values()].map(g => g.length < 2 ? chip(g[0]) : `
+    /* 🔴 ONE CARD SHAPE, ALWAYS — a weapon with one build is a group of one. The first version
+     * returned a bare `.bchip` for singles and a `.bgrp` for multiples, so the rack showed TWO
+     * VISUAL LANGUAGES side by side for the same kind of object. Harkirat: "why are these
+     * different colors/styles, like i'm confused why is 1 a sleek dark style, while the other is
+     * a lifted grey style?" Because they were literally different components. A single card
+     * carried --raised with a 3px accent edge; a group carried --sunk with a header band and no
+     * edge, and the two sat adjacent in the same row. */
+    return [...by.values()].map(g => `
       <div class="bgrp" style="--c:${catOf(g[0].category).hex}">
-        <div class="bgrp-h"><i aria-hidden="true"></i>${g[0].weaponName}
-          ${g.some(b => b.isMeta) ? '<span class="bc-meta">META</span>' : ''}
-          <span class="bgrp-n">${g.length} builds</span></div>
+        <div class="bgrp-h">
+          <span class="bgrp-w"><i aria-hidden="true"></i><b>${g[0].weaponName}</b></span>
+          <span class="bgrp-m">
+            ${g.some(b => b.isMeta) ? '<span class="bc-meta">META</span>' : ''}
+            <span class="bgrp-n">${g.length} build${g.length > 1 ? 's' : ''}</span>
+          </span>
+        </div>
         ${g.map(chip).join('')}
       </div>`).join('');
   }
@@ -882,47 +947,185 @@ Badges: meta, top3
     });
   }
 
-  function openAdd() {
+  /* ══════════════════════════════════════════════════════════════════════════════
+   * ADD A BUILD — rebuilt 2026-08-24 on Harkirat's critique, which was right on every count:
+   *   "SO barebone. It doesn't even state in any way which fields are required/optional.
+   *    MP and DMZ *do not* and should not share the same modal. Where's the gunsmith code
+   *    field? why are attachments in 1 line? that's so unintuitive for an IMMERSIVE DESKTOP
+   *    PORTAL. Those placeholder texts look more like real filled in text than placeholder.
+   *    where's the URL, cloudinary public ID fields? Wheres the badge fields?"
+   *
+   * The old form was FIVE FIELDS. That is not a coincidence — it was Discord's modal shape
+   * reproduced in a browser, and Discord's five-field cap is the single constraint this portal
+   * exists to escape (see .claude/rules/manage-panel.md: the loadout modal is at the cap, which
+   * is why Build Name and Share Code had to share one pipe-delimited field there). Copying that
+   * shape here inherits a limit nothing imposes and then defers the rest to "the editor" —
+   * two screens for one act of creation.
+   *
+   * 🔴 MODE IS NOT A FIELD, AND THE OLD SELECT WAS A REAL DEFECT, not only a design choice.
+   * `core/ops/loadouts.js`'s upsertBulkBlocks does `{ ...rawEntry, mode }` and overwrites mode
+   * with the PAGE's mode unconditionally; the bot removed Mode from its own paste format on
+   * 2026-08-22 for exactly this reason, after a DMZ export pasted on the MP page silently
+   * reassigned every build. A Mode dropdown here offers a choice the write path ignores.
+   * So: two buttons, and which one you press decides it — matching the bot exactly.
+   * ══════════════════════════════════════════════════════════════════════════════ */
+
+  const CODE_RE = /^(?:\d[A-Za-z]){5}$/;          // 10 chars, alternating digit/letter
+  const codeOk  = v => CODE_RE.test(v.replace(/\s/g, ''));
+
+  function openAdd(mode) {
+    const m = mode || st.armMode;
+    const isMP = m === 'MP';
+    const accent = isMP ? 'var(--draw)' : 'var(--ret)';
+    /* Five rows because 123 of 133 real builds carry exactly five attachments — that is the
+     * Gunsmith's own shape, not a guess. The rows are free text rather than slot-typed selects:
+     * the bot stores a flat `attachments` array and `attachmentSlots` is empty on all 133
+     * documents, so typing a slot here would invent a structure the data does not have. */
+    const attRow = i => `<div class="atr" data-i="${i}">
+        <span class="atn">${i + 1}</span>
+        <input class="ati" data-att="${i}" placeholder="${['Muzzle — e.g. Monolithic Suppressor','Barrel — e.g. MIP Light Barrel (Short)','Stock — e.g. No Stock','Ammunition — e.g. 48 Round Extended Mag','Rear grip — e.g. Granulated Grip Tape'][i] || 'Attachment'}">
+        <button class="atx" data-clr="${i}" aria-label="Clear attachment ${i + 1}" tabindex="-1">&#10005;</button>
+      </div>`;
+
     S.drawer({
-      eyebrow:'loadouts.add · tier 1', title:'Add a build',
-      body:`<div class="dwbody">
-        <div class="bed-g2">
-          <label class="dwfield"><span>Weapon name</span><input id="nW" placeholder="AK117"></label>
-          <label class="dwfield"><span>Build name</span><input id="nB" placeholder="Build 1"></label>
-        </div>
-        <div class="bed-g2">
-          <label class="dwfield"><span>Category</span><select id="nC">${F.CATS.map(c =>
-            `<option value="${c.key}">${c.key} — ${c.label}</option>`).join('')}</select></label>
-          <label class="dwfield"><span>Mode</span><select id="nM"><option>MP</option><option>DMZ</option></select></label>
-        </div>
-        <label class="dwfield"><span>Attachments <i>comma separated, in Gunsmith order</i></span>
-          <input id="nA" placeholder="Monolithic Suppressor, MIP Extended Light Barrel, No Stock, 48 Round Extended Mag, Granulated Grip Tape"></label>
-        <p class="dw-p">It stages with no image and no code — both are added in the editor, where you
-          can see the card as you fill them in. Badges are set there too, because they apply to the
-          weapon rather than this one build.</p>
+      /* 🔴 THE EYEBROW SAYS WHAT THIS DOES, NOT WHAT IT IS CALLED INTERNALLY. It used to read
+       * "loadouts.add · tier 1" — Harkirat: "what does that even mean...?" He is right: an op id
+       * and a reversibility tier are things I need while wiring this, and things a person using
+       * the portal has no way to decode. The op id is kept, on the title attribute, so it stays
+       * one hover away for whoever is wiring it. */
+      eyebrow:`<span title="loadout.add · tier 1">Adding to the ${m} armory &middot; you can undo this</span>`,
+      title:`New ${m} build`, wide:true,
+      body:`<div class="dwbody bform" style="--c:${accent}">
+        <p class="bf-legend"><span class="req">*</span> required &mdash; everything else can be filled in now or later.
+          Nothing is written until you commit on Review.</p>
+
+        <section class="bf-sec">
+          <h4 class="bf-h">Identity</h4>
+          <div class="bed-g2">
+            <label class="dwfield"><span>Weapon name <span class="req">*</span></span>
+              <input id="nW" placeholder="AK117" autocomplete="off">
+              <i class="bf-hint">As it should read on the card. <code>weaponKey</code> is derived from it &mdash; lowercased, spaces stripped.</i></label>
+            <label class="dwfield"><span>Build name</span>
+              <input id="nB" placeholder="Aggressive Flex" autocomplete="off">
+              <i class="bf-hint">A human variant label, not a code. Defaults to <b>Build 1</b>.</i></label>
+          </div>
+          <label class="dwfield"><span>Category <span class="req">*</span></span>
+            <select id="nC">${F.CATS.map(c => `<option value="${c.key}">${c.key} &mdash; ${c.label}</option>`).join('')}</select>
+            <i class="bf-hint">Mode is <b>${m}</b> and is not a field here &mdash; it is decided by which button you pressed, exactly as it is in the bot.</i></label>
+        </section>
+
+        <section class="bf-sec">
+          <h4 class="bf-h">Attachments <span class="bf-n" id="nAn">0 of 5</span></h4>
+          <p class="bf-p">In Gunsmith order, top to bottom. <b>123 of 133</b> real builds carry exactly five.</p>
+          <div class="atlist">${[0, 1, 2, 3, 4].map(attRow).join('')}</div>
+        </section>
+
+        ${isMP ? `<section class="bf-sec">
+          <h4 class="bf-h">Gunsmith code</h4>
+          <label class="dwfield"><span>Share code</span>
+            <input id="nCode" placeholder="1C2B4A8B9A" autocomplete="off" spellcheck="false" maxlength="12">
+            <i class="bf-hint" id="nCodeHint">Ten characters, alternating digit then letter. Leave it blank if you do not have one yet.</i></label>
+        </section>` : `<section class="bf-sec">
+          <h4 class="bf-h">Gunsmith code</h4>
+          <p class="bf-p bf-na"><b>DMZ builds have no share code.</b> That screen does not generate one, so the field is not shown rather than shown and ignored.</p>
+        </section>`}
+
+        <section class="bf-sec">
+          <h4 class="bf-h">Image</h4>
+          <label class="dwfield"><span>Cloudinary public ID or full URL</span>
+            <input id="nImg" placeholder="AK117-1" autocomplete="off" spellcheck="false">
+            <i class="bf-hint" id="nImgHint">Convention is <code>WEAPON-N</code>, all caps, spaces to hyphens. A full <code>https://</code> URL is accepted and stored as-is &mdash; but it will not round-trip through a bulk export, because only a real key does.</i></label>
+        </section>
+
+        <section class="bf-sec">
+          <h4 class="bf-h">Badges</h4>
+          <p class="bf-p">🔴 <b>Badges describe the WEAPON, not this one build.</b> The bot propagates them across every build sharing this <code>weaponKey</code> and mode &mdash; setting one here changes the others.</p>
+          <div class="bf-badges">
+            <label class="bf-tog"><input type="checkbox" id="nMeta"><span>Meta</span></label>
+            <label class="bf-tog"><input type="checkbox" id="nTox"><span>Toxic</span></label>
+            <label class="dwfield bf-rank"><span>Category rank</span>
+              <select id="nRank"><option value="">Unranked</option>${
+                ['best', 'top3', 'top4', 'top5'].map(r => `<option value="${r}">${F.RANK_LABEL[r]}</option>`).join('')}</select></label>
+            ${isMP ? '' : `<label class="dwfield bf-rank"><span>DMZ range rank</span>
+              <select id="nDmz"><option value="">None</option>${
+                F.DMZ_RANGE_TOKENS.map(t => `<option value="${t}">${t.replace('-', ' · ')}</option>`).join('')}</select></label>`}
+          </div>
+        </section>
+
+        <section class="bf-sec">
+          <h4 class="bf-h">Description</h4>
+          <label class="dwfield"><span>Usage blurb</span>
+            <textarea id="nDesc" rows="2" placeholder="When to reach for this build."></textarea>
+            <i class="bf-hint">Rendered as a blockquote above the attachments. <b>2 of 133</b> builds carry one.</i></label>
+        </section>
       </div>`,
       actions:`<button class="btn" id="nCancel">Cancel</button>
-               <button class="btn go" id="nAdd">Stage build</button>`
+               <button class="btn go" id="nAdd" disabled>Stage ${m} build</button>`
     });
-    document.getElementById('nCancel').onclick = () => S.closeDrawer();
-    document.getElementById('nAdd').onclick = () => {
-      const name = document.getElementById('nW').value.trim();
-      if (!name) { S.toast('A weapon name is required — weaponKey is derived from it.'); return; }
-      const atts = document.getElementById('nA').value.split(',').map(x => x.trim()).filter(Boolean);
+
+    const $ = id => document.getElementById(id);
+    const atts = () => [...document.querySelectorAll('.ati')].map(i => i.value.trim()).filter(Boolean);
+    /* The button states WHY it is disabled rather than sitting dead. A disabled control with no
+     * reason is the same defect as a check that cannot fail: the reader learns nothing from it. */
+    const sync = () => {
+      const w = $('nW').value.trim();
+      $('nAn').textContent = `${atts().length} of 5`;
+      const code = $('nCode') ? $('nCode').value.trim() : '';
+      const codeBad = code && !codeOk(code);
+      if ($('nCodeHint')) {
+        $('nCodeHint').classList.toggle('bad', !!codeBad);
+        $('nCodeHint').innerHTML = !code
+          ? 'Ten characters, alternating digit then letter. Leave it blank if you do not have one yet.'
+          : codeBad ? `<b>${esc(code)}</b> is not a share code &mdash; ten characters, alternating digit then letter, like <code>1C2B4A8B9A</code>.`
+                    : 'Reads as a valid share code.';
+      }
+      const img = $('nImg').value.trim();
+      $('nImgHint').classList.remove('bad');
+      if (img) $('nImgHint').innerHTML = /^https?:\/\//i.test(img)
+        ? 'Read as a <b>full URL</b> &mdash; stored as-is, and it will not survive a bulk-export round trip.'
+        : `Read as a <b>Cloudinary key</b> &mdash; it will resolve to <code>${esc(F.CLOUD_BASE + img)}</code>.`;
+      const ok = !!w && !codeBad;
+      $('nAdd').disabled = !ok;
+      $('nAdd').title = ok ? '' : (!w ? 'A weapon name is required' : 'Fix the share code first');
+    };
+    document.querySelectorAll('.bform input,.bform select,.bform textarea').forEach(el => {
+      el.addEventListener('input', sync); el.addEventListener('change', sync);
+    });
+    document.querySelectorAll('[data-clr]').forEach(b => b.onclick = () => {
+      document.querySelector(`.ati[data-att="${b.dataset.clr}"]`).value = ''; sync(); });
+    sync();
+
+    $('nCancel').onclick = () => S.closeDrawer();
+    $('nAdd').onclick = () => {
+      const name = $('nW').value.trim();
+      if (!name) return;
+      const list = atts();
+      const code = $('nCode') ? $('nCode').value.trim().replace(/\s/g, '') : '';
       const nb = { id:'new-' + Date.now(), weaponKey:name.toLowerCase().replace(/\s+/g, ''),
-        weaponName:name, category:document.getElementById('nC').value,
-        mode:document.getElementById('nM').value,
-        buildName:document.getElementById('nB').value.trim() || 'Build 1',
-        attachments:atts, attachmentSlots:[], imageKey:'', description:'', shareCode:'',
-        isMeta:false, isToxic:false, categoryRank:null, dmzRangeRank:null, lastUpdated:'2026-08-24' };
+        weaponName:name, category:$('nC').value, mode:m,
+        buildName:$('nB').value.trim() || 'Build 1',
+        attachments:list, attachmentSlots:[], imageKey:$('nImg').value.trim(),
+        description:$('nDesc').value.trim(), shareCode:code,
+        isMeta:$('nMeta').checked, isToxic:$('nTox').checked,
+        categoryRank:$('nRank').value || null,
+        dmzRangeRank:($('nDmz') && $('nDmz').value) || null, lastUpdated:F.today };
       S.Store.onInvert('arm-add-' + nb.id, () => { st.builds = st.builds.filter(x => x !== nb); renderAll(); });
       st.builds.push(nb);
-      S.Store.add({ id:'arm-add-' + nb.id, tier:1, name:`${nb.weaponName} — ${nb.buildName}`,
-        verb:'added', realm:'armory', op:'loadout.add',
-        rows:[['Weapon','—',nb.weaponName],['Category','—',nb.category],['Mode','—',nb.mode],
-              ['Attachments','—',String(atts.length)],['Image','—','not set'],['Code','—','not set']] });
+      /* The staged record states what was actually captured, field by field — the old one
+       * hardcoded "Image: not set" and "Code: not set" because the form could not collect them. */
+      S.Store.add({ id:'arm-add-' + nb.id, name:`${nb.weaponName} — ${nb.buildName}`,
+        verb:'added', realm:'armory', op:'loadout.add', scope:'armory.' + m.toLowerCase(),
+        rows:[{ field:'Weapon', was:'—', becomes:nb.weaponName },
+              { field:'Category', was:'—', becomes:nb.category },
+              { field:'Mode', was:'—', becomes:nb.mode },
+              { field:'Attachments', was:'—', becomes:list.length ? list.join(', ') : '(none)' },
+              { field:'Share code', was:'—', becomes:code || '(none)' },
+              { field:'Image', was:'—', becomes:nb.imageKey || '(none)' },
+              { field:'Badges', was:'—', becomes:[nb.isMeta && 'meta', nb.categoryRank,
+                  nb.dmzRangeRank, nb.isToxic && 'toxic'].filter(Boolean).join(', ') || '(none)' }] });
       S.closeDrawer(); renderAll();
-      S.toast(`${nb.weaponName} staged.`, 'Open editor', () => openBuild(nb.id));
+      S.arrive(`#rows tr[data-id="${nb.id}"]`);
+      S.toast(`${nb.weaponName} staged in ${m}.`, 'Open editor', () => openBuild(nb.id));
     };
   }
 
@@ -1192,7 +1395,11 @@ Badges: meta, top3
   /* Both entry points, one handler — the masthead action and the in-table shortcut must never be
    * able to disagree about what "add a build" does. `N` matches Season, so the shortcut means the
    * same thing in every realm rather than something different per page. */
-  document.getElementById('mhNew').onclick = openAdd;
+  /* `mhNew` stays in the DOM but hidden: Shell.mastheadExport mounts the "take out" line
+   * AFTER it, and several selectors elsewhere still anchor on it. Removing it would move the
+   * export line into a different grid cell on this realm only. */
+  document.getElementById('mhNewMP').onclick = () => openAdd('MP');
+  document.getElementById('mhNewDMZ').onclick = () => openAdd('DMZ');
   document.addEventListener('keydown', e => {
     if (e.key !== 'n' && e.key !== 'N') return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;

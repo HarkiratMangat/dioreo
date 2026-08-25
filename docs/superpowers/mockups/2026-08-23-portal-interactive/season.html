@@ -1612,11 +1612,19 @@
   function clockText(){
     return new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
   }
+  /* 🔴 STARTED ONCE, NOT ONCE PER RENDER. This is called from renderAll(), which runs on every
+   * stage, remove and zoom. Clearing `__nowClock` was not enough: each call also queued a fresh
+   * ALIGNMENT TIMEOUT, and every one of those later created its own interval — so after twenty
+   * renders there were twenty pending timeouts about to install twenty intervals, of which the
+   * variable could only ever hold the last. The rest tick forever, unreferenced and unclearable.
+   * The tick itself re-reads #nowT by id, so it survives the Track being rebuilt underneath it
+   * and does not need restarting at all. */
   function startClock(){
-    if (window.__nowClock) clearInterval(window.__nowClock);
+    if (window.__nowClockStarted) return;
+    window.__nowClockStarted = true;
     const tick = () => { const el = document.getElementById('nowT'); if (el) el.textContent = clockText(); };
-    /* Align to the next minute boundary rather than firing every 60s from load — otherwise
-     * the readout can sit up to 59s stale against the wall clock it claims to be. */
+    /* Align to the next minute boundary rather than firing every 60s from load — otherwise the
+     * readout can sit up to 59s stale against the wall clock it claims to be. */
     setTimeout(() => { tick(); window.__nowClock = setInterval(tick, 60000); },
       (60 - new Date().getSeconds()) * 1000);
   }

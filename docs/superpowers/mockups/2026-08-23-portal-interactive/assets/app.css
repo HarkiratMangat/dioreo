@@ -2563,6 +2563,17 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .pill.ghost:hover{border-color:var(--patch);color:var(--patch)}
 .pill.sm{padding:5px 10px;font-size:11.5px;gap:5px}
 .pill[disabled]{opacity:.45;cursor:default;transform:none}
+/* 🔴 `[hidden]` IS A UA RULE AT SPECIFICITY 0,0,1 AND ANY CLASS BEATS IT. `.pill` sets
+   `display:inline-flex` at 0,1,0, so a `<button class="pill" hidden>` stays on screen — which
+   is exactly what happened when Armory's old single create button was hidden in favour of the
+   two mode buttons: both rendered into the same grid cell and their labels overprinted each
+   other, rendering as "+ Mew DMZbuild".
+   Enumerating the components that set `display` would fix today's cases and miss tomorrow's —
+   there are 40+ of them in this file. `hidden` means hidden, unconditionally, so this is the
+   one place `!important` is the correct tool rather than a shortcut: there is no legitimate
+   pattern where an author sets the attribute AND wants the element painted. Audit rule 11
+   asserts the invariant on every page so a future override cannot quietly reopen it. */
+[hidden]{display:none !important}
 
 /* ── .plate — a surface that GUARANTEES contrast over arbitrary imagery. ──
    Text laid straight onto a user's banner is legible or not depending on which photograph they
@@ -2830,14 +2841,38 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    stored name that is an INDEX ("Build 1", "Build 2"). The data is right; the presentation was
    asking the reader to spot a one-character difference. Siblings in the same tier now render as
    ONE group with the weapon named once and the builds inside it, which is also what they are. */
-.bgrp{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule2);border-radius:9px;
-  overflow:hidden;background:var(--sunk)}
-.bgrp-h{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--rule);
-  font:600 12.5px/1 var(--ui);color:var(--ink)}
-.bgrp-h .bgrp-n{margin-left:auto;font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink4)}
-.bgrp .bchip{border:0;border-radius:0;background:transparent;min-width:0}
-.bgrp .bchip + .bchip{border-top:1px solid var(--rule)}
-.bgrp-h i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
+/* 🔴 EVERY WEAPON IS A GROUP CARD, whether it holds one build or five — see groupChips().
+   It inherits the SINGLE card's surface and accent edge (--raised, 3px --c) rather than the old
+   group's --sunk-with-no-edge, because the single was the better-looking of the two and it is
+   the one a reader sees most often. */
+.bgrp{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule2);
+  border-left:3px solid var(--c);border-radius:6px;overflow:hidden;background:var(--raised);
+  transition:transform .13s,box-shadow .13s,border-color .13s}
+.bgrp:hover{border-color:var(--c);border-left-color:var(--c);transform:translateY(-2px);
+  box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
+/* 🔴 THE HEADER IS TWO LINES BY DESIGN. It was one flex row with the count pushed right by
+   margin-left:auto — so "SWITCHBLADE X9" wrapped to two lines inside a 182px card and shoved
+   "2 builds" off the edge, rendering as "2 buil". A name is variable-length and a count is not,
+   so they do not belong on the same line at a fixed width. The name clamps to two lines and
+   ellipsises; the meta row underneath is always exactly one line high, which also makes every
+   card header in the row the same height. */
+.bgrp-h{display:flex;flex-direction:column;gap:5px;padding:8px 11px;
+  border-bottom:1px solid var(--rule);background:color-mix(in srgb,var(--c) 7%,transparent)}
+.bgrp-w{display:flex;align-items:flex-start;gap:7px;min-width:0}
+/* Reserves TWO lines whether the name needs them or not, so every header in a tier row is the
+   same height and the row's cards align along their divider rather than by 3px each. Measured
+   before: 48px and 51px headers side by side, which reads as sloppy long before it reads as
+   "that name is longer". */
+.bgrp-w b{font:600 12.5px/1.25 var(--ui);color:var(--ink);min-width:0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  overflow-wrap:anywhere;min-height:calc(2 * 1.25em)}
+.bgrp-w i{width:8px;height:8px;border-radius:2px;background:var(--c);flex:none;
+  transform:rotate(45deg);margin-top:4px}
+.bgrp-m{display:flex;align-items:center;gap:7px;padding-left:15px}
+.bgrp-m .bgrp-n{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);white-space:nowrap}
+.bgrp .bchip{border:0;border-radius:0;background:transparent;min-width:0;transform:none;box-shadow:none}
+.bgrp .bchip:hover{transform:none;box-shadow:none;background:color-mix(in srgb,var(--c) 9%,transparent)}
+.bgrp .bchip + .bchip{border-top:1px solid var(--rule3)}
 .bgrp .bc-w{display:none}          /* the weapon is named once, on the group */
 
 /* The realm strip lost its reason to be a 3-up card grid the moment the findings moved into the
@@ -2879,15 +2914,34 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    at T3" — so they share a line, the block hangs from the top of its row instead of floating in
    the middle of it, and the row's height follows its contents. */
 .trow{align-items:stretch}
-.trow-h{align-self:start;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"k n" "t t" "note note";
-  gap:3px 9px;align-content:start;padding-top:13px}
-.trow-k{grid-area:k;line-height:1;align-self:center}
-.trow-n{grid-area:n;justify-self:start;align-self:center}
-.trow-t{grid-area:t;margin-top:5px}
-.trow-note{grid-area:note;margin-top:2px}
-.trow-body{align-content:flex-start}
+/* 🔴 ONE HEADER SHAPE FOR ALL FIVE TIERS. The grid used to stack a token, a count and a label
+   on three rows, which made "T3 / (8) / Top 3" — a tier restating itself twice — and left
+   `best` looking like a different component because it alone carried a ★ and a note.
+   Now: [mark] [label] [count] on one line, note underneath only where there IS one. The mark
+   column stays reserved even when empty so all five labels start at the same x. */
+.trow-h{align-self:start;display:grid;grid-template-columns:18px 1fr auto;
+  grid-template-areas:"k t n" ". note note";align-items:center;column-gap:9px;row-gap:4px;
+  padding:10px 12px;border-bottom:1px solid var(--rule3)}
+.trow-k{grid-area:k;font:700 14px/1 var(--data);text-align:center;width:auto;align-self:center;
+  color:var(--ink3)}
+.t-best .trow-k{color:var(--patch)}
+.trow-t{grid-area:t;margin-top:0;font:600 13px/1.2 var(--ui);color:var(--ink)}
+.trow-n{grid-area:n;justify-self:end;align-self:center;font-family:var(--data);font-size:10px;
+  color:var(--ink3);border:1px solid var(--rule);border-radius:99px;padding:3px 8px;line-height:1}
+.trow-note{grid-area:note;margin-top:0;font-size:11.5px;line-height:1.45;color:var(--ink3)}
+/* 🔴 MASONRY, NOT A WRAPPING FLEX ROW. At the real 133-build scale the cards are wildly
+   different heights — BAL-27 carries five builds and renders ~590px tall, MACHINE PISTOL
+   carries one and renders ~120px — and a wrapping flex row aligns every card in a line to the
+   tallest, leaving a column of dead space under each short one. Fourteen screens of board, a
+   large fraction of it empty. CSS columns pack variable-height blocks with no gaps, which is
+   exactly the shape of this data. `break-inside:avoid` keeps a card whole across a column
+   boundary — without it a weapon's builds split across two columns and the header orphans. */
+.trow-body{align-content:flex-start;display:block;columns:182px;column-gap:10px}
+.trow-body .bgrp{width:auto;break-inside:avoid;margin:0 0 10px;display:block}
+.trow-body .bchip{display:flex}
+.trow-empty{column-span:all}
 /* The group is a card among cards — it must not stretch the row it sits in. */
-.bgrp{flex:0 0 auto;align-self:flex-start;width:182px}
+.bgrp{flex:0 0 auto;align-self:flex-start;width:182px}   /* outside the rack, where it is still a flex child */
 
 
 /* 🔴 THE ARMORY TABLE SCROLLED SIDEWAYS, and the cause was one cell refusing to wrap. The BADGES
@@ -3018,7 +3072,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    tones and --ink4 is non-text. Measured at 3.46:1 against a 4.5:1 requirement. */
 /* ⚠️ `.bgrp-h .bgrp-n` (two classes) outranks `.bgrp-n` (one). Specificity again — the same
    mistake as the double search bar, three hours apart. Match the original selector. */
-.bgrp-h .bgrp-n{color:var(--ink3)}
+.bgrp-m .bgrp-n{color:var(--ink3)}
 .mtable td .none,.mtable .dash,.trow-empty{color:var(--ink3)}
 
 /* 🔴 THE OUTSIDE LABEL LOST ITS COLOUR TO A LATER RULE — TWICE. `.bar.saved .bl{color:var(--ci)}`
@@ -3288,3 +3342,88 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 @media (prefers-reduced-motion:reduce){
   .bar.arriving,.pt.arriving{animation:none}
 }
+
+/* A staged table row arrives, the same way a staged bar does on the Track. It slides from the
+   left rather than scaling, because a row's identity is its full width — scaling one reads as
+   the table resizing. --dur-3, the entrance duration, so it matches the bar it is a peer of. */
+@keyframes rowin{
+  from{opacity:0;transform:translateX(-10px)}
+  to{opacity:1;transform:none}
+}
+tr.rowin{animation:rowin var(--dur-3) var(--ease) both}
+tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
+@media (prefers-reduced-motion:reduce){ tr.rowin{animation:none} tr.rowin > td{background:none} }
+
+/* ══ THE BUILD FORM ═══════════════════════════════════════════════════════════
+   Harkirat, 2026-08-24: "SO barebone. It doesn't even state in any way which fields are
+   required/optional... why are attachments in 1 line? that's so unintuitive for an IMMERSIVE
+   DESKTOP PORTAL. Those placeholder texts look more like real filled in text than placeholder."
+
+   The old form was five fields because it was Discord's modal shape reproduced in a browser —
+   and Discord's five-field cap is the one constraint this portal exists to escape. */
+.bform{--gap:16px}
+.bf-legend{font-size:12px;color:var(--ink3);margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--rule)}
+/* 🔴 REQUIRED IS MARKED, AND THE MARK IS EXPLAINED IN THE SAME PANEL. An asterisk with no
+   legend is a convention the reader has to already know; the legend costs one line. */
+.req{color:var(--patch);font-weight:700}
+.bf-sec{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--rule3)}
+.bf-sec:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+.bf-h{font:600 12px/1 var(--ui);color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:9px}
+.bf-n{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);
+  border:1px solid var(--rule2);border-radius:99px;padding:4px 8px}
+.bf-p{font-size:12px;line-height:1.5;color:var(--ink3);margin:0 0 11px;max-width:70ch}
+.bf-p code{font-family:var(--data);color:var(--ink2)}
+.bf-na{border-left:2px solid var(--rule2);padding-left:11px}
+/* The per-field hint sits UNDER its input, not in the placeholder — a placeholder disappears
+   the moment you type, which is exactly when a format rule becomes useful. */
+.bf-hint{display:block;font-style:normal;font-size:11.5px;line-height:1.45;color:var(--ink3);margin-top:5px}
+.bf-hint code{font-family:var(--data);color:var(--ink2);word-break:break-all}
+.bf-hint.bad{color:var(--danger-ink)}
+.bf-hint b{color:var(--ink2)}
+
+/* 🔴 A PLACEHOLDER MUST NOT READ AS A VALUE. It was --ink3 at the same weight and size as real
+   input text, so a hint looked like a filled field — which is worse than no placeholder,
+   because it makes an empty form look complete. Italic is the cheapest signal that survives at
+   13px, and --ink3 (5.35:1) keeps it legible rather than merely faint. Real input text goes to
+   --ink at 500 so the two are separated by weight, colour AND slant. */
+.bform input,.bform textarea,.bform select{color:var(--ink);font-weight:500}
+.bform input::placeholder,.bform textarea::placeholder{color:var(--ink3);font-style:italic;font-weight:400}
+
+/* Attachments: five rows, numbered, in Gunsmith order. 123 of 133 real builds carry exactly
+   five — the shape is the data's, not a guess. */
+.atlist{display:flex;flex-direction:column;gap:7px}
+.atr{display:flex;align-items:center;gap:9px}
+.atn{font:600 10.5px/1 var(--data);color:var(--ink3);width:16px;text-align:right;flex:none}
+.ati{flex:1;min-width:0;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;
+  color:var(--ink);font:500 13px/1 var(--ui);padding:10px 11px;min-height:var(--tap)}
+.ati:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
+.atx{flex:none;width:28px;height:28px;border-radius:5px;border:1px solid transparent;background:none;
+  color:var(--ink4);cursor:pointer;font-size:11px}
+.atr:hover .atx,.atx:focus-visible{color:var(--ink3);border-color:var(--rule2)}
+.atx:hover{color:var(--danger-ink);border-color:var(--danger-edge)}
+
+.bf-badges{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.bf-tog{display:inline-flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--rule);
+  border-radius:9px;background:var(--sunk);cursor:pointer;font:600 12.5px/1 var(--ui);color:var(--ink2);
+  min-height:var(--tap)}
+.bf-tog:hover{border-color:var(--rule2);color:var(--ink)}
+.bf-tog:has(input:checked){border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--ink)}
+.bf-tog input{accent-color:var(--c);width:15px;height:15px}
+.bf-rank{margin-bottom:0;min-width:180px}
+@media (max-width:768px){ .bf-badges{flex-direction:column;align-items:stretch} .bf-rank{min-width:0} }
+
+/* A tier row collapses. At the real 133-build scale the Tier board is fourteen screens and the
+   Unranked row alone holds 61 of them — the row with the most cards and the least to say. The
+   header keeps its count while closed, so collapsing hides the cards and never the fact. */
+.trow-h{cursor:pointer;user-select:none}
+.trow-h:hover .trow-t{color:var(--ink)}
+.trow-h:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:6px}
+.trow-cv{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3);
+  font-size:10px;transition:transform var(--dur-1) var(--ease)}
+.trow-h{grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto}
+.trow-h .trow-n{margin-right:20px}
+.trow.tclosed .trow-cv{transform:rotate(-90deg)}
+.trow.tclosed .trow-body{display:none}
+.trow.tclosed .trow-note{display:none}
+@media (prefers-reduced-motion:reduce){ .trow-cv{transition:none} }

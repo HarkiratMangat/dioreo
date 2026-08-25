@@ -440,6 +440,8 @@
       S.closeDrawer();
       S.toast('Post staged.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
       renderAll();
+      /* After renderAll — the node does not exist until the table is rebuilt. */
+      S.arrive(`#rows tr[data-id="${a._id}"]`);
     };
   }
 

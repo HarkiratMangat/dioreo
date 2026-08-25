@@ -1655,6 +1655,43 @@ It is narrowed to stats whose own `.k` **label names a record noun** (`items|bui
 
 Also fixed in the same pass: the timing banner made **three** separate assumptions that data exists (`depStats[0]`, the `atlas` lookup, and the reader's need to be told *why* it is empty). The atlas one is not hypothetical — a dependency that has simply never been called is a real state on a freshly started bot, not only a fixture artefact.
 
+### 5.9l.4c PASS 4 — keyboard reachability
+
+Nobody had ever tabbed through a realm. The audit checks that a **focus-visible style exists**; it had never checked that a control can be **reached**. The delete/export layer added four new families of control (row remove, matrix cells, the docked bar's actions, the one-way gate) and every one of them would have been invisible to a keyboard if any had been a `div`.
+
+Three properties, each a real failure mode rather than a checklist item:
+
+| checked | why it is a defect, not a nicety |
+|---|---|
+| anything with `role=button` / `role=checkbox` / `role=tab` is focusable | a control a keyboard cannot reach is not a control; the ARIA role makes it *announce* itself as one, which is worse than silence |
+| nothing focusable is `display:none`, `visibility:hidden` or 0×0 | **a focus trap you cannot see is worse than one you can** — the caret vanishes and the reader has no idea where it went |
+| no positive `tabindex` | a positive value reorders the whole document relative to every other element on the page, and is almost always a mistake rather than a plan |
+
+**Its own falsifier plants a `<div role="button">` and asserts the pass reports it** — this is the newest of the four passes and the one most likely to be silently vacuous, because "no findings" is its *expected* output on a healthy page. That is exactly the shape a check has when it has stopped working.
+
+🔴 **AND ITS FIRST RUN REPORTED NINETEEN FALSE FAILURES, WHICH IS THE MORE USEFUL HALF.** It read `getComputedStyle(el).display` on the **element itself** and flagged every control inside Season's **collapsed identity panel**. `.identity.collapsed .idbody{display:none}` puts the `display:none` on an **ancestor** — and a child of a `display:none` parent computes its own `display` normally (`inline-block` here) while measuring 0×0. So the naive test saw *"CSS-visible but sizeless"* for nineteen elements the browser had already removed from the tab order entirely.
+
+It uses `el.checkVisibility({checkVisibilityCSS:true, checkOpacity:true})` now, which answers the question actually being asked.
+
+🔴 **A FIX THAT SILENCES IS ONE KEYSTROKE FROM A FIX THAT BLINDS**, so the change is asserted in **both directions** rather than trusted, permanently, in the self-test:
+
+| assertion | proves |
+|---|---|
+| a real 0×0 `<button>` still reports `checkVisibility === true` | the pass can still catch the defect it exists for |
+| a `<button>` inside a `display:none` `<div>` reports `checkVisibility === false` | the false positives really are gone, not merely unreported |
+
+Both were verified live before the change was kept. **This is the pattern for every "the probe was wrong" fix in this package: prove the new test still fails on the real thing before trusting that it passes on the false one.**
+
+### 5.9l.4d Row arrival — the same idea as the Track's, everywhere a row is created
+
+`Shell.arrive(sel)` adds `.rowin` (opacity + a 10px slide from the left, `--dur-3`, with a `--staged` wash on the cells) and removes it on `animationend`.
+
+**It slides rather than scales** — a row's identity is its full width, and scaling one reads as the table resizing rather than as a row appearing. Season's bar keyframe scales because a *bar's* identity is its span.
+
+Wired into Armory's `+ New build` and Broadcast's `+ Post announcement`, both **after** their `renderAll()` — the node does not exist until the table is rebuilt. Reduced motion disables it in the helper *and* in the stylesheet, so it costs nothing rather than animating invisibly.
+
+**Where motion deliberately stops:** Access and Analytics get none. Season's Track is the only surface where a continuous spatial view makes interpolation *mean* something; a permission matrix and a stats dashboard have no geometry a reader is tracking through a change. That is a decision, not an omission — noted here so a later session does not "finish the job" by animating things that carry nothing.
+
 ### 5.9l.5 The falsifier
 
 `?self=1` builds a three-column table whose empty row spans nine, and asserts the sweep reports it. **If that self-test ever fails the run exits non-zero rather than printing a clean result**, because a sweep that cannot report a defect is worth less than no sweep — it manufactures confidence.

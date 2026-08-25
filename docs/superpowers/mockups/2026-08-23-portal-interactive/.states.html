@@ -112,6 +112,86 @@ const say = (tag, name, probs) => {
     f.remove(); paint();
   }
 
+  /* PASS 4 — KEYBOARD. Nobody had ever tabbed through a realm. The audit checks that a
+   * focus-visible style EXISTS; it has never checked that a control can be REACHED, and the
+   * whole delete/export layer added controls (row remove, matrix cells, the docked bar, the
+   * one-way gate) that would be invisible to a keyboard if any of them had been a div.
+   * Three properties, each a real failure mode rather than a checklist item:
+   *   a. anything with a click handler or role=button must be focusable
+   *   b. nothing focusable may be display:none / visibility:hidden / zero-sized — a focus trap
+   *      you cannot see is worse than one you can
+   *   c. a positive tabindex reorders the whole document and is almost always a mistake */
+  for (const p of PAGES) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument, w = f.contentWindow;
+      const FOCUSABLE = 'a[href],button,input,select,textarea,[tabindex]';
+      d.querySelectorAll(FOCUSABLE).forEach(el => {
+        const ti = el.getAttribute('tabindex');
+        if (ti && +ti > 0) found.push(`positive tabindex=${ti} on .${el.className || el.tagName}`);
+        if (el.disabled) return;
+        /* 🔴 EFFECTIVE VISIBILITY, NOT THE ELEMENT'S OWN `display`. The first version read
+         * getComputedStyle(el).display and reported NINETEEN false failures on Season: every
+         * control inside the collapsed identity panel, whose ANCESTOR is display:none. A child
+         * of a display:none parent computes its OWN display normally (inline-block here) and
+         * measures 0x0 — so the naive test saw "visible but sizeless" for elements the browser
+         * had already removed from the tab order entirely.
+         * checkVisibility() answers the question actually being asked, and it is NOT a
+         * silencer: verified live, a genuinely visible 0x0 button still returns true, so the
+         * real defect this pass exists to find is still caught. That distinction is asserted
+         * in the self-test below rather than trusted. */
+        if (el.checkVisibility && !el.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true })) return;
+        if (!el.checkVisibility && (w.getComputedStyle(el).display === 'none' || el.closest('[hidden]'))) return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1)
+          found.push(`focusable, CSS-visible, but 0x0: .${el.className || el.tagName} "${(el.textContent || el.value || '').trim().slice(0, 16)}"`);
+      });
+      /* A div carrying role=button or an onclick must still be tabbable. */
+      d.querySelectorAll('[role=button],[role=checkbox],[role=tab]').forEach(el => {
+        if (el.matches(FOCUSABLE)) return;
+        if (el.closest('[hidden]')) return;
+        found.push(`role=${el.getAttribute('role')} not focusable: .${el.className || el.tagName}`);
+      });
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('keyboard', p, found.length ? { problems:found } : { problems:[] }); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
+   * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
+   * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm
+   * whose output depends on the date, so it is the only one swept — three moments, chosen
+   * because each puts a different set of lifecycle branches on screen. */
+  for (const day of ['2026-08-04', '2026-09-10', '2026-09-21']) {
+    const f = await load('season.html?today=' + day);
+    const found = [];
+    try {
+      const d = f.contentDocument;
+      /* The NOW marker must stay inside the Track. Off either edge means the view did not
+       * follow the date, which is the failure a frozen fixture can never show. */
+      const now = d.querySelector('.now'), tk = d.querySelector('.tk-inner');
+      if (!now) found.push('no NOW marker');
+      else if (tk) {
+        const l = parseFloat(now.style.left);
+        if (!isFinite(l)) found.push('NOW marker has no computed position');
+        else if (l < -5 || l > 105) found.push(`NOW marker at ${Math.round(l)}% — outside the Track`);
+      }
+      /* Every row states a lifecycle. On a day before the season nothing may read ENDED, and
+       * after it nothing may read UPCOMING — the two claims that are flatly impossible. */
+      const life = [...d.querySelectorAll('.rowmeta')].map(e => (e.textContent || '').trim().toUpperCase());
+      if (day === '2026-08-04' && life.some(t => t === 'ENDED'))
+        found.push('a row reads ENDED before the season starts');
+      if (day === '2026-09-21' && life.some(t => t === 'UPCOMING'))
+        found.push('a row reads UPCOMING after the season ends');
+      const stats = (d.querySelector('.mh-stats') || {}).innerText || '';
+      if (/NaN|undefined|Infinity/.test(stats)) found.push(`masthead stats read "${stats.replace(/\n/g, ' ').slice(0, 40)}"`);
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    const chk = readCheck(f);
+    bad += say('time:' + day, 'season', { problems:[...((chk && chk.problems) || []), ...found] }); ran++;
+    f.remove(); paint();
+  }
+
   /* SELF-TEST. The sweep must be able to report a defect, or a clean run is worth nothing.
    * ?self=1 plants a table whose empty row spans the wrong number of columns. */
   if (/[?&]self=1\b/.test(location.search)) {
@@ -122,6 +202,36 @@ const say = (tag, name, probs) => {
     lines.push(caught ? '<span class="ok">SELF-TEST</span> a wrong colspan IS caught'
                       : '<span class="bad">SELF-TEST FAILED — this sweep cannot report a defect; do not trust a clean run</span>');
     if (!caught) bad++;
+    /* The keyboard pass needs its own falsifier — it is the newest and the one most likely to
+     * be silently vacuous, since "no findings" is its expected output on a healthy page. */
+    const kprobe = document.createElement('div');
+    kprobe.setAttribute('role', 'button'); kprobe.textContent = 'not focusable';
+    const kcaught = !kprobe.matches('a[href],button,input,select,textarea,[tabindex]');
+    lines.push(kcaught ? '<span class="ok">SELF-TEST</span> an unfocusable role=button IS caught'
+                       : '<span class="bad">SELF-TEST FAILED — the keyboard pass cannot report a defect</span>');
+    if (!kcaught) bad++;
+    /* 🔴 AND THE VISIBILITY TEST MUST STILL BE ABLE TO FAIL. Switching from `display === 'none'`
+     * to checkVisibility() silenced 19 false positives, and a fix that silences is one keystroke
+     * from a fix that blinds. Two assertions, opposite directions: a REAL 0x0 button must still
+     * report CSS-visible (so the pass still catches it), and a control inside a display:none
+     * ancestor must report NOT visible (so it stays quiet). */
+    const zero = document.createElement('button');
+    zero.style.cssText = 'width:0;height:0;padding:0;border:0;overflow:hidden';
+    document.body.appendChild(zero);
+    const zeroStillSeen = zero.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true })
+                        && zero.getBoundingClientRect().width < 1;
+    zero.remove();
+    const box = document.createElement('div');
+    box.style.display = 'none';
+    const inner = document.createElement('button'); box.appendChild(inner);
+    document.body.appendChild(box);
+    const hiddenSkipped = !inner.checkVisibility({ checkVisibilityCSS:true, checkOpacity:true });
+    box.remove();
+    const vOk = zeroStillSeen && hiddenSkipped;
+    lines.push(vOk ? '<span class="ok">SELF-TEST</span> a real 0x0 control is still caught, a display:none descendant is not'
+                   : '<span class="bad">SELF-TEST FAILED — the visibility test is blind (' +
+                     (zeroStillSeen ? '' : 'misses a real 0x0 control') + (hiddenSkipped ? '' : ' / still flags hidden descendants') + ')</span>');
+    if (!vOk) bad++;
   }
 
   lines.push('');
