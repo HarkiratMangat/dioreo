@@ -5,6 +5,22 @@ status: live
 
 # Dioreo web admin portal — the interactive mockup, explained in full
 
+
+> ## 🔴 THIS DOCUMENT IS EXHAUSTIVE BY DESIGN. SIZE IS NEVER A REASON TO TRIM IT.
+>
+> **Harkirat, 2026-08-24, verbatim:** *"the companion doc is a DETAILED AS HELL, fine blueprint, to implement the portal with zero mistakes. Do not be scared by the 143KB size. I have said it before, and I'll repeat it for you, IDC WHAT SIZE THE FILE IS, HOW LARGE, HOW MANY TOKENS, HOW MANY BYTES, it must include everything about the design, every element, for a perfect portal."*
+>
+> He has now said it **more than once**, which means the instinct it corrects is a recurring one — a session opens this file, sees six figures of bytes, and starts writing "a focused section rather than bloat". That instinct is wrong here and it has already cost a pass: §5.9–§5.9e were first written short and had to be rewritten to blueprint depth the same hour.
+>
+> **What that means in practice, when you add to this file:**
+> - Every element gets a row: **what it is, what it does, what it wires to, and the trap it already paid for.** Exact selectors, exact values, exact measurements — `1464px in an 828px viewport`, not "below the fold".
+> - A decision records **the reasoning and the rejected alternative**, not just the outcome. The outcome alone cannot stop the next session re-deriving the wrong thing.
+> - A defect records **what it looked like on screen**, so a reader recognises it before a probe catches it.
+> - Never summarise a section away to save room. **Never say "for brevity".** If something genuinely belongs elsewhere, move it and leave a pointer — that is the only acceptable subtraction, and §8, §11 and §12.1–12.4 are the precedent for how to do it.
+> - ⚠️ The one thing that IS worth cutting is **duplication that has drifted** — three copies of one rule where two are stale. Cut to a single authoritative statement, never to a shorter one.
+>
+> A stale or thin COMPANION is worse than a wrong fixture. A wrong fixture produces a wrong render and someone notices; **this document IS the instruction**, so a gap in it gets implemented faithfully, carefully, by someone doing exactly what they were told.
+
 This document exists for **the session that wires this design into real data and a real backend.** A previous attempt at that struggled because the plan said *what* to build without saying *why anything is shaped the way it is*, so it made locally-reasonable choices that broke the design. Everything here is written to prevent that recurring. It is deliberately long; the traps section alone will save more time than reading it costs.
 
 The mockups carry **no explanatory prose of their own**, on purpose — the HTML has to read as a product, not as a document about a product. All the reasoning lives here.
@@ -916,53 +932,251 @@ const rankOf = b => b.mode === 'DMZ'
 
 ---
 
-## 5.9 THE COMPONENT LAYER, AND WHY IT DID NOT EXIST UNTIL 2026-08-24
+## 5.9 THE COMPONENT LAYER — every class, every state, every value
 
 🔴 **This package had TOKENS AND NO COMPONENTS, and that is not a tidiness complaint — it is the mechanical cause of four separate defects found in one sitting.** `tokens.css` is disciplined: hues, the 31° gap rule, the three-tone ink scale. Nothing sat above it. So every surface hand-rolled its own chip, tooltip, card and plate — and the composer's type chips could not match the masthead button they were asked to match, because **there was no shared chip to reach for**. Nobody was careless. There was nothing to reuse.
 
-Measured before the fix: **one `.pill` on the whole portal against 93 hand-rolled chips.** Building a component and then not adopting it is the same defect as not building one.
+**Measured before the fix: one `.pill` on the whole portal against 93 hand-rolled chips.** Building a component and then not adopting it is the same defect as not building one.
 
-| Component | Use it for | Adopted by |
+### 5.9.1 `.pill` — the one interactive chip
+
+```
+.pill                    base: 8px 13px, radius 999px, --rule border, --sunk fill, --ink2
+.pill:hover              border --rule2, colour --ink, translateY(-1px)
+.pill:active             translateY(0)   ← the lift must resolve, or the press feels dead
+.pill:focus-visible      2px --patch outline, 2px offset
+.pill.on                 border var(--c), background color-mix(--c 13%), --ink
+.pill.lead               PRIMARY. border --patch, background color-mix(--patch 14%), 600/13px, 10px 15px
+.pill.ghost              dashed --rule2, --ink3 — an ADD affordance, never a live one
+.pill.sm                 5px 10px / 11.5px — dense contexts (attention rows, inline actions)
+.pill[disabled]          opacity .45, cursor default, no lift
+.pill .dot               9×9, radius 2, rotate(45deg), background var(--c) — the topic mark
+.pill .sub               10px --data, .09em, uppercase, --ink4 — metadata, never the label's weight
+.pill kbd                10.5px --ui (NOT --data: ⌘ is not in JetBrains Mono and renders as tofu)
+```
+
+| Adopted by | How |
+|---|---|
+| `.chip`, `.seg button`, `.tbdsw button` | **redefined in terms of `.pill`, not renamed.** `.chip` is queried by name in six pages of JS; a mass rename trades a styling inconsistency for a functional break. They inherit radius, transition, hover lift and focus ring |
+| `.mh-new`, `.mh-t` | the masthead primary action and Season's six type pills |
+| `.att-go` | Home's per-row verb |
+| `.rec-cta`, `.rec-add button` | the Season Record's publish affordance |
+
+⚠️ **Do not add a seventh variant without checking these five first.** The variant set is deliberately small: primary (`lead`), selected (`on`), additive (`ghost`), dense (`sm`), inert (`[disabled]`). Anything else is a colour or a size, and both already exist as tokens.
+
+### 5.9.2 `.tip` + `data-tip` — the only tooltip
+
+**A native `title` is OS chrome**: grey, delayed, unstyled, and rendered UNDER the pointer, so it covers the very thing it describes. The cluster readout shipped as one while `.tip` sat defined and unused two hundred lines away.
+
+| Rule | Detail |
+|---|---|
+| Anything a person must READ uses `data-tip` | `title` survives only for hints ≤24 characters that an assistive user can reach another way |
+| Delegated from `document` | `pointerover` / `pointerout` / `focusin` / `focusout` / `Escape` / `scroll` (capture). It must survive every `innerHTML` rebuild the Track performs — a listener bound to a node dies with that node |
+| Positioned BESIDE, never over | prefer right at `+10px`, flip left when it would pass `innerWidth - 8`, clamp vertically into the viewport |
+| First line is the title, subsequent lines are `.sub` | `data-tip` splits on `\n` |
+| Enforced | audit rule 5b: any `title` over 24 chars without a `data-tip` sibling is a finding. It immediately caught four more that a static scan could not see, because they are assigned in JS at render time |
+
+### 5.9.3 `.plate` / `.scrim-b` — contrast over imagery
+
+Legibility that depends on which photograph the user uploaded is a coin toss, not a design decision.
+
+- `.plate` — `position:relative; background:var(--raised); z-index:1`. Anything read over an image sits on one.
+- `.scrim-b` — a `::after` gradient over the bottom 70%, `transparent → color-mix(--raised 92%)`. For a surface that must stay visible while text sits below it.
+- **The account popout is the reference implementation.** `margin-top:-22px` used to pull the WHOLE head — avatar and name — over the banner's bottom third with only an inset shadow standing in for a scrim, so on a light banner the entire block vanished. Discord's own popout overlaps only the AVATAR and puts the name on solid ground; that is the half that makes it work and it was the half that had been dropped. Now: `.ubanner` is 74px with a real `::after` gradient, `.umenu .uhead` sits on `--raised` at `margin-top:0`, and only `.uav` carries `margin-top:-24px`.
+- The presence dot moved from `right:-1px;bottom:-1px` (half outside the ring) to `right:6.5%;bottom:6.5%` — where a 46px circle's own curve puts it — plus a 1px dark ring so it reads on any avatar.
+- Enforced by audit rule 5d: a text-bearing child of an element with a background image and no plate is a finding.
+
+### 5.9.4 `.mark` — the point vocabulary
+
+| Class | Renders | Means |
 |---|---|---|
-| `.pill` | every chip, filter, type selector and inline action. `.lead` is the primary action; `.ghost` is an add affordance; `.sm` is dense | `.chip` and `.seg button` are **redefined in terms of it** rather than renamed — `.chip` is queried by name in six pages of JS, and a mass rename trades a styling inconsistency for a functional break |
-| `.tip` + `data-tip` | anything a person is meant to READ. **A native `title` is OS chrome** — grey, delayed, unstyled, and rendered UNDER the pointer, so it covers the very thing it describes | delegated from the document, so it survives every `innerHTML` rebuild the Track performs |
-| `.plate` / `.scrim-b` | any text laid over arbitrary imagery. Legibility that depends on which photograph the user uploaded is a coin toss, not a design decision | the account popout — the name left the banner and landed on solid ground |
-| `.mark` | the POINT vocabulary: single, `.stack` (several), tier-accented. **A cluster REPLACES what it stands for** — it used to be a count drawn ON TOP of the diamonds, so one bled out behind it and the mark read as a diamond with a blister | Track markers, cluster badges, record-rail nodes |
+| `.mark` | 13×13, radius 2.5, `rotate(45deg)`, `background var(--c)` | one thing at one date |
+| `.mark.staged` | same, `background:none` + `inset 0 0 0 1.5px var(--c)` | dashed/hollow = STAGED, per §4.1 |
+| `.mark.stack` | 15×15 plus a `::before` twin offset `translate(4px,-4px)` at `.4` opacity, count in `.n` | **several.** The shape says it before the number does |
+| `.mark.tier-mythic` | 2px ring + 10px glow in `--c` | rarity, on draw lanes only |
+| `.pt[data-tier=…]` | `mythic` → ring+glow, `legendary` → 1.5px ring | the Track's own markers carry the same vocabulary |
+| `.pt[data-lanekind=returningDraws]::after` | a 5px paper-coloured centre | a RETURN reads as a ring, not a fill |
 
-**`Shell.inkOn(hex)` decides what colour a filled surface can carry.** Not a luminance threshold — a threshold is a guess, and the first version put white on Events' blue at 3.08:1 when black on the same blue measures 5.97:1. There are only two candidates, so compute BOTH ratios and take the winner. Bars, badges and state chips pass their own `--ci`.
+🔴 **A cluster REPLACES what it stands for.** It used to be a count drawn ON TOP of the diamonds, so one bled out from behind the disc and the mark read as a diamond with a blister. `.pt.hid{display:none}` — not opacity, not visibility. And the retired pill-shaped `.ptc` rule had to be DELETED, not out-ranked: its surviving `min-width:19px` beat the new `width:15px` and rendered a 19×15 lozenge. **A higher-specificity rule only wins the properties it SETS.**
+
+### 5.9.5 `Shell.inkOn(hex)` — what a filled surface can carry
+
+Not a luminance threshold. **A threshold is a guess**, and the first version put white on Events' blue (`#4A90D9`) at 3.08:1 when black on the same blue measures 5.97:1. There are only two candidates, so compute BOTH ratios and take the winner:
+
+```js
+dark  = (L + 0.05) / 0.05        // ratio of #07090A against the surface
+light = 1.05 / (L + 0.05)        // ratio of #FFFFFF against the surface
+return dark >= light ? '#07090A' : '#FFFFFF'
+```
+
+Consumers pass the result as `--ci` and the CSS reads `var(--ci, var(--on-accent))`, so an unconverted surface degrades to the old global rather than to nothing. Adopted by `.bar.saved`, `.bar.saved .bl`, `.stt.saved`, `.bdg.filled`.
+
+⚠️ **An outside label must LEAVE the bar's text colour behind with it.** `.bar.saved .bl` paints near-black designed for a filled bar; once the label renders on the dark lane instead, that is black-on-black — **measured at 1.41:1**. `.bar.lbl-out .bl` forces `var(--ink)`.
+
+### 5.9.6 `Shell.fitPlaceholders(root)` — no placeholder may be cut
+
+The surface sweep measured every placeholder against its own rendered field and found them clipped on **six of eight realms**: "…attachment or Gunsm", "Search this realm, or run ", "Paste an image URL — blank". Harkirat called the first one *"that text error in the placeholder"*, which is exactly right — a sentence chopped mid-word reads as a bug, not as brevity.
+
+- Runs on load, on `document.fonts.ready`, and on a debounced `resize` — a placeholder fits or does not fit only relative to a **rendered** field.
+- Walks a ladder of progressively shorter candidates: the full string → `data-ph-short` → the part before an em-dash → the part before a comma or " or " → the first two words → **empty**. An empty placeholder is a legitimate answer for a genuinely tiny field.
+- The full sentence survives on `aria-label`, so nothing is lost to a reader who hears it.
+- 🔴 **Fix the CATEGORY, not the field.** Shortening them one at a time is how they come back; two had already been hand-fixed earlier the same day and the sweep still found four more.
 
 ---
 
 ## 5.9b THE HEADER, THE COMPOSER, AND WHERE CREATION LIVES
 
-**Measured before any of this:** every create control on every realm sat below its own fold or under a filter row. Season's three were at **1464px, 3548px and 3551px in an 828px viewport** — the primary one 4.3 screens down. Armory's single control sat at 1208px, on the realm that manages 133 builds. There were **zero visible DELETE affordances anywhere**, against 12 delete/purge actions in `utils/manageActions.js`, and **one EXPORT** against 8.
+**Measured before any of this**, by rendering every realm and reading each control's position against its own fold:
+
+| Realm | Create controls | Where |
+|---|---|---|
+| Season | 3 | **1464px, 3548px, 3551px** in an 828px viewport — the primary one 4.3 screens down |
+| Armory | 1 | 1208px, below the fold, on the realm that manages 133 builds |
+| Broadcast | 1 | 770px — above the fold only at 880px window height |
+| Access | 1 | 621px |
+| **DELETE** | **0 visible on any page** | against **12** delete/purge actions in `utils/manageActions.js` |
+| **EXPORT** | **1** (Armory) | against **8** in the registry; Season has none |
+
+**The baseline being beaten: `/manage` registers 57 actions across 7 pages, and every one of those pages ships a `formatguide` action** — because there creation means typing a formatted string into a Discord modal, so the format IS the interface and has to be documented. A patch note costs **four modals** (Date/Info, URLs 1, URLs 2, Add New Season) purely because a Discord modal caps at five inputs. A form needs no guide and has no cap. **That asymmetry is the entire opportunity — quote it when justifying portal work.**
 
 Harkirat named the class, not the instance: *"the page is just the visualization of what they trigger."*
 
-- **Every realm's primary action is at masthead level**, beside the numbers, so a reader learns ONE place to look. `N` means the same thing on every page.
-- **Season shows the six TYPES, not a wrapper.** 🔴 `+ New item` was a beautiful button whose only job was to reveal six more buttons — two clicks to begin, with the realm's vocabulary hidden behind the first one. The types ARE the action.
-- **The composer renders INLINE (`Shell.compose({host})`), not in a modal.** `/manage`'s creation flow *is* a Discord modal; putting the portal's in one reproduces the shape of the thing it exists to beat.
-- 🔴 **THE TRACK IS THE PREVIEW.** Not a miniature axis inside a dialog — the real one, at real scale, beside real neighbours. Pick a type and a date and a dashed ghost lands in its lane; you watch it collide with Ranked or fall outside the season, and *then* commit. That is the answer `/manage` structurally cannot give: it replies to "when" with a line of text. The old `composePreview()` mini-axis is deleted — it was a lower-fidelity copy of the thing sitting directly behind the scrim.
-- **The form is the schema.** Picking the type picks the SHAPE: a draw, a returning draw and a patch note show ONE date; a draw window, an event and a playlist show two. The old add-row offered `start` AND `end` for every type including draws, which have exactly one field and no end — a creation form asking for data the record cannot hold.
+### 5.9b.1 The header — every element
+
+| Element | Selector | Behaviour | Wires to |
+|---|---|---|---|
+| Brand | `#home` `.mk` | navigates to `index.html` | — |
+| Breadcrumb | `.crumb` `#crumbView` | `Realm › View`, second half live | — |
+| **Command bar** | `#cmdBar` / `#cbIn` / `#cbDrop` / `#cbList` | `flex:1 1 460px; max-width:520px`. Magnifier, input, `⌘K` hint (hidden on focus), dropdown at `top:calc(100% + 7px)` | `Shell.commandBar` |
+| **Sign out** | `#hdrOut` | icon + label, `--del` on hover, label hidden below 1100px, whole control hidden below 820px (the account menu still carries it) | `session.end` |
+| Account | `#whoBtn` / `.cv` | drawn chevron, `rotate(180deg)` at `aria-expanded=true` | Discord OAuth |
+
+🔴 **THE COMMAND BAR IS NOT A LAUNCHER.** A 44px `⌘K` chip in a header with ~700px of unused space is a keyboard shortcut wearing a button's clothes: it advertises a feature instead of being one, and its full-screen scrim covered the realm you were searching. Season's own 60-line overlay palette is **deleted**; `.pwrap` / `.pbox` / `.pal` are retired.
+
+⚠️ **It opens on INTENT, never on focus.** `pointerdown`, a printable key, `ArrowDown`, or `⌘K` — because the audit's own focus-ring sweep calls `el.focus()` on every input, which fired the old `focus` handler and **every realm loaded with the palette already open**. Closes on blur after 130ms so a click on a result still lands.
+
+⚠️ **`Shell.commandBar` is IDEMPOTENT.** `mountHeader` installs `defaultCommands()` so no realm can ship a dead input — a search box that does nothing is worse than none — and a realm then calls it again with its own richer list. Without the guard that second call stacks a duplicate listener set and every keystroke paints twice.
+
+⚠️ **Two search bars once rendered inside one.** The global reset `input:not([type="checkbox"]):not([type="radio"]):not([type="range"])` scores **0,3,1** — three `:not()` arguments each contributing an attribute selector — and outranked `.cb-in` at 0,1,0, painting the input as its own bordered box inside the bar. `.cmdbar input.cb-in` restores it. **Specificity is not a matter of which rule was written last.**
+
+**Command shape:** `{ k: label, run: fn, hex?: '#RRGGBB', c?: tokenName }`. 🔴 Pass `hex` — five entries once hard-coded `c:'draw'`, and `--draw` does not resolve, so all five rendered the same red dot on a page whose whole discipline is COLOUR CARRIES TOPIC.
+
+### 5.9b.2 The masthead — one shape in every realm
+
+```
+.masthead   grid, 1fr auto, column-gap 28px
+  .mh-id    row 1 col 1   title + job line
+  .mh-stats row 1 col 2   the numbers, right-aligned
+  .mh-new / .mh-add  row 2 col 2   the PRIMARY ACTION, right-aligned
+  .nwhost   row 3, full width   the inline composer
+  ≤820px    collapses to one column, everything left-aligned
+```
+
+It lived in `season.html`'s own `<style>`, which is why Armory's primary action had nowhere to go and stayed parked under a filter row. It is in `app.css` now, so every realm's masthead is the same shape and a reader learns ONE place to look. `N` opens creation on every realm.
+
+🔴 **Season shows the six TYPES, not a wrapper.** `+ New item` was a beautiful button whose only job was to reveal six more buttons — two clicks to begin, with the realm's vocabulary hidden behind the first. `.mh-add` renders one `.pill.mh-t` per lane, built from `COMPOSE_TYPES()` so a type cannot go missing from here while existing on the Track. One click starts the thing you wanted. **The other realms keep a single button, because a single button has nothing to reveal.**
+
+### 5.9b.3 `Shell.compose({host})` — the composer
+
+| Part | Detail |
+|---|---|
+| **Container** | `host` renders INLINE into `#nwHost`; omit it and you get the drawer, kept for surfaces with nowhere to put a bar. 🔴 `/manage`'s creation flow IS a Discord modal — putting the portal's in one reproduces the shape of the thing it exists to beat |
+| **Layout** | ONE row. `.nwhost .nw` is a grid `1fr auto`: types span, form left, actions right. Measured at 134px tall; the stacked version was ~300px and pushed the Track — the preview — off the bottom of the screen, which defeats the entire reason it is inline |
+| **Type first** | picking the type picks the SHAPE, so nothing below it exists until one is chosen |
+| **The form IS the schema** | point types show ONE date labelled by `dateLabel`; span types show Opens/Closes. The old add-row offered `start` AND `end` for every type including draws, which have exactly one field and no end — a form asking for data the record cannot hold, the same defect the Track had when it painted a draw as a band |
+| **Field boxes** | each field is wrapped (`.nw-f`) so the inline bar can lay them on one row; bare label/input siblings force a column |
+| **Gate** | `#nw-why` states the reason in words; `#nw-go` reads `Stage <single>` — never `Stage new draw`, which is what deriving a singular by chopping an "s" off a COLUMN HEADING produced |
+| **`onStage.live(state)`** | called on every keystroke so the realm can draw its own preview |
+
+🔴 **THE TRACK IS THE PREVIEW.** Not a miniature axis inside a dialog — the real one, at real scale, beside real neighbours. `drawComposeGhost(c)` appends `.ghost.cmp` into the target lane, dashed because it is STAGED, and `lane.scrollIntoView({block:'nearest'})` because a ghost is only a preview if you can see it. Aiming at a folded lane unfolds it. `composePreview()`'s mini-axis is deleted — a lower-fidelity copy of the thing directly behind the scrim.
+
+⚠️ **`drawComposeGhost` was DELETED by a dead-code sweep an hour after it was written**, and called from three places for the rest of the session without ever throwing, because it is only reached when the composer opens. `npm run portal:refs` exists because of it.
 
 ---
 
 ## 5.9c THE TRACK IS INSTRUMENTS, NOT SIX ROWS OF RECTANGLES
 
-Six identical rows of rectangles is a table drawn sideways. Each lane holds a different KIND of fact and gets a form tuned to it, plus a collapsed state that answers **that lane's own question** rather than saying "5 hidden".
+Six identical rows of rectangles is a table drawn sideways. Each lane holds a genuinely different KIND of fact, and until 2026-08-24 every one was drawn the same way — which is why the Track read as one undifferentiated block and why it stopped working the moment a lane needed five rows.
 
-| Lane | Collapsed form | Because |
+**Measured before:** the live season put 39 items into six lanes with row heights of 38 / 38 / 88 / 62 / 220px — four different heights carrying no meaning, just whatever fell out of interval packing. The Track was ~1,100px tall and the lane you came for was off-screen while you read another. **After:** ~250px, everything on one screen.
+
+### 5.9c.1 `LANE_KIT` — one entry per lane, in `season.html`
+
+| Key | `sum` | `single` | `ask` | `overlapMatters` |
+|---|---|---|---|---|
+| `newDraws` | `pips` | draw | what released, and how rare | — |
+| `returningDraws` | `pips` | returning draw | what came back | — |
+| `drawWindow` | `runs` | draw window | when you could buy | **`true`** |
+| `event` | `runs` | event | what was running | — |
+| `playlist` | `load` | playlist | how many modes at once | — |
+| `patchNotes` | `pips` | patch note | what was published | — |
+
+🔴 **`single` exists because deriving a singular by chopping an "s" is wrong.** The lane LABEL is a column heading ("New draws"), not a noun for one of the things in it — so `'New ' + label.replace(/s$/,'')` produced **"New new draw"** in the command bar and **"Stage new draw"** on the composer's button. Two different jobs, two different words, written down rather than computed.
+
+`ask` is the lane's own question and appears in the header's `data-tip`, so the tooltip explains what collapsing costs you rather than merely announcing that the control exists.
+
+### 5.9c.2 The collapsed forms — each answers that lane's own question
+
+A collapsed row that only says "5 hidden" is a worse version of nothing.
+
+| `sum` | Renders | Because |
 |---|---|---|
-| New draws · Returning | pips at their true dates, tier-accented | a release is a moment; rarity is the fact that matters |
-| Draw windows · Events | merged runs | overlapping bands read as one span |
-| Playlists | a **load ribbon** with its peak | the question there is never "which one" but "how many are live at once" |
+| `pips` | `.lpip` at each item's true `pct(start)`, 7×7 rotated; `.myth` grows to 9×9 with a 2px ring | a release is a moment; **rarity** is the fact worth keeping when the name goes |
+| `runs` | `mergeRuns()` unions overlapping intervals into `.lrun` bars, 6px tall at `.65` opacity, each tipped `N items · from → to` | overlapping bands are perceived as one span, so that is what the summary shows |
+| `load` | `loadCurve()` samples the visible window at **64 points**, counts how many items are live at each, draws 2px bars scaled to the peak at opacity `.35 + (n/max)*.65`, plus a right-aligned `N at peak` | 🔴 the question in the playlists lane is **never "which one" but "how many are live at once"** — which is exactly why sixteen "overlap" warnings were wrong |
 
-- **A lane needing more than three rows opens collapsed.** Playlists alone needs five — ~130px before anything else is drawn, so you land on a wall with the lane you came for off-screen. Per lane, persisted, **alt-click to solo**. No global "dense mode": a mode is what you build when you cannot decide.
-- ⚠️ **The collapsed class is `.lnc`, never `.col`.** `.col` is a BOARD COLUMN with `min-height:220px` defined 2,400 lines earlier; a collapsed 30px lane inherited it and rendered as a black void with its header floating in the middle. Eighth collision on this package's roster after `.now .left .tbd .k .tk .ed` and `window.frames`.
-- **Labels leave the bar before they truncate**, right by default, flipped left at the edge, dropped only when neither side has room — and **room means room before the NEXT BAR**, not before the lane ends. Five weekly events sit end to end; measuring to the lane edge put every label on top of its neighbour.
-- **One deadline chip per DATE.** Battle Pass and Ranked are both Sep 10; two labels for one moment is a modelling error, and modelling it fixes the alignment by construction — one date, one chip, one stem. Out-of-view deadlines weld to the edge they are beyond.
-- 🔴 **CONCURRENCY IS NOT A DEFECT.** Sixteen "X and Y overlap" boxes rendered below the Track, taller than the Track itself, and nine were playlists overlapping playlists — while the same page drew a ribbon celebrating exactly that. Overlap is a finding only where the lane's semantics make it one (`LANE_KIT[key].overlapMatters`): two draw WINDOWS open at once is a real conflict; two playlists is Tuesday.
-- **A same-day cluster says so.** It used to read "N releases within 17px at this zoom — zoom in to separate them" for two draws on the same date: an instruction that cannot succeed, leaking a pixel constant into a sentence a person reads.
+### 5.9c.3 Collapse — per lane, persisted, never a mode
+
+- **Default:** a lane needing **more than three rows** opens collapsed. Playlists alone needs five — ~130px before anything else is drawn.
+- **Explicit choice always wins** and persists: `sessionStorage['dioreo-lane-col']`, keyed `type` or `d:type` for draft lanes.
+- **Alt-click solos** — everything else folds. That is the gesture you want when one lane is the reason you opened the page.
+- **No global "dense mode".** A mode is what you build when you cannot decide.
+- `.lnh` is the header: caret · colour chip · name · count. It is a **button**, `aria-expanded` tracks state, and the name **WRAPS rather than truncates** — "DRAW WINDOWS" is two words in a 38px row and there was never a reason to cut it.
+
+⚠️ **The collapsed class is `.lnc`, NEVER `.col`.** `.col{…min-height:220px}` is a BOARD COLUMN defined 2,400 lines earlier. A collapsed 30px lane inherited it, computed to 220px, and rendered as **a black void with its header floating in the middle** — because `.lane{align-items:center}` centres a 12px button inside a 220px row. Eighth collision on this package's roster after `.now`, `.left`, `.tbd`, `.k`, `.tk`, `.ed` and `window.frames`.
+
+### 5.9c.4 `--gutter` — one token, three consumers
+
+`.ruler`, `.deadrail` and `.lnh` hang off the same left edge. It was `96px` **hard-coded in three places**, and once the lane header gained a caret, a chip, a name and a count the names truncated to "NEW…", "RE…", "DRA…" — a worse label than the one it replaced. `:root{--gutter:138px}`, `96px` below 820px. **Three copies of a measurement is three chances to disagree.**
+
+### 5.9c.5 Labels leave the bar before they truncate
+
+```
+fits && !clipped   → leave it alone
+room to the RIGHT  → .lbl-out      (label at left:calc(100% + 7px))
+room to the LEFT   → .lbl-out-l    (label at right:calc(100% + 7px))
+neither            → .nolabel
+```
+
+- 🔴 **"Room" means room before the NEXT BAR, not before the lane ends.** Five weekly events sit end to end; measuring to the lane's right edge put every label on top of its neighbour — worse than the truncation it replaced. Only siblings on the SAME row can collide, since row assignment already guarantees no vertical overlap.
+- 🔴 **The 55% threshold was retired.** It was right when the only alternatives were "cut the name in half" and "drop the label"; once a label can move outside, accepting a 55%-cut name is accepting a worse outcome than one that is available. **Measured at 620px with every lane expanded: ten labels moved outside cleanly and three stayed clipped purely because they cleared that gate.** After: eight outside, zero dropped, zero clipped.
+- ⚠️ **An outside label must leave the bar's TEXT COLOUR behind with it** — `.bar.saved .bl` is near-black for a filled bar, and on the dark lane that measured **1.41:1**.
+- **`.stemmed` no longer prints a literal "·".** "· Week 1" read as a stray bullet. A dotted left border is the "continues from" convention and carries the same fact without putting a glyph among the words.
+
+### 5.9c.6 The deadline rail
+
+| Element | Rule |
+|---|---|
+| `.dflag` | **ONE CHIP PER DATE.** Battle Pass and Ranked both end Sep 10; stacking drew two boxes over one line with two stems to the same x. Two labels for one moment is a **modelling error**, and modelling it fixes the alignment by construction — one date, one chip, one stem, plus a `.dfk` key dot per deadline in the group |
+| `.dpin.edge` | an out-of-view deadline **welds to the edge it is beyond** (`right:0` / `left:0`), not floating mid-rail at no grid position. "Beyond this view" is a statement about the boundary |
+| `stackFlags()` | packs `.dflag`, `.dspan` **and `.dpin`** — the pin was missing from the query and is appended AFTER, so it took no row, sat at `top:0` and painted over the Ranked flag, which vanished entirely |
+| `--xtop` | the rail's measured height drives the crosshair offset. It was **hard-coded at 60px**, so the moment the rail grew a row the date bubble landed on the flags it was meant to sit above |
+| `fitFlags()` | flips a chip whose box would pass the right edge. ⚠️ It queried **`.dend .dflag` and matched NOTHING, ever** — the flags live in `.deadrail`; `.dend` is the vertical LINE on the overlay. A selector that matches nothing fails silently forever, and merging two chips into one 205px box turned it into a horizontal scroll at 1024px |
+
+### 5.9c.7 Clusters, and the sentence that could not be obeyed
+
+`CLUSTER_PX = 17`. Points inside that distance group into one `.mark.stack`.
+
+🔴 **It used to read "2 releases within 17px at this zoom — zoom in to separate them" for two draws BOTH dated Aug 22.** No zoom separates two points at one coordinate, so the instruction cannot succeed — and it leaked a pixel constant into a sentence a person reads. **Branch on the FACT, not on the pixel condition that triggered the grouping:**
+
+- **same day** → "N releases on Aug 22 — the same day, so zooming will not separate them", `.same` ring, and clicking **selects those rows in the manifest** and scrolls to them. That is the action actually available.
+- **merely close** → "N releases within N days of each other", and clicking zooms to their span.
+
+### 5.9c.8 🔴 CONCURRENCY IS NOT A DEFECT
+
+**Sixteen "X and Y overlap · Show both" boxes rendered below the Track, taller than the Track itself, and NINE were playlists overlapping playlists** — while the same page drew a load ribbon whose entire purpose is to show several running at once. **Two features on one screen disagreeing about whether the same fact is a problem.**
+
+Capping at three would have hidden the symptom and kept the contradiction. **The rule changed instead:** overlap is a finding only where the lane's own semantics make it one — `LANE_KIT[key].overlapMatters`. Two draw WINDOWS open at once is a real conflict, because a player cannot tell which draw they are buying into. Two events, or two playlists, is Tuesday. **16 → 2.**
 
 ---
 
@@ -970,35 +1184,171 @@ Six identical rows of rectangles is a table drawn sideways. Each lane holds a di
 
 A patch note is a **publication**, not a state with a duration. `models/PatchNote.js` gives it a `releaseDate` and no end, and `isEventEnded()` returns false for it forever. Every other lane answers "when is this ON?"; this one answers "what was said, and when".
 
-- **It does not stretch the axis.** The live season publishes Jul 6 and Jul 22 while nothing is scheduled before Aug 6 — including them spent the left third of the canvas on empty time. This is the same rule the deadline REACH already applied to outliers *ahead* of the content and never to outliers *behind* it.
-- **It renders as a vertical rail under the Track** (Harkirat's pick from three variants: a horizontal release ledger, this rail, and an image filmstrip). Newest first, `CURRENT` vs `HISTORY`, image counts, and its own `+ Publish` affordance — creation lives where the thing lives.
-- Patch notes **keep their place in the Manifest and the legend**. Only the Track lane went.
+### 5.9d.1 It does not stretch the axis
+
+`dataBounds()` excludes publications via `isPublication(it)`. The live season publishes **Jul 6 and Jul 22 while nothing is scheduled before Aug 6** — including them spent the left third of the canvas on empty time. The axis now opens **Aug 4** instead of Jul 3, and reads "48 days shown" instead of 82.
+
+⚠️ **This is the same rule the deadline REACH already applied to outliers AHEAD of the content and never to outliers behind it.** Fixing the right edge and not the left is the instance-not-the-class failure, inside the same function.
+
+### 5.9d.2 The instrument — three variants were built, one was chosen
+
+| Variant | What it was | Verdict |
+|---|---|---|
+| **A · release ledger** | horizontal spine, evenly spaced nodes oldest→newest, current note in its own bordered card | recommended; not chosen |
+| **B · vertical rail** | stacked newest-first: mark · title · date · image count · `CURRENT`/`HISTORY` | ✅ **Harkirat's pick** |
+| **C · filmstrip** | real Cloudinary banner thumbnails, newest largest | technically fine — the images are Cloudinary `f_auto,q_auto` URLs, not the expiring `media.discordapp.net` links the calendar banners use — but the art is **dense text screenshots**, unreadable at 82px and pure noise |
+
+**Shipped (B):** `.rec.rec-b` under the Track, inside `viewTrack`'s markup so it re-renders with the view and appears only on Track. `.rec-row` grid `20px 1fr auto auto auto`; the newest carries `.cur`, a filled `--patch` mark with a 4px halo and the `CURRENT` tag; the rest read `HISTORY`. `+ Publish` opens the composer pre-typed to `patchNotes` — **creation lives where the thing lives**.
+
+### 5.9d.3 What did NOT move
+
+Patch notes **keep their row in the Manifest and their chip in the legend**. Only the Track lane went. `F.LANES` still has six entries; the Track render filters `l.key !== 'patchNotes'` and nothing else does.
+
+⚠️ **`addItem` stages a patch note as `patchnote.addSeason`, not `draw.add`.** `kind === 'point'` is true for three lanes and they are not all draws — `OP_FOR` maps lane → op explicitly.
 
 ---
 
-## 5.9e THE CHECKS — and why the audit could not see any of this
+## 5.9e THE CHECKS — and why the audit could not see any of it
 
-**Every defect found on 2026-08-24 was visible in one second of looking and invisible to every check this package ran.** The audit asserts things about elements someone already thought about; a person's eyes scan the whole surface with no prior. The verification was component-scoped; the defects were surface-scoped.
+**Every defect found on 2026-08-24 was visible in one second of looking and invisible to every check this package ran.** The audit asserts things about elements someone already thought about; a person's eyes scan the whole surface with no prior about what should be there. **The verification was component-scoped; the defects were surface-scoped.**
 
-| Command | What it does |
+### 5.9e.1 The four commands
+
+| Command | What it does | Self-test |
+|---|---|---|
+| `npm run portal:gate` | op names, permission scopes, model fields, tiers — and it scans `COMPANION.md` itself, in code form and in prose | `--self-test`, four probes each proven able to fail |
+| `npm run portal:refs` | identifiers **called but never declared**, per file | `--self-test` renames a real function and asserts it is caught |
+| `.sweep.html?self=1` | the **surface sweep**, 8 pages × 5 widths | plants a clipped node and asserts it is caught |
+| `.audit-all.html?w=` | the per-page `__selfCheck` | `interactions` under `?audit=1` |
+
+### 5.9e.2 The seven surface invariants
+
+Each was derived from a real defect by asking: *what generic rule, applied to every element with no knowledge of what it is, would have caught this?*
+
+| Invariant | Fires when | Caught |
+|---|---|---|
+| `overridden` | an inline `height`/`width` differs from computed by >2px | the `.col` collision — a 220px void |
+| `cut` | `scrollWidth > clientWidth`, overflow hidden, no ellipsis; and any placeholder measured wider than its field | "We⋮", "Gunsm", "2 bui…", six realms' placeholders |
+| `flood` | >8 siblings that **each read as a BOX** (own border + ≥6px padding) | sixteen overlap warnings |
+| `monochrome` | N siblings carrying their own `--c`, N distinct labels, one colour | five identical red palette dots |
+| `flush` | flow neighbours of one class touching with no gap and no rule | the announcement cards |
+| `spill` | past its scroll container **at ≥1024px**, where there was room | the armory table scrolling sideways |
+| `ajar` | a drawer, scrim, menu or dropdown open after load | the palette, on all eight realms |
+
+**Every exclusion is a measurement, not a guess** — and the tuning was most of the work:
+
+- `.sr` is screen-reader-only and clipped **by design**; reporting it is the probe misreading the page.
+- **Repetition is not the defect, separate BOXES are.** 31 table rows are a table, nine list items are a list, ten `<code>` spans are prose — sixteen bordered padded blocks are more alarms than anyone can act on. So the test reads each sibling's own computed border and padding rather than maintaining a blocklist of class names.
+- **A Track lane is SUPPOSED to be one colour.** Colour carries topic, so thirteen draws sharing the draw hue is the rule working.
+- **A wide table scrolling on a phone is the design; the same table scrolling at 1280 is a defect.** The discriminator is whether there was room.
+- The scrubber's density strip is a **plotted series**, not stacked cards — `position:absolute` siblings are excluded from `flush`.
+- **An EMPTY placeholder cannot fail to fit** — the probe was arguing with the fix it had asked for one run earlier.
+
+### 5.9e.3 The audit's new rules (5b–5f)
+
+| Rule | Asserts |
 |---|---|
-| `npm run portal:gate` | schema conformance — op names, permission scopes, model fields, tiers |
-| `npm run portal:refs` | identifiers **called but never declared**. `drawComposeGhost` was called from three places and defined nowhere for most of a session; it never threw, because it is only reached when the composer opens |
-| `.sweep.html?self=1` | the **surface sweep** — seven invariants that know nothing about what an element is, across 8 pages × 5 widths |
-| `.audit-all.html?w=` | the per-page `__selfCheck`, now including real computed contrast |
+| 5b | nothing a person must read lives in a native `title` (>24 chars without `data-tip`) |
+| 5c | no label truncates while there is room beside it |
+| 5d | no text sits on an image without a plate |
+| 5e | the command bar is **CALLED**, not looked at — `items()` must return a non-empty list without throwing |
+| 5f | **real computed contrast** on every rendered text node, against the **actually composited** background. 4.5:1, or 3:1 at ≥18.66px or bold ≥14px |
 
-**The seven surface invariants**, each derived from a real defect by asking *what generic rule, applied to every element, would have caught this?*
+Rule 5f found four on its first run, every one `--ink4` used as TEXT when the ink scale is **three text tones and `--ink4` is non-text**: ⌘K at 3.46:1, Home's index at 3.02:1, the lane count at 3.02:1, and an outside label at **1.41:1**.
 
-`overridden` (inline style beaten by the cascade → the `.col` void) · `cut` (clipped text with no ellipsis → "We⋮", "Gunsm") · `flood` (>8 siblings that each read as a BOX → sixteen alarms) · `monochrome` (N siblings, N labels, one colour → five red palette dots) · `flush` (flow neighbours touching with no rule → the announcement cards) · `spill` (past its scroller **where there was room** → the armory table) · `ajar` (anything open just because the page loaded → the palette on all eight realms).
+### 5.9e.4 🔴 THREE PROBES REPORTED CLEAN WHILE BEING INCAPABLE OF FAILING
 
-⚠️ **THREE PROBES WRITTEN THAT DAY REPORTED CLEAN WHILE BEING INCAPABLE OF FAILING**, and each was caught only by deliberately trying to falsify it:
-1. the reference probe counted every **call site** as a declaration, so nothing could ever be missing;
-2. the contrast probe measured a **semi-transparent** background as opaque, inventing a 1.59:1 that is not physically possible, then failed to premultiply the first layer;
-3. the sweep ran a **light-mode pass that was really a second dark pass** — `data-theme` does nothing here, and the body background measured identical under both.
+All three were written the same day, and each was caught only by deliberately trying to falsify it:
 
-**So every probe in this package carries a falsifier that runs on every invocation.** `--self-test` on the gate and the reference probe; `?self=1` plants a clipped node in the sweep and asserts it is caught. A probe that cannot report PRESENCE is not evidence of absence.
+1. **The reference probe** built its `declared` set with a regex matching `name(` — which is every **call site** — so everything called was also "declared" and nothing could ever be missing. It printed a green tick one commit after `drawComposeGhost` had been missing all day.
+2. **The contrast probe** measured a **semi-transparent** background as opaque, reporting a lavender chip on a dark row at 1.59:1 — *a number not physically possible for that pair*, which is the tell that the probe rather than the page was wrong. After compositing was added it then failed to **premultiply the first layer** and produced the same class of nonsense again.
+3. **The sweep** ran a light-mode pass that was really a second dark pass — `data-theme` does nothing here, and the body background measured identical under both. **Forty renders reported a pass on a mode that never rendered.**
 
-✅ **THE PORTAL IS DARK-ONLY. That is a decision, not a gap** — Harkirat, 2026-08-24: *"we don't need a light mode inside of the portal… the light mode is only a real thing to check for the other parts of the dioreo.app website, such as the legal pages."* Do not re-add a theme axis to the sweep.
+**So every probe in this package carries a falsifier that runs on every invocation.** A probe that cannot report PRESENCE is not evidence of absence.
+
+⚠️ **Hardening the reference probe was itself instructive:** 103 raw hits → strip comments and string literals → most were **English**, from prose like "the window (meaning the visible span)". A checker that cries wolf a hundred times gets muted, which ends where having none ends. A page and the assets it loads are **one runtime scope**. The six survivors are all false and are listed in `KNOWN_FALSE` — **written down rather than silently filtered**, because suppressing the category would hide a real one later.
+
+### 5.9e.5 ✅ THE PORTAL IS DARK-ONLY — a decision, not a gap
+
+**Harkirat, 2026-08-24:** *"we don't need a light mode inside of the portal. it will remain dark mode only. the light mode is only a real thing to check for the other parts of the dioreo.app website, such as the legal pages."*
+
+Do not re-add a theme axis to the sweep. The published SITE is where light mode has to be checked, and that is a different surface with its own build (`scripts/buildLegalPages.js`).
+
+---
+
+## 5.9f HOME IS TRIAGE, NOT A DIRECTORY
+
+**Before:** five identical cards in a 3+2 grid with a hole in the last row, ~40% of the viewport empty below them, and five orange badges of identical weight — `16 TO REPAIR`, `33 NEED REPAIR`, `1 NEVER ENDS`, `9 SCOPES HELD BY ONE PERSON`, `23 ERRORS PINGED`. **When five things are all alarms, none is.** The page is titled *"What needs you"* and nothing answered it in priority order. It had **zero buttons in `main`** — it named five problems and offered no way to act on one.
+
+### 5.9f.1 The attention list
+
+```
+.att-list   <ol>, 1px gaps, first/last rows carry the 11px corner radius
+.att-row    grid 34px 3px 1fr auto  →  index · severity bar · fact+realm · verb
+.att-i      the rank, tabular, --ink3
+.att-b      a 3px full-height bar in var(--sev) — the severity LADDER, not five equal alarms
+.att-x b    the fact, 14.5px/600
+.att-x em   the realm, 10px --data uppercase
+.att-go     .pill.sm — the verb that fixes it
+```
+
+**Severity is a property of the KIND, not of the count** — 33 builds needing a caption is not more urgent than one scope only one person can use. The count only breaks ties.
+
+| Kind | Weight | Colour | Line |
+|---|---|---|---|
+| `conflict` | 95 | `--warn` | N items run past the season's own deadlines |
+| `spof` | 90 | `--del` | N scopes held by exactly one person |
+| `error` | 80 | `--del` | N errors pinged |
+| `repair` | 60 | `--patch` | N builds / season items need repair |
+| `forever` | 50 | `--ink4` | N announcements never end — oldest up Nd |
+
+**The numbering is real information** — these are in priority order and the order is the point. (Per the frontend-design rule: numbered markers are only appropriate when the content genuinely is a sequence.)
+
+**The empty state names what it means:** "Nothing needs you right now. / Every realm matches what the bot is serving." — never "Nothing here".
+
+### 5.9f.2 The realm strip
+
+Once the findings moved up, the cards became a **way IN**, not a second alarm surface — a card repeating a fact from the list is the same fact twice at two different weights. Only a **staged** count survives there, because that is the one thing the attention list deliberately does not rank: it is your own unfinished work, not a fault.
+
+`.hgrid.quiet` is **five across in one row** (3 at ≤1180, 2 at ≤720, 1 at ≤460). The 3+2 grid left a hole in the second row for no gain.
+
+---
+
+## 5.9g ARMORY — the tier board that did not read as tiered
+
+| Defect | What it looked like | Fix |
+|---|---|---|
+| **Six pairs of apparent duplicates** | LOCUS/LOCUS, DR-H/DR-H, HS0405/HS0405, LK24/LK24, HVK-30/HVK-30, SWITCHBLADE X9 ×2 — adjacent cards with identical titles, told apart only by a stored `buildName` that is an INDEX ("Build 1", "Build 2"). The DATA is right; the presentation asked a reader to spot a one-character difference between two identical rectangles, which reads as a duplicate-render bug | `groupChips()` — siblings of one weapon in one tier render as **one `.bgrp`**, weapon named once, builds inside. Inner elements stay `.bchip`, so drag-to-rerank is untouched |
+| **No visual ladder** | ★ / T3 / T4 / T5 / — all identical weight, so the one thing a tier board exists to express was the one thing it did not show | `.trow.t-best` gets a `--patch` wash and a 20px key; T3 17px, T4 15px, T5 14px, unranked `.72` opacity. Cards dim `.94` / `.86` down the ladder and return to full on row hover |
+| **Headers floating in ~110px of dead space** | key, count, label and note as four separate blocks, the key optically centred while everything under it was left-aligned | `.trow-h` is a 3-area grid (`k n` / `t t` / `note note`), `align-self:start`, so the block hangs from the top and the row's height follows its contents |
+| **The same sentence three times** | "ranked within its own category, not across the armory" on T3, T4 **and** T5 — and again, in full, under the whole rack. Four copies of one fact, each taking a third of its row's header height | only `best` and `unranked` keep a note; the shared fact lives once, in `.racknote` |
+| **The table scrolled sideways** | the WEAPON column slid under the panel edge and the first thing you read became "APON" | the BADGES cell held a `nowrap` `.tiers` group at 122px in a 104px cell, forcing the table 65px wider than `.mscroll`. Badges wrap now, right-aligned. **A table whose last column cannot wrap makes the whole table horizontal** |
+| **`+ Add build` below the fold** | at 1208px in an 828px viewport, under a filter row, on the realm that manages 133 builds | promoted to the masthead; the in-table button stays as the shortcut for when you are already scrolled there |
+| **Placeholder cut mid-word** | "Weapon, build, attachment or Gunsm" | shortened, full sentence on `aria-label` — then generalised into `Shell.fitPlaceholders()` |
+
+---
+
+## 5.9h BROADCAST AND ACCESS — the smaller realms
+
+**Broadcast.** Two `.dcard` previews stacked **flush**, so two separate announcements read as one block with a colour change in the middle (`.dcard + .dcard{margin-top:12px}`). And the text was cut mid-word — "…and the battle pas", "Use /draw calculator to" — on a card whose stated job is *"the bot's OWN render shape — a truthful preview"*. **A preview that silently drops the end of the sentence is not truthful;** Discord shows the whole thing. `.dcard h6` no longer clamps.
+
+**Access.** The orange ring on a column header was **the most loaded mark on the page and the only one not in the key** — it flags a scope exactly one person besides the owner holds, which is the finding Home ranks *second out of everything in the portal*, and a reader had no way to learn that. `.klg.spofk` now states it, and every column header carries a `data-tip` naming the scope and its status. The two column groups (`COMMANDS` / `/MANAGE PAGES`) also gained a real gutter — a group needs separation, not just a caption.
+
+---
+
+## 5.9i THE SCROLL BUG — and the probe that could never have found it
+
+🔴 **`main` IS THE SCROLL CONTAINER.** `app.css`: `main{overflow:auto;padding-bottom:96px}` inside `.app{display:grid;height:100vh}`. **Consequence: `window.scrollY` is ALWAYS 0 and `document.documentElement.scrollHeight` ALWAYS equals `innerHeight`, on every portal page.**
+
+A previous investigation read exactly those two numbers, concluded *"there was nothing to scroll"*, and closed a reproduced bug as non-reproducible. **Both numbers were healthy and neither could ever have shown the fault.**
+
+**What is measured:** on a cold load, Season lands at exactly `scrollHeight - clientHeight` — the precise bottom — with ~39 manifest rows inserted after first paint. **Five of five cold loads; zero of roughly fifty once the assets were warm.** Width is NOT the variable: 900px is clean when warm, so an early "narrow viewports only" reading was confounded with warm-up and is withdrawn.
+
+**What is NOT measured:** which late mechanism moves it. Scroll anchoring, a restored offset and a stray focus all produce this signature and none was isolated.
+
+**So the fix is the one that holds for all three:** `Shell.holdTop()` asserts the opening position once the first render and the font reflow are done, and **stands down the instant a real user gesture arrives** (`wheel`, `keydown`, `pointerdown`, `touchstart`, capture) so it can never fight someone scrolling. It self-disarms after 4s regardless.
+
+**The general lesson, which outlives this bug:** when a probe returns well-formed healthy numbers for a fault a person can see, **suspect the probe is reading a different element before suspecting the report.** Ask which element actually scrolls, paints or sizes — and read THAT one.
 
 ---
 
