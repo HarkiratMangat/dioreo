@@ -1979,7 +1979,7 @@ Review's empty state is the best edge state in the package: it names what is mis
 
 | | |
 |---|---|
-| package | **12,875 lines** — `app.css` 3,756 · `season.html` 2,846 · `shell.js` 2,134 |
+| package | **12,875 lines** — `app.css` 3,756 · `season.html` 2,846 · `shell.js` 2,134 *(measured 2026-08-25 morning; §16's work has since moved all three, and this row is a SNAPSHOT that made the argument below — re-measure with `wc -l`, never read it as current)* |
 | `shell.js` | **38% comment** (785 of 2,067 non-blank) |
 | `app.css` | 14% comment |
 | gates on the **code** | five (`portal:gate`, `portal:refs`, `portal:roundtrip`, `.states.html`, `.audit-all.html`) |
