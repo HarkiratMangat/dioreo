@@ -22,7 +22,21 @@ b{color:#F2C230}i{color:#FF6B6B;font-style:normal}em{color:#5FD4E8;font-style:no
  */
 const PAGES  = ['index','season','armory','broadcast','access','analytics','review','door'];
 const WIDTHS = [390, 768, 1024, 1280, 1440];
-const THEMES = ['dark','light'];
+/* 🔴 THERE IS NO LIGHT THEME. The first version of this swept both, and the light pass came back
+ * clean — because `data-theme="light"` does nothing: `tokens.css` contains no light palette, no
+ * `prefers-color-scheme` block and no theme attribute at all. Forty renders reported a pass on a
+ * mode that never rendered, which is the vacuous-pass trap one level up from the probe itself.
+ * Caught by asking the probe to prove it could tell the two apart: it could not — body background
+ * measured rgb(15,20,24) under both. Dark-only is a legitimate choice for an admin tool, but it
+ * is a DECISION, not a fact to discover by accident — so the dimension is removed rather than a
+ * green tick printed over it.
+ *
+ * ✅ SETTLED BY HARKIRAT, 2026-08-24 21:0x EDT: "we don't need a light mode inside of the portal.
+ * it will remain dark mode only. the light mode is only a real thing to check for the other parts
+ * of the dioreo.app website, such as the legal pages." So this is intended, not a gap — do not
+ * re-add a theme axis here. The published SITE is where light mode has to be checked, and that is
+ * a different surface with its own build (`scripts/buildLegalPages.js`). */
+const THEMES = ['dark'];
 const px = v => parseFloat(v) || 0;
 
 function sweep(d, w) {

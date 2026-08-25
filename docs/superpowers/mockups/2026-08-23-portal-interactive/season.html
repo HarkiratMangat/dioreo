@@ -1472,7 +1472,13 @@
   function fitFlags() {
     const box = viewTrack.querySelector('.tk-inner'); if (!box) return;
     const R = box.getBoundingClientRect();
-    viewTrack.querySelectorAll('.dend .dflag').forEach(f => {
+    /* 🔴 `.dend .dflag` MATCHED NOTHING. The flags live in `.deadrail`; `.dend` is the vertical
+     * LINE on the overlay, a different element entirely. So the edge-flip this function exists to
+     * perform has never once run — and merging Battle Pass and Ranked into one chip made the box
+     * 205px wide, which at 1024px pushed the Track into a horizontal scroll. A selector that
+     * matches nothing fails silently forever; the surface sweep found it by measuring the
+     * OVERFLOW rather than by asking whether the function had been called. */
+    viewTrack.querySelectorAll('.deadrail .dflag,.deadrail .dspan').forEach(f => {
       f.classList.remove('flip');
       const r = f.getBoundingClientRect();
       if (r.right > R.right - 4) f.classList.add('flip');
