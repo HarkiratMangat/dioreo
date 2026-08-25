@@ -271,12 +271,52 @@
       requestAnimationFrame(() => { sc.classList.add('on'); d.classList.add('open'); });
       sc.classList.add('on'); d.classList.add('open');
       d.querySelector('.x').addEventListener('click', () => Shell.closeDrawer());
+      /* 🔴 THE DRAWER CLAIMED TO BE MODAL AND TAB WALKED STRAIGHT OUT OF IT. Measured 2026-08-25
+       * with a typed-confirmation open: 218 focusable elements outside the drawer were still
+       * reachable, so somebody could tab past a purge dialog and press something else on the page
+       * behind it. A scrim stops the mouse and says nothing to the keyboard — the visual half of
+       * modality was built and the behavioural half was not, which is the same shape as an
+       * onclick with no tabindex.
+       * `inert` is the honest primitive: it removes the rest of the page from the tab order AND
+       * from the accessibility tree, so a screen reader stops reading the page behind too, which
+       * a hand-rolled TAB-cycling trap never fixes. The manual cycle stays as the fallback for
+       * anything that does not support it. Focus returns to whatever opened the drawer, because a
+       * modal that drops you at the top of the document loses your place. */
+      Shell._opener = document.activeElement;
+      const sibs = [...document.body.children].filter(n => n !== d && n !== sc);
+      sibs.forEach(n => { if (n.inert !== undefined) { n.__wasInert = n.inert; n.inert = true; } });
+      d.__release = () => sibs.forEach(n => { if (n.inert !== undefined) n.inert = !!n.__wasInert; });
+      if (sibs.every(n => n.inert === undefined)) {
+        d.__trap = e => {
+          if (e.key !== 'Tab') return;
+          const f = [...d.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])')]
+            .filter(el => el.checkVisibility ? el.checkVisibility() : true);
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        };
+        document.addEventListener('keydown', d.__trap, true);
+      }
       d.querySelector('.dw-b input,.dw-b button,.dw-f button')?.focus();
       return d;
     },
     closeDrawer(){
-      document.querySelector('.drawer')?.classList.remove('open');
+      const d = document.querySelector('.drawer');
+      /* Undo modality in the same place that applied it — an `inert` left behind would silently
+       * make the whole page unusable, which is a far worse failure than the one it fixes. */
+      if (d) {
+        d.__release && d.__release(); d.__release = null;
+        if (d.__trap) { document.removeEventListener('keydown', d.__trap, true); d.__trap = null; }
+        d.classList.remove('open');
+      }
       document.querySelector('.scrim')?.classList.remove('on');
+      /* Back where you were. A modal that returns you to the top of the document loses your
+       * place in a 39-row table, which is most of what this portal is. */
+      if (Shell._opener && Shell._opener.isConnected && Shell._opener.focus) {
+        try { Shell._opener.focus({ preventScroll: true }); } catch (e) {}
+      }
+      Shell._opener = null;
     },
 
     /* ═══════════════════ ASYNC — §15.7, no longer undesigned ═══════════════════
@@ -448,6 +488,21 @@
       }
     },
 
+    /* 🔴 ONE DELEGATED LISTENER, because the kept-copies list is re-rendered by whatever realm
+     * hosts it and a handler bound per render would either go stale or accumulate. Bound once at
+     * the document, so any realm that drops `Shell.Export.panelHtml()` into its markup gets a
+     * working button without wiring anything — which is the point: a control that renders and
+     * does nothing is worse than no control, and that is exactly what shipping the markup without
+     * this would have been. */
+    bindExportAgain(){
+      if (document.__expAgain) return;
+      document.__expAgain = true;
+      document.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('[data-again]');
+        if (b) Shell.Export.again(b.dataset.again);
+      });
+    },
+
     /* ══════════ WHO MAY DO SOMETHING THAT CANNOT BE UNDONE ══════════
      * Decided 2026-08-25 by Harkirat: tier-3 is OWNER-ONLY by default, with an explicit
      * capability the owner — and only the owner — may hand to one admin.
@@ -528,6 +583,7 @@
        * surface, so they have to land AFTER that surface exists. holdTop() is the one hook every
        * realm already calls at the end of its first render. */
       Shell.async.applyFlag();
+      Shell.bindExportAgain();
       /* Stats are rewritten on every stage, every filter and every save, so a one-shot pass at
        * boot would be correct exactly once. Observed rather than called from each render site —
        * the render sites are the thing that keeps forgetting. */
@@ -1361,6 +1417,62 @@
         });
       })();
 
+      /* 15. A MARK THAT FIRES ON ALMOST EVERY ROW CARRIES NO INFORMATION.
+       *     🔴 SEVEN INSTANCES OF ONE DEFECT IN THIS PACKAGE, and every one of them passed every
+       *     other rule here: Armory's headline read 109 of 125 when 104 were merely stale; three
+       *     separate zeros rendered in an accent; Analytics' success-rate tile tested `any error
+       *     at all` on a continuous quantity, so in production it would have been orange forever;
+       *     the Board painted all 39 relative-time figures in the alarm colour; and the coverage
+       *     meter was green on every card because its override selector was dead.
+       *     None of those is visible one element at a time — each element was individually
+       *     correct. It is a fact about a class across its SIBLING SET, which is the same shape
+       *     as the one-origin rule and the reason both exist.
+       *     ⚠️ IT REPORTS A NOTE, NEVER A FAILURE. A universally-applied accent is sometimes
+       *     right (a brand colour, a single-item list), and a rule that cannot tell those apart
+       *     must not block — a check that cries wolf is switched off, which costs more than it
+       *     saves. The note names the class and the ratio so a person decides in one glance. */
+      (() => {
+        const NEUTRAL = /rgba?\(0, 0, 0, 0\)|transparent/;
+        const groups = new Map();
+        document.querySelectorAll('[class]').forEach(el => {
+          const parent = el.parentElement; if (!parent || !el.checkVisibility?.()) return;
+          const cls = String(el.className).split(' ').filter(Boolean).join('.');
+          if (!cls) return;
+          const key = String(parent.className).split(' ')[0] + '>' + el.tagName + '.' + cls;
+          if (!groups.has(key)) groups.set(key, { on: 0, total: 0, sample: el });
+        });
+        /* Compare each element against its OWN siblings of the same tag — the population a
+         * reader actually scans — rather than against the page, which would drown every set. */
+        const seen = new Set();
+        document.querySelectorAll('*').forEach(parent => {
+          const kids = [...parent.children];
+          if (kids.length < 8) return;                       // too few to say anything
+          /* 🔴 COUNT SIBLINGS THAT CARRY THE MARK, NOT MARKS. The first version tallied every
+           * marked descendant against the sibling count and reported "25 of 14 siblings (179%)" —
+           * a ratio above 100% discredits a check instantly, whatever it found. The question is
+           * "how many ROWS are marked", so a row with two marks still counts once. */
+          const tally = new Map();
+          kids.forEach(k => {
+            const names = new Set();
+            [...k.querySelectorAll('[class]')].forEach(e => {
+              if (NEUTRAL.test(getComputedStyle(e).color)) return;
+              const n = String(e.className).split(' ').find(x => /warn|dang|bad|alert|soon/.test(x));
+              if (n) names.add(n);
+            });
+            names.forEach(n => tally.set(n, (tally.get(n) || 0) + 1));
+          });
+          tally.forEach((n, cls) => {
+            const ratio = n / kids.length;
+            const key = cls + '@' + kids.length;
+            if (ratio >= 0.9 && !seen.has(key)) {
+              seen.add(key);
+              problems.push(`note: .${cls} marks ${n} of ${kids.length} siblings (${Math.round(ratio * 100)}%) — ` +
+                'a mark that fires on almost every row carries no information; check the threshold behind it');
+            }
+          });
+        });
+      })();
+
       /* 14. NO ANIMATION MAY ESCAPE `prefers-reduced-motion`.
        *     🔴 THE FIRST RULE HERE THAT READS THE STYLESHEET RATHER THAN THE PAGE, and it exists
        *     because reading the CSS by eye said this was fine for weeks. MEASURED 2026-08-25:
@@ -1385,7 +1497,14 @@
             if (!r.selectorText || !r.style) continue;
             const a = r.style.getPropertyValue('animation') || r.style.getPropertyValue('animation-name');
             if (inRM) { r.selectorText.split(',').forEach(x => covered.add(x.trim())); continue; }
-            if (a && !/^\s*none/.test(a)) r.selectorText.split(',').forEach(x => moving.push(x.trim()));
+            /* `all: unset` sets every property including `animation`, and the computed value it
+             * reports is "unset" rather than "none" — so a button doing a full reset was flagged
+             * as an animating selector on all eight pages. The CSS-wide keywords are the absence
+             * of an animation, not the presence of one. Found by the rule firing on the sortable
+             * button added minutes earlier, which is the rule working: it noticed a new selector
+             * declaring animation, and the fix is to teach it what "no animation" looks like. */
+            if (a && !/^\s*(none|unset|initial|revert|revert-layer)\b/.test(a))
+              r.selectorText.split(',').forEach(x => moving.push(x.trim()));
           }
         };
         for (const sh of document.styleSheets) { try { walk(sh.cssRules, false); } catch (e) { /* cross-origin */ } }
@@ -1669,6 +1788,29 @@
        * sessionStorage is a mockup shim (§15.11), and an export that dies with the tab is not a
        * safeguard for anybody. */
       retained(scope){ const d = Shell.Export._done[scope]; return !!(d && d.body && String(d.body).length); },
+      /* 🔴 A SAFEGUARD NOBODY CAN SEE IS ONE NOBODY TRUSTS. Retention was built and rendered
+       * nowhere: the confirm dialog claimed a copy was kept and no surface could show it, which
+       * is the same shape as an export that only records a timestamp. This renders every kept
+       * copy with its scope, time, size and a way to take it again — so "the owner holds the
+       * data" is a thing you can look at rather than a sentence in a dialog. */
+      records(){ return Object.entries(Shell.Export._done)
+        .filter(([, d]) => d && d.body)
+        .map(([scope, d]) => ({ scope, at: d.at, rows: d.rows, bytes: String(d.body).length })); },
+      /* Re-download from the KEPT copy, never a re-derivation: a retained export that regenerates
+       * itself is a different document wearing the same name, and the whole point is that this is
+       * the bytes that were handed over. */
+      again(scope){ const d = Shell.Export._done[scope];
+        if (!d || !d.body) return Shell.toast('No kept copy for ' + scope + '.');
+        Shell.Export.file(scope.replace(/[^a-z0-9]+/gi, '-') + '.txt', d.body); },
+      panelHtml(){
+        const r = Shell.Export.records();
+        if (!r.length) return '<p class="expnone">No export taken this session. One-way operations stay locked until there is one.</p>';
+        return '<ul class="explist">' + r.map(x =>
+          '<li><span class="exp-s">' + x.scope + '</span>' +
+          '<span class="exp-m">' + new Date(x.at).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) +
+            (x.rows ? ' &middot; ' + x.rows + ' rows' : '') + ' &middot; ' + x.bytes + ' bytes kept</span>' +
+          '<button class="pill sm" data-again="' + x.scope + '">Take it again</button></li>').join('') + '</ul>';
+      },
 
       /* Recording an export unblocks staged tier-3 ops that name THIS scope — and only this
        * scope. An earlier draft unblocked ops with no scope too, on the reasoning that a
@@ -1722,7 +1864,14 @@
            * Each scope states its own shape in its own note; this line states only what is
            * true of all of them. */
           body: '<p class="dw-p">' + (note || 'Each of these is the format that entity really takes back — the round trip is checked against the bot\'s own exporter on every build, so what comes out here is what /manage would emit. This is what makes a one-way operation survivable: the copy you take before it is the copy you restore from.') + '</p>' +
-                '<ul class="exs">' + rows + '</ul>',
+                '<ul class="exs">' + rows + '</ul>' +
+                /* 🔴 THE KEPT COPIES BELONG WHERE EXPORT LIVES, NOT ON ONE REALM. This surface was
+                 * added to Armory's Bulk view first, which would have made retention — the thing
+                 * that makes a one-way operation survivable — visible on exactly one of the five
+                 * realms that export. Same per-call-site shape as the zero-in-an-alert-colour.
+                 * In the shared panel it appears wherever anybody exports, including from the
+                 * one-way strip's own "Export first" jump. */
+                '<div class="expkept"><h5>Kept this session</h5>' + Shell.Export.panelHtml() + '</div>',
           actions: '<button class="btn" id="dw-cancel">Close</button>'
         });
         d.querySelector('#dw-cancel').onclick = () => Shell.closeDrawer();

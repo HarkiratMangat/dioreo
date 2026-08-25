@@ -180,9 +180,9 @@
                   <col class="c-spark"><col class="c-detail"><col class="c-state"><col class="c-ra"></colgroup>
         <thead><tr>
           <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
-          <th class="sortable" data-sort="name">Item</th>
-          <th class="sortable" data-sort="type">Type</th>
-          <th class="sortable sorted-asc" data-sort="start">Window</th>
+          <th class="sortable" data-sort="name"><button type="button" class="sortbtn" data-sort="name">Item</button></th>
+          <th class="sortable" data-sort="type"><button type="button" class="sortbtn" data-sort="type">Type</button></th>
+          <th class="sortable sorted-asc" data-sort="start"><button type="button" class="sortbtn" data-sort="start">Window</button></th>
           <th class="drop-sm">Span</th>
           <th>Detail</th><th class="ta-r">State</th>
           <!-- A real column with a real header, not a hover reveal. See Shell.removeCell. -->
@@ -1992,6 +1992,20 @@
    * the "-17d" was a second bug on top — "ends in" with a negative number should read "ended".
    * This is the same class as everything else this pass fixed: a point fed to arithmetic that
    * assumes a span. */
+  /* 🔴 IMMINENCE, NOT MERELY TIME. Every relative-time figure on the board was painted in the
+   * alarm colour — "released 15d ago" as loudly as "releases in 1d" — so the colour fired on all
+   * 39 cards and said nothing. Two days is the window in which an admin can still act: a draw
+   * releasing tomorrow can be pulled, one that released a fortnight ago cannot.
+   * Staged is never "soon": it is not scheduled at all until it is committed. */
+  const SOON_DAYS = 2;
+  function boardSoon(i, col) {
+    if (col === 'staged' || col === 'ended') return false;
+    const d = i.kind === 'point' ? T.days(F.today, i.start)
+            : col === 'upcoming' ? T.days(F.today, i.start)
+            : T.days(F.today, i.end);
+    return d >= 0 && d <= SOON_DAYS;
+  }
+
   function boardMeta(i, col) {
     const pt = i.kind === 'point';
     if (col === 'staged') return 'not visible to players yet';
@@ -2035,7 +2049,11 @@
                                     : col.length ? col.filter(x=>x.kind==='point').length + ' with no end date' : '')
                 : c.k==='upcoming' ? (col.length ? 'next ' + T.fmt(col.map(x=>x.start).sort()[0]) : '')
                 : c.k==='staged'   ? (col.length ? 'uncommitted' : '')
-                :                    (col.length ? col.length + ' archived' : '');
+                /* 🔴 EVERY COLUMN'S SECOND LINE ANSWERS THE SAME QUESTION: "what is at the edge
+                 * of this column?" Live and Upcoming both named a DATE; Ended said "10 archived",
+                 * which is the count already in the pill beside it — so one column in four spent
+                 * its only line of explanation repeating its neighbour. */
+                :                    (col.length ? 'last ended ' + T.fmt(col.filter(x => x.end).map(x => x.end).sort().slice(-1)[0] || '') : '');
       return `<section class="bcol${off?' collapsed':''}" data-col="${c.k}">
         <button class="bcol-h" data-toggle="${c.k}" aria-expanded="${!off}"
                 aria-label="${off ? 'Expand' : 'Collapse'} ${c.t}, ${col.length} items">
@@ -2052,7 +2070,16 @@
                style="--c:${accentOf(i.type)}">
             <span class="bn">${i.name}</span>
             <span class="bd">${F.TYPE_LABEL[i.type]} <span class="dot2">·</span> ${T.fmt(i.start)} &rarr; ${T.fmt(i.end)}</span>
-            <div class="bmeta">${boardMeta(i, c.k)}</div>
+<!-- The soon class is what makes the alarm colour mean something on a board of 39 cards:
+                 set only when the thing is within two days of starting or ending, so the orange
+                 marks the rows that need you rather than all of them.
+                 NO BACKTICKS IN THIS COMMENT - it lives inside a template literal. FIFTH and
+                 SIXTH occurrence, both within one edit, and the fifth taught something new: a
+                 backtick before a member access makes a TAGGED TEMPLATE, which is valid
+                 JavaScript, so the parse gate read it clean and it failed at runtime with
+                 ".soon is not a function". The sixth was the comment written to warn about the
+                 fifth. Write these comments with plain quotes. -->
+            <div class="bmeta${boardSoon(i, c.k) ? ' soon' : ''}">${boardMeta(i, c.k)}</div>
             ${i.kind === 'point' ? '' : `<div class="sparkwrap">${spark(i)}</div>`}
             ${c.k === 'staged' ? `<div class="actions">
               <button data-discard="${i.id}">Discard</button>
@@ -2561,7 +2588,10 @@
   document.querySelector('[data-state]').onclick = function () {
     st.stagedOnly = !st.stagedOnly; this.setAttribute('aria-pressed', String(st.stagedOnly)); renderRows();
   };
-  document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+  /* 🔴 THE ELEMENT THAT HANDLES THE CLICK IS THE ELEMENT THAT TAKES FOCUS. A <th> with an
+     onclick and no tabindex made every sort MOUSE-ONLY, on four realms, and the keyboard
+     pass could not see it because it selected by ROLE and a bare th has none. */
+  document.querySelectorAll('button.sortbtn').forEach(th => th.onclick = () => {
     st.sortDir = st.sortKey === th.dataset.sort ? -st.sortDir : 1; st.sortKey = th.dataset.sort;
     document.querySelectorAll('th.sortable').forEach(x => x.className = 'sortable');
     th.className = 'sortable ' + (st.sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
@@ -2645,7 +2675,7 @@
         </div>
         <p class="repnote">${g.note}</p>
         ${g.hits.length ? `<ul class="rephits">${g.hits.map(h => `
-          <li data-hit="${h.id}"><b>${h.label}</b><span>${h.why}</span></li>`).join('')}</ul>`
+          <li><button type="button" data-hit="${h.id}" aria-label="Open ${h.label} - ${h.why}"><b>${h.label}</b><span>${h.why}</span></button></li>`).join('')}</ul>`
           : `<p class="repclean">Nothing to fix. The check still runs; it has nothing to report against this season.</p>`}
       </div>`;
     viewRepairs.innerHTML = `

@@ -60,10 +60,10 @@
       <div class="mscroll"><table class="mtable">
         <colgroup><col class="c-item"><col class="c-type"><col class="c-win"><col class="c-detail"><col class="c-state"></colgroup>
         <thead><tr>
-          <th class="sortable" data-sort="text">Announcement</th>
-          <th class="sortable drop-sm" data-sort="createdAt">Posted</th>
-          <th class="sortable" data-sort="startsAt">Starts</th>
-          <th class="sortable" data-sort="expiresAt">Ends</th>
+          <th class="sortable" data-sort="text"><button type="button" class="sortbtn" data-sort="text">Announcement</button></th>
+          <th class="sortable drop-sm" data-sort="createdAt"><button type="button" class="sortbtn" data-sort="createdAt">Posted</button></th>
+          <th class="sortable" data-sort="startsAt"><button type="button" class="sortbtn" data-sort="startsAt">Starts</button></th>
+          <th class="sortable" data-sort="expiresAt"><button type="button" class="sortbtn" data-sort="expiresAt">Ends</button></th>
           <th class="ta-r">State</th>
         
           <th class="ra"><span class="sr">Remove</span></th>
@@ -574,7 +574,10 @@
     document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
     renderRows();
   });
-  document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+  /* 🔴 THE ELEMENT THAT HANDLES THE CLICK IS THE ELEMENT THAT TAKES FOCUS. A <th> with an
+     onclick and no tabindex made every sort MOUSE-ONLY, on four realms, and the keyboard
+     pass could not see it because it selected by ROLE and a bare th has none. */
+  document.querySelectorAll('button.sortbtn').forEach(th => th.onclick = () => {
     const k = th.dataset.sort;
     st.sort = { k, dir: st.sort.k === k ? -st.sort.dir : 1 };
     document.querySelectorAll('th.sortable').forEach(x => x.className = x.className.replace(/ sorted-\w+/, ''));

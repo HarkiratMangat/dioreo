@@ -54,7 +54,11 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **15.11** | Still open — ask before deciding | Before assuming something is settled |
+| **5.9j–5.9s** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
+| **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
+
+⚠️ **This table is the only navigation this document has, and it is 280KB long.** A section that is not in it is a section a wiring session will not find. Three whole families — §5.9j–5.9r, §15.7 and §15.7b — were missing from it for a day after being written, which made them exhaustive and unreachable at the same time. **If you add a section, add its row.**
 
 ---
 
@@ -1962,6 +1966,52 @@ Review's empty state is the best edge state in the package: it names what is mis
 
 ---
 
+## 5.9s THE SCRUTINY PASS — five recurring classes, and the gates that now hold them
+
+*Written 2026-08-25, after the sub-views. This section is not a list of fixes; it is the count that made the fixes stop being the point.*
+
+### 5.9s.1 Five classes, thirty instances
+
+| class | instances across this branch |
+|---|---|
+| **One quantity, two authorities** | 7 — the Track's origins (×3), Home vs Armory, the identity chip vs the permission model, the Door vs the expired banner, the coverage meter's dead override |
+| **A mark that fires on ~every row** | 7 — Armory's 109-of-125 alarm, three zeros in an accent, Analytics' always-orange success rate, the Board's 39-of-39, the tier board badging age on 109 builds |
+| **A probe that cannot report presence** | 6 — rAF in an unrendered frame, `.find()` on the first track host, the keyboard pass blind to a bare `onclick`, `states()` gone vacuous, a dead CSS selector, retention built and rendered nowhere |
+| **A backtick in a template-literal comment** | 6 — two of them on 2026-08-25, and the sixth was inside the comment written to warn about the fifth |
+| **A per-call-site fix leaving siblings wrong** | 4 — the zero colour, the lane contract, the meter, the kept-copies surface |
+
+**Thirty instances, five shapes.** Every one passed every gate at the time it shipped, and every fix so far has been to the instance. That is the finding.
+
+### 5.9s.2 What changed: three of the five became mechanical
+
+- **Backticks** → `portal:refs` now lints for a backtick inside `<!-- -->` in extracted script source, with its own falsifier. Prose failed six times; five lines of regex cannot. **And the fifth occurrence taught something the parse check alone could not catch:** two backticks terminate and restart the template, which *parses* — and if the restart lands before a member access it becomes a **tagged template**, valid JavaScript that fails at runtime. A green parse gate is not a green page.
+- **Dominance** → audit rule 15 reports, as a **note**, any mark carrying a non-neutral colour on ≥90% of its sibling set. It found the tier-board badge on 109 of 125 builds within a minute of being written — the third place that one conflation was hiding after the masthead and the meter were both fixed. ⚠️ **A note, never a failure**: a universally-applied accent is sometimes right, and a rule that cannot tell those apart gets switched off. ⚠️ **Its first version reported "25 of 14 siblings (179%)"** because it tallied marks rather than marked rows. A ratio above 100% discredits a check instantly, whatever it found.
+- **Reduced motion** → rule 14 (coverage) plus PASS 4f (effect). See §15.7b.
+
+The other two — two authorities, and a per-call-site fix — are not mechanisable in general. What exists instead is **PASS 4e**, the only check that loads two pages and compares them, and the standing habit of moving a fix into the Shell rather than repeating it.
+
+### 5.9s.3 What the pass found by looking
+
+- **The Board painted all 39 relative-time figures in the alarm colour** — "released 15d ago" as loudly as "releases in 1d". A `.soon` class now marks only what is within two days, so orange marks 6 of 39: the rows an admin can still act on. Its column headers also answered three different questions; Ended said "10 archived", repeating the count already beside it.
+- **Season's repair findings were clickable `<li>`s with `tabIndex -1`** — mouse-only, and invisible to the keyboard pass, which selects by role and a bare `li` has none. **The element that handles a click is the element that must take focus**, and a check that only inspects elements which already declared themselves cannot see the ones that did not.
+- **Sorting was mouse-only on four realms.** Every `<th class="sortable">` carried an `onclick` and no tabindex. Now a real `<button>` inside the `th`. ⚠️ **The widened probe first reported 151 findings, and 125 were noise** — table rows whose click merely duplicates a button already inside them. The rule is **reachability**: a click handler is a defect only when nothing inside it can take focus. Burying 3 real findings under 125 false ones is how a probe gets switched off.
+- **The Armory coverage meter was green on every card**, because its override selector `.cn.bad ~ * .cmeter i` asks for a `.cmeter` *descendant* of a later sibling and `.cmeter` **is** the sibling. It never matched. A bar meaning "106 of 125 builds are affected" rendered in the success colour. **A dead selector and a deliberate colour look identical.**
+- **`Shell.async` was integrated nowhere.** It is a spec for the wiring session to call, not code that runs today — stated in §15.7 so nobody assumes otherwise.
+
+### 5.9s.4 The drawer was modal to a mouse and not to a keyboard
+
+Measured with a typed confirmation open: **218 focusable elements outside the drawer were still reachable**. Somebody could tab past a purge dialog and press something on the page behind it. The scrim stops a pointer and says nothing to a keyboard — the visual half of modality was built and the behavioural half was not, which is the same shape as an `onclick` with no tabindex.
+
+Fixed with `inert` on every sibling of the drawer (which removes the page behind from the **accessibility tree** as well as the tab order — a hand-rolled TAB cycle never does), a manual cycle as fallback, and focus returned to whatever opened it.
+
+> ⚠️ **The first probe for this measured the wrong thing precisely.** It counted elements matching a focusable selector — and `inert` elements still match selectors and still report visible; they are merely unfocusable. It reported 218 both before and after the fix. **The only honest test calls `focus()` and sees where focus lands**, with a baseline that can fail. PASS 4g does exactly that, and asserts the page is usable again afterwards, because an `inert` left behind is a worse failure than the one it fixes.
+
+### 5.9s.5 Checked, and nothing there
+
+Stated because silence is not coverage: the **768 / 900 / 1024 tablet band** — never measured before — is clean on Season, Armory and Access, zero horizontal overflow and zero audit failures at all three.
+
+---
+
 ## 5.9q THE DESTRUCTIVE CAPABILITY — the twelfth token, and the first whose *granting* is restricted
 
 *Built 2026-08-25 to Harkirat's specification (§15.11 decision 3). His words: "owner only by default, with explicit permission capability to allow scope to an admin, authorizable only by the owner with explicit warnings (and possibly safeguards like caching/storing the export) so the owner is fully aware."*
@@ -2486,6 +2536,8 @@ So: dragging a bar produces a day, and the day must be mapped back onto the exis
 
 **Two page-level facts take a page-level bar** — the backend is unreachable, or this tab outlived its 12h `PortalSession`. Both name the one action, and both say **staged work is safe**, because that is the reader's actual fear and an "offline" notice that does not answer it only adds to it.
 
+⚠️ **`Shell.async` IS A SPEC TO CALL, NOT CODE THAT RUNS TODAY.** No realm's render path invokes it, because the mockup has no async — the fixtures are synchronous. `?net=` demonstrates every state; **nothing integrates them**. Do not read the presence of `Shell.async` as "async is already handled".
+
 **A realm opts in with one attribute pair:** `data-async-host` on the element that owns its data, and `data-skel="rows|w,w,w"` declaring its own skeleton rhythm. No per-realm JS, so a new realm cannot forget to wire async and quietly ship with no loading state.
 
 🔴 **`?net=loading|refresh|slow|fail|commit|commitfail|offline|expired|rollback` makes every one of these renderable, and that is not a convenience.** This package keeps re-learning that a state nothing can put on screen is a state nobody designs and no check can open — `?audit=1` went unrun for weeks, every `[hidden]` view was audited by nothing, and the owner-only refusal was undesignable until `?as=` existed.
@@ -2515,6 +2567,8 @@ Fixed, and **audit rule 14 now holds the line**: the first rule in this file tha
 ### 15.8 Constants named elsewhere in this document
 
 **The three view-flags, because a state nobody can render is a state nobody designs:** `?audit=1` drives the declared interactions, `?as=admin|plain` renders the portal as somebody who is not the owner, and `?net=loading|refresh|slow|fail|commit|commitfail|offline|expired|rollback` puts each async state on screen. `?empty=1` blanks every record array and `?today=YYYY-MM-DD` moves the pinned date. All six are swept.
+
+**Two tabs share one `sessionStorage` key today, and they will fight.** Each tab reads the staged list at render and writes the whole array back, so the last write wins and the other tab's staged op disappears with no warning. That is a mockup-shim consequence, not a design — §15.11's server-side staging decision is what fixes it, and the fix is *per-account records*, not a smarter merge. Said here so a wiring session does not inherit the shim's behaviour as a specification.
 
 `MIN_SPAN = 7` days — the Track never zooms past a readable week. `Store` persists under the `sessionStorage` key `dioreo-portal-staged`. `.serve.py` binds `127.0.0.1:8899`. The `?v=` cache-buster on asset URLs is **bumped by hand when an asset changes** — it is an unenforced step guarding against the exact staleness failure §0 describes, so if you edit an asset and your change appears not to take, check that first. None of this transfers to the real portal, which serves its own assets and needs its own cache policy.
 

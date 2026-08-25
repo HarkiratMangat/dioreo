@@ -128,6 +128,38 @@ for (const f of files) {
                      : '  ❌ self-test: VACUOUS — the syntax check cannot fail');
   if (!caught) syntaxBad++;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * A BACKTICK INSIDE AN HTML COMMENT INSIDE A TEMPLATE LITERAL.
+ * 🔴 SIX OCCURRENCES, AND THE PARSE CHECK ABOVE CATCHES ONLY SOME OF THEM. Two backticks in one
+ * comment terminate and restart the template, which parses fine — and if the restart lands
+ * immediately before a member access it becomes a TAGGED TEMPLATE, valid JavaScript that fails at
+ * RUNTIME. That is exactly how season.html shipped `.soon is not a function` past a green refs
+ * run on 2026-08-25; the sixth occurrence was in the comment written to warn about the fifth.
+ * Prose has now failed six times. This is five lines and it cannot be forgotten.
+ * Scope is deliberately narrow — a backtick inside `<!-- -->` — so ordinary code and ordinary
+ * comments are untouched and the check has nothing to argue with.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+let tickBad = 0;
+for (const f of files) {
+  const js = inlineJs(readFileSync(dir + f, 'utf8'), f);
+  for (const m of js.matchAll(/<!--[\s\S]*?-->/g)) {
+    if (!m[0].includes('`')) continue;
+    const line = js.slice(0, m.index).split('\n').length;
+    console.log(`  ❌ ${f}:${line}: a backtick inside an HTML comment inside a template literal — ` +
+                `write it with plain quotes (this parses sometimes and fails at runtime)`);
+    tickBad++;
+  }
+}
+{
+  /* It must be able to fail, like everything else here. */
+  const poison = 'x = `<!-- the ' + String.fromCharCode(96) + '.soon' + String.fromCharCode(96) + ' class -->`;';
+  const hit = [...poison.matchAll(/<!--[\s\S]*?-->/g)].some(m => m[0].includes('`'));
+  console.log(hit ? '  ✅ self-test: a backtick in an HTML comment IS caught'
+                  : '  ❌ self-test: VACUOUS — the backtick lint cannot fail');
+  if (!hit) tickBad++;
+}
+if (tickBad) syntaxBad += tickBad;
 console.log(syntaxBad ? `  ⚠ ${syntaxBad} page(s) with a syntax error` : '  ✅ every page parses');
 
 let bad = syntaxBad;

@@ -499,7 +499,17 @@
         <b>Nothing matches that.</b> ${F.OBS_TOTALS.alerts} alerts, ${F.OBS_TOTALS.changes} changes and
         ${F.OBS_TOTALS.boots} deploys are recorded — a quiet river is usually good news, but check the
         filter before believing it.</div></td></tr>`;
-    rows.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => openEvent(tr.dataset.id, l));
+    /* 🔴 THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS — mouse-only, on
+     * every event table in this realm. Season's and Armory's rows escaped the same fault only
+     * because they happen to contain a rename input; these hold plain text, so the row itself is
+     * the control and has to say so. Enter and Space, because a role=button must answer both. */
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('tabindex', '0');
+      const open = () => openEvent(tr.dataset.id, l);
+      tr.onclick = open;
+      tr.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    });
   }
   function openEvent(id, list) {
     const r = list.find(x => x.id === id); if (!r) return;

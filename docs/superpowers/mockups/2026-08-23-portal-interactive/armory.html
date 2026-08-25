@@ -87,9 +87,9 @@
                   <col class="c-spark"><col class="c-detail"><col class="c-state"><col class="c-ra"></colgroup>
         <thead><tr>
           <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
-          <th class="sortable" data-sort="weaponName">Weapon</th>
-          <th class="sortable" data-sort="category">Category</th>
-          <th class="sortable" data-sort="buildName">Build</th>
+          <th class="sortable" data-sort="weaponName"><button type="button" class="sortbtn" data-sort="weaponName">Weapon</button></th>
+          <th class="sortable" data-sort="category"><button type="button" class="sortbtn" data-sort="category">Category</button></th>
+          <th class="sortable" data-sort="buildName"><button type="button" class="sortbtn" data-sort="buildName">Build</button></th>
           <th class="drop-sm">Gunsmith code</th>
           <th>Attachments</th>
           <th class="ta-r">Badges</th>
@@ -352,7 +352,16 @@
         ${b.dmzRangeRank ? `<span class="bc-dmz">${b.dmzRangeRank}</span>` : ''}
         ${b.isToxic ? '<span class="bc-tox" title="Toxic">&#9763;</span>' : ''}
         <span class="bc-att" data-tip="${b.attachments.length} attachments">${b.attachments.length}&#215;</span>
-        ${def.length ? `<span class="bc-bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}</span>` : ''}
+        <!-- 🔴 AGE IS NOT A DEFECT BADGE. This counted every defect including staleness, so the
+             red mark sat on 109 of 125 builds - found by audit rule 15 reporting ".bc-bad marks
+             33 of 36 siblings (92%)", in the third place this same conflation was hiding after
+             the masthead and the Repairs meter were both fixed. A per-element rule saw nothing
+             wrong with any single badge, because no single badge was wrong.
+             Faults get the red count; age gets the quiet dot, which is a different fact and
+             reads as one. -->
+        ${(() => { const faults = def.filter(d => !d.age), aged = def.length - faults.length;
+          return (faults.length ? `<span class="bc-bad" data-tip="${faults.map(d => d.label).join(' · ')}">${faults.length}</span>` : '') +
+                 (aged ? `<span class="bc-age" data-tip="Not updated in ${STALE_DAYS} days" aria-label="stale">&middot;</span>` : ''); })()}
       </span>
     </article>`;
   }
@@ -434,7 +443,13 @@
                     aria-pressed="${st.defect === d.key}">
               <span class="cn ${hits.length ? 'bad' : ''}">${hits.length}</span>
               <span class="cname">${d.label}${d.mech ? ' <i class="mechtag">mechanical</i>' : ''}</span>
-              <span class="cmeter${hits.length ? '' : ' clean'}"><i style="width:${hits.length ? Math.max(1.5, (hits.length / Math.max(1, inMode().length)) * 100) : 0}%"></i></span>
+              <!-- The meter's colour is set by a CLASS the card writes, not by a sibling
+                   combinator. The old rule was ".cn.bad ~ * .cmeter i", which asks for a .cmeter
+                   DESCENDANT of a later sibling - .cmeter is the sibling itself, so it never
+                   matched and every meter painted green, including "106 not updated in 120 days":
+                   a bar meaning "85% of the collection is affected" rendered in the success
+                   colour. Opt IN, so the class cannot silently stop applying. -->
+              <span class="cmeter${hits.length ? (d.age ? ' age' : ' bad') : ' clean'}"><i style="width:${hits.length ? Math.max(1.5, (hits.length / Math.max(1, inMode().length)) * 100) : 0}%"></i></span>
               <span class="why">${d.why}</span>
             </button>`).join('')}
         </div>
@@ -601,6 +616,9 @@
                 Selected (${st.selected.size})</button>
             </div>
             <div id="bvExpOut"></div>
+            <!-- The kept copies used to render here. They live in the SHARED export panel now,
+                 so retention is visible on every realm that exports rather than on this one -
+                 see Shell.Export.panel. A second surface for one fact is how the two disagree. -->
           </section>
         </div>
         <div class="bvnote">
@@ -1406,7 +1424,10 @@ Badges: meta, top3
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => showView(b.dataset.view));
   document.querySelectorAll('[data-filter]').forEach(c => c.onclick = () =>
     setFilter({ cat:c.dataset.filter, defect:null }));
-  document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+  /* 🔴 THE ELEMENT THAT HANDLES THE CLICK IS THE ELEMENT THAT TAKES FOCUS. A <th> with an
+     onclick and no tabindex made every sort MOUSE-ONLY, on four realms, and the keyboard
+     pass could not see it because it selected by ROLE and a bare th has none. */
+  document.querySelectorAll('button.sortbtn').forEach(th => th.onclick = () => {
     const k = th.dataset.sort;
     st.sort = { k, dir: st.sort.k === k ? -st.sort.dir : 1 };
     document.querySelectorAll('th.sortable').forEach(x => x.className = x.className.replace(/ sorted-\w+/, ''));

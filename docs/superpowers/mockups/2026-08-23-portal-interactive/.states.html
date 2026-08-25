@@ -244,6 +244,26 @@ const say = (tag, name, probs) => {
         if (el.closest('[hidden]')) return;
         found.push(`role=${el.getAttribute('role')} not focusable: .${el.className || el.tagName}`);
       });
+      /* 🔴 AND AN ELEMENT THAT HANDLES A CLICK BUT DECLARES NOTHING. Season's repair findings were
+       * bare <li>s carrying an onclick and tabIndex -1: mouse-only, and INVISIBLE to the probe
+       * above, which selects by role and a bare li has none. The rule is not "has a role" — it is
+       * **the element that handles a click is the element that must take focus**, and a check
+       * that only inspects elements which already declared themselves cannot see the ones that
+       * did not. Found by opening the view, not by any pass. */
+      d.querySelectorAll('*').forEach(el => {
+        if (!el.onclick) return;
+        if (el.matches(FOCUSABLE) || el.getAttribute('role')) return;
+        if (el.closest('[hidden]')) return;
+        /* 🔴 A ROW-LEVEL CLICK OVER A REAL CONTROL IS AN ENHANCEMENT, NOT A DEFECT. The first
+         * version reported 151 findings, and 125 of them were table rows whose click merely
+         * duplicates a button already inside them — reachable, announced, and fine. Reporting
+         * those would have buried the 3 that mattered (sortable <th>s, where sorting really was
+         * mouse-only on four realms) under noise, and a probe that cries wolf gets switched off.
+         * The rule is REACHABILITY: if nothing inside can take focus, the click is the only way
+         * in and the element is a control pretending not to be one. */
+        if (el.querySelector('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')) return;
+        found.push(`handles a click but cannot be focused: <${el.tagName.toLowerCase()}>.${el.className || '(no class)'}`);
+      });
     } catch (e) { found.push('probe threw: ' + e.message); }
     bad += say('keyboard', p, found.length ? { problems:found } : { problems:[] }); ran++;
     f.remove(); paint();
@@ -425,6 +445,84 @@ const say = (tag, name, probs) => {
       found.push(`the fault/stale split looks collapsed: ${homeFault} faults vs ${stale} stale`);
     bad += say('cross-page', 'home↔armory', { problems: found }); ran++;
     paint();
+  }
+
+  /* PASS 4f — REDUCED MOTION, OBSERVED. 🔴 Audit rule 14 proves COVERAGE — every animating
+   * selector has an override — and coverage cannot see an override that is present and WRONG:
+   * a keyframe still moving something the override does not touch, or a rule aimed at a selector
+   * that no longer matches. This pass observes the EFFECT instead.
+   * Nothing available here can emulate `prefers-reduced-motion` (chrome-devtools MCP's emulate
+   * exposes viewport, colour scheme, network and CPU, not that media feature), so the honest
+   * substitute is to LIFT every rule out of every reduced-motion block and apply it
+   * unconditionally, then assert `getAnimations()` reports zero RUNNING animations.
+   * ⚠️ WHAT THIS DOES NOT PROVE: that the media query itself gates correctly. It proves the rules
+   * stop the motion when they apply — which is the half that was actually false (ten animations
+   * had no rule at all), and it is stated as a half rather than counted as a whole. */
+  for (const p of PAGES) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument;
+      const lifted = [];
+      for (const sh of d.styleSheets) {
+        let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+        for (const r of rules)
+          if (r.type === CSSRule.MEDIA_RULE && /prefers-reduced-motion/.test(r.conditionText || r.media.mediaText))
+            for (const inner of r.cssRules) lifted.push(inner.cssText);
+      }
+      /* A pass that lifted nothing would report "no motion" and mean "I found no rules" — the
+       * vacuous shape this file exists to refuse. */
+      if (!lifted.length) found.push('no prefers-reduced-motion rules found at all — this check would pass vacuously');
+      const st = d.createElement('style'); st.textContent = lifted.join('\n'); d.head.appendChild(st);
+      await new Promise(r => setTimeout(r, 600));
+      const running = d.getAnimations().filter(a => a.playState === 'running');
+      if (running.length) {
+        const names = [...new Set(running.map(a => (a.animationName || '?') + ' on .' +
+          String((a.effect && a.effect.target && a.effect.target.className) || '?').split(' ')[0]))];
+        found.push(`${running.length} animation(s) still run with every reduced-motion rule applied: ` + names.slice(0, 4).join(', '));
+      }
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('reduced-motion', p, { problems: found }); ran++;
+    f.remove(); paint();
+  }
+
+  /* PASS 4g — MODALITY. 🔴 THE DRAWER CLAIMED TO BE MODAL AND TAB WALKED OUT OF IT. Measured
+   * 2026-08-25 with a typed confirmation open: 218 focusable elements outside the drawer were
+   * still reachable, so somebody could tab past a purge dialog and press something on the page
+   * behind it. The scrim stops a mouse and says nothing to a keyboard — the visual half of
+   * modality was built and the behavioural half was not.
+   * ⚠️ THE FIRST PROBE FOR THIS MEASURED THE WRONG THING PRECISELY: it counted elements matching
+   * a focusable selector, and `inert` elements still match selectors and still report visible —
+   * they are merely unfocusable. It reported 218 both before and after the fix. The only honest
+   * test is to CALL focus() and see where focus lands, with a BASELINE that can fail. */
+  for (const p of ['season', 'armory', 'access']) {
+    const f = await load(p + '.html');
+    const found = [];
+    try {
+      const d = f.contentDocument, w = f.contentWindow;
+      const outside = () => [...d.querySelectorAll('main button, .rail a, .rail button')].find(b => b.checkVisibility?.());
+      const b0 = outside();
+      if (!b0) { found.push('no control outside the drawer to test against — this check would pass vacuously'); }
+      else {
+        b0.focus();
+        if (d.activeElement !== b0) found.push('baseline failed: a control outside the drawer is not focusable even with no drawer open, so this check proves nothing');
+        w.Shell.drawer({ title:'Modality probe', body:'<p class="dw-p">probe</p>',
+                         actions:'<button class="btn" id="dw-cancel">Close</button>' });
+        await new Promise(r => setTimeout(r, 200));
+        const b1 = outside(); b1.focus();
+        if (d.activeElement === b1) found.push('focus escapes the drawer while it is open — the page behind a confirmation is reachable by keyboard');
+        if (!d.querySelector('.drawer.open')?.contains(d.activeElement) && d.activeElement !== d.body)
+          found.push('focus did not start inside the drawer');
+        w.Shell.closeDrawer();
+        await new Promise(r => setTimeout(r, 200));
+        const b2 = outside(); b2.focus();
+        /* An `inert` left behind is a worse failure than the one it fixes — the whole page
+         * becomes unusable and nothing throws. */
+        if (d.activeElement !== b2) found.push('the page is still inert after the drawer closed — modality was not undone');
+      }
+    } catch (e) { found.push('probe threw: ' + e.message); }
+    bad += say('modality', p, { problems: found }); ran++;
+    f.remove(); paint();
   }
 
   /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
