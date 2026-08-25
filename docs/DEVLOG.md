@@ -212,6 +212,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-25 09:52 EDT — The gates nobody was running, and two type scales in one :root (v3.68.0-pre)
 - 2026-08-25 12:29 EDT — the corner nobody could see, and an undo the copy kept promising (v3.68.0)
 - 2026-08-25 13:15 EDT — the probe that said a font existed when it did not (v3.68.0)
+- 2026-08-25 13:41 EDT — the portal promised opposite things one click apart (v3.68.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3691,6 +3692,26 @@ The honest probe is width. Set the same string in each face over a *monospace* f
 The same instinct decided the split he chose. Instrument Serif was the most memorable face by a distance and I wanted it. Looking at `11` set in it at 34px in alarm orange settled it: the hairlines make the figure read *delicate*, and on this portal a figure is a status signal — the number that most needs to shout is the one that face whispers. So the serif takes the titles and never touches a number, and Big Shoulders takes the figures. Its one real failure simply never occurs.
 
 One more check earned its place. Enumerating every rule ≥22px and reporting **which face each one actually resolves to** is a relational question — it can see a display step still sitting in the UI family, which "does this element have a font-family?" never could. It found Home's card figures in the UI face, and the right answer was to leave them: they are 19px, inside the UI range, and *masthead 34px display → card 19px UI* is a legible hierarchy. Sprinkling the new face into the UI range is exactly what would erode the restraint that makes four declarations work.
+
+## 2026-08-25 13:41 EDT — the portal promised opposite things one click apart (v3.68.0)
+
+A read-only pass over every user-facing string in the portal returned about forty-five findings. The worst one is not a typo and not a tone problem — it is the product telling you two different things about the only fact you would act on destructively.
+
+The sign-in door says your staged work is held against your account, and that signing out or losing the tab does not discard it. The sign-out confirmation, one click away, says staged work *"lives in this browser session and is lost on sign out"* — and then calls `Store.clear()`, so the copy was wrong and the behaviour was wrong with it. Three more strings sided with the dialog. Five screens, two answers.
+
+What makes it worth writing down is that **the decision was already made**. §15.11 records Harkirat settling this: staging moves server-side. The door was written after that decision; the other four were written before it, and a decision recorded in a document does not walk over to five strings and update them. Nothing in the gate roster could see it either — every check asks *is this string well-formed?*, and none can ask *do these two sentences agree?* It is the same relational blind spot as a ruler and its lanes on two origins, only in prose.
+
+Then the copy pass found a data bug, which I did not expect and probably should have.
+
+`broadcast.html` guards a callout and an export filter on `lifecycle(a) === 'live'`. `lifecycle()` returns `'UPCOMING'`, `'ENDED'` or `'LIVE NOW'` — it never returns `'live'`, and it never has. So the "this one is live right now" warning had never rendered once, and the **"What is live now" export permanently reported 0 announcements and built an empty file.** Two lines away, `queue()` already reads the field it meant. The lesson is small and general: reading a string in context means reading what produces it, and that is the difference between a copy audit and a spellcheck.
+
+The pass also caught something I had shipped four hours earlier. The tray's new per-row undo reads `realm.href` — and ten existing staging sites already passed `realm:'season'` as a plain **string**, as does the sample changeset in the fixtures. Every one of them drew a disabled button. I had added a field at one call site while nine others already had their own idea of what that field was, which is the same shape as the two row shapes and the two type scales before it, and it is fixed the same way: normalise at the one choke point every path already passes through.
+
+Most of the rest was engineering leaking into the UI. `core/ops`, `apply()`, `ownerOnly()`, `utils/owner.js`, `ADMIN_COMMANDS`, `NOT_IN_ALL`, `models/Announcement.js`, `UserPreference.seenAnnouncementIds`, `ChangeLog`, "on every build", "a Mongo TTL index" — eleven places where the reader, who is an admin about to destroy data, was handed a file path they cannot open. Alongside it, copy that justified its own existence to a reviewer who is not there (*"Why the Best row holds 18 cards and not 7"*, *"Why this view exists at all"*), and one rhetorical construction used three separate times, which stops being a voice the moment you hear the pattern instead of the content.
+
+Two of the findings are about honesty rather than clarity. An account-menu item read **"Switch realm ⌨ G"** — it switched nothing, it toasted a sentence telling you where the rail is, and `G` was bound nowhere. And `review.html` carries a "Load a sample changeset" button explained by a paragraph addressed to a reader of the *mockup*. Both are the same defect as a tray header marked `role="button"` with nothing listening: a control that promises what it does not do. The menu item now opens the command bar it always should have; the sample button is marked `data-demo-only` with a comment naming its removal, because a thing that must be deleted later has to be findable later.
+
+The report's most valuable section is not a finding at all. It is a table of **twelve concepts the portal names more than one way** — undo / drop / take back / discard; remove / delete / purge; token / scope / permission / capability; export / take out / record / audit / download. The blockers forced a few of those to be settled. The rest has to be settled before the wiring rebuild copies the strings forward, because a rebuild is where a vocabulary stops being a choice and becomes the product.
 
 # Part B — Lessons Ledger (thematic)
 
