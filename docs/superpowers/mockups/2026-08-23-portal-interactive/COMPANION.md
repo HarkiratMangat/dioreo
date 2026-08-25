@@ -3425,3 +3425,22 @@ Three ways out, and they are genuinely different products:
 3. **Home adopts the realms'.** One system everywhere; Home's overview gets wider than it wants to be.
 
 Filed rather than chosen, because it is a composition decision and nothing about it is broken.
+
+
+### 16.30 The season-shape glyph — three variants, and one honest failure of the verify condition
+
+`index.html?glyph=A|B|C`, prototype, nothing folded in.
+
+🔴 **IDENTITY, NEVER INFORMATION.** The chart reading was killed outright (*"so useless and tells me nothing"*), so none of the three has a legend, an axis, a label, a number, or a click target. A glyph here identifies a season the way a crest identifies a house, and nobody reads a crest for a quantity.
+
+| | Variant | What it is | Risk |
+|---|---|---|---|
+| **A** | The Seal | a radial crest: one wedge per kind of thing, wedge width from how much of it the season held, on a fixed ring | closest to a pie chart, and see the failure below |
+| **B** | The Sigil | a 5×5 cell block woven deterministically from the season's own numbers; encodes nothing readable **on purpose** | the purest identity, and the least connected to anything a person would notice about a season |
+| **C** | The Span | the season's rhythm as eight columns | the most readable, therefore the most likely to be mistaken for the thing that was already rejected |
+
+**Three scales are the point**, and the prototype shows all three per row — a Home masthead mark at 40px, a Season Record row mark at 18px, and a favicon at 16px. A mark that only survives at 40px is decoration.
+
+🔴 **THE VERIFY CONDITION AND HOW IT ALMOST PASSED VACUOUSLY.** The condition is *two different seasons must produce visibly different glyphs, or it is a logo pretending to be data.* All three variants render five seasons and all five come out **distinct in markup**. That is not the condition. Variant A's five glyphs measure **944, 943, 941, 942 and 925 characters** — they differ only in wedge sweep, by a few degrees, and at 16px that difference is very likely invisible. **Markup distinctness is not visual distinctness**, and reporting the first as if it were the second is exactly the vacuous pass this document keeps recording. A is the variant at risk; B is deterministic from a hash and produces genuinely different cell patterns; C varies by column heights, which read at small sizes.
+
+⚠️ **And a defect worth keeping.** The first version mapped item types by the strings the Track **prints** — `New draws`, `Returning`, `Playlists` — while `item.type` is camelCase (`newDraws`, `returningDraws`, `playlist`, `event`, `drawWindow`, `patchNotes`). Every count came out zero, every wedge had zero sweep, and the glyph rendered as a bare ring with a dot in the middle. **It looked like a deliberate minimal mark.** A zero that renders as a plausible design is the same failure family as §16.4's `.zero` and §16.23's dead parameter: nothing errors, and the wrong output is well-formed.

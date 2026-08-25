@@ -1,0 +1,13 @@
+/* PROTOTYPE — THROWAWAY. Season-shape glyph variants. */
+.pgl-mast{color:var(--ink2);margin-bottom:14px}
+.pgl-strip{margin:40px 0 0;padding:22px 24px;background:var(--paper);border:1px solid var(--hi);
+  border-radius:var(--rad-3)}
+.pgl-k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3);margin-bottom:18px}
+.pgl-rows{display:flex;flex-direction:column;gap:16px}
+.pgl-row{display:flex;align-items:center;gap:20px}
+/* The three scales sit on ONE baseline so the small ones are judged against the large one
+   rather than against each other — a mark that only survives at 40px is decoration. */
+.pgl-b{display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+  color:var(--ink2);background:var(--sunk);border:1px solid var(--hi);border-radius:var(--rad-2)}
+.pgl-n{font-family:var(--title);font-size:17px;color:var(--ink2);font-style:italic}
