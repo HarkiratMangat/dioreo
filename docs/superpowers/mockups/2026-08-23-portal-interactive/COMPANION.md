@@ -2372,11 +2372,31 @@ This is the thinnest part of the whole package, and it is worth saying plainly r
 
 If you build one thing beyond the pages themselves, build that comparison. Until it exists, the practical discipline is: keep the mockup runnable, open it next to the live portal on the same viewport, and treat any difference as a defect in the portal until someone decides otherwise.
 
-### 15.11 Still open — ask before deciding
+### 15.11 Decided 2026-08-25 — three of the four, by Harkirat
 
-1. **Whether staging stays client-side.** `sessionStorage` means per-tab, lost on close, invisible to a second admin. Two admins staging against one global document is not addressed anywhere, and §15.4's conflict surface assumes the answer.
-2. **Whether tier-3 operations are restricted by role**, beyond the general server-side permission check. Any signed-in admin can currently reach the export gate. Related: the `editor` role means "granted scopes minus destructive actions", which the grid now *shows* but nothing yet *enforces*.
-3. **Whether `portal/ui/**` is brought to match these mockups in place, or reimplemented from them.** §0.5 says diff first; which way that goes is a real decision with real cost either way.
+*These were the open questions that gated "ready for wiring". They are answers, not proposals; the consequences below are what the wiring session inherits.*
+
+**1. STAGING MOVES SERVER-SIDE.** A staged change set lives in Mongo against the admin's id, not in `sessionStorage`.
+- It survives a tab close, it is visible to a second admin, and **§15.4's conflict surface stops being hypothetical** — two admins staging against one season document is now a state the design has to answer rather than one it can leave undefined.
+- The mockups still stage into `sessionStorage` under `dioreo-portal-staged`, and that is now **explicitly a mockup-only shim**, not a specification. Read `Store` as *the shape of the change set*, never as *where it lives*.
+- The export interlock (`Shell.Export`) is scoped to the browser session today. Server-side staging means the interlock has to be too — an export that unblocks a tier-3 op must be a fact about the account, not about the tab.
+
+**2. THE WIRING REBUILDS FROM THESE MOCKUPS.** `portal/ui/**` is not brought up in place.
+- The package is the more advanced artifact: the Track redesign, delete/export across five realms, the Access matrix, motion, and the whole audit layer exist only here.
+- ⚠️ **That does NOT retire §0.5's diff.** A previous session found `portal/ui/*` *ahead of* the mockup that was supposed to specify it, and wiring the mockup faithfully would have rolled back working design. Rebuilding means the mockup is the source — it does not mean the existing code has nothing to teach. Diff first, then rebuild, and carry anything the diff finds.
+
+**3. TIER-3 IS OWNER-ONLY BY DEFAULT, WITH AN OWNER-GRANTABLE CAPABILITY.** Harkirat's own words: *"owner only by default, with explicit permission capability to allow scope to an admin, authorizable only by the owner with explicit warnings (and possibly safeguards like caching/storing the export) so the owner is fully aware."*
+
+What that means concretely, and each line is a design obligation rather than a summary:
+- **Default:** every tier-3 operation — the purges, `season.promoteDraft`, `season.discardDraft`, anything with no inverse — requires the owner id. Another admin holding the page scope sees the control **present and disabled with the reason stated**, never hidden. Hiding it teaches nothing and produces a support question.
+- **The capability is a real, separate grant**, not a side effect of holding a page scope. An admin can hold `manage.draws` and still not be able to purge draws.
+- **Only the owner can grant it.** Not an admin holding `manage`. This is the first token in the model whose *granting* is restricted, so the Access matrix has to say so — a column that looks like the other eleven but behaves differently is exactly the "one class, two contracts" failure §5.9o.1 is about.
+- **The grant flow carries explicit warnings**, in the same voice as the one-way strip: it names what the admin will be able to do that cannot be undone, and it is a typed confirmation, not a checkbox.
+- **The safeguard is export retention.** The interlock today only asks whether an export *happened*; the tier-3 record should keep the export itself, so a purge run by a delegated admin leaves the owner holding the data that was purged rather than a note saying somebody downloaded it.
+
+⏳ **Not yet built in the mockups.** The matrix still shows eleven tokens and the one-way strip still states only the export gate. Doing it touches `fixtures.js`'s grant objects, the Access columns, `portal:gate`'s token count, and the one-way copy on five realms — it is the next unit, and it is named here so the gap is visible rather than assumed away.
+
+**4. Still genuinely open:** whether `--ink4` should exist at all. It is a non-text token with 15 uses; if those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote. Cosmetic, and it does not gate wiring.
 4. **Whether `--ink4` should exist at all.** It is now a non-text token with 15 uses. If those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote.
 
 *Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **both** drag surfaces — Season's Board and Armory's tier board. *(This read "all three" until 2026-08-24, counting a Broadcast reorder that had been removed.)**
