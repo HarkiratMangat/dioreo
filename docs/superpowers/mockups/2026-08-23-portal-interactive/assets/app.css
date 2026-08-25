@@ -1561,8 +1561,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .masthead{padding:34px 24px 22px;max-width:none}
 .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
-.masthead h1{margin:0 0 20px;font-size:var(--t-display);font-family:var(--title);font-weight:400;letter-spacing:var(--tr-title);
-  letter-spacing:var(--tr-display);line-height:1.02;color:var(--ink)}
+/* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
+ * the figure is the realm's defining number and is the thing worth reading first. Uppercase
+ * because a condensed grotesque is built for it and because the portal's own vernacular is a
+ * readout; +tracking because condensed caps close up without it. */
+.masthead h1{margin:0 0 20px;font-size:var(--t-figure);font-family:var(--display);font-weight:700;
+  letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .mh-stats .stat{display:flex;flex-direction:column-reverse;gap:2px;align-items:flex-start}
 .mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-fig);line-height:1;
@@ -1946,7 +1950,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .hmast{margin-bottom:28px}
 .hmast .job{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--patch);margin-bottom:12px}
-.hmast h1{font:400 var(--t-display)/1.06 var(--title);letter-spacing:var(--tr-title);color:var(--ink);margin:0}
+.hmast h1{font:700 var(--t-figure)/1 var(--display);letter-spacing:.055em;text-transform:uppercase;color:var(--ink);margin:0}
 .hmast p{font:400 var(--t-lg)/1.55 var(--ui);color:var(--ink3);margin:12px 0 0;max-width:56ch}
 /* Five cards into `auto-fit` leaves a hole at three-across. Six columns divide by both 2
  * and 3, so every card spans two and the row always fills; the last card spans three at
@@ -2659,7 +2663,18 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .mxcell.on{background:var(--c);border-color:var(--c)}
 .mxcell.inh{background:transparent;border:2px solid var(--c);opacity:.85}
 .mxcell.locked{opacity:.55}
-.mxs.mxcol.spof i{box-shadow:0 0 0 2px var(--warn)}
+/* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
+   Harkirat: "the orange ring is just bad. it hides and swallows the color it's surrounding."
+   Measured on the header bars: a 22x7px pill with a 2px ring loses roughly HALF its visible
+   area to the ring, so `manage` grey and `bot` green both read as orange objects with a
+   coloured filling. That inverts §4.1 — COLOUR CARRIES TOPIC, SHAPE CARRIES STATE — and it is
+   the same defect as a zero painted in an alert colour: a mark that overrides the thing it is
+   supposed to annotate.
+   The state moves BESIDE the swatch instead of around it, which is the same correction the
+   Track's deadline notch got: a mark may point at content it does not cross. The topic colour
+   is now untouched at full area, and the state is a warn rule directly beneath it — plus the
+   holder count in warn, so the fact has two carriers and neither is destructive. */
+.mxs.mxcol.spof i{box-shadow:0 3px 0 -1px var(--warn)}
 .mxlegend{display:inline-block;width:12px;height:12px;border-radius:var(--rad-1);vertical-align:-2px;margin-right:5px}
 .mxlegend.on{background:var(--ink2)}
 .mxlegend.inh{background:transparent;border:2px solid var(--ink2)}
@@ -4297,3 +4312,24 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .pz-open:hover{color:var(--ink2)}
 .pz.shut .pz-open{display:inline-block}
 .pz.shut .nw-l,.pz.shut .pz-in,.pz.shut .pz-out{display:none}
+
+/* ── THE LOAD RIBBON — the chart aesthetic, on the one lane that is a distribution ──
+ * The bars fade along their own height rather than ending flat, so a tall bar reads as a
+ * quantity instead of a block, and a hairline under the track makes the row read as an axis.
+ * `.ld0` is a day with NOTHING running — drawn, not erased. The gap is the information. */
+.lsum.load i{background:linear-gradient(180deg,var(--c) 0%,color-mix(in srgb,var(--c) 22%,transparent) 100%)}
+.lsum.load i.ld0{height:3px;width:2px;background:rgba(255,122,69,.42);bottom:5px}
+.lsum.load{box-shadow:inset 0 -1px 0 0 rgba(133,147,159,.20)}
+/* The ring key, beside the marks it explains. Its swatch IS the mark — a ringed pill at chip
+ * scale — so the legend and the thing are visibly the same object rather than a description of it. */
+.key .l.spofk i{background:var(--ink3);box-shadow:0 3px 0 -1px var(--warn);border-radius:var(--rad-pill)}
+.key .l.spofk b{color:var(--warn);font-weight:600}
+/* …and the ringed column's own count agrees with the ring, so the mark is never the only carrier. */
+.mxcol.spof .mxn2{color:var(--warn)}
+/* A countdown inside its last stretch stops being neutral. The lead keeps its size either way —
+ * size is the hierarchy, colour is the meaning (§16.3) — so this only changes the ink. */
+.mh-stats .stat.lead .v.hot{color:var(--warn)}
+/* A stat label is a LABEL — two words at most, and if it needs more the unit belongs on the
+ * VALUE ("17d"), not in the label. Enforced by writing short labels, NOT by a max-width: a
+ * width cap on a label that is already too long clips or overlaps it, which is a worse failure
+ * than the long label was. Measured before removing it: it clipped 2 of the 4 labels on Access. */

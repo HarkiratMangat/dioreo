@@ -61,7 +61,7 @@
    * and Home's attention rows. Season is the bot's own Season End orange; Review's
    * "topic" is the staged cyan, because the realm IS the staging area. */
   --r-season:#F2994A; --r-armory:var(--draw); --r-broadcast:var(--patch);
-  --r-access:var(--ink2); --r-analytics:var(--ev); --r-review:var(--staged);
+  --r-access:var(--info); --r-analytics:var(--ev); --r-review:var(--staged);
 
 
   /* layout — the one place to override */
@@ -82,14 +82,32 @@
   /* ── THE DISPLAY VOICE — two faces, four declarations, nothing else ──
      Until 2026-08-25 one family set both a 9px label and a 44px figure, which is a UI face
      doing display work because there was nothing else. These are deliberately NOT applied
-     broadly: the title face touches two page titles, the figure face touches two figure
+     broadly: the title face touches CONTENT names only, the figure face touches the masthead
      sites, and everything from --t-hero down stays Space Grotesk. Restraint is the design,
      not a compromise on it — a third and fourth family appearing five times a screen.
      🔴 BOTH FALL BACK TO --ui ON PURPOSE. If a webfont fails, the masthead degrades to
      exactly what it looked like before this change rather than to a stranger.
      ⚠️ `--title` ships ONE weight (400). Never write a font-weight against it. */
-  --title:"Instrument Serif",Georgia,"Times New Roman",serif;   /* page titles — a serif over a mono data grid */
-  --display:"Big Shoulders Display",var(--ui);                  /* figures — condensed, so a number reads as a gauge */
+  /* 🔴 THE RULE, AND IT IS SAYABLE IN ONE LINE:
+   *      THE SERIF NAMES THINGS THE BOT HOLDS. THE CONDENSED FACE NAMES THINGS THE PORTAL IS.
+   * Instrument Serif carried every realm page title until 2026-08-25 17:4x EDT. Harkirat:
+   * "it doesn't fit the vibe of the portal at all. it's an accessory/accent font only, not the
+   * main typeface." He is right, and the reason is worth writing down: a high-contrast display
+   * serif is a MAGAZINE voice, and this portal is an INSTRUMENT — a mono data grid, condensed
+   * gauge figures, a time axis, a permission matrix. The serif was a headline pretending to be
+   * a console, which is exactly why it read as borrowed.
+   * It keeps one job, and it is the job it is good at: naming CONTENT. A season is a thing with
+   * a name someone chose ("Season 7 — Terminated"); "Access" is a page. The serif gets the first
+   * and never the second, so its presence now MEANS something instead of being decoration. */
+  --title:"Instrument Serif",Georgia,"Times New Roman",serif;   /* CONTENT names only — never chrome */
+  /* The portal's own voice. Condensed grotesque reads as a gauge at 44px and as a stencil in
+   * caps at 34px, which is the CODM vernacular without costuming — and it is a face the system
+   * ALREADY had, so this change REMOVES a family from the chrome rather than adding one.
+   * ⚠️ Chrome now has one display voice in two registers: FIGURES at --t-display, weight 700,
+   * in the realm's accent · REALM TITLES at --t-figure, weight 700, uppercase, in plain ink.
+   * The figure is bigger AND coloured, so the number leads and the title labels it — which is
+   * the masthead grammar (§16.3) already applied to type instead of to colour. */
+  --display:"Big Shoulders Display",var(--ui);                  /* figures AND realm titles */
   --tr-title:-.006em;                                           /* a serif does not want the grotesque's tight tracking */
   --tr-fig:.004em;                                              /* condensed wants air; the one positive step in the scale */
   --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;

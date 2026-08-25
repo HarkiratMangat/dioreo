@@ -1188,6 +1188,35 @@
      * So: the conflict predicate keeps the last deadline and says why, this returns the first,
      * and it NAMES which deadline it used — an unlabelled "17" beside a strip listing three
      * different dates is the ambiguity that let the two drift in the first place. */
+    /* ── HOW LONG IS LEFT, AT THE PRECISION THE DATA ACTUALLY HAS ──────────
+     * ⚠️ "Days left 17" was a frozen integer while the account panel counts a session down to
+     * the minute and NOW carries a real clock — three approaches to time in one product.
+     * 🔴 AND THE REASON IT WAS FROZEN WAS A MISREADING OF HIS OWN CONSTRAINT. §5.9z.2 killed
+     * AMBIENT time — draining windows, a creeping NOW — because "a quantity that moves slower
+     * than a session cannot be shown as MOTION". That is an argument about animation. It says
+     * nothing about PRECISION, and filing a countdown under it was my error.
+     * 🔴 The unit is chosen by what the record HOLDS. `bpEnd` is a DATE, not a timestamp, so
+     * hours are invented precision for most of the season — until the last stretch, when the
+     * question stops being "which week" and becomes "is this landing today". It switches at
+     * 3 days, which is the only point where an hour changes a decision. */
+    countdown(iso, today){
+      if (!iso) return null;
+      const end = new Date(iso + 'T23:59:59Z').getTime();
+      const ms = end - Date.now();
+      if (ms <= 0) return { text:'ended', hot:true, done:true };
+      const days = Math.floor(ms / 86400000), hrs = Math.floor(ms / 3600000);
+      if (days >= 3)  return { text: days + 'd', hot:false };
+      if (hrs  >= 1)  return { text: hrs + 'h',  hot:true };
+      return { text: Math.max(1, Math.floor(ms / 60000)) + 'm', hot:true };
+    },
+
+    /* Everything counting down ticks on ONE timer, so a page cannot end up with two clocks
+     * disagreeing by a second — and a page with nothing to count starts no interval at all. */
+    tick(fn){
+      (Shell._ticks = Shell._ticks || []).push(fn); fn();
+      if (!Shell._tickTimer) Shell._tickTimer = setInterval(() => Shell._ticks.forEach(f => { try { f(); } catch (e) {} }), 60000);
+    },
+
     seasonDaysLeft(season, today){
       const LINES = [['bpEnd','battle pass'], ['rankEnd','ranked'], ['dmzEnd','dmz']];
       const live = LINES.filter(([k]) => !season[k + 'TBD'] && season[k])
