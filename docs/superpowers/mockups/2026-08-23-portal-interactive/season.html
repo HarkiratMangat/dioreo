@@ -43,8 +43,18 @@
   padding:6px 11px;font:500 12px/1 var(--ui);cursor:pointer}
 .rec-cta:hover{border-color:var(--patch);color:var(--patch)}
 .rec-list{list-style:none;margin:0;padding:0;position:relative}
-.rec-list::before{content:"";position:absolute;left:5px;top:8px;bottom:12px;width:1px;background:var(--rule2)}
-.rec-row{display:grid;grid-template-columns:20px 1fr auto auto auto;align-items:center;gap:12px;
+/* 🔴 THE SPINE AND THE MARKERS DID NOT SHARE AN X. The rail was drawn at a hardcoded `left:5px`
+   while each marker sat in a 20px grid column and was CENTRED in it — so the line ran at x=5 and
+   the diamonds at x=10, and the line entered and left the diamonds off-centre. Same defect class
+   as the Track's two coordinate origins: one position expressed twice, in two places, in two
+   different units, with nothing asserting they agree.
+   `--rec-x` is now the single source for both, so the spine cannot drift from what it threads.
+   It also runs from the FIRST marker to the LAST rather than from an arbitrary 8px inset —
+   a spine that starts above its first bead is a line pointing at nothing. */
+.rec-list{--rec-x:10px}
+.rec-list::before{content:"";position:absolute;left:var(--rec-x);top:22px;bottom:22px;width:1px;
+  background:var(--rule2);transform:translateX(-.5px)}
+.rec-row{display:grid;grid-template-columns:calc(var(--rec-x) * 2) 1fr auto auto auto;align-items:center;gap:12px;
   padding:9px 4px;border-bottom:1px solid var(--rule);cursor:pointer}
 .rec-row:last-child{border-bottom:0}
 .rec-row:hover,.rec-row:focus-visible{background:var(--hi)}
@@ -750,8 +760,12 @@
       const ckey = (isDraft ? 'd:' : '') + lane.type;
       const col = ckey in st.laneCol ? st.laneCol[ckey] : rows > 3;
       return `
+      <!-- 🔴 THE LANE CARRIES ITS OWN TOPIC ACCENT. It used to live only on the header dot, so the
+           lane itself had no identity — every row was the same grey stripe on a shared field. The
+           card's left edge and its header ground both read from --c, which is what makes a lane
+           recognisably ITS lane before you read the label. -->
       <div class="lane${col ? ' lnc' : ''}" data-lane="${lane.type}" data-draft="${isDraft?1:0}" data-rows="${rows}"
-           style="height:${col ? 30 : laneH}px">
+           style="--c:${lane.bar};height:${col ? 30 : laneH}px">
         <button class="lnh" data-lanebtn="${lane.type}" data-draft="${isDraft?1:0}"
                 aria-expanded="${!col}" data-tip="${col ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.">
           <span class="lnh-cv" aria-hidden="true">${col ? '&#9656;' : '&#9662;'}</span>
@@ -920,7 +934,13 @@
            literally crept would move 0.6px an hour and say nothing. A live readout says the
            true thing instead: this is where the line is, and this is when that is. It ticks
            on the minute (see startClock), which is the only rate at which the text changes. -->
-      <div class="now" style="left:${v.pct(F.today)}%"><span class="nowt" id="nowT">${clockText()}</span></div>
+      <!-- 🔴 THE CLOCK LIVES INSIDE THE NOW MARKER, not floating beside it. Added yesterday
+           without deciding where it belonged, it rendered as a bare timestamp between the ruler
+           and the first lane, anchored to neither — Harkirat: "why does the timestamp look so out
+           of place? like an afterthought. and why is it randomly in the middle of the track?"
+           It was homeless: an element whose position was whatever its own CSS said, in a band
+           nothing owned. NOW is one object now — the line, the pill and the time. -->
+      <div class="now" style="left:${v.pct(F.today)}%" data-now="NOW ${clockText()}"></div>
       ${F.LINES.map(L => {
           const o = st.season;
           if (o[L.tbdKey] || !o[L.endKey]) return '';
@@ -1314,10 +1334,21 @@
    * Measured after layout rather than computed from percentages, because the same percentage is a
    * different pixel count at every zoom level and viewport width. */
   const LABEL_MIN_PX = 56;
+  /* Roughly six characters and an ellipsis at 10.5px — the point below which a fragment stops
+   * telling you which item this is. */
+  const TRUNC_MIN_PX = 44;
+
   function fitLabels() {
+    /* 🔴 STRIP THE SHARED PREFIX **BEFORE** MEASURING, NOT AFTER. It used to run at the END of
+     * this function and skipped `.nolabel` bars — so a label was hidden for not fitting, and
+     * then the one transformation that would have made it fit was deliberately not applied to
+     * it. "Nuketown Dedicated MP Playlist" and "Nuketown 10v10 MP Playlist" share nine
+     * characters; stripping first is what lets both fit where neither did. The order was
+     * backwards, and the effect was invisible because the evidence was the hidden label. */
+    stripSharedPrefixes();
     viewTrack.querySelectorAll('.bar').forEach(b => {
       const bl = b.querySelector('.bl');
-      b.classList.remove('nolabel');
+      b.classList.remove('nolabel', 'lbl-cut');
       if (!bl) return;
       const w = b.getBoundingClientRect().width;
       /* Two conditions, and the second is the one that matters. A 62px bar clears the pixel
@@ -1345,16 +1376,30 @@
        * end to end; measuring to the lane's right edge put every label on top of its neighbour —
        * worse than the truncation it replaced. Only siblings on the SAME row can collide, since
        * row assignment already guarantees no vertical overlap. */
-      const row = b.style.top || '';
-      const sibs = [...tk.querySelectorAll('.bar')].filter(o => o !== b && (o.style.top || '') === row)
-                     .map(o => o.getBoundingClientRect());
+      /* 🔴 "SAME ROW" IS VERTICAL OVERLAP, NOT A MATCHING `style.top` STRING. The string test
+       * silently grouped every bar whose top was set some other way (a class, a CSS variable, or
+       * not at all in a single-row lane) into ONE pseudo-row — so `rightWall` became the nearest
+       * bar in ANY row and four labels were told they had no room beside them. The audit caught
+       * it immediately after the truncation rung landed: "truncated with 928px free beside it",
+       * four times. Two bars can only collide if their rects actually overlap vertically, so
+       * that is what the filter asks. */
+      const sibs = [...tk.querySelectorAll('.bar')].filter(o => o !== b).map(o => o.getBoundingClientRect())
+                     .filter(r => r.top < br.bottom - 1 && r.bottom > br.top + 1);
       const rightWall = Math.min(tr.right, ...sibs.filter(r => r.left >= br.right - 1).map(r => r.left));
       const leftWall  = Math.max(tr.left,  ...sibs.filter(r => r.right <= br.left + 1).map(r => r.right));
       if (rightWall - br.right > need)     b.classList.add('lbl-out');
       else if (br.left - leftWall > need)  b.classList.add('lbl-out-l');
+      /* 🔴 THE LADDER WAS MISSING ITS LAST RUNG. It went inside -> outside -> HIDE, and the
+       * comment three lines up says "truncation is the LAST resort... dropping the label
+       * entirely is worse still" — which was the intent and never the code. Measured on the
+       * playlist lane with every lane expanded: FOUR bars 140px wide, each carrying a real
+       * name ("Nuketown Dedicated MP Playlist"), all rendered as blank coloured rectangles.
+       * A bar with no label is not a bar; it is a rectangle. 44px holds roughly six characters
+       * and an ellipsis, which is a worse label than a full one and a far better object than
+       * an anonymous block. Below that there is genuinely nothing to say, so it hides. */
+      else if (w >= TRUNC_MIN_PX)          b.classList.add('lbl-cut');
       else                                 b.classList.add('nolabel');
     });
-    stripSharedPrefixes();
   }
 
   /* 🔴 FIVE BARS READING "COD Point R…" ARE FIVE IDENTICAL FRAGMENTS. Truncation cuts from the
@@ -1369,7 +1414,10 @@
    * stem are still told apart by position. */
   function stripSharedPrefixes() {
     viewTrack.querySelectorAll('.lane .tk').forEach(tk => {
-      const bars = [...tk.querySelectorAll('.bar:not(.nolabel) .bl')];
+      /* Every bar, not `:not(.nolabel)` — this runs BEFORE fitting now, so no bar has been
+       * judged yet, and the ones that most need the prefix gone are exactly the ones that would
+       * have been excluded. */
+      const bars = [...tk.querySelectorAll('.bar .bl')];
       bars.forEach(bl => { if (bl.dataset.full) bl.textContent = bl.dataset.full; });
       if (bars.length < 3) return;
       /* ⚠️ PER GROUP, NOT PER LANE. The events lane is five "COD Point Rush Week N" bars plus one
@@ -1622,7 +1670,7 @@
   function startClock(){
     if (window.__nowClockStarted) return;
     window.__nowClockStarted = true;
-    const tick = () => { const el = document.getElementById('nowT'); if (el) el.textContent = clockText(); };
+    const tick = () => { const el = viewTrack.querySelector('.now'); if (el) el.dataset.now = 'NOW ' + clockText(); };
     /* Align to the next minute boundary rather than firing every 60s from load — otherwise the
      * readout can sit up to 59s stale against the wall clock it claims to be. */
     setTimeout(() => { tick(); window.__nowClock = setInterval(tick, 60000); },

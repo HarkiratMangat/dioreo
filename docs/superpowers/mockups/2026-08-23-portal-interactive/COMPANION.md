@@ -1698,6 +1698,87 @@ Wired into Armory's `+ New build` and Broadcast's `+ Post announcement`, both **
 
 ---
 
+## 5.9m THE ARMORY ON REAL DATA — 133 builds, and the form that stopped being a Discord modal
+
+### 5.9m.0 The sample was the problem
+
+> Harkirat, 2026-08-24: *"why dont you import all 130+ builds and actually stress test how the armory behaves with ALL those loadouts, using their real info...??"*
+
+The fixture held **36 documents**. The dev collection holds **133**. A sample answers *"does this render"* and cannot answer *"does this hold up"* — and the Armory's entire job is density.
+
+**The full catalogue, counted rather than estimated:** 133 builds · 125 MP · 8 DMZ · **70 distinct weapons** · 123 carry a `shareCode` · 2 carry a `description` · 0 carry `attachmentSlots` · 34 meta · 10 toxic · 69 ranked.
+
+Regenerate with `sort({weaponName:1, buildName:1})` out of `mongodb://localhost:27017/diors-builds-dev`, every schema field, `lastUpdated` truncated to a date. **`npm run portal:roundtrip` now validates all 133 against `utils/adminParser.js` byte for byte** — the round-trip claim went from covering a slice to covering the catalogue.
+
+### 5.9m.1 Three things only real scale could show
+
+| found | why 36 documents hid it |
+|---|---|
+| 🔴 **The Best row holds 18 cards; the header said "one per category" and there are 7.** The COUNT was never wrong — the **sentence** was. A badge describes the **weapon**, and the bot propagates it across every build sharing a `weaponKey` and mode, so BAL-27's five builds each carry it. Measured across the full catalogue: **every category has exactly one best weapon, and none has zero.** | at 36 the row held 6 cards against 7 categories, and the sentence read as true |
+| 🔴 **The Tier board was 11,490px — fourteen screens** — with **Unranked holding 61 of 133**: the row with the most cards and the least to say. Tiers collapse now, Unranked starts collapsed (remembered per session), and **the header keeps its count while closed**, so collapsing hides the cards and never the fact. 11,490 → 9,353px. | at 36 the whole board was about two screens |
+| 🔴 **Cards ranged ~120px to ~590px tall**, and a wrapping flex row aligns every card in a line to its tallest — a dead column under each short one. `.trow-body` is `columns:182px` now with `break-inside:avoid` on each card, so a weapon's builds cannot split across a column boundary and orphan its header. | at 36 almost every weapon had one or two builds, so the heights barely varied |
+
+### 5.9m.2 The create form — five fields was a shape, not a decision
+
+> *"SO barebone. It doesn't even state in any way which fields are required/optional. MP and DMZ do not and should not share the same modal. Where's the gunsmith code field? why are attachments in 1 line? that's so unintuitive for an IMMERSIVE DESKTOP PORTAL. Those placeholder texts look more like real filled in text than placeholder. where's the URL, cloudinary public ID fields? Wheres the badge fields?"*
+
+🔴 **Five is not a coincidence — it is Discord's modal cap, reproduced in a browser.** `.claude/rules/manage-panel.md` records that the bot's loadout modal is **at** that cap, which is why Build Name and Share Code share one pipe-delimited field there. Copying the shape into a portal inherits a limit nothing imposes, and then defers everything else to "the editor" — **two screens for one act of creation**, in the surface whose whole purpose is to make `/manage` trivial.
+
+| section | what it holds | the fact it states |
+|---|---|---|
+| Identity | weapon `*`, build name, category `*` | `weaponKey` is derived from the name; build name is a label, not a code, and defaults to `Build 1` |
+| Attachments | **five numbered rows**, Gunsmith order, each clearable | 123 of 133 real builds carry exactly five — the shape is the data's. Free text rather than slot-typed selects, because `attachmentSlots` is empty on all 133 documents and typing a slot would invent structure the data does not have |
+| Gunsmith code | MP only, live-validated `^(\d[A-Za-z]){5}$` | on DMZ the field is **absent and the absence is explained** — that screen generates no code, so showing it and ignoring it would be worse |
+| Image | one field, Cloudinary key **or** full URL | it says which it read, and warns that a full URL will not survive a bulk-export round trip |
+| Badges | meta · toxic · category rank · DMZ range rank | 🔴 **badges describe the WEAPON, not this build** — setting one here changes its siblings |
+| Description | optional blurb | 2 of 133 carry one |
+
+**Required is marked `*` AND the legend explaining the mark is in the same panel** — an asterisk with no legend is a convention the reader has to already know, and the legend costs one line. The Stage button **states why it is disabled** rather than sitting dead: a disabled control with no reason teaches a reader nothing, which is the same defect as a check that cannot fail.
+
+🔴 **MODE IS NOT A FIELD, AND THE OLD DROPDOWN WAS A REAL DEFECT.** `core/ops/loadouts.js`'s `upsertBulkBlocks` does `{ ...rawEntry, mode }` and overwrites mode with the **page's** mode unconditionally. The bot removed Mode from its own paste format on 2026-08-22 after verifying that a DMZ export pasted on the MP page silently reassigned every build. The dropdown offered a choice the write path ignores. **Two buttons** — `New MP build` and `New DMZ build`, in the create-family shape Harkirat approved — and which one you press decides it.
+
+### 5.9m.3 The eyebrow was debug output
+
+> *"'LOADOUTS.ADD • TIER 1' what does that even mean...?"*
+
+An op id and a reversibility tier are things **I** need while wiring this. A person using the portal has no way to decode either. The eyebrow says what the panel does — *"Adding to the MP armory · you can undo this"* — and the op id moved onto a `title` attribute, still one hover away for whoever is wiring it.
+
+**The general rule:** internal identifiers belong on a surface only where the reader is the person who wrote them. Everywhere else they are a shibboleth that makes a product look unfinished.
+
+### 5.9m.4 Placeholders that read as values
+
+> *"Those placeholder texts look more like real filled in text than placeholder."*
+
+They were `--ink3` at the **same weight and size** as real input text, so a hint looked like a filled field — **worse than no placeholder**, because it makes an empty form look complete. Real input is now `--ink` at 500; placeholders are `--ink3` at 400 **italic**. Three axes of separation (colour, weight, slant), and `--ink3` (5.35:1) keeps the hint legible rather than merely faint.
+
+**And the format rule moved out of the placeholder entirely.** A placeholder disappears the moment you type — which is exactly when a format rule becomes useful. Each field carries a `.bf-hint` underneath it that stays.
+
+### 5.9m.5 One card language, and a header that fits
+
+> *"why are these different colors/styles, like i'm confused why is 1 a sleek dark style, while the other is a lifted grey style? look at switchblade x9 with it's info being cutoff and terribly formatted."*
+
+`groupChips()` returned a bare `.bchip` for a weapon with one build and a `.bgrp` for one with several — **literally different components**, sitting adjacent in the same row. A single card carried `--raised` with a 3px accent edge; a group carried `--sunk` with a header band and no edge.
+
+**A weapon with one build is a group of one.** One shape always, inheriting the single card's surface and edge (the better-looking of the two, and the one a reader sees most often).
+
+The header was one flex row with the count pushed right by `margin-left:auto`, so `SWITCHBLADE X9` wrapped inside a 182px card and shoved `2 builds` off the edge as `2 buil`. **A name is variable-length and a count is not; they do not belong on one line at a fixed width.** Two lines by design, the name clamped to two and `min-height`-reserved so every header in a tier row is the same height — measured before: 48px and 51px side by side, which reads as sloppy long before it reads as "that name is longer".
+
+### 5.9m.6 `[hidden]` — the fix that had to be unconditional
+
+🔴 **`[hidden]` is a UA rule at specificity 0,0,1 and ANY class that sets `display` beats it.** `.pill{display:inline-flex}` is 0,1,0, so `<button class="pill" hidden>` stays on screen. Measured: Armory's superseded single create button and its two replacements rendered into the same grid cell and overprinted each other as **"+ Mew DMZbuild"**.
+
+Enumerating the components that set `display` would fix today's cases and miss tomorrow's — there are **40+** in this stylesheet. `hidden` means hidden, unconditionally, so this is the one place `!important` is the correct tool rather than a shortcut: there is no legitimate pattern where an author sets the attribute and wants the element painted. **Audit rule 11** asserts it on every page so a future override cannot quietly reopen it.
+
+### 5.9m.7 The backtick trap, caught by a gate for the first time
+
+Editing this section's own comment fired the **fourth** occurrence of a backtick inside an HTML comment inside a template literal. Every previous one was found by opening the page and seeing it blank.
+
+This time `npm run portal:refs` — which had gained a `new Function(src)` parse check **an hour earlier** — reported `armory.html: does not parse — missing ) after argument list` within a minute of the edit.
+
+**Worth stating as a pattern rather than an anecdote:** the general check (does this file parse) beat every specific one anybody would have written for this trap. A text heuristic hunting for backticks-in-comments would also have to know whether the comment is inside a literal; the parser already knows.
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

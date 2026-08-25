@@ -21,7 +21,17 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
  * that rendered as Chrome's white ButtonFace — a styling system that only covers the cases it
  * happened to name will keep leaking the browser's defaults through the gaps.
  * Now element-based, with the two types that must keep their native look excluded. */
-input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{
+/* 🔴 `[data-bare]` OPTS OUT OF MATCHING — it does not try to OUT-SPECIFY this rule, and that
+ * distinction is the whole fix. Each `:not()` contributes its argument's specificity, so this
+ * selector is 0,3,1. The previous attempt at the doubled command bar wrote
+ * `.cmdbar input.cb-in{border:0}` at 0,2,1 and LOST, silently — the input kept painting its own
+ * --sunk box with a --rule2 border and a 44px min-height inside a 34px wrapper, which is exactly
+ * the "two search bars stacked" Harkirat reported, twice, weeks apart. I raised the specificity
+ * and never measured whether it was now enough. It was not.
+ * An opt-out cannot lose an argument it is not having: a `[data-bare]` input never matches here,
+ * so no future rule ordering can revive the box. Audit rule 12 asserts it stays that way. */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]),
+select:not([data-bare]),textarea:not([data-bare]){
   background:var(--sunk);border:1px solid var(--rule2);border-radius:5px;padding:8px 10px;min-height:var(--tap)}
 input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
 input:focus,select:focus,textarea:focus{border-color:var(--patch);outline:none}
@@ -118,20 +128,64 @@ main{overflow:auto;padding-bottom:96px}
    is a worse label than the one it replaced. One token, so the ruler, the rail and the lane
    header can never disagree again. */
 :root{--gutter:138px}
-.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);margin-left:var(--gutter)}
+/* 🔴 `margin-right:1px` PUTS THE RULER ON THE SAME AXIS AS THE BARS. A lane is a card with a
+   1px right border, so its plot area is 1px narrower than a ruler that runs to the container's
+   edge — and a tick at 100% therefore landed 1px away from a bar at 100%, across the whole axis,
+   permanently. One pixel is invisible on any single element and it is a misalignment of the one
+   thing this realm is: the time axis. Found by audit rule 13 the first time it ran, reporting
+   two origins of 1116 and 1115; no per-element rule could ever have seen it. */
+.ruler{position:relative;height:26px;border-bottom:1px solid var(--rule);
+  margin-left:var(--gutter);margin-right:1px}
 .ruler span{position:absolute;top:0;line-height:26px;padding-left:6px;border-left:1px solid var(--rule);
   font-family:var(--data);font-size:10px;color:var(--ink3);white-space:nowrap}
 .lanes{position:relative;padding-bottom:4px}
-.lane{display:flex;align-items:center;height:38px;border-bottom:1px solid var(--rule3)}
-.lane:last-child{border-bottom:0}
+/* A LANE IS A CARD. Not a row with a hairline — its own object, with a ground the page does not
+   share, an edge in its own topic accent, and padding so nothing it holds touches its boundary. */
+.lane{display:flex;align-items:stretch;min-height:38px;border:1px solid var(--rule);
+  border-left:2px solid var(--c,var(--rule2));border-radius:7px;background:var(--sunk);
+  overflow:hidden;transition:border-color var(--dur-1) var(--ease)}
+.lane:hover{border-color:var(--rule2);border-left-color:var(--c,var(--rule2))}
+.lane:last-child{border-bottom:1px solid var(--rule);border-left-width:2px}
 .lane .nm{width:var(--gutter);flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
   letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
-.tk{position:relative;flex:1;height:100%;overflow:hidden}
+/* The plot area carries its own grid, at the same scale in every lane, so the columns align
+   across the cards while the surfaces stay separate. `--tk-pad` keeps a bar off the card's edge;
+   every measuring pass reads getBoundingClientRect(), so padding is absorbed automatically and
+   nothing needs to know about it. */
+/* --tk-pad keeps a bar off the card's boundary. Every measuring pass reads
+   getBoundingClientRect(), so the inset is absorbed with no code aware of it — verified after
+   the change rather than assumed, because those passes are where a layout shift bites. */
+.tk{position:relative;flex:1;min-height:100%;overflow:hidden;padding:5px 0;
+  background-image:linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:64px 100%;background-position:0 0}
 .divider{padding:9px 0 5px 96px;font-family:var(--data);font-size:9.5px;letter-spacing:.16em;color:var(--ink3);
   text-transform:uppercase;border-top:1px solid var(--rule);margin-top:5px}
-.ov{position:absolute;left:96px;right:0;top:0;bottom:0;pointer-events:none;z-index:1}
+/* 🔴 ONE COORDINATE AUTHORITY. Every dated element on the Track is placed by a PERCENTAGE,
+   which means its pixel position is a function of the box it sits in — so two containers with
+   different origins turn one date into two positions.
+   MEASURED 2026-08-24: `.ov` sat at left=207 width=1158 and `.deadrail` at left=249 width=1116,
+   a 42px origin gap. A deadline's line and its own flag both carried the IDENTICAL inline
+   `left:77.0833%` and landed at x=1100 and x=1108 — the "disconnect in the line" Harkirat
+   photographed. Not a styling slip: the same number measured against two rulers.
+   🔴 SO EVERY PERCENTAGE-POSITIONED LAYER SHARES THIS ONE BOX. `--plot-l` is the single origin.
+   If you add a layer that positions by date, give it these two lines and nothing else. */
+:root{--plot-l:var(--gutter)}
+/* `right:1px` matches the lane card's own right border, so the overlay's plot area is exactly
+   the same box as a lane's `.tk`. Without it the two differ by that 1px and every bar sits one
+   pixel off the NOW line at the right-hand end of the axis — invisible on any single element,
+   and precisely what rule 13 reported the first time it ran (249x1116 vs 249x1115). */
+.ov,.deadrail{position:absolute;left:var(--plot-l);right:1px}
+/* 🔴 THE VERTICALS SIT ABOVE THE CARDS AND CROSS THE GAPS. `.ov` spans the whole lane region, so
+   the NOW line and every deadline line run continuously through five separate surfaces — which is
+   precisely what keeps them one timeline rather than five charts. z-index 3 puts them over a
+   card's ground and under its bars, so a line never hides an object it is meant to date. */
+.ov{z-index:3}
+.lanes > .ov{top:0;bottom:0}
+.ov{top:0;bottom:0;pointer-events:none;z-index:1}
 .now{position:absolute;top:0;bottom:0;width:1px;background:var(--patch);opacity:.55}
-.now::after{content:"NOW";position:absolute;top:-21px;left:-12px;font-family:var(--data);font-size:9px;font-weight:600;
+/* The pill IS the clock. `attr()` rather than a second element, so NOW cannot become two
+   objects that drift apart — which is exactly what the loose `.nowt` timestamp did. */
+.now::after{content:attr(data-now);position:absolute;top:-21px;left:-12px;font-family:var(--data);font-size:9px;font-weight:600;
   letter-spacing:.1em;color:var(--patch);white-space:nowrap}
 .win{position:absolute;top:0;bottom:0;background:rgba(31,138,94,.10);border-left:1px solid rgba(31,138,94,.45);
   border-right:1px solid rgba(31,138,94,.45)}
@@ -490,10 +544,22 @@ main{position:relative;z-index:1}
 /* ── THE TRACK AS AN INSTRUMENT ─────────────────────────────────────────── */
 .tk-inner{position:relative}
 /* blueprint grid, aligned to nothing in particular — texture, not data */
-.lanes{position:relative;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:100% 38px,64px 100%;
-  background-position:0 0,96px 0}
-.lane{border-bottom-color:rgba(255,255,255,.045)}
+/* 🔴 THE SHARED BACKGROUND WAS THE COMPLAINT. Harkirat, five times: "why is the entire track
+   like an open blended canvas? when i keep asking for 'lanes'... i still want the timeline system
+   but i want the rows implemented and redesigned to fit, look, stylize, function, adapt, behave
+   MUCH better. Each sort of in their own 'space'."
+   He was reacting to something literal: `.lanes` painted ONE gradient across every row, so the
+   ground under lane 1 and lane 5 was the same painted surface. They were never separate spaces —
+   they were stripes on one field, and no amount of hairline tuning could change that.
+
+   🔴 THE SPLIT THAT FIXES IT: **the lane owns the GROUND, time owns the VERTICALS.**
+   Each lane is now a card with its own surface, border, radius, accent edge and internal padding,
+   and its own copy of the time grid at the same scale — so the columns still line up across every
+   lane while the surfaces are separate. The NOW line and the deadline lines stay in `.ov`, which
+   spans the whole region, so they run continuously THROUGH the cards and across the gaps between
+   them. That crossing is what keeps five spaces reading as one timeline, and it is the moment the
+   design is actually about. */
+.lanes{position:relative;display:flex;flex-direction:column;gap:7px;background-image:none}
 
 /* the NOW line is the instrument's needle — it glows and breathes */
 .now{width:2px;margin-left:-1px;background:linear-gradient(180deg,var(--patch),rgba(242,194,48,.25));
@@ -1005,7 +1071,24 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* ══════════ DEADLINE RAIL — everything that applies to EVERY lane ══════════
    A deadline is a point, a double-CP window is a span; both are global, so both live here
    on the shared axis rather than floating inside the first lane as afterthoughts. */
-.deadrail{position:relative;margin-left:var(--gutter);min-height:24px;margin-bottom:2px}
+/* 🔴 THE ANNOTATION BAND HAS AN OWNER NOW. Five things used to render into the strip between
+   the ruler and the first lane — deadline flags, pinned out-of-view chips, the NOW pill, a loose
+   clock and the hover tooltip — from four code paths, none aware of the others. They collided,
+   and the collisions are what Harkirat photographed: a chip sitting on the ruler, a tooltip
+   covering the lane it describes. His own diagnosis was the right one — "you literally have SO
+   much available space above them" — because nothing had ALLOCATED the space, so each element
+   grabbed whatever y it wanted and stacked downward into the content.
+   `.deadrail` is that allocation: in flow, sized by what it holds, so the lanes begin below it
+   rather than under it. Position/left/right come from the shared origin rule above; `static`
+   would break its percentage children, so it re-declares `position` and NEVER left/margin-left. */
+/* ⚠️ `right:auto` HERE UNDID THE SHARED `right:1px` ABOVE — my own later rule defeating my own
+   earlier one, and audit rule 13 caught it within a minute of both being written. The rail is in
+   FLOW (so the lanes start below it, not under it), so it takes its inset as a MARGIN, matching
+   the ruler. Third time the shared origin has been broken by a later declaration; the assertion
+   is what makes the fourth time cost a minute instead of a week. */
+.deadrail{position:relative;left:auto;right:auto;
+  margin-left:var(--plot-l);margin-right:1px;
+  min-height:52px;margin-bottom:6px;padding-top:4px}
 .dflag,.dspan{position:absolute;top:0;transform:translateX(-1px);display:flex;align-items:center;gap:6px;
   background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:4px;
   padding:3px 7px;cursor:ew-resize;white-space:nowrap;color:var(--c,var(--ink3));
@@ -2608,7 +2691,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    question, and a header that is a control rather than a caption. */
 
 /* ── the lane header: a control, not a caption ── */
-.lnh{width:var(--gutter);flex:none;display:flex;align-items:center;gap:7px;padding:0 12px 0 7px;
+/* The header is PART OF THE CARD now, on an inset ground with its own right edge — it used to
+   float in a shared gutter, which is why the names read as a list beside a canvas rather than as
+   each lane's own title. */
+.lnh{width:calc(var(--gutter) - 2px);flex:none;display:flex;align-items:center;gap:7px;
+  padding:0 11px 0 9px;background:linear-gradient(90deg,
+    color-mix(in srgb,var(--c,var(--rule)) 14%,var(--desk)),
+    color-mix(in srgb,var(--c,var(--rule)) 5%,var(--desk)));
+  border-right:1px solid var(--rule);align-self:stretch;
   background:none;border:0;cursor:pointer;color:var(--ink3);text-align:left;
   font:700 10px/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
 .lnh:hover{color:var(--ink2)}

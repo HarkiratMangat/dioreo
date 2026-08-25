@@ -158,6 +158,26 @@ const say = (tag, name, probs) => {
     f.remove(); paint();
   }
 
+  /* PASS 4b — EXPANDED. 🔴 THE SWEEP HAD ONLY EVER RENDERED THE DEFAULT STATE, AND THE DEFAULT
+   * COLLAPSES THE DENSEST LANE. Season closes any lane with more than three rows, so the playlist
+   * lane — 14 items, 7 rows, the most crowded surface in the portal — was invisible to all forty
+   * passes. Four bars in it were rendering as blank coloured rectangles the whole time, and
+   * Harkirat found them by opening the page and clicking the caret.
+   * Exactly the same shape as "a [hidden] view is audited by nothing", which this sweep already
+   * fixes for view TABS. Second occurrence of one class, and the second one was found by a human.
+   * Any collapsed disclosure is a surface, and a surface nothing opens is a surface nothing checks. */
+  for (const p of ['season', 'armory']) {
+    const f = await load(p + '.html?audit=1');
+    try {
+      const d = f.contentDocument;
+      d.querySelectorAll('.lane.lnc .lnh, .trow.tclosed .trow-h').forEach(h => h.click());
+      await new Promise(r => setTimeout(r, 900));
+      f.contentWindow.Shell._audit({});
+    } catch (e) {}
+    bad += say('expanded', p, readCheck(f)); ran++;
+    f.remove(); paint();
+  }
+
   /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
    * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
    * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm

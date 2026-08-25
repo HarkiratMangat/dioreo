@@ -406,6 +406,10 @@
     commandBar({ items, run, placeholder }){
       const wrap = document.getElementById('cmdBar'), inp = document.getElementById('cbIn');
       if (!wrap || !inp) return;
+      /* The input opts OUT of the global form reset rather than trying to out-specify it —
+       * see the long note on that rule in app.css. Set here rather than in the markup so a
+       * page cannot ship the command bar without it. */
+      inp.setAttribute('data-bare', '');
       /* 🔴 THE PLACEHOLDER DID NOT FIT ITS OWN INPUT below ~900px — the surface sweep measured the
        * string against the field and found it clipped on six of eight realms. A placeholder that
        * is cut mid-word is worse than a short one: it reads as a rendering fault, which is exactly
@@ -777,8 +781,22 @@
         if (l.scrollWidth <= l.clientWidth + 1) return;
         const bar = l.closest('.bar'), tk = bar && bar.closest('.tk'); if (!tk) return;
         const br = bar.getBoundingClientRect(), tr = tk.getBoundingClientRect();
-        const room = Math.max(tr.right - br.right, br.left - tr.left);
-        if (room > l.scrollWidth + 12 && !bar.classList.contains('lbl-out'))
+        /* 🔴 ROOM MEANS ROOM BEFORE THE NEXT BAR — measured against SIBLINGS, not against the
+         * lane's edge. This rule measured to the lane edge and reported four false positives
+         * ("928px free beside it") on bars that had 23px before their neighbour: a label moved
+         * there would have landed on top of another bar. fitLabels() had already learned this
+         * and fixed it for itself; the audit kept the old measurement, so TWO AUTHORITIES
+         * computed one quantity and disagreed — the same defect class as the two coordinate
+         * origins on this Track, in a different place. A gate that cries wolf trains its reader
+         * to skim the real ones, so this now measures exactly what the placer measures.
+         * Same row = actual vertical overlap; a string comparison on style.top misses any bar
+         * positioned by a class or a variable. */
+        const sibs = [...tk.querySelectorAll('.bar')].filter(o => o !== bar).map(o => o.getBoundingClientRect())
+                       .filter(r => r.top < br.bottom - 1 && r.bottom > br.top + 1);
+        const rightWall = Math.min(tr.right, ...sibs.filter(r => r.left >= br.right - 1).map(r => r.left));
+        const leftWall  = Math.max(tr.left,  ...sibs.filter(r => r.right <= br.left + 1).map(r => r.right));
+        const room = Math.max(rightWall - br.right, br.left - leftWall);
+        if (room > l.scrollWidth + 12 && !bar.classList.contains('lbl-out') && !bar.classList.contains('lbl-out-l'))
           problems.push(`"${l.textContent.trim()}" is truncated with ${Math.round(room)}px free beside it`);
       });
 
@@ -924,6 +942,64 @@
         }
       };
       scanText(document.body, 'page');
+
+      /* 13. ONE DATE, ONE X — EVERY PERCENTAGE-POSITIONED LAYER SHARES ONE CONTAINING BLOCK.
+       *     THE defect that has made the Track feel broken through five attempts, and the first
+       *     rule here that is about a RELATIONSHIP rather than about one element.
+       *     Every dated thing on the Track is placed by a percentage, so its pixel position is a
+       *     function of the box it sits in. MEASURED 2026-08-24: `.ov` sat at left=207 width=1158
+       *     and `.deadrail` at left=249 width=1116 — a 42px origin gap — and a deadline's line and
+       *     its own flag, both carrying the IDENTICAL inline `left:77.0833%`, landed 8px apart.
+       *     Harkirat photographed it as "this disconnect in the line".
+       *     Nothing could have caught that: every other rule in this file inspects ONE element,
+       *     and each of those two was individually perfect. So this compares the containing
+       *     blocks themselves — any future layer that positions by date and forgets the shared
+       *     origin is reported the first time it renders, whatever elements it holds. */
+      (() => {
+        const host = document.querySelector('.tk-inner'); if (!host) return;
+        /* The OVERVIEW strip is excluded, and the exclusion is a real distinction rather than a
+         * convenience: it plots the WHOLE season while the lanes plot the current window, so its
+         * percentages mean something different and unifying them would be wrong. Anything else
+         * that positions by date must share the lanes' origin. */
+        const layers = [...host.querySelectorAll('*')]
+          .filter(e => /left:\s*[\d.]+%/.test(e.getAttribute('style') || ''))
+          .filter(e => !e.closest('.mini,.ovw,.scrub,.overview,.spark'))
+          .map(e => e.offsetParent).filter(Boolean);
+        const boxes = new Map();
+        layers.forEach(p => {
+          const r = p.getBoundingClientRect();
+          const k = Math.round(r.left) + 'x' + Math.round(r.width);
+          boxes.set(k, (boxes.get(k) || 0) + 1);
+        });
+        if (boxes.size > 1)
+          problems.push(`the Track positions dates against ${boxes.size} different origins (${[...boxes.keys()].join(' · ')}) — one date will render at ${boxes.size} different x`);
+      })();
+
+      /* 12. A CONTROL INSIDE A COMPOSITE MUST NOT PAINT ITS OWN BOX, AND MUST FIT INSIDE IT.
+       *     The command bar is a wrapper with an icon, an input and a kbd hint; if the input
+       *     paints its own border and background it renders as a second bar inside the first,
+       *     and a min-height taller than the wrapper makes it overflow on both edges. Measured:
+       *     a 44px input inside a 34px wrapper, bordered, for weeks — reported twice by a human
+       *     and never caught here, because every existing rule inspected ONE element and this is
+       *     a fact about a child AGAINST ITS PARENT. */
+      /* 🔴 IT SELECTS BY ROLE IN THE COMPOSITE, NOT BY THE OPT-OUT MARKER. The first version
+       * iterated `[data-bare]` — so removing the marker, which is the exact regression it
+       * exists to catch, left it with nothing to iterate and it reported clean. Vacuous by
+       * construction, written one minute after documenting that trap, and found only because
+       * the falsifier was run. A check must select the thing it is protecting, never the fix
+       * that protects it. */
+      document.querySelectorAll('.cmdbar input,[data-bare]').forEach(el => {
+        const cs = getComputedStyle(el), p = el.parentElement;
+        if (parseFloat(cs.borderTopWidth) > 0)
+          problems.push(`[data-bare] .${el.className || el.tagName} still paints a ${cs.borderTopWidth} border — it is drawing a second box inside its wrapper`);
+        if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent')
+          problems.push(`[data-bare] .${el.className || el.tagName} still paints a background (${cs.backgroundColor})`);
+        if (p) {
+          const r = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
+          if (pr.height > 0 && (r.height - pr.height > 1))
+            problems.push(`[data-bare] .${el.className || el.tagName} is ${Math.round(r.height)}px tall inside a ${Math.round(pr.height)}px wrapper`);
+        }
+      });
 
       /* 11. `[hidden]` MUST ACTUALLY HIDE. The attribute is a UA rule at specificity 0,0,1 and
        *     any class that sets `display` beats it — measured on Armory, where a hidden create
