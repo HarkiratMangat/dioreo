@@ -5,7 +5,7 @@
  * and see if it notices) with a shrug. A probe that cannot report PRESENCE is not a probe, and
  * this one shipped a green tick one commit after `drawComposeGhost` had been missing all day.
  * Run with --self-test: it renames a real function in memory and asserts it gets caught. */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 /* ⚠️ THE REPO PATH CONTAINS A SPACE (/Applications/Claude Code/…), so `import.meta.url`'s
  * pathname is percent-encoded and `readdirSync` gets `Claude%20Code`. Documented in the memory
  * store as a recurring trap here; `fileURLToPath` is the fix, never a manual decode. */
@@ -160,6 +160,46 @@ for (const f of files) {
   if (!hit) tickBad++;
 }
 if (tickBad) syntaxBad += tickBad;
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE CACHE-BUSTER IS BUMPED BY HAND, AND THAT WAS THE LAST ADMITTED-UNENFORCED STEP.
+ * 🔴 COMPANION §15.8 says so in as many words: "bumped by hand when an asset changes — it is an
+ * unenforced step guarding against the exact staleness failure §0 describes". A stale asset has
+ * produced three false "verified" claims in this package's history, and on 2026-08-25 thirty-five
+ * references were bumped by hand after a day of editing app.css and shell.js. Every other
+ * recurring manual step in this package became a gate today; this is the last one.
+ * The invariant is checkable and needs no judgement: NO ASSET MAY BE NEWER THAN THE `?v=` STAMP
+ * OF THE PAGE THAT REFERENCES IT. If it is, a warm cache serves the old file and every check in
+ * this repo is silent about it.
+ * ⚠️ Uses mtime, so a fresh `git clone` (which sets every mtime to checkout time) can report a
+ * false positive. That is the safe direction — it tells you to bump, and bumping is free.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+let staleBust = 0;
+{
+  const stamps = new Map();   // asset -> newest ?v= seen across all pages
+  for (const f of files) {
+    const html = readFileSync(dir + f, 'utf8');
+    for (const m of html.matchAll(/(assets\/[A-Za-z0-9_.-]+)\?v=(\d+)/g)) {
+      const [, asset, v] = m;
+      stamps.set(asset, Math.max(stamps.get(asset) || 0, Number(v)));
+    }
+  }
+  for (const [asset, v] of stamps) {
+    let mtime;
+    try { mtime = Math.floor(statSync(dir + asset).mtimeMs / 1000); } catch { continue; }
+    if (mtime > v) {
+      console.log(`  ❌ ${asset} was modified after its ?v=${v} stamp (mtime ${mtime}) — ` +
+                  'a warm cache will serve the old file; bump the stamp on every page');
+      staleBust++;
+    }
+  }
+  /* It must be able to fail: a stamp older than a real asset is the whole condition. */
+  const probe = (() => { try { return Math.floor(statSync(dir + 'assets/app.css').mtimeMs / 1000) > 1; } catch { return false; } })();
+  console.log(probe ? '  ✅ self-test: the cache-buster check can read an asset mtime'
+                    : '  ❌ self-test: VACUOUS — no asset mtime is readable, so this check passes on nothing');
+  if (!probe) staleBust++;
+}
+if (staleBust) syntaxBad += staleBust;
 console.log(syntaxBad ? `  ⚠ ${syntaxBad} page(s) with a syntax error` : '  ✅ every page parses');
 
 let bad = syntaxBad;
