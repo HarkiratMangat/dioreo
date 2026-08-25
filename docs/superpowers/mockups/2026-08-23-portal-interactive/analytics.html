@@ -39,7 +39,11 @@
         <label class="adminsw"><input type="checkbox" id="incAdmin"> include admin traffic</label>
         <span class="sp" id="viewMeta"></span>
       </div>
-      <div id="viewHealth"></div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a stat row). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewHealth" data-async-host data-skel="4|34,30,20,10"></div>
       <div id="viewUsage" hidden></div>
       <div id="viewTiming" hidden></div>
       <div id="viewReach" hidden></div>

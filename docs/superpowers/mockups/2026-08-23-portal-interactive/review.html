@@ -26,7 +26,11 @@
         <span class="t">Changeset</span>
         <span class="sp" id="viewMeta"></span>
       </div>
-      <div id="viewReview"></div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a staged op: verb, target, tier). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewReview" data-async-host data-skel="5|30,44,16"></div>
       <div id="rvfoot"></div>
     </section>
   </main>

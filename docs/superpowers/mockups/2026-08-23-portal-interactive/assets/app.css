@@ -1533,6 +1533,95 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .callout.dangerous{border-left:3px solid var(--danger-ink);
   background:color-mix(in srgb,var(--danger-ink) 8%,transparent)}
 .callout.dangerous b,.callout.dangerous code{color:var(--danger-ink)}
+
+/* ══════════════════ ASYNC — §15.7 ══════════════════
+   🔴 A SKELETON, NEVER A SPINNER (§10.6). The bars carry the row's OWN rhythm — the widths come
+   from the realm — so the reader can start reading the layout before the data lands. A spinner
+   says "something is happening"; a skeleton says "a table with six rows is coming".
+   The stagger is per row rather than one shared pulse: a single synchronised flash reads as a
+   broken repaint, and the offset is what makes it read as arriving. */
+/* There was no visually-hidden utility in this package, and the skeleton needs one: the bars are
+   decorative and hidden from the accessibility tree, so without a text node the live region
+   announces nothing at all. Clip rather than `display:none` — a hidden node is not announced. */
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.skel{display:flex;flex-direction:column;gap:9px;padding:14px 12px}
+.skel-r{display:flex;gap:14px;align-items:center;min-height:22px}
+.skel-r i{height:11px;border-radius:3px;display:block;
+  background:linear-gradient(90deg,var(--sunk) 0%,var(--raised) 50%,var(--sunk) 100%);
+  background-size:220% 100%;animation:skel 1.4s var(--ease) infinite;animation-delay:var(--d,0ms)}
+@keyframes skel{to{background-position:-220% 0}}
+
+/* Rule 2 — a REFRESH must not blank correct data. The surface says it is being re-read with a
+   hairline that travels its top edge, and every row stays legible underneath. Blanking here
+   would be a regression dressed as feedback. */
+.is-refreshing{position:relative}
+.is-refreshing::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--patch),transparent);
+  animation:refl 1.1s var(--ease) infinite;pointer-events:none;z-index:6}
+@keyframes refl{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* Rule 3 — SLOW is its own state. Nothing is cancelled; the page stops pretending the wait is
+   normal, because a reader who thinks it is broken reloads MID-WRITE. */
+.is-slow::before{content:attr(data-slow);position:absolute;left:50%;top:12px;transform:translateX(-50%);
+  z-index:7;font:500 11px/1 var(--ui);color:var(--ink2);background:var(--raised);
+  border:1px solid var(--rule2);border-radius:999px;padding:7px 12px;white-space:nowrap;
+  box-shadow:0 6px 20px -10px rgba(0,0,0,.9)}
+
+/* Rule 4 — an error names WHAT failed, WHAT it means, and the ONE action. Three parts, all
+   required: an error missing any of them is the one that gets screenshotted and forwarded. */
+.failbox{margin:14px 12px;border:1px solid var(--danger-edge);border-left:3px solid var(--danger-ink);
+  border-radius:var(--rad);background:color-mix(in srgb,var(--danger-ink) 6%,transparent);padding:14px 16px}
+.fail-h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.fail-k{font:700 9.5px/1 var(--data);letter-spacing:.16em;color:var(--danger-ink);
+  border:1px solid var(--danger-edge);border-radius:3px;padding:4px 6px}
+.fail-h b{font:600 14px/1.2 var(--ui);color:var(--ink)}
+.failbox p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink2);max-width:70ch}
+.fail-d{margin:9px 0 0;padding:8px 10px;background:var(--sunk);border-radius:5px;
+  font:11px/1.5 var(--mono);color:var(--ink3);overflow-x:auto;white-space:pre-wrap}
+.fail-a{margin-top:11px}
+
+/* A commit is N ops in ONE transaction (§15.3) and op 23 of 40 can fail — so progress is per-op
+   and the failure NAMES the op. A percentage alone cannot say which one broke, and at that
+   moment "which one" is the only question worth answering. */
+.prog{padding:12px 14px}
+.prog-b{height:4px;border-radius:999px;background:var(--sunk);overflow:hidden}
+.prog-b i{display:block;height:100%;background:var(--patch);border-radius:999px;
+  transition:width var(--dur-2) var(--ease)}
+.prog.bad .prog-b i{background:var(--danger-ink)}
+.prog-t{margin-top:8px;font:500 11.5px/1.4 var(--data);color:var(--ink2)}
+.prog.bad .prog-t b{color:var(--danger-ink)}
+
+/* Page-level facts take a page-level bar: the backend is gone, or this tab outlived its 12h
+   session. Both name the one action AND say staged work is safe, because that is the reader's
+   actual fear and an "offline" notice that does not answer it just adds to it. */
+.netbar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 22px;
+  border-bottom:1px solid var(--rule2);background:var(--raised);font-size:12.5px}
+.netbar.offline{background:color-mix(in srgb,var(--warn) 9%,var(--raised))}
+.netbar.expired{background:color-mix(in srgb,var(--patch) 9%,var(--raised))}
+.net-k{font:700 9.5px/1 var(--data);letter-spacing:.16em;color:var(--ink2);
+  border:1px solid var(--rule2);border-radius:3px;padding:4px 6px}
+.netbar b{color:var(--ink)}
+.net-m{color:var(--ink2);flex:1 1 320px;min-width:0}
+
+/* 🔴 A ROLLBACK IS SEEN. §15.7: an optimistic write that loses a concurrency check is taken back
+   VISIBLY. A value that silently reverts is indistinguishable from a portal that ignored the
+   click, and the reader's next move is to do it again — which is how one lost edit becomes three. */
+.rb{animation:rb 900ms var(--ease) 1}
+@keyframes rb{
+  0%{background:color-mix(in srgb,var(--danger-ink) 26%,transparent)}
+  35%{background:color-mix(in srgb,var(--danger-ink) 26%,transparent)}
+  100%{background:transparent}}
+
+/* The three moments still govern (§10.3): everything here respects a reduced-motion preference
+   by holding its final frame rather than by disappearing. A skeleton that does not shimmer is
+   still a skeleton; a progress bar that jumps rather than eases still reports progress. */
+@media (prefers-reduced-motion: reduce){
+  .skel-r i{animation:none;background:var(--sunk)}
+  .is-refreshing::after{animation:none;transform:none;opacity:.6}
+  .prog-b i{transition:none}
+  .rb{animation:none;background:color-mix(in srgb,var(--danger-ink) 22%,transparent)}
+}
 /* Age is context, not an alarm — it reads at the weight of the neutral stats beside it. */
 .mh-stats .stat .k{white-space:nowrap}
 

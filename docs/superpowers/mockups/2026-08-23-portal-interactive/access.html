@@ -38,7 +38,11 @@
         <span class="key" id="key"></span>
         <span class="sp" id="viewMeta"></span>
       </div>
-      <div id="viewGrid"></div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a matrix row: admin, cells, actions). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewGrid" data-async-host data-skel="4|22,52,14,10"></div>
       <div id="viewScope" hidden></div>
     </section>
 

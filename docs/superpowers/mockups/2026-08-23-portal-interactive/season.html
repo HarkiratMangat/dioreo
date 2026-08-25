@@ -154,7 +154,11 @@
         <span class="key" id="key"></span>
         <span class="sp" id="viewMeta"></span>
       </div>
-      <div id="viewTrack"></div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (the Track: a lane name, a plot area, a count). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewTrack" data-async-host data-skel="5|18,62,12,8"></div>
       <div id="viewBoard" hidden></div>
       <div id="viewRepairs" hidden></div>
     </section>

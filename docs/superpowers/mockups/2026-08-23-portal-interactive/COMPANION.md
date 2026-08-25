@@ -2417,9 +2417,30 @@ The mockup uses bare `YYYY-MM-DD` strings with no time component, because a time
 
 So: dragging a bar produces a day, and the day must be mapped back onto the existing time-of-day rather than zeroed. The TBD flags (`bpEndTBD` etc.) are **separate booleans that null the Date** — "known to be undecided" is a different state from "not set yet", and `calendar.js`'s `isEventEnded` treats a TBD end as indefinitely running. Preserve that distinction; collapsing it corrupts the season-end display.
 
-### 15.7 Async — every loading, in-flight and failure state is undesigned
+### 15.7 Async — designed 2026-08-25, and renderable
 
-The mockup has no async state at all, so **none of it was designed and you are not "matching the mockup" when you build it.** The only rules that carry over: a skeleton **in the shape of the content**, never a spinner (§10.6); the three edge states get written copy, and so does failure; and motion stays within the three moments (§10.3). Beyond that, treat in-flight and error design as new work — and note that optimistic updates interact directly with §15.4, because an optimistic write that loses a concurrency check has to be visibly rolled back, not silently reconciled.
+*This section read "every loading, in-flight and failure state is undesigned" until 2026-08-25. It was the real wiring blocker: you cannot build "to the mockup" against states nobody drew. It is built now, in `Shell.async`, and every state below can be put on screen with `?net=`.*
+
+**Four rules, and they disagree with each other on purpose:**
+
+| rule | the failure it prevents |
+|---|---|
+| A **first** load skeletons **in the shape of the content**, never a spinner (§10.6) | a spinner says "something is happening"; a skeleton says "a Track with five lanes is coming", and only the second lets the reader start reading the layout |
+| A **refresh does not skeleton** | blanking correct data to announce that you are re-fetching it is a regression dressed as feedback |
+| **Slow is its own state**, at a 2.5s threshold | a reader who concludes the portal is broken reloads **mid-write** |
+| A failure names **what failed, what it means, and the one action** (§10.6) | "Something went wrong" is the error equivalent of a bare "No results" |
+
+**A commit is N ops in one transaction (§15.3), so progress is per-op and a failure NAMES the op.** A percentage cannot say which one broke, and at that moment "which one" is the only question worth answering: *Stopped at 24 of 40 · calendar.bulkReplace refused: the row it targets was edited 40s ago.*
+
+**A rollback is SEEN.** An optimistic write that loses a concurrency check (§15.4) is taken back visibly — the row returns to its old value with a mark and a sentence. A value that silently reverts is indistinguishable from a portal that ignored the click, and the reader's next move is to do it again, which is how one lost edit becomes three.
+
+**Two page-level facts take a page-level bar** — the backend is unreachable, or this tab outlived its 12h `PortalSession`. Both name the one action, and both say **staged work is safe**, because that is the reader's actual fear and an "offline" notice that does not answer it only adds to it.
+
+**A realm opts in with one attribute pair:** `data-async-host` on the element that owns its data, and `data-skel="rows|w,w,w"` declaring its own skeleton rhythm. No per-realm JS, so a new realm cannot forget to wire async and quietly ship with no loading state.
+
+🔴 **`?net=loading|refresh|slow|fail|commit|commitfail|offline|expired|rollback` makes every one of these renderable, and that is not a convenience.** This package keeps re-learning that a state nothing can put on screen is a state nobody designs and no check can open — `?audit=1` went unrun for weeks, every `[hidden]` view was audited by nothing, and the owner-only refusal was undesignable until `?as=` existed.
+
+⏳ **Not yet swept.** The `?net=` states render and were spot-checked, but `.states.html` has no pass over them yet — so nothing guards them against a future edit. That is the next thing this section owes.
 
 ### 15.8 Constants named elsewhere in this document
 

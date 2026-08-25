@@ -36,7 +36,11 @@
         <span class="key" id="key"></span>
         <span class="sp" id="viewMeta"></span>
       </div>
-      <div id="viewQueue"></div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a queue row: position, text, badge). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewQueue" data-async-host data-skel="4|4,68,14,10"></div>
       <div id="viewAir" hidden></div>
     </section>
 

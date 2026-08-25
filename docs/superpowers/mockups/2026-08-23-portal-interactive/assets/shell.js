@@ -279,6 +279,175 @@
       document.querySelector('.scrim')?.classList.remove('on');
     },
 
+    /* ═══════════════════ ASYNC — §15.7, no longer undesigned ═══════════════════
+     * The mockup had NO async state at all, which made it the one part of this package a wiring
+     * session could not build "to the mockup" — you cannot wire a backend against states nobody
+     * drew. Every rule below comes from somewhere already decided in this document rather than
+     * from taste, and each is stated with the failure it prevents.
+     *
+     * 🔴 FOUR RULES, AND THEY DISAGREE WITH EACH OTHER ON PURPOSE:
+     *  1. A FIRST load skeletons in the SHAPE OF THE CONTENT (§10.6). Never a spinner: a spinner
+     *     says "something is happening" where a skeleton says "a table with six rows is coming",
+     *     and the second is the only one that lets the reader start reading the layout.
+     *  2. A REFRESH DOES NOT SKELETON. Blanking correct data to say you are re-fetching it is a
+     *     regression dressed as feedback — the reader loses what they were looking at. Refresh is
+     *     a quiet mark on the surface that owns the data, and the stale rows stay legible.
+     *  3. SLOW IS ITS OWN STATE. A request that has not failed and has not returned needs to say
+     *     so at a threshold, or the reader concludes the portal is broken and reloads mid-write.
+     *  4. A FAILURE NAMES WHAT FAILED, WHAT IT MEANS, AND THE ONE ACTION (§10.6). "Something went
+     *     wrong" is the error equivalent of a bare "No results."
+     *
+     * ⚠️ AND THE ONE THAT COSTS MOST TO GET WRONG: an optimistic write that loses a concurrency
+     * check must be VISIBLY ROLLED BACK, never silently reconciled (§15.7). A row that quietly
+     * returns to its old value after you changed it is indistinguishable from a portal that
+     * ignored you, and the reader's next move is to do it again. */
+    async: {
+      /* Skeleton geometry is declared by the realm, because only the realm knows its own shape.
+       * `lines` is a list of relative widths — a row of 4 cells reads as `[38, 14, 20, 12]` — so
+       * the placeholder carries the layout's own rhythm instead of a generic grey slab. */
+      skeleton(host, { rows = 6, lines = [40, 16, 22, 12], label = 'Loading' } = {}){
+        const el = typeof host === 'string' ? document.querySelector(host) : host;
+        if (!el) return;
+        el.setAttribute('aria-busy', 'true');
+        /* One live region, not one per row: a screen reader must hear "loading" once, not
+         * eighteen times. The bars themselves are decorative and are hidden from the tree. */
+        el.innerHTML = '<div class="skel" role="status" aria-live="polite">' +
+          '<span class="vh">' + label + '&hellip;</span>' +
+          Array.from({ length: rows }, (_, r) =>
+            '<div class="skel-r" aria-hidden="true" style="--d:' + (r * 60) + 'ms">' +
+              lines.map(w => '<i style="width:' + w + '%"></i>').join('') +
+            '</div>').join('') +
+          '</div>';
+      },
+      /* Rule 2. The data stays on screen and the surface says it is being re-read. Returns a
+       * function that clears it, so a caller cannot forget which class it set. */
+      refreshing(host, on = true){
+        const el = typeof host === 'string' ? document.querySelector(host) : host;
+        if (!el) return () => {};
+        el.classList.toggle('is-refreshing', !!on);
+        el.setAttribute('aria-busy', on ? 'true' : 'false');
+        return () => Shell.async.refreshing(el, false);
+      },
+      /* Rule 3. `slowAfter` is a THRESHOLD, not a timeout — nothing is cancelled, the page just
+       * stops pretending the wait is normal. 2.5s is the point at which a person checks whether
+       * they actually clicked. */
+      run(promise, { host, slowAfter = 2500, slowNote = 'Still waiting on the server\u2026' } = {}){
+        let done = false, t = null;
+        const el = host && (typeof host === 'string' ? document.querySelector(host) : host);
+        t = setTimeout(() => { if (!done && el) el.classList.add('is-slow'); }, slowAfter);
+        if (el) el.dataset.slow = slowNote;
+        const clear = () => { done = true; clearTimeout(t); if (el) el.classList.remove('is-slow'); };
+        return Promise.resolve(promise).then(v => { clear(); return v; },
+                                             e => { clear(); throw e; });
+      },
+      /* Rule 4. Three fields, all required, because an error missing any one of them is the
+       * error that gets screenshotted and sent to somebody else to interpret. */
+      failure(host, { what, means, action, onAction, detail }){
+        const el = typeof host === 'string' ? document.querySelector(host) : host;
+        if (!el) return;
+        el.removeAttribute('aria-busy');
+        el.innerHTML = '<div class="failbox" role="alert"><div class="fail-h">' +
+            '<span class="fail-k">FAILED</span><b>' + what + '</b></div>' +
+            '<p>' + means + '</p>' +
+            (detail ? '<pre class="fail-d">' + detail + '</pre>' : '') +
+            '<div class="fail-a"><button class="pill sm" id="fail-go">' + action + '</button></div></div>';
+        const b = el.querySelector('#fail-go');
+        if (b && onAction) b.onclick = onAction;
+      },
+      /* A commit is N ops in one transaction (§15.3) and op 23 of 40 can fail, so progress is
+       * per-op and the failed one is NAMED. A percentage bar cannot say which op broke, and
+       * "which one" is the only question worth answering at that moment. */
+      progress(host, { total, done = 0, current = '', failed = null }){
+        const el = typeof host === 'string' ? document.querySelector(host) : host;
+        if (!el) return;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        el.innerHTML = '<div class="prog' + (failed ? ' bad' : '') + '" role="status" aria-live="polite">' +
+          '<div class="prog-b"><i style="width:' + pct + '%"></i></div>' +
+          '<div class="prog-t">' + (failed
+            ? '<b>Stopped at ' + (done + 1) + ' of ' + total + '</b> &middot; ' + failed
+            : '<b>' + done + ' of ' + total + '</b>' + (current ? ' &middot; ' + current : '')) +
+          '</div></div>';
+      },
+      /* THE WHOLE BACKEND IS GONE, or this tab outlived its 12h PortalSession. Both are page-level
+       * facts rather than one surface's problem, so they take a banner above everything — and both
+       * name the one action, because "you are offline" with nothing to do is a notification, not
+       * a design. `kind` also decides whether staged work is safe: it is, and saying so is the
+       * point, because the reader's fear is that they lost it. */
+      banner(kind, detail){
+        let b = document.querySelector('.netbar');
+        if (kind === null) { b && b.remove(); return; }
+        if (!b) { b = document.createElement('div'); b.className = 'netbar';
+                  document.querySelector('.app')?.prepend(b); }
+        const copy = {
+          offline: { k:'OFFLINE', what:'The portal cannot reach the server.',
+                     means:'Nothing you have staged is lost \u2014 it is held here until the connection is back. Nothing has been written.',
+                     action:'Retry now' },
+          expired: { k:'SIGNED OUT', what:'This session expired.',
+                     means:'Portal sessions last 12 hours. Your staged work is still here; signing in again returns you to it.',
+                     action:'Sign in again' }
+        }[kind] || { k:'PROBLEM', what: detail || 'Something is wrong.', means:'', action:'Reload' };
+        b.className = 'netbar ' + kind;
+        b.setAttribute('role', 'alert');
+        b.innerHTML = '<span class="net-k">' + copy.k + '</span><b>' + copy.what + '</b>' +
+                      '<span class="net-m">' + copy.means + '</span>' +
+                      '<button class="pill sm" data-net-go>' + copy.action + '</button>';
+        return b;
+      },
+      /* 🔴 A ROLLBACK IS SHOWN, NOT PERFORMED QUIETLY. §15.7's own warning: an optimistic write
+       * that loses a concurrency check has to be visibly taken back. The row returns to its old
+       * value WITH a mark and a sentence saying the server refused and why, because a value that
+       * silently reverts is indistinguishable from a portal that ignored the click — and the
+       * reader's next move is to do it again, which is how one lost edit becomes three. */
+      /* 🔴 `?net=` MAKES EVERY ONE OF THESE RENDERABLE, and that is not a convenience. The lesson
+       * this package keeps re-learning is that a state nothing can put on screen is a state
+       * nobody designs and no check can open: `?audit=1` went unrun for weeks, every `[hidden]`
+       * view was audited by nothing, and the owner-only refusal was undesignable until `?as=`
+       * existed. Async is the largest such surface in the portal, so it gets the same treatment
+       * before it gets built rather than after.
+       * A realm opts in with ONE attribute — `data-async-host` on the element that owns its data
+       * — and declares its own skeleton shape in `data-skel` ("rows|w,w,w"). No per-realm JS, so
+       * a new realm cannot forget to wire it and quietly have no loading state. */
+      applyFlag(){
+        const m = /[?&]net=([a-z]+)\b/.exec(location.search);
+        if (!m) return;
+        const kind = m[1];
+        const host = document.querySelector('[data-async-host]');
+        const shape = (() => {
+          const d = (host && host.dataset.skel) || '6|40,16,22,12';
+          const [rows, widths] = d.split('|');
+          return { rows: +rows || 6, lines: (widths || '').split(',').map(Number).filter(Boolean) };
+        })();
+        const A = Shell.async;
+        if (kind === 'offline' || kind === 'expired') { A.banner(kind); return; }
+        if (!host) return;
+        if (kind === 'loading') return A.skeleton(host, shape);
+        if (kind === 'refresh') return void A.refreshing(host, true);
+        if (kind === 'slow') { host.dataset.slow = 'Still waiting on the server\u2026';
+                               host.classList.add('is-slow'); host.style.position = 'relative'; return; }
+        if (kind === 'fail') return A.failure(host, {
+          what: 'Could not load this realm',
+          means: 'The portal reached the server and the server could not read the season document. '
+               + 'Nothing has been written, and anything you had staged is still here.',
+          detail: 'GET /api/season → 500\nMongoServerError: connection <monitor> to 10.0.0.4:27017 timed out',
+          action: 'Try again' });
+        if (kind === 'commit') return A.progress(host, { total: 40, done: 23, current: 'calendar.bulkReplace' });
+        if (kind === 'commitfail') return A.progress(host, { total: 40, done: 23,
+          failed: 'calendar.bulkReplace refused: the row it targets was edited 40s ago' });
+        if (kind === 'rollback') {
+          const row = host.querySelector('tr[data-id], .ow-i, li, .lane');
+          A.rolledBack(row || host, 'the server had a newer value for this row');
+        }
+      },
+
+      rolledBack(el, why){
+        if (!el) return;
+        el.classList.remove('rb'); void el.offsetWidth; el.classList.add('rb');
+        el.setAttribute('data-tip', 'Rolled back \u2014 ' + why);
+        Shell.toast('Rolled back: ' + why);
+        el.addEventListener('animationend', () => el.classList.remove('rb'), { once: true });
+      }
+    },
+
     /* ══════════ WHO MAY DO SOMETHING THAT CANNOT BE UNDONE ══════════
      * Decided 2026-08-25 by Harkirat: tier-3 is OWNER-ONLY by default, with an explicit
      * capability the owner — and only the owner — may hand to one admin.
@@ -342,6 +511,10 @@
      * stands down the instant a real user gesture arrives, so it can never fight someone scrolling. */
     holdTop(){
       Shell.installTips();
+      /* Applied here rather than at boot: `?net=` states replace or mark a realm's rendered
+       * surface, so they have to land AFTER that surface exists. holdTop() is the one hook every
+       * realm already calls at the end of its first render. */
+      Shell.async.applyFlag();
       /* After layout, and again whenever the layout changes — a placeholder fits or does not fit
        * only relative to a rendered field. */
       const fit = () => { Shell.fitPlaceholders(); Shell.inkFills(); Shell.reserveForTray(); };
