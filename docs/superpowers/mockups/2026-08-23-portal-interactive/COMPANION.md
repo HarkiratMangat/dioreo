@@ -2009,7 +2009,17 @@ It had also been asked **twice, in the same section, with the same stale number*
 
 ⚠️ **And then the check fired on this very section, within a minute of it being written** — because a document that describes its own falsifiers necessarily contains the strings they plant. A quoted wrong value is an **example**, not a claim; backticks or quotes around a match exempt it. The repo already learned this once: `timestamp-check.sh` carries a `TS-EXAMPLE` escape for exactly the case of quoting a bad value while writing about it. **The first attempt at the exemption was off by one** (it looked two characters out instead of one), so it exempted nothing and the gate stayed red — a fix that does not fix, found by running the gate rather than by reading the patch.
 
-### 5.9t.5 Two design-system faults, upstream of every surface
+### 5.9t.5 🔴 NONE OF THESE GATES WAS IN CI — the repo's own recorded mistake, made again
+
+Checked at the end of the pass rather than assumed: **`portal:gate`, `portal:refs` and `portal:roundtrip` were not in `npm test`**, and CI runs `npm test`. So every gate in this package — the schema check, the undeclared-identifier and parse checks, the backtick lint, the cache-buster check, the two new COMPANION checks, and the export round-trip against the real `adminParser.js` — **ran only when somebody typed it by hand.**
+
+`.github/workflows/ci.yml` carries a comment about this exact failure, from 2026-08-02:
+
+> *"Two suites existed and NOTHING RAN THEM in CI … they ran only when someone hand-typed `bash <file>`. Harkirat: 'i literally spent hours last session working on some of these gates and … they dont even seem to hold despite their tests.' The tests were fine. Nothing was running them. **A test nobody runs is worse than no test**, because it produces a documented belief that the behaviour is covered."*
+
+All three are in the chain now, and **that was verified by planting a defect and watching `npm test` go red** — not by reading `package.json`. ⚠️ The two **browser** harnesses (`.states.html`, `.audit-all.html`) still cannot run in CI; they need a browser, and that is a real limitation rather than an oversight. They remain manual, which is worth knowing when reading "ALL CLEAN — 73 passes": that number comes from a human running it.
+
+### 5.9t.6 Two design-system faults, upstream of every surface
 
 - **There were two type scales in `:root`, each under a comment claiming to be *the* scale, colliding on `--t-micro` (9.5px and 9px).** The later wins, so **48 usages silently took 9px** while the first declaration said 9.5. One quantity, two authorities, at the level of the tokens file — every surface inherits it and no per-element rule can see it. Collapsed into one scale in two ranges: display (44/34/22, five uses total) and UI (9→24, where `--t-sm` alone is used 55 times). `--t-body` and `--t-label` were a *third* set of names for 13.5px and 11px and are gone rather than aliased, because an alias is a second name for one value and that is how this collided.
 - **`border-radius` is `var(--rad)` 43 times and a hardcoded literal 256 times**, across nine distinct values. The radius token exists and loses 6:1. **Left as-is deliberately** — the values are mostly intentional at their sites (a 2px chip corner is not a 7px card corner) and collapsing them would be a restyle, not a fix. Recorded so the next reader knows the scale is nominal rather than enforced.
