@@ -1779,6 +1779,96 @@ This time `npm run portal:refs` — which had gained a `new Function(src)` parse
 
 ---
 
+## 5.9n THE TRACK REDESIGN — six coordinate authorities, and why four attempts failed
+
+> Harkirat, on the fifth report of this surface: *"that entire thing needs a proper redesign because it is not working in my eyes. this is like the 4th or 5th time i've tried to have it fixed."*
+> And then the question that matters more: *"why am i finding the bugs when ALL of your repeated tests keep missing them?"*
+
+### 5.9n.0 The honest answer to that question
+
+**Every probe in this package has the shape `for each element: assert P(element)`.** Contrast, focusability, overflow, colspan, zero-size, `[hidden]`. Forty passes of it. They are genuinely useful and they caught real defects.
+
+**Not one of them asks whether two elements AGREE.** And five of the six things he found are exactly that:
+
+| what he saw | what it actually is |
+|---|---|
+| "look at this disconnect in the line" | two elements representing ONE date, drawn 8px apart |
+| flags "stacking on top of each other and hiding things" | two layers occupying the same pixels |
+| the clock "randomly in the middle of the track" | an element with no defined home |
+| the Season Record rail misaligned | a spine and its markers expressed in two units |
+| "the entire track like an open blended canvas" | **no check will ever catch this one** |
+
+So the missing category is **relational assertions**, and adding a 41st single-element pass would have been the same mistake a sixth time.
+
+### 5.9n.1 The architectural cause, measured
+
+**The Track is the only surface in the portal where position is COMPUTED rather than laid out.** Everywhere else the browser aligns things: a table's cells share a column, a flex row spaces its children. Here every dated element's x is a percentage *I* assign — bars, points, deadline lines, deadline flags, the NOW line, cluster badges, pinned chips, labels.
+
+🔴 **Which means alignment is not a property of the layout — it is an assertion made in code, and it was made separately, in six different functions:** `_reposition` · `renderOverlay` · `fitFlags` · `stackFlags` · `pinFarDeadlines` · `clusterPoints`.
+
+**MEASURED 2026-08-24:** `.ov` at **left=207 width=1158**; `.deadrail` at **left=249 width=1116** — a **42px origin gap**. A deadline's line and its own flag both carried the *identical* inline `left:77.0833%`, and it resolved to **x=1100** in one box and **x=1108** in the other.
+
+**That is why four attempts failed.** Each fixed the instance — nudged a value until one screenshot looked right — and left six authorities and multiple origins in place. The next element then drifted, and the surface was "broken" again.
+
+`--plot-l` is the single origin now, and **audit rule 13** compares the *containing blocks* of every percentage-positioned layer rather than the elements in them, so a future layer that forgets is reported the first time it renders.
+
+**It found two more within a minute of existing:**
+
+1. 🔴 **`.ruler` was 1116 wide while `.tk` was 1115** — a tick at 100% sat one pixel from a bar at 100%, across the whole axis, permanently. Invisible on any single element, and a misalignment of *the one thing this realm is*.
+2. 🔴 **My own later `.deadrail{right:auto}` undid my own earlier `right:1px`.** Third time the shared origin was broken by a later declaration — caught within a minute of both being written, which is the entire argument for the rule.
+
+### 5.9n.2 Lanes are spaces — the split that makes it work
+
+🔴 **`.lanes` painted ONE gradient across every row.** The ground under lane 1 and lane 5 was literally the same painted surface. They were never separate spaces; they were **stripes on one field**, and no amount of hairline tuning could have changed that. He was reacting to something real and specific, five times.
+
+**THE LANE OWNS THE GROUND. TIME OWNS THE VERTICALS.**
+
+| channel | carries | why |
+|---|---|---|
+| **the lane** | its own surface (`--sunk`), border, radius, **2px left edge in its topic accent**, header on an inset ground, internal `--tk-pad`, and its own copy of the time grid at the same scale | this is what makes it a *space*: separate ground, own edge, own margin, own identity before you read the label |
+| **the overlay** | the NOW line and every deadline line, spanning the whole region so they run **through the cards and across the gaps between them** | this is what keeps five spaces reading as one *timeline* — the crossing is the moment the design is about |
+
+A gap of 7px between cards. The grid moves *into* each lane so the columns still align across all five while the surfaces stay separate.
+
+### 5.9n.3 The blank bars — and the probe that could not see them
+
+🔴 **My first probe found ZERO blank bars.** The playlist lane was **collapsed** by my own ">3 rows" default; his screenshot has it open. Expanded: **four bars, 140px wide, carrying real text, rendering as anonymous coloured rectangles.**
+
+Two causes, both **order** bugs:
+
+1. **`fitLabels` went inside → outside → HIDE**, while its own comment three lines above said *"truncation is the LAST resort... dropping the label entirely is worse still"*. The rung was in the prose and not in the code. `.lbl-cut` is that rung; below 44px (~six characters and an ellipsis) there is genuinely nothing to say and it hides.
+2. **`stripSharedPrefixes()` ran AFTER fitting and skipped `.nolabel` bars** — so a label was hidden for not fitting, and then the one transformation that would have made it fit was *deliberately not applied to it*. "Nuketown Dedicated MP Playlist" and "Nuketown 10v10 MP Playlist" share nine characters. It runs first now.
+
+And **"same row" was a string comparison on `style.top`**, which silently grouped every bar positioned by a class or a variable into one pseudo-row, so `rightWall` became the nearest bar in *any* row. It is measured vertical overlap now — **in `fitLabels` AND in the audit rule that checks it**, because those two computed "free space" independently and disagreed. The audit was reporting *"928px free beside it"* for bars with **23px** before their neighbour: four false positives, fixed **with a falsifier proving the rule still fires when the room is real**.
+
+### 5.9n.4 The doubled search bar — reported twice, "fixed" once, never measured
+
+🔴 **The global form reset is `input:not([type=checkbox]):not([type=radio]):not([type=range])` — specificity 0,3,1**, because each `:not()` contributes its argument's specificity. My earlier fix wrote `.cmdbar input.cb-in{border:0}` at **0,2,1** and **lost, silently**. Measured weeks later: the input still painted a `--sunk` background with a `--rule2` border and a **44px min-height inside a 34px wrapper**.
+
+**It opts OUT of matching now (`[data-bare]`) rather than trying to out-specify.** An opt-out cannot lose an argument it is not having, and no future rule ordering can revive the box.
+
+⚠️ **AND RULE 12'S FIRST VERSION WAS VACUOUS.** It iterated `[data-bare]` — so removing the marker, *the exact regression it exists to catch*, left it nothing to iterate and it reported clean. Written one minute after documenting that trap, and found only because the falsifier was run.
+
+> **A check must select the thing it protects, never the fix that protects it.**
+
+### 5.9n.5 The three relational assertions
+
+| rule | asserts | what it caught |
+|---|---|---|
+| **13 · agreement** | every percentage-positioned layer inside `.tk-inner` shares one containing block | the 42px origin gap, the 1px ruler drift, and my own `right:auto` regression |
+| **12 · occupancy** | a control inside a composite paints no box of its own and fits its wrapper | the doubled search bar, with all three symptoms named |
+| **11 · `[hidden]`** | the attribute actually hides | two create buttons overprinting as "+ Mew DMZbuild" |
+
+The **OVERVIEW strip is excluded from rule 13**, and the exclusion is a real distinction rather than a convenience: it plots the **whole season** while the lanes plot the **current window**, so its percentages mean something different and unifying them would be wrong.
+
+### 5.9n.6 The limit, stated rather than papered over
+
+**None of these can catch "the entire track is an open blended canvas."** No assertion reports that a composition fails to read as intended. That one needed looking at the whole picture the way a reader does — asking what it *says* — rather than the way I had been looking, at a diff, asking whether my change landed.
+
+**The check catches drift. Only looking catches design.** Both are required, and adding more of the first will never substitute for the second.
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

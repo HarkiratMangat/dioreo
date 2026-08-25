@@ -141,11 +141,31 @@ main{overflow:auto;padding-bottom:96px}
 .lanes{position:relative;padding-bottom:4px}
 /* A LANE IS A CARD. Not a row with a hairline — its own object, with a ground the page does not
    share, an edge in its own topic accent, and padding so nothing it holds touches its boundary. */
-.lane{display:flex;align-items:stretch;min-height:38px;border:1px solid var(--rule);
-  border-left:2px solid var(--c,var(--rule2));border-radius:7px;background:var(--sunk);
-  overflow:hidden;transition:border-color var(--dur-1) var(--ease)}
-.lane:hover{border-color:var(--rule2);border-left-color:var(--c,var(--rule2))}
-.lane:last-child{border-bottom:1px solid var(--rule);border-left-width:2px}
+/* 🔴 NO LEFT BORDER — THE ACCENT AND THE EDGE ARE INSET SHADOWS, AND THAT IS A LAYOUT FIX,
+   NOT A STYLING PREFERENCE. A left border shifts the card's CONTENT box, so the plot area started
+   at `laneLeft + borderLeft + lnhWidth` while the ruler started at `margin-left:var(--gutter)` —
+   two expressions for one distance, kept equal by a compensating `calc(var(--gutter) - 2px)` on
+   the header. Any rule that touched the border width silently broke the compensation, and one
+   did: audit rule 13 reported `.ruler at 249x995 vs .tk at 239x995` in the audit harness while
+   the same page measured clean in a normal tab.
+   An inset shadow paints in the same place and occupies NO layout, so `.lnh{width:var(--gutter)}`
+   puts the plot area at exactly `--gutter` with no arithmetic to get wrong. The compensation is
+   deleted rather than corrected — a second expression for one number is the bug, not its value. */
+/* 🔴 THE PLOT AREA'S ORIGIN IS A PADDING, NOT THE SUM OF WHATEVER THE HEADER HAPPENS TO
+   MEASURE. Three times now the header's rendered width has drifted from `--gutter` — a
+   compensating `calc(- 2px)`, a border that shifted the content box, and a residual 10px the
+   audit reported in the harness while the same page measured clean in a normal tab. Each time
+   the plot area moved with it and every bar left the axis the ruler draws.
+   The header is taken OUT of the flow and laid into a reserved padding, so `.tk` begins at
+   exactly `--gutter` no matter what the header does to itself — a different font, a wrapped
+   label, a media query, a future padding change. There is nothing left to keep in sync. */
+.lane{position:relative;display:flex;align-items:stretch;min-height:38px;
+  padding-left:var(--gutter);border:1px solid var(--rule);border-left:0;
+  border-radius:7px;background:var(--sunk);overflow:hidden;
+  box-shadow:inset 2px 0 0 var(--c,var(--rule2));
+  transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.lane:hover{border-color:var(--rule2)}
+.lane:last-child{border-bottom:1px solid var(--rule)}
 .lane .nm{width:var(--gutter);flex:none;text-align:right;padding-right:12px;font-size:10px;font-weight:700;
   letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
 /* The plot area carries its own grid, at the same scale in every lane, so the columns align
@@ -175,6 +195,8 @@ main{overflow:auto;padding-bottom:96px}
    pixel off the NOW line at the right-hand end of the axis — invisible on any single element,
    and precisely what rule 13 reported the first time it ran (249x1116 vs 249x1115). */
 .ov,.deadrail{position:absolute;left:var(--plot-l);right:1px}
+/* The lane's right border is 1px, so its plot area ends 1px in from the card edge; the ruler and
+   the overlay match it with the same inset. One number, three declarations, asserted by rule 13. */
 /* 🔴 THE VERTICALS SIT ABOVE THE CARDS AND CROSS THE GAPS. `.ov` spans the whole lane region, so
    the NOW line and every deadline line run continuously through five separate surfaces — which is
    precisely what keeps them one timeline rather than five charts. z-index 3 puts them over a
@@ -2694,7 +2716,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* The header is PART OF THE CARD now, on an inset ground with its own right edge — it used to
    float in a shared gutter, which is why the names read as a list beside a canvas rather than as
    each lane's own title. */
-.lnh{width:calc(var(--gutter) - 2px);flex:none;display:flex;align-items:center;gap:7px;
+.lnh{position:absolute;left:0;top:0;bottom:0;width:var(--gutter);flex:none;display:flex;align-items:center;gap:7px;
   padding:0 11px 0 9px;background:linear-gradient(90deg,
     color-mix(in srgb,var(--c,var(--rule)) 14%,var(--desk)),
     color-mix(in srgb,var(--c,var(--rule)) 5%,var(--desk)));

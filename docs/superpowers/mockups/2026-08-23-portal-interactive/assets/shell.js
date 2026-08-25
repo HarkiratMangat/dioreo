@@ -700,12 +700,25 @@
      * Deliberately NOT deferred through requestAnimationFrame — rAF never fires in a
      * background tab, which is how ruler masking silently never ran (COMPANION §14).
      * `document.fonts.ready` resolves regardless of tab visibility. */
+    /* 🔴 IT RE-RUNS UNCONDITIONALLY, NOT ONLY WHEN FONTS ARE PENDING — and that distinction was
+     * hiding wrong measurements behind a green result.
+     * The re-run was gated on `document.fonts.status !== 'loaded'`. With WARM fonts that is
+     * already 'loaded' on the first call, so no second pass was scheduled at all — and the only
+     * pass that ran was the synchronous one, which fires before the Track's own measuring passes
+     * (repositionBars, fitLabels, clusterPoints, stackFlags) have run inside their
+     * requestAnimationFrame. So the audit measured a half-laid-out page.
+     * MEASURED 2026-08-24: rule 13 reported `.tk at 239` while the very same element, queried a
+     * second later in the same frame tree, was at 249. The geometry was correct and the audit was
+     * looking at it too early. Every geometric rule here has been doing that — which means some
+     * of this file's silence has been silence about the wrong pixels.
+     * "Fonts loaded" is not "the page has finished measuring itself". Two frames after fonts
+     * settle is, and the pass is idempotent, so the extra run costs nothing but honesty. */
     audit(opts = {}){
       const first = Shell._audit(opts);
-      if (document.fonts && document.fonts.status !== 'loaded') {
-        first.pending = true;
-        document.fonts.ready.then(() => Shell._audit(opts));
-      }
+      first.pending = true;
+      const settle = () => requestAnimationFrame(() =>
+        requestAnimationFrame(() => { const r = Shell._audit(opts); r.pending = false; }));
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(settle, settle);
       return first;
     },
 
@@ -956,7 +969,31 @@
        *     blocks themselves — any future layer that positions by date and forgets the shared
        *     origin is reported the first time it renders, whatever elements it holds. */
       (() => {
-        const host = document.querySelector('.tk-inner'); if (!host) return;
+        /* Scoped to the VISIBLE Track. A hidden view still has a `.tk-inner` in the DOM with a
+         * collapsed or stale geometry, and measuring it compares a rendered axis against one that
+         * is not being rendered — the same blind spot as auditing only expanded lanes, inverted.
+         * `offsetParent` is null inside a `display:none` subtree, so those elements drop out on
+         * their own; this makes the intent explicit rather than relying on that. */
+        /* 🔴 GEOMETRY IS ONLY MEASURABLE AT REST, and saying so is the honest fix rather than a
+         * dodge. Under `?audit=1` the interaction pass opens and closes a drawer; a scrim that
+         * has not finished leaving still suppresses the page's scrollbar, which widens the
+         * layout by the scrollbar's width and moves every percentage-positioned element with it.
+         * Measured: this rule reported `.tk at 239` while the same element, queried moments
+         * later in the same frame tree, was at 249 — and the resting page has one origin at
+         * every width tested. The disagreement was real and it was between two MOMENTS, not two
+         * containers, which is a false positive of exactly the kind that trains a reader to
+         * skim. It reports a NOTE while a dialog is up, so the skip is visible rather than a
+         * silent pass, and the assertion still runs on every resting render. */
+        /* `.scrim` PERSISTS IN THE DOM — closeDrawer only removes its `.on` class, so testing for
+         * the element rather than the open STATE skipped this rule on every page after a single
+         * interaction, forever. The open state is what suppresses the scrollbar. */
+        if (document.querySelector('.drawer.open,.scrim.on')) {
+          problems.push('note: the one-origin check is skipped while a dialog is open — geometry is only measurable at rest');
+          return;
+        }
+        const host = [...document.querySelectorAll('.tk-inner')]
+          .find(h => h.getBoundingClientRect().width > 0 && !h.closest('[hidden]'));
+        if (!host) return;
         /* The OVERVIEW strip is excluded, and the exclusion is a real distinction rather than a
          * convenience: it plots the WHOLE season while the lanes plot the current window, so its
          * percentages mean something different and unifying them would be wrong. Anything else
@@ -965,14 +1002,21 @@
           .filter(e => /left:\s*[\d.]+%/.test(e.getAttribute('style') || ''))
           .filter(e => !e.closest('.mini,.ovw,.scrub,.overview,.spark'))
           .map(e => e.offsetParent).filter(Boolean);
+        /* NAME THE OFFENDER. The first version printed only the boxes ("249x995 · 239x995"),
+         * which told a reader that something was wrong and nothing about where — so acting on
+         * it meant re-deriving the whole measurement by hand. A check that reports a symptom
+         * without an address is a check somebody skips. */
         const boxes = new Map();
         layers.forEach(p => {
           const r = p.getBoundingClientRect();
           const k = Math.round(r.left) + 'x' + Math.round(r.width);
-          boxes.set(k, (boxes.get(k) || 0) + 1);
+          if (!boxes.has(k)) boxes.set(k, { n: 0, who: '.' + String(p.className || p.tagName).split(' ')[0] });
+          boxes.get(k).n++;
         });
         if (boxes.size > 1)
-          problems.push(`the Track positions dates against ${boxes.size} different origins (${[...boxes.keys()].join(' · ')}) — one date will render at ${boxes.size} different x`);
+          problems.push(`the Track positions dates against ${boxes.size} different origins — ` +
+            [...boxes.entries()].map(([k, v]) => `${v.who} at ${k} (${v.n})`).join(' vs ') +
+            ` — one date will render at ${boxes.size} different x`);
       })();
 
       /* 12. A CONTROL INSIDE A COMPOSITE MUST NOT PAINT ITS OWN BOX, AND MUST FIT INSIDE IT.

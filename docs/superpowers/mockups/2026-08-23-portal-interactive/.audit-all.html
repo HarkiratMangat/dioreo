@@ -23,19 +23,29 @@ window.addEventListener('error', e => { document.getElementById('out').textConte
     try {
       const w = f.contentWindow, d = f.contentDocument;
       const sc = w.__selfCheck || {};
-      res = { page:p, ok:sc.ok, fails:(sc.problems||[]).slice(0,4),
+      /* A `note:` is informational by design — a check saying WHY it stood down, which exists so
+         a skip is visible instead of silent. Counting it as a failure makes every run red and
+         teaches the reader to ignore the colour, which is the opposite of what the note is for. */
+      res = { page:p, ok:sc.ok, fails:(sc.problems||[]).filter(x => !/^note:/.test(x)).slice(0,4),
+              notes:(sc.problems||[]).filter(x => /^note:/.test(x)).length,
               vw:w.innerWidth, docW:d.documentElement.scrollWidth,
               overflow: d.documentElement.scrollWidth > w.innerWidth + 1,
               errs:(w.__errs||[]).slice(0,3) };
     } catch (e) { res = { page:p, ok:false, fails:['harness could not reach the frame: ' + e.message] }; }
     results.push(res);
-    document.getElementById("out").textContent = results.map(r => `${r.ok ? 'PASS' : 'FAIL'} ${r.page.padEnd(10)} vw=${r.vw} docW=${r.docW}` +
+    /* `ok` comes from the page's own selfCheck, which counts notes; PASS/FAIL is decided here
+       from the failures that survive the note filter, so an informational skip cannot turn a
+       clean run red. */
+    document.getElementById("out").textContent = results.map(r => `${(r.fails && r.fails.length) ? 'FAIL' : 'PASS'} ${r.page.padEnd(10)} vw=${r.vw} docW=${r.docW}` +
+      (r.notes ? ` (${r.notes} note${r.notes > 1 ? 's' : ''})` : '') +
       (r.overflow ? ' OVERFLOW' : '') + (r.fails && r.fails.length ? '  ' + JSON.stringify(r.fails) : '') +
       (r.errs && r.errs.length ? '  ERR ' + JSON.stringify(r.errs) : '')).join('\n');
     f.remove();
   }
   window.__done = true; window.__results = results;
-  const bad = results.filter(r => !r.ok || r.overflow || (r.errs||[]).length);
+  /* Same rule as the per-row line: a note is not a failure. `r.ok` comes from the page's own
+     selfCheck, which counts every entry including notes, so it cannot be the arbiter here. */
+  const bad = results.filter(r => (r.fails||[]).length || r.overflow || (r.errs||[]).length);
   const wrongVw = results.filter(r => r.vw !== W);
   document.getElementById("out").textContent += `\n\n=== ${bad.length ? 'FAILURES: ' + bad.length : 'ALL ' + results.length + ' PASS'} at ${W}px ===` +
     (wrongVw.length ? `\n!! ${wrongVw.length} frame(s) did not measure at ${W}px — the run is void` : '\n(every frame measured at the requested width)');
