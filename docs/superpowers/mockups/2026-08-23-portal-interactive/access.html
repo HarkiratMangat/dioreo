@@ -12,7 +12,7 @@
     <div class="masthead">
       <div class="mh-id">
         <h1>Access</h1>
-        <span class="job">Eleven grantable tokens across two roles &mdash; and the two questions a permission string cannot answer: what did you actually hand over, and who is the only person holding it.</span>
+        <span class="job">Twelve grantable tokens across two roles &mdash; and the two questions a permission string cannot answer: what did you actually hand over, and who is the only person holding it.</span>
       </div>
       <div class="mh-stats" id="mhStats"></div>
       <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
@@ -151,9 +151,18 @@
             </tr>
             <tr>
               <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
-              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}" data-tip="${spof.has(s.key) ? s.label + ' — single point of failure: exactly one person besides the owner holds it' : s.label}"
+              <!-- 🔴 AN OWNER-ONLY TOKEN MUST NOT LOOK LIKE THE OTHER ELEVEN. The destructive scope
+                   is the first in this model whose GRANTING is restricted — any admin holding a bare
+                   manage token can hand out page scopes, and nobody but the owner can hand out this
+                   one. (No backticks in this comment: it lives inside a template literal, and a
+                   backtick here kills the page — the fifth occurrence of that, caught by the parse
+                   gate within a minute of writing it.)
+                   A column that renders identically to its neighbours while behaving differently is
+                   exactly the "one class, two contracts" failure that put Broadcast's ruler 128px off
+                   its own lanes. So it carries a lock and the legend says what the lock means. -->
+              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}${s.ownerOnly ? ' ownly' : ''}" data-tip="${spof.has(s.key) ? s.label + ' — single point of failure: exactly one person besides the owner holds it' : s.label}"
                     style="--c:${SM[s.key].hex}" data-tip="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
-                  <i></i>${esc(s.label)}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
+                  <i></i>${esc(s.label)}${s.ownerOnly ? '<b class="ownly-k" aria-label="owner-grantable only">&#128274;</b>' : ''}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
               <th><span class="mxs">&nbsp;</span></th>
             </tr>
           </thead>
@@ -171,7 +180,7 @@
             ${st.admins.map(a => `
             <tr data-admin="${esc(a.discordId)}">
               <td class="mxwho"><span class="mxid">
-                <span class="mxav">${esc(a.note ? a.note.replace(/^SESSIONB-SEED /,'')[0].toUpperCase() : a.discordId.slice(-1))}</span>
+                <span class="mxav">${esc(a.note ? a.note[0].toUpperCase() : a.discordId.slice(-1))}</span>
                 <span class="mxn"><b>&hellip;${esc(a.discordId.slice(-6))}</b><span>${esc(a.note || 'no label')} &middot; granted ${fmt(a.grantedAt)}</span></span>
               </span></td>
               ${F.accessScopes.map(s => {
@@ -212,10 +221,16 @@
         <span class="sp" style="flex:1"></span>
         <button class="chip go" id="grantBtn">+ Grant access</button>
       </div>
-      <p class="racknote">Eleven tokens: three commands (<code>manage</code>, <code>autobuild</code>,
-        <code>bot</code>) and eight <code>/manage</code> pages. <code>all</code> is an input-only
-        convenience that expands to the three commands. A permissions array is never allowed to be
-        empty &mdash; an admin with nothing granted should be revoked, not parked in limbo.</p>`;
+      <p class="racknote">Twelve tokens: four commands (<code>manage</code>, <code>autobuild</code>,
+        <code>bot</code>, <code>destructive</code>) and eight <code>/manage</code> pages.
+        <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and
+        <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
+        irreversibility is the opposite of one. A permissions array is never allowed to be empty
+        &mdash; an admin with nothing granted should be revoked, not parked in limbo.
+        <b>&#128274; <code>destructive</code> does not exist in the bot yet:</b> wiring it means adding it to
+        <code>utils/adminAccess.js</code>'s <code>ADMIN_COMMANDS</code> and to
+        <code>AdminUser</code>'s permissions, and the schema gate cannot validate it until then
+        &mdash; it only checks tokens shaped <code>manage.*</code>.</p>`;
     viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
     viewGrid.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => {
       const a = st.admins.find(x => x.discordId === b.dataset.drop); if (a) confirmRevoke(a); });
@@ -343,7 +358,7 @@
       <div class="dwfield"><label for="gPerm">Permissions &mdash; comma separated</label>
         <input id="gPerm" type="text" value="${editing ? esc(a.permissions.join(',')) : ''}"
                placeholder="e.g. manage.draws,manage.calendar,bot" autocomplete="off"></div>
-      <p class="dw-p" id="gHint">Eleven tokens are valid. <code>manage</code> alone means every page.</p>
+      <p class="dw-p" id="gHint">Twelve tokens are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
       <div class="tokgrid" id="tokGrid">
         ${F.accessScopes.map(s => `<button class="chip topic" data-tok="${esc(s.key)}" aria-pressed="false"
             style="--c:${SM[s.key].hex}" title="${esc(s.key)}"><i></i>${esc(s.label)}</button>`).join('')}
@@ -505,7 +520,11 @@
   }
 
   function renderKey() {
-    key.innerHTML = `<span class="l"><i></i>direct</span><span class="s"><i></i>inherited</span>`;
+    /* The legend names states PRESENT on screen (audit rule 7). The lock is always present
+       because the column always is, so it is always named. */
+    key.innerHTML = `<span class="l"><i></i>direct</span><span class="s"><i></i>inherited</span>` +
+      /* data-note: this explains a COLUMN mark, not a cell state — see audit rule 6. */
+      `<span class="l" data-note><i style="background:none">&#128274;</i>owner-grantable only</span>`;
   }
   function renderStats() {
     const spofN = spofScopes().size, liveN = st.sessions.filter(isLive).length;
@@ -542,6 +561,16 @@
   function cellClick(id, scope) {
     const a = st.admins.find(x => x.discordId === id); if (!a) return;
     const g = a.grants[scope] || {};
+    /* 🔴 ONLY THE OWNER MAY HAND OUT THE DESTRUCTIVE CAPABILITY. Every other token in this model
+     * can be granted by anyone holding a bare `manage`; this one cannot, and that asymmetry is
+     * the whole point of it — a delegated admin must not be able to delegate irreversibility
+     * onward. Refused with the REASON rather than a dead cell, because a cell that does nothing
+     * and says nothing reads as a bug. */
+    const sc = F.accessScopes.find(x => x.key === scope) || {};
+    if (sc.ownerOnly && !S.actor().isOwner) {
+      S.toast('Only the owner can grant or revoke ' + sc.label + '. It is the one token a bare manage does not cover.');
+      return;
+    }
     if (g.inherited && !g.direct) {
       S.toast('That one is inherited from the bare manage token, which covers every page. Edit the manage token to change it.', 'Edit', () => openAdmin(id));
       return;
@@ -600,6 +629,9 @@
     const list = pendingList(); if (!list.length) return;
     const grants = list.filter(x => x.grant), revokes = list.filter(x => !x.grant);
     const empties = wouldEmpty(list);
+    /* Only a GRANT of the capability needs the warning — revoking it is the safe direction, and
+     * a dialog that shouts equally at both teaches the reader to skip both. */
+    const dGrants = grants.filter(x => x.scope === 'destructive');
     const rows = who => who.map(x => '<li><code>' + esc(x.who) + '</code> &middot; ' + esc(x.label) + '</li>').join('');
     const body =
       '<p class="dw-p">This writes straight to <code>AdminUser</code> — there is no staging tray for permissions, ' +
@@ -610,7 +642,21 @@
         ' would be left holding nothing, so their <code>AdminUser</code> record is deleted outright.</b> ' +
         'A permissions array is never allowed to be empty (see the note under the matrix) — an admin with ' +
         'nothing granted is not an admin with reduced access, it is a row that no longer means anything. ' +
-        'They keep their Discord account and every public command. <b>There is no undo for that half.</b></div>' : '');
+        'They keep their Discord account and every public command. <b>There is no undo for that half.</b></div>' : '') +
+      /* 🔴 HANDING OVER IRREVERSIBILITY GETS ITS OWN WARNING, IN THE OWNER'S OWN WORDS. Every
+       * other token in this batch grants access to a SURFACE; this one grants the ability to
+       * destroy data on all of them, and it is the only grant the person reading this dialog
+       * cannot take back by re-granting afterwards — what the delegate purges is gone.
+       * It is spelled out rather than trusted to the row list, because "Destructive" reads like
+       * a twelfth checkbox in a list of twelve. */
+      (dGrants.length ? '<div class="callout dangerous"><b>You are handing ' +
+        (dGrants.length > 1 ? dGrants.length + ' admins' : '<code>' + esc(dGrants[0].who) + '</code>') +
+        ' the ability to run operations that cannot be undone.</b> That is every purge, ' +
+        'the season rollover and draft promotion — on <b>every realm</b>, not just the pages they hold. ' +
+        'The portal will still make them export first, and it now keeps a copy of that export with the ' +
+        'record so you hold the data afterwards rather than a note saying they downloaded it. ' +
+        '<b>Only you can grant or revoke this; a bare <code>manage</code> token does not cover it, ' +
+        'and they cannot pass it on.</b></div>' : '');
 
     const apply = () => {
       list.forEach(x => {
@@ -635,6 +681,16 @@
       S.typedConfirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : ''),
         op:'access.grant', tier:3, word:empties[0].discordId,
         body: body + '<p class="dw-p">Type the id of the first admin whose record would be deleted.</p>',
+        onConfirm: apply });
+    } else if (dGrants.length) {
+      /* 🔴 TYPED, LIKE A PURGE — because it AUTHORISES purges. Asking for a typed word on a
+       * reversible change teaches people to type without reading, which is why this file uses it
+       * sparingly; this is the case it exists for. The word is DESTRUCTIVE rather than an id,
+       * because the thing being confirmed is the capability, not a particular person. */
+      S.typedConfirm({ title:'Grant the Destructive capability',
+        op:'access.grant', tier:3, word:'DESTRUCTIVE',
+        body: body + '<p class="dw-p">This is the only token you cannot delegate the granting of. ' +
+              'Type <b>DESTRUCTIVE</b> to confirm you have read what it allows.</p>',
         onConfirm: apply });
     } else {
       S.confirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : '') + '?',

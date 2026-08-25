@@ -1912,6 +1912,73 @@ It names the offending container now: `.ruler at 249x995 (11) vs .tk at 239x995 
 
 ---
 
+## 5.9q THE DESTRUCTIVE CAPABILITY — the twelfth token, and the first whose *granting* is restricted
+
+*Built 2026-08-25 to Harkirat's specification (§15.11 decision 3). His words: "owner only by default, with explicit permission capability to allow scope to an admin, authorizable only by the owner with explicit warnings (and possibly safeguards like caching/storing the export) so the owner is fully aware."*
+
+### 5.9q.1 What it is, and what it is not
+
+`destructive` is a **command-level token**, not a `manage.*` page scope. It grants nothing on any surface; it grants the right to run the operations that **cannot be undone** — every purge, `season.startNew`, `season.promoteDraft` — across **every realm**, whatever page scopes the holder does or does not have.
+
+Three properties make it unlike the other eleven, and each one is a design obligation rather than a note:
+
+1. **Only the owner may grant or revoke it.** Every other token can be handed out by anyone holding a bare `manage`. This one cannot, which means a delegated admin cannot delegate irreversibility onward.
+2. **`all` does not expand to it.** The input-only convenience covers the three original commands and stops there — a convenience that quietly hands out irreversibility is the opposite of one.
+3. **It is the one scope that borrows no realm's colour.** Access is the achromatic realm and every other token wears the accent of the realm it governs; this one governs harm rather than a realm, so it wears `--danger-ink`.
+
+### 5.9q.2 Disabled with the reason, never hidden
+
+`Shell.canDestroy()` is the single authority. **One function, because the alternative is the same permission test copied into five realms' one-way strips and Review's commit path — and six copies of a rule is six chances for one of them to be the lenient one.**
+
+An admin without the capability sees every one-way row **present, legible, and disabled**, with `Shell.whyNoDestroy()` on the control and the rule stated in the strip's own header. Hiding the row would teach nothing, produce a support question, and conceal from that person that somebody else can do this to their data.
+
+⚠️ **The client is not the authority.** This decides what the page *shows*; §15.5 still governs. A portal that only hides the button has no security at all.
+
+### 5.9q.3 The safeguard is retention, not a receipt
+
+The export interlock used to record only *that* an export happened, which makes it a ceremony: an admin could export, discard the file, purge, and leave the owner holding a timestamp instead of the data. `Shell.Export.mark()` now carries `body` — **the exact bytes the download contained**, so the kept copy and the file cannot diverge — and `Shell.Export.retained(scope)` reports whether a copy is actually present.
+
+The confirm only *promises* retention when `retained()` is true. **A safeguard the copy claims and the code does not provide is worse than none.**
+
+⚠️ In the real portal the kept copy belongs beside the ChangeLog row, **server-side**. `sessionStorage` is a mockup shim (§15.11 decision 1), and an export that dies with the tab is not a safeguard for anybody.
+
+### 5.9q.4 The grant is typed, because it authorises typed things
+
+Granting the capability raises a **typed confirmation** — the word is `DESTRUCTIVE`, not an id, because the thing being confirmed is the capability rather than a particular person — carrying a callout that names the specific admin, says what they will be able to do, states that the export is kept, and states that only the owner can grant or revoke it and they cannot pass it on.
+
+**Revoking it does not warn.** A dialog that shouts equally in both directions teaches the reader to skip both; the safe direction stays quiet.
+
+This file uses typed confirmation sparingly on purpose — asking for a typed word on a reversible change teaches people to type without reading. This is the case it exists for.
+
+### 5.9q.5 `?as=` — a state that cannot be rendered is a state nobody designs
+
+The interesting state here is one the mockup's viewer could never reach, because that viewer is always the owner. `?as=admin` is an admin who **holds** the capability; `?as=plain` is one who does not. Both are swept.
+
+That is the same gap that left `?audit=1` never run and every `[hidden]` view unaudited for weeks: **the surface existed and nothing could open it.**
+
+The sweep's assertions are **relational** — the page's own permission verdict must agree with what it drew:
+
+| assertion | the failure it catches |
+|---|---|
+| `?as=admin` must hold it, `?as=plain` must not | the flag silently doing nothing |
+| every one-way row locked ⇔ `!canDestroy()` | a strip that says "owner only" while leaving a button live |
+| no one-way row may lack a control entirely | a future edit "fixing" the disabled state by hiding it |
+| the identity chip must not read OWNER while the model disagrees | two authorities over one fact |
+
+**That last one caught a real defect the moment it was written:** under `?as=plain` the page correctly refused every one-way operation as owner-only while the header still read *"dior · OWNER"*. Same shape as a ruler and its lanes on two origins — one fact, two authorities, and no per-element rule can see it.
+
+### 5.9q.6 What the audit forced, and why the fix went the other way
+
+Rule 6 asserts a legend may only name states present on screen, and it flagged the new lock entry: *"legend claims 🔒owner-grantable only with none on screen."*
+
+**The tempting fix was to add it to `states()`, which would have made `states()` a lie so that a check would pass.** A legend carries two kinds of entry and only one is a row state — the lock explains a property of a *column*, true whether or not any cell shows it. So the annotation is marked `data-note` and rule 6 skips it: **opting out of matching, never out-specifying.**
+
+### 5.9q.7 ⏳ What wiring still owes
+
+**`destructive` does not exist in the bot.** Wiring it means adding it to `utils/adminAccess.js`'s `ADMIN_COMMANDS` and to `AdminUser`'s permissions, and **the schema gate cannot validate it until then** — `checkScopes` only inspects strings shaped `manage.*`, so this token passes unchecked. That is stated on the Access page itself, where somebody reading the matrix will meet it, rather than only here.
+
+---
+
 ## 5.9o THE FOUR FILED BUGS — two were the product, two were the checks
 
 *Written 2026-08-25. Four items were filed in `docs/db-deferred-list.md` at the end of the previous session, each with a repro and a verification step. Working them turned out to be the most instructive hour of the whole project, because **two of the four were defects in the checking apparatus, and one of those had a diagnosis that was confidently wrong**. What follows is what each one actually was.*

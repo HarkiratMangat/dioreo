@@ -268,6 +268,44 @@ const say = (tag, name, probs) => {
     f.remove(); paint();
   }
 
+  /* PASS 4c — WHO IS LOOKING. 🔴 TIER-3 IS OWNER-ONLY (Harkirat, 2026-08-25), so the state that
+   * matters most on the one-way strip — a control PRESENT and DISABLED with its reason stated —
+   * is one the mockup's viewer could never reach, because that viewer is always the owner.
+   * A state nothing can render is a state nothing designs, which is the same gap that left
+   * `?audit=1` never run and every `[hidden]` view unaudited for weeks.
+   * `?as=admin` holds the Destructive capability; `?as=plain` does not. Both are swept, and the
+   * assertions are RELATIONAL: the page's own permission verdict has to agree with what it drew,
+   * which is the only way to catch a strip that says "owner only" while leaving the button live. */
+  for (const as of ['admin', 'plain']) {
+    for (const p of ['season', 'armory', 'broadcast']) {
+      const f = await load(p + '.html?as=' + as);
+      const found = [];
+      try {
+        const w = f.contentWindow, d = f.contentDocument;
+        const may = w.Shell.canDestroy();
+        if (as === 'admin' && !may) found.push('?as=admin should hold the Destructive capability and does not');
+        if (as === 'plain' && may) found.push('?as=plain must NOT hold it, and does');
+        const rows = [...d.querySelectorAll('.ow-i')];
+        const locked = rows.filter(r => r.classList.contains('ow-locked')).length;
+        if (rows.length) {
+          if (!may && locked !== rows.length)
+            found.push(`${rows.length - locked} of ${rows.length} one-way rows are live for someone who may not run them`);
+          if (may && locked)
+            found.push(`${locked} one-way row(s) locked for someone who holds the capability`);
+          const dead = rows.filter(r => !r.querySelector('button')).length;
+          if (dead) found.push(`${dead} one-way row(s) HIDE their control instead of disabling it with a reason`);
+        }
+        /* The identity chip is a second authority over the same fact and must not disagree. */
+        const badge = (d.querySelector('.rolebadge') || {}).textContent;
+        if (badge && badge.trim() === 'OWNER' && !w.Shell.actor().isOwner)
+          found.push('the identity chip reads OWNER while the permission model says otherwise');
+      } catch (e) { found.push('probe threw: ' + e.message); }
+      const chk = await settle(f);
+      bad += say('as:' + as, p, { problems:[...((chk && chk.problems) || []), ...found] }); ran++;
+      f.remove(); paint();
+    }
+  }
+
   /* PASS 5 — TIME. F.today is pinned so screenshots reproduce, and the unexamined cost of that
    * is that LIVE NOW / UPCOMING / ENDED, the NOW marker, every "days left" figure and every
    * spark's elapsed fill had only ever rendered on ONE AFTERNOON. Season is the only realm

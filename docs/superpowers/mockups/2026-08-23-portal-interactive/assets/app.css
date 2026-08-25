@@ -1514,6 +1514,25 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .mh-stats .stat.stg .v{color:var(--staged)}
 .mh-stats .stat.warn .v{color:var(--warn)}
 .mh-stats .stat .v.zero{color:var(--ink4)}
+
+/* ══════════ THE OWNER-ONLY TOKEN ══════════
+   🔴 It must not READ like the other eleven. `destructive` is the only scope whose GRANTING is
+   restricted, and a column that renders identically while behaving differently is the same
+   "one class, two contracts" failure that put Broadcast's ruler 128px off its own lanes.
+   The lock is the mark; the danger ink is inherited from the scope's own --c, so nothing here
+   hardcodes a colour. */
+.mxcol.ownly .ownly-k{font-size:9px;line-height:1;margin-left:3px;opacity:.85;font-weight:400}
+.mxcol.ownly{color:var(--danger-ink)}
+/* A one-way row an admin may SEE but not run. Still fully legible — the point is that they can
+   read what exists and what would unlock it, not that the row is greyed into unreadability. */
+.ow-i.ow-locked{opacity:.78}
+.ow-i.ow-locked .pill[disabled]{color:var(--ink3);border-color:var(--rule);background:var(--sunk);cursor:not-allowed}
+/* The one callout in the portal that is about HARM rather than about a fact. It borrows the
+   one-way strip's own hazard edge so the two read as the same warning in two places, rather than
+   as two unrelated boxes that happen to both be worrying. */
+.callout.dangerous{border-left:3px solid var(--danger-ink);
+  background:color-mix(in srgb,var(--danger-ink) 8%,transparent)}
+.callout.dangerous b,.callout.dangerous code{color:var(--danger-ink)}
 /* Age is context, not an alarm — it reads at the weight of the neutral stats beside it. */
 .mh-stats .stat .k{white-space:nowrap}
 

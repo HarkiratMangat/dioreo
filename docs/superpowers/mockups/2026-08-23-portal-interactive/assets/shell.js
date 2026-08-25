@@ -15,6 +15,18 @@
     avatar: 'https://cdn.discordapp.com/avatars/1139845545754632283/de36d1994e834cd75ac0b7bc3b66a6db.png?size=160',
     banner: 'https://cdn.discordapp.com/banners/1139845545754632283/a_27ab8a4882e601f3e742c54675ad2bf4.gif?size=480'
   };
+  /* 🔴 THE IDENTITY CHIP MUST AGREE WITH THE PERMISSION MODEL. Under `?as=plain` the page
+   * correctly refused every one-way operation as owner-only while the header still read
+   * "dior · OWNER" — two authorities over one fact, which is the shape of defect that put a
+   * ruler 128px off its own lanes. The chip now reads whoever the viewer actually is. */
+  (function applyViewer(){
+    const v = window.FIX && FIX.VIEWER;
+    if (!v || v.isOwner) return;
+    USER.id = v.id; USER.displayName = v.label; USER.username = v.label;
+    /* No avatar for a stand-in admin: Discord would return one, and inventing a face for a
+     * fixture identity is the kind of plausible detail that gets mistaken for real data. */
+    USER.avatar = ''; USER.banner = '';
+  })();
   window.__USER = USER;
   /* Surfaced to the audit harness — a page can pass every geometric invariant while throwing.
    * Collected here rather than per page so no surface can forget to. */
@@ -265,6 +277,25 @@
     closeDrawer(){
       document.querySelector('.drawer')?.classList.remove('open');
       document.querySelector('.scrim')?.classList.remove('on');
+    },
+
+    /* ══════════ WHO MAY DO SOMETHING THAT CANNOT BE UNDONE ══════════
+     * Decided 2026-08-25 by Harkirat: tier-3 is OWNER-ONLY by default, with an explicit
+     * capability the owner — and only the owner — may hand to one admin.
+     * 🔴 ONE FUNCTION, because the alternative is a permission test copied into five realms'
+     * one-way strips and into Review's commit path, and six copies of a rule is six chances for
+     * one of them to be the lenient one. Every surface that gates on irreversibility calls this.
+     * ⚠️ THE CLIENT IS NOT THE AUTHORITY — see §15.5. This decides what the page SHOWS; the
+     * server re-checks, and a portal that only hides the button has no security at all. */
+    actor(){ return (window.FIX && FIX.VIEWER) || { isOwner: true, destructive: true, label: 'owner' }; },
+    canDestroy(){ const a = Shell.actor(); return !!(a.isOwner || a.destructive); },
+    /* The REASON, not just the verdict. A disabled control with no explanation is a dead end —
+     * the reader cannot tell whether they lack a grant, hold the wrong one, or hit a bug. */
+    whyNoDestroy(){
+      const a = Shell.actor();
+      if (a.isOwner || a.destructive) return '';
+      return 'One-way operations are owner-only. The owner can grant the Destructive capability '
+           + 'in Access; nothing else unlocks this, including a bare manage token.';
     },
 
     /* Tier-3 actions all need the same shape: name the operation, say what it does in
@@ -993,10 +1024,17 @@
         });
       }
 
-      // 6. A legend may only name states that are actually present.
+      /* 6. A legend may only name states that are actually present.
+       * 🔴 A LEGEND CARRIES TWO KINDS OF ENTRY AND ONLY ONE OF THEM IS A ROW STATE. Access's key
+       * explains the lock on the owner-only COLUMN — a property of a scope, true whether or not
+       * any cell shows it — and this rule flagged it as a state with none on screen. The fix is
+       * not to add it to states(), which would make states() a lie so a check would pass; it is
+       * to mark the annotation as an annotation. `data-note` is the opt-out, and it opts out of
+       * MATCHING rather than out-specifying, the same discipline as the form reset. */
       if (states) {
         const real = new Set(states());
         document.querySelectorAll('[data-key] span, .key span').forEach(x => {
+          if (x.hasAttribute('data-note') || x.closest('[data-note]')) return;
           const k = x.textContent.trim();
           if (k && !real.has(k)) problems.push(`legend claims "${k}" with none on screen`);
         });
@@ -1271,7 +1309,7 @@
         <div class="uhead">
           <span class="uav" style="--av-src:url('${USER.avatar}')"><i class="pres" title="Signed in"></i></span>
           <span class="uinfo">
-            <span class="l1"><span class="nm">${USER.displayName}</span><span class="rolebadge">OWNER</span></span>
+            <span class="l1"><span class="nm">${USER.displayName}</span><span class="rolebadge">${Shell.actor().role || 'OWNER'}</span></span>
             <span class="id">@${USER.username}</span>
           </span>
         </div>
@@ -1390,12 +1428,26 @@
       _done: {},
       has(scope){ return !!Shell.Export._done[scope]; },
       at(scope){ const d = Shell.Export._done[scope]; return d ? d.at : 0; },
+      /* 🔴 WHETHER THE COPY IS ACTUALLY KEPT, not merely whether an export happened. The
+       * interlock used to record only the FACT of a download, which makes it a ceremony: an
+       * admin could export, discard the file, purge, and leave the owner holding a timestamp
+       * instead of the data. Harkirat asked for "safeguards like caching/storing the export so
+       * the owner is fully aware", and retention is the half that survives the tab closing.
+       * A safeguard the copy PROMISES and the code does not provide is worse than none, so the
+       * confirm only claims retention when this returns true.
+       * ⚠️ In the real portal the kept copy belongs beside the ChangeLog row, server-side —
+       * sessionStorage is a mockup shim (§15.11), and an export that dies with the tab is not a
+       * safeguard for anybody. */
+      retained(scope){ const d = Shell.Export._done[scope]; return !!(d && d.body && String(d.body).length); },
 
       /* Recording an export unblocks staged tier-3 ops that name THIS scope — and only this
        * scope. An earlier draft unblocked ops with no scope too, on the reasoning that a
        * scopeless op could not be matched anyway. That is the shape of a silent wrong result:
        * it would have opened the one-way gate on the strength of an unrelated download. An op
        * that cannot name what would restore it is a hole, so it is REPORTED, never papered over. */
+      /* `meta.body` is the exact text the downloaded file carried, so the kept copy and the
+       * download cannot diverge — a retained export that is a re-derivation rather than the
+       * bytes that were handed over is a different document wearing the same name. */
       mark(scope, meta){
         Shell.Export._done[scope] = Object.assign({ at: Date.now() }, meta || {});
         const a = Store.all(); let touched = false;
@@ -1449,7 +1501,11 @@
           if (!sc) return;
           let text; try { text = sc.build(); } catch (e) { Shell.toast('Export failed: ' + e.message); return; }
           Shell.Export.file(sc.file || (sc.id + '.txt'), text);
-          Shell.Export.mark(sc.id, { rows: sc.count });
+          /* 🔴 THE BYTES, NOT A RECEIPT. `retained()` reports false unless the kept copy is
+           * actually here, and this is the only place the exported text exists — so passing the
+           * row count alone would have left every confirm truthfully saying "no copy is kept"
+           * while the safeguard looked implemented. The same `text` that went into the file. */
+          Shell.Export.mark(sc.id, { rows: sc.count, body: text });
           Shell.toast(sc.count + ' ' + Shell.plural(sc.count, sc.unit || 'records') + ' exported. One-way operations on this data are now unlocked.');
           Shell.closeDrawer();
         });
@@ -1573,13 +1629,28 @@
         el.innerHTML =
           '<section class="ow">' +
             '<div class="ow-h"><span class="ow-k">ONE-WAY</span><h3>' + title + '</h3>' +
-              '<p>' + (note || 'These cannot be undone, and the portal will not run one until an export of the same data exists in this browser session. Everything above this line can be taken back from the tray.') + '</p></div>' +
+              '<p>' + (note || 'These cannot be undone, and the portal will not run one until an export of the same data exists. Everything above this line can be taken back from the tray.') +
+                /* The strip states the RULE, not only the interlock. Somebody who cannot run these
+                 * still needs to know the rule exists and who holds the exception. */
+                (Shell.canDestroy()
+                  ? (Shell.actor().isOwner ? ''
+                     : ' <b>You hold the Destructive capability</b>, which only the owner can grant. A copy of the export is kept with the record.')
+                  : ' <b>' + Shell.whyNoDestroy() + '</b>') + '</p></div>' +
             '<ul class="ow-l">' + items.map((it, i) => {
               const ready = Shell.Export.has(it.scope);
-              return '<li class="ow-i"><div class="ow-t"><b>' + it.title + '</b><span>' + (it.note || '') + '</span></div>' +
+              /* 🔴 DISABLED WITH THE REASON, NEVER HIDDEN. An admin without the capability must
+               * still SEE that the operation exists and read what would unlock it — hiding it
+               * teaches nothing, produces a support question, and conceals from them that somebody
+               * else can do this to their data. Two gates reported separately, because "you may
+               * not" and "not until you export" are different answers to different questions. */
+              const may = Shell.canDestroy();
+              return '<li class="ow-i' + (may ? '' : ' ow-locked') + '"><div class="ow-t"><b>' + it.title + '</b><span>' + (it.note || '') + '</span></div>' +
                 '<div class="ow-c">' + it.count + ' <em>' + Shell.plural(it.count, it.unit || 'records') + '</em></div>' +
-                '<button class="pill sm ' + (ready ? 'dang' : 'ghost') + '" data-o="' + i + '">' +
-                  (ready ? it.title.replace(/…$/, '') + '…' : 'Export first →') + '</button></li>';
+                (may
+                  ? '<button class="pill sm ' + (ready ? 'dang' : 'ghost') + '" data-o="' + i + '">' +
+                      (ready ? it.title.replace(/…$/, '') + '…' : 'Export first →') + '</button>'
+                  : '<button class="pill sm" disabled data-tip="' + Shell.whyNoDestroy() + '">Owner only</button>') +
+                '</li>';
             }).join('') + '</ul>' +
           '</section>';
         el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => {
@@ -1593,7 +1664,16 @@
             title: it.title + '?', op: it.op, tier: 3, word: it.confirmWord || 'PURGE',
             body: '<p class="dw-p">This removes <b>' + it.count + ' ' + Shell.plural(it.count, it.unit || 'records') + '</b> and <b>cannot be undone</b> from inside the portal. ' +
                   'Your export from ' + new Date(Shell.Export.at(it.scope)).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) +
-                  ' is the only way back.</p>',
+                  /* Say WHO is about to do it and whether the data is KEPT. The owner reads this
+                   * record afterwards, and "somebody exported at 11:04" is not the same fact as
+                   * "here is what was removed". */
+                  ' is the only way back' +
+                  (Shell.Export.retained(it.scope)
+                    ? ', and a copy is kept with this record' + (Shell.actor().isOwner ? '' : ' for the owner') + '.'
+                    : '.') +
+                  (Shell.actor().isOwner ? '' :
+                    ' You are running this under the <b>Destructive</b> capability the owner granted you.') +
+                  '</p>',
             onConfirm: () => it.onRun()
           });
         });
