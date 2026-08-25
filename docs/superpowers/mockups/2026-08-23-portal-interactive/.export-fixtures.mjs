@@ -1,14 +1,8 @@
-// .export-fixtures.mjs — regenerates the SEASON / BROADCAST / ACCESS block of assets/fixtures.js
-// straight out of the dev database. Run with:  node .export-fixtures.mjs > /tmp/block.js
+// .export-fixtures.mjs — regenerates the SEASON / BROADCAST / ACCESS block of assets/fixtures.js straight out of the dev database. Run with:  node .export-fixtures.mjs > /tmp/block.js
 //
-// ⚠️ THIS SCRIPT IS THE POINT. The previous fixtures for these three realms were hand-authored,
-// and every one of them was wrong in a way that changed the design (a draw with a start AND an end;
-// an announcement with a `title` and a `body`; an `editor` role). A fixture that a human types is a
-// fixture a human can invent. Exporting removes the opportunity. See COMPANION §3.9.
+// ⚠️ THIS SCRIPT IS THE POINT. The previous fixtures for these three realms were hand-authored, and every one of them was wrong in a way that changed the design (a draw with a start AND an end; an announcement with a `title` and a `body`; an `editor` role). A fixture that a human types is a fixture a human can invent. Exporting removes the opportunity. See COMPANION §3.9.
 //
-// It also reads the REGISTRY rather than a second list: op types come from core/ops's own
-// listOpTypes(), scopes from utils/adminAccess's MANAGE_PAGE_SCOPES/ADMIN_COMMANDS, and the human
-// labels from portal/api/access.js's PAGE_LABELS/COMMAND_LABELS. Nothing below is retyped.
+// It also reads the REGISTRY rather than a second list: op types come from core/ops's own listOpTypes(), scopes from utils/adminAccess's MANAGE_PAGE_SCOPES/ADMIN_COMMANDS, and the human labels from portal/api/access.js's PAGE_LABELS/COMMAND_LABELS. Nothing below is retyped.
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const REPO = '/Applications/Claude Code/Diors-Builds';
@@ -26,11 +20,7 @@ const ops          = require(`${REPO}/core/ops`);
 const { MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require(`${REPO}/utils/adminAccess`);
 const { buildPermissionMatrix, singlePointsOfFailure } = require(`${REPO}/portal/api/access`);
 const { announcementState } = require(`${REPO}/portal/api/broadcast`);
-// ⚠️ THE EXPORT NAME IS `ALLOWED_ADMIN_ID`. This destructured `OWNER_ID`, which utils/owner.js has
-// never exported, so it resolved to undefined and the `||` below silently emitted a retyped
-// literal — under a header that says "Nothing below is retyped." A fallback that hides a wrong
-// name is worse than a crash, because the output looks correct. No fallback now: if the module
-// stops exporting it, this fails loudly rather than freezing today's value into the fixtures.
+// ⚠️ THE EXPORT NAME IS `ALLOWED_ADMIN_ID`. This destructured `OWNER_ID`, which utils/owner.js has never exported, so it resolved to undefined and the `||` below silently emitted a retyped literal — under a header that says "Nothing below is retyped." A fallback that hides a wrong name is worse than a crash, because the output looks correct. No fallback now: if the module stops exporting it, this fails loudly rather than freezing today's value into the fixtures.
 const { ALLOWED_ADMIN_ID: OWNER_ID } = require(`${REPO}/utils/owner`);
 if (!OWNER_ID) throw new Error('utils/owner.js no longer exports ALLOWED_ADMIN_ID — fix this import rather than hardcoding an id.');
 
@@ -68,10 +58,7 @@ const now = new Date();
 const annRows = await Announcement.find({}).sort({ createdAt: 1 }).lean();
 const announcements = [];
 for (const a of annRows) {
-    // REACH IS REAL OR IT IS ABSENT. Counted from UserPreference.seenAnnouncementIds, the only
-    // record of delivery that exists. Measured 2026-08-24: every count is 0, because these were
-    // seeded and no user has ever run a command against them. A column that is always 0 teaches
-    // nothing, so the page must show reach only where it is non-zero — never a fabricated number.
+    // REACH IS REAL OR IT IS ABSENT. Counted from UserPreference.seenAnnouncementIds, the only record of delivery that exists. Measured 2026-08-24: every count is 0, because these were seeded and no user has ever run a command against them. A column that is always 0 teaches nothing, so the page must show reach only where it is non-zero — never a fabricated number.
     const reach = await UserPreference.countDocuments({ seenAnnouncementIds: a._id });
     announcements.push({ _id: String(a._id), text: a.text, createdAt: new Date(a.createdAt).toISOString(), createdBy: a.createdBy,
                          expiresAt: a.expiresAt ? new Date(a.expiresAt).toISOString() : null,
@@ -83,11 +70,7 @@ for (const a of annRows) {
 const admins = await AdminUser.find({}).lean();
 const matrix = buildPermissionMatrix(admins);
 const spof = singlePointsOfFailure(admins);
-// ⚠️ grantedAt: buildPermissionMatrix DERIVES this from the ObjectId and its comment claims
-// AdminUser has "no timestamp at all". It does — `grantedAt` has been declared since 566b3ca
-// (2026-08-13), ten days before that file was last touched, and every real document carries it.
-// The stored value is also the more correct one: an ObjectId timestamp is the DOCUMENT's creation
-// and never moves when permissions are later edited. Filed; the fixture uses the stored field.
+// ⚠️ grantedAt: buildPermissionMatrix DERIVES this from the ObjectId and its comment claims AdminUser has "no timestamp at all". It does — `grantedAt` has been declared since 566b3ca (2026-08-13), ten days before that file was last touched, and every real document carries it. The stored value is also the more correct one: an ObjectId timestamp is the DOCUMENT's creation and never moves when permissions are later edited. Filed; the fixture uses the stored field.
 const byId = new Map(admins.map((a) => [a.discordId, a]));
 const accessAdmins = matrix.admins.map((r) => ({ ...r, note: byId.get(r.discordId)?.note || '',
                                                  grantedBy: byId.get(r.discordId)?.grantedBy || null,
@@ -122,20 +105,10 @@ P(`  const accessScopes = ${j(matrix.scopes)};`);
 P(`  const spof = ${j(spof)};`);
 P(`  const sessions = ${j(sessions)};`);
 P(`  const changeLogRows = ${j(changeLogRows)};`);
-// 🔴 THE /manage ACTION REGISTRY, exported whole. The deferred item this pass closed demanded
-// "enumerate the entity's actions from manageActions.js and confirm each is reachable in the
-// mockup or DELIBERATELY NAMED AS ABSENT" — the exact check the Armory rebuild was born from
-// (Loadouts had ten actions; the mockup implemented three and named none of the rest). It was not
-// run until a completeness sweep asked for it, and it found 24 of 37 unaccounted for. A surface
-// cannot answer "what can an admin do here" from a list it does not have, so here is the list.
+// 🔴 THE /manage ACTION REGISTRY, exported whole. The deferred item this pass closed demanded "enumerate the entity's actions from manageActions.js and confirm each is reachable in the mockup or DELIBERATELY NAMED AS ABSENT" — the exact check the Armory rebuild was born from (Loadouts had ten actions; the mockup implemented three and named none of the rest). It was not run until a completeness sweep asked for it, and it found 24 of 37 unaccounted for. A surface cannot answer "what can an admin do here" from a list it does not have, so here is the list.
 P(`  const MANAGE_ACTIONS = ${j(Object.fromEntries(Object.entries(require(`${REPO}/utils/manageActions`).ACTIONS_BY_PAGE).map(([page, list]) => [page, list.map((a) => ({ id: a.id, label: a.label, kind: a.kind, slash: !!a.slash }))])))};`);
 P(`  const OP_TYPES = ${j(ops.listOpTypes())};`);
-// 🔴 A TIER IS DERIVED, NEVER STATED. "Write directly when you can guarantee an exact inverse,
-// stage when you cannot" (2026-08-20 spec §5) is a rule about the OP, so the answer lives in the
-// op registry and nowhere else. Three surfaces had hand-typed a delete as tier 3 on the intuition
-// that deleting is scary; core/ops says tier 1, because apply() captures the whole document first
-// and the inverse is exact. Stating it by hand is precisely what §4.4 forbids, and it went
-// unnoticed until this map made disagreement checkable.
+// 🔴 A TIER IS DERIVED, NEVER STATED. "Write directly when you can guarantee an exact inverse, stage when you cannot" (2026-08-20 spec §5) is a rule about the OP, so the answer lives in the op registry and nowhere else. Three surfaces had hand-typed a delete as tier 3 on the intuition that deleting is scary; core/ops says tier 1, because apply() captures the whole document first and the inverse is exact. Stating it by hand is precisely what §4.4 forbids, and it went unnoticed until this map made disagreement checkable.
 P(`  const OP_TIERS = ${j(Object.fromEntries(ops.listOpTypes().map((t) => [t, ops.resolveOp(t).tier])))};`);
 P(`  const PERM_TOKENS = ${j([...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map((p) => `manage.${p}`)])};`);
 P(`  const OWNER_ID = ${j(OWNER_ID)};`);

@@ -20,23 +20,14 @@ function ownerOnly(handler) {
 
 // "By scope" \u2014 flags a scope held by exactly one non-owner (a single point of failure).
 function singlePointsOfFailure(admins) {
-    // ⚠️ A SET, NOT A LIST. `parsePermissionsInput` accepts "manage, manage.draws", and with the
-    // two effects below now both applying (they were mutually exclusive until 2026-08-24), that
-    // admin was pushed TWICE for manage.draws — so ids.length === 2 and the one scope they hold
-    // most explicitly was the one scope never reported as a single point. Deduping by id makes
-    // "how many people hold this" mean what it says.
+    // ⚠️ A SET, NOT A LIST. `parsePermissionsInput` accepts "manage, manage.draws", and with the two effects below now both applying (they were mutually exclusive until 2026-08-24), that admin was pushed TWICE for manage.draws — so ids.length === 2 and the one scope they hold most explicitly was the one scope never reported as a single point. Deduping by id makes "how many people hold this" mean what it says.
     const holders = new Map(); // scope -> Set<discordId>
     for (const scope of [...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map(p => `manage.${p}`)]) {
         holders.set(scope, new Set());
     }
     for (const admin of admins) {
         for (const perm of admin.permissions || []) {
-            // 🔴 `manage` COUNTS AS ITSELF, not only as its expansion. This was an `else if`, so a bare
-            // `manage` recorded holders for the eight page scopes and never for `manage` -- leaving the
-            // token permanently at 0 holders and therefore never reportable, when a lone holder of the
-            // FULL token is the most consequential single point of failure there is: lose them and every
-            // page goes at once. Found 2026-08-24 rebuilding the Access mockup on the real permission
-            // model, where the page's own count disagreed with this endpoint's. Both effects now apply.
+            // 🔴 `manage` COUNTS AS ITSELF, not only as its expansion. This was an `else if`, so a bare `manage` recorded holders for the eight page scopes and never for `manage` -- leaving the token permanently at 0 holders and therefore never reportable, when a lone holder of the FULL token is the most consequential single point of failure there is: lose them and every page goes at once. Found 2026-08-24 rebuilding the Access mockup on the real permission model, where the page's own count disagreed with this endpoint's. Both effects now apply.
             if (holders.has(perm)) holders.get(perm).add(admin.discordId);
             if (perm === 'manage') {
                 for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.add(admin.discordId);

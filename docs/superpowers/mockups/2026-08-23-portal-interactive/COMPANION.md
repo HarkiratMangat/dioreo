@@ -1781,8 +1781,7 @@ This time `npm run portal:refs` — which had gained a `new Function(src)` parse
 
 ## 5.9n THE TRACK REDESIGN — six coordinate authorities, and why four attempts failed
 
-> Harkirat, on the fifth report of this surface: *"that entire thing needs a proper redesign because it is not working in my eyes. this is like the 4th or 5th time i've tried to have it fixed."*
-> And then the question that matters more: *"why am i finding the bugs when ALL of your repeated tests keep missing them?"*
+> Harkirat, on the fifth report of this surface: *"that entire thing needs a proper redesign because it is not working in my eyes. this is like the 4th or 5th time i've tried to have it fixed."* And then the question that matters more: *"why am i finding the bugs when ALL of your repeated tests keep missing them?"*
 
 ### 5.9n.0 The honest answer to that question
 

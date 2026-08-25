@@ -43,20 +43,14 @@ check('Access By-scope flags a bare "manage" held by exactly one admin', () => {
 });
 
 check('Access By-scope still flags every page a lone bare-"manage" holder inherits', () => {
-    // The expansion must SURVIVE the fix above -- reporting `manage` while dropping the pages
-    // would trade one blind spot for eight.
+    // The expansion must SURVIVE the fix above -- reporting `manage` while dropping the pages would trade one blind spot for eight.
     const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage'] }]);
     for (const page of ['manage.draws', 'manage.calendar', 'manage.season', 'manage.announcement']) {
         assert.ok(spof.some(s => s.scope === page && s.discordId === 'A'), `${page} should still be reported`);
     }
 });
 
-// 🔴 ONE PERSON, COUNTED TWICE. `parsePermissionsInput` accepts "manage, manage.draws", and the
-// holder map then received that admin TWICE for manage.draws — once from the bare-token expansion
-// and once from the explicit token — so ids.length === 2 and the scope they hold MOST explicitly
-// was the one scope not reported. Latent before the 2026-08-24 fix (the expansion was in an
-// `else if`, so the two paths were mutually exclusive); the if/if shape that fix needs makes it
-// reachable, which is exactly why it belongs in a test rather than in a comment.
+// 🔴 ONE PERSON, COUNTED TWICE. `parsePermissionsInput` accepts "manage, manage.draws", and the holder map then received that admin TWICE for manage.draws — once from the bare-token expansion and once from the explicit token — so ids.length === 2 and the scope they hold MOST explicitly was the one scope not reported. Latent before the 2026-08-24 fix (the expansion was in an `else if`, so the two paths were mutually exclusive); the if/if shape that fix needs makes it reachable, which is exactly why it belongs in a test rather than in a comment.
 check('Access By-scope counts one admin once, even holding both "manage" and "manage.draws"', () => {
     const spof = singlePointsOfFailure([{ discordId: 'A', permissions: ['manage', 'manage.draws'] }]);
     assert.ok(spof.some(s => s.scope === 'manage.draws' && s.discordId === 'A'),

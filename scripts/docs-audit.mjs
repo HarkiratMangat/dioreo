@@ -922,9 +922,7 @@ const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
   ["docs/superpowers/specs/", "spec"],
-  // A mockup package's COMPANION is a LIVING reference — "read this to wire it correctly", kept
-  // true against the code — not a frozen dated snapshot like specs/. That distinction is the
-  // whole point of classifying it: a stale spec is correct, a stale COMPANION is a defect.
+  // A mockup package's COMPANION is a LIVING reference — "read this to wire it correctly", kept true against the code — not a frozen dated snapshot like specs/. That distinction is the whole point of classifying it: a stale spec is correct, a stale COMPANION is a defect.
   ["docs/superpowers/mockups/", "reference"],
   ["docs/superpowers/plans/", "plan"],
   ["docs/reference/", "reference"],

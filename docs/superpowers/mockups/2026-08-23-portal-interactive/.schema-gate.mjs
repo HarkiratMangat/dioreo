@@ -1,9 +1,6 @@
 // .schema-gate.mjs — asserts the mockup names nothing the bot does not have.
 //
-// ⚠️ WHY. Three separate errors in this package were "a name that exists nowhere in the system,
-// written confidently": an `editor` role, a `loadouts.setRank` op, a `views` column, an `is2XCP`
-// flag. Every one of them read as plausible and none of them was checkable by eye across 8 files.
-// This converts "did I invent something?" from a judgement into an exit code.
+// ⚠️ WHY. Three separate errors in this package were "a name that exists nowhere in the system, written confidently": an `editor` role, a `loadouts.setRank` op, a `views` column, an `is2XCP` flag. Every one of them read as plausible and none of them was checkable by eye across 8 files. This converts "did I invent something?" from a judgement into an exit code.
 //
 // Run:  node .schema-gate.mjs        (add --self-test to prove each check can actually FAIL)
 import { createRequire } from 'node:module';
@@ -12,11 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const REPO = '/Applications/Claude Code/Diors-Builds';
-// ⚠️ Resolve every path from THIS FILE, never from the CWD. The gate read `assets/fixtures.js`
-// relatively and so only worked when run from inside the package directory — it crashed with
-// ENOENT the first time `npm run portal:gate` invoked it from the repo root. Found by wiring it
-// up, which is the whole argument for wiring it up: a verifier that only runs one way has only
-// ever been proven one way.
+// ⚠️ Resolve every path from THIS FILE, never from the CWD. The gate read `assets/fixtures.js` relatively and so only worked when run from inside the package directory — it crashed with ENOENT the first time `npm run portal:gate` invoked it from the repo root. Found by wiring it up, which is the whole argument for wiring it up: a verifier that only runs one way has only ever been proven one way.
 const HERE = dirname(fileURLToPath(import.meta.url));
 const here = (f) => join(HERE, f);
 
@@ -25,10 +18,7 @@ const { MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require(`${REPO}/utils/adminAcces
 const OP_TYPES = new Set(ops.listOpTypes());
 const PERM_TOKENS = new Set([...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map((p) => `manage.${p}`)]);
 
-// Access grant/revoke and portal-session end are deliberately NOT ops: portal/api/access.js's own
-// header — "NOT part of the core operation algebra: admin grants/revokes are direct AdminUser
-// writes … and a live PortalSession end is a direct write too." So they are named here, once,
-// rather than the check being loosened to let any unknown string through.
+// Access grant/revoke and portal-session end are deliberately NOT ops: portal/api/access.js's own header — "NOT part of the core operation algebra: admin grants/revokes are direct AdminUser writes … and a live PortalSession end is a direct write too." So they are named here, once, rather than the check being loosened to let any unknown string through.
 const NON_OP_ACTIONS = new Set([
     // portal/api/access.js — direct AdminUser writes, named from its own routes.
     'access.grant', 'access.revoke', 'session.end',
@@ -38,14 +28,7 @@ const NON_OP_ACTIONS = new Set([
     'changelog.revert',
 ]);
 
-// 🔴 COMPANION.md IS SCANNED TOO, AND ITS ABSENCE WAS THE MECHANISM. A cold reader found NINE op
-// names in the document that resolve to nothing — `loadouts.edit` in the canonical copy-this
-// template, plus `announcements.reorder`/`.setPinned`/`.edit` across two element tables describing
-// a page that had been rewritten out of existence. Every one of them was invisible here because
-// this list was `*.html` plus two assets, so the gate stayed green while the SPECIFICATION rotted.
-// That is §14's own thesis one level up: a green check on the wrong scope reads exactly like a
-// green check on the right one. The document is the instruction a wiring session follows, so it is
-// the last place an unresolvable op name should be allowed to sit.
+// 🔴 COMPANION.md IS SCANNED TOO, AND ITS ABSENCE WAS THE MECHANISM. A cold reader found NINE op names in the document that resolve to nothing — `loadouts.edit` in the canonical copy-this template, plus `announcements.reorder`/`.setPinned`/`.edit` across two element tables describing a page that had been rewritten out of existence. Every one of them was invisible here because this list was `*.html` plus two assets, so the gate stayed green while the SPECIFICATION rotted. That is §14's own thesis one level up: a green check on the wrong scope reads exactly like a green check on the right one. The document is the instruction a wiring session follows, so it is the last place an unresolvable op name should be allowed to sit.
 const pages = readdirSync(HERE).filter((f) => f.endsWith('.html'));
 const sources = Object.fromEntries([...pages, 'assets/fixtures.js', 'assets/shell.js', 'COMPANION.md']
     .map((f) => [f, readFileSync(here(f), 'utf8')]));
@@ -53,12 +36,9 @@ const sources = Object.fromEntries([...pages, 'assets/fixtures.js', 'assets/shel
 const failures = [];
 const fail = (check, file, msg) => failures.push({ check, file, msg });
 
-// ── 1. every op name is registered ───────────────────────────────────────────────────────────
-// Matches `op:'x.y'` and `type:'x.y'` — the two keys a staged-op record and a raw op use.
+// ── 1. every op name is registered ─────────────────────────────────────────────────────────── Matches `op:'x.y'` and `type:'x.y'` — the two keys a staged-op record and a raw op use.
 function checkOps(file, src, allow = NON_OP_ACTIONS) {
-    // COMPANION.md deliberately QUOTES wrong names when recording what the gate caught. Those sit
-    // inside backticks on a line that also says so; the pattern below only matches the `op:'…'`
-    // FORM, which is how the doc writes a name it is instructing you to use.
+    // COMPANION.md deliberately QUOTES wrong names when recording what the gate caught. Those sit inside backticks on a line that also says so; the pattern below only matches the `op:'…'` FORM, which is how the doc writes a name it is instructing you to use.
     for (const m of src.matchAll(/\b(?:op|type)\s*:\s*'([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)'/g)) {
         const name = m[1];
         if (!OP_TYPES.has(name) && !allow.has(name)) {
@@ -67,17 +47,14 @@ function checkOps(file, src, allow = NON_OP_ACTIONS) {
     }
 }
 
-// ── 2. every permission token is real ────────────────────────────────────────────────────────
-// Only inspects strings that LOOK like a scope token, so ordinary prose is never dragged in.
+// ── 2. every permission token is real ──────────────────────────────────────────────────────── Only inspects strings that LOOK like a scope token, so ordinary prose is never dragged in.
 function checkScopes(file, src) {
     for (const m of src.matchAll(/'(manage\.[a-z_]+)'/g)) {
         if (!PERM_TOKENS.has(m[1])) fail('scope-real', file, `"${m[1]}" is not in MANAGE_PAGE_SCOPES`);
     }
 }
 
-// ── 3. every exported fixture field exists on its model ──────────────────────────────────────
-// The structural check: reads the real Mongoose schema paths rather than a hand-kept blocklist,
-// so a NEWLY invented field is caught too, not only the four already found.
+// ── 3. every exported fixture field exists on its model ────────────────────────────────────── The structural check: reads the real Mongoose schema paths rather than a hand-kept blocklist, so a NEWLY invented field is caught too, not only the four already found.
 function schemaKeys(Model, sub) {
     const schema = sub ? Model.schema.path(sub)?.schema : Model.schema;
     if (!schema) throw new Error(`no schema at ${sub}`);
@@ -113,15 +90,9 @@ function checkFixtureShape(FIX) {
     }
 }
 
-// ── 4. a tier stated anywhere matches the registry's own tier for that op ─────────────────────
-// ⚠️ REWRITTEN AFTER A CODE REVIEW PROVED THE FIRST VERSION VACUOUS. It matched with `[^}]*?`
-// between the `tier:` and the `op:` keys — a character class that cannot cross a `}`. Every real
-// staging call has a template literal (`` `${b.weaponName} — ${b.buildName}` ``) between those two
-// keys, so the regex matched only the small confirm dialogs (which were already correct) and
-// missed every Store.add. The gate reported clean with six live disagreements in the tree.
+// ── 4. a tier stated anywhere matches the registry's own tier for that op ───────────────────── ⚠️ REWRITTEN AFTER A CODE REVIEW PROVED THE FIRST VERSION VACUOUS. It matched with `[^}]*?` between the `tier:` and the `op:` keys — a character class that cannot cross a `}`. Every real staging call has a template literal (`` `${b.weaponName} — ${b.buildName}` ``) between those two keys, so the regex matched only the small confirm dialogs (which were already correct) and missed every Store.add. The gate reported clean with six live disagreements in the tree.
 //
-// Brace-matching instead: find each call site, walk to its matching close brace, and read the two
-// keys out of the real object literal. A regex cannot balance braces; this is why it is a loop.
+// Brace-matching instead: find each call site, walk to its matching close brace, and read the two keys out of the real object literal. A regex cannot balance braces; this is why it is a loop.
 function callSites(src) {
     const out = [];
     const re = /(?:S\.Store\.add|Store\.add|S\.confirm|Shell\.confirm)\(\{/g;
@@ -141,8 +112,7 @@ function checkTiers(file, src) {
         const op = (body.match(/\bop\s*:\s*['"]([^'"]+)['"]/) || [])[1];
         const tierRaw = (body.match(/\btier\s*:\s*(\d)\b/) || [])[1];
         if (!op) {
-            // A staged op with no type cannot have its tier checked at all, and Review cannot say
-            // what it would run. That is a finding in itself, not a reason to skip the check.
+            // A staged op with no type cannot have its tier checked at all, and Review cannot say what it would run. That is a finding in itself, not a reason to skip the check.
             if (tierRaw !== undefined) fail('tier-matches', file, `${file}:${line} states tier ${tierRaw} but names no op type — nothing can check it`);
             continue;
         }
@@ -154,21 +124,14 @@ function checkTiers(file, src) {
     }
 }
 
-// In prose an op is written in backticks, never as `op:'…'` — so the code-shaped check above sees
-// none of them. This one reads every `entity.verb` inside backticks and holds it to the same
-// registry, EXCEPT where the surrounding line is explicitly recording a name as wrong.
+// In prose an op is written in backticks, never as `op:'…'` — so the code-shaped check above sees none of them. This one reads every `entity.verb` inside backticks and holds it to the same registry, EXCEPT where the surrounding line is explicitly recording a name as wrong.
 const RECORDING = /caught|violation|do not exist|does not exist|pluralised|nonexistent|invented|no longer|retired|was wrong|resolve to nothing|deleted/i;
 function checkDocOps(file, src) {
     for (const line of src.split('\n')) {
         if (RECORDING.test(line)) continue;
         for (const m of line.matchAll(/`([a-z][A-Za-z]*\.[A-Za-z][A-Za-z0-9]*)`/g)) {
             const name = m[1];
-            // ⚠️ TWO SHAPES COLLIDE WITH AN OP NAME and neither is one. `calendar.js` and
-            // `season.html` are FILENAMES; `calendar.isDoubleCP` is a FIELD PATH. Both share an op
-            // namespace, so the naive check flagged five of them on its first run. Discriminated
-            // structurally rather than by a blocklist: a file extension is a closed set, and a
-            // field name is derivable from the real Mongoose schemas — so a NEW field added to a
-            // model stops being a false positive without anyone editing this file.
+            // ⚠️ TWO SHAPES COLLIDE WITH AN OP NAME and neither is one. `calendar.js` and `season.html` are FILENAMES; `calendar.isDoubleCP` is a FIELD PATH. Both share an op namespace, so the naive check flagged five of them on its first run. Discriminated structurally rather than by a blocklist: a file extension is a closed set, and a field name is derivable from the real Mongoose schemas — so a NEW field added to a model stops being a false positive without anyone editing this file.
             const [ns, verb] = name.split('.');
             if (!DOC_NAMESPACES.has(ns)) continue;
             if (FILE_EXT.has(verb)) continue;
@@ -179,11 +142,7 @@ function checkDocOps(file, src) {
         }
     }
 }
-// 🔴 THE PLURAL IS THE ERROR MODE, so it has to be in the watch set or the check misses the exact
-// thing it exists for. Every registered namespace is singular (`draw`, `loadout`, `announcement`);
-// every invented name found so far pluralised it (`loadouts.edit`, `announcements.reorder`). A set
-// built only from the real namespaces skips `announcements.*` entirely — which it did on the first
-// run, catching one of the nine bad names instead of four.
+// 🔴 THE PLURAL IS THE ERROR MODE, so it has to be in the watch set or the check misses the exact thing it exists for. Every registered namespace is singular (`draw`, `loadout`, `announcement`); every invented name found so far pluralised it (`loadouts.edit`, `announcements.reorder`). A set built only from the real namespaces skips `announcements.*` entirely — which it did on the first run, catching one of the nine bad names instead of four.
 const DOC_NAMESPACES = new Set([...OP_TYPES].flatMap((t) => {
     const ns = t.split('.')[0];
     return [ns, ns + 's'];
@@ -213,11 +172,7 @@ if (process.argv.includes('--self-test')) {
         ['op-registered', () => checkOps('probe', `{ op:'loadouts.setRank' }`)],
         ['scope-real',    () => checkScopes('probe', `['manage.nosuchpage']`)],
         ['tier-matches',  () => checkTiers('probe',
-            // ⚠️ THE PROBE MUST MATCH THE REAL SHAPE. It used to be a bare object literal,
-            // which the brace-matching scanner correctly ignores — so the self-test went red
-            // the instant the check was rewritten, which is exactly what a self-test is for.
-            // Note the template literal between the keys: that is the case the old regex
-            // could not cross, and the reason it silently matched nothing.
+            // ⚠️ THE PROBE MUST MATCH THE REAL SHAPE. It used to be a bare object literal, which the brace-matching scanner correctly ignores — so the self-test went red the instant the check was rewritten, which is exactly what a self-test is for. Note the template literal between the keys: that is the case the old regex could not cross, and the reason it silently matched nothing.
             "S.Store.add({ id:'x', name:`${a} - ${b}`, op:'draw.add', tier:3, rows:[] });")],
         ['field-on-model',() => checkFixtureShape({ announcements: [{ text: 'x', views: 1, pinned: true }] })],
     ];
