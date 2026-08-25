@@ -233,7 +233,7 @@
       Shell.installTips();
       /* After layout, and again whenever the layout changes — a placeholder fits or does not fit
        * only relative to a rendered field. */
-      const fit = () => Shell.fitPlaceholders();
+      const fit = () => { Shell.fitPlaceholders(); Shell.inkFills(); };
       requestAnimationFrame(() => requestAnimationFrame(fit));
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(fit);
       let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 120); });
@@ -251,6 +251,39 @@
       (document.fonts ? document.fonts.ready : Promise.resolve())
         .then(() => requestAnimationFrame(settle)).then(off, off);
       setTimeout(off, 4000);
+    },
+
+    /* ══════════ EVERY FILLED SURFACE GETS ITS OWN INK ══════════
+     * 🔴 FIXING THIS PER CALL SITE IS HOW IT COMES BACK. `--ci` was added by hand to Season's bars
+     * and Season's state badges, and the very next audit run found "SAVED" at **1.19:1 on
+     * Broadcast** — the same component, the same defect, a different file. Any element carrying an
+     * inline `--c` that renders as a FILLED surface needs the ink that colour can actually carry,
+     * so it is computed once, here, for all of them. Runs after layout and after fonts, because a
+     * background is only knowable once painted. */
+    inkFills(root = document){
+      /* ⚠️ NOT EVERY FILLED SURFACE DECLARES AN INLINE `--c`. Broadcast's state badge takes its
+       * background from a class, so the first version skipped it entirely and it rendered at
+       * 1.19:1 — the same component that had just been fixed on Season, one file over. Read the
+       * COMPUTED background for the badge families too, so the rule follows the pixels rather
+       * than following how a particular page happened to author them. */
+      const rgbHex = c => { const p = (c.match(/[\d.]+/g) || []).slice(0,3).map(Number);
+        return p.length === 3 ? '#' + p.map(v => Math.round(v).toString(16).padStart(2,'0')).join('') : null; };
+      root.querySelectorAll('.stt,.bdg,.rec-tag,.bc-meta,.pill.on,.att-go').forEach(el => {
+        const bg = getComputedStyle(el).backgroundColor;
+        if (!bg || bg === 'rgba(0, 0, 0, 0)' || /, 0\)$/.test(bg)) return;
+        const hex = rgbHex(bg); if (hex) el.style.setProperty('--ci', Shell.inkOn(hex));
+      });
+      root.querySelectorAll('[style*="--c"]').forEach(el => {
+        const c = el.style.getPropertyValue('--c').trim();
+        if (!c || !/^#[0-9a-f]{3,8}$/i.test(c)) return;
+        const cs = getComputedStyle(el);
+        /* Filled means the element's own background actually resolves to that colour — a bordered
+         * or dashed element paints its text ON THE PAGE, not on the accent, and forcing near-black
+         * onto it is how an outside label ended up at 1.41:1. */
+        const bg = cs.backgroundColor;
+        if (!bg || bg === 'rgba(0, 0, 0, 0)' || /, 0\)$/.test(bg)) return;
+        el.style.setProperty('--ci', Shell.inkOn(c));
+      });
     },
 
     /* ══════════ A PLACEHOLDER THAT DOES NOT FIT IS A RENDERING FAULT ══════════
@@ -593,6 +626,12 @@
     },
 
     _audit({ states, extra, interactions } = {}){
+      /* ⚠️ ORDER, NOT LOGIC. `inkFills()` runs from `holdTop()` inside a requestAnimationFrame, so
+       * the audit's first synchronous pass measured the state BEFORE it — and reported Broadcast's
+       * state badge at 1.19:1 twice after the fix was already correct. An audit must measure the
+       * page as it settles, so it settles the derived parts first. Idempotent, so calling it here
+       * costs nothing. */
+      Shell.inkFills();
       const problems = [];
       const px = v => parseFloat(v) || 0;
       const clear = 'rgba(0, 0, 0, 0)';
@@ -703,9 +742,22 @@
          * renders at ~7:1 was reported at 1.96:1. A check that invents failures gets ignored, and
          * an ignored check is worse than none. Composite the stack instead. */
         const parse = c => (c.match(/[\d.]+/g) || []).map(Number);
+        /* ⚠️ AN ANCESTOR'S BACKGROUND IS ONLY THE BACKGROUND IF THE ELEMENT SITS ON IT.
+         * An outside bar-label is a DOM child of `.bar` but renders BESIDE it, on the lane — so
+         * walking the DOM found the bar's blue and reported near-white text at 2.84:1 while the
+         * label was actually on the dark lane at ~13:1. Measured the rule as broken THREE times
+         * in a row before checking the probe: the page was right and the probe was reading a box
+         * the text does not overlap. Skip any ancestor whose border-box does not CONTAIN the
+         * element's rect — correct in general, not a special case for this one component. */
         const bgOf = el => {
           let n = el, acc = null;
+          const r0 = el.getBoundingClientRect();
           while (n && n !== document.documentElement) {
+            const rn = n.getBoundingClientRect();
+            const covers = n === el ||
+              (r0.left >= rn.left - 1 && r0.right <= rn.right + 1 &&
+               r0.top >= rn.top - 1 && r0.bottom <= rn.bottom + 1);
+            if (!covers) { n = n.parentElement; continue; }
             const p = parse(getComputedStyle(n).backgroundColor);
             if (p.length) {
               const a = p.length > 3 ? p[3] : 1;
@@ -743,7 +795,17 @@
           const key = cs.color + '|' + bgOf(el) + '|' + Math.round(px);
           if (seen.has(key)) return; seen.add(key);
           if (!worst || got < worst.got) worst = { got, need, t, px };
-          problems.push(`"${t.slice(0,18)}" is ${got.toFixed(2)}:1 at ${px}px — needs ${need}:1`);
+          /* ⚠️ NAME THE ELEMENT. The first version reported only the TEXT, and chasing
+           * `"COD Point Rush Wee" is 2.84:1` cost three wrong guesses about which of four
+           * identical-looking bars it meant — the text is the least identifying thing about a
+           * repeated component. A finding that does not say WHERE is a finding you have to
+           * re-derive before you can act on it. */
+          const where = el.tagName.toLowerCase() +
+            (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/).join('.') : '') +
+            ' in ' + (el.parentElement ? el.parentElement.tagName.toLowerCase() +
+              (typeof el.parentElement.className === 'string' && el.parentElement.className
+                ? '.' + el.parentElement.className.trim().split(/\s+/).slice(0,3).join('.') : '') : '?');
+          problems.push(`"${t.slice(0,18)}" is ${got.toFixed(2)}:1 at ${px}px — needs ${need}:1  [${where}]`);
         });
       }
 

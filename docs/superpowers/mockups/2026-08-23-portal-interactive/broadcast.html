@@ -459,7 +459,18 @@
         <td class="nums drop-sm">${fmt(a.createdAt)}</td>
         <td class="nums">${a.startsAt ? fmt(a.startsAt) : '<span class="none">immediately</span>'}</td>
         <td class="nums">${a.expiresAt ? fmt(a.expiresAt) : '<b style="color:var(--warn)">never</b>'}</td>
-        <td class="ta-r"><span class="stt ${a.staged ? 'staged' : 'saved'}">${stateOf(a)}</span>
+        <td class="ta-r"><!-- 🔴 THIS BADGE NEVER SET ITS OWN COLOUR VARIABLE. .stt.saved styles itself as a
+             FILLED chip (background from that variable, near-black text) — with it unset the
+             background resolved to nothing and near-black text sat on the dark row at 1.19:1.
+             It rendered as "styled as if filled, not actually filled", which no eye catches at
+             9px and no check caught until real computed contrast existed. The fix is NOT to give it a fill — on Broadcast the state is TEXT in a cell, which is
+             what Harkirat's own report described ("I can barely see it"). The bug was the FALLBACK:
+             color:var(--ci, var(--on-accent)) defaults to near-black, which is right on a fill and
+             catastrophic without one. .stt.saved now defaults to --ink2 and takes --ci only where a
+             fill actually exists. A fallback must be safe in the ABSENCE of what it falls back from.
+             ⚠️ AND THE FIRST VERSION OF THIS COMMENT BROKE THE PAGE — backticks inside an HTML
+             comment inside a TEMPLATE LITERAL terminate the literal. Second time today. -->
+          <span class="stt ${a.staged ? 'staged' : 'saved'}">${stateOf(a)}</span>
           <span class="rowmeta" style="margin-left:6px">${lifecycle(a)}</span></td>
       </tr>`).join('') : `<tr><td colspan="5"><div class="empty">
         ${st.q || st.filter !== 'all' ? `<b>Nothing matches.</b> ${st.ann.length} exist in total.`

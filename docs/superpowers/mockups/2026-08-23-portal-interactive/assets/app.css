@@ -2798,7 +2798,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .trow.t-top4 .trow-k{font-size:15px;color:var(--ink2)}
 .trow.t-top5 .trow-k{font-size:14px;color:var(--ink3)}
 .trow.t-unranked{opacity:.72}
-.trow.t-unranked .trow-k{font-size:13px;color:var(--ink4)}
+.trow.t-unranked .trow-k{font-size:13px;color:var(--ink3)}   /* --ink4 is non-text: measured 3.46:1 */
 /* the card class is `.bchip`, not `.bcard` — checked against the markup rather than assumed */
 .trow.t-top4,.trow.t-top5{--bc-dim:.94}
 .trow.t-unranked{--bc-dim:.86}
@@ -2961,3 +2961,41 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    out of view by definition, so it is clipped rather than merely unseen. */
 .tk-inner{overflow-x:clip}
 .deadrail{overflow:visible}
+
+/* the group count and the empty-cell dash were --ink4 used as TEXT — the ink scale is three text
+   tones and --ink4 is non-text. Measured at 3.46:1 against a 4.5:1 requirement. */
+/* ⚠️ `.bgrp-h .bgrp-n` (two classes) outranks `.bgrp-n` (one). Specificity again — the same
+   mistake as the double search bar, three hours apart. Match the original selector. */
+.bgrp-h .bgrp-n{color:var(--ink3)}
+.mtable td .none,.mtable .dash,.trow-empty{color:var(--ink3)}
+
+/* 🔴 THE OUTSIDE LABEL LOST ITS COLOUR TO A LATER RULE — TWICE. `.bar.saved .bl{color:var(--ci)}`
+   paints near-black because that is what a FILLED blue bar can carry; an outside label is not on
+   the bar, it is on the dark lane, so the same declaration renders it at 2.84:1 — and at 1.41:1
+   before `--ci` existed. Specificity was the whole argument both times: 0,3,1 versus 0,2,1 read
+   as decisive and was not, once a third rule joined. Settled here with an ancestor in the
+   selector (0,3,2) and placed last, because "a label that has left the bar must leave the bar's
+   ink behind" is an invariant, not a preference. Audit rule 5f is the falsifier. */
+.lane .bar.lbl-out .bl,
+.lane .bar.lbl-out-l .bl,
+.lane .bar.saved.lbl-out .bl,
+.lane .bar.saved.lbl-out-l .bl{color:var(--ink)}
+
+/* 🔴 A "FILLED" STYLE MUST NEVER BE ABLE TO RENDER UNFILLED. `.stt.saved` sets near-black text and
+   takes its background from a custom property; on Broadcast that property was never set, so the
+   fill resolved to nothing and the text sat on the dark row at 1.19:1 — styled as if filled, not
+   actually filled, which no eye catches at 9px. Passing the value at the call site fixed the
+   instance; this fixes the CLASS, so no future page can reintroduce it by forgetting. */
+.stt.saved{background:var(--c,var(--ok))}
+
+/* 🔴 THE FALLBACK WAS THE BUG, AND IT TOOK FIVE ATTEMPTS TO SEE IT. `var(--ci, var(--on-accent))`
+   defaults a state badge to near-black — correct ON A FILL, catastrophic without one, and
+   Broadcast renders it without one because there the state is TEXT in a cell, not a chip. Chasing
+   it as "the fill is missing" was chasing the wrong half: Harkirat's original report was "how did
+   that SAVED text pass accessibility, I can barely see it" — TEXT, which is exactly what it is
+   there and what it should stay. So the default becomes a colour that is readable on the PAGE,
+   and `--ci` takes over only where a fill actually exists. A fallback should be safe in the
+   absence of the thing it falls back from; this one assumed its presence. */
+.stt.saved{color:var(--ci,var(--ink2))}
+/* a filled state badge (Season passes --c) still takes the ink its fill can carry */
+.stt.saved[style*="--c"]{color:var(--ci,var(--on-accent))}
