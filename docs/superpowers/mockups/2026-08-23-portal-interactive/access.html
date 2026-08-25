@@ -231,10 +231,10 @@
         <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
         irreversibility is the opposite of one. A permissions array is never allowed to be empty
         &mdash; an admin with nothing granted should be revoked, not parked in limbo.
-        <b>&#128274; <code>destructive</code> does not exist in the bot yet:</b> wiring it means adding it to
-        <code>utils/adminAccess.js</code>'s <code>ADMIN_COMMANDS</code> and to
-        <code>AdminUser</code>'s permissions, and the schema gate cannot validate it until then
-        &mdash; it only checks tokens shaped <code>manage.*</code>.</p>`;
+        <b>&#128274; <code>destructive</code> is a real token in the bot</b> as of 2026-08-25 &mdash;
+        <code>utils/adminAccess.js</code>'s <code>ADMIN_COMMANDS</code> and <code>AdminUser</code>.
+        <code>all</code> is excluded from it by <code>NOT_IN_ALL</code>, so it can only ever arrive
+        by being typed.</p>`;
     viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
     viewGrid.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => {
       const a = st.admins.find(x => x.discordId === b.dataset.drop); if (a) confirmRevoke(a); });

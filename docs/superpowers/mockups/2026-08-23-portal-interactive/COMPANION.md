@@ -725,7 +725,7 @@ Each token with its holders, derived from the *same* grants so the two views can
 
 | Element | What it is | Wires to |
 |---|---|---|
-| `.mxgrp th` | Two group headers — **Commands** and **/manage pages** — over the eleven columns. The split is the model's, not a layout choice: three `ADMIN_COMMANDS` and eight `MANAGE_PAGE_SCOPES` | `utils/adminAccess.js` |
+| `.mxgrp th` | Two group headers — **Commands** and **/manage pages** — over the twelve columns. The split is the model's, not a layout choice: four `ADMIN_COMMANDS` and eight `MANAGE_PAGE_SCOPES`. ⚠️ **Order IS the grouping**: the colspans come from the two lists' lengths while the columns come from `accessScopes` order, so appending a command at the end made "Commands" span three commands and a page | `utils/adminAccess.js` |
 | `.mx thead .mxs.mxcol` | Scope column header. `i` is a 3px bar in that scope's borrowed topic colour; `em.mxn2` carries the live holder count; `.spof` rings it when exactly one non-owner holds it | `F.SCOPE_META[key]` |
 | `.mxcell` | One grant, `role="img"` — **not interactive**. Filled square = **direct**, hollow ring = **inherited** from a bare `manage`, empty = not held | `F.accessAdmins[i].grants[key]` |
 | `.mxcell.locked` | The owner row. Every scope, permanently, by short-circuit before the allowlist is read | `utils/owner.js` |
@@ -2073,9 +2073,17 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 
 **The tempting fix was to add it to `states()`, which would have made `states()` a lie so that a check would pass.** A legend carries two kinds of entry and only one is a row state — the lock explains a property of a *column*, true whether or not any cell shows it. So the annotation is marked `data-note` and rule 6 skips it: **opting out of matching, never out-specifying.**
 
-### 5.9q.7 ⏳ What wiring still owes
+### 5.9q.7 ✅ Paid the same day — and what paying it found
 
-**`destructive` does not exist in the bot.** Wiring it means adding it to `utils/adminAccess.js`'s `ADMIN_COMMANDS` and to `AdminUser`'s permissions, and **the schema gate cannot validate it until then** — `checkScopes` only inspects strings shaped `manage.*`, so this token passes unchecked. That is stated on the Access page itself, where somebody reading the matrix will meet it, rather than only here.
+`destructive` is a real token in `utils/adminAccess.js`'s `ADMIN_COMMANDS` now, documented on `AdminUser`, and **`portal:gate` reports 12 permission tokens** where it reported eleven all week. The mockup's twelfth column is validated against the bot rather than merely declared.
+
+**Three things the wiring found that the design had not:**
+
+1. **`parsePermissionsInput('all')` returned `[...ADMIN_COMMANDS]`**, so adding the token would have made `all` hand out irreversibility — the exact thing this design says it must never do. `NOT_IN_ALL` is a separate list checked at the one place `all` expands, so the exclusion is visible where it matters rather than as a flag somewhere else.
+2. **The existing test asserted `parsePermissionsInput('all')` equals `[...ADMIN_COMMANDS].sort()`.** A test that tracks the implementation cannot notice the implementation going wrong — it would have absorbed the new token in silence. It names the three expected commands literally now.
+3. **`formatPermissions` silently dropped it.** It enumerates tokens by name, so `['destructive','manage']` read back as `/manage (full)` — an owner reviewing an admin's access could not see they held the right to purge. **A permission that is granted and invisible is worse than one that is not granted.** Fixed, and `unformattablePermissions()` reports any grantable token the formatter cannot render, so the *next* one is caught by a test rather than by somebody noticing a gap in a summary.
+
+⚠️ **No privacy amendment is needed, and that was checked rather than assumed.** `docs/legal/PRIVACY.md` §2.1b and Appendix A already describe `AdminUser` as holding "which pages/commands they can use" — the `permissions` array is disclosed generically, so a new token in it is neither a new field nor a new kind of data.
 
 ---
 
@@ -2603,7 +2611,7 @@ If you build one thing beyond the pages themselves, build that comparison. Until
 What that means concretely, and each line is a design obligation rather than a summary:
 - **Default:** every tier-3 operation — the purges, `season.promoteDraft`, `season.discardDraft`, anything with no inverse — requires the owner id. Another admin holding the page scope sees the control **present and disabled with the reason stated**, never hidden. Hiding it teaches nothing and produces a support question.
 - **The capability is a real, separate grant**, not a side effect of holding a page scope. An admin can hold `manage.draws` and still not be able to purge draws.
-- **Only the owner can grant it.** Not an admin holding `manage`. This is the first token in the model whose *granting* is restricted, so the Access matrix has to say so — a column that looks like the other eleven but behaves differently is exactly the "one class, two contracts" failure §5.9o.1 is about.
+- **Only the owner can grant it** — true, and ⚠️ **the REASON stated here on 2026-08-25 was wrong, and is corrected rather than quietly deleted.** It read *"Not an admin holding `manage`. This is the first token in the model whose granting is restricted."* It is not the first: **every route in `portal/api/access.js` is wrapped in `ownerOnly()`**, and in the bot only the owner may grant at all. Granting has always been owner-only for all twelve tokens. What IS novel is two things the check found while wiring it into the bot: it gates **who may RUN a tier-3 operation**, which no other token touches, and **`all` deliberately does not expand to it** — `NOT_IN_ALL` in `utils/adminAccess.js` — so it is the one token that can never arrive by shorthand. A convenience that quietly hands out irreversibility is the opposite of one. The matrix still marks the column, because "the owner grants this" is worth saying even when it is true of everything.
 - **The grant flow carries explicit warnings**, in the same voice as the one-way strip: it names what the admin will be able to do that cannot be undone, and it is a typed confirmation, not a checkbox.
 - **The safeguard is export retention.** The interlock today only asks whether an export *happened*; the tier-3 record should keep the export itself, so a purge run by a delegated admin leaves the owner holding the data that was purged rather than a note saying somebody downloaded it.
 
