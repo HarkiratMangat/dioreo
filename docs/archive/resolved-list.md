@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 🐞 The Season page loaded scrolled to the bottom (2026-08-24 ~17:00 EDT)
+
+*Swept out of `docs/db-deferred-list.md`'s 🐞 Active Bugs on 2026-08-24 22:26 EDT — an item leaves an active list only by appearing here, and docs-audit's `deferred-sweep` check caught it still sitting in the active section after being marked resolved.*
+
+- ✅ **RESOLVED 2026-08-24 ~17:00 EDT — the Season page loading scrolled to the bottom is FIXED, and the original non-repro was a measurement error.** *(Reported 2026-08-24 13:2x EDT; filed unresolved at 15:4x EDT; reproduced and fixed the same evening.)* 🔴 **`main` IS THE SCROLL CONTAINER** — `app.css`'s `main{overflow:auto}` inside `.app{height:100vh}` — so `window.scrollY` is ALWAYS 0 and `document.documentElement.scrollHeight` ALWAYS equals `innerHeight` on every portal page. The filed entry's evidence (`scrollY:0`, `scrollHeight === innerHeight`) was therefore incapable of showing the fault, and both numbers were healthy while the bug was real. **Measured after switching to `main.scrollTop`: five of five COLD loads landed at exactly `scrollHeight - clientHeight`, zero of ~50 warm ones.** An early reading that it was a width threshold (≤960px) was confounded with warm-up and is withdrawn — 900px is clean once warm. The late mechanism (scroll anchoring vs a restored offset vs a stray focus) was never isolated, so the fix holds for all three: **`Shell.holdTop()`** asserts the opening position once the first render and the font reflow are done and stands down on the first real user gesture. Full detail in `docs/superpowers/mockups/2026-08-23-portal-interactive/COMPANION.md` §5.9i. **The general lesson, which outlives this bug: when a probe returns well-formed healthy numbers for a fault a person can see, suspect the probe is reading a different element before suspecting the report.**
+
+---
+
 ## 🖥️ Portal interactive mockups — the six remaining pages, built (2026-08-24 09:55 EDT)
 
 **Closed:** *Build the six remaining portal mockup pages, on the foundation Season and Armory established* `[P2 · L · Opus5-High]`, filed 2026-08-24 00:08 EDT out of the interactive-mockup session and closed the same morning.

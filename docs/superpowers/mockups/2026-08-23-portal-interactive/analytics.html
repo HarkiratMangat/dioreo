@@ -142,15 +142,34 @@
                 <span class="dc">${d.calls} call${d.calls === 1 ? '' : 's'} · ${d.events} event${d.events === 1 ? '' : 's'}</span>
               </div>`).join('')}
           </div>
-          <div class="hbanner ${slowest.ms > 3000 ? 'warn' : ''}">
+          <!-- 🔴 THIS BANNER ASSUMED DATA EXISTS, in three separate places rather than one.
+               slowest is depStats[0], undefined with no timings; the atlas lookup returns
+               undefined if that dependency has simply never been called, which is a REAL state on
+               a freshly started bot and not only an empty fixture; and the reader of an empty
+               portal needs to be told the reason is "nothing has run yet" rather than shown a
+               blank. Measured: this threw a TypeError under ?empty=1 and killed the page before
+               S.audit ran, so the states sweep reported "no selfCheck" — a page that dies is a
+               page no check can see.
+               ⚠️ AND THE FIRST VERSION OF THIS COMMENT BROKE THE PAGE. Backticks inside an HTML
+               comment inside a TEMPLATE LITERAL terminate the literal. THIRD time in this
+               package. There are no backticks in this comment and there must never be. -->
+          ${(() => {
+            if (!F.depStats.length) return `<div class="hbanner">
+              <span class="hbi">&#10003;</span>
+              <div><h4>No timings recorded yet</h4>
+                <p>A dependency only appears here once something has called it. On a bot that has
+                   just started, that is the correct reading — not a gap.</p></div></div>`;
+            const atlas = F.depStats.find(d => d.name === 'atlas');
+            return `<div class="hbanner ${slowest.ms > 3000 ? 'warn' : ''}">
             <span class="hbi">${slowest.ms > 3000 ? '!' : '&#10003;'}</span>
             <div><h4>${slowest.name} is the outlier at ${fmtMs(slowest.ms)}</h4>
-              <p>Atlas answers in <b>${fmtMs(F.depStats.find(d => d.name === 'atlas').ms)}</b> across
-                <b>${F.depStats.find(d => d.name === 'atlas').calls}</b> calls, so the database is not the
-                cost — image work is. ${slowest.ms > F.ACK_DEADLINE_MS
+              <p>${atlas
+                ? `Atlas answers in <b>${fmtMs(atlas.ms)}</b> across <b>${atlas.calls}</b> calls, so the
+                   database is not the cost — image work is. `
+                : `Atlas has not been called in this window, so the database is not in this picture at all. `}${slowest.ms > F.ACK_DEADLINE_MS
                   ? `At ${fmtMs(slowest.ms)} it exceeds Discord's ${F.ACK_DEADLINE_MS / 1000}s ack deadline on its own, which is survivable only because it runs as a <b>background</b> job rather than inside an interaction.`
                   : 'It stays inside the interaction budget.'}</p></div>
-          </div>
+          </div>`; })()}
         </section>
 
         <section class="hpanel">
@@ -432,7 +451,14 @@
       F.changeLog.forEach((c, i) => rows.push({ kind:'change', at:c.at, level:'info',
         what:c.summary, detail:`${c.page} · ${c.action} · ${c.model}`, who:c.actorId ? 'admin' : 'system',
         id:'ch' + i, undone:c.undone, page:c.page, action:c.action, model:c.model }));
-    if (st.riv === 'all' || st.riv === 'boot')
+    /* 🔴 THIS ROW WAS UNCONDITIONAL. It is a hand-written boot event, and it was pushed into
+     * the river whether or not any boot had been recorded — so with an empty BootRecord the
+     * stream said "Bot online — 3.66.0-pre" beside a header reading "0 recorded". The river is
+     * a record of what happened; a row it invents is worse than a row it omits, because a
+     * reader has no way to tell the two apart. Found by the states sweep's empty pass, which
+     * is the only thing that could have: with real data the row is indistinguishable from a
+     * true one. */
+    if ((st.riv === 'all' || st.riv === 'boot') && F.bootStats.boots > 0)
       rows.push({ kind:'boot', at:'2026-08-23 17:17', level:'info',
         what:`Bot online — ${F.bootStats.lastVersion}`, who:'system', id:'bt0',
         detail:`${F.bootStats.kind} restart · ${F.bootStats.commandsRegistered} commands · ${F.bootStats.guilds} guilds` });
@@ -601,8 +627,10 @@
   (window.Shell||window.S).holdTop();
   S.audit({
     interactions: () => [
-      { name:'river event',    run: () => rows.querySelector('tr[data-id]').click() },
-      { name:'command detail', run: () => openCmd(F.cmdStats[0].command + '|' + (F.cmdStats[0].subcommand || '')) }
+      { name:'river event',    when: () => !!rows.querySelector('tr[data-id]'),
+        run: () => rows.querySelector('tr[data-id]').click() },
+      { name:'command detail', when: () => F.cmdStats.length > 0,
+        run: () => openCmd(F.cmdStats[0].command + '|' + (F.cmdStats[0].subcommand || '')) }
     ]
   });
 })();

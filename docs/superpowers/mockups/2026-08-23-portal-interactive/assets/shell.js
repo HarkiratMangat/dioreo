@@ -931,8 +931,16 @@
       const wantsInteractive = /[?&]audit=1\b/.test(location.search);
       if (interactions && wantsInteractive) {
         const scrollY = window.scrollY;
-        interactions().forEach(({ name, run }) => {
+        interactions().forEach(({ name, run, when }) => {
           try {
+            /* 🔴 SKIPPING IS REPORTED, NEVER SILENT. Analytics' interactions index
+             * `F.cmdStats[0].command` and click `tr[data-id]`, both of which throw against an
+             * empty fixture — so on ?empty=1 the page died before S.audit ever ran and the
+             * sweep reported "no __selfCheck" rather than a result. A `when` that returns
+             * false records the skip in the problem list as a NOTE, because an interaction
+             * check that quietly stops running is exactly the vacuous pass this file exists
+             * to prevent: the run still looks clean, and nothing was checked. */
+            if (when && !when()) { problems.push(`note: ${name} not applicable (no data)`); return; }
             run();
             const d = document.querySelector('.drawer.open');
             if (!d) { problems.push(`${name} opened no panel`); return; }

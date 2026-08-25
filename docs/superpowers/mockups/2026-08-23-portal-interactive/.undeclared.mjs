@@ -99,7 +99,38 @@ const KNOWN_FALSE = {
   'season.html':   ['item']                      // "item(s)" in a confirm body
 };
 
-let bad = 0;
+/* ══════════════════════════════════════════════════════════════════════════════
+ * SYNTAX, BEFORE ANYTHING ELSE.
+ *
+ * A backtick inside an HTML comment inside a TEMPLATE LITERAL terminates the literal, and
+ * the page dies at parse time. That has now happened THREE times in this package —
+ * shell.js, broadcast.html, analytics.html — and every time it was found by opening the page
+ * and seeing it blank, because a dead page produces no console output that any of these
+ * gates read and no __selfCheck for the sweeps to collect. A page that cannot parse is a
+ * page every other check is silent about.
+ *
+ * `new Function(src)` parses without executing, which is exactly the discrimination wanted:
+ * it reports the SyntaxError and never runs a line of realm code in Node.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+let syntaxBad = 0;
+for (const f of files) {
+  const js = inlineJs(readFileSync(dir + f, 'utf8'), f);
+  if (!js.trim()) continue;
+  try { new Function(js); }
+  catch (e) { console.log(`  ❌ ${f}: does not parse — ${e.message}`); syntaxBad++; }
+}
+/* The falsifier: a planted backtick-in-a-comment must be caught, or a clean run means nothing. */
+{
+  const poison = 'const x = `<!-- a ` backtick -->`;';
+  let caught = false;
+  try { new Function(poison); } catch (e) { caught = true; }
+  console.log(caught ? '  ✅ self-test: an unterminated template IS caught'
+                     : '  ❌ self-test: VACUOUS — the syntax check cannot fail');
+  if (!caught) syntaxBad++;
+}
+console.log(syntaxBad ? `  ⚠ ${syntaxBad} page(s) with a syntax error` : '  ✅ every page parses');
+
+let bad = syntaxBad;
 for (const f of files) {
   const js = inlineJs(readFileSync(dir + f, 'utf8'), f);
   if (!js.trim()) continue;

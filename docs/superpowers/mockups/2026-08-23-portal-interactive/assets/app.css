@@ -2953,6 +2953,15 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* the bar carries its own text colour; the global fallback stays for anything not yet converted */
 .bar.saved,.bar.saved .bl{color:var(--ci,var(--on-accent))}
+/* 🔴 A STAGED BAR'S LABEL IS NOT ON A FILL. `.bar.staged` is dashed and hollow — the label
+   renders on the LANE, so painting it `var(--c)` puts a topic accent on --paper/--sunk, and a
+   topic accent is designed to fill a shape, not to carry 10.5px text. Measured by the states
+   sweep on Broadcast's Airtime view, which nothing had ever audited because it is [hidden] at
+   load: "starts Aug 26" at 3.87:1. The border already carries the topic; the label does not
+   need to. This is the SAME correction the shipped portal made for Season's staged bars (three
+   of four Season accents fail as text on --paper: --ret 3.63, --ev 3.89, --play 4.09) — the
+   mockup had kept the old behaviour, in a view no check had opened. */
+.bar.staged .bl{color:var(--ink)}
 .bar.lbl-out .bl,.bar.lbl-out-l .bl,
 .bar.saved.lbl-out .bl,.bar.saved.lbl-out-l .bl{color:var(--ink)}
 /* two more `--ink4`-as-text slips the rule caught: the lane caret and a collapsed lane's name */
@@ -2969,9 +2978,30 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:flex-end}
 .mh-add-k{font:600 10px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
   margin-right:3px}
-.pill.mh-t{padding:9px 14px;font-weight:600;border-color:color-mix(in srgb,var(--c) 38%,var(--rule));
-  background:color-mix(in srgb,var(--c) 9%,transparent);color:var(--ink)}
-.pill.mh-t:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 20%,transparent)}
+/* ══ THE CREATE FAMILY — the shape Harkirat kept ══════════════════════════════
+   Harkirat, 2026-08-24, on the six Add pills: *"while yes these buttons are pretty and i
+   would love to use their style elsewhere, but for this specific area, can you use the
+   styling of how the 'new item' used to look prior to this? ... i mainly want the pill,
+   spacing, border, etc to feel like the original button's style yk? however, i do like those
+   colored diamonds in the buttons, please keep those."*
+
+   What that original button was, measured off the screenshot he attached against the live
+   `.pill.lead`: a ROUNDED RECTANGLE (~9px, not the 999px stadium the .pill component gives),
+   a full-strength 1px accent border rather than a mixed-down one, an accent fill at 14%, a
+   13px/600 label in --ink, and 10px/15px padding. So the six type buttons are `.pill.lead`
+   with the realm's TOPIC accent substituted for --patch, and the diamond kept.
+
+   🔴 THE RECT RADIUS IS SCOPED TO THIS FAMILY, not pushed onto `.pill`. `.pill` is the
+   package's general component and its stadium shape is doing real work everywhere else —
+   filter chips, the export scopes, the selection bar's actions. A create control is a
+   different object from a filter, and this is what makes it read as one at a glance. */
+.pill.lead,.pill.mh-t{border-radius:9px}
+.pill.mh-t{padding:10px 15px;font-weight:600;font-size:13px;color:var(--ink);
+  border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.pill.mh-t:hover{background:color-mix(in srgb,var(--c) 24%,transparent)}
+/* The diamond is the one thing he asked to keep, and it is the only per-type mark left now
+   that every button carries the same border weight — so it does the whole job of saying
+   which lane you are adding to. */
 .pill.mh-t .dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none;transform:rotate(45deg)}
 .mh-k{font:500 10px/1 var(--ui);color:var(--ink3);border:1px solid var(--rule2);border-radius:4px;
   padding:4px 6px;margin-left:2px}

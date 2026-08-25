@@ -1003,3 +1003,52 @@ window.FIX = (function () {
                             ackBuckets, alertStats, alertSample, memStats, changeLog, searchTerms,
                             bootStats, OBS_TOTALS };
 })();
+
+/* ══════════════════════════════════════════════════════════════════════════════
+ * ?empty=1 — THE STATE NOBODY HAD EVER LOOKED AT
+ *
+ * Every screenshot, every audit run and every design decision in this package was made
+ * against a full season: 39 items, 31 builds, 4 announcements, 3 admins. The empty case was
+ * never rendered once — and it is where the things that only break when a list is empty live:
+ * a stale `colspan` on the "nothing matches" row (invisible until the table is empty, and
+ * three of them WERE stale after the remove column was added), an empty-state paragraph that
+ * says nothing a reader could not already see, a stat block dividing by zero, a chart with
+ * no domain, a summary line reading "0 of 0 shown".
+ *
+ * It is a QUERY FLAG rather than a second fixture file on purpose: a copy of the fixtures
+ * with the arrays blanked is a second thing to keep true, and it would drift the first time
+ * a field was added. This blanks the real arrays, so it can never describe a shape the full
+ * fixture does not have.
+ *
+ * ⚠️ SCALARS ARE NOT ZEROED. `season.title`, the deadline dates, OWNER_ID and the various
+ * *_MS constants stay as they are — an empty portal is one with no RECORDS, not one with no
+ * configuration, and zeroing those would test a state the bot cannot be in.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+/* 🔴 GUARDED FOR NODE. `.schema-gate.mjs` and `.roundtrip.mjs` both eval this file in Node to
+ * read the fixtures, where `location` does not exist — so an unguarded reference here does not
+ * degrade, it throws, and it takes BOTH gates down with it. Caught by running them rather than
+ * by reading the diff: the browser was perfectly happy. */
+if (typeof location !== 'undefined' && /[?&]empty=1\b/.test(location.search)) {
+  const BLANK = ['newDraws', 'returningDraws', 'calendar', 'patchNotes', 'items', 'seasonItems',
+                 'seasonRepairs', 'announcements', 'accessAdmins', 'sessions', 'spof', 'builds',
+                 'cmdStats', 'depStats', 'reachStats', 'alertSample', 'changeLog', 'searchTerms',
+                 'sampleOps'];
+  BLANK.forEach(k => { if (Array.isArray(window.FIX[k])) window.FIX[k] = []; });
+  /* Derived counts must follow, or a realm reports "31 builds" over an empty table — which is
+   * the failure this flag exists to make visible, showing up as a lie instead of a blank. */
+  /* 🔴 ZERO THE KEYS THE OBJECT ALREADY HAS — never substitute a hand-written replacement.
+   * The first version wrote `{ MP:0, DMZ:0, total:0, weapons:0 }` over ARMORY_COUNTS, which
+   * really carries `sample` and `needRepair` too — so Home rendered a literal "undefined of 0
+   * builds". That is precisely the drift this flag exists to avoid, committed by the flag
+   * itself: a hand-written empty shape is a second thing to keep true, and it went stale the
+   * moment it was written. Mapping over the real object cannot describe a shape the full
+   * fixture does not have. */
+  const zeroNumbers = o => Object.fromEntries(
+    Object.entries(o).map(([k, v]) => [k, typeof v === 'number' ? 0 : v]));
+  ['ARMORY_COUNTS', 'OBS_TOTALS', 'LOADOUT_STATS', 'bootStats', 'alertStats', 'outcomeStats',
+   'entryStats', 'adminSplit', 'memStats'].forEach(k => {
+    const v = window.FIX[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)) window.FIX[k] = zeroNumbers(v);
+  });
+  document.documentElement.dataset.empty = '1';
+}

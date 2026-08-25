@@ -1603,6 +1603,64 @@ Applied in `addItem()` **after** `renderAll()` (the node does not exist until th
 
 ---
 
+## 5.9l THE STATES SWEEP — every surface nobody had ever opened
+
+### 5.9l.0 What was never looked at, and why the existing checks could not have
+
+Every screenshot, every audit run and every design decision in this package had been made against **eight resting states at fixed widths**. Nothing had opened a drawer, clicked a view tab, or rendered a page with no data. That is not a small gap: it is most of the product.
+
+- **The interaction smoke test had never been run once.** `Shell._audit`'s rule 9 drives every declared path that opens a panel and asserts it produced a real title and a non-empty body — gated on `?audit=1`, a flag nothing ever passed.
+- **A view that is `[hidden]` at load is audited by nothing.** Season has 3 views, Armory 4, Broadcast 2, Access 2, Analytics 5. Sixteen surfaces, of which the load-time pass reaches five.
+- **Empty data had never rendered.** That is where a stale `colspan` lives (invisible until the table is empty — and three *were* stale the moment the remove column landed), and an empty state that teaches nothing, and a stat that reports a count over an empty list.
+
+`.states.html` (`?self=1` for the falsifier) runs **32 passes**: interactions × 8 pages, then every view tab with the full audit re-run against it, then every page under `?empty=1`.
+
+### 5.9l.1 `?empty=1` — a flag, not a second fixture
+
+`assets/fixtures.js` blanks every **record array** when the flag is present.
+
+🔴 **It is a query flag rather than a second fixture file on purpose.** A copy of the fixtures with the arrays emptied is a second thing to keep true, and it would drift the first time a field was added. Blanking the real arrays cannot describe a shape the full fixture does not have.
+
+🔴 **Scalars are NOT zeroed.** `season.title`, the three deadline dates, `OWNER_ID`, the `*_MS` constants. An empty portal is one with **no records**, not one with no configuration — zeroing those would test a state the bot cannot be in.
+
+🔴 **AND THE FLAG SHIPPED WITH THE EXACT BUG IT EXISTS TO CATCH.** The first version wrote a hand-written `{ MP:0, DMZ:0, total:0, weapons:0 }` over `ARMORY_COUNTS`, which really carries `sample` and `needRepair` too — so Home rendered a literal **"undefined of 0 builds"**. A hand-written empty shape is a second thing to keep true, and this one went stale in the same commit that created it. It maps over the real object now (`zeroNumbers`), across nine derived-count objects.
+
+🔴 **AND IT TOOK BOTH NODE GATES DOWN.** `location.search` does not exist in Node, and `.schema-gate.mjs` and `.roundtrip.mjs` both `eval` this file to read the fixtures — so an unguarded reference did not degrade, it threw. Caught by *running* the gates, not by reading the diff: the browser was perfectly happy. `typeof location !== 'undefined'` guards it.
+
+### 5.9l.2 What the first run found
+
+1. 🔴 **`span.bl` in `div.bar.staged` at 3.87:1** — Broadcast's **Airtime** view, which nothing had ever audited because it is `[hidden]` at load. `.bar.staged` paints its label `var(--c)`, but a staged bar is **dashed and hollow**, so the label renders on the lane rather than on a fill — a topic accent is designed to fill a shape, not to carry 10.5px text. **This is the same correction the shipped portal already made for Season's staged bars** (three of four Season accents fail as text on `--paper`: `--ret` 3.63, `--ev` 3.89, `--play` 4.09). The mockup had never received it, in a view no check had opened. `.bar.staged .bl{color:var(--ink)}` — the border already carries the topic.
+2. 🔴 **Analytics died on empty data** before `S.audit` ever ran, so the sweep reported *"no `__selfCheck`"* rather than a result. Its two interactions index `F.cmdStats[0].command` and click `tr[data-id]`, both of which throw against an empty fixture.
+3. 🔴 **The `?empty=1` bug above**, found by the sweep against its own author.
+
+### 5.9l.3 `when` — because a skipped check must be a visible one
+
+An interaction may now declare `when()`. If it returns false the audit pushes **`note: <name> not applicable (no data)`** into the problem list rather than silently passing.
+
+🔴 **Silence would have been the easy fix and the wrong one.** An interaction check that quietly stops running is exactly the vacuous pass this package has now shipped three times: the run still looks clean, and nothing was checked. A note is visible, greppable, and cheap.
+
+### 5.9l.4 The probe cried wolf, and that is a defect too
+
+The first run reported **10 findings**; seven were the same false positive. The count probe read every `.mh-stats .v` and flagged Season's **"79 days left"** and the tray's **"1 staged"** — both true statements about things `?empty=1` deliberately does not blank (a season still has an end date; `sessionStorage` still holds staged work).
+
+It is narrowed to stats whose own `.k` **label names a record noun** (`items|builds|admins|announcements|events|draws|entries|terms|alerts|commands|changes|tokens|granted|weapons|sessions`), plus `#count` and `.rt`, which are unambiguously "N of M shown" lines.
+
+**A probe that cries wolf trains its reader to skim the real ones**, which is the same end state as a probe that misses them. Both halves of a check matter: it must be able to fail, *and* it must not fail on things that are fine.
+
+### 5.9l.4b And one the empty pass found that has nothing to do with empty data
+
+🔴 **Analytics' river pushed a hand-written boot row unconditionally.** `rows.push({ kind:'boot', at:'2026-08-23 17:17', … })` ran whether or not any boot had been recorded — so with an empty `BootRecord` the stream read *"Bot online — 3.66.0-pre"* beside a header saying **"0 recorded"**.
+
+**The river is a record of what happened; a row it invents is worse than a row it omits**, because a reader has no way to tell the two apart. With real data that row is indistinguishable from a true one, which is why only the empty pass could have found it — and why "we only ever look at the populated state" is a coverage gap rather than a preference.
+
+Also fixed in the same pass: the timing banner made **three** separate assumptions that data exists (`depStats[0]`, the `atlas` lookup, and the reader's need to be told *why* it is empty). The atlas one is not hypothetical — a dependency that has simply never been called is a real state on a freshly started bot, not only a fixture artefact.
+
+### 5.9l.5 The falsifier
+
+`?self=1` builds a three-column table whose empty row spans nine, and asserts the sweep reports it. **If that self-test ever fails the run exits non-zero rather than printing a clean result**, because a sweep that cannot report a defect is worth less than no sweep — it manufactures confidence.
+
+---
+
 ## 6. Wiring guide — the order to do it in
 
 1. ✅ **`utils/owner.js` — ALREADY DONE, skip it.** *(Shipped in `009931a`, the portal operation core; this step read as outstanding until 2026-08-24 and a cold reader confirmed it would have cost the first hour of a wiring session.)* The leaf module exists and imports nothing, `utils/adminAccess.js` and `scripts/botAccessPermissions.test.js` already require it, `scripts/ownerModule.test.js` asserts the closure stays clean, and `docs/legal/PRIVACY.md` already names `utils/owner.js` rather than `commands/manage.js`. **Verify in one command before trusting this line:** `rg -n "require.*owner" utils/adminAccess.js scripts/botAccessPermissions.test.js`. The original reasoning is kept because it explains why the module exists: `isOwner()` used to `require('../commands/manage')`, pulling 39 local files plus discord.js, jimp and child_process into anything that wanted one constant.

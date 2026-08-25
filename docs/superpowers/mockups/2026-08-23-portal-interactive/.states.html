@@ -1,0 +1,132 @@
+<!doctype html><meta charset="utf-8"><title>states sweep</title>
+<style>
+body{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0B0D0E;color:#E8ECEF;padding:18px;margin:0}
+h1{font:600 15px system-ui;margin:0 0 4px}p.n{color:#85939F;margin:0 0 14px;max-width:88ch}
+pre{white-space:pre-wrap;margin:0}
+.ok{color:#3DDC97}.bad{color:#FF6B6B}.warn{color:#F2C230}.dim{color:#85939F}
+iframe{position:fixed;left:-4000px;top:0;width:1280px;height:900px;border:0}
+</style>
+<h1>States sweep — the surfaces nobody had opened</h1>
+<p class="n">Three passes per page, at 1280&times;900. <b>1 · interactions</b> — <code>?audit=1</code> drives every
+declared path that opens a panel and asserts it produced a real title and a non-empty body; this had
+never been run once. <b>2 · views</b> — every <code>[role=tab]</code> is clicked and the full audit
+re-run against it, because a view that is <code>[hidden]</code> at load is audited by nothing.
+<b>3 · empty</b> — the same page under <code>?empty=1</code>, which blanks every record array. That
+is where a stale <code>colspan</code>, an empty state that teaches nothing, and a stat dividing by
+zero live.</p>
+<pre id="out">running…</pre>
+<script>
+const PAGES = ['index','season','armory','broadcast','access','review','analytics','door'];
+const out = document.getElementById('out');
+const lines = [];
+const paint = () => { out.innerHTML = lines.join('\n'); };
+
+function load(url){
+  return new Promise(res => {
+    const f = document.createElement('iframe');
+    f.src = url; document.body.appendChild(f);
+    f.onload = () => setTimeout(() => res(f), 1400);
+  });
+}
+const readCheck = f => { try { return f.contentWindow.__selfCheck || null; } catch (e) { return { error:e.message }; } };
+const say = (tag, name, probs) => {
+  if (!probs) { lines.push(`<span class="warn">?    </span> ${name.padEnd(26)} ${tag} — no __selfCheck (the page never called S.audit)`); return 1; }
+  if (probs.error) { lines.push(`<span class="bad">ERR  </span> ${name.padEnd(26)} ${tag} — ${probs.error}`); return 1; }
+  const n = (probs.problems || []).length;
+  if (!n) { lines.push(`<span class="ok">PASS </span> ${name.padEnd(26)} ${tag}`); return 0; }
+  lines.push(`<span class="bad">FAIL </span> ${name.padEnd(26)} ${tag} — ${n}`);
+  (probs.problems || []).slice(0, 8).forEach(p => lines.push(`        <span class="dim">${p}</span>`));
+  return n;
+};
+
+(async () => {
+  let bad = 0, ran = 0;
+
+  /* PASS 1 + 2 — interactions, then every view tab. */
+  for (const p of PAGES) {
+    const f = await load(p + '.html?audit=1');
+    bad += say('interactions', p, readCheck(f)); ran++;
+    let tabs = [];
+    try { tabs = [...f.contentDocument.querySelectorAll('[role=tab][data-view]')]; } catch (e) {}
+    for (let i = 0; i < tabs.length; i++) {
+      const v = tabs[i].dataset.view;
+      try {
+        tabs[i].click();
+        await new Promise(r => setTimeout(r, 700));
+        /* Re-run the audit against the view that is now on screen. A view that is [hidden]
+         * at load contributes nothing to the load-time pass, which is how Board shipped with
+         * four columns resting at opacity 0. */
+        f.contentWindow.Shell && f.contentWindow.Shell._audit && f.contentWindow.Shell._audit({});
+        bad += say('view:' + v, p, readCheck(f)); ran++;
+      } catch (e) { lines.push(`<span class="bad">ERR  </span> ${p.padEnd(26)} view:${v} — ${e.message}`); bad++; ran++; }
+    }
+    f.remove(); paint();
+  }
+
+  /* PASS 3 — empty.
+   * 🔴 THE STAGING STORE IS SESSION STATE, NOT A RECORD, so ?empty=1 does not blank it — but an
+   * "empty portal" plainly means nothing staged either, and leaving it made Review report
+   * "1 change" over an empty changeset. Cleared here rather than in the flag, because the flag's
+   * job is the FIXTURES and sessionStorage belongs to the harness. */
+  try { sessionStorage.removeItem('dioreo-portal-staged'); } catch (e) {}
+  for (const p of PAGES) {
+    const f = await load(p + '.html?empty=1');
+    let extra = [];
+    try {
+      const d = f.contentDocument;
+      /* A colspan that no longer spans the table is invisible until the table is empty, and
+       * three were stale the moment the remove column was added. */
+      d.querySelectorAll('table').forEach(t => {
+        const cols = t.querySelectorAll('thead th').length;
+        t.querySelectorAll('tbody td[colspan]').forEach(td => {
+          const c = +td.getAttribute('colspan');
+          if (cols && c !== cols) extra.push(`empty-row colspan ${c} but the table has ${cols} columns`);
+        });
+      });
+      /* A count over an empty list that is not zero is a lie, and it is the specific failure
+       * this pass exists to make visible.
+       * 🔴 IT MUST ONLY LOOK AT RECORD COUNTS. The first version read every `.mh-stats .v` and
+       * reported Season's "79 days left" and the tray's "1 staged" as failures — both true
+       * statements about things ?empty=1 deliberately does not blank (a season still has an
+       * end date; sessionStorage still holds staged work). Seven of the ten findings in the
+       * first run were this. A probe that cries wolf trains its reader to skim the real ones,
+       * so it is narrowed to stats whose own LABEL names a record noun. */
+      const RECORD_NOUN = /\b(items?|builds?|admins?|announcements?|events?|draws?|entries|terms?|alerts?|commands?|changes?|tokens?|granted|weapons?|sessions?)\b/i;
+      d.querySelectorAll('.mh-stats .stat').forEach(stat => {
+        const v = stat.querySelector('.v'), k = stat.querySelector('.k');
+        if (!v || !k || !RECORD_NOUN.test(k.textContent || '')) return;
+        const m = (v.textContent || '').trim().match(/^(\d[\d,]*)$/);
+        if (m && +m[1].replace(/,/g, '') > 0)
+          extra.push(`stat "${(k.textContent || '').trim()}" reports ${m[1]} with no records loaded`);
+      });
+      d.querySelectorAll('.rt, #count').forEach(el => {
+        const t = (el.textContent || '').trim();
+        const m = t.match(/^(\d[\d,]*)\b/);
+        if (m && +m[1].replace(/,/g, '') > 0) extra.push(`reports "${t.slice(0, 34)}" with no records loaded`);
+      });
+      if (!d.body.innerText.trim()) extra.push('renders nothing at all');
+    } catch (e) { extra.push('probe threw: ' + e.message); }
+    const chk = readCheck(f);
+    const merged = chk ? { problems:[...(chk.problems || []), ...extra] } : (extra.length ? { problems:extra } : chk);
+    bad += say('empty', p, merged); ran++;
+    f.remove(); paint();
+  }
+
+  /* SELF-TEST. The sweep must be able to report a defect, or a clean run is worth nothing.
+   * ?self=1 plants a table whose empty row spans the wrong number of columns. */
+  if (/[?&]self=1\b/.test(location.search)) {
+    const probe = document.createElement('table');
+    probe.innerHTML = '<thead><tr><th>a</th><th>b</th><th>c</th></tr></thead><tbody><tr><td colspan="9">x</td></tr></tbody>';
+    const cols = probe.querySelectorAll('thead th').length;
+    const caught = [...probe.querySelectorAll('tbody td[colspan]')].some(td => +td.getAttribute('colspan') !== cols);
+    lines.push(caught ? '<span class="ok">SELF-TEST</span> a wrong colspan IS caught'
+                      : '<span class="bad">SELF-TEST FAILED — this sweep cannot report a defect; do not trust a clean run</span>');
+    if (!caught) bad++;
+  }
+
+  lines.push('');
+  lines.push(bad ? `<span class="bad">=== ${bad} finding(s) across ${ran} passes ===</span>`
+                 : `<span class="ok">=== ALL CLEAN — ${ran} passes ===</span>`);
+  paint();
+})();
+</script>
