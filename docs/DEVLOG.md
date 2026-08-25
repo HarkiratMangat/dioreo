@@ -208,6 +208,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-23 15:29 EDT — The portal stops looking like scaffolding, and three audited claims turn out to be wrong (v3.68.0-pre)
 - 2026-08-24 22:26 EDT — Delete and export were not missing; they were 1,682px below the fold (v3.68.0-pre)
 - 2026-08-25 00:52 EDT — The four filed bugs, and the audit that was scrolling the page it audits (v3.68.0-pre)
+- 2026-08-25 09:02 EDT — Thirty instances, five shapes: the pass that stopped fixing instances (v3.68.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3599,6 +3600,24 @@ Then a design pass opened every realm and judged the composition instead of the 
 The rest of what looking found: Season's six create buttons were a colour chart, and the comment directly above the rule already described the correct design while the rule underneath contradicted it. A zero was painted in an alert colour. The identity strip repeated the 46px H1 verbatim 280px below it. The season overview placed items at `top: 8 + (i % 4) * 6` — the item's index in an array — so vertical position carried no meaning and the strip read as texture rather than data. Armory's headline alarm read `NEED REPAIR 109` of 125 when the real collection holds **13 actual faults and 104 merely stale records**. And our own seeding marker, `SESSIONB-SEED `, was the first word on every announcement, every player preview and every grant note.
 
 **The lesson that ties them together:** a check that cannot report presence is worth nothing, a diagnostic must not damage the thing it diagnoses, and an alarm true of 87% of rows is wallpaper. None of the six design failures was visible in a diff, and every one of them was visible in a second of looking.
+
+## 2026-08-25 09:02 EDT — Thirty instances, five shapes: the pass that stopped fixing instances (v3.68.0-pre)
+
+Every realm and every sub-view has now been opened and judged by a person, the async states that a backend introduces are designed, and the three decisions that were gating wiring are answered. What made this pass different from the eight before it is that it stopped fixing instances and started counting them.
+
+**Thirty instances, five shapes.** One quantity with two authorities (7). A mark that fires on almost every row (7). A probe that cannot report presence (6). A backtick inside a template-literal comment (6). A per-call-site fix leaving its siblings wrong (4). Every single one passed every gate at the time it shipped, and every fix until this pass had been to the instance rather than to the class.
+
+Three of the five are mechanical now. `portal:refs` lints for a backtick inside an HTML comment — prose had failed six times, and the sixth occurrence was *inside the comment written to warn about the fifth*. That fifth one taught something the parse check alone could never catch: two backticks terminate and restart the template, which parses cleanly, and if the restart lands immediately before a member access it becomes a **tagged template** — valid JavaScript that fails at runtime. A green parse gate is not a green page. Audit **rule 15** reports, as a note rather than a failure, any mark carrying a non-neutral colour on 90% or more of its sibling set; it found the Armory tier board badging *age* as a defect on 109 of 125 builds within a minute of being written, which was the third place that one conflation had been hiding after the masthead and the coverage meter were both fixed. Its own first version reported "25 of 14 siblings (179%)" because it tallied marks instead of marked rows — a ratio above 100% discredits a check instantly, whatever it found.
+
+The two shapes that resist mechanisation got the closest thing available: PASS 4e, the only check in the package that loads two pages at once and compares them, and the habit of moving a fix into the Shell instead of repeating it at each call site.
+
+**What looking found that no gate could.** Season's Board painted all thirty-nine relative-time figures in the alarm colour — "released 15d ago" as loudly as "releases in 1d" — so orange meant nothing; a `.soon` class now marks only what is within two days, and six of thirty-nine carry it. Its repair findings were clickable `<li>`s with `tabIndex -1`: mouse-only, and invisible to the keyboard pass because that pass selects by role and a bare `li` declares none. Sorting was mouse-only on four realms for exactly the same reason. And the Armory coverage meter was green on every card because its override selector asked for a `.cmeter` *descendant* of a later sibling when `.cmeter` **is** the sibling — so a bar meaning "106 of 125 builds are affected" rendered in the success colour. A dead selector and a deliberate colour look identical from the outside.
+
+**The drawer was modal to a mouse and not to a keyboard.** With a typed purge confirmation open, 218 focusable elements outside it were still reachable — you could tab past the dialog and press something on the page behind it. The scrim stops a pointer and says nothing to a keyboard; the visual half of modality had been built and the behavioural half had not. It uses `inert` now, which removes the page behind from the accessibility tree as well as the tab order, with focus returned to whatever opened the drawer.
+
+That fix carries the sharpest lesson of the day. **The first probe for it measured the wrong thing precisely.** It counted elements matching a focusable selector — and `inert` elements still match selectors and still report visible; they are merely unfocusable. It read 218 both before and after the fix, which is indistinguishable from a fix that did nothing. The only honest test calls `focus()` and sees where focus lands, with a baseline that can fail.
+
+**`prefers-reduced-motion` was measured for the first time and was a third broken.** Ninety-three selectors declare motion, forty-four had an override, and ten carrying a real `animation` had none — including an infinite 2.8s pulse on the Track's NOW marker. Six blocks had existed for weeks and the syntax was right the whole time; coverage is a relationship between two *sets* of selectors, and no amount of reading one block reveals what the other contains.
 
 # Part B — Lessons Ledger (thematic)
 
