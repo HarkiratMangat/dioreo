@@ -56,7 +56,7 @@ node .schema-gate.mjs --self-test
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
-| **5.9j–5.9u** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale and the tray’s per-row undo** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
+| **5.9j–5.9v** | **The design-and-defect record** — delete/export, motion, the states sweep, the Armory on real data, the Track redesign, the four filed bugs, what *looking* found, the destructive capability, the four unlooked-at realms, **the shape scale, the tray’s per-row undo, the display voice** | When you want to know why something is the way it is, or before "fixing" something that looks odd |
 | **15.7 / 15.7b** | Async — every loading, in-flight and failure state · `prefers-reduced-motion`, measured | Before wiring anything that waits, fails, or moves |
 | **15.11** | **Decided 2026-08-25** — server-side staging, rebuild-from-mockups, owner-only tier-3 — and the one question still open | Before assuming something is settled |
 
@@ -2148,6 +2148,45 @@ Rule 6 asserts a legend may only name states present on screen, and it flagged t
 ⚠️ **No privacy amendment is needed, and that was checked rather than assumed.** `docs/legal/PRIVACY.md` §2.1b and Appendix A already describe `AdminUser` as holding "which pages/commands they can use" — the `permissions` array is disclosed generically, so a new token in it is neither a new field nor a new kind of data.
 
 ---
+
+## 5.9v THE DISPLAY VOICE — two faces, four declarations
+
+*2026-08-25 13:1x EDT. Harkirat picked from a rendered specimen, not from a list of names: **Big Shoulders Display on the figures, Instrument Serif on the page titles.***
+
+### 5.9v.1 The gap, stated as a measurement
+
+One family — Space Grotesk — was setting a **9px uppercase label and a 44px masthead figure**, three sizes apart and nothing else. `tokens.css` declares three display steps (`--t-display` 44 · `--t-figure` 34 · `--t-h1` 22) and then set all of them in the UI face, because there was no other face to set them in. A UI face doing display work is not a neutral choice; it is the absence of one.
+
+### 5.9v.2 Why two faces and not one
+
+The specimen answered this rather than an argument. **Instrument Serif is the most memorable of the four candidates and it fails on function**: at 34px its hairlines make an alarm figure read *delicate*, and on this portal a figure is a **status signal** — the number that most needs to shout is the one that face whispers. **Big Shoulders is the opposite**: condensed, flat-sided numerals that read like a gauge, which is what a season masthead is.
+
+So the split is not indecision, it is the falsifier's answer: **the serif never touches a number, so its one real failure never happens**, and the figures get the face that makes them instruments.
+
+| token | face | where | why |
+|---|---|---|---|
+| `--title` | Instrument Serif | `.masthead h1` · `.hmast h1` | a serif over a monospace data grid, on near-black — the identity |
+| `--display` | Big Shoulders Display | `.mh-stats .v` · `.tile .tl-v` | condensed numerals read as a gauge, and buy real width at 390px |
+
+🔴 **BOTH FALL BACK TO `--ui`.** If a webfont fails, the masthead degrades to exactly what it looked like before this change rather than to a stranger. ⚠️ **`--title` ships ONE weight (400)** — never write a `font-weight` against it.
+
+### 5.9v.3 Four declarations, and the restraint IS the design
+
+Everything from `--t-hero` (24px) down stays Space Grotesk; data stays JetBrains Mono. The two new families appear about **five times per screen**. `.dw-h h2` (a drawer title at 22px) was deliberately left in the UI face — a confirmation dialog is functional copy, and giving it a display face would spend the effect where it means nothing.
+
+⚠️ **A relational check, not a per-site one, is what proved this landed.** Enumerating every rule in `app.css` that sets a font-size ≥22px and reporting **which face each actually resolves to** is the only shape of check that can see a display step still sitting in the UI face — asking "does this element have a family?" never could. Home's realm-card figures (`.hcard .hf b`) came back in `--ui` and were **left there on purpose**: they are `--t-xl` (19px), in the UI range, and the hierarchy *masthead figure 34px display → card figure 19px UI* is legible. Sprinkling the face into the UI range is exactly what would erode the restraint that makes it work.
+
+### 5.9v.4 The probe that lied, recorded because it will be reached for again
+
+`document.fonts.check('700 44px "SomeFace"')` **returns `true` for a family that does not exist.** It answers whether text can be rendered, not whether the named face loaded — so every "the font is loaded" reading from it is worthless, and a fallback render and a real render are indistinguishable.
+
+**The honest probe is width:** set the same string in each face over a *monospace* fallback and compare. Baseline 742px; the invented face measured **742** (not loaded) and every real face measured differently — Instrument Serif 442, Big Shoulders 464, Chakra Petch 628, Space Grotesk 639, **Archivo 641**. That last pair is also the evidence that retired Archivo: a display face whose whole job is to differ from the UI face should not set the same string within 2px of it.
+
+### 5.9v.5 The two artifacts
+
+Both are published and both were verified by rendering, not by reading: **the display-face specimen** (the four faces in the real masthead, live-switching, with the token diff) and **four live ideas** (the liveliness and magic proposals, built as working demos rather than described — a draining window, a creeping NOW, a Discord card that updates as you drag, two season density glyphs, and a commit that resolves its ghosts one per beat).
+
+⚠️ **A charset trap worth carrying:** a published page with no `<meta charset>` was served as **windows-1252**, and every `·` and `—` became mojibake. The encoding sniffer scans the first 1024 bytes wherever the tag sits, so `<meta charset="utf-8">` as the first line fixes it even though the publish wrapper supplies its own `<head>`.
 
 ## 5.9u THE SHAPE SCALE, AND AN UNDO THE COPY HAD BEEN PROMISING FOR WEEKS
 

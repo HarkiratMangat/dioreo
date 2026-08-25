@@ -1561,11 +1561,11 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .masthead{padding:34px 24px 22px;max-width:none}
 .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
-.masthead h1{margin:0 0 20px;font-size:var(--t-display);font-weight:600;
+.masthead h1{margin:0 0 20px;font-size:var(--t-display);font-family:var(--title);font-weight:400;letter-spacing:var(--tr-title);
   letter-spacing:var(--tr-display);line-height:1.02;color:var(--ink)}
 .mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .mh-stats .stat{display:flex;flex-direction:column-reverse;gap:2px;align-items:flex-start}
-.mh-stats .v{font-size:var(--t-figure);font-weight:600;line-height:1;
+.mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-fig);line-height:1;
   letter-spacing:var(--tr-figure);font-variant-numeric:tabular-nums;color:var(--ink)}
 .mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
@@ -1898,7 +1898,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .tile{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:15px 16px}
 .tile .tl-k{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
-.tile .tl-v{display:block;font:600 var(--t-figure)/1.05 var(--ui);letter-spacing:var(--tr-figure);
+.tile .tl-v{display:block;font:700 var(--t-figure)/1.05 var(--display);letter-spacing:var(--tr-fig);
   color:var(--ink);font-variant-numeric:tabular-nums;margin:9px 0 3px}
 .tile .tl-v i{font-style:normal;font-size:var(--t-lg);color:var(--ink3);margin-left:2px}
 .tile .tl-s{display:block;font:400 var(--t-sm)/1.3 var(--ui);color:var(--ink3)}
@@ -1946,7 +1946,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .hmast{margin-bottom:28px}
 .hmast .job{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--patch);margin-bottom:12px}
-.hmast h1{font:700 var(--t-display)/1.02 var(--ui);letter-spacing:var(--tr-display);color:var(--ink);margin:0}
+.hmast h1{font:400 var(--t-display)/1.06 var(--title);letter-spacing:var(--tr-title);color:var(--ink);margin:0}
 .hmast p{font:400 var(--t-lg)/1.55 var(--ui);color:var(--ink3);margin:12px 0 0;max-width:56ch}
 /* Five cards into `auto-fit` leaves a hole at three-across. Six columns divide by both 2
  * and 3, so every card spans two and the row always fills; the last card spans three at

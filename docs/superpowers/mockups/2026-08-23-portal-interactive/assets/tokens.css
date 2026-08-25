@@ -58,6 +58,20 @@
      scale in two ranges, not two scales, and `--t-micro` belongs to the range that uses it. The
      three names this block no longer defines — body, label, micro — were the duplicated half. */
   --t-display:44px; --t-figure:34px; --t-h1:22px;
+
+  /* ── THE DISPLAY VOICE — two faces, four declarations, nothing else ──
+     Until 2026-08-25 one family set both a 9px label and a 44px figure, which is a UI face
+     doing display work because there was nothing else. These are deliberately NOT applied
+     broadly: the title face touches two page titles, the figure face touches two figure
+     sites, and everything from --t-hero down stays Space Grotesk. Restraint is the design,
+     not a compromise on it — a third and fourth family appearing five times a screen.
+     🔴 BOTH FALL BACK TO --ui ON PURPOSE. If a webfont fails, the masthead degrades to
+     exactly what it looked like before this change rather than to a stranger.
+     ⚠️ `--title` ships ONE weight (400). Never write a font-weight against it. */
+  --title:"Instrument Serif",Georgia,"Times New Roman",serif;   /* page titles — a serif over a mono data grid */
+  --display:"Big Shoulders Display",var(--ui);                  /* figures — condensed, so a number reads as a gauge */
+  --tr-title:-.006em;                                           /* a serif does not want the grotesque's tight tracking */
+  --tr-fig:.004em;                                              /* condensed wants air; the one positive step in the scale */
   --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;
 
   /* MOTION — one easing, three durations. Motion earns its place by explaining where

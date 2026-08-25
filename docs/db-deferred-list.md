@@ -44,6 +44,25 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs — broken behaviour, not yet fixed
 
+- `[P1 · M · Opus5-High]` **A UX-copy audit of the portal mockups found ~45 findings, five of them blocking — including the portal promising OPPOSITE things about whether staged work survives sign-out.** *Run 2026-08-25 13:0x EDT over the eight pages, `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` and the label-bearing parts of `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/fixtures.js`; code comments and `COMPANION.md` were out of scope.*
+
+  📄 **The full report is `local/handoff/2026-08-25-portal-ux-copy-audit.md`** (13 KB, gitignored — state that path explicitly, no `rg` will surface it). **This entry is a POINTER, not a copy** — transcribing forty-five findings here is duplicated state that rots the moment one is fixed. Only the blockers are named below, because a blocker that lives solely in an unsearchable file is a blocker nobody will find.
+
+  🔴 **The five blockers:**
+  1. **Staged work survives sign-out, and is destroyed by it, in five places.** `door.html:28-30` and `shell.js:473` say it is held against the account and returns when you sign back in; `shell.js:1756-1757`, `access.html:329-330` and `shell.js:1725` say it lives in the browser session and is lost. The sign-in door and the sign-out dialog are one click apart. **§15.11 settled this — staging moves server-side — so the door is right and the other three are the stale half.**
+  2. **`season.html:660-664` is `tier:3` and says "Undo is available afterwards"**, while every other tier-3 surface says the opposite and this one is not export-gated. Either the tier is wrong or the copy is.
+  3. **Delete and Remove are the same op at two different tiers**, chosen by which control you clicked: `broadcast.html:387` (tier 2, "Stage deletion") vs `:502` (tier 1, "Remove"); `armory.html:957` vs `:1309` identically. The tier number is the safety contract.
+  4. **`review.html:20` renders "1 GATES OPEN"** in warn colour from `blockers().length` — "gates open" reads as *cleared, you may pass* and means the reverse, on the masthead of the commit screen.
+  5. **`shell.js:475`'s fallback banner is `"Something is wrong."` with an EMPTY `means`** — the explicitly banned pattern, as the default for every unclassified failure, while lines 469-474 show exactly how it should be done.
+
+  ⚠️ **`broadcast.html:506,531` is a live logic bug, not just copy:** the guards compare `lifecycle(a) === 'live'` but `lifecycle()` returns `'LIVE NOW'`, so the "live right now" callout never renders and the **"What is live now" export permanently reports 0 announcements and builds an empty file**.
+
+  ⚠️ **Two things in the report must NOT ship at all:** `review.html:237` ("Load a sample changeset" button) and `review.html:240-241`, which is copy addressed to a reader of the mockup rather than a user of the portal.
+
+  **The report also carries a vocabulary table** — twelve concepts the portal names more than one way (undo/drop/take back/discard; remove/delete/purge; token/scope/permission/capability; export/take out/record/audit/download) with a recommendation for each. That table is the highest-leverage part and should be settled before the wiring rebuild copies the strings forward.
+
+  **Verify by:** each blocker fixed and the five sign-out strings agreeing; `.states.html?self=1` still ALL CLEAN afterwards.
+
 *Moved in from the cross-project tracker's 🐞 section 2026-07-25 21:43 EDT. **Rule:** the moment a bot bug is reported or found, it lands here with a repro + a `[Priority · Effort]` tag (most start P0); it only leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a scratchpad for 2 days.*
 
 - `[P2 · XS · Sonnet5-Medium]` **`npm test` prints "Run with TEST_CACHE=0 to force a real re-run", and doing exactly that makes the suite FAIL — on an unrelated file.** *Found 2026-08-25 00:5x EDT while forcing a real hook run during a completeness sweep.*
@@ -371,6 +390,16 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+- `[P3 · M · Opus5-High]` **Make MOTION a system across all eight portal realms, instead of Season-only.** *Filed 2026-08-25 12:5x EDT on Harkirat's explicit instruction — "file the motion option as something to consider for the future but not necessary at the moment."*
+
+  Motion in the portal mockups is **Season-only by a recorded decision** (COMPANION §5.9l.4d: a permission matrix has no geometry a reader tracks, so animating it would be decoration). That reasoning was right for a target of *correct*. It is the wrong answer for the target Harkirat set on 2026-08-25 — *"does it push every aspect of the website to it's upper echelon?"* — because seven realms currently have **no arrival, no state transition, and nothing that says the interface is alive**. `tokens.css` already declares the whole system (`--ease` plus `--dur-1/2/3`); it simply goes unused outside Season.
+
+  ⚠️ **This is NOT the same thing as the subtle-liveliness work he asked for in the same breath, and conflating the two is how this entry gets wrongly closed.** He wants *"subtle animations, liveliness to elements, and hints/touches of magic scattered to elements, pages, features"* — opportunistic, per-element delight, being built now. **This entry is the structural question**: does motion become a declared system with rules about what may move and why, applied uniformly, overturning §5.9l.4d? That is a design-language decision, and it is his.
+
+  **What to do when it is picked up:** state the rule first (what motion is FOR — this package's own answer is *"motion earns its place by explaining where something came from"*), then audit each realm against it, then build. ⚠️ **Audit rule 14 must hold throughout** — every new `animation` needs a `prefers-reduced-motion` override or the gate fails, which is exactly what it is for.
+
+  **Verify by:** a written per-realm decision in `COMPANION.md` (in the shape of §5.9p), `.states.html?self=1` still ALL CLEAN, and PASS 4f still reporting zero running animations under lifted reduced-motion rules on all eight pages.
 
 - **The Armory fixtures are hand-typed under a comment claiming they are exported** `[P2 · S · Sonnet5-High]` *(filed 2026-08-24 15:4x EDT, from the code review of the real-schema pass.)* `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/fixtures.js`'s `LOADOUT_STATS` and its 36 `builds` sit BELOW the exported block under a header reading *"⚠️ THESE ARE REAL DOCUMENTS, exported from the dev collection … not invented"* — and `.export-fixtures.mjs` emits **nothing** for them. They were exported by hand once, in a previous session, and cannot be regenerated by the script the file tells you to run. So the realm with the worst history of invented fields is the one realm with neither export coverage nor gate coverage, and §3.9.1's *"everything below that block is derived from it, so no fact is stored twice"* is false for the largest block in the file. **What to do:** extend `.export-fixtures.mjs` to emit `builds`, `LOADOUT_STATS` and the analytics aggregates the same way it emits the Season/Broadcast/Access block, then add them to `.schema-gate.mjs`'s `checkFixtureShape` cases against `models/Loadout.js`. **Verify:** delete the hand-typed block, re-run the export, and confirm `npm run portal:gate` and all 8 page audits still pass — if the regenerated block differs from what was there, the difference is the drift this entry is about.
 

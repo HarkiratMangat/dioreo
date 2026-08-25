@@ -211,6 +211,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-25 09:02 EDT — Thirty instances, five shapes: the pass that stopped fixing instances (v3.68.0-pre)
 - 2026-08-25 09:52 EDT — The gates nobody was running, and two type scales in one :root (v3.68.0-pre)
 - 2026-08-25 12:29 EDT — the corner nobody could see, and an undo the copy kept promising (v3.68.0)
+- 2026-08-25 13:15 EDT — the probe that said a font existed when it did not (v3.68.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3668,6 +3669,28 @@ The other change was smaller and older. `shell.js` has rendered `reversible · u
 Building it produced a defect that only opening the page could show. Every staging site calls `Store.add()` — which renders the tray — and *then* `Store.onInvert()`. So a row's undo is drawn before its own inverse exists: staging two removals live gave me `Store.inverses` holding both ids and the second button still disabled. A state read one call too early, which is the same mistake as an audit measuring a half-laid-out page, in a different costume.
 
 And a warning outlived the thing it warned about. §15.11 still closed with *"`prefers-reduced-motion` is still UNVERIFIED — nothing has ever observed those rules taking effect"*, which stopped being true earlier the same day **in the same document**. A caution left standing after its cause is fixed is the same defect it was written to prevent, pointing the other way.
+
+## 2026-08-25 13:15 EDT — the probe that said a font existed when it did not (v3.68.0)
+
+Harkirat picked a display face by looking at one, which is the only way that decision can be made. Before that he read four ideas for "liveliness and magic" and answered: *"these all read as jargon to me… idk what they mean, idk how they'll look… they are **design** and design is visual, i need to see some quick basic mockup."*
+
+He was right twice in one message. The ideas were prose, and prose cannot be judged as design. But the first list had a deeper problem he had already named a message earlier — cursor glow, count-up numbers, film grain, redesign the login. **Not one of those four could only exist in this product.** They are the top four results for "make a dark UI feel premium", and interchangeable is the definition of lame.
+
+So the second attempt used a test rather than taste: **could this exist in a CRM?** If yes, cut it. What survives is the product's own subject matter made visible — this is one person editing the schedule of a live game that thousands of players are inside right now, and the two things it is actually about are **time** and **consequence**.
+
+That reframes "liveliness" completely. The word gets read as *animation*, and that reading is the trap. A thing is alive when it changes while you are not touching it — and everything in the portal is inert until clicked. The only genuinely live quantity here is the clock: the season burns down whether the tab is open or not, and the portal renders that as a static string. So windows hold a level instead of printing a number, the NOW marker **creeps** instead of pulsing, rows age from the clock. All three survive `prefers-reduced-motion` honestly, because they are position derived from a clock rather than `animation`.
+
+And it reframes "magic" as *the tool knowing something you did not expect it to know*, which produced a Discord card that is always on and updates as you drag the Track, and a season compressed to a density glyph you could recognise. Every one of them had to name a question a real user has — drain answers *how long is left*, the card answers *what will they see*, the glyph answers *where is this season empty*. An idea that cannot name its question is a cursor glow with better PR.
+
+The type decision then produced the sharpest lesson of the day, and it came from a probe rather than a design argument.
+
+I checked the candidate faces had loaded with `document.fonts.check('700 44px "…"')`. Out of habit I gave it a falsifier — a family name I had invented — and **it returned `true`**. The method answers whether text *can be rendered*, not whether the named face arrived, so a fallback render and a real render are identical through it. Every reading I would have taken from it was worthless, and the failure is silent in the exact way that matters: I would have judged four faces while looking at one.
+
+The honest probe is width. Set the same string in each face over a *monospace* fallback and compare: baseline 742px, the invented face measured 742, and the real faces measured 442, 464, 628, 639 and 641. That is not just a load check — those numbers **decided a candidate**. Archivo measured 641 against Space Grotesk's 639, and a display face whose entire job is to differ from the UI face should not set the same string within 2px of it.
+
+The same instinct decided the split he chose. Instrument Serif was the most memorable face by a distance and I wanted it. Looking at `11` set in it at 34px in alarm orange settled it: the hairlines make the figure read *delicate*, and on this portal a figure is a status signal — the number that most needs to shout is the one that face whispers. So the serif takes the titles and never touches a number, and Big Shoulders takes the figures. Its one real failure simply never occurs.
+
+One more check earned its place. Enumerating every rule ≥22px and reporting **which face each one actually resolves to** is a relational question — it can see a display step still sitting in the UI family, which "does this element have a font-family?" never could. It found Home's card figures in the UI face, and the right answer was to leave them: they are 19px, inside the UI range, and *masthead 34px display → card 19px UI* is a legible hierarchy. Sprinkling the new face into the UI range is exactly what would erode the restraint that makes four declarations work.
 
 # Part B — Lessons Ledger (thematic)
 
