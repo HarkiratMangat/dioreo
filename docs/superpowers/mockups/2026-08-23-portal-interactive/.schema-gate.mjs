@@ -188,6 +188,110 @@ if (process.argv.includes('--self-test')) {
     console.log('');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+ * THE COMPANION IS THE LEAST-CHECKED ARTIFACT IN THE PACKAGE.
+ * 🔴 The code has five gates and the records have docs-audit's 44 checks. COMPANION.md — 296KB,
+ * 155 subsections, the document a wiring session builds FROM — has none, and every quantity in it
+ * is a hand-maintained copy of state. Measured 2026-08-25: three claims were stale at once, and
+ * the worst sat in the DATA-CONTRACT TABLE that §0.0's own map calls "the part you can copy" — it
+ * said eleven permission tokens while the bot had twelve, so anybody copying it would have built
+ * the wrong thing. One of the three was a CORRECTION written three hours earlier, which had gone
+ * stale because the same session fixed the thing it described.
+ * A general prose-vs-reality checker is not feasible. These three quantities are, because this
+ * gate already computes them: it prints them in its own success line. Narrow on purpose — a check
+ * that guesses at prose cries wolf and gets switched off.
+ * ══════════════════════════════════════════════════════════════════════════════ */
+{
+    const NUM = { 1:'one', 2:'two', 3:'three', 4:'four', 5:'five', 6:'six', 7:'seven', 8:'eight',
+                  9:'nine', 10:'ten', 11:'eleven', 12:'twelve', 13:'thirteen', 14:'fourteen' };
+    const companion = readFileSync(here('COMPANION.md'), 'utf8');
+    /* Only sentences that BIND the number to the noun, so ordinary prose using the word "twelve"
+     * near the word "tokens" is never dragged in. And only the WRONG values are searched for —
+     * asserting the right one appears would fail on a document that simply does not mention it. */
+    const claims = [
+        { what: 'permission tokens', right: PERM_TOKENS.size,
+          /* ⚠️ "permission" or "grantable" is REQUIRED, not optional. The first version matched a
+           * bare "tokens" and flagged a sentence about the INK scale ("three tokens instead of
+           * three-plus-a-footnote") as a claim about permissions. A check that fires on a word
+           * rather than on a meaning is the shape that gets switched off. */
+          re: (n) => new RegExp(`(?:\\b${n}\\b|\\b${NUM[n]}\\b)\\s+(?:grantable|permission)\\s+tokens\\b`, 'i') },
+        { what: 'op types', right: OP_TYPES.size,
+          re: (n) => new RegExp(`(?:\\b${n}\\b|\\b${NUM[n]}\\b)\\s+op types\\b`, 'i') },
+    ];
+    for (const c of claims) {
+        for (let n = 1; n <= 14; n++) {
+            if (n === c.right) continue;
+            const m = c.re(n).exec(companion);
+            if (!m) continue;
+            /* A historical sentence is legitimate — the document records what WAS true. Anything
+             * on a line that dates or past-tenses itself is left alone; the rest is a live claim. */
+            const line = companion.slice(companion.lastIndexOf('\n', m.index) + 1,
+                                         companion.indexOf('\n', m.index));
+            /* ⚠️ THE FIRST HISTORY FILTER MADE THIS CHECK VACUOUS. It exempted any line carrying a
+             * DATE or a bare "was/were/had" — and this document dates almost everything, so a
+             * planted wrong count went green on its first falsifier. Only explicit past-tense
+             * markers about the CLAIM itself exempt a line now; a date does not. */
+            if (/\b(?:used to|until 20|previously|an earlier version|no longer)\b/i.test(line)) continue;
+            /* 🔴 A QUOTED WRONG VALUE IS AN EXAMPLE, NOT A CLAIM. This document describes its own
+             * falsifiers, so it necessarily contains the strings they plant — and the check fired
+             * on §5.9t's account of a planted "Nine permission tokens" within a minute of that
+             * section being written. The repo already learned this once: `timestamp-check.sh`
+             * carries a TS-EXAMPLE escape for exactly the case of quoting a bad value while
+             * writing about it. Backticks or double quotes around the match mean the same here,
+             * and both are deliberate, visible and greppable. */
+            const before = companion[m.index - 1] || '', after = companion[m.index + m[0].length] || '';
+            if (/[`"\u201c\u201d]/.test(before) || /[`"\u201c\u201d]/.test(after)) continue;
+            fail('companion-quantity', 'COMPANION.md',
+                 `states "${m[0]}" as a live claim; the real count is ${c.right} (${c.what})`);
+        }
+    }
+    /* And every top-level section must appear in §0.0's map, because 296KB of exhaustive is
+     * unreachable without it — three whole families were missing from that table for a day. */
+    const map = companion.slice(companion.indexOf('## 0.0 Map'), companion.indexOf('## 0. How to run'));
+    for (const m of companion.matchAll(/^## (\d+(?:\.\d+)?[a-z]?)[. ]/gm)) {
+        const num = m[1];
+        if (num === '0' || num === '0.0' || num === '0.5') continue;
+        const head = num.split('.')[0];
+        /* A row may cover several sections — "**8 / 9**", "**10 / 11 / 12**", "**5.9j–5.9s**".
+         * Matching only the row's FIRST number missed the ones after the slash, which is how §9
+         * and §12 read as orphans while sitting in a row that names them. Strip the bold markers
+         * and look for the number as a standalone token anywhere in the table. */
+        /* ⚠️ THE FIRST VERSION OF THIS WAS ALSO VACUOUS: it allowed any non-digit after the
+         * number, so renaming a row from "13" to "13-removed" still counted as naming §13. The
+         * number must be bounded by a non-alphanumeric on BOTH sides to be a reference rather
+         * than a prefix. */
+        const flat = map.replace(/\*\*/g, '');
+        const named = new RegExp(`(?:^|[^\\w.])${head.replace('.', '\\.')}(?![\\w.])`).test(flat);
+        if (!named)
+            fail('companion-map', 'COMPANION.md', `§${num} is not reachable from the §0.0 map`);
+    }
+
+    /* ══════════════ FALSIFIERS — both of these went green on their first plant ══════════════
+     * 🔴 THE QUANTITY CHECK SHIPPED VACUOUS AND I ALMOST DID NOT NOTICE. Its history filter
+     * exempted any line carrying a DATE, and this document dates almost everything — so a planted
+     * "Nine permission tokens" passed. The map check was fine and my PLANT was wrong (renaming a
+     * row to "13-removed" still mentions 13). Two different ways to get a false green in one
+     * afternoon, which is why these now run on every invocation rather than by hand.
+     * They operate on COPIES of the text, never on the file. */
+    {
+        const wrongCount = companion.replace('Twelve tokens', 'Nine permission tokens');
+        const qCaught = /(?:\b9\b|\bnine\b)\s+(?:grantable|permission)\s+tokens\b/i.test(wrongCount)
+                        && PERM_TOKENS.size !== 9;
+        console.log(qCaught ? '  ✅ self-test: a wrong permission-token count IS caught'
+                            : '  ❌ self-test: VACUOUS — the companion-quantity check cannot fail');
+        if (!qCaught) fail('companion-quantity', 'COMPANION.md', 'the quantity self-test could not detect a planted wrong count');
+
+        /* Delete the row outright — renaming it is not a deletion, and a falsifier that plants
+         * the wrong thing reports a pass that means nothing. */
+        const noRow = map.replace(/\n\| \*\*13\*\* \|[^\n]*/, '');
+        const flatNoRow = noRow.replace(/\*\*/g, '');
+        const mCaught = !new RegExp('(?:^|[^\\w.])13(?![\\w.])').test(flatNoRow);
+        console.log(mCaught ? '  ✅ self-test: a section missing from the §0.0 map IS caught'
+                            : '  ❌ self-test: VACUOUS — the companion-map check cannot fail');
+        if (!mCaught) fail('companion-map', 'COMPANION.md', 'the map self-test could not detect a removed row');
+    }
+}
+
 const files = pages.length + 2;
 if (failures.length) {
     console.error(`❌ schema gate: ${failures.length} failure(s) across ${files} files\n`);

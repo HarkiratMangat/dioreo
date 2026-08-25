@@ -50,7 +50,9 @@ node .schema-gate.mjs --self-test
 | **5.99** | **Data contracts, predicates in code, done-criteria, symptom→cause** | While wiring. This is the part you can copy |
 | **6** | Wiring order | When you start |
 | **7** | Traps already paid for | When something behaves oddly |
-| **10 / 12** | Art direction as specified · what is still outstanding | When judging whether it looks right. §12's measurement half was cut 2026-08-24 — it governed nothing and said so |
+| **8 / 9** | The journey, folded into the sections that use it · the realm roster | §9 is the fastest way to find which realm owns a surface |
+| **10 / 11 / 12** | Art direction as specified · the process lesson in one line · what is still outstanding | When judging whether it looks right. §12's measurement half was cut 2026-08-24 — it governed nothing and said so |
+| **13** | Where the work stands — every surface and its verification state | Before believing anything in this document is current |
 | **14** | What a passing audit does **not** mean | Before saying "verified" |
 | **14.5** | Two defects found in **shipped** `portal/api/access.js`, fixed test-first | Before trusting a portal endpoint's own comments |
 | **15** | Contracts the mockup cannot express — transactions, concurrency, authz, dates, async | While wiring the backend |
@@ -874,7 +876,7 @@ Shell.Store.add(op);
 | **Season** | `SeasonalData` — one global doc | `models/SeasonalData.js`, `portal/api/season.js` | `bpEnd`/`rankEnd`/`dmzEnd` are `Date`, each with a **separate `*TBD` boolean that nulls the date**. There is **no season-start field** — the Track derives its window from the data. `draft` mirrors the live fields minus `patchNotes`. 🔴 **A draw has `date` and NO end**; a calendar row has `date` + `endDate` + `isOngoing`. Tiers are lowercase words (`mythic·legendary·legacy·epic`) plus **`comment`, which is not a tier** but a free-text note rendered as Discord subtext. `isDoubleCP` (not `is2XCP`). Patch-note display is always `titleOverride \|\| title` |
 | **Armory** | `Loadout[]` | `models/Loadout.js` | `attachments` is `[String]`; `attachmentSlots` is a **parallel array** only `/autobuild` fills. `categoryRank` ∈ `best·top3·top4·top5·null` (MP only); `dmzRangeRank` ∈ `best-close·best-midlong·top{N}·top{N}-close·top{N}-midlong` (DMZ only). `imageKey` is a Cloudinary key **or** a full URL. **Badges propagate across `weaponKey`+`mode`** |
 | **Broadcast** | `Announcement[]` | `models/Announcement.js`, `portal/api/broadcast.js` | 🔴 **Six fields, and one of them is the whole content**: `text`. No title, no body, no pin, no view count. `expiresAt: null` means forever; `startsAt: null` means immediately. `state` is computed **server-side** by `announcementState()` and must agree with `getActiveAnnouncements()` — a second, laxer definition of "live" is the bug, reproduced on 2026-08-23. Expiry INPUT is blank / `never` / a whole number of days, **never an absolute date**. Reach, if shown, comes only from `UserPreference.seenAnnouncementIds` |
-| **Access** | `AdminUser[]` + `PortalSession[]` | `models/AdminUser.js`, `models/PortalSession.js`, `portal/api/access.js` | 🔴 **Eleven tokens**: 3 `ADMIN_COMMANDS` + 8 `MANAGE_PAGE_SCOPES` (including the `season` pseudo-page). **Two roles**, no `editor`. `permissions` is never empty. Grants and revokes are **direct writes, not ops** — typed-Discord-ID confirmation, no export leg, no staging. `grantedAt` **is** stored. `PortalSession` holds no IP; "signed in now" is derived from `lastSeenAt` inside 15 minutes. `invalidateAdminCache()` after every write, or the 60s TTL delays it |
+| **Access** | `AdminUser[]` + `PortalSession[]` | `models/AdminUser.js`, `models/PortalSession.js`, `portal/api/access.js` | 🔴 **Twelve tokens**: 4 `ADMIN_COMMANDS` + 8 `MANAGE_PAGE_SCOPES` (including the `season` pseudo-page). The fourth command is **`destructive`** (2026-08-25), which names no surface — it gates the right to RUN a tier-3 operation on all of them — and which **`all` deliberately never expands to** (`NOT_IN_ALL`). **Two roles**, no `editor`. `permissions` is never empty. Grants and revokes are **direct writes, not ops** — typed-Discord-ID confirmation, no export leg, no staging. `grantedAt` **is** stored. `PortalSession` holds no IP; "signed in now" is derived from `lastSeenAt` inside 15 minutes. `invalidateAdminCache()` after every write, or the 60s TTL delays it |
 | **Analytics** | `AnalyticsEvent` · `AlertLog` · `ChangeLog` · `SearchTerm` · `BootRecord` · `AnalyticsRollup` | six models | **Read `AnalyticsRollup` for anything spanning days** — `AnalyticsEvent` is a grow-forever collection on a 512MB free tier with exactly ONE index (`{createdAt:-1, command:1}`). A query that cannot use that prefix collection-scans |
 | **Review** | `Shell.Store` + a live re-read | `core/ops/*` | The re-read at review time is what sets `stale` — §15.4 |
 
@@ -1966,6 +1968,54 @@ Review's empty state is the best edge state in the package: it names what is mis
 
 ---
 
+## 5.9t THE PROSE WAS THE ONLY UNGATED ARTIFACT — and it had gone wrong in four ways
+
+*Written 2026-08-25, from a pass whose brief was to attack everything: the code, this document, the design, and the work itself.*
+
+### 5.9t.1 The measurement
+
+| | |
+|---|---|
+| package | **12,875 lines** — `app.css` 3,756 · `season.html` 2,846 · `shell.js` 2,134 |
+| `shell.js` | **38% comment** (785 of 2,067 non-blank) |
+| `app.css` | 14% comment |
+| gates on the **code** | five (`portal:gate`, `portal:refs`, `portal:roundtrip`, `.states.html`, `.audit-all.html`) |
+| gates on **this document** | **none, until today** |
+
+**Every quantity in a 296KB document was a hand-maintained copy of state**, which is exactly what `feedback_no_duplicated_state_in_prose` says never to write, and there are hundreds of them.
+
+### 5.9t.2 Four ways it had gone wrong
+
+1. **The data-contract table said "Eleven tokens: 3 `ADMIN_COMMANDS` + 8 `MANAGE_PAGE_SCOPES`."** The bot has twelve. §0.0's own map labels that table **"the part you can copy"** — the single worst placement for a stale number, because a wiring session copying it builds the wrong thing.
+2. **A correction written three hours earlier had itself gone stale.** §15.11 said `portal:gate` "still reports eleven, and will until the bot itself gains the token" — and the same session put the token in the bot. **A correction is a claim like any other and rots at the same rate.**
+3. **A claim fixed in one place was not fixed in the other.** "the same permission test copied into five realms' one-way strips" was corrected in §15.11 and survived verbatim in §5.9q.
+4. **Four top-level sections — §8, §9, §11, §13 — had no route from the §0.0 map.** 296KB of exhaustive is unreachable without its index, and the index is hand-maintained too.
+
+### 5.9t.3 `--ink4`: the open question was wrong twice over
+
+§15.11's fourth question asked whether `--ink4`, "a non-text token with 15 uses", could collapse into `--rule2`.
+
+**Measured: 35 uses, and 12 of them are text** — 9 `color`, 3 `stroke`. So the count was 2.3× wrong and the premise was false. `--rule2` is `#3A4752`, a border colour; 13px text on it over `#0B0D0E` is near 1.6:1, and the audit's contrast rule would fail all twelve. **The token stays.**
+
+It had also been asked **twice, in the same section, with the same stale number**. An unanswered question rots exactly like an unmaintained count, and this one was quotable and untrue for a week.
+
+### 5.9t.4 The two checks — and both of them shipped vacuous
+
+`.schema-gate.mjs` now asserts two things about this document: that it does not state a **live** permission-token or op-type count that disagrees with the code, and that every top-level `##` is named in the §0.0 map. Narrow on purpose — a check that guesses at prose cries wolf and gets switched off.
+
+> 🔴 **Both went GREEN on their first falsifier.** The quantity check's history filter exempted any line carrying a **date**, and this document dates almost everything, so a planted "Nine permission tokens" sailed through. The map check was sound and my **plant** was wrong — renaming a row to `13-removed` still mentions 13. **Two different routes to a false green in one afternoon**, written by someone who had spent two days documenting false greens.
+
+**The practice that earned its place:** a falsifier is not something you run once at authoring time. Both now run **on every invocation**, printing `✅ self-test: …`, which is the standard the other four gates in this package already held.
+
+⚠️ **And then the check fired on this very section, within a minute of it being written** — because a document that describes its own falsifiers necessarily contains the strings they plant. A quoted wrong value is an **example**, not a claim; backticks or quotes around a match exempt it. The repo already learned this once: `timestamp-check.sh` carries a `TS-EXAMPLE` escape for exactly the case of quoting a bad value while writing about it. **The first attempt at the exemption was off by one** (it looked two characters out instead of one), so it exempted nothing and the gate stayed red — a fix that does not fix, found by running the gate rather than by reading the patch.
+
+### 5.9t.5 Two design-system faults, upstream of every surface
+
+- **There were two type scales in `:root`, each under a comment claiming to be *the* scale, colliding on `--t-micro` (9.5px and 9px).** The later wins, so **48 usages silently took 9px** while the first declaration said 9.5. One quantity, two authorities, at the level of the tokens file — every surface inherits it and no per-element rule can see it. Collapsed into one scale in two ranges: display (44/34/22, five uses total) and UI (9→24, where `--t-sm` alone is used 55 times). `--t-body` and `--t-label` were a *third* set of names for 13.5px and 11px and are gone rather than aliased, because an alias is a second name for one value and that is how this collided.
+- **`border-radius` is `var(--rad)` 43 times and a hardcoded literal 256 times**, across nine distinct values. The radius token exists and loses 6:1. **Left as-is deliberately** — the values are mostly intentional at their sites (a 2px chip corner is not a 7px card corner) and collapsing them would be a restyle, not a fix. Recorded so the next reader knows the scale is nominal rather than enforced.
+
+---
+
 ## 5.9s THE SCRUTINY PASS — five recurring classes, and the gates that now hold them
 
 *Written 2026-08-25, after the sub-views. This section is not a list of fixes; it is the count that made the fixes stop being the point.*
@@ -2028,7 +2078,7 @@ Three properties make it unlike the other eleven, and each one is a design oblig
 
 ### 5.9q.2 Disabled with the reason, never hidden
 
-`Shell.canDestroy()` is the single authority. **One function, because the alternative is the same permission test copied into five realms' one-way strips and Review's commit path — and six copies of a rule is six chances for one of them to be the lenient one.**
+`Shell.canDestroy()` is the single authority. **One function, because the alternative is the same permission test copied into every surface that gates on irreversibility — and N copies of a rule is N chances for one of them to be the lenient one.** *(This read "five realms' one-way strips" until 2026-08-25. There is **one** `Shell.oneWay` strip, on Season; the other tier-3 surfaces are Review's commit gate and Access's typed revoke. The same overstatement was corrected in §15.11 and survived here — a claim fixed in one place is not fixed.)*
 
 An admin without the capability sees every one-way row **present, legible, and disabled**, with `Shell.whyNoDestroy()` on the control and the rule stated in the strip's own header. Hiding the row would teach nothing, produce a support question, and conceal from that person that somebody else can do this to their data.
 
@@ -2617,10 +2667,10 @@ What that means concretely, and each line is a design obligation rather than a s
 
 ✅ **BUILT 2026-08-25 — see §5.9q.** The matrix carries twelve tokens with the owner-only one marked, the one-way strip states the rule and disables with the reason, the grant is typed, and the export is retained rather than witnessed.
 
-⚠️ **Two claims in the original note were wrong, and they are corrected rather than deleted.** It said the work would touch **`portal:gate`'s token count** — it does not and cannot: the gate builds `PERM_TOKENS` from the real `utils/adminAccess.js`, so it still reports **eleven**, and will until the bot itself gains the token. And it said **"the one-way copy on five realms"** — there is one `Shell.oneWay` strip, on Season, because Season holds every tier-3 *entity* op (`draw.purge`, `calendar.purge`, `patchnote.purge`, `season.startNew`); Review's commit gate and Access's typed revoke are the other two tier-3 surfaces and they are not strips. A scope written from memory rather than from the tree overstates in exactly this direction.
+⚠️ **Two claims in the original note were wrong, and they are corrected rather than deleted.** It said the work would touch **`portal:gate`'s token count** — which at the time it could not, because the gate builds `PERM_TOKENS` from the real `utils/adminAccess.js`. ⚠️ **That correction is itself now out of date, three hours after being written:** the token went into the bot the same day, so the gate reports **twelve**. A correction is a claim like any other and rots at the same rate. And it said **"the one-way copy on five realms"** — there is one `Shell.oneWay` strip, on Season, because Season holds every tier-3 *entity* op (`draw.purge`, `calendar.purge`, `patchnote.purge`, `season.startNew`); Review's commit gate and Access's typed revoke are the other two tier-3 surfaces and they are not strips. A scope written from memory rather than from the tree overstates in exactly this direction.
 
-**4. Still genuinely open:** whether `--ink4` should exist at all. It is a non-text token with 15 uses; if those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote. Cosmetic, and it does not gate wiring.
-4. **Whether `--ink4` should exist at all.** It is now a non-text token with 15 uses. If those 15 could take `--rule2`, the ink scale would be honestly three tokens instead of three-plus-a-footnote.
+**4. ✅ ANSWERED 2026-08-25 — `--ink4` stays, and the question was wrong twice over.** It asked whether a "non-text token with 15 uses" could collapse into `--rule2`. Measured: **35 uses, not 15** — and **12 of them are text** (9 `color`, 3 `stroke`), so the premise that it is non-text is false. `--rule2` is `#3A4752`, a border colour: putting 13px text on it over `#0B0D0E` lands near 1.6:1, nowhere close to AA, and the audit's contrast rule would fail every one of those twelve. The ink scale is honestly four steps because four are used as ink. **A question carried in an open-items list for a week on a count that was 2.3× wrong is its own lesson** — an unanswered question rots exactly like an unmaintained number, and this one was quotable and untrue the whole time.
+4. ✅ **`--ink4` — ANSWERED, it stays.** See the entry above; the "15 non-text uses" premise measured out at 35 uses of which 12 are text. *(This question appeared twice in this document, in the same section, with the same stale number — which is what a hand-maintained open-items list does when nothing checks it.)*
 
 *Closed 2026-08-24: the accents for Broadcast, Access and Analytics (§4.2); `review.html`'s design (§5.8); the WCAG AA floor, now measured rather than claimed; the responsive contract, verified at 390px rather than assumed; and keyboard paths for **both** drag surfaces — Season's Board and Armory's tier board. *(This read "all three" until 2026-08-24, counting a Broadcast reorder that had been removed.)**
 

@@ -47,9 +47,17 @@
   /* layout — the one place to override */
   /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every
      other size. These steps have real jumps and each has exactly one job. Tracking tightens
-     as size grows; every numeral is tabular. */
+     as size grows; every numeral is tabular.
+     🔴 THERE WERE TWO TYPE SCALES IN THIS FILE, BOTH IN :root, EACH UNDER A COMMENT CLAIMING TO
+     BE THE SCALE — and they COLLIDED on `--t-micro` (9.5px here, 9px below). The later one wins
+     in the cascade, so all 48 usages silently took 9px while this line said 9.5px. One quantity,
+     two authorities, at the level of the design system itself: every surface inherits it, and no
+     per-element rule could ever see it.
+     The DISPLAY end lives here (44/34/22 — the masthead figures, used 2/3/1 times) and the UI
+     end lives in the block below (9→24px, where `--t-sm` alone is used 55 times). They are one
+     scale in two ranges, not two scales, and `--t-micro` belongs to the range that uses it. The
+     three names this block no longer defines — body, label, micro — were the duplicated half. */
   --t-display:44px; --t-figure:34px; --t-h1:22px;
-  --t-body:13.5px; --t-label:11px; --t-micro:9.5px;
   --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;
 
   /* MOTION — one easing, three durations. Motion earns its place by explaining where
@@ -80,9 +88,14 @@
   --dc-bg:#2B2D31; --dc-ink:#F2F3F5; --dc-body:#DBDEE1; --dc-mute:#B5BAC1;
   --dc-dim:#949BA4; --dc-rule:#3A3C41; --dc-sunk:#1E1F22;
 
-  /* ── type scale ────────────────────────────────────────────────────────
+  /* ── type scale, UI range ──────────────────────────────────────────────
    * The audit found ELEVEN distinct px font-sizes and no scale. These are the
-   * same values, named, so a twelfth cannot be invented by accident. */
+   * same values, named, so a twelfth cannot be invented by accident.
+   * This is the range everything actually uses — `--t-sm` 55 times, `--t-micro` 48, `--t-xs` 23,
+   * `--t-md` 22. The display range (44/34/22) is declared above and used five times in total,
+   * on the mastheads. `--t-body` and `--t-label` were a THIRD set of names for 13.5px and 11px,
+   * which `--t-md` and `--t-sm` already covered; they are gone rather than aliased, because an
+   * alias is a second name for one value and that is how this collided in the first place. */
   --t-micro:9px; --t-xs:10px; --t-sm:11.5px; --t-base:12.5px;
   --t-md:13.5px; --t-lg:15px; --t-xl:19px; --t-hero:24px;
 
