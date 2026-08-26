@@ -547,7 +547,15 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **A conservation check now covers the seam that made this invisible.** The composer's type keys and the Track's lane keys are matched by string in two different files, and a mismatch fails *silently*: the ghost is computed, handed to the Track, matched against no lane, and never drawn. `patchnote` is the deliberate exception — the Track has no patch-note lane, so composing one draws nothing, which is honest rather than broken.
 
-**Coverage 71% → 79% (Season 73% → 80%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
+### The Track drew three deadline lines and named none of them
+
+🔴 **`.dend` is a coloured hairline crossing every lane, and which colour meant which deadline was something you had to remember** — while in the live season **two of the three fall on the same day**, so even the count was ambiguous. The rail is the flag row those lines were always missing: each deadline named, dated, tied to its line by a stem, in flow above the lanes so it takes its own height rather than sitting over them. A deadline outside the window is **welded to the edge it is beyond** with the distance in days, because "beyond this view" is a statement about the boundary.
+
+⚠️ **THE CHIPS DELIBERATELY DO NOT DRAG, and that is a decision rather than a reduced version of one.** The adopted sheet gives `.dflag` an `ew-resize` cursor because the page it was drawn for had no other way to move a deadline. This portal has the identity editor directly above, where the date is typed and read by the bot's own chrono parser — and a season deadline has to land on an exact day, which a coarse gesture across a 44-day axis is the wrong instrument for. The cursor is overridden so the chip does not promise a gesture it does not have.
+
+⚠️ **Stacking is by proximity as a fraction of the visible span, not by measured pixel width.** The mockup measures each chip's rendered width and re-stacks on every zoom; that needs the DOM and cannot be tested. Asking the same question of the data is approximate at the edges and deterministic — and **a TBD deadline is neither flagged nor pinned**, because drawing it at the date it used to hold would put a deadline on the axis the season has not set.
+
+**Coverage 71% → 79% (Season 73% → 84%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 

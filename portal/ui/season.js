@@ -759,6 +759,7 @@ export function SeasonRealm({ session }) {
                                               onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
                <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null}
+                          rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')} />`

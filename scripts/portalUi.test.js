@@ -395,4 +395,64 @@ check('THE LANE MATCH CAN FAIL: a type with no lane is caught', () => {
     }, /stranded: seasonpass/);
 });
 
+// ── THE DEADLINE RAIL ─────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE TRACK DREW THREE DEADLINE LINES AND NAMED NONE OF THEM — and in the live season TWO of the three fall on the same day, so which colour meant what was something you had to remember and the count itself was ambiguous.
+const { deadlineRail } = require('../portal/ui/season.logic');
+
+const SEASON = {
+    bpTitle: 'BP Season 7', bpEnd: '2026-09-10T00:00:00.000Z',
+    rankTitle: 'Ranked Series 2', rankEnd: '2026-09-10T00:00:00.000Z',
+    dmzTitle: 'DMZ Season 1', dmzEnd: '2026-11-11T00:00:00.000Z',
+};
+
+check('two deadlines on the same day take different rows', () => {
+    const { flags } = deadlineRail(SEASON, '2026-08-06', '2026-09-19');
+    assert.strictEqual(flags.length, 2);
+    assert.strictEqual(flags[0].pct, flags[1].pct, 'the same day is the same position — that is the whole reason they must stack');
+    assert.notStrictEqual(flags[0].level, flags[1].level, 'two chips at one x on one row is one chip hiding another');
+});
+
+check('THE STACKING CAN FAIL: same-day flags sharing a row would hide one another', () => {
+    assert.throws(() => {
+        const flags = [{ pct: 79.5, level: 0 }, { pct: 79.5, level: 0 }];
+        assert.notStrictEqual(flags[0].level, flags[1].level, 'two chips at one x on one row');
+    }, /one x on one row/);
+});
+
+check('a deadline beyond the window is pinned to the edge it is beyond, with the distance', () => {
+    const { flags, pins } = deadlineRail(SEASON, '2026-08-06', '2026-09-19');
+    assert.deepStrictEqual(flags.map((f) => f.key), ['bp', 'rank']);
+    assert.strictEqual(pins.length, 1);
+    assert.strictEqual(pins[0].key, 'dmz');
+    assert.strictEqual(pins[0].side, 'r');
+    assert.strictEqual(pins[0].away, 53, 'the count is days beyond the boundary, not days from today');
+});
+
+check('a deadline before the window pins to the LEFT edge', () => {
+    const { pins } = deadlineRail(SEASON, '2026-09-20', '2026-10-20');
+    assert.deepStrictEqual(pins.map((p) => p.side).sort(), ['l', 'l', 'r']);
+    assert.strictEqual(pins.find((p) => p.key === 'bp').away, 10);
+});
+
+// ⚠️ TBD IS NOT A DATE, and drawing it at a position would put a deadline on the axis that the season has not set. It is stated in the identity panel, where "TBD" is a value the reader can act on.
+check('a TBD deadline is neither a flag nor a pin', () => {
+    const { flags, pins } = deadlineRail({ ...SEASON, bpEndTBD: true }, '2026-08-06', '2026-09-19');
+    assert.ok(!flags.some((f) => f.key === 'bp'), 'a TBD deadline must not be drawn at the date it used to hold');
+    assert.ok(!pins.some((p) => p.key === 'bp'));
+});
+
+check('a season with no deadlines at all produces an empty rail rather than throwing', () => {
+    const empty = deadlineRail({}, '2026-08-06', '2026-09-19');
+    assert.deepStrictEqual(empty, { flags: [], pins: [] });
+    assert.deepStrictEqual(deadlineRail(null, '2026-08-06', '2026-09-19'), { flags: [], pins: [] });
+});
+
+check('no flag is ever assigned a row the stylesheet does not define', () => {
+    // Five deadlines crowded into one week: the rail has three rows, so the surplus shares the last one — an overlapping chip is readable, an absent deadline is not.
+    const crowded = deadlineRail({ bpEnd: '2026-09-10', rankEnd: '2026-09-11', dmzEnd: '2026-09-12' }, '2026-09-09', '2026-09-13');
+    assert.ok(crowded.flags.every((f) => f.level >= 0 && f.level <= 2),
+        `a flag landed on row ${crowded.flags.map((f) => f.level).join(',')} and only lvl1 and lvl2 exist`);
+});
+
 process.exit(failures ? 1 : 0);

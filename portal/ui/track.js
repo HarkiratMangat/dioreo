@@ -386,7 +386,34 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
     `;
 }
 
-export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost }) {
+// ── THE DEADLINE RAIL ─────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE TRACK DREW THREE DEADLINE LINES AND NAMED NONE OF THEM. `.dend` is a coloured hairline crossing every lane, and which colour meant which deadline was something you had to remember — while in the live season TWO of the three fall on the same day, so even the count was ambiguous. The rail is the flag row those lines were always missing, in flow above the lanes so it takes its own height rather than sitting over them.
+//
+// ⚠️ THE CHIPS DO NOT DRAG. The adopted sheet gives them an `ew-resize` cursor because the page it was drawn for had no other way to move a deadline; this portal has the identity editor directly above, where the date is typed and read by the bot's own parser. A season deadline must land on an exact day, and a coarse gesture across a 44-day axis is the wrong instrument for that — so the cursor is overridden rather than left promising a gesture that is not there.
+function DeadRail({ rail, view }) {
+    if (!rail || (!rail.flags.length && !rail.pins.length)) return null;
+    return html`
+        <div class="deadrail" aria-label="Season deadlines">
+            ${rail.flags.map((d) => html`
+                <span key=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '')}
+                      style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
+                      data-tip=${`${d.title || d.label} ends ${TL.fmt(d.date)} — change it in the panel above, where the date is typed and parsed`}>
+                    <i class="dfk"></i><b class="dfl">${d.label}</b><span class="dfd">${TL.fmt(d.date)}</span>
+                </span>`)}
+            <!-- A deadline outside the window is WELDED TO THE EDGE it is beyond, not floated at a
+                 position it does not have. "Beyond this view" is a statement about the boundary, so
+                 it belongs on the boundary. -->
+            ${rail.pins.map((d) => html`
+                <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}`} style=${`--c:${d.hex}`}
+                      data-tip="Outside the current window — press FIT or zoom out to bring it in">
+                    ${d.label} ${TL.fmt(d.date)} <em>${d.away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>
+                </span>`)}
+        </div>
+    `;
+}
+
+export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
@@ -472,6 +499,7 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                     <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
                               onWindow=${onWindow} />` : null}
                 <${Ruler} view=${view} />
+                <${DeadRail} rail=${rail} view=${view} />
                 <div class="lanes">
                     ${lanes.map((l) => html`
                         <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}

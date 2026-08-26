@@ -300,8 +300,47 @@ function draftDiff(live, draft, fmt) {
     return { rows, identical: rows.length === 0 };
 }
 
+// ── THE DEADLINE RAIL ─────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE TRACK DREW THE DEADLINES AND NEVER NAMED THEM. Three vertical lines crossed the lanes in three colours and nothing on the axis said which was which — so "the thing that ends on the 10th" was a colour you had to remember, and TWO of them end on the same day in the live season. The rail is the flag row those lines were always missing.
+//
+// ⚠️ THE FLAGS ARE NOT DRAGGABLE HERE, and that is a decision rather than a reduced version of one. The adopted stylesheet gives `.dflag` an `ew-resize` cursor because the page it was drawn for had no other way to change a deadline; this portal has the identity editor directly above, where a date is typed and parsed by the bot's own chrono. A season deadline has to be exact, and a coarse gesture over a 44-day axis is the wrong instrument for a value that must land on one day. The cursor is overridden so the chip does not promise a gesture it does not have.
+//
+// ⚠️ STACKING IS BY PROXIMITY IN THE WINDOW, not by measured pixel width. The mockup measures each chip's rendered width and stacks on overlap; that needs the DOM, cannot be tested, and re-runs on every zoom. Proximity as a FRACTION OF THE VISIBLE SPAN is the same question asked of the data: two deadlines close enough together to collide at this zoom get different rows. It is approximate at the edges and it is deterministic, which is the trade this file exists to make.
+const RAIL_LABEL = { bp: 'battle pass', rank: 'ranked', dmz: 'DMZ' };
+const RAIL_GAP = 0.14;      // of the visible span — two flags nearer than this share a column
+const RAIL_LEVELS = 3;      // the stylesheet defines lvl1 and lvl2 on top of the base row
+
+function deadlineRail(season, from, to) {
+    const dayOf = (v) => (v ? String(v).slice(0, 10) : null);
+    const span = (new Date(to + 'T00:00:00Z') - new Date(from + 'T00:00:00Z')) / 86400000 || 1;
+    const all = SEASON_LINES
+        .map((L) => ({ key: L.key, label: RAIL_LABEL[L.key] || L.key, hex: L.hex,
+            title: (season || {})[L.titleKey] || '', tbd: Boolean((season || {})[L.tbdKey]), date: dayOf((season || {})[L.endKey]) }))
+        .filter((d) => d.date && !d.tbd)
+        .sort((a, b) => (a.date < b.date ? -1 : 1));
+
+    const flags = []; const pins = [];
+    const lastAt = new Array(RAIL_LEVELS).fill(-Infinity);
+    for (const d of all) {
+        const at = (new Date(d.date + 'T00:00:00Z') - new Date(from + 'T00:00:00Z')) / 86400000;
+        if (at < 0 || at > span) {
+            const side = at < 0 ? 'l' : 'r';
+            pins.push({ ...d, side, away: Math.round(side === 'l' ? -at : at - span) });
+            continue;
+        }
+        const frac = at / span;
+        // The lowest row whose previous flag is far enough away. Past the last row a flag shares row 2 rather than vanishing — an overlapping chip is readable, an absent deadline is not.
+        let level = lastAt.findIndex((prev) => frac - prev > RAIL_GAP);
+        if (level === -1) level = RAIL_LEVELS - 1;
+        lastAt[level] = frac;
+        flags.push({ ...d, level, pct: frac * 100 });
+    }
+    return { flags, pins };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff });
+    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff, deadlineRail, RAIL_LABEL });
 }
 
 if (typeof module !== 'undefined' && module.exports) {
