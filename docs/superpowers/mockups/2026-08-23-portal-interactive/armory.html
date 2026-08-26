@@ -3,7 +3,7 @@
 <title>Armory · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787707489"><link rel="stylesheet" href="assets/app.css?v=1787707489">
+<link rel="stylesheet" href="assets/tokens.css?v=1787710010"><link rel="stylesheet" href="assets/app.css?v=1787710010">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -108,9 +108,10 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787707489"></script>
-<script src="assets/timeline.js?v=1787707489"></script>
-<script src="assets/shell.js?v=1787707489"></script>
+<script src="assets/fixtures.js?v=1787710010"></script>
+<script src="assets/timeline.js?v=1787710010"></script>
+<script src="assets/icons.js?v=1787710010"></script>
+<script src="assets/shell.js?v=1787710010"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -268,7 +269,7 @@
                    in this package — and the first time a gate caught it instead of a person:
                    portal:refs now parses every inline script, and it reported this within a
                    minute of the edit. -->
-              <span class="trow-k" aria-hidden="true">${r === null ? '—' : r === 'best' ? '★' : ''}</span>
+              <span class="trow-k" aria-hidden="true">${r === null ? '—' : r === 'best' ? S.icon('star', {cls:'sm'}) : ''}</span>
               <span class="trow-t">${F.RANK_LABEL[String(r)]}</span>
               <span class="trow-n">${list.length}</span>
               <!-- 🔴 THE SAME SENTENCE RENDERED THREE TIMES. "ranked within its own category,
@@ -285,7 +286,7 @@
                    one best WEAPON and none has zero. -->
               ${r === 'best' ? `<span class="trow-note">one <b>weapon</b> per category</span>`
                 : r === null ? '<span class="trow-note">no rank set; these render with no tier badge</span>' : ''}
-              <span class="trow-cv" aria-hidden="true">&#9662;</span>
+              ${S.fold(true, {cls:'sm trow-i'})}
             </div>
             <div class="trow-body" data-drop="${r === null ? '' : r}">
               ${list.length ? groupChips(list)
@@ -355,7 +356,7 @@
       <span class="bc-foot">
         <span class="bc-mode">${b.mode}</span>
         ${b.dmzRangeRank ? `<span class="bc-dmz">${b.dmzRangeRank}</span>` : ''}
-        ${b.isToxic ? '<span class="bc-tox" title="Toxic">&#9763;</span>' : ''}
+        ${b.isToxic ? ('<span class="bc-tox" title="Toxic">' + S.icon('skull', {cls:'sm', label:'toxic'}) + '</span>') : ''}
         <span class="bc-att" data-tip="${b.attachments.length} attachments">${b.attachments.length}&#215;</span>
         <!-- 🔴 AGE IS NOT A DEFECT BADGE. This counted every defect including staleness, so the
              red mark sat on 109 of 125 builds - found by audit rule 15 reporting ".bc-bad marks
@@ -889,7 +890,7 @@ Badges: meta, top3
             <div class="imgact">
               <button class="chip" id="imgSuggest">Use convention</button>
               <a class="chip" id="imgOpen" target="_blank" rel="noopener"
-                 href="${draft.imageKey ? F.imageUrl(draft.imageKey) : '#'}">Open asset &#8599;</a>
+                 href="${draft.imageKey ? F.imageUrl(draft.imageKey) : '#'}">Open asset ${S.icon('arrow-up-right', {cls:'sm'})}</a>
               <button class="chip danger" id="imgClear" ${draft.imageKey ? '' : 'disabled'}>Remove</button>
             </div>
             <p class="imgnote">Convention is <code>WEAPON-N</code> — all caps, spaces to hyphens,
@@ -1260,7 +1261,7 @@ Badges: meta, top3
           ${b.categoryRank ? `<b class="bdg rank">${b.categoryRank.toUpperCase()}</b>` : ''}
           ${b.dmzRangeRank ? `<b class="bdg dmz">${b.dmzRangeRank}</b>` : ''}
           ${b.isToxic ? '<b class="bdg toxic">TOXIC</b>' : ''}
-          ${def.length ? `<b class="bdg bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}&#9888;</b>` : ''}
+          ${def.length ? `<b class="bdg bad" data-tip="${def.map(d => d.label).join(' · ')}">${def.length}${S.icon('triangle-alert', {cls:'sm'})}</b>` : ''}
           ${!b.isMeta && !b.categoryRank && !b.dmzRangeRank && !b.isToxic && !def.length ? '<span class="none">—</span>' : ''}
         </span></td>${S.removeCell(b.weaponName + ' ' + b.buildName)}</tr>`;
     }).join('') : `<tr><td colspan="8"><div class="empty">

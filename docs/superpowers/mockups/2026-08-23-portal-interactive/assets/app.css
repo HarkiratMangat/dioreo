@@ -1046,7 +1046,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   border-radius:var(--rad-2);color:var(--ink3);cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.09em;
   padding:7px 11px;transition:color .13s,border-color .13s,background .13s}
 .idclose:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
-.idclose span{font-size:7px;opacity:.7}
 .identity.collapsed .idclose{display:none}
 
 /* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
@@ -2988,8 +2987,9 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   font:700 10px/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
 .lnh:hover{color:var(--ink2)}
 .lnh:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-2)}
-.lnh-cv{font-size:8px;opacity:.55;flex:none;width:8px}
-.lnh:hover .lnh-cv{opacity:1}
+/* The lane disclosure is a drawn .pm now - see DISCLOSURE, DRAWN NOT TYPED. */
+.lnh .pm{color:var(--ink3);opacity:.75}
+.lnh:hover .pm{opacity:1;color:var(--ink2)}
 .lnh-d{width:7px;height:7px;border-radius:var(--rad-1);background:var(--c);flex:none;transform:rotate(45deg)}
 /* Wrap rather than truncate. "DRAW WINDOWS" is two words and the lane is 38px tall — there was
    never a reason to cut it, and a truncated lane name is the exact defect widening this gutter
@@ -3394,7 +3394,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .bar.lbl-out .bl,.bar.lbl-out-l .bl,
 .bar.saved.lbl-out .bl,.bar.saved.lbl-out-l .bl{color:var(--ink)}
 /* two more `--ink4`-as-text slips the rule caught: the lane caret and a collapsed lane's name */
-.lnh-cv{opacity:.8;color:var(--ink3)}
+.lnh .pm{opacity:.85}
 .lane.lnc .lnh{color:var(--ink3)}
 
 /* Any filled surface that declares `--ci` uses it; the old single global stays as the fallback
@@ -3808,14 +3808,14 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
 .trow-h{cursor:pointer;user-select:none}
 .trow-h:hover .trow-t{color:var(--ink)}
 .trow-h:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-2)}
-.trow-cv{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3);
-  font-size:10px;transition:transform var(--dur-1) var(--ease)}
+.trow .pm{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3)}
 .trow-h{grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto}
 .trow-h .trow-n{margin-right:20px}
-.trow.tclosed .trow-cv{transform:rotate(-90deg)}
+/* Closed shows the cross stroke; there is nothing to rotate. */
+.trow.tclosed .pm::after{transform:scaleY(1)}
 .trow.tclosed .trow-body{display:none}
 .trow.tclosed .trow-note{display:none}
-@media (prefers-reduced-motion:reduce){ .trow-cv{transition:none} }
+@media (prefers-reduced-motion:reduce){ .trow .pm::after{transition:none} }
 
 /* ══════════════════════════════════════════════════════════════════════════════
  * LIVELINESS — eight micro-interactions, on markup that already exists
@@ -4461,39 +4461,57 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .srec-state{margin-left:auto;font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);
   letter-spacing:.06em}
 .srec-state.staged{color:var(--staged)}
-.srec-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
 /* The season's own name, in the face that names things the BOT HOLDS. */
-.srec-title{font-family:var(--title);font-size:var(--t-h1);line-height:1.15;color:var(--ink);margin:0}
+.srec-title{font-family:var(--title);font-size:var(--t-h1);line-height:1.15;color:var(--ink);
+  margin:0 0 2px}
 .srec-title.untitled{font-family:var(--ui);font-size:var(--t-base);color:var(--ink3);font-style:italic}
-.srec-open{margin-left:auto;font-family:var(--data);font-size:var(--t-sm);color:var(--ink2);
-  letter-spacing:.05em;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
-.idsum:hover .srec-open,.idsum:focus-visible .srec-open{color:var(--ink)}
-.srec-open s{text-decoration:none;transition:transform .16s var(--ease-soft,ease)}
-.idsum:hover .srec-open s{transform:translateX(3px)}
 
-/* Six cells, three abreast. The banners row uses the IDENTICAL cell so it cannot
-   read as a footnote - same bar, same label, same state, same weight. */
-/* Six cells, three abreast, ONE LINE EACH. Two lines per cell still read as a stack and
-   only bought 13px - "the 3 seasons could literally be formatted to be inline". Label,
-   title and date sit on one line and the title takes the slack, so the component is now
-   ~138px where the original vertical version was 209px, on the same width.
-   The banners row uses the IDENTICAL cell so it cannot read as a footnote. */
-.srec-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 20px}
-.srec-grid.ban{padding-top:9px;border-top:1px solid var(--rule)}
-.srec-c{display:flex;align-items:baseline;gap:9px;min-width:0}
-/* The topic hex is a BAR, never the text - DMZ's #337BA6 measures 3.63:1 at 9px.
-   Third time this file has paid for that rule. */
+/* ═══ ONE GRID, NOT SIX ══════════════════════════════════════════════════════
+   🔴 Measured before this rewrite: the six titles started at 128.3 / 478.1 /
+   840.6 / 145.6 / 525.2 / 917.5 — six different x — and the dates were not even
+   right-aligned to each other, ending 401.3 / 782.7 / 1164 / 404.3 / 777.7 /
+   1151. The two rows' columns did not line up either (40 vs 51).
+
+   The cause: `.srec-grid` gave three equal COLUMNS while each `.srec-c` was its
+   own flex row arranging itself from its own content. A grid that aligns only
+   the outer boxes and lets the contents float is not a grid — it is six boxes
+   in a row. And `text-align:right` on a `flex:none` child right-aligns text
+   inside its own shrink-wrapped box, which is a no-op: a rule that cannot do
+   anything is worse than no rule, because in the source it reads as handled.
+
+   `display:contents` dissolves every cell so all eighteen parts land in ONE
+   grid. The label column is then sized by the widest label ACROSS ALL SIX, so
+   every title starts at the same offset in its third and every state ends at
+   the same right edge — in both rows, because it is one grid.               */
+.srec-grid{display:grid;grid-template-columns:repeat(3,max-content minmax(0,1fr) max-content);
+  gap:7px 20px;align-items:baseline}
+.srec-c{display:contents}
+/* The topic hex is a BAR, never the text — DMZ's #337BA6 measures 3.63:1 at 9px. */
 .srec-c .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);display:inline-flex;align-items:center;gap:7px;
-  white-space:nowrap;flex:none}
+  white-space:nowrap}
 .srec-c .k::before{content:"";width:3px;height:11px;border-radius:var(--rad-1);
   background:var(--c);flex:none}
-.srec-c .t{flex:1 1 auto;font-size:var(--t-base);color:var(--ink);min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srec-c .t{font-size:var(--t-base);color:var(--ink);min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
 .srec-c .t.unset{color:var(--ink3);font-style:italic}
-.srec-c .d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink2);flex:none;
+.srec-c .d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink2);justify-self:end;
   font-variant-numeric:tabular-nums;letter-spacing:.04em;white-space:nowrap}
 .srec-c .d.tbd{color:var(--ink3)}
+/* A state, not a verb. "set" at the end of a row reads as a button, and this column
+   carries a DATE in the rows above — so a word here broke the peerage that the shared
+   treatment exists to establish. Filled = present and quiet. Hollow + warn = absent,
+   which is the state that actually wants attention. */
+.srec-c .d em{display:block;width:9px;height:9px;border-radius:var(--rad-round);
+  background:var(--ink3);border:1px solid var(--ink3)}
+.srec-c.off .d em{background:transparent;border-color:var(--warn-ink)}
+.srec-c.off .t{color:var(--warn-ink);font-style:normal}
+/* The banner row is separated by a rule that spans the whole grid rather than by a
+   second grid — a second grid was what let the two rows' columns drift apart. */
+.srec-grid::before{content:"";grid-column:1/-1;height:1px;background:var(--rule);
+  order:0;margin:2px 0}
+.srec-c:nth-child(-n+3){order:-1}
+.srec-c:nth-child(n+4){order:1}
 
 /* Silent unless it is genuinely late: 7 days or fewer AND nothing staged. One
    line, never repeated, gone the moment a draft exists. */
@@ -4544,4 +4562,73 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 @media (max-width:900px){
   .hclock{grid-template-columns:1fr;gap:20px}
   .hc-cols{grid-template-columns:1fr;gap:18px}
+}
+
+/* ═══════════════════ DISCLOSURE, DRAWN NOT TYPED ════════════════════════════
+   🔴 The package used three typed triangles as controls - Done &#9650;, the
+   lane collapse &#9656;/&#9662;, and Armory's row chevron &#9662;. Harkirat:
+   "▴ is a TERRIBLE ui element. like i can't express HOW BAD it is. HOW LAZY it
+   is. HOW UNREADABLE it is. HOW BORING it is."
+
+   All four charges land. A typed glyph hands its size, weight, baseline and
+   hinting to the font, so there is no stroke control and no alignment control;
+   at 9px it rasterises to a smudge. And it is the reflex answer to "this needs
+   an affordance", which is why it is on every accordion ever built.
+
+   This is two 1px rules - a minus when open, a plus when closed. Drawn, so
+   every dimension is a decision. Legible at 8px because it is two rectangles
+   rather than a glyph. And it is made of the same hairlines the rest of this
+   portal is made of, rather than imported from a font's dingbat block.
+
+   ⚠️ NOT a rotating chevron either: rotation animates a shape whose meaning
+   depends on which way it points, which is the same problem in motion.
+   Plus/minus reads at rest, in one glance, with no convention to learn.     */
+.pm{position:relative;display:inline-block;width:9px;height:9px;flex:none;
+  vertical-align:-1px}
+.pm::before,.pm::after{content:"";position:absolute;background:currentColor;
+  border-radius:var(--rad-1)}
+.pm::before{left:0;right:0;top:4px;height:1px}
+.pm::after{top:0;bottom:0;left:4px;width:1px;transform:scaleY(0);
+  transition:transform .16s var(--ease-soft,ease)}
+.pm.shut::after{transform:scaleY(1)}
+@media (prefers-reduced-motion:reduce){.pm::after{transition:none}}
+
+/* ═══════════════════ ICONS ══════════════════════════════════════════════════
+   Lucide, inlined as a sprite in assets/icons.js. See that file for why a real
+   icon set replaced the typed glyphs the package was using as controls.
+
+   An icon is 1em square and inherits currentColor, so it sits inside a line of
+   text at the size of that text without any per-site tuning. Vertical centring
+   is done with a small negative offset rather than vertical-align:middle, which
+   aligns to the x-height's middle and leaves an icon looking high.           */
+.ic{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none;
+  stroke:currentColor;fill:none}
+/* Controls want a slightly heavier stroke than body text or they read as grey
+   at small sizes; the sprite ships at 2 and this trims for the tiny cases. */
+.ic.sm{width:.85em;height:.85em;stroke-width:2.4}
+.ic.lg{width:1.35em;height:1.35em;stroke-width:1.75}
+.ic.xl{width:2.2em;height:2.2em;stroke-width:1.5}
+button .ic,a .ic{pointer-events:none}
+
+/* ═══════════════════ THE FOLD ═══════════════════════════════════════════════
+   The disclosure mark morphs through a flat rule rather than rotating. See the
+   long note in assets/icons.js: a rotation is what every accordion does and the
+   shape never actually changes. Here the path interpolates, so the chevron
+   folds through the horizon — the same event the panel below is performing.
+
+   `d` is animatable as a CSS property when written as path(). Where it is not
+   supported the mark still SWITCHES correctly, because the markup already
+   carries the right path for the state; only the tween is lost.             */
+.ic-fold path{d:path("M6 9 L12 15 L18 9");
+  transition:d .34s cubic-bezier(.65,0,.35,1)}
+.ic-fold.open path{d:path("M6 15 L12 9 L18 15")}
+/* Hovering the row leans the fold toward the state it is about to take, so the
+   control answers before it is clicked. */
+.lnh:hover .ic-fold path,.trow:hover .ic-fold path{d:path("M6 10.5 L12 13.5 L18 10.5")}
+.lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path{d:path("M6 13.5 L12 10.5 L18 13.5")}
+@media (prefers-reduced-motion:reduce){
+  .ic-fold path{transition:none}
+  .lnh:hover .ic-fold path,.trow:hover .ic-fold path,
+  .lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path{d:path("M6 9 L12 15 L18 9")}
+  .lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path{d:path("M6 15 L12 9 L18 15")}
 }

@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787707489"><link rel="stylesheet" href="assets/app.css?v=1787707489">
+<link rel="stylesheet" href="assets/tokens.css?v=1787710010"><link rel="stylesheet" href="assets/app.css?v=1787710010">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -123,7 +123,7 @@
           <button data-sn="draft" aria-pressed="false"><span class="pip draft" data-pip></span>Next</button>
         </div>
         <span class="sp" id="idState">no unsaved edits</span>
-        <button class="idclose" id="idClose" aria-label="Collapse season identity">Done <span>&#9650;</span></button></div>
+        <button class="idclose" id="idClose" aria-label="Collapse season identity">Done</button></div>
 
       <div class="draftnote" id="draftNote">Editing the <b>staged next season</b> — none of this is visible to players until you promote it.</div>
       <div class="f-main"><label for="f-title">Season title</label>
@@ -222,14 +222,10 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787707489"></script>
-<script src="assets/timeline.js?v=1787707489"></script>
-<script src="assets/shell.js?v=1787707489"></script>
-<!-- PROTOTYPE - THROWAWAY. Three variants of the deadline countdown, mounted on the real
-     page so they are judged against real density. Inert unless ?variant= or ?proto= is in
-     the URL. Delete both files and this block once a variant wins. -->
-<link rel="stylesheet" href=".proto-deadline.css?v=1787701491">
-<script defer src=".proto-deadline.js?v=1787701491"></script>
+<script src="assets/fixtures.js?v=1787710010"></script>
+<script src="assets/timeline.js?v=1787710010"></script>
+<script src="assets/icons.js?v=1787710010"></script>
+<script src="assets/shell.js?v=1787710010"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell, T = window.TL;
@@ -602,10 +598,13 @@
         <span class="srec-kind">Titles, dates and calendar banners</span>
         <span class="srec-state${isDraft ? ' staged' : ''}">${isDraft ? 'staged draft' : 'live'}</span>
       </div>
-      <div class="srec-head">
-        <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
-        <span class="srec-open">Open to edit <s>&rarr;</s></span>
-      </div>
+      <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
+      <!-- 🔴 ONE GRID, NOT SIX. Every cell used to be its own flex row that arranged itself
+           from its own content, so the six titles began at 128.3 / 478.1 / 840.6 / 145.6 /
+           525.2 / 917.5 - six different x positions - and the dates were not even
+           right-aligned to each other (ends 401.3 / 782.7 / 1164 / 404.3 / 777.7 / 1151).
+           display:contents dissolves each cell so all eighteen parts land in ONE grid,
+           where the label column is sized by the widest label ACROSS ALL SIX. -->
       <div class="srec-grid">
         ${F.LINES.map(L => {
           const t = (o[L.titleKey] || '').trim();
@@ -615,19 +614,28 @@
             <span class="t${t ? '' : ' unset'}">${t || 'no title set'}</span>
             <span class="d${tbd || !iso ? ' tbd' : ''}">${tbd ? 'TBD' : (iso ? T.fmt(iso) : 'no date')}</span></div>`;
         }).join('')}
-      </div>
-      <div class="srec-grid ban">
+        <!-- 🔴 A DOT, NOT THE WORD "set". A short word at the end of a row reads as a BUTTON -
+             "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
+             in the rows above, so a verb here also broke the peerage the shared treatment was
+             establishing. A filled ring cannot be read as an action. The ABSENT state is the
+             one that matters, so it is the one that is marked. -->
         ${BANNERS.map(b => {
           const on = (o[b.k] || '').trim();
-          return `<div class="srec-c" style="--c:${b.hex}">
-            <span class="k">${b.label} banner</span>
-            <span class="t${on ? '' : ' unset'}">${on ? 'cached and serving' : 'no image set'}</span>
-            <span class="d${on ? '' : ' tbd'}">${on ? 'set' : 'none'}</span></div>`;
+          return `<div class="srec-c${on ? '' : ' off'}" style="--c:${b.hex}">
+            <span class="k">${b.label}</span>
+            <span class="t${on ? '' : ' unset'}">${on ? 'image cached and serving' : 'no image set'}</span>
+            <span class="d" role="img" aria-label="${on ? 'set' : 'not set'}"><em></em></span></div>`;
         }).join('')}
       </div>
       ${nudge ? `<div class="srec-nudge"><b>Next season isn&rsquo;t staged.</b>
         A draft lets you build it &mdash; titles, dates, draws and calendar &mdash; without any of it going live.</div>` : ''}
     </div>`;
+    /* The strip IS the button - role, tabindex, cursor, hover and aria-expanded are all on it.
+     * A floating "Open to edit" label was an apology for an affordance that already existed,
+     * and it sat wherever margin-left:auto dropped it. The words move into the accessible
+     * name, where a keyboard user actually needs them. */
+    idSum.setAttribute('aria-label',
+      `Season record: ${titled || 'no title set'}. Open to edit titles, dates and calendar banners.`);
   }
   const identityEl = document.getElementById('identity');
   const toggleIdentity = () => {
@@ -873,7 +881,7 @@
            style="--c:${lane.bar};height:${col ? 30 : laneH}px">
         <button class="lnh" data-lanebtn="${lane.type}" data-draft="${isDraft?1:0}"
                 aria-expanded="${!col}" data-tip="${col ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.">
-          <span class="lnh-cv" aria-hidden="true">${col ? '&#9656;' : '&#9662;'}</span>
+          ${S.fold(!col, {cls:'sm lnh-i'})}
           <span class="lnh-d" style="--c:${lane.bar}"></span>
           <span class="lnh-t">${isDraft ? 'Draft ' + lane.label.toLowerCase() : lane.label}</span>
           <span class="lnh-n">${list.length}</span>

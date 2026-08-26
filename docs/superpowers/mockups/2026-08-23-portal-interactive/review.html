@@ -3,7 +3,7 @@
 <title>Review &amp; commit · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787707489"><link rel="stylesheet" href="assets/app.css?v=1787707489">
+<link rel="stylesheet" href="assets/tokens.css?v=1787710010"><link rel="stylesheet" href="assets/app.css?v=1787710010">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -44,8 +44,9 @@
      the footer — two controls for one action, with the redundant one obscuring the one that
      matters. Caught by looking at a screenshot; no audit rule can see it. -->
 
-<script src="assets/fixtures.js?v=1787707489"></script>
-<script src="assets/shell.js?v=1787707489"></script>
+<script src="assets/fixtures.js?v=1787710010"></script>
+<script src="assets/icons.js?v=1787710010"></script>
+<script src="assets/shell.js?v=1787710010"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -161,7 +162,7 @@
 
       ${isStale(o) ? `
         <div class="rvcon">
-          <span style="font-size:17px;line-height:1">⚠</span>
+          <svg class="ic lg" aria-hidden="true"><use href="#i-triangle-alert"/></svg>
           <div>
             <b>This record changed after you staged the change</b>
             <p>Someone edited <b>${o.name}</b> in Discord while it sat in your tray, so the value
@@ -187,7 +188,7 @@
       ${o.tier === 3 ? `
         <div class="rvexp ${o.exported ? 'done' : ''}">
           ${o.exported
-            ? `<b>✓ Export saved</b>
+            ? `<b>${S.icon('check', {cls:'sm'})} Export saved</b>
                <p>You are holding a file that re-imports through the bot's own bulk parser — the
                   round trip is checked byte for byte against <code>utils/adminParser.js</code> on
                   every build. That is what converts this from irreversible to reversible-with-a-file.</p>`

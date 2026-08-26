@@ -3,7 +3,7 @@
 <title>Analytics · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787707489"><link rel="stylesheet" href="assets/app.css?v=1787707489">
+<link rel="stylesheet" href="assets/tokens.css?v=1787710010"><link rel="stylesheet" href="assets/app.css?v=1787710010">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -80,8 +80,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787707489"></script>
-<script src="assets/shell.js?v=1787707489"></script>
+<script src="assets/fixtures.js?v=1787710010"></script>
+<script src="assets/icons.js?v=1787710010"></script>
+<script src="assets/shell.js?v=1787710010"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -475,7 +476,7 @@
               <td class="nums ta-r">${x.searches}</td>
               <td class="nums ta-r ${x.zeroResults ? 'bad' : ''}">${x.zeroResults || '—'}</td>
               <td class="nums ta-r">${x.picked || '—'}</td></tr>`).join('')}</tbody></table>`
-        : `<div class="estate"><span class="eicon">&#8253;</span>
+        : `<div class="estate"><span class="eicon">${S.icon('search-x', {cls:'xl'})}</span>
              <h4>No searches recorded yet</h4>
              <p>SearchTerm only fills from autocomplete sessions. An empty table here means nobody has
                 typed into an autocomplete field since the collection was created — not that nobody

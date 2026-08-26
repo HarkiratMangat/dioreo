@@ -1220,6 +1220,17 @@
       return { text: Math.max(1, Math.floor(ms / 60000)) + 'm', hot:true };
     },
 
+    /* ═══ ICONS ═══
+     * 🔴 DELEGATED, NOT BOLTED ON. icons.js originally did `Shell.icon = icon` at the end of
+     * its own module, which meant the method existed only if icons.js had already run when a
+     * caller reached for it - and a page's own inline script runs during parsing, before any
+     * deferred module. The result was "Shell.icon is not a function" and a page that rendered
+     * nothing but its chrome, with no error anywhere except one line in the console.
+     * Declaring the methods HERE and looking the implementation up at call time removes the
+     * ordering question entirely: whenever an icon is actually drawn, icons.js has loaded. */
+    icon(name, o){ return window.Icons ? window.Icons.icon(name, o) : ''; },
+    fold(open, o){ return window.Icons ? window.Icons.fold(open, o) : ''; },
+
     /* ═══ THE SEASON CLOCK ═══
      * 🔴 A COUNTDOWN IS A CLOCK. It RUNS - you look at it and it has changed since last time.
      * Four static compositions of a rendered integer were rejected in one sentence ("I told
@@ -2304,7 +2315,7 @@
       </div>
     </span>`;
       el.querySelector('.crumb').innerHTML =
-        `${crumb} <b>&rsaquo;</b> <span id="crumbView">${sub || ''}</span>`;
+        `${crumb} <b class="crumb-sep">${Shell.icon('chevron-right', {cls:'sm'})}</b> <span id="crumbView">${sub || ''}</span>`;
       el.querySelector('#home').onclick = () => location.href = 'index.html';
       Shell.wireAccount();
     },
