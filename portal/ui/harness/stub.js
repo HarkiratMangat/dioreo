@@ -185,7 +185,8 @@ function harnessChangesets() {
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
-        isOwner: owner, visibleRealms: realms,
+        // ⚠️ SEPARATE FROM `owner`, and reachable on its own. ?destroy=1 lets the strip be seen by a NON-owner who holds the permission, which is the state that actually needed designing — the mockup's viewer is always the owner, so "present, legible and disabled with the reason stated" was undesignable until this existed.
+        isOwner: owner, canDestroy: owner || params.get('destroy') === '1', visibleRealms: realms,
         // The account panel counts down to this. Fixed at seven and a bit hours out rather than derived from the clock, so the harness reads the same on every load and a screenshot of it is comparable to the last one — the whole point of a fixture.
         sessionExpiresAt: new Date(Date.now() + 7 * 3600e3 + 21 * 60e3).toISOString(),
     })],

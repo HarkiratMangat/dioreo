@@ -6,7 +6,7 @@
 const crypto = require('node:crypto');
 const https = require('node:https');
 const PortalSession = require('../models/PortalSession');
-const { isAdmin, isOwner } = require('../utils/adminAccess');
+const { isAdmin, isOwner, hasCommandAccess } = require('../utils/adminAccess');
 const { sendJson, forbidden } = require('./api/httpUtil');
 
 const SESSION_COOKIE = 'portal_session';
@@ -201,7 +201,9 @@ function registerAuthRoutes(route) {
         const expiresAt = session.createdAt
             ? new Date(new Date(session.createdAt).getTime() + PortalSession.SESSION_TTL_SECONDS * 1000).toISOString()
             : null;
-        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms: realms, sessionExpiresAt: expiresAt });
+        // 🔴 `destructive` IS NOT A REALM AND MUST NOT BE INFERRED FROM ONE. utils/adminAccess.js keeps it out of `all` on purpose — the owner typing "all" is asking for broad access, not for somebody else to be able to purge the season — so the portal has to ask for it by name. Sent on the session because the one-way strip has to render DISABLED WITH THE REASON for an admin who lacks it, which it cannot do if it does not know.
+        const canDestroy = owner || await hasCommandAccess(session.discordId, 'destructive');
+        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, canDestroy, visibleRealms: realms, sessionExpiresAt: expiresAt });
     }));
     route('POST', /^\/auth\/logout$/, requireAdmin(async (req, res, url, session) => {
         await PortalSession.updateOne({ sessionHash: session.sessionId }, { revokedAt: new Date() });

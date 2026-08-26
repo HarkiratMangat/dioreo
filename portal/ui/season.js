@@ -7,7 +7,8 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
-import { stageOps } from './composeClient.js';
+import { OneWay } from './oneway.js';
+import { stageOps, exportChangeset } from './composeClient.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
@@ -352,9 +353,10 @@ export function SeasonRealm({ session }) {
     const visibleWindow = zoomedWindow ? clampWindow(zoomedWindow, fullWindow) : fullWindow;
 
     async function handleExport(changeset) {
-        const res = await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        const res = await exportChangeset(changeset._id, session.csrfToken);
         const refused = refusalOf(res);
         if (refused) return overlay.say(`Not exported — ${refused}`);
+        overlay.say('Export saved. This change can commit now.');
         fetchChangesets('season').then(setChangesets);
     }
 
@@ -381,6 +383,15 @@ export function SeasonRealm({ session }) {
     async function handleAdd(op) {
         await stageOps('season', [op], session.csrfToken);
         setShowAdd(null);
+        fetchChangesets('season').then(setChangesets);
+    }
+
+    // A one-way op stages exactly like every other one — that is the point. What makes it different is downstream: it lands as tier 3, and Review will not commit it until the export exists. The toast names the next step because the reader has just pressed something frightening and needs to know what did and did not happen.
+    async function handleOneWay(op, item) {
+        const res = await stageOps('season', [op], session.csrfToken);
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Not staged — ${refused}`);
+        overlay.say(`${item.title} staged — it needs an export before it can commit.`, 'Review', () => { location.hash = '#/review'; });
         fetchChangesets('season').then(setChangesets);
     }
 
@@ -529,7 +540,9 @@ export function SeasonRealm({ session }) {
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
-                  viewSlot=${html`${identitySlot}${viewSlot}`} overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
+                  viewSlot=${html`${identitySlot}${viewSlot}
+                                  <${OneWay} live=${state.live} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
+                  overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;
 }

@@ -96,15 +96,29 @@ function register(route) {
         });
     }));
 
-    // POST /api/changeset/:id/export -> marks the tier-3 export gate satisfied
+    // POST /api/changeset/:id/export -> RETURNS the data a tier-3 op is about to destroy, and only then marks the gate satisfied.
+    //
+    // 🔴 THIS ROUTE USED TO EXPORT NOTHING. It set `exportedAt = new Date()` and returned the timestamp — no file, no rows, nothing. So the interlock the whole tier-3 design rests on, the one the changelog calls "the safety interlock for purge", was satisfied by pressing a button that produced no export at all. The confirmation then told the reader their export was "the only way back" from a purge, which was false: there was no way back. A gate that cannot fail is bad; a gate that manufactures a false assurance about irreversible data loss is worse, and this was the second kind.
+    //
+    // `baseline` is the pre-change snapshot core/changeset.js captures at stage time — the actual records, not a summary — which is exactly what an export has to be. A changeset staged before that field existed has `baseline: null` and CANNOT be exported: refusing is the honest answer, because marking the gate satisfied over an empty payload is what this change exists to stop.
     route('POST', /^\/api\/changeset\/[^/]+\/export$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);
         if (!isObjectId(id)) return sendJson(res, 400, { error: 'not a valid changeset id' });
         const doc = await Changeset.findOne({ _id: id, authorId: session.discordId });
         if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
-        doc.exportedAt = new Date();
+        if (!Array.isArray(doc.baseline) || !doc.baseline.length) {
+            return sendJson(res, 409, { ok: false, reason: 'This change was staged before exports captured their data. Discard it and stage it again to get an export.' });
+        }
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            changesetId: String(doc._id), realm: doc.realm, tier: doc.tier,
+            exportedBy: session.discordId,
+            // Both halves, deliberately: the ops say what was ABOUT to happen and the baseline says what was there. Either one alone leaves the reader of this file guessing at the other.
+            ops: doc.ops, baseline: doc.baseline,
+        };
+        doc.exportedAt = new Date(payload.exportedAt);
         await doc.save();
-        sendJson(res, 200, { exportedAt: doc.exportedAt });
+        sendJson(res, 200, { exportedAt: doc.exportedAt, filename: `dioreo-${doc.realm}-${String(doc._id).slice(-8)}.json`, payload });
     }));
 
     // POST /api/changeset/:id/discard — 🔴 state:'discarded' has been a recognized value in columnFor() (board.logic.js) since the Board pipeline was built — it just had no route that ever set it, so there was no way to abandon a staged or blocked change anywhere in the portal. Never a hard delete: the row stays for history/audit, columnFor already treats it as leaving the board, exactly like 'committed'.

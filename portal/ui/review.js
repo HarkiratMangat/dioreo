@@ -8,6 +8,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
+import { exportChangeset } from './composeClient.js';
 import { useAsync, RealmShell, Progress, Failure } from './async.js';
 import { Icon } from './icons.js';
 import { useOverlay } from './overlay.js';
@@ -128,6 +129,17 @@ export function ReviewRealm({ session }) {
     const ops = data.ops || [];
     const changesets = data.changesets || [];
     const blockers = blockersFor(ops, changesets, resolved, confirmText);
+    const needExport = changesets.filter((c) => c.tier === 3 && !c.exportedAt);
+
+    async function exportOne(changeset) {
+        setBusy(true);
+        const res = await exportChangeset(changeset.id, session.csrfToken);
+        setBusy(false);
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Not exported — ${refused}`);
+        overlay.say('Export saved. This change can commit now.');
+        refresh();
+    }
     const selected = ops.find((o) => o.id === sel) || ops[0] || null;
 
     const stats = [
@@ -217,8 +229,14 @@ export function ReviewRealm({ session }) {
                                    onInput=${(e) => setConfirmText({ ...confirmText, [c.id]: e.target.value })} />
                         </span>`)}
                     <span class="sp"></span>
+                    <!-- 🔴 THE GATE NAMED THE PROBLEM AND OFFERED NO WAY THROUGH IT. Review said "1 tier-3 change needs an export before it will commit" and stopped there: the only Export control in the portal was on Season's Board, one realm away, and nothing on this screen said so. A blocker that states a precondition without the control that satisfies it is a dead end with good manners. -->
                     ${blockers.length
-                        ? html`<span class="rvgate"><${Icon} name="triangle-alert" cls="sm" />${blockers[0].msg}</span>`
+                        ? html`<span class="rvgate">
+                                   <${Icon} name="triangle-alert" cls="sm" />${blockers[0].msg}
+                                   ${needExport.length ? html`
+                                       <button class="pill sm" disabled=${busy}
+                                               onClick=${() => exportOne(needExport[0])}>Export it now</button>` : null}
+                               </span>`
                         : html`<span class="rvgate ok"><${Icon} name="check" cls="sm" />Ready — ${ops.length} change${ops.length > 1 ? 's' : ''} to write</span>`}
                     <button class="btn dang" disabled=${busy} onClick=${() => overlay.confirm({
                         op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard all',

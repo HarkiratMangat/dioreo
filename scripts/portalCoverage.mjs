@@ -31,21 +31,33 @@ function emitted(paths) {
     return out;
 }
 
-const PAIRS = [
-    ['Season', ['season.html'], ['season.js', 'track.js', 'board.js', 'manifest.js']],
-    ['Armory', ['armory.html'], ['armory.js', 'manifest.js']],
-    ['Broadcast', ['broadcast.html'], ['broadcast.js', 'manifest.js']],
-    ['Access', ['access.html'], ['access.js']],
-    ['Analytics', ['analytics.html'], ['analytics.js', 'manifest.js']],
-    ['Review', ['review.html'], ['review.js']],
-    ['Home', ['index.html'], ['home.js']],
-    ['Door', ['door.html'], []],   // the Door component lives in shell.js, which the shared set already covers
+// 🔴 THE THIRD COLUMN WAS A HAND-MAINTAINED LIST AND IT HAD ALREADY GONE STALE. Access renders a Manifest — the live-sessions table with its search box and its selection bar is one, plainly, on screen — and `manifest.js` was not in Access's row. So every class the SelectionBar emits was counted as MISSING from a realm that renders it, which is a false negative in the direction that costs most: it invents work. The entry point is the only thing worth declaring; what a realm actually renders is what it imports, and the import graph cannot go stale because it is the code.
+const ENTRY = [
+    ['Season', ['season.html'], 'season.js'],
+    ['Armory', ['armory.html'], 'armory.js'],
+    ['Broadcast', ['broadcast.html'], 'broadcast.js'],
+    ['Access', ['access.html'], 'access.js'],
+    ['Analytics', ['analytics.html'], 'analytics.js'],
+    ['Review', ['review.html'], 'review.js'],
+    ['Home', ['index.html'], 'home.js'],
+    ['Door', ['door.html'], null],   // the Door component lives in shell.js, which the shared set already covers
 ];
+
+// Relative imports only, followed transitively. A vendor import (../vendor/preact.mjs) emits no classes and is skipped by the same rule that keeps this from wandering out of portal/ui.
+function importsOf(file, seen = new Set()) {
+    if (!file || seen.has(file)) return seen;
+    const full = join(UI, file);
+    if (!existsSync(full)) return seen;
+    seen.add(file);
+    for (const m of readFileSync(full, 'utf8').matchAll(/from\s+'\.\/([\w.-]+\.js)'/g)) importsOf(m[1], seen);
+    return seen;
+}
+
+const PAIRS = ENTRY.map(([name, pages, entry]) => [name, pages, [...importsOf(entry)]]);
 
 // 🔴 THE THIRD COLUMN OF `PAIRS` DID NOTHING, AND THE NUMBERS WERE INFLATED FOR IT. `sharedPortal` used to be EVERY portal/ui/*.js file, so each realm's "have" already contained the whole portal's class vocabulary and the per-realm list it is unioned with could not change a single result. A class emitted only by Season counted as covered on Broadcast. Adding the composer on 2026-08-26 moved five realms that do not render it — 51% to 57% in one commit — which is what exposed it.
 //
-// ⚠️ THE FIX IS TO MIRROR THE MOCKUP'S OWN SPLIT, not to invent one. The mockup's `assets/shell.js` is what every page shares — the header, rail, tray, drawer, toast, command bar, compose and the Discord card — so the portal's shared set is the modules holding those same things, and everything else is attributed to the realm that renders it. Both sides are now scoped the same way; before this the mockup side was scoped per page and the portal side was not, which is the asymmetry that produced the inflation.
-// async.js belongs here by the same test as the rest: the mockup's assets/shell.js is what every page shares, and Shell.async — skeleton, refreshing, slow, failure, progress, banner — is declared in it. Every realm renders those states; none owns them.
+// ⚠️ THE FIX IS TO MIRROR THE MOCKUP'S OWN SPLIT, not to invent one. The mockup's `assets/shell.js` is what every page shares — the header, rail, tray, drawer, toast, command bar, compose and the Discord card — so the portal's shared set is the modules holding those same things, and everything else is attributed to the realm that renders it. Both sides are now scoped the same way; before this the mockup side was scoped per page and the portal side was not, which is the asymmetry that produced the inflation. async.js belongs here by the same test as the rest: the mockup's assets/shell.js is what every page shares, and Shell.async — skeleton, refreshing, slow, failure, progress, banner — is declared in it. Every realm renders those states; none owns them.
 const SHARED_UI = ['shell.js', 'palette.js', 'overlay.js', 'icons.js', 'tray.js', 'composer.js', 'v2Render.js', 'async.js'];
 
 const sharedMockup = emitted([join(MOCKUP, 'assets/shell.js')]);
@@ -62,6 +74,7 @@ for (const [name, mockPages, uiFiles] of PAIRS) {
     console.log(`${name.padEnd(10)} ${String(Math.round((100 * hit.length) / want.size) + '%').padStart(6)}  ${String(hit.length).padStart(5)}/${want.size}`);
     if (showMissing) {
         const missing = [...want].filter((c) => !have.has(c)).sort();
+        console.log(`           from: ${uiFiles.join(' ')}`);
         console.log(`           missing: ${missing.join(' ')}\n`);
     }
 }
