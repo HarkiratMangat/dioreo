@@ -1220,6 +1220,82 @@
       return { text: Math.max(1, Math.floor(ms / 60000)) + 'm', hot:true };
     },
 
+    /* ═══ THE SEASON CLOCK ═══
+     * 🔴 A COUNTDOWN IS A CLOCK. It RUNS - you look at it and it has changed since last time.
+     * Four static compositions of a rendered integer were rejected in one sentence ("I told
+     * you they are a countdown"), and six paddings of a digital readout were rejected in
+     * another. The seconds place is not a planning unit; nobody schedules a battle pass to
+     * the second. It is the PROOF OF LIFE - it says this is a live measurement of a real
+     * deadline and not a number somebody typed into a config.
+     *
+     * 🔴 THE NEXT DEADLINE IS A MOMENT, NOT A LINE. bpEnd and rankEnd are both 2026-09-10, so
+     * this season has TWO deadline MOMENTS, not three deadlines - one of them ends two lines
+     * at once. The Track's own notch layer has grouped by date since it was rebuilt; every
+     * other surface counted three, and the page stated both at the same time. */
+    countdownParts(iso, today){
+      if (!iso) return null;
+      const end = new Date(iso + 'T23:59:59Z').getTime();
+      /* A pinned ?today= must still TICK, or the one mechanism this package has for rendering
+       * states the fixtures never produce cannot reach the one element whose entire point is
+       * that it moves. The pinned date becomes an ORIGIN: midnight there, running forward in
+       * real time from page load. §16.23 is what getting this backwards costs. */
+      let now = Date.now();
+      if (today) {
+        const k = 'ck:' + today;
+        if (!Shell[k]) Shell[k] = Date.now() - new Date(today + 'T00:00:00Z').getTime();
+        now = Date.now() - Shell[k];
+      }
+      let ms = end - now;
+      if (ms <= 0) return { past:true, d:0, h:0, m:0, s:0 };
+      const d = Math.floor(ms / 86400000); ms -= d * 86400000;
+      const h = Math.floor(ms / 3600000);  ms -= h * 3600000;
+      const m = Math.floor(ms / 60000);    ms -= m * 60000;
+      return { past:false, d, h, m, s: Math.floor(ms / 1000) };
+    },
+
+    /* 🔴 FIVE TIERS, NOT ONE ORANGE. The previous version was `hot = d < 3` - a single
+     * if-statement on an element whose whole subject is a continuously rising pressure, so
+     * 4 days looked like 40 days and 2 days looked like 2 minutes. Harkirat: "are u telling
+     * me theres only 1 tier of time warning". Each tier REMOVES something rather than
+     * shouting louder, so the composition sharpens by subtraction as the season closes. */
+    seasonTier(days){
+      if (days === null || days === undefined) return 'none';
+      if (days <= 0) return 'today';
+      if (days <= 2) return 'final';
+      if (days <= 7) return 'closing';
+      if (days <= 21) return 'running';
+      return 'open';
+    },
+
+    /* The deadline MOMENTS ahead, grouped by date, nearest first. Two lines sharing a date
+     * are one moment. Used by Season and Home, so they cannot disagree about the count. */
+    seasonMoments(season, today){
+      const out = [], by = {};
+      /* 🔴 READ THE LINES FROM THE FIXTURE, NOT FROM A FIELD I INVENTED. The first version
+       * of this said `Shell._LINES || []`, and nothing anywhere ever sets Shell._LINES - so
+       * it returned an empty array and the clock rendered "No deadline set for this season"
+       * on a season with three of them. It did not throw and it did not look broken; it
+       * looked like a season with no dates. A well-formed answer to a question nobody asked. */
+      ((window.FIX && window.FIX.LINES) || []).forEach(L => {
+        const iso = season[L.endKey];
+        if (season[L.tbdKey] || !iso) return;
+        if (!by[iso]) { by[iso] = { iso, lines: [] }; out.push(by[iso]); }
+        by[iso].lines.push(L);
+      });
+      const t = new Date(today).getTime();
+      return out.filter(m => new Date(m.iso).getTime() >= t)
+                .sort((a, b) => a.iso < b.iso ? -1 : 1);
+    },
+
+    /* A SECOND shared timer, at one second, for clocks only. tick()'s 60s cadence is right
+     * for everything else and waking every callback 60x more often to serve one element is
+     * the wrong trade. Same lazy contract: nothing registered, no interval. */
+    tickSeconds(fn){
+      (Shell._sTicks = Shell._sTicks || []).push(fn); fn();
+      if (!Shell._sTimer) Shell._sTimer = setInterval(() =>
+        Shell._sTicks.forEach(f => { try { f(); } catch (e) {} }), 1000);
+    },
+
     /* Everything counting down ticks on ONE timer, so a page cannot end up with two clocks
      * disagreeing by a second — and a page with nothing to count starts no interval at all. */
     tick(fn){

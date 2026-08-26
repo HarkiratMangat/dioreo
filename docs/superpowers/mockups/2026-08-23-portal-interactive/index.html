@@ -3,7 +3,7 @@
 <title>Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787704186"><link rel="stylesheet" href="assets/app.css?v=1787704186">
+<link rel="stylesheet" href="assets/tokens.css?v=1787706468"><link rel="stylesheet" href="assets/app.css?v=1787706468">
 </head><body>
 <!-- 🔴 HOME USED TO OVERRIDE THE GRID TO ONE COLUMN AND CARRY NO RAIL, under a comment that
      read: "the rail is the in-realm switcher, and repeating it on the page whose entire job IS
@@ -43,6 +43,11 @@
            and this bar renders ONLY when there is something in it. A permanent bar that says
            "nothing staged" is a third copy of a fact the masthead already carries. -->
       <div id="resume"></div>
+      <!-- 🔴 THE SEASON CLOCK, AND HOME'S OWN FEATURE. Harkirat: the ending/starting items are
+           "a feature unique to the home page" - Season's clock carries the time and the title
+           and nothing else, because that page IS the season and the detail is a click away
+           there. Home is the overview, so here the clock earns its two lists. -->
+      <section class="hclock" id="hClock" aria-label="Season countdown"></section>
       <ol class="att-list" id="attList"></ol>
       <div class="hlive" id="hlive"></div>
     </div>
@@ -51,8 +56,8 @@
 <!-- No floating tray on Home: the resume bar above carries the same information with more of
      it (which realms, and both actions inline), so the tray would be a second, worse copy. -->
 
-<script src="assets/fixtures.js?v=1787704186"></script>
-<script src="assets/shell.js?v=1787704186"></script>
+<script src="assets/fixtures.js?v=1787706468"></script>
+<script src="assets/shell.js?v=1787706468"></script>
 <!-- PROTOTYPE - THROWAWAY. Season-shape glyph variants; inert unless ?glyph= is set. -->
 <link rel="stylesheet" href=".proto-glyph.css?v=1787702090">
 <script defer src=".proto-glyph.js?v=1787702090"></script>
@@ -202,13 +207,69 @@
     mhStats.innerHTML = `
       <span class="stat lead" style="--c:${needs ? 'var(--warn)' : 'var(--ink)'}">
         <span class="v" id="fNeeds">${needs}</span> <span class="k">needs you</span></span>
-      <span class="stat"><span class="v" id="fDays">${sn.days === null ? '—' : sn.days}</span>
-        <span class="k">${S.plural(sn.days === null ? 0 : sn.days, 'days')} left${sn.days === null ? '' : ' &middot; ' + sn.label}</span></span>
       <span class="stat"><span class="v" id="fLive">${live}</span> <span class="k">live now</span></span>
       <span class="stat stg"><span class="v" id="fStaged">${ops.length}</span> <span class="k">staged</span></span>`;
     S.markZero(document.getElementById('fNeeds'), needs);
     S.markZero(document.getElementById('fLive'), live);
     S.markZero(document.getElementById('fStaged'), ops.length, true);
+
+    /* ── THE SEASON CLOCK ─────────────────────────────────────────────────
+     * Same helpers as Season (S.seasonMoments / S.countdownParts / S.seasonTier), so the two
+     * pages cannot drift into disagreeing about the same date - which is exactly what
+     * happened when the masthead read 16d above a strip reading 17 days left. */
+    const hClock = document.getElementById('hClock');
+    /* Home does not load the Track's timeline module, so `T` is not defined here - the first
+     * version of this reached for it and threw, which took the whole render down including
+     * the panel below. Two local helpers, the same arithmetic. */
+    const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dfmt = iso => { const p = iso.split('-'); return MON3[+p[1] - 1] + ' ' + (+p[2]); };
+    const dday = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+    (function renderHomeClock(){
+      const ms = S.seasonMoments(F.season, F.today);
+      if (!ms.length) { hClock.innerHTML = `<span class="sc-none">No season deadline set.</span>`; return; }
+      const next = ms[0], rest = ms.slice(1);
+      const upcoming = (F.items || [])
+        .filter(i => i.start > F.today && i.start <= next.iso)
+        .sort((a, b) => a.start < b.start ? -1 : 1);
+      const ending = (F.items || [])
+        .filter(i => i.end && i.start <= F.today && i.end >= F.today && i.end <= next.iso)
+        .sort((a, b) => a.end < b.end ? -1 : 1);
+      const nm = k => ((F.LANE_BY_KEY && F.LANE_BY_KEY[k]) || {});
+      const rows = (list, dateOf) => list.slice(0, 4).map(i =>
+        `<div class="hc-r" style="--c:${nm(i.lane).hex || 'var(--ink4)'}"><i></i>
+           <span class="n">${i.title || i.name}</span>
+           <span class="w">${dday(F.today, dateOf(i)) === 0 ? 'today'
+             : 'in ' + dday(F.today, dateOf(i)) + 'd'}</span></div>`).join('');
+      const paint = () => {
+        const p = S.countdownParts(next.iso, F.today);
+        if (!p || p.past) return;
+        const tier = S.seasonTier(p.d);
+        const units = [];
+        if (p.d > 0) units.push(['d', p.d, S.plural(p.d, 'days')]);
+        if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+        units.push(['m', p.m, 'min']); units.push(['s', p.s, 'sec']);
+        hClock.innerHTML =
+          `<div class="sclock hc-face" data-tier="${tier}">
+             <div class="sc-face">${units.map((u, i) =>
+               `${i ? '<span class="sc-sep">:</span>' : ''}<span class="sc-u${u[0] === 's' ? ' sec' : ''}">` +
+               `<b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i></span>`).join('')}</div>
+             <div class="sc-when">${F.season.currentSeasonTitle} &middot; until <b>${dfmt(next.iso)}</b></div>
+             ${rest.length ? `<div class="sc-then">then <b>${rest[0].lines.map(L => L.label).join(' ')}</b>
+               ${dfmt(rest[0].iso)}</div>` : ''}
+           </div>
+           <div class="hc-cols">
+             <div class="hc-col"><h3>Still to drop <b>${upcoming.length}</b></h3>
+               ${upcoming.length ? rows(upcoming, i => i.start)
+                 : '<p class="hc-none">Nothing else releases before then.</p>'}
+               ${upcoming.length > 4 ? `<p class="hc-more">${upcoming.length - 4} more</p>` : ''}</div>
+             <div class="hc-col"><h3>Stops by then <b>${ending.length}</b></h3>
+               ${ending.length ? rows(ending, i => i.end)
+                 : '<p class="hc-none">Nothing running ends before then.</p>'}
+               ${ending.length > 4 ? `<p class="hc-more">${ending.length - 4} more</p>` : ''}</div>
+           </div>`;
+      };
+      S.tickSeconds(paint);
+    })();
 
     /* ── WHAT IS LIVE ────────────────────────────────────────────────────── */
     const today = runningToday(), anns = liveAnns();
@@ -216,8 +277,9 @@
     hlive.innerHTML = `
       <div class="lp">
         <h2>Running right now</h2>
-        <div class="hseason"><b>${F.season.currentSeasonTitle}</b>
-          <span>${sn.days === null ? 'no deadline set' : sn.days + ' ' + S.plural(sn.days, 'days') + ' left &middot; ' + sn.label}</span></div>
+<!-- The season title and its days-left used to be stated here too, a third time on one
+             page. The clock above owns both now; this panel answers only "what would a player
+             see this second", which is the one thing it can say that nothing else does. -->
         <p class="lsub">What a player opening the bot this second would be shown.</p>
         ${today.slice(0, SHOW).map(it => `<div class="lrow" style="--c:${(F.LANE_BY_KEY[it.lane] || {}).hex || 'var(--ink4)'}">
           <i class="ld"></i>

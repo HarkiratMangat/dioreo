@@ -3444,3 +3444,64 @@ Filed rather than chosen, because it is a composition decision and nothing about
 🔴 **THE VERIFY CONDITION AND HOW IT ALMOST PASSED VACUOUSLY.** The condition is *two different seasons must produce visibly different glyphs, or it is a logo pretending to be data.* All three variants render five seasons and all five come out **distinct in markup**. That is not the condition. Variant A's five glyphs measure **944, 943, 941, 942 and 925 characters** — they differ only in wedge sweep, by a few degrees, and at 16px that difference is very likely invisible. **Markup distinctness is not visual distinctness**, and reporting the first as if it were the second is exactly the vacuous pass this document keeps recording. A is the variant at risk; B is deterministic from a hash and produces genuinely different cell patterns; C varies by column heights, which read at small sizes.
 
 ⚠️ **And a defect worth keeping.** The first version mapped item types by the strings the Track **prints** — `New draws`, `Returning`, `Playlists` — while `item.type` is camelCase (`newDraws`, `returningDraws`, `playlist`, `event`, `drawWindow`, `patchNotes`). Every count came out zero, every wedge had zero sweep, and the glyph rendered as a bare ring with a dot in the middle. **It looked like a deliberate minimal mark.** A zero that renders as a plausible design is the same failure family as §16.4's `.zero` and §16.23's dead parameter: nothing errors, and the wrong output is well-formed.
+
+
+### 16.31 🔴 THE SEASON CLOCK — thirteen attempts, and the shape of every failure
+
+The deadlines were raised **nine** times, then four more designs were rejected on top of that. The failures fall into three families, and each one had to be named before the next could be seen:
+
+| Attempts | What they were | Why they failed |
+|---|---|---|
+| 1–8 | chips on the Track's axis, a pin on its edge, a strip under the identity block, a masthead figure | **annotations on something else.** A deadline has an x-coordinate, so it kept feeling like it belonged on the axis — but a deadline's coordinate is not its importance |
+| 9 | a row of three equal cards | **arithmetic, not design** — three data points allowed to pick a three-column layout, asserting the three deadlines are peers |
+| 10 | The Horizon · The Moments · The Board · The Sentence | four ways to **compose a rendered integer**. Rejected in one sentence: *"I told you they are a countdown"* |
+| 11 | six clocks — segmented, run-on, tiles, drain, rule, arc | **one design with six paddings.** A digital readout is on every microwave and every presale page. *"ugly, boring, lazy, basic ass designs"* |
+| 12 | The Burndown · The Magazine · The Edge | Magazine *"void of all info"*, Edge *"functionally useless"*, Burndown *"okay"* but a printed list with a clock on top |
+| 13 | **this** | — |
+
+**What settled it was not another design. It was four questions he answered:**
+
+1. 🔴 **It is not a to-do tracker.** *"IM NOT THE ONE CREATING THAT CONTENT, the content already exists."* The season's items happen in the game; the portal records them. Every version that framed them as work to do was answering a question nobody had.
+2. **Its subjects are the TIME and the SEASON TITLE. Nothing else.** No item lists, no counts, no edit control — each was tried and each pulled the element away from what it is.
+3. **It replaces the masthead's stat block**, which he called useless. `LIVE NOW / STAGED / FLAGS` demote to an eyebrow above the page title. `BATTLE PASS 17d` is **not** demoted — it is *subsumed*. It was this, badly.
+4. **The item lists are Home's feature, not Season's.** *"those should be a feature unique to the home page"* — Season IS the season, so the detail is a click away there; Home is the overview, so there the clock earns it.
+
+**The five tiers, and why one orange was stupid.** The old rule was `hot = d < 3`. One if-statement on an element whose entire subject is a continuously rising pressure — so **4 days looked like 40 days and 2 days looked like 2 minutes**. Harkirat: *"are u telling me theres only 1 tier of time warning"*.
+
+| Days | Tier | What it REMOVES | Colour |
+|---|---|---|---|
+| 22+ | `open` | — | `--ink` |
+| 8–21 | `running` | — | `--ink` |
+| 3–7 | `closing` | lead figure grows 1.18× | `--patch` |
+| 1–2 | `final` | **the "then" line goes** — later stops mattering | `--warn-ink` |
+| 0 | `today` | **the seconds go**; hours lead | `--del` |
+
+Each tier **subtracts**. A tier that only changed colour would be the same if-statement with more branches.
+
+⚠️ **A dangling colon, and why `:last-of-type` was the wrong tool.** Hiding the seconds left its separator behind: `23 HRS : 59 MIN :`. The first fix used `.sc-sep:last-of-type`, which matches by **tag**, not class — every child is a `<span>`, so it selected the seconds unit itself and changed nothing. `> :nth-last-child(2)` is the correct expression of "whatever sits before the last child".
+
+### 16.32 The collapsed season record — three complaints, one defect
+
+Harkirat on the old strip: *"Nothing about it suggests that it also encompasses the calendar page banner urls. The dates and titles inside of collapsed strip are not informative or sized correctly considering the level of information they hold. they feel like 3rd tier support information. the intuitiveness/ux-copy are not present."*
+
+Three complaints, **one defect**: it was written as a **caption** for a thing that is a **record**. So it now names every kind of thing it holds — *including the banners, which it never admitted to* — sets the titles and dates at the scale of the content instead of as 10px chips, and says what it is and what opening it does rather than the bare label "Live season".
+
+🔴 **It no longer says "17 days left."** That is the clock's job. The strip shows the dates **as stored**, because this is the record you *edit*. **That split is what stops the two elements repeating each other** — and repeating each other is what made both feel redundant. The collapse/expand toggle is unchanged and the expanded editor is untouched; only the closed state was rebuilt.
+
+**The staging line** is silent unless it is genuinely late — 7 days or fewer **and** nothing staged. One line, never repeated, gone the moment a draft exists. *"but dont make it naggy."*
+
+### 16.33 🔴 `.sr` WAS ALREADY THE SCREEN-READER CLASS
+
+The new record block was named `.sr`. Line 13 of `app.css`:
+
+```css
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+```
+
+**It is the screen-reader-only utility.** The component inherited `position:absolute`, `height:1px` and `clip:rect(0 0 0 0)` — so it rendered **for screen readers and for nobody else**.
+
+Nothing errored. The markup was in the DOM. `innerText` read back the full record, correctly, in order. `getBoundingClientRect()` on its children returned real heights — 15, 25, 70, 29 — while the container itself computed to **1px**. Every probe I habitually reach for said the component was fine; it was simply clipped out of sight.
+
+**A two-letter class name in a 4,400-line stylesheet is a collision waiting to happen.** Renamed `.srec`, which cannot collide. Six genuine `class="sr"` screen-reader labels elsewhere in `season.html` were left alone — the rename was scoped to the new block, not run across the file.
+
+⚠️ **And the page's own audit caught me repeating a bug I had fixed an hour earlier.** `.srec-l .k` painted its label in the line's topic hex; DMZ's `#337BA6` measures **3.63:1 at 9px**. That is the identical defect as `.dpin`, with the identical fix: the colour moves to a 3px bar and the text takes `--ink3`. **A mark may point at content without colouring it** — §16.19's rule, now paid for three times. `--rad-1` also had to replace three off-scale `1px`/`2px` radii the `radius-scale` gate caught.

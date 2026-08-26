@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787704186"><link rel="stylesheet" href="assets/app.css?v=1787704186">
+<link rel="stylesheet" href="assets/tokens.css?v=1787706468"><link rel="stylesheet" href="assets/app.css?v=1787706468">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -77,15 +77,19 @@
   <main>
     <div class="masthead">
       <div class="mh-id">
+        <!-- 🔴 THE FIGURES ARE DEMOTED, NOT DELETED. Harkirat on the old stat block:
+             "the thing the countdown should replace is these numbers in the masthead,
+             they're so useless if im being honest. make them more of an eyebrow element
+             above the page's title." BATTLE PASS 17d is NOT here because it was not
+             demoted - it was SUBSUMED. It was the countdown, badly. -->
+        <div class="mh-eyebrow" id="mhEyebrow"></div>
         <h1 id="hTitle"></h1>
         <span class="job">Everything scheduled this season on one axis &mdash; and whether it still fits inside the season&rsquo;s own deadlines.</span>
       </div>
-      <div class="mh-stats">
-        <span class="stat lead" style="--c:var(--r-season)"><span class="v" id="sDays"></span> <span class="k">days left</span></span>
-        <span class="stat"><span class="v" id="sLive"></span> <span class="k">live now</span></span>
-        <span class="stat stg"><span class="v" id="sStaged">0</span> <span class="k">staged</span></span>
-        <span class="stat warn"><span class="v" id="sFlags"></span> <span class="k">flags</span></span>
-      </div>
+      <!-- The clock takes the stat block's place. Its subjects are the season's TIME and,
+           through the H1 beside it, the season's NAME. Nothing else lives here: the item
+           lists belong to Home, and editing belongs to the record below. -->
+      <div class="sclock mh-stats" id="sClock" aria-live="off"></div>
       <!-- 🔴 CREATION AT THE TOP OF THE PAGE. Measured before this existed: Season's three
            create controls sat at 1464px, 3548px and 3551px inside an 828px viewport — the
            primary one 4.3 screens down. The portal's whole claim over "/manage" is that
@@ -218,9 +222,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787704186"></script>
-<script src="assets/timeline.js?v=1787704186"></script>
-<script src="assets/shell.js?v=1787704186"></script>
+<script src="assets/fixtures.js?v=1787706468"></script>
+<script src="assets/timeline.js?v=1787706468"></script>
+<script src="assets/shell.js?v=1787706468"></script>
 <!-- PROTOTYPE - THROWAWAY. Three variants of the deadline countdown, mounted on the real
      page so they are judged against real density. Inert unless ?variant= or ?proto= is in
      the URL. Delete both files and this block once a variant wins. -->
@@ -554,26 +558,62 @@
 
   /* The collapsed strip has to answer the same question the open editor does — what are the
    * dates — or collapsing it just hides information. It is a summary, not a placeholder. */
+  /* ═══ THE SEASON RECORD, COLLAPSED ═══════════════════════════════════════════════════
+   * Harkirat, on what this used to be: "Nothing about it suggests that it also encompasses
+   * the calendar page banner urls. The dates and titles inside of collapsed strip are not
+   * informative or sized correctly considering the level of information they hold. they
+   * feel like 3rd tier support information. the intuitiveness/ux-copy are not present."
+   *
+   * Three complaints, one defect: it was written as a CAPTION for a thing that is a RECORD.
+   * So it now names every kind of thing it holds - including the banners, which it never
+   * admitted to - sets the titles and dates at the scale of the content rather than as 10px
+   * chips, and says what it is and what opening it does instead of the bare label
+   * "Live season".
+   *
+   * 🔴 IT NO LONGER SAYS "17 DAYS LEFT". That belongs to the clock in the masthead. This
+   * shows the dates AS STORED, because this is the record you EDIT - and that split is what
+   * stops the two elements repeating each other, which is what made both feel redundant.
+   * The collapse/expand toggle is unchanged; only the closed state was rebuilt. */
   function renderIdSummary() {
-    const o = st.season;
-    /* The meta segments live in their own scrolling row so a long summary cannot push the
-     * EDIT chip onto a line of its own — where, as a lone flex item, it stretched to 410px
-     * and stopped reading as a control at all. */
-    idSum.innerHTML = `<span class="idmeta">
-      <!-- 🔴 NOT THE SEASON NAME AGAIN. The masthead's H1 says "Season 7 — Terminated" in 46px
-           and this strip repeated it verbatim 280px below, so the first thing the eye met twice
-           was the one thing it already knew. The strip's job is the DEADLINES; it now says which
-           record it is editing, which is the only thing here the H1 does not already tell you. -->
-      <span class="st">${st.sn === 'draft' ? 'Next season &middot; staged' : 'Live season'}</span>
-      ${F.LINES.map(L => {
-        const f = fmtLeft(o, L);
-        const when = o[L.tbdKey] ? 'TBD' : (o[L.endKey] ? T.fmt(o[L.endKey]) : 'not set');
-        return `<span class="seg2" style="--c:${L.hex}"><i></i>${L.label.toLowerCase()}
-          <b>${when}</b>${f.cls === 'is-tbd' || !o[L.endKey] ? '' : ` · ${f.html.replace(/<[^>]+>/g,'')}`}</span>`;
-      }).join('')}
-      ${st.draft.active ? `<span class="seg2" style="--c:var(--staged)"><i></i>next season <b>staged</b></span>` : ''}
-      </span>
-      <span class="sp"></span><span class="ed">Edit identity</span>`;
+    const o = st.season, isDraft = st.sn === 'draft';
+    const titled = (o.currentSeasonTitle || '').trim();
+    const set = BANNERS.filter(b => (o[b.k] || '').trim());
+    /* Silent unless it is genuinely late AND nothing is staged. One line, never repeated,
+     * gone the moment a draft exists - "dont make it naggy". */
+    const near = S.seasonMoments(o, F.today)[0];
+    const daysOut = near ? T.days(F.today, near.iso) : null;
+    const nudge = !isDraft && !st.draft.active && daysOut !== null && daysOut <= 7;
+
+    idSum.innerHTML = `<div class="srec">
+      <div class="srec-top">
+        <span class="srec-kind">${isDraft
+          ? 'The record for <b>next season</b> &middot; nothing here is live yet'
+          : 'The record this bot shows players &middot; <b>titles, dates and calendar banners</b>'}</span>
+        <span class="srec-state${isDraft ? ' staged' : ''}">${isDraft ? 'staged draft' : 'live'}</span>
+      </div>
+      <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
+      <div class="srec-lines">
+        ${F.LINES.map(L => {
+          const t = (o[L.titleKey] || '').trim();
+          const tbd = o[L.tbdKey], iso = o[L.endKey];
+          const when = tbd ? 'date not decided' : (iso ? T.fmt(iso) : 'no date set');
+          return `<div class="srec-l" style="--c:${L.hex}">
+            <span class="k">${L.label}</span>
+            <span class="t${t ? '' : ' unset'}">${t || 'no title set'}</span>
+            <span class="d${tbd || !iso ? ' tbd' : ''}">${when}</span></div>`;
+        }).join('')}
+      </div>
+      ${nudge ? `<div class="srec-nudge"><b>Next season isn&rsquo;t staged.</b>
+        A draft lets you build it &mdash; titles, dates, draws and calendar &mdash; without any of it going live.</div>` : ''}
+      <div class="srec-foot">
+        ${set.length
+          ? `<span class="srec-ban">${set.map(b =>
+              `<i style="--c:${b.hex}"></i>`).join('')}<b>${set.length} of 3</b> calendar banners &mdash;
+              ${set.map(b => b.label.toLowerCase()).join(', ')}</span>`
+          : `<span class="srec-ban">No calendar banners set</span>`}
+        <span class="srec-open">Open to edit <s>&rarr;</s></span>
+      </div>
+    </div>`;
   }
   const identityEl = document.getElementById('identity');
   const toggleIdentity = () => {
@@ -2745,33 +2785,65 @@
     nameEl.value = '';
   };
 
-  function renderStats() {
-    /* ⚠️ NOT `seasonEnd()`. That takes the LAST deadline, which is right for the conflict
-     * predicate it exists for and wrong here: this masthead read 79 (dmz, Nov 11) while the
-     * Live-season strip directly beneath it read "battle pass Sep 10 · 17 days left". One
-     * quantity, two authorities, three lines apart. The shared helper answers "how long is
-     * left" from the FIRST deadline and names which one, so the figure and the strip agree. */
-    /* ⚠️ THE LABEL WAS 145px AGAINST A 26px NUMBER, so the lead's cell ran three times wider
-     * than every other stat and its figure floated at the far right of its own box, detached
-     * from the label it belongs to. A stat label has to be SHORT or it stops being a label and
-     * becomes a sentence — the unit moves onto the value ("17d"), which the value has room for,
-     * and the label carries only which deadline it is. */
-    const dl = S.seasonDaysLeft(st.season, F.today);
-    const kDays = sDays.parentElement.querySelector('.k');
-    if (kDays) kDays.textContent = dl.days === null ? 'no deadline' : dl.label;
-    S.tick(() => {
-      const c = dl.iso ? S.countdown(dl.iso, F.today) : null;
-      sDays.textContent = c ? c.text : 'TBD';
-      sDays.classList.toggle('hot', !!(c && c.hot));
-    });
-    sLive.textContent  = st.items.filter(i => lifecycle(i) === 'live').length;
-    sFlags.textContent = computeFlags().length;
-    /* The `.zero` class is Shell.zeroStats()'s job now — it observes the stat block, so every
-       realm gets it and none has to remember. Three realms had hand-written copies of this line
-       and Review still shipped without one. */
+  /* renderStats is GONE with the stat block it drove. Its whole job was the masthead's
+   * days-left figure, which the clock has replaced - and the three long comments it carried
+   * were all about defects in that figure (the wrong deadline, the 145px label, the width
+   * cap that clipped Access). Keeping a function to describe a deleted element is how stale
+   * rationale outlives the thing it explains. What survives it is in COMPANION 16.31. */
+  function renderStats() { renderEyebrow(); }
+
+  /* ═══ THE CLOCK ═══════════════════════════════════════════════════════════════════════
+   * A countdown RUNS. Four static compositions and six paddings of a digital readout were
+   * rejected before this; the correction was one sentence - "I told you they are a
+   * countdown". The seconds place is not a planning unit, it is the proof of life.
+   *
+   * FIVE TIERS, each REMOVING something, because the old `hot = d < 3` made 4 days look
+   * like 40 days and 2 days look like 2 minutes. */
+  const sClock = document.getElementById('sClock');
+  const mhEyebrow = document.getElementById('mhEyebrow');
+  function renderClock() {
+    const ms = S.seasonMoments(st.season, F.today);
+    if (!ms.length) {
+      sClock.removeAttribute('data-tier');
+      sClock.innerHTML = `<span class="sc-none">No deadline set for this season.</span>`;
+      return;
+    }
+    const next = ms[0], rest = ms.slice(1);
+    const paint = () => {
+      const p = S.countdownParts(next.iso, F.today);
+      if (!p) return;
+      if (p.past) { renderAll(); return; }
+      sClock.dataset.tier = S.seasonTier(p.d);
+      const units = [];
+      if (p.d > 0) units.push(['d', p.d, S.plural(p.d, 'days')]);
+      if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+      units.push(['m', p.m, 'min']);
+      units.push(['s', p.s, 'sec']);
+      sClock.innerHTML =
+        `<div class="sc-face">${units.map((u, i) =>
+          `${i ? `<span class="sc-sep">:</span>` : ''}<span class="sc-u${u[0] === 's' ? ' sec' : ''}">` +
+          `<b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i></span>`).join('')}</div>` +
+        `<div class="sc-when">until <b>${T.fmt(next.iso)}</b> &middot; ${
+          next.lines.map(L => L.label.toLowerCase()).join(' &amp; ')}</div>` +
+        (rest.length ? `<div class="sc-then">then <b>${rest[0].lines.map(L => L.label).join(' ')}</b>
+           ${T.fmt(rest[0].iso)} &middot; ${T.days(F.today, rest[0].iso)} ${
+           S.plural(T.days(F.today, rest[0].iso), 'days')}</div>` : '');
+    };
+    if (!sClock.dataset.ticking) { sClock.dataset.ticking = '1'; S.tickSeconds(paint); } else paint();
   }
-  function syncStaged(){ sStaged.textContent = S.Store.all().length; S.mountRail('season'); }
-  function renderAll(){ renderIdentity(); renderStats(); renderTrack(); repositionBars(); renderRows(); syncStaged();
+
+  /* The three figures the clock displaced. They keep their meaning and lose their rank. */
+  function renderEyebrow() {
+    const live = st.items.filter(i => lifecycle(i) === 'live').length;
+    const flags = computeFlags().length, staged = S.Store.all().length;
+    const cell = (n, k, cls) =>
+      `<span><i class="${n === 0 ? 'zero' : (cls || '')}">${n}</i>${k}</span>`;
+    mhEyebrow.innerHTML = cell(live, 'live now') + cell(staged, 'staged', 'stg') +
+                          cell(flags, 'flags', 'warn');
+  }
+
+  function syncStaged(){ renderEyebrow(); S.mountRail('season'); }
+  function renderAll(){ renderIdentity(); renderStats(); renderClock(); renderEyebrow(); renderTrack(); repositionBars(); renderRows(); syncStaged();
     renderOneWay(); renderTakeOut(); startClock();
     if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }
 
