@@ -7,13 +7,13 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
-import { Track } from './track.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
 import { useOverlay } from './overlay.js';
 import { Composer } from './composer.js';
+import { Track, Zoomer } from './track.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
@@ -334,6 +334,7 @@ export function SeasonRealm({ session }) {
     const overlay = useOverlay();
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
+    const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
 
     useEffect(() => { fetchSeasonState().then(setState); }, []);
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
@@ -344,8 +345,9 @@ export function SeasonRealm({ session }) {
 
     // Renamed from `window` (Task 4) -- that name silently SHADOWED the real browser global for the rest of this component's body, including handleExportSelection's `window.open()` call below, which was a live, never-yet-clicked bug (TypeError: window.open is not a function, since that identifier resolved to this {start,end} object instead of the global). Found auditing this file for Track's own drag handles, which genuinely need the real global.
     //
-    // seasonWindow (season.logic.js, a bare global) replaces what used to be an inline {start: today, end: live.bpEnd || today}. With bpEnd unset -- the dev database's actual state -- that made start === end, so barGeometry divided by a 1ms window and every bar on the Track collapsed to a sliver at 0%. See that function's own header.
-    const visibleWindow = seasonWindow(state.live);
+    // seasonWindow (season.logic.js, a bare global) replaces what used to be an inline {start: today, end: live.bpEnd || today}. With bpEnd unset -- the dev database's actual state -- that made start === end, so barGeometry divided by a 1ms window and every bar on the Track collapsed to a sliver at 0%. See that function's own header. 🔴 THE WINDOW IS STATE NOW, AND `null` MEANS FIT. Keeping "fitted" as an absence rather than a copy of the fit window means the plot re-fits when the season's own extent changes — staging a draw three weeks past the battle pass widens the axis instead of leaving the new bar outside a window that was correct when it was captured.
+    const fullWindow = seasonWindow(state.live);
+    const visibleWindow = zoomedWindow ? clampWindow(zoomedWindow, fullWindow) : fullWindow;
 
     async function handleExport(changeset) {
         await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
@@ -478,7 +480,8 @@ export function SeasonRealm({ session }) {
                                               onCancel=${() => setShowAdd(null)} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
                <${Track} data=${trackData}
-                          draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
+                          draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
+                          season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')} />`
         : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
@@ -500,6 +503,7 @@ export function SeasonRealm({ session }) {
     return html`
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board']} onSetView=${setView}
                   badges=${{ review: stagedCount }}
+                  tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats}

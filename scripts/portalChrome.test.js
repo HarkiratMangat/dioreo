@@ -8,6 +8,7 @@ const { paletteHits, paletteBlocked } = require('../portal/ui/palette.logic');
 const { typedConfirmReady } = require('../portal/ui/overlay.logic');
 const { permsAfter, describePending } = require('../portal/ui/access.logic');
 const { composerReason, composerFields } = require('../portal/ui/composer.logic');
+const { windowDays, clampWindow, zoomWindow, panWindow } = require('../portal/ui/season.logic');
 
 let failures = 0;
 function check(name, fn) {
@@ -193,6 +194,57 @@ check('a point puts its one date where the op reads it', () => {
 check('a span fills both ends', () => {
     assert.deepStrictEqual(composerFields(ready, SPAN),
         { title: 'Clan Wars', startDate: '2026-09-21', endDate: '2026-09-30' });
+});
+
+// ── THE TRACK'S VISIBLE WINDOW ───────────────────────────────────────────────────────────────
+const FULL = { start: '2026-08-01', end: '2026-09-30' };   // 60 days
+
+check('the span is measured in whole days', () => {
+    assert.strictEqual(windowDays(FULL), 60);
+    assert.strictEqual(windowDays({ start: '2026-08-01', end: '2026-08-02' }), 1);
+});
+
+// 🔴 PANNING PAST THE ENDS WOULD SHOW EMPTY AXIS on a plot whose own subject is "what is in this season". The clamp SLIDES a window that fits back inside rather than squashing it — losing days on a pan is the kind of quiet wrongness nobody reports because the picture still looks plausible.
+check('a window that fits is slid back inside, never narrowed', () => {
+    const out = clampWindow({ start: '2026-07-20', end: '2026-08-09' }, FULL);   // 20 days, starting early
+    assert.strictEqual(out.start, '2026-08-01');
+    assert.strictEqual(windowDays(out), 20, 'the span survives the clamp');
+    const late = clampWindow({ start: '2026-09-25', end: '2026-10-15' }, FULL);
+    assert.strictEqual(late.end, '2026-09-30');
+    assert.strictEqual(windowDays(late), 20);
+});
+
+check('a window wider than the season becomes the season', () => {
+    assert.deepStrictEqual(clampWindow({ start: '2026-01-01', end: '2026-12-31' }, FULL), FULL);
+});
+
+// ⚠️ A THREE-DAY FLOOR, because barGeometry divides by the window and a one-day span makes every bar the full width — the same collapse a season with no bpEnd produced, from the other direction.
+check('zooming in stops at a floor rather than collapsing the axis', () => {
+    let win = FULL;
+    for (let i = 0; i < 30; i++) win = zoomWindow(win, 0.625, FULL);
+    assert.ok(windowDays(win) >= 3, `floor held at ${windowDays(win)} days`);
+});
+
+check('zooming out never exceeds the season, and FIT is reachable', () => {
+    let win = zoomWindow(FULL, 0.5, FULL);
+    for (let i = 0; i < 10; i++) win = zoomWindow(win, 1.6, FULL);
+    assert.deepStrictEqual(win, FULL);
+});
+
+// The anchor is what makes repeated zooming feel like moving rather than jumping: zoom with the pointer over a bar and that bar stays under the pointer.
+check('the zoom anchor decides which edge holds still', () => {
+    const left = zoomWindow(FULL, 0.5, FULL, 0);
+    assert.strictEqual(left.start, FULL.start, 'anchored at 0, the start does not move');
+    const right = zoomWindow(FULL, 0.5, FULL, 1);
+    assert.strictEqual(right.end, FULL.end, 'anchored at 1, the end does not move');
+});
+
+check('panning moves the window and stops at the edges', () => {
+    const win = { start: '2026-08-10', end: '2026-08-20' };
+    assert.deepStrictEqual(panWindow(win, 5, FULL), { start: '2026-08-15', end: '2026-08-25' });
+    const hitLeft = panWindow(win, -100, FULL);
+    assert.strictEqual(hitLeft.start, FULL.start);
+    assert.strictEqual(windowDays(hitLeft), 10, 'the span survives hitting the edge');
 });
 
 // ── THE MODULE-PARSE GATE ────────────────────────────────────────────────────────────────────

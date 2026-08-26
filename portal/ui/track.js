@@ -226,12 +226,90 @@ function deriveFlags(data, window, season, actions) {
     return out;
 }
 
-export function Track({ data, draft, window: visible, season, flags, onDragCommit, onFillGap }) {
+// ── THE ZOOM CONTROL ──────────────────────────────────────────────────────────────────────────
+//
+// 🔴 A FIXED WINDOW CANNOT BE WRONG, ONLY USELESS. `seasonWindow()` spans everything the season holds — six to ten weeks for a real CODM season — so fourteen draws and twenty calendar items shared one axis, and the single-day ones (eleven of the fourteen) computed to under two pixels each. The plot was complete and unreadable.
+//
+// ⚠️ FIT IS DISABLED WHEN IT WOULD DO NOTHING, and the readout says the SPAN rather than a zoom level: "42 days shown" is a fact about the picture; "1.4×" is a fact about the control.
+export function Zoomer({ win, full, onWindow }) {
+    const days = windowDays(win);
+    const fitted = days >= windowDays(full);
+    return html`
+        <div class="zoomer" role="group" aria-label="Zoom">
+            <button title="Zoom out" aria-label="Zoom out" disabled=${fitted}
+                    onClick=${() => onWindow(zoomWindow(win, 1.6, full))}>−</button>
+            <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3}
+                    onClick=${() => onWindow(zoomWindow(win, 0.625, full))}>+</button>
+            <button class="wide" title="Fit everything" disabled=${fitted}
+                    onClick=${() => onWindow(null)}>FIT</button>
+            <span class="rd"><b>${days}</b> ${days === 1 ? 'day' : 'days'} shown</span>
+        </div>
+    `;
+}
+
+// ── THE OVERVIEW SCRUBBER ─────────────────────────────────────────────────────────────────────
+//
+// Every item in the season at once, with the visible window drawn over it: drag the middle to pan, drag either end to resize. It is the only control that shows what is OUTSIDE the current view, which is the question zooming immediately creates.
+//
+// 🔴 A MINIMUM WIDTH ON EVERY MINI BAR, because a single-day draw at season scale computes to under a pixel and simply vanishes — and eleven of this season's fourteen draws are single-day. An overview that silently omits most of what it is overviewing is worse than no overview. The adopted stylesheet sets that floor (`.scrub .mini{min-width:3px}`); this only has to not fight it.
+function Scrub({ items, win, full, seasonEnd, onWindow }) {
+    const ref = useRef(null);
+    const drag = useRef(null);
+    const fullLo = Date.parse(full.start), fullHi = Date.parse(full.end);
+    const span = Math.max(1, fullHi - fullLo);
+    const pct = (iso) => ((Date.parse(iso) - fullLo) / span) * 100;
+    const left = pct(win.start), right = pct(win.end);
+
+    // 🔴 POINTER CAPTURE, NOT A DOCUMENT LISTENER. A drag that leaves the strip — which every drag to the edge does — stops firing move events on the element, so a hand-rolled version silently drops the gesture halfway. setPointerCapture keeps them coming to the node that started it, and the matching release is what stops the window following the pointer forever.
+    function begin(mode, e) {
+        e.preventDefault(); e.stopPropagation();
+        const rect = ref.current.getBoundingClientRect();
+        drag.current = { mode, rect, startX: e.clientX, win };
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    function move(e) {
+        const d = drag.current;
+        if (!d) return;
+        const perPx = span / Math.max(1, d.rect.width);
+        const shifted = (e.clientX - d.startX) * perPx;
+        const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+        const lo = Date.parse(d.win.start), hi = Date.parse(d.win.end);
+        const next = d.mode === 'pan' ? { start: iso(lo + shifted), end: iso(hi + shifted) }
+            : d.mode === 'l' ? { start: iso(lo + shifted), end: d.win.end }
+            : { start: d.win.start, end: iso(hi + shifted) };
+        onWindow(clampWindow(next, full));
+    }
+    const end = (e) => { drag.current = null; try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {} };
+
+    return html`
+        <div class="scrub">
+            <span class="scrub-label">overview</span>
+            <div class="scrub-track" ref=${ref} title="Drag the ends to zoom, the middle to pan">
+                ${items.map((i, n) => html`
+                    <span class="mini" key=${n}
+                          style=${`left:${pct(i.start)}%;width:${Math.max(0, pct(i.end) - pct(i.start))}%;top:${8 + i.row * 8}px;background:${i.accent}`}></span>`)}
+                ${seasonEnd ? html`<span class="season-end" style=${`left:${pct(seasonEnd)}%`}></span>` : null}
+                <div class="winbox" style=${`left:${left}%;width:${Math.max(1, right - left)}%`}
+                     onPointerDown=${(e) => begin('pan', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}>
+                    <span class="wh l" onPointerDown=${(e) => begin('l', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}></span>
+                    <span class="wh r" onPointerDown=${(e) => begin('r', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}></span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
 
     const lanes = LANES.filter((l) => (data[l.key] || []).length || (draft && (draft[l.key] || []).length));
+
+    // Everything the season holds, flattened to {start, end, accent} for the overview strip. Draft items are included and wear their own lane's colour: the scrubber's job is to show what EXISTS, and a staged item exists — the plot above is where the difference between live and staged is drawn. 🔴 ONE ROW PER LANE, NOT ONE PILE. `.scrub .mini` is absolutely positioned with no `top`, so every bar in the season stacked at the same y and thirty-seven items rendered as one continuous stripe — an overview that shows the season has things in it and nothing else. The adopted stylesheet's own comment calls this strip a filmstrip; a filmstrip has frames. The row is the lane's index, which is also why the colours line up with the plot below.
+    const scrubItems = LANES.flatMap((l, row) => [...(data[l.key] || []), ...((draft && draft[l.key]) || [])]
+        .map((i) => ({ start: i.startDate || i.date, end: i.endDate || i.startDate || i.date, accent: `var(${l.topic})`, row }))
+        .filter((i) => i.start && i.end));
     const shown = flags || deriveFlags(data, visible, season, { onClamp: onDragCommit, onFill: onFillGap });
 
     const toggle = useCallback((lane, isDraft, alt) => {
@@ -303,6 +381,9 @@ export function Track({ data, draft, window: visible, season, flags, onDragCommi
                 </span>
             </div>
             <div class="tk-wrap" ref=${rootRef}><div class="tk-inner">
+                ${onWindow && full ? html`
+                    <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
+                              onWindow=${onWindow} />` : null}
                 <${Ruler} view=${view} />
                 <div class="lanes">
                     ${lanes.map((l) => html`

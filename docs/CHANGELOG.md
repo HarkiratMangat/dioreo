@@ -351,6 +351,20 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **Two more instrument faults, both mine, both in the same hour.** The stub matched its route regexes against the raw path **including the query string** — every regex here is `$`-anchored, so `/api/parse-date?q=…` fell through to the unrouted `{ok:true}` branch and the composer's echo read "not a date yet" for every value, which looks exactly like a parser that cannot parse. It matches on the pathname now, as a server does. ⚠️ **`portalHarness.test.js` could not have caught it**: that gate compares the keys a stub returns against the keys the real route promises, and a route whose regex never matches still has the right keys. And a scripted multi-edit helper printed a ✓ per edit **before** writing the file, so an assertion failing on a later edit silently discarded the earlier ones that had already been reported as done — two changes were confirmed in the transcript and absent from the file.
 
+### The Track gets a window you can move
+
+🔴 **A FIXED WINDOW CANNOT BE WRONG, ONLY USELESS.** `seasonWindow()` spans everything the season holds — six to ten weeks for a real CODM season — so fourteen draws and twenty-three calendar items shared one axis and the single-day ones (eleven of the fourteen) computed to under two pixels each. The plot was complete and unreadable. It now zooms and pans: a **zoomer** in the panel header beside the view tabs, and an **overview scrubber** above the plot showing every item in the season at once with the visible window drawn over it — drag the middle to pan, drag either end to resize.
+
+**The window is state, and `null` means fit.** Keeping "fitted" as an absence rather than a copy of the fit window means the plot re-fits when the season's own extent changes: staging a draw three weeks past the battle pass widens the axis, instead of leaving the new bar outside a window that was correct when it was captured.
+
+⚠️ **Every window is clamped in one place**, so the three ways to move it — buttons, drag, and the fit reset — cannot disagree about where the edges are. A window that fits is **slid** back inside rather than narrowed (losing days on a pan is the kind of quiet wrongness nobody reports, because the picture still looks plausible), a window wider than the season becomes the season, and zooming in stops at a three-day floor because `barGeometry` divides by the span. The readout says **"27 days shown"** rather than a zoom level: one is a fact about the picture, the other about the control.
+
+🔴 **THE SCRUBBER'S FIRST VERSION WAS ONE STRIPE.** `.scrub .mini` is absolutely positioned with no `top`, so all thirty-seven items stacked at the same y and the overview showed that the season has things in it and nothing else. One row per lane now — the adopted stylesheet's own comment calls this strip a filmstrip, and a filmstrip has frames.
+
+**And `tools` finally has a caller.** It was one of two `Shell` props nothing passed, filed as dead code; it is the panel-header slot beside the view tabs, which is exactly where the adopted design puts the zoom control.
+
+⚠️ **`left_click_drag` does not exercise this**, which is worth writing down: it synthesizes mouse events, and the handlers listen for pointer events so that `setPointerCapture` can keep a drag alive when the pointer leaves the strip — which every drag to an edge does. Verified with real `PointerEvent`s instead: pan moved the box 18.2% → 4.5% at constant width, and the right handle took the window 27 days → 20.
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

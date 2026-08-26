@@ -115,6 +115,48 @@ function buildSeasonEditOp(row, columnKey, newValue) {
     return { type, target, payload };
 }
 
+// ── THE VISIBLE WINDOW: ZOOM AND PAN ──────────────────────────────────────────────────────────
+//
+// 🔴 THE TRACK HAD ONE WINDOW AND NO WAY TO CHANGE IT. `seasonWindow()` spans everything the season holds, which for a real CODM season is six to ten weeks — so fourteen draws and twenty calendar items shared one axis and the single-day ones (eleven of the fourteen) computed to under two pixels each. The plot was complete and unreadable, which is the failure mode a fixed window always has: it cannot be wrong, only useless.
+//
+// ⚠️ EVERY WINDOW IS CLAMPED TO THE FULL ONE. Panning past the ends would show empty axis on a plot whose own subject is "what is in this season", and zooming past a day would divide by a window barGeometry cannot use. Both bounds are enforced here rather than in the handlers, so the three ways to move the window (buttons, scrubber drag, keyboard) cannot disagree about where the edges are.
+const DAY_MS = 86400000;
+const MIN_DAYS = 3;
+
+function windowDays(win) {
+    return Math.max(1, Math.round((Date.parse(win.end) - Date.parse(win.start)) / DAY_MS));
+}
+
+function isoDay(ms) {
+    return new Date(ms).toISOString().slice(0, 10);
+}
+
+function clampWindow(win, full) {
+    const fullLo = Date.parse(full.start), fullHi = Date.parse(full.end);
+    let lo = Date.parse(win.start), hi = Date.parse(win.end);
+    if (!Number.isFinite(lo) || !Number.isFinite(hi)) return { ...full };
+    if (hi - lo < MIN_DAYS * DAY_MS) hi = lo + MIN_DAYS * DAY_MS;
+    // Width first, then position: a window wider than the season becomes the season, and one that fits gets slid back inside rather than squashed.
+    if (hi - lo > fullHi - fullLo) return { ...full };
+    if (lo < fullLo) { hi += fullLo - lo; lo = fullLo; }
+    if (hi > fullHi) { lo -= hi - fullHi; hi = fullHi; }
+    return { start: isoDay(lo), end: isoDay(hi) };
+}
+
+// `anchor` is 0..1 across the current window — zooming with the pointer over a bar keeps that bar under the pointer, which is what makes repeated zooming feel like moving rather than jumping. Defaults to the middle.
+function zoomWindow(win, factor, full, anchor = 0.5) {
+    const lo = Date.parse(win.start), hi = Date.parse(win.end);
+    const span = hi - lo;
+    const next = span * factor;
+    const at = lo + span * anchor;
+    return clampWindow({ start: isoDay(at - next * anchor), end: isoDay(at + next * (1 - anchor)) }, full);
+}
+
+function panWindow(win, days, full) {
+    const shift = days * DAY_MS;
+    return clampWindow({ start: isoDay(Date.parse(win.start) + shift), end: isoDay(Date.parse(win.end) + shift) }, full);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
 }
@@ -168,5 +210,6 @@ function seasonTier(days) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    Object.assign(module.exports, { SEASON_LINES, seasonMoments, countdownParts, seasonTier });
+    Object.assign(module.exports, { SEASON_LINES, seasonMoments, countdownParts, seasonTier,
+                                    windowDays, clampWindow, zoomWindow, panWindow });
 }
