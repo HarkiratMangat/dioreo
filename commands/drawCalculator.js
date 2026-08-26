@@ -198,8 +198,8 @@ function entitlementSelectRow(state) {
     };
 }
 
-// One row carries every remaining control, and it is capped at Discord's five buttons per row by construction: three regions, then the upgrade toggle only where real upgrade data exists, then the amount button. Splitting these across two rows was tried and reads worse -- the region switch and the upgrade toggle are the same KIND of thing (adjust what is being priced), and separating them implied a hierarchy that is not there.
-function controlsRow(state, { hasUpgrade, hasData }) {
+// One row carries every remaining control, and it is capped at Discord's five buttons per row by construction: three regions, then the upgrade toggle only where real upgrade data exists, then the amount button. Splitting these across two rows was tried and reads worse -- the region switch and the upgrade toggle are the same KIND of thing (adjust what is being priced), and separating them implied a hierarchy that is not there. THIRD PASS, 2026-08-26 12:50 EDT (Harkirat: "understand and contextualize the info at first glance, rather than being forced to read the entire thing to understand the structure"). The first two passes edited WORDING inside a fixed architecture -- every fact was a Text Display, all the same visual register, so nothing signalled what KIND of block a line belonged to without reading it. This pass adds real STRUCTURE: the balance/budget entry action moves off this row entirely, onto a Section accessory attached to the exact stat it acts on (see buildCalculatorPanel) -- co-locating the fact with the control that edits it, rather than making the reader carry the number nine lines down to a generic button row. Section+accessory is an established pattern in THIS codebase (commands/bot.js pairs a change summary with a Details button; commands/draws.js pairs an entry with a thumbnail) -- reused here, not invented.
+function controlsRow(state, { hasUpgrade }) {
     const buttons = REGION_ORDER.map(key => ({
         type: 2,
         style: key === state.region ? 1 : 2,
@@ -214,13 +214,6 @@ function controlsRow(state, { hasUpgrade, hasData }) {
             style: state.includeUpgrades ? 3 : 2,
             label: state.includeUpgrades ? 'Upgrade: On' : 'Upgrade: Off',
             custom_id: encodeState('upg', state)
-        });
-    }
-    if (hasData) {
-        buttons.push({
-            type: 2, style: 2,
-            label: state.target === 'B' ? 'Set Budget' : 'Set Balance',
-            custom_id: encodeState('modal', state)
         });
     }
     return { type: 1, components: buttons };
@@ -260,7 +253,7 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
                 : `-# We have not sourced this draw at any region yet.`
         ].join('\n') });
         components.push(drawSelectRow(state));
-        components.push(controlsRow(state, { hasUpgrade: false, hasData: false }));
+        components.push(controlsRow(state, { hasUpgrade: false }));
         components.push(pricesRow(state));
         return { type: 17, accent_color: accentColor, components };
     }
@@ -279,10 +272,14 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
     components.push({ type: 10, content: statusLines.join('\n') });
     components.push({ type: 14, spacing: 2, divider: true });
 
-    // ---- The answer ----
-    components.push({ type: 10, content: (state.target === 'B'
-        ? budgetAnswer(state, entry, total)
-        : goalAnswer(state, entry, total, upgrade)).join('\n') });
+    // ---- The answer, as a Section -- co-locates the stat with the ONE control that acts on it, instead of leaving the reader to carry the number down to a generic button row. See controlsRow's own header comment for why.
+    const answer = state.target === 'B' ? budgetAnswer(state, entry, total) : goalAnswer(state, entry, total, upgrade);
+    const answerBlock = { type: 10, content: answer.lines.join('\n') };
+    components.push(answer.action ? {
+        type: 9,
+        components: [answerBlock],
+        accessory: { type: 2, style: 2, label: answer.action === 'budget' ? 'Set Budget' : 'Set Balance', custom_id: encodeState('modal', state) }
+    } : answerBlock);
 
     // ---- How to buy it ----
     const shortfall = state.target === 'B' ? 0 : shortfallFor(state, total, upgrade);
@@ -292,9 +289,10 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
     }
 
     // ---- Fine print ----
-    components.push({ type: 10, content: finePrint(state, currency, client, { upgradeIncluded: upgrade !== null }).join('\n') });
+    components.push({ type: 10, content: finePrint(state, currency, client, { upgradeIncluded: upgrade !== null, showRegionRow: answer.action !== null }).join('\n') });
 
-    // ---- Controls ----
+    // ---- Controls ---- A first-time user has no way to learn what these three dropdowns are FOR by looking at them: Discord shows a SELECT'S CURRENT VALUE once one option carries default:true (verified against the real render, 2026-08-26 12:55 EDT) -- and defaultState() always sets a concrete drawKey/pullsDone/target, so the placeholder text every select carries ("Which draw are you pulling on?" etc) never actually renders for anyone, first-time or not. It also isn't obvious there's no Calculate button to press -- every control here just edits the answer above in place. One line says both things once, economically, rather than three separate per-select captions (which would cost 3 more components for the same information).
+    components.push({ type: 10, content: '-# 🎛️ Everything below edits the numbers above live — change the draw, how far you are, or your goal any time.' });
     components.push(drawSelectRow(state));
     components.push(pullsSelectRow(state, total));
     components.push(goalSelectRow(state, total));
@@ -304,7 +302,7 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
             : `-# Select which packages you still have an unused 2X entitlement on, if the event is running.` });
         components.push(entitlementSelectRow(state));
     }
-    components.push(controlsRow(state, { hasUpgrade: upgradeAvailable !== null, hasData: true }));
+    components.push(controlsRow(state, { hasUpgrade: upgradeAvailable !== null }));
     components.push(pricesRow(state));
 
     return { type: 17, accent_color: accentColor, components };
@@ -333,7 +331,7 @@ function goalAnswer(state, entry, total, upgrade) {
     if (pullsLeft <= 0 && !upgrade) {
         lines.push(`### ✅ You are already there`);
         lines.push(`You have completed **pull ${targetPull} of ${total}**. Aim further with the goal picker below.`);
-        return lines;
+        return { lines, action: null }; // nothing left to enter a balance FOR
     }
     if (shortfall <= 0) {
         // Balance figure is already on the status line above -- this branch's only job is the outcome (covers it) and the leftover, not a third restatement of the balance.
@@ -352,15 +350,15 @@ function goalAnswer(state, entry, total, upgrade) {
     if (upgradeAvailable !== null) {
         lines.push(upgrade !== null ? `-# +${fmt(upgrade)} CP upgrade included.` : `-# +${fmt(upgradeAvailable)} CP if you include the Upgrade below.`);
     }
-    return lines;
+    return { lines, action: 'balance' };
 }
 
 function budgetAnswer(state, entry, total) {
     const lines = [];
     if (!state.targetValue) {
         lines.push(`### ${emojis.cp2} How far does a budget go?`);
-        lines.push(`Press **Set Budget** below and enter the CP you are willing to spend.`);
-        return lines;
+        lines.push(`Press **Set Budget** and enter the CP you are willing to spend.`);
+        return { lines, action: 'budget' };
     }
     const result = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
     const gained = result.pullsReachable - state.pullsDone;
@@ -376,7 +374,7 @@ function budgetAnswer(state, entry, total) {
     if (ladder.length) {
         lines.push(`-# **Pulls from here:** ${ladder.map((n, i) => (state.pullsDone + i < result.pullsReachable ? `**${fmt(n)}**` : fmt(n))).join(' / ')}`);
     }
-    return lines;
+    return { lines, action: 'budget' };
 }
 
 // SECOND PASS, 2026-08-26 12:34 EDT (Harkirat, looking at a live render: "look how prose heavy it is... this is NOT helpful, this is overwhelming"). The FIRST pass (12:23 EDT) crammed price + combo + count + leftover into ONE bold sentence to cut from six lines to three -- that reduced line COUNT while making each line worse: "Cheapest -- CA$82.98 x 1x 880 CP + 1x 5,000 CP (2 purchases, 70 CP left over)" is one dense clause that wraps to three lines on a phone regardless of how few sentences it is. Line count was the wrong thing to optimize. This version optimizes WRAP count instead: each tier is a short bold price line (~20 chars), a plain combo line (~25 chars) -- neither wraps -- and one caption folding the count/leftover/savings, which is allowed to wrap once because it is the lowest-priority tier, same as the region-comparison and estimate lines below it.
@@ -392,9 +390,10 @@ function purchaseAdvice(shortfall, state, currency) {
         describe(result.cheapest),
         `-# ${plural(result.cheapest.transactions, 'purchase')} · ${fmt(result.cheapest.leftoverCp)} CP left over${savingsNote ? ` · ${savingsNote}` : ''}`
     ];
+    // Its own header+emoji (2026-08-26 12:50 EDT), matching Cheapest's -- plain bold text at the same weight as the combo line above it read as a continuation of that line, not as an unmistakably SEPARATE alternative. A reader skimming for "is there another option" needs a landmark as strong as the one that told them "Cheapest" was here.
     if (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp) {
         lines.push(
-            `Least waste — **${formatMoney(result.leastWaste.totalCents, currency)}**`,
+            `### ⚖️ Least Waste — **${formatMoney(result.leastWaste.totalCents, currency)}**`,
             describe(result.leastWaste),
             `-# ${plural(result.leastWaste.transactions, 'purchase')} · ${fmt(result.leastWaste.leftoverCp)} CP left over`
         );
@@ -402,12 +401,14 @@ function purchaseAdvice(shortfall, state, currency) {
     return lines;
 }
 
-function finePrint(state, currency, client, { upgradeIncluded = false } = {}) {
+function finePrint(state, currency, client, { upgradeIncluded = false, showRegionRow = true } = {}) {
     const lines = [];
     // Region reality check -- computed live, since every control recomputes the whole panel from scratch anyway (see the Statelessness note above).
     //
     // ⚠️ EVERY FIGURE ON THIS ROW MUST BE THE SAME KIND OF FIGURE, and the first version was not. It listed only the OTHER regions, and compared them against a headline that had the upgrade folded in -- so with the upgrade toggled on, a 6,070 CP local total sat beside "20 CP 640 CP" and the sentence claiming higher regions cost MORE was refuted by its own numbers. Two fixes: the current region is in the row (a comparison needs its own baseline present, not implied by the panel above it), and the upgrade is excluded from all three, which is the only basis available -- mythicWeapon has no upgrade figure at region_20 at all, so including it would have compared a total against a subtotal.
-    if (state.target !== 'B') {
+    //
+    // ⚠️ SUPPRESSED when there's nothing left to compare (showRegionRow=false, 2026-08-26 12:54 EDT) -- the "already there" branch (goalAnswer's action:null) has pullsLeft<=0, so every region's remaining figure is genuinely 0, and a row reading "20 CP 0 - 30 CP 0 CP" is not a comparison, it's noise stating the same non-fact three times. Caught by READING a render, not by counting components -- a structural check would have passed this every time.
+    if (state.target !== 'B' && showRegionRow) {
         const row = REGION_ORDER.map(r => {
             const e = entryFor(r, state.drawKey);
             if (!e) return null;

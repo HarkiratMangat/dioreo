@@ -36,11 +36,13 @@ const countComponents = node => Array.isArray(node)
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
 const messageCount = panel => countComponents([panel, buildGlobalNavRow('nav_prices'), SHARE_ROW]);
 
-const texts = panel => panel.components.filter(c => c.type === 10).map(c => c.content);
+// 2026-08-26 12:54 EDT (third pass): the answer block became a Section (type 9, a Text Display plus an accessory button) so the "Set Balance"/"Set Budget" control could be co-located with the stat it acts on, instead of living in a generic row nine lines down. texts()/buttons() now look INTO a Section as well as at top-level rows -- a helper that only understood Text Displays and Action Rows would silently stop seeing both the headline copy and the promoted button, exactly the kind of gap this suite exists to catch rather than cause.
+const texts = panel => panel.components.flatMap(c => c.type === 10 ? [c.content] : c.type === 9 ? c.components.filter(x => x.type === 10).map(x => x.content) : []);
 const allText = panel => texts(panel).join('\n');
 const rows = panel => panel.components.filter(c => c.type === 1);
+const sectionAccessories = panel => panel.components.filter(c => c.type === 9 && c.accessory && c.accessory.type === 2).map(c => c.accessory);
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
-const buttons = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 2);
+const buttons = panel => [...rows(panel).flatMap(r => r.components).filter(c => c.type === 2), ...sectionAccessories(panel)];
 const selectFor = (panel, verb) => selects(panel).find(s => s.custom_id.split('~')[1] === verb);
 
 console.log('\n/draw calculator -- one panel: budget, degradation, and what the panel actually says\n');
