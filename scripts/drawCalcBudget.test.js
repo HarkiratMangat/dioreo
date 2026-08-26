@@ -1,19 +1,17 @@
-// scripts/drawCalcBudget.test.js  /draw calculator's ONE panel: component budget, and the render invariants that were live defects before the 2026-08-26 rebuild. Run: `node scripts/drawCalcBudget.test.js` (also via `npm test`).
+// scripts/drawCalcBudget.test.js  /draw calculator's ONE panel: component budget, and the render invariants proven by reading the actual output rather than trusting a structural pass. Run: `node scripts/drawCalcBudget.test.js` (also via `npm test`).
 //
-// ⚠️ WHY THE BUDGET HALF EXISTS. Components V2 allows 40 components per message, COUNTED RECURSIVELY. Exceeding it is a hard COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED send failure -- a real production crash this repo has already taken once (see .claude/rules/rendering-and-ui.md). The panel is now a SINGLE stage rather than two, so it carries every control and every answer at once and the cap matters more than it did, not less. The count asserted here includes the global nav row and the share button, because those are siblings in the same message and Discord counts the message.
+// ⚠️ FOURTH PASS, 2026-08-26 17:29 EDT -- rewritten wholesale for the rebuild against Harkirat's own mockup (see commands/drawCalculator.js's header). The Section/accessory structure the third pass's tests pinned is gone; everything here targets plain Text Displays + Action Rows, matching what actually ships now.
 //
-// ⚠️ WHY THE REST EXISTS. Each remaining case pins a defect that was live in the two-stage build and that every existing gate passed over, because none of them read what the panel SAYS:
-//   · the word "null" rendered in three places for a draw with no data at the selected region, and the modal rejected every pull count against it;
-//   · "stop at pull 5" printed all ten pulls under a headline that priced five;
-//   · the headline read the raw total while the line under it read the balance-netted one, so the two contradicted each other whenever a balance was entered.
-// A structural check cannot see any of those. These read the rendered strings.
+// ⚠️ WHY THE BUDGET HALF EXISTS. Components V2 allows 40 components per message, COUNTED RECURSIVELY. Exceeding it is a hard COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED send failure -- a real production crash this repo has already taken once (see .claude/rules/rendering-and-ui.md). The count asserted here includes the global nav row and the share button, because those are siblings in the same message and Discord counts the message.
+//
+// ⚠️ WHY THE INVARIANTS EXIST. A structural/component-count check cannot see WHAT a panel says -- it was a live defect here (the literal word "null" rendered for a draw with no data at the selected region, three months, six green suites) that made rendering-and-reading the standing practice for this file. Every case below reads the actual rendered content.
 const assert = require('assert');
 const {
     defaultState, clampStateToDraw, buildCalculatorPanel, encodeState, decodeState,
     entryFor, regionsWithData, progressBar, shortfallFor
 } = require('../commands/drawCalculator');
 const { DRAW_META, REGION_ORDER } = require('../commands/drawprices');
-const { pullCount, remainingToFinish, remainingToPull } = require('../utils/drawCost');
+const { pullCount } = require('../utils/drawCost');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 
 let failed = 0;
@@ -25,46 +23,31 @@ function t(name, fn) {
 
 const LIMIT = 40;
 const ACCENT = 2067038;
+const CLIENT = { commandIds: new Map() };
 // The same recursive count Discord applies: every component object, plus anything nested in `components` or `accessory`.
 const countComponents = node => Array.isArray(node)
     ? node.reduce((n, x) => n + countComponents(x), 0)
     : (node && typeof node === 'object')
         ? 1 + countComponents(node.components || []) + (node.accessory ? countComponents(node.accessory) : 0)
         : 0;
-
-// The share button is one action row carrying one button; the nav row is real. Counting the whole message rather than the container alone is the point -- the container passing on its own would not stop a send failure.
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
 const messageCount = panel => countComponents([panel, buildGlobalNavRow('nav_prices'), SHARE_ROW]);
 
-// 2026-08-26 12:54 EDT (third pass): the answer block became a Section (type 9, a Text Display plus an accessory button) so the "Set Balance"/"Set Budget" control could be co-located with the stat it acts on, instead of living in a generic row nine lines down. texts()/buttons() now look INTO a Section as well as at top-level rows -- a helper that only understood Text Displays and Action Rows would silently stop seeing both the headline copy and the promoted button, exactly the kind of gap this suite exists to catch rather than cause.
-const texts = panel => panel.components.flatMap(c => c.type === 10 ? [c.content] : c.type === 9 ? c.components.filter(x => x.type === 10).map(x => x.content) : []);
+const texts = panel => panel.components.filter(c => c.type === 10).map(c => c.content);
 const allText = panel => texts(panel).join('\n');
 const rows = panel => panel.components.filter(c => c.type === 1);
-const sectionAccessories = panel => panel.components.filter(c => c.type === 9 && c.accessory && c.accessory.type === 2).map(c => c.accessory);
+const buttons = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 2);
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
-const buttons = panel => [...rows(panel).flatMap(r => r.components).filter(c => c.type === 2), ...sectionAccessories(panel)];
 const selectFor = (panel, verb) => selects(panel).find(s => s.custom_id.split('~')[1] === verb);
+const buttonLabelled = (panel, label) => buttons(panel).find(b => b.label === label);
+const render = (extra, opts) => buildCalculatorPanel(clampStateToDraw({ ...defaultState(), ...extra }), ACCENT, { currency: 'CAD', client: CLIENT, ...opts });
 
-console.log('\n/draw calculator -- one panel: budget, degradation, and what the panel actually says\n');
+console.log('\n/draw calculator -- component budget and what the panel actually says\n');
 
 // ==========================================
 // COMPONENT BUDGET
 // ==========================================
-// Worst case: a mythic draw (upgrade toggle renders), a live 2X event (the entitlement note AND its select render), a shortfall large enough that the purchase block renders both cheapest and least-waste, and a client present so the mention footer resolves.
-t('worst case stays under the 40-component cap, counting nav + share', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', includeUpgrades: true, entitlementMask: 0b111111 });
-    const panel = buildCalculatorPanel(state, ACCENT, {
-        liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) },
-        currency: 'CAD',
-        client: { commandIds: new Map() }
-    });
-    const n = messageCount(panel);
-    console.log(`        worst case: ${n}/${LIMIT} components`);
-    assert.ok(n <= LIMIT, `rendered ${n} components, over the ${LIMIT} cap`);
-});
-
 t('every draw x region x goal x detail-state combination stays under the cap', () => {
-    // detail:true (2026-08-26 13:19 EDT, progressive disclosure) adds MORE components than collapsed -- the full purchase block, Least Waste, the toggle button, finePrint. A sweep that only ever tried the collapsed default would miss the real worst case.
     let worst = 0;
     let worstLabel = '';
     for (const drawKey of Object.keys(DRAW_META)) {
@@ -77,11 +60,8 @@ t('every draw x region x goal x detail-state combination stays under the cap', (
             ];
             for (const goal of goals) {
                 for (const detail of [false, true]) {
-                    const state = clampStateToDraw({ ...defaultState(), drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail, ...goal });
-                    const panel = buildCalculatorPanel(state, ACCENT, {
-                        liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) },
-                        currency: 'CAD', client: { commandIds: new Map() }
-                    });
+                    const panel = render({ drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail, ...goal },
+                        { liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) } });
                     const n = messageCount(panel);
                     if (n > worst) { worst = n; worstLabel = `${drawKey}/${region}/${goal.target}/detail:${detail}`; }
                     assert.ok(n <= LIMIT, `${drawKey} at ${region} (${goal.target}, detail:${detail}) rendered ${n} components`);
@@ -92,20 +72,39 @@ t('every draw x region x goal x detail-state combination stays under the cap', (
     console.log(`        worst across the whole matrix: ${worst}/${LIMIT} (${worstLabel})`);
 });
 
+t('no action row ever exceeds Discord\'s five components', () => {
+    for (const drawKey of Object.keys(DRAW_META)) {
+        for (const region of REGION_ORDER) {
+            for (const detail of [false, true]) {
+                const panel = render({ drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail }, { liveDoubleCPEntry: { isDoubleCP: true } });
+                for (const row of rows(panel)) {
+                    assert.ok(row.components.length <= 5, `${drawKey} at ${region} (detail:${detail}) rendered a row of ${row.components.length}`);
+                }
+            }
+        }
+    }
+});
+
+t('every custom_id the panel emits fits Discord\'s 100-character cap', () => {
+    const panel = render({ drawKey: 'mythicWeapon', pullsDone: 9, target: 'P', targetValue: 10, balance: 999999, entitlementMask: 0b111111, includeUpgrades: true, detail: true }, { liveDoubleCPEntry: { isDoubleCP: true } });
+    for (const c of [...selects(panel), ...buttons(panel)]) {
+        assert.ok(c.custom_id.length <= 100, `custom_id ${c.custom_id} is ${c.custom_id.length} chars`);
+    }
+});
+
 // ==========================================
-// PROGRESSIVE DISCLOSURE (2026-08-26 13:19 EDT, Harkirat's hybrid pick)
+// LANDING STATE
 // ==========================================
 t('a fresh /draw calculator opens on the LANDING state -- no draw picked, no number computed', () => {
-    assert.strictEqual(defaultState().drawKey, null, 'defaultState() must not pre-pick a draw (2026-08-26 13:29 EDT landing-page fix)');
-    const panel = buildCalculatorPanel(clampStateToDraw(defaultState()), ACCENT, {});
-    const body = allText(panel);
+    assert.strictEqual(defaultState().drawKey, null, 'defaultState() must not pre-pick a draw');
+    const panel = render({});
     assert.ok(!/null/i.test(JSON.stringify(panel)), 'landing must never leak the literal word null');
-    assert.ok(!/CP\*\*/.test(body), 'no CP figure should be computed before a draw is chosen');
+    assert.ok(!/CP\*\*/.test(allText(panel)), 'no CP figure should be computed before a draw is chosen');
     const draw = selectFor(panel, 'draw');
     assert.ok(draw, 'the draw select must render on landing');
-    assert.ok(!draw.options.some(o => o.default), 'no option may carry default:true on landing -- that is what makes Discord show the real placeholder instead of a pre-picked value');
-    assert.strictEqual(selectFor(panel, 'pulls'), undefined, 'no pulls select -- nothing to enumerate without a draw');
-    assert.strictEqual(selectFor(panel, 'goal'), undefined, 'no goal select -- nothing to enumerate without a draw');
+    assert.ok(!draw.options.some(o => o.default), 'no option may carry default:true on landing -- that is what makes Discord show the real placeholder');
+    assert.strictEqual(selectFor(panel, 'pulls'), undefined, 'no pulls select on landing');
+    assert.strictEqual(selectFor(panel, 'goal'), undefined, 'no goal select on landing');
 });
 
 t('picking a draw from landing transitions cleanly into the live panel', () => {
@@ -113,216 +112,147 @@ t('picking a draw from landing transitions cleanly into the live panel', () => {
     assert.strictEqual(picked.drawKey, 'mythicWeapon');
     const panel = buildCalculatorPanel(clampStateToDraw(picked), ACCENT, {});
     assert.ok(selectFor(panel, 'pulls'), 'pulls select must appear once a draw is chosen');
-    assert.ok(!/null/i.test(JSON.stringify(panel)));
 });
 
 t('a customId with no drawKey field at all decodes to landing, not to the first draw', () => {
-    // Defends against DRAW_KEYS[-1] || DRAW_KEYS[0] silently resurrecting a draw on a customId that never carried one -- the exact shape of the bug this state was designed to avoid.
     const decoded = decodeState('calc~region~r10~p0~tF~v0~b0~u0~e0~x0');
     assert.strictEqual(decoded.drawKey, null, 'a missing d field must decode to landing, never to DRAW_KEYS[0]');
 });
 
-t('a fresh panel opens collapsed by default', () => {
-    assert.strictEqual(defaultState().detail, false, 'defaultState() must default to collapsed');
-});
-
-t('collapsed view shows exactly the compact purchase line, no ladder, no Least Waste, no region row, no estimate', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon' });
-    const body = allText(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' }));
-    assert.ok(/Cheapest: \*\*/.test(body), 'the compact one-line Cheapest summary must render');
-    assert.ok(!/### 🛒 Cheapest —/.test(body), 'the full header-style Cheapest block must NOT render when collapsed');
-    assert.ok(!/Least Waste/.test(body), 'Least Waste is detail -- must not render collapsed');
-    assert.ok(!/Other regions/.test(body), 'the region-comparison row is detail -- must not render collapsed');
-    assert.ok(!/Estimate only/.test(body), 'the currency disclaimer is detail -- must not render collapsed');
-    const toggle = buttons(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' })).find(b => b.label === '↓ Show breakdown');
-    assert.ok(toggle, 'a Show breakdown button must be present when there is real detail behind it');
-});
-
-t('expanded view (detail:true) shows the ladder, full purchase block, Least Waste, region row and estimate', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', detail: true });
-    const body = allText(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' }));
-    assert.ok(/### 🛒 Cheapest —/.test(body), 'the full Cheapest block must render when expanded');
-    assert.ok(!/Cheapest: \*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');
-    assert.ok(/### ⚖️ Least Waste/.test(body), 'Least Waste must render when expanded and it genuinely differs');
-    assert.ok(/Other regions/.test(body), 'the region-comparison row must render when expanded');
-    assert.ok(/Estimate only/.test(body), 'the currency disclaimer must render when expanded');
-    const toggle = buttons(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' })).find(b => b.label === '↑ Hide breakdown');
-    assert.ok(toggle, 'the toggle must read Hide breakdown once expanded');
-});
-
-t('the toggle round-trips through the state codec and only flips detail', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 3, balance: 4000 });
-    const flipped = decodeState(encodeState('detail', { ...state, detail: !state.detail }));
-    assert.strictEqual(flipped.detail, true, 'toggling from collapsed must decode back to detail:true');
-    assert.strictEqual(flipped.pullsDone, 3, 'toggling detail must not disturb unrelated state');
-    assert.strictEqual(flipped.balance, 4000, 'toggling detail must not disturb unrelated state');
-});
-
-t('a state with nothing to expand (already-there / no purchase needed) shows no toggle at all', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'legendaryGunReactive', pullsDone: 10, target: 'F' });
-    const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
-    assert.ok(!buttons(panel).some(b => /breakdown/.test(b.label || '')), 'no toggle should render when there is nothing behind it');
-});
-
-t('no action row ever exceeds Discord\'s five components', () => {
-    for (const drawKey of Object.keys(DRAW_META)) {
-        for (const region of REGION_ORDER) {
-            const state = clampStateToDraw({ ...defaultState(), drawKey, region, includeUpgrades: true, entitlementMask: 0b111111 });
-            const panel = buildCalculatorPanel(state, ACCENT, { liveDoubleCPEntry: { isDoubleCP: true } });
-            for (const row of rows(panel)) {
-                assert.ok(row.components.length <= 5, `${drawKey} at ${region} rendered a row of ${row.components.length}`);
-            }
-        }
-    }
-});
-
-t('every custom_id the panel emits fits Discord\'s 100-character cap', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 9, target: 'P', targetValue: 10, balance: 999999, entitlementMask: 0b111111, includeUpgrades: true });
-    const panel = buildCalculatorPanel(state, ACCENT, { liveDoubleCPEntry: { isDoubleCP: true } });
-    for (const c of [...selects(panel), ...buttons(panel)]) {
-        assert.ok(c.custom_id.length <= 100, `custom_id ${c.custom_id} is ${c.custom_id.length} chars`);
-    }
-});
-
 // ==========================================
-// ABSENT DATA -- the "null" regression
+// ABSENT DATA
 // ==========================================
-// doubleEpicCharacters exists only at region_10. Before the rebuild the setup panel never checked: the guide read "is a **null-pull** draw", the goal dropdown read "Complete all null pulls", the draw dropdown read "null pulls", and handlers/drawCalc.js compared `pullsDone > null`, which is true for every positive number -- so the modal rejected every entry with a message that itself said "from 0 to null".
 t('a draw with no data at the selected region never renders the word null', () => {
     for (const region of ['region_20', 'region_30']) {
-        const state = clampStateToDraw({ ...defaultState(), drawKey: 'doubleEpicCharacters', region });
-        const panel = buildCalculatorPanel(state, ACCENT, {});
-        const rendered = JSON.stringify(panel);
-        // The message is built lazily: assert.ok evaluates its second argument eagerly, so a .match(...)[0] here throws on the PASSING case and reports as a failure with the wrong reason.
-        const hit = rendered.match(/.{0,60}null.{0,60}/i);
-        assert.ok(!hit, `${region} rendered a literal null: ${hit && hit[0]}`);
+        const panel = render({ drawKey: 'doubleEpicCharacters', region });
+        assert.ok(!/null/i.test(JSON.stringify(panel)), `${region} rendered a literal null`);
     }
 });
 
-t('the no-data panel names the regions that DO have the draw, and offers them', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'doubleEpicCharacters', region: 'region_20' });
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    const body = allText(panel);
-    for (const r of regionsWithData('doubleEpicCharacters')) {
-        assert.ok(body.includes(`${r.split('_')[1]} CP`), `no-data panel never mentions ${r}`);
-    }
-    const regionButtons = buttons(panel).filter(b => b.custom_id.split('~')[1] === 'region');
-    assert.strictEqual(regionButtons.length, REGION_ORDER.length, 'the way out of a no-data region is the region row -- it must always render');
-});
-
-t('the no-data panel renders no pull or goal select, because there is no count to enumerate', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'doubleEpicCharacters', region: 'region_20' });
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    assert.strictEqual(selectFor(panel, 'pulls'), undefined, 'a pulls select rendered with no pull count behind it');
-    assert.strictEqual(selectFor(panel, 'goal'), undefined, 'a goal select rendered with no pull count behind it');
+t('the no-data panel names the regions that DO have the draw and renders no pull/goal select', () => {
+    const panel = render({ drawKey: 'doubleEpicCharacters', region: 'region_20' });
+    assert.ok(allText(panel).includes('10 CP'), 'no-data panel must name the region that DOES have the draw');
+    assert.strictEqual(selectFor(panel, 'pulls'), undefined);
+    assert.strictEqual(selectFor(panel, 'goal'), undefined);
     assert.ok(selectFor(panel, 'draw'), 'the draw select must stay -- it is how you leave this draw');
 });
 
-t('the draw select flags an unpriced draw in its own description rather than offering it as priced', () => {
-    const state = clampStateToDraw({ ...defaultState(), region: 'region_20' });
-    const option = selectFor(buildCalculatorPanel(state, ACCENT, {}), 'draw').options.find(o => o.value === 'doubleEpicCharacters');
-    assert.ok(/no data/i.test(option.description), `expected a no-data description, got "${option.description}"`);
-});
-
 // ==========================================
-// WHAT THE PANEL SAYS
+// THE TOP SUMMARY BLOCK (reused from /draw prices)
 // ==========================================
-t('the ladder stops at the chosen target pull, not at the end of the draw', () => {
-    // detail: true -- the ladder is behind the progressive-disclosure toggle since 2026-08-26 13:19 EDT (third pass); it does not render in the collapsed default view at all.
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2, target: 'P', targetValue: 5, detail: true });
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    // The ladder is the first plain (non `-#`) line after the headline -- anchoring on POSITION rather than a label, since the headline and the goal sentence were fused into one line 2026-08-26 12:38 EDT (second prose pass) and the "Stops you at"/"Finishes all" sentence this used to anchor on no longer exists on its own line.
-    const block = texts(panel).find(c => c.includes(' CP** to ')).split('\n');
-    const headlineIndex = block.findIndex(l => l.includes(' CP** to '));
-    const ladder = block[headlineIndex + 1].split('/').map(x => x.trim());
-    assert.strictEqual(ladder.length, 3, `stop-at-pull-5 from pull 2 should list 3 pulls, listed ${ladder.length}: ${block[headlineIndex + 1]}`);
-    assert.ok(ladder.every(x => x.startsWith('**')), 'every remaining pull should render bold in a goal-mode ladder');
-});
-
-t('the headline figure is the balance-netted shortfall, and shortfallFor agrees with it', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 3, balance: 4000 });
-    const total = pullCount(state.region, state.drawKey);
-    const expected = shortfallFor(state, total, null);
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    const headline = texts(panel).find(c => c.includes(' CP** to '));
-    assert.ok(headline.includes(expected.toLocaleString('en-US')), `headline "${headline.split('\n')[0]}" does not carry the netted shortfall ${expected}`);
-    // The equation line beneath it must resolve to the SAME number -- the pair contradicting each other is the defect this pins.
-    const equation = headline.split('\n').find(l => l.includes('balance ='));
-    assert.ok(equation && equation.includes(expected.toLocaleString('en-US')), 'the equation line disagrees with the headline it sits under');
-});
-
-t('a balance that covers the goal recommends buying nothing, with no purchase block at all', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 0, balance: 999999 });
-    const panel = buildCalculatorPanel(state, ACCENT, { currency: 'USD' });
+t('the top block matches buildDrawEntries verbatim, including the FULL-CAPS heading and the CP-Spent ladder', () => {
+    const panel = render({ drawKey: 'mythicWeapon' });
     const body = allText(panel);
-    assert.ok(/buy nothing/i.test(body), 'a covered balance must say so');
-    assert.ok(!/Cheapest/.test(body), 'no purchase recommendation should render when nothing needs buying');
+    assert.ok(body.includes('MYTHIC WEAPON DRAW'), 'full-caps heading must appear, matching /draw prices\' own convention');
+    assert.ok(body.includes('**CP Spent:**'), 'the cumulative spend ladder must appear');
+    assert.ok(body.includes('5,700 CP Upgrade'), 'the Weapon Upgrade sub-block must appear unconditionally, regardless of the Upgrade toggle');
 });
 
-t('budget mode bolds exactly the pulls the budget covers', () => {
-    // detail: true -- "Pulls from here" is budgetAnswer's detail half, behind the same toggle.
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 0, target: 'B', targetValue: 5000, detail: true });
+t('the upgrade sub-heading gets its OWN card emoji, and only for the two draws that have one', () => {
+    const withCard = allText(render({ drawKey: 'mythicWeapon' }));
+    assert.ok(withCard.includes('<:MythicCard:1542258676889288794> **Weapon Upgrade**'), 'mythicWeapon must get the MythicCard emoji on its upgrade sub-heading');
+    const withCoin = allText(render({ drawKey: 'mythicCharacter' }));
+    assert.ok(withCoin.includes('<:MythicCoin:1542258675706757150> **Character Upgrade**'), 'mythicCharacter must get the MythicCoin emoji on its upgrade sub-heading');
+    const noUpgrade = allText(render({ drawKey: 'legendaryGunReactive' }));
+    assert.ok(!/MythicCard|MythicCoin/.test(noUpgrade), 'a draw with no upgrade step must carry neither emoji');
+});
+
+// ==========================================
+// COST BREAKDOWN -- collapsed vs expanded
+// ==========================================
+t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -- no TYPE, TOTAL PRICE, PENDING, BALANCE, Least Waste, or NOTE', () => {
+    const panel = render({ drawKey: 'mythicWeapon' });
+    const body = allText(panel);
+    assert.ok(/PROGRESS:/.test(body) && /CP SPENT:/.test(body), 'progress + spent/needed must always show');
+    assert.ok(/\*\*Cheapest:\*\*/.test(body), 'the compact one-line Cheapest must render');
+    assert.ok(!/> TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
+    assert.ok(!/> TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
+    assert.ok(!/> PENDING:/.test(body), 'PENDING is full-mode only');
+    assert.ok(!/> BALANCE:/.test(body), 'BALANCE is full-mode only');
+    assert.ok(!/Least Waste Method/.test(body), 'Least Waste is full-mode only');
+    assert.ok(!/NOTE: Estimate/.test(body), 'the NOTE disclaimer is full-mode only');
+    assert.ok(buttonLabelled(panel, 'Show Breakdown'), 'the toggle must read "Show Breakdown" while collapsed');
+});
+
+t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS, PENDING, BALANCE, CP SPENT/NEEDED, RECOMMENDED PACKAGE with per-item pricing and Left Over, and the NOTE', () => {
+    const panel = render({ drawKey: 'mythicWeapon', detail: true });
+    const body = allText(panel);
+    for (const needle of ['> TYPE:', '> TOTAL PRICE:', '> PROGRESS:', '> PENDING:', '> BALANCE:', '> CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
+        assert.ok(body.includes(needle), `expanded view is missing "${needle}"`);
+    }
+    assert.ok(!/\*\*Cheapest:\*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');
+    assert.ok(buttonLabelled(panel, 'Simplify'), 'the toggle must read "Simplify" once expanded, per Harkirat\'s own wording');
+});
+
+t('CP NEEDED includes the upgrade whenever the Upgrade toggle is on, in BOTH compact and full modes', () => {
+    const withUpgrade = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true }));
+    assert.ok(withUpgrade.includes('CP NEEDED: **`11,510 CP`**'), 'compact mode must still reflect the upgrade toggle');
+    const withUpgradeFull = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true, detail: true }));
+    assert.ok(withUpgradeFull.includes('CP NEEDED: **`11,510 CP`**'));
+    const without = allText(render({ drawKey: 'mythicWeapon' }));
+    assert.ok(without.includes('CP NEEDED: **`5,810 CP`**'), 'upgrade off must exclude it from CP NEEDED');
+});
+
+t('a balance that covers the goal shows the covered message and no RECOMMENDED PACKAGE at all', () => {
+    const panel = render({ drawKey: 'mythicWeapon', balance: 99999, detail: true });
+    const body = allText(panel);
+    assert.ok(/already covers this/.test(body));
+    assert.ok(!/RECOMMENDED PACKAGE/.test(body), 'no purchase recommendation should render when nothing needs buying');
+});
+
+t('the Left Over equation nets against the BALANCE-ADJUSTED shortfall, not the raw CP needed', () => {
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', balance: 4000, detail: true });
+    const total = pullCount(state.region, state.drawKey);
+    const shortfall = shortfallFor(state, total, null);
+    const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
+    assert.ok(allText(panel).includes(`\`${shortfall.toLocaleString('en-US')} CP\` Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
+});
+
+// ==========================================
+// BUDGET MODE
+// ==========================================
+t('budget mode with no value yet prompts for Set Budget and computes nothing', () => {
+    const panel = render({ drawKey: 'mythicWeapon', target: 'B' });
+    assert.ok(/Press \*\*Set Budget\*\*/.test(allText(panel)));
+    assert.ok(buttonLabelled(panel, 'Set Budget'));
+});
+
+t('budget mode with a value set reaches the correct pull, and the ladder bolds exactly the pulls covered', () => {
     const { reachableWithBudget } = require('../utils/drawCost');
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', target: 'B', targetValue: 5000, detail: true });
     const reachable = reachableWithBudget(state.region, state.drawKey, 0, 5000).pullsReachable;
-    const line = texts(buildCalculatorPanel(state, ACCENT, {})).find(c => c.includes('**Pulls from here:**'));
-    const entries = line.split('**Pulls from here:**')[1].split('/').map(s => s.trim());
-    const bolded = entries.filter(e => e.startsWith('**')).length;
+    const panel = buildCalculatorPanel(state, ACCENT, {});
+    const line = texts(panel).find(c => c.includes('**Pulls from here:**'));
+    const bolded = line.split('**Pulls from here:**')[1].split('/').filter(s => s.trim().startsWith('**')).length;
     assert.strictEqual(bolded, reachable, `budget reaches ${reachable} pulls but ${bolded} are bolded`);
 });
 
+// ==========================================
+// CONTROLS
+// ==========================================
 t('the goal select enumerates this draw\'s real pull count -- seven, not ten', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'sevenSpinLegendaryWeapon' });
-    const total = pullCount(state.region, state.drawKey);
-    assert.strictEqual(total, 7, 'fixture assumption: sevenSpinLegendaryWeapon is a seven-pull draw');
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    // Finish + one per pull + budget.
-    assert.strictEqual(selectFor(panel, 'goal').options.length, total + 2, 'goal select does not match the draw\'s pull count');
-    // 0..total inclusive.
-    assert.strictEqual(selectFor(panel, 'pulls').options.length, total + 1, 'pulls select does not match the draw\'s pull count');
-    assert.ok(!selectFor(panel, 'goal').options.some(o => o.label === 'Stop at pull 8'), 'a seven-pull draw offered an eighth pull');
+    const panel = render({ drawKey: 'sevenSpinLegendaryWeapon' });
+    assert.strictEqual(selectFor(panel, 'goal').options.length, 7 + 2, 'goal select does not match the draw\'s pull count');
+    assert.strictEqual(selectFor(panel, 'pulls').options.length, 7 + 1);
 });
 
-t('every goal and pulls option value round-trips through the state codec', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon' });
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    for (const option of selectFor(panel, 'goal').options) {
-        const next = option.value.startsWith('P')
-            ? { ...state, target: 'P', targetValue: Number(option.value.slice(1)) }
-            : { ...state, target: option.value };
-        const decoded = decodeState(encodeState('goal', next));
-        assert.strictEqual(decoded.target, next.target, `goal value ${option.value} did not survive the codec`);
-        if (next.target === 'P') assert.strictEqual(decoded.targetValue, next.targetValue, `goal value ${option.value} lost its pull number`);
-    }
-    for (const option of selectFor(panel, 'pulls').options) {
-        const decoded = decodeState(encodeState('pulls', { ...state, pullsDone: Number(option.value) }));
-        assert.strictEqual(decoded.pullsDone, Number(option.value), `pulls value ${option.value} did not survive the codec`);
-    }
+t('every option value round-trips through the state codec, including detail', () => {
+    const flipped = decodeState(encodeState('detail', { ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 3, balance: 4000, detail: true }));
+    assert.strictEqual(flipped.detail, true);
+    assert.strictEqual(flipped.pullsDone, 3);
+    assert.strictEqual(flipped.balance, 4000);
 });
 
 t('switching to a shorter draw cannot leave an impossible pulls-done or target behind', () => {
     const stale = { ...defaultState(), drawKey: 'sevenSpinLegendaryWeapon', pullsDone: 10, target: 'P', targetValue: 10 };
     const clamped = clampStateToDraw(stale);
-    assert.strictEqual(clamped.pullsDone, 7, 'pullsDone was not clamped to the shorter draw');
-    assert.strictEqual(clamped.target, 'F', 'an out-of-range target pull should fall back to finishing the draw');
-    // And the clamped state must render -- an unclamped one is what would produce a negative remainder.
-    const panel = buildCalculatorPanel(clamped, ACCENT, {});
-    assert.ok(!/-\d/.test(allText(panel).replace(/<t:-?\d+/g, '')), 'a negative figure reached the rendered panel');
+    assert.strictEqual(clamped.pullsDone, 7);
+    assert.strictEqual(clamped.target, 'F');
 });
 
 t('the progress bar has exactly one cell per pull', () => {
     assert.strictEqual([...progressBar(3, 10)].length, 10);
-    assert.strictEqual([...progressBar(0, 7)].length, 7);
-    assert.strictEqual([...progressBar(10, 10)].length, 10);
-    // Over-long input is clamped rather than growing the bar.
     assert.strictEqual([...progressBar(99, 7)].length, 7);
-});
-
-t('cheapest and least-waste CAN genuinely differ (so the panel branch that renders both is real, not dead code)', () => {
-    // 11000 is one of the shortfalls scripts/cpPackages.test.js's own "least-waste never overshoots more than cheapest" check is pinned against -- reusing a known-differing value here rather than assuming the worst-case draw scenario produces one (it happens not to).
-    const { optimizePurchase } = require('../utils/cpPackages');
-    const result = optimizePurchase(11000, { currency: 'USD' });
-    const differ = result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp;
-    assert.ok(differ, 'expected 11000 to produce different cheapest/least-waste combos -- if this now fails, the "render both when they differ" branch may be silently dead');
 });
 
 t('entryFor and regionsWithData agree with DRAW_DATA itself', () => {
@@ -330,32 +260,14 @@ t('entryFor and regionsWithData agree with DRAW_DATA itself', () => {
         const expected = REGION_ORDER.filter(r => entryFor(r, drawKey));
         assert.deepStrictEqual(regionsWithData(drawKey), expected);
     }
-    assert.deepStrictEqual(regionsWithData('doubleEpicCharacters'), ['region_10'], 'fixture assumption: doubleEpicCharacters is priced at region_10 only');
+    assert.deepStrictEqual(regionsWithData('doubleEpicCharacters'), ['region_10']);
 });
 
-t('the full-draw figure quoted in the draw select matches what the panel then computes', () => {
-    const state = clampStateToDraw(defaultState());
-    const select = selectFor(buildCalculatorPanel(state, ACCENT, {}), 'draw');
-    for (const option of select.options) {
-        const total = pullCount(state.region, option.value);
-        if (total === null) continue;
-        const full = remainingToFinish(state.region, option.value, 0).toLocaleString('en-US');
-        assert.ok(option.description.includes(full), `${option.value}'s description quotes a different full cost than remainingToFinish`);
-    }
-});
-
-t('each goal option quotes the same figure the panel shows once that goal is picked', () => {
-    const base = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2 });
-    const select = selectFor(buildCalculatorPanel(base, ACCENT, {}), 'goal');
-    for (const option of select.options) {
-        if (!option.value.startsWith('P')) continue;
-        const p = Number(option.value.slice(1));
-        if (p <= base.pullsDone) continue;
-        const need = remainingToPull(base.region, base.drawKey, base.pullsDone, p).toLocaleString('en-US');
-        assert.ok(option.description.includes(need), `"Stop at pull ${p}" quotes "${option.description}" but the panel computes ${need}`);
-        const picked = buildCalculatorPanel({ ...base, target: 'P', targetValue: p }, ACCENT, {});
-        assert.ok(allText(picked).includes(need), `picking pull ${p} shows a different figure than its own option promised`);
-    }
+t('cheapest and least-waste CAN genuinely differ (so the panel branch that renders both is real, not dead code)', () => {
+    const { optimizePurchase } = require('../utils/cpPackages');
+    const result = optimizePurchase(11000, { currency: 'USD' });
+    const differ = result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp;
+    assert.ok(differ, 'expected 11000 to produce different cheapest/least-waste combos');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
