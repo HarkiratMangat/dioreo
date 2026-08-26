@@ -226,6 +226,18 @@ function controlsRow(state, { hasUpgrade, hasData }) {
     return { type: 1, components: buttons };
 }
 
+// The return trip (2026-08-26 12:16 EDT, Harkirat: "a matching pair" -- its own row, not folded into controlsRow, which is already full at up to 5 buttons). Points at the EXACT custom_id drawprices.js's own region-switch buttons produce, so this routes through handlers/drawprices.js's existing price_region_ branch with no new handler code on either side.
+function pricesRow(state) {
+    return {
+        type: 1,
+        components: [{
+            type: 2, style: 2, label: 'Draw Prices',
+            emoji: emojis.parseEmoji(emojis.drawPrices),
+            custom_id: `price_region_${state.region.replace('region_', '')}_0`
+        }]
+    };
+}
+
 // ==========================================
 // PANEL
 // ==========================================
@@ -249,6 +261,7 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
         ].join('\n') });
         components.push(drawSelectRow(state));
         components.push(controlsRow(state, { hasUpgrade: false, hasData: false }));
+        components.push(pricesRow(state));
         return { type: 17, accent_color: accentColor, components };
     }
 
@@ -292,6 +305,7 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
         components.push(entitlementSelectRow(state));
     }
     components.push(controlsRow(state, { hasUpgrade: upgradeAvailable !== null, hasData: true }));
+    components.push(pricesRow(state));
 
     return { type: 17, accent_color: accentColor, components };
 }
@@ -334,18 +348,12 @@ function goalAnswer(state, entry, total, upgrade) {
         if (state.balance) lines.push(`-# ${fmt(needed)} CP to go − ${fmt(state.balance)} CP balance = **${fmt(shortfall)} CP** to buy.`);
     }
 
-    // The ladder stops at the TARGET, not at the end of the draw. The old build always sliced to entry.draws.length, so choosing "stop at pull 5" printed all ten pulls underneath a headline that priced five -- the two disagreed on screen.
+    // The ladder stops at the TARGET, not at the end of the draw. The old build always sliced to entry.draws.length, so choosing "stop at pull 5" printed all ten pulls underneath a headline that priced five -- the two disagreed on screen. Bold ladder only -- a THIRD framing of the same numbers as a running-cumulative "CP Spent" line used to sit under this too. The headline already gives the aggregate; this gives the per-pull detail. Cut 2026-08-26 12:23 EDT, prose-density pass.
     const ladder = entry.draws.slice(state.pullsDone, targetPull);
-    if (ladder.length) {
-        let running = spentSoFar(state.region, state.drawKey, state.pullsDone);
-        const cumulative = ladder.map(n => { running += n; return fmt(running); });
-        lines.push(`${ladder.map(n => `**${fmt(n)}**`).join(' / ')}`);
-        lines.push(`-# **CP Spent:** ${cumulative.join(' › ')}`);
-    }
+    if (ladder.length) lines.push(`${ladder.map(n => `**${fmt(n)}**`).join(' / ')}`);
+    // The controls row's "Upgrade: Off" button already says a step exists; this line's only job is the number the button can't show.
     if (upgradeAvailable !== null) {
-        lines.push(upgrade !== null
-            ? `-# **Upgrade included:** +${fmt(upgrade)} CP.`
-            : `-# This draw also has an **Upgrade** step (+${fmt(upgradeAvailable)} CP) — add it with the toggle below.`);
+        lines.push(upgrade !== null ? `-# +${fmt(upgrade)} CP upgrade included.` : `-# +${fmt(upgradeAvailable)} CP if you include the Upgrade below.`);
     }
     return lines;
 }
@@ -374,21 +382,18 @@ function budgetAnswer(state, entry, total) {
     return lines;
 }
 
+// Six lines compressed to three (2026-08-26 12:23 EDT, Harkirat: "this is overwhelming"): combo, purchase-count and leftover used to each get their own line per tier. Same numbers, one line per tier.
 function purchaseAdvice(shortfall, state, currency) {
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
     // Reads the optimizer's OWN cpEach rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so every 2X combo entry rendered the un-doubled figure.
     const describe = r => r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
-    const lines = [`### 🛒 Cheapest — **${formatMoney(result.cheapest.totalCents, currency)}**`];
-    lines.push(describe(result.cheapest));
-    lines.push(`-# ${plural(result.cheapest.transactions, 'purchase')} · ${fmt(result.cheapest.leftoverCp)} CP left over afterwards.`);
+    const tierLine = (label, r) => `${label} — **${formatMoney(r.totalCents, currency)}** · ${describe(r)} (${plural(r.transactions, 'purchase')}, ${fmt(r.leftoverCp)} CP left over)`;
+    const lines = [`### 🛒 ${tierLine('Cheapest', result.cheapest)}`];
     const savings = result.naive.totalCents - result.cheapest.totalCents;
-    if (savings > 0) {
-        lines.push(`-# 💰 Saves **${formatMoney(savings, currency)}** against the obvious move — one ${fmt(result.naive.combo[0].cpEach)} CP pack on its own.`);
-    }
+    if (savings > 0) lines.push(`-# 💰 Saves **${formatMoney(savings, currency)}** vs. one ${fmt(result.naive.combo[0].cpEach)} CP pack alone.`);
     if (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp) {
-        lines.push(`**Least waste — ${formatMoney(result.leastWaste.totalCents, currency)}** · ${describe(result.leastWaste)}`);
-        lines.push(`-# ${plural(result.leastWaste.transactions, 'purchase')} · only ${fmt(result.leastWaste.leftoverCp)} CP left over.`);
+        lines.push(tierLine('Least waste', result.leastWaste));
     }
     return lines;
 }
@@ -408,11 +413,11 @@ function finePrint(state, currency, client, { upgradeIncluded = false } = {}) {
             // The unit lives in the label, once. Region names are themselves CP figures ("10 CP"), so repeating CP after each number produced "10 CP 5,810 CP · 20 CP 10,075 CP" -- four CPs in a row where two of them mean different things.
             return r === state.region ? `${regionLabel(r)} region **${fmt(need)}**` : `${regionLabel(r)} ${fmt(need)}`;
         }).filter(Boolean);
-        if (row.length > 1) lines.push(`-# **CP to reach your goal:** ${row.join(' · ')}${upgradeIncluded ? ' *(upgrade excluded)*' : ''} — identical rewards, so a higher region is simply more real money.`);
+        // Shortened 2026-08-26 12:23 EDT: this used to spell out "identical rewards, so a higher region is simply more real money" in full every render. The /draw prices pointer is cut outright -- pricesRow (below) is now a real button, not a name in prose.
+        if (row.length > 1) lines.push(`-# ${row.join(' · ')} CP${upgradeIncluded ? ' *(upgrade excluded)*' : ''} — same reward, higher region costs more.`);
     }
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-    const pricesMention = client ? mentionCommand(client, '/draw prices') : '`/draw prices`';
-    lines.push(`-# Estimate only — store prices vary with local tax and conversion. Quoted in **${currency}**; change that in ${settingsMention}. Full per-pull breakdown in ${pricesMention}.`);
+    lines.push(`-# Estimate only, ${currency} — varies with tax/conversion. Change currency in ${settingsMention}.`);
     return lines;
 }
 

@@ -153,13 +153,11 @@ t('the draw select flags an unpriced draw in its own description rather than off
 t('the ladder stops at the chosen target pull, not at the end of the draw', () => {
     const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2, target: 'P', targetValue: 5 });
     const panel = buildCalculatorPanel(state, ACCENT, {});
-    // The ladder is the line directly above the cumulative one, and the two must have the same number of entries -- anchoring on `CP Spent:` rather than on the ladder's own text keeps this pinned to the STRUCTURE (sequence then running total, the shape /draw prices uses) instead of to a label that a wording pass can rename.
-    const block = texts(panel).find(c => c.includes('**CP Spent:**')).split('\n');
-    const cumulativeIndex = block.findIndex(l => l.includes('**CP Spent:**'));
-    const ladder = block[cumulativeIndex - 1].split('/').map(x => x.trim());
-    const cumulative = block[cumulativeIndex].split('**CP Spent:**')[1].split('›').map(x => x.trim());
-    assert.strictEqual(ladder.length, 3, `stop-at-pull-5 from pull 2 should list 3 pulls, listed ${ladder.length}: ${block[cumulativeIndex - 1]}`);
-    assert.strictEqual(cumulative.length, 3, `the running total must have one entry per listed pull, had ${cumulative.length}`);
+    // The ladder is the first plain (non `-#`) line after the "Stops you at"/"Finishes all" line -- anchoring on POSITION rather than on a running-cumulative label that no longer exists (that line was cut 2026-08-26 12:23 EDT, prose-density pass; the ladder itself is the structural invariant, not any particular label around it).
+    const block = texts(panel).find(c => c.includes('still needed')).split('\n');
+    const goalLineIndex = block.findIndex(l => l.startsWith('Stops you at') || l.startsWith('Finishes all'));
+    const ladder = block[goalLineIndex + 1].split('/').map(x => x.trim());
+    assert.strictEqual(ladder.length, 3, `stop-at-pull-5 from pull 2 should list 3 pulls, listed ${ladder.length}: ${block[goalLineIndex + 1]}`);
     assert.ok(ladder.every(x => x.startsWith('**')), 'every remaining pull should render bold in a goal-mode ladder');
 });
 
