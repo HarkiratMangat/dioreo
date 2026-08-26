@@ -21,7 +21,7 @@ Corollary: **the most dangerous thing you can carry across a boundary is a stale
 
 ## ⏱️ START HERE IF A COMPACT IS ALREADY IMMINENT
 
-Four steps, nothing else:
+Nothing else:
 
 1. **Commit.** Clean tree.
 2. **`sequentialthinking`: what is still OPEN?** Approved-but-unbuilt first, stale verifications second.
