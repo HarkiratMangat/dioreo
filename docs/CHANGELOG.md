@@ -405,6 +405,18 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **And the harness answered every preview request with the same card.** Invisible on the one-row preview panel — one card, one selection, nothing to compare it to — and obvious the instant Compare put two side by side: two chips reading `.50 GS` above two cards both reading `AK-47`. A stub that answers the same thing to every question cannot demonstrate the feature it stands in for.
 
+### The build editor, and the whitespace trap running the other way
+
+🔴 **EDITING A BUILD MEANT CLICKING ONE TABLE CELL AT A TIME, AND EVERY CELL WAS ITS OWN STAGED CHANGE.** Five attachments, a badge and an image key is **seven separate edits** through the Manifest — seven changesets, seven rows on the Review screen, for one act. The editor is the surface `/manage`'s modal has always had and the portal did not: the whole record at once, staged as a single `loadout.edit`. Identity with the derived `weaponKey` shown read-only, the gunsmith code with a Copy control and disabled on DMZ (where the card omits it), attachments as removable rows, badges, the rank field in the vocabulary `adminParser` validates, and the image.
+
+⚠️ **The preview moved INSIDE it, which retires the standalone LIVE PREVIEW panel.** That panel showed the card for whichever row you last clicked, beside a table you were not editing — a preview with nothing to preview against. Card and fields are one screen now, which is what `.bed-side` is for.
+
+⚠️ **The image URL is built by the bot's own helper, over the wire.** `buildImageUrl` in `utils/loadoutRender.js` is the one place that knows the convention — a bare key becomes a Cloudinary path with `f_auto,q_auto` baked in, and a value that is already a full URL passes through untouched (two LOCUS rows imported from imgur still depend on that). A client-side copy would hardcode the cloud name and become the second home of a transform convention `utils/cloudinaryDeliveryUrl.js` exists to keep in one place.
+
+🔴 **AND THE htm WHITESPACE TRAP RUNS BOTH WAYS.** The existing gate catches a line ending in a WORD before an inline tag; htm drops the whitespace on **both** sides of a line break, so a line ending in a closing `}` before a line starting with prose loses the space too — *"most builds carry 5.Slot labels are only ever filled by"*, rendered, in a file the first gate had already passed. ⚠️ **The first version of the new gate was too noisy to keep**: it listed known attribute names to skip, a list needing maintenance forever and already wrong inside one file. The discriminator is the SHAPE — an attribute value is `name=${…}` and the whitespace between two attributes means nothing, while a prose interpolation never carries that `=` — plus a JS-keyword filter, because `} ` closing a block before `const …` is ordinary code. **A gate with false positives gets suppressed rather than obeyed**, so it ships with a falsifier proving all four cases.
+
+**Armory 50% → 57%, overall 61%.**
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

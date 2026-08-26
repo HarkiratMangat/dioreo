@@ -295,6 +295,146 @@ function LivePreview({ buildId }) {
     `;
 }
 
+// ── THE BUILD EDITOR ──────────────────────────────────────────────────────────────────────────
+//
+// 🔴 EDITING A BUILD MEANT CLICKING ONE TABLE CELL AT A TIME, and every cell was its own staged change. Five attachments, a badge and an image key is seven separate edits through the Manifest — seven changesets, seven rows on the Review screen, for one act. This is the surface /manage's modal has always had and the portal did not: the whole record at once, staged as ONE operation.
+//
+// ⚠️ THE PREVIEW LIVES INSIDE IT, which retires the separate LIVE PREVIEW panel. That panel showed the card for whichever row you last clicked, beside a table you were not editing — the preview and the thing it previews are now the same screen, which is what the adopted design does with `.bed-side`.
+//
+// ⚠️ NOTHING HERE WRITES. Every field edits a local draft and Save stages one `loadout.edit`; the Review screen is still the only surface that commits.
+const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
+
+function BuildEditor({ build, csrfToken, onStage, onClose }) {
+    const [draft, setDraft] = useState({ ...build, attachments: [...(build.attachments || [])] });
+    const [card, setCard] = useState(null);
+    const [imgFailed, setImgFailed] = useState(false);
+    const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
+
+    useEffect(() => {
+        fetchJson(`/api/armory/preview?id=${build._id}`).then((d) => setCard(d.card || null));
+    }, [build._id]);
+
+    const atts = draft.attachments;
+    const setAtt = (i, v) => set({ attachments: atts.map((a, n) => (n === i ? v : a)) });
+    const dropAtt = (i) => set({ attachments: atts.filter((_, n) => n !== i) });
+
+    // 🔴 THE FULL RECORD, NOT A PATCH. core/ops/loadouts.js's edit validates against the whole build — the same shape handleBulkBadges already sends — so a partial payload would fail validation somewhere far from the field that was actually changed.
+    function stage() {
+        const payload = { ...draft };
+        delete payload.id; delete payload.coverage; delete payload.accent; delete payload.imageUrl; delete payload.topicVar; delete payload.accentHex;
+        onStage({ type: 'loadout.edit', target: { id: String(build._id) }, payload });
+    }
+
+    const dmz = draft.mode === 'DMZ';
+    return html`
+        <div class="panel" id="build-editor">
+            <div class="ph">
+                <span class="t">Editing ${build.weaponName}</span>
+                <span class="rt">one operation, staged — nothing here writes</span>
+            </div>
+            <div class="bed">
+                <!-- The adopted sheet defines .bed as the 1fr/340px grid and styles .bed-sec inside it; the two columns are grid CHILDREN with no rules of their own, so naming them would be emitting classes that do nothing. -->
+                <div>
+                    <div class="bed-sec">
+                        <h5>Identity</h5>
+                        <div class="bed-g2">
+                            <label class="dwfield"><span>Weapon name</span>
+                                <input value=${draft.weaponName || ''} onInput=${(e) => set({ weaponName: e.target.value })} /></label>
+                            <label class="dwfield"><span>Build name <i>a variant label, not a code</i></span>
+                                <input value=${draft.buildName || ''} onInput=${(e) => set({ buildName: e.target.value })} /></label>
+                        </div>
+                        <div class="bed-g3">
+                            <label class="dwfield"><span>Category</span>
+                                <select value=${draft.category} onChange=${(e) => set({ category: e.target.value })}>
+                                    ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c}</option>`)}
+                                </select></label>
+                            <label class="dwfield"><span>Mode</span>
+                                <select value=${draft.mode} onChange=${(e) => set({ mode: e.target.value })}>
+                                    ${MODES.map((m) => html`<option value=${m} key=${m}>${m}</option>`)}
+                                </select></label>
+                            <label class="dwfield"><span>weaponKey <i>derived</i></span>
+                                <input value=${String(draft.weaponName || '').toLowerCase().replace(/\s+/g, '')} readOnly /></label>
+                        </div>
+                        <label class="dwfield">
+                            <span>Gunsmith code ${dmz ? html`<i>DMZ has no code — the card omits it</i>` : html`<i>10 characters, digit and letter alternating</i>`}</span>
+                            <span class="bed-code">
+                                <input value=${draft.shareCode || ''} disabled=${dmz} placeholder="1C2B4A8B9A" spellcheck="false"
+                                       onInput=${(e) => set({ shareCode: e.target.value })} />
+                                <button class="chip" disabled=${!draft.shareCode}
+                                        onClick=${() => navigator.clipboard?.writeText(draft.shareCode || '')}>Copy</button>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="bed-sec">
+                        <h5>Attachments <em>${atts.length}</em></h5>
+                        <ul class="attlist">
+                            ${atts.map((a, i) => html`
+                                <li class="attrow" key=${i}>
+                                    <span class="attn">${i + 1}</span>
+                                    <input class="atti" value=${a} onInput=${(e) => setAtt(i, e.target.value)} />
+                                    <input class="atts" value="" placeholder="slot (optional)" disabled />
+                                    <button class="attx" aria-label=${`Remove ${a}`} onClick=${() => dropAtt(i)}>✕</button>
+                                </li>`)}
+                        </ul>
+                        <div class="attfoot">
+                            <button class="chip" onClick=${() => set({ attachments: [...atts, ''] })}>+ Add attachment</button>
+                            <!-- ⚠️ THE NOTE IS A MEASUREMENT, NOT A RULE. Five is what almost every build carries, and a different count is legal — saying "unusual" rather than "wrong" is the difference between a hint and a false constraint. The slot column is disabled because nothing writes it: only /autobuild's vision pass ever has, and zero stored builds carry one. -->
+                            <span class="attnote">${atts.length === 5
+                                ? 'Five, the usual count.'
+                                : `${atts.length} attachments. Legal, and sometimes right, but unusual — most builds carry 5.`}${' '}
+                                Slot labels are only ever filled by the <code>/autobuild</code> vision pass, so the column is read-only here.</span>
+                        </div>
+                    </div>
+
+                    <div class="bed-sec">
+                        <h5>Badges</h5>
+                        <div class="badgerow">
+                            <button class=${'bgt' + (draft.isMeta ? ' on' : '')} onClick=${() => set({ isMeta: !draft.isMeta })}>Meta</button>
+                            <button class=${'bgt tox' + (draft.isToxic ? ' on' : '')} onClick=${() => set({ isToxic: !draft.isToxic })}>Toxic</button>
+                        </div>
+                        <label class="dwfield" style="margin-top:11px">
+                            <span>${dmz ? 'DMZ range rank' : 'Category rank'} <i>the vocabulary adminParser validates</i></span>
+                            <input value=${(dmz ? draft.dmzRangeRank : draft.categoryRank) || ''}
+                                   placeholder=${dmz ? 'best-close, top3-midlong' : 'best, top3, top5'} spellcheck="false"
+                                   onInput=${(e) => set(dmz ? { dmzRangeRank: e.target.value } : { categoryRank: e.target.value })} /></label>
+                    </div>
+                </div>
+
+                <aside>
+                    <div class="bed-sec">
+                        <h5>Image</h5>
+                        <div class=${'imgbox' + (draft.imageKey ? (imgFailed ? ' failed' : '') : ' none')}>
+                            ${draft.imageKey && build.imageUrl
+                                ? html`<img src=${build.imageUrl} alt=${draft.weaponName} onError=${() => setImgFailed(true)} />` : null}
+                            <span class="imgfail">Cloudinary returned nothing for this key.</span>
+                            <span class="imgnone">No image — the card omits the gallery entirely</span>
+                        </div>
+                        <label class="dwfield"><span>imageKey <i>a Cloudinary key, or a full URL</i></span>
+                            <input value=${draft.imageKey || ''} placeholder="AK117-1" spellcheck="false"
+                                   onInput=${(e) => { setImgFailed(false); set({ imageKey: e.target.value }); }} /></label>
+                        <div class="imgact">
+                            <button class="chip" onClick=${() => set({ imageKey: `${String(draft.weaponName || '').toUpperCase().replace(/\s+/g, '-')}-1` })}>Use convention</button>
+                            <button class="chip danger" disabled=${!draft.imageKey} onClick=${() => set({ imageKey: '' })}>Remove</button>
+                        </div>
+                        <p class="imgnote">The convention is <code>WEAPON-N</code> — all caps, spaces to hyphens, N being this
+                            build's position among its siblings. Delivery bakes in the <code>f_auto,q_auto</code> transform, so the bot
+                            never serves an unoptimised original.</p>
+                    </div>
+                    <div class="bed-sec">
+                        <h5>What Discord sends</h5>
+                        ${card ? renderV2(card.components) : html`<p class="empty">Loading…</p>`}
+                    </div>
+                </aside>
+            </div>
+            <div class="attfoot" style="padding:0 16px 16px">
+                <button class="pill lead" onClick=${stage}>Stage this edit</button>
+                <button class="pill" onClick=${onClose}>Close</button>
+            </div>
+        </div>
+    `;
+}
+
 // ── COMPARE ───────────────────────────────────────────────────────────────────────────────────
 //
 // 🔴 THE QUESTION THIS ANSWERS IS THE ONE THE COVERAGE FLAG CANNOT. "near-duplicate" tells you two builds share a gunsmith code; it cannot tell you WHICH of them to keep, and the only way to decide was to open two rows one after the other and hold the first in your head. Two or three side by side, field by field, with the rows that DIFFER marked — that is the whole feature.
@@ -383,6 +523,7 @@ export function ArmoryRealm({ session }) {
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('Rack');
     const [compared, setCompared] = useState([]);
+    const [editingId, setEditingId] = useState(null);
     const overlay = useOverlay();
 
     function refresh() { fetchJson('/api/armory').then((d) => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }
@@ -482,16 +623,28 @@ export function ArmoryRealm({ session }) {
                       <div class="bed" id="armory">
                           <div>
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-                              ${view === 'Rack'
+                              ${editingId ? html`
+                                  <${BuildEditor} build=${builds.find((b) => String(b._id) === editingId)}
+                                                  csrfToken=${session.csrfToken}
+                                                  onStage=${async (op) => {
+                                                      await stageOps('armory', [op], session.csrfToken);
+                                                      setEditingId(null);
+                                                      overlay.say('Edit staged. Nothing is live until you commit it.', 'Review', () => { location.hash = '#/review'; });
+                                                      refresh();
+                                                  }}
+                                                  onClose=${() => setEditingId(null)} />`
+                              : view === 'Rack'
                                   ? html`<${Rack} builds=${builds} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
                                   : view === 'Compare'
                                       ? html`<${Compare} builds=${rows} picked=${compared}
                                                          onPick=${(id) => setCompared(compared.includes(id) ? compared.filter((x) => x !== id) : [...compared, id])} />`
                                       : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
-                          <div>
-                              <${LivePreview} buildId=${selectedBuildId} />
-                          </div>
+                          <!-- 🔴 THE STANDALONE LIVE PREVIEW PANEL IS GONE. It showed the card for whichever row was
+                               last clicked, beside a table you were not editing — a preview with nothing to preview
+                               against. The build editor carries it in .bed-side, where the card and the fields that
+                               produce it are one screen. Clicking a row opens the editor. -->
+                          ${editingId ? null : html`<p class="empty" style="padding:18px">Click a row below to open it.</p>`}
                       </div>
                   `}
                   manifestSlot=${html`
@@ -505,7 +658,7 @@ export function ArmoryRealm({ session }) {
                                    onAdd=${() => setShowAdd(true)} realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
-                                   onRowClick=${(row) => setSelectedBuildId(row.id)} selectedRowId=${selectedBuildId}
+                                   onRowClick=${(row) => setEditingId(String(row.id))} selectedRowId=${editingId}
                                    bulkActions=${[
                                        { label: 'Set badges…', onClick: (ids) => setBulkBadgesIds(ids) },
                                        { label: 'Export selection', onClick: handleExportSelection },

@@ -224,6 +224,47 @@ check('no sentence wraps straight into an inline tag, losing the space between t
     assert.deepStrictEqual(offenders, [], "htm eats the line break, so these render as one run-on word — end the line with ${' '}:\n  " + offenders.join('\n  '));
 });
 
+// ⚠️ AN ATTRIBUTE CONTINUATION IS NOT PROSE. The first version of this listed known attribute names to skip — a list needing maintenance forever, and already wrong inside one file (overlaySlot, bulkNote, searchableFields). The discriminator is the SHAPE: an attribute value is `name=${…}` and the whitespace between two attributes means nothing to htm, while a prose interpolation never carries that `=`.
+//
+// 🔴 THE SAME TRAP RUNNING THE OTHER WAY. The gate above catches a line ending in a WORD before an inline tag; htm drops the whitespace on both sides of a line break, so a line ending in a closing `}` before a line starting with a word loses the space too — "most builds carry 5.Slot labels are only ever filled by". Found rendered, in the build editor, after the first gate had already passed the file.
+check('no expression wraps straight into a word, losing the space between them', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js') && !n.endsWith('.logic.js'))) {
+        const lines = fs.readFileSync(path.join(dir, f), 'utf8').split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (/^\s*(\/\/|\*|<!--)/.test(lines[i].trim())) continue;
+            // A line ending in `}` that closes an interpolation, followed by prose rather than markup.
+            if (!/\}$/.test(lines[i].trim())) continue;
+            if (!/\$\{/.test(lines[i])) continue;
+            if (/[A-Za-z-]+=\$\{/.test(lines[i])) continue;   // an attribute value, where the line break carries no meaning
+            if (/\$\{' '\}$/.test(lines[i].trim())) continue;   // already ends with the explicit space
+            const next = lines[i + 1].trim();
+            // ⚠️ AND PLAIN JAVASCRIPT IS NOT MARKUP EITHER. `} ` closing a block, followed by `const …`, is ordinary code — icons.js tripped this before the keyword filter. The list is JS statement keywords, which is a set that does not grow.
+            if (/^(const|let|var|return|if|for|while|do|switch|case|function|class|import|export|try|catch|finally|else|new|throw|await|yield|delete|assert|module|process)\b/.test(next)) continue;
+            if (/^[A-Za-z]/.test(next) && !/^[A-Za-z-]+=/.test(next)) {
+                offenders.push(`portal/ui/${f}:${i + 1}  …${lines[i].trim().slice(-34)} ⟶ ${next.slice(0, 30)}`);
+            }
+        }
+    }
+    assert.deepStrictEqual(offenders, [], "htm eats the line break here too — end the line with ${' '}:\n  " + offenders.join('\n  '));
+});
+
+check('THE REVERSE WRAP GATE CAN FAIL, and does not fire on an attribute or on plain JS', () => {
+    const flags = (cur, next) => {
+        if (!/\}$/.test(cur.trim()) || !/\$\{/.test(cur)) return false;
+        if (/[A-Za-z-]+=\$\{/.test(cur)) return false;
+        if (/\$\{' '\}$/.test(cur.trim())) return false;
+        const n = next.trim();
+        if (/^(const|let|var|return|if|for|while|do|switch|case|function|class|import|export|try|catch|finally|else|new|throw|await|yield|delete|assert|module|process)\b/.test(n)) return false;
+        return /^[A-Za-z]/.test(n) && !/^[A-Za-z-]+=/.test(n);
+    };
+    assert.ok(flags('  : `${n} attachments. most builds carry 5.`}', '  Slot labels are only ever filled'), 'the real defect must be caught');
+    assert.ok(!flags('  searchableFields=${[\'discordId\']}', '  bulkNote="Immediate"'), 'an attribute continuation must not fire');
+    assert.ok(!flags('  named "${name}"`); return null; }', '  const a11y = label ? {}'), 'plain JS must not fire');
+    assert.ok(!flags('  most builds carry 5.`}${\' \'}', '  Slot labels'), 'the explicit fix must not fire');
+});
+
 check('THE WRAP GATE CAN FAIL: a line ending in a word followed by <b> is caught', () => {
     assert.ok(/[A-Za-z0-9,;:]$/.test('    permissions held by') && INLINE_TEXT_TAG.test('<b>${id}</b> is removed.'));
     assert.ok(!INLINE_TEXT_TAG.test('${staged ? html`<span class="cnt">'), 'an expression is deliberately NOT gated — see the note above');
