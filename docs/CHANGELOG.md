@@ -555,7 +555,9 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **Stacking is by proximity as a fraction of the visible span, not by measured pixel width.** The mockup measures each chip's rendered width and re-stacks on every zoom; that needs the DOM and cannot be tested. Asking the same question of the data is approximate at the edges and deterministic — and **a TBD deadline is neither flagged nor pinned**, because drawing it at the date it used to hold would put a deadline on the axis the season has not set.
 
-**Coverage 71% → 79% (Season 73% → 84%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
+⚠️ **The instrument needed one more correction, by its own stated test.** `portalCoverage`'s shared set mirrors the mockup's `assets/shell.js` — what every page shares — and `Shell.Export` is declared there, so every realm's *want* carries the export panel's vocabulary. Attributing the portal's `exportPanel.js` per realm made those classes read as missing from **Door**, which renders no realm surfaces at all and cannot be given one. Moving it lifts Door 70% → 78% and changes no markup. `manifest.js` and `oneway.js` deliberately stay per-realm: the mockup declares both in its shell too, but Home and Door render neither, and counting them shared would inflate exactly the realms this correction exists to stop mis-measuring.
+
+**Coverage 71% → 80% (Season 73% → 84%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%, Door 70% → 78%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
