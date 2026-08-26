@@ -160,10 +160,25 @@ t('the upgrade sub-heading gets its OWN card emoji, and only for the two draws t
 // ==========================================
 // COST BREAKDOWN -- collapsed vs expanded
 // ==========================================
-t('no lingering "-# > " blockquote marker anywhere -- replaced with the diamond emoji per Harkirat\'s direct request', () => {
+t('no lingering "-# > " blockquote marker anywhere -- replaced with a plain bullet per Harkirat\'s direct request', () => {
     const panel = render({ drawKey: 'mythicCharacter', detail: true });
     assert.ok(!/-# >/.test(allText(panel)), 'the blockquote-prefixed small-text label must be gone');
-    assert.ok(allText(panel).includes('🔹 TYPE:'), 'replaced with the diamond marker');
+    assert.ok(allText(panel).includes('• TYPE:'), 'replaced with the plain bullet marker');
+});
+
+t('the region sits on its own caption line under the heading, not folded into it, and the diamond emoji is gone', () => {
+    const panel = render({ drawKey: 'mythicWeapon', region: 'region_20', detail: true });
+    const body = allText(panel);
+    assert.ok(body.includes('## COST BREAKDOWN\n-# 20 CP REGION'), 'heading and region must be two separate lines');
+    assert.ok(!/COST BREAKDOWN — /.test(body), 'the region must not be appended to the heading itself');
+    assert.ok(!/🔹/.test(body), 'the diamond emoji must be gone entirely, not just from the field labels');
+});
+
+t('the PROGRESS pull-count fraction is bold-only, not boxed -- a multi-part value wraps mid-pill on mobile', () => {
+    const panel = render({ drawKey: 'mythicWeapon', pullsDone: 3, detail: true });
+    const body = allText(panel);
+    assert.ok(body.includes('**3 / 10 Pulls**'), 'the fraction must render bold-only');
+    assert.ok(!/`3 \/ 10 Pulls`/.test(body), 'the fraction must not be wrapped in a code span any more');
 });
 
 t('the reused /draw-prices summary renders as SEPARATE Text Displays, not one joined block -- that gap IS the vertical spacing', () => {
@@ -179,8 +194,8 @@ t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -
     const body = allText(panel);
     assert.ok(/PROGRESS:/.test(body) && /CP SPENT:/.test(body), 'progress + spent/needed must always show');
     assert.ok(/\*\*Cheapest:\*\*/.test(body), 'the compact one-line Cheapest must render');
-    assert.ok(!/🔹 TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
-    assert.ok(!/🔹 TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
+    assert.ok(!/• TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
+    assert.ok(!/• TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
     assert.ok(!/> PENDING:/.test(body), 'PENDING is full-mode only');
     assert.ok(!/> BALANCE:/.test(body), 'BALANCE is full-mode only');
     assert.ok(!/Least Waste Method/.test(body), 'Least Waste is full-mode only');
@@ -191,7 +206,7 @@ t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -
 t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS, PENDING, BALANCE, CP SPENT/NEEDED, RECOMMENDED PACKAGE with per-item pricing and Left Over, and the NOTE', () => {
     const panel = render({ drawKey: 'mythicWeapon', detail: true });
     const body = allText(panel);
-    for (const needle of ['🔹 TYPE:', '🔹 TOTAL PRICE:', '🔹 PROGRESS:', '🔹 PENDING:', '🔹 BALANCE:', '🔹 CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
+    for (const needle of ['• TYPE:', '• TOTAL PRICE:', '• PROGRESS:', '• PENDING:', '• BALANCE:', '• CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
         assert.ok(body.includes(needle), `expanded view is missing "${needle}"`);
     }
     assert.ok(!/\*\*Cheapest:\*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');

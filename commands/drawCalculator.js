@@ -288,23 +288,23 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
     const spent = spentSoFar(state.region, state.drawKey, state.pullsDone);
     const pullsLeft = Math.max(0, targetPull - state.pullsDone);
 
-    // SECOND mobile pass, 2026-08-26 17:45 EDT (Harkirat, on the FIRST pass's own live result): "decrease usage of code spans but don't completely remove" + "remove the > quote thing... opt for the light blue diamond emoji". Two independent corrections to the 17:38 EDT fix: (1) `-# > ` used a real blockquote marker for a small-text LABEL prefix, which Discord renders as a vertical bar down the left edge of every line -- replaced with a plain emoji marker (🔹), which carries no layout cost. (2) removing EVERY backtick pill was an overcorrection: a SHORT atomic number token (a bare CP amount, a price) doesn't wrap inside its own box, only a LONG or multi-part value does (a draw name, the bar+fraction combo). Rule applied throughout: box short standalone numbers, leave long labels and the progress bar+fraction bold-only.
-    const lines = [`## COST BREAKDOWN — ${regionLabel(state.region)} REGION`];
+    // THIRD mobile pass, 2026-08-26 19:10 EDT (Harkirat, on a screenshot of this exact block): the diamond emoji (🔹, from the 17:45 EDT fix below) read as too loud for a field-label prefix -- replaced with a plain small-text bullet (•), which carries the same "here's a label" job with none of the visual weight. The heading's region suffix ("— 10 CP REGION") was wrapping onto its own line at this font size and reading as part of the title; it now sits on its own -# caption line under the heading instead. And the PROGRESS line's pull-count fraction ("0 / 10 Pulls") is unboxed -- it's a multi-part value, and the earlier SECOND-pass rule (below) already established that those wrap mid-box rather than sitting in one pill. SECOND mobile pass, 2026-08-26 17:45 EDT (Harkirat, on the FIRST pass's own live result): "decrease usage of code spans but don't completely remove" + "remove the > quote thing". Two independent corrections to the 17:38 EDT fix: (1) `-# > ` used a real blockquote marker for a small-text LABEL prefix, which Discord renders as a vertical bar down the left edge of every line -- replaced with a plain marker, which carries no layout cost. (2) removing EVERY backtick pill was an overcorrection: a SHORT atomic number token (a bare CP amount, a price) doesn't wrap inside its own box, only a LONG or multi-part value does (a draw name, the bar+fraction combo). Rule applied throughout: box short standalone numbers, leave long labels and the progress bar+fraction bold-only.
+    const lines = [`## COST BREAKDOWN`, `-# ${regionLabel(state.region)} REGION`];
 
     if (!compact) {
-        lines.push(`-# 🔹 TYPE: **${meta.name}**${upgrade !== null ? ` + **${UPGRADE_LABEL[state.drawKey]} Upgrade**` : ''}`);
+        lines.push(`-# • TYPE: **${meta.name}**${upgrade !== null ? ` + **${UPGRADE_LABEL[state.drawKey]} Upgrade**` : ''}`);
         lines.push(upgrade !== null
-            ? `-# 🔹 TOTAL PRICE: **\`${fmt(entryTotal)} CP Draw\`** + **\`${fmt(upgradeAvailable)} CP Upgrade\`** = **\`${fmt(entryTotal + upgradeAvailable)} CP\`**`
-            : `-# 🔹 TOTAL PRICE: **\`${fmt(entryTotal)} CP\`**`);
-        lines.push(`-# 🔹 PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
+            ? `-# • TOTAL PRICE: **\`${fmt(entryTotal)} CP Draw\`** + **\`${fmt(upgradeAvailable)} CP Upgrade\`** = **\`${fmt(entryTotal + upgradeAvailable)} CP\`**`
+            : `-# • TOTAL PRICE: **\`${fmt(entryTotal)} CP\`**`);
+        lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
         const pending = [`**\`${fmt(pullsLeft)}x Draw Pull${pullsLeft === 1 ? '' : 's'}\`**`];
         if (upgrade !== null) pending.push(`**\`${fmt(entry.upgrade.count)}x Mythic Card Spin${entry.upgrade.count === 1 ? '' : 's'}\`**`);
-        lines.push(`-# 🔹 PENDING: ${pending.join(' · ')}`);
-        lines.push(`-# 🔹 BALANCE: **\`${state.balance ? `${fmt(state.balance)} CP` : 'Not specified'}\`**`);
-        lines.push(`-# 🔹 CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
+        lines.push(`-# • PENDING: ${pending.join(' · ')}`);
+        lines.push(`-# • BALANCE: **\`${state.balance ? `${fmt(state.balance)} CP` : 'Not specified'}\`**`);
+        lines.push(`-# • CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
     } else {
-        lines.push(`-# 🔹 PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
-        lines.push(`-# 🔹 CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
+        lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
+        lines.push(`-# • CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
     }
 
     if (shortfall <= 0) {
@@ -323,7 +323,7 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
         ? [`**${label}:** **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`** — ${describeCp(r)}`]
         : [
             `**${label} Method**`,
-            `🔹 **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`**`,
+            `• **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`**`,
             `-# ${describeCp(r)} ⌇ **\`${fmt(r.totalCp)} CP\`**`,
             `-# ${describePrices(r)} ⌇ **\`${formatMoney(r.totalCents, currency)}\`**`,
             `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (${fmt(r.totalCp)} CP Purchase − ${fmt(shortfall)} CP Needed)`
@@ -345,8 +345,8 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
 
 // Budget mode asks a different question ("how far does this go", not "what do I still need") -- kept as its own function rather than forced into buildCostBreakdown's TYPE/TOTAL/PENDING/RECOMMENDED PACKAGE shape, none of which apply here. No mockup was given for this mode; it keeps the same header for visual consistency with the goal-mode block sitting in the same slot.
 function buildBudgetBreakdown(state, entry, total, { compact }) {
-    const lines = [`## COST BREAKDOWN — ${regionLabel(state.region)} REGION`];
-    lines.push(`-# 🔹 PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
+    const lines = [`## COST BREAKDOWN`, `-# ${regionLabel(state.region)} REGION`];
+    lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
     if (!state.targetValue) {
         lines.push('');
         lines.push('Press **Set Budget** and enter the CP you are willing to spend.');
@@ -354,7 +354,7 @@ function buildBudgetBreakdown(state, entry, total, { compact }) {
     }
     const result = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
     const gained = result.pullsReachable - state.pullsDone;
-    lines.push(`-# 🔹 BUDGET: **\`${fmt(state.targetValue)} CP\`** reaches **\`pull ${result.pullsReachable}\`** of ${total}`);
+    lines.push(`-# • BUDGET: **\`${fmt(state.targetValue)} CP\`** reaches **\`pull ${result.pullsReachable}\`** of ${total}`);
     if (!compact) {
         lines.push(gained > 0
             ? `-# That is **${plural(gained, 'more pull')}** from where you are now.`
