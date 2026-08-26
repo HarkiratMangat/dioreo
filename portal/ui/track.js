@@ -177,14 +177,14 @@ function Point({ it, lane, view }) {
               data-tip=${`${it.title} · releases ${TL.fmt(startOf(it))}`}></span>`;
 }
 
-function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit }) {
+function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost }) {
     const spans = list.filter((i) => lane.kind !== 'point');
     const { row, rows } = assignRows(spans);
     const kit = LANE_KIT[lane.key] || { sum: 'runs', ask: 'what is scheduled' };
     const off = list.filter((it) => TL.days(endOf(it), view.from) > 0 || TL.days(view.to, startOf(it)) > 0).length;
 
     return html`
-        <div class=${'lane' + (collapsed ? ' lnc' : '')} data-lane=${lane.key} data-draft=${isDraft ? 1 : 0}
+        <div class=${'lane' + (collapsed ? ' lnc' : '') + (ghost ? ' aim' : '')} data-lane=${lane.key} data-draft=${isDraft ? 1 : 0}
              data-rows=${rows} style=${`--c:var(${lane.topic});height:${collapsed ? 30 : Math.max(38, rows * ROW_H + ROW_PAD)}px`}>
             <button class="lnh" data-lanebtn=${lane.key} data-draft=${isDraft ? 1 : 0}
                     aria-expanded=${!collapsed} onClick=${onToggle}
@@ -195,6 +195,14 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
                 <span class="lnh-n">${list.length}</span>
             </button>
             <div class="tk">
+                <!-- ⚠️ DASHED BECAUSE IT IS UNSTAGED, which is the same rule every staged thing on this Track
+                     follows: shape carries state. A solid preview would read as a record that already exists. A
+                     POINT is a diamond rather than a bar, for the same reason a real draw is — a preview drawn in
+                     a shape the record cannot have teaches the wrong thing about the record. -->
+                ${ghost && !collapsed ? html`
+                    <i class=${'tghost cmp' + (ghost.shape === 'point' ? ' pt' : '')}
+                       style=${`left:${view.pct(ghost.start)}%` + (ghost.shape === 'point' ? '' : `;width:${view.wpct(ghost.start, ghost.end)}%`)}
+                       aria-hidden="true">${ghost.shape === 'point' ? '' : (ghost.name || 'Unnamed')}</i>` : null}
                 ${collapsed ? html`<${LaneSummary} lane=${lane} list=${list} kit=${kit} view=${view} />` : null}
                 ${off ? html`<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : null}
                 ${collapsed ? null : list.map((it) => {
@@ -378,7 +386,7 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
     `;
 }
 
-export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow }) {
+export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
@@ -468,7 +476,8 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                     ${lanes.map((l) => html`
                         <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}
                                  collapsed=${collapsedFor(l, false)} onToggle=${(e) => toggle(l, false, e.altKey)}
-                                 fits=${fits} onDragCommit=${onDragCommit} />`)}
+                                 fits=${fits} onDragCommit=${onDragCommit}
+                                 ghost=${ghost && ghost.lane === l.key ? ghost : null} />`)}
                     ${draft && lanes.some((l) => (draft[l.key] || []).length) ? html`
                         <div class="divider">Next season draft — staged, not live</div>
                         ${lanes.filter((l) => (draft[l.key] || []).length).map((l) => html`

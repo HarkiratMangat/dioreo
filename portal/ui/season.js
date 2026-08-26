@@ -495,7 +495,8 @@ export function SeasonRealm({ session }) {
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
     const [idScope, setIdScope] = useState('live');
-    const [openPatchId, setOpenPatchId] = useState(null);           // which season the identity editor is editing
+    const [openPatchId, setOpenPatchId] = useState(null);
+    const [composeGhost, setComposeGhost] = useState(null);           // which season the identity editor is editing
 
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
     useEffect(() => { fetchChangesets('season').then(setChangesets); }, [view]);
@@ -754,9 +755,10 @@ export function SeasonRealm({ session }) {
         ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
                                               onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
                                               onStageMany=${handleStageMany}
-                                              onCancel=${() => setShowAdd(null)} />` : null}
+                                              onLive=${setComposeGhost}
+                                              onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
-               <${Track} data=${trackData}
+               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null}
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')} />`

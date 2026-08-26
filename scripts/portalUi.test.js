@@ -343,4 +343,56 @@ check('an untitled row cannot match anything, rather than matching every other u
                                                 dated('   ', '2026-08-01', '2026-08-10')]), []);
 });
 
+// ── THE COMPOSER'S LIVE GHOST ─────────────────────────────────────────────────────────────────
+//
+// 🔴 THE ONE THING /manage STRUCTURALLY CANNOT DO. Discord answers "when" with a line of text; this draws the item in its own lane, at its own dates, before it is staged. It was the mockup's named signature moment and the portal had no version of it.
+const { composeGhostFor } = require('../portal/ui/composer.logic');
+
+check('no ghost before there is something to draw', () => {
+    assert.strictEqual(composeGhostFor(null, null), null);
+    assert.strictEqual(composeGhostFor({ name: 'x', aIso: '2026-09-04' }, { shape: 'point' }), null, 'a date with no type has no lane to land in');
+    assert.strictEqual(composeGhostFor({ type: 'draw', name: 'x', aText: 'sep' }, { shape: 'point' }), null,
+        'a half-typed date must not place a ghost — aText is what the field shows, aIso is what the parser resolved');
+});
+
+check('a point ends where it starts, whatever the second field happens to hold', () => {
+    const g = composeGhostFor({ type: 'draw', name: 'Crimson', aIso: '2026-09-04', bIso: '2026-09-20' }, { shape: 'point' });
+    assert.strictEqual(g.end, '2026-09-04', 'a draw has one date; a stale bIso must not stretch it into a bar the record cannot have');
+    assert.strictEqual(g.shape, 'point');
+});
+
+check('a span uses its closing date, and falls back to the opening one', () => {
+    assert.strictEqual(composeGhostFor({ type: 'event', aIso: '2026-09-04', bIso: '2026-09-20' }, { shape: 'span' }).end, '2026-09-20');
+    assert.strictEqual(composeGhostFor({ type: 'event', aIso: '2026-09-04' }, { shape: 'span' }).end, '2026-09-04',
+        'a span with no closing date yet is drawn as a single day rather than not at all');
+});
+
+check('THE ISO RULE CAN FAIL: placing a ghost from the typed text would land on a different day', () => {
+    assert.throws(() => {
+        const state = { type: 'draw', aText: 'sep', aIso: '2026-09-21' };
+        assert.strictEqual(state.aText, state.aIso, 'the typed text is not the resolved day');
+    }, /not the resolved day/);
+});
+
+// 🔴 A CONSERVATION CHECK BETWEEN TWO LISTS IN DIFFERENT FILES. The composer's type keys and the Track's lane keys are matched by string, and a mismatch fails SILENTLY — the ghost is computed, handed to the Track, matched against no lane, and simply never drawn. `patchnote` is the one deliberate exception: the Track has no patch-note lane, so composing one draws nothing, which is honest rather than broken.
+check('every composer type that should draw a ghost has a Track lane to draw it in', () => {
+    const fs = require('fs'), path = require('path');
+    const ROOT = path.join(__dirname, '..');
+    const season = fs.readFileSync(path.join(ROOT, 'portal', 'ui', 'season.js'), 'utf8');
+    const track = fs.readFileSync(path.join(ROOT, 'portal', 'ui', 'track.js'), 'utf8');
+    const types = [...season.matchAll(/\{ key: '([a-z]+)', label: '[^']*', hex:/g)].map((m) => m[1]);
+    const lanes = [...track.matchAll(/\{ key: '([a-z]+)',\s+label:/g)].map((m) => m[1]);
+    assert.ok(types.length >= 4 && lanes.length >= 4, `parsed ${types.length} types and ${lanes.length} lanes — the shape changed and this check has gone blind`);
+    const NO_LANE = ['patchnote'];
+    const stranded = types.filter((t) => !lanes.includes(t) && !NO_LANE.includes(t));
+    assert.deepStrictEqual(stranded, [], `${stranded.join(', ')} can be composed and has no lane, so its ghost is computed and silently never drawn`);
+});
+
+check('THE LANE MATCH CAN FAIL: a type with no lane is caught', () => {
+    assert.throws(() => {
+        const stranded = ['draw', 'seasonpass'].filter((t) => !['draw', 'event'].includes(t) && !['patchnote'].includes(t));
+        assert.deepStrictEqual(stranded, [], `stranded: ${stranded.join(', ')}`);
+    }, /stranded: seasonpass/);
+});
+
 process.exit(failures ? 1 : 0);

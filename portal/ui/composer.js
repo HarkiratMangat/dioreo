@@ -98,14 +98,27 @@ function PasteZone({ kind, onStageAll }) {
     `;
 }
 
-export function Composer({ types, initialType, onStage, onStageMany, onCancel }) {
+export function Composer({ types, initialType, onStage, onStageMany, onCancel, onLive }) {
     const [state, setState] = useState({ type: initialType || null, name: '', aText: '', aIso: null, bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;
+
+    // 🔴 THE SIGNATURE MOMENT, and the one thing /manage structurally cannot do: it answers "when" with a line of text, and this draws the item where it will land, in its own lane, before it is staged. The composer does not own the Track, so it reports and the page draws — the alternative is a second miniature timeline beside the real one, which is two axes disagreeing about the same season.
+    //
+    // ⚠️ The ISO date is reported, never the typed text. `aText` is only what the field shows so a repaint does not throw away half-typed words; `aIso` is what the server resolved. A ghost placed from the raw text would jump around while somebody types "sep" on the way to "sep 21".
+    useEffect(() => {
+        if (!onLive) return;
+        onLive(composeGhostFor(state, type));
+    }, [state.type, state.name, state.aIso, state.bIso]);
     const reason = composerReason(state, type);
     const set = (patch) => setState((prev) => ({ ...prev, ...patch }));
 
     // Switching type keeps the name and drops the dates: the name is about the thing, the dates are about a shape that just changed. Keeping a "closes" value through a switch to a one-date type would carry a field the record no longer has.
     const pickType = (key) => set({ type: key, aText: '', aIso: null, bText: '', bIso: null });
+
+    // ⚠️ THE MASTHEAD'S ADD CHIPS WERE DEAD ONCE THE COMPOSER WAS OPEN. They call setShowAdd(key), which lands here as `initialType` — and `useState(initialType)` reads its argument once and ignores every later value, so pressing "Playlist" while composing a draw looked like a switch and did nothing. Adopting the new value is the same act as pressing this composer's own type chip, so it goes through pickType rather than a second code path with its own idea of what a switch means.
+    useEffect(() => {
+        if (initialType && initialType !== state.type) pickType(initialType);
+    }, [initialType]);
 
     return html`
         <section class="nwhost" aria-label="Add to the season">

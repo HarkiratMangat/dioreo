@@ -535,6 +535,18 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **The comparison is on the stored DAY, never on the formatted string.** A formatter renders one side *Sep 10* and, given a value carrying a time, could render the other differently — so comparing display text reports a change where the record has none, which is a diff crying wolf on an irreversible operation. **And TBD is a value, not an absence**: a deadline moving from a real date to TBD is exactly what somebody needs to see, and comparing only the date fields would call that pair identical whenever both happened to be empty.
 
+### The composer's signature moment, and four probes that lied about it
+
+🔴 **The mockup names one thing `/manage` structurally cannot do: draw the item where it will land, before it is staged.** Discord answers *when* with a line of text. The composer now reports what it currently describes and the Track draws it — dashed, in its own lane, at its own dates, with the lane it is aimed at tinted. A point is a diamond and a span is a bar, because a preview drawn in a shape the record cannot have teaches the wrong thing about the record.
+
+⚠️ **It reports the resolved ISO, never the typed text.** `aText` is only what the field shows so a repaint does not discard half-typed words; a ghost placed from raw text would slide along the axis while somebody types *"sep"* on the way to *"sep 21"*, and land on a day nobody chose. **And a point's end is its start**, whatever a stale second field holds — otherwise a draw draws as a bar.
+
+**The masthead's Add chips were dead once the composer was open.** They call `setShowAdd(key)`, which arrives as a prop, and `useState(initialType)` reads its argument once and ignores every later value — so pressing *Playlist* while composing a draw looked like a switch and did nothing. Found while probing for something else.
+
+🔴 **FOUR READINGS SAID THE COMPOSER COULD NEVER RESOLVE A DATE, AND THAT WAS THE PROBE, NOT THE CODE.** The reason line read *"That first date does not resolve to a day yet"* and the Stage button stayed disabled — which reads as *the composer's whole form path has never worked*, and came within one commit of being written up as this branch's most serious defect. It was **reading before the debounced round trip landed**: the field waits 220ms, asks the server, and re-renders, and a read taken inside the same async function as the typing races that. Reading in a **separate** call showed *"Ready to stage."*, the resolved date under the field, and the ghost in the right lane. The same impatience explained two earlier "no ghost" readings, and a third came from setting three fields in one task — a pending re-render discards a value written to an input it is about to replace.
+
+⚠️ **A conservation check now covers the seam that made this invisible.** The composer's type keys and the Track's lane keys are matched by string in two different files, and a mismatch fails *silently*: the ghost is computed, handed to the Track, matched against no lane, and never drawn. `patchnote` is the deliberate exception — the Track has no patch-note lane, so composing one draws nothing, which is honest rather than broken.
+
 **Coverage 71% → 79% (Season 73% → 80%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
