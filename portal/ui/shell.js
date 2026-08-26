@@ -171,7 +171,7 @@ function Header({ realm, view, session, staged, commands, onSignOut }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <span class="crumb">${realm}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
+            <span class="crumb">${realm}${view ? html` <b><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
             <${CommandBar} commands=${commands} realmLabel=${realm} />
             <span class="sp"></span>

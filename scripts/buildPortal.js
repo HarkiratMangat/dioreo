@@ -62,8 +62,14 @@ function buildCss() {
 
 // 🔴 THE PORTAL DECLARED TWO TYPEFACES AND LOADED NEITHER, from the first build until 2026-08-23. tokens.css sets `font-family:'Space Grotesk'...` on body and `'JetBrains Mono'` on every data cell, and this file emitted exactly one <link> — /app.css. No @font-face rule existed anywhere and document.fonts.size read 0. The gap audit's §6 listed type under "what's already working ... no gap here", which is how it survived: the fallback stacks are good enough that nothing looked broken. The falsifier that settled it: render the same 40px string in "Space Grotesk" and in "JetBrains Mono" and compare widths — a real proportional sans and a real monospace face cannot measure the same, and both measured 579.87px while sans-serif measured 606.88 and monospace 746.55. Both were falling through to one last-resort face.
 //
-// ⚠️ The fallback stacks in tokens.css stay exactly as they are on purpose: a blocked or offline font load degrades to what shipped before this change rather than to nothing, and `display=swap` means text is never invisible while the fetch is in flight.
-function buildIndexHtml() {
+// ⚠️ The fallback stacks in tokens.css stay exactly as they are on purpose: a blocked or offline font load degrades to what shipped before this change rather than to nothing, and `display=swap` means text is never invisible while the fetch is in flight. 🔴 THE STYLESHEET WAS THE ONE ASSET WITH NO CACHE BUSTER, and it cost twenty minutes of debugging a matrix cell that measured 16x32 against a rule saying 26x26 — because the browser was serving a stylesheet from before app.css was adopted, complete with rules that no longer exist anywhere in this repo. The JS graph has been busted since the module-map lie was found; the CSS was left because nothing had yet CHANGED enough for a stale copy to be visibly wrong. It is not a harness-only concern either: a deployed portal would serve every returning admin the previous design's stylesheet after a redesign.
+//
+// A content hash rather than a timestamp, so an unchanged build keeps its URL and stays cached — the point is to invalidate on CHANGE, not on every build.
+function cssBust(css) {
+    return require('crypto').createHash('sha256').update(css).digest('hex').slice(0, 10);
+}
+
+function buildIndexHtml(cssHash) {
     // Every *.logic.js file loads as a CLASSIC script (no type=module) BEFORE app.js, so its top-level function declarations become globals — see track.js's header comment for why this is the actual working resolution of "Node reads it as CommonJS, the browser reads the same file as a plain script", rather than a literal cross-format ESM import that no real browser could execute.
     const logicFiles = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.logic.js')).sort();
     const logicTags = logicFiles.map(f => `<script src="/ui/${f}"></script>`).join('\n');
@@ -77,7 +83,7 @@ function buildIndexHtml() {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/app.css?v=${cssHash}">
 </head>
 <body>
 <div id="app"></div>
@@ -194,7 +200,7 @@ const MOCKUP_ASSETS = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-08
 // It does NOT stub by branching inside httpClient.js. The page declares an import map aliasing /ui/httpClient.js to /harness/stub.js, so the alias exists only in a page production never loads.
 //
 // ⚠️ fixtures.js and the two instruments are still SOURCED FROM THE MOCKUP PACKAGE. That is the one remaining dependency on it and it is deliberate: copying 135KB of fixtures into git twice during a migration is how the two copies drift. When the mockup package retires (see docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md) these three files move into portal/ui/harness/ and this function's paths change with them.
-function buildHarness() {
+function buildHarness(cssHash) {
     // 🔴 A CACHE BUSTER, BECAUSE A PLAIN RELOAD SERVED STALE MODULES. The harness page is sent with `no-store`, but the browser's ES MODULE MAP is keyed by URL and survives a reload — so edited components kept rendering their previous version and a verification pass looked at code that was no longer on disk. Measured: the season identity strip and the rebuilt staged strip both reported ABSENT on a fresh navigation while sitting in the built file.
     const bust = Date.now();
 
@@ -222,6 +228,7 @@ function buildHarness() {
         imports[`/ui/${f}`] = `/ui/${f}?v=${bust}`;
     }
     const page = fs.readFileSync(path.join(HARNESS_SRC, 'index.html'), 'utf8')
+        .replace('href="/app.css"', `href="/app.css?v=${cssHash}"`)
         .replace('__LOGIC__', logicTags)
         .replace('src="/ui/app.js"', `src="/ui/app.js?v=${bust}"`)
         .replace(/<script type="importmap">[\s\S]*?<\/script>/,
@@ -234,8 +241,9 @@ function build() {
     vendorPreactAndHtm();
     const uiFiles = copyUiScripts();
     const css = buildCss();
-    const indexHtml = buildIndexHtml();
-    const harness = buildHarness();
+    const cssHash = cssBust(css);
+    const indexHtml = buildIndexHtml(cssHash);
+    const harness = buildHarness(cssHash);
     return { uiFiles, css, indexHtml, harness };
 }
 

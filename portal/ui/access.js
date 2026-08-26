@@ -6,6 +6,7 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useOverlay } from './overlay.js';
+import { Icon } from './icons.js';
 
 const SESSION_COLUMNS = [
     { key: 'discordId', label: 'Discord ID' },
@@ -50,14 +51,43 @@ function RevokeControl({ discordId, onRevoke }) {
     return html`<button class="danger" onClick=${() => onRevoke(discordId)}>Revoke</button>`;
 }
 
-// By admin -- THE GRID. Spec §8.2: "By admin is the grid you grant from." It shipped as one line per admin holding a comma-separated permission string, which is precisely the Discord modal field this realm exists to replace: you cannot see at a glance who can touch the calendar without reading every row, and a mistyped token is invisible until it silently fails.
+// By admin — THE GRID, and as of 2026-08-26 the grid you actually grant from.
 //
-// Two things the grid does that the string cannot, and both are why it is worth building: INHERITANCE (a bare `manage` lights every page in a paler green, so you see what you actually handed over rather than remembering the rule) and, in the By-scope view below, SINGLE POINTS OF FAILURE. Data comes from GET /api/access/matrix, which Phase 2 built over the exact same scope enumeration singlePointsOfFailure() already used -- never a second list that could drift.
-function ByAdmin({ matrix, onGrant, onRevoke, isOwnerId }) {
+// 🔴 IT SHIPPED READ-ONLY BESIDE A FREE-TEXT PERMISSION FIELD, WHICH FIXES HALF THE DEFECT IT WAS BUILT FOR. The design spec's argument for a matrix is two-part: you cannot see at a glance who can touch the calendar without reading every row, AND a mistyped token is invisible until it silently fails. A read-only grid answers the first and leaves the second exactly where it was — the tokens were still typed into a comma-separated box. Worse, `.mxcell` in the adopted stylesheet carries hover and focus-visible styles, so a `<span>` wearing that class grows under the cursor and does nothing: a second lying affordance, one day after the first was removed.
+//
+// 🔴 SO THE CELLS EDIT, AND THEY STAGE RATHER THAN FIRE. A click marks the cell pending — the matrix reads as the state you are about to save, not the one you are leaving — and the row's Save opens the same typed drawer every other destructive act in this realm goes through, with the target's own Discord ID as the word. No new server route: /api/access/grant already replaces the whole permission list, which is exactly what a recomputed set is.
+//
+// ⚠️ AN INHERITED CELL DOES NOT TOGGLE. Holding a bare `manage` covers every page at once, so there is no such thing as revoking one of them — the honest response to that click is to say so, not to quietly rewrite the token into eight explicit ones. Two things the grid does that the string cannot are INHERITANCE (visible rather than remembered) and, in the By-scope view below, SINGLE POINTS OF FAILURE. Data comes from GET /api/access/matrix, built over the same scope enumeration singlePointsOfFailure() uses — never a second list that could drift.
+function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId }) {
+    const [pending, setPending] = useState({});     // { "discordId|scope": true|false }
     const scopes = matrix.scopes || [];
     const commands = scopes.filter((s) => s.kind === 'command');
     const pages = scopes.filter((s) => s.kind === 'page');
     const ordered = [...commands, ...pages];
+    const spofScopes = new Set((spof || []).map((x) => x.scope));
+    const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
+    const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).length;
+
+    const rowPending = (id) => Object.fromEntries(Object.entries(pending)
+        .filter(([k]) => k.startsWith(id + '|'))
+        .map(([k, v]) => [k.slice(id.length + 1), v]));
+
+    function toggle(admin, sc) {
+        const g = admin.grants[sc.key] || {};
+        if (g.inherited && !g.direct) return onExplain(sc);
+        const key = admin.discordId + '|' + sc.key;
+        setPending((prev) => {
+            const next = { ...prev };
+            const want = !(key in prev ? prev[key] : g.direct);
+            if (want === Boolean(g.direct)) delete next[key];   // back to where it started is not a change
+            else next[key] = want;
+            return next;
+        });
+    }
+
+    const clearRow = (id) => setPending((prev) => Object.fromEntries(
+        Object.entries(prev).filter(([k]) => !k.startsWith(id + '|'))));
+
     return html`
         <div class="panel" id="by-admin">
             <div class="ph">
@@ -65,45 +95,84 @@ function ByAdmin({ matrix, onGrant, onRevoke, isOwnerId }) {
                 <span class="rt">${matrix.admins.length} granted · owner is not editable</span>
             </div>
             ${matrix.admins.length === 0 ? html`<p class="empty">Nobody else has been granted access. You are the only admin.</p>` : html`
-                <div class="gwrap">
-                    <table class="grid">
+                <div class="mxwrap">
+                    <table class="mx">
                         <thead>
-                            <tr>
-                                <th class="who"></th>
-                                <th class="grp" colspan=${commands.length}>Commands</th>
-                                <th class="grp" colspan=${pages.length}>/manage pages</th>
-                                <th class="act"></th>
+                            <tr class="mxgrp">
+                                <th class="mxwho"></th>
+                                <th colspan=${commands.length}><span>Commands</span></th>
+                                <th colspan=${pages.length}><span>/manage pages</span></th>
+                                <th></th>
                             </tr>
                             <tr>
-                                <th class="who">Admin</th>
-                                ${ordered.map((sc) => html`<th>${sc.label}</th>`)}
-                                <th class="act">Action</th>
+                                <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
+                                ${ordered.map((sc) => html`
+                                    <th key=${sc.key}>
+                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '')}
+                                              style=${`--c:${accentOf(sc)}`}
+                                              title=${`${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'}${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
+                                            <i></i>${sc.label}<em class="mxn2">${holdersOf(sc)}</em>
+                                        </span>
+                                    </th>`)}
+                                <th><span class="mxs">Action</span></th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${matrix.admins.map((a) => html`
-                                <tr>
-                                    <td class="who">
-                                        <b>${a.discordId}</b>
-                                        <span>${a.note ? a.note + ' · ' : ''}${a.grantedAt ? 'granted ' + new Date(a.grantedAt).toISOString().slice(0, 10) : ''}</span>
-                                    </td>
-                                    ${ordered.map((sc) => {
-                                        const g = a.grants[sc.key] || {};
-                                        const cls = g.direct ? 'cel on' : g.inherited ? 'cel inh' : 'cel';
-                                        const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
-                                        return html`<td><span class=${cls} role="img" aria-label=${`${sc.label}: ${what}`} title=${`${sc.label} — ${what}`}>✓</span></td>`;
-                                    })}
-                                    <td class="act">${a.discordId === isOwnerId
-                                        ? html`<span class="holder">locked</span>`
-                                        : html`<${RevokeControl} discordId=${a.discordId} onRevoke=${onRevoke} />`}</td>
-                                </tr>
-                            `)}
+                            ${matrix.admins.map((a) => {
+                                const owner = a.discordId === isOwnerId;
+                                const rp = rowPending(a.discordId);
+                                const changes = Object.keys(rp).length;
+                                return html`
+                                    <tr key=${a.discordId} class=${owner ? 'ownerrow' : ''}>
+                                        <td class="mxwho"><span class="mxid">
+                                            <span class="mxav" aria-hidden="true">${(a.note ? a.note[0] : a.discordId.slice(-1)).toUpperCase()}</span>
+                                            <span class="mxn">
+                                                <b>…${a.discordId.slice(-6)}</b>
+                                                <span>${a.note || 'no label'}${a.grantedAt ? ' · granted ' + new Date(a.grantedAt).toISOString().slice(0, 10) : ''}</span>
+                                            </span>
+                                        </span></td>
+                                        ${ordered.map((sc) => {
+                                            const g = a.grants[sc.key] || {};
+                                            const pend = rp[sc.key];
+                                            const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
+                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry.
+                                            const cls = 'mxcell'
+                                                + (on ? ' on' : '')
+                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (g.inherited && !g.direct ? ' inh inherited' : ''))
+                                                + (owner ? ' locked' : '');
+                                            const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
+                                            const willBe = pend === true ? ' — pending: will be granted'
+                                                : pend === false ? ' — pending: will be revoked' : '';
+                                            if (owner) {
+                                                return html`<td key=${sc.key}><span class=${cls} role="img" aria-checked="true" style=${`--c:${accentOf(sc)}`}
+                                                    aria-label=${`${sc.label}: held by the owner, not editable`}
+                                                    title="The owner short-circuits every check"></span></td>`;
+                                            }
+                                            return html`<td key=${sc.key}><button class=${cls} style=${`--c:${accentOf(sc)}`}
+                                                role="checkbox" aria-checked=${on ? 'true' : 'false'}
+                                                aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
+                                                title=${`${sc.label} — ${what}${willBe}`}
+                                                onClick=${() => toggle(a, sc)}></button></td>`;
+                                        })}
+                                        <td class="mxact"><span class="mxacts">
+                                            ${owner ? html`<span class="holder">locked</span>`
+                                                : changes ? html`
+                                                    <button class="chip go" onClick=${() => onSave(a, rp, () => clearRow(a.discordId))}>
+                                                        Save ${changes} ${changes === 1 ? 'change' : 'changes'}</button>
+                                                    <button class="chip" onClick=${() => clearRow(a.discordId)}>Discard</button>`
+                                                : html`
+                                                    <button class="rmv" title="Revoke entirely"
+                                                            aria-label=${`Revoke …${a.discordId.slice(-6)} entirely`}
+                                                            onClick=${() => onRevoke(a.discordId)}><${Icon} name="trash-2" cls="sm" /></button>`}
+                                        </span></td>
+                                    </tr>`;
+                            })}
                         </tbody>
                     </table>
                 </div>
-                <div class="glegend">
-                    <span><span class="cel on">✓</span>granted directly</span>
-                    <span><span class="cel inh">✓</span>inherited — a bare <code>manage</code> covers every page</span>
+                <div class="mxfoot">
+                    <span><span class="mxlegend on"></span>granted <b>directly</b> — revoking it removes exactly this.</span>
+                    <span><span class="mxlegend inh"></span><b>inherited</b> — holding <code>manage</code> covers every page at once, so these cells cannot be turned off one at a time.</span>
                     <span>The owner has everything and cannot be edited.</span>
                 </div>
             `}
@@ -169,6 +238,33 @@ export function AccessRealm({ session }) {
         });
     }
 
+    // Clicking an inherited cell is not an error and not a no-op with no explanation — it is the one place the difference between `manage` and a page token becomes visible, so the toast says what would actually have to happen.
+    function explainInherited(sc) {
+        overlay.say(`${sc.label} comes from a bare “manage” token — revoke that to take it away.`);
+    }
+
+    // 🔴 THE GRID STAGES; THIS IS WHERE IT WRITES, and it goes through the same typed gate as a full revoke because it is the same act at a smaller scale. `permsAfter` recomputes the whole list, which is exactly the shape /api/access/grant already takes.
+    function confirmSave(admin, rowPending, clear) {
+        const labelOf = (key) => (matrix.scopes || []).find((s) => s.key === key)?.label || key;
+        const { granted, revoked } = describePending(rowPending, labelOf);
+        overlay.confirm({
+            op: 'admin.grant', tier: 3, danger: Boolean(revoked.length), confirmLabel: 'Save permissions',
+            typed: admin.discordId,
+            title: `Change what …${admin.discordId.slice(-6)} can do?`,
+            body: html`
+                ${granted.length ? html`<p class="dw-p"><b>Granting:</b> ${granted.join(', ')}.</p>` : null}
+                ${revoked.length ? html`<p class="dw-p"><b>Revoking:</b> ${revoked.join(', ')}.</p>` : null}
+                <p class="dw-p">Access does not stage. This is written the moment you confirm, and every request
+                    they make re-checks server-side — so a revoke takes effect on their very next action, even with
+                    a portal session already open.</p>`,
+            onConfirm: async () => {
+                await grant(admin.discordId, permsAfter(admin.permissions, rowPending), admin.discordId);
+                clear();
+                overlay.say('Permissions saved.');
+            },
+        });
+    }
+
     // 🔴 THE TYPED WORD IS THE TARGET'S OWN ID, which is also exactly what portal/api/access.js's confirmMatchesTarget requires on the wire — so the gate the person passes and the gate the server enforces are the same gate rather than two that could drift. Never the word "revoke": you would type it without reading which row you were on.
     function confirmRevoke(discordId) {
         const admin = (matrix.admins || []).find((a) => a.discordId === discordId);
@@ -228,7 +324,9 @@ export function AccessRealm({ session }) {
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'
-                          ? html`<${ByAdmin} matrix=${matrix} onGrant=${grant} onRevoke=${confirmRevoke} isOwnerId=${session.discordId} />`
+                          ? html`<${ByAdmin} matrix=${matrix} spof=${data.singlePointsOfFailure}
+                                             onGrant=${grant} onRevoke=${confirmRevoke} onSave=${confirmSave}
+                                             onExplain=${explainInherited} isOwnerId=${session.discordId} />`
                           : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
                   `}
                   manifestSlot=${html`<${Manifest} rows=${data.sessions.map(s => ({ ...s, id: s.sessionHash, state: 'live' }))} columns=${SESSION_COLUMNS}

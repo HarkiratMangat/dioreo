@@ -48,9 +48,16 @@ const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot' };
 
 // Gap audit §3.2: the permission-grid data this needs already exists (getAdminPermissionsMap, MANAGE_PAGE_SCOPES) -- this reuses the EXACT same scope enumeration singlePointsOfFailure() above already established, rather than a second list that could drift from it. Shaped for a grid component directly (rows=admins, columns=scopes), not a raw dump of AdminUser docs.
 function buildPermissionMatrix(admins) {
+    // The realm a scope governs travels with it, so the grid's column colour is a fact from the permission model rather than a palette the UI invented. Required lazily for the same reason auth.js does it: these three modules register routes of their own and requiring them at load time would make the import order load-bearing.
+    const { realmForScope } = require('./realmAccess');
+    const pageLists = {
+        SEASON_PAGES: require('./season').SEASON_PAGES,
+        ARMORY_PAGES: require('./armory').ARMORY_PAGES,
+        BROADCAST_PAGES: require('./broadcast').BROADCAST_PAGES,
+    };
     const scopes = [
-        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command' })),
-        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page' })),
+        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command', realm: realmForScope(key, pageLists) })),
+        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page', realm: realmForScope(`manage.${page}`, pageLists) })),
     ];
     const rows = admins.map((admin) => {
         const perms = admin.permissions || [];

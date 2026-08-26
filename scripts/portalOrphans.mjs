@@ -14,10 +14,8 @@ const UI = path.join(ROOT, 'portal', 'ui');
 const KNOWN_ORPHANS = new Set([
     // Armory — the two-column layout and the coverage matrix
     'armcols', 'armmain', 'armside', 'covwrap', 'covcell', 'covnote', 'hit', 'bc-mode',
-    // Analytics — the KPI tiles, the source line, the event-kind chips
-    'kpis', 'kpi', 'metrics', 'srcline', 'src', 'kind',
-    // Access — the permission grid
-    'gwrap', 'grid', 'glegend', 'cel', 'grantrow',
+    // Access — the grant form's own row
+    'grantrow',
     // Board — the whole per-changeset review panel
     'review', 'revhead', 'revbody', 'revfoot', 'oplist', 'rows', 'diffs', 'step', 'tally',
     'tierbadge', 'ttl', 'discard',
@@ -27,8 +25,6 @@ const KNOWN_ORPHANS = new Set([
     'hc-face',
     // The Discord card preview, which has no counterpart in the mockup at all
     'v2-text', 'v2-media', 'v2-sep', 'v2-small', 'v2-empty',
-    // Shell — the breadcrumb separator and the Manifest's remove column
-    'crumb-sep', 'c-ra',
 ]);
 
 function definedClasses() {

@@ -284,6 +284,19 @@ input, select, textarea, button {
     min-height: 32px;              /* dense on desktop, per spec §7; 44px on phone, below */
     box-sizing: border-box;
 }
+
+/* 🔴 `min-height` BEATS `height` REGARDLESS OF SPECIFICITY, and the reset above is what stretched the
+   Access matrix's cells — a component rule saying a height looked correct and was being overruled
+   by a property it does not compete with. The reset exists for touch targets and stays; the matrix
+   is a dense twelve-column grid where a 44px cell fits on no laptop, and the adopted stylesheet
+   sizes it deliberately. State the exception rather than raise the specificity of a rule that was
+   never losing on specificity.
+   ⚠️ `0`, NOT A NUMBER. The adopted app.css declares `.mxcell` TWICE — 26x26 inline-grid at one
+   point and 16x16 block 800 lines later, two generations of the same component in one file, with
+   the later one winning. Writing 26 here pinned the height to the LOSING declaration's value and
+   produced a 16x26 cell: a third authority over a size that already had two. Zero defers to
+   whichever of them wins, which is the only answer that stays correct if that ever changes. */
+.mxcell { min-height: 0; }
 button {
     background: var(--raised);
     font-weight: 600;

@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { paletteHits, paletteBlocked } = require('../portal/ui/palette.logic');
 const { typedConfirmReady } = require('../portal/ui/overlay.logic');
+const { permsAfter, describePending } = require('../portal/ui/access.logic');
 
 let failures = 0;
 function check(name, fn) {
@@ -121,6 +122,36 @@ check('THE DIALOG GATE CAN FAIL: a bare confirm( is caught and a namespaced one 
     assert.ok(hit('if (confirm(\'sure?\')) go();'), 'a bare native call must be caught');
     assert.ok(!hit('overlay.confirm({ title: 1 })'), 'the shared drawer must not be a false positive');
     assert.ok(!hit('confirmDiscard(c)'), 'a function whose NAME contains confirm must not be a false positive');
+});
+
+// ── THE ACCESS GRID'S RECOMPUTED PERMISSION LIST ─────────────────────────────────────────────
+//
+// The grid stages toggles and then writes the WHOLE list, because /api/access/grant replaces it. That makes the recomputation the one place a permission can be silently gained or lost.
+check('a toggle on adds the scope and a toggle off removes it', () => {
+    assert.deepStrictEqual(permsAfter(['manage.draws'], { 'manage.calendar': true }).sort(),
+        ['manage.calendar', 'manage.draws']);
+    assert.deepStrictEqual(permsAfter(['manage.draws', 'bot'], { bot: false }), ['manage.draws']);
+});
+
+check('no pending changes leaves the list exactly as it was', () => {
+    assert.deepStrictEqual(permsAfter(['bot', 'manage'], {}), ['bot', 'manage']);
+    assert.deepStrictEqual(permsAfter(['bot'], null), ['bot']);
+});
+
+// 🔴 A LIVE DOCUMENT CAN ALREADY HOLD A DUPLICATE. parsePermissionsInput accepts "manage, manage.draws", so a token can appear twice in models/AdminUser.js's array — and adding one with concat would make it three. Every duplicate is invisible in the grid and permanent.
+check('the result is a SET, so an existing duplicate cannot be multiplied', () => {
+    assert.deepStrictEqual(permsAfter(['bot', 'bot'], { bot: true }), ['bot']);
+    assert.deepStrictEqual(permsAfter(['bot', 'bot'], { bot: false }), []);
+});
+
+check('turning a scope on that is already held changes nothing', () => {
+    assert.deepStrictEqual(permsAfter(['manage'], { manage: true }), ['manage']);
+});
+
+check('the confirmation names the acts, split by direction, sorted', () => {
+    const d = describePending({ b: true, a: false, c: true }, (k) => k.toUpperCase());
+    assert.deepStrictEqual(d, { granted: ['B', 'C'], revoked: ['A'] });
+    assert.deepStrictEqual(describePending({}, null), { granted: [], revoked: [] });
 });
 
 // ── THE MODULE-PARSE GATE ────────────────────────────────────────────────────────────────────

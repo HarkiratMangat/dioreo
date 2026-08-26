@@ -157,7 +157,18 @@ const ROUTES = [
         admins: FIX.accessAdmins || [], sessions: FIX.sessions || [],
         singlePointsOfFailure: FIX.spof || FIX.SPOF || [],
     })],
-    [/^\/api\/access\/matrix$/, () => ({ scopes: FIX.accessScopes || FIX.SCOPES || [], admins: FIX.accessAdmins || [] })],
+    // 🔴 THE FIXTURE PREDATES THE `realm` FIELD, AND THE GRID READS ITS COLOUR FROM IT. Without this the harness rendered twelve identical grey columns while production renders them tinted by the realm each scope governs — the instrument showing a duller page than the product, which is the harder direction to notice. The mapping is the route's own (portal/api/realmAccess.js's realmForScope), reproduced here rather than imported because the stub runs in the browser.
+    [/^\/api\/access\/matrix$/, () => {
+        const REALM = {
+            bot: 'analytics', autobuild: 'armory',
+            'manage.draws': 'season', 'manage.calendar': 'season', 'manage.patchnotes': 'season',
+            'manage.seasondraft': 'season', 'manage.season': 'season',
+            'manage.loadouts_mp': 'armory', 'manage.loadouts_dmz': 'armory',
+            'manage.announcement': 'broadcast',
+        };
+        const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({ ...s, realm: s.realm || REALM[s.key] || null }));
+        return { scopes, admins: FIX.accessAdmins || [] };
+    }],
     [/^\/api\/analytics$/, () => analyticsPayload()],
     [/^\/api\/review$/, () => reviewPayload()],
     // 🔴 BOTH FORMS, AND THE BARE ONE WAS MISSING. season.js fetches `/api/changeset?realm=season` and board.js fetches `/api/changeset/:id/preview`, but the route the API actually registers is `/^\/api\/changeset$/` — and with no stub for it the Board's own fetch fell through to the unrouted {ok:true} fallback, so `body.changesets` was undefined and the Board rendered empty all session while looking perfectly fine. Caught by scripts/portalHarness.test.js, which is the only thing that compares what the stub returns against what the route promises.

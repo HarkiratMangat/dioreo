@@ -6,6 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
+import { Icon } from './icons.js';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
@@ -27,8 +28,9 @@ function summaryOf(row) {
 
 const RIVER_COLUMNS = [
     { key: 'at', label: 'When', dataKind: 'date', render: (r) => new Date(r.at).toISOString().slice(5, 16).replace('T', ' ') },
-    { key: 'kind', label: 'Kind', render: (r) => html`<span class=${'kind ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
-    { key: 'source', label: 'Source', render: (r) => html`<span class="src">${sourceOf(r)}</span>` },
+    { key: 'kind', label: 'Kind', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
+    // ⚠️ The source is PLAIN TEXT in a monospaced column. It used to carry a `.src` chip class with no rule behind it, and a chip here would compete with the kind chip beside it for the same reading — one of the two has to be quieter, and the kind is the one that classifies.
+    { key: 'source', label: 'Source', render: (r) => sourceOf(r) },
     { key: 'summary', label: 'What', render: (r) => summaryOf(r) },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : 'system') },
 ];
@@ -39,23 +41,36 @@ const RIVER_FILTERS = [
     ] },
 ];
 
-// A sparkline of real daily buckets. Deliberately bars rather than an SVG path: the series is seven points, a bar chart reads the shape just as well at 26px, and it needs no viewBox arithmetic that could silently mis-scale. The last bucket is today and takes the accent, matching the mockup.
-function Spark({ series = [] }) {
+// 🔴 `.spark` EXISTS IN THE ADOPTED STYLESHEET AND MEANS SOMETHING ELSE ENTIRELY. The old component emitted `<i style="height:N%">` for a vertical bar chart; app.css's `.spark` is a 6px horizontal progress track whose children are absolutely positioned by `left`/`width`, so every bar collapsed and the chart rendered as a flat line. Nothing errored, the class WAS defined, and `portal:orphans` cannot see this — its question is whether a class exists, not whether it means what the emitter thought.
+//
+// The honest fix is not a third bar chart: `.lvlbars` is the adopted design's own labelled series, and it is better than the sparkline it replaces because seven anonymous bars become seven NAMED days. A reader could not previously tell which end was today.
+function DailyBars({ series = [], label }) {
+    if (!series.length) return null;
     const max = Math.max(1, ...series);
+    // Newest first, because the question is almost always "what is happening now" and a series read left-to-right made today the LAST thing you reached.
+    const rows = series.map((n, i) => ({ n, ago: series.length - 1 - i })).reverse();
     return html`
-        <div class="spark" aria-hidden="true">
-            ${series.map((n, i) => html`<i class=${i === series.length - 1 ? 'tip' : ''} style=${`height:${Math.round((n / max) * 100)}%`}></i>`)}
+        <h5>${label}</h5>
+        <div class="lvlbars">
+            ${rows.map((r) => html`
+                <div class="lvlb" key=${r.ago}>
+                    <span class="ln">${r.ago === 0 ? 'today' : `−${r.ago}d`}</span>
+                    <span class="lt"><i style=${`width:${Math.round((r.n / max) * 100)}%`}></i></span>
+                    <span class="lv2">${r.n}</span>
+                </div>`)}
         </div>
     `;
 }
 
-function Kpi({ label, value, sub, tone, series }) {
+// A tile is the adopted design's KPI: a label, a figure with its unit set smaller inside it, and one line of context.
+//
+// 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem.
+function Tile({ label, value, unit, sub, tone }) {
     return html`
-        <div class=${'kpi' + (tone ? ' ' + tone : '')}>
-            <h5>${label}</h5>
-            <span class="v">${value}</span>
-            ${sub ? html`<span class="sub">${sub}</span>` : null}
-            ${series ? html`<${Spark} series=${series} />` : null}
+        <div class=${'tile' + (tone ? ' ' + tone : '')}>
+            <span class="tl-k">${label}</span>
+            <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>
+            ${sub ? html`<span class="tl-s">${sub}</span>` : null}
         </div>
     `;
 }
@@ -67,45 +82,58 @@ function fmtUptime(since) {
     return d ? `${d}d ${hrs}h` : `${hrs}h ${Math.floor((secs % 3600) / 60)}m`;
 }
 
+// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it.
 function Health({ health }) {
     const h = health || {};
+    const errors = h.errors24h ?? 0;
     return html`
         <div class="panel" id="health">
             <div class="ph">
                 <span class="t">Health</span>
                 <span class="rt">read from the bot's own records</span>
             </div>
-            <div class="kpis">
-                <${Kpi} label="Uptime" value=${fmtUptime(h.uptimeSince)} tone="ok"
-                        sub=${h.uptimeSince ? `since the last ${h.lastBootKind || 'restart'}${h.lastBootVersion ? ' · ' + h.lastBootVersion : ''}` : 'no boot recorded'} />
-                <${Kpi} label="Errors 24h" value=${h.errors24h ?? '—'} tone=${h.errors24h ? 'bad' : 'ok'}
-                        sub=${`${h.noise24h ?? 0} lower-level alert${h.noise24h === 1 ? '' : 's'} not counted`}
-                        series=${h.spark?.alerts} />
-                <${Kpi} label="RAM at last alert"
-                        value=${h.rssPeakMb ? h.rssPeakMb + ' MB' : '—'}
-                        sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} sample${h.rssSampleCount === 1 ? '' : 's'} in 7d` : 'no alerts fired in 7 days'} />
-                <${Kpi} label="Commands 24h" value=${(h.commands24h ?? 0).toLocaleString()}
-                        sub=${`${h.distinctUsers24h ?? 0} distinct users`} series=${h.spark?.commands} />
+            <div class="tiles">
+                <${Tile} label="Uptime" value=${fmtUptime(h.uptimeSince)} tone=${h.uptimeSince ? 'ok' : ''}
+                         sub=${h.uptimeSince ? `since the last ${h.lastBootKind || 'restart'}${h.lastBootVersion ? ' · ' + h.lastBootVersion : ''}` : 'no boot recorded'} />
+                <${Tile} label="Errors 24h" value=${errors} tone=${errors === 0 ? 'ok' : errors > 5 ? 'err' : 'warn'}
+                         sub=${`${h.noise24h ?? 0} lower-level ${h.noise24h === 1 ? 'alert' : 'alerts'} not counted`} />
+                <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
+                         tone=${h.rssPeakMb > 400 ? 'warn' : ''}
+                         sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
+                <${Tile} label="Commands 24h" value=${(h.commands24h ?? 0).toLocaleString()}
+                         sub=${`${h.distinctUsers24h ?? 0} distinct users`} />
             </div>
-            <div class="srcline">
-                <span>SOURCES</span>
-                <span>BootRecord · AlertLog · AnalyticsEvent · ChangeLog</span>
-                <span class="rt">${h.restarts24h ?? 0} restart${h.restarts24h === 1 ? '' : 's'} in 24h · ${h.restarts7d ?? 0} in 7d</span>
+            <div class="hsplit">
+                <section class="hpanel">
+                    <h4>Restarts</h4>
+                    <p class="hp">${h.restarts24h ?? 0} in the last 24 hours, ${h.restarts7d ?? 0} in the last 7 days.
+                        A restart is normal after a deploy and is worth a look when it was not one.</p>
+                    <${DailyBars} series=${h.spark?.alerts || []} label="Alerts per day" />
+                </section>
+                <section class="hpanel">
+                    <h4>Where these come from</h4>
+                    <p class="hp">Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
+                        the memory figure come from the <code>AlertLog</code> collection; command counts come from${' '}
+                        <code>AnalyticsEvent</code> records, and the river below adds <code>ChangeLog</code> to those three.</p>
+                    <${DailyBars} series=${h.spark?.commands || []} label="Commands per day" />
+                </section>
             </div>
-            <div class="callout">
-                <b>These are the bot's records, not a live reading.</b>
-                The portal runs as its own process with no gateway connection, so gateway status and live memory are not
-                readable from here. Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
-                the memory figure come from the <code>AlertLog</code> collection. For a live reading, run the${' '}
-                <code>/bot analytics</code> command in Discord.
+            <div class="hbanner">
+                <span class="hbi"><${Icon} name="clock" cls="sm" /></span>
+                <div>
+                    <h4>These are the bot's records, not a live reading.</h4>
+                    <p>The portal runs as its own process with no gateway connection, so gateway status and live memory
+                        are not readable from here. For a live reading, run the <code>/bot analytics</code> command in Discord.</p>
+                </div>
             </div>
         </div>
     `;
 }
 
+// ⚠️ The raw text exports keep a <pre>, because that is what they ARE — the Discord command's own output, reproduced. `.metrics` was a class modifier with no rule behind it, so it is gone rather than restyled.
 function MetricsPanel({ title, text, stats }) {
     return html`
-        <div class="panel metrics">
+        <div class="panel">
             <div class="ph"><span class="t">${title}</span>${stats ? html`<span class="rt">${stats}</span>` : null}</div>
             ${text ? html`<pre>${text}</pre>` : html`<p class="empty">Nothing recorded in this window.</p>`}
         </div>
