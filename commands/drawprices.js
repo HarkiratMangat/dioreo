@@ -299,7 +299,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         indicatorCustomId: 'price_subpage_indicator'
     });
 
-    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container (region button is the container's LAST item) -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws.
+    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws. ⚠️ "region button is the container's LAST item" stopped being true 2026-08-26 12:16 EDT -- the Cost Calculator row (below) is now last, added on Harkirat's explicit request after the nav bar's shared Draw Prices button turned out to hijack /draw calculator's own active state with no way back. Lazy-required (function-scoped, not top-level) to avoid a circular require: drawCalculator.js already requires THIS file's exports at module load.
     const globalNavigationRow = buildGlobalNavRow('nav_prices');
 
     // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the earlier "title divider stays spacing 1" exception from the same day's prior pass).
@@ -327,6 +327,15 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                     label: `${key.split('_')[1]} CP`,
                     emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
                 }))
+            },
+            {
+                type: 1,
+                // The other half of the cross-link (2026-08-26 12:16 EDT, Harkirat's explicit call: its own row under the region row, not folded into it). custom_id is the EXACT shape drawCalculator.js's own region-switch buttons produce (`calc~region~r<digits>~...`), so this needs no new routing anywhere -- handlers/router.js already sends any `calc~` id straight to handleDrawCalcInteraction, which already has a `region` verb that just renders. Lazy require, see the BUG FIX comment above for why.
+                components: [{
+                    type: 2, style: 2, label: 'Cost Calculator',
+                    emoji: emojis.parseEmoji(emojis.cp2),
+                    custom_id: require('./drawCalculator').encodeState('region', { ...require('./drawCalculator').defaultState(), region: regionKey })
+                }]
             }
         ]
     };
@@ -336,8 +345,9 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 }
 
 module.exports = {
-    // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads").
+    // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
+    buildDrawEntries, UPGRADE_LABEL, formatCP,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()
@@ -352,6 +362,11 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('calculator')
             .setDescription('Work out how much more CP you need, and the cheapest way to buy it')
+            // Every option is optional and every one maps onto a control the panel also carries, so the command line and the panel are two doors into the same state rather than two features. Choices are DERIVED from DRAW_META/REGION_ORDER rather than transcribed -- a tenth draw or a fourth region appears here on its own, which is the same rule DRAW_DATA's header sets for every other number in this file.
+            .addStringOption(option => option.setName('draw').setDescription('Which draw you are pulling on').addChoices(...Object.entries(DRAW_META).map(([value, meta]) => ({ name: meta.name, value }))))
+            .addIntegerOption(option => option.setName('pulls').setDescription('How many pulls you have already done on it').setMinValue(0).setMaxValue(10))
+            .addIntegerOption(option => option.setName('balance').setDescription('CP you already have, so it can tell you what is left to buy').setMinValue(0))
+            .addStringOption(option => option.setName('region').setDescription('Price it in a specific CP region').addChoices(...REGION_ORDER.map(value => ({ name: `${value.split('_')[1]} CP Region`, value }))))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
