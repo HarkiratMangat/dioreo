@@ -3,7 +3,7 @@
 <title>Season · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1787706468"><link rel="stylesheet" href="assets/app.css?v=1787706468">
+<link rel="stylesheet" href="assets/tokens.css?v=1787707489"><link rel="stylesheet" href="assets/app.css?v=1787707489">
 <style>
 /* creation, promoted out of the page's basement */
 .mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
@@ -222,9 +222,9 @@
 </div>
 <aside class="tray" hidden></aside>
 
-<script src="assets/fixtures.js?v=1787706468"></script>
-<script src="assets/timeline.js?v=1787706468"></script>
-<script src="assets/shell.js?v=1787706468"></script>
+<script src="assets/fixtures.js?v=1787707489"></script>
+<script src="assets/timeline.js?v=1787707489"></script>
+<script src="assets/shell.js?v=1787707489"></script>
 <!-- PROTOTYPE - THROWAWAY. Three variants of the deadline countdown, mounted on the real
      page so they are judged against real density. Inert unless ?variant= or ?proto= is in
      the URL. Delete both files and this block once a variant wins. -->
@@ -584,35 +584,49 @@
     const daysOut = near ? T.days(F.today, near.iso) : null;
     const nudge = !isDraft && !st.draft.active && daysOut !== null && daysOut <= 7;
 
+    /* 🔴 REBUILT 2026-08-25 21:22 EDT, three corrections:
+     *  · "making it this vertical is just wasted space" - the three lines were stacked rows
+     *    running the full width for three short facts. They go three-abreast instead, two
+     *    lines each, and the block loses roughly a third of its height while using the
+     *    width it always had.
+     *  · "THE RECORD THIS BOT SHOWS PLAYERS is a useless line" - it described the component
+     *    to somebody who is already looking at it. Only the half that says what is INSIDE
+     *    survives, which is the half that was doing work.
+     *  · "the calendar banners portion needs to stop feeling like a foot note. it's
+     *    literally one of the main elements" - they were a grey line under a rule, below
+     *    the fold of the component. They now get the IDENTICAL cell treatment as the
+     *    deadlines, on their own row of three: same bar, same label, same state line.
+     *    Peers, not a footer. */
     idSum.innerHTML = `<div class="srec">
       <div class="srec-top">
-        <span class="srec-kind">${isDraft
-          ? 'The record for <b>next season</b> &middot; nothing here is live yet'
-          : 'The record this bot shows players &middot; <b>titles, dates and calendar banners</b>'}</span>
+        <span class="srec-kind">Titles, dates and calendar banners</span>
         <span class="srec-state${isDraft ? ' staged' : ''}">${isDraft ? 'staged draft' : 'live'}</span>
       </div>
-      <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
-      <div class="srec-lines">
+      <div class="srec-head">
+        <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
+        <span class="srec-open">Open to edit <s>&rarr;</s></span>
+      </div>
+      <div class="srec-grid">
         ${F.LINES.map(L => {
           const t = (o[L.titleKey] || '').trim();
           const tbd = o[L.tbdKey], iso = o[L.endKey];
-          const when = tbd ? 'date not decided' : (iso ? T.fmt(iso) : 'no date set');
-          return `<div class="srec-l" style="--c:${L.hex}">
+          return `<div class="srec-c" style="--c:${L.hex}">
             <span class="k">${L.label}</span>
             <span class="t${t ? '' : ' unset'}">${t || 'no title set'}</span>
-            <span class="d${tbd || !iso ? ' tbd' : ''}">${when}</span></div>`;
+            <span class="d${tbd || !iso ? ' tbd' : ''}">${tbd ? 'TBD' : (iso ? T.fmt(iso) : 'no date')}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="srec-grid ban">
+        ${BANNERS.map(b => {
+          const on = (o[b.k] || '').trim();
+          return `<div class="srec-c" style="--c:${b.hex}">
+            <span class="k">${b.label} banner</span>
+            <span class="t${on ? '' : ' unset'}">${on ? 'cached and serving' : 'no image set'}</span>
+            <span class="d${on ? '' : ' tbd'}">${on ? 'set' : 'none'}</span></div>`;
         }).join('')}
       </div>
       ${nudge ? `<div class="srec-nudge"><b>Next season isn&rsquo;t staged.</b>
         A draft lets you build it &mdash; titles, dates, draws and calendar &mdash; without any of it going live.</div>` : ''}
-      <div class="srec-foot">
-        ${set.length
-          ? `<span class="srec-ban">${set.map(b =>
-              `<i style="--c:${b.hex}"></i>`).join('')}<b>${set.length} of 3</b> calendar banners &mdash;
-              ${set.map(b => b.label.toLowerCase()).join(', ')}</span>`
-          : `<span class="srec-ban">No calendar banners set</span>`}
-        <span class="srec-open">Open to edit <s>&rarr;</s></span>
-      </div>
     </div>`;
   }
   const identityEl = document.getElementById('identity');

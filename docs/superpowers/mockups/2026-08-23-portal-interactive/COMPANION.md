@@ -3480,15 +3480,27 @@ Each tier **subtracts**. A tier that only changed colour would be the same if-st
 
 ⚠️ **A dangling colon, and why `:last-of-type` was the wrong tool.** Hiding the seconds left its separator behind: `23 HRS : 59 MIN :`. The first fix used `.sc-sep:last-of-type`, which matches by **tag**, not class — every child is a `<span>`, so it selected the seconds unit itself and changed nothing. `> :nth-last-child(2)` is the correct expression of "whatever sits before the last child".
 
-### 16.32 The collapsed season record — three complaints, one defect
+### 16.32 The collapsed season record — six peers, not a headline and a footer
 
-Harkirat on the old strip: *"Nothing about it suggests that it also encompasses the calendar page banner urls. The dates and titles inside of collapsed strip are not informative or sized correctly considering the level of information they hold. they feel like 3rd tier support information. the intuitiveness/ux-copy are not present."*
+Two rounds of correction, and the second one named the real mistake.
 
-Three complaints, **one defect**: it was written as a **caption** for a thing that is a **record**. So it now names every kind of thing it holds — *including the banners, which it never admitted to* — sets the titles and dates at the scale of the content instead of as 10px chips, and says what it is and what opening it does rather than the bare label "Live season".
+**Round one.** *"Nothing about it suggests that it also encompasses the calendar page banner urls. The dates and titles inside of collapsed strip are not informative or sized correctly considering the level of information they hold. they feel like 3rd tier support information. the intuitiveness/ux-copy are not present."* Three complaints, one defect: it was written as a **caption** for a thing that is a **record**. Rebuilt to name everything it holds, at content scale.
 
-🔴 **It no longer says "17 days left."** That is the clock's job. The strip shows the dates **as stored**, because this is the record you *edit*. **That split is what stops the two elements repeating each other** — and repeating each other is what made both feel redundant. The collapse/expand toggle is unchanged and the expanded editor is untouched; only the closed state was rebuilt.
+**Round two, on that rebuild.** *"making it this vertical is just wasted space… the 3 seasons could literally be formatted to be inline and still expresive."* · *"THE RECORD THIS BOT SHOWS PLAYERS is a useless line."* · *"the calendar banners portion of the strip needs to stop feeling like a foot note. it's literally one of the main elements of the strip."*
 
-**The staging line** is silent unless it is genuinely late — 7 days or fewer **and** nothing staged. One line, never repeated, gone the moment a draft exists. *"but dont make it naggy."*
+🔴 **All three were the same mistake in three places: I laid out SIX PEER FACTS as a headline, a stacked list and a footer** — a hierarchy the content does not have. The record holds three deadlines and three banners. They are six things of equal standing, so they get **six identical cells, three abreast, one line each**. The banners row uses the *same cell* as the deadlines, which is the only way it stops reading as a footnote — not more colour, the same treatment.
+
+| | Height | What it was |
+|---|---|---|
+| Original | 51px | a caption — a label and some chips |
+| First rebuild | 209px | a record, laid out as a stack |
+| **Now** | **153px** | six peers, three abreast, on the width it always had |
+
+⚠️ **Two lines per cell only bought 13px** and still read as a stack. "Inline" meant *one line*: label, title, date, with the title taking the slack. That is where the other 43px came from.
+
+⚠️ **And the responsive rule pointed at a class that no longer existed.** `@media (max-width:820px){.srec-l{…}}` survived the rebuild that deleted `.srec-l`. A media query aimed at a dead selector is a responsive fix that silently does nothing — it does not error, and at 390px the grid would simply have stayed three-abreast.
+
+**Copy that survived the cut:** the eyebrow says what is *inside* (`Titles, dates and calendar banners`) and no longer describes the component to somebody already looking at it. **It still does not say "17 days left"** — that is the clock's job; this shows the dates *as stored*, because this is the record you edit.
 
 ### 16.33 🔴 `.sr` WAS ALREADY THE SCREEN-READER CLASS
 
