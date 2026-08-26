@@ -112,7 +112,7 @@ function Header({ realm, view, session, staged, onCommand }) {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, masthead, badges = {}, tools = null, panelTitle }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, panelTitle }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     return html`
         <div class="app">
@@ -138,6 +138,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                 <div id="manifest-layer">${manifestSlot}</div>
             </main>
             ${traySlot || null}
+            ${overlaySlot || null}
         </div>
     `;
 }

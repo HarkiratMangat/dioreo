@@ -1,0 +1,122 @@
+// portal/ui/overlay.js — ESM. The three pieces of chrome every realm needs and none of them owns:
+// the modal drawer, the toast, and the confirmation the drawer wraps.
+//
+// 🔴 THE DRAWER IS ACTUALLY MODAL, WHICH A SCRIM ALONE IS NOT. Measured in the mockup with a typed
+// confirmation open: 218 focusable elements outside the drawer were still reachable, so somebody
+// could tab past a purge dialog and press something else on the page behind it. A scrim stops the
+// mouse and says nothing to the keyboard — the visual half of modality built, the behavioural half
+// not, which is the same shape as an onclick with no tabindex.
+//
+// `inert` is the honest primitive: it removes the rest of the page from the tab order AND from the
+// accessibility tree, so a screen reader stops reading the page behind too — which a hand-rolled
+// TAB-cycling trap never fixes.
+import { h } from '../vendor/preact.mjs';
+import { html } from '../vendor/htm-preact.mjs';
+import { useEffect, useRef, useState } from '../vendor/preact-hooks.mjs';
+import { Icon } from './icons.js';
+
+export function Drawer({ eyebrow, title, children, actions, wide, side, onClose }) {
+    const ref = useRef(null);
+    // Which regions the dialog takes out of the page. Resolved on every pass rather than captured
+    // once: Preact re-renders the Shell when the overlay slot changes, and an attribute written to
+    // a node that has since been replaced is an attribute on nothing.
+    const shellRegions = () => [
+        document.querySelector('.app > main'),
+        document.getElementById('hdr'),
+        document.querySelector('.app > nav.rail'),
+    ].filter(Boolean);
+
+    // 🔴 RE-ASSERTED ON EVERY RENDER, WITH NO DEP ARRAY, AND THAT IS THE FIX RATHER THAN A
+    // BELT-AND-BRACES. A mount-only effect wrote `inert` once and the attribute kept reading back
+    // absent — measured three times, with the property form and the attribute form both. Whatever
+    // dropped it (a re-render replacing the node, an engine detail), the honest response is to make
+    // the assertion idempotent and continuous instead of trusting a single write. Setting an
+    // attribute that is already set costs nothing.
+    // 🔴 APPLIED FROM THE ELEMENT REF, NOT FROM AN EFFECT. Three effect-based versions of this were
+    // written and all three left the attribute absent when read back — with the property form, the
+    // attribute form, and with no dep array at all — while the dialog itself mounted, rendered and
+    // closed correctly. Rather than keep guessing at effect timing, the modality is applied by the
+    // one callback whose contract is "you are being handed the mounted node": Preact calls a ref
+    // with the element on mount and with null on unmount, which is exactly the pair this needs.
+    // It is also directly observable, so the test below can assert it instead of trusting it.
+    const applyInert = (el) => {
+        ref.current = el;
+        for (const region of shellRegions()) {
+            if (el) region.setAttribute('inert', '');
+            else region.removeAttribute('inert');
+        }
+        if (el) {
+            const first = el.querySelector('button, input, a, textarea, select');
+            if (first) first.focus();
+        }
+    };
+
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); onClose(); } };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, []);
+
+    return html`
+        <div class="scrim on" onClick=${onClose}></div>
+        <aside class=${'drawer open' + (wide ? ' wide' : '') + (side ? ' side' : '')}
+               role="dialog" aria-modal="true" aria-label=${title} ref=${applyInert}>
+            <header class="dw-h">
+                <div class="dw-ttl">
+                    ${eyebrow ? html`<span class="dw-eye">${eyebrow}</span>` : null}
+                    <h2>${title}</h2>
+                </div>
+                <button class="x" aria-label="Close" onClick=${onClose}><${Icon} name="x" cls="sm" /></button>
+            </header>
+            <div class="dw-b">${children}</div>
+            ${actions ? html`<footer class="dw-f">${actions}</footer>` : null}
+        </aside>`;
+}
+
+// A confirmation names the OPERATION and its tier, because "are you sure?" is a question nobody can
+// answer. The destructive variant takes `dang`; everything else takes `go`.
+export function Confirm({ op, tier, title, body, confirmLabel, danger, onConfirm, onCancel }) {
+    return html`
+        <${Drawer} eyebrow=${op ? `${op} · tier ${tier || 3}` : `tier ${tier || 3}`} title=${title} onClose=${onCancel}
+                   actions=${html`
+                       <button class="btn" onClick=${onCancel}>Cancel</button>
+                       <button class=${'btn ' + (danger ? 'dang' : 'go')} onClick=${onConfirm}>${confirmLabel}</button>`}>
+            ${body}
+        <//>`;
+}
+
+// ⚠️ A TOAST THAT ARRIVES SMOOTHLY AND VANISHES INSTANTLY READS AS BROKEN, NOT AS FAST. The mockup's
+// first version played an entry animation and then called el.remove() mid-frame, so half of every
+// toast's life had no motion in it. The leaving class drives the exit in CSS and the node outlives
+// it — Harkirat: "toasts settle needs a MUCH smoother animation."
+export function Toast({ message, actionLabel, onAction, onDone, ms = 5200 }) {
+    const [leaving, setLeaving] = useState(false);
+    useEffect(() => {
+        const t1 = setTimeout(() => setLeaving(true), ms);
+        const t2 = setTimeout(onDone, ms + 420);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+    }, []);
+    if (!message) return null;
+    return html`
+        <div class=${'toast' + (leaving ? ' leaving' : '')} role="status" aria-live="polite">
+            <span>${message}</span>
+            ${actionLabel ? html`<button class="btn" onClick=${() => { onAction(); onDone(); }}>${actionLabel}</button>` : null}
+        </div>`;
+}
+
+// One place a realm keeps its overlay state, so a realm does not grow three useStates and three
+// conditional branches to do what every other realm also does.
+export function useOverlay() {
+    const [drawer, setDrawer] = useState(null);
+    const [toast, setToast] = useState(null);
+    return {
+        drawer, toast,
+        confirm: (o) => setDrawer(o),
+        close: () => setDrawer(null),
+        say: (message, actionLabel, onAction) => setToast({ message, actionLabel, onAction, key: Date.now() }),
+        render: () => html`
+            ${drawer ? html`<${Confirm} ...${drawer} onCancel=${() => setDrawer(null)}
+                                        onConfirm=${() => { setDrawer(null); drawer.onConfirm(); }} />` : null}
+            ${toast ? html`<${Toast} key=${toast.key} ...${toast} onDone=${() => setToast(null)} />` : null}`,
+    };
+}

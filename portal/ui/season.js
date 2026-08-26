@@ -12,6 +12,7 @@ import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
+import { useOverlay } from './overlay.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
@@ -100,7 +101,7 @@ function StagedPanel({ changesets, onDiscard, onReview }) {
                         </span>
                         <button class="rvdrop" aria-label=${`Discard ${describeOp((c.ops || [])[0])}`}
                                 data-tip="Discard this staged change — nothing live is undone"
-                                onClick=${() => onDiscard(String(c._id))}>×</button>
+                                onClick=${() => onDiscard(c)}>×</button>
                     </div>`)}
             </div>
             <div class="rvfoot">
@@ -350,6 +351,7 @@ export function SeasonRealm({ session }) {
     const [state, setState] = useState(null);
     const [changesets, setChangesets] = useState([]);
     const [notices, setNotices] = useState([]);
+    const overlay = useOverlay();
     const [showAdd, setShowAdd] = useState(false);
 
     useEffect(() => { fetchSeasonState().then(setState); }, []);
@@ -480,7 +482,14 @@ export function SeasonRealm({ session }) {
 
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-               <${StagedPanel} changesets=${changesets} onDiscard=${handleDiscard} onReview=${() => setView('Board')} />
+               <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')}
+                                onDiscard=${(c) => overlay.confirm({
+                                    op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard',
+                                    title: 'Discard this staged change?',
+                                    body: html`<p class="dw-p">Nothing live is undone — this change never reached
+                                        Discord. Only what has not committed yet is abandoned.</p>`,
+                                    onConfirm: () => handleDiscard(String(c._id)),
+                                })} />
                <${Track} data=${trackData}
                           draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd(true)} />`
@@ -508,7 +517,7 @@ export function SeasonRealm({ session }) {
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${() => setShowAdd(true)} />`} />`}
-                  viewSlot=${html`${identitySlot}${viewSlot}`} manifestSlot=${manifestSlot}
+                  viewSlot=${html`${identitySlot}${viewSlot}`} overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;
 }

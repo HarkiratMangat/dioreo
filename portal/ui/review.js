@@ -9,6 +9,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { Icon } from './icons.js';
+import { useOverlay } from './overlay.js';
 
 const dash = (v) => (v === null || v === undefined || v === '' ? '—' : String(v));
 
@@ -115,6 +116,7 @@ export function ReviewRealm({ session }) {
     const [resolved, setResolved] = useState({});
     const [confirmText, setConfirmText] = useState({});
     const [busy, setBusy] = useState(false);
+    const overlay = useOverlay();
 
     function refresh() {
         fetchJson('/api/review').then((d) => {
@@ -214,9 +216,27 @@ export function ReviewRealm({ session }) {
                     ${blockers.length
                         ? html`<span class="rvgate"><${Icon} name="triangle-alert" cls="sm" />${blockers[0].msg}</span>`
                         : html`<span class="rvgate ok"><${Icon} name="check" cls="sm" />Ready — ${ops.length} change${ops.length > 1 ? 's' : ''} to write</span>`}
-                    <button class="danger" onClick=${discardAll} disabled=${busy}>Discard all</button>
-                    <button class="accent-fill" onClick=${commitAll} disabled=${busy || blockers.length > 0}>
-                        Commit ${ops.length} change${ops.length > 1 ? 's' : ''}</button>
+                    <button class="btn dang" disabled=${busy} onClick=${() => overlay.confirm({
+                        op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard all',
+                        title: `Discard all ${ops.length} staged change${ops.length > 1 ? 's' : ''}?`,
+                        // The old copy said each change is 'reverted — the portal puts the previous value back' AND that none of it ever reached Discord, which are two different mechanics: if it never reached Discord there is no previous value out there to restore. Both halves are true of different things, so this says which is which.
+                        body: html`<p class="dw-p">None of this ever reached Discord, so nothing changes for players.
+                            Every row on the page goes back to the value it had before you touched it.</p>`,
+                        onConfirm: discardAll,
+                    })}>Discard all</button>
+                    <button class="btn go" disabled=${busy || blockers.length > 0} onClick=${() => overlay.confirm({
+                        op: 'changeset.commit', tier: ops.some((o) => o.tier === 3) ? 3 : 2,
+                        confirmLabel: `Commit ${ops.length} change${ops.length > 1 ? 's' : ''}`,
+                        title: 'Commit these staged changes?',
+                        // One transaction, or nothing. The bot re-reads on every interaction, so a half-applied changeset reaches real players within seconds — which is why atomicity here is load-bearing rather than tidy.
+                        body: html`
+                            <p class="dw-p">All <b>${ops.length}</b> changes are written in <b>one transaction</b> —
+                                they all land or none of them do. The bot reads fresh on every interaction, so this is
+                                live to players within seconds.</p>
+                            <p class="dw-p">Every change is recorded with its inverse, so tier-1 and tier-2 changes stay
+                                undoable afterwards${ops.some((o) => o.tier === 3) ? ', and the tier-3 change is recoverable from the export you saved' : ''}.</p>`,
+                        onConfirm: commitAll,
+                    })}>Commit ${ops.length} change${ops.length > 1 ? 's' : ''}</button>
                 </div>
             </div>`;
 
@@ -225,5 +245,5 @@ export function ReviewRealm({ session }) {
                   masthead=${html`<${Masthead} title="Review & commit"
                       sub="Exactly what is about to change, and what it will overwrite, before any of it is written."
                       stats=${stats} />`}
-                  viewSlot=${viewSlot} />`;
+                  viewSlot=${viewSlot} overlaySlot=${overlay.render()} />`;
 }
