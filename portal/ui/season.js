@@ -645,7 +645,7 @@ export function SeasonRealm({ session }) {
     }
 
     // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra argument) -- deliberately scoped out of this pass rather than reaching for a native prompt(), which this session already removed from Access's Revoke for the same UX reason. Stage deletion and Export selection need no such input and are built here. toManifestRows/stateForElement now live in season.logic.js (bare global, same pattern as LANE_LABELS above) -- real state derivation needs `changesets` (already fetched for Board), so it moved out of a browser-only local function to become properly testable.
-    const allRows = toManifestRows(state.live, changesets);
+    const allRows = toManifestRows(state.live, changesets, state.draft);
     function rowsById(ids) { return allRows.filter((r) => ids.includes(r.id)); }
 
     async function handleBulkDelete(ids) {
@@ -804,7 +804,7 @@ export function SeasonRealm({ session }) {
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
                                             bulkNote="Reversible — a staged deletion is discarded, never undone"
                                             bulkTier=${2} rowNoun=${['item', 'items']}
-                                            onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
+                                            onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Stage deletion"
                                             emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}

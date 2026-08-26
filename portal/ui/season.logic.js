@@ -53,7 +53,10 @@ function stateForElement(elementId, changesets) {
     return 'live';
 }
 
-function toManifestRows(live, changesets) {
+// 🔴 THE TABLE CALLED ITSELF "EVERYTHING IN THE SEASON" AND OMITTED THE DRAFT ENTIRELY. A draft can hold twenty items — the harness fixture's does — and none of them appeared in the one place that claims to list everything, so the only way to see what was staged for next season was to read it off the Track. The draft rows come through marked, because a staged item and a live one are not the same fact and a table that renders them alike is worse than one that omits them.
+//
+// ⚠️ Found because the `.nextmark` branch in SEASON_COLUMNS could never be reached: the condition was `row.isDraft` and nothing ever set it. A branch that cannot be true is the same defect as a button with no handler, one layer down.
+function toManifestRows(live, changesets, draft) {
     if (!live) return [];
     const rows = [];
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {
@@ -68,6 +71,20 @@ function toManifestRows(live, changesets) {
                 // A draw's real schema field is `date` (no separate start/end); calendar events have both `date`(start) and `endDate`. This pre-existing display line always fell to '—' for every draw before this fix, since item.endDate is never set on a draw record.
                 window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
             });
+        }
+    }
+    // ⚠️ THE ID IS PREFIXED. A draft subdocument carries its own _id and a live one carries a different one, but nothing guarantees they never collide across the two arrays — and the Manifest keys rows, selections and the edit target on `id`. A prefix makes a draft row impossible to mistake for the live record it was copied from, and buildSeasonEditOp would refuse it anyway.
+    if (draft && draft.active) {
+        for (const key of ['newDraws', 'returningDraws', 'calendar']) {
+            for (const item of draft[key] || []) {
+                rows.push({
+                    ...item,
+                    id: `draft:${item._id}`, title: item.title, lane: key, isDraft: true,
+                    state: 'staged',
+                    topicVar: topicVarFor(key, item), typeLabel: typeLabelFor(key, item),
+                    window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
+                });
+            }
         }
     }
     return rows;

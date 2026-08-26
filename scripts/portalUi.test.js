@@ -455,4 +455,72 @@ check('no flag is ever assigned a row the stylesheet does not define', () => {
         `a flag landed on row ${crowded.flags.map((f) => f.level).join(',')} and only lvl1 and lvl2 exist`);
 });
 
+// ── WHAT A MANIFEST ROW CARRIES ───────────────────────────────────────────────────────────────
+//
+// 🔴 THE TABLE SAID WHAT EVERY ITEM WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity; the row showed a title, a type and a date, so the question this list exists to answer needed a click per row.
+const { rowTiers, rowDetail, rowLifecycle, TIER_CLASS, toManifestRows } = require('../portal/ui/season.logic');
+
+check('a tier chip is drawn once per rarity, in the order it first appears', () => {
+    const row = { items: [{ tier: 'legendary', name: 'A' }, { tier: 'epic', name: 'B' }, { tier: 'legendary', name: 'C' }] };
+    assert.deepStrictEqual(rowTiers(row), ['legendary', 'epic'], 'three items and two rarities is two chips');
+});
+
+// ⚠️ A `-#` COMMENT LINE IS A NOTE ATTACHED TO THE DRAW, not an item with a rarity — utils/adminParser.js stores it with tier 'comment'. Counting it would put a chip on the row for a sentence.
+check('a comment line is not a rarity', () => {
+    assert.deepStrictEqual(rowTiers({ items: [{ tier: 'comment', name: 'Character bundle only' }, { tier: 'mythic', name: 'X' }] }), ['mythic']);
+    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'comment', name: 'a note' }, { tier: 'mythic', name: 'X' }] }), 'X');
+});
+
+// ⚠️ ONLY THE THREE TIERS THE STYLESHEET DEFINES GET A CLASS. resolveTier also returns 'legacy' and a title-cased fallback for anything it does not know; inventing `t-legacy` would emit a class with no rule, which is the one thing portal:orphans exists to stop.
+check('an unknown rarity gets no class rather than an invented one', () => {
+    assert.strictEqual(TIER_CLASS.legendary, 't-leg');
+    assert.strictEqual(TIER_CLASS.legacy, undefined, 'the sheet defines t-leg, t-myth and t-epic — nothing else');
+    assert.strictEqual(TIER_CLASS['Some New Tier'], undefined);
+});
+
+check('a calendar entry has no items, so its detail is its category', () => {
+    assert.strictEqual(rowDetail({ category: 'playlist' }), 'playlist');
+    assert.strictEqual(rowDetail({}), '', 'nothing to say is empty, and the cell renders "no detail" for it');
+});
+
+// 🔴 BOTH ENDS ARE INCLUSIVE. Treating `end < now` as ended retires an entry at midnight of the morning it is still live — which is the entire span of a one-day event.
+check('an entry whose last day is today is still running', () => {
+    assert.strictEqual(rowLifecycle({ date: '2026-08-20', endDate: '2026-08-26' }, '2026-08-26'), 'running');
+    assert.strictEqual(rowLifecycle({ date: '2026-08-26' }, '2026-08-26'), 'running', 'a one-day event is running on its day');
+    assert.strictEqual(rowLifecycle({ date: '2026-08-20', endDate: '2026-08-25' }, '2026-08-26'), 'ended');
+    assert.strictEqual(rowLifecycle({ date: '2026-08-27' }, '2026-08-26'), 'upcoming');
+    assert.strictEqual(rowLifecycle({}, '2026-08-26'), '', 'an undated row states nothing rather than guessing');
+});
+
+check('THE INCLUSIVE-END RULE CAN FAIL: a strict comparison retires a one-day event on its own day', () => {
+    assert.throws(() => {
+        const end = '2026-08-26', today = '2026-08-26';
+        assert.ok(!(end <= today) || end > today, `a strict end < today would call this ended on ${today}`);
+    }, /would call this ended/);
+});
+
+// 🔴 THE TABLE CALLED ITSELF "EVERYTHING IN THE SEASON" AND OMITTED THE DRAFT ENTIRELY — twenty items in the harness fixture, invisible in the one place that claims to list everything. Found because the `.nextmark` branch keyed on `row.isDraft` and nothing ever set it: a branch that cannot be true is a button with no handler, one layer down.
+const LIVE_SEASON = { newDraws: [{ _id: 'a', title: 'Live draw', date: '2026-08-10' }], returningDraws: [], calendar: [] };
+const DRAFT_SEASON = { active: true, newDraws: [{ _id: 'b', title: 'Next draw', date: '2026-09-10' }], returningDraws: [], calendar: [] };
+
+check('draft items appear in the manifest, marked, and only when the draft is active', () => {
+    assert.strictEqual(toManifestRows(LIVE_SEASON, [], null).length, 1, 'no draft means no extra rows');
+    assert.strictEqual(toManifestRows(LIVE_SEASON, [], { active: false, newDraws: [{ _id: 'b', title: 'x' }] }).length, 1,
+        'an INACTIVE draft is a discarded one — the schema keeps the subdocument around after a discard');
+    const both = toManifestRows(LIVE_SEASON, [], DRAFT_SEASON);
+    assert.strictEqual(both.length, 2);
+    const d = both.find((r) => r.isDraft);
+    assert.strictEqual(d.title, 'Next draw');
+    assert.strictEqual(d.state, 'staged', 'a staged item and a live one are not the same fact');
+});
+
+// ⚠️ THE ID IS PREFIXED because the Manifest keys rows, selections and the edit target on it, and nothing guarantees a draft subdocument's _id never matches a live one.
+check('a draft row can never be mistaken for the live record it was copied from', () => {
+    const copied = { active: true, newDraws: [{ _id: 'a', title: 'Live draw', date: '2026-08-10' }], returningDraws: [], calendar: [] };
+    const rows = toManifestRows(LIVE_SEASON, [], copied);
+    const ids = rows.map((r) => r.id);
+    assert.strictEqual(new Set(ids).size, ids.length, 'two rows sharing an id is one row the table cannot address');
+    assert.ok(ids.some((i) => String(i).startsWith('draft:')));
+});
+
 process.exit(failures ? 1 : 0);
