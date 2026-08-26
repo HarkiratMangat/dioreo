@@ -381,6 +381,18 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ The backtick-in-a-template trap fired for the **ninth** time, in the comment recording why the overlap group was removed. Caught at `node --check` this time, because an odd count fails loudly — it is the even counts that ship.
 
+### The routes get executed, and the first run finds an empty diff on the review screen
+
+**`scripts/portalRoutes.test.js` calls the handlers.** Nothing in this suite ever had: `portalApi` is a source scan for `requireAdmin`, the rest test pure functions, and `portalHarness` compares the stub's keys against the routes' promised keys without ever sending a request. It runs handlers straight out of `ROUTES` rather than over HTTP — no listener, no port collision, and no chance of hitting a portal somebody else is running. ⚠️ **The refusal cases run everywhere, always** (`sessionFor` returns null on a missing cookie before it queries), and the 200 cases **skip loudly** without a local database.
+
+🔴 **AND IT FOUND A SILENT-WRONG-RESULT BUG IN ITS FIRST RUN.** `previewSet` reproduced the exact `||` defect that `validateSet`, twenty lines above it, had already been fixed for — under a comment explaining the hazard at length. Most entities' `validate()` returns only `{ payload }`, so handing the bare result to `preview()` drops `target`, and `draw.edit`'s preview threw on `op.target.category`. **`/api/review` catches preview failures and still answers 200**, so every staged `draw.edit` had been rendering an **empty diff** on the review screen — the one screen whose entire job is showing what is about to change. **A fix that lands in one function and not its neighbour is how a defect survives being fixed.**
+
+⚠️ **The test skipped itself the first time, and the reason is worth knowing.** `require('portal/server')` pulls in modules that call dotenv against the **production** `.env`, and dotenv does not overwrite a variable that is already set — so a later `config({ path: '.env.dev' })` is a no-op and `process.env.MONGODB_URI` is the live Atlas URI. It read prod's URI, saw it was not local, and stood down on a machine with a perfectly good `mongod` running. It parses `.env.dev` itself now, which also makes the local-only guard absolute.
+
+**The Board moved onto the adopted classes** — `.bbar`, `.bcols`, `.bcol` with a real header, `.bcard` with the realm's accent. 🔴 **And the card stopped being a `<button>`, because it contains buttons.** A button inside a button is invalid HTML and the browser does not error: it closes the outer one early and reparents what follows, so the card's own click target silently stopped covering its own content. It had been that way through the `.card` version too. Gated now, with a falsifier. ⚠️ **The column note moved into the header**: it used to sit under the cards, so a column with six of them put its own explanation a screenful below the thing it explains — the affordance-distance shape again.
+
+⚠️ **The backtick-in-a-comment trap fired for the tenth and eleventh times in one hour**, one of them inside the comment recording the previous one. The build refuses to emit a file with a backtick in an HTML comment now — the source-level check existed but ran at the END of the suite, so a broken build got as far as four failing render cases whose message named a variable nobody wrote (`sum is not defined`, from a comment that said `.bcol-sum`).
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

@@ -31,7 +31,17 @@ function vendorPreactAndHtm() {
 
 // 🔴 `node --check` PARSES AS COMMONJS AND IS A FALSE GREEN ON THESE FILES. A stray backtick inside an HTML comment inside an html`` template closes the template early — the file then parses fine as a script and fails as a module, so the CommonJS check passes and the browser gets a SyntaxError. This trap has now fired five times on this branch, twice inside the comment documenting the previous occurrence. Parsing each ESM file the way the browser will parse it is the only check that can see it, and the build is where it belongs: a build that emits a file no browser can load has not built anything.
 //
-// ⚠️ The .logic.js siblings are deliberately EXCLUDED — they ship as classic scripts and are read by Node as CommonJS, so module-mode parsing is the wrong grammar for them (a top-level `module.exports` is legal in one and not the other).
+// ⚠️ The .logic.js siblings are deliberately EXCLUDED — they ship as classic scripts and are read by Node as CommonJS, so module-mode parsing is the wrong grammar for them (a top-level `module.exports` is legal in one and not the other). 🔴 AN EVEN NUMBER OF BACKTICKS IS THE CASE assertParsesAsModule CANNOT SEE, AND IT IS THE ONE THAT SHIPS. Two backticks inside an HTML comment CLOSE the surrounding template and REOPEN it, so the prose between them becomes an expression: the file parses cleanly as a module, the build passes, and the page throws at render — "sum is not defined" from a comment that said .bcol-sum, "Cannot read properties of null (reading 'bed')" from one that said .bed. The odd count fails loudly at parse time; this is the guard for the even one. Eleven occurrences on this branch, three of them inside the comment documenting the previous occurrence.
+//
+// ⚠️ At BUILD time rather than only in the suite: the source-level version in portalChrome.test.js runs after everything else, so a broken build got as far as four failing render cases with a message naming a variable nobody wrote. Refusing to emit the file is the earliest this can be caught.
+function assertNoBacktickInComments(file, src) {
+    for (const m of src.matchAll(/<!--[\s\S]*?-->/g)) {
+        if (!m[0].includes('`')) continue;
+        const line = src.slice(0, m.index).split('\n').length;
+        throw new Error(`portal/ui/${file}:${line} has a backtick inside an HTML comment — it closes the surrounding template. Say the name in plain words.`);
+    }
+}
+
 function assertParsesAsModule(file, src) {
     const r = spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src, encoding: 'utf8' });
     if (r.status !== 0) {
@@ -44,7 +54,7 @@ function copyUiScripts() {
     const files = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.js'));
     for (const f of files) {
         const src = fs.readFileSync(path.join(UI_DIR, f), 'utf8');
-        if (!f.endsWith('.logic.js')) assertParsesAsModule(f, src);
+        if (!f.endsWith('.logic.js')) { assertNoBacktickInComments(f, src); assertParsesAsModule(f, src); }
         copyFile(path.join(UI_DIR, f), path.join(UI_OUT, f));
     }
     return files;

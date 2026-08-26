@@ -215,7 +215,7 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
     return out;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, panelTitle, commands = [] }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [] }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
@@ -250,7 +250,12 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                 ${viewOptions ? html`
                     <section class="panel" aria-label=${`${realm} view`}>
                         <div class="ph">
-                            <span class="t">${panelTitle || realm}</span>
+                            <!-- ⚠️ panelTitle USED TO BE A PROP AND NOTHING EVER PASSED IT. Filed as dead code
+                                 alongside tools, which turned out to have a real home (the zoomer). This one
+                                 does not: every realm's panel is titled with the realm, the adopted mockups
+                                 title them the same way, and a prop that exists so a caller COULD disagree with
+                                 that is an invitation rather than a feature. -->
+                            <span class="t">${realm}</span>
                             <div class="seg" role="tablist" aria-label="View">
                                 ${viewOptions.map((v) => html`
                                     <button role="tab" aria-pressed=${v === view} onClick=${() => onSetView(v)}>${v}</button>`)}

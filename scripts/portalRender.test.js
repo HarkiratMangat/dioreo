@@ -212,6 +212,24 @@ const SEASON_COLUMNS = [
         assert.ok(/all of it lands, or none of it does/.test(out), 'Ready states the all-or-nothing contract');
     });
 
+    // 🔴 A BUTTON INSIDE A BUTTON IS INVALID HTML and the browser does not error — it closes the outer one early and reparents what follows, so the card's own click target silently stops covering its own content. The pipeline card carried a Discard button inside a card button for the whole life of this component.
+    check('no control nests inside another control', () => {
+        const nested = [
+            { _id: 'a', tier: 3, state: 'staged', exportedAt: null, realm: 'season', ops: [{ type: 'draw.delete', target: {}, payload: {} }] },
+        ];
+        const out = render(html`<${Board} changesets=${nested} onExport=${() => {}} onDiscard=${() => {}} />`);
+        assert.ok(!/<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/.test(out),
+            'a <button> opens before the previous one closes — the browser will reparent this');
+    });
+
+    check('THE NESTING GATE CAN FAIL: a button opened inside another is caught', () => {
+        const bad = '<button class="card"><span>x</span><button>Discard</button></button>';
+        const good = '<div role="button"><span>x</span><button>Discard</button></div>';
+        const re = /<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/;
+        assert.ok(re.test(bad), 'the nested form must be caught');
+        assert.ok(!re.test(good), 'a div wrapper must not be a false positive');
+    });
+
     check('an empty Board explains itself instead of showing four empty columns', () => {
         const out = render(html`<${Board} changesets=${[]} onCommit=${() => {}} onExport=${() => {}} />`);
         assert.ok(/Nothing is staged/.test(out), 'it says what would put something here');
