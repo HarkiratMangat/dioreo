@@ -150,6 +150,7 @@ rg -n '^- `\[P' docs/db-deferred-list.md
 | ⛔ Don't | Do instead |
 |---|---|
 | Re-run the full test suite "to be safe" | **Skip what you would not otherwise have run.** Same branch, same chat: the suites are unchanged. Note their state instead |
+| Run every gate after a docs edit | **Run only the gate that CONSUMES what you changed.** Markdown cannot break `portal:gate`, `portal:refs` or `portal:roundtrip` — after a handoff/memory/tracker edit the only consumer is `docs:audit`. Ran the full set five times at this boundary; four were markdown-only |
 | Re-run slow browser harnesses **whose last result was GREEN** | **Declare them stale in the handoff.** Nobody acts on a green, so not knowing costs nothing |
 | ⚠️ …but **NOT if the change since that green could plausibly have broken them** | 🔴 **A stale green is safe; a stale RED is a landmine.** Run it. Two tool calls now, with full context, beats the next session hitting a failure cold and re-deriving why the change was made. The asymmetry is the whole rule — visual, layout, contrast or token changes since the last green mean RUN IT |
 | Re-read files you have already read | The content is already in context. `git diff` shows what moved |
