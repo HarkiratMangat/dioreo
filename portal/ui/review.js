@@ -62,8 +62,8 @@ function OpDetail({ op, resolved, onResolve }) {
                     <div>
                         <b>This record changed after you staged the change</b>
                         <p>Somebody edited <b>${op.name}</b> in Discord while it sat here, so the value you are about to
-                           overwrite is not the value you saw. The inverse captured for this op would restore the
-                           <em>old</em> old value, which is not what you want.</p>
+                           overwrite is not the value you saw. The inverse captured for this op would restore the${' '}
+                           <em>old</em> value, which is not the value you want.</p>
                         <div class="rvcx">
                             <button class="chip go" onClick=${() => onResolve(op, 'keep')}>Keep mine, overwrite theirs</button>
                             <button class="chip" onClick=${() => onResolve(op, 'drop')}>Drop my change</button>

@@ -53,13 +53,24 @@ export function Drawer({ eyebrow, title, children, actions, wide, side, onClose 
 }
 
 // A confirmation names the OPERATION and its tier, because "are you sure?" is a question nobody can answer. The destructive variant takes `dang`; everything else takes `go`.
-export function Confirm({ op, tier, title, body, confirmLabel, danger, onConfirm, onCancel }) {
+//
+// 🔴 `typed` IS THE TIER-3 GATE, AND THE WORD IS NEVER "DELETE". review.logic.js already makes this argument for the commit screen — muscle memory carries you straight through a word you have typed a hundred times — so the word is always something specific to the thing in front of you: the Discord id being revoked, the id fragment of the changeset being committed. Typing it means you looked at it, which is the entire point and the only thing a confirmation can actually buy.
+//
+// ⚠️ The gate is on the BUTTON, not on the submit path: an enabled button that then refuses is a control lying about its own state. typedConfirmReady comes from overlay.logic.js (classic script, same cross-runtime mechanism as every other .logic.js here).
+export function Confirm({ op, tier, title, body, confirmLabel, danger, typed, onConfirm, onCancel }) {
+    const [text, setText] = useState('');
+    const ready = !typed || typedConfirmReady(text, typed);
     return html`
         <${Drawer} eyebrow=${op ? `${op} · tier ${tier || 3}` : `tier ${tier || 3}`} title=${title} onClose=${onCancel}
                    actions=${html`
                        <button class="btn" onClick=${onCancel}>Cancel</button>
-                       <button class=${'btn ' + (danger ? 'dang' : 'go')} onClick=${onConfirm}>${confirmLabel}</button>`}>
+                       <button class=${'btn ' + (danger ? 'dang' : 'go')} disabled=${!ready}
+                               onClick=${() => ready && onConfirm()}>${confirmLabel}</button>`}>
             ${body}
+            ${typed ? html`
+                <label class="tc-l" for="tc-in">Type <b>${typed}</b> to confirm</label>
+                <input class="tc-in" id="tc-in" autocomplete="off" spellcheck="false" placeholder=${typed}
+                       value=${text} onInput=${(e) => setText(e.target.value)} />` : null}
         <//>`;
 }
 

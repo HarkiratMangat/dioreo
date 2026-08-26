@@ -34,9 +34,12 @@ function check(name, fn) {
 }
 
 // The realm components read their pure helpers as BARE GLOBALS, because those siblings ship as classic <script> tags rather than modules (see portal/ui/track.js's header for why). A browser gets them from the script tags; Node gets them from here. Same files, same functions.
+//
+// 🔴 DERIVED FROM THE DIRECTORY, NEVER LISTED. This was a hardcoded array of seven names, and buildPortal has always emitted a script tag for EVERY *.logic.js — so the browser got the new ones and this harness did not. Adding palette.logic.js broke two Shell cases with `paletteHits is not defined`, which reads as a bug in the component and was a stale list in the test. A source list is only ever as complete as its list; globbing the same directory the build globs is the only version that cannot fall behind.
 function installLogicGlobals() {
-    for (const mod of ['board', 'season', 'track', 'manifest', 'armory', 'broadcast', 'v2Render']) {
-        Object.assign(globalThis, require(`../portal/ui/${mod}.logic`));
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.logic.js'))) {
+        Object.assign(globalThis, require(path.join(dir, f)));
     }
 }
 
@@ -61,6 +64,7 @@ const SEASON_COLUMNS = [
     const { Shell, Masthead, Rail, Door } = await import('../portal/public/.ssr/ui/shell.js');
     const { Manifest } = await import('../portal/public/.ssr/ui/manifest.js');
     const { Board } = await import('../portal/public/.ssr/ui/board.js');
+    const { Confirm } = await import('../portal/public/.ssr/ui/overlay.js');
 
     const session = { discordId: '1139845545754632283', isOwner: true, csrfToken: 'x', visibleRealms: ['season', 'armory', 'broadcast', 'access', 'analytics'] };
 
@@ -215,6 +219,55 @@ const SEASON_COLUMNS = [
     check('the view switcher is absent when a realm has only one view', () => {
         const out = render(html`<${Shell} realm="access" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
         assert.ok(!out.includes('role="tablist"'), 'no empty tab group on a single-view realm');
+    });
+
+    // ── THE CHROME ────────────────────────────────────────────────────────────────────────────
+    //
+    // 🔴 THE COMMAND BAR RENDERED COMPLETELY AND DID NOTHING for the whole of the migration, which is exactly the class of defect a render test can catch and a screenshot cannot: the markup was right. These cases assert the two halves that make it real — a combobox wired to a list, and a list that is CLOSED until somebody opens it.
+    check('the header ships a real command bar: a combobox, its listbox, and both closed on arrival', () => {
+        const out = render(html`<${Shell} realm="season" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
+        assert.ok(out.includes('role="combobox"'), 'the input announces itself as a combobox');
+        assert.ok(out.includes('aria-controls="cbList"') && out.includes('id="cbList"'),
+            'the input points at a listbox that actually exists — the pair is what makes it navigable');
+        assert.ok(out.includes('aria-expanded="false"'), 'closed on arrival');
+        assert.ok(/<div class="cb-drop" hidden/.test(out), 'the dropdown is hidden until intent, never on focus');
+    });
+
+    check('the command bar offers the realms the session can actually see, and never the one you are on', () => {
+        const out = render(html`<${Shell} realm="season" session=${session} viewOptions=${['Track', 'Board']}
+            onSetView=${() => {}} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
+        assert.ok(out.includes('>Track<') && out.includes('>Board<'), "a realm's views reach the palette without the realm declaring them");
+        assert.ok(!/aria-selected="[^"]*">\s*<i[^>]*><\/i>\s*Season\s*</.test(out), 'the realm you are standing on is not offered as a destination');
+        assert.ok(out.includes('Sign out'), 'sign out is reachable from the palette on every realm');
+    });
+
+    // 🔴 THE PORTAL COULD NOT BE SIGNED OUT OF. POST /auth/logout existed from the first build and no surface called it.
+    check('the account panel exists, is closed, and carries the only sign-out in the portal', () => {
+        const out = render(html`<${Shell} realm="armory" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
+        assert.ok(out.includes('class="whobtn"') && out.includes('aria-haspopup="menu"'), 'the trigger is a real menu button');
+        assert.ok(/<div class="umenu" role="menu"[^>]*hidden/.test(out), 'the panel is closed until asked for');
+        assert.ok(out.includes('Sign out'), 'the panel carries sign out');
+        assert.ok(out.includes(String(session.discordId)), 'the id is WHOLE in the panel — a partial id cannot be checked');
+    });
+
+    // ⚠️ The failure this guards is silent and specific: an unset custom property makes the whole `background` declaration invalid at computed-value time, so the disc and the banner paint TRANSPARENT rather than falling back to a lower-specificity rule.
+    check('the account head sets --banner and --av-src to a VALID value rather than leaving them unset', () => {
+        const out = render(html`<${Shell} realm="armory" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
+        assert.ok(out.includes('--banner:none'), 'the banner names a value the CSS can resolve');
+        assert.ok(out.includes('--av-src:none'), 'the avatar disc names a value the CSS can resolve');
+    });
+
+    check('a typed confirmation renders its gate and holds the button shut until it is satisfied', () => {
+        const shut = render(html`<${Confirm} op="admin.revoke" tier=${3} typed="1139845545754632283" danger=${true}
+            title="Revoke this admin entirely?" confirmLabel="Revoke all access"
+            body=${html`<p class="dw-p">x</p>`} onConfirm=${() => {}} onCancel=${() => {}} />`);
+        assert.ok(shut.includes('class="tc-l"') && shut.includes('class="tc-in"'), 'the typed field is rendered, not implied');
+        assert.ok(/Revoke all access<\/button>/.test(shut) && /disabled[^>]*>Revoke all access/.test(shut),
+            'the destructive button is disabled until the word is typed');
+        const open = render(html`<${Confirm} op="changeset.discard" tier=${1} title="Discard?" confirmLabel="Discard"
+            body=${html`<p class="dw-p">x</p>`} onConfirm=${() => {}} onCancel=${() => {}} />`);
+        assert.ok(!open.includes('class="tc-in"'), 'a confirmation with no typed word grows no field');
+        assert.ok(!/disabled[^>]*>Discard/.test(open), 'and its button is live');
     });
 
     process.exit(failures ? 1 : 0);

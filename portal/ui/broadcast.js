@@ -8,6 +8,7 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
+import { useOverlay } from './overlay.js';
 
 const fmtDay = (v) => new Date(v).toDateString().slice(4);
 
@@ -185,6 +186,7 @@ export function BroadcastRealm({ session }) {
     const [showAdd, setShowAdd] = useState(false);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('Now showing');
+    const overlay = useOverlay();
 
     function refresh() { fetchJson('/api/broadcast').then(setData); }
     useEffect(refresh, []);
@@ -202,6 +204,7 @@ export function BroadcastRealm({ session }) {
     async function handleAdd(op) {
         await stageOps('broadcast', [op], session.csrfToken);
         setShowAdd(false);
+        overlay.say('Announcement staged. Nothing reaches a player until you commit it.', 'Review', () => { location.hash = '#/review'; });
         refresh();
     }
 
@@ -209,7 +212,27 @@ export function BroadcastRealm({ session }) {
     async function handleBulkDelete(ids) {
         const ops = ids.map((id) => ({ type: 'announcement.delete', target: { id }, payload: {} }));
         if (ops.length) await stageOps('broadcast', ops, session.csrfToken);
+        overlay.say(`${ids.length} deletion${ids.length === 1 ? '' : 's'} staged.`, 'Review', () => { location.hash = '#/review'; });
         refresh();
+    }
+
+    // A live announcement is the one thing in this portal a player is looking at RIGHT NOW, so the confirmation says which of the selected ones are live rather than treating the set as uniform.
+    function confirmBulkDelete(ids) {
+        const chosen = rows.filter((r) => ids.includes(r.id));
+        const live = chosen.filter((r) => r.state === 'live').length;
+        overlay.confirm({
+            op: 'announcement.delete', tier: 2, danger: true, confirmLabel: 'Stage deletion',
+            title: `Stage deletion of ${ids.length} announcement${ids.length === 1 ? '' : 's'}?`,
+            body: html`
+                <p class="dw-p">${live
+                    ? html`<b>${live} of these ${live === 1 ? 'is' : 'are'} showing to players right now.</b> `
+                    : null}Nothing changes yet — this stages the deletion, and the announcements keep showing until
+                    the changeset is committed on the Review screen.</p>
+                <ul class="dw-l">${chosen.slice(0, 6).map((r) => html`
+                    <li key=${r.id}>${r.text.slice(0, 64)}${r.text.length > 64 ? '…' : ''}</li>`)}
+                    ${ids.length > 6 ? html`<li>…and ${ids.length - 6} more</li>` : null}</ul>`,
+            onConfirm: () => handleBulkDelete(ids),
+        });
     }
 
     function handleExportSelection(ids) {
@@ -220,6 +243,11 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
+                  overlaySlot=${overlay.render()}
+                  commands=${[
+                      { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
+                        keywords: ['new', 'write', 'say', 'announce'], run: () => setShowAdd(true) },
+                  ]}
                   masthead=${html`<${Masthead} title="Broadcast" sub="One text field, delivered once per player, in the order it was written — and the two things Discord never shows you: what has not started yet, and what will never stop."
                                                stats=${[
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
@@ -241,7 +269,7 @@ export function BroadcastRealm({ session }) {
                                                     onEditError=${(msg) => setNotice(msg)}
                                                     bulkActions=${[
                                                         { label: 'Export selection', onClick: handleExportSelection },
-                                                        { label: 'Stage deletion', danger: true, onClick: handleBulkDelete },
+                                                        { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
                                                     ]} />`} />
     `;
 }

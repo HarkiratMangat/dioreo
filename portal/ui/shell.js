@@ -6,6 +6,9 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { Icon } from './icons.js';
+import { useState, useEffect } from '../vendor/preact-hooks.mjs';
+import { CommandBar } from './palette.js';
+import { useOverlay } from './overlay.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -82,41 +85,164 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
     `;
 }
 
+// ── THE ACCOUNT PANEL ─────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE PORTAL HAD NO WAY TO SIGN OUT. `POST /auth/logout` has existed in portal/auth.js since the door was built and no surface has ever called it — so an admin console that hands out 12-hour cookies offered no way to end one, on a shared machine or anywhere else. That is a missing function, not a missing panel, and it is the reason this exists.
+//
+// 🔴 AND IT IS BUILT FROM WHAT THE PORTAL ACTUALLY KNOWS, WHICH IS LESS THAN THE MOCKUP ASSUMED. The approved design leads with a Discord banner, an avatar and a display name, because "the fastest possible answer to whose session this is, is the face the person already recognises". The portal has no face: `GET /auth/csrf` returns `discordId`, `isOwner` and `visibleRealms`, and nothing in this codebase stores a username or an avatar hash. Rendering the mockup's markup anyway would produce `url(undefined)` — a real request, from a page whose whole premise is that it asks for nothing it did not say it would. So the head is quiet on purpose: `--banner`/`--av-src` are set to `none` (a VALID value, so the CSS falls through to its designed `--sunk` ground rather than being dropped as invalid-at-computed-value-time and painting transparent), the disc carries Discord's own mark, and the identity is the id — whole, as the design insists, in the one slot whose type size fits nineteen digits.
+//
+// ⚠️ The OWNER badge is ABSENT for a non-owner rather than reading "ADMIN", the same rule the commit chip follows: a badge every account carries states nothing, and "Dioreo admin" above it already says what the account is.
+const DISCORD_MARK = 'M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.5c1.6.4 2.9 1 4.2 1.8a16.6 16.6 0 0 0-14.7 0A17 17 0 0 1 8.9 3.5L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.9 8.5.2 12.5.5 16.4a19.9 19.9 0 0 0 6 3l1.2-1.9c-.7-.2-1.3-.5-1.9-.9l.4-.3a14.2 14.2 0 0 0 11.6 0l.5.3c-.6.4-1.3.7-2 .9l1.2 1.9a19.8 19.8 0 0 0 6-3c.5-4.6-.6-8.6-3.2-12zM8.5 14.2c-1.2 0-2.1-1.1-2.1-2.4S7.3 9.4 8.5 9.4s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z';
+
+// ⚠️ "SESSION · 12 HOURS" STATES THE POLICY; THIS STATES A FACT ABOUT THE READER. models/PortalSession.js expires a row 12 hours after `createdAt` via a Mongo TTL index, so the deadline is real and knowable — /auth/csrf now sends it. Absent (an older session, or a fetch that predates the field) reads as an em dash rather than a guessed countdown.
+function sessionLeft(expiresAt) {
+    if (!expiresAt) return '—';
+    const left = new Date(expiresAt).getTime() - Date.now();
+    if (!Number.isFinite(left) || left <= 0) return 'expired';
+    const hrs = Math.floor(left / 3600000), mins = Math.floor((left % 3600000) / 60000);
+    return hrs ? `expires in ${hrs}h ${String(mins).padStart(2, '0')}m` : `expires in ${mins}m`;
+}
+
+function Account({ session, staged, onSignOut }) {
+    const [open, setOpen] = useState(false);
+    // One minute is the right cadence for a twelve-hour clock: faster is a spinning number nobody reads, slower and the last minute of a session is a lie. Only while the panel is open — a closed panel ticking is a timer nobody can see.
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        if (!open) return undefined;
+        const id = setInterval(() => setTick((n) => n + 1), 60000);
+        return () => clearInterval(id);
+    }, [open]);
+    useEffect(() => {
+        if (!open) return undefined;
+        const away = (e) => { if (!e.target.closest || !e.target.closest('.who')) setOpen(false); };
+        const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('pointerdown', away);
+        document.addEventListener('keydown', esc);
+        return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
+    }, [open]);
+
+    if (!session) return null;
+    const id = String(session.discordId);
+    const realms = (session.visibleRealms || []).filter((r) => r !== 'review');
+    const reach = session.isOwner ? 'everything' : `${realms.length} realm${realms.length === 1 ? '' : 's'}`;
+
+    return html`
+        <span class="who">
+            <button class="whobtn" aria-expanded=${open ? 'true' : 'false'} aria-haspopup="menu"
+                    onClick=${(e) => { e.stopPropagation(); setOpen(!open); }}>
+                <span class="av" aria-hidden="true"></span>
+                <span class="id" title=${id}>…${id.slice(-4)}</span>
+                <span class="cv" aria-hidden="true"></span>
+            </button>
+            <div class="umenu" role="menu" aria-label="Account" hidden=${!open}>
+                <div class="ubanner" style="--banner:none" aria-hidden="true"></div>
+                <div class="uid">
+                    <span class="uav" style="--av-src:none" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20" style="opacity:.7"><path fill="currentColor" d=${DISCORD_MARK} /></svg>
+                    </span>
+                    <span class="un"><b>Dioreo admin</b><span>${id}</span></span>
+                    ${session.isOwner ? html`<span class="rolebadge">OWNER</span>` : null}
+                </div>
+                <div class="usec">
+                    <div class="ustat"><span>What you can reach</span><b>${reach}</b></div>
+                    <div class="ustat"><span>Session</span><b>${sessionLeft(session.sessionExpiresAt)}</b></div>
+                </div>
+                <div class="usec">
+                    <button class="mi" role="menuitem" onClick=${() => { setOpen(false); navigator.clipboard?.writeText(id); }}>
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z" /><path d="M3 11V3h8" /></svg>
+                        Copy Discord ID
+                    </button>
+                </div>
+                <div class="usec last">
+                    <button class="mi danger" role="menuitem" onClick=${() => { setOpen(false); onSignOut(staged); }}>
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3H4v10h6" /><path d="M8 8h6M12 6l2 2-2 2" /></svg>
+                        Sign out
+                    </button>
+                </div>
+            </div>
+        </span>
+    `;
+}
+
 // The header bar. The command bar is THE bar rather than a launcher for one: it used to be a 44px ⌘K chip in a header with ~700px of unused space, which is a keyboard shortcut wearing a button's clothes — it advertised a feature instead of being one.
 //
 // ⚠️ The commit chip is ABSENT at zero rather than reading "0 staged". A chip that is always there is a permanent third copy of the tray and the rail badge; one that appears only when there is something to act on is the same fact at the moment it becomes actionable.
-function Header({ realm, view, session, staged, onCommand }) {
-    const id = session ? String(session.discordId) : '';
+function Header({ realm, view, session, staged, commands, onSignOut }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <span class="crumb">${realm}${view ? html` <b>›</b> ${view}` : null}</span>
+            <span class="crumb">${realm}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
-            <div class="cmdbar">
-                <span class="cb-mag" aria-hidden="true"></span>
-                <input class="cb-in" autocomplete="off" spellcheck="false"
-                       placeholder="Search, or run a command" aria-label="Search, or run a command"
-                       onInput=${onCommand} />
-                <kbd>⌘K</kbd>
-            </div>
+            <${CommandBar} commands=${commands} realmLabel=${realm} />
             <span class="sp"></span>
             ${staged ? html`
                 <a class="hdr-commit" href="#/review"><b>${staged}</b><span>staged · review</span></a>` : null}
-            ${session ? html`
-                <span class="who">
-                    <span class="av" aria-hidden="true"></span>
-                    <span class="id" title=${id}>${id}</span>
-                    ${session.isOwner ? html`<span class="role">owner</span>` : null}
-                </span>` : null}
+            <${Account} session=${session} staged=${staged} onSignOut=${onSignOut} />
         </header>
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, panelTitle }) {
+// Everything the command bar can do that is true on EVERY realm: go somewhere, and end the session. A realm adds its own verbs through `commands`; it never has to re-declare navigation, and it cannot accidentally ship a page whose bar knows less than the page next door.
+//
+// ⚠️ THE VIEW SWITCHES ARE DERIVED, NOT DECLARED. Shell already receives `viewOptions`/`onSetView` to draw the tab strip, so the palette reads the same two values — which means the bar and the tabs can never offer different views, and a realm that adds a view gets it in the palette for free rather than by remembering to.
+function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut }) {
+    const out = [];
+    if (viewOptions) {
+        for (const v of viewOptions) {
+            out.push({ label: v, group: 'view', local: true, accent: `var(--r-${realm})`,
+                       keywords: ['view', 'switch', 'tab'], run: () => onSetView(v) });
+        }
+    }
+    const visible = (session?.visibleRealms || REALMS);
+    out.push({ label: 'What needs you', group: 'home', accent: 'var(--warn)',
+               keywords: ['home', 'start', 'overview', 'dashboard'], run: () => { location.hash = '#/home'; } });
+    for (const r of visible.filter((x) => x !== 'review' && x !== realm)) {
+        out.push({ label: r.charAt(0).toUpperCase() + r.slice(1), group: 'realm', accent: `var(--r-${r})`,
+                   keywords: ['go', 'open', 'realm'], run: () => { location.hash = '#/' + r; } });
+    }
+    if (realm !== 'review') {
+        out.push({ label: staged ? `Review & commit — ${staged} staged` : 'Review & commit', group: 'commit',
+                   accent: 'var(--r-review)', keywords: ['commit', 'staged', 'changeset', 'apply'],
+                   run: () => { location.hash = '#/review'; } });
+    }
+    if (session) {
+        out.push({ label: 'Copy my Discord ID', group: 'account', accent: 'var(--ink3)',
+                   keywords: ['id', 'clipboard', 'snowflake'],
+                   run: () => navigator.clipboard?.writeText(String(session.discordId)) });
+        out.push({ label: 'Sign out', group: 'account', accent: 'var(--danger-ink)',
+                   keywords: ['logout', 'log out', 'leave', 'end session'], run: () => onSignOut(staged) });
+    }
+    return out;
+}
+
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, panelTitle, commands = [] }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
+    // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
+    const chrome = useOverlay();
+
+    // 🔴 SIGNING OUT IS CONFIRMED, AND THE CONFIRMATION SAYS WHAT HAPPENS TO STAGED WORK. The door page promises staged work is held against your account and comes back when you sign back in; a sign-out that says nothing invites the reader to assume the opposite, one click from the page that promised it. Staging is server-side (models/Changeset.js), so this is a statement of fact, not reassurance.
+    function signOut(n) {
+        chrome.confirm({
+            op: 'session.end', tier: 1, confirmLabel: 'Sign out', danger: true,
+            title: 'Sign out of the portal?',
+            body: n
+                ? html`<p class="dw-p">You have <b>${n} staged change${n === 1 ? '' : 's'}</b>. They stay staged against
+                    your account and will be here when you sign back in — signing out ends this browser session only.</p>`
+                : html`<p class="dw-p">Nothing is staged. Signing out just ends this browser session.</p>`,
+            onConfirm: async () => {
+                // requireAdmin verifies CSRF on every non-GET, so the token rides along; the route clears the cookie and 302s to the door.
+                await fetch('/auth/logout', { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } }).catch(() => {});
+                location.href = '/';
+            },
+        });
+    }
+
+    const allCommands = chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut: signOut }).concat(commands);
+
     return html`
         <div class="app">
-            <${Header} realm=${realm} view=${view} session=${session} staged=${staged} />
+            <${Header} realm=${realm} view=${view} session=${session} staged=${staged}
+                       commands=${allCommands} onSignOut=${signOut} />
             <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
             <main>
                 ${masthead || null}
@@ -139,6 +265,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             </main>
             ${traySlot || null}
             ${overlaySlot || null}
+            ${chrome.render()}
         </div>
     `;
 }

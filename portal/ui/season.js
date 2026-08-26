@@ -477,23 +477,25 @@ export function SeasonRealm({ session }) {
         if (ops.length) { await stageOps('season', ops, session.csrfToken); fetchSeasonState().then(setState); fetchChangesets('season').then(setChangesets); }
     }
 
+    // 🔴 TWO DISCARD BUTTONS, TWO DIFFERENT CONFIRMATIONS, ONE ACTION. The staged panel opened the shared drawer; the Board's own card called a native confirm() from inside board.js — so the same act asked for permission in two different voices depending on which view you happened to be in, and only one of them could say the tier. Both go through this now, and board.js no longer owns a dialog at all.
+    const confirmDiscard = (c) => overlay.confirm({
+        op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard',
+        title: 'Discard this staged change?',
+        body: html`<p class="dw-p">Nothing live is undone — this change never reached Discord. Only what has not
+            committed yet is abandoned.</p>`,
+        onConfirm: () => handleDiscard(String(c._id)),
+    });
+
     const identitySlot = html`<${SeasonIdentity} season=${state.live} editingDraft=${false} draftStaged=${Boolean(state.draft)}
                                                  today=${todayIso()} onSave=${handleIdentitySave} />`;
 
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-               <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')}
-                                onDiscard=${(c) => overlay.confirm({
-                                    op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard',
-                                    title: 'Discard this staged change?',
-                                    body: html`<p class="dw-p">Nothing live is undone — this change never reached
-                                        Discord. Only what has not committed yet is abandoned.</p>`,
-                                    onConfirm: () => handleDiscard(String(c._id)),
-                                })} />
+               <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
                <${Track} data=${trackData}
                           draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd(true)} />`
-        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} onDiscard=${handleDiscard} />`;
+        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}

@@ -160,7 +160,8 @@ async function sessionFor(req) {
     if (Date.now() - new Date(row.lastSeenAt).getTime() > 60_000) {
         PortalSession.updateOne({ sessionHash }, { lastSeenAt: new Date() }).catch((e) => console.error('Portal lastSeenAt update failed:', e));
     }
-    return { discordId: row.discordId, sessionId: sessionHash };
+    // createdAt rides along so /auth/csrf can tell the browser when this session expires — the account panel states a fact about the reader rather than restating the 12-hour policy at them.
+    return { discordId: row.discordId, sessionId: sessionHash, createdAt: row.createdAt };
 }
 
 function csrfToken(session) {
@@ -196,7 +197,11 @@ function registerAuthRoutes(route) {
         const { BROADCAST_PAGES } = require('./api/broadcast');
         const owner = isOwner(session.discordId);
         const realms = await visibleRealms(session.discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES });
-        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms: realms });
+        // The deadline is Mongo's own: models/PortalSession.js expires the row SESSION_TTL_SECONDS after createdAt, so this is when the session actually stops working rather than a client-side guess. Null for a row written before createdAt was carried through, which the panel renders as an em dash instead of inventing a countdown.
+        const expiresAt = session.createdAt
+            ? new Date(new Date(session.createdAt).getTime() + PortalSession.SESSION_TTL_SECONDS * 1000).toISOString()
+            : null;
+        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms: realms, sessionExpiresAt: expiresAt });
     }));
     route('POST', /^\/auth\/logout$/, requireAdmin(async (req, res, url, session) => {
         await PortalSession.updateOne({ sessionHash: session.sessionId }, { revokedAt: new Date() });

@@ -204,4 +204,30 @@ check('THE CHIP GATE CAN FAIL: a sample line with a chip before a comma is caugh
 });
 
 
+// 🔴 htm DROPS THE WHITESPACE AROUND A LINE BREAK, so a sentence that wraps just before an inline tag loses the space that was holding two words apart. Measured live in the Access revoke drawer: "permissions held by<b>411000000000000002</b>" rendered as "held by411000000000000002". Three more were already in the tree and had been for weeks — "run the<code>/bot analytics</code>" on the Analytics callout, and "restore the<em>old</em>" on the Review conflict card — because the source looks perfectly correct and only the rendered page shows it. Same family as the chip gate above, same reason for existing.
+//
+// ⚠️ DELIBERATELY LIMITED TO INLINE TEXT TAGS, and the omission is the interesting part: the identical break before a `${…}` expression is the SAME defect when the expression yields text, and is CORRECT when it yields a positioned element — the rail's own staged-count badge is `position:absolute`, so a space there would be wrong. A gate cannot tell those apart from the source, and a gate with a false positive gets suppressed rather than obeyed. The tags below are the set where a missing space is always wrong.
+const INLINE_TEXT_TAG = /^<(b|code|em|i|strong|abbr|kbd|sup|sub)\b/;
+check('no sentence wraps straight into an inline tag, losing the space between the words', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js') && !n.endsWith('.logic.js'))) {
+        const lines = fs.readFileSync(path.join(dir, f), 'utf8').split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (/^\s*(\/\/|\*|<!--)/.test(lines[i].trim())) continue;
+            if (!/[A-Za-z0-9,;:]$/.test(lines[i])) continue;
+            if (INLINE_TEXT_TAG.test(lines[i + 1].trim())) {
+                offenders.push(`portal/ui/${f}:${i + 1}  …${lines[i].trim().slice(-38)} ⟶ ${lines[i + 1].trim().slice(0, 30)}`);
+            }
+        }
+    }
+    assert.deepStrictEqual(offenders, [], "htm eats the line break, so these render as one run-on word — end the line with ${' '}:\n  " + offenders.join('\n  '));
+});
+
+check('THE WRAP GATE CAN FAIL: a line ending in a word followed by <b> is caught', () => {
+    assert.ok(/[A-Za-z0-9,;:]$/.test('    permissions held by') && INLINE_TEXT_TAG.test('<b>${id}</b> is removed.'));
+    assert.ok(!INLINE_TEXT_TAG.test('${staged ? html`<span class="cnt">'), 'an expression is deliberately NOT gated — see the note above');
+});
+
+
 process.exit(failures ? 1 : 0);

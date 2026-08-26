@@ -177,6 +177,10 @@ export function HomeRealm({ session }) {
 
     return html`
         <${Shell} realm="home" session=${session} badges=${{ review: staged }}
+                  commands=${rows.map((a) => ({
+                      label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm})`,
+                      keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },
+                  }))}
                   masthead=${html`<${Masthead} eyebrow=${html`<span class="job">Dioreo admin</span>`}
                                                title="What needs you" stats=${stats} />`}
                   viewSlot=${html`

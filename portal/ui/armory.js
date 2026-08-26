@@ -10,6 +10,7 @@ import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
 import { renderV2 } from './v2Render.js';
+import { useOverlay } from './overlay.js';
 
 const MODES = ['MP', 'DMZ'];
 
@@ -286,6 +287,7 @@ export function ArmoryRealm({ session }) {
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('Rack');
+    const overlay = useOverlay();
 
     function refresh() { fetchJson('/api/armory').then((d) => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }
     useEffect(refresh, []);
@@ -310,15 +312,34 @@ export function ArmoryRealm({ session }) {
         .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
         .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent }));
 
+    // 🔴 STAGING WITH NO ACKNOWLEDGEMENT READS AS A DROPPED CLICK. The form closed, the table did not change (a staged build is not a live one), and nothing anywhere said the work had landed — so the only way to find out was to open Review and look. The toast carries the way there, because "it is staged" and "here is where staged things go" are the same sentence.
     async function handleAdd(op) {
         await stageOps('armory', [op], session.csrfToken);
         setShowAdd(false);
+        overlay.say('Build staged. Nothing is live until you commit it.', 'Review', () => { location.hash = '#/review'; });
         refresh();
     }
 
     async function handleBulkDelete(ids) {
         await stageOps('armory', [{ type: 'loadout.bulkDelete', target: null, payload: { ids } }], session.csrfToken);
+        overlay.say(`${ids.length} deletion${ids.length === 1 ? '' : 's'} staged.`, 'Review', () => { location.hash = '#/review'; });
         refresh();
+    }
+
+    // ⚠️ THE CONFIRMATION NAMES WHAT SURVIVES, NOT JUST WHAT GOES. This action only STAGES — the builds stay live until somebody commits the changeset — and a dialog that omits that is asking for a decision under the wrong stakes. The bulk note under the table already said so; the moment of deciding is where it has to be said.
+    function confirmBulkDelete(ids) {
+        const named = rows.filter((r) => ids.includes(r.id)).slice(0, 6).map((r) => `${r.weaponName} · ${r.buildName}`);
+        overlay.confirm({
+            op: 'loadout.bulkDelete', tier: 2, danger: true, confirmLabel: 'Stage deletion',
+            title: `Stage deletion of ${ids.length} build${ids.length === 1 ? '' : 's'}?`,
+            body: html`
+                <p class="dw-p">Nothing goes yet. This stages the deletion; the builds stay live and visible in
+                    Discord until the changeset is committed on the Review screen, and discarding it there undoes
+                    this completely.</p>
+                <ul class="dw-l">${named.map((n) => html`<li key=${n}>${n}</li>`)}
+                    ${ids.length > named.length ? html`<li>…and ${ids.length - named.length} more</li>` : null}</ul>`,
+            onConfirm: () => handleBulkDelete(ids),
+        });
     }
 
     async function handleBulkBadges(badgesText) {
@@ -331,6 +352,7 @@ export function ArmoryRealm({ session }) {
         });
         if (ops.length) await stageOps('armory', ops, session.csrfToken);
         setBulkBadgesIds(null);
+        overlay.say(`Badges staged for ${ops.length} build${ops.length === 1 ? '' : 's'}.`, 'Review', () => { location.hash = '#/review'; });
         refresh();
     }
 
@@ -341,6 +363,13 @@ export function ArmoryRealm({ session }) {
 
     return html`
         <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage']} onSetView=${setView}
+                  overlaySlot=${overlay.render()}
+                  commands=${[
+                      { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
+                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
+                      { label: 'Clear the rack and coverage filters', group: 'armory', local: true, accent: 'var(--ink3)',
+                        keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
+                  ]}
                   masthead=${html`<${Masthead} title="Armory"
                                                sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
                                                stats=${armoryStats} />`}
@@ -371,7 +400,7 @@ export function ArmoryRealm({ session }) {
                                    bulkActions=${[
                                        { label: 'Set badges…', onClick: (ids) => setBulkBadgesIds(ids) },
                                        { label: 'Export selection', onClick: handleExportSelection },
-                                       { label: 'Stage deletion', danger: true, onClick: handleBulkDelete },
+                                       { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
                                    ]} />
                       ${bulkBadgesIds ? html`<${BulkBadgesPanel} ids=${bulkBadgesIds} onApply=${handleBulkBadges} onCancel=${() => setBulkBadgesIds(null)} />` : null}
                   `} />

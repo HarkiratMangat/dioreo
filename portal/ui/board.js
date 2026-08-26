@@ -36,8 +36,13 @@ function Card({ changeset, onExport, onOpen, onDiscard, selected }) {
                 </div>
             ` : null}
             ${onDiscard ? html`
+                <!-- 🔴 THIS WAS THE LAST NATIVE confirm() IN THE PORTAL, and it was invisible because it worked.
+                     A browser dialog is the one surface the portal cannot style, cannot make modal on its own
+                     terms, and cannot say a tier in — and it sat on a card in a pipeline whose entire subject is
+                     which changes are safe to take back. The caller supplies a confirming onDiscard now (season.js
+                     opens the shared drawer); this button's job is to ask, not to decide. -->
                 <button class="discard" style="margin-top:6px"
-                        onClick=${(e) => { e.stopPropagation(); if (confirm('Discard this staged change? This does not undo anything already live — it only abandons what has not committed yet.')) onDiscard(String(changeset._id)); }}>Discard</button>
+                        onClick=${(e) => { e.stopPropagation(); onDiscard(changeset); }}>Discard</button>
             ` : null}
         </button>
     `;

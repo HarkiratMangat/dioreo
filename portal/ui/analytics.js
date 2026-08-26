@@ -9,6 +9,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { useOverlay } from './overlay.js';
 
 const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'BOOT' };
 
@@ -95,7 +96,7 @@ function Health({ health }) {
                 <b>These are the bot's records, not a live reading.</b>
                 The portal runs as its own process with no gateway connection, so gateway status and live memory are not
                 readable from here. Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
-                the memory figure come from the <code>AlertLog</code> collection. For a live reading, run the
+                the memory figure come from the <code>AlertLog</code> collection. For a live reading, run the${' '}
                 <code>/bot analytics</code> command in Discord.
             </div>
         </div>
@@ -114,6 +115,7 @@ function MetricsPanel({ title, text, stats }) {
 export function AnalyticsRealm({ session }) {
     const [data, setData] = useState({ river: [], usage: '', timing: '', alerts: '', health: null, usageStats: null, timingStats: null });
     const [view, setView] = useState('Health');
+    const overlay = useOverlay();
     useEffect(() => { fetchJson('/api/analytics').then(setData); }, []);
 
     if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
@@ -121,6 +123,33 @@ export function AnalyticsRealm({ session }) {
     async function revert(changeId) {
         await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
         fetchJson('/api/analytics').then(setData);
+    }
+
+    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL HAD NO CONFIRMATION AT ALL. Everything else here stages; this one fires immediately against live data, once per selected row, and it is the only control that can undo something a person already committed on purpose. It sat in a bulk-action list beside "Export selection".
+    //
+    // ⚠️ NOT a typed gate, and that is a judgement rather than an omission: a revert applies the change's own recorded INVERSE, so the safe direction is the one this button goes in — the risk is reverting the WRONG row, which naming the rows answers and typing a word does not.
+    function confirmRevert(ids) {
+        const chosen = rows.filter((r) => ids.includes(r.id));
+        const revertable = chosen.filter((r) => r.kind === 'change');
+        overlay.confirm({
+            op: 'change.revert', tier: 2, danger: true,
+            confirmLabel: revertable.length === 1 ? 'Revert it' : `Revert ${revertable.length} changes`,
+            title: revertable.length === 1 ? 'Revert this change?' : `Revert ${revertable.length} changes?`,
+            body: html`
+                <p class="dw-p">This applies each change's recorded inverse <b>immediately</b> — it does not stage, and
+                    the Review screen never sees it. The revert is itself recorded here, so it can be reverted in turn.</p>
+                ${chosen.length !== revertable.length ? html`
+                    <p class="dw-p"><b>${chosen.length - revertable.length}</b> of the selected rows${' '}
+                        ${chosen.length - revertable.length === 1 ? 'is an alert or a restart' : 'are alerts or restarts'},
+                        not changes — nothing will happen to ${chosen.length - revertable.length === 1 ? 'it' : 'them'}.</p>` : null}
+                <ul class="dw-l">${revertable.slice(0, 6).map((r) => html`
+                    <li key=${r.id}>${r.summary}</li>`)}
+                    ${revertable.length > 6 ? html`<li>…and ${revertable.length - 6} more</li>` : null}</ul>`,
+            onConfirm: () => {
+                revertable.forEach((r) => revert(r.id));
+                overlay.say(`${revertable.length} change${revertable.length === 1 ? '' : 's'} reverted.`);
+            },
+        });
     }
 
     // The row dot carries the event's KIND, matching its chip. Left ungated it rendered 100 identical grey squares, which is a column of noise -- colour has to mean something or it should not be drawn. --patch/--warn/--ret are the same three signals the chips use, so the dot and the chip never disagree.
@@ -139,6 +168,7 @@ export function AnalyticsRealm({ session }) {
 
     return html`
         <${Shell} realm="analytics" session=${session} view=${view} viewOptions=${['Health', 'Usage', 'Timing']} onSetView=${setView}
+                  overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                stats=${[
                                                    { value: fmtUptime(h.uptimeSince), label: 'uptime' },
@@ -150,6 +180,6 @@ export function AnalyticsRealm({ session }) {
                                                     title="One history, both front doors" filterGroups=${RIVER_FILTERS}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
-                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: (ids) => ids.forEach(revert) }]} />`} />
+                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]} />`} />
     `;
 }
