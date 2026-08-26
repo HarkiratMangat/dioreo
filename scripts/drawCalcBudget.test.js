@@ -219,7 +219,7 @@ t('the Left Over equation nets against the BALANCE-ADJUSTED shortfall, not the r
     const total = pullCount(state.region, state.drawKey);
     const shortfall = shortfallFor(state, total, null);
     const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
-    assert.ok(allText(panel).includes(`\`${shortfall.toLocaleString('en-US')} CP\` Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
+    assert.ok(allText(panel).includes(`${shortfall.toLocaleString('en-US')} CP Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
 });
 
 // ==========================================

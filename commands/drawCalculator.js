@@ -316,9 +316,9 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
     lines.push('');
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
-    // Reads the optimizer's OWN cpEach/priceCents rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so a re-derived 2X combo entry would render the un-doubled figure.
-    const describeCp = r => r.combo.map(c => `**${c.count}×** \`${fmt(c.cpEach)} CP\`${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
-    const describePrices = r => r.combo.map(c => `\`${formatMoney(c.priceCents * c.count, currency)}\``).join(' + ');
+    // Reads the optimizer's OWN cpEach/priceCents rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so a re-derived 2X combo entry would render the un-doubled figure. THIRD mobile pass, 2026-08-26 19:08 EDT (Harkirat, on a screenshot of this exact block): boxing every number here was still too dense -- code-spans are now reserved for the three figures a player actually needs to act on (total price, total CP, and what's left over); the individual per-package counts/prices that sum INTO those totals stay bold-only.
+    const describeCp = r => r.combo.map(c => `**${c.count}×** ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
+    const describePrices = r => r.combo.map(c => `${formatMoney(c.priceCents * c.count, currency)}`).join(' + ');
     const packageLines = (label, r) => compact
         ? [`**${label}:** **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`** — ${describeCp(r)}`]
         : [
@@ -326,7 +326,7 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
             `🔹 **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`**`,
             `-# ${describeCp(r)} ⌇ **\`${fmt(r.totalCp)} CP\`**`,
             `-# ${describePrices(r)} ⌇ **\`${formatMoney(r.totalCents, currency)}\`**`,
-            `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (\`${fmt(r.totalCp)} CP\` Purchase − \`${fmt(shortfall)} CP\` Needed)`
+            `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (${fmt(r.totalCp)} CP Purchase − ${fmt(shortfall)} CP Needed)`
         ];
 
     lines.push('### RECOMMENDED PACKAGE');
