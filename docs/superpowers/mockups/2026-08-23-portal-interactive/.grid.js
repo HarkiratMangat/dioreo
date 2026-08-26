@@ -1,105 +1,127 @@
 /* ═══════════════════════════════════════════════════════════════════════════════════════
-   A TEMPORARY ALIGNMENT GRID. Injected, never shipped — nothing links this file.
+   ALIGNMENT + SIZE INSTRUMENT — every rendered element, not a whitelist.
 
-     var s=document.createElement('script'); s.src='.grid.js'; document.body.appendChild(s);
-     __grid()            draw
-     __grid.off()        remove
-     __grid.report()     the numbers
+     __grid()          draw the field
+     __grid.off()
+     __grid.near()     NEAR-MISS alignment: edges 1-4px apart that should be equal
+     __grid.sizes()    siblings that should match in size and do not
+     __grid.all()      both, plus the count of elements actually examined
 
-   🔴 IT IS DRAWN INSIDE main, NOT THE VIEWPORT. main is the scroll container in this portal
-   (window.scrollY reads 0 on every page). A viewport-fixed grid would stay still while the
-   content scrolled under it, so every judgement below the fold would compare content at
-   scroll 900 against lines drawn for scroll 0 — well-formed, and about nothing.
+   🔴 THE FIRST VERSION OF THIS FILE ENUMERATED A SELECTOR WHITELIST — .masthead, .panel,
+   .ph, .mtable, .rail — i.e. PAGE FRAMES. It could not see anything inside a panel, it
+   never looked at SIZE at all, and it only ever ran on each page's default view. It found
+   one 1px masthead offset and that was reported as "a fine grid over every page". Harkirat
+   had been silently watching a broken Compare view for several sessions that this could
+   never have reached. The ask was EVERY ELEMENT, aligned AND sized.
 
-   🔴 IT EMITS NUMBERS AS WELL AS PIXELS. A 3px misalignment is under one pixel in a
-   downscaled screenshot. The picture says whether it LOOKS wrong; the numbers say whether
-   it IS wrong. Neither alone can answer the question.
+   🔴 NEAR-MISS IS THE DEFECT CLASS. Two edges at the same x are fine. Two edges 200px apart
+   are a layout. Two edges 3px apart are always a mistake — nobody intends 3px. So the
+   instrument reports the 1-4px band and stays quiet about everything else.
+
+   🔴 IT DRAWS INSIDE main, which is this portal's scroll container.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
 (function () {
-  var UNIT = 8, HEAVY = 4;   // 8px fine, every 4th (32px) heavy
-
+  var UNIT = 8, HEAVY = 4, NEAR = 4;
   function main() { return document.querySelector('main'); }
 
-  function blocks() {
-    var sel = '.masthead, .mh-id, .mh-stats, .mh-add, .mh-take, .identity, .idsum, ' +
-              '.ph, .panel, section > .ph, .viewtrack, .deadrail, .manifest, table, ' +
-              '.rail, header, .pcd, .cdown, .board, .bcol, .repcard, .tierboard, .bulkview';
-    var out = [], seen = new Set();
-    document.querySelectorAll(sel).forEach(function (el) {
-      var r = el.getBoundingClientRect();
-      if (r.width < 40 || r.height < 12) return;
-      var key = el.className + '|' + Math.round(r.left) + '|' + Math.round(r.width);
-      if (seen.has(key)) return; seen.add(key);
-      out.push({ el: el, name: (el.className || el.tagName).toString().split(' ')[0],
-                 l: r.left, r: r.right, w: r.width, t: r.top, h: r.height });
+  /* EVERY element that actually renders. No selector list — the whitelist is what failed. */
+  function all() {
+    var m = main(), mr = m.getBoundingClientRect(), out = [];
+    [].forEach.call(m.querySelectorAll('*'), function (el) {
+      if (el.closest('#__gridwrap')) return;
+      var b = el.getBoundingClientRect();
+      if (b.width < 4 || b.height < 4) return;
+      var cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) return;
+      out.push({ el: el,
+        tag: el.tagName.toLowerCase(),
+        cls: (el.className || '').toString().split(' ').filter(Boolean).slice(0, 2).join('.') || el.tagName.toLowerCase(),
+        L: +(b.left - mr.left).toFixed(1), R: +(b.right - mr.left).toFixed(1),
+        T: +(b.top - mr.top + m.scrollTop).toFixed(1), B: +(b.bottom - mr.top + m.scrollTop).toFixed(1),
+        w: +b.width.toFixed(1), h: +b.height.toFixed(1),
+        txt: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 24) });
+    });
+    return out;
+  }
+
+  /* Two edges 1-4px apart, on elements that overlap vertically (so they are actually seen
+     together). Exact matches and wide gaps are both silent. */
+  function near() {
+    var els = all(), hits = [], seen = {};
+    for (var i = 0; i < els.length; i++) for (var j = i + 1; j < els.length; j++) {
+      var a = els[i], b = els[j];
+      if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      if (Math.min(a.B, b.B) - Math.max(a.T, b.T) < 6) continue;   // never on screen together
+      [['L','L'], ['R','R']].forEach(function (p) {
+        var d = Math.abs(a[p[0]] - b[p[1]]);
+        if (d >= 0.5 && d <= NEAR) {
+          var k = a.cls + '|' + b.cls + '|' + p[0] + '|' + d.toFixed(1);
+          if (seen[k]) return; seen[k] = 1;
+          hits.push({ gap: +d.toFixed(1), edge: p[0],
+            a: a.cls + ' ' + p[0] + '=' + a[p[0]] + ' "' + a.txt + '"',
+            b: b.cls + ' ' + p[1] + '=' + b[p[1]] + ' "' + b.txt + '"' });
+        }
+      });
+    }
+    return hits.sort(function (x, y) { return x.gap - y.gap; });
+  }
+
+  /* Siblings of the same class should be the same size. A 1-6px difference between two
+     things meant to be identical is the size half of the same defect. */
+  function sizes() {
+    var els = all(), byKey = {}, out = [];
+    els.forEach(function (e) {
+      var k = (e.el.parentElement ? (e.el.parentElement.className || 'root').toString().split(' ')[0] : 'root') + '>' + e.cls;
+      (byKey[k] = byKey[k] || []).push(e);
+    });
+    Object.keys(byKey).forEach(function (k) {
+      var g = byKey[k]; if (g.length < 2) return;
+      ['w', 'h'].forEach(function (d) {
+        var vals = g.map(function (x) { return x[d]; });
+        var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+        if (mx - mn >= 0.5 && mx - mn <= 8) out.push({ group: k, dim: d, n: g.length,
+          spread: +(mx - mn).toFixed(1), values: vals.slice(0, 6) });
+      });
+      // vertical pairing: two columns of the same thing that start at different tops
+      var tops = {}; g.forEach(function (x) { tops[Math.round(x.T)] = 1; });
+      var ts = Object.keys(tops).map(Number).sort(function (a, b) { return a - b; });
+      for (var i = 1; i < ts.length; i++) if (ts[i] - ts[i-1] >= 1 && ts[i] - ts[i-1] <= 40)
+        out.push({ group: k, dim: 'TOP-OFFSET', n: g.length, spread: ts[i] - ts[i-1], values: ts.slice(0, 6) });
     });
     return out;
   }
 
   function draw() {
-    off();
-    var m = main(); if (!m) return 'no main';
+    off(); var m = main(); if (!m) return 'no main';
     if (getComputedStyle(m).position === 'static') m.style.position = 'relative';
-
-    var wrap = document.createElement('div');
-    wrap.id = '__gridwrap';
-    wrap.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:' + m.scrollHeight +
-      'px;pointer-events:none;z-index:9998';
-
+    var wrap = document.createElement('div'); wrap.id = '__gridwrap';
+    wrap.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:' + m.scrollHeight + 'px;pointer-events:none;z-index:9998';
     var g = document.createElement('div');
-    g.style.cssText = 'position:absolute;inset:0;' +
-      'background-image:' +
-        'repeating-linear-gradient(to right,rgba(95,212,232,.16) 0 1px,transparent 1px ' + UNIT + 'px),' +
-        'repeating-linear-gradient(to bottom,rgba(95,212,232,.16) 0 1px,transparent 1px ' + UNIT + 'px),' +
-        'repeating-linear-gradient(to right,rgba(95,212,232,.34) 0 1px,transparent 1px ' + (UNIT * HEAVY) + 'px),' +
-        'repeating-linear-gradient(to bottom,rgba(95,212,232,.34) 0 1px,transparent 1px ' + (UNIT * HEAVY) + 'px)';
+    g.style.cssText = 'position:absolute;inset:0;background-image:' +
+      'repeating-linear-gradient(to right,rgba(95,212,232,.13) 0 1px,transparent 1px ' + UNIT + 'px),' +
+      'repeating-linear-gradient(to bottom,rgba(95,212,232,.13) 0 1px,transparent 1px ' + UNIT + 'px),' +
+      'repeating-linear-gradient(to right,rgba(95,212,232,.3) 0 1px,transparent 1px ' + (UNIT*HEAVY) + 'px),' +
+      'repeating-linear-gradient(to bottom,rgba(95,212,232,.3) 0 1px,transparent 1px ' + (UNIT*HEAVY) + 'px)';
     wrap.appendChild(g);
-
-    /* Edge guides come from LIVE bounding boxes, so this measures the page rather than my
-       model of it. A guide is GREEN where several blocks agree on an x and RED where one
-       block sits alone — a lone edge is what misalignment actually looks like. */
-    var mr = m.getBoundingClientRect(), tally = {};
-    blocks().forEach(function (b) {
-      [Math.round(b.l - mr.left), Math.round(b.r - mr.left)].forEach(function (x) {
-        tally[x] = (tally[x] || 0) + 1;
+    /* Every near-miss gets a RED pair of lines, so the eye is sent straight at the defect
+       instead of being asked to scan a field of equal-looking guides. */
+    near().slice(0, 60).forEach(function (h) {
+      [h.a, h.b].forEach(function (s) {
+        var x = parseFloat(s.split('=')[1]);
+        var line = document.createElement('div');
+        line.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;left:' + x + 'px;background:rgba(255,52,48,.75)';
+        wrap.appendChild(line);
       });
     });
-    Object.keys(tally).forEach(function (x) {
-      var n = tally[x], line = document.createElement('div');
-      line.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;left:' + x + 'px;' +
-        'background:' + (n >= 3 ? 'rgba(61,220,151,.55)' : n === 2 ? 'rgba(242,194,48,.5)' : 'rgba(255,52,48,.55)');
-      wrap.appendChild(line);
-    });
-
     m.appendChild(wrap);
-    return 'grid on · ' + Object.keys(tally).length + ' distinct edges · main ' +
-           Math.round(mr.width) + 'x' + m.scrollHeight;
+    return 'grid on';
   }
-
   function off() { var w = document.getElementById('__gridwrap'); if (w) w.remove(); return 'off'; }
 
-  function report() {
-    var m = main(), mr = m.getBoundingClientRect(), bs = blocks(), tally = {};
-    bs.forEach(function (b) {
-      [['L', Math.round(b.l - mr.left)], ['R', Math.round(b.r - mr.left)]].forEach(function (p) {
-        (tally[p[1]] = tally[p[1]] || []).push(b.name + ':' + p[0]);
-      });
-    });
-    var lonely = Object.keys(tally).filter(function (x) { return tally[x].length === 1; })
-                       .map(function (x) { return x + 'px ' + tally[x][0]; });
-    var offGrid = bs.filter(function (b) {
-      return Math.round(b.l - mr.left) % UNIT !== 0 || Math.round(b.w) % UNIT !== 0;
-    }).map(function (b) {
-      return b.name + ' L=' + Math.round(b.l - mr.left) + ' w=' + Math.round(b.w) +
-             ' h=' + Math.round(b.h);
-    });
-    var shared = Object.keys(tally).filter(function (x) { return tally[x].length >= 3; })
-                       .map(function (x) { return x + 'px×' + tally[x].length; });
-    return { mainW: Math.round(mr.width), blocks: bs.length,
-             sharedEdges: shared, lonelyEdges: lonely.slice(0, 14),
-             offGrid: offGrid.slice(0, 16), offGridCount: offGrid.length,
-             heights: bs.map(function (b) { return b.name + ':' + Math.round(b.h); }).slice(0, 20) };
-  }
-
-  window.__grid = draw; window.__grid.off = off; window.__grid.report = report;
+  window.__grid = draw; window.__grid.off = off; window.__grid.near = near; window.__grid.sizes = sizes;
+  window.__grid.all = function () {
+    var n = near(), s = sizes();
+    return { examined: all().length, nearMisses: n.length, sizeIssues: s.length,
+             near: n.slice(0, 22), sizes: s.slice(0, 18) };
+  };
 })();
