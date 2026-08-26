@@ -1,16 +1,8 @@
-// portal/ui/review.js — ESM. The Review realm: exactly what is about to change, and what it will
-// overwrite, before any of it is written.
+// portal/ui/review.js — ESM. The Review realm: exactly what is about to change, and what it will overwrite, before any of it is written.
 //
-// 🔴 THE HIGHEST-CONSEQUENCE SCREEN IN THE PORTAL, and the only one that is cross-realm. Every other
-// realm shows one part of the bot; this shows every open changeset the signed-in admin owns, in any
-// realm, flattened to individual operations with a field-level diff each. The Board is its
-// per-realm sibling and answers a different question: the Board is where work waits, Review is
-// where it becomes real.
+// 🔴 THE HIGHEST-CONSEQUENCE SCREEN IN THE PORTAL, and the only one that is cross-realm. Every other realm shows one part of the bot; this shows every open changeset the signed-in admin owns, in any realm, flattened to individual operations with a field-level diff each. The Board is its per-realm sibling and answers a different question: the Board is where work waits, Review is where it becomes real.
 //
-// It derives nothing itself. Tier, diff, gate and wording all arrive from /api/review, which reads
-// them from validateSet, previewSet, gateCommit and describeOp — the same functions the Board uses.
-// The mockup's own header records the reason: an earlier draft kept a second ledger of "has this
-// been exported?", and the review screen refused a commit the store considered ready.
+// It derives nothing itself. Tier, diff, gate and wording all arrive from /api/review, which reads them from validateSet, previewSet, gateCommit and describeOp — the same functions the Board uses. The mockup's own header records the reason: an earlier draft kept a second ledger of "has this been exported?", and the review screen refused a commit the store considered ready.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -20,10 +12,7 @@ import { Icon } from './icons.js';
 
 const dash = (v) => (v === null || v === undefined || v === '' ? '—' : String(v));
 
-// blockersFor lives in review.logic.js — a classic script whose top-level declarations become
-// globals this module reads, and CommonJS when Node requires it for scripts/portalReview.test.js.
-// Same split as track.logic.js and board.logic.js, for the same reason: the browser never loads
-// CommonJS and Node never loads this file's ESM.
+// blockersFor lives in review.logic.js — a classic script whose top-level declarations become globals this module reads, and CommonJS when Node requires it for scripts/portalReview.test.js. Same split as track.logic.js and board.logic.js, for the same reason: the browser never loads CommonJS and Node never loads this file's ESM.
 
 function OpRow({ op, selected, onSelect, onDrop, resolved }) {
     const warn = op.blocked ? 'no longer valid'
@@ -157,10 +146,7 @@ export function ReviewRealm({ session }) {
         setBusy(false); setSel(null); refresh();
     }
 
-    // One transaction per changeset, and every changeset in order. The bot re-reads on every
-    // interaction, so a half-applied set reaches real players within seconds — atomicity here is
-    // load-bearing rather than tidy. Committing sequentially rather than in parallel is deliberate:
-    // a later changeset may depend on an earlier one having landed.
+    // One transaction per changeset, and every changeset in order. The bot re-reads on every interaction, so a half-applied set reaches real players within seconds — atomicity here is load-bearing rather than tidy. Committing sequentially rather than in parallel is deliberate: a later changeset may depend on an earlier one having landed.
     async function commitAll() {
         setBusy(true);
         for (const c of changesets) {

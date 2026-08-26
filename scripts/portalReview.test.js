@@ -1,9 +1,6 @@
 // scripts/portalReview.test.js — the Review realm's pure halves.
 //
-// Review is the screen that WRITES. Everything else in the portal can be wrong and be corrected;
-// this one decides whether a destructive change reaches real players, so its two pure functions are
-// tested here rather than left to a browser pass: blockersFor (what stands between staged work and
-// the commit button) and stalenessOf (whether the record moved underneath a staged op).
+// Review is the screen that WRITES. Everything else in the portal can be wrong and be corrected; this one decides whether a destructive change reaches real players, so its two pure functions are tested here rather than left to a browser pass: blockersFor (what stands between staged work and the commit button) and stalenessOf (whether the record moved underneath a staged op).
 const assert = require('assert');
 const { blockersFor } = require('../portal/ui/review.logic');
 const { stalenessOf } = require('../portal/api/review');
@@ -37,10 +34,7 @@ check('typing the exact confirmation word clears the last gate', () => {
     assert.deepStrictEqual(blockersFor([{ id: 'a', tier: 3 }], cs, {}, { c: 'AB12' }), []);
 });
 
-// 🔴 THE WORD IS NEVER "DELETE" — muscle memory carries you straight through that one. It is the
-// changeset's own id fragment, which the SERVER independently expects (portal/api/changesets.js's
-// commit route computes the same slice), so a client that accepted anything else would be rejected
-// there rather than committing something unconfirmed.
+// 🔴 THE WORD IS NEVER "DELETE" — muscle memory carries you straight through that one. It is the changeset's own id fragment, which the SERVER independently expects (portal/api/changesets.js's commit route computes the same slice), so a client that accepted anything else would be rejected there rather than committing something unconfirmed.
 check('a near-miss on the confirmation word does NOT clear the gate', () => {
     const cs = [{ id: 'c', tier: 3, exportedAt: new Date(), confirmText: 'AB12', realm: 'season' }];
     assert.strictEqual(blockersFor([{ id: 'a', tier: 3 }], cs, {}, { c: 'ab12' }).length, 1, 'case must matter');
@@ -57,9 +51,7 @@ check('an op that no longer validates blocks on its own account', () => {
     assert.ok(blockersFor([{ id: 'a', blocked: 'no such draw' }], [], {}, {}).some((x) => x.kind === 'invalid'));
 });
 
-// The mockup shipped a masthead reading "1 GATES OPEN" — plural on a count of one, and meaning the
-// REVERSE of what it says. The wording is the component's, but the COUNT is this function's, so the
-// singular/plural decision has something real to agree with.
+// The mockup shipped a masthead reading "1 GATES OPEN" — plural on a count of one, and meaning the REVERSE of what it says. The wording is the component's, but the COUNT is this function's, so the singular/plural decision has something real to agree with.
 check('every blocker carries a count, so the masthead noun can agree with a number', () => {
     const b = blockersFor([{ id: 'a', stale: true }, { id: 'b', stale: true }], [], {}, {});
     assert.strictEqual(b.find((x) => x.kind === 'stale').n, 2);
@@ -75,10 +67,7 @@ check('a changed before-state IS stale', () => {
     assert.deepStrictEqual(stalenessOf([{ title: 'A' }], { before: { title: 'B' } }, 0), { stale: true, checked: true });
 });
 
-// 🔴 "WE DID NOT LOOK" AND "WE LOOKED AND IT IS FINE" ARE DIFFERENT FACTS. A changeset staged before
-// models/Changeset.js gained its baseline field has nothing to compare against, and reporting that
-// as clean would be the portal asserting something it never checked — on the one screen where the
-// consequence of being wrong is a destructive write against a record somebody else already moved.
+// 🔴 "WE DID NOT LOOK" AND "WE LOOKED AND IT IS FINE" ARE DIFFERENT FACTS. A changeset staged before models/Changeset.js gained its baseline field has nothing to compare against, and reporting that as clean would be the portal asserting something it never checked — on the one screen where the consequence of being wrong is a destructive write against a record somebody else already moved.
 check('no baseline reports UNCHECKED, never clean', () => {
     assert.deepStrictEqual(stalenessOf(null, { before: { title: 'A' } }, 0), { stale: false, checked: false });
     assert.deepStrictEqual(stalenessOf([], { before: { title: 'A' } }, 0), { stale: false, checked: false });
