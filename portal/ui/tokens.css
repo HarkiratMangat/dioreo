@@ -1,82 +1,242 @@
-/* portal/ui/tokens.css
+/* portal/ui/tokens.css — THE design tokens, adopted whole from the interactive mockup 2026-08-25.
  *
- * The portal's palette — "blued steel" (spec §9), distinct from the public site's violet-graphite
- * (legal) and green-black (chronicle) while obviously the same house.
+ * This file used to define 24 variables; the mockup's defined 95, and the two shared only 20. That
+ * gap was the design gap in miniature — the portal was styled against a stub of its own token
+ * system, so every surface built here started from less vocabulary than the approved design had.
+ * Per docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md the design moves onto the
+ * code rather than the other way round, and tokens are the first thing to move because they are
+ * pure CSS: nothing about them depends on which paradigm renders the markup.
  *
- * ⚠️ ONE :root BLOCK, DELIBERATELY. scripts/buildLegalPages.js's contrastAudit() reads `--name: #hex`
- * declarations and has previously shipped a gate that silently matched only the FIRST :root{} block
- * in a file — 63 pairs passed while three signals sat at 1.47:1. Splitting these tokens across two
- * :root blocks would reproduce that exact defect against a different file.
+ * ⚠️ ONE :root BLOCK, DELIBERATELY — carried over from both files' own headers, which independently
+ * record the same trap. scripts/buildPortal.js's portalContrastAudit() (and buildLegalPages.js's
+ * before it) reads `--name: #hex` declarations from the FIRST :root{} block it matches; splitting
+ * these across two blocks has previously let 63 pairs pass while three signals sat at 1.47:1.
+ *
+ * ⚠️ THE FOUR LEGACY ALIASES AT THE BOTTOM ARE LOAD-BEARING. --gut/--hdr/--radius/--rail are
+ * referenced 29 times across the existing per-realm stylesheets in portal/ui/. They are kept as aliases onto the
+ * mockup's equivalents rather than find-and-replaced, because a rename touching ten stylesheets in
+ * the same change that swaps the whole palette makes any resulting defect unattributable. They
+ * retire per realm, as each realm's CSS is migrated.
  */
+/* 🔴 THE ORPHANED COMMENT TAIL THAT USED TO SIT ON THE NEXT LINE COST A WHOLE PAGE OF TEXT.
+ * Adopting this token block was scripted as `src[src.index(':root'):]`, and the mockup file's OWN
+ * header comment contains the words ":root block, deliberately" — so the slice began mid-comment
+ * and left the tail of that sentence, comment-closer and all, sitting above the real rule. A CSS parser reads that as a
+ * SELECTOR and swallows the following `{ … }` as its body, so every token here silently ceased to
+ * exist and all 335 rendered elements fell back to black on the desk surface.
+ * ⚠️ Both static gates still passed: portalContrastAudit() regex-matches `:root\s*\{([^}]*)\}`
+ * against the file's TEXT, which is present and correct — it cannot see a cascade error. Only
+ * scripts/portalContrastRendered.test.js, which measures COMPUTED style on real elements, caught it.
+ * ⚠️ AND THIS COMMENT REPRODUCED THE BUG WHILE DESCRIBING IT: quoting the stray text verbatim put
+ * a literal comment-CLOSER inside this block, which ended it early and turned the prose that
+ * followed into an invalid selector that swallowed the whole token block a second time. Chrome
+ * reported one :root rule (the aliases) and every custom property resolved empty. Never quote a
+ * comment delimiter inside a comment -- and note that `portal/ui/` plus a wildcard spells an
+ * OPENER, which is why the sentence above no longer writes it that way.
+ * Anchor a slice on `^:root\s*\{`, never on a bare substring that prose can contain. */
 :root {
-    /* surfaces */
-    --desk: #0F1418;
-    --paper: #171E24;
-    --raised: #1F272E;
-    --sunk: #0B0F12;
-    --rule: #2A343D;
+  /* surfaces */
+  --desk:#0F1418; --paper:#171E24; --raised:#1F272E; --sunk:#0B0F12; --hi:#232C34;
+  --rule:#2A343D; --rule2:#3A4752;
 
-    /* ink — text sits on --desk/--paper/--raised, never used as a fill */
-    --ink: #E8EDF1;
-    --ink2: #9DAAB4;
-    --ink3: #80909D; /* spec sect9 literally gives #6E7C87 here, which FAILS WCAG AA -- as low as
-       3.53:1 on --raised -- caught by actually running portalContrastAudit against real input
-       (Task 4 Step 4). Same blue-grey hue, scaled up (~1.16x per channel) to clear 4.5:1 against
-       every portal background with margin (4.61:1 on --raised, the worst case). Flagged as a
-       spec correction, not a silent edit -- see the portal build's audit log / final report. */
+  /* ── ink ── never used as a fill, and only THREE of these may carry text.
+   * Measured 2026-08-24 against every surface token: `--ink4` at #5C6A75 scored
+   * 3.02:1 on --paper and 2.55:1 on --hi, failing WCAG AA (4.5) in all 89 places it
+   * coloured text — across every page, including the two already reviewed. Solving for
+   * four AA-passing steps collapses two of them into each other: at this floor, on these
+   * surfaces, the scale only has room for three text tones. So it has three, stated
+   * rather than pretended:
+   *   --ink   primary        14.28:1 on --paper, 12.03 on --hi
+   *   --ink2  secondary       7.09:1 on --paper,  5.97 on --hi
+   *   --ink3  dim             5.35:1 on --paper,  4.50 on --hi  ← the floor, lifted from #80909D
+   * 🔴 --ink4 IS NOT A TEXT COLOUR. It is kept dark on purpose for the 11 places it draws
+   *    a border, a stroke or a fill, where contrast rules do not apply. Never write
+   *    `color:var(--ink4)` — use --ink3. */
+  --ink:#E8EDF1; --ink2:#9DAAB4; --ink3:#85939F; --ink4:#5C6A75;
 
-    /* signal — shape carries state, colour carries topic (spec §9); these three are the
-       state-signal exception: patch/warn/ok read as status regardless of topic accent */
-    --patch: #F2C230;
-    --warn: #FF7A45;
-    --ok: #3DDC97;
-    /* The fourth signal, added 2026-08-23 15:52 EDT because the Analytics kind-chips needed a third
-       colour and the first attempt borrowed --ret, a SEASON TOPIC token that exists to be a FILL on
-       a Track bar. As chip TEXT on --sunk it measured 4.15:1 -- below the 4.5:1 body floor, in an
-       8.5px mono chip. Same defect class as the login button this whole plan started from, and
-       portalContrastAudit could not see it because it only ever paired ink/ink2/ink3 against the four
-       surfaces. Derived the way --ink3 already was: the same hue scaled up (1.25x per channel) until
-       it clears 4.5:1 on EVERY portal surface with margin rather than on the line -- 6.19 on --sunk,
-       5.41 on --paper, 4.86 on --raised. The audit now checks this pair and the ones beside it. */
-    --info: #409AD0;
-    /* SCHEDULED reads purple in 05-door-broadcast-ops.html, and --play (the Season PLAYLIST topic
-       accent) was the obvious token to reach for -- the same mistake --info exists to correct. As
-       pill TEXT --play measured 3.68:1 on --raised. Same derivation: the mockup's hue, scaled 1.20x
-       until it clears 4.5:1 on every portal surface (5.69 paper / 5.12 raised / 6.51 sunk). --play
-       keeps its own value and stays a FILL. */
-    --sched: #A680FB;
+  /* signal — state, readable regardless of topic accent */
+  --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
-    /* Season topic-accent tokens (gap audit §2.2) -- track.js's TOPIC_VAR and manifest.js's
-       row.topicVar both reference these by name; only --patch existed here before, so every
-       draw/returning/event/playlist bar fell through --topic-accent's own fallback to --raised,
-       a flat grey. Values read directly from the approved mockup (03-three-surfaces.html:10-11). */
-    --draw: #FF3430;
-    --ret: #337BA6;
-    --ev: #1F8A5E;
-    --play: #8A6BD1;
+  /* SEASON topic accents — colour carries TOPIC */
+  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --pn:#F2C230;
+  /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
+   * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
+   * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the
+   * fill, one lifted for ink, hue and saturation untouched because those ARE the identity.
+   * 🔴 Never write `color:var(--ev)`. Use --ev-ink. */
+  --ev-ink:#25A570;
+  /* 🔴 AND `--warn` HAS THE SAME PROBLEM ONE STEP LATER, closed 2026-08-25 16:3x EDT by
+   * measuring rather than by noticing it had stopped reporting. Broadcast's "never ends" chip
+   * painted `--warn` #FF7A45 at 9px on its own warn-tinted ground; the shipped audit reported
+   * 4.28:1 twice, stable, and then would not reproduce — because the audit's ground-walk does
+   * NOT composite a translucent background over what is beneath it, so the number it got
+   * depended on which ancestor the walk happened to land on. Composited correctly the true
+   * value is 4.53:1 — it PASSES, by 0.03, which is not a margin. Same fix as --ev-ink: one
+   * value for the fill, one lifted for ink, hue and saturation untouched. */
+  --warn-ink:#FF9E72;
 
-    /* The staged-state accent, from 01-season-spine.html:15's own --staged. Distinct from the four
-       topic accents on purpose: staged is a STATE, and shape carries state, so this only ever tints
-       a shape that is already dashed/hollow -- it never becomes the sole signal. */
-    --staged: #5FD4E8;
+  /* ARMORY topic accents — the bot's real MP_CATEGORY_ACCENT values */
+  --ar:#FF3B5C; --smg:#FFD23F; --lmg:#845EC2; --mm:#3DDC97; --sn:#4361EE; --sg:#F6A93B; --sec:#3E6E8E;
 
-    /* geometry */
-    --radius: 6px;
+  /* staged-state accent — only ever tints a shape that is ALREADY dashed/hollow */
+  --staged:#5FD4E8;
+  /* the three season deadlines are distinct TOPICS, so each gets its own hue;
+     they read as vertical dashed markers, never as lane bars */
+  --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
 
-    /* LAYOUT DIMENSIONS (gap audit §4: "shell dimensions are hardcoded per-property in shell.css
-       instead of tokenized"). Values from 01-season-spine.html:15, the full-style mockup.
-       🔴 --rail names a THICKNESS, not a width. The nav rail is VERTICAL on desktop (thickness =
-       width) and HORIZONTAL along the bottom on phone (thickness = height), so one token serves
-       both axes and the 900px breakpoint overrides ONE declaration rather than a dozen scattered
-       per-property values. That is the whole reason this token exists -- see the redesign spec §3.1. */
-    --rail: 76px;
-    --hdr: 52px;
-    --gut: 24px;
-    --gap: 16px;
+  --dsc:#5865F2;                     /* Discord brand, door only */
+  /* ── REALM ACCENTS — one hue per realm, and the ONLY place they are written ──
+   * These existed as five hardcoded hexes inside index.html's CARDS array while four
+   * of the five were already tokens under other names (--draw, --patch, --ink2, --ev).
+   * A hex repeated across components is a token that has not been named yet — the
+   * design-system audit's own line, applied to the last place it had not reached.
+   * Three consumers now read them: the rail's hover wash, the masthead's LEAD figure,
+   * and Home's attention rows. Season is the bot's own Season End orange; Review's
+   * "topic" is the staged cyan, because the realm IS the staging area. */
+  --r-season:#F2994A; --r-armory:var(--draw); --r-broadcast:var(--patch);
+  --r-access:var(--info); --r-analytics:var(--ev); --r-review:var(--staged);
 
-    /* the ink used ON TOP of a topic-accent fill -- design-system audit found 4 separate hardcoded #000/#000000 literals for this one concept across tokens.css/track.css/manifest.css/board.css */
-    --on-accent: #000000;
+
+  /* layout — the one place to override */
+  /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every
+     other size. These steps have real jumps and each has exactly one job. Tracking tightens
+     as size grows; every numeral is tabular.
+     🔴 THERE WERE TWO TYPE SCALES IN THIS FILE, BOTH IN :root, EACH UNDER A COMMENT CLAIMING TO
+     BE THE SCALE — and they COLLIDED on `--t-micro` (9.5px here, 9px below). The later one wins
+     in the cascade, so all 48 usages silently took 9px while this line said 9.5px. One quantity,
+     two authorities, at the level of the design system itself: every surface inherits it, and no
+     per-element rule could ever see it.
+     The DISPLAY end lives here (44/34/22 — the masthead figures, used 2/3/1 times) and the UI
+     end lives in the block below (9→24px, where `--t-sm` alone is used 55 times). They are one
+     scale in two ranges, not two scales, and `--t-micro` belongs to the range that uses it. The
+     three names this block no longer defines — body, label, micro — were the duplicated half. */
+  --t-display:44px; --t-figure:34px; --t-h1:22px;
+
+  /* ── THE DISPLAY VOICE — two faces, four declarations, nothing else ──
+     Until 2026-08-25 one family set both a 9px label and a 44px figure, which is a UI face
+     doing display work because there was nothing else. These are deliberately NOT applied
+     broadly: the title face touches CONTENT names only, the figure face touches the masthead
+     sites, and everything from --t-hero down stays Space Grotesk. Restraint is the design,
+     not a compromise on it — a third and fourth family appearing five times a screen.
+     🔴 BOTH FALL BACK TO --ui ON PURPOSE. If a webfont fails, the masthead degrades to
+     exactly what it looked like before this change rather than to a stranger.
+     ⚠️ `--title` ships ONE weight (400). Never write a font-weight against it. */
+  /* 🔴 THE RULE, AND IT IS SAYABLE IN ONE LINE:
+   *      THE SERIF NAMES THINGS THE BOT HOLDS. THE CONDENSED FACE NAMES THINGS THE PORTAL IS.
+   * Instrument Serif carried every realm page title until 2026-08-25 17:4x EDT. Harkirat:
+   * "it doesn't fit the vibe of the portal at all. it's an accessory/accent font only, not the
+   * main typeface." He is right, and the reason is worth writing down: a high-contrast display
+   * serif is a MAGAZINE voice, and this portal is an INSTRUMENT — a mono data grid, condensed
+   * gauge figures, a time axis, a permission matrix. The serif was a headline pretending to be
+   * a console, which is exactly why it read as borrowed.
+   * It keeps one job, and it is the job it is good at: naming CONTENT. A season is a thing with
+   * a name someone chose ("Season 7 — Terminated"); "Access" is a page. The serif gets the first
+   * and never the second, so its presence now MEANS something instead of being decoration. */
+  --title:"Instrument Serif",Georgia,"Times New Roman",serif;   /* CONTENT names only — never chrome */
+  /* The portal's own voice. Condensed grotesque reads as a gauge at 44px and as a stencil in
+   * caps at 34px, which is the CODM vernacular without costuming — and it is a face the system
+   * ALREADY had, so this change REMOVES a family from the chrome rather than adding one.
+   * ⚠️ Chrome now has one display voice in two registers: FIGURES at --t-display, weight 700,
+   * in the realm's accent · REALM TITLES at --t-figure, weight 700, uppercase, in plain ink.
+   * The figure is bigger AND coloured, so the number leads and the title labels it — which is
+   * the masthead grammar (§16.3) already applied to type instead of to colour. */
+  --display:"Big Shoulders Display",var(--ui);                  /* figures AND realm titles */
+  --tr-title:-.006em;                                           /* a serif does not want the grotesque's tight tracking */
+  --tr-fig:.004em;                                              /* condensed wants air; the one positive step in the scale */
+  --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;
+
+  /* MOTION — one easing, three durations. Motion earns its place by explaining where
+     something came from; anything that is not doing that stays a colour fade. */
+  --ease:cubic-bezier(.2,.8,.3,1);
+  --dur-1:130ms;   /* state    */
+  --dur-2:180ms;   /* transition */
+  --dur-3:320ms;   /* entrance */
+  /* ── LIVELINESS — feel, expressed as four numbers rather than per-component taste ──
+   * Harkirat's definition: "breathing life into elements — subtle glows, tints,
+   * animations upon clicking, elements dynamically changing on behaviour."
+   * 🔴 The lifted card and the hover tint are ONE mechanism at two strengths, not two
+   * effects. Kept as tokens because the alternative is what the shape scale turned into:
+   * 29 values, each individually reasonable. */
+  --tint-hover:9%;    /* topic colour mixed into a surface on hover        */
+  --tint-lift:14%;    /* …and on a lifted card, where the edge also lights */
+  --lift:2px;         /* how far a card rises. Any further reads as a modal */
+  --press:1px;        /* how far a control sinks under a finger            */
+  --dur-toast-in:460ms;  /* a toast ARRIVES slowly enough to be read as motion */
+  --dur-toast-out:260ms; /* …and leaves faster than it came, or it reads as stuck */
+  --ease-soft:cubic-bezier(.22,1,.36,1);  /* long travel, no overshoot spike */
+
+  --rail-w:76px; --hdr-h:52px; --gap:14px;
+
+  /* SHAPE SCALE — the same defect as the type scale above, one level out and never checked.
+     Measured 2026-08-25: **308 `border-radius` declarations across 29 DISTINCT values** — 1px,
+     1.5px, 2px, 2.5px, 3px, 4px, 5px, 6px, 7px, 8px, 9px, 10px, 11px, 12px, 14px, 20px … — while
+     `--rad` existed and carried only 44 of them. Eight steps inside a 1–9px band is not a scale;
+     it is noise, and it is exactly what tokens.css's own type comment warns about ("a dashboard
+     fails typographically when every size is within 4px of every other size") applied to corners
+     instead of text. Nothing could see it: every audit rule asks `for each element, is P true?`,
+     and no per-element question can notice that 29 answers disagree.
+     Three steps, plus two SEMANTIC values that are not steps at all — a pill and a circle are
+     shapes, not sizes, and folding them into a scale is how a pill becomes a rounded rectangle.
+     Steps sit at the population centroids so the collapse moves most declarations by 0–1px.
+     🔴 Enforced by `.schema-gate.mjs`'s `radius-scale`, so a 30th value cannot appear. */
+  --rad-1:3px;        /* chips, ticks, tags, tiny controls — boxes under ~24px */
+  --rad-2:6px;        /* the DEFAULT: buttons, inputs, cards, panels */
+  --rad-3:10px;       /* large containers: drawers, modals, the ⌘K palette */
+  --rad-round:50%;    /* circles — avatars, dots, status beads */
+  --rad-pill:999px;   /* pills — a radius that always exceeds half the height */
+  --tap:44px;                        /* minimum touch target */
+
+
+  /* ── derived / semantic, added by the design-system audit ──────────────
+   * The audit found 5 uses of #07090A, 2 of #1C242A and a danger pair, all
+   * hardcoded. A hex repeated across components is a token that has not been
+   * named yet — naming it is what stops the sixth use drifting. */
+  --on-accent:#07090A;      /* ink ON a filled accent — never on a surface */
+  --rule3:#1C242A;          /* the faint row rule, one step under --rule */
+  --danger-ink:#FF8A85;     /* destructive TEXT — a fill would need solveOn() */
+  --danger-edge:#54322F;
+  --avatar-a:#3A4C5A;
+
+  /* ── Discord's OWN palette, deliberately foreign ───────────────────────
+   * The preview card must look like Discord, not like the portal, or it stops
+   * being a truthful preview. Namespaced --dc-* so a future reader can see
+   * these are intentionally outside the portal's system rather than leftovers. */
+  --dc-bg:#2B2D31; --dc-ink:#F2F3F5; --dc-body:#DBDEE1; --dc-mute:#B5BAC1;
+  --dc-dim:#949BA4; --dc-rule:#3A3C41; --dc-sunk:#1E1F22;
+
+  /* ── type scale, UI range ──────────────────────────────────────────────
+   * The audit found ELEVEN distinct px font-sizes and no scale. These are the
+   * same values, named, so a twelfth cannot be invented by accident.
+   * This is the range everything actually uses — `--t-sm` 55 times, `--t-micro` 48, `--t-xs` 23,
+   * `--t-md` 22. The display range (44/34/22) is declared above and used five times in total,
+   * on the mastheads. `--t-body` and `--t-label` were a THIRD set of names for 13.5px and 11px,
+   * which `--t-md` and `--t-sm` already covered; they are gone rather than aliased, because an
+   * alias is a second name for one value and that is how this collided in the first place. */
+  --t-micro:9px; --t-xs:10px; --t-sm:11.5px; --t-base:12.5px;
+  --t-md:13.5px; --t-lg:15px; --t-xl:19px; --t-hero:24px;
+
+  --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
+@media (max-width:768px){ :root{ --rail-w:0px; --hdr-h:48px; } }
+
+/* ── legacy aliases — see the header. Retire per realm as each stylesheet migrates. ── */
+:root {
+  --radius: var(--rad-2);   /* 6px, the value it always held */
+  --rail:   var(--rail-w);
+  --hdr:    var(--hdr-h);
+  --gut:    24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE BASE LAYER — kept verbatim from this file's previous version.
+   🔴 IT WAS DROPPED ONCE, ON 2026-08-25, by replacing this file wholesale with the mockup's
+   tokens.css. That file is tokens ONLY; this one has always been tokens PLUS a base layer, and
+   losing it left `button.dismiss` at 1.13:1 — black on the desk surface, because nothing styled a
+   bare control any more. scripts/portalContrastRendered.test.js caught it, which is the one gate
+   here that measures RENDERED elements rather than the token table, and the only one that could
+   have. The lesson generalises to the rest of the migration: a file's NAME is not its contents.
+   ───────────────────────────────────────────────────────────────────────────── */
 
 body {
     background: var(--desk);
