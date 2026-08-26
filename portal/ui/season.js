@@ -243,8 +243,8 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
         </div>`;
 }
 
-// `editingDraft` is WHICH season you are editing; `draftStaged` is whether one exists at all. They were one flag, and the record read "staged draft" on the live season purely because a draft existed — the chip states the thing you are looking at, not the thing that exists elsewhere.
-export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSave }) {
+// `editingDraft` is WHICH season you are editing; `draftStaged` is whether one exists at all. They were one flag, and the record read "staged draft" on the live season purely because a draft existed — the chip states the thing you are looking at, not the thing that exists elsewhere. 🔴 `editingDraft` WAS A PROP THE CALLER HARDCODED TO FALSE. It reached SeasonRecord, which styles the summary strip for it, and nothing could ever set it — so the whole draft half of this component was built, styled and unreachable. The switch is what the mockup specifies: one editor, two seasons, and which one you are editing said out loud rather than inferred from what the fields happen to contain.
+export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSave, onScope }) {
     const [open, setOpen] = useState(() => { try { return sessionStorage.getItem(IDENTITY_KEY) === '1'; } catch { return false; } });
     const [edits, setEdits] = useState({});
     const value = (k) => (k in edits ? edits[k] : (season?.[k] ?? ''));
@@ -257,7 +257,7 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
 
     const titled = (season?.currentSeasonTitle || '').trim();
     return html`
-        <section class=${'identity' + (open ? '' : ' collapsed')} aria-label="Season identity">
+        <section class=${'identity' + (open ? '' : ' collapsed') + (editingDraft ? ' editing-draft' : '')} aria-label="Season identity">
             <!-- The strip IS the button — role, tabindex, cursor, hover and aria-expanded all live on
                  it. A floating "Open to edit" label was an apology for an affordance that already
                  existed, and it sat wherever margin-left:auto dropped it. The words move into the
@@ -271,9 +271,22 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
             <div class="idbody">
                 <div class="ph idhead">
                     <span class="t">Season identity</span>
+                    ${onScope ? html`
+                        <!-- ⚠️ SWITCHING SCOPE DROPS THE UNSAVED EDITS, and that is the honest behaviour rather than a shortcut. The edits are keyed by field name and both seasons carry the same field names, so carrying them across would apply the live season's half-typed title to the draft with nothing on screen saying it had moved. -->
+                        <div class="lnsw" role="group" aria-label="Which season">
+                            <button aria-pressed=${!editingDraft} onClick=${() => { setEdits({}); onScope('live'); }}>
+                                <span class="pip"></span>Live</button>
+                            <button aria-pressed=${editingDraft} onClick=${() => { setEdits({}); onScope('draft'); }}>
+                                <span class=${'pip ' + (draftStaged ? 'draft' : 'none')}></span>Next</button>
+                        </div>` : null}
                     <span class="sp">${dirty ? `${dirty} unsaved edit${dirty > 1 ? 's' : ''}` : 'no unsaved edits'}</span>
                     <button class="idclose" onClick=${() => { if (dirty) onSave(edits); setEdits({}); toggle(); }}>Done</button>
                 </div>
+                ${editingDraft ? html`
+                    <div class="draftnote">
+                        <b>Editing the next season.</b> Nothing here is visible to players. Promoting it is in the
+                        one-way strip at the foot of this page.
+                    </div>` : null}
                 <div class="f-main">
                     <label for="f-title">Season title</label>
                     <input id="f-title" autocomplete="off" spellcheck="false" placeholder="Season title"
@@ -300,7 +313,12 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                     })}
                 </div>
                 <!-- Three independent banners, one per /calendar page. Blank means "show nothing" —
-                     NOT a placeholder — so an empty field is a real, meaningful value and says so. -->
+                     NOT a placeholder — so an empty field is a real, meaningful value and says so.
+                     🔴 ABSENT ON THE DRAFT, AND THE SAVE GUARD WAS NOT ENOUGH. calendar.setBanners writes the LIVE
+                     document; there is no draft equivalent. Guarding only the save left three inputs on screen that
+                     accepted a URL and dropped it — the same class of silent no-op this editor was just fixed for,
+                     re-introduced two lines away from the fix. A field that cannot be saved must not be offered. -->
+                ${editingDraft ? null : html`
                 <div class="bansec">
                     <div class="bansec-h"><span class="bansec-n">Calendar page banners</span></div>
                     <div class="bans">
@@ -318,7 +336,7 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                 </div>`;
                         })}
                     </div>
-                </div>
+                </div>`}
             </div>
         </section>`;
 }
@@ -327,6 +345,38 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
 // `?today=` travels the clock in the harness; in production this is simply today.
 const todayIso = () => (typeof document !== 'undefined' && document.documentElement.dataset.today)
     || new Date().toISOString().slice(0, 10);
+
+// ── THE NEXT SEASON, STAGED AND INVISIBLE ─────────────────────────────────────────────────────
+//
+// A draft is the whole next season — titles, deadlines, draws, calendar — built where players cannot see it. It sits directly under the identity editor because that is what a draft IS: a second copy of those same fields, and putting it anywhere else would make the relationship a thing you have to be told rather than a thing you can see.
+//
+// ⚠️ PROMOTE IS NOT HERE. It is the one draft operation that cannot be taken back, so it lives in the one-way strip at the foot of the realm with the other six — and this bar says so, because a reader who has staged a draft and cannot find the button will conclude the feature is unfinished rather than that it is somewhere safer.
+function DraftZone({ draft, onStart, onDiscard }) {
+    const [title, setTitle] = useState('');
+    if (!draft || !draft.active) {
+        return html`
+            <div class="nodraft">
+                <p>No next season staged. A draft lets you build the whole next season — titles, deadlines, draws
+                    and calendar — without any of it going live.</p>
+                <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+                    <input class="nw-i" style="flex:0 1 240px;width:auto" type="text" aria-label="Next season title"
+                           placeholder="Season 8 — …" value=${title}
+                           onInput=${(e) => setTitle(e.target.value)} />
+                    <button class="chip" disabled=${!title.trim()} onClick=${() => onStart(title.trim())}>Start a draft</button>
+                </div>
+            </div>`;
+    }
+    const n = (draft.newDraws || []).length + (draft.returningDraws || []).length + (draft.calendar || []).length;
+    return html`
+        <div class="draftbar">
+            <span class="dt">Next season staged</span>
+            <span class="dsub">${draft.currentSeasonTitle || 'untitled'} · ${n} item${n === 1 ? '' : 's'} ·
+                not visible to players</span>
+            <span class="sp"></span>
+            <span class="dsub">Promote is in the one-way strip below.</span>
+            <button class="chip danger" onClick=${onDiscard}>Discard draft</button>
+        </div>`;
+}
 
 export function SeasonRealm({ session }) {
     const [view, setView] = useState('Track');
@@ -339,6 +389,7 @@ export function SeasonRealm({ session }) {
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
+    const [idScope, setIdScope] = useState('live');           // which season the identity editor is editing
 
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
     useEffect(() => { fetchChangesets('season').then(setChangesets); }, [view]);
@@ -370,8 +421,36 @@ export function SeasonRealm({ session }) {
 
     // ⚠️ `handleCommit` LIVED HERE AND IS GONE. Season stopped being able to commit when board.js's duplicate review panel was removed — the Review realm is the only surface that writes, and a live commit function on a page that no longer has a control for it is the next session's accident.
 
-    // 🔴 ONE CHANGESET FOR THE WHOLE PASTE, not one per line. Eight pasted draws staged as eight changesets would fill the Review screen with eight separate transactions to commit, each individually discardable — which is not what a person who pasted one list means. stageOps already takes an array; this is the caller finally passing one.
-    async function handleStageMany(kind, rows) {
+    // 🔴 ONE CHANGESET FOR THE WHOLE PASTE, not one per line. Eight pasted draws staged as eight changesets would fill the Review screen with eight separate transactions to commit, each individually discardable — which is not what a person who pasted one list means. stageOps already takes an array; this is the caller finally passing one. 🔴 THE DRAFT PATH REPLACES; THE LIVE PATH ADDS. core/ops/season.js's draft bulk ops `$set` the whole array — that is the Discord modal's semantics, where the textarea IS the list — while the live path composes one add per row. Two genuinely different operations behind one paste box, so the confirmation has to say which one is about to happen; a toast afterwards saying "replaced" would be telling somebody what they had already lost.
+    async function handleStageDraftMany(kind, rawText) {
+        if (kind === 'patchnote') {
+            return overlay.say('Patch notes have no draft — they are one history, not a per-season list.');
+        }
+        const isDraw = kind === 'draw' || kind === 'returning';
+        const op = isDraw
+            ? { type: 'season.bulkDraftDraws', target: null,
+                payload: kind === 'draw' ? { newText: rawText } : { returningText: rawText } }
+            : { type: 'season.bulkDraftCalendar', target: null, payload: { text: rawText } };
+        const noun = isDraw ? (kind === 'draw' ? 'new draws' : 'returning draws') : 'calendar';
+        overlay.confirm({
+            op: op.type, tier: 2, confirmLabel: 'Replace the draft list',
+            title: `Replace the draft's ${noun}?`,
+            body: html`<p class="dw-p">Pasting into the next season <b>replaces</b> that list rather than adding to
+                it — the box is the list. Nothing live changes, and nothing is visible to players until the draft is
+                promoted. Tier 2, so the previous draft list is captured and can be put back.</p>`,
+            onConfirm: async () => {
+                const res = await stageOps('season', [op], session.csrfToken);
+                const refused = refusalOf(res);
+                if (refused) return overlay.say(`Not staged — ${refused}`);
+                setShowAdd(null);
+                overlay.say(`The draft's ${noun} staged.`, 'Review', () => { location.hash = '#/review'; });
+                fetchChangesets('season').then(setChangesets);
+            },
+        });
+    }
+
+    async function handleStageMany(kind, rows, rawText) {
+        if (idScope === 'draft') return handleStageDraftMany(kind, rawText);
         const ops = rows.map((r) => buildSeasonAddOp(kind, { title: r.name, startDate: r.start, endDate: r.end || r.start }));
         if (!ops.length) return;
         await stageOps('season', ops, session.csrfToken);
@@ -384,6 +463,37 @@ export function SeasonRealm({ session }) {
         await stageOps('season', [op], session.csrfToken);
         setShowAdd(null);
         fetchChangesets('season').then(setChangesets);
+    }
+
+    // 🔴 THE PORTAL COULD PROMOTE A DRAFT IT HAD NO WAY TO CREATE. core/ops declares five draft operations and /manage reaches all five; the portal reached none, so the promote row added to the one-way strip was an action on a thing nobody could make. A capability whose only entry point is somewhere else is not a capability this surface has.
+    //
+    // ⚠️ STARTING A DRAFT IS TIER 1, NOT A DESTRUCTIVE ACT, and the copy has to say so or nobody will press it. season.setDraftTitlesDeadlines sets draft.active and touches nothing live — the whole point of a draft is that it is invisible to players until promoted, which is the one-way step and lives in the strip below.
+    async function startDraft(title) {
+        const op = { type: 'season.setDraftTitlesDeadlines', target: null, payload: { mainTitle: title } };
+        const res = await stageOps('season', [op], session.csrfToken);
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Draft not started — ${refused}`);
+        overlay.say('Draft staged. Nothing is public until you promote it.', 'Review', () => { location.hash = '#/review'; });
+        fetchChangesets('season').then(setChangesets);
+    }
+
+    function confirmDiscardDraft() {
+        const d = state.draft || {};
+        const n = (d.newDraws || []).length + (d.returningDraws || []).length + (d.calendar || []).length;
+        overlay.confirm({
+            op: 'season.discardDraft', tier: 2, danger: true, confirmLabel: 'Discard the draft',
+            title: 'Discard the staged draft?',
+            body: html`<p class="dw-p">This throws away the draft's title, deadlines and its${' '}
+                <b>${n} staged item${n === 1 ? '' : 's'}</b>. Nothing live changes — a draft has never been visible
+                to players. Tier 2, so it is recorded with its inverse and can be put back.</p>`,
+            onConfirm: async () => {
+                const res = await stageOps('season', [{ type: 'season.discardDraft', target: null, payload: {} }], session.csrfToken);
+                const refused = refusalOf(res);
+                if (refused) return overlay.say(`Not discarded — ${refused}`);
+                overlay.say('Discard staged.', 'Review', () => { location.hash = '#/review'; });
+                fetchChangesets('season').then(setChangesets);
+            },
+        });
     }
 
     // A one-way op stages exactly like every other one — that is the point. What makes it different is downstream: it lands as tier 3, and Review will not commit it until the export exists. The toast names the next step because the reader has just pressed something frightening and needs to know what did and did not happen.
@@ -484,8 +594,12 @@ export function SeasonRealm({ session }) {
         const seasonEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => !bannerKeys.includes(k)));
         const bannerEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => bannerKeys.includes(k)));
         const ops = [];
-        if (Object.keys(seasonEdits).length) ops.push({ type: 'season.setTitlesDeadlines', target: null, payload: seasonEdits });
-        if (Object.keys(bannerEdits).length) ops.push({ type: 'calendar.setBanners', target: null, payload: bannerEdits });
+        // ⚠️ A DRAFT HAS NO CALENDAR BANNERS. calendar.setBanners writes the live document's banner urls and there is no draft equivalent, so a banner edit made while the Next scope is selected would silently land on LIVE — the one thing a draft is supposed to make impossible. The banner fields are not rendered in that scope for the same reason.
+        if (Object.keys(seasonEdits).length) {
+            ops.push({ type: idScope === 'draft' ? 'season.setDraftTitlesDeadlines' : 'season.setTitlesDeadlines',
+                target: null, payload: seasonEdits });
+        }
+        if (idScope !== 'draft' && Object.keys(bannerEdits).length) ops.push({ type: 'calendar.setBanners', target: null, payload: bannerEdits });
         if (ops.length) { await stageOps('season', ops, session.csrfToken); fetchSeasonState().then(setState); fetchChangesets('season').then(setChangesets); }
     }
 
@@ -498,8 +612,10 @@ export function SeasonRealm({ session }) {
         onConfirm: () => handleDiscard(String(c._id)),
     });
 
-    const identitySlot = html`<${SeasonIdentity} season=${state.live} editingDraft=${false} draftStaged=${Boolean(state.draft)}
-                                                 today=${todayIso()} onSave=${handleIdentitySave} />`;
+    const editingDraft = idScope === 'draft';
+    const identitySlot = html`<${SeasonIdentity} season=${editingDraft ? (state.draft || {}) : state.live}
+                                                 editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
+                                                 today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope} />`;
 
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
@@ -540,8 +656,10 @@ export function SeasonRealm({ session }) {
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
-                  viewSlot=${html`${identitySlot}${viewSlot}
-                                  <${OneWay} live=${state.live} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
+                  viewSlot=${html`${identitySlot}
+                                  <${DraftZone} draft=${state.draft} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
+                                  ${viewSlot}
+                                  <${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;

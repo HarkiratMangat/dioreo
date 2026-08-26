@@ -13,6 +13,7 @@ function check(name, fn) {
 
 say('portalOneWay — is every irreversible operation reachable, and gated?');
 
+// ⚠️ SHAPED LIKE THE ROUTE, NOT LIKE THE COMPONENT. portal/api/season.js answers { live, draft } with draft destructured OUT of live, and the first version of this fixture put draft on live — so it proved the code agreed with itself while the promote row read "No draft is active" over an active draft in the running portal. A fixture is only a falsifier if it is shaped like the thing that actually arrives.
 const LIVE = {
     currentSeasonTitle: 'Season 7',
     newDraws: [{ title: 'a' }, { title: 'b' }, { title: 'c' }],
@@ -20,6 +21,12 @@ const LIVE = {
     calendar: [{ title: 'e' }, { title: 'f' }],
     patchNotes: [{ title: 'g' }],
 };
+
+check('THE FIXTURE MATCHES THE ROUTE: /api/season strips draft out of live', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'portal', 'api', 'season.js'), 'utf8');
+    assert.match(src, /const \{ draft, [^}]*\}\s*=\s*doc/, 'the route no longer destructures draft out of live — this whole file\'s fixture shape is now wrong');
+    assert.strictEqual(LIVE.draft, undefined, 'live must never carry draft, because the route cannot produce that');
+});
 
 // 🔴 THE CONSERVATION CHECK. Reads the real registry rather than a list retyped here, because a list retyped here would agree with itself forever — which is exactly how the gap it is meant to catch came about.
 check('every tier-3 op that has a /manage action is offered by the strip', () => {
@@ -41,6 +48,26 @@ check('THE CONSERVATION CHECK CAN FAIL: an op with no row is caught', () => {
         const missing = ['draw.purge', 'calendar.purge'].filter((t) => !offered.has(t));
         assert.deepStrictEqual(missing, [], `unreached: ${missing.join(', ')}`);
     }, /unreached: calendar\.purge/);
+});
+
+// 🔴 THE SAME ABSENCE, ONE CATEGORY OVER. The portal could PROMOTE a draft it had no way to create: five draft ops exist, /manage reaches all five, the portal reached none — so the promote row was an action on a thing nobody could make. This is the conservation check for that, and it is a SOURCE SCAN rather than a call, because the wiring lives in portal/ui/season.js which is ESM the browser loads and Node cannot require. Weaker than executing it; strong enough to fail loudly when an op is added with no way to reach it, which is the failure that actually happens.
+check('every season op with a /manage action is reachable from the portal', () => {
+    const fs = require('fs'), path = require('path');
+    const ops = require('../core/ops');
+    const ui = ['season.js', 'oneway.logic.js', 'season.logic.js', 'board.logic.js', 'track.logic.js']
+        .map((f) => fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', f), 'utf8')).join('\n');
+    const declared = ops.listOpTypes().filter((t) => t.startsWith('season.') && ops.resolveOp(t).action).sort();
+    assert.ok(declared.length >= 5, `found ${declared.length} season ops with actions — too few for this check to mean anything`);
+    const unreachable = declared.filter((t) => !ui.includes(`'${t}'`));
+    assert.deepStrictEqual(unreachable, [], `core/ops declares ${unreachable.join(', ')} and no portal surface names it`);
+});
+
+check('THE REACHABILITY CHECK CAN FAIL: an op named nowhere in the UI is caught', () => {
+    const ui = "type: 'season.startNew'";
+    assert.throws(() => {
+        const unreachable = ['season.startNew', 'season.discardDraft'].filter((t) => !ui.includes(`'${t}'`));
+        assert.deepStrictEqual(unreachable, [], `unreachable: ${unreachable.join(', ')}`);
+    }, /unreachable: season\.discardDraft/);
 });
 
 check('each row counts the records it would actually destroy', () => {
@@ -68,10 +95,13 @@ check('a row with nothing to remove offers no button to press', () => {
 });
 
 check('promote is disabled with a reason when no draft exists, and live when one does', () => {
-    const noDraft = oneWayItems(LIVE).find((i) => i.id === 'promote');
+    const noDraft = oneWayItems(LIVE, null).find((i) => i.id === 'promote');
+    // An INACTIVE draft object is not a draft. The schema keeps the subdocument around with active:false after a discard, so a truthiness test on the object alone would offer a promote over a draft that was thrown away.
+    assert.strictEqual(owRowState(oneWayItems(LIVE, { active: false, newDraws: [1] }).find((i) => i.id === 'promote'),
+        { canDestroy: true }).state, 'empty');
     assert.strictEqual(owRowState(noDraft, { canDestroy: true }).state, 'empty');
     assert.match(noDraft.note, /No draft is active/);
-    const withDraft = oneWayItems({ ...LIVE, draft: { newDraws: [1, 2], returningDraws: [], calendar: [3] } })
+    const withDraft = oneWayItems(LIVE, { active: true, newDraws: [1, 2], returningDraws: [], calendar: [3] })
         .find((i) => i.id === 'promote');
     assert.strictEqual(withDraft.count, 3);
     assert.strictEqual(owRowState(withDraft, { canDestroy: true }).state, 'ready');

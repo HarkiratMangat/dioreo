@@ -9,9 +9,9 @@ import { useState } from '../vendor/preact-hooks.mjs';
 
 /* global oneWayItems, whyNoDestroy, owRowState, plural */
 
-export function OneWay({ live, session, overlay, onStage }) {
+export function OneWay({ live, draft, session, overlay, onStage }) {
     const [fields, setFields] = useState({});
-    const items = oneWayItems(live);
+    const items = oneWayItems(live, draft);
     const canDestroy = Boolean(session?.canDestroy);
     const why = whyNoDestroy(session);
 

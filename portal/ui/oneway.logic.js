@@ -4,15 +4,17 @@
 //
 // ⚠️ ALL OF THEM LIVE ON SEASON. draws, calendar and patch notes are Season's data, and the two season-lifecycle ops are Season's by definition — so this is one strip on one realm, not a component every realm mounts. That is a fact about the data rather than a design choice, and if a tier-3 op ever lands on another entity this list is where it will show up missing.
 
+// 🔴 THE DRAFT ARRIVES SEPARATELY AND THE FIRST VERSION OF THIS READ IT OFF `live`. portal/api/season.js destructures it out — `const { draft, _id, __v, ...live } = doc` — so `live.draft` is ALWAYS undefined and the promote row said "No draft is active" over an active draft, permanently. The test passed because its fixture put draft on live: a fixture that agrees with the code instead of with the API proves the code agrees with itself, which is the failure this branch keeps paying for. It takes the same two arguments the route returns now, and the test asserts the route's shape.
+//
 // A row is one operation with the count it would destroy. `field` marks the one op that needs a value rather than only a confirmation.
-function oneWayItems(live) {
+function oneWayItems(live, draft) {
     const l = live || {};
     const newDraws = (l.newDraws || []).length;
     const returning = (l.returningDraws || []).length;
     const calendar = (l.calendar || []).length;
     const patchNotes = (l.patchNotes || []).length;
-    const draft = l.draft || null;
-    const draftCount = draft ? (draft.newDraws || []).length + (draft.returningDraws || []).length + (draft.calendar || []).length : 0;
+    const d = draft && draft.active ? draft : null;
+    const draftCount = d ? (d.newDraws || []).length + (d.returningDraws || []).length + (d.calendar || []).length : 0;
 
     return [
         { id: 'draws-all', title: 'Purge every draw', unit: 'draws', count: newDraws + returning,
@@ -31,8 +33,8 @@ function oneWayItems(live) {
             note: 'The whole history, not only this season.',
             op: { type: 'patchnote.purge', target: {}, payload: {} }, word: 'PURGE' },
         { id: 'promote', title: 'Promote the draft season', unit: 'staged items', count: draftCount,
-            note: draft ? 'Replaces the live season with the draft, wholesale.' : 'No draft is active, so there is nothing to promote.',
-            disabled: !draft, op: { type: 'season.promoteDraft', target: {}, payload: {} }, word: 'PROMOTE' },
+            note: d ? 'Replaces the live season with the draft, wholesale.' : 'No draft is active, so there is nothing to promote.',
+            disabled: !d, op: { type: 'season.promoteDraft', target: {}, payload: {} }, word: 'PROMOTE' },
         // ⚠️ THE ONE ROW THAT TAKES A VALUE. season.startNew refuses to validate without a title, so a row that only asked for a confirmation word would stage an op the server rejects — a button that looks like it worked and did not. The field is part of the row rather than the confirmation because a reader deciding whether to press it needs to see what they are naming.
         { id: 'startnew', title: 'Start a new season', unit: 'items', count: newDraws + returning + calendar,
             note: 'Wipes every draw and calendar entry and renames the season. Patch-note history survives.',

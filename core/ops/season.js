@@ -31,6 +31,30 @@ function applyLine(current, line, label, skipped) {
     return result;
 }
 
+// 🔴 THE PORTAL'S IDENTITY EDITOR WROTE NOTHING, SILENTLY, ON EVERY FIELD. applyLine reads the Discord modal's one-line-per-deadline format ("Battle Pass 7 | Sep 10"), and the portal composes discrete fields — currentSeasonTitle, bpTitle, bpEnd, bpEndTBD — because a web form with three inputs is not a modal with one textarea. It sent those keys straight through as the payload, so `op.payload.bpLine` was undefined for every line, applyLine returned `current` unchanged for all three, and `(op.payload.mainTitle || '')` fell back to the existing title. The op validated, the changeset staged, Review showed it, committing it applied EXACTLY NOTHING, and every surface reported success. Nothing could catch it: validate() passes anything, preview() reads mainTitle and so agreed with the no-op, and no test exercised the caller's payload against the op's reader.
+//
+// ⚠️ ADDITIVE, AND THE LINE PATH IS UNTOUCHED. Discord still sends lines and still behaves identically; a field payload simply takes precedence when one is present. Making the portal build "title | date" strings instead would have put a parser between a form and a field that already has the value, and would break on any title containing the separator.
+function applyFields(current, payload, prefix, line, label, skipped) {
+    const tKey = `${prefix}Title`, eKey = `${prefix}End`, bKey = `${prefix}EndTBD`;
+    const hasFields = payload && (payload[tKey] !== undefined || payload[eKey] !== undefined || payload[bKey] !== undefined);
+    if (!hasFields) return applyLine(current, line, label, skipped);
+
+    const out = { title: current.title, end: current.end, endTBD: current.endTBD };
+    if (payload[tKey] !== undefined) out.title = String(payload[tKey]).trim() || current.title;
+    // TBD is resolved BEFORE the date, because they contradict each other and the toggle is the more explicit statement: a form that submits both is saying "no date yet", not "this date, and also no date".
+    if (payload[bKey] !== undefined) { out.endTBD = Boolean(payload[bKey]); if (out.endTBD) out.end = null; }
+    if (payload[eKey] !== undefined && !out.endTBD) {
+        const raw = payload[eKey];
+        if (!raw) { out.end = null; }
+        else {
+            const parsed = parseAdminDate(String(raw));
+            // An unparseable date is REPORTED, never silently kept as the old one -- that is the failure mode this whole comment is about.
+            if (parsed) { out.end = parsed; out.endTBD = false; } else skipped.push(label);
+        }
+    }
+    return out;
+}
+
 function mapParsedEvents(parsed) {
     return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
 }
@@ -39,7 +63,8 @@ registerEntity('season', {
     'season.setTitlesDeadlines': {
         action: 'season:titlesdeadlines', tier: 1,
         validate: (op) => ({ ok: true, errors: [], normalized: op }),
-        preview: (op, live) => ({ before: { title: live.currentSeasonTitle }, after: { title: (op.payload.mainTitle || '').trim() || live.currentSeasonTitle } }),
+        // ⚠️ THE PREVIEW HAS TO READ THE SAME KEYS APPLY DOES. It read only mainTitle, so it agreed with the broken no-op and the Review screen showed "Season title: unchanged" — the one surface whose entire job is saying what a commit will do, confirming that it would do nothing.
+        preview: (op, live) => ({ before: { title: live.currentSeasonTitle }, after: { title: (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim() || live.currentSeasonTitle } }),
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             const prior = {
@@ -47,11 +72,12 @@ registerEntity('season', {
                 bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD
             };
-            const currentSeasonTitle = (op.payload.mainTitle || '').trim() || before.currentSeasonTitle;
+            // `currentSeasonTitle` beside `mainTitle` for the same reason as the lines: the portal's field is named after the schema, Discord's modal field is named after the sentence it reads as.
+            const currentSeasonTitle = (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim() || before.currentSeasonTitle;
             const skipped = [];
-            const bp = applyLine({ title: before.bpTitle, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload.bpLine, 'Battle Pass', skipped);
-            const rank = applyLine({ title: before.rankTitle, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload.rankLine, 'Ranked', skipped);
-            const dmz = applyLine({ title: before.dmzTitle, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload.dmzLine, 'DMZ', skipped);
+            const bp = applyFields({ title: before.bpTitle, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: before.rankTitle, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: before.dmzTitle, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
                 currentSeasonTitle, bpTitle: bp.title, rankTitle: rank.title, dmzTitle: dmz.title,
                 bpEnd: bp.end, rankEnd: rank.end, dmzEnd: dmz.end, bpEndTBD: bp.endTBD, rankEndTBD: rank.endTBD, dmzEndTBD: dmz.endTBD
@@ -225,11 +251,11 @@ registerEntity('season', {
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const draft = before.draft || {};
             const prior = { ...draft };
-            const mainTitle = (op.payload.mainTitle || '').trim();
+            const mainTitle = (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim();
             const skipped = [];
-            const bp = applyLine({ title: draft.bpTitle || 'Battle Pass', end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload.bpLine, 'Battle Pass', skipped);
-            const rank = applyLine({ title: draft.rankTitle || 'Ranked Series', end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload.rankLine, 'Ranked', skipped);
-            const dmz = applyLine({ title: draft.dmzTitle || 'DMZ Season', end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload.dmzLine, 'DMZ', skipped);
+            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
                 'draft.active': true,
                 ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle } : {}),
@@ -315,3 +341,6 @@ registerEntity('season', {
         invert: (c) => ({ type: 'season.bulkDraftCalendar', payload: { parsed: c.applied.prior } })
     }
 });
+
+// ⚠️ EXPORTED FOR ONE REASON: apply() needs a Mongo session, so every existing test here reaches only validate() and invert() — which is precisely why a payload the op could not read survived. This is the seam where the portal's field names meet the op's reader, and it is the only part of that path testable without a database.
+module.exports = { applyFields };

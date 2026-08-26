@@ -44,7 +44,7 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
 
 // ⚠️ "PASTE ANYTHING NEEDS TO BE MORE INTUITIVE." The intuitive version is not a better drawer — it is not being a drawer. The field sits inside the composer, beside the form it replaces, and parses as you type: one thing to look at, and the demonstration and the control are the same object.
 //
-// 🔴 THE PARSING IS THE BOT'S OWN, over HTTP. utils/adminParser.js has ingested pasted lists for /manage since it was built, including the traps already paid for there — a date written "July 16, 2026" splitting across two comma fields, a bulleted Notes paste arriving as one physical line. A browser reimplementation would preview rows the bot would then read differently, which is the one thing a preview must not do.
+// 🔴 THE PARSING IS THE BOT'S OWN, over HTTP. utils/adminParser.js has ingested pasted lists for /manage since it was built, including the traps already paid for there — a date written "July 16, 2026" splitting across two comma fields, a bulleted Notes paste arriving as one physical line. A browser reimplementation would preview rows the bot would then read differently, which is the one thing a preview must not do. ⚠️ THE RAW TEXT IS PASSED ALONG WITH THE PARSED ROWS, because the two callers need different halves. Staging into the LIVE season builds one op per row from the parsed values; staging into the DRAFT sends the text, because core/ops/season.js's draft bulk ops parse server-side and resolve draw thumbnails while they are at it — reconstructing that text from the rows would be a second, lossier serializer for a string this component already has.
 function PasteZone({ kind, onStageAll }) {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState('');
@@ -91,7 +91,7 @@ function PasteZone({ kind, onStageAll }) {
                         <!-- 🔴 A LINE THE PARSER COULD NOT READ IS SHOWN, NEVER DROPPED. A paste where three of eight lines fell out silently is exactly the failure a preview exists to prevent, and the count says both numbers so the difference is unmissable. -->
                         <span class="pz-sum">${ok.length} of ${rows.length} ${rows.length === 1 ? 'line' : 'lines'} understood</span>
                         <button class="pill lead" disabled=${!ok.length}
-                                onClick=${() => onStageAll(ok)}>Stage ${ok.length}</button>
+                                onClick=${() => onStageAll(ok, text)}>Stage ${ok.length}</button>
                     </div>` : null}
             </div>
         </div>
@@ -119,7 +119,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel })
                             <em>${t.shape === 'point' ? 'one date' : 'a window'}</em>
                         </button>`)}
                 </div>
-                ${type && onStageMany ? html`<${PasteZone} kind=${type.key} onStageAll=${(rows) => onStageMany(type.key, rows)} />` : null}
+                ${type && onStageMany ? html`<${PasteZone} kind=${type.key} onStageAll=${(rows, raw) => onStageMany(type.key, rows, raw)} />` : null}
                 <div class="nw-form">
                     ${!type ? html`
                         <p class="nw-hint">Pick what you are adding. The form follows the record — a release asks for
