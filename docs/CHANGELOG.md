@@ -511,7 +511,23 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **`fixMechanical` was next on the list and was not built, because neither of its two rules is mechanical here.** Measured against the real 133-build catalogue rather than reasoned about: rewriting an `http` image key to the `WEAPON-N` convention would hit **exactly one** build — the imgur-hosted row `buildImageUrl` passes through on purpose — and would point it at a Cloudinary key that may not exist, breaking a working image. The other rule, *meta but unranked → `top5`*, affects **2** records and is a guess dressed as a derivation, which the panel's own stated rule ("anything needing a judgement call is deliberately absent") excludes. And of the portal's five coverage flags, none has a derivable correct value: you cannot invent an attachment, and which of two duplicate builds to keep is what Compare is for. **An affordance with nothing true to do is worse than an absent one** — it implies the flags it sits under are fixable when they are not.
 
-**Coverage 71% → 74% (Season 73% → 77%, Armory 61% → 72%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
+### Three realms shipped an export button that ran, said nothing, and produced no file
+
+🔴 **`window.open('data:text/plain;…')` is blocked as a top-level navigation** — measured in this app rather than assumed: the call returns `null`, throws nothing, and the page does not change. Season's, Armory's and Broadcast's *Export selection* all did exactly that. **The third was found by a gate, not by hand**: after fixing the first two, a source scan asserting nothing in `portal/ui` opens a `data:` URL immediately named Broadcast, which nobody had looked at. It ships with a falsifier.
+
+⚠️ **And Season's export was a caption, not a backup.** It emitted `title — window`, which nothing reads back — so even if the navigation had worked, what came out was not restorable. The whole-list exports are the bot's own formatters now (`formatDrawsAsBulkText`, `formatCalendarAsBulkText`, `formatPatchNotesAsText`), and a selection writes real TSV. **There is one download mechanism**: the Blob-and-anchor path the changeset export has always used — the one export in this app known to work — extracted so a new one cannot reach for the broken kind by accident.
+
+**Export was reachable only by selecting rows first**, so taking a backup of a whole season meant ticking every row of it, and retention rendered nowhere at all — which made *"a copy is kept"* a sentence in a dialog rather than something anybody could look at. The masthead carries an **Export strip** on every realm that has one: each scope with its record count, its own note, and a **Kept this session** list showing what was taken, when, how many rows and how many bytes, with the exact bytes handed back rather than a re-derivation.
+
+🔴 **Each scope states its own shape, because one line for all of them would be a lie.** Draws and loadouts round-trip; the calendar is prefixed bullet lines; **patch notes re-import through nothing at all**, having no bulk-add flow, and the note says so. Telling somebody they hold a restorable backup of their patch notes is worse than offering no export.
+
+⚠️ **The mockup's empty state was NOT carried across.** It reads *"One-way operations stay locked until there is one"* — false here, because the one-way strip deliberately does not gate on a session export; the interlock is the changeset export at Review, where it is real. The replacement says what the kept copies actually are (page-lived) and names where the durable one is. A test asserts the old sentence never comes back.
+
+⚠️ **A scopeless export is a refusal on both routes now**, and the two test drivers that call every GET with a bare path share **one** map of which routes need a scope, rather than a copy each — a copy in the harness test would keep passing while the real route's contract moved, which is this branch's whole subject.
+
+**Two of this file's own gates were self-inflicted and worth recording.** The `data:` scan flagged three files whose only offence was *describing* the defect in the comment that records it — a source gate that cannot tell code from prose fires hardest on the files that document the bug best, and trains the next person to delete the comment. And the scope-shape check matched up to the first `}`, which lands inside `${todayIso()}` in a filename template, so every scope appeared to end three keys early.
+
+**Coverage 71% → 79% (Season 73% → 80%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 

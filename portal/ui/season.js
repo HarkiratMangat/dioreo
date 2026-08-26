@@ -9,6 +9,7 @@ import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 import { OneWay } from './oneway.js';
 import { stageOps, exportChangeset } from './composeClient.js';
+import { downloadText } from './download.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
@@ -624,11 +625,29 @@ export function SeasonRealm({ session }) {
         });
     }
 
+    // 🔴 THIS BUILT A CAPTION AND CALLED IT AN EXPORT, then handed it to `window.open('data:…')`, which browsers block — measured in this app: the call returns null and nothing happens. So the button ran, said nothing and produced no file, and the text it would have produced (`title — window`) is read back by nothing anyway. A selection now writes the same TSV the Manifest shows, and whole-list backups live in the masthead's Export strip, in the bot's own formats.
     function handleExportSelection(ids) {
         const rows = rowsById(ids);
-        const text = rows.map((r) => `${r.title} — ${r.window}`).join('\n');
-        window.open(`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`, '_blank');
+        const header = ['Title', 'Type', 'Window', 'State'].join('\t');
+        const body = rows.map((r) => [r.title, r.type || '', r.window || '', r.state || ''].join('\t')).join('\n');
+        downloadText(`dioreo-season-selection-${todayIso()}.tsv`, `${header}\n${body}`, 'text/tab-separated-values;charset=utf-8');
     }
+
+    // ⚠️ EACH SCOPE STATES ITS OWN SHAPE. Three of these four re-import and one does not — `formatPatchNotesAsText` is a read format with no bulk-add flow behind it — and one note claiming "the format the paste box accepts" for all four would tell somebody they hold a backup of their patch notes that nothing can restore.
+    const exportScopes = [
+        { id: 'season.draws', label: 'New draws', unit: 'draws', count: (state.live?.newDraws || []).length,
+          url: '/api/season/export?scope=draws', filename: `dioreo-new-draws-${todayIso()}.txt`,
+          note: 'Title, items, date, thumbnail — the exact line format Bulk Add New Draws reads back.' },
+        { id: 'season.returning', label: 'Returning draws', unit: 'draws', count: (state.live?.returningDraws || []).length,
+          url: '/api/season/export?scope=returning', filename: `dioreo-returning-draws-${todayIso()}.txt`,
+          note: 'The same line format, for the returning list.' },
+        { id: 'season.calendar', label: 'Calendar', unit: 'entries', count: (state.live?.calendar || []).length,
+          url: '/api/season/export?scope=calendar', filename: `dioreo-calendar-${todayIso()}.txt`,
+          note: 'Prefixed bullet lines — a different shape from the draws export, and what Add Multiple reads.' },
+        { id: 'season.patchnotes', label: 'Patch notes', unit: 'entries', count: (state.live?.patchNotes || []).length,
+          url: '/api/season/export?scope=patchnotes', filename: `dioreo-patch-notes-${todayIso()}.txt`,
+          note: 'A readable record, NOT a re-importable one — patch notes have no bulk-add flow to read it back.' },
+    ];
 
     // Task 4 -- Track's drag handles. editOpFor (track.logic.js, a bare global) preserves every field of the dragged item except the edited date; a draw writes to `date`, a calendar item to `endDate` (see that function's own header for the full field-name reasoning).
     async function handleDragCommit(item, newDate) {
@@ -744,7 +763,7 @@ export function SeasonRealm({ session }) {
 
     return html`
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView}
-                  badges=${{ review: stagedCount }}
+                  badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Season" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}

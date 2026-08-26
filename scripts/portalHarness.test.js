@@ -108,9 +108,11 @@ function assertShape(where, value, spec) {
 }
 
 async function main() {
+    // ⚠️ A ROUTE THAT REQUIRES A SCOPE MUST BE GIVEN ONE, and the map is shared with scripts/portalRoutes.test.js rather than copied — see scripts/lib/portalRouteQuery.js for why a second copy would keep passing while the real contract moved.
+    const QUERY = require('./lib/portalRouteQuery');
     for (const [route, keys] of Object.entries(promised)) {
         await checkAsync(`the harness serves every key ${route} promises`, async () => {
-            const body = await stub.fetchJson(route.replace('[^/]+', 'x'));
+            const body = await stub.fetchJson(route.replace('[^/]+', 'x') + (QUERY[route] || ''));
             const missing = keys.filter((k) => !(k in body));
             assert.deepStrictEqual(missing, [], `${route} promises ${keys.join(', ')} — the stub omits ${missing.join(', ')}`);
         });

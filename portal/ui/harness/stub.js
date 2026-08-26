@@ -222,6 +222,28 @@ const ROUTES = [
         grantedPages: ['season', 'draws', 'calendar', 'patchnotes'],
     })],
     [/^\/api\/armory$/, () => ({ builds: (FIX.builds || []).map(armoryBuild), grantedPages: ['loadouts'] })],
+    // ⚠️ REAL TEXT, for the same reason the armory export emits it: the Export strip's claim is that what comes out is what the bot reads back, and a placeholder string demonstrates the layout while disproving the claim. Narrower than utils/adminParser.js on purpose — it reproduces each scope's SHAPE (comma line, prefixed bullet, keyed record) rather than its every edge case, and does not attempt formatAdminDate's vocabulary.
+    [/^\/api\/season\/export$/, (params) => {
+        const scope = params.get('scope');
+        const day = (v) => (v ? new Date(v).toISOString().slice(0, 10) : '');
+        const md = (v) => (v ? `${new Date(v).getUTCMonth() + 1}/${new Date(v).getUTCDate()}` : '');
+        if (scope === 'draws' || scope === 'returning') {
+            const list = (scope === 'draws' ? FIX.newDraws : FIX.returningDraws) || [];
+            return { count: list.length, text: list.map((d) => [d.title,
+                (d.items || []).map((i) => `${i.tier || ''} ${i.name}`.trim()).join(', '), day(d.date), d.thumbnailUrl || ''].join(', ')).join('\n') };
+        }
+        if (scope === 'calendar') {
+            const list = FIX.calendar || [];
+            return { count: list.length, text: list.map((c) => `e• ${md(c.date)} - ${c.isOngoing ? 'All Season' : md(c.endDate || c.date)} | ${c.title}`).join('\n') };
+        }
+        if (scope === 'patchnotes') {
+            const list = FIX.patchNotes || [];
+            return { count: list.length, text: list.map((p) => [`Title: ${p.titleOverride || p.title}`,
+                `Release Date: ${day(p.releaseDate)}`, `Description: ${p.description || '(none)'}`, 'URLs:',
+                ...(p.images || []).map((u) => `  ${u}`)].join('\n')).join('\n\n') };
+        }
+        return { error: 'export needs one of: draws, returning, calendar, patchnotes' };
+    }],
     // 🔴 THE PREVIEW HAS TO BE OF THE BUILD THAT WAS ASKED FOR. This returned ONE fixed card for every id, which is invisible on the single-row preview panel — one card, one selection, nothing to compare it against — and became obvious the moment Compare put two of them side by side: two chips reading ".50 GS" above two cards both reading "AK-47". A stub that answers the same thing to every question is a stub that cannot demonstrate the feature it is standing in for.
     [/^\/api\/armory\/preview/, (params) => {
         const build = (FIX.builds || []).find((b) => String(b._id) === params.get('id'));

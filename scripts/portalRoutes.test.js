@@ -106,7 +106,7 @@ function promisedKeys() {
         const promised = promisedKeys();
 
         // ⚠️ A ROUTE THAT REQUIRES A SCOPE MUST BE GIVEN ONE HERE, and /api/armory/export gained that requirement on 2026-08-26: with neither ids nor a mode it now answers 400 rather than an empty export. That refusal is the point — an empty file that looks like a successful backup is the worst answer a route can give when the tier-3 interlock tells the reader an export is the way back — so the loop supplies the scope and the bare call gets its own case below.
-        const QUERY = { '/api/armory/export': '?mode=MP' };
+        const QUERY = require('./lib/portalRouteQuery');
 
         // The preview route takes an id; it gets its own case below, with a real one.
         for (const [route, keys] of Object.entries(promised).filter(([r]) => r !== '/api/armory/preview')) {

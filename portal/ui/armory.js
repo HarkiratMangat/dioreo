@@ -13,6 +13,7 @@ import { stageOps } from './composeClient.js';
 import { renderV2 } from './v2Render.js';
 import { useOverlay } from './overlay.js';
 import { reportFailure } from './async.js';
+import { downloadText } from './download.js';
 
 const MODES = ['MP', 'DMZ'];
 const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
@@ -837,14 +838,26 @@ export function ArmoryRealm({ session }) {
         refresh();
     }
 
+    // 🔴 `open('data:…')` IS BLOCKED as a top-level navigation and returns null — measured in this app, so this button ran, reported nothing and produced no file. It writes a real one now, through the mechanism the changeset export has always used.
     async function handleExportSelection(ids) {
-        const body = await fetchJson(`/api/armory/export?ids=${ids.join(',')}`);
-        globalThis.open(`data:text/plain;charset=utf-8,${encodeURIComponent(body.text || '')}`, '_blank');
+        const body = await fetchJson(`/api/armory/export?${armoryExportQuery({ scope: 'selection', ids })}`);
+        if (await reportFailure(overlay, body, 'The selection could not be exported')) return;
+        downloadText(`dioreo-builds-selection-${new Date().toISOString().slice(0, 10)}.txt`, body.text || '');
+        overlay.say(`${body.count || ids.length} build${(body.count || ids.length) === 1 ? '' : 's'} exported in paste format.`);
     }
+
+    const exportToday = new Date().toISOString().slice(0, 10);
+    const exportScopes = MODES.map((m) => ({
+        id: `armory.${m}`, label: `${m} builds`, unit: 'builds',
+        count: builds.filter((b) => b.mode === m).length,
+        url: `/api/armory/export?${armoryExportQuery({ scope: 'mode', mode: m })}`,
+        filename: `dioreo-${m.toLowerCase()}-builds-${exportToday}.txt`,
+        note: 'Blocks in the same grammar the Bulk view\'s paste box accepts, so a round trip is lossless.',
+    }));
 
     return html`
         <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare', 'Bulk']} onSetView=${setView}
-                  overlaySlot=${overlay.render()}
+                  overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Armory" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },

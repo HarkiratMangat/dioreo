@@ -7,6 +7,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
@@ -258,10 +259,15 @@ export function BroadcastRealm({ session }) {
         });
     }
 
+    // 🔴 THE THIRD DEAD EXPORT BUTTON ON THIS BRANCH, and the first one nobody went looking for — `scripts/portalExport.test.js`'s source scan found it after the same defect was fixed by hand in Season and Armory. `open('data:…')` is blocked as a top-level navigation: it returns null, throws nothing, and the page does not change, so the button ran and produced no file. It writes a real one now, as TSV, because an announcement has no bulk-add format to round-trip through and a caption pretending otherwise is the other half of the same defect.
     function handleExportSelection(ids) {
         const selected = rows.filter((r) => ids.includes(r.id));
-        const text = selected.map((r) => `${r.text} — expires ${r.expiresAt ? new Date(r.expiresAt).toDateString() : 'never'}`).join('\n');
-        globalThis.open(`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`, '_blank');
+        const header = ['Text', 'State', 'Starts', 'Expires'].join('\t');
+        const body = selected.map((r) => [String(r.text || '').replace(/\s+/g, ' '), r.state || '',
+            r.startsAt ? new Date(r.startsAt).toISOString().slice(0, 10) : '',
+            r.expiresAt ? new Date(r.expiresAt).toISOString().slice(0, 10) : 'never'].join('\t')).join('\n');
+        downloadText(`dioreo-announcements-${new Date().toISOString().slice(0, 10)}.tsv`,
+            `${header}\n${body}`, 'text/tab-separated-values;charset=utf-8');
     }
 
     return html`

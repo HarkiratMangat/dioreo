@@ -9,6 +9,7 @@ import { Icon } from './icons.js';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
+import { ExportStrip } from './exportPanel.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -216,7 +217,7 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
 }
 
 // `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content.
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '' }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
@@ -247,6 +248,13 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
             <main class=${busy} data-slow=${busyNote || null}>
                 ${masthead || null}
+                <!-- 🔴 THE EXPORT STRIP SITS UNDER THE MASTHEAD ON EVERY REALM THAT HAS ONE, not inside a realm's own
+                     view. Export was reachable only through the Manifest's selection bar, so taking a backup of a whole
+                     season meant ticking every row of it — and retention rendered nowhere at all, which made "a copy is
+                     kept" a sentence in a dialog rather than something anybody could look at. -->
+                ${exportScopes && exportScopes.length
+                    ? html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />`
+                    : null}
                 <div id="view-layer">
                 ${viewOptions ? html`
                     <section class="panel" aria-label=${`${realm} view`}>

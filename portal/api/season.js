@@ -22,6 +22,26 @@ function register(route) {
         }
         sendJson(res, 200, { live, draft: draft || null, grantedPages });
     }));
+
+    // 🔴 THE EXPORT IS THE BOT'S OWN FORMATTERS, NOT A DISPLAY STRING. Season's "Export selection" built its own `title — window` line, which is a caption rather than a backup: nothing reads it back. utils/adminParser.js has formatted these three shapes for /manage since it was built, and scripts/portalRoundtrip checks them against the parsers that consume them.
+    //
+    // ⚠️ ONLY TWO OF THE THREE ROUND-TRIP, and the UI's per-scope note says which. Draws re-import through parseBulkDrawList and the calendar through parseBulkEvents; `formatPatchNotesAsText` is a READ format with no bulk-add flow behind it at all, so calling it a backup would tell somebody they hold something they do not.
+    route('GET', /^\/api\/season\/export$/, requireAdmin(async (req, res, url, session) => {
+        const grantedPages = await grantedPagesFor(session.discordId, SEASON_PAGES);
+        if (grantedPages.length === 0) return forbidden(res, 'forbidden');
+        const { formatDrawsAsBulkText, formatCalendarAsBulkText, formatPatchNotesAsText } = require('../../utils/adminParser');
+        const doc = await SeasonalData.findOne({ docType: 'global' }).lean() || {};
+        const scope = url.searchParams.get('scope');
+        const SHAPES = {
+            draws: () => [(doc.newDraws || []), formatDrawsAsBulkText],
+            returning: () => [(doc.returningDraws || []), formatDrawsAsBulkText],
+            calendar: () => [(doc.calendar || []), formatCalendarAsBulkText],
+            patchnotes: () => [(doc.patchNotes || []), formatPatchNotesAsText],
+        };
+        if (!SHAPES[scope]) return sendJson(res, 400, { error: 'export needs one of: draws, returning, calendar, patchnotes' });
+        const [list, format] = SHAPES[scope]();
+        sendJson(res, 200, { text: format(list), count: list.length });
+    }));
 }
 
 module.exports = { register, SEASON_PAGES };
