@@ -79,40 +79,50 @@ function airtimeWindow(all, now) {
 function Airtime({ all }) {
     const now = Date.now();
     const window = airtimeWindow(all, now);
-    const nowPct = Math.max(0, Math.min(100, ((now - new Date(window.start).getTime()) / Math.max(1, new Date(window.end).getTime() - new Date(window.start).getTime())) * 100));
+    const lo = new Date(window.start).getTime(), hi = new Date(window.end).getTime();
+    const pct = (d) => Math.max(0, Math.min(100, ((new Date(d).getTime() - lo) / Math.max(1, hi - lo)) * 100));
+
+    // 🔴 THE RAIL IS A SHARED COMPONENT, AND THIS MARKUP IS THE CONTRACT FOR IT. `.tk-wrap` is what portal/ui/rail.css scopes on — not `#airtime`, and not the Season Track's id. Airtime draws the same object the Track does (lanes, bars, a ruler, a now-line), and it used to get that for free by sharing global class names with whatever the Track's stylesheet happened to define. That is exactly what broke when track.css was first scoped to `#track`: bars fell to position:static, lanes collapsed to 30px and the two ruler dates printed on top of each other. Rendering the wrapper is what earns the styles now.
     return html`
         <div class="panel" id="airtime">
             <div class="ph">
                 <span class="t">Airtime</span>
-                <span class="rt">${window.start} → ${window.end}</span>
+                <span class="rt">${TL.fmt(window.start)} → ${TL.fmt(window.end)}</span>
             </div>
             ${all.length === 0 ? html`<p class="empty">No announcements have ever been posted.</p>` : html`
-                <div class="air">
+                <div class="tk-wrap"><div class="tk-inner">
                     <div class="ruler">
-                        <span style="left:0%">${window.start}</span>
-                        <span data-end style="left:100%">${window.end}</span>
+                        <span style="left:0%"><b>${TL.fmt(window.start)}</b></span>
+                        <span style="left:100%;transform:translateX(-100%)"><b>${TL.fmt(window.end)}</b></span>
                     </div>
                     <div class="lanes">
-                        ${all.map((a) => {
-                            const item = { startDate: a.startsAt || a.createdAt, endDate: a.expiresAt || window.end };
-                            const { left, width } = barGeometry(item, window);
-                            // Shape carries state: live is a solid fill, scheduled is hollow+dashed, expired is muted. "No expiry" additionally has NO RIGHT EDGE -- it fades past the window rather than stopping, because a bar that stops reads as an end date and that is the exact misreading to prevent.
-                            const cls = 'bar ' + (a.state === 'scheduled' ? 'stag' : a.state === 'expired' ? 'exp' : 'live') + (a.state === 'live' && !a.expiresAt ? ' forever' : '');
-                            const style = `left:${left}%;width:${width}%;` + (accentOf(a) ? `--topic-accent:${accentOf(a)}` : '');
+                        ${all.slice().sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))).map((a) => {
+                            const startAt = a.startsAt || a.createdAt;
+                            const forever = !a.expiresAt;
+                            const l = pct(startAt);
+                            const r = forever ? 100 : pct(a.expiresAt);
+                            // Shape carries state, exactly as it does on the Track: a solid fill is live, hollow-dashed is scheduled, muted is over. "No expiry" additionally has NO RIGHT EDGE — it fades past the window rather than stopping, because a bar that stops reads as an end date and that is the precise misreading this whole view exists to prevent.
+                            const cls = 'bar ' + (a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved')
+                                + (forever && a.state === 'live' ? ' forever' : '');
+                            const accent = accentOf(a);
+                            const label = a.state === 'scheduled' ? 'starts ' + TL.fmt(String(startAt).slice(0, 10))
+                                : forever && a.state === 'live' ? 'no expiry →' : '';
                             return html`
-                                <div class="lane">
-                                    <span class="nm" title=${a.text}>${a.text.slice(0, 22)}</span>
+                                <div class="lane" key=${a._id} style=${accent ? `--c:${accent}` : ''}>
+                                    <span class="nm" title=${a.text}>${a.text.slice(0, 22)}${a.text.length > 22 ? '…' : ''}</span>
                                     <div class="tk">
-                                        <div class=${cls} style=${style} title=${a.text}>
-                                            <span class="bl">${a.state === 'scheduled' ? 'scheduled' : (!a.expiresAt && a.state === 'live') ? 'no expiry →' : ''}</span>
+                                        <div class=${cls} style=${`left:${l}%;width:${Math.max(1.2, r - l)}%`
+                                            + (accent ? `;--c:${accent}` : '')} title=${a.text}
+                                             aria-label=${`${a.text.slice(0, 40)}, ${a.state}${forever ? ', no end date' : ''}`}>
+                                            <span class="bl">${label}</span>
                                         </div>
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         })}
-                        <div class="ov" style="left:120px"><div class="now" style=${`left:${nowPct}%`}></div></div>
+                        <div class="ov"><div class="now" style=${`left:${pct(now)}%`}></div></div>
                     </div>
-                </div>
+                </div></div>
+                <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at <code>createdAt</code>. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it — nothing expires it and nothing reminds you.</p>
             `}
         </div>
     `;
@@ -130,7 +140,7 @@ function HeadsUp({ all }) {
             <b>Heads up:</b>
             “${worst.text.slice(0, 60)}${worst.text.length > 60 ? '…' : ''}” has no expiry and has been showing for ${worst.days} days.
             ${forever.length > 1 ? ` ${forever.length - 1} other announcement${forever.length === 2 ? '' : 's'} also never ends.` : ''}
-            Announcements without an end date stay up forever.
+            ${' '}Announcements without an end date stay up forever.
         </div></div>
     `;
 }
