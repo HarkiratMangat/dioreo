@@ -122,6 +122,15 @@ function reviewPayload() {
     return { ops, changesets };
 }
 
+// Staged changesets in the shape /api/changeset returns them — one per sample op, so the Board has columns with something in them and Season's staged panel has rows.
+function harnessChangesets() {
+    return (window.FIX.sampleOps || []).map((o, i) => ({
+        _id: 'cs-' + i, realm: o.realm || 'season', tier: i === (window.FIX.sampleOps.length - 1) ? 3 : (o.tier || 1),
+        state: 'staged', ops: [{ type: o.op || 'draw.edit', target: null, payload: {} }],
+        exportedAt: null, createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+    }));
+}
+
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
@@ -146,7 +155,8 @@ const ROUTES = [
     [/^\/api\/access\/matrix$/, () => ({ scopes: FIX.accessScopes || FIX.SCOPES || [], admins: FIX.accessAdmins || [] })],
     [/^\/api\/analytics$/, () => analyticsPayload()],
     [/^\/api\/review$/, () => reviewPayload()],
-    [/^\/api\/changeset\?/, () => ({ changesets: [] })],
+    // 🔴 BOTH FORMS, AND THE BARE ONE WAS MISSING. season.js fetches `/api/changeset?realm=season` and board.js fetches `/api/changeset/:id/preview`, but the route the API actually registers is `/^\/api\/changeset$/` — and with no stub for it the Board's own fetch fell through to the unrouted {ok:true} fallback, so `body.changesets` was undefined and the Board rendered empty all session while looking perfectly fine. Caught by scripts/portalHarness.test.js, which is the only thing that compares what the stub returns against what the route promises.
+    [/^\/api\/changeset(\?|$)/, () => ({ changesets: harnessChangesets() })],
     [/^\/api\/changeset\/[^/]+\/preview$/, () => ({ preview: null })],
 ];
 
