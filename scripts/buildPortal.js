@@ -42,6 +42,16 @@ function assertNoBacktickInComments(file, src) {
     }
 }
 
+// 🔴 A CROSS-FORMAT IMPORT PARSES CLEANLY AND TAKES THE WHOLE PAGE DOWN. Every *.logic.js loads as a CLASSIC script before the module graph evaluates, so its top-level functions are GLOBALS — there are no exports to name. `import { tipPlacement } from './tips.logic.js'` is valid module syntax, passes assertParsesAsModule below, and throws "does not provide an export named" at load, blanking the page. Made twice now: season.js first, and tips.js on 2026-08-26 while building the tooltip runtime, which is what turned the warning in every .logic.js header into this gate. ⚠️ COMMENTS ARE STRIPPED FIRST, and this is the SECOND source-scan gate today that fired on its own documentation — the `data:` URL scan in scripts/portalExport.test.js did the same. Three files here name the trap in the comment that records it, and a gate that cannot tell code from prose fires hardest on the files that explain the bug best, which trains the next reader to delete the comment rather than keep the rule. **Any source-shape gate strips comments before it looks.**
+const stripJsComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+
+function assertNoLogicImport(file, src) {
+    for (const m of stripJsComments(src).matchAll(/import\s[^;]*?from\s+'\.\/([\w.-]+\.logic\.js)'/g)) {
+        const line = src.slice(0, m.index).split('\n').length;
+        throw new Error(`portal/ui/${file}:${line} imports './${m[1]}' as a module — it loads as a CLASSIC script and exports nothing. Its top-level functions are already globals; drop the import.`);
+    }
+}
+
 function assertParsesAsModule(file, src) {
     const r = spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src, encoding: 'utf8' });
     if (r.status !== 0) {
@@ -54,7 +64,7 @@ function copyUiScripts() {
     const files = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.js'));
     for (const f of files) {
         const src = fs.readFileSync(path.join(UI_DIR, f), 'utf8');
-        if (!f.endsWith('.logic.js')) { assertNoBacktickInComments(f, src); assertParsesAsModule(f, src); }
+        if (!f.endsWith('.logic.js')) { assertNoBacktickInComments(f, src); assertNoLogicImport(f, src); assertParsesAsModule(f, src); }
         copyFile(path.join(UI_DIR, f), path.join(UI_OUT, f));
     }
     return files;

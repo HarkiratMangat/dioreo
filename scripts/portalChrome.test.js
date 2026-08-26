@@ -274,6 +274,27 @@ check('no backtick appears inside an HTML comment in a template', () => {
     assert.deepStrictEqual(offenders, [], 'a backtick here closes the surrounding template — say the class name in plain words:\n  ' + offenders.join('\n  '));
 });
 
+// 🔴 THE GATE FOR A MISTAKE THAT PARSES. A *.logic.js sibling loads as a classic script and exports nothing, so importing one is valid module syntax that throws at LOAD — the page renders blank and the build reports success. Made twice: season.js, and tips.js on 2026-08-26. `scripts/buildPortal.js`'s assertNoLogicImport refuses the build now; this is its falsifier.
+check('no ESM file imports a .logic.js sibling as a module', () => {
+    const fs = require('fs'), path = require('path');
+    const UI = path.join(__dirname, '..', 'portal', 'ui');
+    // ⚠️ COMMENTS STRIPPED FIRST: three files name this trap in the comment that records it, and the first version of this check flagged all three. A gate that cannot tell code from prose punishes the files that document the bug best.
+    const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+    const files = fs.readdirSync(UI).filter((f) => f.endsWith('.js') && !f.endsWith('.logic.js'));
+    const offenders = files.filter((f) => /import\s[^;]*?from\s+'\.\/[\w.-]+\.logic\.js'/.test(strip(fs.readFileSync(path.join(UI, f), 'utf8'))));
+    assert.deepStrictEqual(offenders, [], `${offenders.join(', ')} imports a classic script as a module — it exports nothing and the page will render blank`);
+    // The strip must not have blanked the files, or this check is vacuous.
+    assert.ok(files.some((f) => /import\s/.test(strip(fs.readFileSync(path.join(UI, f), 'utf8')))), 'stripping removed the imports too — this check now sees nothing');
+});
+
+check('THE LOGIC-IMPORT GATE CAN FAIL: an import of a .logic sibling is caught', () => {
+    const bad = "import { tipPlacement } from './tips.logic.js';";
+    const good = "import { Shell } from './shell.js';";
+    const rule = /import\s[^;]*?from\s+'\.\/[\w.-]+\.logic\.js'/;
+    assert.ok(rule.test(bad), 'the trap form must match, or the gate proves nothing');
+    assert.ok(!rule.test(good), 'an ordinary module import must NOT match, or the gate bans the normal case');
+});
+
 check('THE BACKTICK-IN-COMMENT GATE CAN FAIL: an even pair inside a comment is caught', () => {
     const tick = String.fromCharCode(96);
     const bad = '<!-- the ' + tick + '.bed' + tick + ' class is the split -->';

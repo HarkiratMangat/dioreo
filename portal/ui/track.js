@@ -398,7 +398,7 @@ function DeadRail({ rail, view }) {
             ${rail.flags.map((d) => html`
                 <span key=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '')}
                       style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
-                      data-tip=${`${d.title || d.label} ends ${TL.fmt(d.date)} — change it in the panel above, where the date is typed and parsed`}>
+                      data-tip=${`${d.title || d.label} ends ${TL.fmt(d.date)}\nChange it in the panel above, where the date is typed and read by the same parser the bot uses.`}>
                     <i class="dfk"></i><b class="dfl">${d.label}</b><span class="dfd">${TL.fmt(d.date)}</span>
                 </span>`)}
             <!-- A deadline outside the window is WELDED TO THE EDGE it is beyond, not floated at a
@@ -406,7 +406,7 @@ function DeadRail({ rail, view }) {
                  it belongs on the boundary. -->
             ${rail.pins.map((d) => html`
                 <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}`} style=${`--c:${d.hex}`}
-                      data-tip="Outside the current window — press FIT or zoom out to bring it in">
+                      data-tip="Outside the current window.\nPress FIT, or drag the scrubber, to bring it back in.">
                     ${d.label} ${TL.fmt(d.date)} <em>${d.away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>
                 </span>`)}
         </div>

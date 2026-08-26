@@ -10,6 +10,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
 import { ExportStrip } from './exportPanel.js';
+import { installTips } from './tips.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -219,6 +220,8 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
 // `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content.
 export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
+    // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
+    useEffect(() => { installTips(); }, []);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
 
