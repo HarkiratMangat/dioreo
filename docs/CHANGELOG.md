@@ -28,7 +28,21 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
+## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel
+
+The old `/draw calculator` was a setup form: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate — five interactions before a single figure appeared, and Harkirat called it "terrible, lacks intuitive, lacks design/style, and is not user friendly." It is rebuilt from the ground up.
+
+**One always-live panel, not two stages.** Every figure is a pure function of the state carried in the button/select `customId`, so recomputing on every click costs a few thousand integer operations against a Discord round trip — there was never a reason for a separate "Calculate" step. `pullsDone` and the target pull are now selects, enumerated from the draw's real pull count, so an out-of-range value can no longer be typed in the first place; only genuinely free-form amounts (a CP balance, a CP budget) still open a one-field modal. A real landing state was added — the command used to open straight into a random draw with no explanation of what the dropdowns or buttons were for.
+
+**Rebuilt a second time against Harkirat's own mockup.** Three earlier passes each guessed at "better structure" from first principles and were each rejected on his live screenshots. He then exported a real Components V2 message he'd built himself, and the COST BREAKDOWN block was rebuilt to match it directly — reusing `/draw prices`' own `buildDrawEntries()` for the top summary so the two commands render the same draw identically instead of two similar-but-different copies, and adding progressive disclosure ("Show Breakdown" / "Simplify") so the collapsed view isn't a wall of numbers.
+
+**Three rounds of live mobile polish followed**, each from a screenshot on the running dev bot: code-spans are now reserved for the figures a player actually acts on (total price, total CP, what's left over) rather than boxing every number, since a long or multi-part value wraps mid-box on a narrow phone; the blockquote-prefixed label marker was replaced with a plain bullet after it rendered as an unwanted vertical bar down the page; and the region label moved off the `## COST BREAKDOWN` heading onto its own caption line after it started wrapping into the title.
+
+The two commands are cross-linked (`/draw calculator` ↔ `/draw prices`, zero new handler code either way, both routing through each command's own existing custom_id scheme), and three new emoji assets were added (`calculator`, `mythicCard`, `mythicCoin`) — verified against the dev application only, since prod credentials aren't available from this worktree.
+
+Not yet click-tested live end-to-end on the dev bot in a formal pass (it was exercised heavily via the live screenshot-feedback loop above); filed in `docs/db-deferred-list.md`'s 🔔 Reminders with the specific sequence still owed.
+
+## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174 · `4a7971e`) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.
 
