@@ -50,7 +50,7 @@ function defaultState() {
     return {
         verb: 'setup',
         region: 'region_10',
-        drawKey: DRAW_KEYS[0],
+        drawKey: null,          // landing state (2026-08-26 13:29 EDT) -- no draw picked yet, no number computed
         pullsDone: 0,
         target: 'F',            // F = finish, P = specific pull, B = budget
         targetValue: 0,
@@ -82,10 +82,12 @@ function decodeState(customId) {
         const hit = parts.slice(2).find(p => p.startsWith(prefix));
         return hit === undefined ? fallback : hit.slice(prefix.length);
     };
+    // d-1 (or a missing d field) decodes to null -- landing. Distinguishing "index 0 chosen" from "nothing chosen" is the whole point; DRAW_KEYS[-1] || DRAW_KEYS[0] would have silently resurrected drawKey to the first draw on every round trip through a customId that never carried one.
+    const drawIndex = Number(get('d', '-1'));
     return {
         verb: parts[1] || 'setup',
         region: `region_${get('r', '10')}`,
-        drawKey: DRAW_KEYS[Number(get('d', 0))] || DRAW_KEYS[0],
+        drawKey: drawIndex >= 0 ? (DRAW_KEYS[drawIndex] || null) : null,
         pullsDone: Number(get('p', 0)),
         target: get('t', 'F'),
         targetValue: Number(get('v', 0)),
@@ -239,6 +241,22 @@ function pricesRow(state) {
 // ==========================================
 function buildCalculatorPanel(state, accentColor, options = {}) {
     const { liveDoubleCPEntry = null, assertDoubleCP = false, currency = 'USD', client = null, notice = null } = options;
+
+    // ---- Landing: no draw picked yet (2026-08-26 13:29 EDT) ---- Every user used to land on Mythic Weapon Draw, 0 pulls, finish -- a real computed answer to a question nobody had asked yet. Harkirat's pick from the AskUserQuestion fork. Nothing is computed here; the draw select is the only thing that matters, and with no option carrying default:true its PLACEHOLDER actually renders (verified: Discord only shows a select's placeholder when no option is marked default -- every other state in this file marks one, which is why the placeholder text elsewhere never appears).
+    if (!state.drawKey) {
+        return {
+            type: 17, accent_color: accentColor,
+            components: [
+                buildTitleBlock('Cost Calculator', emojis.drawPrices, 'Work out what you need to finish a draw', 2, true),
+                { type: 14, spacing: 2, divider: true },
+                { type: 10, content: '🎯 Pick a draw below to see what you still need, and the cheapest way to buy it.' },
+                drawSelectRow(state),
+                controlsRow(state, { hasUpgrade: false }),
+                pricesRow(state)
+            ]
+        };
+    }
+
     const meta = DRAW_META[state.drawKey];
     const entry = entryFor(state.region, state.drawKey);
     const components = [

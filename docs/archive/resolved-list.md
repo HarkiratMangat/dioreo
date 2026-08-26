@@ -5,6 +5,10 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 2026-08-26 13:19 EDT — `/draw calculator` panel structure, second resolution
+
+- **🎨 `/draw calculator` panel structure — RESOLVED 2026-08-26 13:19 EDT, folded into the click-test entry below** `[P1 · S]` *(filed 2026-08-26 13:16 EDT as "awaiting Harkirat's pick"; superseded ~3 minutes later when he picked. Corrects `docs/archive/resolved-list.md`'s 2026-08-26 11:20 EDT closure, which was itself premature -- see that entry's own correction note for the full timeline of two rejections between DONE and this resolution.)* Picked: a hybrid of the shipped Section/accessory treatment with progressive disclosure. `state.detail` (default false) gates the ladder/upgrade-note/Least Waste/region-comparison/estimate behind a real "Show breakdown" toggle; headline + a compact one-line Cheapest always show. Shipped commit `d6f64d2`. What's left to verify lives in the click-test entry immediately below, not here.
+
 ## 2026-08-26 11:20 EDT — `/draw calculator`'s design passover
 
 - **🧮 `/draw calculator` — design PASSOVER session on the already-shipped feature** `[P2 · S · Opus5-High]` *(filed 2026-08-20 09:52 EDT, Harkirat — the build itself shipped in Pre-Release v3.28.0/PR [#136](https://github.com/HarkiratMangat/dioreo/pull/136); this is a NEW, distinct ask: a review pass on the live feature now that it's been out a few days, not a rebuild.)* Original spec (21 decisions): `docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md`. **Scope this at session start** — Harkirat hasn't yet said what prompted the passover (a UX rough edge, a data-accuracy concern, something else); the shipped record and the design's original decisions are the starting point, not a blank slate. **Timing not yet stated by Harkirat** — don't assume it's a launch blocker; confirm before scheduling.

@@ -95,6 +95,33 @@ t('every draw x region x goal x detail-state combination stays under the cap', (
 // ==========================================
 // PROGRESSIVE DISCLOSURE (2026-08-26 13:19 EDT, Harkirat's hybrid pick)
 // ==========================================
+t('a fresh /draw calculator opens on the LANDING state -- no draw picked, no number computed', () => {
+    assert.strictEqual(defaultState().drawKey, null, 'defaultState() must not pre-pick a draw (2026-08-26 13:29 EDT landing-page fix)');
+    const panel = buildCalculatorPanel(clampStateToDraw(defaultState()), ACCENT, {});
+    const body = allText(panel);
+    assert.ok(!/null/i.test(JSON.stringify(panel)), 'landing must never leak the literal word null');
+    assert.ok(!/CP\*\*/.test(body), 'no CP figure should be computed before a draw is chosen');
+    const draw = selectFor(panel, 'draw');
+    assert.ok(draw, 'the draw select must render on landing');
+    assert.ok(!draw.options.some(o => o.default), 'no option may carry default:true on landing -- that is what makes Discord show the real placeholder instead of a pre-picked value');
+    assert.strictEqual(selectFor(panel, 'pulls'), undefined, 'no pulls select -- nothing to enumerate without a draw');
+    assert.strictEqual(selectFor(panel, 'goal'), undefined, 'no goal select -- nothing to enumerate without a draw');
+});
+
+t('picking a draw from landing transitions cleanly into the live panel', () => {
+    const picked = decodeState(encodeState('draw', { ...defaultState(), drawKey: 'mythicWeapon' }));
+    assert.strictEqual(picked.drawKey, 'mythicWeapon');
+    const panel = buildCalculatorPanel(clampStateToDraw(picked), ACCENT, {});
+    assert.ok(selectFor(panel, 'pulls'), 'pulls select must appear once a draw is chosen');
+    assert.ok(!/null/i.test(JSON.stringify(panel)));
+});
+
+t('a customId with no drawKey field at all decodes to landing, not to the first draw', () => {
+    // Defends against DRAW_KEYS[-1] || DRAW_KEYS[0] silently resurrecting a draw on a customId that never carried one -- the exact shape of the bug this state was designed to avoid.
+    const decoded = decodeState('calc~region~r10~p0~tF~v0~b0~u0~e0~x0');
+    assert.strictEqual(decoded.drawKey, null, 'a missing d field must decode to landing, never to DRAW_KEYS[0]');
+});
+
 t('a fresh panel opens collapsed by default', () => {
     assert.strictEqual(defaultState().detail, false, 'defaultState() must default to collapsed');
 });
