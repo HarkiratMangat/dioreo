@@ -288,24 +288,23 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
     const spent = spentSoFar(state.region, state.drawKey, state.pullsDone);
     const pullsLeft = Math.max(0, targetPull - state.pullsDone);
 
-    const lines = [`## COST BREAKDOWN — \`${regionLabel(state.region)} REGION\``];
+    // Mobile polish (2026-08-26 17:38 EDT, Harkirat's own click-through screenshot): every value used to sit inside a backtick code-span, which Discord renders as a grey boxed "pill" -- fine on desktop, but a long one (a draw NAME, a bar+fraction) wraps mid-box on a narrow phone width and reads as broken. Bold text wraps like a normal sentence with no box to break out of, so every value below is bold-only, no backticks. Also dropped the blank-line gap BETWEEN field pairs (TYPE/TOTAL, PROGRESS/PENDING, BALANCE/CP-SPENT) -- on mobile those gaps read as far larger relative to how little text sits between them than they did in the source mockup, which was likely viewed on desktop.
+    const lines = [`## COST BREAKDOWN — ${regionLabel(state.region)} REGION`];
 
     if (!compact) {
-        lines.push(`-# > TYPE: **\`${meta.name}\`**${upgrade !== null ? ` + **\`${UPGRADE_LABEL[state.drawKey]} Upgrade\`**` : ''}`);
+        lines.push(`-# > TYPE: **${meta.name}**${upgrade !== null ? ` + **${UPGRADE_LABEL[state.drawKey]} Upgrade**` : ''}`);
         lines.push(upgrade !== null
-            ? `-# > TOTAL PRICE: **\`${fmt(entryTotal)} CP Draw\`** + **\`${fmt(upgradeAvailable)} CP Upgrade\`** = **\`${fmt(entryTotal + upgradeAvailable)} CP\`**`
-            : `-# > TOTAL PRICE: **\`${fmt(entryTotal)} CP\`**`);
-        lines.push('');
-        lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
-        const pending = [`**\`${fmt(pullsLeft)}x Draw Pull${pullsLeft === 1 ? '' : 's'}\`**`];
-        if (upgrade !== null) pending.push(`**\`${fmt(entry.upgrade.count)}x Mythic Card Spin${entry.upgrade.count === 1 ? '' : 's'}\`**`);
+            ? `-# > TOTAL PRICE: **${fmt(entryTotal)} CP Draw** + **${fmt(upgradeAvailable)} CP Upgrade** = **${fmt(entryTotal + upgradeAvailable)} CP**`
+            : `-# > TOTAL PRICE: **${fmt(entryTotal)} CP**`);
+        lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
+        const pending = [`**${fmt(pullsLeft)}x Draw Pull${pullsLeft === 1 ? '' : 's'}**`];
+        if (upgrade !== null) pending.push(`**${fmt(entry.upgrade.count)}x Mythic Card Spin${entry.upgrade.count === 1 ? '' : 's'}**`);
         lines.push(`-# > PENDING: ${pending.join(' · ')}`);
-        lines.push('');
-        lines.push(`-# > BALANCE: **\`${state.balance ? `${fmt(state.balance)} CP` : 'Not specified'}\`**`);
-        lines.push(`-# > CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
+        lines.push(`-# > BALANCE: **${state.balance ? `${fmt(state.balance)} CP` : 'Not specified'}**`);
+        lines.push(`-# > CP SPENT: **${fmt(spent)} CP** · CP NEEDED: **${fmt(needed)} CP**`);
     } else {
-        lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
-        lines.push(`-# > CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
+        lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
+        lines.push(`-# > CP SPENT: **${fmt(spent)} CP** · CP NEEDED: **${fmt(needed)} CP**`);
     }
 
     if (shortfall <= 0) {
@@ -318,16 +317,16 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
     // Reads the optimizer's OWN cpEach/priceCents rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so a re-derived 2X combo entry would render the un-doubled figure.
-    const describeCp = r => r.combo.map(c => `**${c.count}×** \`${fmt(c.cpEach)} CP\`${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
+    const describeCp = r => r.combo.map(c => `**${c.count}×** ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
     const describePrices = r => r.combo.map(c => `**${formatMoney(c.priceCents * c.count, currency)}**`).join(' + ');
     const packageLines = (label, r) => compact
-        ? [`**${label}:** **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`** — ${describeCp(r)}`]
+        ? [`**${label}:** **${formatMoney(r.totalCents, currency)}** for **${fmt(r.totalCp)} CP** — ${describeCp(r)}`]
         : [
             `**${label} Method**`,
-            `> **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`**`,
-            `-# ${describeCp(r)} ⌇ **\`${fmt(r.totalCp)} CP\`**`,
-            `-# ${describePrices(r)} ⌇ **\`${formatMoney(r.totalCents, currency)}\`**`,
-            `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (\`${fmt(r.totalCp)} CP\` Purchase - \`${fmt(shortfall)} CP\` Needed)`
+            `> **${formatMoney(r.totalCents, currency)}** for **${fmt(r.totalCp)} CP**`,
+            `-# ${describeCp(r)} ⌇ **${fmt(r.totalCp)} CP**`,
+            `-# ${describePrices(r)} ⌇ **${formatMoney(r.totalCents, currency)}**`,
+            `-# Left Over: **${fmt(r.leftoverCp)} CP** (${fmt(r.totalCp)} CP Purchase − ${fmt(shortfall)} CP Needed)`
         ];
 
     lines.push('### RECOMMENDED PACKAGE');
@@ -346,8 +345,8 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
 
 // Budget mode asks a different question ("how far does this go", not "what do I still need") -- kept as its own function rather than forced into buildCostBreakdown's TYPE/TOTAL/PENDING/RECOMMENDED PACKAGE shape, none of which apply here. No mockup was given for this mode; it keeps the same header for visual consistency with the goal-mode block sitting in the same slot.
 function buildBudgetBreakdown(state, entry, total, { compact }) {
-    const lines = [`## COST BREAKDOWN — \`${regionLabel(state.region)} REGION\``];
-    lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **\`${state.pullsDone} / ${total} Pulls\`**`);
+    const lines = [`## COST BREAKDOWN — ${regionLabel(state.region)} REGION`];
+    lines.push(`-# > PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
     if (!state.targetValue) {
         lines.push('');
         lines.push('Press **Set Budget** and enter the CP you are willing to spend.');
@@ -355,7 +354,7 @@ function buildBudgetBreakdown(state, entry, total, { compact }) {
     }
     const result = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
     const gained = result.pullsReachable - state.pullsDone;
-    lines.push(`-# > BUDGET: **\`${fmt(state.targetValue)} CP\`** reaches **\`pull ${result.pullsReachable}\`** of ${total}`);
+    lines.push(`-# > BUDGET: **${fmt(state.targetValue)} CP** reaches **pull ${result.pullsReachable}** of ${total}`);
     if (!compact) {
         lines.push(gained > 0
             ? `-# That is **${plural(gained, 'more pull')}** from where you are now.`

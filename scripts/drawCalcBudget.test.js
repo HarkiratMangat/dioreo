@@ -186,11 +186,11 @@ t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS,
 
 t('CP NEEDED includes the upgrade whenever the Upgrade toggle is on, in BOTH compact and full modes', () => {
     const withUpgrade = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true }));
-    assert.ok(withUpgrade.includes('CP NEEDED: **`11,510 CP`**'), 'compact mode must still reflect the upgrade toggle');
+    assert.ok(withUpgrade.includes('CP NEEDED: **11,510 CP**'), 'compact mode must still reflect the upgrade toggle');
     const withUpgradeFull = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true, detail: true }));
-    assert.ok(withUpgradeFull.includes('CP NEEDED: **`11,510 CP`**'));
+    assert.ok(withUpgradeFull.includes('CP NEEDED: **11,510 CP**'));
     const without = allText(render({ drawKey: 'mythicWeapon' }));
-    assert.ok(without.includes('CP NEEDED: **`5,810 CP`**'), 'upgrade off must exclude it from CP NEEDED');
+    assert.ok(without.includes('CP NEEDED: **5,810 CP**'), 'upgrade off must exclude it from CP NEEDED');
 });
 
 t('a balance that covers the goal shows the covered message and no RECOMMENDED PACKAGE at all', () => {
@@ -205,7 +205,7 @@ t('the Left Over equation nets against the BALANCE-ADJUSTED shortfall, not the r
     const total = pullCount(state.region, state.drawKey);
     const shortfall = shortfallFor(state, total, null);
     const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
-    assert.ok(allText(panel).includes(`\`${shortfall.toLocaleString('en-US')} CP\` Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
+    assert.ok(allText(panel).includes(`${shortfall.toLocaleString('en-US')} CP Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
 });
 
 // ==========================================
