@@ -160,13 +160,27 @@ t('the upgrade sub-heading gets its OWN card emoji, and only for the two draws t
 // ==========================================
 // COST BREAKDOWN -- collapsed vs expanded
 // ==========================================
+t('no lingering "-# > " blockquote marker anywhere -- replaced with the diamond emoji per Harkirat\'s direct request', () => {
+    const panel = render({ drawKey: 'mythicCharacter', detail: true });
+    assert.ok(!/-# >/.test(allText(panel)), 'the blockquote-prefixed small-text label must be gone');
+    assert.ok(allText(panel).includes('🔹 TYPE:'), 'replaced with the diamond marker');
+});
+
+t('the reused /draw-prices summary renders as SEPARATE Text Displays, not one joined block -- that gap IS the vertical spacing', () => {
+    const panel = render({ drawKey: 'mythicCharacter' });
+    const summaryTexts = texts(panel).slice(1, 4); // title, then the 3 buildDrawEntries blocks
+    assert.strictEqual(summaryTexts.length, 3, 'mythicCharacter has an upgrade step, so buildDrawEntries returns 3 blocks -- each must be its own component');
+    assert.ok(summaryTexts[0].includes('MYTHIC CHARACTER'));
+    assert.ok(summaryTexts[2].includes('Character Upgrade'));
+});
+
 t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -- no TYPE, TOTAL PRICE, PENDING, BALANCE, Least Waste, or NOTE', () => {
     const panel = render({ drawKey: 'mythicWeapon' });
     const body = allText(panel);
     assert.ok(/PROGRESS:/.test(body) && /CP SPENT:/.test(body), 'progress + spent/needed must always show');
     assert.ok(/\*\*Cheapest:\*\*/.test(body), 'the compact one-line Cheapest must render');
-    assert.ok(!/> TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
-    assert.ok(!/> TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
+    assert.ok(!/🔹 TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
+    assert.ok(!/🔹 TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
     assert.ok(!/> PENDING:/.test(body), 'PENDING is full-mode only');
     assert.ok(!/> BALANCE:/.test(body), 'BALANCE is full-mode only');
     assert.ok(!/Least Waste Method/.test(body), 'Least Waste is full-mode only');
@@ -177,7 +191,7 @@ t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -
 t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS, PENDING, BALANCE, CP SPENT/NEEDED, RECOMMENDED PACKAGE with per-item pricing and Left Over, and the NOTE', () => {
     const panel = render({ drawKey: 'mythicWeapon', detail: true });
     const body = allText(panel);
-    for (const needle of ['> TYPE:', '> TOTAL PRICE:', '> PROGRESS:', '> PENDING:', '> BALANCE:', '> CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
+    for (const needle of ['🔹 TYPE:', '🔹 TOTAL PRICE:', '🔹 PROGRESS:', '🔹 PENDING:', '🔹 BALANCE:', '🔹 CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
         assert.ok(body.includes(needle), `expanded view is missing "${needle}"`);
     }
     assert.ok(!/\*\*Cheapest:\*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');
@@ -186,11 +200,11 @@ t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS,
 
 t('CP NEEDED includes the upgrade whenever the Upgrade toggle is on, in BOTH compact and full modes', () => {
     const withUpgrade = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true }));
-    assert.ok(withUpgrade.includes('CP NEEDED: **11,510 CP**'), 'compact mode must still reflect the upgrade toggle');
+    assert.ok(withUpgrade.includes('CP NEEDED: **`11,510 CP`**'), 'compact mode must still reflect the upgrade toggle');
     const withUpgradeFull = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true, detail: true }));
-    assert.ok(withUpgradeFull.includes('CP NEEDED: **11,510 CP**'));
+    assert.ok(withUpgradeFull.includes('CP NEEDED: **`11,510 CP`**'));
     const without = allText(render({ drawKey: 'mythicWeapon' }));
-    assert.ok(without.includes('CP NEEDED: **5,810 CP**'), 'upgrade off must exclude it from CP NEEDED');
+    assert.ok(without.includes('CP NEEDED: **`5,810 CP`**'), 'upgrade off must exclude it from CP NEEDED');
 });
 
 t('a balance that covers the goal shows the covered message and no RECOMMENDED PACKAGE at all', () => {
@@ -205,7 +219,7 @@ t('the Left Over equation nets against the BALANCE-ADJUSTED shortfall, not the r
     const total = pullCount(state.region, state.drawKey);
     const shortfall = shortfallFor(state, total, null);
     const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
-    assert.ok(allText(panel).includes(`${shortfall.toLocaleString('en-US')} CP Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
+    assert.ok(allText(panel).includes(`\`${shortfall.toLocaleString('en-US')} CP\` Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
 });
 
 // ==========================================
