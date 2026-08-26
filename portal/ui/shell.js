@@ -6,7 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
-const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
+const REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analytics'];
 
 // One 24×24 stroke glyph per realm. Inline rather than an icon font or sprite sheet: five paths is less bytes than either, and the portal serves no external assets (the door is the only page a stranger reaches and it must request nothing). `stroke: currentColor` in shell.css means the active/hover colour transition covers the icon for free.
 const REALM_ICON = {
@@ -15,6 +15,7 @@ const REALM_ICON = {
     broadcast: 'M4 10v4a1 1 0 0 0 1 1h3l5 4V5L8 9H5a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11',
     access: 'M15 7a4 4 0 1 1-3.9 5H8v2H6v2H3v-3l8.1-8.1A4 4 0 0 1 15 7zM16 10.5h.01',
     analytics: 'M3 17l4-6 4 3 4-7 3 4M3 21h18',
+    review: 'M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1zM8 6H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-2M9 13l2 2 4-4',
 };
 
 function RealmIcon({ realm }) {

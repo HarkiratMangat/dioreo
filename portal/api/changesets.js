@@ -61,8 +61,12 @@ function register(route) {
             // 🔴 CODE REVIEW FOUND: this used to pass an empty {} as live state. draws/calendar/ patchnotes/season op preview()s all read live.newDraws/.calendar/.patchNotes/ .currentSeasonTitle/.draft directly (no defensive guard), so previewSet threw on an empty object -- confirmed reproduced (season.startNew / season.promoteDraft, both tier 3, both threw). loadouts/announcements previews self-fetch or ignore the param, so passing the real SeasonalData doc for every realm is harmless where it is unused.
             const live = (await SeasonalData.findOne({ docType: 'global' }).lean()) || {};
             preview = v.ok ? await previewSet(v.normalized, live) : null;
+            // The baseline is the `before` half of this very preview — the same numbers, kept. Taking it here rather than in a second pass matters: a separately-fetched baseline could be read a moment later than the preview and disagree with it, which would report the record as stale the instant it was staged.
+            if (preview) doc.baseline = preview.map((p) => (p && p.before !== undefined ? p.before : null));
         } catch (e) { console.error('Portal changeset preview failed:', e); }
         await savePromise;
+        // Saved separately from savePromise, which was already in flight when the baseline arrived.
+        if (doc.isModified('baseline')) await doc.save();
 
         sendJson(res, 200, { changesetId: doc._id, state: doc.state, tier: doc.tier, failures: v.failures, preview });
     }));

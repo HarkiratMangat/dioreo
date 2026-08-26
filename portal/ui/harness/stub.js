@@ -18,7 +18,7 @@ function seasonLive() {
 }
 
 // Every realm this admin can see. The harness signs in as the owner because the alternative — a partial grant — hides surfaces, and a harness that silently omits a page is worse than useless when the whole point is looking at every page. Narrower grants are reachable with ?realms= below.
-const ALL_REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
+const ALL_REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analytics'];
 const params = new URLSearchParams(location.search);
 const realms = params.get('realms') ? params.get('realms').split(',') : ALL_REALMS;
 const owner = params.get('owner') !== '0';
@@ -93,6 +93,35 @@ const FIXTURE_CARD = { components: [
     ] },
 ] };
 
+// /api/review flattens open changesets to individual operations. FIX.sampleOps is the mockup's own staged set; its rows are [field, was, becomes] triples, while diffRows (portal/ui/board.logic.js) returns {key, from, to} — so they are converted here rather than teaching the component a second row shape. One op is marked stale and one changeset is tier 3 and unexported, because a review screen whose fixtures are all clean never renders the two surfaces it exists for.
+function reviewPayload() {
+    const src = window.FIX.sampleOps || [];
+    const ops = src.map((o, i) => ({
+        id: 'cs-' + i + ':0',
+        changesetId: 'cs-' + i,
+        index: 0,
+        realm: o.realm || 'season',
+        op: o.op || 'unknown',
+        tier: i === src.length - 1 ? 3 : (o.tier || 1),
+        name: o.name,
+        verb: o.verb || 'changed',
+        rows: (o.rows || []).map((r) => ({ key: r[0], from: r[1], to: r[2] })),
+        destroys: i === src.length - 1,
+        exported: false,
+        exportedAt: null,
+        stale: i === 1,
+        staleChecked: true,
+        blocked: null,
+        confirmText: ('CS' + i).toUpperCase(),
+    }));
+    const changesets = ops.map((o) => ({
+        id: o.changesetId, realm: o.realm, tier: o.tier, state: 'staged',
+        exportedAt: null, confirmText: o.confirmText, opCount: 1,
+        gate: { ok: o.tier !== 3, reason: o.tier === 3 ? 'export required' : null },
+    }));
+    return { ops, changesets };
+}
+
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
@@ -116,6 +145,7 @@ const ROUTES = [
     })],
     [/^\/api\/access\/matrix$/, () => ({ scopes: FIX.accessScopes || FIX.SCOPES || [], admins: FIX.accessAdmins || [] })],
     [/^\/api\/analytics$/, () => analyticsPayload()],
+    [/^\/api\/review$/, () => reviewPayload()],
     [/^\/api\/changeset\?/, () => ({ changesets: [] })],
     [/^\/api\/changeset\/[^/]+\/preview$/, () => ({ preview: null })],
 ];

@@ -58,7 +58,15 @@
   --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
   /* SEASON topic accents — colour carries TOPIC */
-  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --pn:#F2C230;
+  /* 🔴 THE MOCKUP'S SET, ADOPTED 2026-08-26 08:39 EDT (Harkirat: "Keep the mockup colors").
+   * These four had TWO sources that disagreed: this token block said red/blue/green/purple,
+   * while the mockup's own fixtures.js LANES array carried #AE72E0/#E8639B/#4A90D9/#2CC4C4 —
+   * and the mockup's Track rendered from `lane.bar`, i.e. from the FIXTURES. So every approved
+   * screenshot was painted by a fixture file while the design system said something else, and
+   * each was internally consistent, which is why nothing caught it until the two were rendered
+   * side by side. The tokens now carry the approved values and the fixture hexes agree with
+   * them exactly; production reads these, never a fixture. */
+  --draw:#AE72E0; --ret:#E8639B; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
   /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
    * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
    * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the

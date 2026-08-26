@@ -14,6 +14,8 @@ const ChangesetSchema = new mongoose.Schema({
     state: { type: String, enum: ['draft', 'staged', 'blocked', 'committed', 'discarded'], default: 'draft' },
     tier: { type: Number, default: 1 },
     exportedAt: { type: Date, default: null },   // tier 3 will not commit until this is set
+    // 🔴 WHAT THE RECORD LOOKED LIKE WHEN THIS WAS STAGED, so the review screen can tell you the record MOVED underneath your change. Without it "staged against a record that has since moved" is undetectable: the ops carry what you want to write, never what you were writing over, so a re-preview at review time has nothing to compare against. Captured from the same previewSet() call that already runs on stage, one entry per op, keyed by op index.
+    baseline: { type: [mongoose.Schema.Types.Mixed], default: null },
     createdAt: { type: Date, default: Date.now },
     committedAt: { type: Date, default: null },
     discardedAt: { type: Date, default: null }

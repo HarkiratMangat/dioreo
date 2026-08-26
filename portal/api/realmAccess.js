@@ -19,6 +19,8 @@ async function visibleRealms(discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_
     if (pages.some((p) => BROADCAST_PAGES.includes(p))) realms.push('broadcast');
     if (owner) realms.push('access');
     if (owner || (await hasCommandAccess(discordId, 'bot'))) realms.push('analytics');
+    // Review is not page-scoped and deliberately has no gate of its own: it shows an admin THEIR OWN staged work and nothing else, so anyone who can stage anything must be able to reach the only screen that commits it. Gating it separately would let an admin stage a change they could then never commit — the ops themselves are still checked per-op at commit time by assertOpsAccess.
+    if (realms.length) realms.splice(3, 0, 'review');
     return realms;
 }
 

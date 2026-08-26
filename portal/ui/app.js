@@ -10,11 +10,12 @@ import { ArmoryRealm } from './armory.js';
 import { BroadcastRealm } from './broadcast.js';
 import { AccessRealm } from './access.js';
 import { AnalyticsRealm } from './analytics.js';
+import { ReviewRealm } from './review.js';
 
 // Door/Forbidden used to be re-declared here as local copies of shell.js's own exports — a review pass caught the duplication; both states now go through the ONE Door component (spec §10: a stranger, a never-granted account, and a revoked admin must all read identically).
 const REALM_COMPONENTS = {
     season: SeasonRealm, armory: ArmoryRealm, broadcast: BroadcastRealm,
-    access: AccessRealm, analytics: AnalyticsRealm,
+    access: AccessRealm, analytics: AnalyticsRealm, review: ReviewRealm,
 };
 
 function currentRealm() {
