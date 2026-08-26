@@ -8,6 +8,7 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { stageOps } from './composeClient.js';
 import { Track } from './track.js';
+import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
@@ -83,22 +84,27 @@ function AddComposer({ onSubmit, onCancel }) {
 function StagedPanel({ changesets, onDiscard, onReview }) {
     const pending = (changesets || []).filter((c) => c.state === 'staged' || c.state === 'blocked');
     if (!pending.length) return null;
+    // The staged strip in the adopted vocabulary: one row per change, tier first, and the ONE action that matters — review and commit — as the row of controls rather than a footer. A blocked change says why on its own row; a strip that hides the reason behind a click is a receipt.
     return html`
-        <div class="panel staged" style="margin-bottom:14px">
-            <div class="ph"><span class="t">Staged</span><span class="rt">${pending.length} change${pending.length === 1 ? '' : 's'}</span></div>
-            <div class="stagedlist">
+        <div class="callout stg" style="margin:0 22px 14px">
+            <div class="rvlist" role="list">
                 ${pending.map((c) => html`
-                    <div class="stagedrow">
-                        <span class="tr">T${c.tier}</span>
-                        <span class="cn">${describeOp((c.ops || [])[0])}</span>
-                        ${(c.ops || []).length > 1 ? html`<span class="cd">+${c.ops.length - 1} more</span>` : null}
-                        ${blockedReason(c) ? html`<span class="why">${blockedReason(c)}</span>` : null}
-                        <span class="sp"></span>
-                        <button class="discard" onClick=${() => { if (confirm('Discard this staged change? This does not undo anything already live — it only abandons what has not committed yet.')) onDiscard(String(c._id)); }}>Discard</button>
-                    </div>
-                `)}
+                    <div class="rvopwrap" role="listitem" key=${String(c._id)}>
+                        <span class=${'rvop' + (c.tier === 3 ? ' t3' : '')}>
+                            <span class="rvt">T${c.tier}</span>
+                            <span class="rvn">
+                                <b>${describeOp((c.ops || [])[0])}</b>
+                                <span>${c.realm || 'season'}${(c.ops || []).length > 1 ? ` · +${c.ops.length - 1} more` : ''}</span>
+                                ${blockedReason(c) ? html`<span class="rvw">${blockedReason(c)}</span>` : null}
+                            </span>
+                        </span>
+                        <button class="rvdrop" aria-label=${`Discard ${describeOp((c.ops || [])[0])}`}
+                                data-tip="Discard this staged change — nothing live is undone"
+                                onClick=${() => onDiscard(String(c._id))}>×</button>
+                    </div>`)}
             </div>
-            <div class="stagedfoot">
+            <div class="rvfoot">
+                <span class="sp"></span>
                 <button class="accent-fill" onClick=${onReview}>Review & commit</button>
             </div>
         </div>
@@ -113,6 +119,89 @@ async function fetchChangesets(realm) {
     const body = await fetchJson(`/api/changeset?realm=${realm}`);
     return body.changesets || [];
 }
+
+// ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────
+//
+// The subject is THE TIME AND THE SEASON TITLE. Not a to-do list, not a count of pending work — Harkirat, after thirteen rejected designs: "IM NOT THE ONE CREATING THAT CONTENT, the content already exists… the countdown is an informative insight into when the season ends, what's live in the game, what still needs to release."
+//
+// 🔴 ONE HERO FIGURE, and the rest subordinate to it. Four equal segments is a digital readout, and a digital readout is what a phone lock screen does — it tells you the time without telling you anything about the time. The days are the number you act on; hours/minutes/seconds are the proof it is running.
+//
+// 🔴 FIVE PRESSURE TIERS, each REMOVING something. `data-tier` drives it from CSS so the component states the tier and the stylesheet decides what that looks like — a single orange "hot" state means the element says exactly one thing for twenty days and then another.
+//
+// ⚠️ TWO WALLS, NOT THREE DEADLINES. bpEnd and rankEnd are usually the same day; seasonMoments groups by date so one moment carrying two lines reads as one wall.
+function SeasonClock({ season, today }) {
+    const [, setTick] = useState(0);
+    const moments = seasonMoments(season, today || new Date().toISOString().slice(0, 10));
+    // One interval, started only when there is something to count. A clock with no deadline should wake nothing up.
+    useEffect(() => {
+        if (!moments.length) return undefined;
+        const id = setInterval(() => setTick((n) => n + 1), 1000);
+        return () => clearInterval(id);
+    }, [moments.length]);
+
+    if (!moments.length) {
+        return html`<div class="sclock"><span class="sc-none">No deadline set for this season.</span></div>`;
+    }
+    const next = moments[0];
+    const rest = moments.slice(1);
+    const p = countdownParts(next.iso, Date.now());
+    if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
+
+    const units = [];
+    if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
+    if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+    units.push(['m', p.m, 'min']);
+    units.push(['s', p.s, 'sec']);
+
+    return html`
+        <div class="sclock" data-tier=${seasonTier(p.d)}>
+            <div class="sc-face">
+                ${units.map((u, i) => html`
+                    ${i ? html`<span class="sc-sep">:</span>` : null}
+                    <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
+                        <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
+                    </span>`)}
+            </div>
+            <div class="sc-when">
+                until <b>${fmtDay(next.iso)}</b> · ${next.lines.map((L) => L.label).join(' & ')}
+                ${rest.length ? html`<span class="sc-then"> · then ${rest.map((m) => `${m.lines.map((L) => L.label).join(' & ')} ${fmtDay(m.iso)}`).join(' · ')}</span>` : null}
+            </div>
+        </div>`;
+}
+
+const fmtDay = (iso) => new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+// The eyebrow: three counts above the title, each a fact the page can act on. A zero is dimmed rather than hidden — "no flags" is information, and a row that changes length as numbers reach zero makes the reader re-find every other number.
+function Eyebrow({ live, staged, flags }) {
+    const cell = (n, k, cls) => html`<span><i class=${n === 0 ? 'zero' : (cls || '')}>${n}</i>${k}</span>`;
+    return html`<div class="mh-eyebrow">${cell(live, 'live now')}${cell(staged, 'staged', 'stg')}${cell(flags, 'flags', 'warn')}</div>`;
+}
+
+// Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track.
+const ADD_CHIPS = [
+    { key: 'draw', label: 'Draw', accent: 'var(--draw)' },
+    { key: 'returning', label: 'Returning draw', accent: 'var(--ret)' },
+    { key: 'event', label: 'Event', accent: 'var(--ev)' },
+    { key: 'playlist', label: 'Playlist', accent: 'var(--play)' },
+    { key: 'patchnote', label: 'Patch note', accent: 'var(--pn)' },
+];
+
+function AddChips({ onAdd }) {
+    return html`
+        <div class="mh-add" role="group" aria-label="Add to this season">
+            <span class="mh-add-k">Add</span>
+            ${ADD_CHIPS.map((c) => html`
+                <button class="pill mh-t" style=${`--c:${c.accent}`} onClick=${() => onAdd(c.key)}>
+                    <span class="dot"></span>${c.label}
+                </button>`)}
+        </div>`;
+}
+
+
+// `?today=` travels the clock in the harness; in production this is simply today.
+const todayIso = () => (typeof document !== 'undefined' && document.documentElement.dataset.today)
+    || new Date().toISOString().slice(0, 10);
 
 export function SeasonRealm({ session }) {
     const [view, setView] = useState('Track');
@@ -224,6 +313,9 @@ export function SeasonRealm({ session }) {
     const daysLeft = state.live?.bpEnd
         ? Math.max(0, Math.ceil((new Date(state.live.bpEnd).getTime() - Date.now()) / 86400000))
         : '—';
+    // The Track derives its own findings; the eyebrow counts the same ones rather than a second rule.
+    const flagCount = state.live?.bpEnd
+        ? Object.values(trackData).flat().filter((i) => i.endDate && i.endDate > state.live.bpEnd).length : 0;
     const seasonStats = [
         { value: daysLeft, label: 'days left' },
         { value: drawsLive, label: 'draws live' },
@@ -254,8 +346,12 @@ export function SeasonRealm({ session }) {
     return html`
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board']} onSetView=${setView}
                   badges=${{ review: stagedCount }}
-                  masthead=${html`<${Masthead} title=${state.live?.currentSeasonTitle || 'Season'}
-                                               sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats} />`}
+                  masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
+                                               title=${state.live?.currentSeasonTitle || 'Season'}
+                                               sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats}
+                                               actions=${html`
+                                                   <${SeasonClock} season=${state.live} today=${todayIso()} />
+                                                   <${AddChips} onAdd=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${viewSlot} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;

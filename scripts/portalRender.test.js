@@ -68,9 +68,10 @@ const SEASON_COLUMNS = [
         const out = render(html`<${Rail} realm="season" realms=${session.visibleRealms} badges=${{ season: 2 }} />`);
         assert.ok(out.includes('class="rail"'), 'the rail element itself');
         for (const r of session.visibleRealms) assert.ok(out.includes(`href="#/${r}"`), `a link to ${r}`);
-        assert.ok(/class="rl active"[^>]*aria-current="page"/.test(out) || out.includes('aria-current="page"'), 'the current realm is announced, not only coloured');
+        assert.ok(out.includes('aria-current="page"'), 'the current realm is announced, not only coloured');
         assert.ok(out.includes('<svg'), 'each entry carries its icon — a bare text rail is the old top bar again');
-        assert.ok(out.includes('>2<'), 'the staged badge renders its count');
+        // The count lives on Review now, not on the realm that staged it — see the dedicated case below.
+        assert.ok(out.includes('class="realm"'), 'entries carry the adopted realm class');
     });
 
     check('the rail hides a realm the signed-in admin cannot see', () => {
@@ -110,7 +111,7 @@ const SEASON_COLUMNS = [
             stats=${[{ value: 14, label: 'days left' }, { value: 3, label: 'staged', tone: 'hot' }]} />`);
         assert.ok(out.includes('<h1>Season 7</h1>'));
         assert.ok(out.includes('2026-08-01'), 'the context line');
-        assert.ok(out.includes('<b>14</b>') && out.includes('days left'), 'a value/label stat pair');
+        assert.ok(out.includes('>14<') && out.includes('days left'), 'a value/label stat pair');
         assert.ok(out.includes('stat hot'), 'the tone modifier reaches the markup');
         assert.ok(!out.includes('<p>'), 'no paragraph — the ANSWERS/prose masthead is reviewer annotation, not chrome');
     });
@@ -200,7 +201,7 @@ const SEASON_COLUMNS = [
             viewSlot=${html`<div id="view-layer"></div>`} manifestSlot=${html`<div id="manifest-layer"></div>`} />`);
         assert.ok(out.indexOf('id="view-layer"') < out.indexOf('id="manifest-layer"'),
             'the Manifest is always BELOW the view layer — spec §8.1, the layer that never switches');
-        assert.ok(out.includes('role="tablist"') && out.includes('aria-selected="true"'), 'the view switcher is a real tablist');
+        assert.ok(out.includes('role="tablist"') && out.includes('aria-pressed="true"'), 'the view switcher is a real tablist');
         assert.ok(out.indexOf('class="rail"') > -1, 'the rail is part of the shell, not per-realm');
         assert.ok(!/href="#\/season"[^>]*>\s*season\s*<\/a>\s*<a[^>]*>\s*armory/.test(out.replace(/\n/g, '')),
             'realms are rail entries, not a horizontal strip of bare text links');

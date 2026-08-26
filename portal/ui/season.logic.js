@@ -111,3 +111,55 @@ function buildSeasonEditOp(row, columnKey, newValue) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
 }
+
+// ── THE SEASON'S DEADLINE LINES ───────────────────────────────────────────────────────────────
+//
+// Three lines end a season and they do not end together: the battle pass, the ranked series and DMZ. models/SeasonalData.js stores each as a title/end/TBD triple, and every surface that counts down to "the end of the season" has to say WHICH end it means — a single number is a lie whenever two of the three differ, which is most seasons.
+//
+// 🔴 THE LINES ARE READ FROM THE SEASON DOCUMENT, NEVER FROM A FIELD SOMEBODY INVENTED. The mockup's first version of this read `Shell._LINES`, which nothing anywhere set — so it returned an empty array and the clock rendered "No deadline set for this season" on a season with three of them. It did not throw and it did not look broken; it looked like a season with no dates. A well-formed answer to a question nobody asked is the failure mode this whole file guards against.
+const SEASON_LINES = [
+    { key: 'bp', label: 'BATTLE PASS', titleKey: 'bpTitle', endKey: 'bpEnd', tbdKey: 'bpEndTBD', hex: '#F2994A' },
+    { key: 'rank', label: 'RANKED', titleKey: 'rankTitle', endKey: 'rankEnd', tbdKey: 'rankEndTBD', hex: '#FF3430' },
+    { key: 'dmz', label: 'DMZ', titleKey: 'dmzTitle', endKey: 'dmzEnd', tbdKey: 'dmzEndTBD', hex: '#337BA6' },
+];
+
+// The still-future deadlines, GROUPED BY DATE and soonest first. Grouping is the point: a season whose battle pass and ranked series end on the same day has ONE wall, not two, and a clock that counts the same moment twice is telling you there is more time than there is.
+function seasonMoments(season, today) {
+    if (!season) return [];
+    const out = [], by = {};
+    for (const L of SEASON_LINES) {
+        const iso = season[L.endKey];
+        if (season[L.tbdKey] || !iso) continue;
+        const day = String(iso).slice(0, 10);
+        if (!by[day]) { by[day] = { iso: day, lines: [] }; out.push(by[day]); }
+        by[day].lines.push(L);
+    }
+    const t = new Date(String(today).slice(0, 10) + 'T00:00:00Z').getTime();
+    return out.filter((m) => new Date(m.iso + 'T23:59:59Z').getTime() >= t).sort((a, b) => (a.iso < b.iso ? -1 : 1));
+}
+
+// A deadline lands at the END of its day — a season ending "Sep 10" is live all through Sep 10. Counting to midnight AT THE START of that day loses a full day, which on a two-day warning is half the warning.
+function countdownParts(iso, nowMs) {
+    if (!iso) return null;
+    const end = new Date(String(iso).slice(0, 10) + 'T23:59:59Z').getTime();
+    let ms = end - nowMs;
+    if (ms <= 0) return { past: true, d: 0, h: 0, m: 0, s: 0 };
+    const d = Math.floor(ms / 86400000); ms -= d * 86400000;
+    const h = Math.floor(ms / 3600000); ms -= h * 3600000;
+    const m = Math.floor(ms / 60000); ms -= m * 60000;
+    return { past: false, d, h, m, s: Math.floor(ms / 1000) };
+}
+
+// 🔴 FIVE TIERS, NOT ONE ORANGE. Time pressure is continuous, and a single "hot" state means the element says exactly one thing for the twenty days before it says another. Each tier REMOVES something rather than adding a colour: further out, the seconds stop mattering; closer in, the days do.
+function seasonTier(days) {
+    if (days === null || days === undefined) return 'none';
+    if (days <= 0) return 'today';
+    if (days <= 2) return 'final';
+    if (days <= 7) return 'closing';
+    if (days <= 21) return 'running';
+    return 'open';
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    Object.assign(module.exports, { SEASON_LINES, seasonMoments, countdownParts, seasonTier });
+}

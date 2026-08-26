@@ -28,7 +28,7 @@ function RealmIcon({ realm }) {
 //
 // 🔴 REVIEW SITS BELOW A RULE, NOT AS A SIXTH REALM, and that is the approved design's own decision rather than a layout preference: five realms are PLACES TO WORK, Review is the WAY OUT. The rule says that without a label nobody would read at 9px. It first shipped reachable only through the tray — which requires staged work to exist — so the commit screen was unreachable from a page with nothing staged, which is exactly when you want to check that nothing is staged.
 //
-// 🔴 AND THE STAGED COUNT BELONGS HERE, not on Season. It is a property of the CHANGESET, so an Armory edit putting a badge on Season is the surface disagreeing with its own data.
+// 🔴 AND THE STAGED COUNT BELONGS HERE, not on Season. It is a property of the CHANGESET, so an Armory edit putting a badge on Season is the surface disagreeing with its own data. The rail's realm entries. `--c` per realm is the adopted design's own mechanism — the accent is a property of the realm, applied as a custom property rather than a class, so hover/active/current states all read from one value.
 export function Rail({ realm, realms, badges = {} }) {
     const visible = realms || REALMS;
     const places = visible.filter((r) => r !== 'review');
@@ -36,71 +36,107 @@ export function Rail({ realm, realms, badges = {} }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     return html`
         <nav class="rail" aria-label="Realms">
-            ${places.map(r => html`
-                <a class=${'rl' + (r === realm ? ' active' : '')} href=${'#/' + r}
+            ${places.map((r) => html`
+                <a class="realm" href=${'#/' + r} style=${`--c:var(--r-${r})`}
                    aria-current=${r === realm ? 'page' : null}>
-                    <${RealmIcon} realm=${r} />
-                    <span>${r}</span>
-                    ${badges[r] ? html`<span class="badge" aria-label=${`${badges[r]} staged`}>${badges[r]}</span>` : null}
-                </a>
-            `)}
+                    <${RealmIcon} realm=${r} />${r}
+                </a>`)}
             ${canReview ? html`
+                <!-- 🔴 BELOW A RULE, NOT A SIXTH REALM. Five realms are places to work; Review is the
+                     way out, and the rule says so without a label nobody would read at 9px. The
+                     staged count is a property of the CHANGESET, so it belongs here rather than on
+                     whichever realm happened to stage the work. -->
                 <span class="rail-rule" aria-hidden="true"></span>
-                <a class=${'rl out' + (realm === 'review' ? ' active' : '')} href="#/review"
+                <a class=${'realm out' + (staged ? ' has' : '')} href="#/review" style="--c:var(--r-review)"
                    aria-current=${realm === 'review' ? 'page' : null}>
-                    <${RealmIcon} realm="review" />
-                    <span>review</span>
-                    ${staged ? html`<span class="badge" aria-label=${`${staged} staged`}>${staged}</span>` : null}
+                    <${RealmIcon} realm="review" />Review
+                    ${staged ? html`<span class="cnt" aria-label=${`${staged} staged`}>${staged}</span>` : null}
                 </a>` : null}
         </nav>
     `;
 }
 
-// DATA ONLY — a title, a context line, and a right-aligned stat cluster, exactly as 01-season-spine renders it. Deliberately NO "ANSWERS: …" tag and no explanatory paragraph: those appear only in the compiled sheets and are reviewer annotation, not product copy (Harkirat, 2026-08-23 14:47 EDT). `stats` is [{value, label, tone?}] where tone is 'hot' (gold) or 'bad' (warn).
-export function Masthead({ title, sub, stats = [] }) {
+// The masthead every realm shares: an identity block and a stat cluster. `lead` marks the one stat that is the page's headline; `--c` tints it with whatever that number is about.
+//
+// Deliberately NO "ANSWERS: …" tag and no explanatory paragraph — those appear only in the compiled review sheets and are reviewer annotation, not product copy (Harkirat, 2026-08-23 14:47 EDT).
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null }) {
     return html`
-        <header class="mast">
-            <h1>${title}</h1>
-            ${sub ? html`<span class="sub">${sub}</span>` : null}
+        <div class="masthead">
+            <div class="mh-id">
+                ${eyebrow}
+                <h1>${title}</h1>
+                ${sub ? html`<span class="job">${sub}</span>` : null}
+                ${actions}
+            </div>
             ${stats.length ? html`
-                <div class="stats">
-                    ${stats.map(s => html`<span class=${'stat' + (s.tone ? ' ' + s.tone : '')}><b>${s.value}</b><i>${s.label}</i></span>`)}
-                </div>
-            ` : null}
+                <div class="mh-stats">
+                    ${stats.map((s) => html`
+                        <span class=${'stat' + (s.tone ? ' ' + s.tone : '') + (s.lead ? ' lead' : '')}
+                              style=${s.accent ? `--c:${s.accent}` : null}>
+                            <span class="v">${s.value}</span> <span class="k">${s.label}</span>
+                        </span>`)}
+                </div>` : null}
+        </div>
+    `;
+}
+
+// The header bar. The command bar is THE bar rather than a launcher for one: it used to be a 44px ⌘K chip in a header with ~700px of unused space, which is a keyboard shortcut wearing a button's clothes — it advertised a feature instead of being one.
+//
+// ⚠️ The commit chip is ABSENT at zero rather than reading "0 staged". A chip that is always there is a permanent third copy of the tray and the rail badge; one that appears only when there is something to act on is the same fact at the moment it becomes actionable.
+function Header({ realm, view, session, staged, onCommand }) {
+    const id = session ? String(session.discordId) : '';
+    return html`
+        <header id="hdr">
+            <button class="mk" title="Home" onClick=${() => { location.hash = '#/season'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
+            <span class="crumb">${realm}${view ? html` <b>›</b> ${view}` : null}</span>
+            <span class="sp"></span>
+            <div class="cmdbar">
+                <span class="cb-mag" aria-hidden="true"></span>
+                <input class="cb-in" autocomplete="off" spellcheck="false"
+                       placeholder="Search, or run a command" aria-label="Search, or run a command"
+                       onInput=${onCommand} />
+                <kbd>⌘K</kbd>
+            </div>
+            <span class="sp"></span>
+            ${staged ? html`
+                <a class="hdr-commit" href="#/review"><b>${staged}</b><span>staged · review</span></a>` : null}
+            ${session ? html`
+                <span class="who">
+                    <span class="av" aria-hidden="true"></span>
+                    <span class="id" title=${id}>${id}</span>
+                    ${session.isOwner ? html`<span class="role">owner</span>` : null}
+                </span>` : null}
         </header>
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, masthead, badges }) {
-    const id = session ? String(session.discordId) : '';
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, masthead, badges = {}, tools = null, panelTitle }) {
+    const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     return html`
-        <div class="top">
-            <span class="mk">DIOREO<b>/</b>PORTAL</span>
-            <span class="crumb"><b>${realm}</b>${view ? ' › ' + view : ''}</span>
-            ${session ? html`
-                <span class="who">
-                    <span class="dot-id"></span>
-                    <span class="id" title=${id}>${id}</span>
-                    ${session.isOwner ? html`<span class="role">owner</span>` : null}
-                </span>
-            ` : null}
-        </div>
-        <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
-        <main class="stage">
-            ${masthead || null}
-            ${viewOptions ? html`
-                <div class="viewbar">
-                    <div class="tabs" role="tablist">
-                        ${viewOptions.map(v => html`
-                            <button class="tab" role="tab" aria-selected=${v === view} onClick=${() => onSetView(v)}>${v}</button>
-                        `)}
-                    </div>
+        <div class="app">
+            <${Header} realm=${realm} view=${view} session=${session} staged=${staged} />
+            <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
+            <main>
+                ${masthead || null}
+                <div id="view-layer">
+                ${viewOptions ? html`
+                    <section class="panel" aria-label=${`${realm} view`}>
+                        <div class="ph">
+                            <span class="t">${panelTitle || realm}</span>
+                            <div class="seg" role="tablist" aria-label="View">
+                                ${viewOptions.map((v) => html`
+                                    <button role="tab" aria-pressed=${v === view} onClick=${() => onSetView(v)}>${v}</button>`)}
+                            </div>
+                            ${tools}
+                        </div>
+                        ${viewSlot}
+                    </section>`
+                : viewSlot}
                 </div>
-            ` : null}
-            ${viewSlot}
-            ${manifestSlot}
-        </main>
-        ${traySlot || null}
+                <div id="manifest-layer">${manifestSlot}</div>
+            </main>
+            ${traySlot || null}
+        </div>
     `;
 }
 

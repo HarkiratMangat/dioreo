@@ -30,15 +30,27 @@ function findChrome() {
 // The fixture is a real portal page: the built stylesheet, plus markup covering the cases the static pass cannot reach — a row whose topic accent IS set beside one where it is not, every state pill, the kind chips, the KPI tiles, the access grid cells and the review gate.
 function fixtureHtml(css) {
     return `<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body>
-<div class="top"><span class="mk">DIOREO<b>/</b>PORTAL</span><span class="crumb"><b>season</b> › Track</span>
-  <span class="who"><span class="dot-id"></span><span class="id">1139845545754632283</span><span class="role">owner</span></span></div>
-<nav class="rail"><a class="rl active" href="#/season"><span>season</span><span class="badge">2</span></a>
-  <a class="rl" href="#/armory"><span>armory</span></a></nav>
-<main class="stage">
-  <header class="mast"><h1>Season 7</h1><span class="sub">2026-08-01 → 2026-09-04</span>
-    <div class="stats"><span class="stat"><b>14</b><i>days left</i></span>
-      <span class="stat hot"><b>3</b><i>staged</i></span><span class="stat bad"><b>1</b><i>conflict</i></span></div></header>
-  <div class="viewbar"><div class="tabs"><button class="tab" aria-selected="true">Track</button><button class="tab">Board</button></div></div>
+<div class="app">
+<header id="hdr"><button class="mk"><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
+  <span class="crumb">season <b>›</b> Track</span><span class="sp"></span>
+  <div class="cmdbar"><span class="cb-mag"></span><input class="cb-in" placeholder="Search, or run a command"><kbd>⌘K</kbd></div>
+  <span class="sp"></span><a class="hdr-commit" href="#/review"><b>3</b><span>staged · review</span></a>
+  <span class="who"><span class="av"></span><span class="id">1139845545754632283</span><span class="role">owner</span></span></header>
+<nav class="rail"><a class="realm" href="#/season" style="--c:var(--r-season)" aria-current="page">season</a>
+  <a class="realm" href="#/armory" style="--c:var(--r-armory)">armory</a>
+  <span class="rail-rule"></span>
+  <a class="realm out has" href="#/review" style="--c:var(--r-review)">Review<span class="cnt">3</span></a></nav>
+<main>
+  <div class="masthead"><div class="mh-id">
+    <div class="mh-eyebrow"><span><i>14</i>live now</span><span><i class="stg">3</i>staged</span><span><i class="warn">1</i>flags</span></div>
+    <h1>Season 7</h1><span class="job">2026-08-01 → 2026-09-04</span>
+    <div class="sclock" data-tier="running"><div class="sc-face"><span class="sc-u"><b>14</b><i>days</i></span><span class="sc-sep">:</span><span class="sc-u sec"><b>09</b><i>sec</i></span></div><div class="sc-when">until <b>Sep 10</b> · BATTLE PASS</div></div>
+    <div class="mh-add"><span class="mh-add-k">Add</span><button class="pill mh-t" style="--c:var(--draw)"><span class="dot"></span>Draw</button></div>
+  </div>
+    <div class="mh-stats"><span class="stat"><span class="v">14</span> <span class="k">days left</span></span>
+      <span class="stat hot"><span class="v">3</span> <span class="k">staged</span></span>
+      <span class="stat bad"><span class="v">1</span> <span class="k">conflict</span></span></div></div>
+  <div class="ph"><span class="t">Season</span><div class="seg" role="tablist"><button role="tab" aria-pressed="true">Track</button><button role="tab" aria-pressed="false">Board</button></div></div>
 
   <div class="panel"><div class="ph"><span class="t">Season track</span>
     <span class="rt"><span class="leg live"><i></i>live</span><span class="leg stag"><i></i>staged</span><span class="leg conf"><i></i>conflict</span></span></div>
