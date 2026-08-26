@@ -127,6 +127,13 @@ async function route(interaction) {
         return true;
     }
 
+    // Progressive-disclosure toggle (2026-08-26 13:19 EDT) -- same shape as 'upg', flips one boolean and re-renders.
+    if (interaction.isButton() && state.verb === 'detail') {
+        await interaction.deferUpdate();
+        await renderPanel(interaction, { ...state, detail: !state.detail });
+        return true;
+    }
+
     if (interaction.isButton() && state.verb === 'region') {
         await interaction.deferUpdate();
         await renderPanel(interaction, state); // customId's own region field IS the target region

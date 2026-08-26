@@ -63,7 +63,8 @@ t('worst case stays under the 40-component cap, counting nav + share', () => {
     assert.ok(n <= LIMIT, `rendered ${n} components, over the ${LIMIT} cap`);
 });
 
-t('every draw x region x goal combination stays under the cap', () => {
+t('every draw x region x goal x detail-state combination stays under the cap', () => {
+    // detail:true (2026-08-26 13:19 EDT, progressive disclosure) adds MORE components than collapsed -- the full purchase block, Least Waste, the toggle button, finePrint. A sweep that only ever tried the collapsed default would miss the real worst case.
     let worst = 0;
     let worstLabel = '';
     for (const drawKey of Object.keys(DRAW_META)) {
@@ -75,18 +76,65 @@ t('every draw x region x goal combination stays under the cap', () => {
                 { target: 'B', targetValue: 5000 }
             ];
             for (const goal of goals) {
-                const state = clampStateToDraw({ ...defaultState(), drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, ...goal });
-                const panel = buildCalculatorPanel(state, ACCENT, {
-                    liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) },
-                    currency: 'CAD', client: { commandIds: new Map() }
-                });
-                const n = messageCount(panel);
-                if (n > worst) { worst = n; worstLabel = `${drawKey}/${region}/${goal.target}`; }
-                assert.ok(n <= LIMIT, `${drawKey} at ${region} (${goal.target}) rendered ${n} components`);
+                for (const detail of [false, true]) {
+                    const state = clampStateToDraw({ ...defaultState(), drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail, ...goal });
+                    const panel = buildCalculatorPanel(state, ACCENT, {
+                        liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) },
+                        currency: 'CAD', client: { commandIds: new Map() }
+                    });
+                    const n = messageCount(panel);
+                    if (n > worst) { worst = n; worstLabel = `${drawKey}/${region}/${goal.target}/detail:${detail}`; }
+                    assert.ok(n <= LIMIT, `${drawKey} at ${region} (${goal.target}, detail:${detail}) rendered ${n} components`);
+                }
             }
         }
     }
     console.log(`        worst across the whole matrix: ${worst}/${LIMIT} (${worstLabel})`);
+});
+
+// ==========================================
+// PROGRESSIVE DISCLOSURE (2026-08-26 13:19 EDT, Harkirat's hybrid pick)
+// ==========================================
+t('a fresh panel opens collapsed by default', () => {
+    assert.strictEqual(defaultState().detail, false, 'defaultState() must default to collapsed');
+});
+
+t('collapsed view shows exactly the compact purchase line, no ladder, no Least Waste, no region row, no estimate', () => {
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon' });
+    const body = allText(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' }));
+    assert.ok(/Cheapest: \*\*/.test(body), 'the compact one-line Cheapest summary must render');
+    assert.ok(!/### 🛒 Cheapest —/.test(body), 'the full header-style Cheapest block must NOT render when collapsed');
+    assert.ok(!/Least Waste/.test(body), 'Least Waste is detail -- must not render collapsed');
+    assert.ok(!/Other regions/.test(body), 'the region-comparison row is detail -- must not render collapsed');
+    assert.ok(!/Estimate only/.test(body), 'the currency disclaimer is detail -- must not render collapsed');
+    const toggle = buttons(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' })).find(b => b.label === '↓ Show breakdown');
+    assert.ok(toggle, 'a Show breakdown button must be present when there is real detail behind it');
+});
+
+t('expanded view (detail:true) shows the ladder, full purchase block, Least Waste, region row and estimate', () => {
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', detail: true });
+    const body = allText(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' }));
+    assert.ok(/### 🛒 Cheapest —/.test(body), 'the full Cheapest block must render when expanded');
+    assert.ok(!/Cheapest: \*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');
+    assert.ok(/### ⚖️ Least Waste/.test(body), 'Least Waste must render when expanded and it genuinely differs');
+    assert.ok(/Other regions/.test(body), 'the region-comparison row must render when expanded');
+    assert.ok(/Estimate only/.test(body), 'the currency disclaimer must render when expanded');
+    const toggle = buttons(buildCalculatorPanel(state, ACCENT, { currency: 'CAD' })).find(b => b.label === '↑ Hide breakdown');
+    assert.ok(toggle, 'the toggle must read Hide breakdown once expanded');
+});
+
+t('the toggle round-trips through the state codec and only flips detail', () => {
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 3, balance: 4000 });
+    const flipped = decodeState(encodeState('detail', { ...state, detail: !state.detail }));
+    assert.strictEqual(flipped.detail, true, 'toggling from collapsed must decode back to detail:true');
+    assert.strictEqual(flipped.pullsDone, 3, 'toggling detail must not disturb unrelated state');
+    assert.strictEqual(flipped.balance, 4000, 'toggling detail must not disturb unrelated state');
+});
+
+t('a state with nothing to expand (already-there / no purchase needed) shows no toggle at all', () => {
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'legendaryGunReactive', pullsDone: 10, target: 'F' });
+    const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
+    assert.ok(!buttons(panel).some(b => /breakdown/.test(b.label || '')), 'no toggle should render when there is nothing behind it');
 });
 
 t('no action row ever exceeds Discord\'s five components', () => {
@@ -153,7 +201,8 @@ t('the draw select flags an unpriced draw in its own description rather than off
 // WHAT THE PANEL SAYS
 // ==========================================
 t('the ladder stops at the chosen target pull, not at the end of the draw', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2, target: 'P', targetValue: 5 });
+    // detail: true -- the ladder is behind the progressive-disclosure toggle since 2026-08-26 13:19 EDT (third pass); it does not render in the collapsed default view at all.
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2, target: 'P', targetValue: 5, detail: true });
     const panel = buildCalculatorPanel(state, ACCENT, {});
     // The ladder is the first plain (non `-#`) line after the headline -- anchoring on POSITION rather than a label, since the headline and the goal sentence were fused into one line 2026-08-26 12:38 EDT (second prose pass) and the "Stops you at"/"Finishes all" sentence this used to anchor on no longer exists on its own line.
     const block = texts(panel).find(c => c.includes(' CP** to ')).split('\n');
@@ -184,7 +233,8 @@ t('a balance that covers the goal recommends buying nothing, with no purchase bl
 });
 
 t('budget mode bolds exactly the pulls the budget covers', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 0, target: 'B', targetValue: 5000 });
+    // detail: true -- "Pulls from here" is budgetAnswer's detail half, behind the same toggle.
+    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 0, target: 'B', targetValue: 5000, detail: true });
     const { reachableWithBudget } = require('../utils/drawCost');
     const reachable = reachableWithBudget(state.region, state.drawKey, 0, 5000).pullsReachable;
     const line = texts(buildCalculatorPanel(state, ACCENT, {})).find(c => c.includes('**Pulls from here:**'));

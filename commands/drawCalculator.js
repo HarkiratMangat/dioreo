@@ -56,7 +56,8 @@ function defaultState() {
         targetValue: 0,
         balance: 0,
         includeUpgrades: false,
-        entitlementMask: 0
+        entitlementMask: 0,
+        detail: false            // progressive disclosure (2026-08-26 13:19 EDT) -- collapsed by default
     };
 }
 
@@ -70,7 +71,8 @@ function encodeState(verb, s) {
         `v${s.targetValue || 0}`,
         `b${s.balance || 0}`,
         `u${s.includeUpgrades ? 1 : 0}`,
-        `e${s.entitlementMask || 0}`
+        `e${s.entitlementMask || 0}`,
+        `x${s.detail ? 1 : 0}`
     ].join('~');
 }
 
@@ -89,7 +91,8 @@ function decodeState(customId) {
         targetValue: Number(get('v', 0)),
         balance: Number(get('b', 0)),
         includeUpgrades: get('u', '0') === '1',
-        entitlementMask: Number(get('e', 0))
+        entitlementMask: Number(get('e', 0)),
+        detail: get('x', '0') === '1'
     };
 }
 
@@ -273,23 +276,34 @@ function buildCalculatorPanel(state, accentColor, options = {}) {
     components.push({ type: 14, spacing: 2, divider: true });
 
     // ---- The answer, as a Section -- co-locates the stat with the ONE control that acts on it, instead of leaving the reader to carry the number down to a generic button row. See controlsRow's own header comment for why.
+    //
+    // ⚠️ PROGRESSIVE DISCLOSURE, 2026-08-26 13:19 EDT -- Harkirat's pick after two rejections: a hybrid of this Section/accessory treatment with MOCKUP C. headline is ALWAYS on screen; detail (the ladder, the upgrade note, the Least Waste alternative, the region comparison, the estimate disclaimer) renders ONLY when state.detail is true, behind the "Show breakdown" toggle below. Nothing about WHICH facts exist changed -- only whether they render by default. The controls (selects, region/upgrade buttons) are NOT gated; the complaint was about stacked DATA, never about the pickers.
     const answer = state.target === 'B' ? budgetAnswer(state, entry, total) : goalAnswer(state, entry, total, upgrade);
-    const answerBlock = { type: 10, content: answer.lines.join('\n') };
+    const sectionLines = state.detail ? [...answer.headline, ...answer.detail] : answer.headline;
+    const answerBlock = { type: 10, content: sectionLines.join('\n') };
     components.push(answer.action ? {
         type: 9,
         components: [answerBlock],
         accessory: { type: 2, style: 2, label: answer.action === 'budget' ? 'Set Budget' : 'Set Balance', custom_id: encodeState('modal', state) }
     } : answerBlock);
 
-    // ---- How to buy it ----
+    // ---- How to buy it ---- compact=true collapses Cheapest to the one line MOCKUP C showed ("Cheapest: $X -- combo"); Least Waste, the savings note and the purchase-count caption all move behind the same toggle as the ladder.
     const shortfall = state.target === 'B' ? 0 : shortfallFor(state, total, upgrade);
     if (shortfall > 0) {
         components.push({ type: 14, spacing: 2, divider: true });
-        components.push({ type: 10, content: purchaseAdvice(shortfall, state, currency).join('\n') });
+        components.push({ type: 10, content: purchaseAdvice(shortfall, state, currency, { compact: !state.detail }).join('\n') });
     }
 
-    // ---- Fine print ----
-    components.push({ type: 10, content: finePrint(state, currency, client, { upgradeIncluded: upgrade !== null, showRegionRow: answer.action !== null }).join('\n') });
+    // ---- The toggle -- only when there is real detail behind it. "Already there"/no-purchase-needed has no ladder and no purchase block, so there is nothing to collapse; finePrint's own showRegionRow already suppresses the one line that COULD differ there, so it renders unconditionally in that case exactly as before this pass.
+    const hasDetail = answer.detail.length > 0 || (state.target !== 'B' && shortfall > 0);
+    if (hasDetail) {
+        components.push({ type: 1, components: [{ type: 2, style: 2, label: state.detail ? '↑ Hide breakdown' : '↓ Show breakdown', custom_id: encodeState('detail', state) }] });
+    }
+
+    // ---- Fine print ---- gated the same way: the region comparison and currency disclaimer are exactly the kind of thing MOCKUP C's collapsed state omitted entirely.
+    if (!hasDetail || state.detail) {
+        components.push({ type: 10, content: finePrint(state, currency, client, { upgradeIncluded: upgrade !== null, showRegionRow: answer.action !== null }).join('\n') });
+    }
 
     // ---- Controls ---- A first-time user has no way to learn what these three dropdowns are FOR by looking at them: Discord shows a SELECT'S CURRENT VALUE once one option carries default:true (verified against the real render, 2026-08-26 12:55 EDT) -- and defaultState() always sets a concrete drawKey/pullsDone/target, so the placeholder text every select carries ("Which draw are you pulling on?" etc) never actually renders for anyone, first-time or not. It also isn't obvious there's no Calculate button to press -- every control here just edits the answer above in place. One line says both things once, economically, rather than three separate per-select captions (which would cost 3 more components for the same information).
     components.push({ type: 10, content: '-# 🎛️ Everything below edits the numbers above live — change the draw, how far you are, or your goal any time.' });
@@ -328,61 +342,68 @@ function goalAnswer(state, entry, total, upgrade) {
     const upgradeAvailable = upgradeCost(state.region, state.drawKey);
     const lines = [];
 
+    // THIRD PASS, 2026-08-26 13:19 EDT -- Harkirat's pick: a hybrid of the shipped Section/accessory treatment with progressive disclosure (MOCKUP C, DM'd for comparison). headline is ALWAYS shown; detail (the ladder + upgrade note) renders only when state.detail is true, via the "Show breakdown" toggle below. This is the split point buildCalculatorPanel joins back together based on that flag.
+    const headline = [];
+    const detail = [];
     if (pullsLeft <= 0 && !upgrade) {
-        lines.push(`### ✅ You are already there`);
-        lines.push(`You have completed **pull ${targetPull} of ${total}**. Aim further with the goal picker below.`);
-        return { lines, action: null }; // nothing left to enter a balance FOR
+        headline.push(`### ✅ You are already there`);
+        headline.push(`You have completed **pull ${targetPull} of ${total}**. Aim further with the goal picker below.`);
+        return { headline, detail, action: null }; // nothing left to enter a balance FOR
     }
     if (shortfall <= 0) {
         // Balance figure is already on the status line above -- this branch's only job is the outcome (covers it) and the leftover, not a third restatement of the balance.
-        lines.push(`### ✅ You already have enough — buy nothing`);
-        lines.push(`**${fmt(needed)} CP** covers ${pullsLeft > 0 ? plural(pullsLeft, 'more pull') : 'the upgrade'}, with **${fmt(-shortfall)} CP** left over.`);
+        headline.push(`### ✅ You already have enough — buy nothing`);
+        headline.push(`**${fmt(needed)} CP** covers ${pullsLeft > 0 ? plural(pullsLeft, 'more pull') : 'the upgrade'}, with **${fmt(-shortfall)} CP** left over.`);
     } else {
         // 2026-08-26 12:34 EDT, second pass -- Harkirat, looking at a live render: "this is NOT helpful, this is overwhelming". The FIRST pass cut sentence count but left "5,810 CP still needed" and "Finishes all 10 pulls." as two separate sentences restating the same fact from two angles. Fused into one: the amount and the goal are one idea, not two.
-        lines.push(`### ${emojis.cp2} **${fmt(shortfall)} CP** to ${state.target === 'P' ? `reach pull ${targetPull} of ${total}` : `finish all ${total} pulls`}`);
-        if (state.balance) lines.push(`-# ${fmt(needed)} CP to go − ${fmt(state.balance)} CP balance = **${fmt(shortfall)} CP** to buy.`);
+        headline.push(`### ${emojis.cp2} **${fmt(shortfall)} CP** to ${state.target === 'P' ? `reach pull ${targetPull} of ${total}` : `finish all ${total} pulls`}`);
+        if (state.balance) headline.push(`-# ${fmt(needed)} CP to go − ${fmt(state.balance)} CP balance = **${fmt(shortfall)} CP** to buy.`);
     }
 
-    // The ladder stops at the TARGET, not at the end of the draw. The old build always sliced to entry.draws.length, so choosing "stop at pull 5" printed all ten pulls underneath a headline that priced five -- the two disagreed on screen. Bold ladder only -- a THIRD framing of the same numbers as a running-cumulative "CP Spent" line used to sit under this too. The headline already gives the aggregate; this gives the per-pull detail. Cut 2026-08-26 12:23 EDT, prose-density pass.
+    // The ladder stops at the TARGET, not at the end of the draw. The old build always sliced to entry.draws.length, so choosing "stop at pull 5" printed all ten pulls underneath a headline that priced five -- the two disagreed on screen.
     const ladder = entry.draws.slice(state.pullsDone, targetPull);
-    if (ladder.length) lines.push(`${ladder.map(n => `**${fmt(n)}**`).join(' / ')}`);
+    if (ladder.length) detail.push(`${ladder.map(n => `**${fmt(n)}**`).join(' / ')}`);
     // The controls row's "Upgrade: Off" button already says a step exists; this line's only job is the number the button can't show.
     if (upgradeAvailable !== null) {
-        lines.push(upgrade !== null ? `-# +${fmt(upgrade)} CP upgrade included.` : `-# +${fmt(upgradeAvailable)} CP if you include the Upgrade below.`);
+        detail.push(upgrade !== null ? `-# +${fmt(upgrade)} CP upgrade included.` : `-# +${fmt(upgradeAvailable)} CP if you include the Upgrade below.`);
     }
-    return { lines, action: 'balance' };
+    return { headline, detail, action: 'balance' };
 }
 
 function budgetAnswer(state, entry, total) {
-    const lines = [];
+    const headline = [];
+    const detail = [];
     if (!state.targetValue) {
-        lines.push(`### ${emojis.cp2} How far does a budget go?`);
-        lines.push(`Press **Set Budget** and enter the CP you are willing to spend.`);
-        return { lines, action: 'budget' };
+        headline.push(`### ${emojis.cp2} How far does a budget go?`);
+        headline.push(`Press **Set Budget** and enter the CP you are willing to spend.`);
+        return { headline, detail, action: 'budget' };
     }
     const result = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
     const gained = result.pullsReachable - state.pullsDone;
-    lines.push(`### ${emojis.cp2} **${fmt(state.targetValue)} CP** reaches **pull ${result.pullsReachable}** of ${total}`);
-    lines.push(gained > 0
+    headline.push(`### ${emojis.cp2} **${fmt(state.targetValue)} CP** reaches **pull ${result.pullsReachable}** of ${total}`);
+    headline.push(gained > 0
         ? `That is **${plural(gained, 'more pull')}** from where you are now.`
         : `That is not enough for even one more pull from pull ${state.pullsDone}.`);
-    lines.push(result.cpShortOfNext !== null
+    detail.push(result.cpShortOfNext !== null
         ? `-# **${fmt(result.cpShortOfNext)} CP** short of pull ${result.pullsReachable + 1} · ${fmt(state.targetValue - result.cpUsed)} CP would go unspent.`
         : `-# That finishes the draw outright, with **${fmt(state.targetValue - result.cpUsed)} CP** left over.`);
     // Bold marks the pulls the budget actually covers, so the ladder answers "which ones do I get" rather than repeating the headline in list form.
     const ladder = entry.draws.slice(state.pullsDone);
     if (ladder.length) {
-        lines.push(`-# **Pulls from here:** ${ladder.map((n, i) => (state.pullsDone + i < result.pullsReachable ? `**${fmt(n)}**` : fmt(n))).join(' / ')}`);
+        detail.push(`-# **Pulls from here:** ${ladder.map((n, i) => (state.pullsDone + i < result.pullsReachable ? `**${fmt(n)}**` : fmt(n))).join(' / ')}`);
     }
-    return { lines, action: 'budget' };
+    return { headline, detail, action: 'budget' };
 }
 
-// SECOND PASS, 2026-08-26 12:34 EDT (Harkirat, looking at a live render: "look how prose heavy it is... this is NOT helpful, this is overwhelming"). The FIRST pass (12:23 EDT) crammed price + combo + count + leftover into ONE bold sentence to cut from six lines to three -- that reduced line COUNT while making each line worse: "Cheapest -- CA$82.98 x 1x 880 CP + 1x 5,000 CP (2 purchases, 70 CP left over)" is one dense clause that wraps to three lines on a phone regardless of how few sentences it is. Line count was the wrong thing to optimize. This version optimizes WRAP count instead: each tier is a short bold price line (~20 chars), a plain combo line (~25 chars) -- neither wraps -- and one caption folding the count/leftover/savings, which is allowed to wrap once because it is the lowest-priority tier, same as the region-comparison and estimate lines below it.
-function purchaseAdvice(shortfall, state, currency) {
+// SECOND PASS, 2026-08-26 12:34 EDT (Harkirat, looking at a live render: "look how prose heavy it is... this is NOT helpful, this is overwhelming"). The FIRST pass (12:23 EDT) crammed price + combo + count + leftover into ONE bold sentence to cut from six lines to three -- that reduced line COUNT while making each line worse: "Cheapest -- CA$82.98 x 1x 880 CP + 1x 5,000 CP (2 purchases, 70 CP left over)" is one dense clause that wraps to three lines on a phone regardless of how few sentences it is. Line count was the wrong thing to optimize. This version optimizes WRAP count instead: each tier is a short bold price line (~20 chars), a plain combo line (~25 chars) -- neither wraps -- and one caption folding the count/leftover/savings, which is allowed to wrap once because it is the lowest-priority tier, same as the region-comparison and estimate lines below it. THIRD PASS, 2026-08-26 13:19 EDT -- {compact} collapses to the ONE line MOCKUP C's collapsed state showed ("Cheapest: $X -- combo"), for when state.detail is false. Least Waste, the purchase-count caption and the savings note only exist in the full render.
+function purchaseAdvice(shortfall, state, currency, { compact = false } = {}) {
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
     // Reads the optimizer's OWN cpEach rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so every 2X combo entry rendered the un-doubled figure.
     const describe = r => r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
+    if (compact) {
+        return [`-# 🛒 Cheapest: **${formatMoney(result.cheapest.totalCents, currency)}** — ${describe(result.cheapest)}`];
+    }
     const savings = result.naive.totalCents - result.cheapest.totalCents;
     const savingsNote = savings > 0 ? `saves ${formatMoney(savings, currency)} vs. ${fmt(result.naive.combo[0].cpEach)} CP alone` : null;
     const lines = [
