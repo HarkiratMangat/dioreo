@@ -4,6 +4,8 @@
 // Owns every calc~ interaction. Serves THREE interaction types -- buttons, string selects and modal submits -- so EVERY branch type-tests as well as prefix-tests. Skipping that is the exact defect that broke /settings pagination during the index.js split (see .claude/rules/interaction-router.md): two branches with byte-identical customId prefixes but different types, where the first swallowed the second.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleDrawCalcInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch.
+//
+// ⚠️ EVERY BRANCH ENDS IN THE SAME renderPanel() CALL. The panel is a pure function of the state in the customId, so a control's whole job is to produce the next state -- there is no "recalculate" step to forget, and no second panel that can drift from the first. When the two-stage flow was removed, `run` and `edit` (the old Calculate and Edit Inputs buttons) went with it; a decoded verb of either comes from a stale message and falls through to the unrecognised-verb path, which is the correct outcome -- the panel it belonged to no longer exists.
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { withShareButton } = require('../utils/shareButton');
@@ -11,10 +13,9 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
-    decodeState, encodeState, buildSetupPanel, buildResultsPanel, findLiveDoubleCPEntry
+    decodeState, encodeState, clampStateToDraw, buildCalculatorPanel, findLiveDoubleCPEntry
 } = require('../commands/drawCalculator');
-const { DRAW_META, PRESET_ACCENT } = require('../commands/drawprices');
-const { pullCount } = require('../utils/drawCost');
+const { PRESET_ACCENT } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
 
 const OWNED_PREFIXES = ['calc~'];
@@ -34,104 +35,79 @@ function parseAmount(raw) {
     return Math.floor(k ? n * 1000 : n);
 }
 
-function buildNumbersModal(state) {
-    const total = pullCount(state.region, state.drawKey);
-    const modal = new ModalBuilder().setCustomId(encodeState('nums', state)).setTitle('Enter Your Numbers');
-    const fields = [
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder().setCustomId('pulls_done').setLabel(`Pulls already done (0-${total})`)
-                .setStyle(TextInputStyle.Short).setValue(String(state.pullsDone)).setRequired(true)
-        )
-    ];
-    // Budget mode ('B') asks "how far does spending X more CP get me" -- it has no use for an existing balance (design decision 10's own framing is the new spend amount alone), so the field is skipped rather than collected and silently discarded. F/P modes DO use it (see buildResultsPanel's shortfall = totalNeeded - state.balance).
-    if (state.target !== 'B') {
-        fields.push(new ActionRowBuilder().addComponents(
-            new TextInputBuilder().setCustomId('balance').setLabel('Current CP balance')
-                .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 3,000 or 3k').setValue(state.balance ? String(state.balance) : '').setRequired(false)
-        ));
-    }
-    if (state.target !== 'F') {
-        fields.push(new ActionRowBuilder().addComponents(
-            new TextInputBuilder().setCustomId('target_value').setLabel(state.target === 'P' ? `Target pull number (1-${total})` : 'Budget to spend (CP)')
-                .setStyle(TextInputStyle.Short).setPlaceholder(state.target === 'P' ? 'e.g. 9' : 'e.g. 5,000 or 5k').setValue(state.targetValue ? String(state.targetValue) : '').setRequired(true)
-        ));
-    }
-    modal.addComponents(...fields);
-    return modal;
+// The modal now asks for ONE free-form amount, because that is all that is genuinely free-form. Pulls done and the target pull are bounded by the draw's own length and live on the panel as selects -- putting them in a text field is what forced a modal into the common path, and what made the seven-pull draws a validation problem in the first place.
+function buildAmountModal(state) {
+    const budgetMode = state.target === 'B';
+    const field = budgetMode
+        ? new TextInputBuilder().setCustomId('amount').setLabel('Budget to spend (CP)')
+            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 5,000 or 5k')
+            .setValue(state.targetValue ? String(state.targetValue) : '').setRequired(true)
+        : new TextInputBuilder().setCustomId('amount').setLabel('CP you already have')
+            .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 3,000 or 3k')
+            .setValue(state.balance ? String(state.balance) : '').setRequired(false);
+    return new ModalBuilder()
+        .setCustomId(encodeState('nums', state))
+        .setTitle(budgetMode ? 'Set Your Budget' : 'Your CP Balance')
+        .addComponents(new ActionRowBuilder().addComponents(field));
 }
 
-async function renderSetup(interaction, state) {
+async function renderPanel(interaction, state, notice = null) {
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
     const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
-    const panel = buildSetupPanel(state, accentColor, { liveDoubleCPEntry });
-    const nav = buildGlobalNavRow('nav_prices');
-    return sendV2Payload(interaction, withShareButton([panel, nav], isEphemeral));
-}
-
-async function renderResults(interaction, state) {
-    const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
-    const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-    const currency = prefs?.cpCurrency || 'USD';
-    const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
-    const panel = buildResultsPanel(state, accentColor, { currency, client: interaction.client });
+    const panel = buildCalculatorPanel(clampStateToDraw(state), accentColor, {
+        liveDoubleCPEntry,
+        currency: prefs?.cpCurrency || 'USD',
+        client: interaction.client,
+        notice
+    });
     const nav = buildGlobalNavRow('nav_prices');
     return sendV2Payload(interaction, withShareButton([panel, nav], isEphemeral));
 }
 
 async function route(interaction) {
-    const customId = interaction.customId;
-    const state = decodeState(customId);
+    const state = decodeState(interaction.customId);
 
     // showModal() must be the DIRECT response to the button -- it cannot follow a deferReply or deferUpdate. Same constraint documented in handlers/autobuild.js.
     if (interaction.isButton() && state.verb === 'modal') {
-        return await interaction.showModal(buildNumbersModal(state));
+        return await interaction.showModal(buildAmountModal(state));
     }
 
     if (interaction.isModalSubmit() && state.verb === 'nums') {
-        const total = pullCount(state.region, state.drawKey);
-        const pullsDoneRaw = parseAmount(interaction.fields.getTextInputValue('pulls_done'));
-        if (pullsDoneRaw === null || pullsDoneRaw > total) {
+        const amount = parseAmount(interaction.fields.getTextInputValue('amount'));
+        if (amount === null) {
             try {
-                await interaction.reply({ content: `❌ Pulls done must be a number from 0 to ${total} for **${DRAW_META[state.drawKey].name}** -- it doesn't have a 10th pull if that's not what you meant.`, ephemeral: true });
-            } catch (notifyError) { console.error('Failed to notify user of invalid pullsDone (interaction likely expired):', notifyError); }
+                await interaction.reply({ content: '❌ That amount was not understood — try a plain number like `3000` or `3k`.', ephemeral: true });
+            } catch (notifyError) { console.error('Failed to notify user of invalid amount (interaction likely expired):', notifyError); }
             return true;
         }
-        // 'balance' isn't on the modal at all in budget mode (buildNumbersModal skips it -- see that function's own comment) -- getTextInputValue() throws on a field that doesn't exist, so this must match the modal's own conditional exactly, not just default missing to 0.
-        const balanceRaw = state.target === 'B' ? 0 : parseAmount(interaction.fields.getTextInputValue('balance'));
-        let targetValueRaw = state.targetValue;
-        if (state.target !== 'F') {
-            targetValueRaw = parseAmount(interaction.fields.getTextInputValue('target_value'));
-            if (targetValueRaw === null) {
-                try {
-                    await interaction.reply({ content: `❌ That target value wasn't understood -- try a plain number like \`3000\` or \`3k\`.`, ephemeral: true });
-                } catch (notifyError) { console.error('Failed to notify user of invalid target value (interaction likely expired):', notifyError); }
-                return true;
-            }
-            // 'P' (stop at a specific pull) must reject an out-of-range pull the same way pullsDone does above -- buildResultsPanel silently clamps this, and clamping a REJECTABLE input is the exact anti-pattern pullsDone validation exists to avoid (a typo'd "500" silently becoming "finish the draw" with no indication anything was out of range).
-            if (state.target === 'P' && (targetValueRaw < 1 || targetValueRaw > total)) {
-                try {
-                    await interaction.reply({ content: `❌ Target pull must be a number from 1 to ${total} for **${DRAW_META[state.drawKey].name}** -- it doesn't have a pull ${targetValueRaw} if that's not what you meant.`, ephemeral: true });
-                } catch (notifyError) { console.error('Failed to notify user of invalid target pull (interaction likely expired):', notifyError); }
-                return true;
-            }
-        }
         await interaction.deferUpdate();
-        const newState = { ...state, pullsDone: pullsDoneRaw, balance: balanceRaw === null ? 0 : balanceRaw, targetValue: targetValueRaw };
-        await renderSetup(interaction, newState);
+        await renderPanel(interaction, state.target === 'B' ? { ...state, targetValue: amount } : { ...state, balance: amount });
         return true;
     }
 
     if (interaction.isStringSelectMenu() && state.verb === 'draw') {
         await interaction.deferUpdate();
-        await renderSetup(interaction, { ...state, drawKey: interaction.values[0], includeUpgrades: false });
+        // includeUpgrades resets with the draw: an upgrade toggled on for a mythic draw means nothing on a draw that has no upgrade step, and clampStateToDraw cannot see that from pull counts alone.
+        await renderPanel(interaction, { ...state, drawKey: interaction.values[0], includeUpgrades: false });
         return true;
     }
 
-    if (interaction.isStringSelectMenu() && state.verb === 'target') {
+    if (interaction.isStringSelectMenu() && state.verb === 'pulls') {
         await interaction.deferUpdate();
-        await renderSetup(interaction, { ...state, target: interaction.values[0] });
+        await renderPanel(interaction, { ...state, pullsDone: Number(interaction.values[0]) || 0 });
+        return true;
+    }
+
+    if (interaction.isStringSelectMenu() && state.verb === 'goal') {
+        await interaction.deferUpdate();
+        // One control now carries both halves of the goal: 'F', 'B', or 'P' with the pull number appended ('P7'). Encoding the value INTO the option is what let the target-pull modal field go away.
+        const raw = interaction.values[0];
+        const next = raw.startsWith('P')
+            ? { ...state, target: 'P', targetValue: Number(raw.slice(1)) || 1 }
+            : { ...state, target: raw, targetValue: raw === 'B' ? state.targetValue : 0 };
+        await renderPanel(interaction, next);
         return true;
     }
 
@@ -141,31 +117,19 @@ async function route(interaction) {
             const i = CP_PACKAGES.findIndex(p => p.id === id);
             return i === -1 ? m : m | (1 << i);
         }, 0);
-        await renderSetup(interaction, { ...state, entitlementMask: mask });
+        await renderPanel(interaction, { ...state, entitlementMask: mask });
         return true;
     }
 
     if (interaction.isButton() && state.verb === 'upg') {
         await interaction.deferUpdate();
-        await renderSetup(interaction, { ...state, includeUpgrades: !state.includeUpgrades });
-        return true;
-    }
-
-    if (interaction.isButton() && state.verb === 'run') {
-        await interaction.deferUpdate();
-        await renderResults(interaction, state);
+        await renderPanel(interaction, { ...state, includeUpgrades: !state.includeUpgrades });
         return true;
     }
 
     if (interaction.isButton() && state.verb === 'region') {
         await interaction.deferUpdate();
-        await renderResults(interaction, state); // customId's own region field IS the target region
-        return true;
-    }
-
-    if (interaction.isButton() && state.verb === 'edit') {
-        await interaction.deferUpdate();
-        await renderSetup(interaction, state);
+        await renderPanel(interaction, state); // customId's own region field IS the target region
         return true;
     }
 

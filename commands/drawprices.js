@@ -352,6 +352,11 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('calculator')
             .setDescription('Work out how much more CP you need, and the cheapest way to buy it')
+            // Every option is optional and every one maps onto a control the panel also carries, so the command line and the panel are two doors into the same state rather than two features. Choices are DERIVED from DRAW_META/REGION_ORDER rather than transcribed -- a tenth draw or a fourth region appears here on its own, which is the same rule DRAW_DATA's header sets for every other number in this file.
+            .addStringOption(option => option.setName('draw').setDescription('Which draw you are pulling on').addChoices(...Object.entries(DRAW_META).map(([value, meta]) => ({ name: meta.name, value }))))
+            .addIntegerOption(option => option.setName('pulls').setDescription('How many pulls you have already done on it').setMinValue(0).setMaxValue(10))
+            .addIntegerOption(option => option.setName('balance').setDescription('CP you already have, so it can tell you what is left to buy').setMinValue(0))
+            .addStringOption(option => option.setName('region').setDescription('Price it in a specific CP region').addChoices(...REGION_ORDER.map(value => ({ name: `${value.split('_')[1]} CP Region`, value }))))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
