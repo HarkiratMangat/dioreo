@@ -325,17 +325,25 @@ button[aria-busy="true"]::after {
     border: 1px solid var(--rule);
 }
 .bar.live {
-    /* Same reasoning as .accent-fill above -- track.css's .bar.live sets color:var(--on-accent), and
-       broadcast.js's Airtime only stamps --topic-accent when the announcement carries a stored
-       colour. Without one this fell to --raised under #000 ink. */
+    /* 🔴 THE INK LIVES HERE NOW. It used to be track.css's `.bar.live{color:var(--on-accent)}` — a
+       cross-realm dependency nothing declared: Broadcast's Airtime rail emits `bar live/stag/exp`
+       (broadcast.js) and was silently borrowing the Track's stylesheet for its text colour. When
+       track.css was replaced with the adopted design (which keys on saved/staged/conflict), every
+       Airtime bar fell back to --ink on its own accent fill — 1.42:1 on --patch. Caught by
+       portalContrastRendered.test.js, invisible to everything else.
+       broadcast.js only stamps --topic-accent when the announcement carries a stored colour, hence
+       the --patch fallback rather than --raised under black ink. */
     background: var(--topic-accent, var(--patch));
+    color: var(--on-accent);
     border-style: solid;
 }
 .bar.stag {
+    color: var(--ink);
     background: transparent;
     border: 1px dashed var(--topic-accent, var(--ink3));
 }
 .bar.conf {
+    color: var(--warn);
     background: repeating-linear-gradient(45deg, var(--topic-accent, var(--warn)) 0 4px, transparent 4px 8px);
     border-color: var(--warn);
 }

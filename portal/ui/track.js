@@ -1,103 +1,293 @@
-// portal/ui/track.js — ESM. The Track view layer: ruler + lanes + bars + flags + drag handles.
+// portal/ui/track.js — ESM. The Track: ruler + lanes + bars + points + flags.
 //
-// bandClass/laneFor/tierOf/barGeometry/findOverlaps/findGaps/dateFromOffset/editOpFor come from track.logic.js, loaded as a plain CLASSIC <script> before this module (see portal/render.js's script order) -- a classic script's top-level function declarations become globals, which an ESM module can read like any other global without an import statement. This is the actual working resolution of the "Node never loads ESM, browser never loads CJS" split: Node's require() reads the SAME file as CommonJS via module.exports, and the browser reads it as a non-module script that defines globals. A literal `import {...} from './track.logic.js'` would fail in every real browser (no export statement exists), so this file deliberately does not attempt one -- season.js shipped exactly that mistake once; see its own header for the live-verified fix.
+// 🔴 REWRITTEN 2026-08-25 to render the INTERACTIVE MOCKUP'S markup and class vocabulary. This is the first realm component migrated under docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md: the design moves onto the code, not the other way round. The two implementations shared only 62 class names out of the mockup's 890, so "converging" the other way meant re-authoring the design. The props contract is UNCHANGED — season.js was not touched — because a migration that also changes its own interface makes every resulting defect unattributable.
+//
+// What comes from elsewhere, unchanged:
+//   TL                        timeline.logic.js — the date<->pixel engine (classic script global)
+//   bandClass, barGeometry,   track.logic.js — pure, Node-tested, paradigm-agnostic
+//   dateFromOffset
+//   <Icon>, <Fold>            icons.js — never a text glyph, and the fold MORPHS
+//   useMeasured               useMeasured.js — the only safe shape for a post-layout pass
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
-import { useState } from '../vendor/preact-hooks.mjs';
+import { useState, useCallback, useRef } from '../vendor/preact-hooks.mjs';
+import { Fold } from './icons.js';
+import { useMeasured } from './useMeasured.js';
 
-const TOPIC_VAR = { draw: '--draw', returning: '--ret', event: '--ev', playlist: '--play', patchnote: '--patch' };
-const LANE_LABEL = { draw: 'New draws', returning: 'Returning', event: 'Events', playlist: 'Playlists', patchnote: 'Patch notes' };
+// 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
+//
+// ⚠️ `patchnote` IS DELIBERATELY ABSENT and must stay that way. A patch note is a PUBLICATION, not a state with a duration — isEventEnded() returns false for it forever — so it does not belong on an axis whose every other lane answers "when is this ON?". The mockup renders it as the Season Record instead. A [P2] tracker entry once prescribed adding it and was closed as superseded.
+const LANES = [
+    { key: 'draw',      label: 'New draws', topic: '--draw', kind: 'point' },
+    { key: 'returning', label: 'Returning', topic: '--ret',  kind: 'point' },
+    { key: 'event',     label: 'Events',    topic: '--ev',   kind: 'span'  },
+    { key: 'playlist',  label: 'Playlists', topic: '--play', kind: 'span'  },
+];
 
-// Drag handle on a band's right edge -- reassigns the item's END date only (the mockup's only worked example; the start edge and whole-band move are deliberately out of this pass's scope). Uses `globalThis.addEventListener`, not the bare `window` global, because this component's OWN `window` prop (the visible date range) shadows the real global for its entire body -- `globalThis` resolves unambiguously regardless of that shadow, so the prop keeps its established name across every Track/Lane/Bar call site instead of a renamed-just-here special case.
-function Bar({ item, window, season, onDragCommit }) {
-    const { left, width } = barGeometry(item, window);
-    const state = item.state || (tierOf(item, season) === 'conflict' ? 'conflict' : 'live');
-    const cls = bandClass({ state });
-    // top offset stacks a bar into its assigned row (assignRows in track.logic.js) so two items overlapping in the same lane get their own row instead of painting on the same pixels. transform:none cancels .bar's CSS translateY(-50%) centering, which assumed a single row.
-    const top = (item.row || 0) * 26 + 2;
-    const style = `left:${left}%;width:${width}%;top:${top}px;transform:none;--topic-accent:var(${TOPIC_VAR[laneFor(item)] || '--ink2'})`;
-    const [dragLabel, setDragLabel] = useState(null);
+// A collapsed lane must still ANSWER something — a row that only says "5 hidden" is a worse version of nothing. Each lane's summary answers that lane's own question.
+const LANE_KIT = {
+    draw:      { sum: 'pips', ask: 'what released, and how rare' },
+    returning: { sum: 'pips', ask: 'what came back' },
+    event:     { sum: 'runs', ask: 'what was running' },
+    playlist:  { sum: 'load', ask: 'how many modes at once' },
+};
 
-    function startDrag(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const track = e.currentTarget.closest('.tk');
-        function pctFor(ev) {
-            const rect = track.getBoundingClientRect();
-            return Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
-        }
-        function onMove(ev) {
-            setDragLabel(dateFromOffset(pctFor(ev), window).toDateString());
-        }
-        function onUp(ev) {
-            globalThis.removeEventListener('pointermove', onMove);
-            globalThis.removeEventListener('pointerup', onUp);
-            setDragLabel(null);
-            onDragCommit(item, dateFromOffset(pctFor(ev), window));
-        }
-        globalThis.addEventListener('pointermove', onMove);
-        globalThis.addEventListener('pointerup', onUp);
+const ROW_H = 26, ROW_PAD = 10, LABEL_MIN_PX = 44, TRUNC_MIN_PX = 44, MAX_FLAGS = 3;
+const LANE_COL_KEY = 'dioreo-lane-col';
+
+function loadLaneCol() { try { return JSON.parse(sessionStorage.getItem(LANE_COL_KEY)) || {}; } catch { return {}; } }
+function saveLaneCol(v) { try { sessionStorage.setItem(LANE_COL_KEY, JSON.stringify(v)); } catch (e) {} }
+
+const startOf = (it) => it.startDate || it.endDate;
+const endOf = (it) => it.endDate || it.startDate;
+
+// Greedy interval row assignment, so two items overlapping in one lane get their own row instead of painting on the same pixels.
+//
+// ⚠️ THIS IS THE MOCKUP'S VERSION, NOT track.logic.js's, AND THE DIFFERENCE IS REAL. The portal's assignRows tests `rowEnds[r] <= start`, which puts two merely-TOUCHING bars on separate rows; the mockup requires a full day of clearance, so consecutive bars share a row separated by the gutter `.bar`'s inset already provides. Two implementations of one idea existed and disagreed — the migration is where the better one gets chosen deliberately rather than inherited by whichever file happened to be open.
+function assignRows(list) {
+    const sorted = [...list].sort((a, b) => startOf(a).localeCompare(startOf(b)));
+    const ends = [];
+    const row = new Map();
+    for (const it of sorted) {
+        let r = ends.findIndex((e) => TL.days(e, startOf(it)) >= 0);
+        if (r === -1) { r = ends.length; ends.push(endOf(it)); } else { ends[r] = endOf(it); }
+        row.set(it.id, r);
     }
-
-    return html`
-        <div class=${cls} style=${style} title=${item.title}>
-            <span class="bl">${item.title}</span>
-            ${onDragCommit ? html`<span class="handle" onPointerDown=${startDrag} title="Drag to change the end date"></span>` : null}
-            ${dragLabel ? html`<span class="dragtip">${dragLabel}</span>` : null}
-        </div>
-    `;
+    return { row, rows: Math.max(1, ends.length) };
 }
 
-function Lane({ name, items, window, season, onDragCommit }) {
-    const stacked = assignRows(items);
-    const rows = stacked.length ? Math.max(...stacked.map((i) => i.row)) + 1 : 1;
-    // Lane height grows with the row count an overlap actually needs, instead of a fixed height that only ever fit one bar per lane.
-    const laneStyle = rows > 1 ? `height:${rows * 26 + 4}px` : '';
-    return html`
-        <div class="lane" style=${laneStyle}>
-            <span class="nm">${name}</span>
-            <div class="tk">${stacked.map(item => html`<${Bar} item=${item} window=${window} season=${season} onDragCommit=${onDragCommit} />`)}</div>
-        </div>
-    `;
-}
-
-// `data[k]`/`draft[k]` are read directly, with NO re-filtering by laneFor(item) -- a prior version filtered here, but laneFor() reads item.kind, which no caller ever set, so EVERY draw/returning lane silently rendered empty (calendar's 'event' bucket only "worked" by the fallback accidentally equaling its own key). Bucketing by lane is now the caller's job (season.js's toTrackItems), the same contract `draft` already had. The Track's own defect flags. track.logic.js has carried findOverlaps/findGaps/tierOf since the first build, with dedicated tests -- and NOTHING has ever called them. The `flags` prop existed and every caller passed nothing, so the row never rendered. That row is the realm's entire reason for being: spec §8.2 says the Track exists so that three defects which "have no signal at all today" become impossible to miss. Each flag NAMES THE PROBLEM, and where the mockup gives one, offers the fix rather than only reporting (01-season-spine.html's "Clamp to BP end" / "Fill").
-function deriveFlags(data, window, season, actions) {
-    const items = Object.values(data || {}).flat();
+// Merge overlapping intervals into the runs a reader actually perceives.
+function mergeRuns(list) {
+    const xs = list.map((i) => ({ a: startOf(i), b: endOf(i) })).sort((x, y) => (x.a < y.a ? -1 : 1));
     const out = [];
-    for (const item of items) {
-        if (tierOf(item, season) === 'conflict') {
-            const over = Math.ceil((new Date(item.endDate) - new Date(season.bpEnd)) / 86400000);
-            out.push({
-                title: item.title, detail: `ends ${over} day${over === 1 ? '' : 's'} after the battle pass — it will outlive the season.`,
-                // Mockup's own worked example (01-season-spine.html): a conflict is fixable in one click, not just a fact to go act on elsewhere. Reuses the exact edit path Track's own drag handle already commits through.
-                action: actions?.onClamp && season?.bpEnd ? { label: 'Clamp to BP end', onClick: () => actions.onClamp(item, new Date(season.bpEnd)) } : null,
-            });
-        }
-    }
-    for (const gap of findGaps(items, window)) {
-        const days = Math.round((gap.end - gap.start) / 86400000);
-        out.push({
-            title: `${gap.start.toDateString().slice(4, 10)}–${gap.end.toDateString().slice(4, 10)}`, detail: `has no draw and no event scheduled (${days} days).`,
-            action: actions?.onFill ? { label: 'Fill', onClick: () => actions.onFill(gap) } : null,
-        });
-    }
-    for (const [a, b] of findOverlaps(items)) {
-        out.push({ title: `${a.title} and ${b.title}`, detail: 'overlap in the same lane.' });
+    for (const r of xs) {
+        const last = out[out.length - 1];
+        if (last && TL.days(r.a, last.b) >= -1) { if (TL.days(last.b, r.b) > 0) last.b = r.b; last.n++; }
+        else out.push({ ...r, n: 1 });
     }
     return out;
 }
 
-// 🔴 THE ROW IS CAPPED, AND THE CAP IS THE DESIGN. Rendered uncapped against the real dev catalogue (23 calendar items) this produced ~50 flags and buried the page under "X and Y overlap in the same lane" — concurrent events and playlists are NORMAL in CODM, so an overlap is information rather than a defect, and fifty pieces of information is none. Ordering is deliberate: a conflict (runs past the battle-pass end) is unambiguously wrong, a gap is probably wrong, an overlap is only maybe. deriveFlags pushes them in that order, so slicing keeps the most severe.
-//
-// ⚠️ Deliberately NOT filtered by lane. It would be easy to declare "overlaps only matter for draws" and cut the noise at the source, but that asserts a CODM scheduling rule this session cannot verify — and a detector that silently drops a real finding is worse than one that ranks it last.
-const MAX_FLAGS = 3;
+// Concurrency sampled across the visible window — the playlists lane's real question.
+function loadCurve(list, view, steps = 64) {
+    const out = [];
+    for (let i = 0; i < steps; i++) {
+        const d = view.dateAt((i / (steps - 1)) * 100);
+        out.push(list.filter((it) => TL.days(startOf(it), d) >= 0 && TL.days(d, endOf(it)) >= 0).length);
+    }
+    return out;
+}
 
-// <Track view=Season|Month|Week /> -- exported as a named component; Task 5's Shell wraps it as the switchable top half. `data` groups items by lane (spec's live rails) and `draft` mirrors it for the staged second rail below the divider (the existing draft area given a picture for the first time).
-export function Track({ data, draft, window, season, flags, onDragCommit, onFillGap }) {
-    // A lane with nothing in it, live or draft, is not rendered. Five always-on lanes meant the patch-notes rail (which season.js has never supplied) plus any unused topic sat as empty 38px rows -- structure announcing content that is not there. 🔴 AND `patchnote` MUST STAY UNFILLED — that is now a DESIGN DECISION, not an oversight. `docs/db-deferred-list.md` carried a [P2 · XS] entry prescribing `patchnote: toTrackItems(...)` to "fix" the missing fifth lane; it was closed 2026-08-24 as superseded. A patch note is a PUBLICATION, not a state with a duration -- models/PatchNote.js gives it a releaseDate and no end, and isEventEnded() returns false for it forever -- so it does not belong on an axis whose every other lane answers "when is this ON?". It also stretched the axis for nothing: the live season publishes Jul 6 and Jul 22 while nothing is scheduled before Aug 6. The mockup renders it as the Season Record, a vertical rail beneath the Track. See COMPANION.md §5.9d. The KEY stays in LANE_LABEL/TOPIC_VAR because historical rows and the Manifest still use it; filling it here is what must not happen.
-    const lanes = Object.keys(LANE_LABEL).filter(k => (data[k] || []).length || (draft && (draft[k] || []).length));
-    const shown = flags || deriveFlags(data, window, season, { onClamp: onDragCommit, onFill: onFillGap });
+// Pixels decide the spacing, not days — a rule that holds at any span.
+function tickStep(span, widthPx) {
+    const want = Math.max(1, Math.floor(widthPx / 92));
+    const raw = span / want;
+    return [1, 2, 3, 7, 14, 28, 56, 91, 182, 364].find((c) => c >= raw) || 364;
+}
+
+function Ruler({ view }) {
+    const ref = useRef(null);
+    const [w, setW] = useState(1100);
+    // Was an imperative renderRuler() re-run after every innerHTML rebuild, re-querying and re-binding as it went. Only the width needs measuring now, and a ResizeObserver reports it without a render loop.
+    useMeasured('ruler:' + view.from + view.to, ref, (root) => {
+        const px = root.getBoundingClientRect().width || 1100;
+        if (px !== w) setW(px);
+        return {};
+    });
+    return html`
+        <div class="ruler" ref=${ref}>
+            ${TL.ticks(view, tickStep(view.span(), w)).map((t) => html`
+                <span key=${t.iso} style=${'left:' + t.x + '%'}><b>${t.label}</b></span>`)}
+        </div>`;
+}
+
+function LaneSummary({ lane, list, kit, view }) {
+    if (kit.sum === 'pips') {
+        return html`<span class="lsum">${list.map((it) => html`
+            <i key=${it.id} class=${'lpip' + (it.tier === 'mythic' ? ' myth' : '')}
+               style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%`}
+               data-tip=${`${it.title} · ${TL.fmt(startOf(it))}`}></i>`)}</span>`;
+    }
+    if (kit.sum === 'load') {
+        const c = loadCurve(list, view);
+        const max = Math.max(1, ...c);
+        const empties = c.filter((n) => !n).length;
+        // 🔴 THE PEAK IS SHOWN, NOT ASSERTED, and a ZERO IS DRAWN. A linear height on a curve whose peak is 7 and whose typical value is 1 renders six bars out of seven as a 14% stub, so the only thing carrying "7 at peak" is the text beside it. Gamma 0.6 lifts the low end enough that the SHAPE is the reading. And `opacity:0` used to erase every empty day — the one thing a person scanning this lane would act on, indistinguishable from the lane ending.
+        return html`<span class="lsum load" data-tip=${'How many run at once — peak ' + max
+                + (empties ? `, and ${empties} day${empties === 1 ? '' : 's'} with nothing running` : '')}>
+            ${c.map((n, i) => {
+                const x = (i / (c.length - 1)) * 100;
+                return n
+                    ? html`<i key=${i} style=${`--c:var(${lane.topic});left:${x}%;height:${Math.round(Math.pow(n / max, 0.6) * 100)}%`}></i>`
+                    : html`<i key=${i} class="ld0" style=${'left:' + x + '%'}></i>`;
+            })}<b>${max} at peak</b></span>`;
+    }
+    return html`<span class="lsum">${mergeRuns(list).map((r, i) => html`
+        <i key=${i} class="lrun" style=${`--c:var(${lane.topic});left:${view.pct(r.a)}%;width:${view.wpct(r.a, r.b)}%`}
+           data-tip=${`${r.n} item${r.n === 1 ? '' : 's'} · ${TL.fmt(r.a)} → ${TL.fmt(r.b)}`}></i>`)}</span>`;
+}
+
+function Bar({ it, lane, view, top, fit, onDragCommit }) {
+    const ref = useRef(null);
+    const [ghost, setGhost] = useState(null);
+
+    // WAS bound imperatively in wireTrack() after every innerHTML rebuild, under a comment reading "a listener bound to the old node would silently stop working after the first interaction". That failure mode is structurally gone: the handler is part of the tree, so it is re-attached to whatever node the render produces.
+    const startDrag = useCallback((e) => {
+        if (e.button !== 0 || !onDragCommit) return;
+        e.preventDefault(); e.stopPropagation();
+        const tk = ref.current && ref.current.closest('.tk');
+        if (!tk) return;
+        const pctAt = (ev) => {
+            const r = tk.getBoundingClientRect();
+            return Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
+        };
+        const move = (ev) => setGhost(view.dateAt(pctAt(ev)));
+        const up = (ev) => {
+            globalThis.removeEventListener('pointermove', move);
+            globalThis.removeEventListener('pointerup', up);
+            setGhost(null);
+            // 🔴 CONVERT AT THE SEAM. TL.dateAt returns an ISO STRING; editOpFor (track.logic.js) calls newEndDate.toISOString() and needs a DATE. The mismatch throws only into the console, so the drag LOOKS like it worked and never commits — measured, not imagined.
+            onDragCommit(it, new Date(view.dateAt(pctAt(ev)) + 'T00:00:00Z'));
+        };
+        globalThis.addEventListener('pointermove', move);
+        globalThis.addEventListener('pointerup', up);
+    }, [it, view, onDragCommit]);
+
+    const end = ghost || endOf(it);
+    const geo = barGeometry({ startDate: startOf(it), endDate: end }, { start: view.from, end: view.to });
+    const cls = [bandClass({ state: it.state || 'live' }), it.openEnded ? 'forever' : '', fit || '', ghost ? 'dragging' : '']
+        .filter(Boolean).join(' ');
+    return html`
+        <div class=${cls} ref=${ref} data-id=${it.id} tabindex="0" role="button"
+             style=${`--c:var(${lane.topic});left:${geo.left}%;width:${geo.width}%${top ? ';' + top : ''}`}
+             aria-label=${`${it.title}, ${TL.fmt(startOf(it))} ${it.openEnded ? 'onward, with no end date' : 'to ' + TL.fmt(end)}${it.isOngoing ? ', runs all season' : ''}`}
+             data-tip=${ghost ? 'Ends ' + TL.fmt(ghost) : null}>
+            <span class="gr a" data-edge="start"></span>
+            <span class="bl">${it.title}</span>
+            <span class="gr b" data-edge="end" onPointerDown=${startDrag}></span>
+        </div>`;
+}
+
+function Point({ it, lane, view }) {
+    return html`
+        <span class=${'pt ' + (it.state || 'live')} data-id=${it.id} tabindex="0" role="button"
+              data-tier=${it.tier || ''} data-lanekind=${lane.key}
+              style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%`}
+              aria-label=${`${it.title}, releases ${TL.fmt(startOf(it))}`}
+              data-tip=${`${it.title} · releases ${TL.fmt(startOf(it))}`}></span>`;
+}
+
+function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit }) {
+    const spans = list.filter((i) => lane.kind !== 'point');
+    const { row, rows } = assignRows(spans);
+    const kit = LANE_KIT[lane.key] || { sum: 'runs', ask: 'what is scheduled' };
+    const off = list.filter((it) => TL.days(endOf(it), view.from) > 0 || TL.days(view.to, startOf(it)) > 0).length;
+
+    return html`
+        <div class=${'lane' + (collapsed ? ' lnc' : '')} data-lane=${lane.key} data-draft=${isDraft ? 1 : 0}
+             data-rows=${rows} style=${`--c:var(${lane.topic});height:${collapsed ? 30 : Math.max(38, rows * ROW_H + ROW_PAD)}px`}>
+            <button class="lnh" data-lanebtn=${lane.key} data-draft=${isDraft ? 1 : 0}
+                    aria-expanded=${!collapsed} onClick=${onToggle}
+                    data-tip=${`${collapsed ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.`}>
+                <${Fold} open=${!collapsed} cls="sm lnh-i" />
+                <span class="lnh-d" style=${`--c:var(${lane.topic})`}></span>
+                <span class="lnh-t">${isDraft ? 'Draft ' + lane.label.toLowerCase() : lane.label}</span>
+                <span class="lnh-n">${list.length}</span>
+            </button>
+            <div class="tk">
+                ${collapsed ? html`<${LaneSummary} lane=${lane} list=${list} kit=${kit} view=${view} />` : null}
+                ${off ? html`<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : null}
+                ${collapsed ? null : list.map((it) => {
+                    if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} />`;
+                    const r = row.has(it.id) ? row.get(it.id) : 0;
+                    const top = rows === 1 ? null : `top:${ROW_PAD / 2 + r * ROW_H}px;transform:none;height:${ROW_H - 5}px`;
+                    return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top}
+                                        fit=${fits[it.id]} onDragCommit=${onDragCommit} />`;
+                })}
+            </div>
+        </div>`;
+}
+
+// Kept from the previous implementation, unchanged: the flags a Track exists to surface. Only their PRESENTATION moves to the mockup's one-line-per-finding strip.
+function deriveFlags(data, window, season, actions) {
+    const all = Object.values(data).flat();
+    const out = [];
+    if (season?.bpEnd) {
+        for (const it of all) {
+            if (!it.endDate || it.endDate <= season.bpEnd) continue;
+            const over = TL.days(season.bpEnd, it.endDate);
+            out.push({
+                id: 'past-bp-' + it.id, sev: 'warn', text: html`<b>${it.title}</b> ends ${over} day${over === 1 ? '' : 's'} after the battle pass — it will outlive the season.`,
+                fix: 'Clamp to BP end',
+                onFix: actions?.onClamp ? () => actions.onClamp(it, new Date(season.bpEnd + 'T00:00:00Z')) : null,
+            });
+        }
+    }
+    return out;
+}
+
+export function Track({ data, draft, window: visible, season, flags, onDragCommit, onFillGap }) {
+    const rootRef = useRef(null);
+    const [laneCol, setLaneCol] = useState(loadLaneCol);
+    const view = TL.make(visible.start, visible.end);
+
+    const lanes = LANES.filter((l) => (data[l.key] || []).length || (draft && (draft[l.key] || []).length));
+    const shown = flags || deriveFlags(data, visible, season, { onClamp: onDragCommit, onFill: onFillGap });
+
+    const toggle = useCallback((lane, isDraft, alt) => {
+        setLaneCol((prev) => {
+            const k = (isDraft ? 'd:' : '') + lane.key;
+            // Alt-click solos: everything else folds, which is the gesture you want when one lane is the reason you opened the page. A mode is what you build when you cannot decide.
+            const next = alt
+                ? Object.fromEntries(LANES.flatMap((l) => [[l.key, l.key !== k], ['d:' + l.key, 'd:' + l.key !== k]]))
+                : { ...prev, [k]: !prev[k] };
+            saveLaneCol(next);
+            return next;
+        });
+    }, []);
+
+    const collapsedFor = (l, isDraft) => {
+        const k = (isDraft ? 'd:' : '') + l.key;
+        if (k in laneCol) return laneCol[k];
+        // A lane needing more than three rows opens COLLAPSED — you should not land on a wall with the lane you came for off-screen. An explicit choice always wins, and it persists.
+        return l.kind !== 'point' && assignRows((isDraft ? draft : data)[l.key] || []).rows > 3;
+    };
+
+    // fitLabels, through the one safe shape. See useMeasured.js for why the generation key is not optional: measuring an already-truncated label reads a different width and the two states alternate forever.
+    const fits = useMeasured(
+        `${visible.start}|${visible.end}|${JSON.stringify(laneCol)}|${Object.values(data).flat().map((i) => i.id + ':' + i.endDate).join(',')}`,
+        rootRef,
+        (root) => {
+            const out = {};
+            root.querySelectorAll('.bar').forEach((b) => {
+                const bl = b.querySelector('.bl');
+                if (!bl) return;
+                const w = b.getBoundingClientRect().width;
+                const ratio = bl.scrollWidth ? w / bl.scrollWidth : 1;
+                const clipped = bl.scrollWidth > bl.clientWidth + 1;
+                if (w >= LABEL_MIN_PX && ratio >= 0.55 && !clipped) { out[b.dataset.id] = ''; return; }
+                const tk = b.closest('.tk');
+                if (!tk) { out[b.dataset.id] = 'nolabel'; return; }
+                const br = b.getBoundingClientRect(), tr = tk.getBoundingClientRect();
+                const need = bl.scrollWidth + 10;
+                // 🔴 ROOM MEANS ROOM BEFORE THE NEXT BAR, and "same row" is VERTICAL OVERLAP, never a matching style string — the string test groups every bar whose top came from a class into one pseudo-row and reports "no room" beside 900px of empty track.
+                const sibs = [...tk.querySelectorAll('.bar')].filter((o) => o !== b).map((o) => o.getBoundingClientRect())
+                    .filter((r) => r.top < br.bottom - 1 && r.bottom > br.top + 1);
+                const rightWall = Math.min(tr.right, ...sibs.filter((r) => r.left >= br.right - 1).map((r) => r.left));
+                const leftWall = Math.max(tr.left, ...sibs.filter((r) => r.right <= br.left + 1).map((r) => r.right));
+                // OUTSIDE BEFORE TRUNCATED, and truncated before hidden. A bar with no label is not a bar, it is a rectangle.
+                if (rightWall - br.right > need) out[b.dataset.id] = 'lbl-out';
+                else if (br.left - leftWall > need) out[b.dataset.id] = 'lbl-out-l';
+                else if (w >= TRUNC_MIN_PX) out[b.dataset.id] = 'lbl-cut';
+                else out[b.dataset.id] = 'nolabel';
+            });
+            return out;
+        },
+        (root) => root.querySelectorAll('.bar').forEach((b) => b.classList.remove('lbl-out', 'lbl-out-l', 'lbl-cut', 'nolabel')),
+    );
+
+    const nowPct = view.pct(TL.toISO(Date.now()));
+
     return html`
         <div class="panel" id="track">
             <div class="ph">
@@ -108,35 +298,34 @@ export function Track({ data, draft, window, season, flags, onDragCommit, onFill
                     <span class="leg conf"><i></i>conflict</span>
                 </span>
             </div>
-            <div style="padding:8px 14px 0">
-                <div class="ruler">
-                    <span style="left:0%">${window.start}</span>
-                    <span data-end style="left:100%">${window.end}</span>
-                </div>
+            <div class="tk-wrap" ref=${rootRef}><div class="tk-inner">
+                <${Ruler} view=${view} />
                 <div class="lanes">
-                    ${lanes.map(k => html`<${Lane} name=${LANE_LABEL[k]} items=${data[k] || []} window=${window} season=${season} onDragCommit=${onDragCommit} />`)}
-                    ${draft ? html`
-                        <div class="lane divider">Next season draft — staged, not live</div>
-                        ${lanes.map(k => html`<${Lane} name=${'Draft ' + LANE_LABEL[k].toLowerCase()} items=${(draft[k] || []).map(i => ({ ...i, state: 'staged' }))} window=${window} season=${season} />`)}
+                    ${lanes.map((l) => html`
+                        <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}
+                                 collapsed=${collapsedFor(l, false)} onToggle=${(e) => toggle(l, false, e.altKey)}
+                                 fits=${fits} onDragCommit=${onDragCommit} />`)}
+                    ${draft && lanes.some((l) => (draft[l.key] || []).length) ? html`
+                        <div class="divider">Next season draft — staged, not live</div>
+                        ${lanes.filter((l) => (draft[l.key] || []).length).map((l) => html`
+                            <${Lane} key=${'d:' + l.key} lane=${l}
+                                     list=${(draft[l.key] || []).map((i) => ({ ...i, state: 'staged' }))}
+                                     isDraft=${true} view=${view} collapsed=${collapsedFor(l, true)}
+                                     onToggle=${(e) => toggle(l, true, e.altKey)} fits=${fits} />`)}
                     ` : null}
                     <div class="ov">
-                        <div class="now" style=${`left:${nowPercent(window)}%`}></div>
-                        ${season?.bpEnd ? html`<div class="bpe" style=${`left:${percentOf(season.bpEnd, window)}%`}></div>` : null}
+                        <div class="now" style=${'left:' + nowPct + '%'}></div>
+                        ${season?.bpEnd ? html`<div class="bpe" style=${'left:' + view.pct(season.bpEnd) + '%'}></div>` : null}
                     </div>
                 </div>
+            </div></div>
+            <div class="flags tight">
+                ${shown.length ? shown.slice(0, MAX_FLAGS).map((f) => html`
+                    <span key=${f.id} class=${'flag' + (f.sev === 'info' ? ' info' : '')} data-flagid=${f.id}>${f.text}
+                        ${f.onFix ? html`<button onClick=${f.onFix}>${f.fix}</button>` : null}</span>`)
+                : html`<span class="flag info" style="border-left-color:var(--ok)">No conflicts, overlaps or gaps in the current window.</span>`}
+                ${shown.length > MAX_FLAGS ? html`
+                    <span class="flag info">and ${shown.length - MAX_FLAGS} more — concurrent events are normal, so these rank last.</span>` : null}
             </div>
-            ${shown.length ? html`
-                <div class="flags">
-                    ${shown.slice(0, MAX_FLAGS).map(f => html`<span class="flag"><b>${f.title}</b> ${f.detail} ${f.action ? html`<button onClick=${f.action.onClick}>${f.action.label}</button>` : null}</span>`)}
-                    ${shown.length > MAX_FLAGS ? html`<span class="flag" style="border-left-color:var(--rule);color:var(--ink3)">and ${shown.length - MAX_FLAGS} more overlapping or unscheduled stretch${shown.length - MAX_FLAGS === 1 ? '' : 'es'} — concurrent events are normal, so these rank last.</span>` : null}
-                </div>
-            ` : null}
-        </div>
-    `;
+        </div>`;
 }
-
-function percentOf(date, window) {
-    const w = new Date(window.start).getTime(), e = new Date(window.end).getTime();
-    return Math.max(0, Math.min(100, ((new Date(date).getTime() - w) / Math.max(1, e - w)) * 100));
-}
-function nowPercent(window) { return percentOf(new Date(), window); }

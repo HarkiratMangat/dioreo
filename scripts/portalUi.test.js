@@ -12,9 +12,9 @@ function check(name, fn) {
 }
 
 check('SHAPE carries state \u2014 three states, three distinct classes', () => {
-    assert.strictEqual(bandClass({ state: 'live' }), 'bar live');
-    assert.strictEqual(bandClass({ state: 'staged' }), 'bar stag');
-    assert.strictEqual(bandClass({ state: 'conflict' }), 'bar conf');
+    assert.strictEqual(bandClass({ state: 'live' }), 'bar saved');
+    assert.strictEqual(bandClass({ state: 'staged' }), 'bar staged');
+    assert.strictEqual(bandClass({ state: 'conflict' }), 'bar conflict');
 });
 
 check('COLOUR carries topic and is never used to signal state', () => {

@@ -45,6 +45,15 @@ function fixtureHtml(css) {
     <div class="lanes">
       <div class="lane"><span class="nm">New draws</span><div class="tk">
         <div class="bar live" style="--topic-accent:var(--draw);left:0;width:40%"><span class="bl">Iron Wolf</span></div></div></div>
+    <!-- The ADOPTED Track vocabulary (portal/ui/track.css, scoped under #track). The legacy
+         live/stag/exp classes above are Broadcast's and stay: both are live in the portal during the
+         migration, and a fixture that covered only one of them would leave the other unmeasured. -->
+    <div id="track"><div class="lanes"><div class="lane"><div class="tk">
+      <div class="bar saved" style="--c:var(--draw);left:0;width:40%"><span class="bl">Adopted saved bar</span></div>
+      <div class="bar staged" style="--c:var(--play);left:45%;width:20%"><span class="bl">Adopted staged bar</span></div>
+      <div class="bar conflict" style="left:70%;width:20%"><span class="bl">Adopted conflict bar</span></div>
+      <span class="pt" style="--c:var(--ret);left:95%"></span></div>
+      <button class="lnh"><span class="lnh-t">Lane</span><span class="lnh-n">3</span></button></div></div></div>
       <div class="lane"><span class="nm">Events</span><div class="tk">
         <!-- the case the static pass cannot see: same rule, NO topic accent set -->
         <div class="bar live" style="left:0;width:40%"><span class="bl">Unaccented bar</span></div></div></div>

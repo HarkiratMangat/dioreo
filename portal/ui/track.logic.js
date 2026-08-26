@@ -4,9 +4,10 @@
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9) \u2014 do not invert. `state` always maps to a class suffix (live/stag/conf); `topic` never appears in the returned class at all \u2014 it is applied by the caller as a `--c` CSS custom property, exactly like the approved mockup does.
 function bandClass({ state }) {
-    if (state === 'live') return 'bar live';
-    if (state === 'staged') return 'bar stag';
-    if (state === 'conflict') return 'bar conf';
+    // ⚠️ THE CLASS SUFFIXES CHANGED 2026-08-25 — live/stag/conf became saved/staged/conflict, which is the vocabulary the adopted design's stylesheet actually keys on (portal/ui/track.css, from the mockup). Two vocabularies for one idea is how a bar renders unstyled while every gate passes: the class was emitted, the rule simply never matched it. `state` is unchanged — only the class it maps to moved.
+    if (state === 'live' || state === 'saved') return 'bar saved';
+    if (state === 'staged') return 'bar staged';
+    if (state === 'conflict') return 'bar conflict';
     return 'bar';
 }
 

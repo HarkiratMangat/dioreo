@@ -1,26 +1,14 @@
 // portal/ui/icons.js — ESM. Lucide (MIT) as an inlined SVG sprite, plus the morphing fold.
 //
-// 🔴 STANDING RULE, Harkirat 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS. text is
-// text." A typed character hands its size, weight, baseline and hinting to whatever font resolves
-// it — no stroke control, no alignment control, and at 9px it rasterises to a smudge. It is also
-// the reflex answer, which is why it turns up on every accordion ever built.
+// 🔴 STANDING RULE, Harkirat 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS. text is text." A typed character hands its size, weight, baseline and hinting to whatever font resolves it — no stroke control, no alignment control, and at 9px it rasterises to a smudge. It is also the reflex answer, which is why it turns up on every accordion ever built.
 //
-// WHY A COMPONENT AND NOT A STRING HELPER. The mockup's Icons.icon() returns an HTML STRING, which
-// under Preact means dangerouslySetInnerHTML at all sixteen call sites — each one an escape hatch
-// out of the very rendering model the migration exists to adopt, and each one a place a future
-// value could be interpolated unescaped. <Icon name="check" /> is one component, no innerHTML, and
-// the name is checkable. The sprite itself is still real embedded artwork referenced by <use>: a
-// CDN script would add a network dependency to a portal that must work behind Cloudflare Tunnel,
-// and re-inlining every path per instance would repeat ~200 bytes of geometry per icon per render.
+// WHY A COMPONENT AND NOT A STRING HELPER. The mockup's Icons.icon() returns an HTML STRING, which under Preact means dangerouslySetInnerHTML at all sixteen call sites — each one an escape hatch out of the very rendering model the migration exists to adopt, and each one a place a future value could be interpolated unescaped. <Icon name="check" /> is one component, no innerHTML, and the name is checkable. The sprite itself is still real embedded artwork referenced by <use>: a CDN script would add a network dependency to a portal that must work behind Cloudflare Tunnel, and re-inlining every path per instance would repeat ~200 bytes of geometry per icon per render.
 //
-// Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text
-// without a fight. Decorative by default — an icon beside a word is not read twice; pass `label`
-// only when the icon is the ONLY thing carrying the meaning.
+// Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text without a fight. Decorative by default — an icon beside a word is not read twice; pass `label` only when the icon is the ONLY thing carrying the meaning.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
-// Lucide path data, verbatim. Keep Lucide's own names so a swap or an addition is a lookup rather
-// than a guess.
+// Lucide path data, verbatim. Keep Lucide's own names so a swap or an addition is a lookup rather than a guess.
 const PATHS = {
     'check':        '<path d="M20 6 9 17l-5-5"/>',
     'x':            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
@@ -43,10 +31,7 @@ const PATHS = {
 
 export const ICON_NAMES = Object.keys(PATHS);
 
-// 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">`
-// resolves against the document, and an element already in the DOM when its symbol arrives is not
-// guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup
-// rendered during parsing. documentElement always exists by the time a module body runs.
+// 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">` resolves against the document, and an element already in the DOM when its symbol arrives is not guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup rendered during parsing. documentElement always exists by the time a module body runs.
 export function installSprite() {
     if (typeof document === 'undefined' || document.getElementById('__icons')) return;
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -62,35 +47,23 @@ export function installSprite() {
 installSprite();
 
 export function Icon({ name, cls, label }) {
-    // A missing name renders NOTHING rather than an empty box, and says so once in the console. The
-    // mockup's string version returned '' on a miss, which is how every icon on every page rendered
-    // as an empty string for a whole session without one visible symptom — see the migration spec's
-    // trap table. A component at least keeps the failure to the one icon that is wrong.
+    // A missing name renders NOTHING rather than an empty box, and says so once in the console. The mockup's string version returned '' on a miss, which is how every icon on every page rendered as an empty string for a whole session without one visible symptom — see the migration spec's trap table. A component at least keeps the failure to the one icon that is wrong.
     if (!PATHS[name]) { console.warn(`[dioreo] no icon named "${name}"`); return null; }
     const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' };
     return html`<svg class=${'ic' + (cls ? ' ' + cls : '')} ...${a11y}><use href=${'#i-' + name} /></svg>`;
 }
 
-// ═══════════════════ THE FOLD — a morph, not a swap ═════════════════════════
-// Harkirat: "use icons with animation so things dont feel boring. icons that genuinely animate into
-// different states, such as collapsed/open in a truly unique and seamless transition".
+// ═══════════════════ THE FOLD — a morph, not a swap ═════════════════════════ Harkirat: "use icons with animation so things dont feel boring. icons that genuinely animate into different states, such as collapsed/open in a truly unique and seamless transition".
 //
-// 🔴 A ROTATION IS NOT A MORPH. Spinning a chevron 90 or 180 degrees is what every disclosure
-// control on the internet does, and it is the same laziness as the typed glyph one level up — the
-// shape never changes, it just points somewhere else.
+// 🔴 A ROTATION IS NOT A MORPH. Spinning a chevron 90 or 180 degrees is what every disclosure control on the internet does, and it is the same laziness as the typed glyph one level up — the shape never changes, it just points somewhere else.
 //
-// This animates the PATH ITSELF. The chevron's two strokes travel through a FLAT LINE on the way
-// between down and up, so the mark reads as folding through the horizon — which is exactly what the
-// panel underneath is doing. The metaphor and the motion are the same event.
+// This animates the PATH ITSELF. The chevron's two strokes travel through a FLAT LINE on the way between down and up, so the mark reads as folding through the horizon — which is exactly what the panel underneath is doing. The metaphor and the motion are the same event.
 //
 //   closed  M6 9  L12 15 L18 9     the chevron points down
 //   (mid)   M6 12 L12 12 L18 12    a flat rule — the fold at its hinge
 //   open    M6 15 L12 9  L18 15    the chevron points up
 //
-// Three points throughout, so the interpolation is well-defined. The transition itself lives in CSS
-// (.ic-fold path { d: path(...) }), which interpolates `d` geometrically rather than faking it with
-// a transform. ⚠️ The CSS `d` property BEATS this inline attribute, so both must agree — the
-// attribute is what a non-supporting engine and any server render fall back to.
+// Three points throughout, so the interpolation is well-defined. The transition itself lives in CSS (.ic-fold path { d: path(...) }), which interpolates `d` geometrically rather than faking it with a transform. ⚠️ The CSS `d` property BEATS this inline attribute, so both must agree — the attribute is what a non-supporting engine and any server render fall back to.
 const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
 const FOLD_OPEN = 'M6 15 L12 9 L18 15';
 
