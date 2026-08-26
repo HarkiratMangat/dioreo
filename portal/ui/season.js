@@ -6,6 +6,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
@@ -328,7 +329,9 @@ const todayIso = () => (typeof document !== 'undefined' && document.documentElem
 
 export function SeasonRealm({ session }) {
     const [view, setView] = useState('Track');
-    const [state, setState] = useState(null);
+    // useAsync replaces the useState/useEffect pair AND the two lines that used to stand in for six states. Its `reload` is what a refresh calls, which is also what makes the is-refreshing hairline work without any realm knowing the class exists.
+    const load = useAsync(() => fetchSeasonState(), []);
+    const state = load.data;
     const [changesets, setChangesets] = useState([]);
     const [notices, setNotices] = useState([]);
     const overlay = useOverlay();
@@ -336,12 +339,11 @@ export function SeasonRealm({ session }) {
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
 
-    useEffect(() => { fetchSeasonState().then(setState); }, []);
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
     useEffect(() => { fetchChangesets('season').then(setChangesets); }, [view]);
 
-    if (!state) return html`<p style="padding:24px">Loading…</p>`;
-    if (state.signedOut || state.forbidden) return html`<${NoAccess} />`;
+    if (!state) return html`<${RealmShell} realm="season" session=${session} error=${load.error} slow=${load.slow}
+                                           onRetry=${load.reload} skeleton=${{ rows: 9, lines: [26, 34, 16, 12] }} />`;
 
     // Renamed from `window` (Task 4) -- that name silently SHADOWED the real browser global for the rest of this component's body, including handleExportSelection's `window.open()` call below, which was a live, never-yet-clicked bug (TypeError: window.open is not a function, since that identifier resolved to this {start,end} object instead of the global). Found auditing this file for Track's own drag handles, which genuinely need the real global.
     //
@@ -350,13 +352,17 @@ export function SeasonRealm({ session }) {
     const visibleWindow = zoomedWindow ? clampWindow(zoomedWindow, fullWindow) : fullWindow;
 
     async function handleExport(changeset) {
-        await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        const res = await fetchJson(`/api/changeset/${changeset._id}/export`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Not exported — ${refused}`);
         fetchChangesets('season').then(setChangesets);
     }
 
     // Mockup's Staged panel (01-season-spine.html) shows Discard as a first-class action, but no route ever set state:'discarded' anywhere in the portal before this — the only way out of a staged/blocked change was to commit it. Ownership-scoped exactly like export/commit above.
     async function handleDiscard(changesetId) {
-        await fetchJson(`/api/changeset/${changesetId}/discard`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        const res = await fetchJson(`/api/changeset/${changesetId}/discard`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Not discarded — ${refused}`);
         fetchChangesets('season').then(setChangesets);
     }
 

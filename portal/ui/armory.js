@@ -8,6 +8,7 @@ import { Fold, Icon } from './icons.js';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { renderV2 } from './v2Render.js';
 import { useOverlay } from './overlay.js';
@@ -513,10 +514,8 @@ function Compare({ builds, picked, onPick }) {
 }
 
 export function ArmoryRealm({ session }) {
-    const [builds, setBuilds] = useState([]);
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
     const [weaponFilter, setWeaponFilter] = useState(null);
-    const [error, setError] = useState(false);
     const [showAdd, setShowAdd] = useState(false);
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
@@ -526,10 +525,13 @@ export function ArmoryRealm({ session }) {
     const [editingId, setEditingId] = useState(null);
     const overlay = useOverlay();
 
-    function refresh() { fetchJson('/api/armory').then((d) => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }
-    useEffect(refresh, []);
+    // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
+    const load = useAsync(() => fetchJson('/api/armory'), []);
+    const refresh = load.reload;
 
-    if (error) return html`<${NoAccess} />`;
+    if (!load.data) return html`<${RealmShell} realm="armory" session=${session} error=${load.error} slow=${load.slow}
+                                               onRetry=${load.reload} skeleton=${{ rows: 8, lines: [30, 22, 18, 14, 10] }} />`;
+    const builds = load.data.builds || [];
 
     // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page.
     const weapons = new Set(builds.map((b) => b.weaponName));

@@ -10,6 +10,7 @@ import { Icon } from './icons.js';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell, reportFailure } from './async.js';
 import { useOverlay } from './overlay.js';
 
 const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'BOOT' };
@@ -491,16 +492,20 @@ function Search({ rows = [] }) {
 }
 
 export function AnalyticsRealm({ session }) {
-    const [data, setData] = useState({ river: [], health: null, usageStats: null, timingStats: null, reach: [], searches: [], outcomeKeys: [], entryKeys: [] });
+    const load = useAsync(() => fetchJson('/api/analytics'), []);
     const [view, setView] = useState('Health');
     const overlay = useOverlay();
-    useEffect(() => { fetchJson('/api/analytics').then(setData); }, []);
 
-    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
+    if (!load.data) return html`<${RealmShell} realm="analytics" session=${session} error=${load.error} slow=${load.slow}
+                                               onRetry=${load.reload} skeleton=${{ rows: 8, lines: [18, 30, 14, 22, 10] }} />`;
+    const data = load.data;
 
+    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again.
     async function revert(changeId) {
-        await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
-        fetchJson('/api/analytics').then(setData);
+        const res = await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        if (await reportFailure(overlay, res, 'That change was not reverted')) return false;
+        load.reload();
+        return true;
     }
 
     // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL HAD NO CONFIRMATION AT ALL. Everything else here stages; this one fires immediately against live data, once per selected row, and it is the only control that can undo something a person already committed on purpose. It sat in a bulk-action list beside "Export selection".

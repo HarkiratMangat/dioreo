@@ -5,6 +5,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell } from './async.js';
 import { useOverlay } from './overlay.js';
 import { Icon } from './icons.js';
 
@@ -209,17 +210,14 @@ function ByScope({ matrix, spof, ownerId }) {
 }
 
 export function AccessRealm({ session }) {
-    const [data, setData] = useState({ admins: [], sessions: [], singlePointsOfFailure: [] });
-    const [matrix, setMatrix] = useState({ admins: [], scopes: [] });
+    // Both endpoints in ONE useAsync, because they are one page: two hooks would give the realm two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
+    const load = useAsync(() => Promise.all([fetchJson('/api/access'), fetchJson('/api/access/matrix')])
+        .then(([d, m]) => (failureOf(d) ? d : failureOf(m) ? m : { ...d, matrix: m })), []);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('By admin');
     const overlay = useOverlay();
 
-    function refresh() {
-        fetchJson('/api/access').then(setData);
-        fetchJson('/api/access/matrix').then(setMatrix);
-    }
-    useEffect(refresh, []);
+    const refresh = load.reload;
 
     // ⚠️ ENDING A SESSION IS NOT REVOKING ACCESS, AND THE CONFIRMATION HAS TO SAY SO. It signs a browser out; the admin still holds everything they held a second earlier and can sign straight back in. Somebody reaching for this because they want the permissions gone needs to be told, at the moment of deciding, that this is not that control.
     function confirmEndSessions(ids) {
@@ -282,10 +280,12 @@ export function AccessRealm({ session }) {
     }
 
     async function endSession(sessionHash) {
-        await fetchJson('/api/access/session/end', {
+        const res = await fetchJson('/api/access/session/end', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
             body: JSON.stringify({ sessionHash }),
         });
+        const refused = refusalOf(res);
+        if (refused) return setNotice(`That session was not ended — ${refused}`);
         refresh();
     }
 
@@ -307,7 +307,10 @@ export function AccessRealm({ session }) {
         refresh();
     }
 
-    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
+    if (!load.data) return html`<${RealmShell} realm="access" session=${session} error=${load.error} slow=${load.slow}
+                                               onRetry=${load.reload} skeleton=${{ rows: 5, lines: [28, 44, 16] }} />`;
+    const data = load.data;
+    const matrix = data.matrix || { admins: [], scopes: [] };
 
     // A session is "signed in now" if it was seen in the last 15 minutes -- the same rough threshold 06-access-and-analytics.html's own "2 signed in now" stat line implies. Not a stored flag: a browser session has no logout event unless someone clicks it, so recency is the only honest signal there is.
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;

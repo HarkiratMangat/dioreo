@@ -7,6 +7,7 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
 
@@ -203,16 +204,17 @@ function PostForm({ onSubmit, onCancel }) {
 }
 
 export function BroadcastRealm({ session }) {
-    const [data, setData] = useState({ live: [], all: [] });
     const [showAdd, setShowAdd] = useState(false);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('Now showing');
     const overlay = useOverlay();
 
-    function refresh() { fetchJson('/api/broadcast').then(setData); }
-    useEffect(refresh, []);
+    const load = useAsync(() => fetchJson('/api/broadcast'), []);
+    const refresh = load.reload;
+    const data = load.data;
 
-    if (data.signedOut || data.forbidden) return html`<${NoAccess} />`;
+    if (!data) return html`<${RealmShell} realm="broadcast" session=${session} error=${load.error} slow=${load.slow}
+                                          onRetry=${load.reload} skeleton=${{ rows: 6, lines: [34, 20, 26, 12] }} />`;
 
     // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or editable on this Manifest actually worked before this mapping existed. `state` is computed SERVER-SIDE (portal/api/broadcast.js's announcementState) and passed straight through -- see that function's header for why it is not re-derived here.
     const rows = data.all.map((a) => ({ ...a, id: a._id, accentHex: accentOf(a) }));

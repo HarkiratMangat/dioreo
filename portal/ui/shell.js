@@ -215,7 +215,8 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
     return out;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [] }) {
+// `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content.
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '' }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
@@ -244,7 +245,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             <${Header} realm=${realm} view=${view} session=${session} staged=${staged}
                        commands=${allCommands} onSignOut=${signOut} />
             <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
-            <main>
+            <main class=${busy} data-slow=${busyNote || null}>
                 ${masthead || null}
                 <div id="view-layer">
                 ${viewOptions ? html`

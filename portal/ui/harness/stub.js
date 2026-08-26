@@ -281,9 +281,40 @@ const ROUTES = [
     [/^\/api\/changeset\/[^/]+\/preview$/, () => ({ preview: null })],
 ];
 
+// 🔴 A STATE NOTHING CAN PUT ON SCREEN IS A STATE NOBODY DESIGNS AND NO CHECK CAN OPEN. This package has learned that repeatedly — ?audit=1 went unrun for weeks, every hidden view was audited by nothing, and the owner-only refusal was undesignable until ?as= existed. Async is now the largest such surface in the portal, so it gets the same treatment: every failure mode is reachable from the address bar.
+//
+//   ?fail=500        every request answers 500        ?fail=/api/season  only that path fails
+//   ?fail=offline    the connection never lands       ?fail=garbage      a 200 that is not JSON
+//   ?fail=expired    the session is gone              ?slow=4000         every request takes that long
+//
+// ⚠️ The delay is applied to EVERY route including the ones that succeed, because "slow" is not a failure and the point is to see the is-slow note appear over data that then arrives.
+const FAULT = (() => {
+    const q = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+    return { fail: q.get('fail'), slow: Number(q.get('slow')) || 0 };
+})();
+
+function faultFor(pathname) {
+    const f = FAULT.fail;
+    if (!f) return null;
+    // A path-shaped value fails only that path, which is how a realm renders its failure while the rest of the app keeps working — the case a blanket switch cannot produce and the one that actually happens.
+    if (f.startsWith('/')) return pathname === f ? { failed: true, status: 500, detail: 'Injected failure for ' + f } : null;
+    if (f === 'offline') return { failed: true, offline: true, status: 0, detail: 'Injected: fetch never landed' };
+    if (f === 'expired') return { signedOut: true };
+    if (f === 'forbidden') return { forbidden: true };
+    if (f === 'garbage') return { failed: true, unreadable: true, status: 200, detail: 'Injected: Unexpected token < in JSON at position 0' };
+    return { failed: true, status: Number(f) || 500, detail: 'Injected HTTP ' + (Number(f) || 500) };
+}
+
 export async function fetchJson(path, opts) {
     // 🔴 MATCH ON THE PATH, NOT THE WHOLE URL, WHICH IS WHAT THE SERVER DOES. Every route regex here is anchored with `$`, and this used to test it against the raw argument — so the moment a caller passed a query string the regex stopped matching and the request fell through to the unrouted `{ok:true}` branch. `/api/parse-date?q=in+3+weeks` did exactly that: the composer's date echo read "not a date yet" for every value, which looks like a parser that cannot parse rather than a route that was never reached. ⚠️ `portalHarness.test.js` could not see it either — that gate compares the KEYS a stub returns against the keys the real route promises, and a route whose regex never matches still has the right keys.
     const [pathname, query = ''] = String(path).split('?');
+    if (FAULT.slow) await new Promise((r) => setTimeout(r, FAULT.slow));
+    const fault = faultFor(pathname);
+    if (fault) {
+        console.warn('[harness] INJECTED FAULT', (opts && opts.method) || 'GET', path, fault);
+        await new Promise((r) => setTimeout(r, 0));
+        return fault;
+    }
     for (const [re, make] of ROUTES) {
         if (re.test(pathname)) {
             // A POST route needs what was posted; a GET route ignores the second argument. Parsed here rather than in each route so a stub cannot forget it.

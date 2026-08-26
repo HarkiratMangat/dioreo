@@ -8,6 +8,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell, Progress, Failure } from './async.js';
 import { Icon } from './icons.js';
 import { useOverlay } from './overlay.js';
 
@@ -110,24 +111,19 @@ function OpDetail({ op, resolved, onResolve }) {
 }
 
 export function ReviewRealm({ session }) {
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(false);
+    const load = useAsync(() => fetchJson('/api/review'), []);
+    const data = load.data;
     const [sel, setSel] = useState(null);
     const [resolved, setResolved] = useState({});
     const [confirmText, setConfirmText] = useState({});
     const [busy, setBusy] = useState(false);
+    const [progress, setProgress] = useState(null);   // {total, done, current, failed} while a run is in flight
     const overlay = useOverlay();
 
-    function refresh() {
-        fetchJson('/api/review').then((d) => {
-            if (d.signedOut || d.forbidden) return setError(true);
-            setData(d);
-        });
-    }
-    useEffect(refresh, []);
+    const refresh = load.reload;
 
-    if (error) return html`<${NoAccess} />`;
-    if (!data) return html`<p style="padding:24px">Loading…</p>`;
+    if (!data) return html`<${RealmShell} realm="review" session=${session} error=${load.error} slow=${load.slow}
+                                          onRetry=${load.reload} skeleton=${{ rows: 7, lines: [22, 40, 18, 10] }} />`;
 
     const ops = data.ops || [];
     const changesets = data.changesets || [];
@@ -142,34 +138,42 @@ export function ReviewRealm({ session }) {
 
     async function discardChangeset(op) {
         setBusy(true);
-        await fetchJson(`/api/changeset/${op.changesetId}/discard`, {
+        const res = await fetchJson(`/api/changeset/${op.changesetId}/discard`, {
             method: 'POST', headers: { 'x-csrf-token': session.csrfToken },
         });
-        setBusy(false); setSel(null); refresh();
+        setBusy(false);
+        const refused = refusalOf(res);
+        if (refused) return overlay.say(`Not discarded — ${refused}`);
+        setSel(null); refresh();
     }
 
-    // One transaction per changeset, and every changeset in order. The bot re-reads on every interaction, so a half-applied set reaches real players within seconds — atomicity here is load-bearing rather than tidy. Committing sequentially rather than in parallel is deliberate: a later changeset may depend on an earlier one having landed.
-    async function commitAll() {
+    // One transaction per changeset, and every changeset in order. The bot re-reads on every interaction, so a half-applied set reaches real players within seconds — atomicity here is load-bearing rather than tidy. Committing sequentially rather than in parallel is deliberate: a later changeset may depend on an earlier one having landed. 🔴 THIS LOOP THREW AWAY EVERY ANSWER IT GOT. Each commit was awaited and its payload dropped, so a tier-3 changeset refused for a mistyped confirmation word — a 409 carrying the exact sentence explaining it — produced no message, no mark, and a list that refreshed looking identical. The reader presses the button again. Worse, a failure at changeset four of nine kept going through all nine, which is the opposite of what the sequential order is FOR: a later changeset may depend on an earlier one having landed, so the first refusal has to stop the run.
+    //
+    // The progress readout is per-op and NAMES the one that stopped it, because a percentage cannot say which, and at that moment "which" is the only question worth answering.
+    async function runAll(kind) {
+        const commit = kind === 'commit';
         setBusy(true);
-        for (const c of changesets) {
-            const body = c.tier === 3 ? { confirmText: confirmText[c.id] || '' } : {};
-            await fetchJson(`/api/changeset/${c.id}/commit`, {
-                method: 'POST', headers: { 'x-csrf-token': session.csrfToken, 'content-type': 'application/json' },
-                body: JSON.stringify(body),
+        setProgress({ total: changesets.length, done: 0, current: '' });
+        for (let i = 0; i < changesets.length; i++) {
+            const c = changesets[i];
+            setProgress({ total: changesets.length, done: i, current: `${c.ops?.length || 0} change${(c.ops?.length || 0) === 1 ? '' : 's'}` });
+            const res = await fetchJson(`/api/changeset/${c.id}/${commit ? 'commit' : 'discard'}`, {
+                method: 'POST',
+                headers: { 'x-csrf-token': session.csrfToken, 'content-type': 'application/json' },
+                body: JSON.stringify(commit && c.tier === 3 ? { confirmText: confirmText[c.id] || '' } : {}),
             });
+            const refused = refusalOf(res);
+            if (refused) {
+                setProgress({ total: changesets.length, done: i, failed: refused });
+                setBusy(false);
+                refresh();
+                return;
+            }
         }
-        setBusy(false); setConfirmText({}); setResolved({}); setSel(null); refresh();
+        setProgress(null); setBusy(false); setConfirmText({}); setResolved({}); setSel(null); refresh();
     }
-
-    async function discardAll() {
-        setBusy(true);
-        for (const c of changesets) {
-            await fetchJson(`/api/changeset/${c.id}/discard`, {
-                method: 'POST', headers: { 'x-csrf-token': session.csrfToken },
-            });
-        }
-        setBusy(false); setConfirmText({}); setResolved({}); setSel(null); refresh();
-    }
+    const commitAll = () => runAll('commit');
+    const discardAll = () => runAll('discard');
 
     const viewSlot = ops.length === 0
         ? html`
@@ -238,6 +242,8 @@ export function ReviewRealm({ session }) {
                         onConfirm: commitAll,
                     })}>Commit ${ops.length} change${ops.length > 1 ? 's' : ''}</button>
                 </div>
+                <!-- Below the bar rather than inside it: the bar is a row of controls that must not reflow while a run is in flight, and a reader watching a nine-changeset commit is looking at the count, not at the buttons. -->
+                ${progress ? html`<${Progress} ...${progress} />` : null}
             </div>`;
 
     return html`

@@ -8,6 +8,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
+import { useAsync, RealmShell } from './async.js';
 
 const dayOf = (v) => String(v || '').slice(0, 10);
 const fmtDay = (iso) => new Date(dayOf(iso) + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -148,20 +149,13 @@ function HomeClock({ season, today }) {
 }
 
 export function HomeRealm({ session }) {
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(false);
+    // In parallel: four realms' own endpoints. A realm the signed-in admin cannot see answers with `forbidden`, which reads here as "no rows from there" rather than an error — Home must render for a delegated admin who holds one page. Only the SESSION being gone is fatal, which is why season's signedOut is the one answer allowed to fail the whole page.
+    const load = useAsync(() => Promise.all(['/api/season', '/api/armory', '/api/broadcast', '/api/review'].map((path) => fetchJson(path)))
+        .then(([season, armory, broadcast, review]) => (season.signedOut ? season : { season, armory, broadcast, review })), []);
+    const data = load.data;
 
-    useEffect(() => {
-        // In parallel: four realms' own endpoints. A realm the signed-in admin cannot see answers with `forbidden`, which reads here as "no rows from there" rather than an error — Home must render for a delegated admin who holds one page.
-        Promise.all(['/api/season', '/api/armory', '/api/broadcast', '/api/review'].map((p) => fetchJson(p).catch(() => ({}))))
-            .then(([season, armory, broadcast, review]) => {
-                if (season.signedOut) return setError(true);
-                setData({ season, armory, broadcast, review });
-            });
-    }, []);
-
-    if (error) return html`<${NoAccess} />`;
-    if (!data) return html`<p style="padding:24px">Loading…</p>`;
+    if (!data) return html`<${RealmShell} realm="home" session=${session} error=${load.error} slow=${load.slow}
+                                          onRetry=${load.reload} skeleton=${{ rows: 5, lines: [12, 46, 20] }} />`;
 
     const today = todayIso();
     const rows = attentionRows({ ...data, today });
