@@ -74,6 +74,13 @@ function toManifestRows(live, changesets) {
 }
 
 function buildSeasonAddOp(kind, fields) {
+    // 🔴 THE PATCH-NOTE CHIP STAGED A CALENDAR EVENT. `patchnote` is one of the five chips on Season's masthead and was not in KIND_TO_ENTITY, so it fell past the draw branch into the calendar one and produced `calendar.add` with `category:'Event'` — a patch note quietly filed as an event, under a control labelled "Patch note". Found rebuilding the composer, not by any check: nothing is wrong with the code's shape, only with what it does.
+    //
+    // ⚠️ The op is `patchnote.addSeason`, whose payload keys are its OWN (`titleOverride`, `releaseDate`) and not the calendar's — `resolveReleaseDate()` in core/ops/patchnotes.js reads `releaseDate`, so sending `endDate` here would parse an empty string. Description and image URLs are genuinely absent rather than defaulted: the composer collects a name and a date, and /manage is where the rest of a patch note is written.
+    if (kind === 'patchnote') {
+        return { type: 'patchnote.addSeason', target: null,
+                 payload: { titleOverride: fields.title, releaseDate: fields.endDate, description: '', urls1: [], urls2: [] } };
+    }
     const entity = KIND_TO_ENTITY[kind];
     if (entity === 'draw') {
         // core/ops/draws.js validates payload.date (matching the SeasonalData schema's newDraws/ returningDraws[].date field, and utils/adminParser.js's parseBulkDrawList -- draws have no separate start/end, unlike calendar events, whose schema genuinely has both).

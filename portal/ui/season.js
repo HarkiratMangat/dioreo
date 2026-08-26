@@ -13,6 +13,7 @@ import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
 import { useOverlay } from './overlay.js';
+import { Composer } from './composer.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
@@ -33,12 +34,6 @@ const SEASON_FILTERS = [
     ] },
 ];
 
-const ADD_KINDS = [
-    { value: 'draw', label: 'New draw' },
-    { value: 'returning', label: 'Returning draw' },
-    { value: 'event', label: 'Event' },
-    { value: 'playlist', label: 'Playlist' },
-];
 
 // Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect -- deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/ 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event', matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own consumer rather than one row shape trying to serve two different vocabularies. `startDate` is synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js.
 function toTrackItems(live, path, lane) {
@@ -48,38 +43,7 @@ function toTrackItems(live, path, lane) {
     }));
 }
 
-// The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome).
-function AddComposer({ onSubmit, onCancel }) {
-    const [kind, setKind] = useState('draw');
-    const [title, setTitle] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const isDraw = kind === 'draw' || kind === 'returning';
-    const ready = title.trim() && endDate.trim() && (isDraw || startDate.trim());
-
-    return html`
-        <div class="panel" style="margin-bottom:14px">
-            <div class="ph"><span class="t">Add to Season</span></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;align-items:center">
-                <label class="sr-only" for="add-kind">Kind</label>
-                <select id="add-kind" value=${kind} onChange=${(e) => setKind(e.target.value)}>
-                    ${ADD_KINDS.map((k) => html`<option value=${k.value}>${k.label}</option>`)}
-                </select>
-                <label class="sr-only" for="add-title">Title</label>
-                <input id="add-title" placeholder="Title" value=${title} onInput=${(e) => setTitle(e.target.value)} />
-                ${!isDraw ? html`
-                    <label class="sr-only" for="add-start">Start date</label>
-                    <input id="add-start" placeholder="Start date (e.g. Aug 25)" value=${startDate} onInput=${(e) => setStartDate(e.target.value)} />
-                ` : null}
-                <label class="sr-only" for="add-end">End date</label>
-                <input id="add-end" placeholder="End date (e.g. Sep 10)" value=${endDate} onInput=${(e) => setEndDate(e.target.value)} />
-                <button class="accent-fill" disabled=${!ready}
-                        onClick=${() => onSubmit(buildSeasonAddOp(kind, { title, startDate, endDate, items: [] }))}>Stage</button>
-                <button onClick=${onCancel}>Cancel</button>
-            </div>
-        </div>
-    `;
-}
+// The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome). ⚠️ `AddComposer` LIVED HERE AND IS GONE. It was a select and three bare inputs in a panel — the form the adopted design replaced with the inline composer above the Track (portal/ui/composer.js). Left in place it would have been a second way to add the same things, with a different vocabulary and no natural-language dates.
 
 // 01-season-spine.html's Staged panel -- the mockup keeps pending changes visible and actionable right beside the Track instead of buried in the flat Manifest table below. describeOp/blockedReason are board.logic.js globals (every *.logic.js file loads on every page -- see track.js's header), the same functions Board's own cards already use, so the two views can never describe a change differently. Reads changesets Season already fetches; asks for nothing new.
 function StagedPanel({ changesets, onDiscard, onReview }) {
@@ -179,7 +143,23 @@ function Eyebrow({ live, staged, flags }) {
     return html`<div class="mh-eyebrow">${cell(live, 'live now')}${cell(staged, 'staged', 'stg')}${cell(flags, 'flags', 'warn')}</div>`;
 }
 
-// Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track.
+// Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place.
+const COMPOSE_TYPES = [
+    { key: 'draw', label: 'Draw', hex: 'var(--draw)', shape: 'point', nameLabel: 'Draw name',
+      placeholder: 'Crimson Moonlight', dateLabel: 'Releases',
+      pointNote: 'A draw has no end date — the record stores the day it releases.' },
+    { key: 'returning', label: 'Returning draw', hex: 'var(--ret)', shape: 'point', nameLabel: 'Draw name',
+      placeholder: 'Havoc rerun', dateLabel: 'Returns',
+      pointNote: 'A returning draw stores one date, the same as a new one.' },
+    { key: 'event', label: 'Event', hex: 'var(--ev)', shape: 'span', nameLabel: 'Event name',
+      placeholder: 'Clan Wars' },
+    { key: 'playlist', label: 'Playlist', hex: 'var(--play)', shape: 'span', nameLabel: 'Playlist name',
+      placeholder: 'Hardpoint 24/7' },
+    { key: 'patchnote', label: 'Patch note', hex: 'var(--pn)', shape: 'point', nameLabel: 'Season title',
+      placeholder: 'Season 8 — Codename', dateLabel: 'Releases',
+      pointNote: 'The description and the images are written in /manage — this stages the season and its date.' },
+];
+
 const ADD_CHIPS = [
     { key: 'draw', label: 'Draw', accent: 'var(--draw)' },
     { key: 'returning', label: 'Returning draw', accent: 'var(--ret)' },
@@ -352,7 +332,8 @@ export function SeasonRealm({ session }) {
     const [changesets, setChangesets] = useState([]);
     const [notices, setNotices] = useState([]);
     const overlay = useOverlay();
-    const [showAdd, setShowAdd] = useState(false);
+    // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
+    const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
 
     useEffect(() => { fetchSeasonState().then(setState); }, []);
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
@@ -381,7 +362,7 @@ export function SeasonRealm({ session }) {
 
     async function handleAdd(op) {
         await stageOps('season', [op], session.csrfToken);
-        setShowAdd(false);
+        setShowAdd(null);
         fetchChangesets('season').then(setChangesets);
     }
 
@@ -492,11 +473,13 @@ export function SeasonRealm({ session }) {
                                                  today=${todayIso()} onSave=${handleIdentitySave} />`;
 
     const viewSlot = view === 'Track'
-        ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+        ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
+                                              onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
+                                              onCancel=${() => setShowAdd(null)} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
                <${Track} data=${trackData}
                           draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
-                          onFillGap=${() => setShowAdd(true)} />`
+                          onFillGap=${() => setShowAdd('event')} />`
         : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
@@ -522,7 +505,7 @@ export function SeasonRealm({ session }) {
                                                sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats}
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
-                                                   <${AddChips} onAdd=${() => setShowAdd(true)} />`} />`}
+                                                   <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
                   viewSlot=${html`${identitySlot}${viewSlot}`} overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;

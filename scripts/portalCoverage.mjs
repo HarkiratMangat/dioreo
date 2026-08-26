@@ -7,7 +7,7 @@
 // ⚠️ DONE IS NOT 100%. A real slice of every remaining gap is the mockup's own reviewer scaffolding — `data-demo-only` controls, `S.audit()` hooks, `data-async-host`/`data-skel`, the document-nav chrome standalone files need — and the mockup says in capitals that some of it MUST NOT SHIP. Chasing the number builds things the design forbids. A realm is done when the remaining delta is scaffolding, which is why this prints the MISSING NAMES and not just a percentage.
 //
 // ⚠️ IT UNDER-COUNTS, IN ONE KNOWN WAY. Components build class strings in variables (`const cls = 'bar ' + state`), which a source scan cannot see. So true coverage is somewhat higher than reported, and a realm that stalls while LOOKING right may be hitting that rather than missing markup. Read it with the page open, never instead of opening the page.
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -39,11 +39,16 @@ const PAIRS = [
     ['Analytics', ['analytics.html'], ['analytics.js', 'manifest.js']],
     ['Review', ['review.html'], ['review.js']],
     ['Home', ['index.html'], ['home.js']],
-    ['Door', ['door.html'], ['shell.js']],
+    ['Door', ['door.html'], []],   // the Door component lives in shell.js, which the shared set already covers
 ];
 
+// 🔴 THE THIRD COLUMN OF `PAIRS` DID NOTHING, AND THE NUMBERS WERE INFLATED FOR IT. `sharedPortal` used to be EVERY portal/ui/*.js file, so each realm's "have" already contained the whole portal's class vocabulary and the per-realm list it is unioned with could not change a single result. A class emitted only by Season counted as covered on Broadcast. Adding the composer on 2026-08-26 moved five realms that do not render it — 51% to 57% in one commit — which is what exposed it.
+//
+// ⚠️ THE FIX IS TO MIRROR THE MOCKUP'S OWN SPLIT, not to invent one. The mockup's `assets/shell.js` is what every page shares — the header, rail, tray, drawer, toast, command bar, compose and the Discord card — so the portal's shared set is the modules holding those same things, and everything else is attributed to the realm that renders it. Both sides are now scoped the same way; before this the mockup side was scoped per page and the portal side was not, which is the asymmetry that produced the inflation.
+const SHARED_UI = ['shell.js', 'palette.js', 'overlay.js', 'icons.js', 'tray.js', 'composer.js', 'v2Render.js'];
+
 const sharedMockup = emitted([join(MOCKUP, 'assets/shell.js')]);
-const sharedPortal = emitted(readdirSync(UI).filter((f) => f.endsWith('.js')).map((f) => join(UI, f)));
+const sharedPortal = emitted(SHARED_UI.map((f) => join(UI, f)));
 
 const showMissing = process.argv.includes('--missing');
 let totalWant = 0, totalHave = 0;

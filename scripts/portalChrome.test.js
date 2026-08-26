@@ -7,6 +7,7 @@ const path = require('path');
 const { paletteHits, paletteBlocked } = require('../portal/ui/palette.logic');
 const { typedConfirmReady } = require('../portal/ui/overlay.logic');
 const { permsAfter, describePending } = require('../portal/ui/access.logic');
+const { composerReason, composerFields } = require('../portal/ui/composer.logic');
 
 let failures = 0;
 function check(name, fn) {
@@ -152,6 +153,46 @@ check('the confirmation names the acts, split by direction, sorted', () => {
     const d = describePending({ b: true, a: false, c: true }, (k) => k.toUpperCase());
     assert.deepStrictEqual(d, { granted: ['B', 'C'], revoked: ['A'] });
     assert.deepStrictEqual(describePending({}, null), { granted: [], revoked: [] });
+});
+
+// ── THE COMPOSER ─────────────────────────────────────────────────────────────────────────────
+const POINT = { key: 'draw', shape: 'point' };
+const SPAN = { key: 'event', shape: 'span' };
+const ready = { name: 'Clan Wars', aText: 'sep 21', aIso: '2026-09-21', bText: 'sep 30', bIso: '2026-09-30' };
+
+check('the reason names what is missing, one thing at a time', () => {
+    assert.strictEqual(composerReason({}, null), 'Pick what you are adding.');
+    assert.strictEqual(composerReason({ name: '   ' }, POINT), 'Give it a name.');
+    assert.strictEqual(composerReason({ name: 'x' }, POINT), 'Set a date.');
+});
+
+// 🔴 AN UNPARSED VALUE IS A DIFFERENT FAILURE FROM AN EMPTY ONE, and saying so is the whole point of parsing as you type: "set a date" reads as though you had not typed anything, which is wrong and unhelpful when you typed something the parser refused.
+check('a typed-but-unresolved date says so, rather than reading as empty', () => {
+    assert.strictEqual(composerReason({ name: 'x', aText: 'tuesdayish', aIso: null }, POINT),
+        'That first date does not resolve to a day yet.');
+    assert.strictEqual(composerReason({ ...ready, bText: 'whenever', bIso: null }, SPAN),
+        'That second date does not resolve to a day yet.');
+});
+
+check('a window that closes before it opens is refused', () => {
+    assert.strictEqual(composerReason({ ...ready, aIso: '2026-09-30', bIso: '2026-09-21' }, SPAN), 'It closes before it opens.');
+    assert.strictEqual(composerReason({ ...ready, aIso: '2026-09-21', bIso: '2026-09-21' }, SPAN), null, 'the same day is a valid one-day window');
+});
+
+check('a complete point and a complete span both clear', () => {
+    assert.strictEqual(composerReason({ name: 'Draw', aIso: '2026-09-21' }, POINT), null);
+    assert.strictEqual(composerReason(ready, SPAN), null);
+});
+
+// 🔴 A POINT'S DATE IS THE END DATE. buildSeasonAddOp reads a draw's date from `endDate` — its schema field is `date` and there is no start — so putting the one date in `startDate` would stage a draw with no date at all, and the op would fail validation somewhere far from here.
+check('a point puts its one date where the op reads it', () => {
+    assert.deepStrictEqual(composerFields({ name: ' Crimson ', aIso: '2026-09-21' }, POINT),
+        { title: 'Crimson', startDate: '', endDate: '2026-09-21' });
+});
+
+check('a span fills both ends', () => {
+    assert.deepStrictEqual(composerFields(ready, SPAN),
+        { title: 'Clan Wars', startDate: '2026-09-21', endDate: '2026-09-30' });
 });
 
 // ── THE MODULE-PARSE GATE ────────────────────────────────────────────────────────────────────

@@ -82,6 +82,7 @@ require('./api/broadcast').register(route);
 require('./api/access').register(route);
 require('./api/analytics').register(route);
 require('./api/review').register(route);
+require('./api/dates').register(route);
 
 // 🔴 THE ACTUAL BOOTSTRAP — found missing in code review. Every earlier manual check in this repo exercised createServer() via a one-off `node -e` one-liner that called it directly, which never exposed that running this file the way the systemd unit and package.json's "portal" script both do (`node portal/server.js`) executed NOTHING: module.exports was assigned and the routes were wired, but nothing ever called mongoose.connect() or createServer() itself. Every Mongoose query would have buffered forever against a connection that was never opened. Mirrors index.js's own connect-then-log pattern.
 if (require.main === module) {

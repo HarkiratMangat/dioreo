@@ -170,6 +170,22 @@ const ROUTES = [
         return { scopes, admins: FIX.accessAdmins || [] };
     }],
     [/^\/api\/analytics$/, () => analyticsPayload()],
+    // 🔴 THE HARNESS MUST PARSE DATES TOO, or the composer's echo reads "not a date yet" for every value and the one thing that surface exists to demonstrate cannot be seen. The real route calls the bot's chrono parser; this understands only what a fixture needs to show — an ISO day, and the two relative forms the placeholder itself suggests. ⚠️ It is deliberately NARROWER than chrono rather than a second attempt at it: a stub that half-implements a parser teaches the reviewer a grammar the product does not have.
+    [/^\/api\/parse-date$/, (params) => {
+        const q = (params.get('q') || '').trim().toLowerCase();
+        const day = (d) => new Date(d).toISOString().slice(0, 10);
+        const today = new Date((document.documentElement.dataset.today || new Date().toISOString().slice(0, 10)) + 'T12:00:00Z');
+        let iso = null;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(q)) iso = q;
+        else if (q === 'today') iso = day(today);
+        else if (q === 'tomorrow') iso = day(today.getTime() + 86400000);
+        else {
+            const rel = q.match(/^in (\d+) (day|week|month)s?$/);
+            if (rel) iso = day(today.getTime() + Number(rel[1]) * { day: 1, week: 7, month: 30 }[rel[2]] * 86400000);
+            else { const abs = Date.parse(q + ' 2026 UTC'); if (Number.isFinite(abs)) iso = day(abs); }
+        }
+        return { q, iso };
+    }],
     [/^\/api\/review$/, () => reviewPayload()],
     // 🔴 BOTH FORMS, AND THE BARE ONE WAS MISSING. season.js fetches `/api/changeset?realm=season` and board.js fetches `/api/changeset/:id/preview`, but the route the API actually registers is `/^\/api\/changeset$/` — and with no stub for it the Board's own fetch fell through to the unrouted {ok:true} fallback, so `body.changesets` was undefined and the Board rendered empty all session while looking perfectly fine. Caught by scripts/portalHarness.test.js, which is the only thing that compares what the stub returns against what the route promises.
     [/^\/api\/changeset(\?|$)/, () => ({ changesets: harnessChangesets() })],
@@ -177,9 +193,11 @@ const ROUTES = [
 ];
 
 export async function fetchJson(path, opts) {
+    // 🔴 MATCH ON THE PATH, NOT THE WHOLE URL, WHICH IS WHAT THE SERVER DOES. Every route regex here is anchored with `$`, and this used to test it against the raw argument — so the moment a caller passed a query string the regex stopped matching and the request fell through to the unrouted `{ok:true}` branch. `/api/parse-date?q=in+3+weeks` did exactly that: the composer's date echo read "not a date yet" for every value, which looks like a parser that cannot parse rather than a route that was never reached. ⚠️ `portalHarness.test.js` could not see it either — that gate compares the KEYS a stub returns against the keys the real route promises, and a route whose regex never matches still has the right keys.
+    const [pathname, query = ''] = String(path).split('?');
     for (const [re, make] of ROUTES) {
-        if (re.test(path)) {
-            const body = make();
+        if (re.test(pathname)) {
+            const body = make(query ? new URLSearchParams(query) : new URLSearchParams());
             // Same the real client returns, including the async boundary — a component that renders correctly only because the harness resolved synchronously would be a lie.
             await new Promise((r) => setTimeout(r, 0));
             console.log('[harness]', (opts && opts.method) || 'GET', path, body);
