@@ -74,8 +74,7 @@ function promisedKeys() {
         });
     }
 
-    // ── THE HALF THAT NEEDS A DATABASE ───────────────────────────────────────────────────────
-    // 🔴 READ .env.dev DIRECTLY, NEVER `process.env`. Requiring portal/server.js above pulls in the modules that call dotenv against the PRODUCTION `.env`, and dotenv does not overwrite a variable that is already set — so a later `config({ path: '.env.dev' })` is a no-op and `process.env.MONGODB_URI` is the live Atlas URI. That is how this section silently skipped on a machine with a perfectly good local mongod running: it read prod's URI, saw it was not local, and stood down. Parsing the file itself also makes the guard below absolute — this test cannot reach a remote database even if one is configured everywhere else.
+    // ── THE HALF THAT NEEDS A DATABASE ─────────────────────────────────────────────────────── 🔴 READ .env.dev DIRECTLY, NEVER `process.env`. Requiring portal/server.js above pulls in the modules that call dotenv against the PRODUCTION `.env`, and dotenv does not overwrite a variable that is already set — so a later `config({ path: '.env.dev' })` is a no-op and `process.env.MONGODB_URI` is the live Atlas URI. That is how this section silently skipped on a machine with a perfectly good local mongod running: it read prod's URI, saw it was not local, and stood down. Parsing the file itself also makes the guard below absolute — this test cannot reach a remote database even if one is configured everywhere else.
     const devEnv = path.join(__dirname, '..', '.env.dev');
     const uri = fs.existsSync(devEnv)
         ? ((fs.readFileSync(devEnv, 'utf8').match(/^MONGODB_URI=(.*)$/m) || [])[1] || '').trim()
@@ -102,6 +101,8 @@ function promisedKeys() {
         await PortalSession.deleteMany({ userAgent: 'portal-routes-test' });
         await PortalSession.create({ sessionHash: hashSession(raw), discordId: ALLOWED_ADMIN_ID, userAgent: 'portal-routes-test' });
         const cookie = `portal_session=${raw}`;
+        // Every non-GET route verifies CSRF, and the token is derived from the session hash rather than stored — so the test computes it exactly as the server does instead of fetching it.
+        const csrf = require('../portal/auth').csrfToken({ sessionId: hashSession(raw) });
         const promised = promisedKeys();
 
         // The preview route takes an id; it gets its own case below, with a real one.
@@ -143,6 +144,20 @@ function promisedKeys() {
                 assert.ok(Array.isArray(o.rows) && o.rows.length > 0,
                     `${o.op} came back with an empty diff — its preview threw and the route swallowed it`);
             }
+        });
+
+        // 🔴 A LINE THE PARSER CANNOT READ MUST COME BACK MARKED, NEVER DROPPED AND NEVER GUESSED. The fixture stub failed this exact case first: `Date.parse("with no date 2026 UTC")` returns January 1st, so a nonsense line came back "understood" with a date nobody typed.
+        await acheck('POST /api/parse-bulk marks an undatable line rather than inventing a date', async () => {
+            const match = ROUTES.find((r) => r.method === 'POST' && r.pattern.test('/api/parse-bulk'));
+            assert.ok(match, '/api/parse-bulk is registered');
+            const res = fakeRes();
+            const req = fakeReq(cookie, 'POST', { 'content-type': 'application/json', 'x-csrf-token': csrf });
+            req.on = (ev, fn) => { if (ev === 'data') fn(Buffer.from(JSON.stringify({ kind: 'draw', text: 'Crimson Moonlight, Fennec, Sep 3\nnonsense line with no date' }))); if (ev === 'end') fn(); return req; };
+            await match.handler(req, res, new URL('http://127.0.0.1/api/parse-bulk'));
+            assert.strictEqual(res.status, 200, `expected 200, got ${res.status} (${res.body.slice(0, 90)})`);
+            const rows = json(res).rows || [];
+            assert.ok(rows.some((r) => r.ok && r.start), 'the readable line is understood');
+            assert.ok(!rows.some((r) => r.ok && /nonsense/i.test(r.name || '')), 'the unreadable line is not reported as understood');
         });
 
         // 🔴 THE DEFECT THE MANUAL BOOT FOUND, kept as a case so it cannot come back: a client typo is a 400, not a 500.

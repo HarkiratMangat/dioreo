@@ -144,7 +144,22 @@ const ROUTES = [
         grantedPages: ['season', 'draws', 'calendar', 'patchnotes'],
     })],
     [/^\/api\/armory$/, () => ({ builds: (FIX.builds || []).map(armoryBuild), grantedPages: ['loadouts'] })],
-    [/^\/api\/armory\/preview/, () => ({ card: FIXTURE_CARD })],
+    // 🔴 THE PREVIEW HAS TO BE OF THE BUILD THAT WAS ASKED FOR. This returned ONE fixed card for every id, which is invisible on the single-row preview panel — one card, one selection, nothing to compare it against — and became obvious the moment Compare put two of them side by side: two chips reading ".50 GS" above two cards both reading "AK-47". A stub that answers the same thing to every question is a stub that cannot demonstrate the feature it is standing in for.
+    [/^\/api\/armory\/preview/, (params) => {
+        const build = (FIX.builds || []).find((b) => String(b._id) === params.get('id'));
+        if (!build) return { card: FIXTURE_CARD };
+        // The real route runs the bot's own buildLoadoutCard; this reshapes the fixture card's own components so the shape stays honest and only the fields that identify the build change.
+        const card = JSON.parse(JSON.stringify(FIXTURE_CARD));
+        const container = (card.components || []).find((c) => c.type === 17);
+        const text = container && (container.components || []).find((c) => c.type === 10);
+        if (text) {
+            text.content = `# ${build.weaponName}\n### ${build.buildName || 'Build'}\n`
+                + (build.attachments || []).map((a) => `- ${a}`).join('\n')
+                + (build.shareCode ? `\n-# ${build.shareCode}` : '');
+        }
+        if (container && build.accent) container.accent_color = parseInt(String(build.accent).replace('#', ''), 16);
+        return { card };
+    }],
     [/^\/api\/armory\/export/, () => ({ text: '(harness: bulk export text)' })],
     [/^\/api\/broadcast$/, () => ({
         // 🔴 `state`, NOT `active`. The route's own announcementState() is the one place an announcement's state is decided, and the counts in the masthead already read it — filtering on a different field here put FOUR cards under a "Now showing" heading beside a masthead reading LIVE 2. One quantity, two authorities, on the same screen: the exact defect this project keeps paying for, reproduced in the instrument rather than the product.
@@ -170,7 +185,30 @@ const ROUTES = [
         return { scopes, admins: FIX.accessAdmins || [] };
     }],
     [/^\/api\/analytics$/, () => analyticsPayload()],
-    // 🔴 THE HARNESS MUST PARSE DATES TOO, or the composer's echo reads "not a date yet" for every value and the one thing that surface exists to demonstrate cannot be seen. The real route calls the bot's chrono parser; this understands only what a fixture needs to show — an ISO day, and the two relative forms the placeholder itself suggests. ⚠️ It is deliberately NARROWER than chrono rather than a second attempt at it: a stub that half-implements a parser teaches the reviewer a grammar the product does not have.
+    // 🔴 THE HARNESS MUST PARSE DATES TOO, or the composer's echo reads "not a date yet" for every value and the one thing that surface exists to demonstrate cannot be seen. The real route calls the bot's chrono parser; this understands only what a fixture needs to show — an ISO day, and the two relative forms the placeholder itself suggests. ⚠️ It is deliberately NARROWER than chrono rather than a second attempt at it: a stub that half-implements a parser teaches the reviewer a grammar the product does not have. ⚠️ NARROWER THAN THE REAL PARSER ON PURPOSE, same as parse-date above: this understands the two shapes the placeholder itself suggests, so a reviewer can see the preview work without the stub teaching a grammar the product does not have. The real route runs utils/adminParser.js.
+    [/^\/api\/parse-bulk$/, (params, body) => {
+        const kind = (body && body.kind) || 'draw';
+        const day = (d) => new Date(d).toISOString().slice(0, 10);
+        const rows = String((body && body.text) || '').split('\n').map((raw) => {
+            const line = raw.trim();
+            if (!line) return null;
+            const dash = line.split(/\s+[—-]\s+/);
+            const parts = dash.length > 1 ? dash : line.split(',').map((p) => p.trim());
+            const name = (parts.shift() || '').trim();
+            const span = (parts.join(' ') || '').match(/(.+?)\s+to\s+(.+)/);
+            // 🔴 `Date.parse` SAYS YES TO ALMOST ANYTHING. "with no date 2026 UTC" parses to January 1st, so a line the real parser would skip came back understood, with a date nobody typed — the stub teaching a behaviour the product does not have, which is the whole failure mode a fixture harness has. The candidate has to LOOK like a date before it is offered to the parser.
+            const one = (v) => {
+                const raw = String(v).trim();
+                if (!/^(\d{1,2}[\/-]\d{1,2}|[a-z]{3,9}\.?\s+\d{1,2}|\d{1,2}\s+[a-z]{3,9})/i.test(raw)) return null;
+                const t = Date.parse(raw + ' 2026 UTC');
+                return Number.isFinite(t) ? day(t) : null;
+            };
+            const start = span ? one(span[1]) : one(parts[parts.length - 1] || '');
+            const end = span ? one(span[2]) : start;
+            return { name, start, end, ok: Boolean(name && start) };
+        }).filter(Boolean);
+        return { kind, rows };
+    }],
     [/^\/api\/parse-date$/, (params) => {
         const q = (params.get('q') || '').trim().toLowerCase();
         const day = (d) => new Date(d).toISOString().slice(0, 10);
@@ -197,7 +235,10 @@ export async function fetchJson(path, opts) {
     const [pathname, query = ''] = String(path).split('?');
     for (const [re, make] of ROUTES) {
         if (re.test(pathname)) {
-            const body = make(query ? new URLSearchParams(query) : new URLSearchParams());
+            // A POST route needs what was posted; a GET route ignores the second argument. Parsed here rather than in each route so a stub cannot forget it.
+            let sent = null;
+            try { sent = opts && opts.body ? JSON.parse(opts.body) : null; } catch (e) { sent = null; }
+            const body = make(query ? new URLSearchParams(query) : new URLSearchParams(), sent);
             // Same the real client returns, including the async boundary — a component that renders correctly only because the harness resolved synchronously would be a lie.
             await new Promise((r) => setTimeout(r, 0));
             console.log('[harness]', (opts && opts.method) || 'GET', path, body);

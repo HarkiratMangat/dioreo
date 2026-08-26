@@ -393,6 +393,18 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **The backtick-in-a-comment trap fired for the tenth and eleventh times in one hour**, one of them inside the comment recording the previous one. The build refuses to emit a file with a backtick in an HTML comment now — the source-level check existed but ran at the END of the suite, so a broken build got as far as four failing render cases whose message named a variable nobody wrote (`sum is not defined`, from a comment that said `.bcol-sum`).
 
+### Paste a list, and compare two builds
+
+**The composer takes a pasted list**, parsed as you type, with what it understood shown before anything is staged. 🔴 **The parsing is the BOT'S OWN, over HTTP** — `parseBulkDrawList` and `parseBulkEvents` in `utils/adminParser.js` are what `/manage` has ingested pasted lists with since it was built, including every trap already paid for there: a date written *"July 16, 2026"* splits across two comma fields and has to be rejoined, a bulleted paste out of Notes arrives as **one physical line** and has to be scanned per line or the last entry swallows everything after it. A browser reimplementation would preview rows the bot then reads differently, which is the one thing a preview must not do.
+
+🔴 **A LINE THE PARSER CANNOT READ IS SHOWN, NEVER DROPPED**, and the count says both numbers — *"2 of 3 lines understood"*. A paste where three of eight lines fell out silently is exactly the failure a preview exists to prevent. ⚠️ **The fixture stub failed that case first**, which is worth recording: `Date.parse("with no date 2026 UTC")` returns January 1st, so a nonsense line came back understood **with a date nobody typed**. The stub now requires a candidate to look like a date before offering it to the parser, and the real route has a case of its own in `portalRoutes.test.js`.
+
+**A pasted list stages as ONE changeset**, not one per line. Eight pasted draws as eight changesets would fill the Review screen with eight separate transactions to commit and discard individually, which is not what somebody who pasted one list means.
+
+**Armory gets Compare** — two or three builds side by side, their real Discord cards above a field-by-field table. 🔴 **It answers the question the coverage flag cannot**: `near-duplicate` tells you two builds share a gunsmith code and cannot tell you which to keep, and deciding meant opening two rows in turn and holding the first in your head. ⚠️ **Rows that AGREE are drawn too** — showing only the differences would be shorter and would answer a different question, because *"identical apart from the image"* is a conclusion you can only reach by seeing the fields that match.
+
+⚠️ **And the harness answered every preview request with the same card.** Invisible on the one-row preview panel — one card, one selection, nothing to compare it to — and obvious the instant Compare put two side by side: two chips reading `.50 GS` above two cards both reading `AK-47`. A stub that answers the same thing to every question cannot demonstrate the feature it stands in for.
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

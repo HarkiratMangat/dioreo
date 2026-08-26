@@ -295,6 +295,83 @@ function LivePreview({ buildId }) {
     `;
 }
 
+// ── COMPARE ───────────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE QUESTION THIS ANSWERS IS THE ONE THE COVERAGE FLAG CANNOT. "near-duplicate" tells you two builds share a gunsmith code; it cannot tell you WHICH of them to keep, and the only way to decide was to open two rows one after the other and hold the first in your head. Two or three side by side, field by field, with the rows that DIFFER marked — that is the whole feature.
+//
+// ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that.
+const COMPARE_FIELDS = [
+    ['Weapon', (b) => b.weaponName],
+    ['Build', (b) => b.buildName],
+    ['Category', (b) => b.category],
+    ['Mode', (b) => b.mode],
+    ['Rank', (b) => b.dmzRangeRank || b.categoryRank || '—'],
+    ['Meta', (b) => (b.isMeta ? 'yes' : 'no')],
+    ['Toxic', (b) => (b.isToxic ? 'yes' : 'no')],
+    ['Attachments', (b) => (b.attachments || []).join(', ') || '—'],
+    ['Share code', (b) => b.shareCode || '—'],
+    ['Image', (b) => b.imageKey || '—'],
+];
+
+const MAX_COMPARE = 3;
+
+function Compare({ builds, picked, onPick }) {
+    const chosen = builds.filter((b) => picked.includes(String(b._id)));
+    const [cards, setCards] = useState({});
+    useEffect(() => {
+        for (const b of chosen) {
+            const id = String(b._id);
+            if (cards[id]) continue;
+            fetchJson(`/api/armory/preview?id=${id}`).then((d) => setCards((prev) => ({ ...prev, [id]: d.card || null })));
+        }
+    }, [picked.join(',')]);
+
+    return html`
+        <div class="panel" id="compare">
+            <div class="ph">
+                <span class="t">Compare</span>
+                <span class="rt">${chosen.length} of ${MAX_COMPARE} picked</span>
+            </div>
+            <div class="cmpbar">
+                ${builds.slice(0, 40).map((b) => {
+                    const id = String(b._id);
+                    const on = picked.includes(id);
+                    return html`
+                        <button class=${'chip' + (on ? ' on' : '')} key=${id} aria-pressed=${on ? 'true' : 'false'}
+                                disabled=${!on && picked.length >= MAX_COMPARE}
+                                onClick=${() => onPick(id)}>
+                            ${b.weaponName}<b>${b.buildName || '—'}</b>
+                        </button>`;
+                })}
+            </div>
+            ${chosen.length < 2 ? html`
+                <p class="empty">Pick two or three builds above. Rows that differ are marked; rows that agree are shown
+                    too, because "identical apart from the image" is a conclusion you can only reach by seeing them.</p>`
+            : html`
+                <div class="cmp">
+                    <div class="cmpcards">
+                        ${chosen.map((b) => html`
+                            <div key=${String(b._id)}>${cards[String(b._id)] ? renderV2(cards[String(b._id)].components) : html`<p class="empty">Loading…</p>`}</div>`)}
+                    </div>
+                    <table class="cmptab">
+                        <thead><tr><th>Field</th>${chosen.map((b) => html`<th key=${String(b._id)}>${b.weaponName}</th>`)}</tr></thead>
+                        <tbody>
+                            ${COMPARE_FIELDS.map(([label, read]) => {
+                                const values = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
+                                const same = values.every((v) => v === values[0]);
+                                return html`
+                                    <tr class=${same ? 'same' : 'diff'} key=${label}>
+                                        <td class="cmpf">${label}</td>
+                                        ${values.map((v, i) => html`<td key=${i}>${v}</td>`)}
+                                    </tr>`;
+                            })}
+                        </tbody>
+                    </table>
+                </div>`}
+        </div>
+    `;
+}
+
 export function ArmoryRealm({ session }) {
     const [builds, setBuilds] = useState([]);
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
@@ -305,6 +382,7 @@ export function ArmoryRealm({ session }) {
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('Rack');
+    const [compared, setCompared] = useState([]);
     const overlay = useOverlay();
 
     function refresh() { fetchJson('/api/armory').then((d) => { if (d.signedOut || d.forbidden) return setError(true); setBuilds(d.builds || []); }); }
@@ -380,11 +458,13 @@ export function ArmoryRealm({ session }) {
     }
 
     return html`
-        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage']} onSetView=${setView}
+        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare']} onSetView=${setView}
                   overlaySlot=${overlay.render()}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
+                      { label: 'Compare the selected builds', group: 'armory', local: true, accent: 'var(--r-armory)',
+                        keywords: ['diff', 'side by side', 'duplicate'], run: () => setView('Compare') },
                       { label: 'Clear the rack and coverage filters', group: 'armory', local: true, accent: 'var(--ink3)',
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
@@ -404,7 +484,10 @@ export function ArmoryRealm({ session }) {
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${view === 'Rack'
                                   ? html`<${Rack} builds=${builds} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
-                                  : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
+                                  : view === 'Compare'
+                                      ? html`<${Compare} builds=${rows} picked=${compared}
+                                                         onPick=${(id) => setCompared(compared.includes(id) ? compared.filter((x) => x !== id) : [...compared, id])} />`
+                                      : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
                           <div>
                               <${LivePreview} buildId=${selectedBuildId} />

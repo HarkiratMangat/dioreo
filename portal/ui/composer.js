@@ -42,7 +42,63 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
     `;
 }
 
-export function Composer({ types, initialType, onStage, onCancel }) {
+// ⚠️ "PASTE ANYTHING NEEDS TO BE MORE INTUITIVE." The intuitive version is not a better drawer — it is not being a drawer. The field sits inside the composer, beside the form it replaces, and parses as you type: one thing to look at, and the demonstration and the control are the same object.
+//
+// 🔴 THE PARSING IS THE BOT'S OWN, over HTTP. utils/adminParser.js has ingested pasted lists for /manage since it was built, including the traps already paid for there — a date written "July 16, 2026" splitting across two comma fields, a bulleted Notes paste arriving as one physical line. A browser reimplementation would preview rows the bot would then read differently, which is the one thing a preview must not do.
+function PasteZone({ kind, onStageAll }) {
+    const [open, setOpen] = useState(false);
+    const [text, setText] = useState('');
+    const [rows, setRows] = useState([]);
+    const latest = useRef('');
+    latest.current = text;
+
+    useEffect(() => {
+        if (!open || !text.trim()) { setRows([]); return undefined; }
+        const t = setTimeout(() => {
+            fetchJson('/api/parse-bulk', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ kind, text }),
+            }).then((d) => { if (latest.current === text) setRows(d.rows || []); }).catch(() => {});
+        }, 280);
+        return () => clearTimeout(t);
+    }, [text, kind, open]);
+
+    const ok = rows.filter((r) => r.ok);
+    if (!open) {
+        return html`<div class="pz shut"><button type="button" class="pz-open" onClick=${() => setOpen(true)}>Or paste a list instead</button></div>`;
+    }
+    return html`
+        <div class="pz">
+            <button type="button" class="pz-open" onClick=${() => { setOpen(false); setText(''); setRows([]); }}>Close the paste box</button>
+            <textarea class="pz-in" rows="4" spellcheck="false" value=${text}
+                      placeholder=${kind === 'draw' || kind === 'returning'
+                          ? 'Crimson Moonlight, Fennec, Sep 3\nJudgment Day, AK117, Sep 10'
+                          : 'Clan Wars — Sep 3 to Sep 12\nDouble CP Weekend — Sep 5'}
+                      onInput=${(e) => setText(e.target.value)}></textarea>
+            <div class="pz-out">
+                ${rows.length ? html`
+                    <div class="pz-rows">
+                        ${rows.map((r, i) => html`
+                            <div class=${'pz-r' + (r.ok ? '' : ' bad')} key=${i}>
+                                <i class="pz-d"></i>
+                                <span class="pz-k">${kind}</span>
+                                <span class="pz-n">${r.name || 'unnamed'}</span>
+                                <span class="pz-w">${r.start ? (r.end && r.end !== r.start ? `${r.start} → ${r.end}` : r.start) : 'no date found'}</span>
+                            </div>`)}
+                    </div>
+                    <div class="pz-act">
+                        <!-- 🔴 A LINE THE PARSER COULD NOT READ IS SHOWN, NEVER DROPPED. A paste where three of eight lines fell out silently is exactly the failure a preview exists to prevent, and the count says both numbers so the difference is unmissable. -->
+                        <span class="pz-sum">${ok.length} of ${rows.length} ${rows.length === 1 ? 'line' : 'lines'} understood</span>
+                        <button class="pill lead" disabled=${!ok.length}
+                                onClick=${() => onStageAll(ok)}>Stage ${ok.length}</button>
+                    </div>` : null}
+            </div>
+        </div>
+    `;
+}
+
+export function Composer({ types, initialType, onStage, onStageMany, onCancel }) {
     const [state, setState] = useState({ type: initialType || null, name: '', aText: '', aIso: null, bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;
     const reason = composerReason(state, type);
@@ -63,6 +119,7 @@ export function Composer({ types, initialType, onStage, onCancel }) {
                             <em>${t.shape === 'point' ? 'one date' : 'a window'}</em>
                         </button>`)}
                 </div>
+                ${type && onStageMany ? html`<${PasteZone} kind=${type.key} onStageAll=${(rows) => onStageMany(type.key, rows)} />` : null}
                 <div class="nw-form">
                     ${!type ? html`
                         <p class="nw-hint">Pick what you are adding. The form follows the record — a release asks for

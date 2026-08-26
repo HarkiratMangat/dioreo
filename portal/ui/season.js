@@ -362,6 +362,16 @@ export function SeasonRealm({ session }) {
 
     // ⚠️ `handleCommit` LIVED HERE AND IS GONE. Season stopped being able to commit when board.js's duplicate review panel was removed — the Review realm is the only surface that writes, and a live commit function on a page that no longer has a control for it is the next session's accident.
 
+    // 🔴 ONE CHANGESET FOR THE WHOLE PASTE, not one per line. Eight pasted draws staged as eight changesets would fill the Review screen with eight separate transactions to commit, each individually discardable — which is not what a person who pasted one list means. stageOps already takes an array; this is the caller finally passing one.
+    async function handleStageMany(kind, rows) {
+        const ops = rows.map((r) => buildSeasonAddOp(kind, { title: r.name, startDate: r.start, endDate: r.end || r.start }));
+        if (!ops.length) return;
+        await stageOps('season', ops, session.csrfToken);
+        setShowAdd(null);
+        overlay.say(`${ops.length} ${ops.length === 1 ? 'item' : 'items'} staged from what you pasted.`, 'Review', () => { location.hash = '#/review'; });
+        fetchChangesets('season').then(setChangesets);
+    }
+
     async function handleAdd(op) {
         await stageOps('season', [op], session.csrfToken);
         setShowAdd(null);
@@ -477,6 +487,7 @@ export function SeasonRealm({ session }) {
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
                                               onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
+                                              onStageMany=${handleStageMany}
                                               onCancel=${() => setShowAdd(null)} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
                <${Track} data=${trackData}
