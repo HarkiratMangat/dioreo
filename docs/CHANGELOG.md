@@ -323,6 +323,20 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 **`portal:orphans` now reads 0**, from 52 that morning — 52 → 46 → 29 → 10 → 0, every entry retired by rebuilding the surface behind it rather than by deleting a line. Coverage **48% → 51%**.
 
+### The portal is booted against a real database for the first time, and it 500s on a typo
+
+🔴 **NO PORTAL ROUTE HAD EVER BEEN EXECUTED — the suite proves route SHAPE and PURE FUNCTIONS and never a request/response cycle.** `/api/review` in particular had run in **no environment, ever**: every check on it went through the fixture harness with `fetchJson` swapped out by an import map. So it was booted for real.
+
+**The method, so it is repeatable and needs no OAuth round trip.** The cookie is the only thing the sign-in flow produces that the server actually reads, so: seed a `PortalSession` row in the **local dev** database with a known raw value (`hashSession` is exported from `portal/auth.js`), boot `node --env-file=.env.dev portal/server.js`, and curl with `Cookie: portal_session=<raw>`. ⚠️ **Check `lsof -nP -iTCP:8787 -sTCP:LISTEN` first** — a portal was already running, and a `pkill` aimed at the new one took both down. Use a spare port instead.
+
+**All nine routes returned 200 with the keys they promise**, `/api/review` among them, and a freshly staged changeset was read back out of Mongo carrying `baseline` as a real array with `staleChecked:true` — while the row staged before that field existed correctly reports `false`. That is the design working, not a gap: it ages out.
+
+🔴 **AND THE FIRST REAL REQUEST FOUND A DEFECT THE WHOLE SUITE COULD NOT.** Every route that looks a document up by a client-supplied id handed the raw string straight to Mongoose, which throws a `CastError` on anything that is not 24 hex characters — so `?id=x` came back as a **500** with `Something went wrong. It has been logged.` and a full stack trace in the log. **Six call sites across two files.** It matters twice over: a 500 tells the caller to retry and the operator to investigate, both wrong for a typo; and a log filling with stack traces from bad input is a log where a real 500 stops standing out. Guarded now by one shared `isObjectId()`, with a source-scan test that counts guards against id-taking routes so a new route cannot quietly skip it.
+
+⚠️ **What is still open is the AUTOMATED half.** This was a manual pass — nothing in `npm test` calls a route, so a handler could still throw on its first real call and the suite would stay green. The tracker entry is amended rather than closed.
+
+⚠️ **`/api/analytics` returns 495 KB on every page load**, against 555 B – 59 KB for the other eight. It ships the whole event river *plus* four pre-rendered text exports that are only read when their tab is open, and it grows with the collection rather than levelling off. Filed, not fixed: the page is correct, the cost is a design question.
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

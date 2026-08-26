@@ -3,7 +3,7 @@
 // Armory realm \u2014 covers /manage's 'loadouts_mp' and 'loadouts_dmz' pages. No dates, so no Track \u2014 Rack (by category) and Coverage (data-quality flags) are both derived read-only views over the same Loadout collection. Mutations go through the generic changeset pathway (loadout.add, loadout.bulkReplace, etc.) built by the frontend.
 const Loadout = require('../../models/Loadout');
 const { findDuplicateLoadouts, getMpCategoryAccent, buildLoadoutCard } = require('../../utils/loadoutRender');
-const { sendJson, forbidden } = require('./httpUtil');
+const { sendJson, forbidden, isObjectId } = require('./httpUtil');
 const { grantedPagesFor } = require('./realmAccess');
 
 const ARMORY_PAGES = ['loadouts_mp', 'loadouts_dmz'];
@@ -44,6 +44,7 @@ function register(route) {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
         const id = url.searchParams.get('id');
+        if (id && !isObjectId(id)) return sendJson(res, 400, { error: 'not a valid build id' });
         const build = id && await Loadout.findById(id).lean();
         if (!build) return sendJson(res, 404, { error: 'no such loadout' });
         const card = buildLoadoutCard([build], 0, { color: getMpCategoryAccent(build.category), idPrefix: 'preview_' });

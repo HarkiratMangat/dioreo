@@ -10,7 +10,7 @@ const { revertChange } = require('../../core/revert');
 const { getChange } = require('../../utils/changeStore');
 const { hasManagePageAccess, isOwner } = require('../../utils/adminAccess');
 const { gateCommit } = require('./policy');
-const { readJsonBody, segment, sendJson, forbidden } = require('./httpUtil');
+const { readJsonBody, segment, sendJson, forbidden, isObjectId } = require('./httpUtil');
 
 async function assertOpsAccess(discordId, ops) {
     for (const op of ops) {
@@ -47,6 +47,7 @@ function register(route) {
         const state = v.ok ? 'staged' : 'blocked';
         let doc;
         if (changesetId) {
+            if (!isObjectId(changesetId)) return sendJson(res, 400, { error: 'not a valid changeset id' });
             doc = await Changeset.findOne({ _id: changesetId, authorId: session.discordId });
             if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
             doc.ops = ops; doc.state = state; doc.tier = v.tier;
@@ -76,6 +77,7 @@ function register(route) {
     // The POST route above already computes a preview and returns it, and the client threw it away (composeClient.js's stageOps ignores the body). That preview is also a snapshot from staging time, which is precisely the wrong thing for the review screen: the whole point of reviewing a tier-3 change is to see what it would do to the state that exists RIGHT NOW, so a set staged an hour ago and edited in Discord since shows its real, current consequence rather than the one it would have had. previewSet is pure and reads live state, so re-running it is the correct answer and not a cache miss.
     route('GET', /^\/api\/changeset\/[^/]+\/preview$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);
+        if (!isObjectId(id)) return sendJson(res, 400, { error: 'not a valid changeset id' });
         const doc = await Changeset.findOne({ _id: id, authorId: session.discordId }).lean();
         if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
         const access = await assertOpsAccess(session.discordId, doc.ops);
@@ -97,6 +99,7 @@ function register(route) {
     // POST /api/changeset/:id/export -> marks the tier-3 export gate satisfied
     route('POST', /^\/api\/changeset\/[^/]+\/export$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);
+        if (!isObjectId(id)) return sendJson(res, 400, { error: 'not a valid changeset id' });
         const doc = await Changeset.findOne({ _id: id, authorId: session.discordId });
         if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
         doc.exportedAt = new Date();
@@ -107,6 +110,7 @@ function register(route) {
     // POST /api/changeset/:id/discard — 🔴 state:'discarded' has been a recognized value in columnFor() (board.logic.js) since the Board pipeline was built — it just had no route that ever set it, so there was no way to abandon a staged or blocked change anywhere in the portal. Never a hard delete: the row stays for history/audit, columnFor already treats it as leaving the board, exactly like 'committed'.
     route('POST', /^\/api\/changeset\/[^/]+\/discard$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);
+        if (!isObjectId(id)) return sendJson(res, 400, { error: 'not a valid changeset id' });
         const doc = await Changeset.findOne({ _id: id, authorId: session.discordId });
         if (!doc) return sendJson(res, 404, { error: 'no such changeset' });
         if (doc.state === 'committed') return sendJson(res, 409, { error: 'already committed, cannot discard' });
@@ -119,6 +123,7 @@ function register(route) {
     // POST /api/changeset/:id/commit  { confirmText? }
     route('POST', /^\/api\/changeset\/[^/]+\/commit$/, requireAdmin(async (req, res, url, session) => {
         const id = segment(url, 2);
+        if (!isObjectId(id)) return sendJson(res, 400, { error: 'not a valid changeset id' });
         const body = await readJsonBody(req);
         const doc = await Changeset.findOne({ _id: id, authorId: session.discordId });
         if (!doc) return sendJson(res, 404, { error: 'no such changeset' });

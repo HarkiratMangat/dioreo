@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ⌨️ The command bar was a lying affordance, and four realms had no confirmations (2026-08-26 11:00 EDT)
+
+*Swept out of `docs/db-deferred-list.md`'s 🗂️ Queued on 2026-08-26, built and verified the same day it came due. An item leaves an active list only by appearing here.*
+
+- `[P1 · M · Opus5-XHigh]` **THE COMMAND BAR IS A LYING AFFORDANCE, and four realms are not wired to the overlay.** Two loose ends left by the 2026-08-26 chrome adoption, both visible rather than internal. **(a)** The header renders the full command bar — magnifier, placeholder "Search, or run a command", ⌘K hint — and typing in it does **nothing**: there is no `.cb-drop`, no result list, no ⌘K binding. An affordance that looks operable and is not is worse than an absent one, and it sits in the widest element on every page. The mockup's own note explains why it is the bar rather than a chip: "it advertised a feature instead of being one" — which is exactly what the portal now does. **(b)** `useOverlay()` (drawer + confirm + toast, `portal/ui/overlay.js`) is wired into **Season and Review only**; Armory, Broadcast, Access, Analytics and Home still have destructive or notable actions with no confirmation and no toast. The mechanism exists and connecting a realm is a few lines — this is wiring, not design. **Verify:** typing in the command bar produces a result list and Enter navigates; and every realm's destructive control opens the portal drawer rather than doing nothing or calling a native dialog. *Filed 2026-08-26 09:5x EDT at the migration checkpoint.*
+
+**Both halves shipped, and building them found more than the entry described.** The bar filters and **ranks** — a prefix beats a containment, a keyword is last, and being on the current realm is worth half a tier — with its view switches derived from `Shell`'s own `viewOptions` so the bar and the tabs cannot disagree. 🔴 **`inert` does not stop a keyboard shortcut**, so ⌘K behind an open modal would have focused an input nobody could type into; `paletteBlocked()` is the guard and it is a tested pure function. And the overlay wiring turned up the thing the entry did not know about: **`POST /auth/logout` had existed since the door was built with no caller anywhere** — an admin console handing out 12-hour cookies with no way to end one. The account panel carries it now, behind a confirmation that says what happens to staged work.
+
 ## 🐞 The four portal-mockup bugs — two were the product, two were the checks (2026-08-25 00:5x EDT)
 
 *Swept out of `docs/db-deferred-list.md`'s 🐞 Active Bugs on 2026-08-25 00:5x EDT, all four fixed and verified in the same session they were filed. An item leaves an active list only by appearing here.*
