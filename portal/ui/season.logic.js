@@ -339,8 +339,49 @@ function deadlineRail(season, from, to) {
     return { flags, pins };
 }
 
+// ── WHAT A MANIFEST ROW IS, BEYOND ITS NAME ───────────────────────────────────────────────────
+//
+// 🔴 THE TABLE SAID WHAT EVERY ITEM WAS CALLED AND NOTHING ABOUT WHAT WAS IN IT. A draw's whole point is the items it carries and their rarity; the row showed a title, a type and a date. These three derive the rest from the record the row already carries — `toManifestRows` spreads the full item onto it precisely so nothing downstream has to go back for more.
+//
+// ⚠️ ONLY THE THREE TIERS THE STYLESHEET DEFINES GET A CLASS. `resolveTier` also returns `legacy` and a title-cased fallback for anything it does not know, and inventing `t-legacy` would emit a class with no rule — an orphan. An unclassed chip still reads, because `.tiers b` carries the shape.
+const TIER_CLASS = { legendary: 't-leg', mythic: 't-myth', epic: 't-epic' };
+
+function rowTiers(row) {
+    const seen = [];
+    for (const item of (row && row.items) || []) {
+        // A `-# comment` line is a note attached to the draw, not an item with a rarity — counting it as a tier would put a chip on the row for a sentence.
+        const t = String(item.tier || '').toLowerCase();
+        if (!t || t === 'comment') continue;
+        if (!seen.includes(t)) seen.push(t);
+    }
+    return seen;
+}
+
+function rowDetail(row) {
+    if (!row) return '';
+    const items = ((row.items) || []).filter((i) => String(i.tier || '').toLowerCase() !== 'comment');
+    if (items.length) return items.map((i) => i.name).filter(Boolean).join(', ');
+    // A calendar entry has no items; what it has instead is a category, and "playlist" is a real answer where "—" is not.
+    return row.category ? String(row.category) : '';
+}
+
+// ⚠️ COMPARED ON THE DAY, and both ends are INCLUSIVE. An entry whose last day is today is still running — treating `end < now` as ended retires it at midnight of the morning it is still live, which is the whole span of a one-day event.
+function rowLifecycle(row, today) {
+    const day = (v) => (v ? String(v).slice(0, 10) : '');
+    const t = day(today);
+    const start = day(row && (row.date || row.startDate));
+    const end = day(row && (row.endDate || row.date));
+    if (!start) return '';
+    if (start > t) return 'upcoming';
+    if (end && end < t) return 'ended';
+    return 'running';
+}
+
+const LIFE_LABEL = { upcoming: 'not yet', running: 'running now', ended: 'finished' };
+
 if (typeof module !== 'undefined' && module.exports) {
-    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff, deadlineRail, RAIL_LABEL });
+    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff, deadlineRail, RAIL_LABEL,
+        rowTiers, rowDetail, rowLifecycle, TIER_CLASS, LIFE_LABEL });
 }
 
 if (typeof module !== 'undefined' && module.exports) {

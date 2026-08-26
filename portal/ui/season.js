@@ -18,13 +18,45 @@ import { useOverlay } from './overlay.js';
 import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 
-// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
+// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused.
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
     // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
-    { key: 'lane', label: 'Type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane },
-    { key: 'window', label: 'Window', dataKind: 'date' },
-    { key: 'state', label: 'State' },
+    { key: 'lane', label: 'Type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane,
+      metaClass: 'rowlife',
+      meta: (row) => (row.isDraft
+          ? html`<span class="nextmark">NEXT SEASON</span>`
+          : (LIFE_LABEL[rowLifecycle(row, todayIso())] || '')) },
+    { key: 'window', label: 'Window', dataKind: 'nums',
+      render: (row) => {
+          const start = row.date ? fmtDay(row.date) : null;
+          const end = (row.endDate || row.date) ? fmtDay(row.endDate || row.date) : null;
+          if (!start) return html`<span class="none">no date</span>`;
+          return end && end !== start
+              ? html`${start} <span class="arw">→</span> ${end}`
+              : html`${start}`;
+      },
+      meta: (row) => {
+          const a = row.date ? new Date(String(row.date).slice(0, 10)) : null;
+          const b = (row.endDate || row.date) ? new Date(String(row.endDate || row.date).slice(0, 10)) : null;
+          if (!a || !b) return '';
+          const days = Math.round((b - a) / 86400000) + 1;
+          return `${days} day${days === 1 ? '' : 's'}`;
+      } },
+    { key: 'detail', label: 'What it carries', dataKind: 'detail', render: (row) => {
+        const tiers = rowTiers(row);
+        const detail = rowDetail(row);
+        return html`
+            <div class="detcell">
+                ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_CLASS[t] || ''}>${t.toUpperCase()}</b>`)}</span>` : null}
+                ${detail ? html`<span class="dsub">${detail}</span>` : html`<span class="dsub"><span class="none">no detail</span></span>`}
+                <!-- A draw's thumbnail is re-hosted on Cloudinary when it is saved; "not cached" is a fact
+                     about THIS record, and the only place it was visible before was a Discord card. -->
+                ${row.lane === 'calendar' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
+            </div>`;
+    } },
+    // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells.
+    { key: 'state', label: 'State', dataKind: 'right' },
 ];
 
 // 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value.

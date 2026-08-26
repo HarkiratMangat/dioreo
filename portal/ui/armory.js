@@ -18,12 +18,41 @@ import { downloadText } from './download.js';
 const MODES = ['MP', 'DMZ'];
 const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
 
+// 🔴 THE MANIFEST NAMED EVERY BUILD AND SHOWED WHAT WAS IN NONE OF THEM. Weapon, build, category, mode and a comma-joined list of defect keys — so the one question you open a build list to answer, *what does this build actually run*, needed a click per row. The attachments peek and the badge chips are what the adopted table was styled for.
+//
+// ⚠️ THE PEEK SHOWS TWO AND COUNTS THE REST. Five attachment names is a paragraph in a table cell; two plus "+3" is the shape of the thing, and the editor is one click away for the rest.
 const ARMORY_COLUMNS = [
-    { key: 'weaponName', label: 'Weapon', editable: true },
+    { key: 'weaponName', label: 'Weapon', editable: true,
+      meta: (r) => `${r.mode} · ${(r.attachments || []).length} attachment${(r.attachments || []).length === 1 ? '' : 's'}` },
     { key: 'buildName', label: 'Build', editable: true },
     { key: 'category', label: 'Category', editable: true },
-    { key: 'mode', label: 'Mode' },
-    { key: 'coverage', label: 'Coverage', render: (r) => (r.coverage || []).join(', ') || '—' },
+    { key: 'shareCode', label: 'Code', dataKind: 'date',
+      render: (r) => (r.mode === 'DMZ'
+          ? html`<span class="none">DMZ — no code</span>`
+          : (r.shareCode ? html`<span class="code">${r.shareCode}</span>` : html`<span class="none">not set</span>`)) },
+    { key: 'attachments', label: 'Runs', dataKind: 'detail', render: (r) => {
+        const atts = r.attachments || [];
+        if (!atts.length) return html`<div class="detcell"><span class="none">none</span></div>`;
+        return html`
+            <div class="detcell">
+                <span class="attpeek">
+                    ${atts.slice(0, 2).map((a, i) => html`<em key=${i}>${a}</em>`)}
+                    ${atts.length > 2 ? html`<em class="more">+${atts.length - 2}</em>` : null}
+                </span>
+                <span class=${'thumb ' + (r.imageKey ? 'ok' : 'no')}>${r.imageKey ? 'image' : 'no image'}</span>
+            </div>`;
+    } },
+    // ⚠️ THE DEFECT COUNT IS A CHIP WITH THE NAMES ON IT, not a comma-joined list of internal flag keys. `wrong-attachment-count, near-duplicate` is the shape of the data; "2 problems" with the names on hover is the shape of the question. Age is excluded here for the same reason the Rack excludes it — it is not a fault.
+    { key: 'coverage', label: 'Badges', dataKind: 'right', render: (r) => {
+        const faults = (r.coverage || []).filter((f) => f !== 'stale-90d');
+        const chips = [];
+        if (r.isMeta) chips.push(html`<b class="bdg" key="m">META</b>`);
+        if (r.categoryRank) chips.push(html`<b class="bdg rank" key="r">${String(r.categoryRank).toUpperCase()}</b>`);
+        if (r.dmzRangeRank) chips.push(html`<b class="bdg dmz" key="d">${r.dmzRangeRank}</b>`);
+        if (r.isToxic) chips.push(html`<b class="bdg toxic" key="t">TOXIC</b>`);
+        if (faults.length) chips.push(html`<b class="bdg bad" key="f" data-tip=${`${faults.length} problem${faults.length === 1 ? '' : 's'}\n${faults.map((f) => COVERAGE_LABEL[f] || f).join(' · ')}`}>${faults.length}<${Icon} name="triangle-alert" cls="sm" /></b>`);
+        return chips.length ? html`<span class="tiers">${chips}</span>` : html`<span class="none">—</span>`;
+    } },
 ];
 
 const ARMORY_FILTERS = [
@@ -552,16 +581,51 @@ const COMPARE_FIELDS = [
 
 const MAX_COMPARE = 3;
 
+// 🔴 `.cmpcards` EXPECTED `.dcard` CHILDREN AND GOT BARE DIVS, so the column layout, the dividers and every rule under `.dcard.lc` styled nothing — twelve classes with rules and no markup. The card is the RECORD, laid out so two of them line up field for field: the attachment list is the thing you actually compare, and reading it out of two Discord renders means reading two pictures.
+//
+// ⚠️ THE DISCORD RENDER MOVED OUT OF COMPARE, not away. It lives in the build editor's own side column under "What Discord sends", where it sits beside the fields that produce it. Here it cost one request per picked build to show two images you cannot align, while the table below already reports every field that differs.
+function LoadoutCard({ build, siblings }) {
+    const b = build;
+    const idx = siblings.findIndex((s) => String(s._id) === String(b._id)) + 1;
+    const badges = [
+        b.isMeta ? 'META' : null,
+        b.categoryRank ? String(b.categoryRank).toUpperCase() : null,
+        b.dmzRangeRank ? String(b.dmzRangeRank) : null,
+        b.isToxic ? 'TOXIC' : null,
+    ].filter(Boolean);
+    const code = b.mode !== 'DMZ' && (b.shareCode || b.buildName);
+    const [failed, setFailed] = useState(false);
+    const atts = b.attachments || [];
+    const slots = b.attachmentSlots || [];
+
+    return html`
+        <div class="dcard lc" style=${`--c:${b.accent || 'var(--r-armory)'}`}>
+            <h6>${b.weaponName}</h6>
+            ${badges.length ? html`<div class="lc-badges">${badges.map((x) => html`<span key=${x}>${x}</span>`)}</div>` : null}
+            <div class="lc-rule"></div>
+            ${b.description ? html`<blockquote class="lc-desc">${b.description}</blockquote>` : null}
+            <div class="lc-h">Attachments</div>
+            <ul class="lc-att">
+                ${atts.length
+                    ? atts.map((a, i) => html`<li key=${i}><code>${a}</code>${slots[i] ? html`<em>${slots[i]}</em>` : null}</li>`)
+                    : html`<li class="none">none recorded</li>`}
+            </ul>
+            ${code ? html`<div class="lc-h">Gunsmith Code</div><div class="lc-code">${code}</div>` : null}
+            ${b.imageKey && b.imageUrl
+                ? html`
+                    <div class=${'lc-img' + (failed ? ' failed' : '')}>
+                        <img src=${b.imageUrl} alt=${`${b.weaponName} ${b.buildName || ''}`} loading="lazy" onError=${() => setFailed(true)} />
+                        <span class="lc-imgfail">Cloudinary did not return this image — <code>${b.imageKey}</code></span>
+                    </div>`
+                : html`<div class="lc-noimg">No image on this build, so the card omits the gallery entirely.</div>`}
+            <div class="lc-foot">${b.category} • Build ${idx || 1} of ${siblings.length || 1}${b.lastUpdated ? ` • Updated ${String(b.lastUpdated).slice(0, 10)}` : ''}</div>
+        </div>
+    `;
+}
+
 function Compare({ builds, picked, onPick }) {
     const chosen = builds.filter((b) => picked.includes(String(b._id)));
-    const [cards, setCards] = useState({});
-    useEffect(() => {
-        for (const b of chosen) {
-            const id = String(b._id);
-            if (cards[id]) continue;
-            fetchJson(`/api/armory/preview?id=${id}`).then((d) => setCards((prev) => ({ ...prev, [id]: d.card || null })));
-        }
-    }, [picked.join(',')]);
+    const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
 
     return html`
         <div class="panel" id="compare">
@@ -587,8 +651,7 @@ function Compare({ builds, picked, onPick }) {
             : html`
                 <div class="cmp">
                     <div class="cmpcards">
-                        ${chosen.map((b) => html`
-                            <div key=${String(b._id)}>${cards[String(b._id)] ? renderV2(cards[String(b._id)].components) : html`<p class="empty">Loading…</p>`}</div>`)}
+                        ${chosen.map((b) => html`<${LoadoutCard} key=${String(b._id)} build=${b} siblings=${siblingsOf(b)} />`)}
                     </div>
                     <table class="cmptab">
                         <thead><tr><th>Field</th>${chosen.map((b) => html`<th key=${String(b._id)}>${b.weaponName}</th>`)}</tr></thead>

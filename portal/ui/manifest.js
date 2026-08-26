@@ -155,14 +155,23 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                                 const body = c.render ? c.render(row) : (c.key === 'state'
                                     ? html`<span class=${'stt ' + (PILL[stateOf(row)] || 'conf')}>${String(stateOf(row)).toUpperCase()}</span>`
                                     : row[c.key]);
+                                // 🔴 THE TABLE HAD ONE CELL KIND AND THE STYLESHEET STYLES FIVE. Every column rendered as plain text or a date, so a row could say WHAT a thing is and never what is IN it — the detail column, the tier chips, the right-aligned status column and the secondary line under a name were all styled, all unused, and invisible to an orphan check because a rule existed for each. `dataKind` names the cell; the realm supplies what goes in it.
+                                //
+                                // ⚠️ `detail` MUST stay a table-cell. The mockup's own comment records the fix: `display:block` on the td broke row layout thirty-nine times, once per row, and only the inner box needs the ellipsis. That is why `.det` carries `min-width:0` and the truncation lives on `.detcell`/`.dsub`.
+                                const kind = ci === 0 ? 'n'
+                                    : c.dataKind === 'date' ? 'd drop-sm'
+                                    : c.dataKind === 'detail' ? 'det'
+                                    : c.dataKind === 'right' ? 'ta-r'
+                                    : c.dataKind === 'nums' ? 'nums'
+                                    : '';
                                 return html`
-                                    <td key=${c.key}
-                                        class=${(ci === 0 ? 'n' : c.dataKind === 'date' ? 'd' : '') + (ci > 0 && c.dataKind === 'date' ? ' drop-sm' : '')}
+                                    <td key=${c.key} class=${kind}
                                         onClick=${c.editable ? (e) => { e.stopPropagation(); setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(String(row[c.key] ?? '')); } : null}
                                         style=${c.editable ? 'cursor:text' : ''}>
                                         ${ci === 0
-                                            ? html`<span class="ncell"><span class="dot" style=${dotAccent(row)}></span>${body}</span>`
-                                            : body}
+                                            ? html`<span class="ncell"><span class="dot" style=${dotAccent(row)}></span>
+                                                <span>${body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span></span>`
+                                            : html`${body}${c.meta ? html`<div class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</div>` : null}`}
                                     </td>
                                 `;
                             })}
