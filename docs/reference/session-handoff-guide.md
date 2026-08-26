@@ -129,6 +129,22 @@ Paste-ready, in **one fenced block**, containing:
 
 ---
 
+## Two checks that are worth the thirty seconds
+
+**Before you hand ANYTHING over — critique it once, as if someone else made it.** Not after the reply comes back. The failure this catches is stopping the moment the literal complaint is addressed rather than when the design is right; three rounds in one session were spent on defects that were visible in what had just been sent.
+
+**Anything you call "awaiting his review" must be something he can OPEN.** A localhost URL is not a deliverable. An Artifact, a committed file, or a path he can reach — otherwise it does not exist and saying it is waiting on him is false.
+
+## Read the trackers; do not reconstruct the list
+
+`docs/db-deferred-list.md` is the pending work. Reading it takes one command and it holds items from weeks back; a list assembled from what you remember covers the last few hours and quietly drops the rest.
+
+```bash
+rg -n '^- `\[P' docs/db-deferred-list.md
+```
+
+⚠️ **"Approved" means he said yes to a specific thing.** "Try it" is permission to explore. Writing the stronger word into a tracker manufactures a decision that was never made, and the next session builds on it.
+
 ## What NOT to do — the friction Harkirat named
 
 | ⛔ Don't | Do instead |
