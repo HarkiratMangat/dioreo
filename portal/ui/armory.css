@@ -1,52 +1,135 @@
-/* portal/ui/armory.css — the Rack (weapon cards by category) and Coverage (the defect matrix).
+/* portal/ui/armory.css — the Armory's styles, adopted from the interactive mockup 2026-08-26.
  *
- * Spec §8.2: "Rack shows what exists by category in the bot's real MP_CATEGORY_ACCENT hues" and
- * "Coverage is the Armory's equivalent of the Track's defect flags ... every cell is a filter".
- * The accent is real DATA (portal/api/armory.js stamps b.accent from getMpCategoryAccent), not a
- * CSS token -- a different and correct mechanism from Season's --topic-accent tokens, so this file
- * deliberately consumes an inline --cat rather than adding six more tokens that could drift.
+ * SCOPED UNDER #armory, for the same reason track.css is scoped under #track: several of these
+ * class names are not realm-private in this portal. `.cov`, `.hit`, `.on`, `.zero` and `.panel`
+ * children in particular appear elsewhere, and an unscoped adoption silently restyles a realm
+ * nobody is looking at. Scoping also puts these above the base layer, so inside the Armory they
+ * are unambiguously the authority.
+ *
+ * Extracted by SCANNING BRACES, never by pattern-matching rules — a flat regex hoists @media
+ * contents out of their query. See portal/ui/icons.css's header for the measured case.
+ *
+ * ⚠️ THE RACK'S STRUCTURE CHANGED WITH THIS FILE. It was category -> weapon; it is now rank tier ->
+ * weapon group -> build chip. The old `.catsec`/`.cathead`/`.wcard` rules are carried across anyway
+ * because Coverage and the category chrome still use parts of that vocabulary; a rule with no
+ * markup is dead weight, not a defect, and deleting the wrong one is worse than keeping both while
+ * the migration is in flight.
  */
-.catsec{padding:0 14px}
-.cathead{display:flex;align-items:center;gap:10px;padding:12px 0 8px}
-.cathead .nm{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;font-weight:700;color:var(--cat,var(--ink2))}
-.cathead .ln{flex:1;height:1px;background:var(--rule)}
-.cathead .ct{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink3);white-space:nowrap}
-.wcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding-bottom:6px}
-.wcard{background:var(--sunk);border:1px solid var(--rule);border-left:3px solid var(--cat,var(--rule));
-  border-radius:5px;padding:9px 10px;min-height:0;text-align:left;display:block;font-weight:400}
-.wcard:hover{border-color:var(--rule);border-left-color:var(--cat,var(--rule));background:var(--raised)}
-.wcard .nm{font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--ink);display:block}
-.wcard .mt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:block;margin-top:3px}
-.wcard .dupe{color:var(--warn)}
-.noimg{margin-top:7px;border:1px dashed var(--rule);border-radius:3px;padding:5px;text-align:center;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3)}
-/* Coverage as a real matrix. A cell holding zero is not a problem and must not read like one; a
-   non-zero cell is a filter you can click, so it is a button and it is tinted by severity. */
-.covwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 14px 12px}
-.cov{border-collapse:collapse;width:100%;font-size:12px}
-.cov th{background:transparent;cursor:default;text-align:center;font-size:9px;padding:8px 6px;border-bottom:1px solid var(--rule)}
-.cov th.who{text-align:right;min-width:96px}
-.cov td{padding:4px;text-align:center;border-bottom:1px solid var(--sunk)}
-.cov td.who{text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
-  letter-spacing:.1em;color:var(--cat,var(--ink3))}
-.covcell{width:100%;min-height:32px;padding:6px 4px;font-family:'JetBrains Mono',monospace;font-size:12px;
-  background:var(--sunk);border:1px solid var(--rule);color:var(--ink3);border-radius:4px}
-.covcell.zero{color:var(--ink3);opacity:.45;cursor:default}
-.covcell.hit{color:var(--ink);background:rgba(255,122,69,.14);border-color:rgba(255,122,69,.45)}
-.covcell.on{border-color:var(--patch);color:var(--patch)}
-.covnote{padding:0 14px 12px;font-size:11px;color:var(--ink3)}
-/* The view layer and the Live Preview sit side by side so the Manifest -- the surface you actually
-   work in -- is not pushed a screen and a half down the page. The preview keeps a real minimum
-   because a Discord card below ~250px stops resembling what Discord renders, which is its whole job. */
-.armcols{display:flex;gap:14px;align-items:flex-start}
-.armmain{flex:2;min-width:0}
-.armside{flex:1;min-width:250px;max-width:360px}
 
-@media(max-width:900px){
-  .armcols{flex-direction:column}
-  .armmain,.armside{width:100%;max-width:none;min-width:0}
-  .catsec,.covwrap,.covnote{padding-left:var(--gut);padding-right:var(--gut)}
-  .wcards{grid-template-columns:1fr 1fr}
+#armory .who { display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2) }
+#armory .who .av { width:24px;height:24px;border-radius:var(--rad-round);border:1px solid var(--rule2);flex:none; background:linear-gradient(140deg,#3A4C5A,#1C242C) center/cover no-repeat }
+#armory .who .av[data-src] { background-image:var(--av-src) }
+#armory .who .av:not([data-src]) { background:linear-gradient(140deg,var(--avatar-a),var(--raised)) }
+#armory .who { position:relative }
+#armory .who .av.lg { width:34px;height:34px;flex:none }
+#armory .rack { display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px;padding:14px 16px }
+#armory .racknote { margin:0;padding:0 16px 14px;font-size:11.5px;color:var(--ink3) }
+#armory .cov { display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px;padding:14px 16px }
+#armory .bc-age { font:700 13px/1 var(--data);color:var(--ink3);padding:0 3px;cursor:default }
+#armory .trow { border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk);overflow:hidden }
+#armory .trow-h { display:flex;align-items:center;gap:11px;padding:8px 12px;border-bottom:1px solid var(--rule3) }
+#armory .trow-k { font:700 15px/1 var(--data);letter-spacing:.04em;width:26px;text-align:center;flex:none }
+#armory .trow-n { font-family:var(--data);font-size:10px;color:var(--ink3);border:1px solid var(--rule); border-radius:var(--rad-3);padding:1px 7px;font-variant-numeric:tabular-nums }
+#armory .trow-note { font-size:11px;color:var(--ink3) }
+#armory .t-S .trow-k { color:var(--patch) }
+#armory .t-A .trow-k { color:#9BE8C0 }
+#armory .t-B .trow-k { color:var(--ink3) }
+#armory .t-none { opacity:.86 }
+#armory .t-none .trow-k { color:var(--ink3);font-size:11px;width:auto;letter-spacing:.1em }
+#armory .trow-body { display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px; transition:background .14s,box-shadow .14s }
+#armory .trow-body.over { background:rgba(95,212,232,.07);box-shadow:inset 0 0 0 1.5px var(--staged) }
+#armory .trow-empty { margin:0;align-self:center;font-size:11.5px;color:var(--ink3);font-style:italic }
+#armory .bchip { display:flex;flex-direction:column;gap:4px;min-width:158px;cursor:grab; background:var(--raised);border:1px solid var(--rule2);border-left:3px solid var(--c); border-radius:var(--rad-2);padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s }
+#armory .bchip:hover { border-color:var(--c);transform:translateY(-2px); box-shadow:0 8px 18px -10px rgba(0,0,0,.9) }
+#armory .bchip.dragging { opacity:.6;transform:rotate(-1.5deg) scale(.98);cursor:grabbing }
+#armory .bc-top { display:flex;align-items:center;gap:7px }
+#armory .bc-w { font:600 12.5px/1.2 var(--ui);color:var(--ink) }
+#armory .bc-meta { font:700 7.5px/1 var(--data);letter-spacing:.09em;color:var(--patch); border:1px solid rgba(242,194,48,.45);border-radius:var(--rad-1);padding:2px 4px }
+#armory .bc-b { font-size:11px;color:var(--ink3) }
+#armory .bc-foot { display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:9px; letter-spacing:.06em;color:var(--ink3) }
+#armory .bc-dmz { color:#5FA8D8 }
+#armory .bc-tox { color:var(--del);font-size:11px }
+#armory .bc-bad { margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:var(--rad-3); padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help }
+#armory #viewRack:not([hidden]) .trow { animation:viewIn var(--dur-2) var(--ease) backwards }
+#armory #viewRack:not([hidden]) .trow:nth-child(2) { animation-delay:20ms }
+#armory #viewRack:not([hidden]) .trow:nth-child(3) { animation-delay:40ms }
+#armory #viewRack:not([hidden]) .trow:nth-child(4) { animation-delay:60ms }
+#armory .bchip.settled { animation:settle var(--dur-2) var(--ease) 1 }
+#armory .trow-body.flash { box-shadow:inset 0 0 0 1.5px var(--staged);transition:box-shadow var(--dur-3) }
+#armory .racknote kbd, #armory .bbar-t kbd, #armory .colnote kbd { font-family:var(--data);font-size:var(--t-micro); background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:1px 5px; color:var(--ink2);white-space:nowrap }
+#armory .bc-att { font-family:var(--data);font-size:8.5px;color:var(--ink3);letter-spacing:.04em }
+#armory .cov { display:block;padding:14px 16px }
+#armory .cov .cols { display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px;padding:0 }
+#armory .cov .repbar { height:auto;align-self:start }
+#armory .rack { display:flex;flex-direction:column;gap:10px;padding:14px 16px }
+#armory .trow { display:grid;grid-template-columns:190px minmax(0,1fr);align-items:stretch }
+#armory .trow-h { flex-direction:column;align-items:flex-start;justify-content:center;gap:3px; border-bottom:0;border-right:1px solid var(--rule3);padding:12px 14px }
+#armory .trow-h .trow-k { font-size:var(--t-xl) }
+#armory .trow-note { display:block;font-size:var(--t-xs);color:var(--ink3);line-height:1.45;margin-top:3px }
+#armory .trow-body { align-content:flex-start;padding:12px }
+#armory .trow.t-best { background:linear-gradient(90deg,color-mix(in srgb,var(--patch) 8%,transparent),transparent) }
+#armory .trow.t-best .trow-k { font-size:20px;color:var(--patch) }
+#armory .trow.t-top3 .trow-k { font-size:17px;color:var(--ink) }
+#armory .trow.t-top4 .trow-k { font-size:15px;color:var(--ink2) }
+#armory .trow.t-top5 .trow-k { font-size:14px;color:var(--ink3) }
+#armory .trow.t-unranked { opacity:.72 }
+#armory .trow.t-unranked .trow-k { font-size:13px;color:var(--ink3) }
+#armory .trow.t-top4, #armory .trow.t-top5 { --bc-dim:.94 }
+#armory .trow.t-unranked { --bc-dim:.86 }
+#armory .trow .bchip { opacity:var(--bc-dim,1) }
+#armory .trow:hover .bchip { opacity:1 }
+#armory .bgrp { display:flex;flex-direction:column;gap:0;border:1px solid var(--rule2); border-left:3px solid var(--c);border-radius:var(--rad-2);overflow:hidden;background:var(--raised); transition:transform .13s,box-shadow .13s,border-color .13s }
+#armory .bgrp:hover { border-color:var(--c);border-left-color:var(--c);transform:translateY(-2px); box-shadow:0 8px 18px -10px rgba(0,0,0,.9) }
+#armory .bgrp-h { display:flex;flex-direction:column;gap:5px;padding:8px 11px; border-bottom:1px solid var(--rule);background:color-mix(in srgb,var(--c) 7%,transparent) }
+#armory .bgrp-w { display:flex;align-items:flex-start;gap:7px;min-width:0 }
+#armory .bgrp-w b { font:600 12.5px/1.25 var(--ui);color:var(--ink);min-width:0; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; overflow-wrap:anywhere;min-height:calc(2 * 1.25em) }
+#armory .bgrp-w i { width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none; transform:rotate(45deg);margin-top:4px }
+#armory .bgrp-m { display:flex;align-items:center;gap:7px;padding-left:15px }
+#armory .bgrp-m .bgrp-n { font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);white-space:nowrap }
+#armory .bgrp .bchip { border:0;border-radius:0;background:transparent;min-width:0;transform:none;box-shadow:none }
+#armory .bgrp .bchip:hover { transform:none;box-shadow:none;background:color-mix(in srgb,var(--c) 9%,transparent) }
+#armory .bgrp .bchip + .bchip { border-top:1px solid var(--rule3) }
+#armory .bgrp .bc-w { display:none }
+#armory .trow { align-items:stretch }
+#armory .trow-h { align-self:start;display:grid;grid-template-columns:18px 1fr auto; grid-template-areas:"k t n" ". note note";align-items:center;column-gap:9px;row-gap:4px; padding:10px 12px;border-bottom:1px solid var(--rule3) }
+#armory .trow-k { grid-area:k;font:700 14px/1 var(--data);text-align:center;width:auto;align-self:center; color:var(--ink3) }
+#armory .t-best .trow-k { color:var(--patch) }
+#armory .trow-t { grid-area:t;margin-top:0;font:600 13px/1.2 var(--ui);color:var(--ink) }
+#armory .trow-n { grid-area:n;justify-self:end;align-self:center;font-family:var(--data);font-size:10px; color:var(--ink3);border:1px solid var(--rule);border-radius:var(--rad-pill);padding:3px 8px;line-height:1 }
+#armory .trow-note { grid-area:note;margin-top:0;font-size:11.5px;line-height:1.45;color:var(--ink3) }
+#armory .trow-body { align-content:flex-start;display:block;columns:182px;column-gap:10px }
+#armory .trow-body .bgrp { width:auto;break-inside:avoid;margin:0 0 10px;display:block }
+#armory .trow-body .bchip { display:flex }
+#armory .trow-empty { column-span:all }
+#armory .bgrp { flex:0 0 auto;align-self:flex-start;width:182px }
+#armory .bgrp-m .bgrp-n { color:var(--ink3) }
+#armory .mtable td .none, #armory .mtable .dash, #armory .trow-empty { color:var(--ink3) }
+#armory .trow-h { cursor:pointer;user-select:none }
+#armory .trow-h:hover .trow-t { color:var(--ink) }
+#armory .trow-h:focus-visible { outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-2) }
+#armory .trow .pm { grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3) }
+#armory .trow-h { grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto }
+#armory .trow-h .trow-n { margin-right:20px }
+#armory .trow.tclosed .pm::after { transform:scaleY(1) }
+#armory .trow.tclosed .trow-body { display:none }
+#armory .trow.tclosed .trow-note { display:none }
+#armory .pill[style*="--c"]:not(.on):hover, #armory .chip[style*="--c"]:not(.on):hover, #armory .nw-chip:not(.on):hover, #armory .lane .nm:hover, #armory button[data-lane]:not(.on):hover { background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-hover),transparent) }
+#armory .wcard, #armory .ccard, #armory .tile, #armory .hlive .lp, #armory .dcard { transition:transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease) }
+#armory .wcard:hover, #armory .ccard:hover, #armory .tile:hover, #armory .dcard:hover, #armory .wcard:focus-visible, #armory .ccard:focus-visible { transform:translateY(calc(var(--lift) * -1)); background:color-mix(in srgb,var(--c,var(--patch)) var(--tint-lift),var(--paper)); border-color:color-mix(in srgb,var(--c,var(--patch)) 42%,var(--rule2)); box-shadow:0 10px 26px -14px #000,inset 0 1px 0 0 color-mix(in srgb,var(--c,var(--patch)) 55%,transparent) }
+#armory .lnh:hover .ic-fold path, #armory .trow:hover .ic-fold path { d:path("M6 10.5 L12 13.5 L18 10.5") }
+#armory .lnh:hover .ic-fold.open path, #armory .trow:hover .ic-fold.open path { d:path("M6 13.5 L12 10.5 L18 13.5") }
+
+@media (prefers-reduced-motion: reduce) {
+    #armory #viewTrack:not([hidden]), #armory #viewBoard:not([hidden]), #armory #viewRack:not([hidden]), #armory #viewCoverage:not([hidden]), #armory #viewCompare:not([hidden]), #armory #viewBoard:not([hidden]) .bcol, #armory #viewRack:not([hidden]) .trow { animation:none }
+    #armory #viewTrack, #armory #viewBoard, #armory #viewRack, #armory #viewCoverage, #armory #viewCompare, #armory .bcols .bcol, #armory .trows .trow, #armory .staged-pulse, #armory .count-bump, #armory .bchip.settled { animation:none !important }
 }
-@media(max-width:640px){.wcards{grid-template-columns:1fr}}
-@media(max-width:900px){.covcell{min-height:44px}.wcard{min-height:44px}}
+@media (max-width:820px) {
+    #armory .trow { grid-template-columns:1fr }
+    #armory .trow-h { flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--rule3) }
+    #armory .trow-note { display:none }
+}
+@media (prefers-reduced-motion:reduce) {
+    #armory .trow .pm::after { transition:none }
+    #armory .lnh:hover .ic-fold path, #armory .trow:hover .ic-fold path, #armory .lnh:hover .ic-fold.open path, #armory .trow:hover .ic-fold.open path { d:path("M6 9 L12 15 L18 9") }
+    #armory .lnh:hover .ic-fold.open path, #armory .trow:hover .ic-fold.open path { d:path("M6 15 L12 9 L18 15") }
+}

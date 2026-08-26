@@ -99,7 +99,7 @@ function StagedPanel({ changesets, onDiscard, onReview }) {
                 `)}
             </div>
             <div class="stagedfoot">
-                <button class="accent-fill" onClick=${onReview}>Review &amp; commit</button>
+                <button class="accent-fill" onClick=${onReview}>Review & commit</button>
             </div>
         </div>
     `;

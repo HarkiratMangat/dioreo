@@ -4,6 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
+import { Fold, Icon } from './icons.js';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
@@ -31,43 +32,115 @@ const COVERAGE_LABEL = {
 
 // Rack -- what exists, by category, in the bot's REAL per-category accent (spec §8.2). It shipped as one row of uniform grey chips: a count per category and nothing else. 04-armory-and-commit.html specs a card per WEAPON under a per-category section divider, each card carrying its build count, a dupe warning where one applies, and a dashed placeholder where the image is missing -- so the panel answers "what is in the armory" at a glance instead of "how many categories are there".
 //
-// `accent` is real DATA (portal/api/armory.js stamps it from getMpCategoryAccent), not a CSS token. That is the correct mechanism and deliberately unlike Season's --topic-accent tokens: the bot owns these hues, so reading them from the payload means the two can never drift apart.
+// `accent` is real DATA (portal/api/armory.js stamps it from getMpCategoryAccent), not a CSS token. That is the correct mechanism and deliberately unlike Season's --topic-accent tokens: the bot owns these hues, so reading them from the payload means the two can never drift apart. 🔴 THE RACK IS ORGANISED BY RANK TIER, NOT BY CATEGORY — rebuilt 2026-08-26 onto the adopted design. The previous version grouped by category, which answers "what is in the armory"; the rack in the approved mockup answers "what is ranked where", which is the question the badges exist for and the only one a rack can answer that the Manifest below cannot. Category has not been lost — it is the accent every card carries, so the two facts occupy colour and position rather than competing for the same structure.
+const RANK_ORDER = ['best', 'top3', 'top4', 'top5', null];
+const RANK_LABEL = { best: 'Best in category', top3: 'Top 3', top4: 'Top 4', top5: 'Top 5', null: 'Unranked' };
+const RANK_KEY = { best: 'best', top3: 't3', top4: 't4', top5: 't5', null: 'none' };
+const TCLOSED_KEY = 'dioreo-armory-tclosed';
+
+// A DMZ build ranks on dmzRangeRank, which also encodes a combat range (`best-close`, `best-midlong`) — the tier is the part before the hyphen. An MP build ranks on categoryRank. Reading the wrong field is how DMZ builds all pile into Unranked while looking correct.
+function rankOf(b) {
+    const raw = b.mode === 'DMZ' ? b.dmzRangeRank : b.categoryRank;
+    if (!raw) return null;
+    return String(raw).split('-')[0];
+}
+
+function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(TCLOSED_KEY)) || []); } catch { return new Set(); } }
+function saveTClosed(set) { try { sessionStorage.setItem(TCLOSED_KEY, JSON.stringify([...set])); } catch (e) {} }
+
+// 🔴 AGE IS NOT A DEFECT. Counting staleness among the faults put a red mark on nearly every card — the mockup measured 33 of 36 siblings — so the badge stopped meaning anything. Faults get the red count; age gets a quiet dot, because it is a different fact and reads as one.
+function splitCoverage(b) {
+    const all = b.coverage || [];
+    return { faults: all.filter((f) => f !== 'stale-90d'), aged: all.includes('stale-90d') };
+}
+
+function BuildChip({ b, onPick }) {
+    const { faults, aged } = splitCoverage(b);
+    return html`
+        <article class="bchip" data-id=${b._id || b.id} tabindex="0" role="button"
+                 style=${`--c:${b.accent || 'var(--ink3)'}`}
+                 onClick=${() => onPick(b.weaponName)}
+                 aria-label=${`${b.weaponName} ${b.buildName}, ${RANK_LABEL[String(rankOf(b))]}`}>
+            <span class="bc-top"><span class="bc-w">${b.weaponName}</span>
+                ${b.isMeta ? html`<span class="bc-meta" title="Meta">META</span>` : null}</span>
+            <span class="bc-b">${b.buildName}</span>
+            <span class="bc-foot">
+                <span class="bc-mode">${b.mode}</span>
+                ${b.dmzRangeRank ? html`<span class="bc-dmz">${b.dmzRangeRank}</span>` : null}
+                ${b.isToxic ? html`<span class="bc-tox" title="Toxic"><${Icon} name="skull" cls="sm" label="toxic" /></span>` : null}
+                <span class="bc-att" data-tip=${`${(b.attachments || []).length} attachments`}>${(b.attachments || []).length}×</span>
+                ${faults.length ? html`<span class="bc-bad" data-tip=${faults.map((f) => COVERAGE_LABEL[f] || f).join(' · ')}>${faults.length}</span>` : null}
+                ${aged ? html`<span class="bc-age" data-tip="Not updated in 90 days" aria-label="stale">·</span>` : null}
+            </span>
+        </article>`;
+}
+
+// 🔴 ONE CARD SHAPE, ALWAYS — a weapon with one build is a group of one. Returning a bare chip for singles and a group for multiples put two visual languages side by side for the same kind of object, which Harkirat read as a rendering bug rather than a distinction. And siblings genuinely ARE a group: six pairs of adjacent cards differed only by a stored buildName that is an index ("Build 1", "Build 2"), so the rack was asking a reader to spot a one-character difference between two identical rectangles.
+function WeaponGroup({ weapon, group, onPick }) {
+    return html`
+        <div class="bgrp" style=${`--c:${group[0].accent || 'var(--ink3)'}`}>
+            <div class="bgrp-h">
+                <span class="bgrp-w"><i aria-hidden="true"></i><b>${weapon}</b></span>
+                <span class="bgrp-m">
+                    ${group.some((b) => b.isMeta) ? html`<span class="bc-meta">META</span>` : null}
+                    <span class="bgrp-n">${group.length} build${group.length > 1 ? 's' : ''}</span>
+                </span>
+            </div>
+            ${group.map((b) => html`<${BuildChip} key=${b._id || b.id} b=${b} onPick=${onPick} />`)}
+        </div>`;
+}
+
 function Rack({ builds, onPick }) {
-    const byCategory = {};
-    for (const b of builds) (byCategory[b.category] = byCategory[b.category] || []).push(b);
+    const [tclosed, setTClosed] = useState(loadTClosed);
+    const toggle = (k) => setTClosed((prev) => {
+        const next = new Set(prev);
+        next.has(k) ? next.delete(k) : next.add(k);
+        saveTClosed(next);
+        return next;
+    });
+
     return html`
         <div class="panel" id="rack">
             <div class="ph">
-                <span class="t">Rack — by category</span>
-                <span class="rt">${Object.keys(byCategory).length} categories</span>
+                <span class="t">Rack — by rank</span>
+                <span class="rt">${new Set(builds.map((b) => b.weaponName)).size} weapons</span>
             </div>
             ${builds.length === 0 ? html`<p class="empty">No builds in this catalogue yet.</p>` : null}
-            ${Object.entries(byCategory).map(([cat, list]) => {
-                const byWeapon = {};
-                for (const b of list) (byWeapon[b.weaponName] = byWeapon[b.weaponName] || []).push(b);
-                const accent = list[0]?.accent || 'var(--rule)';
-                return html`
-                    <section class="catsec" style=${`--cat:${accent}`}>
-                        <div class="cathead">
-                            <span class="nm">${cat}</span><span class="ln"></span>
-                            <span class="ct">${Object.keys(byWeapon).length} weapons · ${list.length} builds</span>
-                        </div>
-                        <div class="wcards">
-                            ${Object.entries(byWeapon).map(([weapon, wb]) => {
-                                const dupe = wb.some((b) => (b.coverage || []).includes('near-duplicate'));
-                                const noImage = wb.every((b) => (b.coverage || []).includes('missing-image'));
-                                return html`
-                                    <button class="wcard" onClick=${() => onPick(weapon)} title=${`Filter the manifest to ${weapon}`}>
-                                        <span class="nm">${weapon}</span>
-                                        <span class="mt">${wb.length} build${wb.length === 1 ? '' : 's'}${dupe ? html` · <span class="dupe">dupe?</span>` : null}</span>
-                                        ${noImage ? html`<span class="noimg">no image</span>` : null}
-                                    </button>
-                                `;
-                            })}
-                        </div>
-                    </section>
-                `;
-            })}
+            <div class="rack">
+                ${RANK_ORDER.map((r) => {
+                    const key = String(r);
+                    const list = builds.filter((b) => rankOf(b) === r);
+                    const closed = tclosed.has(key);
+                    const byWeapon = new Map();
+                    for (const b of list) { if (!byWeapon.has(b.weaponName)) byWeapon.set(b.weaponName, []); byWeapon.get(b.weaponName).push(b); }
+                    return html`
+                        <div key=${key} class=${`trow t-${RANK_KEY[key]}${closed ? ' tclosed' : ''}`} data-tier=${key}>
+                            <div class="trow-h" role="button" tabindex="0" aria-expanded=${!closed}
+                                 onClick=${() => toggle(key)}
+                                 onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(key); } }}
+                                 aria-label=${`${RANK_LABEL[key]}, ${byWeapon.size} weapon group${byWeapon.size === 1 ? '' : 's'} — click to collapse`}>
+                                <!-- 🔴 "T3" AND "Top 3" ARE THE SAME FACT. The header used to render a token, a
+                                     count and a label as three lines, so every tier restated itself, and the
+                                     shapes differed row to row — five headers reading as three designs. One
+                                     shape: mark, label, count, and a note ONLY where there is something to add.
+                                     The mark is a star for best and an em dash for unranked, the two rows whose
+                                     meaning is not already in their label. -->
+                                <span class="trow-k" aria-hidden="true">${r === null ? '—' : r === 'best' ? html`<${Icon} name="star" cls="sm" />` : ''}</span>
+                                <span class="trow-t">${RANK_LABEL[key]}</span>
+                                <span class="trow-n">${list.length}</span>
+                                ${r === 'best' ? html`<span class="trow-note">one <b>weapon</b> per category</span>`
+                                    : r === null ? html`<span class="trow-note">no rank set; these render with no tier badge</span>` : null}
+                                <${Fold} open=${!closed} cls="sm trow-i" />
+                            </div>
+                            <div class="trow-body">
+                                ${list.length
+                                    ? [...byWeapon.entries()].map(([w, g]) => html`<${WeaponGroup} key=${w} weapon=${w} group=${g} onPick=${onPick} />`)
+                                    : html`<div class="trow-empty">Nothing at ${RANK_LABEL[key]}.</div>`}
+                            </div>
+                        </div>`;
+                })}
+            </div>
+            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own (<code>best</code> / <code>top3</code> / <code>top4</code> / <code>top5</code>), validated by <code>adminParser.js</code>'s <code>parseLoadoutBadges()</code>. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code>, which also encodes a combat range (<code>best-close</code>, <code>best-midlong</code>).</p>
         </div>
     `;
 }
@@ -270,7 +343,7 @@ export function ArmoryRealm({ session }) {
                   masthead=${html`<${Masthead} title="Armory" sub=${modeLine} stats=${armoryStats} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
-                      <div class="armcols">
+                      <div class="armcols" id="armory">
                           <div class="armmain">
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${view === 'Rack'

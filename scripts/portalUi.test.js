@@ -1,5 +1,7 @@
 // scripts/portalUi.test.js Render functions are PURE: state in, tree out. No DOM, no browser, no framework harness. That is the whole frontend testing story, and it only works because the components take state as an argument rather than reaching for it.
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const { bandClass, laneFor, tierOf } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
 const { columnFor, groupByColumn, blockedReason, describeOp, describeInverse, diffRows, fmtDiffValue } = require('../portal/ui/board.logic');
 const { seasonWindow, topicVarFor, typeLabelFor } = require('../portal/ui/season.logic');
@@ -155,6 +157,30 @@ check('an announcement that has not started yet is SCHEDULED, never live', () =>
     assert.strictEqual(announcementState({ startsAt: new Date('2026-08-01'), expiresAt: null }, now), 'live');
     assert.strictEqual(announcementState({ startsAt: new Date('2026-08-26'), expiresAt: new Date('2026-08-11') }, now), 'expired',
         'expiry wins over a future start — a set that already ended is not waiting to begin');
+});
+
+// 🔴 HTML ENTITIES DO NOT DECODE INSIDE AN htm TEMPLATE, and the failure is silent and visible only on screen. htm builds a Preact tree, and a text node is rendered verbatim -- so `&#215;` prints as the five characters "&#215;", not "×". Found 2026-08-26 on the migrated Armory rack, where every build chip read "MP 5&#215;", and the same pass then found a PRE-EXISTING one that had been shipping in season.js's staged panel: "Review &amp; commit". Nothing else here can see it -- it is not a contrast problem, not a schema problem, and the markup is perfectly well formed.
+//
+// Write the real character. This test exists because the reflex ("escape it for HTML") is right in an HTML file and wrong in every one of these.
+check('no HTML entity is written inside a portal/ui template', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8');
+        src.split('\n').forEach((line, i) => {
+            // Comments are prose about the problem -- this very file's neighbours quote entities on purpose, so a line that is only a comment is not an offence.
+            const code = line.replace(/^\s*(\/\/|\*).*$/, '');
+            const m = code.match(/&(?:[a-zA-Z][a-zA-Z0-9]+|#[0-9]+);/);
+            if (m) offenders.push(`portal/ui/${f}:${i + 1}  ${m[0]}`);
+        });
+    }
+    assert.deepStrictEqual(offenders, [], 'HTML entities render as literal text under htm:\n  ' + offenders.join('\n  '));
+});
+
+// THE GATE CAN FAIL -- without this the case above passes on an empty directory listing just as happily as on a clean one.
+check('THE ENTITY GATE CAN FAIL: a sample line with an entity is caught', () => {
+    const sample = '    <span class="x">5&#215;</span>';
+    assert.ok(/&(?:[a-zA-Z][a-zA-Z0-9]+|#[0-9]+);/.test(sample.replace(/^\s*(\/\/|\*).*$/, '')));
 });
 
 process.exit(failures ? 1 : 0);

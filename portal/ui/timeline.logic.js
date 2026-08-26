@@ -1,23 +1,12 @@
-// portal/ui/timeline.logic.js — CLASSIC script + CommonJS. The date<->pixel engine, adopted from
-// the interactive mockup's assets/timeline.js.
+// portal/ui/timeline.logic.js — CLASSIC script + CommonJS. The date<->pixel engine, adopted from the interactive mockup's assets/timeline.js.
 //
-// Everything the Track does -- drag, resize, zoom, pan, snap -- resolves to a real ISO date through
-// here, so a dragged bar produces a date the backend could actually store.
+// Everything the Track does -- drag, resize, zoom, pan, snap -- resolves to a real ISO date through here, so a dragged bar produces a date the backend could actually store.
 //
-// WHY IT IS A .logic.js. Same contract as track.logic.js and season.logic.js: buildPortal emits a
-// classic <script> for every *.logic.js BEFORE app.js, so its top-level declarations become globals
-// an ESM module can read without an import; Node's require() reads the SAME file as CommonJS. That
-// is the working resolution of "Node never loads ESM, the browser never loads CJS".
+// WHY IT IS A .logic.js. Same contract as track.logic.js and season.logic.js: buildPortal emits a classic <script> for every *.logic.js BEFORE app.js, so its top-level declarations become globals an ESM module can read without an import; Node's require() reads the SAME file as CommonJS. That is the working resolution of "Node never loads ESM, the browser never loads CJS".
 //
-// 🔴 THIS FILE SPEAKS ISO STRINGS. Every function here takes and returns 'YYYY-MM-DD', never a Date.
-// track.logic.js's editOpFor takes a DATE. That mismatch is a real seam and it fails SILENTLY: the
-// Track spike's drag looked like it worked -- the ghost state applied and cleared -- and simply
-// never committed, throwing `newEndDate.toISOString is not a function` only into the console.
-// Convert explicitly at the boundary; never assume which vocabulary a value is in.
+// 🔴 THIS FILE SPEAKS ISO STRINGS. Every function here takes and returns 'YYYY-MM-DD', never a Date. track.logic.js's editOpFor takes a DATE. That mismatch is a real seam and it fails SILENTLY: the Track spike's drag looked like it worked -- the ghost state applied and cleared -- and simply never committed, throwing `newEndDate.toISOString is not a function` only into the console. Convert explicitly at the boundary; never assume which vocabulary a value is in.
 
-// `var` at classic-script top level becomes a real global the ESM modules read as a bare `TL`,
-// exactly as track.logic.js's function declarations do. `window.TL = ...` was the mockup's form
-// and it throws ReferenceError the moment Node requires this file, which is half its job.
+// `var` at classic-script top level becomes a real global the ESM modules read as a bare `TL`, exactly as track.logic.js's function declarations do. `window.TL = ...` was the mockup's form and it throws ReferenceError the moment Node requires this file, which is half its job.
 var TL = (function () {
 
   const DAY = 86400000;
@@ -86,7 +75,6 @@ var TL = (function () {
   return { DAY, days, addDays, toISO, fmt, fmtLong, make, ticks, drag };
 })();
 
-// Guarded, exactly as track.logic.js is: a classic script in a real browser has no `module` global,
-// and an unguarded assignment throws ReferenceError mid-parse.
+// Guarded, exactly as track.logic.js is: a classic script in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse.
 if (typeof window !== 'undefined') window.TL = TL;
 if (typeof module !== 'undefined' && module.exports) module.exports = TL;

@@ -23,6 +23,26 @@ const params = new URLSearchParams(location.search);
 const realms = params.get('realms') ? params.get('realms').split(',') : ALL_REALMS;
 const owner = params.get('owner') !== '0';
 
+// portal/api/armory.js stamps two fields onto every build that are NOT in the stored document: `coverage` (from coverageFlags) and `accent` (from getMpCategoryAccent). The fixtures hold raw documents, so without this the Rack renders with no accents and the Coverage matrix is all zeros — a page that looks finished and is measuring nothing.
+//
+// ⚠️ ONE FLAG IS AN APPROXIMATION AND IT IS MARKED. The real near-duplicate check runs utils/search.js's findDuplicateLoadouts, which needs the bot's own module; here an exact shareCode collision among the other MP builds stands in. The other four rules are the server's verbatim. Anything that turns on the precise duplicate SET must be checked against the server, not against this.
+const CAT_HEX = Object.fromEntries((FIX.CATS || []).map((c) => [c.key, c.hex]));
+const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+const MP_CODES = new Map();
+for (const b of FIX.builds || []) {
+    if (b.mode !== 'MP' || !b.shareCode) continue;
+    MP_CODES.set(b.shareCode, (MP_CODES.get(b.shareCode) || 0) + 1);
+}
+function armoryBuild(b) {
+    const flags = [];
+    if (!b.imageKey) flags.push('missing-image');
+    if (!(b.isMeta || b.categoryRank || b.dmzRangeRank || b.isToxic)) flags.push('no-badges');
+    if ((b.attachments || []).length !== (b.mode === 'DMZ' ? 9 : 5)) flags.push('wrong-attachment-count');
+    if (b.lastUpdated && Date.now() - new Date(b.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
+    if (b.mode === 'MP' && b.shareCode && (MP_CODES.get(b.shareCode) || 0) > 1) flags.push('near-duplicate');
+    return { ...b, _id: b._id || b.id, coverage: flags, accent: CAT_HEX[b.category] || 'var(--ink3)' };
+}
+
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
@@ -33,7 +53,7 @@ const ROUTES = [
         draft: FIX.draft ? { ...FIX.draft } : null,
         grantedPages: ['season', 'draws', 'calendar', 'patchnotes'],
     })],
-    [/^\/api\/armory$/, () => ({ builds: FIX.builds || [], grantedPages: ['loadouts'] })],
+    [/^\/api\/armory$/, () => ({ builds: (FIX.builds || []).map(armoryBuild), grantedPages: ['loadouts'] })],
     [/^\/api\/armory\/preview/, () => ({ card: null })],
     [/^\/api\/armory\/export/, () => ({ text: '(harness: bulk export text)' })],
     [/^\/api\/broadcast$/, () => ({
