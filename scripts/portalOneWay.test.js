@@ -133,6 +133,61 @@ check('THE PERMISSION GATE CAN FAIL: a row runnable without the permission is ca
     }, /runnable without the permission/);
 });
 
+// ── WHAT PROMOTE WOULD DO ─────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE ONE IRREVERSIBLE OPERATION IN THIS REALM COULD NOT BE INSPECTED. A draft is built over weeks and promote replaces the live season with it; the scope switch let you EDIT the draft and nothing showed the DIFFERENCE. On the harness's own fixture the answer turns out to matter: promoting blanks all three deadline titles and all three end dates, and drops the season from 37 items to 20. None of that was visible anywhere before Compare.
+const { draftDiff } = require('../portal/ui/season.logic');
+
+const DAY = (iso) => String(iso).slice(0, 10);
+
+check('an identical draft produces no rows at all', () => {
+    const same = { currentSeasonTitle: 'S7', bpTitle: 'BP', bpEnd: '2026-09-10T00:00:00.000Z', newDraws: [1], calendar: [] };
+    const d = draftDiff(same, { ...same }, DAY);
+    assert.deepStrictEqual(d.rows, []);
+    assert.strictEqual(d.identical, true);
+});
+
+// 🔴 THE COMPARISON IS ON THE STORED DAY, NEVER ON THE FORMATTED STRING. A formatter renders one side "Sep 10" and, given a value carrying a time, could render the other differently — so comparing display text reports a change where the record has none. That is a diff crying wolf on an irreversible operation, which is how a real difference stops being read.
+check('the same day is not a change, even when the two values are written differently', () => {
+    const live = { bpEnd: '2026-09-10T00:00:00.000Z' };
+    const draft = { bpEnd: '2026-09-10T18:45:00.000Z' };
+    const d = draftDiff(live, draft, DAY);
+    assert.deepStrictEqual(d.rows.filter((r) => r.key.endsWith('ends')), [],
+        'the two values are the same DAY and must not be reported as a change');
+});
+
+check('THE DAY COMPARISON CAN FAIL: comparing the raw values reports a change that is not one', () => {
+    assert.throws(() => {
+        assert.strictEqual('2026-09-10T00:00:00.000Z', '2026-09-10T18:45:00.000Z', 'raw values differ');
+    }, /raw values differ/);
+});
+
+// ⚠️ TBD IS A VALUE, NOT AN ABSENCE. A deadline moving from a real date to TBD is exactly the kind of thing somebody needs to see before an irreversible replace, and comparing only the date fields would call that pair identical whenever both were empty.
+check('a date becoming TBD is a change, and so is TBD becoming a date', () => {
+    const toTbd = draftDiff({ bpEnd: '2026-09-10T00:00:00.000Z' }, { bpEndTBD: true }, DAY).rows.find((r) => r.key === 'battle pass ends');
+    assert.ok(toTbd, 'a real date becoming TBD went unreported');
+    assert.strictEqual(toTbd.now, 'TBD');
+    const fromTbd = draftDiff({ bpEndTBD: true }, { bpEnd: '2026-09-10T00:00:00.000Z' }, DAY).rows.find((r) => r.key === 'battle pass ends');
+    assert.strictEqual(fromTbd.was, 'TBD');
+    assert.strictEqual(fromTbd.now, '2026-09-10');
+});
+
+check('every deadline line is compared, not just the battle pass', () => {
+    const d = draftDiff({ bpTitle: 'a', rankTitle: 'b', dmzTitle: 'c' }, { bpTitle: 'x', rankTitle: 'y', dmzTitle: 'z' }, DAY);
+    assert.deepStrictEqual(d.rows.map((r) => r.key), ['battle pass', 'ranked', 'dmz'],
+        'a line missing here is a deadline that could change without being shown');
+});
+
+check('the content row counts all three lists, and marks growth', () => {
+    const d = draftDiff({ newDraws: [1], returningDraws: [], calendar: [2] },
+        { newDraws: [1, 2], returningDraws: [3], calendar: [4, 5] }, DAY).rows.find((r) => r.key === 'content');
+    assert.strictEqual(d.was, '2 live items');
+    assert.strictEqual(d.now, '5 items after promote');
+    assert.strictEqual(d.add, true);
+    const shrink = draftDiff({ newDraws: [1, 2, 3] }, { newDraws: [1] }, DAY).rows.find((r) => r.key === 'content');
+    assert.strictEqual(shrink.add, false, 'losing items must not be marked as an addition');
+});
+
 check('one record is not "1 draws"', () => {
     assert.strictEqual(plural(1, 'draws'), 'draw');
     assert.strictEqual(plural(2, 'draws'), 'draws');

@@ -351,9 +351,25 @@ const todayIso = () => (typeof document !== 'undefined' && document.documentElem
 //
 // A draft is the whole next season — titles, deadlines, draws, calendar — built where players cannot see it. It sits directly under the identity editor because that is what a draft IS: a second copy of those same fields, and putting it anywhere else would make the relationship a thing you have to be told rather than a thing you can see.
 //
-// ⚠️ PROMOTE IS NOT HERE. It is the one draft operation that cannot be taken back, so it lives in the one-way strip at the foot of the realm with the other six — and this bar says so, because a reader who has staged a draft and cannot find the button will conclude the feature is unfinished rather than that it is somewhere safer.
-function DraftZone({ draft, onStart, onDiscard }) {
+// ⚠️ PROMOTE IS NOT HERE. It is the one draft operation that cannot be taken back, so it lives in the one-way strip at the foot of the realm with the other six — and this bar says so, because a reader who has staged a draft and cannot find the button will conclude the feature is unfinished rather than that it is somewhere safer. 🔴 PROMOTE IS THE ONE IRREVERSIBLE OPERATION IN THIS REALM AND ITS EFFECT COULD NOT BE INSPECTED. The scope switch let you EDIT the draft; nothing showed the difference between it and what is live. Compare answers the only question worth asking before a one-way replace: what actually changes. It sits in the draft bar rather than in the strip below, because you read it while deciding, not while confirming.
+function DraftCompare({ live, draft }) {
+    const { rows, identical } = draftDiff(live, draft, (iso) => fmtDay(iso));
+    if (identical) return html`<div class="diff"><div class="diff-none">The draft is identical to what is live.</div></div>`;
+    return html`
+        <div class="diff">
+            <div class="diff-h"><span>FIELD</span><span>LIVE NOW</span><span>AFTER PROMOTE</span></div>
+            ${rows.map((r) => html`
+                <div class="diff-r" key=${r.key}>
+                    <span class="dk">${r.key}</span>
+                    <span class="dwas">${r.was || '—'}</span>
+                    <span class=${'dnow' + (r.add ? ' add' : '')}>${r.now || '—'}</span>
+                </div>`)}
+        </div>`;
+}
+
+function DraftZone({ draft, live, onStart, onDiscard }) {
     const [title, setTitle] = useState('');
+    const [comparing, setComparing] = useState(false);
     if (!draft || !draft.active) {
         return html`
             <div class="nodraft">
@@ -375,8 +391,10 @@ function DraftZone({ draft, onStart, onDiscard }) {
                 not visible to players</span>
             <span class="sp"></span>
             <span class="dsub">Promote is in the one-way strip below.</span>
+            <button class="chip" aria-pressed=${comparing ? 'true' : 'false'} onClick=${() => setComparing(!comparing)}>Compare</button>
             <button class="chip danger" onClick=${onDiscard}>Discard draft</button>
-        </div>`;
+        </div>
+        ${comparing ? html`<${DraftCompare} live=${live} draft=${draft} />` : null}`;
 }
 
 // ── THE PATCH-NOTE RECORD ─────────────────────────────────────────────────────────────────────
@@ -772,7 +790,7 @@ export function SeasonRealm({ session }) {
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
                   viewSlot=${html`${identitySlot}
-                                  <${DraftZone} draft=${state.draft} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
+                                  <${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
                                   ${viewSlot}
                                   <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
                                                    onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />

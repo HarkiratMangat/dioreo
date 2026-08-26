@@ -23,8 +23,7 @@ const uiFiles = fs.readdirSync(UI).filter((f) => f.endsWith('.js'));
 
 const { recordExport, exportRecords, exportRecord, clearExports, exportSummary } = require('../portal/ui/exportPanel.logic');
 
-// ── THE MECHANISM ─────────────────────────────────────────────────────────────────────────────
-// ⚠️ COMMENTS ARE STRIPPED FIRST, AND THE FIRST VERSION OF THIS DID NOT — so it flagged three files whose only offence was DESCRIBING the defect in the comment that records it. A source-scan gate that cannot tell code from prose fires hardest on the files that document the bug best, which trains the next person to delete the comment rather than keep the rule.
+// ── THE MECHANISM ───────────────────────────────────────────────────────────────────────────── ⚠️ COMMENTS ARE STRIPPED FIRST, AND THE FIRST VERSION OF THIS DID NOT — so it flagged three files whose only offence was DESCRIBING the defect in the comment that records it. A source-scan gate that cannot tell code from prose fires hardest on the files that document the bug best, which trains the next person to delete the comment rather than keep the rule.
 const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
 
 check('nothing in portal/ui opens a data: URL — that navigation is blocked and fails silently', () => {

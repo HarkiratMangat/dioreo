@@ -266,8 +266,42 @@ function patchEditOps(entry, draft) {
     return { ops, blocked: '' };
 }
 
+// ── LIVE vs DRAFT ─────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 PROMOTE IS ONE-WAY AND THERE WAS NO WAY TO SEE WHAT IT WOULD DO. A draft can be built for weeks — titles, three deadlines, draws, a whole calendar — and the only irreversible operation in the realm replaces the live season with it. The scope switch let you EDIT the draft; nothing anywhere would show you the difference. An irreversible action whose effect cannot be inspected beforehand is the exact shape the staging model exists to remove, one level up.
+//
+// ⚠️ COMPARED ON NORMALISED VALUES, DISPLAYED WITH A FORMATTER. A date is compared as its stored ISO day and rendered by the caller's own `fmt`, so "same day, different string" cannot show up as a change — which is what a comparison of formatted text would do the moment one side carried a time and the other did not.
+//
+// ⚠️ TBD IS A VALUE, NOT AN ABSENCE. A deadline moving from a real date to TBD is a change worth seeing, and comparing the date fields alone would call that pair identical whenever both happened to be empty.
+function draftDiff(live, draft, fmt) {
+    const show = typeof fmt === 'function' ? fmt : ((v) => v);
+    const day = (v) => (v ? String(v).slice(0, 10) : '');
+    const rows = [];
+    const push = (key, a, b, add) => { if (a !== b) rows.push({ key, was: a, now: b, add: Boolean(add) }); };
+    const L = live || {};
+    const D = draft || {};
+
+    push('title', L.currentSeasonTitle || '', D.currentSeasonTitle || '');
+    for (const line of SEASON_LINES) {
+        const label = line.label.toLowerCase();
+        push(label, L[line.titleKey] || '', D[line.titleKey] || '');
+        const endOf = (o) => (o[line.tbdKey] ? 'TBD' : day(o[line.endKey]));
+        const a = endOf(L), b = endOf(D);
+        if (a !== b) rows.push({ key: `${label} ends`, was: a === 'TBD' ? 'TBD' : (a ? show(a) : ''), now: b === 'TBD' ? 'TBD' : (b ? show(b) : ''), add: false });
+    }
+
+    // Content is one row rather than a list, because the draft's items are visible on the Track and this column answers a different question: how much of the season is about to be replaced.
+    const count = (o) => (o.newDraws || []).length + (o.returningDraws || []).length + (o.calendar || []).length;
+    const liveN = count(L), draftN = count(D);
+    if (liveN !== draftN) {
+        rows.push({ key: 'content', was: `${liveN} live item${liveN === 1 ? '' : 's'}`,
+            now: `${draftN} item${draftN === 1 ? '' : 's'} after promote`, add: draftN > liveN });
+    }
+    return { rows, identical: rows.length === 0 };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES });
+    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff });
 }
 
 if (typeof module !== 'undefined' && module.exports) {

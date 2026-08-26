@@ -527,6 +527,14 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 **Two of this file's own gates were self-inflicted and worth recording.** The `data:` scan flagged three files whose only offence was *describing* the defect in the comment that records it — a source gate that cannot tell code from prose fires hardest on the files that document the bug best, and trains the next person to delete the comment. And the scope-shape check matched up to the first `}`, which lands inside `${todayIso()}` in a filename template, so every scope appeared to end three keys early.
 
+### The one irreversible operation in Season could not be inspected
+
+🔴 **A draft is built over weeks and promote replaces the live season with it — and nothing showed the difference.** The scope switch let you *edit* the draft; there was no way to see what promoting it would actually do. That is the shape the whole staging model exists to remove, one level up: an action you cannot inspect before taking, and this one cannot be taken back. **Compare** sits in the draft bar, next to the thing it describes and above the strip that runs it.
+
+**On the harness's own fixture the answer turns out to matter**: promoting blanks all three deadline titles and all three end dates, and drops the season from 37 items to 20. None of that was visible anywhere before.
+
+⚠️ **The comparison is on the stored DAY, never on the formatted string.** A formatter renders one side *Sep 10* and, given a value carrying a time, could render the other differently — so comparing display text reports a change where the record has none, which is a diff crying wolf on an irreversible operation. **And TBD is a value, not an absence**: a deadline moving from a real date to TBD is exactly what somebody needs to see, and comparing only the date fields would call that pair identical whenever both happened to be empty.
+
 **Coverage 71% → 79% (Season 73% → 80%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
