@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dioreo Portal — fixture harness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap">
+<link rel="stylesheet" href="/app.css">
+
+<!-- 🔴 THE SEAM. A URL-like import-map key is matched against the RESOLVED specifier, so every
+     `import { fetchJson } from './httpClient.js'` inside /ui/*.js resolves to the harness stub
+     instead. Production code is untouched and the real page, which declares no import map, is
+     unaffected. -->
+<script type="importmap">
+{ "imports": { "/ui/httpClient.js": "/harness/stub.js" } }
+</script>
+</head>
+<body>
+
+<!-- Both instruments resolve their coordinate space from document.querySelector('main'), which is
+     this portal's scroll container. The real shell provides one; the harness must too, or __peers()
+     throws on a null rect. -->
+<main><div id="app"></div></main>
+
+<!-- fixtures.js reads ?today= itself and stamps document.documentElement.dataset.today, so the
+     date-travel switch the mockup harness had comes across for free. -->
+<script src="/harness/fixtures.js"></script>
+__LOGIC__
+<script type="module" src="/ui/app.js"></script>
+
+<script src="/harness/peers.js"></script>
+<script src="/harness/grid.js"></script>
+</body>
+</html>

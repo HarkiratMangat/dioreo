@@ -172,12 +172,42 @@ function portalContrastAudit(css) {
     return true;
 }
 
+const MOCKUP_ASSETS = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-08-23-portal-interactive');
+
+// The FIXTURE HARNESS — portal/public/harness.html. A page the SERVER NEVER SERVES: portal/server.js routes every non-/api non-/auth GET through serveStatic, so this is reachable only through the repo-static config in .claude/launch.json (:8900) or any plain file server. It exists so design work on the real components needs no Mongo, no Discord OAuth and no session — the components are pure (spec §12a) and the only thing standing between them and a browser was the data.
+//
+// It does NOT stub by branching inside httpClient.js. The page declares an import map aliasing /ui/httpClient.js to /harness/stub.js, so the alias exists only in a page production never loads.
+//
+// ⚠️ fixtures.js and the two instruments are still SOURCED FROM THE MOCKUP PACKAGE. That is the one remaining dependency on it and it is deliberate: copying 135KB of fixtures into git twice during a migration is how the two copies drift. When the mockup package retires (see docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md) these three files move into portal/ui/harness/ and this function's paths change with them.
+function buildHarness() {
+    const HARNESS_SRC = path.join(UI_DIR, 'harness');
+    if (!fs.existsSync(HARNESS_SRC)) return null;
+    const HARNESS_OUT = path.join(OUT_DIR, 'harness');
+    fs.mkdirSync(HARNESS_OUT, { recursive: true });
+    copyFile(path.join(HARNESS_SRC, 'stub.js'), path.join(HARNESS_OUT, 'stub.js'));
+    for (const [src, dest] of [
+        ['assets/fixtures.js', 'fixtures.js'],
+        ['.peers.js', 'peers.js'],
+        ['.grid.js', 'grid.js'],
+    ]) {
+        const from = path.join(MOCKUP_ASSETS, src);
+        if (fs.existsSync(from)) copyFile(from, path.join(HARNESS_OUT, dest));
+    }
+    // The same classic-script logic tags index.html emits, for the same reason — *.logic.js must define its globals before app.js's module graph evaluates.
+    const logicTags = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.logic.js')).sort()
+        .map(f => `<script src="/ui/${f}"></script>`).join('\n');
+    const page = fs.readFileSync(path.join(HARNESS_SRC, 'index.html'), 'utf8').replace('__LOGIC__', logicTags);
+    fs.writeFileSync(path.join(OUT_DIR, 'harness.html'), page);
+    return page;
+}
+
 function build() {
     vendorPreactAndHtm();
     const uiFiles = copyUiScripts();
     const css = buildCss();
     const indexHtml = buildIndexHtml();
-    return { uiFiles, css, indexHtml };
+    const harness = buildHarness();
+    return { uiFiles, css, indexHtml, harness };
 }
 
 function runCli() {
