@@ -79,6 +79,32 @@ const SEASON_COLUMNS = [
         assert.ok(!out.includes('href="#/access"'), 'a realm outside visibleRealms must not appear');
     });
 
+    // 🔴 REVIEW IS BELOW THE RULE, NOT A SIXTH REALM — the approved design's own decision, and one that silently regressed the first time it was wired: it went in as an ordinary rail item at position four, with a hand-drawn glyph and no rule. Five realms are places to work, Review is the way out. Nothing else can catch this; a rail with six links renders perfectly.
+    check('Review renders after a rail rule rather than among the realms', () => {
+        const realms = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review'];
+        const out = render(html`<${Rail} realm="season" realms=${realms} badges=${{}} />`);
+        assert.ok(out.includes('rail-rule'), 'the divider that separates the two kinds must be present');
+        assert.ok(out.indexOf('rail-rule') < out.indexOf('href="#/review"'), 'Review comes AFTER the rule');
+        for (const r of ['season', 'armory', 'broadcast', 'access', 'analytics']) {
+            assert.ok(out.indexOf(`href="#/${r}"`) < out.indexOf('rail-rule'), `${r} belongs before the rule`);
+        }
+    });
+
+    // The staged count is a property of the CHANGESET, so an Armory edit must not badge Season.
+    check('the staged count lands on Review, whatever realm staged the work', () => {
+        const realms = ['season', 'armory', 'review'];
+        const out = render(html`<${Rail} realm="armory" realms=${realms} badges=${{ review: 3 }} />`);
+        const badgeAt = out.indexOf('3 staged');
+        assert.ok(badgeAt > -1, 'the count must render');
+        assert.ok(badgeAt > out.indexOf('rail-rule'), 'and it must sit on Review, past the rule');
+    });
+
+    check('an admin who cannot see Review gets no rule and no way out', () => {
+        const out = render(html`<${Rail} realm="season" realms=${['season']} badges=${{}} />`);
+        assert.ok(!out.includes('href="#/review"'), 'Review must not appear');
+        assert.ok(!out.includes('rail-rule'), 'and neither must a divider dividing nothing');
+    });
+
     check('the masthead is DATA — a title and stats, never an explanatory paragraph', () => {
         const out = render(html`<${Masthead} title="Season 7" sub="2026-08-01 → 2026-09-04"
             stats=${[{ value: 14, label: 'days left' }, { value: 3, label: 'staged', tone: 'hot' }]} />`);

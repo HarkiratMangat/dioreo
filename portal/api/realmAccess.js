@@ -9,7 +9,7 @@ async function grantedPagesFor(discordId, allowedPages) {
     return pages.filter((p) => allowedPages.includes(p));
 }
 
-// Which of the 5 realms this admin can even see. Access and Analytics aren't page-scoped (Access is owner-only; Analytics gates on the 'bot' command token), so they're resolved separately from the page-based realms.
+// Which realms this admin can even see — the five places to work, plus Review, which is not one of them (see portal/ui/shell.js's Rail). Access and Analytics aren't page-scoped (Access is owner-only; Analytics gates on the 'bot' command token), so they're resolved separately from the page-based realms.
 async function visibleRealms(discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES }) {
     const owner = isOwner(discordId);
     const pages = await getManagePages(discordId);

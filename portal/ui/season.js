@@ -253,7 +253,7 @@ export function SeasonRealm({ session }) {
 
     return html`
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board']} onSetView=${setView}
-                  badges=${{ season: stagedCount }}
+                  badges=${{ review: stagedCount }}
                   masthead=${html`<${Masthead} title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats} />`}
                   viewSlot=${viewSlot} manifestSlot=${manifestSlot}

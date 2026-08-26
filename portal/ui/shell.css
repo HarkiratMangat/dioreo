@@ -193,3 +193,9 @@
     .who .id { display: none; }      /* the role alone identifies the session on a phone */
     .mast h1 { font-size: 18px; }
 }
+
+/* The rule that separates the five places to work from the one way out. Horizontal in the rail,
+   vertical once the rail becomes a bottom tab bar — the divider follows the axis it divides. */
+.rail-rule { display:block; height:1px; background:var(--rule); margin:10px 14px }
+.rl.out { margin-top:0 }
+@media (max-width:768px) { .rail-rule { width:1px; height:auto; margin:8px 0 } }

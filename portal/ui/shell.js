@@ -6,27 +6,37 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
-const REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analytics'];
+// Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
+const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
 
-// One 24×24 stroke glyph per realm. Inline rather than an icon font or sprite sheet: five paths is less bytes than either, and the portal serves no external assets (the door is the only page a stranger reaches and it must request nothing). `stroke: currentColor` in shell.css means the active/hover colour transition covers the icon for free.
+// One 24×24 stroke glyph per realm. Inline rather than an icon font or sprite sheet: six paths is less bytes than either, and the portal serves no external assets (the door is the only page a stranger reaches and it must request nothing). `stroke: currentColor` in shell.css means the active/hover colour transition covers the icon for free.
 const REALM_ICON = {
     season: 'M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z',
     armory: 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 2v4M12 18v4M2 12h4M18 12h4M12 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z',
     broadcast: 'M4 10v4a1 1 0 0 0 1 1h3l5 4V5L8 9H5a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11',
     access: 'M15 7a4 4 0 1 1-3.9 5H8v2H6v2H3v-3l8.1-8.1A4 4 0 0 1 15 7zM16 10.5h.01',
     analytics: 'M3 17l4-6 4 3 4-7 3 4M3 21h18',
-    review: 'M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1zM8 6H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-2M9 13l2 2 4-4',
+    // The approved design's own glyph for Review — lines shortening to a check. Kept verbatim rather than re-drawn, so the rail reads the same here as in the mockup it came from.
+    review: 'M4 6h16M4 12h10M4 18h7M15 17l2.5 2.5L22 15',
 };
 
 function RealmIcon({ realm }) {
     return html`<svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d=${REALM_ICON[realm] || REALM_ICON.season} /></svg>`;
 }
 
-// `badges` is realm -> count of the signed-in admin's own staged changesets there (01's "3" over the Season icon). Absent rather than zero when there is nothing staged — a permanent "0" is noise.
+// `badges` is realm -> count of the signed-in admin's own staged changesets. Absent rather than zero when there is nothing staged — a permanent "0" is noise.
+//
+// 🔴 REVIEW SITS BELOW A RULE, NOT AS A SIXTH REALM, and that is the approved design's own decision rather than a layout preference: five realms are PLACES TO WORK, Review is the WAY OUT. The rule says that without a label nobody would read at 9px. It first shipped reachable only through the tray — which requires staged work to exist — so the commit screen was unreachable from a page with nothing staged, which is exactly when you want to check that nothing is staged.
+//
+// 🔴 AND THE STAGED COUNT BELONGS HERE, not on Season. It is a property of the CHANGESET, so an Armory edit putting a badge on Season is the surface disagreeing with its own data.
 export function Rail({ realm, realms, badges = {} }) {
+    const visible = realms || REALMS;
+    const places = visible.filter((r) => r !== 'review');
+    const canReview = !realms || visible.includes('review');
+    const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     return html`
         <nav class="rail" aria-label="Realms">
-            ${(realms || REALMS).map(r => html`
+            ${places.map(r => html`
                 <a class=${'rl' + (r === realm ? ' active' : '')} href=${'#/' + r}
                    aria-current=${r === realm ? 'page' : null}>
                     <${RealmIcon} realm=${r} />
@@ -34,6 +44,14 @@ export function Rail({ realm, realms, badges = {} }) {
                     ${badges[r] ? html`<span class="badge" aria-label=${`${badges[r]} staged`}>${badges[r]}</span>` : null}
                 </a>
             `)}
+            ${canReview ? html`
+                <span class="rail-rule" aria-hidden="true"></span>
+                <a class=${'rl out' + (realm === 'review' ? ' active' : '')} href="#/review"
+                   aria-current=${realm === 'review' ? 'page' : null}>
+                    <${RealmIcon} realm="review" />
+                    <span>review</span>
+                    ${staged ? html`<span class="badge" aria-label=${`${staged} staged`}>${staged}</span>` : null}
+                </a>` : null}
         </nav>
     `;
 }
