@@ -199,6 +199,148 @@ function AddChips({ onAdd }) {
 }
 
 
+// ── THE SEASON RECORD / IDENTITY STRIP ────────────────────────────────────────────────────────
+//
+// Harkirat on what the collapsed strip used to be: "Nothing about it suggests that it also encompasses the calendar page banner urls. The dates and titles inside of collapsed strip are not informative or sized correctly considering the level of information they hold. they feel like 3rd tier support information."
+//
+// Three complaints, one defect: it was written as a CAPTION for a thing that is a RECORD. So it names every kind of thing it holds — including the banners, which it never admitted to — sets the titles and dates at the scale of their content rather than as 10px chips, and says what opening it does instead of a bare "Live season" label.
+//
+// 🔴 IT DOES NOT SAY "17 DAYS LEFT". That belongs to the clock in the masthead. This shows the dates AS STORED, because this is the record you EDIT — and that split is what stops the two elements repeating each other, which is what made both feel redundant.
+const BANNERS = [
+    { k: 'drawsBannerUrl', label: 'Draws', hex: 'var(--draw)' },
+    { k: 'eventsBannerUrl', label: 'Events', hex: 'var(--ev)' },
+    { k: 'playlistsBannerUrl', label: 'Playlists', hex: 'var(--play)' },
+];
+
+const IDENTITY_KEY = 'dioreo-identity-open';
+
+function SeasonRecord({ season, editingDraft, draftStaged, today }) {
+    const titled = (season?.currentSeasonTitle || '').trim();
+    // Silent unless it is genuinely late AND nothing is staged. One line, never repeated, gone the moment a draft exists — "make it smart and suggest things to prep/stage for the next season. but dont make it naggy."
+    const near = seasonMoments(season, today)[0];
+    const daysOut = near ? Math.ceil((new Date(near.iso + 'T23:59:59Z').getTime() - new Date(today + 'T00:00:00Z').getTime()) / 86400000) : null;
+    const nudge = !editingDraft && !draftStaged && daysOut !== null && daysOut <= 7;
+
+    // 🔴 ONE GRID, NOT SIX. Every cell used to arrange itself from its own content, so six titles began at six different x positions and the dates were not even right-aligned to each other. `.srec-c` is display:contents, which dissolves each cell so all eighteen parts land in ONE grid whose label column is sized by the widest label ACROSS ALL SIX.
+    return html`
+        <div class="srec">
+            <div class="srec-top">
+                <span class="srec-kind">Titles, dates and calendar banners</span>
+                <span class=${'srec-state' + (editingDraft ? ' staged' : '')}>${editingDraft ? 'staged draft' : 'live'}</span>
+            </div>
+            <p class=${'srec-title' + (titled ? '' : ' untitled')}>${titled || 'No season title set'}</p>
+            <div class="srec-grid">
+                ${SEASON_LINES.map((L) => {
+                    const t = (season?.[L.titleKey] || '').trim();
+                    const tbd = season?.[L.tbdKey], iso = season?.[L.endKey];
+                    return html`
+                        <div class="srec-c" key=${L.key} style=${`--c:${L.hex}`}>
+                            <span class="k">${L.label}</span>
+                            <span class=${'t' + (t ? '' : ' unset')}>${t || 'no title set'}</span>
+                            <span class=${'d' + (tbd || !iso ? ' tbd' : '')}>${tbd ? 'TBD' : (iso ? fmtDay(iso) : 'no date')}</span>
+                        </div>`;
+                })}
+                <!-- 🔴 A DOT, NOT THE WORD "set". A short word at the end of a row reads as a BUTTON —
+                     "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
+                     in the rows above, so a verb here also broke the peerage the shared treatment
+                     establishes. The ABSENT state is the one that matters, so it is the one marked. -->
+                ${BANNERS.map((b) => {
+                    const on = (season?.[b.k] || '').trim();
+                    return html`
+                        <div class=${'srec-c' + (on ? '' : ' off')} key=${b.k} style=${`--c:${b.hex}`}>
+                            <span class="k">${b.label}</span>
+                            <span class=${'t' + (on ? '' : ' unset')}>${on ? 'image cached and serving' : 'no image set'}</span>
+                            <span class="d" role="img" aria-label=${on ? 'set' : 'not set'}><em></em></span>
+                        </div>`;
+                })}
+            </div>
+            ${nudge ? html`
+                <div class="srec-nudge"><b>Next season isn’t staged.</b> A draft lets you build it — titles, dates,
+                    draws and calendar — without any of it going live.</div>` : null}
+        </div>`;
+}
+
+// `editingDraft` is WHICH season you are editing; `draftStaged` is whether one exists at all. They were one flag, and the record read "staged draft" on the live season purely because a draft existed — the chip states the thing you are looking at, not the thing that exists elsewhere.
+export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSave }) {
+    const [open, setOpen] = useState(() => { try { return sessionStorage.getItem(IDENTITY_KEY) === '1'; } catch { return false; } });
+    const [edits, setEdits] = useState({});
+    const value = (k) => (k in edits ? edits[k] : (season?.[k] ?? ''));
+    const dirty = Object.keys(edits).length;
+
+    function toggle() {
+        setOpen((o) => { try { sessionStorage.setItem(IDENTITY_KEY, o ? '0' : '1'); } catch (e) {} return !o; });
+    }
+    function set(k, v) { setEdits((e) => ({ ...e, [k]: v })); }
+
+    const titled = (season?.currentSeasonTitle || '').trim();
+    return html`
+        <section class=${'identity' + (open ? '' : ' collapsed')} aria-label="Season identity">
+            <!-- The strip IS the button — role, tabindex, cursor, hover and aria-expanded all live on
+                 it. A floating "Open to edit" label was an apology for an affordance that already
+                 existed, and it sat wherever margin-left:auto dropped it. The words move into the
+                 accessible name, where a keyboard user actually needs them. -->
+            <div class="idsum" role="button" tabindex="0" aria-expanded=${open}
+                 aria-label=${`Season record: ${titled || 'no title set'}. Open to edit titles, dates and calendar banners.`}
+                 onClick=${toggle}
+                 onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}>
+                <${SeasonRecord} season=${season} editingDraft=${editingDraft} draftStaged=${draftStaged} today=${today} />
+            </div>
+            <div class="idbody">
+                <div class="ph idhead">
+                    <span class="t">Season identity</span>
+                    <span class="sp">${dirty ? `${dirty} unsaved edit${dirty > 1 ? 's' : ''}` : 'no unsaved edits'}</span>
+                    <button class="idclose" onClick=${() => { if (dirty) onSave(edits); setEdits({}); toggle(); }}>Done</button>
+                </div>
+                <div class="f-main">
+                    <label for="f-title">Season title</label>
+                    <input id="f-title" autocomplete="off" spellcheck="false" placeholder="Season title"
+                           value=${value('currentSeasonTitle')} onInput=${(e) => set('currentSeasonTitle', e.target.value)} />
+                </div>
+                <div class="dlines">
+                    ${SEASON_LINES.map((L) => {
+                        const tbd = Boolean(value(L.tbdKey));
+                        return html`
+                            <div class=${'dline' + ((L.titleKey in edits || L.endKey in edits || L.tbdKey in edits) ? ' dirty' : '')}
+                                 key=${L.key} style=${`--c:${L.hex}`}>
+                                <span class="trk">${L.label}</span>
+                                <input type="text" aria-label=${`${L.label} title`} spellcheck="false"
+                                       value=${value(L.titleKey)} onInput=${(e) => set(L.titleKey, e.target.value)} />
+                                <input type="date" aria-label=${`${L.label} end date`} disabled=${tbd}
+                                       value=${String(value(L.endKey) || '').slice(0, 10)} onInput=${(e) => set(L.endKey, e.target.value)} />
+                                <!-- A date and "TBD" are two different ANSWERS to one question, not a
+                                     field and a checkbox — so they are one control with two states. -->
+                                <span class="tbdsw" role="group" aria-label=${`${L.label} end is`}>
+                                    <button aria-pressed=${!tbd} onClick=${() => set(L.tbdKey, false)}>DATE</button>
+                                    <button aria-pressed=${tbd} onClick=${() => set(L.tbdKey, true)}>TBD</button>
+                                </span>
+                            </div>`;
+                    })}
+                </div>
+                <!-- Three independent banners, one per /calendar page. Blank means "show nothing" —
+                     NOT a placeholder — so an empty field is a real, meaningful value and says so. -->
+                <div class="bansec">
+                    <div class="bansec-h"><span class="bansec-n">Calendar page banners</span></div>
+                    <div class="bans">
+                        ${BANNERS.map((b) => {
+                            const v = String(value(b.k) || '');
+                            return html`
+                                <div class="ban" key=${b.k} style=${`--c:${b.hex}`}>
+                                    <span class="bl">${b.label}</span>
+                                    <span class=${'bthumb' + (v ? ' has' : '')}
+                                          style=${v ? `background-image:url("${v}")` : null}>${v ? '' : 'none'}</span>
+                                    <input type="url" spellcheck="false" aria-label=${`${b.label} page banner URL`}
+                                           placeholder="Paste an image URL — blank shows no banner"
+                                           value=${v} onInput=${(e) => set(b.k, e.target.value.trim())} />
+                                    <span class="bst">${b.k in edits ? 'will re-host on save' : (v ? 'cached' : 'no banner')}</span>
+                                </div>`;
+                        })}
+                    </div>
+                </div>
+            </div>
+        </section>`;
+}
+
+
 // `?today=` travels the clock in the harness; in production this is simply today.
 const todayIso = () => (typeof document !== 'undefined' && document.documentElement.dataset.today)
     || new Date().toISOString().slice(0, 10);
@@ -322,6 +464,20 @@ export function SeasonRealm({ session }) {
         { value: stagedCount, label: 'staged', tone: stagedCount ? 'hot' : undefined },
     ];
 
+    async function handleIdentitySave(edits) {
+        // Two ops, because they are two entities: the season document's own titles and dates, and the calendar's banner urls. Splitting them here rather than server-side keeps each op's payload exactly what its own validate() expects.
+        const bannerKeys = BANNERS.map((b) => b.k);
+        const seasonEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => !bannerKeys.includes(k)));
+        const bannerEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => bannerKeys.includes(k)));
+        const ops = [];
+        if (Object.keys(seasonEdits).length) ops.push({ type: 'season.setTitlesDeadlines', target: null, payload: seasonEdits });
+        if (Object.keys(bannerEdits).length) ops.push({ type: 'calendar.setBanners', target: null, payload: bannerEdits });
+        if (ops.length) { await stageOps('season', ops, session.csrfToken); fetchSeasonState().then(setState); fetchChangesets('season').then(setChangesets); }
+    }
+
+    const identitySlot = html`<${SeasonIdentity} season=${state.live} editingDraft=${false} draftStaged=${Boolean(state.draft)}
+                                                 today=${todayIso()} onSave=${handleIdentitySave} />`;
+
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${AddComposer} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                <${StagedPanel} changesets=${changesets} onDiscard=${handleDiscard} onReview=${() => setView('Board')} />
@@ -352,7 +508,7 @@ export function SeasonRealm({ session }) {
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${() => setShowAdd(true)} />`} />`}
-                  viewSlot=${viewSlot} manifestSlot=${manifestSlot}
+                  viewSlot=${html`${identitySlot}${viewSlot}`} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;
 }

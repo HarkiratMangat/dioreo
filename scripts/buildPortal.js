@@ -180,6 +180,9 @@ const MOCKUP_ASSETS = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-08
 //
 // ⚠️ fixtures.js and the two instruments are still SOURCED FROM THE MOCKUP PACKAGE. That is the one remaining dependency on it and it is deliberate: copying 135KB of fixtures into git twice during a migration is how the two copies drift. When the mockup package retires (see docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md) these three files move into portal/ui/harness/ and this function's paths change with them.
 function buildHarness() {
+    // 🔴 A CACHE BUSTER, BECAUSE A PLAIN RELOAD SERVED STALE MODULES. The harness page is sent with `no-store`, but the browser's ES MODULE MAP is keyed by URL and survives a reload — so edited components kept rendering their previous version and a verification pass looked at code that was no longer on disk. Measured: the season identity strip and the rebuilt staged strip both reported ABSENT on a fresh navigation while sitting in the built file.
+    const bust = Date.now();
+
     const HARNESS_SRC = path.join(UI_DIR, 'harness');
     if (!fs.existsSync(HARNESS_SRC)) return null;
     const HARNESS_OUT = path.join(OUT_DIR, 'harness');
@@ -195,8 +198,12 @@ function buildHarness() {
     }
     // The same classic-script logic tags index.html emits, for the same reason — *.logic.js must define its globals before app.js's module graph evaluates.
     const logicTags = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.logic.js')).sort()
-        .map(f => `<script src="/ui/${f}"></script>`).join('\n');
-    const page = fs.readFileSync(path.join(HARNESS_SRC, 'index.html'), 'utf8').replace('__LOGIC__', logicTags);
+        .map(f => `<script src="/ui/${f}?v=${bust}"></script>`).join('\n');
+    const page = fs.readFileSync(path.join(HARNESS_SRC, 'index.html'), 'utf8')
+        .replace('__LOGIC__', logicTags)
+        .replace('/ui/app.js', `/ui/app.js?v=${bust}`)
+        .replace('/harness/stub.js', `/harness/stub.js?v=${bust}`)
+        .replace('"/ui/httpClient.js"', `"/ui/httpClient.js?v=${bust}"`);
     fs.writeFileSync(path.join(OUT_DIR, 'harness.html'), page);
     return page;
 }
