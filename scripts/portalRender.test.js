@@ -62,7 +62,7 @@ const SEASON_COLUMNS = [
     const { render } = await import('preact-render-to-string');
     const { html } = await import('../portal/public/.ssr/vendor/htm-preact.mjs');
     const { Shell, Masthead, Rail, Door } = await import('../portal/public/.ssr/ui/shell.js');
-    const { Manifest } = await import('../portal/public/.ssr/ui/manifest.js');
+    const { Manifest, SelectionBar } = await import('../portal/public/.ssr/ui/manifest.js');
     const { Board } = await import('../portal/public/.ssr/ui/board.js');
     const { Confirm } = await import('../portal/public/.ssr/ui/overlay.js');
 
@@ -147,7 +147,50 @@ const SEASON_COLUMNS = [
         assert.ok(!out.includes('--topic-accent:var(--ink3)'), 'no row falls through to the grey fallback');
         assert.ok(out.includes('stt live') && out.includes('stt stag') && out.includes('stt conf'),
             'three states, three SHAPES — colour alone would not survive greyscale');
-        assert.ok(out.includes('class="twrap"'), 'the table sits in its own scroll container');
+        assert.ok(out.includes('class="mscroll"') && out.includes('class="mtable"'), 'the table sits in its own scroll container');
+        assert.ok(out.includes('<colgroup>') && out.includes('class="c-item"'),
+            'table-layout:fixed needs a colgroup, and the widths are derived from each column’s role');
+        assert.ok(out.includes('class="ncell"'), 'the dot and the name are one cell object, not two loose children');
+    });
+
+    // 🔴 A <th> WITH AN onClick IS NOT A CONTROL. The whole table could be sorted with a mouse and not at all without one.
+    check('every sortable column is a real button, and the header states the sort direction', () => {
+        const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} />`);
+        assert.strictEqual((out.match(/class="sortbtn"/g) || []).length, SEASON_COLUMNS.length,
+            'one button per column, reachable by keyboard');
+        assert.ok(out.includes('aria-sort="none"'), 'an unsorted column says so rather than saying nothing');
+        assert.ok(!/<th[^>]*onclick/i.test(out), 'the handler is on the button, never on the cell');
+    });
+
+    // 🔴 THE SELECTION ACTIONS WERE 1,682px BELOW THE FOLD, at the foot of the table.
+    check('the selection bar is absent with nothing selected, and never renders a badge a realm did not supply', () => {
+        const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']}
+            bulkActions=${[{ label: 'Stage deletion', danger: true, onClick: () => {} }]} />`);
+        assert.ok(!out.includes('class="selbar'), 'no bar until something is selected');
+        assert.ok(!out.includes('selbar-rev'), 'and no reversibility sentence invented on a realm’s behalf');
+    });
+
+    // 🔴 "1 announcements" IS THE FIFTH OCCURRENCE OF THIS SHAPE IN THIS PROJECT. The changelog already carries a paragraph about the fourth, found in the function directly below the pluraliser written for it. The caller states both forms rather than the component stripping a trailing "s", because a rule is exactly what produced the previous four.
+    check('the selection bar agrees with its own number', () => {
+        const bar = (n) => render(html`<${SelectionBar} count=${n} noun=${['item', 'items']} tier=${2}
+            badge="Reversible" actions=${[{ label: 'Stage deletion', danger: true, onClick: () => {} }]} onClear=${() => {}} />`);
+        assert.ok(bar(1).includes('1 item') && !bar(1).includes('1 items'), 'a count of one never takes a plural noun');
+        assert.ok(bar(3).includes('3 items'), 'and a count of three does');
+        assert.ok(bar(2).includes('selbar-rev ok'), 'tier 2 is the reversible badge');
+        assert.ok(render(html`<${SelectionBar} count=${2} noun=${['item', 'items']} tier=${3} badge="Immediate"
+            actions=${[]} onClear=${() => {}} />`).includes('selbar-rev gate'), 'tier 3 is the gate badge');
+        assert.ok(!render(html`<${SelectionBar} count=${2} noun=${['item', 'items']} actions=${[]} onClear=${() => {}} />`)
+            .includes('selbar-rev'), 'a realm that supplied no sentence gets none invented for it');
+    });
+
+    // 🔴 ITS OWN COLUMN WITH A HEADER, NEVER A HOVER REVEAL — a reveal does not exist on touch and cannot be scanned.
+    check('the per-row remove control appears only when a realm supplies one, and is labelled per row', () => {
+        const without = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} />`);
+        assert.ok(!without.includes('class="rmv"'), 'a realm with no single-row destructive op grows no column');
+        const withIt = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']}
+            onRemove=${() => {}} removeLabel="Stage deletion" />`);
+        assert.strictEqual((withIt.match(/class="rmv"/g) || []).length, SEASON_ROWS.length, 'one per row');
+        assert.ok(withIt.includes('Stage deletion Iron Wolf — Legendary'), 'the label names the row, not just the verb');
     });
 
     check('the Manifest says why a table is empty rather than showing nothing', () => {

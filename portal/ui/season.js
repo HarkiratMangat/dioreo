@@ -412,7 +412,23 @@ export function SeasonRealm({ session }) {
                 : { type: 'calendar.delete', target: { elementId: r.id }, payload: {} };
         });
         if (ops.length) await stageOps('season', ops, session.csrfToken);
+        overlay.say(`${ops.length} deletion${ops.length === 1 ? '' : 's'} staged.`, 'Review', () => { location.hash = '#/review'; });
         fetchChangesets('season').then(setChangesets);
+    }
+
+    // Season's deletions STAGE, like everything else it composes — so the confirmation's job is to say that, and to name the items, because a draw and a calendar event are the same row shape here and a reader picking three of thirty needs to see which three.
+    function confirmBulkDelete(ids) {
+        const chosen = rowsById(ids);
+        overlay.confirm({
+            op: 'season.delete', tier: 2, danger: true, confirmLabel: 'Stage deletion',
+            title: `Stage deletion of ${ids.length} item${ids.length === 1 ? '' : 's'}?`,
+            body: html`
+                <p class="dw-p">Nothing leaves the season yet — this stages the deletion, and the items keep
+                    showing in Discord until the changeset is committed on the Review screen.</p>
+                <ul class="dw-l">${chosen.slice(0, 6).map((r) => html`<li key=${r.id}>${r.title}</li>`)}
+                    ${ids.length > 6 ? html`<li>and ${ids.length - 6} more</li>` : null}</ul>`,
+            onConfirm: () => handleBulkDelete(ids),
+        });
     }
 
     function handleExportSelection(ids) {
@@ -500,14 +516,16 @@ export function SeasonRealm({ session }) {
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
-                                            bulkNote="Destructive actions stage — they never fire from here."
+                                            bulkNote="Reversible — a staged deletion is discarded, never undone"
+                                            bulkTier=${2} rowNoun=${['item', 'items']}
+                                            onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                             emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
                                             onEditError=${(msg) => setNotices([...notices, { changeId: `edit-${Date.now()}`, summary: msg }])}
                                             bulkActions=${[
                                                 { label: 'Export selection', onClick: handleExportSelection },
-                                                { label: 'Stage deletion', danger: true, onClick: handleBulkDelete },
+                                                { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
                                             ]} />`;
 
     return html`

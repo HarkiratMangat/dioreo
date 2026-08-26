@@ -123,4 +123,25 @@ check('THE DIALOG GATE CAN FAIL: a bare confirm( is caught and a namespaced one 
     assert.ok(!hit('confirmDiscard(c)'), 'a function whose NAME contains confirm must not be a false positive');
 });
 
+// ── THE MODULE-PARSE GATE ────────────────────────────────────────────────────────────────────
+//
+// 🔴 `node --check` PARSES AS COMMONJS, so it is a FALSE GREEN on these files. A stray backtick inside an HTML comment inside an html`` template closes the template early; the result parses fine as a script and fails as a module, which means the CommonJS check passes and the browser gets a SyntaxError. It has fired five times on this branch, twice inside the comment documenting the previous occurrence. buildPortal now parses every ESM file the way the browser will; this proves that check is not vacuous.
+const { spawnSync } = require('child_process');
+const parsesAsModule = (src) => spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src, encoding: 'utf8' }).status === 0;
+
+check('THE MODULE GATE CAN FAIL: a backtick inside an HTML comment in a template is caught', () => {
+    const good = 'export const a = html`<div><!-- a plain comment --></div>`;';
+    const bad = 'export const a = html`<div><!-- a comment with a ' + String.fromCharCode(96) + 'chip' + String.fromCharCode(96) + ' in it --></div>`;';
+    assert.strictEqual(parsesAsModule(good), true, 'the clean form must pass, or the gate proves nothing');
+    assert.strictEqual(parsesAsModule(bad), false, 'the backtick form must fail — this is the trap the gate exists for');
+});
+
+check('every ESM file the build emits parses as a module', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const bad = fs.readdirSync(dir)
+        .filter((f) => f.endsWith('.js') && !f.endsWith('.logic.js'))
+        .filter((f) => !parsesAsModule(fs.readFileSync(path.join(dir, f), 'utf8')));
+    assert.deepStrictEqual(bad, [], 'these would reach the browser as a SyntaxError: ' + bad.join(', '));
+});
+
 process.exit(failures ? 1 : 0);

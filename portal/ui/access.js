@@ -236,6 +236,9 @@ export function AccessRealm({ session }) {
                                                     headerRight="Revoking an admin in Discord does not end their browser session — this does."
                                                     emptyText="Nobody is signed in to the portal."
                                                     searchableFields=${['discordId']}
+                                                    bulkNote="Immediate — Access does not stage, and there is no undo"
+                                                    bulkTier=${3} rowNoun=${['session', 'sessions']}
+                                                    onRemove=${(row) => confirmEndSessions([row.id])} removeLabel="End session"
                                                     bulkActions=${[{ label: 'End session', danger: true, onClick: confirmEndSessions }]} />`} />
     `;
 }

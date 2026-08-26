@@ -3,6 +3,7 @@
 // Emits portal/public/** — the portal's built frontend. No bundler (spec decision 6): this copies portal/ui/*.js verbatim for the browser to load as native ESM, and vendors Preact + htm as real devDependencies (installed via npm so dep-licences can see them — a file just copied into portal/public/ would be invisible to it, the exact "fails open" shape the plan's R2 finding warns about) rather than writing its own bundle.
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 // 🔴 FALSIFIED, NOT REUSED. The plan's Task 4 Step 3 said to run scripts/buildLegalPages.js's own `contrastAudit()` over the portal's CSS — tested by actually calling it (`for (const page of built)` throws TypeError on anything but an array of the site's own page objects, and it reads bytes from disk via that generator's `outPath()`/`dirOf()`, then checks only ITS OWN hardcoded variable names: `--desk`/`--card`/`--sig`/`--ink`/`--ink2`/`--ink3`). None of that matches the portal's token vocabulary (`--paper`/`--raised`/`--patch`/`--warn`/`--ok`) or its single-CSS-file shape. Reusing it as written is not possible without reshaping the portal to pretend to be a legal-site page. So this file re-implements the SAME WCAG luminance/ratio math (below), scoped to the portal's own :root block, rather than a call that would either throw or silently check the wrong variables under a name that implies real reuse.
 
 const ROOT = path.join(__dirname, '..');
@@ -28,10 +29,24 @@ function vendorPreactAndHtm() {
     fs.writeFileSync(path.join(VENDOR_OUT, 'htm-preact.mjs'), binding);
 }
 
+// 🔴 `node --check` PARSES AS COMMONJS AND IS A FALSE GREEN ON THESE FILES. A stray backtick inside an HTML comment inside an html`` template closes the template early — the file then parses fine as a script and fails as a module, so the CommonJS check passes and the browser gets a SyntaxError. This trap has now fired five times on this branch, twice inside the comment documenting the previous occurrence. Parsing each ESM file the way the browser will parse it is the only check that can see it, and the build is where it belongs: a build that emits a file no browser can load has not built anything.
+//
+// ⚠️ The .logic.js siblings are deliberately EXCLUDED — they ship as classic scripts and are read by Node as CommonJS, so module-mode parsing is the wrong grammar for them (a top-level `module.exports` is legal in one and not the other).
+function assertParsesAsModule(file, src) {
+    const r = spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src, encoding: 'utf8' });
+    if (r.status !== 0) {
+        throw new Error(`portal/ui/${file} does not parse as an ES module — the browser will refuse it:\n${(r.stderr || '').trim()}`);
+    }
+}
+
 function copyUiScripts() {
     fs.mkdirSync(UI_OUT, { recursive: true });
     const files = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.js'));
-    for (const f of files) copyFile(path.join(UI_DIR, f), path.join(UI_OUT, f));
+    for (const f of files) {
+        const src = fs.readFileSync(path.join(UI_DIR, f), 'utf8');
+        if (!f.endsWith('.logic.js')) assertParsesAsModule(f, src);
+        copyFile(path.join(UI_DIR, f), path.join(UI_OUT, f));
+    }
     return files;
 }
 

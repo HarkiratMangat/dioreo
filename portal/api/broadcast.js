@@ -4,6 +4,7 @@
 const Announcement = require('../../models/Announcement');
 const { sendJson, forbidden } = require('./httpUtil');
 const { grantedPagesFor } = require('./realmAccess');
+const { MAX_EMBEDS_PER_MESSAGE } = require('../../utils/announcement');
 
 const BROADCAST_PAGES = ['announcement'];
 
@@ -26,7 +27,8 @@ function register(route) {
         const rows = await Announcement.find({}).sort({ createdAt: 1 }).lean();
         const all = rows.map(a => ({ ...a, state: announcementState(a, now) }));
         const live = all.filter(a => a.state === 'live');
-        sendJson(res, 200, { live, all });
+        // Discord's own per-message embed cap, read from the module that ENFORCES it (utils/announcement.js slices the unseen list by exactly this number). The portal shows which live announcements are past it and therefore waiting for the next message; a literal 10 here would be a second copy of a limit that only one of the two would ever notice changing.
+        sendJson(res, 200, { live, all, maxPerMessage: MAX_EMBEDS_PER_MESSAGE });
     }));
 }
 

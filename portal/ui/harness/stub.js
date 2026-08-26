@@ -147,8 +147,11 @@ const ROUTES = [
     [/^\/api\/armory\/preview/, () => ({ card: FIXTURE_CARD })],
     [/^\/api\/armory\/export/, () => ({ text: '(harness: bulk export text)' })],
     [/^\/api\/broadcast$/, () => ({
-        live: (FIX.announcements || []).filter((a) => a.active !== false),
+        // 🔴 `state`, NOT `active`. The route's own announcementState() is the one place an announcement's state is decided, and the counts in the masthead already read it — filtering on a different field here put FOUR cards under a "Now showing" heading beside a masthead reading LIVE 2. One quantity, two authorities, on the same screen: the exact defect this project keeps paying for, reproduced in the instrument rather than the product.
+        live: (FIX.announcements || []).filter((a) => a.state === 'live'),
         all: FIX.announcements || [],
+        // ⚠️ THREE, NOT TEN, and that is the point of a fixture. Discord's real cap is 10 and the route sends utils/announcement.js's own constant; with four fixture announcements a cap of 10 renders the over-cap state ZERO times, so the harness would show a panel that cannot demonstrate the one fact it was rebuilt to show. A fixture exists to reach the states real data does not happen to be in today.
+        maxPerMessage: 1,
     })],
     [/^\/api\/access$/, () => ({
         admins: FIX.accessAdmins || [], sessions: FIX.sessions || [],

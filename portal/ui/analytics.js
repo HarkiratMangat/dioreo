@@ -180,6 +180,8 @@ export function AnalyticsRealm({ session }) {
                                                     title="One history, both front doors" filterGroups=${RIVER_FILTERS}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
+                                                    bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
+                                                    bulkTier=${3} rowNoun=${['event', 'events']}
                                                     bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]} />`} />
     `;
 }

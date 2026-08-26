@@ -391,7 +391,9 @@ export function ArmoryRealm({ session }) {
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
                                    title="Every build" filterGroups=${ARMORY_FILTERS}
                                    headerRight=${weaponFilter || (coverageFilter ? `${coverageFilter.category} · ${COVERAGE_LABEL[coverageFilter.flag]}` : '')}
-                                   bulkNote="Destructive actions stage — they never fire from here."
+                                   bulkNote="Reversible — a staged deletion is discarded, never undone"
+                                   bulkTier=${2} rowNoun=${['build', 'builds']}
+                                   onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
                                    onAdd=${() => setShowAdd(true)} realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}

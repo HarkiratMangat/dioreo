@@ -31,8 +31,14 @@ const BROADCAST_FILTERS = [
 // The topic accent for an announcement is its OWN stored colour (models/Announcement.js's `color`, generated once at creation and never regenerated on edit), so the portal's dot matches the embed Discord actually renders rather than inventing a second palette. ⚠️ NEVER RETURNS NULL. models/Announcement.js makes `color` required, but a document written before that field existed -- or any future partial -- would leave --topic-accent unset, and the rules that consume it pair a fill with #000 ink. --patch is the safe floor (12.53:1 under #000).
 const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16).padStart(6, '0') : 'var(--patch)');
 
-// Now showing -- the live set in the order Discord delivers it. ⚠️ SLOT n DESCRIBES DELIVERY POSITION, NOT A STORED FIELD. models/Announcement.js has no ordering column and the design spec §8.2 explicitly flags that adding one would be a schema change to file rather than assume, so the order here is createdAt and the label says nothing that implies otherwise.
-function NowShowing({ live, counts }) {
+// Now showing -- the live set in the order Discord delivers it.
+//
+// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.slot`, `.sl`, `.tx` and `.mt` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so this panel had been rendering four spans with no rules — three lines of run-on text where the design specifies a card per announcement. It looked like a copy defect and was a missing stylesheet.
+//
+// ⚠️ SLOT n DESCRIBES DELIVERY POSITION, NOT A STORED FIELD. models/Announcement.js has no ordering column and the design spec §8.2 flags that adding one would be a schema change to file rather than assume, so the order here is createdAt and nothing in the label implies otherwise.
+//
+// 🔴 AND THE CAP IS THE FACT THIS PANEL EXISTS TO SHOW. Discord sends at most MAX_EMBEDS_PER_MESSAGE embeds in one message and utils/announcement.js slices the unseen list by exactly that, so a live announcement past the cap is not showing — it is WAITING, and nothing anywhere told anyone. The number is sent by the route rather than written here, because a second copy of a limit is a copy only one of the two would notice changing.
+function NowShowing({ live, counts, cap }) {
     return html`
         <div class="panel" id="now-showing">
             <div class="ph">
@@ -40,22 +46,37 @@ function NowShowing({ live, counts }) {
                 <span class="rt">${counts.live} live · ${counts.scheduled} scheduled · ${counts.forever} never expires</span>
             </div>
             ${live.length === 0
-                ? html`<p class="empty">Nothing is showing right now. Anything scheduled for later is in Airtime.</p>`
-                : html`<div class="slots">
+                ? html`<div class="nstack"><div class="nsempty">Nothing is showing right now. Players get no announcement
+                    message at all. Anything scheduled for later is in Airtime.</div></div>`
+                : html`<div class="nstack" role="list" aria-label="Announcements in delivery order">
                     ${live.map((a, i) => {
                         const days = Math.round((Date.now() - new Date(a.createdAt).getTime()) / 86400000);
+                        const waiting = cap ? i >= cap : false;
                         return html`
-                            <div class="slot" style=${accentOf(a) ? `--topic-accent:${accentOf(a)}` : null}>
-                                <span class="sl">SLOT ${i + 1}${i === 0 ? ' — TOP' : ''}</span>
-                                <span class="tx">${a.text}</span>
-                                <span class="mt">
-                                    up ${days}d ·
-                                    ${a.expiresAt ? ` ends ${fmtDay(a.expiresAt)}` : html` <span class="warn">no expiry</span>`}
+                            <div class=${'nscard' + (i === 0 ? ' p0' : '') + (waiting ? ' over' : '')}
+                                 key=${a._id} role="listitem" style=${`--c:${accentOf(a)}`}
+                                 aria-label=${`Delivery position ${i + 1}${waiting ? `, beyond the ${cap}-message cap` : ''}`}>
+                                <span class="np">${i + 1}</span>
+                                <span class="nsb">
+                                    <span class="nt">${a.text}</span>
+                                    <span class="nd">up ${days} ${days === 1 ? 'day' : 'days'}</span>
                                 </span>
-                            </div>
-                        `;
+                                <span class="nsmeta">
+                                    ${a.expiresAt
+                                        ? html`<span class="nschan">ends ${fmtDay(a.expiresAt)}</span>`
+                                        : html`<span class="nspin warn">never ends</span>`}
+                                    ${waiting ? html`<span class="nspin warn">waits</span>` : null}
+                                </span>
+                            </div>`;
                     })}
-                </div>`}
+                </div>
+                ${cap && live.length > cap ? (() => {
+                    const n = live.length - cap;
+                    return html`
+                        <p class="racknote">Discord sends at most <b>${cap}</b> announcements in one message.
+                            The ${n === 1 ? 'one' : n} below that line ${n === 1 ? 'is' : 'are'} live and <b>not being shown</b> —
+                            ${n === 1 ? 'it waits' : 'they wait'} until something above ${n === 1 ? 'it' : 'them'} ends.</p>`;
+                })() : null}`}
         </div>
     `;
 }
@@ -257,12 +278,14 @@ export function BroadcastRealm({ session }) {
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-                      ${view === 'Now showing' ? html`<${NowShowing} live=${data.live} counts=${counts} />` : html`<${Airtime} all=${data.all} />`}
+                      ${view === 'Now showing' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
                       <${HeadsUp} all=${data.all} />
                   `}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
                                                     title="Every announcement" filterGroups=${BROADCAST_FILTERS}
-                                                    bulkNote="Destructive actions stage — they never fire from here."
+                                                    bulkNote="Reversible — a staged deletion is discarded, never undone"
+                                                    bulkTier=${2} rowNoun=${['announcement', 'announcements']}
+                                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                                     emptyText="Nothing has been announced yet." 
                                                     onAdd=${() => setShowAdd(true)} realm="broadcast" csrfToken=${session.csrfToken}
                                                     buildEditOp=${buildBroadcastEditOp}
