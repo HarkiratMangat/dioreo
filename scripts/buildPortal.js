@@ -199,11 +199,18 @@ function buildHarness() {
     // The same classic-script logic tags index.html emits, for the same reason — *.logic.js must define its globals before app.js's module graph evaluates.
     const logicTags = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.logic.js')).sort()
         .map(f => `<script src="/ui/${f}?v=${bust}"></script>`).join('\n');
+    // 🔴 THE BUSTER GOES IN THE IMPORT MAP, NOT ON THE SCRIPT TAG. A query on /ui/app.js busts only app.js — its own `import './season.js'` resolves RELATIVE, without the query, so every component behind it kept serving from the module map. And rewriting the httpClient KEY breaks the stub alias outright: the modules still resolve to the unqueried URL, so the map no longer matches and the real client fetches /api/* for real. Measured both: Home rendered blank with two 404s. Mapping every module to its busted URL fixes the whole graph at once, and the stub alias keeps its unqueried key so it still matches what the components ask for.
+    const uiModules = fs.readdirSync(UI_DIR).filter((f) => f.endsWith('.js') && !f.endsWith('.logic.js'));
+    const imports = { '/ui/httpClient.js': `/harness/stub.js?v=${bust}` };
+    for (const f of uiModules) {
+        if (f === 'httpClient.js') continue;
+        imports[`/ui/${f}`] = `/ui/${f}?v=${bust}`;
+    }
     const page = fs.readFileSync(path.join(HARNESS_SRC, 'index.html'), 'utf8')
         .replace('__LOGIC__', logicTags)
-        .replace('/ui/app.js', `/ui/app.js?v=${bust}`)
-        .replace('/harness/stub.js', `/harness/stub.js?v=${bust}`)
-        .replace('"/ui/httpClient.js"', `"/ui/httpClient.js?v=${bust}"`);
+        .replace('src="/ui/app.js"', `src="/ui/app.js?v=${bust}"`)
+        .replace(/<script type="importmap">[\s\S]*?<\/script>/,
+            `<script type="importmap">\n${JSON.stringify({ imports }, null, 2)}\n</script>`);
     fs.writeFileSync(path.join(OUT_DIR, 'harness.html'), page);
     return page;
 }

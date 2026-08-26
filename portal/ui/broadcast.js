@@ -220,9 +220,9 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
-                  masthead=${html`<${Masthead} title="Broadcast" sub="what is showing, in what order, until when"
+                  masthead=${html`<${Masthead} title="Broadcast" sub="One text field, delivered once per player, in the order it was written — and the two things Discord never shows you: what has not started yet, and what will never stop."
                                                stats=${[
-                                                   { value: counts.live, label: 'live' },
+                                                   { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
                                                    { value: counts.forever, label: 'never expires', tone: counts.forever ? 'bad' : undefined },
                                                ]} />`}

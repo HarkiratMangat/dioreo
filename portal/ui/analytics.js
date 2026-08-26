@@ -139,11 +139,11 @@ export function AnalyticsRealm({ session }) {
 
     return html`
         <${Shell} realm="analytics" session=${session} view=${view} viewOptions=${['Health', 'Usage', 'Timing']} onSetView=${setView}
-                  masthead=${html`<${Masthead} title="Analytics" sub="read-only — nothing here is re-derived"
+                  masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                stats=${[
                                                    { value: fmtUptime(h.uptimeSince), label: 'uptime' },
                                                    { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'bad' : undefined },
-                                                   { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h' },
+                                                   { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h', lead: true, accent: 'var(--r-analytics)' },
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor']}

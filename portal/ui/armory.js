@@ -298,6 +298,7 @@ export function ArmoryRealm({ session }) {
     const modes = [...new Set(builds.map((b) => b.mode))].sort();
     const modeLine = modes.length ? modes.join(' · ') : '';
     const armoryStats = [
+        { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
         { value: builds.length, label: 'builds' },
         { value: flagged, label: 'flagged', tone: flagged ? 'bad' : undefined },
@@ -340,7 +341,9 @@ export function ArmoryRealm({ session }) {
 
     return html`
         <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage']} onSetView=${setView}
-                  masthead=${html`<${Masthead} title="Armory" sub=${modeLine} stats=${armoryStats} />`}
+                  masthead=${html`<${Masthead} title="Armory"
+                                               sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
+                                               stats=${armoryStats} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <div class="armcols" id="armory">

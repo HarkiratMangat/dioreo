@@ -133,7 +133,7 @@ export function ReviewRealm({ session }) {
     const selected = ops.find((o) => o.id === sel) || ops[0] || null;
 
     const stats = [
-        { value: ops.length, label: ops.length === 1 ? 'change' : 'changes' },
+        { value: ops.length, label: ops.length === 1 ? 'change' : 'changes', lead: true, accent: 'var(--r-review)' },
         { value: new Set(ops.map((o) => o.realm)).size, label: 'realms' },
         { value: blockers.length, label: blockers.length === 1 ? 'blocker' : 'blockers', tone: blockers.length ? 'bad' : undefined },
     ];

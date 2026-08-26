@@ -18,6 +18,7 @@ const REALM_ICON = {
     analytics: 'M3 17l4-6 4 3 4-7 3 4M3 21h18',
     // The approved design's own glyph for Review — lines shortening to a check. Kept verbatim rather than re-drawn, so the rail reads the same here as in the mockup it came from.
     review: 'M4 6h16M4 12h10M4 18h7M15 17l2.5 2.5L22 15',
+    home: 'M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5',
 };
 
 function RealmIcon({ realm }) {
@@ -87,7 +88,7 @@ function Header({ realm, view, session, staged, onCommand }) {
     const id = session ? String(session.discordId) : '';
     return html`
         <header id="hdr">
-            <button class="mk" title="Home" onClick=${() => { location.hash = '#/season'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
+            <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
             <span class="crumb">${realm}${view ? html` <b>›</b> ${view}` : null}</span>
             <span class="sp"></span>
             <div class="cmdbar">

@@ -192,9 +192,9 @@ export function AccessRealm({ session }) {
 
     return html`
         <${Shell} realm="access" session=${session} view=${view} viewOptions=${['By admin', 'By scope']} onSetView=${setView}
-                  masthead=${html`<${Masthead} title="Access" sub="who can do what — and who is in here right now"
+                  masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
-                                                   { value: data.admins.length, label: 'granted' },
+                                                   { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
                                                    { value: activeSessions, label: 'signed in now', tone: activeSessions ? 'hot' : undefined },
                                                    { value: (data.singlePointsOfFailure || []).length, label: 'single points', tone: (data.singlePointsOfFailure || []).length ? 'bad' : undefined },
                                                ]} />`}
