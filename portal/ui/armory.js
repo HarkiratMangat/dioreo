@@ -140,7 +140,7 @@ function Rack({ builds, onPick }) {
                         </div>`;
                 })}
             </div>
-            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own (<code>best</code> / <code>top3</code> / <code>top4</code> / <code>top5</code>), validated by <code>adminParser.js</code>'s <code>parseLoadoutBadges()</code>. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code>, which also encodes a combat range (<code>best-close</code>, <code>best-midlong</code>).</p>
+            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and <code>parseLoadoutBadges()</code> in <code>adminParser.js</code> validates it. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
         </div>
     `;
 }

@@ -43,6 +43,40 @@ function armoryBuild(b) {
     return { ...b, _id: b._id || b.id, coverage: flags, accent: CAT_HEX[b.category] || 'var(--ink3)' };
 }
 
+// portal/api/analytics.js assembles seven fields from six collections, and the fixtures hold the raw material under different names. Mapping them explicitly is the difference between a page that renders and a page that MEASURES — the first attempt passed the fixture arrays through under the API's key names and every KPI read "no boot recorded / 0 alerts / 0 users" on a fixture set that carries 303 boots, 998 alerts and 496 events. It looked finished and said nothing.
+function analyticsPayload() {
+    const F_ = window.FIX;
+    const boot = F_.bootStats || {};
+    const totals = F_.OBS_TOTALS || {};
+    const alertRows = F_.alertSample || [];
+    const changeRows = F_.changeLog || [];
+    const bySeverity = Object.fromEntries((F_.alertStats || []).map((a) => [a.level, a.n]));
+    // The river is one stream, oldest last, exactly as eventRiver() returns it: changes and alerts interleaved and sorted by time. `kind` is the row's OWN kind and must not be clobbered by a spread — the real endpoint carries a comment about that exact bug.
+    const river = [
+        ...changeRows.map((c) => ({ ...c, kind: 'change', at: c.at, changeId: c.target + c.at })),
+        ...alertRows.map((a) => ({ ...a, kind: 'alert', at: a.at, alertId: a.title + a.at })),
+    ].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    const spark = (n, peak) => Array.from({ length: 7 }, (_, i) => Math.round(peak * (0.4 + 0.6 * Math.abs(Math.sin(i + n)))));
+    return {
+        river,
+        usage: (F_.cmdStats || []).map((c) => `${c.command}${c.subcommand ? ' ' + c.subcommand : ''}  ${c.n}  ok ${c.ok}  ${c.dur}ms`).join('\n'),
+        timing: (F_.depStats || []).map((d) => `${d.name}  ${d.calls} calls  ${d.ms}ms`).join('\n'),
+        alerts: alertRows.map((a) => `[${a.level}] ${a.title} — ${a.detail} (${a.at})`).join('\n'),
+        health: {
+            uptimeSince: new Date(Date.now() - (boot.uptimeSec || 5400) * 1000).toISOString(),
+            lastBootKind: boot.kind, lastBootVersion: boot.lastVersion,
+            errors24h: (bySeverity.error || 0) + (bySeverity.critical || 0),
+            noise24h: bySeverity.info || 0,
+            rssPeakMb: (F_.memStats || {}).maxMb, rssSampleCount: alertRows.length,
+            commands24h: totals.events || 0,
+            distinctUsers24h: new Set((F_.cmdStats || []).map((c) => c.command)).size,
+            spark: { alerts: spark(1, (bySeverity.error || 0) + 4), commands: spark(3, Math.round((totals.events || 0) / 7)) },
+            restarts24h: 0, restarts7d: boot.boots || 0,
+        },
+        usageStats: F_.cmdStats || [], timingStats: F_.depStats || [],
+    };
+}
+
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
@@ -65,11 +99,7 @@ const ROUTES = [
         singlePointsOfFailure: FIX.spof || FIX.SPOF || [],
     })],
     [/^\/api\/access\/matrix$/, () => ({ scopes: FIX.accessScopes || FIX.SCOPES || [], admins: FIX.accessAdmins || [] })],
-    [/^\/api\/analytics$/, () => ({
-        river: FIX.changeLog || FIX.changeLogRows || [], usage: FIX.cmdStats || [],
-        timing: FIX.depStats || [], alerts: FIX.alertSample || [], health: FIX.bootStats || {},
-        usageStats: FIX.OBS_TOTALS || {}, timingStats: FIX.memStats || {},
-    })],
+    [/^\/api\/analytics$/, () => analyticsPayload()],
     [/^\/api\/changeset\?/, () => ({ changesets: [] })],
     [/^\/api\/changeset\/[^/]+\/preview$/, () => ({ preview: null })],
 ];

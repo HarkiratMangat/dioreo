@@ -40,3 +40,15 @@
 .grantrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-top:1px solid var(--rule)}
 .grantrow .hint{font-size:11px;color:var(--ink3);flex:1 1 100%}
 @media(max-width:900px){.scopes{grid-template-columns:1fr;padding:var(--gut)}.scope .nm{min-width:0;flex:1 1 100%}}
+
+/* 🔴 THE REVOKE BUTTON WAS OFF-SCREEN, AND "it scrolls" IS NOT AN ANSWER. The matrix is 1207px wide
+ * in a 1154px scroller, so a row's only destructive control sat 46px past the right edge with
+ * nothing on screen indicating it existed. That is the affordance-distance failure: a control you
+ * cannot see is missing, whether it is 46px away or 1,682px. Every gate passed — a scroll container
+ * doing its job is not an overflow error.
+ *
+ * The column pins instead. It carries its own background because a sticky cell composites over the
+ * scrolling content behind it, and a transparent one would print the matrix's ticks through the
+ * button. The header cell pins too, or the column label slides out from over its own column. */
+.act { position:sticky; right:0; z-index:2; background:var(--paper); box-shadow:-8px 0 8px -8px rgba(0,0,0,.55) }
+thead .act { background:var(--raised) }

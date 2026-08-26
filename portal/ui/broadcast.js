@@ -122,7 +122,7 @@ function Airtime({ all }) {
                         <div class="ov"><div class="now" style=${`left:${pct(now)}%`}></div></div>
                     </div>
                 </div></div>
-                <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at <code>createdAt</code>. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it — nothing expires it and nothing reminds you.</p>
+                <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at the <code>createdAt</code> timestamp. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it — nothing expires it and nothing reminds you.</p>
             `}
         </div>
     `;

@@ -80,12 +80,12 @@ function ByAdmin({ matrix, onGrant, onRevoke, isOwnerId }) {
                                 <th class="who"></th>
                                 <th class="grp" colspan=${commands.length}>Commands</th>
                                 <th class="grp" colspan=${pages.length}>/manage pages</th>
-                                <th></th>
+                                <th class="act"></th>
                             </tr>
                             <tr>
                                 <th class="who">Admin</th>
                                 ${ordered.map((sc) => html`<th>${sc.label}</th>`)}
-                                <th></th>
+                                <th class="act">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -101,7 +101,7 @@ function ByAdmin({ matrix, onGrant, onRevoke, isOwnerId }) {
                                         const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
                                         return html`<td><span class=${cls} role="img" aria-label=${`${sc.label}: ${what}`} title=${`${sc.label} — ${what}`}>✓</span></td>`;
                                     })}
-                                    <td>${a.discordId === isOwnerId
+                                    <td class="act">${a.discordId === isOwnerId
                                         ? html`<span class="holder">locked</span>`
                                         : html`<${RevokeControl} discordId=${a.discordId} onRevoke=${onRevoke} />`}</td>
                                 </tr>

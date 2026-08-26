@@ -183,4 +183,25 @@ check('THE ENTITY GATE CAN FAIL: a sample line with an entity is caught', () => 
     assert.ok(/&(?:[a-zA-Z][a-zA-Z0-9]+|#[0-9]+);/.test(sample.replace(/^\s*(\/\/|\*).*$/, '')));
 });
 
+// 🔴 AN INLINE CODE CHIP IS A BOX, NOT A WORD. `code` carries horizontal padding here, so a comma or a full stop set immediately after one lands a chip's width away from the word it belongs to. On the Analytics callout this rendered as "come from  BootRecord , errors" and "from  AlertLog .Run" — three chips, each abutting punctuation, in one sentence. Nothing was wrong with the markup or the CSS; the sentence was built so the chips ended its clauses.
+//
+// The fix is a copy rule, not a style one: a chip NAMES a thing, so let a real word follow it — "the <code>AlertLog</code> collection." rather than "<code>AlertLog</code>.". This gate exists because the defect is invisible in source and obvious only once rendered, which is the worst combination to leave to memory.
+check('no inline <code> chip is immediately followed by punctuation', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        fs.readFileSync(path.join(dir, f), 'utf8').split('\n').forEach((line, i) => {
+            if (/^\s*(\/\/|\*)/.test(line)) return;
+            const m = line.match(/<\/code>\s*[.,;:!?]/);
+            if (m) offenders.push(`portal/ui/${f}:${i + 1}  ${m[0]}`);
+        });
+    }
+    assert.deepStrictEqual(offenders, [], 'a code chip abutting punctuation reads as a gap:\n  ' + offenders.join('\n  '));
+});
+
+check('THE CHIP GATE CAN FAIL: a sample line with a chip before a comma is caught', () => {
+    assert.ok(/<\/code>\s*[.,;:!?]/.test('  read from <code>AlertLog</code>, and elsewhere'));
+});
+
+
 process.exit(failures ? 1 : 0);

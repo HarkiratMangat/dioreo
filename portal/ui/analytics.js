@@ -94,8 +94,9 @@ function Health({ health }) {
             <div class="callout">
                 <b>These are the bot's records, not a live reading.</b>
                 The portal runs as its own process with no gateway connection, so gateway status and live memory are not
-                readable from here — uptime and restarts come from <code>BootRecord</code>, errors and the memory figure
-                from <code>AlertLog</code>. Run <code>/bot analytics</code> in Discord for a live reading.
+                readable from here. Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
+                the memory figure come from the <code>AlertLog</code> collection. For a live reading, run the
+                <code>/bot analytics</code> command in Discord.
             </div>
         </div>
     `;
