@@ -336,15 +336,12 @@ function goalAnswer(state, entry, total, upgrade) {
         return lines;
     }
     if (shortfall <= 0) {
+        // Balance figure is already on the status line above -- this branch's only job is the outcome (covers it) and the leftover, not a third restatement of the balance.
         lines.push(`### ✅ You already have enough — buy nothing`);
-        lines.push(`**${fmt(needed)} CP** covers ${pullsLeft > 0 ? plural(pullsLeft, 'more pull') : 'the upgrade'}, and you hold **${fmt(state.balance)} CP**.`);
-        lines.push(`-# That leaves **${fmt(-shortfall)} CP** spare afterwards.`);
+        lines.push(`**${fmt(needed)} CP** covers ${pullsLeft > 0 ? plural(pullsLeft, 'more pull') : 'the upgrade'}, with **${fmt(-shortfall)} CP** left over.`);
     } else {
-        lines.push(`### ${emojis.cp2} **${fmt(shortfall)} CP** still needed`);
-        // Finishing and stopping short are different sentences. One "takes you to pull 10 of 10" template covered both and read as a tautology on the commonest goal there is.
-        lines.push(state.target === 'P'
-            ? `Stops you at **pull ${targetPull} of ${total}** — ${plural(pullsLeft, 'pull')} away.`
-            : `Finishes all **${total} pulls**${state.pullsDone ? ` — ${pullsLeft} to go` : ''}.`);
+        // 2026-08-26 12:34 EDT, second pass -- Harkirat, looking at a live render: "this is NOT helpful, this is overwhelming". The FIRST pass cut sentence count but left "5,810 CP still needed" and "Finishes all 10 pulls." as two separate sentences restating the same fact from two angles. Fused into one: the amount and the goal are one idea, not two.
+        lines.push(`### ${emojis.cp2} **${fmt(shortfall)} CP** to ${state.target === 'P' ? `reach pull ${targetPull} of ${total}` : `finish all ${total} pulls`}`);
         if (state.balance) lines.push(`-# ${fmt(needed)} CP to go − ${fmt(state.balance)} CP balance = **${fmt(shortfall)} CP** to buy.`);
     }
 
@@ -382,18 +379,25 @@ function budgetAnswer(state, entry, total) {
     return lines;
 }
 
-// Six lines compressed to three (2026-08-26 12:23 EDT, Harkirat: "this is overwhelming"): combo, purchase-count and leftover used to each get their own line per tier. Same numbers, one line per tier.
+// SECOND PASS, 2026-08-26 12:34 EDT (Harkirat, looking at a live render: "look how prose heavy it is... this is NOT helpful, this is overwhelming"). The FIRST pass (12:23 EDT) crammed price + combo + count + leftover into ONE bold sentence to cut from six lines to three -- that reduced line COUNT while making each line worse: "Cheapest -- CA$82.98 x 1x 880 CP + 1x 5,000 CP (2 purchases, 70 CP left over)" is one dense clause that wraps to three lines on a phone regardless of how few sentences it is. Line count was the wrong thing to optimize. This version optimizes WRAP count instead: each tier is a short bold price line (~20 chars), a plain combo line (~25 chars) -- neither wraps -- and one caption folding the count/leftover/savings, which is allowed to wrap once because it is the lowest-priority tier, same as the region-comparison and estimate lines below it.
 function purchaseAdvice(shortfall, state, currency) {
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
     // Reads the optimizer's OWN cpEach rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so every 2X combo entry rendered the un-doubled figure.
     const describe = r => r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
-    const tierLine = (label, r) => `${label} — **${formatMoney(r.totalCents, currency)}** · ${describe(r)} (${plural(r.transactions, 'purchase')}, ${fmt(r.leftoverCp)} CP left over)`;
-    const lines = [`### 🛒 ${tierLine('Cheapest', result.cheapest)}`];
     const savings = result.naive.totalCents - result.cheapest.totalCents;
-    if (savings > 0) lines.push(`-# 💰 Saves **${formatMoney(savings, currency)}** vs. one ${fmt(result.naive.combo[0].cpEach)} CP pack alone.`);
+    const savingsNote = savings > 0 ? `saves ${formatMoney(savings, currency)} vs. ${fmt(result.naive.combo[0].cpEach)} CP alone` : null;
+    const lines = [
+        `### 🛒 Cheapest — **${formatMoney(result.cheapest.totalCents, currency)}**`,
+        describe(result.cheapest),
+        `-# ${plural(result.cheapest.transactions, 'purchase')} · ${fmt(result.cheapest.leftoverCp)} CP left over${savingsNote ? ` · ${savingsNote}` : ''}`
+    ];
     if (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp) {
-        lines.push(tierLine('Least waste', result.leastWaste));
+        lines.push(
+            `Least waste — **${formatMoney(result.leastWaste.totalCents, currency)}**`,
+            describe(result.leastWaste),
+            `-# ${plural(result.leastWaste.transactions, 'purchase')} · ${fmt(result.leastWaste.leftoverCp)} CP left over`
+        );
     }
     return lines;
 }
@@ -410,14 +414,13 @@ function finePrint(state, currency, client, { upgradeIncluded = false } = {}) {
             const need = state.target === 'P'
                 ? remainingToPull(r, state.drawKey, state.pullsDone, Math.min(Math.max(state.targetValue, state.pullsDone), e.draws.length))
                 : remainingToFinish(r, state.drawKey, state.pullsDone);
-            // The unit lives in the label, once. Region names are themselves CP figures ("10 CP"), so repeating CP after each number produced "10 CP 5,810 CP · 20 CP 10,075 CP" -- four CPs in a row where two of them mean different things.
-            return r === state.region ? `${regionLabel(r)} region **${fmt(need)}**` : `${regionLabel(r)} ${fmt(need)}`;
+            return r === state.region ? null : `${regionLabel(r)} ${fmt(need)}`;
         }).filter(Boolean);
-        // Shortened 2026-08-26 12:23 EDT: this used to spell out "identical rewards, so a higher region is simply more real money" in full every render. The /draw prices pointer is cut outright -- pricesRow (below) is now a real button, not a name in prose.
-        if (row.length > 1) lines.push(`-# ${row.join(' · ')} CP${upgradeIncluded ? ' *(upgrade excluded)*' : ''} — same reward, higher region costs more.`);
+        // SECOND PASS, 2026-08-26 12:34 EDT: the current region's own figure used to sit in this row too ("10 CP region **5,810**") -- but that number is already the giant headline three lines up. Repeating it here, in grey caption text, was pure redundancy; the row now names only the OTHER regions, which is the only new information it was ever providing. Shortened the trailing clause from a full sentence to a short tag for the same reason the purchase block was split -- one idea, one line, no wrap-inducing run-on.
+        if (row.length) lines.push(`-# Other regions, same goal: ${row.join(' · ')} CP${upgradeIncluded ? ' (upgrade excluded)' : ''}.`);
     }
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-    lines.push(`-# Estimate only, ${currency} — varies with tax/conversion. Change currency in ${settingsMention}.`);
+    lines.push(`-# Estimate only — varies by tax/conversion. Currency: **${currency}** (${settingsMention}).`);
     return lines;
 }
 

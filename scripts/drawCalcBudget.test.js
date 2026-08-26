@@ -153,11 +153,11 @@ t('the draw select flags an unpriced draw in its own description rather than off
 t('the ladder stops at the chosen target pull, not at the end of the draw', () => {
     const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 2, target: 'P', targetValue: 5 });
     const panel = buildCalculatorPanel(state, ACCENT, {});
-    // The ladder is the first plain (non `-#`) line after the "Stops you at"/"Finishes all" line -- anchoring on POSITION rather than on a running-cumulative label that no longer exists (that line was cut 2026-08-26 12:23 EDT, prose-density pass; the ladder itself is the structural invariant, not any particular label around it).
-    const block = texts(panel).find(c => c.includes('still needed')).split('\n');
-    const goalLineIndex = block.findIndex(l => l.startsWith('Stops you at') || l.startsWith('Finishes all'));
-    const ladder = block[goalLineIndex + 1].split('/').map(x => x.trim());
-    assert.strictEqual(ladder.length, 3, `stop-at-pull-5 from pull 2 should list 3 pulls, listed ${ladder.length}: ${block[goalLineIndex + 1]}`);
+    // The ladder is the first plain (non `-#`) line after the headline -- anchoring on POSITION rather than a label, since the headline and the goal sentence were fused into one line 2026-08-26 12:38 EDT (second prose pass) and the "Stops you at"/"Finishes all" sentence this used to anchor on no longer exists on its own line.
+    const block = texts(panel).find(c => c.includes(' CP** to ')).split('\n');
+    const headlineIndex = block.findIndex(l => l.includes(' CP** to '));
+    const ladder = block[headlineIndex + 1].split('/').map(x => x.trim());
+    assert.strictEqual(ladder.length, 3, `stop-at-pull-5 from pull 2 should list 3 pulls, listed ${ladder.length}: ${block[headlineIndex + 1]}`);
     assert.ok(ladder.every(x => x.startsWith('**')), 'every remaining pull should render bold in a goal-mode ladder');
 });
 
@@ -166,7 +166,7 @@ t('the headline figure is the balance-netted shortfall, and shortfallFor agrees 
     const total = pullCount(state.region, state.drawKey);
     const expected = shortfallFor(state, total, null);
     const panel = buildCalculatorPanel(state, ACCENT, {});
-    const headline = texts(panel).find(c => c.includes('still needed'));
+    const headline = texts(panel).find(c => c.includes(' CP** to '));
     assert.ok(headline.includes(expected.toLocaleString('en-US')), `headline "${headline.split('\n')[0]}" does not carry the netted shortfall ${expected}`);
     // The equation line beneath it must resolve to the SAME number -- the pair contradicting each other is the defect this pins.
     const equation = headline.split('\n').find(l => l.includes('balance ='));
