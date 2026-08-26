@@ -1,0 +1,37 @@
+/* portal/ui/icons.css — the icon layer's own styles, adopted from the interactive mockup.
+ *
+ * Split out of shell.css rather than folded into it: these rules are the CONTRACT
+ * portal/ui/icons.js renders against (`.ic` sizing, `.ic-fold`'s `d` interpolation), and a
+ * contract that lives beside fifty unrelated layout rules is one that gets edited by accident.
+ *
+ * 🔴 `.ic-fold path` INTERPOLATING `d` IS THE MORPH, and it is why the fold is not a rotation.
+ * CSS interpolates the `d` property geometrically when written as path(); a transform would only
+ * point the same shape somewhere else. This CSS OVERRIDES the inline attribute icons.js writes,
+ * so the two must agree — the attribute is the fallback for an engine without `d` support and for
+ * any server-rendered pass. The hover rules lean the fold toward the state the row is about to
+ * take, so the control previews its own outcome. `.lnh` is the Track lane header, `.trow` the
+ * Manifest row.
+ *
+ * ⚠️ THE @media BLOCK BELOW IS LOAD-BEARING AND WAS ALMOST LOST. The first extraction of this file
+ * stripped comments and matched rules with one flat regex, which silently hoisted the three
+ * prefers-reduced-motion overrides OUT of their media query — making them unconditional and
+ * killing the morph for every visitor. Nothing in this repo's gate roster reads motion, so it
+ * would have shipped looking fine. Any future extraction from the mockup must scan braces, not
+ * pattern-match rules.
+ */
+
+.ic { width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none; stroke:currentColor;fill:none }
+.ic.sm { width:.85em;height:.85em;stroke-width:2.4 }
+.ic.lg { width:1.35em;height:1.35em;stroke-width:1.75 }
+.ic.xl { width:2.2em;height:2.2em;stroke-width:1.5 }
+button .ic,a .ic { pointer-events:none }
+.ic-fold path { d:path("M6 9 L12 15 L18 9"); transition:d .34s cubic-bezier(.65,0,.35,1) }
+.ic-fold.open path { d:path("M6 15 L12 9 L18 15") }
+.lnh:hover .ic-fold path,.trow:hover .ic-fold path { d:path("M6 10.5 L12 13.5 L18 10.5") }
+.lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path { d:path("M6 13.5 L12 10.5 L18 13.5") }
+
+@media (prefers-reduced-motion:reduce) {
+    .ic-fold path { transition:none }
+    .lnh:hover .ic-fold path,.trow:hover .ic-fold path, .lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path { d:path("M6 9 L12 15 L18 9") }
+    .lnh:hover .ic-fold.open path,.trow:hover .ic-fold.open path { d:path("M6 15 L12 9 L18 15") }
+}
