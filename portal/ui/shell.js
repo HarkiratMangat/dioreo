@@ -5,6 +5,7 @@
 // 🔴 THE NAV IS A RAIL, NOT A BAR, and that is a correction rather than a preference. `01-season-spine.html` is the FULL-STYLE mockup — one page, designed completely — and its chrome is a 76px left icon rail plus a thin top bar carrying only the wordmark, a breadcrumb and identity. Mockups 02–06 are COMPILED-STYLE sheets: several pages stacked into one file for review, wrapped in a document-navigation bar. The horizontal five-realm bar that shipped here is almost exactly 06's *document* nav — review scaffolding built as product. Measured before removing it: 863px of content in a 359px viewport. See the redesign spec §0.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
+import { Icon } from './icons.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -147,29 +148,46 @@ export function NoAccess() {
 }
 
 export function Door({ forbidden }) {
-    // Three door states read identically (spec §10) — a stranger, a never-granted account and a revoked admin all see this exact page. `forbidden` changes nothing visible on purpose.
+    // 🔴 THREE DOOR STATES READ IDENTICALLY (spec §10) — a stranger, a never-granted account and a revoked admin all see this page. `forbidden` adds ONE line and changes nothing else, because telling a stranger which of the three they are is telling them something about the account they just tried.
     //
-    // The two disclosure blocks are from 05-door-broadcast-ops.html and they are the page's actual content, not decoration: this is the only page a stranger can reach, so what it says about the OAuth request has to be literally what the request asks for (spec §10 — `identify` and nothing else). If the scope list here ever stops matching portal/auth.js's, this page is lying to a stranger, which is the one thing it exists not to do.
+    // The door has no rail, no tray and no realm: it is the only surface a signed-OUT person can reach, so it must not imply the app is already open behind it. And what it says about the OAuth request has to be literally what the request asks for — if this list ever stops matching portal/auth.js's scope, this page is lying to a stranger, which is the one thing it exists not to do.
     return html`
-        <div class="door">
-            <h1>DIOREO<b>/</b>PORTAL</h1>
-            <p class="tag">bot management</p>
-            <a class="door-cta" href="/auth/login">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.3.5a13.6 13.6 0 0 1 4 2 16.4 16.4 0 0 0-14.2 0 13.6 13.6 0 0 1 4.1-2L8.6 3a19.7 19.7 0 0 0-4.9 1.4C1 9 .3 13.5.6 18a19.9 19.9 0 0 0 5.9 3l.8-1.3a13 13 0 0 1-2-1c.2-.1.3-.3.5-.4a14 14 0 0 0 12.4 0l.5.4a13 13 0 0 1-2 1l.8 1.3a19.8 19.8 0 0 0 5.9-3c.4-5.4-1-9.9-3-13.6ZM8.5 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.9.9 1.9 2-.8 2-1.9 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.9-2 1.8.9 1.8 2-.8 2-1.9 2Z"/></svg>
-                Continue with Discord
-            </a>
-            <div class="facts">
-                <h2>What this asks Discord for</h2>
-                <ul>
-                    <li><span class="y">✓</span> your user ID and username — that is the whole request</li>
-                    <li><span class="n">×</span> no email, no servers, no messages, no friends</li>
-                    <li><span class="n">×</span> nothing is posted or changed on your account</li>
-                </ul>
+        <main class="door">
+            <div class="doorcard">
+                <span class="doormk"><span class="glyph"></span>DIOREO<b>/</b>PORTAL</span>
+                ${forbidden ? html`
+                    <div class="dfail">
+                        <${Icon} name="triangle-alert" cls="lg" />
+                        <span><b>That account is not an admin.</b> Signing in worked; you have no permissions here.
+                            Ask the owner to grant you access, then sign in again.</span>
+                    </div>` : null}
+                <h1>Sign in with Discord</h1>
+                <p>The portal is for Dioreo's admins. It uses your Discord account — there is no separate password to
+                   create, and none to lose.</p>
+
+                <a class="dbtn" href="/auth/login">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.5c1.6.4 2.9 1 4.2 1.8a16.6 16.6 0 0 0-14.7 0A17 17 0 0 1 8.9 3.5L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.9 8.5.2 12.5.5 16.4a19.9 19.9 0 0 0 6 3l1.2-1.9c-.7-.2-1.3-.5-1.9-.9l.4-.3a14.2 14.2 0 0 0 11.6 0l.5.3c-.6.4-1.3.7-2 .9l1.2 1.9a19.8 19.8 0 0 0 6-3c.5-4.6-.6-8.6-3.2-12zM8.5 14.2c-1.2 0-2.1-1.1-2.1-2.4S7.3 9.4 8.5 9.4s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+                    Continue with Discord
+                </a>
+
+                <div class="dnote">
+                    <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+                    <span>Being signed in is not the same as being allowed. Every request re-checks your permissions
+                        server-side — the portal never trusts this browser about what you may see or do.</span>
+                </div>
+                <div class="dnote">
+                    <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5L10 10"></path></svg>
+                    <span>A session lasts 12 hours and lives in this browser only. <b>Your staged work does not</b> — it
+                        is held against your account, so signing out or losing this tab does not discard it, and signing
+                        back in returns you to it.</span>
+                </div>
+                <div class="dnote">
+                    <svg viewBox="0 0 16 16"><path d="M8 2l5 2v4c0 3-2.1 5.3-5 6-2.9-.7-5-3-5-6V4l5-2z"></path></svg>
+                    <span>Dioreo reads only your Discord user ID and username — that is the whole request. It asks for
+                        no email, no servers, no messages and no friends, and nothing is posted or changed on your
+                        account.</span>
+                </div>
             </div>
-            <div class="facts">
-                <h2>What gets stored</h2>
-                <ul><li>One signed cookie, 12 hours. No Discord token is kept after sign-in.</li></ul>
-            </div>
-        </div>
+        </main>
     `;
 }

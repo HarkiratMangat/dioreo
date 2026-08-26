@@ -1,14 +1,8 @@
 // portal/ui/home.js — ESM. Home: what needs you.
 //
-// 🔴 EVERY NUMBER HERE IS DERIVED FROM THE SAME ENDPOINTS THE REALM PAGES USE, and that is the whole
-// design rule rather than an implementation convenience. A home screen that counts rows with its own
-// query is a home screen that can disagree with the page it links to — you read "3 flagged" here,
-// open Armory, and find four. So Home fetches the realms' own endpoints and applies the realms' own
-// predicates; it adds no server route and no second source of truth.
+// 🔴 EVERY NUMBER HERE IS DERIVED FROM THE SAME ENDPOINTS THE REALM PAGES USE, and that is the whole design rule rather than an implementation convenience. A home screen that counts rows with its own query is a home screen that can disagree with the page it links to — you read "3 flagged" here, open Armory, and find four. So Home fetches the realms' own endpoints and applies the realms' own predicates; it adds no server route and no second source of truth.
 //
-// ⚠️ THE MASTHEAD FIGURES DO NOT REPEAT THE RAIL. The masthead answers WHAT IS THE STATE; the rail
-// answers WHERE DO I GO and carries no counts at all. Putting a figure on both rebuilds the
-// cards-versus-list defect one level up.
+// ⚠️ THE MASTHEAD FIGURES DO NOT REPEAT THE RAIL. The masthead answers WHAT IS THE STATE; the rail answers WHERE DO I GO and carries no counts at all. Putting a figure on both rebuilds the cards-versus-list defect one level up.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
@@ -21,8 +15,7 @@ const dday = (from, to) => Math.round((new Date(dayOf(to) + 'T00:00:00Z') - new 
 const todayIso = () => (typeof document !== 'undefined' && document.documentElement.dataset.today)
     || new Date().toISOString().slice(0, 10);
 
-// Every dated thing in the season as ONE list, which is what both clock columns read. The realms
-// keep their arrays separate because each has its own schema; Home only ever asks "when".
+// Every dated thing in the season as ONE list, which is what both clock columns read. The realms keep their arrays separate because each has its own schema; Home only ever asks "when".
 function seasonItems(live) {
     if (!live) return [];
     const out = [];
@@ -39,9 +32,7 @@ const LANE_ACCENT = { draw: 'var(--draw)', returning: 'var(--ret)', event: 'var(
 
 // ── THE ATTENTION LIST ────────────────────────────────────────────────────────────────────────
 //
-// Each row states the ONE thing in a realm that currently wants a person, and links to it. A
-// dashboard that only counts rows makes you open all five realms to find out whether anything is
-// wrong.
+// Each row states the ONE thing in a realm that currently wants a person, and links to it. A dashboard that only counts rows makes you open all five realms to find out whether anything is wrong.
 function attentionRows({ season, armory, broadcast, review, today }) {
     const out = [];
     const bpEnd = season?.live?.bpEnd;
@@ -97,9 +88,7 @@ function AttentionList({ rows }) {
         </ol>`;
 }
 
-// 🔴 THE CLOCK EARNS ITS TWO LISTS HERE AND ONLY HERE. Harkirat: the ending/starting items are "a
-// feature unique to the home page". Season's clock carries the time and the title and nothing else,
-// because that page IS the season and the detail is one click away there. Home is the overview.
+// 🔴 THE CLOCK EARNS ITS TWO LISTS HERE AND ONLY HERE. Harkirat: the ending/starting items are "a feature unique to the home page". Season's clock carries the time and the title and nothing else, because that page IS the season and the detail is one click away there. Home is the overview.
 function HomeClock({ season, today }) {
     const [, setTick] = useState(0);
     const moments = seasonMoments(season, today);
@@ -163,9 +152,7 @@ export function HomeRealm({ session }) {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        // In parallel: four realms' own endpoints. A realm the signed-in admin cannot see answers
-        // with `forbidden`, which reads here as "no rows from there" rather than an error — Home
-        // must render for a delegated admin who holds one page.
+        // In parallel: four realms' own endpoints. A realm the signed-in admin cannot see answers with `forbidden`, which reads here as "no rows from there" rather than an error — Home must render for a delegated admin who holds one page.
         Promise.all(['/api/season', '/api/armory', '/api/broadcast', '/api/review'].map((p) => fetchJson(p).catch(() => ({}))))
             .then(([season, armory, broadcast, review]) => {
                 if (season.signedOut) return setError(true);
@@ -181,9 +168,7 @@ export function HomeRealm({ session }) {
     const live = (data.broadcast?.live || []).length;
     const staged = (data.review?.ops || []).length;
 
-    // The LEAD is "needs you", because that is what this page IS. Its colour is the state it
-    // reports — warn when there is something, plain ink at zero — which is the same rule every
-    // other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
+    // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
     const stats = [
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
         { value: live, label: 'live now' },

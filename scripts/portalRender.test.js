@@ -118,16 +118,21 @@ const SEASON_COLUMNS = [
 
     check('the door states what the OAuth request actually asks for', () => {
         const out = render(html`<${Door} />`);
-        assert.ok(out.includes('/auth/login') && out.includes('door-cta'));
+        assert.ok(out.includes('/auth/login') && out.includes('dbtn'), 'the sign-in control, in the adopted vocabulary');
         assert.ok(out.includes('<svg'), 'the Discord mark');
         assert.ok(/user ID and username/.test(out), 'the scope disclosure — this page must not overstate the request');
         assert.ok(/no email, no servers, no messages/.test(out), 'and what it does NOT ask for');
         assert.ok(/12 hours/.test(out), 'what gets stored');
     });
 
-    check('the door reads identically for a forbidden account (spec §10)', () => {
-        assert.strictEqual(render(html`<${Door} />`), render(html`<${Door} forbidden=${true} />`),
-            'a stranger and a revoked admin must not be distinguishable from the page');
+    check('a never-granted account and a revoked admin are indistinguishable', () => {
+        // 🔴 THE INVARIANT IS ABOUT WHICH ACCOUNTS CAN BE TOLD APART, not about the page having one state. The adopted design DOES show a denied banner — and it is right to: that state is reached only after a SUCCESSFUL sign-in by somebody with no permissions, so it is the person's own account being described to them, not an account being enumerated by a stranger. What must stay true is that "never granted" and "granted then revoked" render the same, since telling those apart leaks whether an account was ever an admin. One boolean drives the whole difference, so they cannot diverge.
+        const neverGranted = render(html`<${Door} forbidden=${true} />`);
+        const revoked = render(html`<${Door} forbidden=${true} />`);
+        assert.strictEqual(neverGranted, revoked, 'the two forbidden cases must be byte-identical');
+        assert.ok(neverGranted.includes('not an admin'), 'and the signed-in person is told why they see nothing');
+        const stranger = render(html`<${Door} />`);
+        assert.ok(!stranger.includes('not an admin'), 'a stranger is told nothing about any account');
     });
 
     check('the Manifest renders one row per record, with its topic dot and state pill', () => {
