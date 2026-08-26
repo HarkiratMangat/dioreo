@@ -76,24 +76,59 @@ async function healthStats() {
     };
 }
 
+// ── REACH ─────────────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE PORTAL COMPUTES THIS BECAUSE NOTHING ELSE DOES. /bot analytics has five pages and none of them is Reach -- context and installType are recorded on every event and have never been read back by anything. This is not a portal-side duplicate of a Discord number; it is the first time the number exists. Which is also the division of labour the project already settled: Discord answers one question in one screenful, the portal is where depth lives.
+//
+// ⚠️ installType is NULLABLE BY DESIGN and the null is a real answer, not a gap to hide. utils/eventStore.js writes it from interaction.authorizingIntegrationOwners, which Discord omits on some interaction types -- so "not reported" is a third row, never folded into either install kind. Folding it in would overstate whichever bar absorbed it.
+async function reachStats() {
+    const rows = await AnalyticsEvent.aggregate([
+        { $match: { createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) }, isAdmin: false } },
+        { $group: { _id: { context: '$context', installType: '$installType' }, n: { $sum: 1 } } },
+    ]);
+    return rows.map(r => ({ context: r._id.context || null, installType: r._id.installType || null, n: r.n }));
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE ONLY NUMBER IN THE WHOLE SYSTEM THAT DESCRIBES WHAT SOMEBODY WANTED. Every other figure in Analytics describes what the bot did. A term typed into an autocomplete that matched nothing is a request for something this bot does not have -- a missing alias or a missing feature -- and it is invisible on every other surface, including Discord's.
+//
+// ⚠️ ZERO ROWS HERE MEANS "NOBODY TYPED", NEVER "NOTHING WAS MISSING". utils/eventStore.js only writes the search subdocument on autocomplete sessions, so an empty table is a statement about instrumentation coverage rather than about demand. The empty state says so in those words rather than showing a blank.
+async function searchTerms({ limit = 40 } = {}) {
+    const rows = await AnalyticsEvent.aggregate([
+        { $match: { createdAt: { $gte: new Date(Date.now() - 30 * DAY_MS) }, 'search.term': { $type: 'string', $ne: '' } } },
+        { $group: {
+            _id: { term: '$search.term', command: '$command', field: '$search.field' },
+            searches: { $sum: 1 },
+            zeroResults: { $sum: { $cond: [{ $eq: ['$search.results', 0] }, 1, 0] } },
+            picked: { $sum: { $cond: ['$search.picked', 1, 0] } },
+        } },
+        { $sort: { zeroResults: -1, searches: -1 } }, { $limit: limit },
+    ]);
+    return rows.map(r => ({ term: r._id.term, command: r._id.command || '?', field: r._id.field || '—',
+        searches: r.searches, zeroResults: r.zeroResults, picked: r.picked }));
+}
+
 function register(route) {
     const { requireAdmin } = require('../auth');
 
     route('GET', /^\/api\/analytics$/, requireAdmin(async (req, res, url, session) => {
         if (!(await hasCommandAccess(session.discordId, 'bot'))) return forbidden(res, 'forbidden');
-        const { buildUsageExport, buildTimingExport, computeUsageStats, computeTimingStats } = require('../../commands/bot');
-        const { buildAlertExport } = require('../../utils/alertStore');
-        const [river, alerts, health, usageStats, timingStats, events7d] = await Promise.all([
-            eventRiver({}), buildAlertExport(),
-            healthStats(), computeUsageStats(), computeTimingStats(),
+        const { computeUsageStats, computeTimingStats } = require('../../commands/bot');
+        const { OUTCOME_KEYS, ENTRY_KEYS } = require('../../models/AnalyticsRollup');
+        // 🔴 THE LIMITS ARE RAISED HERE, NOT IN THE SHARED FUNCTION. 8 and 6 are the numbers that fit a Discord panel; the portal has a scrolling page and the reason it exists is depth. Passing the limit keeps both true at once -- see the options bag on computeUsageStats.
+        const [river, health, usageStats, timingStats, reach, searches, events7d] = await Promise.all([
+            eventRiver({}), healthStats(),
+            computeUsageStats({ limit: 25 }), computeTimingStats({ limit: 25 }),
+            reachStats(), searchTerms(),
             AnalyticsEvent.find({ createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) } }).select('createdAt').lean(),
         ]);
         health.spark.commands = bucketByDay(events7d, 7);
-        // usage/timing/alerts stay in the payload: they are the /bot analytics text exports and the Usage and Timing panels still render them verbatim under their own stat tiles. Nothing here is a second computation of the same numbers (spec §8.2's "nothing is re-derived") — the tiles read the stats objects those same functions were built from. 🔴 usageStats/timingStats are computed ONCE above and threaded into the export builders below — buildUsageExport/buildTimingExport used to be called with no args, which silently re-ran the exact same aggregation (2 counts + 3 aggregates, and a full $percentile pipeline) a second time on every page load.
-        const usage = await buildUsageExport(usageStats);
-        const timing = await buildTimingExport(timingStats);
-        sendJson(res, 200, { river, usage, timing, alerts, health, usageStats, timingStats });
+        // 🔴 THE THREE TEXT EXPORTS ARE GONE FROM THIS PAYLOAD, AND DELETING THEM IS THE POINT. buildUsageExport/buildTimingExport/buildAlertExport produce the Discord command's own downloadable .txt, and the portal was rendering all three verbatim inside <pre> blocks — the fallback that stood in for a dashboard until there was one. Now that Usage and Timing are real panels, keeping the text beside them is two layers saying the same thing, which is the defect this branch has spent its life finding rather than a harmless extra. The alert export's own facts (level, detail) were never lost: eventRiver already returns full AlertLog documents, so the river carries them as columns and filters instead of prose. Three text builds per page load go with them. The exports remain exactly where they belong — attached to /bot analytics, in Discord.
+        //
+        // OUTCOME_KEYS/ENTRY_KEYS ride in the payload because the browser cannot require a Mongoose model and the six outcomes are an ENUM, not a display list: the Outcomes panel's whole reading is which ones have NEVER occurred, so it has to know the ones the data does not contain. models/AnalyticsRollup is their single source (its own header records the bug from when two copies existed), and the UI holds only the prose labels.
+        sendJson(res, 200, { river, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
     }));
 }
 
-module.exports = { register, eventRiver, healthStats, bucketByDay };
+module.exports = { register, eventRiver, healthStats, bucketByDay, reachStats, searchTerms };

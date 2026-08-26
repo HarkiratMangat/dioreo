@@ -74,6 +74,39 @@ async function checkAsync(name, fn) {
     catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
 }
 
+// 🔴 KEY PRESENCE WAS NEVER ENOUGH, AND THIS FILE PROVED IT ON ITSELF. Every check above asks whether a key EXISTS. /api/analytics promised usageStats and timingStats and the stub answered both with fixture ARRAYS while the route returns OBJECTS — so the key was present, the suite was green, and the component read `usageStats.current` off an array and got undefined. That is the same shape as the defect in this file's own header, one level deeper: a value that exists and means something else.
+//
+// So a second, narrower table: for the payloads whose VALUE a component destructures, what does that value have to look like. Written as a table rather than a wall of asserts because the next drift will be in a realm that is not analytics.
+const SHAPES = {
+    '/api/analytics': {
+        usageStats: { object: ['current', 'previous', 'byCommand', 'byEntry', 'byOutcome'],
+            rowsIn: { byCommand: ['_id', 'c', 'ok', 'bg'], byEntry: ['_id', 'c'], byOutcome: ['_id', 'c'] } },
+        timingStats: { object: ['overall', 'byCommand', 'byDep', 'ackBuckets'],
+            rowsIn: { byCommand: ['_id', 'p', 'n'], byDep: ['_id', 'totalMs', 'calls'], ackBuckets: ['_id', 'n'] } },
+        reach: { rows: ['context', 'installType', 'n'] },
+        searches: { rows: ['term', 'command', 'field', 'searches', 'zeroResults', 'picked'] },
+        outcomeKeys: { rows: null, minLength: 6 },
+        entryKeys: { rows: null, minLength: 7 },
+    },
+};
+
+function assertShape(where, value, spec) {
+    if (spec.object) {
+        assert.ok(value && typeof value === 'object' && !Array.isArray(value),
+            `${where} must be an OBJECT, got ${Array.isArray(value) ? 'an array' : typeof value}`);
+        for (const k of spec.object) assert.ok(k in value, `${where}.${k} is missing`);
+        for (const [k, fields] of Object.entries(spec.rowsIn || {})) {
+            assert.ok(Array.isArray(value[k]), `${where}.${k} must be an array`);
+            assert.ok(value[k].length, `${where}.${k} is empty — a fixture set that renders nothing proves nothing`);
+            for (const f of fields) assert.ok(f in value[k][0], `${where}.${k}[0].${f} is missing`);
+        }
+        return;
+    }
+    assert.ok(Array.isArray(value), `${where} must be an array`);
+    assert.ok(value.length >= (spec.minLength || 1), `${where} has ${value.length} rows, expected at least ${spec.minLength || 1}`);
+    for (const f of spec.rows || []) assert.ok(f in value[0], `${where}[0].${f} is missing`);
+}
+
 async function main() {
     for (const [route, keys] of Object.entries(promised)) {
         await checkAsync(`the harness serves every key ${route} promises`, async () => {
@@ -82,6 +115,21 @@ async function main() {
             assert.deepStrictEqual(missing, [], `${route} promises ${keys.join(', ')} — the stub omits ${missing.join(', ')}`);
         });
     }
+
+    for (const [route, spec] of Object.entries(SHAPES)) {
+        await checkAsync(`the harness serves the right SHAPE under every key ${route} promises`, async () => {
+            const body = await stub.fetchJson(route);
+            for (const [key, rule] of Object.entries(spec)) assertShape(`${route}.${key}`, body[key], rule);
+        });
+    }
+
+    // The shape table's own falsifier. Without this, a typo in SHAPES that made every rule vacuous would read exactly like every payload being correct — which is precisely how the array-under-an-object-key defect survived.
+    await checkAsync('THE SHAPE GATE CAN FAIL: an array where an object is promised is caught', () => {
+        assert.throws(() => assertShape('x.usageStats', [1, 2, 3], SHAPES['/api/analytics'].usageStats),
+            /must be an OBJECT, got an array/);
+        assert.throws(() => assertShape('x.reach', [{ context: 'guild' }], SHAPES['/api/analytics'].reach),
+            /installType is missing/);
+    });
 
     // Proven the way every other gate here is proven: seed the defect, watch it fail.
     await checkAsync('THE GATE CAN FAIL: a route answered with the wrong shape is caught', async () => {

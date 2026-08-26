@@ -1590,10 +1590,17 @@ if (typeof location !== 'undefined') {
 }
 
 if (typeof location !== 'undefined' && /[?&]empty=1\b/.test(location.search)) {
+  /* 🔴 FOUR OF THESE WERE MISSED AND THE ZEROING LOOP BELOW COULD NOT CATCH THEM. alertStats,
+   * outcomeStats, entryStats and ackBuckets are ARRAYS of rows, and the zeroNumbers pass right
+   * below explicitly skips arrays — so under ?empty=1 they kept their full values while every
+   * list around them emptied. Measured on the portal's Analytics realm: an empty portal showed
+   * "ERRORS 24H 23" in the masthead beside "0 commands" and a river reading "No changes, alerts
+   * or restarts have been recorded yet". That is the exact lie this flag exists to expose,
+   * produced by the flag itself, and it was invisible for as long as nothing read those four. */
   const BLANK = ['newDraws', 'returningDraws', 'calendar', 'patchNotes', 'items', 'seasonItems',
                  'seasonRepairs', 'announcements', 'accessAdmins', 'sessions', 'spof', 'builds',
                  'cmdStats', 'depStats', 'reachStats', 'alertSample', 'changeLog', 'searchTerms',
-                 'sampleOps'];
+                 'sampleOps', 'alertStats', 'outcomeStats', 'entryStats', 'ackBuckets'];
   BLANK.forEach(k => { if (Array.isArray(window.FIX[k])) window.FIX[k] = []; });
   /* Derived counts must follow, or a realm reports "31 builds" over an empty table — which is
    * the failure this flag exists to make visible, showing up as a lie instead of a blank. */
@@ -1606,8 +1613,10 @@ if (typeof location !== 'undefined' && /[?&]empty=1\b/.test(location.search)) {
    * fixture does not have. */
   const zeroNumbers = o => Object.fromEntries(
     Object.entries(o).map(([k, v]) => [k, typeof v === 'number' ? 0 : v]));
-  ['ARMORY_COUNTS', 'OBS_TOTALS', 'LOADOUT_STATS', 'bootStats', 'alertStats', 'outcomeStats',
-   'entryStats', 'adminSplit', 'memStats'].forEach(k => {
+  /* alertStats/outcomeStats/entryStats used to be listed here too. They are arrays, this pass
+   * skips arrays, and so naming them read as coverage while doing nothing at all — they are in
+   * BLANK above now, which is the pass that can actually reach them. */
+  ['ARMORY_COUNTS', 'OBS_TOTALS', 'LOADOUT_STATS', 'bootStats', 'adminSplit', 'memStats'].forEach(k => {
     const v = window.FIX[k];
     if (v && typeof v === 'object' && !Array.isArray(v)) window.FIX[k] = zeroNumbers(v);
   });

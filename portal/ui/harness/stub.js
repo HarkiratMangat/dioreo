@@ -59,9 +59,6 @@ function analyticsPayload() {
     const spark = (n, peak) => Array.from({ length: 7 }, (_, i) => Math.round(peak * (0.4 + 0.6 * Math.abs(Math.sin(i + n)))));
     return {
         river,
-        usage: (F_.cmdStats || []).map((c) => `${c.command}${c.subcommand ? ' ' + c.subcommand : ''}  ${c.n}  ok ${c.ok}  ${c.dur}ms`).join('\n'),
-        timing: (F_.depStats || []).map((d) => `${d.name}  ${d.calls} calls  ${d.ms}ms`).join('\n'),
-        alerts: alertRows.map((a) => `[${a.level}] ${a.title} — ${a.detail} (${a.at})`).join('\n'),
         health: {
             uptimeSince: new Date(Date.now() - (boot.uptimeSec || 5400) * 1000).toISOString(),
             lastBootKind: boot.kind, lastBootVersion: boot.lastVersion,
@@ -70,10 +67,64 @@ function analyticsPayload() {
             rssPeakMb: (F_.memStats || {}).maxMb, rssSampleCount: alertRows.length,
             commands24h: totals.events || 0,
             distinctUsers24h: new Set((F_.cmdStats || []).map((c) => c.command)).size,
-            spark: { alerts: spark(1, (bySeverity.error || 0) + 4), commands: spark(3, Math.round((totals.events || 0) / 7)) },
+            // 🔴 THE +4 FLOOR MEANT THIS SPARKLINE COULD NEVER READ ZERO. Under ?empty=1 the Health panel showed "Alerts per day: 3 2 4 3 2 4 4" beside "0 errors", "0 commands" and a river saying nothing had been recorded — a chart inventing a week of activity in a portal with no records at all, which is the precise failure that flag exists to expose. Both series now derive from a real row count, so an empty fixture set produces empty bars.
+            spark: { alerts: spark(1, Math.ceil(alertRows.length / 7)), commands: spark(3, Math.round((totals.events || 0) / 7)) },
             restarts24h: 0, restarts7d: boot.boots || 0,
         },
-        usageStats: F_.cmdStats || [], timingStats: F_.depStats || [],
+        // 🔴 THESE TWO WERE ARRAYS AND THE REAL ROUTE RETURNS OBJECTS. `usageStats: F_.cmdStats` put the fixture array straight under the API's key name — the exact defect this file's own header describes, committed a second time in the same function, on the two fields nothing was reading yet. The old component only touched `usageStats.current`, which is undefined on an array, so a header silently did not render and every gate stayed green. It surfaced only when a component finally destructured `byCommand` and got nothing on a fixture set carrying 496 events.
+        //
+        // The real shapes: computeUsageStats groups by $command ALONE, so the fixtures' per-subcommand rows have to be folded the way Mongo would fold them — a stub that keeps them separate would show more rows than production ever can.
+        usageStats: usageStatsShape(F_), timingStats: timingStatsShape(F_),
+        reach: F_.reachStats || [],
+        searches: F_.searchTerms || [],
+        outcomeKeys: F_.OUTCOMES || [], entryKeys: F_.ENTRIES || [],
+    };
+}
+
+// 🔴 THE ADMIN FILTER IS PART OF THE SHAPE, NOT A DETAIL. computeUsageStats matches isAdmin:false, so byCommand and `current` describe the SAME population. Folding every fixture row in while taking `current` from adminSplit.product mixed two populations, and the page showed per-command shares of a smaller total: 38 + 30 + 23 + 19 + 17 … summing far past 100%. Production cannot produce that, so a stub that does is teaching the reviewer a defect the code does not have. The command list is the fixtures' own, which the mockup uses for exactly this filter.
+const ADMIN_COMMANDS = ['mng', 'bot', 'manage', 'add', 'edit', 'autobuild'];
+
+// $group by command, exactly as computeUsageStats does — summing the fixtures' subcommand rows rather than listing them.
+function foldByCommand(cmdStats, { product = false } = {}) {
+    const m = new Map();
+    for (const c of cmdStats || []) {
+        if (product && ADMIN_COMMANDS.includes(c.command)) continue;
+        const k = c.command || '?';
+        const prev = m.get(k) || { _id: k, c: 0, ok: 0, bg: 0, dur: 0, ack: 0, rows: 0 };
+        prev.c += c.n || 0; prev.ok += c.ok || 0; prev.rows += 1;
+        // The fixtures have no entry column per command row, so a zero-ack row stands in for a background job — those never answered an interaction, which is exactly what ack 0 means and why the mockup's own command drawer says so.
+        prev.bg += (c.ack === 0 ? (c.n || 0) : 0);
+        prev.dur = Math.max(prev.dur, c.dur || 0); prev.ack = Math.max(prev.ack, c.ack || 0);
+        m.set(k, prev);
+    }
+    return [...m.values()].sort((a, b) => b.c - a.c);
+}
+
+function usageStatsShape(F_) {
+    const folded = foldByCommand(F_.cmdStats, { product: true });
+    const current = (F_.adminSplit || {}).product || folded.reduce((a, c) => a + c.c, 0);
+    return {
+        current,
+        // No previous-window figure exists in the fixtures, so one is derived deterministically. It is a FIXTURE, invented like every other number in this file — it exists so the delta line has something to render, not because anybody measured it.
+        previous: Math.round(current * 0.82),
+        byCommand: folded.map((c) => ({ _id: c._id, c: c.c, ok: c.ok, bg: c.bg })),
+        byEntry: (F_.entryStats || []).map((e) => ({ _id: e.entry, c: e.n })),
+        byOutcome: (F_.outcomeStats || []).map((o) => ({ _id: o.outcome, c: o.n })),
+    };
+}
+
+function timingStatsShape(F_) {
+    const folded = foldByCommand(F_.cmdStats);
+    // $percentile returns an array per requested p, which is why the real overall carries [p50, p95] rather than two fields — a stub with two scalars would render and be the wrong shape.
+    const at = (list, q) => (list.length ? list[Math.min(list.length - 1, Math.floor(list.length * q))] : null);
+    const acks = folded.map((c) => c.ack).filter((n) => n > 0).sort((a, b) => a - b);
+    const durs = folded.map((c) => c.dur).filter((n) => n > 0).sort((a, b) => a - b);
+    return {
+        overall: { ackP: [at(acks, 0.5), at(acks, 0.95)], durP: [at(durs, 0.5), at(durs, 0.95)] },
+        byCommand: folded.filter((c) => c.dur > 0).map((c) => ({ _id: c._id, p: [c.dur], n: c.c })),
+        byDep: (F_.depStats || []).map((d) => ({ _id: d.name, totalMs: d.ms, calls: d.calls })),
+        // $bucket names its groups by the LOWER BOUNDARY, under `_id` — the fixtures call the same number `from`.
+        ackBuckets: (F_.ackBuckets || []).map((b) => ({ _id: b.from, n: b.n })),
     };
 }
 
