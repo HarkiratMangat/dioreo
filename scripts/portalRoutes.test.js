@@ -105,6 +105,9 @@ function promisedKeys() {
         const csrf = require('../portal/auth').csrfToken({ sessionId: hashSession(raw) });
         const promised = promisedKeys();
 
+        // ⚠️ A ROUTE THAT REQUIRES A SCOPE MUST BE GIVEN ONE HERE, and /api/armory/export gained that requirement on 2026-08-26: with neither ids nor a mode it now answers 400 rather than an empty export. That refusal is the point — an empty file that looks like a successful backup is the worst answer a route can give when the tier-3 interlock tells the reader an export is the way back — so the loop supplies the scope and the bare call gets its own case below.
+        const QUERY = { '/api/armory/export': '?mode=MP' };
+
         // The preview route takes an id; it gets its own case below, with a real one.
         for (const [route, keys] of Object.entries(promised).filter(([r]) => r !== '/api/armory/preview')) {
             // eslint-disable-next-line no-await-in-loop
@@ -112,13 +115,22 @@ function promisedKeys() {
                 const match = gets.find((r) => r.pattern.test(route));
                 assert.ok(match, `no registered route matches ${route}`);
                 const res = fakeRes();
-                await match.handler(fakeReq(cookie), res, new URL('http://127.0.0.1' + route));
+                await match.handler(fakeReq(cookie), res, new URL('http://127.0.0.1' + route + (QUERY[route] || '')));
                 assert.strictEqual(res.status, 200, `expected 200, got ${res.status} (${res.body.slice(0, 80)})`);
                 const body = json(res);
                 assert.ok(body, 'the body parses as JSON');
                 for (const k of keys) assert.ok(k in body, `promised key "${k}" is missing from the response`);
             });
         }
+
+        // 🔴 AN EXPORT WITH NO SCOPE IS A REFUSAL, NOT AN EMPTY FILE. Before the mode and category scopes existed this route answered 200 with an empty string for a request naming nothing — which reads as "there was nothing to export" rather than "you did not say what to export", and the two are very different when the file is meant to be the way back from a purge.
+        await acheck('/api/armory/export refuses a request that names no scope', async () => {
+            const match = gets.find((r) => r.pattern.test('/api/armory/export'));
+            const res = fakeRes();
+            await match.handler(fakeReq(cookie), res, new URL('http://127.0.0.1/api/armory/export'));
+            assert.strictEqual(res.status, 400, 'a scopeless export must not answer with an empty success');
+            assert.match(json(res).error, /ids, or a mode/);
+        });
 
         // ⚠️ A ROUTE THAT TAKES A PARAMETER NEEDS ONE. The loop above calls every GET with its bare path, which is right for the eight that take none and wrong for the preview: with no id it correctly 404s, and asserting 200 there tests the test rather than the route. It gets a REAL id, fetched the same way the page does.
         await acheck('/api/armory/preview answers 200 for a real build', async () => {

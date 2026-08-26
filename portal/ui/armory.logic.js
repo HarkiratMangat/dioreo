@@ -53,6 +53,32 @@ function buildArmoryEditOp(row, columnKey, newValue) {
     return { type: 'loadout.edit', target: { id: row.id }, payload };
 }
 
+// ── THE BULK PASTE ────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 A PASTE PREVIEW THAT ONLY COUNTS THE ERROR ARRAY LIES IN BOTH DIRECTIONS. utils/adminParser.js's parseBulkLoadoutList pushes an error and drops the block when it cannot read the header, and pushes an error but KEEPS the block when a badge token is unrecognised — so "6 problems" over a paste where four builds saved fine is both alarming and wrong, and "4 understood, 6 errors" reads as arithmetic nobody can follow. The server returns the BLOCK count, which makes the split exact: a block either parsed or it did not.
+//
+// ⚠️ THE DECOMPOSITION IS DERIVED FROM THAT PARSER'S CONTROL FLOW, not assumed — every rejecting branch there ends in `continue`, and the badge branch is the only one that pushes an error and falls through to `parsed.push`. scripts/portalArmoryBulk.test.js asserts it against the real parser on real text, so a change to the parser fails a test instead of silently re-conflating the two.
+function bulkPasteSummary(result) {
+    const rows = (result && result.rows) || [];
+    const errors = (result && result.errors) || [];
+    const blocks = Number.isFinite(result && result.blocks) ? result.blocks : rows.length;
+    const rejected = Math.max(0, blocks - rows.length);
+    const updates = rows.filter((r) => r.existing).length;
+    return {
+        blocks, understood: rows.length, rejected,
+        warnings: Math.max(0, errors.length - rejected),
+        updates, creates: rows.length - updates,
+        canStage: rows.length > 0,
+    };
+}
+
+// ⚠️ SELECTION STAYS FIRST. The Manifest's own "Export selection" has always sent `ids`, and the route still reads that before anything else — the two new scopes are additions, not a replacement, and reordering them here would silently change what an existing button exports.
+function armoryExportQuery({ scope, mode, category, ids }) {
+    if (scope === 'selection') return `ids=${(ids || []).join(',')}`;
+    if (scope === 'category' && category) return `mode=${encodeURIComponent(mode)}&category=${encodeURIComponent(category)}`;
+    return `mode=${encodeURIComponent(mode)}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken };
+    module.exports = { buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken, bulkPasteSummary, armoryExportQuery };
 }

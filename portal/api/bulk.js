@@ -24,6 +24,33 @@ function register(route) {
         // A row the parser could not date is REPORTED, never dropped: a paste where three of eight lines fell out silently is the failure a preview exists to prevent.
         sendJson(res, 200, { kind, rows: rows.map((r) => ({ ...r, ok: Boolean(r.name && r.start) })) });
     }));
+
+    // POST /api/parse-bulk/loadout { mode, text } -> { mode, blocks, rows, errors }
+    //
+    // 🔴 MODE IS A PARAMETER, NEVER A PARSED FIELD, and that is the bot's own behaviour rather than a simplification. core/ops/loadouts.js's upsertBulkBlocks does `{ ...rawEntry, mode }` unconditionally, and the block format dropped its Mode segment on 2026-08-22 — so a block typed DMZ and pasted on the MP page saves as MP. Reading a mode out of the text here would preview one thing and save another.
+    //
+    // ⚠️ IT PARSES AND LOOKS UP; IT NEVER WRITES. `existing` is the same match key the upsert uses (weaponKey + mode + buildName), read here only so the preview can say update-or-new before anything is staged. A separate route from /api/parse-bulk above because this one reads the Loadout collection and therefore has to check the Armory pages, which a pure text parse does not.
+    route('POST', /^\/api\/parse-bulk\/loadout$/, requireAdmin(async (req, res, url, session) => {
+        const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
+        if (grantedPages.length === 0) return forbidden(res, 'forbidden');
+        const body = await readJsonBody(req);
+        const text = String(body.text || '');
+        if (text.length > 60000) return sendJson(res, 400, { error: 'that is more text than the armory holds' });
+        const mode = MODES.includes(body.mode) ? body.mode : 'MP';
+        const { parsed, errors } = parseBulkLoadoutList(text);
+        const keys = parsed.map((p) => ({ weaponKey: p.weaponKey, mode, buildName: p.buildName }));
+        const existing = keys.length ? await Loadout.find({ $or: keys }).select('weaponKey mode buildName').lean() : [];
+        const seen = new Set(existing.map((e) => `${e.weaponKey}\u0000${e.mode}\u0000${e.buildName}`));
+        sendJson(res, 200, {
+            mode, blocks: blockCount(text), errors,
+            rows: parsed.map((p) => ({
+                weaponName: p.weaponName, buildName: p.buildName, category: p.category,
+                attachments: p.attachments.length, imageKey: p.imageKey, shareCode: p.shareCode,
+                isMeta: p.isMeta, isToxic: p.isToxic, categoryRank: p.categoryRank, dmzRangeRank: p.dmzRangeRank,
+                existing: seen.has(`${p.weaponKey}\u0000${mode}\u0000${p.buildName}`),
+            })),
+        });
+    }));
 }
 
 module.exports = { register };

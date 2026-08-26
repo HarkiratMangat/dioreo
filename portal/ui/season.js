@@ -378,6 +378,92 @@ function DraftZone({ draft, onStart, onDiscard }) {
         </div>`;
 }
 
+// ── THE PATCH-NOTE RECORD ─────────────────────────────────────────────────────────────────────
+//
+// ⚠️ NOT `SeasonRecord` — that name is already taken, by the identity strip's own summary line, and the collision was caught by the build's ES-module parse rather than by `node --check`, which accepts a duplicate top-level declaration in CommonJS. This one lists what has been PUBLISHED; that one summarises what the season IS.
+//
+// 🔴 THE PORTAL COULD PUBLISH A PATCH NOTE AND PURGE EVERY ONE, AND NOTHING IN BETWEEN. patchnote.setDateInfo, setUrls1, setUrls2 and editSeason are all declared, tiered and permissioned in core/ops, and none of them had an affordance — so a typo in a published season title was fixable only from Discord. Found by counting what the registry declares against what the surface offers, which is the one check shape that can see a thing that is not there.
+//
+// 🔴 THE PANEL IS A SPINE, NOT A TABLE, and the mockup's own note says why: the record is a sequence, the newest entry is the one Discord is currently serving, and a list that renders them all alike hides which one that is. The marker on the current row is filled; the others are outlines on the same thread.
+//
+// ⚠️ IT SITS ABOVE THE ONE-WAY STRIP, which is deliberate: the strip's patch-notes purge destroys exactly what this panel lists, so the count you are about to lose is on screen directly above the control that loses it.
+function PatchEditor({ entry, onStage, onClose }) {
+    const [draft, setDraft] = useState({
+        titleOverride: entry.titleOverride, description: entry.description,
+        releaseDateText: entry.releaseDateText, urls: entry.images.join('\n'),
+    });
+    const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
+    const urlList = draft.urls.split('\n').map((u) => u.trim()).filter(Boolean);
+    const { ops, blocked } = patchEditOps(entry, { ...draft, urls: urlList });
+    const over = urlList.length > MAX_PATCH_IMAGES;
+
+    return html`
+        <div class="bed-sec" style="margin:12px 4px 0">
+            <h5>${entry.current ? 'Editing the current entry' : 'Editing a past season'}${' '}
+                <em>${entry.current ? 'date/info and each image slot stage separately, as they do in Discord' : 'one edit, carrying every field'}</em></h5>
+            <div class="bed-g2">
+                <label class="dwfield"><span>Title override <i>blank keeps the season title it was published under</i></span>
+                    <input value=${draft.titleOverride} placeholder=${entry.title}
+                           onInput=${(e) => set({ titleOverride: e.target.value })} /></label>
+                <label class="dwfield"><span>Release date <i>read by the same parser the bot uses</i></span>
+                    <input value=${draft.releaseDateText} spellcheck="false" placeholder="July 22, 2026 7:20 AM"
+                           onInput=${(e) => set({ releaseDateText: e.target.value })} /></label>
+            </div>
+            <label class="dwfield"><span>Additional info <i>rendered under the images; b:, n: and f: become the buff, nerf and fix marks</i></span>
+                <textarea rows="4" value=${draft.description} onInput=${(e) => set({ description: e.target.value })}></textarea></label>
+            <label class="dwfield">
+                <span>Images <i>one URL per line — the first five are slot 1, the next five slot 2</i></span>
+                <textarea rows="5" spellcheck="false" value=${draft.urls} onInput=${(e) => set({ urls: e.target.value })}></textarea></label>
+            <!-- Each URL is re-hosted through Cloudinary on commit, keyed by this entry's own id, which is
+                 why an untouched slot is never restaged: resubmitting five unchanged URLs re-uploads five
+                 images to say nothing at all. -->
+            <p class="attnote">${urlList.length} of ${MAX_PATCH_IMAGES} used.${' '}
+                ${over ? html`<b>Only the first ${MAX_PATCH_IMAGES} would be kept.</b>` : ''}${' '}
+                Every URL is re-hosted on Cloudinary when this commits, so a link that dies later does not take the patch note with it.</p>
+            <div class="attfoot">
+                <!-- ⚠️ A DISABLED BUTTON HAS TO SAY WHICH KIND OF NOTHING IT MEANS. Blanking the release date
+                     read as "Nothing changed yet" — the same words as an untouched form — while the real
+                     reason was a refusal, and the refusal itself sat in a paragraph below. Measured on the
+                     page, not reasoned about: the two states were indistinguishable at the control. -->
+                <button class="pill lead" disabled=${!ops.length} onClick=${() => onStage(ops)}>
+                    ${ops.length ? `Stage ${ops.length} change${ops.length === 1 ? '' : 's'}`
+                        : (blocked ? 'Fix the release date first' : 'Nothing changed yet')}</button>
+                <button class="pill" onClick=${onClose}>Close</button>
+                ${blocked ? html`<span class="attnote" style="color:var(--warn)">${blocked}</span>` : null}
+            </div>
+        </div>
+    `;
+}
+
+function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
+    const rows = patchRecordRows(live);
+    const open = rows.find((r) => r.id === openId) || null;
+    return html`
+        <section class="rec" aria-label="Season record">
+            <header class="rec-h">
+                <span class="rec-t">Season record</span>
+                <span class="rec-n">${rows.length} published · newest first</span>
+                <button type="button" class="rec-cta" onClick=${onPublish}>+ Publish</button>
+            </header>
+            <ol class="rec-list">
+                ${rows.length ? rows.map((n) => html`
+                    <li key=${n.id} class=${'rec-row' + (n.current ? ' cur' : '')} tabindex="0" role="button"
+                        aria-expanded=${openId === n.id ? 'true' : 'false'}
+                        onClick=${() => onOpen(openId === n.id ? null : n.id)}
+                        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(openId === n.id ? null : n.id); } }}>
+                        <span class="rec-mk"></span>
+                        <span class="rec-ttl">${n.title}</span>
+                        <span class="rec-d">${n.releaseDateText || '—'}</span>
+                        <span class="rec-meta">${n.images.length} img</span>
+                        <span class="rec-tag">${n.current ? 'current' : 'history'}</span>
+                    </li>`)
+                : html`<li class="rec-empty">Nothing published this season yet.</li>`}
+            </ol>
+            ${open ? html`<${PatchEditor} entry=${open} onStage=${(ops) => onStage(open, ops)} onClose=${() => onOpen(null)} />` : null}
+        </section>
+    `;
+}
+
 export function SeasonRealm({ session }) {
     const [view, setView] = useState('Track');
     // useAsync replaces the useState/useEffect pair AND the two lines that used to stand in for six states. Its `reload` is what a refresh calls, which is also what makes the is-refreshing hairline work without any realm knowing the class exists.
@@ -389,7 +475,8 @@ export function SeasonRealm({ session }) {
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
-    const [idScope, setIdScope] = useState('live');           // which season the identity editor is editing
+    const [idScope, setIdScope] = useState('live');
+    const [openPatchId, setOpenPatchId] = useState(null);           // which season the identity editor is editing
 
     // Board has nothing to show without this — a review pass found the list endpoint and this fetch were both missing entirely, so the Board column stayed permanently empty regardless of what was actually staged.
     useEffect(() => { fetchChangesets('season').then(setChangesets); }, [view]);
@@ -612,6 +699,15 @@ export function SeasonRealm({ session }) {
         onConfirm: () => handleDiscard(String(c._id)),
     });
 
+    // ⚠️ THE WHOLE SET GOES IN ONE CHANGESET. Editing the current entry can produce up to three ops — date/info and each image slot — and they are one act; staging them separately would put three rows on Review for one edit and let two of them commit without the third.
+    async function handlePatchStage(entry, ops) {
+        if (!ops.length) return;
+        await stageOps('season', ops, session.csrfToken);
+        setOpenPatchId(null);
+        fetchSeasonState().then(setState);
+        fetchChangesets('season').then(setChangesets);
+    }
+
     const editingDraft = idScope === 'draft';
     const identitySlot = html`<${SeasonIdentity} season=${editingDraft ? (state.draft || {}) : state.live}
                                                  editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
@@ -659,6 +755,8 @@ export function SeasonRealm({ session }) {
                   viewSlot=${html`${identitySlot}
                                   <${DraftZone} draft=${state.draft} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
                                   ${viewSlot}
+                                  <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
+                                                   onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />
                                   <${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />

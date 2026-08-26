@@ -6,14 +6,26 @@
 
 const FIX = window.FIX;
 
-// The season document as models/SeasonalData.js actually stores it — the six arrays live ON the document, which is why `state.live` is spread from FIX.season and the arrays together rather than nested under a `data` key.
+// The season document as models/SeasonalData.js actually stores it — the six arrays live ON the document, which is why `state.live` is spread from FIX.season and the arrays together rather than nested under a `data` key. ⚠️ `releaseDateText` IS STAMPED BY THE REAL ROUTE and has to be stamped here too, or the record panel's editor refuses to stage in the harness — the empty-date guard would fire on every entry and the surface would demonstrate a refusal rather than the feature. It reproduces utils/adminParser.js's formatReleaseDateTime for the two shapes that function emits: a bare day for an exact UTC midnight, day plus a local clock time otherwise. ⚠️ The timezone is hardcoded to the one the bot defaults to; the real formatter takes it as an argument. That is the deliberate narrowing here, and it means a harness reading is right for Harkirat's clock and nobody else's.
+const PATCH_TZ = 'America/Toronto';
+function harnessReleaseText(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const midnight = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0 && d.getUTCMilliseconds() === 0;
+    if (midnight) return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+    const day = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PATCH_TZ });
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: PATCH_TZ });
+    return `${day} ${time}`;
+}
+
 function seasonLive() {
     return {
         ...FIX.season,
         newDraws: FIX.newDraws,
         returningDraws: FIX.returningDraws,
         calendar: FIX.calendar,
-        patchNotes: FIX.patchNotes,
+        patchNotes: (FIX.patchNotes || []).map((p) => ({ ...p, releaseDateText: harnessReleaseText(p.releaseDate) })),
     };
 }
 
@@ -226,7 +238,68 @@ const ROUTES = [
         if (container && build.accent) container.accent_color = parseInt(String(build.accent).replace('#', ''), 16);
         return { card };
     }],
-    [/^\/api\/armory\/export/, () => ({ text: '(harness: bulk export text)' })],
+    // 🔴 THE HARNESS EXPORTS REAL TEXT NOW, because the Bulk view's whole claim is that the export round-trips through the paste box — and a placeholder string proves the layout while disproving nothing. This mirrors utils/adminParser.js's formatLoadoutsAsBulkText field for field; the round trip is checkable in the harness by copying the output into the paste box and pressing Preview.
+    [/^\/api\/armory\/export/, (params) => {
+        // ⚠️ `params` IS A URLSearchParams, NOT A PLAIN OBJECT — `params.mode` is always undefined, and the first version of this read it that way. The export then ignored the mode entirely: the button offered "All 125 MP builds" and the panel answered with 133, the whole fixture set. Caught by opening the page, not by the suite, which never exercises the stub.
+        const ids = String(params.get('ids') || '').split(',').filter(Boolean);
+        const mode = params.get('mode') || null;
+        const cat = (params.get('category') || '').toUpperCase();
+        const all = (FIX.builds || []);
+        const list = ids.length
+            ? all.filter((b) => ids.includes(String(b._id)))
+            : all.filter((b) => (!mode || b.mode === mode) && (!cat || String(b.category).toUpperCase() === cat));
+        const text = list.map((l) => {
+            const badges = [l.isMeta ? 'meta' : null, l.categoryRank,
+                l.dmzRangeRank ? String(l.dmzRangeRank).replace('-', '') : null, l.isToxic ? 'toxic' : null].filter(Boolean).join(', ');
+            const lines = [`${l.weaponName} | ${l.category}`];
+            if (l.buildName) lines.push(`Build: ${l.buildName}`);
+            if (l.imageKey && !String(l.imageKey).startsWith('http')) lines.push(`Image: ${l.imageKey}`);
+            if (l.shareCode) lines.push(`Code: ${l.shareCode}`);
+            if (badges) lines.push(`Badges: ${badges}`);
+            lines.push(...(l.attachments || []).map((a) => `- ${a}`));
+            return lines.join('\n');
+        }).join('\n\n');
+        return { text, count: list.length };
+    }],
+
+    // ⚠️ NARROWER THAN THE REAL PARSER, AND THE NARROWING IS NAMED. This reproduces the block grammar exactly — blank-line separated blocks, a "Weapon | Category" header, Build/Image/Code/Badges keyed lines, everything else an attachment — because that is what the preview demonstrates. It does NOT reproduce parseLoadoutBadges' token vocabulary, so an unrecognised badge token produces no warning here and does in production; a stub that half-implements a validator teaches a grammar the product does not have.
+    [/^\/api\/parse-bulk\/loadout$/, (params, body) => {
+        const mode = (body && body.mode) === 'DMZ' ? 'DMZ' : 'MP';
+        const KEYS = { build: 'buildName', image: 'imageKey', code: 'shareCode', badges: 'badges' };
+        const blocks = String((body && body.text) || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+        const rows = []; const errors = [];
+        for (const block of blocks) {
+            const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+            const head = lines[0];
+            const snippet = head.length > 60 ? `${head.slice(0, 60)}...` : head;
+            const parts = head.split('|').map((x) => x.trim());
+            while (parts.length > 2 && parts[parts.length - 1] === '') parts.pop();
+            if (parts.length > 2) { errors.push(`"${snippet}" -- that looks like the OLD pipe format. The first line is now just "Weapon | Category".`); continue; }
+            if (!parts[0] || !parts[1]) { errors.push(`"${snippet}" -- a block's first line must be "Weapon | Category", and both halves are required.`); continue; }
+            const fields = {}; const attachments = []; let badKey = null;
+            for (const line of lines.slice(1)) {
+                if (/^[-*•]\s+/.test(line)) { attachments.push(line.replace(/^[-*•]\s+/, '').trim()); continue; }
+                const keyed = /^([A-Za-z ]+):\s*(.*)$/.exec(line);
+                if (!keyed) { attachments.push(line); continue; }
+                const key = keyed[1].trim().toLowerCase();
+                if (!Object.prototype.hasOwnProperty.call(KEYS, key)) { badKey = keyed[1].trim(); break; }
+                fields[KEYS[key]] = keyed[2].trim();
+            }
+            if (badKey) { errors.push(`"${snippet}" -- unrecognized field "${badKey}:". Valid fields are Build, Image, Code and Badges.`); continue; }
+            const atts = attachments.filter(Boolean);
+            if (!atts.length) { errors.push(`"${snippet}" -- no attachment lines found under the header`); continue; }
+            const weaponKey = parts[0].toLowerCase().replace(/\s+/g, '');
+            const buildName = fields.buildName || 'Standard Build';
+            rows.push({
+                weaponName: parts[0], buildName, category: parts[1].toUpperCase(), attachments: atts.length,
+                imageKey: fields.imageKey || '', shareCode: fields.shareCode || '',
+                existing: (FIX.builds || []).some((b) => b.mode === mode
+                    && String(b.weaponName).toLowerCase().replace(/\s+/g, '') === weaponKey
+                    && (b.buildName || 'Standard Build') === buildName),
+            });
+        }
+        return { mode, blocks: blocks.length, rows, errors };
+    }],
     [/^\/api\/broadcast$/, () => ({
         // 🔴 `state`, NOT `active`. The route's own announcementState() is the one place an announcement's state is decided, and the counts in the masthead already read it — filtering on a different field here put FOUR cards under a "Now showing" heading beside a masthead reading LIVE 2. One quantity, two authorities, on the same screen: the exact defect this project keeps paying for, reproduced in the instrument rather than the product.
         live: (FIX.announcements || []).filter((a) => a.state === 'live'),

@@ -12,6 +12,7 @@ import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { renderV2 } from './v2Render.js';
 import { useOverlay } from './overlay.js';
+import { reportFailure } from './async.js';
 
 const MODES = ['MP', 'DMZ'];
 
@@ -513,6 +514,152 @@ function Compare({ builds, picked, onPick }) {
     `;
 }
 
+// ── THE ACTIVE FILTER BAR ─────────────────────────────────────────────────────────────────────
+//
+// 🔴 THE FILTER WAS INVISIBLE FROM THE TABLE IT FILTERED. Clicking a Coverage card narrowed the Manifest and said so only in the Manifest's header-right corner, as a bare string with no way back — so a reader who scrolled past it saw a short table and no reason for it, which reads as missing data rather than as a filter. The bar states every active narrowing, in the words the control used, with the count it produced and one control that undoes all of it.
+function FilterBar({ weapon, flag, shown, total, onClear }) {
+    if (!weapon && !flag) return null;
+    return html`
+        <div class="afbar">
+            <span class="aflab">Showing</span>
+            ${weapon ? html`<span class="afchip"><i></i>${weapon}</span>` : null}
+            ${flag ? html`<span class="afchip warn"><i></i>${COVERAGE_LABEL[flag] || flag}</span>` : null}
+            <span class="afn">${shown} of ${total}</span>
+            <button class="afclear" onClick=${onClear}>Clear</button>
+        </div>
+    `;
+}
+
+// ── THE BULK VIEW ─────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 loadout.bulkAdd AND loadout.bulkReplace WERE DECLARED, TIERED, PERMISSIONED AND UNREACHABLE. Both carry real /manage action ids (loadouts_mp:bulkadd, loadouts_dmz:bulkadd) and neither had a single affordance anywhere in the portal — the same shape as the seven tier-3 operations found the day before, and invisible to every gate for the same reason: a capability with no affordance does nothing, so there is nothing to measure. The Add form does one build at a time, and a build is a weapon, a category, five attachments, a code, an image and its badges; retyping forty of those through a form is precisely what the paste box exists to avoid.
+//
+// 🔴 THE MODE IS A CONTROL HERE, NOT A PARSED FIELD. In Discord the mode is decided by which page you opened, and core/ops/loadouts.js applies it to every block unconditionally — the format has carried no Mode segment since 2026-08-22. The portal shows MP and DMZ on one screen, so the thing Discord gets from context has to be stated, and stating it is better than inferring it: a paste that means DMZ and lands in MP is a silent wrong result, and this switch is the only place that decision is visible.
+//
+// ⚠️ ADD AND REPLACE ARE THE SAME UPSERT, deliberately, and the card says so rather than offering two buttons that do one thing. utils/manageActions.js opens the identical modal for both ids, and core/ops/loadouts.js gives loadout.bulkReplace the same apply() body as loadout.bulkAdd — a real wholesale replace would have deleted every build of that mode the paste did not mention, which is a bug already found once for draws.
+const BULK_EXAMPLE = ['AK117 | AR', 'Build: Aggressive Flex', 'Image: AK117-1', 'Code: 1C2B4A8B9A', 'Badges: meta, top3',
+    '- Monolithic Suppressor', '- MIP Extended Light Barrel', '- No Stock', '- 48 Round Extended Mag', '- Granulated Grip Tape'].join('\n');
+
+function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
+    const [text, setText] = useState('');
+    const [preview, setPreview] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const [guide, setGuide] = useState(false);
+    const [exported, setExported] = useState(null);
+    const [exportCat, setExportCat] = useState('');
+
+    const inMode = builds.filter((b) => b.mode === mode);
+    const cats = [...new Set(inMode.map((b) => b.category))].sort();
+    const sum = preview ? bulkPasteSummary(preview) : null;
+
+    async function runPreview() {
+        setBusy(true);
+        const res = await fetchJson('/api/parse-bulk/loadout', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ mode, text }),
+        });
+        setBusy(false);
+        if (await reportFailure(overlay, res, 'The paste could not be read')) return;
+        setPreview(res);
+    }
+
+    async function stage() {
+        setBusy(true);
+        const res = await stageOps('armory', [{ type: 'loadout.bulkAdd', target: { mode }, payload: { text } }], csrfToken);
+        setBusy(false);
+        if (await reportFailure(overlay, res, 'The paste could not be staged')) return;
+        if (!res.changesetId) { overlay.say(res.error || 'The server refused the paste.'); return; }
+        const staged = sum;
+        setText(''); setPreview(null);
+        onStaged(staged);
+    }
+
+    async function runExport(scope, category) {
+        const res = await fetchJson(`/api/armory/export?${armoryExportQuery({ scope, mode, category })}`);
+        if (await reportFailure(overlay, res, 'The export could not be read')) return;
+        setExported({ scope, category, text: res.text || '', count: res.count || 0 });
+    }
+
+    return html`
+        <div class="bulkview">
+            <div class="modesw" role="group" aria-label="Which armory this paste and export apply to">
+                ${MODES.map((m) => html`
+                    <button key=${m} data-arm=${m} aria-pressed=${mode === m ? 'true' : 'false'}
+                            onClick=${() => { onSetMode(m); setPreview(null); setExported(null); setExportCat(''); }}>${m}</button>`)}
+            </div>
+            <div class="bvgrid">
+                <section class="bvcard">
+                    <h4>Paste in <em class="modetag">${mode}</em></h4>
+                    <p>One <b>block</b> per build, blocks separated by a blank line. A build already carrying this
+                        weapon and build name is updated in place, so <b>Add</b> and <b>Replace</b> are one upsert —
+                        which is exactly how the bot behaves, <code>bulkreplace</code> reusing <code>bulkadd</code>'s
+                        own modal. Mode is not part of the format: every block lands in <b>${mode}</b>.</p>
+                    <textarea rows="7" spellcheck="false" value=${text} placeholder=${BULK_EXAMPLE}
+                              onInput=${(e) => { setText(e.target.value); setPreview(null); }}></textarea>
+                    <div class="bvact">
+                        <button class="chip" aria-pressed=${guide ? 'true' : 'false'} onClick=${() => setGuide(!guide)}>Format guide</button>
+                        <button class="chip" disabled=${!text.trim() || busy} onClick=${runPreview}>Preview changes</button>
+                    </div>
+                    ${guide ? html`<pre class="guide">${BULK_EXAMPLE}</pre>` : null}
+                    ${!preview ? html`<div class="bvmsg">${text.trim() ? 'Not previewed yet.' : 'Nothing pasted yet.'}</div>` : html`
+                        <div class="bvres">
+                            <div class="bvsum">
+                                <span><b>${sum.updates}</b> update</span>
+                                <span><b>${sum.creates}</b> new</span>
+                                ${sum.rejected ? html`<span><b class="bad">${sum.rejected}</b> rejected</span>` : null}
+                                ${sum.warnings ? html`<span><b>${sum.warnings}</b> saved with a warning</span>` : null}
+                            </div>
+                            ${preview.rows.map((r, i) => html`
+                                <div class=${'bvrow ' + (r.existing ? 'upd' : 'new')} key=${i}>
+                                    <span class="bvtag">${r.existing ? 'update' : 'new'}</span>
+                                    <span><b>${r.weaponName}</b> · ${r.buildName}${' '}
+                                        <em>${r.category} · ${r.attachments} attachment${r.attachments === 1 ? '' : 's'}</em></span>
+                                </div>`)}
+                            <!-- A block the parser rejected is SHOWN, never dropped. A paste where three of eight
+                                 blocks fell out silently is the exact failure a preview exists to prevent, and the
+                                 parser's own message names the block by its first line. -->
+                            ${preview.errors.map((e, i) => html`
+                                <div class="bvrow bad" key=${'e' + i}>
+                                    <span class="bvtag">problem</span>
+                                    <span><i class="bverr">${e}</i></span>
+                                </div>`)}
+                            ${sum.canStage ? html`
+                                <button class="chip go" disabled=${busy} onClick=${stage}>Stage ${sum.understood} build${sum.understood === 1 ? '' : 's'}</button>` : null}
+                        </div>`}
+                </section>
+
+                <section class="bvcard">
+                    <h4>Export <em class="modetag">${mode}</em></h4>
+                    <p>Every export emits the same block format the paste box accepts, so a round trip is lossless —
+                        <code>npm run portal:roundtrip</code> checks that against the real parser. This is what makes a
+                        staged deletion recoverable: the export you take first re-imports through the same grammar.</p>
+                    <div class="bvexp">
+                        <button class="chip" onClick=${() => runExport('mode')}>All ${inMode.length} ${mode} builds</button>
+                        <label class="sr-only" for="bv-cat">Category to export</label>
+                        <select id="bv-cat" value=${exportCat}
+                                onChange=${(e) => { setExportCat(e.target.value); if (e.target.value) runExport('category', e.target.value); }}>
+                            <option value="">By category…</option>
+                            ${cats.map((c) => html`<option value=${c} key=${c}>${c} — ${inMode.filter((b) => b.category === c).length}</option>`)}
+                        </select>
+                    </div>
+                    ${!exported ? html`<div class="bvmsg">Nothing exported yet.</div>` : html`
+                        <div class="bvres">
+                            <div class="bvsum"><span><b>${exported.count}</b> build${exported.count === 1 ? '' : 's'} —${' '}
+                                ${exported.scope === 'category' ? `every ${mode} ${exported.category} build` : `all ${mode} builds`}</span></div>
+                            <textarea class="bvexpout" rows="8" readOnly spellcheck="false" value=${exported.text || '(nothing matched)'}></textarea>
+                            <button class="chip" onClick=${() => { navigator.clipboard?.writeText(exported.text || ''); overlay.say(`${exported.count} build${exported.count === 1 ? '' : 's'} copied in paste format.`); }}>Copy to clipboard</button>
+                        </div>`}
+                </section>
+            </div>
+            <div class="bvnote">
+                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot has none
+                either — <code>commands/manage.js</code>'s <code>PURGE_LABELS</code> omits both — and adding one to the
+                portal would put a capability within reach that the system has already decided against.
+            </div>
+        </div>
+    `;
+}
+
 export function ArmoryRealm({ session }) {
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
     const [weaponFilter, setWeaponFilter] = useState(null);
@@ -523,6 +670,7 @@ export function ArmoryRealm({ session }) {
     const [view, setView] = useState('Rack');
     const [compared, setCompared] = useState([]);
     const [editingId, setEditingId] = useState(null);
+    const [bulkMode, setBulkMode] = useState('MP');
     const overlay = useOverlay();
 
     // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
@@ -601,13 +749,15 @@ export function ArmoryRealm({ session }) {
     }
 
     return html`
-        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare']} onSetView=${setView}
+        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare', 'Bulk']} onSetView=${setView}
                   overlaySlot=${overlay.render()}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
                       { label: 'Compare the selected builds', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['diff', 'side by side', 'duplicate'], run: () => setView('Compare') },
+                      { label: 'Paste a list of builds', group: 'armory', local: true, accent: 'var(--r-armory)',
+                        keywords: ['bulk', 'import', 'many', 'export', 'backup'], run: () => { setEditingId(null); setView('Bulk'); } },
                       { label: 'Clear the rack and coverage filters', group: 'armory', local: true, accent: 'var(--ink3)',
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
@@ -640,6 +790,14 @@ export function ArmoryRealm({ session }) {
                                   : view === 'Compare'
                                       ? html`<${Compare} builds=${rows} picked=${compared}
                                                          onPick=${(id) => setCompared(compared.includes(id) ? compared.filter((x) => x !== id) : [...compared, id])} />`
+                                  : view === 'Bulk'
+                                      ? html`<${BulkView} builds=${builds} mode=${bulkMode} onSetMode=${setBulkMode}
+                                                          csrfToken=${session.csrfToken} overlay=${overlay}
+                                                          onStaged=${(s) => {
+                                                              overlay.say(`${s.understood} build${s.understood === 1 ? '' : 's'} staged — ${s.updates} update, ${s.creates} new. Nothing is live until you commit.`,
+                                                                  'Review', () => { location.hash = '#/review'; });
+                                                              refresh();
+                                                          }} />`
                                       : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
                           <!-- 🔴 THE STANDALONE LIVE PREVIEW PANEL IS GONE. It showed the card for whichever row was
@@ -650,6 +808,9 @@ export function ArmoryRealm({ session }) {
                       </div>
                   `}
                   manifestSlot=${html`
+                      <${FilterBar} weapon=${weaponFilter} flag=${coverageFilter && coverageFilter.flag}
+                                    shown=${rows.length} total=${builds.length}
+                                    onClear=${() => { setWeaponFilter(null); setCoverageFilter(null); }} />
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
                                    title="Every build" filterGroups=${ARMORY_FILTERS}
                                    headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}

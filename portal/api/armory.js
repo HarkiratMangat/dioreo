@@ -59,10 +59,17 @@ function register(route) {
     route('GET', /^\/api\/armory\/export$/, requireAdmin(async (req, res, url, session) => {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
+        // ⚠️ THREE SCOPES, ONE ROUTE, AND `ids` STAYS FIRST so the Manifest's existing "Export selection" keeps working unchanged. mode/category exist because the Bulk view exports what you are looking at rather than what you have ticked — ticking 133 rows to take a backup is the same defect as retyping them.
         const ids = (url.searchParams.get('ids') || '').split(',').filter(Boolean);
-        const builds = await Loadout.find({ _id: { $in: ids } }).lean();
+        const mode = url.searchParams.get('mode');
+        const category = url.searchParams.get('category');
+        let query;
+        if (ids.length) query = { _id: { $in: ids } };
+        else if (mode) query = { mode, ...(category ? { category: category.toUpperCase() } : {}) };
+        else return sendJson(res, 400, { error: 'export needs ids, or a mode' });
+        const builds = await Loadout.find(query).lean();
         const { formatLoadoutsAsBulkText } = require('../../utils/adminParser');
-        sendJson(res, 200, { text: formatLoadoutsAsBulkText(builds) });
+        sendJson(res, 200, { text: formatLoadoutsAsBulkText(builds), count: builds.length });
     }));
 }
 

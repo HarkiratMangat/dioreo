@@ -4666,3 +4666,62 @@ button .ic,a .ic{pointer-events:none}
  * The --ink4 raises are the mockup's own later rules made consistent: its token comment says
  * only three inks may carry text, and its own last declaration for these already used --ink3.
  * ─────────────────────────────────────────────────────────────────────────────────────── */
+
+/* ── THE SEASON PAGE'S OWN RULES, adopted 2026-08-26 ──────────────────────────
+ *
+ * 🔴 THE FIRST ADOPTION MISSED THESE, AND THAT IS WHY THE SEASON RECORD WAS NEVER BUILT. The
+ * mockup package keeps one shared app.css plus a per-page <style> block, and only season.html has
+ * one — 66 lines holding the record panel, the masthead's create button, and two measured table
+ * fixes. Taking app.css whole and leaving that block behind made every one of these classes an
+ * ORPHAN-IN-WAITING: emitting `.rec-row` would have produced unstyled markup, so the panel read as
+ * unbuildable when it was only unstyled. The same "adopted whole" decision applies to a page's own
+ * block; there is no second stylesheet to protect.
+ *
+ * ⚠️ Two rules here are RECORDED FIXES, not styling — the mockup's own comments say so. `.mtable
+ * .det` must stay a table-cell (a `display:block` on the cell broke row layout 39 times, once per
+ * row), and the ellipsis belongs on `.dsub`, the box that actually overflows, not on the cell that
+ * merely declares text-overflow.
+ */
+.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
+  border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
+  font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
+.mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
+.mh-plus{font-size:16px;line-height:1;color:var(--patch)}
+.mh-new kbd{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
+  border-radius:var(--rad-2);padding:3px 5px}
+.mtable .det{min-width:0}
+.mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtable .det .dsub{display:block}
+.ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+
+.rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:14px 16px 16px}
+.rec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.rec-t{font:600 10.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.rec-n{font-size:11.5px;color:var(--ink3)}
+.rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
+  padding:6px 11px;font:500 12px/1 var(--ui);cursor:pointer}
+.rec-cta:hover{border-color:var(--patch);color:var(--patch)}
+.rec-list{list-style:none;margin:0;padding:0;position:relative;--rec-x:10px}
+/* 🔴 THE SPINE AND THE MARKERS DID NOT SHARE AN X in the mockup's own first pass: the rail was drawn
+   at a hardcoded left:5px while each marker sat centred in a 20px grid column, so the line entered
+   and left every diamond off-centre. --rec-x is the single source for both, and the spine runs from
+   the FIRST marker to the LAST rather than from an arbitrary inset — a spine that starts above its
+   first bead is a line pointing at nothing. */
+.rec-list::before{content:"";position:absolute;left:var(--rec-x);top:22px;bottom:22px;width:1px;
+  background:var(--rule2);transform:translateX(-.5px)}
+.rec-row{display:grid;grid-template-columns:calc(var(--rec-x) * 2) 1fr auto auto auto;align-items:center;gap:12px;
+  padding:9px 4px;border-bottom:1px solid var(--rule);cursor:pointer}
+.rec-row:last-child{border-bottom:0}
+.rec-row:hover,.rec-row:focus-visible{background:var(--hi)}
+.rec-mk{width:11px;height:11px;border-radius:var(--rad-1);transform:rotate(45deg) scale(.82);
+  background:var(--sunk);box-shadow:inset 0 0 0 1.5px var(--patch);position:relative;z-index:1}
+.rec-row.cur .rec-mk{background:var(--patch);box-shadow:0 0 0 4px color-mix(in srgb,var(--patch) 22%,transparent)}
+.rec-ttl{font:600 13.5px/1.3 var(--ui);color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-row.cur .rec-ttl{color:var(--ink)}
+.rec-row[aria-expanded=true] .rec-ttl{color:var(--ink)}
+.rec-d,.rec-meta{font:500 11px/1 var(--data);letter-spacing:.07em;color:var(--ink3);white-space:nowrap}
+.rec-tag{font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:var(--rad-2);
+  background:var(--sunk);color:var(--ink3);white-space:nowrap}
+.rec-row.cur .rec-tag{background:color-mix(in srgb,var(--patch) 18%,transparent);color:var(--patch)}
+.rec-empty{list-style:none;font-size:13px;color:var(--ink3);padding:8px 0}
+@media (max-width:820px){.rec-row{grid-template-columns:20px 1fr auto}.rec-meta,.rec-d{display:none}}

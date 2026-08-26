@@ -209,6 +209,67 @@ function seasonTier(days) {
     return 'open';
 }
 
+// ── THE SEASON RECORD ─────────────────────────────────────────────────────────────────────────
+//
+// 🔴 FOUR PATCH-NOTE OPERATIONS WERE DECLARED AND UNREACHABLE — setDateInfo, setUrls1, setUrls2 and editSeason. The portal could publish a patch note season and purge every one of them, and could not so much as fix a typo in between. Found by conservation (scripts/portalOpsReach.test.js) rather than by looking, which is the only way an absence is ever found.
+//
+// 🔴 THE CURRENT ENTRY AND A PAST ONE TAKE DIFFERENT OPS, and that is the bot's own split rather than a simplification. /manage edits the newest entry through three separate actions — date/info, images 1-5, images 6-10 — and edits a past one through a single editSeason. Following that means a change made here reads on the Review screen exactly as the same change made in Discord would, and each inverts the way the bot's own undo does.
+const MAX_PATCH_IMAGES = 10;
+const sameList = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+function patchRecordRows(live) {
+    return ((live && live.patchNotes) || [])
+        .map((n) => ({
+            id: String(n._id),
+            title: (n.titleOverride || n.title || 'Untitled season').trim(),
+            titleOverride: n.titleOverride || '',
+            description: n.description || '',
+            images: n.images || [],
+            releaseDate: n.releaseDate || null,
+            // Sent by portal/api/season.js, formatted by the bot's own formatReleaseDateTime so the field starts life holding a value its parser reads back. Absent only in a fixture that predates that route change, where an empty prefill is the honest answer rather than a guessed format.
+            releaseDateText: n.releaseDateText || '',
+        }))
+        .sort((a, b) => String(b.releaseDate || '').localeCompare(String(a.releaseDate || '')))
+        .map((n, i) => ({ ...n, current: i === 0 }));
+}
+
+// 🔴 AN UNTOUCHED DATE FIELD SENDS THE STORED ISO, NOT THE TEXT, and that is a measurement rather than a preference. formatReleaseDateTime renders to the MINUTE, so a stored 16:27:56.919 comes back as "July 6, 2026 12:27 PM" and re-parses to 16:27:00.000 — editing only a description would have quietly moved the record by 57 seconds. chrono parses a raw ISO string back to the identical instant (verified against the real parser in scripts/portalPatchNotes.test.js), so the untouched case round-trips exactly and only a date somebody actually typed is re-read as prose.
+//
+// ⚠️ AN EMPTY DATE IS REFUSED, because parseReleaseDateTime('') returns `new Date()` rather than null — a blank field would not clear the release date, it would silently set it to the moment you pressed the button.
+function patchEditOps(entry, draft) {
+    const dateText = String(draft.releaseDateText ?? entry.releaseDateText ?? '').trim();
+    if (!dateText) {
+        return { ops: [], blocked: 'A release date is required — leaving it blank would set this entry to right now, not clear it.' };
+    }
+    const urls = (draft.urls || []).map((u) => String(u).trim()).filter(Boolean).slice(0, MAX_PATCH_IMAGES);
+    const titleOverride = String(draft.titleOverride ?? entry.titleOverride ?? '').trim();
+    const description = String(draft.description ?? entry.description ?? '');
+    const was = entry.images || [];
+    const dateTouched = dateText !== String(entry.releaseDateText || '').trim();
+    const releaseDate = dateTouched ? dateText : String(entry.releaseDate || '');
+    const infoChanged = dateTouched
+        || titleOverride !== String(entry.titleOverride || '').trim()
+        || description !== String(entry.description || '');
+    const urlsChanged = !sameList(urls, was);
+    if (!infoChanged && !urlsChanged) return { ops: [], blocked: '' };
+
+    if (!entry.current) {
+        // editSeason carries every field at once, which is what the bot's past-season modal sends and why it needs both URL slots even when only one changed.
+        return { ops: [{ type: 'patchnote.editSeason', target: { elementId: entry.id },
+            payload: { titleOverride, description, releaseDate, urls1: urls.slice(0, 5), urls2: urls.slice(5, 10) } }], blocked: '' };
+    }
+    const ops = [];
+    if (infoChanged) ops.push({ type: 'patchnote.setDateInfo', target: { elementId: entry.id }, payload: { titleOverride, description, releaseDate } });
+    // Each slot is its own op with its own inverse, so a slot nobody touched is never resubmitted — cachePatchImage re-hosts every URL it is handed, and re-sending an unchanged slot would re-upload five images to say nothing.
+    if (!sameList(urls.slice(0, 5), was.slice(0, 5))) ops.push({ type: 'patchnote.setUrls1', target: { elementId: entry.id }, payload: { urls: urls.slice(0, 5) } });
+    if (!sameList(urls.slice(5, 10), was.slice(5, 10))) ops.push({ type: 'patchnote.setUrls2', target: { elementId: entry.id }, payload: { urls: urls.slice(5, 10) } });
+    return { ops, blocked: '' };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES });
+}
+
 if (typeof module !== 'undefined' && module.exports) {
     Object.assign(module.exports, { SEASON_LINES, seasonMoments, countdownParts, seasonTier,
                                     windowDays, clampWindow, zoomWindow, panWindow });
