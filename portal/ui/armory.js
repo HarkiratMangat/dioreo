@@ -15,6 +15,7 @@ import { useOverlay } from './overlay.js';
 import { reportFailure } from './async.js';
 
 const MODES = ['MP', 'DMZ'];
+const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
 
 const ARMORY_COLUMNS = [
     { key: 'weaponName', label: 'Weapon', editable: true },
@@ -212,56 +213,150 @@ function Coverage({ builds, active, onFilter }) {
     `;
 }
 
-// Mirrors /manage's real add-loadout modal fields (handlers/manage/loadouts.js's addLoadout): weapon name, category, build name, image key, a comma-separated badges token field (parsed client-side by parseBadgesToken -- the exact grammar utils/adminParser.js's parseLoadoutBadges validates server-side), and attachments one-per-line. Mode is a real field here (unlike the modal, whose Add button is already page-scoped) since Armory shows both MP and DMZ builds on one page.
+// ── THE ADD FORM ──────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 TWO FORMS IN ONE REALM SPOKE TWO DIFFERENT LANGUAGES. The build editor is built from the adopted sheet's own `bed-sec`/`dwfield` sections; this one was a row of bare inputs with `display:flex;gap:8px` written into the JSX, which is what the whole migration exists to remove. It is the mockup's `bform` now — sectioned, with each field saying what the value MEANS rather than only what it is called.
+//
+// 🔴 AND IT COLLECTED NEITHER A GUNSMITH CODE NOR A DESCRIPTION, which put the portal BEHIND Discord on a field Discord had to smuggle through a pipe-delimited convention because its modals cap at five inputs. A web form has no such cap; the omission was inherited, not required. (`docs/db-deferred-list.md`, filed 2026-08-22.)
+//
+// ⚠️ THE SHARE CODE FIELD NEVER BLOCKS. `correctGunsmithCode` CORRECTS a code rather than validating one — it maps look-alike characters onto whichever type each position expects — so a client-side "is this valid" test would refuse input the server would have happily fixed. The hint states the shape and says the correction happens; it does not gate the button.
+const CATEGORY_LABEL = {
+    AR: 'Assault Rifle', SMG: 'Submachine Gun', SNIPER: 'Sniper', LMG: 'Light Machine Gun',
+    SHOTGUN: 'Shotgun', MARKSMAN: 'Marksman', SECONDARIES: 'Secondary', MELEE: 'Melee',
+};
+
+// ⚠️ FIVE ROWS BECAUSE FIVE IS WHAT THE DATA HAS, not because five is a rule. 123 of 133 real builds carry exactly five attachments, and coverageFlags treats anything else as a defect for MP — but the field is free text with no slot typing, because `attachmentSlots` is empty on every stored document and only /autobuild's vision pass has ever written one.
+const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
+    'Stock — e.g. No Stock', 'Ammunition — e.g. 48 Round Extended Mag', 'Rear grip — e.g. Granulated Grip Tape'];
+
 function AddBuildForm({ onSubmit, onCancel }) {
-    const [weaponName, setWeaponName] = useState('');
-    const [category, setCategory] = useState('AR');
-    const [mode, setMode] = useState('MP');
-    const [buildName, setBuildName] = useState('');
-    const [imageKey, setImageKey] = useState('');
-    const [badges, setBadges] = useState('');
-    const [attachments, setAttachments] = useState('');
-    const [badgeWarning, setBadgeWarning] = useState('');
-    const ready = weaponName.trim() && category.trim();
+    const [f, setF] = useState({
+        weaponName: '', category: 'AR', mode: 'MP', buildName: '', imageKey: '',
+        shareCode: '', description: '', isMeta: false, isToxic: false, rank: '',
+    });
+    const [atts, setAtts] = useState(['', '', '', '', '']);
+    const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
+    const dmz = f.mode === 'DMZ';
+    const filled = atts.map((a) => a.trim()).filter(Boolean);
+    const ready = f.weaponName.trim() && f.category.trim();
+    const code = f.shareCode.trim();
+    const img = f.imageKey.trim();
 
     function submit() {
-        const parsed = parseBadgesToken(badges, mode);
-        setBadgeWarning(parsed.unrecognized.length
-            ? `Not recognized and ignored: "${parsed.unrecognized.join(', ')}". Valid: meta, best, toxic, topN (e.g. top3), or a DMZ range badge (bestclose, bestmidlong, top3close, top5midlong).`
-            : '');
         onSubmit(buildArmoryAddOp({
-            weaponName, category, mode, buildName, imageKey, badges,
-            attachments: attachments.split('\n').map((s) => s.trim()).filter(Boolean),
+            ...f, attachments: filled,
+            categoryRank: dmz ? null : (f.rank || null),
+            dmzRangeRank: dmz ? (f.rank || null) : null,
         }));
     }
 
     return html`
-        <div class="panel" style="margin-bottom:14px">
-            <div class="ph"><span class="t">Add a build</span></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;align-items:center">
-                <label class="sr-only" for="ab-weapon">Weapon name</label>
-                <input id="ab-weapon" placeholder="Weapon name" value=${weaponName} onInput=${(e) => setWeaponName(e.target.value)} />
-                <label class="sr-only" for="ab-category">Category</label>
-                <input id="ab-category" placeholder="Category (e.g. AR)" value=${category} onInput=${(e) => setCategory(e.target.value)} style="width:100px" />
-                <label class="sr-only" for="ab-mode">Mode</label>
-                <select id="ab-mode" value=${mode} onChange=${(e) => setMode(e.target.value)}>
-                    ${MODES.map((m) => html`<option value=${m}>${m}</option>`)}
-                </select>
-                <label class="sr-only" for="ab-build">Build name</label>
-                <input id="ab-build" placeholder="Build name" value=${buildName} onInput=${(e) => setBuildName(e.target.value)} />
-                <label class="sr-only" for="ab-image">Cloudinary image key</label>
-                <input id="ab-image" placeholder="Image key" value=${imageKey} onInput=${(e) => setImageKey(e.target.value)} />
+        <div class="panel bform" style="margin-bottom:14px">
+            <div class="ph"><span class="t">New build</span><span class="rt">staged, never written — Review is the only screen that commits</span></div>
+            <div style="padding:14px 16px 16px">
+                <p class="bf-legend"><span class="req">*</span> required — everything else can be filled in now or later.</p>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Identity</h4>
+                    <div class="modesw" role="group" aria-label="Which armory this build belongs to">
+                        ${MODES.map((m) => html`
+                            <button key=${m} data-arm=${m} aria-pressed=${f.mode === m ? 'true' : 'false'}
+                                    onClick=${() => set({ mode: m, rank: '' })}>${m}</button>`)}
+                    </div>
+                    <div class="bed-g2" style="margin-top:11px">
+                        <label class="dwfield"><span>Weapon name <span class="req">*</span></span>
+                            <input value=${f.weaponName} placeholder="AK117" autocomplete="off"
+                                   onInput=${(e) => set({ weaponName: e.target.value })} />
+                            <i class="bf-hint">As it should read on the card. <code>weaponKey</code> is derived from it —${' '}
+                                lowercased, spaces stripped${f.weaponName.trim() ? html` → <code>${f.weaponName.toLowerCase().replace(/\s+/g, '')}</code>` : ''}.</i></label>
+                        <label class="dwfield"><span>Build name</span>
+                            <input value=${f.buildName} placeholder="Aggressive Flex" autocomplete="off"
+                                   onInput=${(e) => set({ buildName: e.target.value })} />
+                            <i class="bf-hint">A human variant label, not a code. Defaults to <b>Standard Build</b>.</i></label>
+                    </div>
+                    <label class="dwfield"><span>Category <span class="req">*</span></span>
+                        <select value=${f.category} onChange=${(e) => set({ category: e.target.value })}>
+                            ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c} — ${CATEGORY_LABEL[c] || c}</option>`)}
+                        </select>
+                        <i class="bf-hint">Mode is <b>${f.mode}</b> and is chosen above, exactly as it is decided by which page you opened in the bot.</i></label>
+                </section>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Attachments <span class="bf-n">${filled.length} of 5</span></h4>
+                    <p class="bf-p">In Gunsmith order, top to bottom. <b>123 of 133</b> real builds carry exactly five,
+                        and ${dmz ? 'a DMZ build is counted against nine' : 'a different count is flagged on the Coverage view'}.</p>
+                    <div class="atlist">
+                        ${atts.map((a, i) => html`
+                            <div class="atr" key=${i}>
+                                <span class="atn">${i + 1}</span>
+                                <label class="sr-only" for=${`ab-att-${i}`}>Attachment ${i + 1}</label>
+                                <input class="ati" id=${`ab-att-${i}`} value=${a} placeholder=${ATT_HINTS[i] || 'Attachment'}
+                                       onInput=${(e) => setAtts(atts.map((v, n) => (n === i ? e.target.value : v)))} />
+                                <button class="atx" aria-label=${`Clear attachment ${i + 1}`} tabIndex=${-1}
+                                        onClick=${() => setAtts(atts.map((v, n) => (n === i ? '' : v)))}>✕</button>
+                            </div>`)}
+                    </div>
+                </section>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Gunsmith code</h4>
+                    ${dmz ? html`
+                        <p class="bf-p bf-na"><b>DMZ builds have no share code.</b> That screen does not generate one, so
+                            the field is absent rather than shown and ignored.</p>`
+                    : html`
+                        <label class="dwfield"><span>Share code</span>
+                            <input value=${f.shareCode} placeholder="1C2B4A8B9A" autocomplete="off" spellcheck="false" maxLength="12"
+                                   onInput=${(e) => set({ shareCode: e.target.value })} />
+                            <i class="bf-hint">Ten characters, a digit and a letter alternating. Look-alike characters are
+                                corrected on save rather than refused${code && code.length !== 10 ? html`, but ${code.length} characters is not ten` : ''}.
+                                Leave it blank if you do not have one — a blank field sends no value at all.</i></label>`}
+                </section>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Image</h4>
+                    <label class="dwfield"><span>Cloudinary key, or a full URL</span>
+                        <input value=${f.imageKey} placeholder="AK117-1" autocomplete="off" spellcheck="false"
+                               onInput=${(e) => set({ imageKey: e.target.value })} />
+                        <i class="bf-hint">${!img
+                            ? html`Convention is <code>WEAPON-N</code> — all caps, spaces to hyphens, N being this build's position among its siblings.`
+                            : (/^https?:\/\//i.test(img)
+                                ? html`Read as a <b>full URL</b>, stored as-is — and it will not survive a bulk-export round trip, because only a real key is emitted there.`
+                                : html`Read as a <b>Cloudinary key</b>, delivered with <code>f_auto,q_auto</code> baked in.`)}</i></label>
+                </section>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Badges</h4>
+                    <p class="bf-p">🔴 <b>Badges describe the WEAPON, not this one build.</b> On an EDIT the bot propagates
+                        them across every build sharing this <code>weaponKey</code> and mode. It deliberately does not do
+                        that on an add — a blank badges field is the common case, and propagating it would wipe the
+                        siblings you were not touching.</p>
+                    <div class="bf-badges">
+                        <label class="bf-tog"><input type="checkbox" checked=${f.isMeta} onChange=${(e) => set({ isMeta: e.target.checked })} /><span>Meta</span></label>
+                        <label class="bf-tog"><input type="checkbox" checked=${f.isToxic} onChange=${(e) => set({ isToxic: e.target.checked })} /><span>Toxic</span></label>
+                        <label class="dwfield bf-rank"><span>${dmz ? 'DMZ range rank' : 'Category rank'}</span>
+                            <select value=${f.rank} onChange=${(e) => set({ rank: e.target.value })}>
+                                <option value="">${dmz ? 'None' : 'Unranked'}</option>
+                                ${(dmz ? DMZ_RANGE_TOKENS : MP_RANK_TOKENS).map((t) => html`
+                                    <option value=${t} key=${t}>${dmz ? t.replace('-', ' · ') : (RANK_LABEL[t] || t)}</option>`)}
+                            </select></label>
+                    </div>
+                </section>
+
+                <section class="bf-sec">
+                    <h4 class="bf-h">Description</h4>
+                    <label class="dwfield"><span>Usage blurb</span>
+                        <textarea rows="2" value=${f.description} placeholder="When to reach for this build."
+                                  onInput=${(e) => set({ description: e.target.value })}></textarea>
+                        <i class="bf-hint">Rendered as a blockquote above the attachments. <b>2 of 133</b> builds carry one.</i></label>
+                </section>
+
+                <div class="attfoot">
+                    <!-- A disabled control that does not say why is the same defect as a check that cannot fail: the reader learns nothing from it. -->
+                    <button class="pill lead" disabled=${!ready} onClick=${submit}>
+                        ${ready ? `Stage this ${f.mode} build` : 'A weapon name is required'}</button>
+                    <button class="pill" onClick=${onCancel}>Cancel</button>
+                </div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 14px 12px;align-items:center">
-                <label class="sr-only" for="ab-badges">Badges</label>
-                <input id="ab-badges" placeholder="Badges (e.g. meta, top3)" value=${badges} onInput=${(e) => setBadges(e.target.value)} style="width:220px" />
-                <label class="sr-only" for="ab-attachments">Attachments, one per line</label>
-                <textarea id="ab-attachments" placeholder="Attachments, one per line" value=${attachments} onInput=${(e) => setAttachments(e.target.value)} rows="3"
-                          style="flex:1;min-width:220px;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;color:var(--ink);font-size:13px;padding:7px 10px"></textarea>
-                <button class="accent-fill" disabled=${!ready} onClick=${submit}>Stage</button>
-                <button onClick=${onCancel}>Cancel</button>
-            </div>
-            ${badgeWarning ? html`<p style="color:var(--warn);padding:0 var(--gut) 10px;font-size:12px">${badgeWarning}</p>` : null}
         </div>
     `;
 }
@@ -304,7 +399,6 @@ function LivePreview({ buildId }) {
 // ⚠️ THE PREVIEW LIVES INSIDE IT, which retires the separate LIVE PREVIEW panel. That panel showed the card for whichever row you last clicked, beside a table you were not editing — the preview and the thing it previews are now the same screen, which is what the adopted design does with `.bed-side`.
 //
 // ⚠️ NOTHING HERE WRITES. Every field edits a local draft and Save stages one `loadout.edit`; the Review screen is still the only surface that commits.
-const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'MELEE'];
 
 function BuildEditor({ build, csrfToken, onStage, onClose }) {
     const [draft, setDraft] = useState({ ...build, attachments: [...(build.attachments || [])] });
@@ -804,7 +898,10 @@ export function ArmoryRealm({ session }) {
                                last clicked, beside a table you were not editing — a preview with nothing to preview
                                against. The build editor carries it in .bed-side, where the card and the fields that
                                produce it are one screen. Clicking a row opens the editor. -->
-                          ${editingId ? null : html`<p class="empty" style="padding:18px">Click a row below to open it.</p>`}
+                          <!-- ⚠️ The aside is the editor's preview column, so its placeholder only means anything
+                               when the main column is showing the rack. Beside an open Add form or the Bulk view it
+                               read "Click a row below to open it" at somebody who was mid-way through typing one. -->
+                          ${editingId || showAdd || view === 'Bulk' ? null : html`<p class="empty" style="padding:18px">Click a row below to open it.</p>`}
                       </div>
                   `}
                   manifestSlot=${html`

@@ -497,7 +497,21 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **`node --check` accepted a duplicate top-level `const` again** — a second `SeasonRecord`, colliding with the identity strip's own summary component. The build's ES-module parse caught it. Renamed `PatchRecord`, which is also the truer name.
 
-**Coverage 71% → 73% (Season 73% → 77%, Armory 61% → 67%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
+### Two forms in one realm spoke two different languages
+
+**The build editor is built from the adopted sheet's own sections; the add form was a row of bare inputs with `display:flex;gap:8px` written into the JSX** — which is the exact shape this whole migration exists to remove. It is the mockup's `bform` now: sectioned, each field saying what its value MEANS, the derived `weaponKey` echoed live under the name that produces it, and a disabled button that says which kind of nothing it is waiting for.
+
+🔴 **It collected neither a gunsmith code nor a description**, which put the portal *behind* Discord on a field Discord had to smuggle through a pipe-delimited convention because its modals cap at five inputs. A web form has no such cap; the omission was inherited rather than required. (Filed 2026-08-22; the editor half had quietly been done since, so the entry had gone stale on its own subject.) **The share code field deliberately never blocks the button** — `correctGunsmithCode` *corrects* a code rather than validating one, so a client-side validity test would refuse input the server would have fixed.
+
+**A blank share code sends no `shareCode` key at all**, and that is asserted with a falsifier rather than merely followed: `core/ops` spreads the payload into a `$set` and an always-present `''` wipes a real code. Nothing exists to wipe on an add — but a rule that holds in one op-builder and not the other has stopped being a rule.
+
+⚠️ **Every rank the form offers is now checked against the parser that reads it**, because a dropdown producing a value the server silently discards is worse than no dropdown. The falsifier for that check had to be replaced: the first one used `top9000close`, which the real parser **accepts** — its pattern is `top\d+`, not a fixed list — so the throw came from the assertion's own wrong expectation rather than from anything being rejected. A vacuous pass wearing a falsifier's name is the one failure mode a falsifier exists to prevent.
+
+### The repairs panel the mockup specifies does not port, and the measurement is the finding
+
+⚠️ **`fixMechanical` was next on the list and was not built, because neither of its two rules is mechanical here.** Measured against the real 133-build catalogue rather than reasoned about: rewriting an `http` image key to the `WEAPON-N` convention would hit **exactly one** build — the imgur-hosted row `buildImageUrl` passes through on purpose — and would point it at a Cloudinary key that may not exist, breaking a working image. The other rule, *meta but unranked → `top5`*, affects **2** records and is a guess dressed as a derivation, which the panel's own stated rule ("anything needing a judgement call is deliberately absent") excludes. And of the portal's five coverage flags, none has a derivable correct value: you cannot invent an attachment, and which of two duplicate builds to keep is what Compare is for. **An affordance with nothing true to do is worse than an absent one** — it implies the flags it sits under are fixable when they are not.
+
+**Coverage 71% → 74% (Season 73% → 77%, Armory 61% → 72%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 

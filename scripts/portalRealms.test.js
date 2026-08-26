@@ -196,6 +196,54 @@ check('buildArmoryAddOp builds a loadout.add op with badges parsed from the toke
     assert.strictEqual(op.payload.isMeta, true);
 });
 
+// 🔴 THE FORM SETS THE BADGE FIELDS DIRECTLY NOW, and the token path stays for text input. An explicit field must win, or the add form's checkboxes would be overruled by an empty token string it never had.
+check('buildArmoryAddOp takes explicit badge fields, and they beat the token', () => {
+    const op = buildArmoryAddOp({ weaponName: 'AK-47', category: 'AR', mode: 'DMZ', isToxic: true, dmzRangeRank: 'best-close' });
+    assert.strictEqual(op.payload.isToxic, true);
+    assert.strictEqual(op.payload.dmzRangeRank, 'best-close');
+    assert.strictEqual(op.payload.categoryRank, null);
+    const beats = buildArmoryAddOp({ weaponName: 'AK-47', category: 'AR', mode: 'MP', badges: 'meta, top3', isMeta: false, categoryRank: 'best' });
+    assert.strictEqual(beats.payload.isMeta, false, 'an explicit false must not be overwritten by the token');
+    assert.strictEqual(beats.payload.categoryRank, 'best');
+});
+
+// 🔴 core/ops/loadouts.js spreads this payload into a Mongo $set and its own header says an always-present '' would wipe a real gunsmith code. Nothing exists to wipe on an ADD — the contract is asserted here anyway, because a rule that holds in one op-builder and not the other has stopped being a rule.
+check('a blank share code sends NO shareCode key at all', () => {
+    assert.ok(!('shareCode' in buildArmoryAddOp({ weaponName: 'A', category: 'AR', mode: 'MP', shareCode: '   ' }).payload));
+    assert.strictEqual(buildArmoryAddOp({ weaponName: 'A', category: 'AR', mode: 'MP', shareCode: ' 1C2B4A8B9A ' }).payload.shareCode, '1C2B4A8B9A');
+});
+
+check('THE OMISSION CONTRACT CAN FAIL: a present-but-empty shareCode is caught', () => {
+    assert.throws(() => {
+        const payload = { weaponName: 'A', shareCode: '' };
+        assert.ok(!('shareCode' in payload), 'shareCode is present with an empty value');
+    }, /present with an empty value/);
+});
+
+check('the description the form now collects reaches the payload', () => {
+    assert.strictEqual(buildArmoryAddOp({ weaponName: 'A', category: 'AR', mode: 'MP', description: 'wall-bang build' }).payload.description, 'wall-bang build');
+});
+
+// ⚠️ The rank vocabularies are what utils/adminParser.js's parseLoadoutBadges accepts. A token this list offers that the parser rejects would be a dropdown producing a value the server silently discards.
+check('every rank the form offers is a token the real badge parser accepts', () => {
+    const { DMZ_RANGE_TOKENS, MP_RANK_TOKENS } = require('../portal/ui/armory.logic');
+    assert.ok(MP_RANK_TOKENS.length >= 3 && DMZ_RANGE_TOKENS.length >= 4, 'too few tokens for this check to mean anything');
+    for (const t of MP_RANK_TOKENS) {
+        assert.strictEqual(parseBadgesToken(t, 'MP').categoryRank, t, `MP rank "${t}" is not a token the parser reads back`);
+    }
+    for (const t of DMZ_RANGE_TOKENS) {
+        assert.strictEqual(parseBadgesToken(t.replace('-', ''), 'DMZ').dmzRangeRank, t, `DMZ rank "${t}" is not a token the parser reads back`);
+    }
+});
+
+// ⚠️ THE FALSIFIER HAS TO USE A GENUINELY UNKNOWN TOKEN. `top9000close` was the first choice and the parser accepts it — its pattern is `top\d+`, not a fixed list — so the throw came from the assertion's own wrong expectation rather than from the parser rejecting anything, which is a vacuous pass wearing a falsifier's name.
+check('THE VOCABULARY CHECK CAN FAIL: a rank the parser does not know is caught', () => {
+    assert.strictEqual(parseBadgesToken('wobbleclose', 'DMZ').dmzRangeRank, null, 'the parser really does reject this one');
+    assert.throws(() => {
+        assert.strictEqual(parseBadgesToken('wobbleclose', 'DMZ').dmzRangeRank, 'wobble-close', 'unknown token');
+    }, /unknown token/);
+});
+
 check('buildArmoryEditOp edits a field via loadout.edit, targeting { id }, preserving weaponKey/mode', () => {
     const row = { id: 'l1', weaponKey: 'ak-47', mode: 'MP', category: 'AR', buildName: 'No Recoil', attachments: ['a'], isMeta: false, isToxic: false, categoryRank: null };
     const op = buildArmoryEditOp(row, 'isMeta', true);
