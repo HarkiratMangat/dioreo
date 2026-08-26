@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { bandClass, laneFor, tierOf } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
+const { bandClass, laneFor, tierOf, findOverlaps, findGaps, findDuplicateTitles } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
 const { columnFor, groupByColumn, blockedReason, describeOp, describeInverse, diffRows, fmtDiffValue } = require('../portal/ui/board.logic');
 const { seasonWindow, topicVarFor, typeLabelFor } = require('../portal/ui/season.logic');
 const { announcementState } = require('../portal/api/broadcast');
@@ -229,5 +229,77 @@ check('THE WRAP GATE CAN FAIL: a line ending in a word followed by <b> is caught
     assert.ok(!INLINE_TEXT_TAG.test('${staged ? html`<span class="cnt">'), 'an expression is deliberately NOT gated — see the note above');
 });
 
+
+// ── OVERLAPS AND GAPS ────────────────────────────────────────────────────────────────────────
+//
+// 🔴 BOTH OF THESE HAD NO CALLER ANYWHERE until the Repairs view was built, and the first one was broken. `laneFor` read `item.kind`; the Track's own items carry `lane` and no `kind`, so every item fell through to the 'event' default and findOverlaps saw ONE lane containing the whole season — 61 overlaps across 37 items, a playlist "overlapping" a draw. A pure function with no reader cannot be wrong in a way anybody sees.
+check('laneFor reads the item’s own lane, not only a kind', () => {
+    assert.strictEqual(laneFor({ lane: 'playlist' }), 'playlist');
+    assert.strictEqual(laneFor({ kind: 'draw' }), 'draw');
+    assert.strictEqual(laneFor({}), 'event', 'the default stands for an item that names neither');
+});
+
+check('two items in DIFFERENT lanes never overlap, however much their dates do', () => {
+    const a = { lane: 'playlist', startDate: '2026-08-01', endDate: '2026-08-31' };
+    const b = { lane: 'draw', startDate: '2026-08-10', endDate: '2026-08-10' };
+    assert.deepStrictEqual(findOverlaps([a, b]), [], 'a draw inside a playlist window is not an overlap');
+});
+
+check('two items in the SAME lane sharing days do overlap, and a shared boundary does not', () => {
+    const a = { lane: 'playlist', startDate: '2026-08-01', endDate: '2026-08-10' };
+    const b = { lane: 'playlist', startDate: '2026-08-05', endDate: '2026-08-15' };
+    assert.strictEqual(findOverlaps([a, b]).length, 1);
+    const c = { lane: 'playlist', startDate: '2026-08-10', endDate: '2026-08-20' };
+    assert.deepStrictEqual(findOverlaps([a, c]), [], 'consecutive weeks touching end-to-start are not an overlap');
+});
+
+check('a gap is only reported when it is wider than the floor', () => {
+    const win = { start: '2026-08-01', end: '2026-08-31' };
+    const items = [{ startDate: '2026-08-01', endDate: '2026-08-10' }, { startDate: '2026-08-11', endDate: '2026-08-31' }];
+    assert.deepStrictEqual(findGaps(items, win), [], 'one day between two items is not a gap');
+    const sparse = [{ startDate: '2026-08-01', endDate: '2026-08-05' }, { startDate: '2026-08-20', endDate: '2026-08-31' }];
+    assert.strictEqual(findGaps(sparse, win).length, 1);
+});
+
+// ── THE SAME THING ENTERED TWICE ─────────────────────────────────────────────────────────────
+//
+// 🔴 THE PREDICATE THIS REPLACES WAS MEASURED WRONG TWICE. "Any two items sharing days" reported 61 findings across 37 real items, nearly all events meant to run together; "only within a lane where concurrency should be impossible" reported 47, every one a pair of playlists, and CODM runs many playlists at once. Harkirat settled the flaggable case as a DOUBLE ENTRY, which these cases pin down.
+const dated = (title, startDate, endDate) => ({ title, startDate, endDate: endDate || startDate });
+
+check('the same title over the same days is a duplicate, whatever the punctuation', () => {
+    const hits = findDuplicateTitles([dated('COD Point Rush Week 2', '2026-08-10', '2026-08-17'),
+                                      dated('cod point rush — week 2!', '2026-08-12', '2026-08-19')]);
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0][2], 'same');
+});
+
+check('one title inside another is a duplicate when the shorter is substantial', () => {
+    const hits = findDuplicateTitles([dated('Undead Legion Series Armory', '2026-08-10', '2026-08-20'),
+                                      dated('Undead Legion Series Armory Draw', '2026-08-15', '2026-08-25')]);
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0][2], 'contains');
+});
+
+// ⚠️ THE CASE A DISTANCE METRIC GETS WRONG. "Week 2" and "Week 3" differ by one character and are consecutive playlists, not a double entry — which is exactly why this does containment and not fuzzy distance.
+check('consecutive weeks are NOT duplicates', () => {
+    assert.deepStrictEqual(findDuplicateTitles([dated('COD Point Rush Week 2', '2026-08-10', '2026-08-17'),
+                                                dated('COD Point Rush Week 3', '2026-08-10', '2026-08-17')]), []);
+});
+
+check('a short title inside a longer one is not enough on its own', () => {
+    assert.deepStrictEqual(findDuplicateTitles([dated('Krai BR', '2026-08-10', '2026-08-20'),
+                                                dated('Krai BR Mode Rotation', '2026-08-10', '2026-08-20')], 12),
+        [], 'below the floor, containment is a coincidence rather than a duplicate');
+});
+
+check('the same title in a later season is not a double entry', () => {
+    assert.deepStrictEqual(findDuplicateTitles([dated('Nuketown Dedicated', '2026-08-01', '2026-08-10'),
+                                                dated('Nuketown Dedicated', '2026-09-01', '2026-09-10')]), []);
+});
+
+check('an untitled row cannot match anything, rather than matching every other untitled row', () => {
+    assert.deepStrictEqual(findDuplicateTitles([dated('', '2026-08-01', '2026-08-10'),
+                                                dated('   ', '2026-08-01', '2026-08-10')]), []);
+});
 
 process.exit(failures ? 1 : 0);

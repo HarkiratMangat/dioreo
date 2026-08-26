@@ -14,7 +14,8 @@ function bandClass({ state }) {
 // Which Track lane an item belongs to, derived from its kind \u2014 never hand-assigned per item.
 const LANE_ORDER = ['draw', 'returning', 'event', 'playlist', 'patchnote'];
 function laneFor(item) {
-    const kind = (item && item.kind || '').toLowerCase();
+    // 🔴 `lane` FIRST, AND THE OMISSION MADE findOverlaps REPORT EVERYTHING. The Track's own items carry an explicit `lane` (season.js's toTrackItems sets it) and no `kind` at all, so this read undefined and fell through to the 'event' default for EVERY item — which meant findOverlaps saw one lane containing the whole season and reported 61 overlaps across 37 items, including a playlist "overlapping" a draw. It went unnoticed because findOverlaps had no caller anywhere until the Repairs view was built; a pure function with no reader cannot be wrong in a way anybody sees.
+    const kind = (item && (item.lane || item.kind) || '').toLowerCase();
     return LANE_ORDER.includes(kind) ? kind : 'event';
 }
 
@@ -46,6 +47,34 @@ function findOverlaps(items) {
             const aStart = new Date(a.startDate || a.endDate), aEnd = new Date(a.endDate || a.startDate);
             const bStart = new Date(b.startDate || b.endDate), bEnd = new Date(b.endDate || b.startDate);
             if (aStart < bEnd && bStart < aEnd) out.push([a, b]);
+        }
+    }
+    return out;
+}
+
+// 🔴 A DOUBLE ENTRY, NOT A SCHEDULING CONFLICT — and that distinction was measured, not assumed. `findOverlaps` reports any two items sharing days, which on the live season is **61 findings across 37 items**; scoping it to one lane gave **47**, every one a pair of playlists, and CODM plainly runs many playlists at once. Two definitions, both wrong, both plausible before they were run. Harkirat settled it 2026-08-26: the flaggable case is the same thing entered twice — a title repeated over days that overlap — which is a MISTAKE rather than a schedule.
+//
+// ⚠️ NORMALISED, THEN CONTAINMENT, AND THE FLOOR IS WHAT KEEPS IT HONEST. Exact-after-normalising catches "COD Point Rush Week 2" against "cod point rush week 2"; containment catches "Nuketown Dedicated" against "Nuketown Dedicated MP Playlist". The 8-character floor on the shorter title is what stops containment matching everything — without it "Krai BR" is inside "Krai BR Mode" and so is every three-letter fragment of every other title. ⚠️ It deliberately does NOT do fuzzy distance: "Week 2" and "Week 3" differ by one character and are not duplicates, which is exactly the case a distance metric gets wrong.
+function normalizeTitle(t) {
+    return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function findDuplicateTitles(items, minContained = 8) {
+    const out = [];
+    for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+            const a = items[i], b = items[j];
+            const na = normalizeTitle(a.title), nb = normalizeTitle(b.title);
+            if (!na || !nb) continue;
+            const same = na === nb;
+            const shorter = na.length <= nb.length ? na : nb;
+            const longer = na.length <= nb.length ? nb : na;
+            const contained = !same && shorter.length >= minContained && longer.includes(shorter);
+            if (!same && !contained) continue;
+            // "covering the same days" — a title reused in a later season is not a double entry.
+            const aStart = new Date(a.startDate || a.endDate), aEnd = new Date(a.endDate || a.startDate);
+            const bStart = new Date(b.startDate || b.endDate), bEnd = new Date(b.endDate || b.startDate);
+            if (aStart <= bEnd && bStart <= aEnd) out.push([a, b, same ? 'same' : 'contains']);
         }
     }
     return out;
@@ -112,5 +141,5 @@ function assignRows(items) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, assignRows, LANE_ORDER, dateFromOffset, editOpFor };
+    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor };
 }

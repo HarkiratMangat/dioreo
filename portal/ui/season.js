@@ -13,7 +13,7 @@ import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
 import { useOverlay } from './overlay.js';
 import { Composer } from './composer.js';
-import { Track, Zoomer } from './track.js';
+import { Track, Zoomer, Repairs } from './track.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display.
 const SEASON_COLUMNS = [
@@ -483,7 +483,9 @@ export function SeasonRealm({ session }) {
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')} />`
-        : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
+        : view === 'Repairs'
+            ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
+            : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}
@@ -501,7 +503,7 @@ export function SeasonRealm({ session }) {
                                             ]} />`;
 
     return html`
-        <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board']} onSetView=${setView}
+        <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView}
                   badges=${{ review: stagedCount }}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}

@@ -365,6 +365,22 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **`left_click_drag` does not exercise this**, which is worth writing down: it synthesizes mouse events, and the handlers listen for pointer events so that `setPointerCapture` can keep a drag alive when the pointer leaves the strip — which every drag to an edge does. Verified with real `PointerEvent`s instead: pan moved the box 18.2% → 4.5% at constant width, and the right handle took the window 27 days → 20.
 
+### Repairs, and a defect predicate that was wrong twice before it was asked about
+
+**Season gets a third view.** 🔴 **TWO OF THE THREE DEFECT FINDERS HAD NO CALLER ANYWHERE.** `findOverlaps` and `findGaps` are exported from `track.logic.js`, one of them documented in its own comment as *"the third defect the Track exists to surface"*, and nothing read either — so the Track had been surfacing exactly one kind of finding while two more were computed, tested and thrown away.
+
+🔴 **AND THE MOMENT ONE WAS READ, IT TURNED OUT TO BE BROKEN.** `findOverlaps` calls `laneFor(item)`, which read `item.kind` — and the Track's own items carry `lane` and no `kind` at all, so every item fell through to the `'event'` default and the finder saw **one lane containing the entire season**: 61 overlaps across 37 items, including a playlist "overlapping" a draw. A pure function with no reader cannot be wrong in a way anybody sees.
+
+🔴 **THEN THE FIXED VERSION WAS STILL WRONG, FOR A DIFFERENT REASON.** Scoping overlap to lanes where concurrency should be impossible sounded right and gave **47 findings — every one a pair of playlists**, and CODM plainly runs many playlists at once (seven are live on the same days in the real data). Two premises, both plausible before they were run, both describing ordinary scheduling. **A third guess would have been a guess**, so it was put to Harkirat with the two measurements attached rather than tuned again. His answer: the flaggable case is **the same thing entered twice** — a title repeated over days that overlap, which is a mistake rather than a schedule. **17 findings**, four of them real double entries in the live data.
+
+⚠️ **Containment with a length floor, deliberately not fuzzy distance.** Exact-after-normalising catches punctuation and case; containment catches *"Undead Legion Series Armory"* inside *"Undead Legion Series Armory Draw"*; the eight-character floor is what stops containment matching every fragment of every title. **"Week 2" and "Week 3" differ by one character and are consecutive playlists** — precisely the case a distance metric gets wrong, which is why there is no distance metric.
+
+⚠️ **A clean group is still drawn**, dashed and dimmed. "No duplicates" is a different statement from "we did not look", and a list that shows only problems cannot tell you which it is.
+
+⚠️ **Repairs reads the VISIBLE window, not the whole season**, because `findGaps` is defined against a window — a gap is a stretch of the axis you are looking at with nothing in it. Zooming therefore changes what Repairs reports, which is honest; the alternative is a gap count that quietly means something other than the picture beside it.
+
+⚠️ The backtick-in-a-template trap fired for the **ninth** time, in the comment recording why the overlap group was removed. Caught at `node --check` this time, because an odd count fails loudly — it is the even counts that ship.
+
 ## Pre-Release v3.67.0 — 2026-08-23 14:08 EDT (#174) — five tracker entries that described work already done
 
 Harkirat read the open-items summary and said *"thought they were implemented."* He was right about all three, and checking turned up two more.

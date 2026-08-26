@@ -16,12 +16,12 @@ import { useMeasured } from './useMeasured.js';
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
 //
-// ⚠️ `patchnote` IS DELIBERATELY ABSENT and must stay that way. A patch note is a PUBLICATION, not a state with a duration — isEventEnded() returns false for it forever — so it does not belong on an axis whose every other lane answers "when is this ON?". The mockup renders it as the Season Record instead. A [P2] tracker entry once prescribed adding it and was closed as superseded.
+// ⚠️ `patchnote` IS DELIBERATELY ABSENT and must stay that way. A patch note is a PUBLICATION, not a state with a duration — isEventEnded() returns false for it forever — so it does not belong on an axis whose every other lane answers "when is this ON?". The mockup renders it as the Season Record instead. A [P2] tracker entry once prescribed adding it and was closed as superseded. 🔴 `exclusive` IS WHY OVERLAP DETECTION IS WORTH ANYTHING. Two events running at once is ordinary — a themed event and a CP promotion overlap by design — so reporting every concurrent pair produced **61 findings across 37 items** on the live fixture, which is a list nobody reads. A playlist rotation is the one lane where two things at once IS the defect: the game shows one playlist, so a second one covering the same days means somebody's dates are wrong. Making it a property of the lane rather than an `if` in the finder means adding a lane forces the question to be answered.
 const LANES = [
     { key: 'draw',      label: 'New draws', topic: '--draw', kind: 'point' },
     { key: 'returning', label: 'Returning', topic: '--ret',  kind: 'point' },
     { key: 'event',     label: 'Events',    topic: '--ev',   kind: 'span'  },
-    { key: 'playlist',  label: 'Playlists', topic: '--play', kind: 'span'  },
+    { key: 'playlist',  label: 'Playlists', topic: '--play', kind: 'span', exclusive: true },
 ];
 
 // A collapsed lane must still ANSWER something — a row that only says "5 hidden" is a worse version of nothing. Each lane's summary answers that lane's own question.
@@ -224,6 +224,85 @@ function deriveFlags(data, window, season, actions) {
         }
     }
     return out;
+}
+
+// ── REPAIRS ───────────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 TWO OF THE THREE DEFECT FINDERS HAD NO CALLER ANYWHERE. `findOverlaps` and `findGaps` are exported from track.logic.js, documented as "the third defect the Track exists to surface", and are read by nothing — so the Track has been surfacing exactly one kind of finding (an item outliving the battle pass) while two more were computed, tested and thrown away. This view is where they arrive.
+//
+// ⚠️ A CLEAN GROUP IS STILL DRAWN, dashed and dimmed rather than omitted. "No overlaps" is a different statement from "we did not look", and a list that shows only problems cannot tell you which is which — the same reason Armory's coverage cards keep a zero card instead of hiding it.
+//
+// ⚠️ AND IT READS THE VISIBLE WINDOW, not the whole season, because `findGaps` is defined against a window: a gap is a stretch of the axis you are looking at with nothing in it. Zooming therefore changes what Repairs reports, which is honest — the alternative is a gap count that silently means something other than the picture beside it.
+const REPAIR_NOTE = {
+    dupe: 'The same thing entered twice, over days that overlap. Not a scheduling conflict — two items genuinely running at once is ordinary here, and counting those produced sixty-one findings nobody would read. This is the narrower case: one record, entered by two people or twice by one.',
+    overrun: 'The battle pass is what a player calls the end of the season. Anything still running past it is either a deliberate carry-over or a date nobody updated, and the record cannot tell you which — that is why this is a finding rather than a fix.',
+    gap: 'A stretch of the visible window with nothing in this lane at all. A gap is only a defect if the lane is meant to be continuous — playlists usually are, draws are not.',
+};
+
+export function Repairs({ data, window: visible, season, onClamp }) {
+    const all = Object.values(data).flat();
+    const overruns = season?.bpEnd ? all.filter((i) => i.endDate && i.endDate > season.bpEnd) : [];
+    // The same thing entered twice — Harkirat's own definition of the flaggable case, after two measured definitions of "conflict" both turned out to describe ordinary scheduling. See findDuplicateTitles for what those measurements were.
+    const dupes = findDuplicateTitles(all);
+    const gapLanes = LANES.map((l) => ({ lane: l, gaps: findGaps(data[l.key] || [], visible) })).filter((g) => g.gaps.length);
+    const total = overruns.length + dupes.length + gapLanes.reduce((n, g) => n + g.gaps.length, 0);
+
+    const group = (key, label, count, kind, rows) => html`
+        <div class=${'repgrp' + (count ? '' : ' clean')} key=${key}>
+            <div class="reph">
+                <span class="rt-n">${count}</span>
+                <span class="rt-l">${label}</span>
+                <span class="rt-k">${kind}</span>
+            </div>
+            <p class="repnote">${REPAIR_NOTE[key]}</p>
+            ${count ? html`<div class="rephits">${rows}</div>` : html`<p class="repclean">Nothing to look at here.</p>`}
+        </div>`;
+
+    return html`
+        <div class="panel" id="repairs">
+            <div class="ph">
+                <span class="t">Repairs</span>
+                <span class="rt">${TL.fmt(visible.start)} → ${TL.fmt(visible.end)}</span>
+            </div>
+            <div class="repwrap">
+                <div class="rephead">
+                    <b>${total} ${total === 1 ? 'finding' : 'findings'}</b> in the window you are looking at.
+                    None of these is an error the bot would refuse — they are the shapes a season takes when a date
+                    moved and something else did not.
+                </div>
+
+                <p class="reps">Outliving the season</p>
+                ${group('overrun', 'End after the battle pass', overruns.length, 'date', overruns.map((it) => html`
+                    <button key=${it.id} onClick=${() => onClamp && onClamp(it, new Date(season.bpEnd + 'T00:00:00Z'))}>
+                        <b>${it.title}</b>
+                        <span>ends ${TL.days(season.bpEnd, it.endDate)} days late — clamp it to the battle pass</span>
+                    </button>`))}
+
+                <!-- 🔴 THIS GROUP REPORTED "OVERLAP" TWICE AND WAS WRONG BOTH TIMES. Any two items sharing
+                     days: 61 findings across 37 items, nearly all events meant to run together. Only within
+                     a lane where concurrency should be impossible: 47, every one a pair of playlists, and
+                     CODM plainly runs many playlists at once. Both premises sounded right and neither
+                     survived being run. Harkirat settled the real case on 2026-08-26 — the same thing
+                     entered TWICE — which is a mistake rather than a schedule, and is what this reports
+                     now. findOverlaps stays in track.logic.js, now correct and tested, with no caller and
+                     a comment saying why. -->
+                <p class="reps">Entered twice</p>
+                ${group('dupe', 'The same item, twice', dupes.length, 'record', dupes.map(([a, b, how], n) => html`
+                    <button key=${n} disabled>
+                        <b>${a.title}</b>
+                        <span>${how === 'same' ? 'appears again as' : 'is also inside'} <b>${b.title}</b>, over the same days</span>
+                    </button>`))}
+
+                <p class="reps">Empty stretches</p>
+                ${group('gap', 'Gaps in a lane', gapLanes.reduce((n, g) => n + g.gaps.length, 0), 'window',
+                    gapLanes.flatMap((g) => g.gaps.map((gap, n) => html`
+                        <button key=${g.lane.key + n} disabled>
+                            <b>${g.lane.label}</b>
+                            <span>nothing from ${TL.fmt(gap.start.toISOString().slice(0, 10))} to ${TL.fmt(gap.end.toISOString().slice(0, 10))}</span>
+                        </button>`)))}
+            </div>
+        </div>
+    `;
 }
 
 // ── THE ZOOM CONTROL ──────────────────────────────────────────────────────────────────────────
