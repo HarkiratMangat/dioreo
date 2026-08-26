@@ -10,25 +10,19 @@ import { fileURLToPath } from 'url';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UI = path.join(ROOT, 'portal', 'ui');
 
+// ⚠️ EVERY STYLESHEET, GLOBBED — never a listed pair. buildPortal concatenates every portal/ui/*.css, so a hardcoded list here reports a class as an orphan the moment its rules land in a sheet the list does not know about. Same correction portalRender.test.js's logic-module list needed, for the same reason: a source list is only as complete as its list.
+
 // The debt as it stood when this gate was written. Delete a line when the surface behind it is rebuilt on the adopted design — never add one.
 const KNOWN_ORPHANS = new Set([
-    // Armory — the two-column layout and the coverage matrix
-    'armcols', 'armmain', 'armside', 'covwrap', 'covcell', 'covnote', 'hit', 'bc-mode',
-    // Access — the grant form's own row
-    'grantrow',
-    // Board — the whole per-changeset review panel
-    'review', 'revhead', 'revbody', 'revfoot', 'oplist', 'rows', 'diffs', 'step', 'tally',
-    'tierbadge', 'ttl', 'discard',
-    // Track — two marks
-    'bpe', 'leg',
-    // Home — the clock face wrapper
-    'hc-face',
-    // The Discord card preview, which has no counterpart in the mockup at all
-    'v2-text', 'v2-media', 'v2-sep', 'v2-small', 'v2-empty',
+    // ✅ EMPTY, AND IT GOT THERE BY FIXING THINGS. 52 on 2026-08-26 08:00, then 46, 29, 10, 0 across one afternoon — every entry left by rebuilding the surface behind it on the adopted design, never by deleting a line. It must stay empty: a class with no rule is an element with no styling, and the whole suite was green for weeks while nine components rendered as bare text.
 ]);
 
+// 🔴 COMMENTS ARE NOT DEFINITIONS, AND COUNTING THEM MADE THIS GATE UNDER-REPORT. This tree's stylesheets are heavily commented and those comments NAME CLASSES — one line in tokens.css reads "`.v2-card .v2-row button`" while explaining a form reset, and that alone was enough to certify two classes that have no rule anywhere. A gate whose false NEGATIVES are silent is the exact shape it exists to prevent, so the comments come out first.
 function definedClasses() {
-    const css = ['app.css', 'tokens.css'].map((f) => fs.readFileSync(path.join(UI, f), 'utf8')).join('\n');
+    const css = fs.readdirSync(UI).filter((f) => f.endsWith('.css')).sort()
+        .map((f) => fs.readFileSync(path.join(UI, f), 'utf8'))
+        .join('\n')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ');
     return new Set([...css.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)].map((m) => m[1]));
 }
 

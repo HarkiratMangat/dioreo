@@ -292,10 +292,14 @@ export function Track({ data, draft, window: visible, season, flags, onDragCommi
         <div class="panel" id="track">
             <div class="ph">
                 <span class="t">Season track</span>
-                <span class="rt" style="display:flex;gap:12px;align-items:center">
-                    <span class="leg live"><i></i>live</span>
-                    <span class="leg stag"><i></i>staged</span>
-                    <span class="leg conf"><i></i>conflict</span>
+                <!-- 🔴 A KEY DRAWN IN A LANGUAGE THE THING IT KEYS DOES NOT SPEAK. The leg class had no rule
+                     left after app.css was adopted, so this rendered as three bare words each with an empty i
+                     beside it. The Manifest's own state pills ARE these three shapes, so the legend is made
+                     of the marks it explains rather than of a second set that has to agree with them. -->
+                <span class="rt" style="display:flex;gap:8px;align-items:center">
+                    <span class="stt live">LIVE</span>
+                    <span class="stt stag">STAGED</span>
+                    <span class="stt conf">CONFLICT</span>
                 </span>
             </div>
             <div class="tk-wrap" ref=${rootRef}><div class="tk-inner">
@@ -315,7 +319,7 @@ export function Track({ data, draft, window: visible, season, flags, onDragCommi
                     ` : null}
                     <div class="ov">
                         <div class="now" style=${'left:' + nowPct + '%'}></div>
-                        ${season?.bpEnd ? html`<div class="bpe" style=${'left:' + view.pct(season.bpEnd) + '%'}></div>` : null}
+                        ${season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null}
                     </div>
                 </div>
             </div></div>

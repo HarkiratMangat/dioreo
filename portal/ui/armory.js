@@ -66,7 +66,7 @@ function BuildChip({ b, onPick }) {
                 ${b.isMeta ? html`<span class="bc-meta" title="Meta">META</span>` : null}</span>
             <span class="bc-b">${b.buildName}</span>
             <span class="bc-foot">
-                <span class="bc-mode">${b.mode}</span>
+                <span class="modetag">${b.mode}</span>
                 ${b.dmzRangeRank ? html`<span class="bc-dmz">${b.dmzRangeRank}</span>` : null}
                 ${b.isToxic ? html`<span class="bc-tox" title="Toxic"><${Icon} name="skull" cls="sm" label="toxic" /></span>` : null}
                 <span class="bc-att" data-tip=${`${(b.attachments || []).length} attachments`}>${(b.attachments || []).length}×</span>
@@ -146,48 +146,66 @@ function Rack({ builds, onPick }) {
     `;
 }
 
-// Coverage -- the Armory's equivalent of the Track's defect flags (spec §8.2). It shipped as a flat row of six totals; 04-armory-and-commit.html specs a MATRIX, category down the side and defect across the top, because "SMG has 4 missing images" is the actionable fact and "there are 6 missing images somewhere" is not. Every cell is a filter, exactly as the mockup's own caption promises.
+// Coverage — one card per defect, which is the adopted design's own answer and not the one that shipped here.
 //
-// A zero cell must not read like a problem, so it is dimmed and inert rather than tinted and clickable -- the tint is reserved for a count that is actually a defect.
+// 🔴 THE MATRIX HAD NO STYLING AT ALL. `.covwrap`, `.cov` as a table, `.covcell` and `.covnote` were defined in a portal-authored stylesheet that adopting app.css deleted, so a category-by-defect grid rendered as a bare HTML table. The adopted sheet defines `.cov` as a CARD GRID with a meter per defect — a different component wearing a name the old markup also used, which is why nothing reported it.
+//
+// ⚠️ WHAT THE CARDS GIVE UP, AND WHY IT IS THE RIGHT TRADE. The matrix answered "SMG has 4 missing images"; the cards answer "how many builds have each defect, and how much of the catalogue is that". The second is the question you open Coverage WITH, and the first is one click away — every card is still a filter, and the Rack above already narrows by weapon. A meter is also the one thing the matrix could not draw: 106 stale builds out of 133 is a proportion, and a cell containing "106" does not say that.
+//
+// 🔴 AGE IS NOT A DEFECT, and the meter says so in a third colour rather than a second. `.cmeter.age` is the adopted sheet's own class for exactly this — the mockup's note records a bar meaning "85% of the collection is affected" painting in the success colour because a sibling selector never matched. The class is written by the card, opting IN, so it cannot silently stop applying.
+const COVERAGE_WHY = {
+    'missing-image': 'The card renders with a dashed placeholder where the loadout image goes.',
+    'no-badges': 'Nothing marks where this build ranks, so it sorts below every ranked sibling.',
+    'wrong-attachment-count': 'Discord shows five attachment slots; this build fills a different number.',
+    'stale-90d': 'Still served, still correct as far as anything here knows — just not looked at in a while.',
+    'near-duplicate': 'Two builds share a gunsmith code, so one of them is showing the other one’s guns.',
+};
+
 function Coverage({ builds, active, onFilter }) {
-    const categories = [...new Set(builds.map((b) => b.category))];
     const flags = Object.keys(COVERAGE_LABEL);
-    const accentOf = (cat) => builds.find((b) => b.category === cat)?.accent || 'var(--ink3)';
+    const total = Math.max(1, builds.length);
+    const hitsFor = (f) => builds.filter((b) => (b.coverage || []).includes(f));
     return html`
         <div class="panel" id="coverage">
             <div class="ph">
                 <span class="t">Coverage</span>
                 <span class="rt">${builds.filter((b) => (b.coverage || []).length).length} of ${builds.length} builds flagged</span>
             </div>
-            <div class="covwrap">
-                <table class="cov">
-                    <thead><tr>
-                        <th class="who"></th>
-                        <th>Builds</th>
-                        ${flags.map((f) => html`<th>${COVERAGE_LABEL[f]}</th>`)}
-                    </tr></thead>
-                    <tbody>
-                        ${categories.map((cat) => {
-                            const inCat = builds.filter((b) => b.category === cat);
-                            return html`
-                                <tr style=${`--cat:${accentOf(cat)}`}>
-                                    <td class="who">${cat}</td>
-                                    <td><span class="covcell zero">${inCat.length}</span></td>
-                                    ${flags.map((f) => {
-                                        const n = inCat.filter((b) => (b.coverage || []).includes(f)).length;
-                                        const on = active && active.flag === f && active.category === cat;
-                                        if (!n) return html`<td><span class="covcell zero">0</span></td>`;
-                                        return html`<td><button class=${'covcell hit' + (on ? ' on' : '')}
-                                            title=${`Show the ${n} ${cat} build${n === 1 ? '' : 's'} flagged "${COVERAGE_LABEL[f]}"`}
-                                            onClick=${() => onFilter(on ? null : { flag: f, category: cat })}>${n}</button></td>`;
-                                    })}
-                                </tr>
-                            `;
-                        })}
-                    </tbody>
-                </table>
+            <!-- 🔴 THE CARDS GO INSIDE .cols, NOT DIRECTLY INSIDE .cov, and the adopted sheet says so in its
+                 own comment: .cov is declared TWICE in that file — a grid first, then display:block eight
+                 hundred lines later — so the later one wins and .cov is the BLOCK, .cov .cols is the grid.
+                 Emitting the cards straight into .cov gave five buttons at five different content widths
+                 under a rule that reads like a grid and no longer is. Second duplicate declaration found in
+                 this stylesheet today; assume there are more. -->
+            <div class="cov"><div class="cols">
+                ${flags.map((f) => {
+                    const hits = hitsFor(f);
+                    const age = f === 'stale-90d';
+                    const on = active && active.flag === f;
+                    return html`
+                        <button key=${f} class=${'ccard' + (hits.length ? '' : ' clean')} aria-pressed=${on ? 'true' : 'false'}
+                                onClick=${() => onFilter(on ? null : { flag: f })}>
+                            <span class=${'cn' + (hits.length ? (age ? '' : ' bad') : ' ok')}>${hits.length}</span>
+                            <span class="cname">${COVERAGE_LABEL[f]}${age ? html` <i class="mechtag">age, not a fault</i>` : null}</span>
+                            <span class=${'cmeter' + (hits.length ? (age ? ' age' : ' bad') : ' clean')}>
+                                <i style=${`width:${hits.length ? Math.max(1.5, (hits.length / total) * 100) : 0}%`}></i>
+                            </span>
+                            <span class="why">${COVERAGE_WHY[f] || ''}</span>
+                        </button>`;
+                })}
+            </div></div>
+            <div class="covfacts">
+                <h5>True of the collection, not of any one build</h5>
+                ${[...new Set(builds.map((b) => b.category))].sort().map((cat) => {
+                    const inCat = builds.filter((b) => b.category === cat);
+                    const bad = inCat.filter((b) => (b.coverage || []).some((f) => f !== 'stale-90d'));
+                    return html`
+                        <div class="covfact" key=${cat}>
+                            <b>${bad.length} of ${inCat.length}</b>
+                            <span>${cat} — ${bad.length ? 'have something wrong that is not age' : 'are clean'}</span>
+                        </div>`;
+                })}
             </div>
-            <p class="covnote">Every cell is a filter — click a count to load exactly those builds into the manifest below.</p>
         </div>
     `;
 }
@@ -308,7 +326,7 @@ export function ArmoryRealm({ session }) {
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
     const rows = builds
-        .filter((b) => !coverageFilter || ((b.coverage || []).includes(coverageFilter.flag) && b.category === coverageFilter.category))
+        .filter((b) => !coverageFilter || (b.coverage || []).includes(coverageFilter.flag))
         .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
         .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent }));
 
@@ -375,14 +393,20 @@ export function ArmoryRealm({ session }) {
                                                stats=${armoryStats} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
-                      <div class="armcols" id="armory">
-                          <div class="armmain">
+                      <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
+                           exactly this layout. The armcols/armmain/armside names were portal-authored, with no rules
+                           left behind them, so the preview column had been stacking under the rack rather than beside
+                           it. (No backticks in this comment: an EVEN number of them inside an html template closes and
+                           reopens it, which parses fine and turns the prose into expressions — this exact comment did
+                           that, and the page rendered blank with "Cannot read properties of null (reading 'bed')".) -->
+                      <div class="bed" id="armory">
+                          <div>
                               ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${view === 'Rack'
                                   ? html`<${Rack} builds=${builds} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
                                   : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
-                          <div class="armside">
+                          <div>
                               <${LivePreview} buildId=${selectedBuildId} />
                           </div>
                       </div>
@@ -390,7 +414,7 @@ export function ArmoryRealm({ session }) {
                   manifestSlot=${html`
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
                                    title="Every build" filterGroups=${ARMORY_FILTERS}
-                                   headerRight=${weaponFilter || (coverageFilter ? `${coverageFilter.category} · ${COVERAGE_LABEL[coverageFilter.flag]}` : '')}
+                                   headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}
                                    bulkNote="Reversible — a staged deletion is discarded, never undone"
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"

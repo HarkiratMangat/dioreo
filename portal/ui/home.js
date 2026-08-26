@@ -121,7 +121,7 @@ function HomeClock({ season, today }) {
 
     return html`
         <section class="hclock" aria-label="Season countdown">
-            <div class="sclock hc-face" data-tier=${seasonTier(p.d)}>
+            <div class="sclock" data-tier=${seasonTier(p.d)}>
                 <div class="sc-face">
                     ${units.map((u, i) => html`
                         ${i ? html`<span class="sc-sep">:</span>` : null}

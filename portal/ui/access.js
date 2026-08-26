@@ -31,7 +31,7 @@ function GrantForm({ onGrant }) {
     const [confirmText, setConfirmText] = useState('');
     const ready = discordId && confirmText === discordId;
     return html`
-        <div class="grantrow">
+        <div class="addrow">
             <label class="sr-only" for="grant-discordid">Discord ID to grant</label>
             <input id="grant-discordid" placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
             <label class="sr-only" for="grant-permissions">Permissions</label>

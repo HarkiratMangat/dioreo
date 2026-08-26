@@ -167,6 +167,27 @@ check('THE MODULE GATE CAN FAIL: a backtick inside an HTML comment in a template
     assert.strictEqual(parsesAsModule(bad), false, 'the backtick form must fail — this is the trap the gate exists for');
 });
 
+// 🔴 AN EVEN NUMBER OF BACKTICKS IS THE CASE THE PARSE GATE CANNOT SEE, and it is worse than the odd one. Two backticks inside an HTML comment CLOSE the template and REOPEN it, so the prose between them becomes an expression: the file parses cleanly as a module, the build passes, and the page renders blank with `Cannot read properties of null (reading 'bed')` — the class name I had quoted. The odd case fails loudly at parse time; this one ships. A source rule is the only thing that catches both.
+check('no backtick appears inside an HTML comment in a template', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8');
+        for (const m of src.matchAll(/<!--[\s\S]*?-->/g)) {
+            if (!m[0].includes('`')) continue;
+            offenders.push(`portal/ui/${f}:${src.slice(0, m.index).split('\n').length}`);
+        }
+    }
+    assert.deepStrictEqual(offenders, [], 'a backtick here closes the surrounding template — say the class name in plain words:\n  ' + offenders.join('\n  '));
+});
+
+check('THE BACKTICK-IN-COMMENT GATE CAN FAIL: an even pair inside a comment is caught', () => {
+    const tick = String.fromCharCode(96);
+    const bad = '<!-- the ' + tick + '.bed' + tick + ' class is the split -->';
+    assert.ok([...bad.matchAll(/<!--[\s\S]*?-->/g)].some((m) => m[0].includes(tick)));
+    assert.ok(![...'<!-- the .bed class is the split -->'.matchAll(/<!--[\s\S]*?-->/g)].some((m) => m[0].includes(tick)));
+});
+
 check('every ESM file the build emits parses as a module', () => {
     const dir = path.join(__dirname, '..', 'portal', 'ui');
     const bad = fs.readdirSync(dir)

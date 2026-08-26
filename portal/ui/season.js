@@ -377,21 +377,7 @@ export function SeasonRealm({ session }) {
         fetchChangesets('season').then(setChangesets);
     }
 
-    // Each changeset commits independently, so this used to be a needless sequential await-in-a-loop (efficiency review). Parallelizing it the naive way would also have reintroduced a stale-closure bug -- each iteration's setNotices([...notices, ...]) read `notices` from the same closure, so concurrent failures would overwrite each other and only the last one would survive. Collecting into a local array and setting state once avoids both.
-    async function handleCommit(ready, confirmText) {
-        const results = await Promise.all(ready.map(async (c) => {
-            const res = await fetch(`/api/changeset/${c._id}/commit`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
-                body: JSON.stringify({ confirmText }),
-            });
-            const body = await res.json();
-            return res.ok ? null : { changeId: c._id, summary: `Commit failed: ${body.reason || 'unknown error'}` };
-        }));
-        const failures = results.filter(Boolean);
-        if (failures.length) setNotices([...notices, ...failures]);
-        fetchChangesets('season').then(setChangesets);
-    }
+    // ⚠️ `handleCommit` LIVED HERE AND IS GONE. Season stopped being able to commit when board.js's duplicate review panel was removed — the Review realm is the only surface that writes, and a live commit function on a page that no longer has a control for it is the next session's accident.
 
     async function handleAdd(op) {
         await stageOps('season', [op], session.csrfToken);
@@ -511,7 +497,7 @@ export function SeasonRealm({ session }) {
                <${Track} data=${trackData}
                           draft=${draftData} window=${visibleWindow} season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd(true)} />`
-        : html`<${Board} changesets=${changesets} onCommit=${handleCommit} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
+        : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
     const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}
