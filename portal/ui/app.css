@@ -2811,7 +2811,8 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    BOX, not bare prose: capping it leaves a 625px tinted box floating in a 1534px panel, which reads
    as a layout fault rather than as a measure. Its text is long at wide widths and that is a known,
    accepted cost — a ragged box would be a worse one. */
-.racknote,.chint,.hint,.nodraft p,.hbanner p,.ow-i .ow-t{max-width:78ch}
+.racknote,.chint,.hint,.nodraft p,.hbanner p,.hp,.ow-i .ow-t{max-width:78ch}
+/* .hp was missed on the first pass and caught by re-measuring at 1700 rather than by re-reading the rule -- it is Analytics' bare note paragraph, same profile as the rest: transparent, unbordered, unpadded, and it was running 706px at 11.5px. */
 
 @media (max-width:860px){
   .scope{grid-template-columns:1fr;gap:6px}
