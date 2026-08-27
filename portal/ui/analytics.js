@@ -131,7 +131,7 @@ function Health({ health }) {
         <div class="panel" id="health">
             <div class="ph">
                 <span class="t">Health</span>
-                <span class="rt">read from the bot's own records</span>
+                <span class="rt">${health.commands24h ?? '—'} commands · ${health.rssSampleCount ?? 0} memory samples · ${health.restarts7d ?? '—'} boots in 7 days</span>
             </div>
             <!-- 🔴 THE TILES SAID WHAT THE MASTHEAD HAD JUST SAID. Measured 2026-08-27: the masthead read
                  uptime 1h 30m · errors 24h 23 · commands 24h 496, and three of the four tiles beneath it

@@ -140,7 +140,7 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
         <div class="panel" id="by-admin">
             <div class="ph">
                 <span class="t">By admin</span>
-                <span class="rt">${matrix.admins.length} granted · owner is not editable</span>
+                <span class="rt">${matrix.admins.length} admin${matrix.admins.length === 1 ? '' : 's'} × ${matrix.scopes.length} permissions · owner is not editable</span>
             </div>
             ${matrix.admins.length === 0 ? html`<p class="empty">Nobody else has been granted access. You are the only admin.</p>` : html`
                 <div class="mxwrap">

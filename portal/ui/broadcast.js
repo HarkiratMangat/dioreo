@@ -69,7 +69,7 @@ function NowShowing({ live, counts, cap }) {
         <div class="panel" id="now-showing">
             <div class="ph">
                 <span class="t">Now showing</span>
-                <span class="rt">${counts.live} live · ${counts.scheduled} scheduled · ${counts.forever} never expires</span>
+                <span class="rt">${Math.min(counts.live, cap)} in one message, oldest first · cap ${cap}${counts.live > cap ? ` · ${counts.live - cap} wait for the next` : ''}</span>
             </div>
             <div class="nowwrap">
             <div>

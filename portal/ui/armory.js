@@ -88,6 +88,20 @@ function splitCoverage(b) {
     return { faults: all.filter((f) => f !== 'stale-90d'), aged: all.includes('stale-90d') };
 }
 
+// ⚠️ BOTH NOTES READ FROM THE SAME DERIVATION THE MASTHEAD DOES, so a panel and the figures above it cannot disagree -- the failure this realm has already had twice. Each says what its own view is for and nothing the masthead has already said.
+function RackNote({ builds }) {
+    const ranked = builds.filter((b) => b.categoryRank || b.dmzRangeRank).length;
+    return html`<span class="rt">${ranked} of ${builds.length} ranked</span>`;
+}
+
+function RepairNote({ builds }) {
+    const split = builds.map(splitCoverage);
+    const faults = split.filter((c) => c.faults.length).length;
+    const aged = split.filter((c) => c.aged).length;
+    if (!faults && !aged) return html`<span class="rt">nothing to repair</span>`;
+    return html`<span class="rt">${faults} need repair${aged ? ` · ${aged} merely old` : ''}</span>`;
+}
+
 function BuildChip({ b, onPick }) {
     const { faults, aged } = splitCoverage(b);
     return html`
@@ -137,7 +151,7 @@ function Rack({ builds, onPick }) {
         <div class="panel" id="rack">
             <div class="ph">
                 <span class="t">${VIEWS.rack} — by rank</span>
-                <span class="rt">${new Set(builds.map((b) => b.weaponName)).size} weapons</span>
+                <${RackNote} builds=${builds} />
             </div>
             ${builds.length === 0 ? html`<p class="empty">No builds in this catalogue yet.</p>` : null}
             <div class="rack">
@@ -201,8 +215,8 @@ function Coverage({ builds, active, onFilter }) {
     return html`
         <div class="panel" id="coverage">
             <div class="ph">
-                <span class="t">Coverage</span>
-                <span class="rt">${builds.filter((b) => (b.coverage || []).length).length} of ${builds.length} builds flagged</span>
+                <span class="t">${VIEWS.coverage}</span>
+                <${RepairNote} builds=${builds} />
             </div>
             <!-- 🔴 THE CARDS GO INSIDE .cols, NOT DIRECTLY INSIDE .cov, and the adopted sheet says so in its
                  own comment: .cov is declared TWICE in that file — a grid first, then display:block eight
