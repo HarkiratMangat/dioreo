@@ -188,7 +188,7 @@ npm test && git add docs/db-deferred-list.md && git commit -m "docs(portal): the
 
 - [ ] **Step 1: Establish whether the instrument still exists**
 
-The 7–25% → 51% numbers came from an ad-hoc class-vocabulary comparison, **not** from `npm run portal:coverage` (which measures something else — class slots, currently 1493/1495). Search for it:
+The 7–25% → 51% numbers came from an ad-hoc class-vocabulary comparison, **not** from `npm run portal:coverage` (which measures something else — class slots, reported per realm; run `npm run portal:coverage` for the current figures rather than trusting a number written here, which counts a quantity this branch changes on most commits and was already stale by ~190 slots when checked on 2026-08-27). Search for it:
 
 ```bash
 rg -l --hidden --no-ignore "class-vocabulary|mockup.*class.*emit" scripts/ docs/superpowers/

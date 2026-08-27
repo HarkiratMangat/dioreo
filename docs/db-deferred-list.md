@@ -269,6 +269,8 @@ Every visual verification on this branch was done at **1280×880**. His actual p
 
 **Verify by:** `resize_page` to 1700×1000 in chrome-devtools-mcp, walk the six realms, and re-run the geometry fingerprint from the composition item (six distinct signatures) at that width.
 
+✅ **BOTH HALVES MET, 2026-08-27 15:3x EDT.** The walk: seven routes at 1700×980, **zero overflowing elements and no document overflow anywhere**. The fingerprint, re-run at that width: **6 distinct signatures of 6, zero identical pairs.** ⚠️ Season and Review share a masthead grid (`1357px 192px`) and a stat count, so they separate only on their block signatures — the pair to re-check first if a future change makes the realms converge.
+
 ### First real boot of the portal against Mongo and OAuth `[P1 · M · Opus5-High]`
 *Task 3.2 of `docs/superpowers/plans/2026-08-27-portal-completion.md`. Approved by the plan, NOT built.*
 
@@ -289,9 +291,11 @@ node --env-file=.env.dev portal/server.js
 
 > ✅ **CLOSED 2026-08-27 15:1x EDT BY MEASUREMENT: 42.1 KB**, against the 495 KB that put it here and a verify condition of under 100 KB. 🔴 **And the row was stale rather than open, in an instructive way.** The remedy prescribed below was overtaken by a stronger one: `38c7ec6` **deleted** `buildUsageExport`/`buildTimingExport`/`buildAlertExport` from the payload outright rather than moving them behind a route — and it landed **2026-08-26 13:42, two hours twenty minutes AFTER the 495 KB reading was taken at 11:2x**. So the fix already existed and only the *verification* was missing, which is a different row from an open one and needed a real boot to produce. Measured against the dev database through the route's own functions: **river 37.4 KB of the 42.1** (100 items, and `eventRiver` bounds each of ChangeLog/AlertLog/BootRecord at 100), `timingStats` 1.7 KB, `usageStats` 1.6 KB, everything else under 1 KB. The measurement script is `local/measure-analytics.js`. ⚠️ **A row whose fix landed after its measurement reads exactly like an open row** — the only thing that separates them is comparing the two timestamps.
 
-**Do the route split, not the pagination alternative:** the river feeds the Manifest so it has to arrive whole, while the pre-rendered `usage`/`timing`/`alerts` text exports are only ever read when their own tab is open. Add a route returning one export by name, fetched on tab open.
+⚠️ **THE INSTRUCTION BELOW IS SUPERSEDED AND IS KEPT ONLY SO THE CLOSED ENTRY STILL SHOWS WHAT WAS ASKED FOR.** Do not act on it: the exports were deleted rather than moved, so there is no route to add. ~~**Do the route split, not the pagination alternative:**~~ the river feeds the Manifest so it has to arrive whole, while the pre-rendered `usage`/`timing`/`alerts` text exports are only ever read when their own tab is open. Add a route returning one export by name, fetched on tab open.
 
 **Verify by:** a cold Analytics load transfers under 100KB (`curl -s -b "$COOKIE" http://localhost:8787/api/analytics | wc -c`, or the transfer column in DevTools), and the Usage and Timing tabs still render their text.
+
+✅ **BOTH HALVES MET, 2026-08-27 15:3x EDT.** Size: **42.1 KB**. And the second half, which is the one a size measurement alone would have skipped — every tab was clicked and read back: **Health 1,109 chars · Usage 921 · Timing 1,579 · Reach 889 · Search 642**, each carrying real figures and **zero `<pre>` blocks**, which is the positive proof that the text exports are gone *and* were replaced by panels rather than by nothing. ⚠️ A payload that shrank because a tab went blank would have passed the first half and failed this one.
 
 ### 🔔 REMINDER — two live calendar banners are dead links and only Harkirat can replace them `[P1 · XS]`
 *Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
@@ -300,7 +304,7 @@ node --env-file=.env.dev portal/server.js
 
 🔴 **No script can repair these.** The re-hosting mechanism is correct and has been since 2026-08-07 — `utils/calendarBannerCache.js` uses one stable public id per page (`calendar_banners/draws|events|playlists`) with `overwrite:true`, so a new upload replaces the old asset and exactly three ever exist, and BOTH write paths use it (`/manage`'s Calendar handler and the portal's `calendar.setBanners` op). But re-hosting needs a source, and these sources are gone. **The repair is pasting a fresh URL into the record's editor**, three fields below the warning; it re-hosts permanently on save.
 
-⚠️ **This is the fourth item this session that turned out to be already built** — see the caveat memory `portal_tracker_pending_but_shipped`. The mechanism was never the gap; the gap was that nothing reported which rows still needed re-saving.
+⚠️ **This was the fourth item that session to turn out already built; the count reached EIGHT on 2026-08-27** — see the memory `feedback_read_the_already_built_layer`. ⚠️ The name `portal_tracker_pending_but_shipped` used to be cited here and **no such memory has ever existed** — a dangling pointer that read like a source. The mechanism was never the gap; the gap was that nothing reported which rows still needed re-saving.
 
 ### ✅ The season record region — thumbnails, one control, and a panel that was finally measured `[P2 · S · Opus5-High]`
 *Items B, C and D of the completion plan's Task 1.2, built 2026-08-27.*
