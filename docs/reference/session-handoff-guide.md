@@ -53,6 +53,7 @@ Not "did I do the steps" — that is the checklist restating itself. Two falsifi
 
 - 🔴 **Could a session that read ONLY this handoff produce the next commit without asking Harkirat a question?** It fails for exactly the right reasons: no stated first action, an unstated approval status, a dangling "we discussed X" with no resolution.
 - 🔴 **Is every OPEN item marked approved-or-not AND built-or-not AND filed-or-not?** Three booleans per item. Miss the first two and the next session redoes approved work or builds something unapproved — **both have happened on this branch.** Miss the third and it cannot tell which items survive the handoff being lost.
+- 🔴 **The reader test is CHEAP TO AUTOMATE and should be.** A ~30-line script that (1) resolves every backticked path, (2) `git cat-file -t`s every commit hash, (3) checks every `§n` against the document's own headings, and (4) re-derives any claimed commit count from its stated range, found two real defects in checkpoint-X in one run. ⚠️ Its false positive was instructive too: a `§16.31` belonging to another document read as a missing local heading, which is the provenance rule below.
 - 🔴 **Did a reader test actually RUN, against the filesystem?** Not a re-read — a pass that opens every path, resolves every section reference, executes every command, and re-runs the document's own headline measurement. On 2026-08-27 that pass found **two blockers in a handoff written by the session that had just spent the day fixing this exact defect class**, including a measurement that had been silently invalidated by the act of writing it down. See §3b.
 
 ---
@@ -157,6 +158,35 @@ Paste-ready, in **one fenced block**, containing:
 6. Server / browser / working-style line
 
 ---
+
+## 🔁 §4 · The working CADENCE — the half of a handoff that keeps getting dropped
+
+🔴 **A handoff that transmits STATE and WORK but not CADENCE produces a session that rediscovers how to work, every time.** Measured 2026-08-27: Harkirat issued **seven** corrections in one afternoon and **at least four were cadence, not knowledge** — how many turns a check costs, when to run a gate, which batch tool exists. None of them was about the portal. A handoff carrying this section would have prevented all four.
+
+🔴 **A correction he had to issue TWICE goes into the handoff VERBATIM, with its parenthetical.** He said *"stop wasting turns on intermediate tests"* and had to repeat it as *"did i literally say to stop wasting turns on intermediate tests and to save them for large checkpoints (that means completing an entire unit of work, not completing 1 component on a page.)"* — **the parenthetical is the whole content**, because the first phrasing left "checkpoint" undefined and I read it as "component". A paraphrase loses exactly the part that was added to make it land.
+
+**What this project means by a UNIT, since that word was the ambiguity:**
+
+| | |
+|---|---|
+| A unit IS | a whole realm brought in line with its design · a whole feature end-to-end (route **+** UI **+** fixture **+** CSS **+** the shared map that registers it) |
+| A unit is NOT | one component · one selector · one label · one subtitle |
+| Gates run | at the END of a unit, before its commit — **never between edits inside one** |
+| The one legitimate mid-unit build | `node -e "require('./scripts/buildPortal').build()"` alone, when you need to LOOK at the page. Not the suite. |
+
+⚠️ **The boundary, or this becomes the opposite failure:** batch without limit *within* a unit; never span two units in one unverified batch, because an unattributable failure costs more turns than the batching saved.
+
+**Name the batch tool you used, and the one you did not know about.** `mcp__Claude_Browser__browser_batch` takes a LIST of browser actions in one call. `/chrome-devtools-mcp:chrome-devtools-cli` exposes the same tools as a **shell** command, so a whole browser sequence becomes one Bash call — ⚠️ it was **not on PATH** on 2026-08-27 and needs the one-time install in that skill's `references/installation.md`; a session that runs it, sees `command not found` and gives up has rediscovered nothing.
+
+🔴 **And carry any METHOD that beat the obvious approach.** The one found 2026-08-27, which took a full portal-vs-mockup comparison from ~13 navigations to **2 calls**: the portal is an SPA, so ONE `evaluate_script` walks every realm with `location.hash` + a sleep and returns a structured inventory (headings, tab labels, stat keys, chip labels, column headers, computed topic colours, which slot each block sits in); and the mockup pages are **same-origin**, so ONE more script loads all six into hidden IFRAMES and extracts the identical shape. Diff two JSON blobs and reason over a LIST instead of a screenshot. ⚠️ **The diff is EVIDENCE, never a verdict** — eight tracker rows across two sessions have been portal-*ahead* — so every line still needs adjudicating against the design record before it becomes an edit.
+
+## Name the ARTIFACT every measurement came from — and the DOCUMENT every section number is in
+
+⚠️ **A bare `§16.31` does not say which file it lives in.** The 2026-08-27 reader test flagged one as a missing heading in the handoff itself — a false positive that is really this same rule applied to section numbers. Write the path with the section the first time it appears, and say plainly which numbers are local and which belong to another document.
+
+## Name the ARTIFACT every measurement came from
+
+⚠️ **Harkirat had to ask *"is that screenshot of the mockup or the wired in portal?"*** — a reasonable question, about a screenshot whose filename said `mk-` and whose prose said nothing. **A number or an image without its provenance teaches a fact that cannot be checked**, and on this project the two artifacts look almost identical by design. Prefix the files (`mk-` mockup, `pt-` portal), and say which one in the sentence, not only in the path.
 
 ## Two checks that are worth the thirty seconds
 
