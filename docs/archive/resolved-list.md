@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 2026-08-27 10:18 EDT — `/draw calculator` multi-draw: both morning questions ANSWERED
+
+- **🌅 TWO MORNING QUESTIONS for `/draw calculator` multi-draw — RESOLVED 2026-08-27 10:18 EDT** `[P1 · S]` *(filed 2026-08-27 00:31 EDT when Harkirat deferred both overnight — "ask me thing again in the morning". Asked again at 09:58 EDT and answered.)*
+  - **Q1 — per-instance progress → ANSWERED: full per-instance progress.** Each parallel banner carries its own pulls-done. Chosen over the cheaper "N−1 fresh + 1 in progress" simplification and over "quantity is a pure multiplier". The encoding was measured to fit either way, so this was decided on real usage, not implementation cost.
+  - **Q2 — prioritisation → ANSWERED, and it reframed the feature.** Harkirat: *"this is a pure preference sort of question. People don't necessarily choose things like 'cheapest to finish', etc… they choose what they want."* 🔴 **Every algorithmic default ordering is forbidden.** The player orders the basket; the calculator renders a cumulative "priority plan" down that order and marks where a balance runs out. Both ranking options originally offered were rejected by this answer.
+  - **Five further decisions landed the same morning** and are recorded in the spec: its own bottom button row (Draw Info · Draw Prices · Reset · Help), the draw-info block moving to an ephemeral button panel, author-locking, no passive expiry, and — after Harkirat asked *"can't we keep calling it /draw calculator?"* — the command name staying exactly as it is.
+  - **Where it lives now:** `docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md` (rewritten, 19 audit findings across two falsification passes) and `docs/superpowers/plans/2026-08-27-draw-calculator-multi-draw.md` (nine tasks). Implementation has NOT started.
+
 ## 2026-08-26 13:19 EDT — `/draw calculator` panel structure, second resolution
 
 - **🎨 `/draw calculator` panel structure — RESOLVED 2026-08-26 13:19 EDT, folded into the click-test entry below** `[P1 · S]` *(filed 2026-08-26 13:16 EDT as "awaiting Harkirat's pick"; superseded ~3 minutes later when he picked. Corrects `docs/archive/resolved-list.md`'s 2026-08-26 11:20 EDT closure, which was itself premature -- see that entry's own correction note for the full timeline of two rejections between DONE and this resolution.)* Picked: a hybrid of the shipped Section/accessory treatment with progressive disclosure. `state.detail` (default false) gates the ladder/upgrade-note/Least Waste/region-comparison/estimate behind a real "Show breakdown" toggle; headline + a compact one-line Cheapest always show. Shipped commit `d6f64d2`. What's left to verify lives in the click-test entry immediately below, not here.

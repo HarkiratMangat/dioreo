@@ -59,6 +59,11 @@ const emojis = {
     calculator: '<a:Calculator:1542232659940343819>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
+    // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.
+    smallDot: '<:SmallDot_SD:1542356720070697001>',
+    blueDash: '<:BlueDash_BD:1542356720943239188>',
+    simplify: '<a:Simplify:1542387991723642960>',
+    expand: '<a:Expand:1542387990763147294>',
     b1: '<:b1:1523852972835082371>',
     // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next page row, not just one specific command's list. /invite's "Share Link" button (2026-08-22, Harkirat-provided). Distinct from `share` above, which is the "Show Everyone" button's icon -- two different actions, two different icons.
     shareHeart: '<a:ShareHeart:1539021725784739891>',

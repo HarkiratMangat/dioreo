@@ -1,36 +1,33 @@
 // ==========================================
-// COMMAND: /draw calculator -- one live panel
+// COMMAND: /draw calculator -- saved baskets, per-banner planning
 // ==========================================
-// Deliberately exports NO `data`. bot/registry.js's loadCommandModules() only registers a module having BOTH `data` and `execute`, and keys the registration by data.name -- a second file exporting setName('draw') would register a DUPLICATE `draw` command and silently overwrite drawprices.js's registration in client.commands. This module stays safely un-registered while remaining requireable from commands/drawprices.js, which owns the `draw` group's builder and dispatches the `calculator` subcommand here. See docs/superpowers/specs/2026-08-15-draw-cost-calculator-design.md's "registration constraint" section.
+// Deliberately exports NO `data`. bot/registry.js's loadCommandModules() only registers a module having BOTH `data` and `execute`, and keys the registration by data.name -- a second file exporting setName('draw') would register a DUPLICATE `draw` command and silently overwrite drawprices.js's registration in client.commands. This module stays safely un-registered while remaining requireable from commands/drawprices.js, which owns the `draw` group's builder and dispatches the `calculator` subcommand here.
 //
-// ⚠️ FOURTH PASS, 2026-08-26 17:26 EDT -- rebuilt around Harkirat's OWN mockup (a real Components V2 message he built and exported as JSON, pasted in verbatim rather than described). Three prior passes each guessed at "better structure" from first principles and were each rejected; this one implements a concrete, given spec instead. The panel is still ONE always-live message (see the 11:14 EDT note below, unchanged) -- what changed is the CONTENT MODEL: the top block reuses /draw prices' own per-draw entry renderer verbatim (drawprices.js's buildDrawEntries, exported for exactly this), and everything calculator-specific lives in a single "## COST BREAKDOWN" block whose density is controlled by ONE button, relabelled "Simplify" (collapse) / "Show Breakdown" (expand) per Harkirat's own words -- "Simplify is basically a reword of Hide breakdown". The Section+accessory landmark pattern from the third pass is GONE: his mockup puts every control back into plain Action Rows, and there is no color/border primitive in Components V2 for a Section to buy over a well-structured Text Display anyway (see the corrected mockups from earlier this session).
+// ⚠️ FIFTH PASS, 2026-08-27 11:48 EDT -- rebuilt around the saved-basket redesign (docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md, revision 3). The whole prior single-draw model (drawKey/pullsDone/target/targetValue living in the customId) is GONE. 🔴 THE BASKET IS A FLAT LIST OF BANNERS -- "quantity" does not exist as a concept. Three Mythic Weapon banners are three separate, independently-orderable rows in `basket.banners`, each with its own `pullsDone`. Budget mode and per-banner goals other than "finish" are explicitly out of scope (spec §10) -- there is no goal select any more, every banner is always priced to completion.
 //
-// ⚠️ ONE PANEL, NOT TWO STAGES (rebuilt 2026-08-26 11:14 EDT, still true). The original build was a setup FORM you filled in and then pressed "Calculate" on: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate -- five interactions before a single figure appeared, and the setup panel showed no numbers at all while you filled it in. Every figure here is a pure function of the state carried in the customId, so recomputing on every click costs a few thousand integer ops against a Discord round trip. The panel therefore ALWAYS shows the answer and every control edits it in place. That also removes the modal from the common path: "pulls done" and "which pull am I aiming for" are small bounded integers, which is a SELECT -- a text field for them was the single most hostile thing about the old flow. Only genuinely free-form amounts (a CP balance, a CP budget) still open a modal.
-//
-// ⚠️ ABSENT DATA IS A FIRST-CLASS STATE, NOT AN EDGE CASE. DRAW_DATA has real holes -- doubleEpicCharacters exists only at region_10. buildCalculatorPanel() branches on entryFor() before it reads any count, and the pull/goal selects -- both of which are enumerations OF a pull count -- are simply not rendered when there is no count to enumerate.
+// ⚠️ STATE NOW LIVES IN TWO PLACES ON PURPOSE. The customId carries only a reference plus transient VIEW state (which page, detail on/off, the reorder focus pointer, the author lock) -- `calc~<verb>~<basketId>~g<page>~x<detail>~f<focus>~a<authorId base36>`. The basket itself (banners/region/balance/includeUpgrades/entitlementMask/name) lives in the DrawBasket collection via utils/drawBasketStore.js, and is looked up fresh on every render. 🔴 THAT MEANS THE PANEL CAN NOW GO STALE -- a basket can be deleted, or an unnamed one can expire (30-day TTL) -- which the old fully-stateless design made structurally impossible. Every render path through buildCalculatorPanel() takes `basket` as an explicit possibly-null argument and has a real "this basket no longer exists" branch; there is no path that assumes it is there.
 const { withShareButton } = require('../utils/shareButton');
-const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, DRAW_DATA, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, buildDrawEntries, UPGRADE_LABEL } = require('./drawprices');
-const { pullCount, upgradeCost, spentSoFar, remainingToFinish, remainingToPull, reachableWithBudget } = require('../utils/drawCost');
+const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL } = require('./drawprices');
+const { pullCount, upgradeCost, remainingToFinish, basketCost } = require('../utils/drawCost');
 const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 
 const DRAW_KEYS = Object.keys(DRAW_META);
+const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the component cap (spec §2)
 
-// The progress bar's two cells. Deliberately geometric block characters rather than emoji: a custom emoji costs a CDN fetch per cell and renders off the text baseline, and ten of them side by side wraps on a phone. These are one character wide in every Discord client.
 const BAR_FILLED = '▰';
 const BAR_EMPTY = '▱';
 
 function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
-function regionLabel(region) { return `${region.split('_')[1]} CP`; }
+function regionLabel(region) { return `${(region || 'region_10').split('_')[1]} CP`; }
 function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
 
-// The one place this module asks "does real data exist here". utils/drawCost.js's functions each answer null independently; asking THEM is how the old panel ended up printing the word null.
+const DRAW_DATA = require('./drawprices').DRAW_DATA;
 function entryFor(region, drawKey) { return (DRAW_DATA[region] && DRAW_DATA[region][drawKey]) || null; }
 function regionsWithData(drawKey) { return REGION_ORDER.filter(r => entryFor(r, drawKey)); }
 
@@ -39,7 +36,6 @@ function progressBar(done, total) {
     return BAR_FILLED.repeat(filled) + BAR_EMPTY.repeat(Math.max(0, total - filled));
 }
 
-// Only mythicWeapon/mythicCharacter have the Mythic Card upgrade mechanic (UPGRADE_LABEL's own two keys) -- every other draw has no upgrade at all, so this returns null for them rather than a fallback icon.
 function upgradeCardEmoji(drawKey) {
     if (drawKey === 'mythicWeapon') return emojis.mythicCard;
     if (drawKey === 'mythicCharacter') return emojis.mythicCoin;
@@ -47,88 +43,77 @@ function upgradeCardEmoji(drawKey) {
 }
 
 // ==========================================
-// STATE CODEC
+// STATE CODEC -- view state only, see the file header for why the basket itself is never here.
 // ==========================================
-// All panel state rides in the customId -- no model, no cache, no per-user persistence beyond the one deliberate exception (cpCurrency). That is a PRIVACY decision as much as an architectural one: storing someone's CP balance and spend progress would need a PRIVACY.md Appendix A entry and would trip the privacy-inventory docs-audit gate. It is also what makes a single always-live panel affordable -- every click just recomputes, and there is nothing to invalidate.
-//
-// Format: calc~<verb>~r<region digits>~d<draw index>~p<pulls done>~t<target>~v<target value>
-//         ~b<balance>~u<0|1 upgrades>~e<2X entitlement bitmask>~x<0|1 detail>
-// Fields are looked up BY PREFIX rather than by position, so a missing field decodes to its default instead of shifting every field after it. Discord's customId cap is 100 chars; a maximal state here is about 50.
 function defaultState() {
-    return {
-        verb: 'setup',
-        region: 'region_10',
-        drawKey: null,          // landing state -- no draw picked yet, no number computed
-        pullsDone: 0,
-        target: 'F',            // F = finish, P = specific pull, B = budget
-        targetValue: 0,
-        balance: 0,
-        includeUpgrades: false,
-        entitlementMask: 0,
-        detail: false            // progressive disclosure -- collapsed ("Simplify"d) by default
-    };
+    return { verb: 'landing', basketId: null, page: 0, detail: false, focus: null, authorId: null };
 }
 
+// A raw 19-digit snowflake in decimal is longer than it needs to be in a budget this roomy now that the basket itself doesn't ride here -- kept base-36 anyway (spec §5) for consistency with every other id this project encodes into a customId. BigInt throughout: a snowflake exceeds Number.MAX_SAFE_INTEGER, so this cannot go through parseInt/Number without silent precision loss.
+function toBase36Id(discordId) {
+    let n = BigInt(discordId);
+    if (n === 0n) return '0';
+    const digits = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let out = '';
+    while (n > 0n) { out = digits[Number(n % 36n)] + out; n /= 36n; }
+    return out;
+}
+
+function fromBase36Id(str) {
+    let n = 0n;
+    for (const ch of String(str).toLowerCase()) {
+        const d = parseInt(ch, 36);
+        if (Number.isNaN(d)) return null; // malformed/stale segment -- decode to "no author", never throw
+        n = n * 36n + BigInt(d);
+    }
+    return n.toString();
+}
+
+// `r` is an OPTIONAL trailing field, emitted only by regionRow -- every other control leaves it off entirely rather than paying bytes for a field almost no click needs. It carries the TARGET region for a 'region' verb click; it is never the basket's own persisted region (that lives on the basket document, read fresh at render time, same as everything else in §5). `p` (the within-BASKET-page banner-list page, distinct from `g`'s COST/BASKET page selector) and `r` (a region-switch's TARGET region) are both OPTIONAL trailing fields -- most controls need neither, so most customIds don't pay their bytes.
 function encodeState(verb, s) {
-    return [
+    const fields = [
         'calc', verb,
-        `r${s.region.replace('region_', '')}`,
-        `d${DRAW_KEYS.indexOf(s.drawKey)}`,
-        `p${s.pullsDone}`,
-        `t${s.target}`,
-        `v${s.targetValue || 0}`,
-        `b${s.balance || 0}`,
-        `u${s.includeUpgrades ? 1 : 0}`,
-        `e${s.entitlementMask || 0}`,
-        `x${s.detail ? 1 : 0}`
-    ].join('~');
+        s.basketId || '',
+        `g${s.page || 0}`,
+        `x${s.detail ? 1 : 0}`,
+        `f${(s.focus === null || s.focus === undefined) ? '' : s.focus}`,
+        `a${s.authorId ? toBase36Id(s.authorId) : ''}`
+    ];
+    if (s.bpage) fields.push(`p${s.bpage}`);
+    if (s.targetRegion) fields.push(`r${s.targetRegion.replace('region_', '')}`);
+    return fields.join('~');
 }
 
 function decodeState(customId) {
     const parts = customId.split('~');
     const get = (prefix, fallback) => {
-        const hit = parts.slice(2).find(p => p.startsWith(prefix));
+        const hit = parts.slice(3).find(p => p.startsWith(prefix));
         return hit === undefined ? fallback : hit.slice(prefix.length);
     };
-    // d-1 (or a missing d field) decodes to null -- landing. Distinguishing "index 0 chosen" from "nothing chosen" is the whole point; DRAW_KEYS[-1] || DRAW_KEYS[0] would have silently resurrected drawKey to the first draw on every round trip through a customId that never carried one.
-    const drawIndex = Number(get('d', '-1'));
+    const focusRaw = get('f', '');
+    const authorB36 = get('a', '');
+    const regionDigits = get('r', '');
     return {
-        verb: parts[1] || 'setup',
-        region: `region_${get('r', '10')}`,
-        drawKey: drawIndex >= 0 ? (DRAW_KEYS[drawIndex] || null) : null,
-        pullsDone: Number(get('p', 0)),
-        target: get('t', 'F'),
-        targetValue: Number(get('v', 0)),
-        balance: Number(get('b', 0)),
-        includeUpgrades: get('u', '0') === '1',
-        entitlementMask: Number(get('e', 0)),
-        detail: get('x', '0') === '1'
+        verb: parts[1] || 'landing',
+        basketId: parts[2] || null,
+        page: Number(get('g', 0)) || 0,
+        detail: get('x', '0') === '1',
+        focus: focusRaw === '' ? null : (Number(focusRaw) || 0),
+        authorId: authorB36 ? fromBase36Id(authorB36) : null,
+        bpage: Number(get('p', 0)) || 0,
+        targetRegion: regionDigits ? `region_${regionDigits}` : null
     };
 }
 
-// Every control that can change WHICH draw or region is in play runs its result through here, because both of those change the valid range of everything else. Switching from a 10-pull draw to a 7-pull one while sitting on "8 pulls done, stop at pull 9" must not leave two impossible values in the state -- they would render an out-of-range ladder and a negative remainder. Clamping here rather than at each read site is what keeps the render functions free of range guards.
-function clampStateToDraw(state) {
-    const total = pullCount(state.region, state.drawKey);
-    if (total === null) return { ...state, pullsDone: 0 };
-    const pullsDone = Math.max(0, Math.min(state.pullsDone, total));
-    let { target, targetValue } = state;
-    if (target === 'P' && (targetValue < 1 || targetValue > total)) { target = 'F'; targetValue = 0; }
-    return { ...state, pullsDone, target, targetValue };
-}
-
-// The number the whole panel turns on: what is left to buy AFTER the balance already in hand.
-function shortfallFor(state, total, upgrade) {
-    const targetPull = state.target === 'P' ? Math.min(Math.max(state.targetValue, state.pullsDone), total) : total;
-    const remainingCp = state.target === 'P'
-        ? remainingToPull(state.region, state.drawKey, state.pullsDone, targetPull)
-        : remainingToFinish(state.region, state.drawKey, state.pullsDone);
-    return remainingCp + (upgrade || 0) - state.balance;
+// Clamps a reorder-focus pointer to a real index whenever the banner list underneath it shrank (a delete, or switching baskets) -- the same "never leave an impossible value behind" role clampStateToDraw played in the old single-draw codec.
+function clampFocus(focus, bannerCount) {
+    if (focus === null || bannerCount === 0) return null;
+    return Math.max(0, Math.min(focus, bannerCount - 1));
 }
 
 // ==========================================
-// CALENDAR DETECTION -- is a 2X CP event live right now?
+// CALENDAR DETECTION -- unchanged from the single-draw panel; entitlements are basket-wide now, not per-draw, so this still applies exactly as before.
 // ==========================================
-// Reuses the LOGIC commands/calendar.js's isEventEnded() already established for its active-filter mode (ongoing checks bpEnd/bpEndTBD, a dated entry checks its own endDate) rather than a third independent date comparison -- that function is private to calendar.js, so this mirrors its convention instead of importing it, per the design's "reuse the liveness logic" instruction. An entry is live when it is ongoing (and the season hasn't ended), or now falls within date..endDate.
 function isDoubleCPEventLive(entry, seasonalDoc, nowMs) {
     if (!entry || !entry.isDoubleCP) return false;
     if (entry.isOngoing) {
@@ -147,68 +132,151 @@ async function findLiveDoubleCPEntry() {
 }
 
 // ==========================================
-// CONTROLS
+// BASKET HELPERS
 // ==========================================
-// Every option carries its own PRICE. A dropdown whose options read "Stop at pull 7" tells you nothing you did not already know; one whose options read "Stop at pull 7 -- 6,800 CP from here" turns the control itself into the comparison. The figures are the same drawCost.js calls the panel body makes, so they cannot disagree with the answer above them.
-function drawSelectRow(state) {
+// The distinct draw TYPES currently represented in the basket, in first-seen order -- backs both the COST page's multi-select (which types are "in") and Page 2's "+ Add another" select (which types can be duplicated as a fresh banner).
+function usedTypes(banners) {
+    const seen = [];
+    for (const b of banners || []) if (!seen.includes(b.drawKey)) seen.push(b.drawKey);
+    return seen;
+}
+
+// Display compression for the COST page's basket listing ONLY (spec §1: "Page 1 may render three consecutive identical-progress banners as ×3 for readability. Page 2 always shows them individually, because that is where they are edited."). State stays flat either way -- this touches nothing but the rendered string.
+function groupForDisplay(banners) {
+    const groups = [];
+    for (const b of banners || []) {
+        const last = groups[groups.length - 1];
+        if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone) last.count++;
+        else groups.push({ drawKey: b.drawKey, pullsDone: b.pullsDone, count: 1 });
+    }
+    return groups;
+}
+
+// ==========================================
+// SELECT / BUTTON ROWS
+// ==========================================
+// Landing's draw picker -- also reused as the "start a new basket" control when an existing (possibly named) basket has been emptied by Reset (state.basketId still points at it, so picking here ADDS to that same basket rather than creating a second one -- see buildLandingPanel).
+function drawSelectRow(state, region) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('draw', state), placeholder: 'Which draw are you pulling on?',
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Pick a draw to add to your basket...',
             options: DRAW_KEYS.map(key => {
-                const total = pullCount(state.region, key);
-                // The two mythic draws have an Upgrade step that the "CP total" figure doesn't include -- mention it here too, or the dropdown quietly undersells what finishing this draw actually costs (found live 2026-08-26 17:34 EDT, Harkirat clicking through the real select).
-                const upgrade = total !== null ? upgradeCost(state.region, key) : null;
+                const total = pullCount(region, key);
+                const upgrade = total !== null ? upgradeCost(region, key) : null;
                 return {
                     label: DRAW_META[key].name,
                     value: key,
-                    // A draw with no data at THIS region says so in its own description rather than silently offering itself as if it were priced -- selecting it is still allowed, and lands on the no-data panel with its region buttons.
                     description: total === null
-                        ? `No data at ${regionLabel(state.region)} yet`
-                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(state.region, key, 0))} CP total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`,
-                    emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
-                    default: key === state.drawKey
+                        ? `No data at ${regionLabel(region)} yet`
+                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(region, key, 0))} CP total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`,
+                    emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
                 };
             })
         }]
     };
 }
 
-function pullsSelectRow(state, total) {
+// COST page's multi-select -- "which draw TYPES are in this basket". Selecting a type not currently present appends ONE fresh banner (0 pulls, no inherited defaults -- spec §2, decision 11: "calculators don't assume or constrain answers"). Deselecting a present type removes EVERY banner of that type -- a duplicate of a type is added back one at a time via "+ Add another" on Page 2, which this control cannot express (a multi-select's state is a set, not a multiset).
+function typesSelectRow(state, basket) {
+    const present = new Set(usedTypes(basket.banners));
+    return {
+        type: 1,
+        components: [{
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are in your basket?',
+            min_values: 0, max_values: DRAW_KEYS.length,
+            options: DRAW_KEYS.map(key => ({
+                label: DRAW_META[key].name,
+                value: key,
+                description: `${fmt(remainingToFinish(basket.region, key, 0))} CP fresh`,
+                emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
+                default: present.has(key)
+            }))
+        }]
+    };
+}
+
+// Page 2's per-banner pulls-done dropdown. 🔴 The placeholder is REPLACED by the chosen option once picked, so without a banner number in every option a set dropdown stops saying which banner it belongs to (spec §2, found live) -- every option and the placeholder both carry `#N`. `f` here carries WHICH banner index this specific select edits, not the reorder pointer -- a per-control target, scoped to this one customId, distinct from the reorder focus stored across renders.
+function bannerPullsRow(state, basket, index) {
+    const banner = basket.banners[index];
+    const total = pullCount(basket.region, banner.drawKey);
+    const meta = DRAW_META[banner.drawKey];
+    const rowState = { ...state, focus: index };
+    if (total === null) {
+        return { type: 1, components: [{
+            type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} — ${meta.name} (no data at this region)`,
+            options: [{ label: 'No data at this region', value: '0', default: true }], disabled: true
+        }] };
+    }
     const options = [];
     for (let n = 0; n <= total && options.length < 25; n++) {
         options.push({
-            label: n === 0 ? 'I have not started this draw' : `${plural(n, 'pull')} done`,
+            label: `#${index + 1} — ${n === 0 ? 'Not started' : `${plural(n, 'pull')} done`}`,
             value: String(n),
-            description: n === 0 ? 'Price the draw from scratch' : `${fmt(spentSoFar(state.region, state.drawKey, n))} CP spent so far`,
-            default: n === state.pullsDone
+            description: n === 0 ? meta.name : `${fmt(remainingToFinish(basket.region, banner.drawKey, n))} CP left on ${meta.name}`,
+            default: n === banner.pullsDone
         });
     }
-    return { type: 1, components: [{ type: 3, custom_id: encodeState('pulls', state), placeholder: 'How many pulls have you done?', options }] };
+    return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} — ${meta.name}`, options }] };
 }
 
-// The goal select folds the old "target type" dropdown and its modal-entered target VALUE into one control. "Stop at a specific pull" used to be a mode you chose and then typed a number for in a modal; a pull number is bounded by the draw's own length, so every reachable value is simply an option -- and each one is priced from where the player currently is.
-function goalSelectRow(state, total) {
-    const options = [{
-        label: 'Finish the draw',
-        value: 'F',
-        description: `All ${total} pulls · ${fmt(remainingToFinish(state.region, state.drawKey, state.pullsDone))} CP from here`,
-        default: state.target === 'F'
-    }];
-    for (let p = 1; p <= total; p++) {
-        const need = remainingToPull(state.region, state.drawKey, state.pullsDone, p);
-        options.push({
-            label: `Stop at pull ${p}`,
-            value: `P${p}`,
-            description: p <= state.pullsDone ? 'Already reached' : `${fmt(need)} CP from here`,
-            default: state.target === 'P' && state.targetValue === p
-        });
-    }
-    options.push({ label: 'Spend a set budget', value: 'B', description: 'See how far an amount of CP goes', default: state.target === 'B' });
-    return { type: 1, components: [{ type: 3, custom_id: encodeState('goal', state), placeholder: 'What are you aiming for?', options }] };
+// "+ Add another" -- lists the DISTINCT types already in the basket (spec §2); picking one appends a fresh banner (0 pulls) of that same type as a new, independently-orderable row.
+function addAnotherRow(state, basket) {
+    const types = usedTypes(basket.banners);
+    return {
+        type: 1,
+        components: [{
+            type: 3, custom_id: encodeState('addmore', state), placeholder: '+ Add another banner of a draw you already have...',
+            options: types.map(key => ({
+                label: DRAW_META[key].name,
+                value: key,
+                description: `Adds one more ${DRAW_META[key].name} banner at 0 pulls`,
+                emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
+            }))
+        }]
+    };
 }
 
-function entitlementSelectRow(state) {
+// The ONE remaining focus pointer (spec §2) -- which banner ▲/▼ will move. A select, not a per-banner button pair, because a button pair per banner would cost a whole extra Action Row PER banner (5 banners = 5 extra rows) for a control used far less often than pulls-done.
+function reorderFocusRow(state, basket) {
+    return {
+        type: 1,
+        components: [{
+            type: 3, custom_id: encodeState('setfocus', state), placeholder: 'Reorder: pick a banner to move...',
+            options: basket.banners.map((b, i) => ({
+                label: `#${i + 1} — ${DRAW_META[b.drawKey].name} (${b.pullsDone}/${pullCount(basket.region, b.drawKey) ?? '?'})`,
+                value: String(i),
+                default: state.focus === i
+            }))
+        }]
+    };
+}
+
+function reorderButtonsRow(state, basket) {
+    const focus = clampFocus(state.focus, basket.banners.length);
+    return {
+        type: 1,
+        components: [
+            { type: 2, style: 2, label: '▲ Move Up', custom_id: encodeState('up', { ...state, focus }), disabled: focus === null || focus === 0 },
+            { type: 2, style: 2, label: '▼ Move Down', custom_id: encodeState('down', { ...state, focus }), disabled: focus === null || focus === basket.banners.length - 1 }
+        ]
+    };
+}
+
+function pageNavRow(state, banners) {
+    const totalPages = Math.max(1, Math.ceil(banners.length / MAX_BANNERS_PER_PAGE));
+    const current = Math.min(state.bpage || 0, totalPages - 1);
+    return {
+        type: 1,
+        components: [
+            { type: 2, style: 2, label: '◀ Prev', custom_id: encodeState('bpage', { ...state, bpage: Math.max(0, current - 1) }), disabled: current === 0 },
+            { type: 2, style: 2, label: `Page ${current + 1}/${totalPages}`, custom_id: encodeState('bpage', state), disabled: true },
+            { type: 2, style: 2, label: 'Next ▶', custom_id: encodeState('bpage', { ...state, bpage: Math.min(totalPages - 1, current + 1) }), disabled: current === totalPages - 1 }
+        ]
+    };
+}
+
+function entitlementSelectRow(state, basket) {
     return {
         type: 1,
         components: [{
@@ -218,93 +286,94 @@ function entitlementSelectRow(state) {
                 label: `${fmt(p.baseCp)} CP package`,
                 value: p.id,
                 description: `Gives ${fmt(p.baseCp * 2)} CP during a 2X event`,
-                default: (state.entitlementMask & (1 << i)) !== 0
+                default: (basket.entitlementMask & (1 << i)) !== 0
             }))
         }]
     };
 }
 
-// Region-only now (2026-08-26 17:26 EDT) -- the upgrade toggle moved into the top control row (Set Balance/Upgrade/Simplify), matching Harkirat's own mockup, which puts all three of those together and keeps this row purely regional.
-function controlsRow(state) {
+// Region switching (kept from the single-draw panel, verb 'region') -- MUST preserve every banner's progress (spec §9): switching region never touches `basket.banners`, only `basket.region`, so pullsDone rides across unaffected. A banner with no data at the new region still renders (excluded from the total, named on its own row -- buildCostBlock's `unpriced` branch), never silently dropped.
+function regionRow(state, basket) {
     return {
         type: 1,
         components: REGION_ORDER.map(key => ({
             type: 2,
-            style: key === state.region ? 1 : 2,
-            disabled: key === state.region,
-            custom_id: encodeState('region', { ...state, region: key }),
+            style: key === basket.region ? 1 : 2,
+            disabled: key === basket.region,
+            custom_id: encodeState('region', { ...state, targetRegion: key }),
             label: regionLabel(key),
             emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
         }))
     };
 }
 
-// Points at the EXACT custom_id drawprices.js's own region-switch buttons produce, so this routes through handlers/drawprices.js's existing price_region_ branch with no new handler code on either side.
-function pricesRow(state) {
+function costActionRow(state, basket) {
+    const cardEmoji = usedTypes(basket.banners).map(upgradeCardEmoji).find(Boolean);
     return {
         type: 1,
-        components: [{
-            type: 2, style: 2, label: 'Draw Prices',
-            emoji: emojis.parseEmoji(emojis.drawPrices),
-            custom_id: `price_region_${state.region.replace('region_', '')}_0`
-        }]
+        components: [
+            { type: 2, style: 2, label: 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
+            { type: 2, style: basket.includeUpgrades ? 3 : 2, label: basket.includeUpgrades ? 'Upgrade: YES' : 'Upgrade: NO', custom_id: encodeState('upg', state), ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {}) },
+            { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) },
+            { type: 2, style: 2, label: 'Edit Basket', custom_id: encodeState('page', { ...state, page: 1 }) }
+        ]
     };
 }
 
-// The row above the dropdowns -- Set Balance/Set Budget, Upgrade (only where real upgrade data exists), Simplify/Show Breakdown. Matches Harkirat's own mockup exactly: all three in one Action Row, none of them a Section accessory.
-function actionRow(state, { hasUpgrade }) {
-    const buttons = [{
-        type: 2, style: 2,
-        label: state.target === 'B' ? 'Set Budget' : 'Set Balance',
-        custom_id: encodeState('modal', state),
-        emoji: emojis.parseEmoji(emojis.cp2)
-    }];
-    if (hasUpgrade) {
-        const cardEmoji = upgradeCardEmoji(state.drawKey);
-        buttons.push({
-            type: 2, style: state.includeUpgrades ? 3 : 2,
-            label: state.includeUpgrades ? 'Upgrade: On' : 'Upgrade: Off',
-            custom_id: encodeState('upg', state),
-            ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {})
-        });
-    }
-    buttons.push({ type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state) });
-    return { type: 1, components: buttons };
+// Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
+function basketManageRow(state, basket) {
+    const deleteArmed = state.verb === 'delarm';
+    return {
+        type: 1,
+        components: [
+            { type: 2, style: 2, label: basket.name ? 'Rename' : 'Save', custom_id: encodeState('modal_name', state), emoji: emojis.parseEmoji(emojis.mngEdit) },
+            { type: 2, style: deleteArmed ? 4 : 2, label: deleteArmed ? 'Delete Basket — click again' : 'Delete Basket', custom_id: encodeState(deleteArmed ? 'del' : 'delarm', state), emoji: emojis.parseEmoji(emojis.mngDelete) }
+        ]
+    };
+}
+
+// Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself.
+function bottomNavRow(state) {
+    const resetArmed = state.verb === 'resetarm';
+    return {
+        type: 1,
+        components: [
+            { type: 2, style: 2, label: 'Draw Info', custom_id: encodeState('info', state) },
+            { type: 2, style: 2, label: 'Draw Prices', custom_id: 'nav_prices' },
+            { type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'Reset — click again' : 'Reset', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) },
+            { type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) }
+        ]
+    };
 }
 
 // ==========================================
-// COST BREAKDOWN -- matches Harkirat's own mockup (a real Components V2 message he built and exported, 2026-08-26 17:18 EDT). TYPE/TOTAL PRICE deliberately duplicate the reused /draw-prices summary block pushed just above this in buildCalculatorPanel -- his own mockup keeps both, so this block reads standalone without scrolling up. The region-comparison feature from the third pass is dropped entirely: it appears nowhere in his mockup and nothing asked for it to survive the redesign.
+// COST BREAKDOWN -- basket-wide, always priced to FINISH every banner (budget mode and per-banner goals other than Finish are out of scope, spec §10 -- there is no goal select any more).
 // ==========================================
-function buildCostBreakdown(state, entry, total, upgrade, currency, client, { compact }) {
-    const meta = DRAW_META[state.drawKey];
-    const upgradeAvailable = upgradeCost(state.region, state.drawKey);
-    const entryTotal = entry.draws.reduce((a, b) => a + b, 0);
-    const targetPull = state.target === 'P' ? Math.min(Math.max(state.targetValue, state.pullsDone), total) : total;
-    const remainingCp = state.target === 'P'
-        ? remainingToPull(state.region, state.drawKey, state.pullsDone, targetPull)
-        : remainingToFinish(state.region, state.drawKey, state.pullsDone);
-    const needed = remainingCp + (upgrade || 0);
-    const shortfall = needed - state.balance;
-    const spent = spentSoFar(state.region, state.drawKey, state.pullsDone);
-    const pullsLeft = Math.max(0, targetPull - state.pullsDone);
+function buildCostBlock(state, basket, currency, client, { compact }) {
+    const dot = emojis.smallDot;
+    const dash = emojis.blueDash;
+    const { total: needed, perBanner } = basketCost(basket.region, basket.banners, basket.includeUpgrades);
+    const unpriced = perBanner.filter(b => !b.priced);
+    const shortfall = needed - (basket.balance || 0);
 
-    // THIRD mobile pass, 2026-08-26 19:10 EDT (Harkirat, on a screenshot of this exact block): the diamond emoji (🔹, from the 17:45 EDT fix below) read as too loud for a field-label prefix -- replaced with a plain small-text bullet (•), which carries the same "here's a label" job with none of the visual weight. The heading's region suffix ("— 10 CP REGION") was wrapping onto its own line at this font size and reading as part of the title; it now sits on its own -# caption line under the heading instead. And the PROGRESS line's pull-count fraction ("0 / 10 Pulls") is unboxed -- it's a multi-part value, and the earlier SECOND-pass rule (below) already established that those wrap mid-box rather than sitting in one pill. SECOND mobile pass, 2026-08-26 17:45 EDT (Harkirat, on the FIRST pass's own live result): "decrease usage of code spans but don't completely remove" + "remove the > quote thing". Two independent corrections to the 17:38 EDT fix: (1) `-# > ` used a real blockquote marker for a small-text LABEL prefix, which Discord renders as a vertical bar down the left edge of every line -- replaced with a plain marker, which carries no layout cost. (2) removing EVERY backtick pill was an overcorrection: a SHORT atomic number token (a bare CP amount, a price) doesn't wrap inside its own box, only a LONG or multi-part value does (a draw name, the bar+fraction combo). Rule applied throughout: box short standalone numbers, leave long labels and the progress bar+fraction bold-only.
-    const lines = [`## COST BREAKDOWN`, `-# ${regionLabel(state.region)} REGION`];
+    const lines = [`## COST BREAKDOWN`];
+    lines.push(`${dot} Draws in basket: **\`${fmt(basket.banners.length)}\`**`);
+    lines.push(`${dot} Balance: **\`${basket.balance ? `${fmt(basket.balance)} CP` : 'Not specified'}\`** ${dash} Region: **\`${regionLabel(basket.region)}\`**`);
+    lines.push(`${dot} CP Needed: **\`${fmt(needed)} CP\`**`);
+    if (unpriced.length) {
+        lines.push(`⚠️ **${plural(unpriced.length, 'banner')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => DRAW_META[b.drawKey].name).join(', ')}.`);
+    }
 
     if (!compact) {
-        lines.push(`-# • TYPE: **${meta.name}**${upgrade !== null ? ` + **${UPGRADE_LABEL[state.drawKey]} Upgrade**` : ''}`);
-        lines.push(upgrade !== null
-            ? `-# • TOTAL PRICE: **\`${fmt(entryTotal)} CP Draw\`** + **\`${fmt(upgradeAvailable)} CP Upgrade\`** = **\`${fmt(entryTotal + upgradeAvailable)} CP\`**`
-            : `-# • TOTAL PRICE: **\`${fmt(entryTotal)} CP\`**`);
-        lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
-        const pending = [`**\`${fmt(pullsLeft)}x Draw Pull${pullsLeft === 1 ? '' : 's'}\`**`];
-        if (upgrade !== null) pending.push(`**\`${fmt(entry.upgrade.count)}x Mythic Card Spin${entry.upgrade.count === 1 ? '' : 's'}\`**`);
-        lines.push(`-# • PENDING: ${pending.join(' · ')}`);
-        lines.push(`-# • BALANCE: **\`${state.balance ? `${fmt(state.balance)} CP` : 'Not specified'}\`**`);
-        lines.push(`-# • CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
-    } else {
-        lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
-        lines.push(`-# • CP SPENT: **\`${fmt(spent)} CP\`** · CP NEEDED: **\`${fmt(needed)} CP\`**`);
+        lines.push('');
+        lines.push(`## PRIORITY PLAN`);
+        let running = 0;
+        perBanner.forEach((b, i) => {
+            running += b.cost;
+            const total = pullCount(basket.region, b.drawKey);
+            lines.push(`${dot} ${i + 1}. ${DRAW_META[b.drawKey].name} — ${b.pullsDone}/${total ?? '?'} ${dash} **${fmt(b.cost)} CP** ${dash} running **${fmt(running)} CP**`);
+        });
+        lines.push('');
     }
 
     if (shortfall <= 0) {
@@ -313,206 +382,210 @@ function buildCostBreakdown(state, entry, total, upgrade, currency, client, { co
         return lines;
     }
 
-    lines.push('');
-    const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (state.entitlementMask & (1 << i)) !== 0).map(p => p.id);
+    const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
-    // Reads the optimizer's OWN cpEach/priceCents rather than re-deriving with normalCp() (v3-pre-release review, finding #3) -- normalCp() never applies the double-CP bonus, so a re-derived 2X combo entry would render the un-doubled figure. THIRD mobile pass, 2026-08-26 19:08 EDT (Harkirat, on a screenshot of this exact block): boxing every number here was still too dense -- code-spans are now reserved for the three figures a player actually needs to act on (total price, total CP, and what's left over); the individual per-package counts/prices that sum INTO those totals stay bold-only.
+    if (!result || !result.cheapest) {
+        lines.push('');
+        lines.push(`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`);
+        return lines;
+    }
     const describeCp = r => r.combo.map(c => `**${c.count}×** ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
     const describePrices = r => r.combo.map(c => `${formatMoney(c.priceCents * c.count, currency)}`).join(' + ');
     const packageLines = (label, r) => compact
-        ? [`**${label}:** **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`** — ${describeCp(r)}`]
+        ? [`**${label}:** **\`${fmt(r.totalCp)} CP\`** for **\`${formatMoney(r.totalCents, currency)}\`** — ${describeCp(r)}`]
         : [
             `**${label} Method**`,
-            `• **\`${formatMoney(r.totalCents, currency)}\`** for **\`${fmt(r.totalCp)} CP\`**`,
-            `-# ${describeCp(r)} ⌇ **\`${fmt(r.totalCp)} CP\`**`,
-            `-# ${describePrices(r)} ⌇ **\`${formatMoney(r.totalCents, currency)}\`**`,
+            `> **\`${fmt(r.totalCp)} CP\`** for **\`${formatMoney(r.totalCents, currency)}\`**`,
+            `${describeCp(r)} ⌇ **\`${fmt(r.totalCp)} CP\`**`,
+            `${describePrices(r)} ⌇ **\`${formatMoney(r.totalCents, currency)}\`**`,
             `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (${fmt(r.totalCp)} CP Purchase − ${fmt(shortfall)} CP Needed)`
         ];
 
-    lines.push('### RECOMMENDED PACKAGE');
+    lines.push('## RECOMMENDED PACKAGE');
     lines.push(...packageLines('Cheapest', result.cheapest));
-    if (!compact && (result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp)) {
-        lines.push('');
-        lines.push(...packageLines('Least Waste', result.leastWaste));
+    if (!compact && result.stockUp) {
+        lines.push(...packageLines('Stock Up', result.stockUp));
+        lines.push(`-# Costs **\`${formatMoney(result.stockUp.extraCents, currency)}\`** more than Cheapest, but banks **\`${fmt(result.stockUp.extraCp)}\`** extra CP at a better rate — worth it only if you plan to keep pulling.`);
     }
     if (!compact) {
-        lines.push('');
         const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-        lines.push(`-# NOTE: Estimates only — varies by tax/conversion. Currency: **${currency}** (Change in ${settingsMention}).`);
-    }
-    return lines;
-}
-
-// Budget mode asks a different question ("how far does this go", not "what do I still need") -- kept as its own function rather than forced into buildCostBreakdown's TYPE/TOTAL/PENDING/RECOMMENDED PACKAGE shape, none of which apply here. No mockup was given for this mode; it keeps the same header for visual consistency with the goal-mode block sitting in the same slot.
-function buildBudgetBreakdown(state, entry, total, { compact }) {
-    const lines = [`## COST BREAKDOWN`, `-# ${regionLabel(state.region)} REGION`];
-    lines.push(`-# • PROGRESS:  **${progressBar(state.pullsDone, total)}**  **${state.pullsDone} / ${total} Pulls**`);
-    if (!state.targetValue) {
-        lines.push('');
-        lines.push('Press **Set Budget** and enter the CP you are willing to spend.');
-        return lines;
-    }
-    const result = reachableWithBudget(state.region, state.drawKey, state.pullsDone, state.targetValue);
-    const gained = result.pullsReachable - state.pullsDone;
-    lines.push(`-# • BUDGET: **\`${fmt(state.targetValue)} CP\`** reaches **\`pull ${result.pullsReachable}\`** of ${total}`);
-    if (!compact) {
-        lines.push(gained > 0
-            ? `-# That is **${plural(gained, 'more pull')}** from where you are now.`
-            : `-# That is not enough for even one more pull from pull ${state.pullsDone}.`);
-        lines.push(result.cpShortOfNext !== null
-            ? `-# **${fmt(result.cpShortOfNext)} CP** short of pull ${result.pullsReachable + 1} · ${fmt(state.targetValue - result.cpUsed)} CP would go unspent.`
-            : `-# That finishes the draw outright, with **${fmt(state.targetValue - result.cpUsed)} CP** left over.`);
-        const ladder = entry.draws.slice(state.pullsDone);
-        if (ladder.length) lines.push(`-# **Pulls from here:** ${ladder.map((n, i) => (state.pullsDone + i < result.pullsReachable ? `**${fmt(n)}**` : fmt(n))).join(' / ')}`);
+        lines.push(`-# _Estimates only — varies by tax/conversion. Currency: **${currency}** (Change in ${settingsMention})._`);
     }
     return lines;
 }
 
 // ==========================================
-// PANEL
+// PAGES
 // ==========================================
-function buildCalculatorPanel(state, accentColor, options = {}) {
-    const { liveDoubleCPEntry = null, assertDoubleCP = false, currency = 'USD', client = null, notice = null } = options;
+function titleBlock(basket) {
+    const suffix = basket && basket.name ? ` — ${basket.name}` : '';
+    return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator${suffix}` };
+}
 
-    // Single-line title, no second caption line -- matches Harkirat's mockup exactly ("## <Calculator emoji> Lucky Draw Calculator", nothing beneath it). The draw name used to be the title's own heading; it now shows properly inside the reused /draw-prices summary block below, so the title no longer needs to carry it.
-    const titleBlock = { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator` };
+function buildLandingPanel(state, savedBaskets, accentColor, { region, notice = null } = {}) {
+    const components = [
+        titleBlock(null),
+        { type: 14, spacing: 2, divider: true }
+    ];
+    if (notice) components.push({ type: 10, content: `-# ${notice}` });
+    components.push({ type: 10, content: '🎯 Pick a draw below to start (or add to) your basket, and see what you still need.' });
+    components.push(drawSelectRow(state, region));
+    if (savedBaskets && savedBaskets.length) {
+        components.push({ type: 14, spacing: 1, divider: true });
+        components.push({ type: 10, content: `## SAVED BASKETS\n${savedBaskets.map(b => `${emojis.smallDot} **${b.name}** — ${plural(b.banners.length, 'banner')}`).join('\n')}` });
+        components.push({
+            type: 1, components: [{
+                type: 3, custom_id: encodeState('load', state), placeholder: 'Load a saved basket...',
+                options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'banner')} · ${regionLabel(b.region)}` }))
+            }]
+        });
+    }
+    return { type: 17, accent_color: accentColor, components };
+}
 
-    // ---- Landing: no draw picked yet ---- Every user used to land on Mythic Weapon Draw, 0 pulls, finish -- a real computed answer to a question nobody had asked yet. Nothing is computed here; the draw select is the only thing that matters, and with no option carrying default:true its PLACEHOLDER actually renders (verified: Discord only shows a select's placeholder when no option is marked default).
-    if (!state.drawKey) {
-        return {
-            type: 17, accent_color: accentColor,
-            components: [
-                titleBlock,
-                { type: 14, spacing: 2, divider: true },
-                { type: 10, content: '🎯 Pick a draw below to see what you still need, and the cheapest way to buy it.' },
-                drawSelectRow(state),
-                controlsRow(state),
-                pricesRow(state)
-            ]
-        };
+function buildMissingBasketPanel(state, savedBaskets, accentColor) {
+    return buildLandingPanel({ ...state, basketId: null }, savedBaskets, accentColor, {
+        region: 'region_10',
+        notice: '⚠️ That saved basket no longer exists — it may have expired, or been deleted.'
+    });
+}
+
+function buildCostPage(state, basket, accentColor, options = {}) {
+    const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
+    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
+
+    if (!basket.banners.length) {
+        // Empty basket returns to the landing look (spec §9), but STAYS bound to this basketId so picking a draw adds to the same (possibly named) basket instead of creating a second one.
+        return buildLandingPanel(state, options.savedBaskets, accentColor, { region: basket.region, notice: basket.name ? `"${basket.name}" is empty — pick a draw to add to it.` : null });
     }
 
-    const entry = entryFor(state.region, state.drawKey);
-    const components = [titleBlock, { type: 14, spacing: 2, divider: true }];
-
-    // ---- No data for this draw at this region ---- Never interpolate a missing price (Harkirat's standing call, see DRAW_DATA's own header). Say plainly which regions DO have it, and leave the region row as the way out -- the pull and goal selects are enumerations of a pull count that does not exist here, so they are absent rather than empty.
-    if (!entry) {
-        const available = regionsWithData(state.drawKey);
-        components.push({ type: 10, content: [
-            `⚠️ **No sourced pricing for this draw at the ${regionLabel(state.region)} region.**`,
-            available.length
-                ? `-# Real figures exist at **${available.map(regionLabel).join('** and **')}** — switch below and the numbers come back.`
-                : `-# We have not sourced this draw at any region yet.`
-        ].join('\n') });
-        components.push(drawSelectRow(state));
-        components.push(controlsRow(state));
-        components.push(pricesRow(state));
-        return { type: 17, accent_color: accentColor, components };
-    }
-
-    const total = entry.draws.length;
-    const upgradeAvailable = upgradeCost(state.region, state.drawKey);
-    const upgrade = state.includeUpgrades && upgradeAvailable !== null ? upgradeAvailable : null;
-
-    // ---- The reused /draw-prices summary -- heading, total, pull ladder, cumulative spend, and (where it exists) the Upgrade sub-block, all built by drawprices.js's OWN buildDrawEntries so the two commands can never drift into two similar-but-different renderings of the same draw. The upgrade sub-block's card emoji is spliced in here ONLY -- drawprices.js's shared output is untouched, so /draw prices itself is unaffected.
-    const summaryBlocks = buildDrawEntries(state.region, [state.drawKey])[0];
-    const upgradeHeading = upgrade !== null || state.includeUpgrades || upgradeAvailable !== null ? `**${UPGRADE_LABEL[state.drawKey]} Upgrade**` : null;
-    const cardEmoji = upgradeCardEmoji(state.drawKey);
-    const summaryWithIcon = cardEmoji && upgradeHeading
-        ? summaryBlocks.map(b => b.startsWith(upgradeHeading) ? `${cardEmoji} ${b}` : b)
-        : summaryBlocks;
-    // Pushed as SEPARATE Text Displays, not joined into one (fixed 2026-08-26 17:48 EDT -- Harkirat: "Improve vertical spacing here", pointing at this exact block). buildDrawEntries' own header comment is explicit about why: "kept as 3 real separate Text Displays... since the gap BETWEEN components is what gives the natural spacing Harkirat wants here." Joining them with \n collapsed that gap to nothing, which is what made this block read as cramped -- a bug introduced when this block was first reused, not a contradiction of the shared function's own design.
-    for (const block of summaryWithIcon) components.push({ type: 10, content: block });
+    const groups = groupForDisplay(basket.banners);
+    components.push({ type: 10, content: `## YOUR BASKET\n${groups.map(g => `${emojis.smallDot} ${DRAW_META[g.drawKey].name}${g.count > 1 ? ` ×${g.count}` : ` — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'}`}`).join('\n')}` });
+    components.push(typesSelectRow(state, basket));
     components.push({ type: 14, spacing: 1, divider: true });
 
-    // ---- COST BREAKDOWN -- the calculator-specific block, density controlled by state.detail. ----
-    const breakdownLines = state.target === 'B'
-        ? buildBudgetBreakdown(state, entry, total, { compact: !state.detail })
-        : buildCostBreakdown(state, entry, total, upgrade, currency, client, { compact: !state.detail });
-    components.push({ type: 10, content: breakdownLines.join('\n') });
-    components.push(actionRow(state, { hasUpgrade: upgradeAvailable !== null }));
-    components.push({ type: 14, spacing: 1, divider: true });
+    components.push({ type: 10, content: buildCostBlock(state, basket, currency, client, { compact: !state.detail }).join('\n') });
+    components.push(costActionRow(state, basket));
+    components.push(basketManageRow(state, basket));
 
-    // ---- Controls ----
-    components.push({ type: 10, content: '-# Select the **Draw Type**, **Number of Pulls Done**, and **Your Goal** from the dropdowns below.' });
-    components.push(drawSelectRow(state));
-    components.push(pullsSelectRow(state, total));
-    components.push(goalSelectRow(state, total));
-    if (liveDoubleCPEntry || assertDoubleCP || state.entitlementMask) {
+    if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry
             ? `-# 🎉 A **Double CP** event looks live right now${liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : ''}. Tell the optimizer which packages you still have a 2X entitlement on.`
             : `-# Select which packages you still have an unused 2X entitlement on, if the event is running.` });
-        components.push(entitlementSelectRow(state));
+        components.push(entitlementSelectRow(state, basket));
     }
-    if (notice) components.push({ type: 10, content: `-# ${notice}` });
     components.push({ type: 14, spacing: 1, divider: true });
-    components.push({ type: 10, content: '-# Use the buttons to toggle between **Regional Prices**.' });
-    components.push(controlsRow(state));
-    components.push(pricesRow(state));
-
+    components.push(regionRow(state, basket));
+    components.push(bottomNavRow(state));
     return { type: 17, accent_color: accentColor, components };
+}
+
+function buildBasketPage(state, basket, accentColor) {
+    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
+
+    if (!basket.banners.length) {
+        components.push({ type: 10, content: 'Your basket is empty — go back to the Cost page and pick a draw.' });
+        components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
+        components.push(bottomNavRow(state));
+        return { type: 17, accent_color: accentColor, components };
+    }
+
+    components.push({ type: 10, content: '-# Select the **Pulls Done** for each banner below. Reorder with the select + ▲/▼ near the bottom.' });
+
+    const totalPages = Math.max(1, Math.ceil(basket.banners.length / MAX_BANNERS_PER_PAGE));
+    const bpage = Math.min(state.bpage || 0, totalPages - 1);
+    const start = bpage * MAX_BANNERS_PER_PAGE;
+    const pageIndices = basket.banners.map((_, i) => i).slice(start, start + MAX_BANNERS_PER_PAGE);
+
+    components.push({ type: 10, content: `## BASKET LIST\n${pageIndices.map(i => `${emojis.smallDot} #${i + 1} — ${DRAW_META[basket.banners[i].drawKey].name} (${basket.banners[i].pullsDone}/${pullCount(basket.region, basket.banners[i].drawKey) ?? '?'})`).join('\n')}` });
+    for (const i of pageIndices) components.push(bannerPullsRow(state, basket, i));
+
+    if (totalPages > 1) components.push(pageNavRow({ ...state, bpage }, basket.banners));
+    if (usedTypes(basket.banners).length) components.push(addAnotherRow(state, basket));
+
+    if (basket.banners.length > 1) {
+        components.push({ type: 14, spacing: 1, divider: true });
+        components.push(reorderFocusRow(state, basket));
+        components.push(reorderButtonsRow(state, basket));
+    }
+
+    components.push({ type: 14, spacing: 1, divider: true });
+    components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
+    components.push(bottomNavRow(state));
+    return { type: 17, accent_color: accentColor, components };
+}
+
+// Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
+function buildDrawInfoPanel(basket, accentColor) {
+    const { buildDrawEntries } = require('./drawprices');
+    const types = usedTypes(basket.banners);
+    const components = [{ type: 10, content: `## ${emojis.calculator} Draw Info` }, { type: 14, spacing: 2, divider: true }];
+    if (!types.length) {
+        components.push({ type: 10, content: 'Your basket is empty — nothing to show yet.' });
+    } else {
+        const blocks = buildDrawEntries(basket.region, types);
+        for (const set of blocks) for (const block of set) components.push({ type: 10, content: block });
+    }
+    return { type: 17, accent_color: accentColor, components };
+}
+
+function buildHelpPanel(accentColor) {
+    const components = [
+        { type: 10, content: `## ${emojis.calculator} How the calculator works` },
+        { type: 14, spacing: 2, divider: true },
+        { type: 10, content: [
+            '**Basket** — a flat list of banners you\'re tracking. There is no "quantity" — three Mythic Weapon banners are three separate rows, each with its own progress.',
+            '**Banner** — one entry in the basket: a draw type plus how many pulls you\'ve done on it.',
+            '**Priority** — the ORDER banners appear in. It is never sorted for you; reorder with the select + ▲/▼ on the Basket page.',
+            '**Simplify / Show Breakdown** — collapses or expands the full per-package math. Simplify still shows the total CP needed and the cheapest package.',
+            '**Save** — naming your basket (via the Rename button) is what keeps it: an unnamed basket is cleared automatically after 30 days.'
+        ].join('\n\n') }
+    ];
+    return { type: 17, accent_color: accentColor, components };
+}
+
+// ==========================================
+// DISPATCH
+// ==========================================
+function buildCalculatorPanel(state, basket, accentColor, options = {}) {
+    if (!basket) return buildMissingBasketPanel(state, options.savedBaskets, accentColor);
+    return state.page === 1 ? buildBasketPage(state, basket, accentColor) : buildCostPage(state, basket, accentColor, options);
 }
 
 // ==========================================
 // SLASH ENTRY
 // ==========================================
-// The options exist so the panel is not the ONLY way in. Someone who already knows their situation types it once -- `/draw calculator draw:… pulls:3 balance:3000` -- and the first thing they see is the answer, with the controls underneath for adjusting it. Every option is optional, so the bare command still opens on the landing state.
 async function execute(interaction) {
     const userId = interaction.user.id;
     const prefs = await UserPreference.findOne({ discordId: userId });
+    const basketStore = require('../utils/drawBasketStore');
 
     let argPrivate = null;
-    let notice = null;
-    const state = defaultState();
-
-    if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') state.region = prefs.defaultRegionMode;
-    else if (prefs?.defaultRegion) state.region = prefs.defaultRegion;
+    const state = { ...defaultState(), authorId: userId };
+    let region = 'region_10';
+    if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
+    else if (prefs?.defaultRegion) region = prefs.defaultRegion;
 
     if (interaction.isChatInputCommand()) {
         const visibilityChoice = interaction.options.getString('visibility');
         argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
-
         const regionOption = interaction.options.getString('region');
-        if (regionOption && REGION_ORDER.includes(regionOption)) state.region = regionOption;
-
-        const drawOption = interaction.options.getString('draw');
-        if (drawOption && DRAW_META[drawOption]) state.drawKey = drawOption;
-
-        const balanceOption = interaction.options.getInteger('balance');
-        if (balanceOption !== null && balanceOption >= 0) state.balance = balanceOption;
-
-        const pullsOption = interaction.options.getInteger('pulls');
-        if (pullsOption !== null && pullsOption >= 0) {
-            const total = pullCount(state.region, state.drawKey);
-            // Clamping silently is the anti-pattern the old modal validation existed to avoid -- so it clamps AND says so, in the panel itself, where the corrected figure sits right beside the note.
-            if (total !== null && pullsOption > total) {
-                state.pullsDone = total;
-                notice = `You asked for ${pullsOption} pulls, but **${DRAW_META[state.drawKey].name}** only has ${total} — showing ${total}.`;
-            } else {
-                state.pullsDone = pullsOption;
-            }
-        }
+        if (regionOption && REGION_ORDER.includes(regionOption)) region = regionOption;
     }
 
-    // Reuses the shared "Seasonal Content" toggle (Option A, design-decisions.md) -- the calculator is part of the same /draw family as /draw prices, not a new visibility axis of its own.
     const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
     if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-    const liveDoubleCPEntry = await findLiveDoubleCPEntry();
-    const containerPayload = buildCalculatorPanel(clampStateToDraw(state), accentColor, {
-        liveDoubleCPEntry,
-        currency: prefs?.cpCurrency || 'USD',
-        client: interaction.client,
-        notice
-    });
-    const globalNavigationRow = buildGlobalNavRow('nav_prices');
+    const savedBaskets = await basketStore.listForUser(userId);
+    const containerPayload = buildLandingPanel(state, savedBaskets, accentColor, { region });
 
-    return sendV2Payload(interaction, withShareButton([containerPayload, globalNavigationRow], isEphemeral));
+    return sendV2Payload(interaction, withShareButton([containerPayload], isEphemeral));
 }
 
 module.exports = {
-    encodeState, decodeState, defaultState, clampStateToDraw,
-    buildCalculatorPanel, entryFor, regionsWithData, progressBar, shortfallFor,
+    encodeState, decodeState, defaultState, clampFocus,
+    buildCalculatorPanel, buildLandingPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel,
+    buildCostBlock, entryFor, regionsWithData, progressBar, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute
 };

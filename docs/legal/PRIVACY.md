@@ -7,7 +7,7 @@ published: true
 # Privacy Policy — Dioreo
 
 **Effective date:** on the Dioreo v3 release — this version is not yet in effect
-**Version:** 1.13 (pending)
+**Version:** 1.14 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and this documentation website (the "Site")
 
 
@@ -107,6 +107,19 @@ The Bot's owner and any admin granted access can sign into a browser-based manag
 **The session id itself is never stored** — only a one-way hash of it. A database compromise cannot be turned into a working login. The device/browser string is a category of data this policy has not previously described; it identifies your browser and operating system, not you personally, and exists solely so the owner can distinguish one active session from another on the Access page (e.g. "which of my two logged-in sessions is this").
 
 **Neither record is linked to your `UserPreference` record and neither is used to personalise anything.** They exist purely to run the portal's own login and staging mechanics for a small number of admins. If you would rather your portal session record were not stored, §9 applies to it in the same way as to everything else described in this policy. You can read both schemas yourself: [`models/PortalSession.js`](../../models/PortalSession.js) and [`models/Changeset.js`](../../models/Changeset.js).
+
+### 2.1d Saved draw calculator baskets
+
+`/draw calculator` can save a **basket** — a named, ordered list of banners you're tracking progress on, so you can close the panel and come back to it later instead of starting over. **A record is only created once you actually save a basket** (an unsaved session in the calculator stores nothing).
+
+| Data | What it is | Why we have it |
+|---|---|---|
+| **Discord user ID** | The owner of the basket | So only you (or, per §2.1's admin override, the owner) can load, edit or delete it |
+| **Basket name** | An optional label you give it | Lets you tell two saved baskets apart on the calculator's landing page |
+| **Banner list** | Which draws you're tracking, in the order you put them, and how many pulls you've done on each | This IS the basket — the whole point of saving one |
+| **Region, CP balance, upgrade toggle, 2X entitlements** | The same settings the calculator already asks for on a single draw | Recomputes the cost breakdown and purchase recommendation without re-entering them every time |
+
+**An unnamed basket is temporary — it is automatically deleted 30 days after creation.** Naming it exempts it from that expiry, on the theory that giving something a name is the signal you intend to keep coming back to it. Deleting a basket yourself (via the calculator's own delete control) removes it immediately, no 30-day wait required. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
 
 ### 2.2 About the colour data specifically
 
@@ -243,7 +256,7 @@ Under **PIPEDA**, our basis is your **implied consent**: you install the Bot and
 | Provider | What it handles | Where |
 |---|---|---|
 | **Discord Inc.** | The platform itself — your ID, your interactions | Per [Discord's Privacy Policy](https://discord.com/privacy) |
-| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, and the portal session / staged-change records described in §2.1c** | **🇨🇦 Azure Canada Central (Toronto)** |
+| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, the portal session / staged-change records described in §2.1c, and the saved draw calculator baskets described in §2.1d** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
 | **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
 | **Google Cloud Error Reporting** (Google LLC) | Groups repeated errors from those same server logs — no new data, 30-day retention | 🇺🇸 United States |
@@ -308,6 +321,7 @@ Given the data involved is a user ID and colour preferences, the practical risk 
 | **`/manage` change log entries** (§2.1b) | **180 days**, or the newest 5,000 entries, whichever is reached first — then automatically deleted |
 | **Web admin portal session** (§2.1c) | **12 hours**, then automatically deleted (Mongo TTL) |
 | **Staged change (Changeset)** (§2.1c) | **Kept while in progress; an abandoned draft is automatically deleted after 30 days.** A committed set is not deleted by this rule — the resulting change is recorded exactly as any other `/manage` change log entry, above |
+| **Saved draw calculator basket** (§2.1d) | **Unnamed: automatically deleted 30 days after creation. Named: kept until you delete it or ask us to** — see §9 |
 | **Interaction records** (§2.4b) | **Kept indefinitely**, together with daily summaries. Deleted on request — see §9 |
 | **Search-term summary table** (§2.4b) | **Kept indefinitely.** It contains no user identifier of any kind, so there is nothing in it to delete on request |
 | **Startup records** | **Kept indefinitely.** They contain nothing about any user |
@@ -530,6 +544,8 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 **Administrative records, described in §2.1b:** an admin allowlist entry (the Discord user ID of someone the Bot's owner has granted admin access, which pages/commands they can use, an optional note, and who granted it), an announcement record (text, when it was posted, who posted it, when it expires), and a change log entry (which admin performed a data-entry action through `/manage`, what kind of action, which section of data, and a short description of the change — retained 180 days or the newest 5,000 entries, whichever comes first, then automatically deleted, same as the alert log in §2.4). All three are administrative tooling rather than something built from your own use of the Bot — see [`models/AdminUser.js`](../../models/AdminUser.js), [`models/Announcement.js`](../../models/Announcement.js), and [`models/ChangeLog.js`](../../models/ChangeLog.js).
 
+**Saved draw calculator baskets, described in §2.1d:** a discordId, an optional name, the ordered banner list (each entry a `drawKey` and a pull count), region, CP balance, upgrade toggle, and 2X-entitlement selections. Created only when you press Save on the calculator. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
+
 **Web admin portal records, described in §2.1c:** a portal session (a hashed session id, your Discord user ID, sign-in/last-active timestamps, and a device/browser string) and, if you have staged an edit and not yet committed or abandoned it, a changeset (your Discord user ID, which part of the portal it belongs to, and the pending edits). Both exist only for the small number of people with admin access, and neither is linked to your `UserPreference` record.
 
 
@@ -538,6 +554,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 | Version | Date | Change |
 |---|---|---|
+| **1.14** *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` gained saved, named baskets — new §2.1d describes the record, listed in Appendix A, named in §5's MongoDB Atlas row, and given retention in §7 (unnamed: 30-day TTL; named: kept until deleted). **No new recipient, no new category of data** — it's the same discordId/region/balance/entitlement shape §2.1 already describes, plus an ordered banner list, stored so a session can be resumed instead of starting over. |
 | **1.13** *(pending)* | on the v3 release | **Not yet in effect.** A browser-based admin portal (`portal.dioreo.app`) was added, reachable only by the owner and granted admins. New §2.1c describes its two records — a **portal session** (hashed session id, Discord user ID, timestamps, device/browser string) and a **staged change (Changeset)**. Named in §5's MongoDB Atlas row and §7's retention table: sessions expire after 12 hours, abandoned staged changes after 30 days. **No Discord token is retained**, and the device/browser string is a new category of data, described in full in §2.1c. **No new recipient.**
 | **1.12** *(pending)* | on the v3 release | **Not yet in effect**, and takes effect alongside 1.11. The Bot now keeps its own **interaction records** — one per command, button, dropdown or search — described in new §2.4b, listed in Appendix A, named in §5's MongoDB Atlas row, and given **indefinite** retention in §7. **A genuine expansion of what is collected, not a clarification.** You are identified by a **keyed hash (HMAC-SHA256)**, never by your Discord ID; **no third party is involved and there is no new recipient**; and it is **never used to personalise anything for any individual**. The "no analytics/tracking/profiling" statements in §0, §3 and Appendix C are made **precise** rather than removed. Typed search text is recorded once per search, lowercased and capped at 100 characters — this is command input, **not** message content, and §3's Message Content claim is untouched. The same change **deleted** the `RenderTiming` log, migrating its rows with the Discord ID replaced by the keyed hash: this release removes a store of raw user IDs while adding one that never holds them. |
 | **1.11** *(pending)* | on the v3 release | **Not yet in effect.** The Bot will read your Discord **server profile** in servers you have set one for, so §2.2 describes it and Appendix A names the ten new cached colour fields. **No new kind of data, no new recipient, no longer retention** — they hold the same derived hex code and asset hash the existing colour fields hold, kept separately so a server-profile colour and an ordinary-profile colour do not overwrite one another. The same release adds `/admin`, so new §2.1a and Appendix A describe the separate `GuildSettings` record it creates — keyed to a **server** ID, its only personal data being the Discord user ID of whoever last saved a change. **No new recipient, no longer retention**, and a server rule can only make the Bot quieter, never louder than a user asked for. The same release adds an **admin allowlist**, **announcement**, and **change log** record — see the matching row in §12.1's revision history for the full description; the change log entries are retained 180 days/5,000 rows, the only one of the three not kept indefinitely. |

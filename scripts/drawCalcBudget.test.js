@@ -1,303 +1,356 @@
-// scripts/drawCalcBudget.test.js  /draw calculator's ONE panel: component budget, and the render invariants proven by reading the actual output rather than trusting a structural pass. Run: `node scripts/drawCalcBudget.test.js` (also via `npm test`).
+// scripts/drawCalcBudget.test.js -- /draw calculator's SAVED-BASKET redesign: component budget, render invariants proven by reading actual output, and the handful of handler-level behaviours that can't be proven from render alone (author lock, two-step confirms). Run: `node scripts/drawCalcBudget.test.js` (also via `npm test`).
 //
-// ⚠️ FOURTH PASS, 2026-08-26 17:29 EDT -- rewritten wholesale for the rebuild against Harkirat's own mockup (see commands/drawCalculator.js's header). The Section/accessory structure the third pass's tests pinned is gone; everything here targets plain Text Displays + Action Rows, matching what actually ships now.
-//
-// ⚠️ WHY THE BUDGET HALF EXISTS. Components V2 allows 40 components per message, COUNTED RECURSIVELY. Exceeding it is a hard COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED send failure -- a real production crash this repo has already taken once (see .claude/rules/rendering-and-ui.md). The count asserted here includes the global nav row and the share button, because those are siblings in the same message and Discord counts the message.
-//
-// ⚠️ WHY THE INVARIANTS EXIST. A structural/component-count check cannot see WHAT a panel says -- it was a live defect here (the literal word "null" rendered for a draw with no data at the selected region, three months, six green suites) that made rendering-and-reading the standing practice for this file. Every case below reads the actual rendered content.
+// ⚠️ FIFTH PASS, 2026-08-27 -- rewritten wholesale for docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md. Every case here targets the FLAT BANNER LIST model: there is no quantity, no goal select, no budget mode. Requirement 4 below is a FALSIFIER, not a smoke test -- it must be able to fail, per spec §11 and the plan's own audit log.
 const assert = require('assert');
-const {
-    defaultState, clampStateToDraw, buildCalculatorPanel, encodeState, decodeState,
-    entryFor, regionsWithData, progressBar, shortfallFor
-} = require('../commands/drawCalculator');
-const { DRAW_META, REGION_ORDER } = require('../commands/drawprices');
-const { pullCount } = require('../utils/drawCost');
-const { buildGlobalNavRow } = require('../utils/globalNav');
+const Module = require('module');
 
-let failed = 0;
-let passed = 0;
+const dc = require('../commands/drawCalculator');
+const { DRAW_META, REGION_ORDER } = require('../commands/drawprices');
+const { basketCost } = require('../utils/drawCost');
+
+let failed = 0, passed = 0;
 function t(name, fn) {
     try { fn(); passed++; console.log(`  PASS  ${name}`); }
     catch (err) { failed++; console.log(`  FAIL  ${name}\n        ${err.message}`); }
 }
+async function ta(name, fn) {
+    try { await fn(); passed++; console.log(`  PASS  ${name}`); }
+    catch (err) { failed++; console.log(`  FAIL  ${name}\n        ${err.message}`); }
+}
 
-const LIMIT = 40;
 const ACCENT = 2067038;
-const CLIENT = { commandIds: new Map() };
-// The same recursive count Discord applies: every component object, plus anything nested in `components` or `accessory`.
+const AUTHOR = '1139845545754632283';
 const countComponents = node => Array.isArray(node)
     ? node.reduce((n, x) => n + countComponents(x), 0)
     : (node && typeof node === 'object')
         ? 1 + countComponents(node.components || []) + (node.accessory ? countComponents(node.accessory) : 0)
         : 0;
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
-const messageCount = panel => countComponents([panel, buildGlobalNavRow('nav_prices'), SHARE_ROW]);
+const messageCount = panel => countComponents([panel, SHARE_ROW]);
 
 const texts = panel => panel.components.filter(c => c.type === 10).map(c => c.content);
 const allText = panel => texts(panel).join('\n');
 const rows = panel => panel.components.filter(c => c.type === 1);
 const buttons = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 2);
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
-const selectFor = (panel, verb) => selects(panel).find(s => s.custom_id.split('~')[1] === verb);
 const buttonLabelled = (panel, label) => buttons(panel).find(b => b.label === label);
-const render = (extra, opts) => buildCalculatorPanel(clampStateToDraw({ ...defaultState(), ...extra }), ACCENT, { currency: 'CAD', client: CLIENT, ...opts });
 
-console.log('\n/draw calculator -- component budget and what the panel actually says\n');
+function makeBasket(overrides = {}) {
+    return {
+        _id: '000000000000000000000001', name: null,
+        banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }],
+        region: 'region_10', balance: 0, includeUpgrades: false, entitlementMask: 0,
+        ...overrides
+    };
+}
+function state(overrides = {}) { return { ...dc.defaultState(), authorId: AUTHOR, ...overrides }; }
+function render(basket, stateOverrides = {}, opts = {}) {
+    return dc.buildCalculatorPanel(state(stateOverrides), basket, ACCENT, { currency: 'CAD', ...opts });
+}
+
+console.log('\n/draw calculator (saved baskets) -- component budget and what the panel actually says\n');
 
 // ==========================================
-// COMPONENT BUDGET
+// COMPONENT BUDGET -- swept across basket size x page x detail x region
 // ==========================================
-t('every draw x region x goal x detail-state combination stays under the cap', () => {
-    let worst = 0;
-    let worstLabel = '';
-    for (const drawKey of Object.keys(DRAW_META)) {
-        for (const region of REGION_ORDER) {
-            const total = pullCount(region, drawKey);
-            const goals = total === null ? [{ target: 'F', targetValue: 0 }] : [
-                { target: 'F', targetValue: 0 },
-                { target: 'P', targetValue: total },
-                { target: 'B', targetValue: 5000 }
-            ];
-            for (const goal of goals) {
-                for (const detail of [false, true]) {
-                    const panel = render({ drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail, ...goal },
-                        { liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) } });
-                    const n = messageCount(panel);
-                    if (n > worst) { worst = n; worstLabel = `${drawKey}/${region}/${goal.target}/detail:${detail}`; }
-                    assert.ok(n <= LIMIT, `${drawKey} at ${region} (${goal.target}, detail:${detail}) rendered ${n} components`);
-                }
+t('every basket size (1-9 banners, one per real draw type) x page x detail stays under the cap', () => {
+    const keys = Object.keys(DRAW_META);
+    let worst = 0, worstLabel = '';
+    for (let size = 1; size <= keys.length; size++) {
+        const banners = keys.slice(0, size).map(k => ({ drawKey: k, pullsDone: 1 }));
+        for (const page of [0, 1]) {
+            for (const detail of [false, true]) {
+                const basket = makeBasket({ banners, includeUpgrades: true, entitlementMask: 0b111111 });
+                const panel = render(basket, { page, detail }, { liveDoubleCPEntry: { isDoubleCP: true, endDate: new Date(Date.now() + 86400000) } });
+                const n = messageCount(panel);
+                if (n > worst) { worst = n; worstLabel = `size:${size}/page:${page}/detail:${detail}`; }
+                assert.ok(n <= 40, `size ${size} page ${page} detail ${detail} rendered ${n} components`);
             }
         }
     }
-    console.log(`        worst across the whole matrix: ${worst}/${LIMIT} (${worstLabel})`);
+    console.log(`        worst across the whole matrix: ${worst}/40 (${worstLabel})`);
 });
 
 t('no action row ever exceeds Discord\'s five components', () => {
-    for (const drawKey of Object.keys(DRAW_META)) {
+    const keys = Object.keys(DRAW_META).slice(0, 6);
+    const banners = keys.map(k => ({ drawKey: k, pullsDone: 2 }));
+    for (const page of [0, 1]) {
+        const panel = render(makeBasket({ banners, includeUpgrades: true, entitlementMask: 0b111111 }), { page }, { liveDoubleCPEntry: { isDoubleCP: true } });
+        for (const row of rows(panel)) assert.ok(row.components.length <= 5, `page ${page} rendered a row of ${row.components.length}`);
+    }
+});
+
+t('every custom_id fits Discord\'s 100-character cap, even at a 9-banner basket', () => {
+    const banners = Object.keys(DRAW_META).map(k => ({ drawKey: k, pullsDone: 5 }));
+    for (const page of [0, 1]) {
+        const panel = render(makeBasket({ banners, includeUpgrades: true, entitlementMask: 0b111111, balance: 999999 }), { page, detail: true, focus: 3 }, { liveDoubleCPEntry: { isDoubleCP: true } });
+        for (const c of [...selects(panel), ...buttons(panel)]) {
+            if (!c.custom_id) continue;
+            assert.ok(c.custom_id.length <= 100, `custom_id ${c.custom_id} is ${c.custom_id.length} chars`);
+        }
+    }
+});
+
+// ==========================================
+// NO NULL / NaN / UNDEFINED / NEGATIVE, ANYWHERE -- swept, not sampled
+// ==========================================
+t('no rendered string ever contains the literal null/NaN/undefined across a real sweep', () => {
+    const keys = Object.keys(DRAW_META);
+    for (let size = 1; size <= 5; size++) {
+        const banners = keys.slice(0, size).map((k, i) => ({ drawKey: k, pullsDone: i }));
         for (const region of REGION_ORDER) {
-            for (const detail of [false, true]) {
-                const panel = render({ drawKey, region, includeUpgrades: true, entitlementMask: 0b111111, detail }, { liveDoubleCPEntry: { isDoubleCP: true } });
-                for (const row of rows(panel)) {
-                    assert.ok(row.components.length <= 5, `${drawKey} at ${region} (detail:${detail}) rendered a row of ${row.components.length}`);
-                }
+            for (const page of [0, 1]) {
+                const panel = render(makeBasket({ banners, region, balance: 500 }), { page, detail: true });
+                const body = JSON.stringify(panel);
+                assert.ok(!/\bnull\b/.test(body.replace(/"name":null/g, '')), `region ${region} size ${size} page ${page} leaked null`);
+                assert.ok(!/\bNaN\b/.test(body), `region ${region} size ${size} page ${page} leaked NaN`);
+                assert.ok(!/\bundefined\b/.test(body), `region ${region} size ${size} page ${page} leaked undefined`);
             }
         }
     }
 });
 
-t('every custom_id the panel emits fits Discord\'s 100-character cap', () => {
-    const panel = render({ drawKey: 'mythicWeapon', pullsDone: 9, target: 'P', targetValue: 10, balance: 999999, entitlementMask: 0b111111, includeUpgrades: true, detail: true }, { liveDoubleCPEntry: { isDoubleCP: true } });
-    for (const c of [...selects(panel), ...buttons(panel)]) {
-        assert.ok(c.custom_id.length <= 100, `custom_id ${c.custom_id} is ${c.custom_id.length} chars`);
+t('no rendered CP figure is ever negative', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }];
+    const panel = render(makeBasket({ banners, balance: 999999999, detail: true }));
+    const body = allText(panel);
+    const figures = [...body.matchAll(/-?[\d,]+ CP/g)].map(m => Number(m[0].replace(/[^0-9-]/g, '')));
+    for (const n of figures) assert.ok(n >= 0, `found a negative CP figure: ${n}`);
+});
+
+// ==========================================
+// LANDING / EMPTY / MISSING BASKET
+// ==========================================
+t('a fresh /draw calculator opens on landing -- no basket, draw picker only', () => {
+    const panel = dc.buildLandingPanel(state(), [], ACCENT, { region: 'region_10' });
+    assert.ok(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), 'landing must render the draw picker');
+    assert.strictEqual(selects(panel).some(s => s.custom_id.split('~')[1] === 'bpulls'), false);
+});
+
+t('a MISSING basket (deleted/expired) renders a real notice, never throws, and offers the draw picker back', () => {
+    const panel = dc.buildCalculatorPanel(state({ basketId: '000000000000000000000099' }), null, ACCENT, { savedBaskets: [] });
+    assert.ok(/no longer exists/i.test(allText(panel)), 'missing-basket panel must say so in plain language');
+    assert.ok(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), 'missing-basket panel must still offer a way to start fresh');
+});
+
+t('an EMPTY basket (0 banners, e.g. after Reset) renders the landing look but stays bound to its own basketId', () => {
+    const basket = makeBasket({ banners: [], name: 'Kept Name' });
+    const panel = render(basket, { basketId: basket._id }, { savedBaskets: [] });
+    const drawSelect = selects(panel).find(s => s.custom_id.split('~')[1] === 'draws');
+    assert.ok(drawSelect, 'an empty basket must still show the draw picker');
+    assert.strictEqual(drawSelect.custom_id.split('~')[2], basket._id, 'picking a draw from an empty-but-named basket must add to THAT basket, not create a new one');
+});
+
+// ==========================================
+// PER-BANNER COST -- flat list, no quantity
+// ==========================================
+t('3 banners at 7/3/0 costs strictly less than 3 fresh and strictly more than 1 fresh', () => {
+    const region = 'region_10';
+    const fresh1 = basketCost(region, [{ drawKey: 'mythicWeapon', pullsDone: 0 }], false).total;
+    const fresh3 = basketCost(region, [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }], false).total;
+    const mixed3 = basketCost(region, [{ drawKey: 'mythicWeapon', pullsDone: 7 }, { drawKey: 'mythicWeapon', pullsDone: 3 }, { drawKey: 'mythicWeapon', pullsDone: 0 }], false).total;
+    assert.ok(mixed3 < fresh3, `mixed3 (${mixed3}) should be < fresh3 (${fresh3})`);
+    assert.ok(mixed3 > fresh1, `mixed3 (${mixed3}) should be > fresh1 (${fresh1})`);
+});
+
+t('upgrades multiply PER BANNER -- 3 mythic banners carry exactly 3 upgrades', () => {
+    const region = 'region_10';
+    const { perBanner } = basketCost(region, [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }], true);
+    assert.strictEqual(perBanner.filter(b => b.upgrade !== null).length, 3);
+});
+
+t('an unpriced banner (no data at this region) is EXCLUDED from the total and reported, never silently dropped or estimated', () => {
+    const { total, perBanner } = basketCost('region_20', [{ drawKey: 'doubleEpicCharacters', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }], false);
+    assert.strictEqual(perBanner[0].priced, false, 'doubleEpicCharacters has no region_20 data');
+    assert.strictEqual(total, perBanner[1].cost, 'the unpriced banner must contribute 0, not be silently dropped from perBanner');
+    const panel = render(makeBasket({ region: 'region_20', banners: [{ drawKey: 'doubleEpicCharacters', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }));
+    assert.ok(/excluded/i.test(allText(panel)), 'the panel must NAME the excluded banner, not silently omit it');
+});
+
+// ==========================================
+// 🔴 NO ALGORITHMIC REORDERING -- must be able to FAIL (spec §11 req 4)
+// ==========================================
+t('priority is the ARRAY ORDER, never a cheapest-first sort -- proven with an order that provably differs from cost order', () => {
+    // Deliberately most-expensive-first: mythicWeapon@0 pulls costs more than mythicWeapon@9 pulls. A cheapest-first sort would put the 9-pulls banner FIRST; the render must not.
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 9 }];
+    const { perBanner } = basketCost('region_10', banners, false);
+    assert.ok(perBanner[0].cost > perBanner[1].cost, 'fixture invariant broken -- banner 0 must cost MORE than banner 1 for this to be a real falsifier');
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const basketListText = texts(panel).find(c => c.startsWith('## BASKET LIST'));
+    const firstLine = basketListText.split('\n')[1];
+    assert.ok(firstLine.includes('#1') && firstLine.includes('0/10'), 'banner #1 in the listing must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
+});
+
+// ==========================================
+// PAGE 2 -- one dropdown per banner, banner-numbered options
+// ==========================================
+t('every pulls-done dropdown option carries its banner NUMBER, so a chosen value stays attributable', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }];
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const bpullsSelects = selects(panel).filter(s => s.custom_id.split('~')[1] === 'bpulls');
+    assert.strictEqual(bpullsSelects.length, 2);
+    assert.ok(bpullsSelects[0].placeholder.startsWith('#1 —'));
+    assert.ok(bpullsSelects[1].placeholder.startsWith('#2 —'));
+    assert.ok(bpullsSelects[0].options.every(o => o.label.startsWith('#1 —')), 'every OPTION (not just the placeholder) must carry its banner number');
+});
+
+t('setting up to 3 banners costs at most 4 taps -- one dropdown click per banner, plus the initial add', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }];
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const bpullsSelects = selects(panel).filter(s => s.custom_id.split('~')[1] === 'bpulls');
+    assert.strictEqual(bpullsSelects.length, 3, 'all 3 banners must have their OWN dropdown visible at once -- no focus pointer, no pagination hiding them at this size');
+});
+
+t('paginates the banner list at 5 per page, not because of the component budget (9 fit) but for readability', () => {
+    const banners = Object.keys(DRAW_META).slice(0, 7).map(k => ({ drawKey: k, pullsDone: 0 }));
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const bpullsSelects = selects(panel).filter(s => s.custom_id.split('~')[1] === 'bpulls');
+    assert.strictEqual(bpullsSelects.length, 5, '7 banners must show exactly 5 on the first page');
+    assert.ok(buttons(panel).some(b => /Page 1\//.test(b.label)), 'a pagination indicator must render when there is more than one page');
+});
+
+t('a NEW banner starts at 0 pulls -- no inherited default from a sibling banner of the same type', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 7 }];
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const addMore = selects(panel).find(s => s.custom_id.split('~')[1] === 'addmore');
+    assert.ok(addMore, 'a type already in the basket must be offered via + Add another');
+    assert.ok(addMore.options[0].description.includes('0 pulls'), 'the option copy must say the new banner starts at 0, never inheriting the existing 7');
+});
+
+// ==========================================
+// TWO-STEP CONFIRMS -- Reset and Delete
+// ==========================================
+t('Reset is two-step: armed state shows Danger style + "click again", unarmed shows the plain button', () => {
+    const basket = makeBasket();
+    const plain = buttonLabelled(render(basket), 'Reset');
+    assert.ok(plain && plain.style !== 4, 'unarmed Reset must not be Danger-styled');
+    const armed = buttonLabelled(render(basket, { verb: 'resetarm' }), 'Reset — click again');
+    assert.ok(armed && armed.style === 4, 'armed Reset must be Danger-styled and re-labelled');
+});
+
+t('Delete Basket is two-step the same way', () => {
+    const basket = makeBasket();
+    const plain = buttonLabelled(render(basket), 'Save'); // unnamed basket -> button reads "Save"
+    assert.ok(plain, 'an unnamed basket\'s manage row must read Save, not Rename');
+    const armedDelete = buttonLabelled(render(basket, { verb: 'delarm' }), 'Delete Basket — click again');
+    assert.ok(armedDelete && armedDelete.style === 4);
+});
+
+t('a NAMED basket\'s manage row reads Rename, not Save', () => {
+    const named = buttonLabelled(render(makeBasket({ name: 'My Push' })), 'Rename');
+    assert.ok(named);
+});
+
+// ==========================================
+// REGION SWITCHING PRESERVES PROGRESS
+// ==========================================
+t('region buttons never touch banner progress -- only region itself changes on the customId path', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 6 }];
+    const panel = render(makeBasket({ banners, region: 'region_10' }));
+    const regionButtons = buttons(panel).filter(b => b.custom_id && b.custom_id.split('~')[1] === 'region');
+    assert.strictEqual(regionButtons.length, 3);
+    const target20 = regionButtons.find(b => b.custom_id.includes('~r20'));
+    assert.ok(target20, 'a region button must encode its OWN target region, distinct from the basket\'s current one');
+});
+
+// ==========================================
+// SHARED COPY IS A SNAPSHOT -- Task 10
+// ==========================================
+(async () => {
+await ta('sharing a calculator panel strips EVERY interactive component, keeps every Text Display', async () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
+    const panel = render(makeBasket({ banners }), { basketId: '000000000000000000000001' });
+    assert.ok(buttons(panel).length + selects(panel).length > 0, 'fixture must actually have controls, or stripping proves nothing');
+    const textCountBefore = texts(panel).length;
+
+    const v2Path = require.resolve('../utils/sendV2Payload');
+    const originalV2 = require.cache[v2Path];
+    let sentComponents = null;
+    require.cache[v2Path] = new Module(v2Path, null);
+    require.cache[v2Path].filename = v2Path;
+    require.cache[v2Path].loaded = true;
+    require.cache[v2Path].exports = { sendV2Payload: async (interaction, components) => { sentComponents = components; } };
+    delete require.cache[require.resolve('../handlers/share')];
+    try {
+        const { handleShareInteraction } = require('../handlers/share');
+        const fakeInteraction = {
+            customId: 'share_public',
+            message: { components: [panel], embeds: [], flags: { bitfield: 32768 | 64 } },
+            deferReply: async () => {}
+        };
+        const handled = await handleShareInteraction(fakeInteraction);
+        assert.strictEqual(handled, true);
+        const sentButtons = sentComponents.flatMap(c => (c.type === 17 ? c.components : [c])).filter(c => c.type === 1);
+        assert.strictEqual(sentButtons.length, 0, 'a shared calculator snapshot must carry ZERO action rows');
+        const sentTexts = sentComponents[0].components.filter(c => c.type === 10);
+        assert.strictEqual(sentTexts.length, textCountBefore, 'every Text Display (the actual cost breakdown) must survive the strip -- only controls are removed');
+    } finally {
+        require.cache[v2Path] = originalV2;
+        delete require.cache[require.resolve('../handlers/share')];
     }
 });
 
 // ==========================================
-// LANDING STATE
+// AUTHOR LOCK -- resolvePanelActor wiring (handler-level, stubbed)
 // ==========================================
-t('a fresh /draw calculator opens on the LANDING state -- no draw picked, no number computed', () => {
-    assert.strictEqual(defaultState().drawKey, null, 'defaultState() must not pre-pick a draw');
-    const panel = render({});
-    assert.ok(!/null/i.test(JSON.stringify(panel)), 'landing must never leak the literal word null');
-    assert.ok(!/CP\*\*/.test(allText(panel)), 'no CP figure should be computed before a draw is chosen');
-    const draw = selectFor(panel, 'draw');
-    assert.ok(draw, 'the draw select must render on landing');
-    assert.ok(!draw.options.some(o => o.default), 'no option may carry default:true on landing -- that is what makes Discord show the real placeholder');
-    assert.strictEqual(selectFor(panel, 'pulls'), undefined, 'no pulls select on landing');
-    assert.strictEqual(selectFor(panel, 'goal'), undefined, 'no goal select on landing');
-});
-
-t('picking a draw from landing transitions cleanly into the live panel', () => {
-    const picked = decodeState(encodeState('draw', { ...defaultState(), drawKey: 'mythicWeapon' }));
-    assert.strictEqual(picked.drawKey, 'mythicWeapon');
-    const panel = buildCalculatorPanel(clampStateToDraw(picked), ACCENT, {});
-    assert.ok(selectFor(panel, 'pulls'), 'pulls select must appear once a draw is chosen');
-});
-
-t('a customId with no drawKey field at all decodes to landing, not to the first draw', () => {
-    const decoded = decodeState('calc~region~r10~p0~tF~v0~b0~u0~e0~x0');
-    assert.strictEqual(decoded.drawKey, null, 'a missing d field must decode to landing, never to DRAW_KEYS[0]');
-});
-
-// ==========================================
-// ABSENT DATA
-// ==========================================
-t('a draw with no data at the selected region never renders the word null', () => {
-    for (const region of ['region_20', 'region_30']) {
-        const panel = render({ drawKey: 'doubleEpicCharacters', region });
-        assert.ok(!/null/i.test(JSON.stringify(panel)), `${region} rendered a literal null`);
+await ta('the handler denies a third party and never touches the basket store', async () => {
+    const ctxPath = require.resolve('../utils/interactionContext');
+    const originalCtx = require.cache[ctxPath];
+    const storePath = require.resolve('../utils/drawBasketStore');
+    const originalStore = require.cache[storePath];
+    let storeTouched = false;
+    require.cache[ctxPath] = new Module(ctxPath, null);
+    require.cache[ctxPath].filename = ctxPath;
+    require.cache[ctxPath].loaded = true;
+    require.cache[ctxPath].exports = { resolvePanelActor: async () => null, buildSyntheticInteraction: (i) => i };
+    require.cache[storePath] = new Module(storePath, null);
+    require.cache[storePath].filename = storePath;
+    require.cache[storePath].loaded = true;
+    require.cache[storePath].exports = new Proxy({}, { get: () => (async () => { storeTouched = true; return null; }) });
+    delete require.cache[require.resolve('../handlers/drawCalc')];
+    try {
+        const { handleDrawCalcInteraction } = require('../handlers/drawCalc');
+        let replied = null;
+        const fakeInteraction = {
+            customId: dc.encodeState('bpulls', { basketId: '000000000000000000000001', page: 1, detail: false, focus: 0, authorId: '999999999999999999' }),
+            user: { id: AUTHOR },
+            isButton: () => false, isStringSelectMenu: () => true, isModalSubmit: () => false,
+            values: ['3'],
+            reply: async (opts) => { replied = opts; }
+        };
+        const handled = await handleDrawCalcInteraction(fakeInteraction);
+        assert.strictEqual(handled, true, 'an owned prefix must always report handled, even when denied');
+        assert.ok(replied && /isn't your calculator/i.test(replied.content), 'a denied click must get an explicit lock message');
+        assert.strictEqual(storeTouched, false, 'a denied click must never reach the basket store');
+    } finally {
+        require.cache[ctxPath] = originalCtx;
+        require.cache[storePath] = originalStore;
+        delete require.cache[require.resolve('../handlers/drawCalc')];
     }
 });
 
-t('the no-data panel names the regions that DO have the draw and renders no pull/goal select', () => {
-    const panel = render({ drawKey: 'doubleEpicCharacters', region: 'region_20' });
-    assert.ok(allText(panel).includes('10 CP'), 'no-data panel must name the region that DOES have the draw');
-    assert.strictEqual(selectFor(panel, 'pulls'), undefined);
-    assert.strictEqual(selectFor(panel, 'goal'), undefined);
-    assert.ok(selectFor(panel, 'draw'), 'the draw select must stay -- it is how you leave this draw');
-});
-
 // ==========================================
-// THE TOP SUMMARY BLOCK (reused from /draw prices)
+// STATE CODEC
 // ==========================================
-t('the top block matches buildDrawEntries verbatim, including the FULL-CAPS heading and the CP-Spent ladder', () => {
-    const panel = render({ drawKey: 'mythicWeapon' });
-    const body = allText(panel);
-    assert.ok(body.includes('MYTHIC WEAPON DRAW'), 'full-caps heading must appear, matching /draw prices\' own convention');
-    assert.ok(body.includes('**CP Spent:**'), 'the cumulative spend ladder must appear');
-    assert.ok(body.includes('5,700 CP Upgrade'), 'the Weapon Upgrade sub-block must appear unconditionally, regardless of the Upgrade toggle');
+t('every field round-trips through the codec, including the base-36 author id', () => {
+    const s = { basketId: '000000000000000000000042', page: 1, detail: true, focus: 3, authorId: '1139845545754632283', bpage: 2 };
+    const decoded = dc.decodeState(dc.encodeState('bpulls', s));
+    assert.strictEqual(decoded.basketId, s.basketId);
+    assert.strictEqual(decoded.page, 1);
+    assert.strictEqual(decoded.detail, true);
+    assert.strictEqual(decoded.focus, 3);
+    assert.strictEqual(decoded.authorId, s.authorId);
+    assert.strictEqual(decoded.bpage, 2);
 });
 
-t('the upgrade sub-heading gets its OWN card emoji, and only for the two draws that have one', () => {
-    const withCard = allText(render({ drawKey: 'mythicWeapon' }));
-    assert.ok(withCard.includes('<:MythicCard:1542258676889288794> **Weapon Upgrade**'), 'mythicWeapon must get the MythicCard emoji on its upgrade sub-heading');
-    const withCoin = allText(render({ drawKey: 'mythicCharacter' }));
-    assert.ok(withCoin.includes('<:MythicCoin:1542258675706757150> **Character Upgrade**'), 'mythicCharacter must get the MythicCoin emoji on its upgrade sub-heading');
-    const noUpgrade = allText(render({ drawKey: 'legendaryGunReactive' }));
-    assert.ok(!/MythicCard|MythicCoin/.test(noUpgrade), 'a draw with no upgrade step must carry neither emoji');
-});
-
-// ==========================================
-// COST BREAKDOWN -- collapsed vs expanded
-// ==========================================
-t('no lingering "-# > " blockquote marker anywhere -- replaced with a plain bullet per Harkirat\'s direct request', () => {
-    const panel = render({ drawKey: 'mythicCharacter', detail: true });
-    assert.ok(!/-# >/.test(allText(panel)), 'the blockquote-prefixed small-text label must be gone');
-    assert.ok(allText(panel).includes('• TYPE:'), 'replaced with the plain bullet marker');
-});
-
-t('the region sits on its own caption line under the heading, not folded into it, and the diamond emoji is gone', () => {
-    const panel = render({ drawKey: 'mythicWeapon', region: 'region_20', detail: true });
-    const body = allText(panel);
-    assert.ok(body.includes('## COST BREAKDOWN\n-# 20 CP REGION'), 'heading and region must be two separate lines');
-    assert.ok(!/COST BREAKDOWN — /.test(body), 'the region must not be appended to the heading itself');
-    assert.ok(!/🔹/.test(body), 'the diamond emoji must be gone entirely, not just from the field labels');
-});
-
-t('the PROGRESS pull-count fraction is bold-only, not boxed -- a multi-part value wraps mid-pill on mobile', () => {
-    const panel = render({ drawKey: 'mythicWeapon', pullsDone: 3, detail: true });
-    const body = allText(panel);
-    assert.ok(body.includes('**3 / 10 Pulls**'), 'the fraction must render bold-only');
-    assert.ok(!/`3 \/ 10 Pulls`/.test(body), 'the fraction must not be wrapped in a code span any more');
-});
-
-t('the reused /draw-prices summary renders as SEPARATE Text Displays, not one joined block -- that gap IS the vertical spacing', () => {
-    const panel = render({ drawKey: 'mythicCharacter' });
-    const summaryTexts = texts(panel).slice(1, 4); // title, then the 3 buildDrawEntries blocks
-    assert.strictEqual(summaryTexts.length, 3, 'mythicCharacter has an upgrade step, so buildDrawEntries returns 3 blocks -- each must be its own component');
-    assert.ok(summaryTexts[0].includes('MYTHIC CHARACTER'));
-    assert.ok(summaryTexts[2].includes('Character Upgrade'));
-});
-
-t('collapsed view shows PROGRESS + CP SPENT/NEEDED + one compact Cheapest line -- no TYPE, TOTAL PRICE, PENDING, BALANCE, Least Waste, or NOTE', () => {
-    const panel = render({ drawKey: 'mythicWeapon' });
-    const body = allText(panel);
-    assert.ok(/PROGRESS:/.test(body) && /CP SPENT:/.test(body), 'progress + spent/needed must always show');
-    assert.ok(/\*\*Cheapest:\*\*/.test(body), 'the compact one-line Cheapest must render');
-    assert.ok(!/• TYPE:/.test(body), 'TYPE is full-mode only -- it duplicates the top block, collapsed drops it');
-    assert.ok(!/• TOTAL PRICE:/.test(body), 'TOTAL PRICE is full-mode only');
-    assert.ok(!/> PENDING:/.test(body), 'PENDING is full-mode only');
-    assert.ok(!/> BALANCE:/.test(body), 'BALANCE is full-mode only');
-    assert.ok(!/Least Waste Method/.test(body), 'Least Waste is full-mode only');
-    assert.ok(!/NOTE: Estimate/.test(body), 'the NOTE disclaimer is full-mode only');
-    assert.ok(buttonLabelled(panel, 'Show Breakdown'), 'the toggle must read "Show Breakdown" while collapsed');
-});
-
-t('expanded view shows every field from the mockup: TYPE, TOTAL PRICE, PROGRESS, PENDING, BALANCE, CP SPENT/NEEDED, RECOMMENDED PACKAGE with per-item pricing and Left Over, and the NOTE', () => {
-    const panel = render({ drawKey: 'mythicWeapon', detail: true });
-    const body = allText(panel);
-    for (const needle of ['• TYPE:', '• TOTAL PRICE:', '• PROGRESS:', '• PENDING:', '• BALANCE:', '• CP SPENT:', 'Cheapest Method', 'Left Over:', 'NOTE: Estimate']) {
-        assert.ok(body.includes(needle), `expanded view is missing "${needle}"`);
-    }
-    assert.ok(!/\*\*Cheapest:\*\*/.test(body), 'the compact one-liner must not ALSO render -- one or the other, never both');
-    assert.ok(buttonLabelled(panel, 'Simplify'), 'the toggle must read "Simplify" once expanded, per Harkirat\'s own wording');
-});
-
-t('CP NEEDED includes the upgrade whenever the Upgrade toggle is on, in BOTH compact and full modes', () => {
-    const withUpgrade = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true }));
-    assert.ok(withUpgrade.includes('CP NEEDED: **`11,510 CP`**'), 'compact mode must still reflect the upgrade toggle');
-    const withUpgradeFull = allText(render({ drawKey: 'mythicWeapon', includeUpgrades: true, detail: true }));
-    assert.ok(withUpgradeFull.includes('CP NEEDED: **`11,510 CP`**'));
-    const without = allText(render({ drawKey: 'mythicWeapon' }));
-    assert.ok(without.includes('CP NEEDED: **`5,810 CP`**'), 'upgrade off must exclude it from CP NEEDED');
-});
-
-t('a balance that covers the goal shows the covered message and no RECOMMENDED PACKAGE at all', () => {
-    const panel = render({ drawKey: 'mythicWeapon', balance: 99999, detail: true });
-    const body = allText(panel);
-    assert.ok(/already covers this/.test(body));
-    assert.ok(!/RECOMMENDED PACKAGE/.test(body), 'no purchase recommendation should render when nothing needs buying');
-});
-
-t('the Left Over equation nets against the BALANCE-ADJUSTED shortfall, not the raw CP needed', () => {
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', balance: 4000, detail: true });
-    const total = pullCount(state.region, state.drawKey);
-    const shortfall = shortfallFor(state, total, null);
-    const panel = buildCalculatorPanel(state, ACCENT, { currency: 'CAD' });
-    assert.ok(allText(panel).includes(`${shortfall.toLocaleString('en-US')} CP Needed)`), 'Left Over\'s equation must use the netted shortfall, matching shortfallFor exactly');
-});
-
-// ==========================================
-// BUDGET MODE
-// ==========================================
-t('budget mode with no value yet prompts for Set Budget and computes nothing', () => {
-    const panel = render({ drawKey: 'mythicWeapon', target: 'B' });
-    assert.ok(/Press \*\*Set Budget\*\*/.test(allText(panel)));
-    assert.ok(buttonLabelled(panel, 'Set Budget'));
-});
-
-t('budget mode with a value set reaches the correct pull, and the ladder bolds exactly the pulls covered', () => {
-    const { reachableWithBudget } = require('../utils/drawCost');
-    const state = clampStateToDraw({ ...defaultState(), drawKey: 'mythicWeapon', target: 'B', targetValue: 5000, detail: true });
-    const reachable = reachableWithBudget(state.region, state.drawKey, 0, 5000).pullsReachable;
-    const panel = buildCalculatorPanel(state, ACCENT, {});
-    const line = texts(panel).find(c => c.includes('**Pulls from here:**'));
-    const bolded = line.split('**Pulls from here:**')[1].split('/').filter(s => s.trim().startsWith('**')).length;
-    assert.strictEqual(bolded, reachable, `budget reaches ${reachable} pulls but ${bolded} are bolded`);
-});
-
-// ==========================================
-// CONTROLS
-// ==========================================
-t('the goal select enumerates this draw\'s real pull count -- seven, not ten', () => {
-    const panel = render({ drawKey: 'sevenSpinLegendaryWeapon' });
-    assert.strictEqual(selectFor(panel, 'goal').options.length, 7 + 2, 'goal select does not match the draw\'s pull count');
-    assert.strictEqual(selectFor(panel, 'pulls').options.length, 7 + 1);
-});
-
-t('every option value round-trips through the state codec, including detail', () => {
-    const flipped = decodeState(encodeState('detail', { ...defaultState(), drawKey: 'mythicWeapon', pullsDone: 3, balance: 4000, detail: true }));
-    assert.strictEqual(flipped.detail, true);
-    assert.strictEqual(flipped.pullsDone, 3);
-    assert.strictEqual(flipped.balance, 4000);
-});
-
-t('switching to a shorter draw cannot leave an impossible pulls-done or target behind', () => {
-    const stale = { ...defaultState(), drawKey: 'sevenSpinLegendaryWeapon', pullsDone: 10, target: 'P', targetValue: 10 };
-    const clamped = clampStateToDraw(stale);
-    assert.strictEqual(clamped.pullsDone, 7);
-    assert.strictEqual(clamped.target, 'F');
-});
-
-t('the progress bar has exactly one cell per pull', () => {
-    assert.strictEqual([...progressBar(3, 10)].length, 10);
-    assert.strictEqual([...progressBar(99, 7)].length, 7);
-});
-
-t('entryFor and regionsWithData agree with DRAW_DATA itself', () => {
-    for (const drawKey of Object.keys(DRAW_META)) {
-        const expected = REGION_ORDER.filter(r => entryFor(r, drawKey));
-        assert.deepStrictEqual(regionsWithData(drawKey), expected);
-    }
-    assert.deepStrictEqual(regionsWithData('doubleEpicCharacters'), ['region_10']);
-});
-
-t('cheapest and least-waste CAN genuinely differ (so the panel branch that renders both is real, not dead code)', () => {
-    const { optimizePurchase } = require('../utils/cpPackages');
-    const result = optimizePurchase(11000, { currency: 'USD' });
-    const differ = result.leastWaste.totalCents !== result.cheapest.totalCents || result.leastWaste.leftoverCp !== result.cheapest.leftoverCp;
-    assert.ok(differ, 'expected 11000 to produce different cheapest/least-waste combos');
+t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rather than mis-decoding', () => {
+    const legacy = 'calc~setup~r10~d0~p3~tF~v0~b4000~u0~e0~x0';
+    const decoded = dc.decodeState(legacy);
+    // The old encoding's positional 'r10' lands in the new basketId slot -- an obviously-invalid Mongo id, which utils/drawBasketStore.js's load() rejects via its own try/catch (proven in scripts/drawBasketStore.test.js) rather than throwing here. This test proves decode itself never throws on stale input, which is the property this file owns.
+    assert.strictEqual(typeof decoded.basketId, 'string');
+    assert.doesNotThrow(() => dc.buildCalculatorPanel({ ...decoded, authorId: null }, null, ACCENT, { savedBaskets: [] }));
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed === 0 ? 0 : 1);
+})();

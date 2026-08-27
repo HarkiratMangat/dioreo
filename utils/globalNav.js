@@ -8,16 +8,21 @@ const NAV_ITEMS = [
 ];
 
 // `activeCustomId` gets style 4 (Danger/red) + disabled, matching the existing "locked to active state" convention; every other button stays style 2 (Secondary/gray).
-function buildGlobalNavRow(activeCustomId) {
+//
+// `overrides` (added 2026-08-26 23:03 EDT, the /draw prices <-> /draw calculator cross-link) lets a caller replace one slot's label/custom_id/emoji entirely -- keyed by the slot's ORIGINAL custom_id, so /draw prices can swap its own disabled-and-useless "Draw Prices" button for an active "Draw Calculator" link without a duplicate copy of NAV_ITEMS. An overridden item is never treated as the active/disabled slot, regardless of `activeCustomId` -- it points somewhere else now, so it must stay clickable.
+function buildGlobalNavRow(activeCustomId, overrides = {}) {
     return {
         type: 1,
         components: NAV_ITEMS.map(item => {
-            const isActive = item.custom_id === activeCustomId;
+            const override = overrides[item.custom_id];
+            const resolved = override ? { ...item, ...override } : item;
+            const isActive = !override && item.custom_id === activeCustomId;
             return {
                 type: 2,
                 style: isActive ? 4 : 2,
-                label: item.label,
-                custom_id: item.custom_id,
+                label: resolved.label,
+                custom_id: resolved.custom_id,
+                ...(resolved.emoji ? { emoji: resolved.emoji } : {}),
                 ...(isActive ? { disabled: true } : {})
             };
         })

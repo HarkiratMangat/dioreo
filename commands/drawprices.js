@@ -299,8 +299,18 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         indicatorCustomId: 'price_subpage_indicator'
     });
 
-    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws. ⚠️ "region button is the container's LAST item" stopped being true 2026-08-26 12:16 EDT -- the Cost Calculator row (below) is now last, added on Harkirat's explicit request after the nav bar's shared Draw Prices button turned out to hijack /draw calculator's own active state with no way back. Lazy-required (function-scoped, not top-level) to avoid a circular require: drawCalculator.js already requires THIS file's exports at module load.
-    const globalNavigationRow = buildGlobalNavRow('nav_prices');
+    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws. "region button is the container's LAST item" is true again as of 2026-08-26 23:05 EDT -- the in-container "Cost Calculator" row (which had briefly displaced it) is gone; the cross-link now lives entirely in the nav row below, via `overrides`. Lazy-required (function-scoped, not top-level) to avoid a circular require: drawCalculator.js already requires THIS file's exports at module load.
+    //
+    // Swaps the disabled-and-useless "Draw Prices" nav slot for an active "Draw Calculator" link (2026-08-26 23:05 EDT, Harkirat's explicit call: "instead of changing the 'draw prices' button to be in disabled state, instead change it to show 'Draw Calculator'"). Every other command's nav row still disables its own slot as usual -- this is the one place `overrides` is used, because /draw prices and /draw calculator are siblings under the same `draw` group and the disabled state was a dead end with no way back to the calculator.
+    //
+    // ⚠️ UPDATED for the 2026-08-27 saved-basket redesign -- there is no `region` field on the calculator's own state any more (it lives on the basket document, not the customId), so this can no longer carry a target region the way the single-draw panel's cross-link did. It lands on the calculator's plain LANDING state instead (verb 'page', no basketId, no author lock -- landing needs none) via encodeState/defaultState, which is still the exact shape drawCalculator.js's own handler already routes -- zero new handler code.
+    const globalNavigationRow = buildGlobalNavRow(null, {
+        nav_prices: {
+            label: 'Draw Calculator',
+            emoji: emojis.parseEmoji(emojis.calculator),
+            custom_id: require('./drawCalculator').encodeState('page', require('./drawCalculator').defaultState())
+        }
+    });
 
     // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the earlier "title divider stays spacing 1" exception from the same day's prior pass).
     const containerPayload = {
@@ -327,15 +337,6 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                     label: `${key.split('_')[1]} CP`,
                     emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
                 }))
-            },
-            {
-                type: 1,
-                // The other half of the cross-link (2026-08-26 12:16 EDT, Harkirat's explicit call: its own row under the region row, not folded into it). custom_id is the EXACT shape drawCalculator.js's own region-switch buttons produce (`calc~region~r<digits>~...`), so this needs no new routing anywhere -- handlers/router.js already sends any `calc~` id straight to handleDrawCalcInteraction, which already has a `region` verb that just renders. Lazy require, see the BUG FIX comment above for why.
-                components: [{
-                    type: 2, style: 2, label: 'Cost Calculator',
-                    emoji: emojis.parseEmoji(emojis.cp2),
-                    custom_id: require('./drawCalculator').encodeState('region', { ...require('./drawCalculator').defaultState(), region: regionKey })
-                }]
             }
         ]
     };
