@@ -255,7 +255,9 @@ const ROUTES = [
     }],
     // 🔴 THE PREVIEW HAS TO BE OF THE BUILD THAT WAS ASKED FOR. This returned ONE fixed card for every id, which is invisible on the single-row preview panel — one card, one selection, nothing to compare it against — and became obvious the moment Compare put two of them side by side: two chips reading ".50 GS" above two cards both reading "AK-47". A stub that answers the same thing to every question is a stub that cannot demonstrate the feature it is standing in for.
     [/^\/api\/armory\/preview/, (params) => {
-        const build = (FIX.builds || []).find((b) => String(b._id) === params.get('id'));
+        // 🔴 THE RAW FIXTURES CARRY `id`, NOT `_id` — armoryBuild() is what normalises them, and this route searched the un-normalised array. So `String(b._id)` was the string "undefined" for every build, matched the real ObjectId the component sends for none of them, and every single row fell through to the generic FIXTURE_CARD below. The Live Preview panel showed the same AK-47 card whichever build you opened, which is worse than not rendering: it renders, it looks right, and it is about a different weapon. Found 2026-08-27 by opening the panel and reading the card against the editor beside it.
+        const wanted = params.get('id');
+        const build = (FIX.builds || []).find((b) => String(b._id || b.id) === wanted);
         if (!build) return { card: FIXTURE_CARD };
         // The real route runs the bot's own buildLoadoutCard; this reshapes the fixture card's own components so the shape stays honest and only the fields that identify the build change.
         const card = JSON.parse(JSON.stringify(FIXTURE_CARD));
