@@ -270,11 +270,7 @@ function SeasonClock({ season, today }) {
 const fmtDay = (iso) => new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-// The eyebrow: three counts above the title, each a fact the page can act on. A zero is dimmed rather than hidden — "no flags" is information, and a row that changes length as numbers reach zero makes the reader re-find every other number.
-function Eyebrow({ live, staged, flags }) {
-    const cell = (n, k, cls) => html`<span><i class=${n === 0 ? 'zero' : (cls || '')}>${n}</i>${k}</span>`;
-    return html`<div class="mh-eyebrow">${cell(live, 'live now')}${cell(staged, 'staged', 'stg')}${cell(flags, 'flags', 'warn')}</div>`;
-}
+// 🔴 THE EYEBROW IS GONE, AND IT WAS THE SAME DEFECT HOME HAD. It read `14 LIVE NOW · 4 STAGED · 2 FLAGS` above the title while the stats row 1,100px to its right read `DRAWS LIVE 14 · STAGED 4` -- two of its three figures restated, in the same masthead, in a different voice. `flags` was the only one it alone carried, so it moved into the stats row and the row was deleted. See COMPANION 16.6: a second saying weakens the first, and nothing here was missing.
 
 // Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place.
 const COMPOSE_TYPES = [
@@ -882,9 +878,10 @@ export function SeasonRealm({ session }) {
     // The Track derives its own findings; the eyebrow counts the same ones rather than a second rule.
     const flagCount = state.live?.bpEnd
         ? Object.values(trackData).flat().filter((i) => i.endDate && i.endDate > state.live.bpEnd).length : 0;
+    // ⚠️ `days left` IS NOT HERE, AND ITS ABSENCE IS THE POINT. The clock beside this row states it at 82px -- it is the largest thing on the page -- so a 34px copy of the same number three inches away is a second authority over one quantity. Home carries `days left` as a figure precisely because Home has no clock.
     const seasonStats = [
-        { value: daysLeft, label: 'days left' },
         { value: drawsLive, label: 'draws live' },
+        { value: flagCount, label: flagCount === 1 ? 'flag' : 'flags', tone: flagCount ? 'bad' : undefined },
         { value: stagedCount, label: 'staged', tone: stagedCount ? 'hot' : undefined },
     ];
 
@@ -973,8 +970,7 @@ export function SeasonRealm({ session }) {
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView} stateKey
                   badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Season" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
-                  masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
-                                               title=${state.live?.currentSeasonTitle || 'Season'}
+                  masthead=${html`<${Masthead} title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats}
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />

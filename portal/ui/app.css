@@ -166,7 +166,9 @@ main{overflow:auto;padding-bottom:96px}
    chip, a name and a count in it — at 96px the names truncated to "NEW…", "RE…", "DRA…", which
    is a worse label than the one it replaced. One token, so the ruler, the rail and the lane
    header can never disagree again. */
-:root{--gutter:138px}
+:root{
+  /* The horizontal inset every panel under the masthead sits at. Named so a sibling of those panels can line up with them instead of guessing 22px. */
+  --edge:22px;--gutter:138px}
 /* 🔴 `margin-right:1px` PUTS THE RULER ON THE SAME AXIS AS THE BARS. A lane is a card with a
    1px right border, so its plot area is 1px narrower than a ruler that runs to the container's
    edge — and a tick at 100% therefore landed 1px away from a bar at 100%, across the whole axis,
@@ -1613,6 +1615,16 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * the figure is the realm's defining number and is the thing worth reading first. Uppercase
  * because a condensed grotesque is built for it and because the portal's own vernacular is a
  * readout; +tracking because condensed caps close up without it. */
+/* 🔴 --display AND --title WERE DECLARED AND NEITHER WAS EVER LOADED. The font link requested only
+   Space Grotesk and JetBrains Mono, so `Big Shoulders Display` fell through to Space Grotesk on all
+   seven rules that ask for it -- every masthead H1, every masthead figure, the Analytics tiles, Home's
+   H1, the header commit chip, the season clock face and the health columns, which is to say EVERY LARGE
+   NUMBER IN THE PORTAL -- and `Instrument Serif` fell through to Georgia on .srec-title, putting the one
+   serif in the whole console on the season record's title. Silent both times: a fallback stack renders
+   perfectly well-formed wrong output. The mockups load all four faces; the portal loaded two.
+   🔴 THE FALSIFIER, because "the link now lists it" is not evidence it arrived: render the same string
+   in var(--ui) and var(--display) and compare widths. Two different faces CANNOT measure identically.
+   Before the fix both were 444px at 40px; that identity was the proof it was broken. */
 .masthead h1{margin:0 0 20px;font-size:var(--t-figure);font-family:var(--display);font-weight:700;
   letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
@@ -3698,9 +3710,16 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* The masthead's "take out" line. Deliberately NOT inside .mh-add: an export is not a thing
    you are adding, and folding it into that group made the row read as seven creation buttons
    one of which does the opposite. Same label geometry, own line, quieter weight. */
-.mh-take{grid-column:2;grid-row:3;justify-self:end;display:flex;align-items:center;
-  gap:10px;margin-top:10px;flex-wrap:wrap}
-@media (max-width:820px){.mh-take{grid-column:1;grid-row:auto;justify-self:start}}
+/* 🔴 THREE OF THESE DECLARATIONS USED TO BE INERT, AND THE SYMPTOM WAS A LABEL ON THE WINDOW EDGE.
+   The rule read `grid-column:2;grid-row:3;justify-self:end`, which are grid-placement properties --
+   and the strip was moved out of .masthead into <main>, which is display:block. So all three no-opped,
+   the strip fell to main's own right edge with NO gutter, and "4 formats" sat flush against the frame
+   while every panel below it stopped 22px short. Measured at 1280: strip right 1280, panel right 1258.
+   It now aligns to the panels by the mechanism that actually applies to a block child -- auto margin
+   on one side, a real gutter on the other -- and cannot silently detach from the grid again. */
+.mh-take{display:flex;align-items:center;gap:10px;margin:10px var(--edge) 0 auto;
+  width:max-content;max-width:calc(100% - var(--edge) * 2);flex-wrap:wrap}
+@media (max-width:820px){.mh-take{margin-left:var(--edge);margin-right:auto}}
 .mh-take .mh-i{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round}
 .mh-take-n{font:400 11px/1 var(--data);letter-spacing:.05em;color:var(--ink3)}
@@ -4462,15 +4481,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
        `hot = d < 3`, one if-statement on an element whose entire subject is a
        continuously rising pressure.                                          */
 
-/* The demoted figures. A thin line above the title - still reachable, no
-   longer pretending to be headline numbers. */
-.mh-eyebrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;margin:0 0 10px;
-  font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;color:var(--ink3)}
-.mh-eyebrow i{font-style:normal;color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
-.mh-eyebrow i.zero{color:var(--ink3)}
-.mh-eyebrow i.warn{color:var(--warn-ink)}
-.mh-eyebrow i.stg{color:var(--staged)}
+/* .mh-eyebrow was deleted with its only emitter -- Season's three-count line, which restated two figures the stats row beside it already carried. See season.js. */
 .mh-eyebrow span{display:inline-flex;align-items:baseline;gap:6px}
 
 /* 🔴 REBUILT 2026-08-27 — attempt 13's five hierarchy gaps, critiqued the same night it
