@@ -1,15 +1,8 @@
 // scripts/portalCoverage.test.mjs — the self-test portal:coverage did not have.
 //
-// 🔴 IT EXISTS BECAUSE THE FILE STOPPED BEING A SET COMPARISON. On 2026-08-26 it grew brace matching,
-// five class-valued props, a 600-char declaration window, a one-hop function-body lookup with a 900-char
-// window over a concatenated sibling corpus, a member call-graph with a keyword blacklist, and a
-// styled-class intersection — eight heuristics, added one at a time, each raising the number, none
-// tested. A gate whose failure mode is a slightly WRONG answer rather than an error has to prove it can
-// still be wrong, or nobody can tell which heuristic they just broke.
+// 🔴 IT EXISTS BECAUSE THE FILE STOPPED BEING A SET COMPARISON. On 2026-08-26 it grew brace matching, five class-valued props, a 600-char declaration window, a one-hop function-body lookup with a 900-char window over a concatenated sibling corpus, a member call-graph with a keyword blacklist, and a styled-class intersection — eight heuristics, added one at a time, each raising the number, none tested. A gate whose failure mode is a slightly WRONG answer rather than an error has to prove it can still be wrong, or nobody can tell which heuristic they just broke.
 //
-// ⚠️ EVERY CHECK HAS A FALSIFIER. A resolution test that only ever asserts "the class was found" passes
-// on a scanner that returns every string in the file. Each one below also asserts something that must
-// NOT be found, which is what makes the positive half mean anything.
+// ⚠️ EVERY CHECK HAS A FALSIFIER. A resolution test that only ever asserts "the class was found" passes on a scanner that returns every string in the file. Each one below also asserts something that must NOT be found, which is what makes the positive half mean anything.
 import assert from 'node:assert';
 import { emittedFrom, shellMembers, closureOf, classExpressions } from './portalCoverage.mjs';
 
@@ -43,8 +36,7 @@ check('every class-valued prop is read, and the list is shared with portal:orpha
         const out = emittedFrom(`{ ${prop}: 'zeta-${prop}' }`);
         assert.ok(out.has(`zeta-${prop}`), `${prop} is not being read`);
     }
-    // 🔴 THE ASYMMETRY THAT LET A NO-OP CLASS SHIP. `tone` was added here and not to orphans, so a class
-    // that styles nothing counted as covered and the gate that refuses an unstyled class never saw it.
+    // 🔴 THE ASYMMETRY THAT LET A NO-OP CLASS SHIP. `tone` was added here and not to orphans, so a class that styles nothing counted as covered and the gate that refuses an unstyled class never saw it.
     const orphans = (await import('node:fs')).readFileSync('scripts/portalOrphans.mjs', 'utf8');
     assert.ok(orphans.includes("from './portalClassProps.mjs'"),
         'portal:orphans must read the SHARED prop list, not a second copy that can drift');

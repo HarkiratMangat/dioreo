@@ -238,6 +238,11 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
                 <span class="t">Usage — last 7 days</span>
                 <span class="rt">${current.toLocaleString()} this week · ${previous.toLocaleString()} the week before</span>
             </div>
+            <!-- ⚠️ INSIDE THIS PANEL, NOT BESIDE IT. Built first as a standalone box below — three numbers
+                 the bars underneath already carry, in a second container, which is two places answering one
+                 question. Harkirat: keep it, move it. It leads the panel it summarises, so the shape is
+                 headline-then-breakdown rather than breakdown-then-restatement. -->
+            <${OutcomeSplit} stats=${stats} />
             <div class="ubars">
                 ${byCommand.map((c) => {
                     const failed = Math.max(0, c.c - (c.ok ?? c.c));
@@ -470,18 +475,18 @@ function Reach({ rows = [] }) {
 
 // ══ SEARCH ══════════════════════════════════════════════════════════════════════════════════════
 //
-// 🔴 THE ONLY FIGURE IN THE SYSTEM THAT DESCRIBES WHAT SOMEBODY WANTED. Everything else on this realm describes what the bot did. A term typed into an autocomplete that matched nothing names something this bot does not have — a missing alias, or a missing feature — and it appears on no other surface, in Discord or here. 🔴 A SUCCESS RATE IS A COMPARISON AND IT WAS RENDERED AS A PERCENTAGE. "99.0%" hides both numbers that matter — how many ran and how many did not — and the panel already has them. The sheet's diff block is the shape for exactly this: a key, and the two sides of the fact.
+// 🔴 THE ONLY FIGURE IN THE SYSTEM THAT DESCRIBES WHAT SOMEBODY WANTED. Everything else on this realm describes what the bot did. A term typed into an autocomplete that matched nothing names something this bot does not have — a missing alias, or a missing feature — and it appears on no other surface, in Discord or here. 🔴 A SUCCESS RATE IS A COMPARISON AND IT WAS RENDERED AS A PERCENTAGE. "99.0%" hides both numbers that matter — how many ran and how many did not — and the panel already has them. The sheet's diff block is the shape for exactly this: a key, and the two sides of the fact. ⚠️ IT READS `byOutcome`, THE SAME BREAKDOWN THE BARS BELOW IT DRAW, and never the headline `current`. The panel's own note records why: dividing one aggregation by another assumes the two match on the same $match, and the moment they drift a bar renders past 100% and is silently clamped, which looks exactly like a full bar. A summary computed from a different source than the thing it summarises is the same defect wearing a smaller hat.
 function OutcomeSplit({ stats }) {
-    const rows = (stats || []).filter((s) => s && Number.isFinite(s.total));
-    if (!rows.length) return null;
-    const total = rows.reduce((a, r) => a + r.total, 0);
-    const failed = rows.reduce((a, r) => a + (r.failed || 0), 0);
+    const byOutcome = stats?.byOutcome || [];
+    if (!byOutcome.length) return null;
+    const total = byOutcome.reduce((a, o) => a + o.c, 0);
     if (!total) return null;
+    const failed = byOutcome.filter((o) => o._id && o._id !== 'ok').reduce((a, o) => a + o.c, 0);
     return html`
         <div class="diff">
-            <div class="diff-r"><span class="dk">Succeeded</span><span>${total - failed} of ${total}</span></div>
-            <div class="diff-r"><span class="dk">Failed</span><span>${failed || 'none'}</span></div>
-            <div class="diff-r"><span class="dk">Commands seen</span><span>${rows.length}</span></div>
+            <div class="diff-r"><span class="dk">Succeeded</span><span>${(total - failed).toLocaleString()} of ${total.toLocaleString()}</span></div>
+            <div class="diff-r"><span class="dk">Failed</span><span>${failed ? failed.toLocaleString() : 'none'}</span></div>
+            <div class="diff-r"><span class="dk">Outcomes recorded</span><span>${byOutcome.length}</span></div>
         </div>`;
 }
 
@@ -600,8 +605,7 @@ export function AnalyticsRealm({ session }) {
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
     const VIEWS = {
         Health: () => html`<${Health} health=${data.health} />`,
-        Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />
-                          <${OutcomeSplit} stats=${data.usageStats} />`,
+        Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />`,
         Timing: () => html`<${Timing} stats=${data.timingStats} />`,
         Reach: () => html`<${Reach} rows=${data.reach} />`,
         Search: () => html`<${Search} rows=${data.searches} />`,

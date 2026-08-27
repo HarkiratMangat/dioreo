@@ -246,6 +246,21 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🔔 Reminders / watch-for
 
+### 🔎 OPEN QUESTION — four mockup COMPOSITION changes Harkirat has not seen `[P2 · XS]`
+*Filed 2026-08-26 23:08 EDT. He asked to be pointed at them exactly and to keep this open, not to decide now.*
+
+Four changes on `feat/portal-redesign-session-b` ported the mockup's composition rather than only its stylesheet vocabulary, and none was shown to him before it landed. ⚠️ **His direction, same night: "the old design is essentially retired at this point. the design is the mockup."** So the default is KEEP — this is a look-and-confirm, not a revert list.
+
+| Where | What changed | How to see it |
+|---|---|---|
+| `portal/ui/broadcast.js` — `BROADCAST_COLUMNS[0]` | A severity dot now rides **inside** the Announcement name cell, marking a live announcement with no expiry. Built first as its own headerless column, which read as a 38px strip of mostly-empty dots | Broadcast → the manifest table's first column |
+| `portal/ui/season.js` — `StagedPanel` | "Review & commit" restyled from `accent-fill` to the sheet's `.commit` — full-width, primary | Season → stage any change → the staged strip above the Track |
+| `portal/ui/composer.js` — `ComposePreview` | The composer's preview was a one-line sentence; it is now a Discord-shaped card. ⚠️ With one row and no image it may read as an empty box | Season → press Add → pick a type → type a name and a date |
+| `portal/ui/armory.js` — `ArmoryAddChips` | Armory's masthead create control went from one labelled button to two chips (MP / DMZ). **The keyboard shortcut it lost in the first version has been restored** — `b` opens MP, `d` opens DMZ, both announced on the chip | Armory → masthead, top right |
+
+**Verify condition:** he has opened each of the four on screen and either kept it or named the change. Until then none of these is settled, and the changelog should not describe them as such.
+
+
 - **The four portal commits on `feat/portal-redesign-session-b` have no changelog entry, no DEVLOG entry and no version bump** `[P1 · S]` *(filed 2026-08-24 15:4x EDT.)* `79ed566` · `01505d4` · `0e83613` · `e4a9018` are committed and **unpushed**. `package.json` reads `3.68.0-pre`; per the suspended-minor-bumps rule for the pre-release line this is a MODERATE bump to **`3.69.0-pre`**. Per the git workflow the entry, the bump and the previous entry's hash backfill all go **on the branch before the squash merge**, never after — bumping after the merge is the exact bug that produced sixteen two-commit releases. ⚠️ **`docs/CHANGELOG.md:31` still carries an unfilled `(#PR)` placeholder from the v3.68.0 entry** (an earlier session's), and `docs-audit`'s `changelog-pr-cite` fails CI on it — so it must be filled with the real PR number before anything here can merge, independently of this entry. **Verify:** `npm run docs:audit` exits 0, and `git log -1` on the squash commit shows a `package.json` already reading the tagged version.
 
 - **The 2026-08-23 20:45 EDT design-critique fix pass (commit `2614a39`, `feat/portal-redesign-session-b`) has never been LOOKED AT — only computed against.** `[P2 · XS · Sonnet5-Medium]` Armory's near-duplicate flag count (131/133 → 2/133) was confirmed by re-running `coverageFlags()` directly against local Mongo, and `npm test`/`docs:audit` are clean — real verification, but neither one is a screenshot. The Season Track's row-stacking (`assignRows()`) and legibility `min-width` are CSS/layout math that only a rendered page can actually confirm; the new Staged panel and its Discard button have never been clicked once. **Verify by:** log into the local dev portal (`http://localhost:8787` — see the login note above this section) and look at Season/Track (overlapping events should now sit in separate rows, single-day draws should show more than one letter) and Armory/Coverage (near-duplicate count should read ~2, not ~131), then click Discard on a staged item and confirm it disappears from the board without touching anything live.
