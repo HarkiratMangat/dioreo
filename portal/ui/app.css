@@ -143,6 +143,11 @@ main{overflow:auto;padding-bottom:96px}
 .rkey .rk-clean i{background:none}
 .rkey .rk-bad i{background:var(--warn)}
 .rkey .rk-age i{background:var(--ink4)}
+/* Airtime's own key. Each swatch is the bar treatment it names, not a colour standing in for one:
+   solid fill, dashed hollow, muted -- so the legend and the lane cannot drift apart visually. */
+.rkey .bk-live i{background:var(--ink3);box-shadow:none}
+.rkey .bk-sched i{background:none;border:1.5px dashed var(--ink3);box-shadow:none}
+.rkey .bk-over i{background:var(--rule2);opacity:.7;box-shadow:none}
 /* The mode group shares the view bar with .seg, so it has to share its height: .seg is 32px of button
    inside 2px of padding inside a 1px border. .modesw has no padding, so its buttons carry the whole 38px. */
 .ph .modesw button{min-height:38px;padding:0 14px}

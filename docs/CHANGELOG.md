@@ -800,6 +800,10 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ✅ **Measured after: `Season 39 items · 4 formats` — the mockup's own line, exactly — plus `Armory 133 · 2`, `Broadcast 6 · 2`, `Access 8 · 3`, `Analytics 32 · 5`.** Review and Home have none, which is also what the mockup draws.
 
+✅ **Four Armory labels named things the columns do not contain, and one named a view that no longer exists.** `Runs` was the **attachments** cell — five named parts, not a usage count nobody stores; `Code` is the bot's **gunsmith code** everywhere else it appears; the rack panel's eyebrow still read `Rack — by rank` after the tab was renamed, which is exactly the drift the one-table rename was meant to make impossible, so it reads from that table now. And the masthead's lead figure said `125 builds` while the realm shows one armory at a time — it reads **`125 MP builds`** and **`8 DMZ builds`**, because an unqualified total invites a check against a number that is no longer on the page.
+
+🔴 **AIRTIME PAINTED THREE BAR STATES AND NAMED NONE OF THEM.** Solid is showing, hollow-dashed is scheduled, muted is over — the same shape vocabulary the Track uses, met with no key at all. ⚠️ **It is deliberately NOT the shared state key**: that one teaches *dashed = staged*, and a dashed bar here means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word. Like every key in this portal it names **only states present on screen**, so a week with nothing scheduled does not send somebody hunting for a bar that is not drawn.
+
 ## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel
 
 The old `/draw calculator` was a setup form: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate — five interactions before a single figure appeared, and Harkirat called it "terrible, lacks intuitive, lacks design/style, and is not user friendly." It is rebuilt from the ground up.

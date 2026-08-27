@@ -240,6 +240,22 @@ function PostForm({ onSubmit, onCancel }) {
     `;
 }
 
+// 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
+//
+// ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
+function AirtimeKey({ rows }) {
+    const has = (state) => (rows || []).some((r) => r.state === state);
+    const items = [];
+    if (has('live')) items.push(['bk-live', 'showing']);
+    if (has('scheduled')) items.push(['bk-sched', 'scheduled']);
+    if (has('expired')) items.push(['bk-over', 'over']);
+    if (!items.length) return null;
+    return html`
+        <span class="key rkey" aria-label="What a bar's shape means">
+            ${items.map(([cls, label]) => html`<span key=${cls} class=${cls}><i></i>${label}</span>`)}
+        </span>`;
+}
+
 export function BroadcastRealm({ session }) {
     const [showAdd, setShowAdd] = useState(false);
     const [notice, setNotice] = useState('');
@@ -329,6 +345,7 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
+                  realmKey=${view === 'Airtime' ? html`<${AirtimeKey} rows=${rows} />` : null}
                   exports=${exportScopes} exportLabel="Broadcast" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   commands=${[

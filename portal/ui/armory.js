@@ -26,11 +26,11 @@ const ARMORY_COLUMNS = [
       meta: (r) => `${r.mode} · ${(r.attachments || []).length} attachment${(r.attachments || []).length === 1 ? '' : 's'}` },
     { key: 'buildName', label: 'Build', editable: true },
     { key: 'category', label: 'Category', col: 'c-type', editable: true },
-    { key: 'shareCode', label: 'Code', dataKind: 'date',
+    { key: 'shareCode', label: 'Gunsmith code', dataKind: 'date',
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`
           : (r.shareCode ? html`<span class="code">${r.shareCode}</span>` : html`<span class="none">not set</span>`)) },
-    { key: 'attachments', label: 'Runs', col: 'c-spark', dataKind: 'detail', render: (r) => {
+    { key: 'attachments', label: 'Attachments', col: 'c-spark', dataKind: 'detail', render: (r) => {
         const atts = r.attachments || [];
         if (!atts.length) return html`<div class="detcell"><span class="none">none</span></div>`;
         return html`
@@ -136,7 +136,7 @@ function Rack({ builds, onPick }) {
     return html`
         <div class="panel" id="rack">
             <div class="ph">
-                <span class="t">Rack — by rank</span>
+                <span class="t">${VIEWS.rack} — by rank</span>
                 <span class="rt">${new Set(builds.map((b) => b.weaponName)).size} weapons</span>
             </div>
             ${builds.length === 0 ? html`<p class="empty">No builds in this catalogue yet.</p>` : null}
@@ -987,7 +987,7 @@ export function ArmoryRealm({ session }) {
         : (load.data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     // ⚠️ THE LEAD FIGURE WAS ALSO A STAT — `builds` appeared twice in the same row, as the hero number and again three columns to its right, reading as two different measurements that happened to agree. The mockup's Armory masthead has no repetition in it: a lead, then four figures that each say something the lead does not.
     const armoryStats = [
-        { value: inMode.length, label: inMode.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
+        { value: inMode.length, label: `${armMode} build${inMode.length === 1 ? '' : 's'}`, lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
         { value: needRepair, label: 'need repair', tone: needRepair ? 'bad' : undefined },
         { value: stale, label: 'stale' },
