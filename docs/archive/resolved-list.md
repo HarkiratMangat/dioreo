@@ -5,6 +5,10 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 2026-08-27 12:12 EDT — `/draw calculator` budget-mode money-solver item is MOOT, not built
+
+- **💵 `/draw calculator` budget mode answers only the CP half of design decision 10 — the money half was never built** `[P2 · M · Sonnet5-High]` *(filed 2026-08-26 11:29 EDT; closed as MOOT 2026-08-27 12:12 EDT.)* This item asked for a money-budget solver (the DP's dual, maximise CP subject to a dollar cap) to complete budget mode. **Budget mode itself was deleted** in the same session's saved-basket redesign — spec §10 puts it explicitly out of scope; every banner is now always priced to completion, and there is no goal select at all any more (Finish/Stop-at-pull/Budget are all gone). `reachableWithBudget()` in `utils/drawCost.js` is dead code from the single-draw era, left in place only because nothing currently requires deleting it. Not fixed — the feature it would have completed no longer exists. If budget mode is ever wanted again, this item's fix direction (the DP's dual, verified against USD and NOK) is still the right approach and can be re-filed against the new basket model.
+
 ## 2026-08-27 10:18 EDT — `/draw calculator` multi-draw: both morning questions ANSWERED
 
 - **🌅 TWO MORNING QUESTIONS for `/draw calculator` multi-draw — RESOLVED 2026-08-27 10:18 EDT** `[P1 · S]` *(filed 2026-08-27 00:31 EDT when Harkirat deferred both overnight — "ask me thing again in the morning". Asked again at 09:58 EDT and answered.)*
