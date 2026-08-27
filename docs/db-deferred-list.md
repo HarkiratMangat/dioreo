@@ -445,8 +445,16 @@ The mockup's §16 liveliness layer was built 2026-08-25 and the CSS came across 
 **Verify condition:** stage something in each realm and see the rail badge bump and the tray pulse; hover a card and see it lift. ⚠️ **Not "the classes appear in source"** — that is what already reads as done.
 
 
-### Wire the portal harness into `npm test` — a gate that OBSERVES instead of scanning `[P1 · M]`
+### ~~Wire the portal harness into `npm test` — a gate that OBSERVES instead of scanning~~ ✅ **BUILT 2026-08-27 12:2x EDT** `[P1 · M]`
 *Filed 2026-08-26 22:24 EDT, after an audit found a feature that could never render while every gate stayed green.*
+
+✅ **CLOSED — `scripts/portalHarnessRender.test.js`, wired into `npm test`.** It mounts all seven realms into a real (linkedom) document with preact's own `render()`, lets each `useEffect` fire, lets the harness stub resolve, and asserts the realm got PAST its skeleton. **Proved it can fail before trusting it:** the Armory `data`-undefined bug was reinstated, the gate failed with exit 1 and named *armory* alone, and it was reverted — a gate that has never failed is not known to work.
+
+🔴 **The reason it could not be an SSR test, which is the non-obvious part.** Every realm loads through `useAsync`, and `useAsync` fetches inside a `useEffect`. `preact-render-to-string` does not run effects, so an SSR render of any realm reaches the LOADING skeleton and stops — the loaded branch, where all three known instances of this bug class lived, is never evaluated. `scripts/portalRender.test.js` is SSR and is right to be; this one needs a DOM, so `linkedom` is now a devDependency.
+
+⚠️ **A non-empty tree is NOT the assertion, and that was nearly the whole defect.** A realm whose loader failed still renders the shell and a skeleton, which is a perfectly valid non-empty tree — and is exactly what the dead Armory looked like for a day. The check requires the masthead, and it collects preact's `_catchError` path, `uncaughtException`, `unhandledRejection` and `console.error` output, because a component that throws during render does not reliably reject a promise.
+
+⚠️ **It is NOT `scripts/portalHarness.test.js`**, which already existed and was already in `npm test`: that one executes the harness STUB and checks payload SHAPE, and renders no component. A reader who greps for "portalHarness" and stops at the first hit concludes this work was already done.
 
 **The gap:** every portal gate is a SOURCE SCANNER. `portal:orphans` asks whether a class has a rule; `portal:coverage` asks whether a class name appears in a file. Neither can know whether the branch containing it ever executes. Measured on this branch: the Track's double-CP window read `data.calendar`, a key that does not exist on that prop, and rendered nothing forever — with `orphans` 0, `refs` 0, coverage counting the class as covered, and `npm test` green.
 
