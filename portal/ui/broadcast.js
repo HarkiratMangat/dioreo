@@ -4,7 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, MastheadNew } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
@@ -39,7 +39,28 @@ const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16
 //
 // ⚠️ SLOT n DESCRIBES DELIVERY POSITION, NOT A STORED FIELD. models/Announcement.js has no ordering column and the design spec §8.2 flags that adding one would be a schema change to file rather than assume, so the order here is createdAt and nothing in the label implies otherwise.
 //
-// 🔴 AND THE CAP IS THE FACT THIS PANEL EXISTS TO SHOW. Discord sends at most MAX_EMBEDS_PER_MESSAGE embeds in one message and utils/announcement.js slices the unseen list by exactly that, so a live announcement past the cap is not showing — it is WAITING, and nothing anywhere told anyone. The number is sent by the route rather than written here, because a second copy of a limit is a copy only one of the two would notice changing.
+// 🔴 AND THE CAP IS THE FACT THIS PANEL EXISTS TO SHOW. Discord sends at most MAX_EMBEDS_PER_MESSAGE embeds in one message and utils/announcement.js slices the unseen list by exactly that, so a live announcement past the cap is not showing — it is WAITING, and nothing anywhere told anyone. The number is sent by the route rather than written here, because a second copy of a limit is a copy only one of the two would notice changing. 🔴 THE PANEL SAID WHAT IS LIVE AND NEVER WHAT IT LOOKS LIKE. Broadcast is the one realm whose output a player reads verbatim, and the only way to see the delivered result was to run the bot — so the accent colour, the order and the cap were three separate facts on screen and the thing they add up to was nowhere.
+//
+// ⚠️ IT PREVIEWS THE MESSAGE, NOT THE RECORDS. Anything past the cap is absent here rather than greyed out, because a player does not see a faded row — they see nothing, and that is the whole point the racknote beside it is making.
+function DeliveryPreview({ live, cap }) {
+    const shown = cap ? live.slice(0, cap) : live;
+    return html`
+        <aside class="nprev" aria-label="What a player receives">
+            <h5>What a player receives</h5>
+            ${shown.length ? shown.map((a) => html`
+                <div class="idop" key=${a._id} style=${`border-left:3px solid ${accentOf(a)}`}>
+                    <b>${a.text}</b>
+                </div>`)
+            : html`<div class="idop"><b>nothing attached</b></div>`}
+            <p class="pnote">
+                ${shown.length
+                    ? html`${shown.length} embed${shown.length === 1 ? '' : 's'}, in this order, on the player's next
+                        reply. The stripe is each announcement's own accent colour.`
+                    : html`Replies go out with no announcement attached at all.`}
+            </p>
+        </aside>`;
+}
+
 function NowShowing({ live, counts, cap }) {
     return html`
         <div class="panel" id="now-showing">
@@ -47,6 +68,8 @@ function NowShowing({ live, counts, cap }) {
                 <span class="t">Now showing</span>
                 <span class="rt">${counts.live} live · ${counts.scheduled} scheduled · ${counts.forever} never expires</span>
             </div>
+            <div class="nowwrap">
+            <div>
             ${live.length === 0
                 ? html`<div class="nstack"><div class="nsempty">Nothing is showing right now. Players get no announcement
                     message at all. Anything scheduled for later is in Airtime.</div></div>`
@@ -79,6 +102,9 @@ function NowShowing({ live, counts, cap }) {
                             The ${n === 1 ? 'one' : n} below that line ${n === 1 ? 'is' : 'are'} live and <b>not being shown</b> —
                             ${n === 1 ? 'it waits' : 'they wait'} until something above ${n === 1 ? 'it' : 'them'} ends.</p>`;
                 })() : null}`}
+            </div>
+            <${DeliveryPreview} live=${live} cap=${cap} />
+            </div>
         </div>
     `;
 }
@@ -282,7 +308,10 @@ export function BroadcastRealm({ session }) {
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
                                                    { value: counts.forever, label: 'never expires', tone: counts.forever ? 'bad' : undefined },
-                                               ]} />`}
+                                               ]}
+                                               actions=${html`<${MastheadNew} label="New announcement" hint="a"
+                                                                              tip="Write an announcement"
+                                                                              onClick=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}

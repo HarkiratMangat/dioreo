@@ -3564,7 +3564,13 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    Its own column with a header, never a hover reveal: a reveal does not exist on touch and
    cannot be scanned, and "..." buries the verb behind a click for nothing. --ink3 at rest
    (5.35:1, over the 3:1 non-text floor) so it is findable; destructive colour on hover/focus. */
-.mtable td.ra,.mtable th.ra{width:40px;padding-right:8px;text-align:right}
+/* 🔴 THE WIDTH MOVED TO THE <col>, WHICH IS WHERE EVERY OTHER COLUMN IN THIS TABLE IS SIZED.
+   It sat here because the remove column was the one column with no col class, so it had nowhere
+   else to be stated — and that made the colgroup's own rule ("widths are derived from each
+   column's role") false for exactly one column. `.c-ra` now names it like the rest; these two
+   cells keep the alignment and the padding, which are about the CELL and not the column. */
+.mtable td.ra,.mtable th.ra{padding-right:8px;text-align:right}
+.mtable col.c-ra{width:40px}
 .rmv{width:28px;height:28px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
   color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;
   transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
@@ -4725,3 +4731,25 @@ button .ic,a .ic{pointer-events:none}
 .rec-row.cur .rec-tag{background:color-mix(in srgb,var(--patch) 18%,transparent);color:var(--patch)}
 .rec-empty{list-style:none;font-size:13px;color:var(--ink3);padding:8px 0}
 @media (max-width:820px){.rec-row{grid-template-columns:20px 1fr auto}.rec-meta,.rec-d{display:none}}
+
+/* ═══ PORTAL-AUTHORED — CLASSES THE ADOPTED SHEET NAMES BUT NEVER STYLED ═══
+ * 🔴 EACH OF THESE IS EMITTED BY THE MOCKUP AND HAS NO RULE IN IT. The mockup carried them as
+ * semantic hooks (`rec-b`, `rowlife`, `bed-main`) or leaned on an inline `style=` attribute
+ * (`badges`), which is fine in a sketch and is exactly what a stylesheet is for in a product.
+ * They are written here rather than inline so the portal has ONE place that decides, and so
+ * `portal:orphans` — which fails on a class with no rule — stays a real gate rather than a
+ * reason to leave markup unnamed.
+ * ⚠️ Every rule below is load-bearing, not a placeholder to satisfy the gate: `min-width:0` on a
+ * flex/grid child is the difference between an ellipsis and a blown-out column, and the two-column
+ * splits below are the layout the mockup drew with inline styles. */
+.nw-f{min-width:0}
+.crumb-sep{display:inline-flex;align-items:center;color:var(--ink4);vertical-align:middle}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+/* Home's clock is the page's lead and sits above a two-column live panel, so it centres its own
+ * measure instead of running the full width the way Season's does — same component, one page's
+ * composition. */
+.hc-face{margin-inline:auto}
+/* The mode is a classification beside a build's name, not a heading — MP and DMZ are the two
+ * halves of the Armory and the word has to read as a label rather than as part of the title. */
+.bc-mode{font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);
+  border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px;white-space:nowrap}

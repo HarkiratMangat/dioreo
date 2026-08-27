@@ -22,7 +22,7 @@ import { Track, Zoomer, Repairs } from './track.js';
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
     // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
-    { key: 'lane', label: 'Type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane,
+    { key: 'lane', label: 'Type', col: 'c-type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane,
       meta: (row) => (row.isDraft
           ? html`<span class="nextmark">NEXT SEASON</span>`
           : (LIFE_LABEL[rowLifecycle(row, todayIso())] || '')) },

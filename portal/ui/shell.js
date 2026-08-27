@@ -87,6 +87,37 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
     `;
 }
 
+// 🔴 CREATION WAS BURIED ON EVERY REALM THAT HAD IT. Measured 2026-08-26: Armory's and Broadcast's only "new" affordance was a command-palette entry plus a button inside the Bulk view, and Access's grant form sat at the foot of a grid — so the one thing an admin opens the portal to DO was reachable only by knowing it was there. The masthead is where the page says what it is; it is also where it should offer the verb.
+//
+// ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT JUST BOUND. A shortcut nobody can see is a shortcut nobody uses, which is why the <kbd> is part of the control rather than a tooltip — the mockup makes the same call in season.html. The key is rendered from the same `hint` that is bound, so the two cannot drift.
+export function MastheadNew({ label, hint, onClick, tip }) {
+    useEffect(() => {
+        if (!hint || !onClick) return undefined;
+        const onKey = (e) => {
+            if (e.key.toLowerCase() !== hint.toLowerCase() || e.metaKey || e.ctrlKey || e.altKey) return;
+            const t = e.target;
+            // ⚠️ A bare letter is a TEXT CHARACTER first. Firing the shortcut while somebody is typing a build name would swallow the letter and open a second composer over the one they are filling in.
+            if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+            e.preventDefault();
+            onClick();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [hint, onClick]);
+
+    return html`
+        <button type="button" class="pill lead mh-new" onClick=${onClick} data-tip=${tip || null}>
+            <span class="mh-plus" aria-hidden="true">+</span>${' '}${label}
+            ${hint ? html`<kbd class="mh-k" aria-label=${`Keyboard shortcut: ${hint.toUpperCase()}`}>${hint.toUpperCase()}</kbd>` : null}
+        </button>
+    `;
+}
+
+// ⚠️ A ZERO-HEIGHT CELL, ON PURPOSE. Analytics has no create verb, so its masthead's second row would collapse and the export popover it anchors would jump to the page edge. `.mh-anchor{height:0}` reserves the POSITION without reserving space — the mockup's own solution, kept because the alternative is a hidden button that a screen reader still finds.
+export function MastheadAnchor({ id }) {
+    return html`<div class="mh-anchor" id=${id || null} aria-hidden="true"></div>`;
+}
+
 // ── THE ACCOUNT PANEL ─────────────────────────────────────────────────────────────────────────
 //
 // 🔴 THE PORTAL HAD NO WAY TO SIGN OUT. `POST /auth/logout` has existed in portal/auth.js since the door was built and no surface has ever called it — so an admin console that hands out 12-hour cookies offered no way to end one, on a shared machine or anywhere else. That is a missing function, not a missing panel, and it is the reason this exists.
@@ -182,7 +213,7 @@ function Header({ realm, view, session, staged, commands, onSignOut }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <span class="crumb">${realm}${view ? html` <b><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
+            <span class="crumb">${realm}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
             <${CommandBar} commands=${commands} realmLabel=${realm} />
             <span class="sp"></span>

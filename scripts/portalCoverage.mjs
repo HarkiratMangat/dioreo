@@ -16,6 +16,24 @@ const MOCKUP = join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interactiv
 const UI = join(ROOT, 'portal/ui');
 
 const CLASS_RE = /^[a-zA-Z][\w-]*$/;
+
+// 🔴 A NON-GREEDY `[^}]*` CANNOT READ A CLASS EXPRESSION THAT INTERPOLATES, and every dynamic class in this codebase does. `class=${`lvtag lv-${r.level}`}` stops the old scan dead at the FIRST `}` — which belongs to the inner `${r.level}`, not to the attribute — so the captured text was the fragment "`lvtag lv-$" and the literal `lvtag` was never seen. analytics.js has emitted `lvtag` since the river was built and BOTH instruments reported it as unbuilt work. That is the third blind spot of this exact shape on this branch: a gate is a claim about what it can SEE, and a regex that cannot nest is claiming less than it appears to.
+//
+// ⚠️ Brace-matched rather than made cleverer. Counting `{` and `}` from the opening `${` is the only thing that ends in the right place for arbitrary nesting, and it is applied to the MOCKUP and the PORTAL by the same function — an asymmetric fix here is what inflated this instrument once already.
+function classExpressions(text) {
+    const out = [];
+    const re = /class=\$\{/g;
+    let m;
+    while ((m = re.exec(text))) {
+        let depth = 1, i = m.index + m[0].length;
+        for (; i < text.length && depth > 0; i += 1) {
+            if (text[i] === '{') depth += 1;
+            else if (text[i] === '}') depth -= 1;
+        }
+        out.push(text.slice(m.index + m[0].length, i - 1));
+    }
+    return out;
+}
 function emitted(paths) {
     const out = new Set();
     for (const p of paths) {
@@ -23,8 +41,8 @@ function emitted(paths) {
         const t = readFileSync(p, 'utf8');
         const add = (s) => s.split(/\s+/).forEach((c) => { if (CLASS_RE.test(c) && !isFragment(c)) out.add(c); });
         for (const m of t.matchAll(/class=["'`]([^"'`$]*)["'`]/g)) add(m[1]);
-        for (const m of t.matchAll(/class=\$\{([^}]*)\}/g)) {
-            for (const lit of m[1].matchAll(/["'`]([^"'`]*)["'`]/g)) add(lit[1]);
+        for (const expr of classExpressions(t)) {
+            for (const lit of expr.matchAll(/["'`]([^"'`]*)["'`]/g)) add(lit[1]);
         }
         for (const m of t.matchAll(/class="([^"$]*)/g)) add(m[1]);
     }

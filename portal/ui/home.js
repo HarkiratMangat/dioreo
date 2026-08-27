@@ -122,7 +122,7 @@ function HomeClock({ season, today }) {
 
     return html`
         <section class="hclock" aria-label="Season countdown">
-            <div class="sclock" data-tier=${seasonTier(p.d)}>
+            <div class="sclock hc-face" data-tier=${seasonTier(p.d)}>
                 <div class="sc-face">
                     ${units.map((u, i) => html`
                         ${i ? html`<span class="sc-sep">:</span>` : null}
@@ -146,6 +146,76 @@ function HomeClock({ season, today }) {
                 </div>
             </div>
         </section>`;
+}
+
+// 🔴 THE PORTAL'S ACTUAL SUBJECT, AND HOME DID NOT ANSWER IT. The attention list says what is WRONG and the clock says how long the season has; neither says what a player opening the bot this second would be shown. Those are three different questions and the third is the one the whole console exists to control.
+//
+// ⚠️ IT IS NOT A SECOND AUTHORITY OVER THE ATTENTION LIST. That list is EXCEPTIONS — things that want a person. This is CURRENT STATE, which is true and boring most days. Merging them would mean either the exceptions drown in routine rows or the routine rows get dressed as problems.
+//
+// ⚠️ AND IT RE-USES `seasonItems`, never its own filter. Home already learned this the expensive way in the mockup: two copies of one predicate on one page reported different numbers for the same collection, and the fix is that there is only ever one derivation to read.
+const endsIn = (iso, today) => {
+    const d = dday(today, iso);
+    if (d < 0) return 'ended';
+    if (d === 0) return 'ends today';
+    return `ends in ${d}d`;
+};
+
+function LiveNow({ season, broadcast, today }) {
+    const SHOW = 5;
+    const items = seasonItems(season)
+        .filter((i) => i.start <= today && (i.end || i.start) >= today)
+        .sort((a, b) => ((a.end || a.start) < (b.end || b.start) ? -1 : 1));
+    const anns = (broadcast?.live || []).length ? broadcast.live : (broadcast?.all || []).filter((a) => a.state === 'live');
+
+    return html`
+        <div class="hlive">
+            <div class="lp">
+                <h2>Running right now</h2>
+                <p class="lsub">What a player opening the bot this second would be shown.</p>
+                ${items.slice(0, SHOW).map((i) => html`
+                    <div class="lrow" key=${i.title + i.start} style=${`--c:${LANE_ACCENT[i.lane] || 'var(--ink4)'}`}>
+                        <i class="ld"></i>
+                        <span class="lt">${i.title}</span>
+                        <!-- "hot" is two days out, the same threshold the attention list uses for a deadline. A colour that fires on a different number than the list beside it teaches the reader that neither can be trusted. -->
+                        <span class=${'lw' + (i.end && dday(today, i.end) <= 2 ? ' hot' : '')}>
+                            ${i.end && i.end !== i.start ? endsIn(i.end, today) : 'today'}
+                        </span>
+                    </div>`)}
+                ${items.length > SHOW ? html`
+                    <p class="lmore">${items.length - SHOW} more running · <a href="#/season">open the Track</a></p>` : null}
+                ${!items.length ? html`
+                    <p class="lmore">Nothing is scheduled for today. The season runs, but no draw, event or playlist
+                        opens or closes.</p>` : null}
+            </div>
+            <div class="lp">
+                <h2>Showing to players</h2>
+                <p class="lsub">Announcements the bot is attaching to its replies.</p>
+                ${anns.length ? anns.map((a) => html`
+                    <div class="lrow" key=${a._id || a.text} style="--c:var(--patch)">
+                        <i class="ld"></i>
+                        <span class="lt">${a.text || a.title || 'untitled announcement'}</span>
+                        <!-- 🔴 NO EXPIRY IS THE HOT STATE, not the calm one. An announcement with no expiresAt value never stops on its own, which is the single defect Broadcast's own attention row exists to report — so it reads hot here for the same reason. -->
+                        <span class=${'lw' + (a.expiresAt ? '' : ' hot')}>
+                            ${a.expiresAt ? endsIn(String(a.expiresAt).slice(0, 10), today) : 'never ends'}
+                        </span>
+                    </div>`)
+                : html`<p class="lmore">No announcement is showing. Replies go out with nothing attached.</p>`}
+                <p class="lmore"><a href="#/broadcast">Open Broadcast</a></p>
+            </div>
+        </div>`;
+}
+
+// ⚠️ IT OFFERS THE WAY BACK, NOT THE VERBS. The mockup puts "Discard all" here beside "Review & commit"; the portal does not, because Review is the only screen that commits and discarding everything from a summary strip — with no list of what is about to go — is the one shape of that button nobody should press. The count and the route are what this can honestly carry.
+function Resume({ ops }) {
+    if (!ops.length) return null;
+    const realms = new Set(ops.map((o) => o.realm || 'season'));
+    return html`
+        <div class="hres">
+            <b>${ops.length} staged change${ops.length === 1 ? '' : 's'}</b>
+            <span>across ${realms.size} realm${realms.size === 1 ? '' : 's'} — nothing is live until you commit them.</span>
+            <span class="sp"></span>
+            <a class="chip go" href="#/review">Review & commit</a>
+        </div>`;
 }
 
 export function HomeRealm({ session }) {
@@ -180,6 +250,8 @@ export function HomeRealm({ session }) {
                   viewSlot=${html`
                       <div class="home">
                           <${AttentionList} rows=${rows} />
+                          <${Resume} ops=${data.review?.ops || []} />
                           <${HomeClock} season=${data.season?.live} today=${today} />
+                          <${LiveNow} season=${data.season?.live} broadcast=${data.broadcast} today=${today} />
                       </div>`} />`;
 }

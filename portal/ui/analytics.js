@@ -51,7 +51,7 @@ function summaryOf(row) {
 
 const RIVER_COLUMNS = [
     { key: 'at', label: 'When', dataKind: 'date', render: (r) => new Date(r.at).toISOString().slice(5, 16).replace('T', ' ') },
-    { key: 'kind', label: 'Kind', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
+    { key: 'kind', label: 'Kind', col: 'c-type', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
     // ⚠️ The source is PLAIN TEXT in a monospaced column. It used to carry a `.src` chip class with no rule behind it, and a chip here would compete with the kind chip beside it for the same reading — one of the two has to be quieter, and the kind is the one that classifies.
     { key: 'source', label: 'Source', render: (r) => sourceOf(r) },
     // 🔴 THE LEVEL WAS A FILTER AND NEVER A MARK. An error and a routine change read identically down the column, so the one thing you scan a log for — which rows are bad — needed the filter to be touched first. The dot carries severity, the tag names it, and both are absent on rows that have no level rather than defaulting to a reassuring one.
@@ -76,7 +76,10 @@ const RIVER_FILTERS = [
 
 // 🔴 `.spark` EXISTS IN THE ADOPTED STYLESHEET AND MEANS SOMETHING ELSE ENTIRELY. The old component emitted `<i style="height:N%">` for a vertical bar chart; app.css's `.spark` is a 6px horizontal progress track whose children are absolutely positioned by `left`/`width`, so every bar collapsed and the chart rendered as a flat line. Nothing errored, the class WAS defined, and `portal:orphans` cannot see this — its question is whether a class exists, not whether it means what the emitter thought.
 //
-// The honest fix is not a third bar chart: `.lvlbars` is the adopted design's own labelled series, and it is better than the sparkline it replaces because seven anonymous bars become seven NAMED days. A reader could not previously tell which end was today.
+// The honest fix is not a third bar chart: `.lvlbars` is the adopted design's own labelled series, and it is better than the sparkline it replaces because seven anonymous bars become seven NAMED days. A reader could not previously tell which end was today. UTC, because every other date the portal prints is the UTC calendar day the bot stores — a local-midnight rollover here would label the same bar differently depending on where it is read.
+const dayAgo = (ago) => new Date(Date.now() - ago * 86400000)
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
 function DailyBars({ series = [], label }) {
     if (!series.length) return null;
     const max = Math.max(1, ...series);
@@ -90,6 +93,11 @@ function DailyBars({ series = [], label }) {
                     <span class="ln">${r.ago === 0 ? 'today' : `−${r.ago}d`}</span>
                     <span class="lt"><i style=${`width:${Math.round((r.n / max) * 100)}%`}></i></span>
                     <span class="lv2">${r.n}</span>
+                    <!-- 🔴 "−3d" IS A DISTANCE, NOT A DAY. Every other date in this console is a real one, and a
+                         reader comparing a spike here against a deploy in the river below had to count backwards
+                         from today to line them up. The adopted sheet already reserves a second grid row on this
+                         component for exactly this kind of sub-line. -->
+                    <span class="lp">${dayAgo(r.ago)}</span>
                 </div>`)}
         </div>
     `;

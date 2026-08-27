@@ -36,9 +36,9 @@ if (!missing.size) {
 }
 
 const hasRule = (c) => new RegExp(`\\.${c.replace(/[-]/g, '\\-')}(?![\\w-])`).test(CSS);
-// A class name can appear inside any string that ends up in a class attribute, so the match is on the NAME inside a quoted run rather than on `class=` — the portal builds plenty of them by concatenation.
+// A class name can appear inside any string that ends up in a class attribute, so the match is on the NAME inside a quoted run rather than on `class=` — the portal builds plenty of them by concatenation. ⚠️ THE RUN MAY CONTAIN AN INTERPOLATION. `'lvtag lv-' + level` and `` `lvtag lv-${r.level}` `` are both a class this file emits, and a character class of `[\w\s-]` alone rejects the second — which is how `lvtag` reached the UNBUILT list while analytics.js had been emitting it all along. `$`, `{`, `}` and `.` join the run so an interpolated neighbour cannot hide a literal class name.
 const emittedBy = (c) => Object.keys(SRC).filter((f) =>
-    new RegExp(`["'\`][\\w\\s-]*\\b${c.replace(/[-]/g, '\\-')}\\b[\\w\\s-]*["'\`]`).test(SRC[f]));
+    new RegExp(`["'\`][\\w\\s${'\\-'}\\$\\{\\}.]*\\b${c.replace(/[-]/g, '\\-')}\\b[\\w\\s${'\\-'}\\$\\{\\}.]*["'\`]`).test(SRC[f]));
 
 const noRule = [], already = [], unbuilt = [];
 for (const [c, realms] of [...missing].sort()) {

@@ -117,9 +117,9 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                 <colgroup>
                     <col class="c-cb" />
                     ${columns.map((c, i) => html`<col key=${c.key}
-                        class=${i === 0 ? 'c-item' : c.key === 'state' ? 'c-state' : c.dataKind === 'date' ? 'c-win' : 'c-detail'} />`)}
+                        class=${c.col || (i === 0 ? 'c-item' : c.key === 'state' ? 'c-state' : c.dataKind === 'date' ? 'c-win' : 'c-detail')} />`)}
                     <!-- The remove column takes its width from the .mtable th.ra rule, which the adopted sheet already sets; a col class of its own would be a second authority over one number. (No backticks in this comment: it lives inside a template literal, and the build's parse gate caught the sixth occurrence of that within seconds of writing it.) -->
-                    ${onRemove ? html`<col />` : null}
+                    ${onRemove ? html`<col class="c-ra" />` : null}
                 </colgroup>
                 <thead><tr>
                     <th class="c-cb"></th>

@@ -2,7 +2,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, MastheadNew } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
@@ -246,9 +246,15 @@ function ByScope({ matrix, spof, ownerId }) {
                     return html`
                         <div class=${'scope' + (alone ? ' spof' : '')}>
                             <span class="nm">${sc.key}</span>
-                            ${ownerId ? html`<span class="holder owner">owner</span>` : null}
-                            ${holders.map((h) => html`<span class="holder">${h.slice(-6)}</span>`)}
-                            ${alone ? html`<span class="flag">⚠ single point</span>` : null}
+                            <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
+                            <span class="rl">${sc.realm ? `portal realm: ${sc.realm}` : 'Discord only'}</span>
+                            <span class="hs">
+                                ${ownerId ? html`<span class="holder owner">owner</span>` : null}
+                                ${holders.map((h) => html`<span class="holder" key=${h}>${h.slice(-6)}</span>`)}
+                            </span>
+                            <!-- ⚠️ "nobody but you" IS QUIET, and "single point" IS NOT. Sole ownership by the owner is the resting state of a solo-maintained bot; one OTHER person holding it alone is the thing that goes wrong when they leave. Painting both in warning colour would make the common case shout and teach the reader to skip the mark. -->
+                            ${alone ? html`<span class="flag">⚠ single point</span>`
+                                : !holders.length ? html`<span class="flag quiet">nobody but you</span>` : null}
                         </div>
                     `;
                 })}
@@ -298,8 +304,17 @@ export function AccessRealm({ session }) {
             typed: admin.discordId,
             title: `Change what …${admin.discordId.slice(-6)} can do?`,
             body: html`
-                ${granted.length ? html`<p class="dw-p"><b>Granting:</b> ${granted.join(', ')}.</p>` : null}
-                ${revoked.length ? html`<p class="dw-p"><b>Revoking:</b> ${revoked.join(', ')}.</p>` : null}
+                <!-- 🔴 GRANTING AND REVOKING READ IDENTICALLY AS TWO BOLD PARAGRAPHS, and they are opposite acts. The drawer's eyebrow already carries the op id in prose; this states it as the identifier the server will see, and splits the two directions into groups whose colour is their direction. -->
+                <div class="idop"><b>admin.grant</b> — replaces the whole permission list for this account</div>
+                ${granted.length ? html`
+                    <div class="acg"><b class="acg-k on">Granting ${granted.length}</b>
+                        <ul class="dw-l">${granted.map((g) => html`<li key=${g}>${g}</li>`)}</ul></div>` : null}
+                ${revoked.length ? html`
+                    <div class="acg"><b class="acg-k off">Revoking ${revoked.length}</b>
+                        <ul class="dw-l">${revoked.map((g) => html`<li key=${g}>${g}</li>`)}</ul></div>` : null}
+                ${revoked.length ? html`
+                    <div class="callout dangerous"><b>A revoke takes effect on their very next action.</b> It is not
+                        staged and there is no undo button — restoring it means granting it again.</div>` : null}
                 <p class="dw-p">Access does not stage. This is written the moment you confirm, and every request
                     they make re-checks server-side — so a revoke takes effect on their very next action, even with
                     a portal session already open.</p>`,
@@ -360,6 +375,12 @@ export function AccessRealm({ session }) {
     const data = load.data;
     const matrix = data.matrix || { admins: [], scopes: [] };
 
+    // ⚠️ THE FORM IS AT THE FOOT OF A GRID, so the masthead button has to travel rather than toggle: there is no second copy to reveal, and building one would be two grant forms that can disagree. The focus lands on the field, not merely the scroll position — a page that moves and leaves the caret behind has not actually taken you there.
+    const scrollToGrant = () => requestAnimationFrame(() => {
+        const el = document.querySelector('.grantform input, #grant-id');
+        if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus({ preventScroll: true }); }
+    });
+
     // A session is "signed in now" if it was seen in the last 15 minutes -- the same rough threshold 06-access-and-analytics.html's own "2 signed in now" stat line implies. Not a stored flag: a browser session has no logout event unless someone clicks it, so recency is the only honest signal there is.
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;
 
@@ -371,7 +392,10 @@ export function AccessRealm({ session }) {
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
                                                    { value: activeSessions, label: 'signed in now', tone: activeSessions ? 'hot' : undefined },
                                                    { value: (data.singlePointsOfFailure || []).length, label: 'single points', tone: (data.singlePointsOfFailure || []).length ? 'bad' : undefined },
-                                               ]} />`}
+                                               ]}
+                                               actions=${html`<${MastheadNew} label="Grant access" hint="g"
+                                                                              tip="Jump to the grant form"
+                                                                              onClick=${() => { setView('By admin'); scrollToGrant(); }} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'

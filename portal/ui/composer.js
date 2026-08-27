@@ -32,7 +32,7 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
 
     const raw = String(value || '').trim();
     return html`
-        <div>
+        <div class="nw-f">
             <label class="nw-l" for=${id}>${label}</label>
             <input class="nw-i nw-smart" id=${id} type="text" autocomplete="off" spellcheck="false"
                    placeholder=${placeholder} value=${value}
@@ -98,6 +98,28 @@ function PasteZone({ kind, onStageAll }) {
     `;
 }
 
+// 🔴 IT SAYS WHAT THE RECORD WILL BE, IN THE SENTENCE THE BOT WOULD USE — not a second copy of the form's own fields. The composer already draws a ghost onto the Track (below), which answers WHERE; this answers WHAT, because the Track cannot show a name or tell a one-date release from a window that happens to be a day long.
+//
+// ⚠️ IT RENDERS NOTHING UNTIL THERE IS SOMETHING TRUE TO SAY. `.nwhost .nw-prev:empty{display:none}` is in the adopted sheet, so an empty preview must be genuinely EMPTY rather than a wrapper holding a placeholder — a "nothing yet" line would reserve 76px of the composer forever and defeat the rule.
+function ComposePreview({ state, type }) {
+    const ghost = composeGhostFor(state, type);
+    if (!ghost || !type) return html`<div class="nw-prev"></div>`;
+    const name = (state.name || '').trim();
+    const window = ghost.shape === 'point' || ghost.end === ghost.start
+        ? fmtDay(ghost.start)
+        : `${fmtDay(ghost.start)} → ${fmtDay(ghost.end)}`;
+    return html`
+        <div class="nw-prev">
+            <p class="nw-hint" style=${`--c:${type.hex}`}>
+                <span class="nw-dot" style=${`--c:${type.hex}`}></span>${' '}
+                <b>${name || type.nameLabel || 'Unnamed'}</b>${' '}
+                ${ghost.shape === 'point' ? 'releases' : 'runs'} ${window}${' '}
+                <em style="font-style:normal;color:var(--ink3)">· ${type.label}</em>
+            </p>
+        </div>
+    `;
+}
+
 export function Composer({ types, initialType, onStage, onStageMany, onCancel, onLive }) {
     const [state, setState] = useState({ type: initialType || null, name: '', aText: '', aIso: null, bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;
@@ -132,13 +154,16 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
                             <em>${t.shape === 'point' ? 'one date' : 'a window'}</em>
                         </button>`)}
                 </div>
-                ${type && onStageMany ? html`<${PasteZone} kind=${type.key} onStageAll=${(rows, raw) => onStageMany(type.key, rows, raw)} />` : null}
+                ${type && onStageMany ? html`
+                    <div class="nw-paste">
+                        <${PasteZone} kind=${type.key} onStageAll=${(rows, raw) => onStageMany(type.key, rows, raw)} />
+                    </div>` : null}
                 <div class="nw-form">
                     ${!type ? html`
                         <p class="nw-hint">Pick what you are adding. The form follows the record — a release asks for
                             one date, a window asks for two.</p>`
                     : html`
-                        <div class="nw-f-name">
+                        <div class="nw-f nw-f-name">
                             <label class="nw-l" for="nw-name">${type.nameLabel || 'Name'}</label>
                             <input class="nw-i" id="nw-name" type="text" autocomplete="off" spellcheck="false"
                                    placeholder=${type.placeholder || ''} value=${state.name}
@@ -156,6 +181,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
                         ${type.shape === 'point' ? html`
                             <p class="nw-note">${type.pointNote || 'This has no end date — the record stores one date.'}</p>` : null}`}
                 </div>
+                <${ComposePreview} state=${state} type=${type} />
                 <div class="nw-act">
                     <!-- The reason sits beside the button rather than under the offending field: it is the answer to "why can I not press this", and it belongs where the question is asked. -->
                     <span class="nw-why">${reason || 'Ready to stage.'}</span>

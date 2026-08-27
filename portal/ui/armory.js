@@ -5,7 +5,7 @@ import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Fold, Icon } from './icons.js';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, MastheadNew } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
@@ -25,7 +25,7 @@ const ARMORY_COLUMNS = [
     { key: 'weaponName', label: 'Weapon', editable: true,
       meta: (r) => `${r.mode} · ${(r.attachments || []).length} attachment${(r.attachments || []).length === 1 ? '' : 's'}` },
     { key: 'buildName', label: 'Build', editable: true },
-    { key: 'category', label: 'Category', editable: true },
+    { key: 'category', label: 'Category', col: 'c-type', editable: true },
     { key: 'shareCode', label: 'Code', dataKind: 'date',
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`
@@ -933,7 +933,10 @@ export function ArmoryRealm({ session }) {
                   ]}
                   masthead=${html`<${Masthead} title="Armory"
                                                sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
-                                               stats=${armoryStats} />`}
+                                               stats=${armoryStats}
+                                               actions=${html`<${MastheadNew} label="New build" hint="b"
+                                                                              tip="Open the build form"
+                                                                              onClick=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
