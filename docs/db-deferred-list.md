@@ -426,8 +426,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### 🎛️ Four of §16's eight liveliness micro-interactions never reached `portal/ui` `[P2 · S]`
+### ~~🎛️ Four of §16's eight liveliness micro-interactions never reached `portal/ui`~~ ✅ **RESOLVED 2026-08-27 12:4x EDT** `[P2 · S]`
 *Filed 2026-08-27 00:04 EDT. Found by reading the COMPANION against the code, not by any gate — `portal:coverage` reads 100% with all four absent.*
+
+✅ **CLOSED — and it was two different findings wearing one label, which is why the count said four.**
+
+🔴 **`.count-bump` and `.staged-pulse` were genuinely absent. Now built.** `pulseTray()` lives in `portal/ui/shell.js` (the module that owns both targets — the rail's staged count and the tray) and is called from **one place**: `composeClient.js`'s `stageOps`, the single funnel every staging path in the portal goes through, which is the same reason the mockup puts its own call inside `Store.add`. ⚠️ **Only on a real stage** — a refusal, an expired session and a validation failure all return through that same call, and pulsing for work that was not staged is a surface telling the reader something happened when nothing did. **Verified in the browser both ways:** a real stage bumps the badge with the real `countBump` animation; an injected `?fail=/api/changeset` bumps nothing.
+
+⚠️ **The badge could not simply be bumped when the stage returns, and the first version got this wrong twice.** The mockup's store is synchronous so its count is already updated; here a stage is a round trip plus a refetch plus a re-render, and at 0→1 the badge node does not exist yet. Waiting for the count to *change* was the second wrong answer: staging into an EXISTING changeset adds an op and leaves the count alone, a real and common case that trigger would never fire for. It now bumps as soon as the badge is on the page.
+
+🟢 **`.lift` and `.tint` were never actually missing — the tracker was reading class NAMES, not behaviour.** `portal/ui/app.css`'s own *LIVELINESS, APPLIED* block states the decision in capitals: applied **by selector, not by adding a class at every call site**, because 40 hand-added classes is 40 a new surface forgets. Measured on the live page: Armory's rack cards (`.bgrp`) lift and tint on hover through their own component rule, and the enumerated card list plus the `[style*="--c"]` hover rule cover the rest. A source scanner looking for the literal strings `lift`/`tint` in markup reports absence for a behaviour that is present — the same blind spot as every other portal gate, in the opposite direction.
+
+⚠️ **One genuine defect the measurement did surface, and it is the `.stat.live` shape again:** `.wcard` appears in that enumerated card list in BOTH codebases and is emitted by **nothing, in either** — a name transcribed from the mockup's stylesheet for a component the portal calls something else. Filed rather than silently deleted because the enumeration is the design's own list and pruning it is a design edit.
 
 The mockup's §16 liveliness layer was built 2026-08-25 and the CSS came across whole with `app.css`. **The markup that triggers half of it did not.** Measured: the rules exist in `portal/ui/app.css`; nothing in `portal/ui/*.js` emits them.
 

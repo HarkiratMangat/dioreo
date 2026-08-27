@@ -35,7 +35,38 @@ function RealmIcon({ realm }) {
 //
 // 🔴 REVIEW SITS BELOW A RULE, NOT AS A SIXTH REALM, and that is the approved design's own decision rather than a layout preference: five realms are PLACES TO WORK, Review is the WAY OUT. The rule says that without a label nobody would read at 9px. It first shipped reachable only through the tray — which requires staged work to exist — so the commit screen was unreachable from a page with nothing staged, which is exactly when you want to check that nothing is staged.
 //
-// 🔴 AND THE STAGED COUNT BELONGS HERE, not on Season. It is a property of the CHANGESET, so an Armory edit putting a badge on Season is the surface disagreeing with its own data. The rail's realm entries. `--c` per realm is the adopted design's own mechanism — the accent is a property of the realm, applied as a custom property rather than a class, so hover/active/current states all read from one value.
+// 🔴 AND THE STAGED COUNT BELONGS HERE, not on Season. It is a property of the CHANGESET, so an Armory edit putting a badge on Season is the surface disagreeing with its own data. The rail's realm entries. `--c` per realm is the adopted design's own mechanism — the accent is a property of the realm, applied as a custom property rather than a class, so hover/active/current states all read from one value. 🔴 THE PORTAL STAGED FROM SIX REALMS AND ACKNOWLEDGED IT NOWHERE BUT A TOAST. `.count-bump` and `.staged-pulse` have had rules in the adopted stylesheet since it was adopted and no code has ever applied either — the mockup applies them from `Shell.pulseTray()`, and nothing was ported. This is that function. It lives here because this module owns both targets: the rail's staged count and the tray.
+//
+// ⚠️ IT IS CALLED FROM ONE PLACE, DELIBERATELY. `composeClient.js`'s `stageOps` is the single funnel every staging path in the portal goes through, which is the same reason the mockup put its call inside `Store.add` — an acknowledgement remembered at each call site is one a new surface forgets.
+//
+// 🔴 AND THE BADGE CANNOT SIMPLY BE BUMPED WHEN THE STAGE RETURNS, WHICH THE MOCKUP DID NOT HAVE TO SOLVE. Its store is synchronous, so the count is already updated by the time it pulses. Here a stage is a network round trip followed by a refetch and a re-render, and when the count goes 0→1 the badge NODE DOES NOT YET EXIST at return time — decorating it then decorates nothing, which looks exactly like a rule that does not work. So the tray, which no stage re-renders, is pulsed immediately, and the badge is pulsed as soon as it is on the page.
+//
+// ⚠️ IT DOES NOT WAIT FOR THE NUMBER TO CHANGE, and that was the first version's bug. Staging into an EXISTING changeset adds an op and leaves the changeset COUNT alone — a real and common case — so a "wait until the count differs" trigger would never fire for it, silently, which is the same class of defect as the missing acknowledgement itself.
+//
+// ⚠️ THE CLASS SURVIVES THE RE-RENDER because preact reuses the node and only writes `class` when the vnode's own class prop changed; this badge's is the constant "cnt", so the count's text updates underneath an animation that keeps playing.
+//
+// ⚠️ setTimeout rather than requestAnimationFrame on purpose: rAF does not fire in a background tab (COMPANION §14 — that is how ruler masking silently never ran), and a stage kicked off before switching tabs would then acknowledge nothing on return. It gives up quietly after ~1.5s: a stage in a realm whose badge never appears has nothing to acknowledge, and that is not an error.
+const BADGE_SEL = '.rail .realm.out .cnt';
+function replay(sel, cls) {
+    const el = typeof document !== 'undefined' && document.querySelector(sel);
+    if (!el) return false;
+    el.classList.remove(cls);
+    void el.offsetWidth;   // without the reflow, removing and re-adding in one frame replays nothing
+    el.classList.add(cls);
+    return true;
+}
+export function pulseTray() {
+    if (typeof document === 'undefined') return;
+    replay('.tray', 'staged-pulse');
+    if (replay(BADGE_SEL, 'count-bump')) return;
+    let waited = 0;
+    const tick = () => {
+        if (replay(BADGE_SEL, 'count-bump')) return;
+        if ((waited += 50) < 1500) setTimeout(tick, 50);
+    };
+    setTimeout(tick, 50);
+}
+
 export function Rail({ realm, realms, badges = {} }) {
     const visible = realms || REALMS;
     const places = visible.filter((r) => r !== 'review');
